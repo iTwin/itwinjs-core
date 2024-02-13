@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Field, KeySet, Ruleset } from "@itwin/presentation-common";
@@ -10,7 +10,6 @@ import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
 
 describe("Learning Snippets", () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
@@ -24,9 +23,7 @@ describe("Learning Snippets", () => {
   });
 
   describe("Content Customization", () => {
-
     describe("RelatedPropertiesSpecification", () => {
-
       it("uses `propertiesSource` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.RelatedPropertiesSpecification.PropertiesSource.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. The produced content is customized to
@@ -34,18 +31,26 @@ describe("Learning Snippets", () => {
         // in backwards direction.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "Content",
-            specifications: [{
-              specType: "SelectedNodeInstances",
-              relatedProperties: [{
-                propertiesSource: [{
-                  relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
-                  direction: "Backward",
-                }],
-              }],
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "SelectedNodeInstances",
+                  relatedProperties: [
+                    {
+                      propertiesSource: [
+                        {
+                          relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
+                          direction: "Backward",
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -57,16 +62,22 @@ describe("Learning Snippets", () => {
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x12" }]),
           descriptor: {},
         }))!;
-        expect(content.descriptor.fields).to.containSubset([{
-          label: "Element",
-          nestedFields: [{
-            label: "Model",
-          }, {
-            label: "Code",
-          }, {
-            label: "User Label",
-          }],
-        }]);
+        expect(content.descriptor.fields).to.containSubset([
+          {
+            label: "Element",
+            nestedFields: [
+              {
+                label: "Model",
+              },
+              {
+                label: "Code",
+              },
+              {
+                label: "User Label",
+              },
+            ],
+          },
+        ]);
       });
 
       it("uses `handleTargetClassPolymorphically` attribute", async () => {
@@ -77,19 +88,27 @@ describe("Learning Snippets", () => {
         // determined and all its properties are loaded.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "Content",
-            specifications: [{
-              specType: "SelectedNodeInstances",
-              relatedProperties: [{
-                propertiesSource: [{
-                  relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
-                  direction: "Backward",
-                }],
-                handleTargetClassPolymorphically: true,
-              }],
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "SelectedNodeInstances",
+                  relatedProperties: [
+                    {
+                      propertiesSource: [
+                        {
+                          relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
+                          direction: "Backward",
+                        },
+                      ],
+                      handleTargetClassPolymorphically: true,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -101,18 +120,25 @@ describe("Learning Snippets", () => {
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x12" }]),
           descriptor: {},
         }))!;
-        expect(content.descriptor.fields).to.containSubset([{
-          label: "Subject",
-          nestedFields: [{
-            label: "Model",
-          }, {
-            label: "Code",
-          }, {
-            label: "User Label",
-          }, {
-            label: "Description",
-          }],
-        }]);
+        expect(content.descriptor.fields).to.containSubset([
+          {
+            label: "Subject",
+            nestedFields: [
+              {
+                label: "Model",
+              },
+              {
+                label: "Code",
+              },
+              {
+                label: "User Label",
+              },
+              {
+                label: "Description",
+              },
+            ],
+          },
+        ]);
       });
 
       it("uses `relationshipMeaning` attribute", async () => {
@@ -123,20 +149,28 @@ describe("Learning Snippets", () => {
         // nested under the default category.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "Content",
-            specifications: [{
-              specType: "SelectedNodeInstances",
-              relatedProperties: [{
-                propertiesSource: [{
-                  relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                  direction: "Forward",
-                  targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
-                }],
-                relationshipMeaning: "SameInstance",
-              }],
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "SelectedNodeInstances",
+                  relatedProperties: [
+                    {
+                      propertiesSource: [
+                        {
+                          relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
+                          direction: "Forward",
+                          targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
+                        },
+                      ],
+                      relationshipMeaning: "SameInstance",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -150,31 +184,38 @@ describe("Learning Snippets", () => {
         }))!;
 
         const defaultCategory = content.descriptor.categories[0];
-        expect(content.descriptor.fields).to.containSubset([{
-          label: "Physical Partition",
-          category: defaultCategory,
-          nestedFields: [{
-            label: "Model",
-            category: {
-              parent: defaultCategory,
-            },
-          }, {
-            label: "Code",
-            category: {
-              parent: defaultCategory,
-            },
-          }, {
-            label: "User Label",
-            category: {
-              parent: defaultCategory,
-            },
-          }, {
-            label: "Description",
-            category: {
-              parent: defaultCategory,
-            },
-          }],
-        }]);
+        expect(content.descriptor.fields).to.containSubset([
+          {
+            label: "Physical Partition",
+            category: defaultCategory,
+            nestedFields: [
+              {
+                label: "Model",
+                category: {
+                  parent: defaultCategory,
+                },
+              },
+              {
+                label: "Code",
+                category: {
+                  parent: defaultCategory,
+                },
+              },
+              {
+                label: "User Label",
+                category: {
+                  parent: defaultCategory,
+                },
+              },
+              {
+                label: "Description",
+                category: {
+                  parent: defaultCategory,
+                },
+              },
+            ],
+          },
+        ]);
       });
 
       it("uses `properties` attribute", async () => {
@@ -183,20 +224,28 @@ describe("Learning Snippets", () => {
         // additionally include specific properties of modeled Element by following the `bis.ModelModelsElement` relationship.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "Content",
-            specifications: [{
-              specType: "SelectedNodeInstances",
-              relatedProperties: [{
-                propertiesSource: [{
-                  relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                  direction: "Forward",
-                  targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
-                }],
-                properties: ["UserLabel", "Description"],
-              }],
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "SelectedNodeInstances",
+                  relatedProperties: [
+                    {
+                      propertiesSource: [
+                        {
+                          relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
+                          direction: "Forward",
+                          targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
+                        },
+                      ],
+                      properties: ["UserLabel", "Description"],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -208,14 +257,19 @@ describe("Learning Snippets", () => {
           keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
           descriptor: {},
         }))!;
-        expect(content.descriptor.fields).to.containSubset([{
-          label: "Physical Partition",
-          nestedFields: [{
-            label: "User Label",
-          }, {
-            label: "Description",
-          }],
-        }]);
+        expect(content.descriptor.fields).to.containSubset([
+          {
+            label: "Physical Partition",
+            nestedFields: [
+              {
+                label: "User Label",
+              },
+              {
+                label: "Description",
+              },
+            ],
+          },
+        ]);
       });
 
       it("uses `autoExpand` attribute", async () => {
@@ -225,19 +279,27 @@ describe("Learning Snippets", () => {
         // the properties should be automatically expanded.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "Content",
-            specifications: [{
-              specType: "SelectedNodeInstances",
-              relatedProperties: [{
-                propertiesSource: [{
-                  relationship: { schemaName: "BisCore", className: "SubjectOwnsSubjects" },
-                  direction: "Forward",
-                }],
-                autoExpand: true,
-              }],
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "SelectedNodeInstances",
+                  relatedProperties: [
+                    {
+                      propertiesSource: [
+                        {
+                          relationship: { schemaName: "BisCore", className: "SubjectOwnsSubjects" },
+                          direction: "Forward",
+                        },
+                      ],
+                      autoExpand: true,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -249,19 +311,26 @@ describe("Learning Snippets", () => {
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
           descriptor: {},
         }))!;
-        expect(content.descriptor.fields).to.containSubset([{
-          label: "Subject",
-          autoExpand: true,
-          nestedFields: [{
-            label: "Model",
-          }, {
-            label: "Code",
-          }, {
-            label: "User Label",
-          }, {
-            label: "Description",
-          }],
-        }]);
+        expect(content.descriptor.fields).to.containSubset([
+          {
+            label: "Subject",
+            autoExpand: true,
+            nestedFields: [
+              {
+                label: "Model",
+              },
+              {
+                label: "Code",
+              },
+              {
+                label: "User Label",
+              },
+              {
+                label: "Description",
+              },
+            ],
+          },
+        ]);
       });
 
       it("uses `skipIfDuplicate` attribute", async () => {
@@ -274,31 +343,44 @@ describe("Learning Snippets", () => {
         // ignored due to `skipIfDuplicate` attribute being set to `true`.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "Content",
-            specifications: [{
-              specType: "SelectedNodeInstances",
-              relatedProperties: [{
-                propertiesSource: [{
-                  relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                  direction: "Forward",
-                  targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
-                }],
-                properties: ["UserLabel"],
-              }],
-            }],
-          }, {
-            ruleType: "ContentModifier",
-            class: { schemaName: "BisCore", className: "Model" },
-            relatedProperties: [{
-              propertiesSource: [{
-                relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                direction: "Forward",
-                targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
-              }],
-              skipIfDuplicate: true,
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "SelectedNodeInstances",
+                  relatedProperties: [
+                    {
+                      propertiesSource: [
+                        {
+                          relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
+                          direction: "Forward",
+                          targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
+                        },
+                      ],
+                      properties: ["UserLabel"],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              ruleType: "ContentModifier",
+              class: { schemaName: "BisCore", className: "Model" },
+              relatedProperties: [
+                {
+                  propertiesSource: [
+                    {
+                      relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
+                      direction: "Forward",
+                      targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
+                    },
+                  ],
+                  skipIfDuplicate: true,
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -310,13 +392,14 @@ describe("Learning Snippets", () => {
           keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
           descriptor: {},
         }))!;
-        expect(content.descriptor.fields).to.containSubset([{
-          label: "Physical Partition",
-          nestedFields: (nestedFields: Field[]) => {
-            return nestedFields.length === 1
-              && nestedFields[0].label === "User Label";
+        expect(content.descriptor.fields).to.containSubset([
+          {
+            label: "Physical Partition",
+            nestedFields: (nestedFields: Field[]) => {
+              return nestedFields.length === 1 && nestedFields[0].label === "User Label";
+            },
           },
-        }]);
+        ]);
       });
 
       it("uses `nestedRelatedProperties` attribute", async () => {
@@ -325,26 +408,38 @@ describe("Learning Snippets", () => {
         // specification that loads modeled element properties and properties of `bis.LinkElement` related to the modeled element.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "Content",
-            specifications: [{
-              specType: "SelectedNodeInstances",
-              relatedProperties: [{
-                propertiesSource: [{
-                  relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                  direction: "Forward",
-                  targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
-                }],
-                nestedRelatedProperties: [{
-                  propertiesSource: [{
-                    relationship: { schemaName: "BisCore", className: "ElementHasLinks" },
-                    direction: "Forward",
-                    targetClass: { schemaName: "BisCore", className: "RepositoryLink" },
-                  }],
-                }],
-              }],
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "SelectedNodeInstances",
+                  relatedProperties: [
+                    {
+                      propertiesSource: [
+                        {
+                          relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
+                          direction: "Forward",
+                          targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
+                        },
+                      ],
+                      nestedRelatedProperties: [
+                        {
+                          propertiesSource: [
+                            {
+                              relationship: { schemaName: "BisCore", className: "ElementHasLinks" },
+                              direction: "Forward",
+                              targetClass: { schemaName: "BisCore", className: "RepositoryLink" },
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -356,15 +451,21 @@ describe("Learning Snippets", () => {
           keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
           descriptor: {},
         }))!;
-        expect(content.descriptor.fields).to.containSubset([{
-          label: "Physical Partition",
-          nestedFields: [{
-            label: "Repository Link",
-            nestedFields: [{
-              label: "URL",
-            }],
-          }],
-        }]);
+        expect(content.descriptor.fields).to.containSubset([
+          {
+            label: "Physical Partition",
+            nestedFields: [
+              {
+                label: "Repository Link",
+                nestedFields: [
+                  {
+                    label: "URL",
+                  },
+                ],
+              },
+            ],
+          },
+        ]);
       });
 
       it("uses `relationshipProperties` attribute", async () => {
@@ -373,20 +474,28 @@ describe("Learning Snippets", () => {
         // additionally include a specific relationship property of the `meta.ClassHasBaseClasses` relationship.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "Content",
-            specifications: [{
-              specType: "SelectedNodeInstances",
-              relatedProperties: [{
-                propertiesSource: [{
-                  relationship: { schemaName: "ECDbMeta", className: "ClassHasBaseClasses" },
-                  direction: "Forward",
-                }],
-                properties: ["Name"],
-                relationshipProperties: ["Ordinal"],
-              }],
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "SelectedNodeInstances",
+                  relatedProperties: [
+                    {
+                      propertiesSource: [
+                        {
+                          relationship: { schemaName: "ECDbMeta", className: "ClassHasBaseClasses" },
+                          direction: "Forward",
+                        },
+                      ],
+                      properties: ["Name"],
+                      relationshipProperties: ["Ordinal"],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -398,15 +507,19 @@ describe("Learning Snippets", () => {
           keys: new KeySet([{ className: "ECDbMeta:ECClassDef", id: "0x3b" }]),
           descriptor: {},
         }))!;
-        expect(content.descriptor.fields).to.containSubset([{
-          label: "ClassHasBaseClasses",
-          nestedFields: [{
-            label: "Ordinal",
-            category: {
-              name: "ClassHasBaseClasses",
-            },
-          }],
-        }]);
+        expect(content.descriptor.fields).to.containSubset([
+          {
+            label: "ClassHasBaseClasses",
+            nestedFields: [
+              {
+                label: "Ordinal",
+                category: {
+                  name: "ClassHasBaseClasses",
+                },
+              },
+            ],
+          },
+        ]);
       });
 
       it("uses `forceCreateRelationshipCategory` attribute", async () => {
@@ -415,21 +528,29 @@ describe("Learning Snippets", () => {
         // additionally create a category for the `bis.ModelModelsElement` relationship.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "Content",
-            specifications: [{
-              specType: "SelectedNodeInstances",
-              relatedProperties: [{
-                propertiesSource: [{
-                  relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                  direction: "Forward",
-                  targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
-                }],
-                properties: ["UserLabel"],
-                forceCreateRelationshipCategory: true,
-              }],
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "SelectedNodeInstances",
+                  relatedProperties: [
+                    {
+                      propertiesSource: [
+                        {
+                          relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
+                          direction: "Forward",
+                          targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
+                        },
+                      ],
+                      properties: ["UserLabel"],
+                      forceCreateRelationshipCategory: true,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -441,19 +562,20 @@ describe("Learning Snippets", () => {
           keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
           descriptor: {},
         }))!;
-        expect(content.descriptor.fields).to.containSubset([{
-          label: "Physical Partition",
-          nestedFields: [{
-            label: "User Label",
-            category: {
-              name: "ModelModelsElement-PhysicalPartition",
-            },
-          }],
-        }]);
+        expect(content.descriptor.fields).to.containSubset([
+          {
+            label: "Physical Partition",
+            nestedFields: [
+              {
+                label: "User Label",
+                category: {
+                  name: "ModelModelsElement-PhysicalPartition",
+                },
+              },
+            ],
+          },
+        ]);
       });
-
     });
-
   });
-
 });

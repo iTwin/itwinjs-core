@@ -2185,6 +2185,7 @@ export interface CheckboxFormatPropEditorSpec extends CustomFormatPropEditorSpec
 
 // @public
 export class CheckpointConnection extends IModelConnection {
+    protected constructor(props: IModelConnectionProps, fromIpc: boolean);
     close(): Promise<void>;
     get iModelId(): GuidString;
     isCheckpointConnection(): this is CheckpointConnection;
@@ -2192,7 +2193,7 @@ export class CheckpointConnection extends IModelConnection {
     // (undocumented)
     protected _isClosed?: boolean;
     get iTwinId(): GuidString;
-    static openRemote(iTwinId: string, iModelId: string, version?: IModelVersion): Promise<CheckpointConnection>;
+    static openRemote(iTwinId: GuidString, iModelId: GuidString, version?: IModelVersion): Promise<CheckpointConnection>;
 }
 
 // @public
@@ -4270,7 +4271,7 @@ export type GeoServicesOptions = Omit<GeoConverterOptions, "datum">;
 export function getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect;
 
 // @internal (undocumented)
-export function getCesiumAccessTokenAndEndpointUrl(assetId?: number, requestKey?: string): Promise<{
+export function getCesiumAccessTokenAndEndpointUrl(assetId: string, requestKey?: string): Promise<{
     token?: string;
     url?: string;
 }>;
@@ -13719,6 +13720,7 @@ export abstract class TerrainMeshProvider {
 
 // @public
 export interface TerrainMeshProviderOptions {
+    dataSource?: string;
     exaggeration: number;
     wantNormals: boolean;
     wantSkirts: boolean;

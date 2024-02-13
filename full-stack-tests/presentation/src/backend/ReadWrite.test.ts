@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as fs from "fs";
 import { IModelDb, StandaloneDb } from "@itwin/core-backend";
@@ -12,7 +12,6 @@ import { initialize, terminate } from "../IntegrationTests";
 import { prepareOutputFilePath } from "../Utils";
 
 describe("ReadWrite", () => {
-
   let manager: PresentationManager;
   let imodel: IModelDb;
 
@@ -44,19 +43,22 @@ describe("ReadWrite", () => {
   });
 
   describe("Handling read-write operations", () => {
-
     it("handles schema import during nodes request", async () => {
       const ruleset: Ruleset = {
         id: "test",
-        rules: [{
-          ruleType: RuleTypes.RootNodes,
-          specifications: [{
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
-            classes: { schemaName: "BisCore", classNames: ["Element"] },
-            arePolymorphic: true,
-            groupByClass: false,
-          }],
-        }],
+        rules: [
+          {
+            ruleType: RuleTypes.RootNodes,
+            specifications: [
+              {
+                specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                classes: { schemaName: "BisCore", classNames: ["Element"] },
+                arePolymorphic: true,
+                groupByClass: false,
+              },
+            ],
+          },
+        ],
       };
       const schema = `<?xml version="1.0" encoding="UTF-8"?>
         <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -78,7 +80,5 @@ describe("ReadWrite", () => {
       const nodes = await nodesRequest;
       expect(nodes.length).to.eq(85);
     });
-
   });
-
 });

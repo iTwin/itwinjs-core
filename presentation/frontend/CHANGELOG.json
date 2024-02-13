@@ -2,6 +2,24 @@
   "name": "@itwin/presentation-frontend",
   "entries": [
     {
+      "version": "4.4.0",
+      "tag": "@itwin/presentation-frontend_v4.4.0",
+      "date": "Mon, 12 Feb 2024 18:15:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix descriptor, node path and distinct value responses not being localized"
+          },
+          {
+            "comment": "Added 'getHiliteSetIterator' method to `HiliteSetProvider`. It allows to handle hilite set in batches instead of waiting for whole set to be loaded. "
+          },
+          {
+            "comment": "Add support for default formats when formatting values on the frontend (when `Presentation` is initialized with `schemaContextProvider`)."
+          }
+        ]
+      }
+    },
+    {
       "version": "4.3.3",
       "tag": "@itwin/presentation-frontend_v4.3.3",
       "date": "Wed, 03 Jan 2024 19:28:38 GMT",

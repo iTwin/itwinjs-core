@@ -1026,6 +1026,12 @@ export interface CategorySelectorProps extends DefinitionElementProps {
     categories: Id64Array;
 }
 
+// @public
+export enum CesiumTerrainAssetId {
+    Bathymetry = "2426648",
+    Default = "1"
+}
+
 // @internal (undocumented)
 export interface ChangeData {
     // (undocumented)
@@ -3428,6 +3434,94 @@ export interface FunctionalElementProps extends ElementProps {
     typeDefinition?: RelatedElementProps;
 }
 
+// @beta
+export interface GenericInstanceFilter {
+    filteredClassNames?: string[];
+    propertyClassNames: string[];
+    relatedInstances: GenericInstanceFilterRelatedInstanceDescription[];
+    rules: GenericInstanceFilterRule | GenericInstanceFilterRuleGroup;
+}
+
+// @beta (undocumented)
+export namespace GenericInstanceFilter {
+    export function isFilterRuleGroup(obj: GenericInstanceFilterRule | GenericInstanceFilterRuleGroup): obj is GenericInstanceFilterRuleGroup;
+}
+
+// @beta
+export interface GenericInstanceFilterRelatedInstanceDescription {
+    alias: string;
+    path: GenericInstanceFilterRelationshipStep[];
+}
+
+// @beta
+export interface GenericInstanceFilterRelationshipStep {
+    isForwardRelationship: boolean;
+    relationshipClassName: string;
+    sourceClassName: string;
+    targetClassName: string;
+}
+
+// @beta
+export interface GenericInstanceFilterRule {
+    operator: GenericInstanceFilterRuleOperator;
+    propertyName: string;
+    propertyTypeName: string;
+    sourceAlias: string;
+    value?: GenericInstanceFilterRuleValue;
+}
+
+// @beta
+export interface GenericInstanceFilterRuleGroup {
+    operator: GenericInstanceFilterRuleGroupOperator;
+    rules: Array<GenericInstanceFilterRule | GenericInstanceFilterRuleGroup>;
+}
+
+// @beta
+export type GenericInstanceFilterRuleGroupOperator = "and" | "or";
+
+// @beta
+export type GenericInstanceFilterRuleOperator = "is-equal" | "is-not-equal" | "is-null" | "is-not-null" | "is-true" | "is-false" | "less" | "less-or-equal" | "greater" | "greater-or-equal" | "like";
+
+// @beta
+export interface GenericInstanceFilterRuleValue {
+    // (undocumented)
+    displayValue: string;
+    // (undocumented)
+    rawValue: GenericInstanceFilterRuleValue.Values;
+}
+
+// @beta (undocumented)
+export namespace GenericInstanceFilterRuleValue {
+    // (undocumented)
+    export interface InstanceKey {
+        // (undocumented)
+        className: string;
+        // (undocumented)
+        id: string;
+    }
+    export function isInstanceKey(value: GenericInstanceFilterRuleValue.Values): value is GenericInstanceFilterRuleValue.InstanceKey;
+    export function isPoint2d(value: GenericInstanceFilterRuleValue.Values): value is GenericInstanceFilterRuleValue.Point2d;
+    export function isPoint3d(value: GenericInstanceFilterRuleValue.Values): value is GenericInstanceFilterRuleValue.Point3d;
+    // (undocumented)
+    export interface Point2d {
+        // (undocumented)
+        x: number;
+        // (undocumented)
+        y: number;
+    }
+    // (undocumented)
+    export interface Point3d {
+        // (undocumented)
+        x: number;
+        // (undocumented)
+        y: number;
+        // (undocumented)
+        z: number;
+    }
+    // (undocumented)
+    export type Values = string | number | boolean | Date | GenericInstanceFilterRuleValue.Point2d | GenericInstanceFilterRuleValue.Point3d | GenericInstanceFilterRuleValue.InstanceKey;
+}
+
 // @public
 export class GeocentricTransform implements GeocentricTransformProps {
     constructor(data?: GeocentricTransformProps);
@@ -5000,8 +5094,9 @@ export interface IpcAppFunctions {
     isRedoPossible: (key: string) => Promise<boolean>;
     isUndoPossible: (key: string) => Promise<boolean>;
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
-    openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
-    openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
+    openBriefcase: (args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
+    openCheckpoint: (args: OpenCheckpointArgs) => Promise<IModelConnectionProps>;
+    openStandalone: (filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
     pullChanges: (key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions) => Promise<ChangesetIndexAndId>;
     pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
     queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
@@ -6108,6 +6203,14 @@ export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
     readonly fileName: LocalFileName;
     readonly readonly?: boolean;
     readonly watchForChanges?: boolean;
+}
+
+// @beta
+export interface OpenCheckpointArgs {
+    readonly changeset?: ChangesetIndexOrId;
+    readonly iModelId: GuidString;
+    // (undocumented)
+    readonly iTwinId: GuidString;
 }
 
 // @public
@@ -9201,6 +9304,7 @@ export enum TerrainHeightOriginMode {
 // @public
 export interface TerrainProps {
     applyLighting?: boolean;
+    dataSource?: string;
     exaggeration?: number;
     heightOrigin?: number;
     heightOriginMode?: TerrainHeightOriginMode;
@@ -9214,13 +9318,17 @@ export type TerrainProviderName = string;
 
 // @public
 export class TerrainSettings {
+    // @deprecated
     constructor(providerName?: string, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode);
+    constructor(props?: TerrainProps);
     readonly applyLighting: boolean;
     clone(changedProps?: TerrainProps): TerrainSettings;
+    readonly dataSource: string;
     // (undocumented)
     equals(other: TerrainSettings): boolean;
     equalsJSON(json?: BackgroundMapProps): boolean;
     readonly exaggeration: number;
+    static fromCesiumIonAsset(assetId?: string, options?: Omit<TerrainProps, "providerName" | "dataSource">): TerrainSettings;
     // (undocumented)
     static fromJSON(json?: TerrainProps): TerrainSettings;
     readonly heightOrigin: number;
