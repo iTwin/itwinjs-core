@@ -38,11 +38,12 @@ for (let i = 0; i < pull_requests.data.length; i++) {
       }
     }
 
+    console.log(itwinjs_target_url);
     await octokit.request('POST /repos/{owner}/{repo}/statuses/{sha}', {
       owner: 'iTwin',
       repo: 'itwinjs-core',
       sha: `${pr_sha}`,
-      state: 'success',
+      state: 'failure',
       target_url: itwinjs_target_url,
       description: 'imodeljs-native version is out of date',
       context: 'iTwin.js',
