@@ -7,14 +7,17 @@
  * @module Topology
  */
 
+import { assert } from "@itwin/core-bentley";
 import { ClipUtilities } from "../clipping/ClipUtils";
 import { Geometry } from "../Geometry";
+import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { IndexedXYZCollection, LineStringDataVariant, MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { PointStreamXYZXYZHandlerBase, VariantPointDataStream } from "../geometry3d/PointStreaming";
 import { Range1d, Range2d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
 import { XAndY } from "../geometry3d/XYZProps";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { MarkedEdgeSet } from "./HalfEdgeMarkSet";
@@ -244,6 +247,9 @@ export class Triangulator {
   }
   /**
    * Triangulate all positive area faces of a graph.
+   * * Area is computed using `HalfEdge.signedFaceArea`, thus if your graph contains z-coordinates and exterior faces
+   * have been masked, you may get better results with [[triangulateAllInteriorFaces]].
+   * @returns whether all indicated faces were triangulated successfully
    */
   public static triangulateAllPositiveAreaFaces(graph: HalfEdgeGraph): boolean {
     const seeds = graph.collectFaceLoops();
@@ -254,6 +260,42 @@ export class Triangulator {
         if (area > 0.0)
           if (!Triangulator.triangulateSingleFace(graph, face))
             numFail++;
+      }
+    }
+    return numFail === 0;
+  }
+
+  private static _workTransform?: Transform;
+
+  /**
+   * Triangulate all interior faces of a graph.
+   * * A random node is checked for each face; if it has the `HalfEdgeMask.EXTERIOR` mask, the face is ignored.
+   * @param useLocalCoords whether to transform each face into local coords before triangulating (useful if graph has z-coordinates).
+   * @returns whether all indicated faces were triangulated successfully
+   */
+  public static triangulateAllInteriorFaces(graph: HalfEdgeGraph, useLocalCoords?: boolean): boolean {
+    const seeds = graph.collectFaceLoops();
+    let localToWorld: Transform | undefined;
+    let nodes: Point3d[] | undefined;
+    let nodeCount = 0;
+    let numFail = 0;
+    for (const face of seeds) {
+      if (face.countEdgesAroundFace() > 3) {
+        if (!face.getMask(HalfEdgeMask.EXTERIOR)) {
+          if (useLocalCoords) {
+            nodeCount = graph.countNodes();
+            nodes = face.collectAroundFace();
+            localToWorld = this._workTransform = FrameBuilder.createRightHandedLocalToWorld(nodes, this._workTransform);
+            localToWorld?.multiplyInversePoint3dArrayInPlace(nodes);
+          }
+          if (!Triangulator.triangulateSingleFace(graph, face))
+            numFail++;
+          if (localToWorld && nodes) {
+            if (graph.countNodes() > nodeCount)
+              nodes.push(...graph.allHalfEdges.slice(nodeCount) as any);  // START HERE: not getting all nodes transformed??
+            localToWorld.multiplyPoint3dArrayInPlace(nodes);
+          }
+        }
       }
     }
     return numFail === 0;
@@ -535,7 +577,7 @@ export class Triangulator {
       // The earcut algorithm does not support self intersections, however we do handle the re-entrant triangle
       // case by pinching a bridge/hole into existence when vertices i and i+3 live in the same face loop, but not
       // the same vertex loop. Earcut whittles larger faces down into triangles, so this is the only case needed.
-      if (Geometry.isAlmostEqualXAndY(next2, pred) && !next2.findAroundVertex (pred)) {
+      if (Geometry.isAlmostEqualXAndY(next2, pred) && !next2.findAroundVertex(pred)) {
         const next3 = next2.faceSuccessor;
         const hasBridgeEdgeOrHoleInside = this.nodeInTriangle(pred, ear, next, next3);
         if (hasBridgeEdgeOrHoleInside) {

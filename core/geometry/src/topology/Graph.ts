@@ -13,7 +13,7 @@ import { Angle } from "../geometry3d/Angle";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Transform } from "../geometry3d/Transform";
-import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
+import { WritableXYAndZ, XAndY, XYAndZ } from "../geometry3d/XYZProps";
 import { SmallSystem } from "../numerics/Polynomials";
 import { MaskManager } from "./MaskManager";
 // import { GraphChecker } from "../test/topology/Graph.test"; // used for debugging
@@ -113,13 +113,7 @@ export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolea
  * Member fields for a half edge (which is also commonly called a node).
  * @internal
  */
-export interface HalfEdgeUserData {
-  /** Vertex x coordinate. */
-  x: number;
-  /** Vertex y coordinate. */
-  y: number;
-  /** Vertex z coordinate. */
-  z: number;
+export interface HalfEdgeUserData extends WritableXYAndZ {
   /** Angle used for sort-around-vertex. */
   sortAngle?: number;
   /** Numeric value for application-specific tagging (e.g. sorting). */

@@ -578,7 +578,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
     return this._facetStart[index + 1];
   }
   /** Create a visitor for this polyface */
-  public createVisitor(numWrap: number = 0): PolyfaceVisitor {
+  public createVisitor(numWrap: number = 0): IndexedPolyfaceVisitor {
     return IndexedPolyfaceVisitor.create(this, numWrap);
   }
   /** Return the range of (optionally transformed) points in this mesh. */

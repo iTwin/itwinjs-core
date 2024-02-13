@@ -1629,8 +1629,11 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * * Rely on the builder's compress step to find common vertex coordinates
    * @internal
    */
-  public addGraph(graph: HalfEdgeGraph, acceptFaceFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testNodeMaskNotExterior(node),
-    isEdgeVisibleFunction: HalfEdgeToBooleanFunction | undefined = (node) => HalfEdge.testMateMaskExterior(node)) {
+  public addGraph(
+    graph: HalfEdgeGraph,
+    acceptFaceFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testNodeMaskNotExterior(node),
+    isEdgeVisibleFunction: HalfEdgeToBooleanFunction | undefined = (node) => HalfEdge.testMateMaskExterior(node),
+  ) {
     let index = 0;
     const needNormals = this._options.needNormals;
     const needParams = this._options.needParams;
@@ -1668,7 +1671,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    *  * terminate the facet
    * @internal
    */
-  public addGraphFaces(_graph: HalfEdgeGraph, faces: HalfEdge[]) {
+  public addGraphFaces(faces: HalfEdge[]) {
     let index = 0;
     for (const seed of faces) {
       let node = seed;
@@ -1692,9 +1695,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /** Create a polyface containing the faces of a HalfEdgeGraph that are specified by the HalfEdge array.
    * @internal
    */
-  public static graphFacesToPolyface(graph: HalfEdgeGraph, faces: HalfEdge[]): IndexedPolyface {
+  public static graphFacesToPolyface(faces: HalfEdge[]): IndexedPolyface {
     const builder = PolyfaceBuilder.create();
-    builder.addGraphFaces(graph, faces);
+    builder.addGraphFaces(faces);
     builder.endFace();
     return builder.claimPolyface();
   }

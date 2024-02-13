@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import { Dictionary } from "@itwin/core-bentley";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
 import { ConstructCurveBetweenCurves } from "../../curve/ConstructCurveBetweenCurves";
@@ -17,6 +18,7 @@ import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
@@ -32,10 +34,12 @@ import { SolidPrimitive } from "../../solid/SolidPrimitive";
 import { Sphere } from "../../solid/Sphere";
 import { SweepContour } from "../../solid/SweepContour";
 import { TorusPipe } from "../../solid/TorusPipe";
+import { Triangulator } from "../../topology/Triangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 import { ImportedSample } from "../testInputs/ImportedSamples";
+import { Geometry } from "../../Geometry";
 
 function verifyUnitPerpendicularFrame(ck: Checker, frame: Transform, source: any) {
   ck.testTrue(frame.matrix.isRigid(), "perpendicular frame", source);
@@ -249,32 +253,73 @@ describe("Solids", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  // add uv and average normals to convex mesh centered at origin
-  it("CartesianToSpherical", () => {
-    const ck = new Checker();
+  // Add uv, normals, and colors to a convex 62-sided mesh centered at origin.
+  it.only("CartesianToSpherical", () => {
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
-    const mesh = ImportedSample.createPolyhedron62();
+    let mesh = ImportedSample.createPolyhedron62();
     if (ck.testPointer(mesh, "created mesh")) {
       const vertex = Point3d.createZero();
+      const normal = Vector3d.createZero();
+      // compute radius of circumscribing sphere (not all mesh vertices are on it!)
       let radius = 0.0;
       for (let i = 0; i < mesh.data.pointCount; ++i) {
         const mag = mesh.data.point.getPoint3dAtUncheckedPointIndex(i, vertex).magnitude();
         if (radius < mag)
           radius = mag;
       }
-      mesh.data.param?.clear();
+      // preserve by-face colors
+      let colors: number[] | undefined;
+      const normalToColorIndex = new Dictionary<Vector3d, number>(
+        (v0: Vector3d, v1: Vector3d) => {
+          if (v0.isAlmostEqual(v1)) return 0;
+          if (!Geometry.isAlmostEqualNumber(v0.x, v1.x)) { if (v0.x < v1.x) return -1; if (v0.x > v1.x) return 1; }
+          if (!Geometry.isAlmostEqualNumber(v0.y, v1.y)) { if (v0.y < v1.y) return -1; if (v0.y > v1.y) return 1; }
+          if (!Geometry.isAlmostEqualNumber(v0.z, v1.z)) { if (v0.z < v1.z) return -1; if (v0.z > v1.z) return 1; }
+          return 0;
+        },
+        (v: Vector3d) => { return v.clone(); },
+      );
+      if (ck.testDefined(mesh.data.color, "input mesh has colors") && mesh.data.color !== undefined &&
+          ck.testDefined(mesh.data.colorIndex, "input mesh has color indices") && mesh.data.colorIndex !== undefined) {
+        colors = mesh.data.color.slice();
+        const visitor0 = mesh.createVisitor();
+        for (visitor0.reset(); visitor0.moveToNextFacet();) {
+          ck.testTrue(PolygonOps.unitNormal(visitor0.point, normal), "computed normal of facet");
+          const faceColorIndex = visitor0.colorIndex![0];
+          ck.testTrue(normalToColorIndex.insert(normal, faceColorIndex), "associate normal to color of face");
+        }
+      }
+      // triangulate the polyface (loses normals, params, colors)
+      const graph = PolyfaceQuery.convertToHalfEdgeGraph(mesh);
+      ck.testTrue(Triangulator.triangulateAllInteriorFaces(graph, true), "triangulated the graph");
+      mesh = PolyfaceBuilder.graphToPolyface(graph);
+      ck.testTrue(!mesh.isEmpty, "triangulated the mesh");
+      // install params and normals
       for (let i = 0; i < mesh.data.pointCount; ++i) {
         mesh.data.point.getPoint3dAtUncheckedPointIndex(i, vertex);
-        if (vertex.isZero) continue;
+        ck.testFalse(vertex.isZero, "Can't encounter origin point for this to work");
         vertex.scaleInPlace(radius / vertex.magnitude()); // push vertex out radially onto sphere
-        let theta = Math.atan2(vertex.y, vertex.x);
-        if (theta < 0.0)
-          theta += 2 * Math.PI; // theta in [0,2pi]
-        const phi = Math.asin(vertex.z / radius); // phi in [-pi/2,pi/2]
+        const theta = Math.atan2(vertex.y, vertex.x);     // in [-pi, pi]
+        const phi = Math.asin(vertex.z / radius);         // in [-pi/2, pi/2]
         mesh.addParamUV(theta, phi);
       }
-      mesh.data.paramIndex = mesh.data.pointIndex.slice(); // param indices are same as vertex indices
-      PolyfaceQuery.buildAverageNormals(mesh, Angle.createDegrees(35));
+      // reinstall by-face colors
+      if (colors) {
+        const visitor1 = mesh.createVisitor();
+        for (visitor1.reset(); visitor1.moveToNextFacet();) {
+          ck.testTrue(PolygonOps.unitNormal(visitor1.point, normal), "computed normal of facet");
+          const colorIndex = normalToColorIndex.get(normal);
+          if (ck.testDefined(colorIndex, "found color index in map") && colorIndex !== undefined)
+            for (let i = 0; i < visitor1.numEdgesThisFacet; ++i)
+              mesh.addColorIndex(colorIndex);
+        }
+        mesh.data.color = colors;
+      }
+      // because params/normals are in 1-1 correspondence with vertices, they can use the same indices
+      mesh.data.paramIndex = mesh.data.pointIndex.slice();
+      mesh.data.normalIndex = mesh.data.pointIndex.slice();
+      mesh.data.compress();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "CartesianToSpherical");
