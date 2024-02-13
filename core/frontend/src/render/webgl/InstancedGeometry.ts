@@ -79,13 +79,15 @@ export class InstanceBuffers extends InstanceData {
   public readonly patternParams = InstanceBuffers._patternParams;
   public readonly patternTransforms = undefined;
   public readonly viewIndependentOrigin = undefined;
+  public readonly texAtlasIndex?: BufferHandle;
 
-  private constructor(count: number, transforms: BufferHandle, rtcCenter: Point3d, range: Range3d, symbology?: BufferHandle, featureIds?: BufferHandle) {
+  private constructor(count: number, transforms: BufferHandle, rtcCenter: Point3d, range: Range3d, symbology?: BufferHandle, featureIds?: BufferHandle, texAtlasIndex?: BufferHandle) {
     super(count, rtcCenter, range);
     this.transforms = transforms;
     this.featureIds = featureIds;
     this.hasFeatures = undefined !== featureIds;
     this.symbology = symbology;
+    this.texAtlasIndex = texAtlasIndex;
   }
 
   public static createTransformBufferParameters(techniqueId: TechniqueId): BufferParameters[] {
@@ -117,7 +119,7 @@ export class InstanceBuffers extends InstanceData {
   }
 
   public static create(params: InstancedGraphicParams, range: Range3d): InstanceBuffers | undefined {
-    const { count, featureIds, symbologyOverrides, transforms } = params;
+    const { count, featureIds, symbologyOverrides, transforms, texAtlasIndices } = params;
 
     assert(count > 0 && Math.floor(count) === count);
     assert(count === transforms.length / 12);
@@ -132,8 +134,12 @@ export class InstanceBuffers extends InstanceData {
     if (undefined !== symbologyOverrides && undefined === (symBuf = BufferHandle.createArrayBuffer(symbologyOverrides)))
       return undefined;
 
+    let taiBuf: BufferHandle | undefined;
+    if (undefined !== texAtlasIndices && undefined === (taiBuf = BufferHandle.createArrayBuffer(texAtlasIndices)))
+      return undefined;
+
     const tfBuf = BufferHandle.createArrayBuffer(transforms);
-    return undefined !== tfBuf ? new InstanceBuffers(count, tfBuf, params.transformCenter, range, symBuf, idBuf) : undefined;
+    return undefined !== tfBuf ? new InstanceBuffers(count, tfBuf, params.transformCenter, range, symBuf, idBuf, taiBuf) : undefined;
   }
 
   public get isDisposed(): boolean {
@@ -323,6 +329,11 @@ export class InstancedGeometry extends CachedGeometry {
       container.addBuffer(buffers.featureIds, [BufferParameters.create(attrFeatureId.location, 3, GL.DataType.UnsignedByte, false, 0, 0, true)]);
     }
 
+    if (buffers.texAtlasIndex) {
+      const texAtlasIndex = AttributeMap.findAttribute("a_texAtlasIndex", techId, true);
+      assert(texAtlasIndex !== undefined);
+      container.addBuffer(buffers.texAtlasIndex, [BufferParameters.create(texAtlasIndex.location, 3, GL.DataType.UnsignedByte, false, 0, 0, true)]);
+    }
     return new this(repr, ownsBuffers, buffers, container);
   }
 

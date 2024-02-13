@@ -379,6 +379,9 @@
     "ExplosionEffect": {
       "keyin": "fdt particle explosion"
     },
+    "MarkerEffect": {
+      "keyin": "fdt particle marker"
+    },
     "ClearEffects": {
       "keyin": "fdt effect clear"
     },

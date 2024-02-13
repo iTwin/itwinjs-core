@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@itwin/core-geometry";
+import { Matrix3d, Point2d, Point3d, Range1d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import {
   ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, PackedFeatureTable, QParams3d, QPoint3dList, RenderTexture,
 } from "@itwin/core-common";
@@ -54,6 +54,8 @@ export interface ParticleCollectionBuilderParams {
    * @see [[CoordSystem.View]] and [[CoordSystem.World]].
    */
   isViewCoords?: boolean;
+
+  hasIndex?: boolean;
 }
 
 /** Describes a particle to to add to a particle collection via [[ParticleCollectionBuilder.addParticle]].
@@ -72,6 +74,8 @@ export interface ParticleProps extends XYAndZ {
 
   /** A rotation matrix to orient the particle.  If supplied then the particle will not be automatically oriented towards the camera. */
   rotationMatrix?: Matrix3d;
+
+  index?: number;
 }
 
 /** Interface for producing a collection of particles suitable for use in particle effects.
@@ -129,13 +133,15 @@ class Particle {
   public readonly width: number;
   public readonly height: number;
   public readonly rotationMatrix?: Matrix3d;
+  public readonly index?: number;
 
-  public constructor(centroid: XYAndZ, width: number, height: number, transparency: number, rotationMatrix?: Matrix3d) {
+  public constructor(centroid: XYAndZ, width: number, height: number, transparency: number, rotationMatrix?: Matrix3d, index?: number) {
     this.centroid = Point3d.fromJSON(centroid);
     this.transparency = transparency;
     this.width = width;
     this.height = height;
     this.rotationMatrix = rotationMatrix;
+    this.index = index;
   }
 }
 
@@ -202,7 +208,7 @@ class Builder implements ParticleCollectionBuilder {
     if (transparency !== this.transparency && this._particlesTranslucent.length > 0)
       this._hasVaryingTransparency = true;
 
-    const particle = new Particle(props, width, height, transparency, props.rotationMatrix);
+    const particle = new Particle(props, width, height, transparency, props.rotationMatrix, props.index);
     if (transparency > 0)
       this._particlesTranslucent.push(particle);
     else

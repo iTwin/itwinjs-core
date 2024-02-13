@@ -186,7 +186,8 @@ class ParticleSystem {
 
   public static async addDecorator(iModel: IModelConnection): Promise<void> {
     // Note: The decorator takes ownership of the texture, and disposes of it when the decorator is disposed.
-    const image = await imageElementFromUrl(`${IModelApp.publicPath}sprites/particle_explosion.png`);
+
+    const image = await imageElementFromUrl(`${IModelApp.publicPath}sprites/TextureAtlas.png`);
     const texture = IModelApp.renderSystem.createTexture({
       ownership: "external",
       image: { source: image, transparency: TextureTransparency.Mixed },
@@ -195,6 +196,17 @@ class ParticleSystem {
       IModelApp.viewManager.addDecorator(new ParticleSystem(texture, iModel, randomIntegerInRange(this.numEmissionsRange)));
   }
 }
+
+// }
+//     const image = await imageElementFromUrl(`${IModelApp.publicPath}sprites/particle_explosion.png`);
+//     const texture = IModelApp.renderSystem.createTexture({
+//       ownership: "external",
+//       image: { source: image, transparency: TextureTransparency.Mixed },
+//     });
+//     if (texture)
+//       IModelApp.viewManager.addDecorator(new ParticleSystem(texture, iModel, randomIntegerInRange(this.numEmissionsRange)));
+//   }
+// }
 
 /** This tool applies an explosion particle effect used for testing [ParticleCollectionBuilder]($frontend).
  * @beta
