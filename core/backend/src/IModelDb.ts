@@ -65,7 +65,6 @@ interface ChangesetConflictArgs {
   opcode: DbOpcode;
   indirect: boolean;
   tableName: string;
-  hasLocalChanges: boolean;
   changesetFile?: string;
   getForeignKeyConflicts: () => number;
   dump: () => void;
@@ -1092,148 +1091,6 @@ export abstract class IModelDb extends IModel {
       this.loadMetaData(classFullName);
       return ClassRegistry.getClass(classFullName, this) as T;
     }
-  }
-
-  /* This is called by native code when applying a changeset */
-  private onChangesetConflict(args: ChangesetConflictArgs): DbConflictResolution | undefined {
-    // returning undefined will result in native handler to resolve conflict
-    const category = "DgnCore";
-    const interpretConflictCause = (cause: DbConflictCause) => {
-      switch (cause) {
-        case DbConflictCause.Data:
-          return "data";
-        case DbConflictCause.NotFound:
-          return "not found";
-        case DbConflictCause.Conflict:
-          return "conflict";
-        case DbConflictCause.Constraint:
-          return "constraint";
-        case DbConflictCause.ForeignKey:
-          return "foreign key";
-      }
-    };
-    if (args.cause === DbConflictCause.Data && !args.indirect) {
-      /*
-      * From SQLite Docs CHANGESET_DATA as the second argument
-      * when processing a DELETE or UPDATE change if a row with the required
-      * PRIMARY KEY fields is present in the database, but one or more other
-      * (non primary-key) fields modified by the update do not contain the
-      * expected "before" values.
-      *
-      * The conflicting row, in this case, is the database row with the matching
-      * primary key.
-      *
-      * Another reason this will be invoked is when SQLITE_CHANGESETAPPLY_FKNOACTION
-      * is passed ApplyChangeset(). The flag will disable CASCADE action and treat
-      * them as CASCADE NONE resulting in conflict handler been called.
-      */
-      if (!args.hasLocalChanges) {
-        // This changeset is bad. However, it is already in the timeline. We must allow services such as
-        // checkpoint-creation, change history, and other apps to apply any changeset that is in the timeline.
-        Logger.logWarning(category, "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.");
-        args.dump();
-      } else {
-        const msg = "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.";
-        args.setLastError(msg);
-        Logger.logError(category, msg);
-        args.dump();
-        return DbConflictResolution.Abort;
-      }
-    }
-    // Handle some special cases
-    if (args.cause === DbConflictCause.Conflict) {
-      // From the SQLite docs: "CHANGESET_CONFLICT is passed as the second argument to the conflict handler while processing an INSERT change if the operation would result in duplicate primary key values."
-      // This is always a fatal error - it can happen only if the app started with a briefcase that is behind the tip and then uses the same primary key values (e.g., ElementIds)
-      // that have already been used by some other app using the SAME briefcase ID that recently pushed changes. That can happen only if the app makes changes without first pulling and acquiring locks.
-      if (!args.hasLocalChanges) {
-        // This changeset is bad. However, it is already in the timeline. We must allow services such as
-        // checkpoint-creation, change history, and other apps to apply any changeset that is in the timeline.
-        Logger.logWarning(category, "PRIMARY KEY INSERT CONFLICT - resolved by replacing the existing row with the incoming row");
-        args.dump();
-      } else {
-        const msg = "PRIMARY KEY INSERT CONFLICT - rejecting this changeset";
-        args.setLastError(msg);
-        Logger.logError(category, msg);
-        args.dump();
-        return DbConflictResolution.Abort;
-      }
-    }
-
-    if (args.cause === DbConflictCause.ForeignKey) {
-      // Note: No current or conflicting row information is provided if it's a FKey conflict
-      // Since we abort on FKey conflicts, always try and provide details about the error
-      const nConflicts = args.getForeignKeyConflicts();
-
-      // Note: There is no performance implication of follow code as it happen toward end of
-      // apply_changeset only once so we be querying value for 'DebugAllowFkViolations' only once.
-      if (this.nativeDb.queryLocalValue("DebugAllowFkViolations")) {
-        Logger.logError(category, `Detected ${nConflicts} foreign key conflicts in changeset. Continuing merge as 'DebugAllowFkViolations' flag is set. Run 'PRAGMA foreign_key_check' to get list of violations.`);
-        return DbConflictResolution.Skip;
-      } else {
-        const msg = `Detected ${nConflicts} foreign key conflicts in ChangeSet. Aborting merge.`;
-        args.setLastError(msg);
-        return DbConflictResolution.Abort;
-      }
-    }
-
-    if (args.cause === DbConflictCause.NotFound) {
-      /*
-       * Note: If DbConflictCause = NotFound, the primary key was not found, and returning DbConflictResolution::Replace is
-       * not an option at all - this will cause a BE_SQLITE_MISUSE error.
-       */
-      if (args.opcode === DbOpcode.Delete) {
-        // Caused by CASCADE DELETE on a foreign key, and is usually not a problem.
-        return DbConflictResolution.Skip;
-      }
-
-      if (args.opcode === DbOpcode.Update && args.tableName.startsWith("ec_")) {
-        // Caused by a ON DELETE SET NULL constraint on a foreign key - this is known to happen with "ec_" tables, but needs investigation if it happens otherwise
-        return DbConflictResolution.Skip;
-      }
-
-      // Refer to comment below
-      return args.opcode === DbOpcode.Update ? DbConflictResolution.Skip : DbConflictResolution.Replace;
-    }
-
-    if (args.cause === DbConflictCause.Constraint) {
-      if (Logger.isEnabled(category, LogLevel.Info)) {
-        Logger.logInfo(category, "------------------------------------------------------------------");
-        Logger.logInfo(category, `Conflict detected - Cause: ${interpretConflictCause(args.cause)}`);
-        args.dump();
-      }
-
-      Logger.logWarning(category, "Constraint conflict handled by rejecting incoming change. Constraint conflicts are NOT expected. These happen most often when two clients both insert elements with the same code. That indicates a bug in the client or the code server.");
-      return DbConflictResolution.Skip;
-    }
-
-    /*
-     * If we don't have a control, we always accept the incoming revision in cases of conflicts:
-     *
-     * + In a briefcase with no local changes, the state of a row in the Db (i.e., the final state of a previous revision)
-     *   may not exactly match the initial state of the incoming revision. This will cause a conflict.
-     *      - The final state of the incoming (later) revision will always be setup exactly right to accommodate
-     *        cases where dependency handlers won't be available (for instance on the server), and we have to rely on
-     *        the revision to correctly set the final state of the row in the Db. Therefore it's best to resolve the
-     *        conflict in favor of the incoming change.
-     * + In a briefcase with local changes, the state of relevant dependent properties (due to propagated indirect changes)
-     *   may not correspond with the initial state of these properties in an incoming revision. This will cause a conflict.
-     *      - Resolving the conflict in favor of the incoming revision may cause some dependent properties to be set
-     *        incorrectly, but the dependency handlers will run anyway and set this right. The new changes will be part of
-     *        a subsequent revision generated from that briefcase.
-     *
-     * + Note that conflicts can NEVER happen between direct changes made locally and direct changes in the incoming revision.
-     *      - Only one user can make a direct change at one time, and the next user has to pull those changes before getting a
-     *        lock to the same element
-     *
-     * + Also see comments in TxnManager::MergeDataChanges()
-     */
-    if (Logger.isEnabled(category, LogLevel.Info)) {
-      Logger.logInfo(category, "------------------------------------------------------------------");
-      Logger.logInfo(category, `Conflict detected - Cause: ${interpretConflictCause(args.cause)}`);
-      args.dump();
-      Logger.logInfo(category, "Conflicting resolved by replacing the existing entry with the change");
-    }
-    return DbConflictResolution.Replace;
   }
 
   /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
@@ -2812,6 +2669,151 @@ export class BriefcaseDb extends IModelDb {
 
     this.onOpened.raiseEvent(briefcaseDb, args);
     return briefcaseDb;
+  }
+
+  /* This is called by native code when applying a changeset */
+  private onChangesetConflict(args: ChangesetConflictArgs): DbConflictResolution | undefined {
+    // returning undefined will result in native handler to resolve conflict
+
+    const category = "DgnCore";
+    const interpretConflictCause = (cause: DbConflictCause) => {
+      switch (cause) {
+        case DbConflictCause.Data:
+          return "data";
+        case DbConflictCause.NotFound:
+          return "not found";
+        case DbConflictCause.Conflict:
+          return "conflict";
+        case DbConflictCause.Constraint:
+          return "constraint";
+        case DbConflictCause.ForeignKey:
+          return "foreign key";
+      }
+    };
+
+    if (args.cause === DbConflictCause.Data && !args.indirect) {
+      /*
+      * From SQLite Docs CHANGESET_DATA as the second argument
+      * when processing a DELETE or UPDATE change if a row with the required
+      * PRIMARY KEY fields is present in the database, but one or more other
+      * (non primary-key) fields modified by the update do not contain the
+      * expected "before" values.
+      *
+      * The conflicting row, in this case, is the database row with the matching
+      * primary key.
+      *
+      * Another reason this will be invoked is when SQLITE_CHANGESETAPPLY_FKNOACTION
+      * is passed ApplyChangeset(). The flag will disable CASCADE action and treat
+      * them as CASCADE NONE resulting in conflict handler been called.
+      */
+      if (!this.txns.hasPendingTxns) {
+        // This changeset is bad. However, it is already in the timeline. We must allow services such as
+        // checkpoint-creation, change history, and other apps to apply any changeset that is in the timeline.
+        Logger.logWarning(category, "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.");
+        args.dump();
+      } else {
+        const msg = "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.";
+        args.setLastError(msg);
+        Logger.logError(category, msg);
+        args.dump();
+        return DbConflictResolution.Abort;
+      }
+    }
+
+    // Handle some special cases
+    if (args.cause === DbConflictCause.Conflict) {
+      // From the SQLite docs: "CHANGESET_CONFLICT is passed as the second argument to the conflict handler while processing an INSERT change if the operation would result in duplicate primary key values."
+      // This is always a fatal error - it can happen only if the app started with a briefcase that is behind the tip and then uses the same primary key values (e.g., ElementIds)
+      // that have already been used by some other app using the SAME briefcase ID that recently pushed changes. That can happen only if the app makes changes without first pulling and acquiring locks.
+      if (!this.txns.hasPendingTxns) {
+        // This changeset is bad. However, it is already in the timeline. We must allow services such as
+        // checkpoint-creation, change history, and other apps to apply any changeset that is in the timeline.
+        Logger.logWarning(category, "PRIMARY KEY INSERT CONFLICT - resolved by replacing the existing row with the incoming row");
+        args.dump();
+      } else {
+        const msg = "PRIMARY KEY INSERT CONFLICT - rejecting this changeset";
+        args.setLastError(msg);
+        Logger.logError(category, msg);
+        args.dump();
+        return DbConflictResolution.Abort;
+      }
+    }
+
+    if (args.cause === DbConflictCause.ForeignKey) {
+      // Note: No current or conflicting row information is provided if it's a FKey conflict
+      // Since we abort on FKey conflicts, always try and provide details about the error
+      const nConflicts = args.getForeignKeyConflicts();
+
+      // Note: There is no performance implication of follow code as it happen toward end of
+      // apply_changeset only once so we be querying value for 'DebugAllowFkViolations' only once.
+      if (this.nativeDb.queryLocalValue("DebugAllowFkViolations")) {
+        Logger.logError(category, `Detected ${nConflicts} foreign key conflicts in changeset. Continuing merge as 'DebugAllowFkViolations' flag is set. Run 'PRAGMA foreign_key_check' to get list of violations.`);
+        return DbConflictResolution.Skip;
+      } else {
+        const msg = `Detected ${nConflicts} foreign key conflicts in ChangeSet. Aborting merge.`;
+        args.setLastError(msg);
+        return DbConflictResolution.Abort;
+      }
+    }
+
+    if (args.cause === DbConflictCause.NotFound) {
+      /*
+       * Note: If DbConflictCause = NotFound, the primary key was not found, and returning DbConflictResolution::Replace is
+       * not an option at all - this will cause a BE_SQLITE_MISUSE error.
+       */
+      if (args.opcode === DbOpcode.Delete) {
+        // Caused by CASCADE DELETE on a foreign key, and is usually not a problem.
+        return DbConflictResolution.Skip;
+      }
+
+      if (args.opcode === DbOpcode.Update && args.tableName.startsWith("ec_")) {
+        // Caused by a ON DELETE SET NULL constraint on a foreign key - this is known to happen with "ec_" tables, but needs investigation if it happens otherwise
+        return DbConflictResolution.Skip;
+      }
+
+      // Refer to comment below
+      return args.opcode === DbOpcode.Update ? DbConflictResolution.Skip : DbConflictResolution.Replace;
+    }
+
+    if (args.cause === DbConflictCause.Constraint) {
+      if (Logger.isEnabled(category, LogLevel.Info)) {
+        Logger.logInfo(category, "------------------------------------------------------------------");
+        Logger.logInfo(category, `Conflict detected - Cause: ${interpretConflictCause(args.cause)}`);
+        args.dump();
+      }
+
+      Logger.logWarning(category, "Constraint conflict handled by rejecting incoming change. Constraint conflicts are NOT expected. These happen most often when two clients both insert elements with the same code. That indicates a bug in the client or the code server.");
+      return DbConflictResolution.Skip;
+    }
+
+    /*
+     * If we don't have a control, we always accept the incoming revision in cases of conflicts:
+     *
+     * + In a briefcase with no local changes, the state of a row in the Db (i.e., the final state of a previous revision)
+     *   may not exactly match the initial state of the incoming revision. This will cause a conflict.
+     *      - The final state of the incoming (later) revision will always be setup exactly right to accommodate
+     *        cases where dependency handlers won't be available (for instance on the server), and we have to rely on
+     *        the revision to correctly set the final state of the row in the Db. Therefore it's best to resolve the
+     *        conflict in favor of the incoming change.
+     * + In a briefcase with local changes, the state of relevant dependent properties (due to propagated indirect changes)
+     *   may not correspond with the initial state of these properties in an incoming revision. This will cause a conflict.
+     *      - Resolving the conflict in favor of the incoming revision may cause some dependent properties to be set
+     *        incorrectly, but the dependency handlers will run anyway and set this right. The new changes will be part of
+     *        a subsequent revision generated from that briefcase.
+     *
+     * + Note that conflicts can NEVER happen between direct changes made locally and direct changes in the incoming revision.
+     *      - Only one user can make a direct change at one time, and the next user has to pull those changes before getting a
+     *        lock to the same element
+     *
+     * + Also see comments in TxnManager::MergeDataChanges()
+     */
+    if (Logger.isEnabled(category, LogLevel.Info)) {
+      Logger.logInfo(category, "------------------------------------------------------------------");
+      Logger.logInfo(category, `Conflict detected - Cause: ${interpretConflictCause(args.cause)}`);
+      args.dump();
+      Logger.logInfo(category, "Conflicting resolved by replacing the existing entry with the change");
+    }
+    return DbConflictResolution.Replace;
   }
 
   /** If the briefcase is read-only, reopen the native briefcase for writing.

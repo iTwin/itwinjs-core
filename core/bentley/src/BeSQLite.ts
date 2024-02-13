@@ -27,7 +27,7 @@ export enum DbOpcode {
 }
 
 /** Cause of conflict when applying a changeset
- * @public
+ * @internal
  */
 export enum DbConflictCause {
   Data = 1,
@@ -38,7 +38,7 @@ export enum DbConflictCause {
 }
 
 /** Conflict resolution strategy
- * @public
+ * @internal
  */
 export enum DbConflictResolution {
   /** Skip incoming change */
