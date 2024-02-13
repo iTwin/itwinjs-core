@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@itwin/core-bentley";
 import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
@@ -23,12 +23,11 @@ export class ECClassHierarchy {
     private _imodel: IModelConnection,
     private _classInfos: Map<Id64String, ECClassInfo>,
     private _baseClasses: Map<Id64String, Id64String[]>,
-    private _derivedClasses: Map<Id64String, Id64String[]>) {
-  }
+    private _derivedClasses: Map<Id64String, Id64String[]>,
+  ) {}
   public static async create(imodel: IModelConnection) {
     const classInfosMap = new Map();
-    const classesQuery =
-      `SELECT
+    const classesQuery = `SELECT
         c.ECInstanceId AS ClassId,
         c.Name AS ClassName,
         s.Name AS SchemaName
@@ -44,8 +43,7 @@ export class ECClassHierarchy {
 
     const baseClassHierarchy = new Map();
     const derivedClassHierarchy = new Map();
-    const hierarchyQuery =
-      `SELECT
+    const hierarchyQuery = `SELECT
         h.TargetECInstanceId AS BaseClassId,
         h.SourceECInstanceId AS ClassId
       FROM
@@ -55,16 +53,18 @@ export class ECClassHierarchy {
       const { baseClassId, classId } = row;
 
       const baseClasses = baseClassHierarchy.get(classId);
-      if (baseClasses)
+      if (baseClasses) {
         baseClasses.push(baseClassId);
-      else
+      } else {
         baseClassHierarchy.set(classId, [baseClassId]);
+      }
 
       const derivedClasses = derivedClassHierarchy.get(baseClassId);
-      if (derivedClasses)
+      if (derivedClasses) {
         derivedClasses.push(classId);
-      else
+      } else {
         derivedClassHierarchy.set(baseClassId, [classId]);
+      }
     }
 
     return new ECClassHierarchy(imodel, classInfosMap, baseClassHierarchy, derivedClassHierarchy);
@@ -73,8 +73,9 @@ export class ECClassHierarchy {
     const baseClassIds = this._baseClasses.get(classId) ?? [];
     return baseClassIds.reduce<ECClassInfo[]>((arr, id) => {
       const info = this._classInfos.get(id);
-      if (info)
+      if (info) {
         arr.push(info);
+      }
       arr.push(...this.getAllBaseClassInfos(id));
       return arr;
     }, []);
@@ -84,8 +85,9 @@ export class ECClassHierarchy {
     return derivedClassIds.reduce<ECClassInfo[]>((arr, id) => {
       const thisInfo = this._classInfos.get(id)!;
       const derivedInfo = this.getAllDerivedClassInfos(id, onlyLeaf);
-      if (onlyLeaf && derivedInfo.length === 0 || !onlyLeaf)
+      if ((onlyLeaf && derivedInfo.length === 0) || !onlyLeaf) {
         arr.push(thisInfo);
+      }
       arr.push(...derivedInfo);
       return arr;
     }, []);
@@ -101,7 +103,9 @@ export class ECClassHierarchy {
   }
   public async getClassInfo(schemaName: string, className: string): Promise<ECClassHierarchyInfo> {
     const classQuery = `SELECT c.ECInstanceId FROM meta.ECClassDef c JOIN meta.ECSchemaDef s ON s.ECInstanceId = c.Schema.Id WHERE c.Name = ? AND s.Name = ?`;
-    const result = await this._imodel.createQueryReader(classQuery, QueryBinder.from([className, schemaName]), { rowFormat: QueryRowFormat.UseJsPropertyNames }).toArray();
+    const result = await this._imodel
+      .createQueryReader(classQuery, QueryBinder.from([className, schemaName]), { rowFormat: QueryRowFormat.UseJsPropertyNames })
+      .toArray();
     const { id } = result[0];
     return this.getClassInfoById(id);
   }

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { KeySet, Ruleset } from "@itwin/presentation-common";
@@ -11,7 +11,6 @@ import { getFieldByLabel } from "../../../Utils";
 import { printRuleset } from "../../Utils";
 
 describe("Learning Snippets", () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
@@ -25,25 +24,29 @@ describe("Learning Snippets", () => {
   });
 
   describe("Content Customization", () => {
-
     describe("CalculatedPropertiesSpecification", () => {
-
       it("uses `label` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.Label.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. The produced content is customized to
         // additionally have a calculated "My Calculated Property" property.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "Content",
-            specifications: [{
-              specType: "SelectedNodeInstances",
-              calculatedProperties: [{
-                label: "My Calculated Property",
-                value: `123`,
-              }],
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "SelectedNodeInstances",
+                  calculatedProperties: [
+                    {
+                      label: "My Calculated Property",
+                      value: `123`,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -55,9 +58,11 @@ describe("Learning Snippets", () => {
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
           descriptor: {},
         }))!;
-        expect(content.descriptor.fields).to.containSubset([{
-          label: "My Calculated Property",
-        }]);
+        expect(content.descriptor.fields).to.containSubset([
+          {
+            label: "My Calculated Property",
+          },
+        ]);
       });
 
       it("uses `value` attribute", async () => {
@@ -67,16 +72,22 @@ describe("Learning Snippets", () => {
         // element's `BBoxHigh` and `BBoxLow` property values.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "Content",
-            specifications: [{
-              specType: "SelectedNodeInstances",
-              calculatedProperties: [{
-                label: "Element Volume",
-                value: "(this.BBoxHigh.x - this.BBoxLow.x) * (this.BBoxHigh.y - this.BBoxLow.y) * (this.BBoxHigh.z - this.BBoxLow.z)",
-              }],
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "SelectedNodeInstances",
+                  calculatedProperties: [
+                    {
+                      label: "Element Volume",
+                      value: "(this.BBoxHigh.x - this.BBoxLow.x) * (this.BBoxHigh.y - this.BBoxLow.y) * (this.BBoxHigh.z - this.BBoxLow.z)",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -89,11 +100,15 @@ describe("Learning Snippets", () => {
           descriptor: {},
         }))!;
         const field = getFieldByLabel(content.descriptor.fields, "Element Volume");
-        expect(content.contentSet).to.have.lengthOf(1).and.to.containSubset([{
-          values: {
-            [field.name]: "3.449493952966681",
-          },
-        }]);
+        expect(content.contentSet)
+          .to.have.lengthOf(1)
+          .and.to.containSubset([
+            {
+              values: {
+                [field.name]: "3.449493952966681",
+              },
+            },
+          ]);
       });
 
       it("uses `categoryId` attribute", async () => {
@@ -103,21 +118,29 @@ describe("Learning Snippets", () => {
         // assigning it a `categoryId`.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "Content",
-            specifications: [{
-              specType: "SelectedNodeInstances",
-              propertyCategories: [{
-                id: "custom-category",
-                label: "Custom",
-              }],
-              calculatedProperties: [{
-                label: "My Calculated Property",
-                value: "123",
-                categoryId: "custom-category",
-              }],
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "SelectedNodeInstances",
+                  propertyCategories: [
+                    {
+                      id: "custom-category",
+                      label: "Custom",
+                    },
+                  ],
+                  calculatedProperties: [
+                    {
+                      label: "My Calculated Property",
+                      value: "123",
+                      categoryId: "custom-category",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -130,12 +153,14 @@ describe("Learning Snippets", () => {
           descriptor: {},
         });
         content;
-        expect(content!.descriptor.fields).to.containSubset([{
-          label: "My Calculated Property",
-          category: {
-            label: "Custom",
+        expect(content!.descriptor.fields).to.containSubset([
+          {
+            label: "My Calculated Property",
+            category: {
+              label: "Custom",
+            },
           },
-        }]);
+        ]);
       });
 
       it("uses `renderer` attribute", async () => {
@@ -144,19 +169,25 @@ describe("Learning Snippets", () => {
         // additionally have a calculated "My Calculated Property" property with a custom "my-renderer" renderer.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "Content",
-            specifications: [{
-              specType: "SelectedNodeInstances",
-              calculatedProperties: [{
-                label: "My Calculated property",
-                value: "123",
-                renderer: {
-                  rendererName: "my-renderer",
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "SelectedNodeInstances",
+                  calculatedProperties: [
+                    {
+                      label: "My Calculated property",
+                      value: "123",
+                      renderer: {
+                        rendererName: "my-renderer",
+                      },
+                    },
+                  ],
                 },
-              }],
-            }],
-          }],
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -169,12 +200,14 @@ describe("Learning Snippets", () => {
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
           descriptor: {},
         }))!;
-        expect(content.descriptor.fields).to.containSubset([{
-          label: "My Calculated property",
-          renderer: {
-            name: "my-renderer",
+        expect(content.descriptor.fields).to.containSubset([
+          {
+            label: "My Calculated property",
+            renderer: {
+              name: "my-renderer",
+            },
           },
-        }]);
+        ]);
         // __PUBLISH_EXTRACT_END__
       });
 
@@ -184,19 +217,25 @@ describe("Learning Snippets", () => {
         // additionally have a calculated "My Calculated Property" property with a custom "my-editor" editor.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "Content",
-            specifications: [{
-              specType: "SelectedNodeInstances",
-              calculatedProperties: [{
-                label: "My Calculated property",
-                value: "123",
-                editor: {
-                  editorName: "my-editor",
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "SelectedNodeInstances",
+                  calculatedProperties: [
+                    {
+                      label: "My Calculated property",
+                      value: "123",
+                      editor: {
+                        editorName: "my-editor",
+                      },
+                    },
+                  ],
                 },
-              }],
-            }],
-          }],
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -209,12 +248,14 @@ describe("Learning Snippets", () => {
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
           descriptor: {},
         }))!;
-        expect(content.descriptor.fields).to.containSubset([{
-          label: "My Calculated property",
-          editor: {
-            name: "my-editor",
+        expect(content.descriptor.fields).to.containSubset([
+          {
+            label: "My Calculated property",
+            editor: {
+              name: "my-editor",
+            },
           },
-        }]);
+        ]);
         // __PUBLISH_EXTRACT_END__
       });
 
@@ -225,17 +266,23 @@ describe("Learning Snippets", () => {
         // appear at the top in the UI, since generally properties have a priority of `1000`.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "Content",
-            specifications: [{
-              specType: "SelectedNodeInstances",
-              calculatedProperties: [{
-                label: "My Calculated Property",
-                value: `123`,
-                priority: 9999,
-              }],
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "SelectedNodeInstances",
+                  calculatedProperties: [
+                    {
+                      label: "My Calculated Property",
+                      value: `123`,
+                      priority: 9999,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -247,14 +294,13 @@ describe("Learning Snippets", () => {
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
           descriptor: {},
         }))!;
-        expect(content.descriptor.fields).to.containSubset([{
-          label: "My Calculated Property",
-          priority: 9999,
-        }]);
+        expect(content.descriptor.fields).to.containSubset([
+          {
+            label: "My Calculated Property",
+            priority: 9999,
+          },
+        ]);
       });
-
     });
-
   });
-
 });

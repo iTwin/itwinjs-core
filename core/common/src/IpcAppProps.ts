@@ -8,7 +8,7 @@
 
 import { GuidString, Id64String, IModelStatus, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { Range3dProps, XYZProps } from "@itwin/core-geometry";
-import { OpenBriefcaseProps } from "./BriefcaseTypes";
+import { OpenBriefcaseProps, OpenCheckpointArgs } from "./BriefcaseTypes";
 import { ChangedEntities } from "./ChangedEntities";
 import { ChangesetIndex, ChangesetIndexAndId } from "./ChangesetProps";
 import { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
@@ -119,9 +119,11 @@ export interface IpcAppFunctions {
   log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
 
   /** see BriefcaseConnection.openFile */
-  openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
+  openBriefcase: (args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
   /** see BriefcaseConnection.openStandalone */
-  openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
+  openCheckpoint: (args: OpenCheckpointArgs) => Promise<IModelConnectionProps>;
+  /** see BriefcaseConnection.openStandalone */
+  openStandalone: (filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
   /** see BriefcaseConnection.close */
   closeIModel: (key: string) => Promise<void>;
   /** see BriefcaseConnection.saveChanges */
