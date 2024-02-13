@@ -2,6 +2,24 @@
   "name": "@itwin/core-electron",
   "entries": [
     {
+      "version": "4.4.0",
+      "tag": "@itwin/core-electron_v4.4.0",
+      "date": "Mon, 12 Feb 2024 18:15:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": " Add support for Electron 27."
+          },
+          {
+            "comment": "Add support for Node 20."
+          },
+          {
+            "comment": "Add support for Electron 28"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.3.3",
       "tag": "@itwin/core-electron_v4.3.3",
       "date": "Wed, 03 Jan 2024 19:28:38 GMT",

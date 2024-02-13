@@ -2,6 +2,45 @@
   "name": "@itwin/core-geometry",
   "entries": [
     {
+      "version": "4.4.0",
+      "tag": "@itwin/core-geometry_v4.4.0",
+      "date": "Mon, 12 Feb 2024 18:15:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "New code for RangeTree construction and search"
+          },
+          {
+            "comment": "logic error in coincident segment detection"
+          },
+          {
+            "comment": "B-spline legacy closure conversion"
+          },
+          {
+            "comment": "restore open bcurve json import"
+          },
+          {
+            "comment": "cw region input to PolyfaceClip.drapeRegion"
+          },
+          {
+            "comment": "polyface silhouettes"
+          },
+          {
+            "comment": "ClipUtilities.rangeOfIntersectionOfLocalRanges"
+          },
+          {
+            "comment": "Fix spelling of deep clone in PolyfaceData.clone jsdoc"
+          },
+          {
+            "comment": "Slight optimization for Transform.isAlmostEqual."
+          },
+          {
+            "comment": "add GeometryProps.pointString"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.3.3",
       "tag": "@itwin/core-geometry_v4.3.3",
       "date": "Wed, 03 Jan 2024 19:28:38 GMT",

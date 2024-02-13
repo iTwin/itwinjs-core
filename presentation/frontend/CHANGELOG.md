@@ -1,6 +1,15 @@
 # Change Log - @itwin/presentation-frontend
 
-This log was last generated on Wed, 03 Jan 2024 19:29:41 GMT and should not be manually modified.
+This log was last generated on Mon, 12 Feb 2024 19:26:22 GMT and should not be manually modified.
+
+## 4.4.0
+Mon, 12 Feb 2024 18:15:58 GMT
+
+### Updates
+
+- Fix descriptor, node path and distinct value responses not being localized
+- Added 'getHiliteSetIterator' method to `HiliteSetProvider`. It allows to handle hilite set in batches instead of waiting for whole set to be loaded. 
+- Add support for default formats when formatting values on the frontend (when `Presentation` is initialized with `schemaContextProvider`).
 
 ## 4.3.3
 Wed, 03 Jan 2024 19:28:38 GMT

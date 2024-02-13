@@ -1,6 +1,16 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Wed, 03 Jan 2024 19:29:41 GMT and should not be manually modified.
+This log was last generated on Mon, 12 Feb 2024 19:26:22 GMT and should not be manually modified.
+
+## 4.4.0
+Mon, 12 Feb 2024 18:15:58 GMT
+
+### Updates
+
+- Handle SI and METRIC unit systems as a single unit system. This fixes a problem where temperatures are formatted in Kelvin even though metric was requested.
+- Provide an option to control batch size for `PresentationManager.getElementProperties` multi-elements case.
+- Add formatting for kind of quantity point properties.
+- Add support for default formats in `KoqPropertyValueFormatter`.
 
 ## 4.3.3
 Wed, 03 Jan 2024 19:28:38 GMT
