@@ -1,14 +1,15 @@
-# Triggered on a commit to master when imodeljs-native version changes
+# Triggered on a commit to master when core/backend/package.json changes
+# This is mainly to invalidate PRs on an @bentley/imodeljs-native version change
 
 name: Invalidate Open PRs when imodeljs-native is updated
 
-on: [push]
-  # workflow_dispatch:
-  # push:
-  #   branches:
-  #   - 'master'
-  #   paths:
-  #   - '**/core/backend/package.json'
+on:
+  workflow_dispatch:
+  push:
+    branches:
+    - 'master'
+    paths:
+    - '**/core/backend/package.json'
 
 jobs:
   invalidate:
