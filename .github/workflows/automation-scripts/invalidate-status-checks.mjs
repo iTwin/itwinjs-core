@@ -25,11 +25,13 @@ for (let i = 0; i < pull_requests.data.length; i++) {
     let statuses = await octokit.request('GET /repos/{owner}/{repo}/commits/{ref}/statuses', {
       owner: 'iTwin',
       repo: 'itwinjs-core',
-      ref: pull_requests.data[i].head.ref,
+      ref: `${pr_sha}`,
       headers: {
         'X-GitHub-Api-Version': '2022-11-28'
       }
     })
+
+    console.log(statuses);
 
     let itwinjs_target_url = '';
     for (let j = 0; j < statuses.length; j++) {
