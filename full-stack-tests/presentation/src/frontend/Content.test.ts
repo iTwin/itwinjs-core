@@ -1173,6 +1173,7 @@ describe("Content", () => {
       const realRace = Promise.race;
       const rejectedPromise = Promise.reject();
       raceStub = sinon.stub(Promise, "race").callsFake(async (values) => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         (values as Array<Promise<any>>).splice(0, 0, rejectedPromise);
         return realRace.call(Promise, values);
       });
