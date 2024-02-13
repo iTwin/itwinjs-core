@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import faker from "faker";
 import fs from "fs";
@@ -15,14 +15,18 @@ import { prepareOutputFilePath } from "../Utils";
 
 const RULESET_1: Ruleset = {
   id: "ruleset_1",
-  rules: [{
-    ruleType: RuleTypes.RootNodes,
-    specifications: [{
-      specType: ChildNodeSpecificationTypes.CustomNode,
-      type: "test 1",
-      label: "label 1",
-    }],
-  }],
+  rules: [
+    {
+      ruleType: RuleTypes.RootNodes,
+      specifications: [
+        {
+          specType: ChildNodeSpecificationTypes.CustomNode,
+          type: "test 1",
+          label: "label 1",
+        },
+      ],
+    },
+  ],
 };
 
 describe("RulesEmbedding", () => {
@@ -235,5 +239,4 @@ describe("RulesEmbedding", () => {
     expect(rulesets[0]).to.deep.eq(ruleset1);
     expect(rulesets[1]).to.deep.eq(ruleset3);
   });
-
 });

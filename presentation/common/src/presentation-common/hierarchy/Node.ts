@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Hierarchies
  */
@@ -163,8 +163,9 @@ export namespace Node {
    */
   // eslint-disable-next-line deprecation/deprecation
   export function fromJSON(json: NodeJSON | string): Node {
-    if (typeof json === "string")
+    if (typeof json === "string") {
       return JSON.parse(json, reviver);
+    }
     const { labelDefinition, ...baseJson } = json;
     return {
       ...baseJson,
@@ -208,8 +209,9 @@ export namespace Node {
    */
   // eslint-disable-next-line deprecation/deprecation
   export function listFromJSON(json: NodeJSON[] | string): Node[] {
-    if (typeof json === "string")
+    if (typeof json === "string") {
       return JSON.parse(json, listReviver);
+    }
     // eslint-disable-next-line deprecation/deprecation
     return json.map((m) => fromJSON(m));
   }

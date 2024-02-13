@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
 import * as faker from "faker";
@@ -11,7 +11,6 @@ import { createRandomRuleset } from "@itwin/presentation-common/lib/cjs/test";
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 
 describe("RulesetManager", () => {
-
   let onRulesetModifiedSpy: sinon.SinonSpy<[RegisteredRuleset, Ruleset], Promise<void>>;
   let manager: RulesetManagerImpl;
 
@@ -22,7 +21,6 @@ describe("RulesetManager", () => {
   });
 
   describe("get", () => {
-
     it("returns undefined when ruleset is not registered", async () => {
       expect(await manager.get(faker.random.word())).to.be.undefined;
     });
@@ -35,11 +33,9 @@ describe("RulesetManager", () => {
       expect(result!.toJSON()).to.deep.eq(ruleset);
       expect(result!.uniqueIdentifier).to.eq(added.uniqueIdentifier);
     });
-
   });
 
   describe("add", () => {
-
     it("registers a ruleset", async () => {
       const ruleset = await createRandomRuleset();
       await manager.add(ruleset);
@@ -49,16 +45,16 @@ describe("RulesetManager", () => {
     it("allows registering 2 rulesets with the same id", async () => {
       const rulesetId = faker.random.uuid();
       const rulesets = [await createRandomRuleset(), await createRandomRuleset()];
-      await Promise.all(rulesets.map(async (r) => {
-        r.id = rulesetId;
-        return manager.add(r);
-      }));
+      await Promise.all(
+        rulesets.map(async (r) => {
+          r.id = rulesetId;
+          return manager.add(r);
+        }),
+      );
     });
-
   });
 
   describe("modify", () => {
-
     it("modifies given ruleset and raises the `onRulesetModified` event", async () => {
       const initialRuleset = await createRandomRuleset();
       const registered = await manager.add(initialRuleset);
@@ -74,11 +70,9 @@ describe("RulesetManager", () => {
       expect(onRulesetModifiedSpy.firstCall.args[0]).to.eq(modified);
       expect(onRulesetModifiedSpy.firstCall.args[1]).to.deep.eq(initialRuleset);
     });
-
   });
 
   describe("remove", () => {
-
     it("does nothing if ruleset with the specified id is not registered", async () => {
       expect(await manager.remove([faker.random.uuid(), faker.random.uuid()])).to.be.false;
     });
@@ -104,11 +98,9 @@ describe("RulesetManager", () => {
       expect(await manager.remove(registered)).to.be.true;
       expect(await manager.get(ruleset.id)).to.be.undefined;
     });
-
   });
 
   describe("clear", () => {
-
     it("clears only if there are rulesets", async () => {
       await manager.clear();
     });
@@ -118,11 +110,9 @@ describe("RulesetManager", () => {
       await manager.add(ruleset);
       await manager.clear();
     });
-
   });
 
   describe("dispose", () => {
-
     it("disposes registered ruleset for add result", async () => {
       const ruleset = await createRandomRuleset();
       const result = await manager.add(ruleset);
@@ -131,7 +121,5 @@ describe("RulesetManager", () => {
       result.dispose();
       expect(eventSpy).to.have.been.calledOnce;
     });
-
   });
-
 });

@@ -35,7 +35,8 @@
     "extract-api": "betools extract-api --entry=presentation-backend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha --config ../.mocharc.json --file ./lib/cjs/test/index.test.js \"./lib/cjs/test/**/*.test.js\"",
-    "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
+    "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch",
+    "prettier:fix": "prettier --write ."
   },
   "peerDependencies": {
     "@itwin/core-backend": "workspace:^4.5.0-dev.9",
@@ -77,9 +78,11 @@
     "cross-env": "^5.1.4",
     "deep-equal": "^1",
     "eslint": "^8.44.0",
+    "eslint-config-prettier": "^9.1.0",
     "faker": "^4.1.0",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
+    "prettier": "^3.2.5",
     "rimraf": "^3.0.2",
     "sinon": "^17.0.1",
     "sinon-chai": "^3.7.0",

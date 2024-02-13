@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
@@ -9,16 +9,24 @@ import { ECSqlReader, QueryRowFormat, QueryRowProxy } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Field, NestedContentField, PropertiesField, PropertyInfo } from "@itwin/presentation-common";
 import {
-  createTestECClassInfo, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo, createTestRelatedClassInfo,
+  createTestECClassInfo,
+  createTestNestedContentField,
+  createTestPropertiesContentField,
+  createTestPropertyInfo,
+  createTestRelatedClassInfo,
   createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
 import {
-  createFieldOrderInfos, FavoritePropertiesManager, FavoritePropertiesOrderInfo, FavoritePropertiesScope, getFieldInfos, IFavoritePropertiesStorage,
+  createFieldOrderInfos,
+  FavoritePropertiesManager,
+  FavoritePropertiesOrderInfo,
+  FavoritePropertiesScope,
+  getFieldInfos,
+  IFavoritePropertiesStorage,
 } from "../../presentation-frontend";
 import { PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 
 describe("FavoritePropertiesManager", () => {
-
   let manager: FavoritePropertiesManager;
   let propertyField1: PropertiesField;
   let propertyField2: PropertiesField;
@@ -58,20 +66,23 @@ describe("FavoritePropertiesManager", () => {
     imodelMock.reset();
   });
 
-  function setupMocksForQueryingBaseClasses(classBaseClass: Array<{ classFullName: string, baseClassFullName: string }>) {
+  function setupMocksForQueryingBaseClasses(classBaseClass: Array<{ classFullName: string; baseClassFullName: string }>) {
     let currIndex = -1;
     const ecSqlReaderMock = moq.Mock.ofType<ECSqlReader>();
     ecSqlReaderMock.setup(async (x) => x.step()).returns(async () => ++currIndex < classBaseClass.length);
-    ecSqlReaderMock.setup((x) => x.current).returns(() => {
-      const queryRowProxyMock = moq.Mock.ofType<QueryRowProxy>();
-      queryRowProxyMock.setup((x) => x.toRow()).returns(() => classBaseClass[currIndex]);
-      return queryRowProxyMock.object;
-    });
-    imodelMock.setup((x) => x.createQueryReader(moq.It.isAnyString(), undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })).returns(() => ecSqlReaderMock.object);
+    ecSqlReaderMock
+      .setup((x) => x.current)
+      .returns(() => {
+        const queryRowProxyMock = moq.Mock.ofType<QueryRowProxy>();
+        queryRowProxyMock.setup((x) => x.toRow()).returns(() => classBaseClass[currIndex]);
+        return queryRowProxyMock.object;
+      });
+    imodelMock
+      .setup((x) => x.createQueryReader(moq.It.isAnyString(), undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
+      .returns(() => ecSqlReaderMock.object);
   }
 
   describe("initializeConnection", () => {
-
     it("loads iTwin and iModel scopes", async () => {
       await manager.initializeConnection(imodelMock.object);
       storageMock.verify(async (x) => x.loadProperties(undefined, undefined), moq.Times.once());
@@ -142,13 +153,13 @@ describe("FavoritePropertiesManager", () => {
       expect(fieldInfos.size).to.eq(4);
       expect(orderInfos.length).to.eq(4);
     });
-
   });
 
   describe("has", () => {
-
     it("throws if not initialized", () => {
-      expect(() => manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel)).to.throw(`Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${iTwinId}'. Call initializeConnection() with an IModelConnection to initialize.`);
+      expect(() => manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel)).to.throw(
+        `Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${iTwinId}'. Call initializeConnection() with an IModelConnection to initialize.`,
+      );
     });
 
     it("returns false for not favorite property field", async () => {
@@ -233,13 +244,13 @@ describe("FavoritePropertiesManager", () => {
       await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin);
       expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin)).to.be.true;
     });
-
   });
 
   describe("add", () => {
-
     it("throws if not initialized", async () => {
-      await expect(manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.rejectedWith(`Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${iTwinId}'. Call initializeConnection() with an IModelConnection to initialize.`);
+      await expect(manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.rejectedWith(
+        `Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${iTwinId}'. Call initializeConnection() with an IModelConnection to initialize.`,
+      );
     });
 
     it("raises onFavoritesChanged event", async () => {
@@ -279,13 +290,13 @@ describe("FavoritePropertiesManager", () => {
       await manager.add(propertyField2, imodelMock.object, FavoritePropertiesScope.Global);
       await manager.add(primitiveField, imodelMock.object, FavoritePropertiesScope.Global);
     });
-
   });
 
   describe("remove", () => {
-
     it("throws if not initialized", async () => {
-      await expect(manager.remove(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.rejectedWith(`Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${iTwinId}'. Call initializeConnection() with an IModelConnection to initialize.`);
+      await expect(manager.remove(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.rejectedWith(
+        `Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${iTwinId}'. Call initializeConnection() with an IModelConnection to initialize.`,
+      );
     });
 
     it("removes single property field", async () => {
@@ -368,13 +379,13 @@ describe("FavoritePropertiesManager", () => {
       await manager.remove(propertyField1, imodelMock.object, FavoritePropertiesScope.Global);
       expect(s).to.be.not.called;
     });
-
   });
 
   describe("clear", () => {
-
     it("throws if not initialized", async () => {
-      await expect(manager.clear(imodelMock.object, FavoritePropertiesScope.IModel)).to.be.rejectedWith(`Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${iTwinId}'. Call initializeConnection() with an IModelConnection to initialize.`);
+      await expect(manager.clear(imodelMock.object, FavoritePropertiesScope.IModel)).to.be.rejectedWith(
+        `Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${iTwinId}'. Call initializeConnection() with an IModelConnection to initialize.`,
+      );
     });
 
     it("clears global", async () => {
@@ -448,11 +459,9 @@ describe("FavoritePropertiesManager", () => {
       expect(iTwinFieldInfos.size).to.eq(1);
       expect(orderInfos.length).to.eq(1);
     });
-
   });
 
   describe("sortFields", () => {
-
     it("sorts favorite properties", async () => {
       const a = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a" }) }] });
       const b = createTestNestedContentField({ nestedFields: [] });
@@ -539,12 +548,14 @@ describe("FavoritePropertiesManager", () => {
       storageMock.setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny())).returns(async () => new Set<PropertyFullName>(fieldInfos));
 
       let priority = properties.length;
-      const orderInfos = properties.map((property: PropertyInfo): FavoritePropertiesOrderInfo => ({
-        parentClassName: property.classInfo.name,
-        name: `${property.classInfo.name}:${property.name}`,
-        orderedTimestamp: new Date(),
-        priority: priority--,
-      }));
+      const orderInfos = properties.map(
+        (property: PropertyInfo): FavoritePropertiesOrderInfo => ({
+          parentClassName: property.classInfo.name,
+          name: `${property.classInfo.name}:${property.name}`,
+          orderedTimestamp: new Date(),
+          priority: priority--,
+        }),
+      );
       orderInfos[3].orderedTimestamp.setDate(orderInfos[3].orderedTimestamp.getDate() + 1); // make b1 more recent than a1
       orderInfos[2].orderedTimestamp.setDate(orderInfos[2].orderedTimestamp.getDate() + 1); // make a2 more recent than b2
       orderInfos[0].orderedTimestamp = orderInfos[5].orderedTimestamp; // make a3 and b3 equal
@@ -558,11 +569,9 @@ describe("FavoritePropertiesManager", () => {
       expect(fields[1]).to.eq(f2);
       expect(fields[2]).to.eq(f1);
     });
-
   });
 
   describe("changeFieldPriority", () => {
-
     it("throws if both fields are the same object", async () => {
       const a = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a" }) }] });
       const allFields = [a];
@@ -608,7 +617,9 @@ describe("FavoritePropertiesManager", () => {
       const nonFavoriteField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "non-favorite" }) }] });
       const visibleFields = [...allFields, nonFavoriteField];
       await manager.initializeConnection(imodelMock.object);
-      await expect(manager.changeFieldPriority(imodelMock.object, nonFavoriteField, b, visibleFields)).to.be.rejectedWith("Field has no property order information.");
+      await expect(manager.changeFieldPriority(imodelMock.object, nonFavoriteField, b, visibleFields)).to.be.rejectedWith(
+        "Field has no property order information.",
+      );
     });
 
     it("throws if given non-visible afterField", async () => {
@@ -642,12 +653,18 @@ describe("FavoritePropertiesManager", () => {
       const nonFavoriteField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "non-favorite" }) }] });
       const visibleFields = [...allFields, nonFavoriteField];
       await manager.initializeConnection(imodelMock.object);
-      await expect(manager.changeFieldPriority(imodelMock.object, a, nonFavoriteField, visibleFields)).to.be.rejectedWith("Field has no property order information.");
+      await expect(manager.changeFieldPriority(imodelMock.object, a, nonFavoriteField, visibleFields)).to.be.rejectedWith(
+        "Field has no property order information.",
+      );
     });
 
     it("does not query for base classes if it already has it cached", async () => {
-      const a = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a", classInfo: createTestECClassInfo({ name: "S:A" }) }) }] });
-      const b = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b", classInfo: createTestECClassInfo({ name: "S:B" }) }) }] });
+      const a = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "a", classInfo: createTestECClassInfo({ name: "S:A" }) }) }],
+      });
+      const b = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "b", classInfo: createTestECClassInfo({ name: "S:B" }) }) }],
+      });
       const allFields = [a, b];
 
       const classBaseClass = [
@@ -686,11 +703,21 @@ describe("FavoritePropertiesManager", () => {
        *  b2    a1
        *  c     b2
        */
-      const a1 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a1", classInfo: createTestECClassInfo({ name: "S:A" }) }) }] });
-      const b1 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b1", classInfo: createTestECClassInfo({ name: "S:B" }) }) }] });
-      const a2 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a2", classInfo: createTestECClassInfo({ name: "S:A" }) }) }] });
-      const b2 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b2", classInfo: createTestECClassInfo({ name: "S:B" }) }) }] });
-      const c = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "c", classInfo: createTestECClassInfo({ name: "S:C" }) }) }] });
+      const a1 = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "a1", classInfo: createTestECClassInfo({ name: "S:A" }) }) }],
+      });
+      const b1 = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "b1", classInfo: createTestECClassInfo({ name: "S:B" }) }) }],
+      });
+      const a2 = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "a2", classInfo: createTestECClassInfo({ name: "S:A" }) }) }],
+      });
+      const b2 = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "b2", classInfo: createTestECClassInfo({ name: "S:B" }) }) }],
+      });
+      const c = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "c", classInfo: createTestECClassInfo({ name: "S:C" }) }) }],
+      });
       const allFields = [a1, b1, a2, b2, c];
       const visibleFields = [a1, a2, c]; // imitating a selection of a class C instance
 
@@ -732,11 +759,21 @@ describe("FavoritePropertiesManager", () => {
        *  b1    a2
        *  a1    b1
        */
-      const c = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "c", classInfo: createTestECClassInfo({ name: "S:C" }) }) }] });
-      const b2 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b2", classInfo: createTestECClassInfo({ name: "S:B" }) }) }] });
-      const a2 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a2", classInfo: createTestECClassInfo({ name: "S:A" }) }) }] });
-      const b1 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b1", classInfo: createTestECClassInfo({ name: "S:B" }) }) }] });
-      const a1 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a1", classInfo: createTestECClassInfo({ name: "S:A" }) }) }] });
+      const c = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "c", classInfo: createTestECClassInfo({ name: "S:C" }) }) }],
+      });
+      const b2 = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "b2", classInfo: createTestECClassInfo({ name: "S:B" }) }) }],
+      });
+      const a2 = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "a2", classInfo: createTestECClassInfo({ name: "S:A" }) }) }],
+      });
+      const b1 = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "b1", classInfo: createTestECClassInfo({ name: "S:B" }) }) }],
+      });
+      const a1 = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "a1", classInfo: createTestECClassInfo({ name: "S:A" }) }) }],
+      });
       const allFields = [c, b2, a2, b1, a1];
       const visibleFields = [c, a2, a1]; // imitating a selection of a class C instance
 
@@ -778,11 +815,21 @@ describe("FavoritePropertiesManager", () => {
        *  b1    a2
        *  a1    b1
        */
-      const c = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "c", classInfo: createTestECClassInfo({ name: "S:C" }) }) }] });
-      const b2 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b2", classInfo: createTestECClassInfo({ name: "S:B" }) }) }] });
-      const a2 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a2", classInfo: createTestECClassInfo({ name: "S:A" }) }) }] });
-      const b1 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b1", classInfo: createTestECClassInfo({ name: "S:B" }) }) }] });
-      const a1 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a1", classInfo: createTestECClassInfo({ name: "S:A" }) }) }] });
+      const c = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "c", classInfo: createTestECClassInfo({ name: "S:C" }) }) }],
+      });
+      const b2 = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "b2", classInfo: createTestECClassInfo({ name: "S:B" }) }) }],
+      });
+      const a2 = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "a2", classInfo: createTestECClassInfo({ name: "S:A" }) }) }],
+      });
+      const b1 = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "b1", classInfo: createTestECClassInfo({ name: "S:B" }) }) }],
+      });
+      const a1 = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "a1", classInfo: createTestECClassInfo({ name: "S:A" }) }) }],
+      });
       const allFields = [c, b2, a2, b1, a1];
       const visibleFields = [c, a2, a1]; // imitating a selection of a class C instance
 
@@ -827,11 +874,19 @@ describe("FavoritePropertiesManager", () => {
        * prim is a primitive field, only visible having selected class B instances
        */
 
-      const a = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a", classInfo: createTestECClassInfo({ name: "S:A" }) }) }] });
-      const b1 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b1", classInfo: createTestECClassInfo({ name: "S:B" }) }) }] });
+      const a = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "a", classInfo: createTestECClassInfo({ name: "S:A" }) }) }],
+      });
+      const b1 = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "b1", classInfo: createTestECClassInfo({ name: "S:B" }) }) }],
+      });
       const prim = createTestSimpleContentField();
-      const b2 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b2", classInfo: createTestECClassInfo({ name: "S:B" }) }) }] });
-      const c = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "c", classInfo: createTestECClassInfo({ name: "S:C" }) }) }] });
+      const b2 = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "b2", classInfo: createTestECClassInfo({ name: "S:B" }) }) }],
+      });
+      const c = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "c", classInfo: createTestECClassInfo({ name: "S:C" }) }) }],
+      });
       const allFields = [a, b1, prim, b2, c];
       const visibleFields = [a, c]; // imitating a selection of a class C instance
 
@@ -872,25 +927,35 @@ describe("FavoritePropertiesManager", () => {
        *  C.A.a2   b
        */
 
-      const a1 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a1", classInfo: createTestECClassInfo({ name: "S:A" }) }) }] });
-      const a2 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a2", classInfo: createTestECClassInfo({ name: "S:A" }) }) }] });
-      const b = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b", classInfo: createTestECClassInfo({ name: "S:B" }) }) }] });
+      const a1 = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "a1", classInfo: createTestECClassInfo({ name: "S:A" }) }) }],
+      });
+      const a2 = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "a2", classInfo: createTestECClassInfo({ name: "S:A" }) }) }],
+      });
+      const b = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "b", classInfo: createTestECClassInfo({ name: "S:B" }) }) }],
+      });
       const caa2 = createTestPropertiesContentField({ properties: a2.properties });
 
       const nestedMiddle = createTestNestedContentField({
-        pathToPrimaryClass: [createTestRelatedClassInfo({
-          sourceClassInfo: createTestECClassInfo({ name: "S:A" }),
-          targetClassInfo: createTestECClassInfo({ name: "S:A" }),
-        })],
+        pathToPrimaryClass: [
+          createTestRelatedClassInfo({
+            sourceClassInfo: createTestECClassInfo({ name: "S:A" }),
+            targetClassInfo: createTestECClassInfo({ name: "S:A" }),
+          }),
+        ],
         nestedFields: [caa2],
       });
 
       const nestedTop = createTestNestedContentField({
-        pathToPrimaryClass: [createTestRelatedClassInfo({
-          sourceClassInfo: createTestECClassInfo({ name: "S:A" }),
-          targetClassInfo: createTestECClassInfo({ name: "S:C" }),
-          isForwardRelationship: true,
-        })],
+        pathToPrimaryClass: [
+          createTestRelatedClassInfo({
+            sourceClassInfo: createTestECClassInfo({ name: "S:A" }),
+            targetClassInfo: createTestECClassInfo({ name: "S:C" }),
+            isForwardRelationship: true,
+          }),
+        ],
         nestedFields: [nestedMiddle],
       });
       nestedTop.rebuildParentship();
@@ -921,16 +986,14 @@ describe("FavoritePropertiesManager", () => {
       expect(orderInfos[1]).to.eq(oldOrderInfo[0]); // a1
       expect(orderInfos[2]).to.eq(oldOrderInfo[1]); // b
     });
-
   });
-
 });
 
-const getFieldsInfos = (fields: Field[]): PropertyFullName[] => fields.reduce((total: PropertyFullName[], field) => ([...total, ...getFieldInfos(field)]), []);
+const getFieldsInfos = (fields: Field[]): PropertyFullName[] => fields.reduce((total: PropertyFullName[], field) => [...total, ...getFieldInfos(field)], []);
 
 const getFieldsOrderInfos = (fields: Field[]): FavoritePropertiesOrderInfo[] => {
-  const orderInfos = fields.reduce((total: FavoritePropertiesOrderInfo[], field) => ([...total, ...createFieldOrderInfos(field)]), []);
+  const orderInfos = fields.reduce((total: FavoritePropertiesOrderInfo[], field) => [...total, ...createFieldOrderInfos(field)], []);
   let priority = orderInfos.length;
-  orderInfos.forEach((orderInfo) => orderInfo.priority = priority--);
+  orderInfos.forEach((orderInfo) => (orderInfo.priority = priority--));
   return orderInfos;
 };
