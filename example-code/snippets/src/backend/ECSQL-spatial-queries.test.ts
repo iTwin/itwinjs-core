@@ -75,7 +75,7 @@ describe("Useful ECSQL spatial queries", () => {
 
     const rangeSum: Range3dProps = iModel.withPreparedStatement(bboxUnionStmtECSQL,
       (stmt: ECSqlStatement) => {
-        stmt.bindId(1, modelId!);
+        stmt.bindId(1, modelId);
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)
           return {} as Range3dProps;
         // Note that the the ECSQL value is a blob. Its data must be extracted and interpreted as a Range3d.

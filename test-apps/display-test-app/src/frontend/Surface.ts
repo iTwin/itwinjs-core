@@ -269,7 +269,7 @@ export class Surface {
     }
 
     if (undefined !== dock)
-      return () => focused.addDock(dock!);
+      return () => focused.addDock(dock);
 
     return undefined;
   }

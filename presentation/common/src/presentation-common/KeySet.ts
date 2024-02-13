@@ -183,7 +183,7 @@ export class KeySet {
       }
       entry["1"].forEach((id: Id64String) => {
         if (!pred || pred({ className, id })) {
-          set!.add(id);
+          set.add(id);
         }
       });
     }
