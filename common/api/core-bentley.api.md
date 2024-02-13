@@ -278,6 +278,27 @@ export type ComputePriorityFunction<T> = (value: T) => number;
 export type Constructor<T> = new (...args: any[]) => T;
 
 // @public
+export enum DbConflictCause {
+    // (undocumented)
+    Conflict = 3,
+    // (undocumented)
+    Constraint = 4,
+    // (undocumented)
+    Data = 1,
+    // (undocumented)
+    ForeignKey = 5,
+    // (undocumented)
+    NotFound = 2
+}
+
+// @public
+export enum DbConflictResolution {
+    Abort = 2,
+    Replace = 1,
+    Skip = 0
+}
+
+// @public
 export enum DbOpcode {
     Delete = 9,
     Insert = 18,
