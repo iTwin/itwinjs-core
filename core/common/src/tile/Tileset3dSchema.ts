@@ -46,6 +46,7 @@ export namespace Tileset3dSchema {
 
   export type GeometricError = number;
 
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   export type Refinement = "ADD" | "REPLACE" | string;
 
   export type Transform = [

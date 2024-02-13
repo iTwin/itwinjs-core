@@ -98,6 +98,7 @@ class TestTile extends Tile {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   public resolveRequest(response: TileRequest.Response | "undefined" = new Uint8Array(1)): void {
     if ("undefined" === response)
       response = undefined; // passing `undefined` to resolveRequest uses the default arg instead...
