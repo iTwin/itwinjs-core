@@ -67,6 +67,7 @@ export abstract class View {
  // ###TODO scheduleScript, scheduleScriptReference
  // ###TODO analysisStyle
 
+ // ###TODO is this needed?
  abstract equals(other: this): boolean;
 
  abstract get areAllTileTreesLoaded(): boolean;
