@@ -7,11 +7,11 @@
  */
 
 import { Id64String, assert } from "@itwin/core-bentley";
-import { Viewport, ViewportDecorator } from "./Viewport";
-import { HitDetail } from "./HitDetail";
-import { SceneContext } from "./ViewContext";
+import { Viewport, ViewportDecorator } from "../Viewport";
+import { HitDetail } from "../HitDetail";
+import { SceneContext } from "../ViewContext";
 import { AmbientOcclusion, ContextRealityModelProps, Environment, FeatureAppearance, PlanarClipMaskSettings, RealityDataSourceKey, RealityModelDisplaySettings, SolarShadowSettings, SpatialClassifiers, ViewFlags } from "@itwin/core-common";
-import { IModelConnection } from "./IModelConnection";
+import { IModelConnection } from "../IModelConnection";
 
 // Describes the common interface for all SceneObjects.
 // For documentation and type-checking purposes only - SceneObject is a union type.
