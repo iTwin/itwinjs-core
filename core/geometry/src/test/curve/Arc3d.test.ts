@@ -327,7 +327,7 @@ describe("Arc3d", () => {
       x0 = 0;
       y0 += dx;
     }
-    GeometryCoreTestIO.consoleLog(`chord error range ${rangeE.toJSON()}`);
+    GeometryCoreTestIO.consoleLog(`chord error range ${JSON.stringify(rangeE.toJSON())}`);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "PreciseRange");
     expect(ck.getNumErrors()).equals(0);
   });

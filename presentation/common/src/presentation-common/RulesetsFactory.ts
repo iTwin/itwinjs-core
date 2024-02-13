@@ -107,6 +107,7 @@ const toString = (displayValue: Value | DisplayValue): string => {
   if (!displayValue) {
     return "NULL";
   }
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string
   return displayValue.toString();
 };
 

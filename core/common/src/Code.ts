@@ -69,6 +69,8 @@ export class Code implements CodeProps {
   public static isValid(c: CodeProps): boolean { return Id64.isValidId64(c.spec); }
   /** Determine if this code is valid but not otherwise meaningful (and therefore not necessarily unique) */
   public static isEmpty(c: CodeProps): boolean { return this.isValid(c) && (c.value === undefined || c.value === ""); }
+
+  public toString(): string { return `[Code: ${this.spec}, ${this.scope}, ${this.value}]`; }
 }
 
 /** Names of the internal BIS CodeSpecs. These names match those specified by the native library.

@@ -121,8 +121,8 @@ function testClipper(points: Point3d[], root: AlternatingCCTreeNode, outputLevel
   const numTest = fractions.length * fractions.length;
   if (Checker.noisy.clipTree === true) {
     GeometryCoreTestIO.consoleLog(`ClipperTest  (polygonPoints: ${points.length}) (TestPoint: ${numTest})`);
-    GeometryCoreTestIO.consoleLog(`IN: ${inSum.count} avg: ${inSum.mean} max ${inSum.minMax}`);
-    GeometryCoreTestIO.consoleLog(`OUT: ${outSum.count} avg: ${outSum.mean}  max: ${outSum.minMax}`);
+    GeometryCoreTestIO.consoleLog(`IN: ${inSum.count} avg: ${inSum.mean} max ${JSON.stringify(inSum.minMax)}`);
+    GeometryCoreTestIO.consoleLog(`OUT: ${outSum.count} avg: ${outSum.mean}  max: ${JSON.stringify(outSum.minMax)}`);
   }
 }
 

@@ -131,6 +131,7 @@ export class ContentPropertyValueFormatter {
       return value.label.displayValue;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
     return value.toString();
   }
 

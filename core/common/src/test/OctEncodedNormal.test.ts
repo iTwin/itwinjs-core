@@ -19,7 +19,7 @@ function expectSignsEqual(a: XYZ, b: XYZ) {
 }
 
 function expectPointsEqual(lhs: XYZ, rhs: XYZ, tolerance: number) {
-  assert.isTrue(lhs.isAlmostEqual(rhs, tolerance), `expectPointsEqual ${lhs.toJSON()} ${rhs.toJSON()}`);
+  assert.isTrue(lhs.isAlmostEqual(rhs, tolerance), `expectPointsEqual ${JSON.stringify(lhs.toJSON())} ${JSON.stringify(rhs.toJSON())}`);
 }
 
 function _roundTrip(vec: Vector3d, normalized: boolean = true, tolerance: number = 0.005) {

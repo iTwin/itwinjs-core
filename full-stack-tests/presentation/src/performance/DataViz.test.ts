@@ -205,6 +205,7 @@ describe("#performance DataViz requests", () => {
                 fieldDescriptor,
               });
               res.items.map((dv) => {
+                // eslint-disable-next-line @typescript-eslint/no-base-to-string
                 const displayValue = dv.displayValue ? dv.displayValue.toString() : "";
                 pushValues(distinctValues, displayValue, dv.groupedRawValues);
               });
@@ -272,6 +273,7 @@ describe("#performance DataViz requests", () => {
             fieldDescriptor: filteredField.getFieldDescriptor(),
           });
           res.items.map((dv) => {
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
             const displayValue = dv.displayValue ? dv.displayValue.toString() : "";
             pushValues(distinctValues, displayValue, dv.groupedRawValues);
           });
@@ -350,6 +352,7 @@ describe("#performance DataViz requests", () => {
             if (rawValue === undefined || rawValue === null) {
               filter += " IS NULL";
             } else {
+              // eslint-disable-next-line @typescript-eslint/no-base-to-string
               filter += ` = ${filteredProperty.type.toLowerCase() === "string" ? `'${rawValue}'` : rawValue}`;
             }
             return filter;
@@ -451,8 +454,10 @@ describe("#performance DataViz requests", () => {
                           if (rawValue === undefined || rawValue === null) {
                             filter += "NULL";
                           } else if (filteredProperty.type.toLowerCase() === "string") {
+                            // eslint-disable-next-line @typescript-eslint/no-base-to-string
                             filter += `"${rawValue}"`;
                           } else {
+                            // eslint-disable-next-line @typescript-eslint/no-base-to-string
                             filter += rawValue;
                           }
                           return filter;
@@ -645,6 +650,7 @@ describe("#performance DataViz requests", () => {
                 continue;
               }
 
+              // eslint-disable-next-line @typescript-eslint/no-base-to-string
               const displayValue = (displayValues[filteredField.name] ?? "").toString();
               assert(distinctValues.has(displayValue));
               pushValues(
