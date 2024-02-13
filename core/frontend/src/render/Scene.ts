@@ -8,7 +8,7 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { SpatialClassifier } from "@itwin/core-common";
-import { RenderGraphic } from "./RenderGraphic";
+import { GraphicList, RenderGraphic } from "./RenderGraphic";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTextureDrape } from "./RenderSystem";
 
@@ -18,6 +18,7 @@ import { RenderTextureDrape } from "./RenderSystem";
 export interface SceneVolumeClassifier {
   classifier: SpatialClassifier;
   modelId: Id64String;
+  graphicList?: GraphicList;
 }
 
 /** Holds a collection of objects comprising the scene to be drawn by a [[Viewport]]'s.

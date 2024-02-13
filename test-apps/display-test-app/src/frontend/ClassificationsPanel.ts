@@ -6,7 +6,7 @@
 import { assert, compareStringsOrUndefined, GuidString } from "@itwin/core-bentley";
 import { ComboBox, ComboBoxEntry, createCheckBox, createComboBox, createNestedMenu, createNumericInput, NestedMenu } from "@itwin/frontend-devtools";
 import {
-  CartographicRange, ContextRealityModelProps, ModelProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, SpatialClassifier, SpatialClassifierFlagsProps, SpatialClassifierInsideDisplay,
+  CartographicRange, ContextRealityModelProps, ModelProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, SpatialClassifier, SpatialClassifierFlags, SpatialClassifierFlagsProps, SpatialClassifierInsideDisplay,
   SpatialClassifierOutsideDisplay, SpatialClassifiers,
 } from "@itwin/core-common";
 import {
@@ -24,7 +24,7 @@ function clearElement(element: HTMLElement): void {
 const NO_MODEL_ID = "-1";
 
 enum RealityDataType {
-  REALITYMESH3DTILES  = "REALITYMESH3DTILES",
+  REALITYMESH3DTILES = "REALITYMESH3DTILES",
   OSMBUILDINGS = "OSMBUILDINGS",
   OPC = "OPC",
   TERRAIN3DTILES = "TERRAIN3DTILES", // Terrain3DTiles
@@ -103,8 +103,8 @@ export class ClassificationsPanel extends ToolBarDropDown {
     };
   }
 
-  private hasAttachedRealityModelFromKey(style: DisplayStyle3dState, rdSourceKey: RealityDataSourceKey ): boolean {
-    return undefined !== style.settings.contextRealityModels.models.find((x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey,x.rdSourceKey));
+  private hasAttachedRealityModelFromKey(style: DisplayStyle3dState, rdSourceKey: RealityDataSourceKey): boolean {
+    return undefined !== style.settings.contextRealityModels.models.find((x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey, x.rdSourceKey));
   }
 
   private isSupportedType(type: string | undefined): boolean {
@@ -153,7 +153,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
     }
 
     const range = new CartographicRange(this._vp.iModel.projectExtents, ecef.getTransform());
-    let available: RealityDataResponse = {realityDatas: []};
+    let available: RealityDataResponse = { realityDatas: [] };
     try {
       if (this._iTwinId !== undefined && IModelApp.authorizationClient) {
         const accessToken = await IModelApp.authorizationClient.getAccessToken();
@@ -178,7 +178,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
     for (const rdEntry of available.realityDatas) {
       const name = undefined !== rdEntry.displayName ? rdEntry.displayName : rdEntry.id;
       const rdSourceKey = this.createRealityDataSourceKeyFromITwinRealityData(rdEntry);
-      const tilesetUrl = await IModelApp.realityDataAccess?.getRealityDataUrl(this._iTwinId,rdSourceKey.id);
+      const tilesetUrl = await IModelApp.realityDataAccess?.getRealityDataUrl(this._iTwinId, rdSourceKey.id);
       const isDisplaySupported = this.isSupportedDisplayType(rdEntry.type);
       if (tilesetUrl && isDisplaySupported) {
         const entry: ContextRealityModelProps = {
@@ -187,6 +187,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
           name,
           description: rdEntry?.description,
           realityDataId: rdSourceKey.id,
+          classifiers: [],
         };
 
         createCheckBox({
@@ -263,12 +264,15 @@ export class ClassificationsPanel extends ToolBarDropDown {
 
     clearElement(this._modelListDiv);
 
+    this._selectedClassifier ? this._selectedClassifier.modelId : undefined;
+    const value = typeof this._selectedClassifier?.modelId === "string" ? this._selectedClassifier.modelId : "";
+
     this._modelComboBox = createComboBox({
       entries,
       parent: this._modelListDiv,
       id: "classifiers_modelBox",
       name: "Active Classifier: ",
-      value: undefined !== this._selectedClassifier ? this._selectedClassifier.modelId : undefined,
+      value,
       handler: (select) => {
         this.setAsActiveClassifier(this._models[select.value]);
         this.populateRealityModelList();
@@ -302,7 +306,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
   }
 
   private detachRealityModelByKey(style: DisplayStyle3dState, rdSourceKey: RealityDataSourceKey): boolean {
-    const model = style.settings.contextRealityModels.models.find((x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey,x.rdSourceKey));
+    const model = style.settings.contextRealityModels.models.find((x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey, x.rdSourceKey));
     return undefined !== model && style.settings.contextRealityModels.delete(model);
   }
 
@@ -334,7 +338,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
       return;
     }
 
-    this.updateModelComboBox(classifier.modelId);
+    this.updateModelComboBox(typeof classifier.modelId === "string" ? classifier.modelId : "");
 
     this.populateClassifierProperties();
   }
@@ -418,3 +422,78 @@ export class ClassificationsPanel extends ToolBarDropDown {
     });
   }
 }
+
+// Testing code
+function runClassify() {
+
+  const data = [{
+    id: "0xffffff0000000001",
+    range: [{ x: 11.466576, y: 7.52628, z: -109.554264 },
+    { x: 12.466576, y: 8.52628, z: -108.554264 }],
+  },
+  {
+    id: "0xffffff0000000002",
+    range: [{ x: 11.466576, y: 5.52628, z: -109.554264 },
+    { x: 12.466576, y: 6.52628, z: -108.554264 }],
+  }];
+
+  const c1 = new SpatialClassifier(data, "My Test Classifier 1", SpatialClassifierFlags.fromJSON({
+    inside: SpatialClassifierInsideDisplay.ElementColor,
+    outside: SpatialClassifierOutsideDisplay.Off,
+    isVolumeClassifier: true,
+  }));
+
+  IModelApp.viewManager.selectedView?.displayStyle.settings.contextRealityModels.models.forEach((m) => {
+
+    m.classifiers?.add(c1);
+    m.classifiers?.setActive(c1);
+  });
+
+  IModelApp.viewManager.selectedView?.invalidateScene();
+
+}
+function runClassify2() {
+
+  const data = [{
+    id: "0xffffff0000000001",
+    range: [{ x: 6.466576, y: 7.52628, z: -109.554264 },
+    { x: 7.466576, y: 8.52628, z: -108.554264 }],
+  },
+  {
+    id: "0xffffff0000000002",
+    range: [{ x: 9.466576, y: 7.52628, z: -109.554264 },
+    { x: 10.466576, y: 8.52628, z: -108.554264 }],
+  }];
+
+  const c1 = new SpatialClassifier(data, "My Test Classifier 2", SpatialClassifierFlags.fromJSON({
+    inside: SpatialClassifierInsideDisplay.ElementColor,
+    outside: SpatialClassifierOutsideDisplay.Off,
+    isVolumeClassifier: true,
+  }));
+
+  IModelApp.viewManager.selectedView?.displayStyle.settings.contextRealityModels.models.forEach((m) => {
+
+    m.classifiers?.add(c1);
+    m.classifiers?.setActive(c1);
+  });
+
+  IModelApp.viewManager.selectedView?.invalidateScene();
+
+}
+
+function clearClassify() {
+
+  IModelApp.viewManager.selectedView?.displayStyle.settings.contextRealityModels.models.forEach((m) => {
+    m.classifiers?.clear();
+  });
+
+  IModelApp.viewManager.selectedView?.invalidateScene();
+
+}
+
+// @ts-ignore
+window.runClassify2 = runClassify2;
+// @ts-ignore
+window.runClassify = runClassify;
+// @ts-ignore
+window.clearClassify = clearClassify;

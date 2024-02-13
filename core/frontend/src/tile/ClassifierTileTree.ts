@@ -18,6 +18,9 @@ import { ViewState } from "../ViewState";
 import {
   DisclosedTileTreeSet, IModelTileTree, iModelTileTreeParamsFromJSON, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
+import { GraphicType } from "../render/GraphicBuilder";
+import { GraphicList } from "../render/RenderGraphic";
+import { Box, Range3d, Transform } from "@itwin/core-geometry";
 
 interface ClassifierTreeId extends ClassifierTileTreeId {
   modelId: Id64String;
@@ -166,11 +169,30 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     if (undefined === classifier)
       return;
 
-    const classifierTree = this.treeOwner.load();
-    if (undefined === classifierTree)
-      return;
+    let graphicList: GraphicList | undefined = undefined;
 
-    context.setVolumeClassifier(classifier, classifiedTree.modelId);
+    if (typeof classifier.modelId === "string") {
+      const classifierTree = this.treeOwner.load();
+      if (undefined === classifierTree)
+        return;
+    } else {
+
+      graphicList = [];
+
+      classifier.modelId.forEach((m) => {
+
+        const builder = context.renderSystem.createGraphic({ type: GraphicType.Scene, viewport: context.viewport, pickable: { id: m.id } });
+        builder.activatePickableId(m.id);
+        const box = Box.createRange(Range3d.fromJSON(m.range), true);
+        if (box) {
+          builder.addSolidPrimitive(box);
+        }
+        graphicList?.push(builder.finish());
+      });
+    }
+
+    context.setVolumeClassifier(classifier, classifiedTree.modelId, graphicList);
+
     super.addToScene(context);
   }
 
@@ -186,9 +208,14 @@ function createClassifierId(classifier: SpatialClassifier | undefined, source: V
     return { modelId: Id64.invalid, type: BatchType.PlanarClassifier, expansion: 0, animationId: undefined };
 
   const type = classifier.flags.isVolumeClassifier ? BatchType.VolumeClassifier : BatchType.PlanarClassifier;
-  const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(classifier.modelId, source?.scheduleScriptReference); // eslint-disable-line deprecation/deprecation
+
+  let scriptInfo;
+  if (typeof classifier.modelId === "string") {
+    scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(classifier.modelId, source?.scheduleScriptReference); // eslint-disable-line deprecation/deprecation
+  }
+
   return {
-    modelId: classifier.modelId,
+    modelId: typeof classifier.modelId === "string" ? classifier.modelId : classifier.modelId[0].id,
     type,
     expansion: classifier.expand,
     animationId: scriptInfo?.animationId,

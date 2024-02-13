@@ -481,7 +481,7 @@ export class SceneContext extends RenderContext {
   public get textureDrapes() { return this.scene.textureDrapes; }
 
   /** @internal */
-  public setVolumeClassifier(classifier: SpatialClassifier, modelId: Id64String): void {
-    this.scene.volumeClassifier = { classifier, modelId };
+  public setVolumeClassifier(classifier: SpatialClassifier, modelId: Id64String, graphicList?: GraphicList): void {
+    this.scene.volumeClassifier = { classifier, modelId, graphicList };
   }
 }

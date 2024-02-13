@@ -135,6 +135,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public isFadeOutActive = false;
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: SpatialClassifier;
+  public activeVolumeClassifierGeometry: GraphicList | undefined = undefined;
   public activeVolumeClassifierModelId?: Id64String;
   private _currentAnimationTransformNodeId?: number;
 
@@ -419,8 +420,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.changeDrapesOrClassifiers<RenderPlanarClassifier>(this._planarClassifiers, scene.planarClassifiers);
     this._planarClassifiers = scene.planarClassifiers;
 
-    this.activeVolumeClassifierProps = scene.volumeClassifier?.classifier;
-    this.activeVolumeClassifierModelId = scene.volumeClassifier?.modelId;
+    const volumeClassifier = scene.volumeClassifier;
+
+    this.activeVolumeClassifierProps = volumeClassifier?.classifier;
+    this.activeVolumeClassifierModelId = volumeClassifier?.modelId;
+    this.activeVolumeClassifierGeometry = volumeClassifier?.graphicList;
+
   }
 
   public override onBeforeRender(viewport: Viewport, setSceneNeedRedraw: (redraw: boolean) => void) {
@@ -672,7 +677,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this.endPerfMetricRecord();
 
       this.beginPerfMetricRecord("Init Commands");
-      this._renderCommands.initForRender(this.graphics);
+      this._renderCommands.initForRender(this.graphics, this.activeVolumeClassifierGeometry);
       this.endPerfMetricRecord();
 
       this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed

@@ -50,7 +50,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   /** Force a new tree owner / tile tree to be created for the current tile tree reference
    * @internal
    */
-  public resetTreeOwner() {}
+  public resetTreeOwner() { }
 
   /** Disclose *all* TileTrees use by this reference. This may include things like map tiles used for draping on terrain.
    * Override this and call super if you have such auxiliary trees.
@@ -80,7 +80,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   /** Optionally return a MapLayerFeatureInfo object describing the hit.].
    * @alpha
    */
-  public async getMapFeatureInfo(_hit: HitDetail, _options?: MapFeatureInfoOptions): Promise<MapLayerFeatureInfo[] | undefined>  { return undefined; }
+  public async getMapFeatureInfo(_hit: HitDetail, _options?: MapFeatureInfoOptions): Promise<MapLayerFeatureInfo[] | undefined> { return undefined; }
 
   /** Optionally add any decorations specific to this reference. For example, map tile trees may add a logo image and/or copyright attributions.
    * @note This is currently only invoked for background maps and TiledGraphicsProviders - others have no decorations, but if they did implement this it would not be called.

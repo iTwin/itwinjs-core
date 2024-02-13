@@ -537,7 +537,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
     this._layers.outputCommands();
   }
 
-  public initForRender(gfx: TargetGraphics): void {
+  public initForRender(gfx: TargetGraphics, activeVolumeClassifierGeometry?: GraphicList): void {
     this.clear();
 
     this.addGraphics(gfx.foreground);
@@ -559,6 +559,10 @@ export class RenderCommands implements Iterable<DrawCommands> {
 
       if (undefined !== dec.world && 0 < dec.world.length)
         this.addWorldDecorations(dec.world);
+
+      if (undefined !== activeVolumeClassifierGeometry && 0 < activeVolumeClassifierGeometry.length) {
+        this.addGraphics(activeVolumeClassifierGeometry, RenderPass.Classification);
+      }
 
       this.pushAndPopState(this.target.decorationsState, () => {
         if (undefined !== dec.viewOverlay && 0 < dec.viewOverlay.length)

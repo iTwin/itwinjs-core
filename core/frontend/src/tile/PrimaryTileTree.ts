@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, comparePossiblyUndefined, compareStrings, Id64String,
+  assert, comparePossiblyUndefined, compareStrings, Id64, Id64String,
 } from "@itwin/core-bentley";
 import {
   BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, ModelMapLayerSettings,
@@ -53,7 +53,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
   public compareTileTreeIds(lhs: PrimaryTreeId, rhs: PrimaryTreeId): number {
     // NB: we don't compare isPlanProjection or is3d - they should always have the same value for a given modelId.
     return compareStrings(lhs.modelId, rhs.modelId) || compareIModelTileTreeIds(lhs.treeId, rhs.treeId)
-      ||  comparePossiblyUndefined((x, y) => x.compareTo(y), lhs.timeline, rhs.timeline);
+      || comparePossiblyUndefined((x, y) => x.compareTo(y), lhs.timeline, rhs.timeline);
   }
 
   public async createTileTree(id: PrimaryTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
@@ -445,7 +445,7 @@ export class ModelMapLayerTileTreeReference extends MapLayerTileTreeReference {
   public constructor(layerSettings: MapLayerSettings, private _classifier: SpatialClassifier, layerIndex: number, iModel: IModelConnection, private _source?: DisplayStyleState) {
     super(layerSettings, layerIndex, iModel);
     this._id = {
-      modelId: _classifier.modelId,
+      modelId: typeof _classifier.modelId === "string" ? _classifier.modelId : _classifier.modelId[0].id,
       is3d: true, // model.is3d,
       treeId: this.createTreeId(),
       isPlanProjection: false, // isPlanProjection(view, model),
@@ -485,7 +485,7 @@ export class ModelMapLayerTileTreeReference extends MapLayerTileTreeReference {
 }
 /** @internal */
 export function createModelMapLayerTileTreeReference(layerSettings: ModelMapLayerSettings, layerIndex: number, iModel: IModelConnection): ModelMapLayerTileTreeReference | undefined {
-  const classifier =  SpatialClassifier.fromModelMapLayer(layerSettings);
+  const classifier = SpatialClassifier.fromModelMapLayer(layerSettings);
   return classifier ? new ModelMapLayerTileTreeReference(layerSettings, classifier, layerIndex, iModel) : undefined;
 }
 

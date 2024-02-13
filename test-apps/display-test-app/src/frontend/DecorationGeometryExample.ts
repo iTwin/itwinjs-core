@@ -94,7 +94,7 @@ class GeometryDecorator {
 
       builder.setSymbology(color, color, 1);
 
-      const ndx = Math.floor(textureIndex++/4);
+      const ndx = Math.floor(textureIndex++ / 4);
       const tx = textures[ndx];
       const nm = nMaps[ndx];
       let textureMapping: MaterialTextureMappingProps | undefined;
@@ -103,9 +103,9 @@ class GeometryDecorator {
           textureMapping = { texture: tx, transform, mode, worldMapping };
       } else {
         if (undefined !== tx)
-          textureMapping = { texture:tx, transform, mode, worldMapping, normalMapParams: { normalMap: nm }};
+          textureMapping = { texture: tx, transform, mode, worldMapping, normalMapParams: { normalMap: nm } };
         else
-          textureMapping = { texture:nm, transform, mode, worldMapping, normalMapParams: {}};
+          textureMapping = { texture: nm, transform, mode, worldMapping, normalMapParams: {} };
       }
 
       const gp = GraphicParams.fromSymbology(color, color, 1);
@@ -166,7 +166,7 @@ class GeometryDecorator {
       coneId = this._iModel.transientIds.getNext();
 
     this._decorators.set(this._iModel.transientIds.getNext(), (builder) => {
-      builder.addShape([ new Point3d(0, y, 0), new Point3d(1, y, 0), new Point3d(1, y + 1, 1), new Point3d(0, y + 1, 1), new Point3d(0, y, 0) ]);
+      builder.addShape([new Point3d(0, y, 0), new Point3d(1, y, 0), new Point3d(1, y + 1, 1), new Point3d(0, y + 1, 1), new Point3d(0, y, 0)]);
 
       builder.activatePickableId(boxId);
       const box = Box.createRange(new Range3d(3, y, 0, 4, y + 1, 1), true);

@@ -131,7 +131,9 @@ export class Surface {
       iconUnicode: "\ue9d8", // "property-data"
       tooltip: "Open Blank Connection",
       click: async () => {
-        await this.openBlankConnection();
+        await this.openBlankConnection({
+          location: Cartographic.fromDegrees({ longitude: -0.8835, latitude: 53.2255, height: 100 }),
+        });
       },
     }));
 
@@ -166,12 +168,13 @@ export class Surface {
   // create a new blank connection for testing backgroundMap and reality models.
   private async openBlankConnection(props?: Partial<BlankConnectionProps>): Promise<Viewer> {
     const iModel = BlankConnection.create({
-      location: props?.location ?? Cartographic.fromDegrees({longitude: -75.686694, latitude: 40.065757, height: 0}), // near Exton pa
+      location: props?.location ?? Cartographic.fromDegrees({ longitude: -75.686694, latitude: 40.065757, height: 0 }), // near Exton pa
       extents: props?.extents ?? new Range3d(-1000, -1000, -100, 1000, 1000, 100),
       name: props?.name ?? "blank connection test",
     });
 
     const viewer = await this.createViewer({ iModel });
+    void openDecorationGeometryExample(viewer);
     viewer.dock(Dock.Full);
     return viewer;
   }

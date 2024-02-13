@@ -8,6 +8,7 @@
 
 import { assert, Id64String } from "@itwin/core-bentley";
 import { ModelMapLayerSettings } from "./MapLayerSettings";
+import { Range3dProps } from "@itwin/core-geometry";
 
 /** Describes how a [[SpatialClassifier]] affects the display of classified geometry - that is, geometry intersecting
  * the classifier.
@@ -118,7 +119,7 @@ export class SpatialClassifierFlags {
  */
 export interface SpatialClassifierProps {
   /** See [[SpatialClassifier.modelId]]. */
-  modelId: Id64String;
+  modelId: Id64String | { range: Range3dProps, id: Id64String }[];
   /** See [[SpatialClassifier.expand]]. */
   expand: number;
   /** See [[SpatialClassifier.flags]]. */
@@ -151,7 +152,7 @@ export interface SpatialClassifierProps {
  */
 export class SpatialClassifier {
   /** The Id of the [GeometricModel]($backend) whose geometry is used to produce the classifier. */
-  public readonly modelId: Id64String;
+  public readonly modelId: Id64String | { range: Range3dProps, id: Id64String }[];
   /** A distance in meters by which to expand the classifier geometry. For example, if line strings are used to represent streets,
    * you might expand them to the average width of a street.
    */
@@ -162,7 +163,7 @@ export class SpatialClassifier {
   public readonly name: string;
 
   /** Construct a new classifier. */
-  public constructor(modelId: Id64String, name: string, flags = new SpatialClassifierFlags(), expand = 0) {
+  public constructor(modelId: Id64String | { range: Range3dProps, id: Id64String }[], name: string, flags = new SpatialClassifierFlags(), expand = 0) {
     this.modelId = modelId;
     this.expand = expand;
     this.flags = flags;
@@ -191,7 +192,7 @@ export class SpatialClassifier {
    * @beta
    */
   public static fromModelMapLayer(mapLayer: ModelMapLayerSettings): SpatialClassifier {
-    const flags =  SpatialClassifierFlags.fromJSON({ inside: SpatialClassifierInsideDisplay.Off, outside: SpatialClassifierOutsideDisplay.Off });
+    const flags = SpatialClassifierFlags.fromJSON({ inside: SpatialClassifierInsideDisplay.Off, outside: SpatialClassifierOutsideDisplay.Off });
 
     return new SpatialClassifier(mapLayer.modelId, mapLayer.name, flags);
   }
