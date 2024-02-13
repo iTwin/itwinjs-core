@@ -52,7 +52,7 @@ const enum ACSDisplaySizes { // eslint-disable-line no-restricted-syntax
   ArrowTipFlange = 0.75,
   ArrowTipWidth = 0.4,
   ZAxisLength = 0.65,
-  LabelStart = 0.4,
+  LabelStart = 0.4, // eslint-disable-line @typescript-eslint/no-duplicate-enum-values
   LabelEnd = 0.8,
   LabelWidth = 0.15,
 }
