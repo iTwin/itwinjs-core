@@ -147,9 +147,9 @@ describe("BarycentricTriangle", () => {
     // some special barycentric triples
     const specialPoints: Point3d[] = [];
     const barycentricInsideOn: [TriangleLocationDetail, boolean][] = [
-      [triangle.pointToFraction(centroid)!, true],
-      [triangle.pointToFraction(incenter)!, true],
-      [triangle.pointToFraction(triangle.circumcenter())!, false],
+      [triangle.pointToFraction(centroid), true],
+      [triangle.pointToFraction(incenter), true],
+      [triangle.pointToFraction(triangle.circumcenter()), false],
     ];
     for (const specialPt of barycentricInsideOn) {
       ck.testBoolean(specialPt[0].isInsideOrOn, specialPt[1], "special point containment");

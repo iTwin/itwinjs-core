@@ -640,8 +640,8 @@ describe("#performance DataViz requests", () => {
                   break;
                 }
                 assert(Value.isNestedContent(nestedContent));
-                rawValues = nestedContent[0]!.values;
-                displayValues = nestedContent[0]!.displayValues;
+                rawValues = nestedContent[0].values;
+                displayValues = nestedContent[0].displayValues;
               }
               if (!containsValue) {
                 continue;

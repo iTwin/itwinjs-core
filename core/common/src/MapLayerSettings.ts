@@ -102,7 +102,7 @@ export class MapSubLayerSettings {
       children: undefined !== changedProps.children ? changedProps.children.slice() : this.children?.slice(),
       title: undefined !== changedProps.title ? changedProps.title : this.title,
     };
-    return MapSubLayerSettings.fromJSON(props)!;
+    return MapSubLayerSettings.fromJSON(props);
   }
 
   /** @internal */
@@ -595,7 +595,7 @@ export class BaseMapLayerSettings extends ImageMapLayerSettings {
   /** Create a copy of this layer. */
   public override clone(changedProps: Partial<BaseMapLayerProps>): BaseMapLayerSettings {
     const prevUrl = this.url;
-    const clone = BaseMapLayerSettings.fromJSON(this.cloneProps(changedProps))!;
+    const clone = BaseMapLayerSettings.fromJSON(this.cloneProps(changedProps));
 
     if (this.provider && prevUrl !== this.url)
       clone._provider = undefined;

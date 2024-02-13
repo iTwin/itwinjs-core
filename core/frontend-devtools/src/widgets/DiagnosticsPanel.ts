@@ -118,6 +118,6 @@ export class DiagnosticsPanel {
   }
 
   private addSeparator(): void {
-    this._element.appendChild(document.createElement("hr")!);
+    this._element.appendChild(document.createElement("hr"));
   }
 }

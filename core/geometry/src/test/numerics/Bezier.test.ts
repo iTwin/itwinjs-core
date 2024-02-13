@@ -397,7 +397,7 @@ describe("PascalCoefficients", () => {
         const testPoints0 = LineString3d.create();
         // test that the ranges contain strokes (similarly transformed)
         bezier.emitStrokes(testPoints0);
-        const testPoints1 = testPoints0.cloneTransformed(transform)!;
+        const testPoints1 = testPoints0.cloneTransformed(transform);
         const range0A = testPoints0.range();
         const range1A = testPoints1.range();
         range1A.scaleAboutCenterInPlace(0.99999);
@@ -452,7 +452,7 @@ describe("PascalCoefficients", () => {
       new Order4Bezier(0, 1, 2, 3),
       new Order5Bezier(0, 1, 2, 3, 4)]) {
       // GeometryCoreTestIO.consoleLog(prettyPrint (bezierA));
-      const bezierB = UnivariateBezier.create(bezierA)!;
+      const bezierB = UnivariateBezier.create(bezierA);
       for (const u of [0, 0.2, 0.8]) {
         const blockA = bezierA.sumBasisFunctions(u, polygonY, 2);
         const blockB = bezierB.sumBasisFunctions(u, polygonY, 2);

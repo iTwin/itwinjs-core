@@ -230,7 +230,7 @@ describe("ConsolidateAdjacentPrimitives", () => {
         dy = 10;
         options.consolidateCompatibleArcs = true;
       }
-      const chainA = chain1.clone()!;
+      const chainA = chain1.clone();
       RegionOps.consolidateAdjacentPrimitives(chainA, options);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, chainA, x0 + dx, y0 + dy);
       markLimits(allGeometry, chainA.collectCurvePrimitives(), 0.01, 0.03, 0.01, x0 + dx, y0 + dy);
@@ -279,7 +279,7 @@ describe("ConsolidateAdjacentPrimitives", () => {
     const ck = new Checker();
     const unitCircle = Arc3d.createUnitCircle();
     const loop0 = Loop.create(unitCircle);
-    const loop1 = Loop.create(unitCircle.clonePartialCurve(0, 0.25)!, unitCircle.clonePartialCurve(0.25, 1.0)!);
+    const loop1 = Loop.create(unitCircle.clonePartialCurve(0, 0.25), unitCircle.clonePartialCurve(0.25, 1.0));
 
     RegionOps.consolidateAdjacentPrimitives(loop0);
     RegionOps.consolidateAdjacentPrimitives(loop1);

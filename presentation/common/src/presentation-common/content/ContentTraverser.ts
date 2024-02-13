@@ -597,7 +597,7 @@ function findRelatedFields(rootFields: FieldHierarchy[], hierarchy: FieldHierarc
             hierarchy: first ? rootFieldHierarchy : undefined,
             index: rootIndex,
           },
-          matchingField: fields[index]!,
+          matchingField: fields[index],
         };
       }
       currField = currField.parent;
