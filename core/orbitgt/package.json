@@ -44,7 +44,7 @@
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "typescript": "~5.3.3"
+    "typescript": "~5.4.0-beta"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

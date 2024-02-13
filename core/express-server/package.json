@@ -54,7 +54,7 @@
     "rimraf": "^3.0.2",
     "sinon": "^17.0.1",
     "supertest": "^3.0.0",
-    "typescript": "~5.3.3"
+    "typescript": "~5.4.0-beta"
   },
   "peerDependencies": {
     "@itwin/core-backend": "workspace:*"

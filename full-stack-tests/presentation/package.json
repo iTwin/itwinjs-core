@@ -79,7 +79,7 @@
     "jsdom-global": "3.0.2",
     "prettier": "^3.2.5",
     "sanitize-filename": "^1.6.3",
-    "typescript": "~5.3.3",
+    "typescript": "~5.4.0-beta",
     "i18next-http-backend": "^1.4.4"
   },
   "mocha": {

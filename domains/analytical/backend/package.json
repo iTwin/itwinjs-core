@@ -58,7 +58,7 @@
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "semver": "^7.3.5",
-    "typescript": "~5.3.3"
+    "typescript": "~5.4.0-beta"
   },
   "TODO-dependencies": {
     "@bentley/analytical-schema": "~1.0.0"

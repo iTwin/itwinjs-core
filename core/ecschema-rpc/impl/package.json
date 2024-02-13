@@ -49,6 +49,6 @@
     "@itwin/eslint-plugin": "4.0.0-dev.50",
     "eslint": "^8.44.0",
     "rimraf": "^3.0.2",
-    "typescript": "~5.3.3"
+    "typescript": "~5.4.0-beta"
   }
 }

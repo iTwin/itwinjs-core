@@ -93,7 +93,7 @@
     "sinon": "^17.0.1",
     "source-map-loader": "^4.0.0",
     "ts-node": "^10.8.2",
-    "typescript": "~5.3.3",
+    "typescript": "~5.4.0-beta",
     "webpack": "^5.76.0"
   },
   "dependencies": {

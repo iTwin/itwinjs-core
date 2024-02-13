@@ -110,7 +110,7 @@
     "rollup-plugin-visualizer": "^5.9.2",
     "rollup-plugin-webpack-stats": "^0.2.0",
     "ts-node": "^10.8.2",
-    "typescript": "~5.3.3",
+    "typescript": "~5.4.0-beta",
     "vite": "^4.5.2",
     "vite-plugin-env-compatible": "^1.1.1",
     "vite-plugin-inspect": "^0.7.28",

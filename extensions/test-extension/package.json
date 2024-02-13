@@ -34,7 +34,7 @@
     "esbuild": "^0.13.8",
     "eslint": "^8.44.0",
     "rimraf": "^3.0.2",
-    "typescript": "~5.3.3"
+    "typescript": "~5.4.0-beta"
   },
   "dependencies": {
     "@itwin/core-extension": "workspace:*",
