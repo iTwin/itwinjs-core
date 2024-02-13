@@ -6,8 +6,10 @@
  * @module Views
  */
 
-import { Id64String, Optional, OrderedId64Iterable } from "@itwin/core-bentley";
+import { Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { FeatureAppearance, PlanProjectionSettings, PlanarClipMaskSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlagsProperties } from "@itwin/core-common";
+import { IModelConnection } from "../IModelConnection";
+import { TileTreeReference } from "../core-frontend";
 
 /** ###TODO optional properties have no effect. shadows, clipVolume, lighting, and thematicDisplay can't be enabled if they are globally disabled, I think.
  */
@@ -18,6 +20,7 @@ export abstract class ViewStyle {
   protected constructor() { }
 
   abstract viewFlags: ViewStyleFlags;
+  abstract get iModel(): IModelConnection;
 
   abstract planarClipMasks: Map<Id64String, PlanarClipMaskSettings>;
 
@@ -44,6 +47,9 @@ export abstract class ViewStyle {
   abstract dropExcludedElements(id: Id64String | Iterable<Id64String>): void;
   abstract clearExcludedElements(): void;
 
+  // ###TODO yuck
+  abstract forEachTileTreeRef(func: (ref: TileTreeReference) => void): void;
+  
   // ###TODO ClipStyle to override/replace Scene's style?
 
   get settings(): ViewStyle {
