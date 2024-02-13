@@ -38,7 +38,7 @@
   ],
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.44",
+    "@itwin/eslint-plugin": "4.0.0-dev.50",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@types/chai": "4.3.1",
@@ -49,7 +49,7 @@
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "typescript": "~5.0.2"
+    "typescript": "~5.3.3"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

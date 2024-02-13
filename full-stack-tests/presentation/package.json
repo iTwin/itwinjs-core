@@ -67,7 +67,7 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.44",
+    "@itwin/eslint-plugin": "4.0.0-dev.50",
     "cache-require-paths": "^0.3.0",
     "cross-env": "^5.1.4",
     "dotenv": "^10.0.0",
@@ -79,7 +79,7 @@
     "jsdom-global": "3.0.2",
     "prettier": "^3.2.5",
     "sanitize-filename": "^1.6.3",
-    "typescript": "~5.0.2",
+    "typescript": "~5.3.3",
     "i18next-http-backend": "^1.4.4"
   },
   "mocha": {

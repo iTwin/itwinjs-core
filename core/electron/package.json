@@ -48,7 +48,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.44",
+    "@itwin/eslint-plugin": "4.0.0-dev.50",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
     "@types/node": "~18.16.20",
@@ -59,7 +59,7 @@
     "mocha": "^10.2.0",
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
-    "typescript": "~5.0.2",
+    "typescript": "~5.3.3",
     "webpack": "^5.76.0",
     "webpack-cli": "^5.0.1"
   },

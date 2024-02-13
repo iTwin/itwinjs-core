@@ -49,7 +49,7 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.44",
+    "@itwin/eslint-plugin": "4.0.0-dev.50",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
     "babel-loader": "~8.2.5",
@@ -62,7 +62,7 @@
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
-    "typescript": "~5.0.2",
+    "typescript": "~5.3.3",
     "webpack": "^5.76.0"
   },
   "dependencies": {

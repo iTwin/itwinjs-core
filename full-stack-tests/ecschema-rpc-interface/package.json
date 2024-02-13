@@ -52,7 +52,7 @@
   },
   "devDependencies": {
     "@itwin/core-backend": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.44",
+    "@itwin/eslint-plugin": "4.0.0-dev.50",
     "@itwin/express-server": "workspace:*",
     "@itwin/itwins-client": "^1.2.0",
     "@types/chai": "4.3.1",
@@ -71,7 +71,7 @@
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
     "stream-browserify": "^3.0.0",
-    "typescript": "~5.0.2",
+    "typescript": "~5.3.3",
     "webpack": "^5.76.0",
     "webpack-cli": "^5.0.1"
   }

@@ -46,7 +46,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.44",
+    "@itwin/eslint-plugin": "4.0.0-dev.50",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^10.0.6",
@@ -62,7 +62,7 @@
     "rimraf": "^3.0.2",
     "sinon": "^17.0.1",
     "source-map-loader": "^4.0.0",
-    "typescript": "~5.0.2",
+    "typescript": "~5.3.3",
     "webpack": "^5.76.0"
   }
 }

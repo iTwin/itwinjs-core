@@ -61,7 +61,7 @@
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.44",
+    "@itwin/eslint-plugin": "4.0.0-dev.50",
     "@itwin/presentation-common": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
@@ -90,7 +90,7 @@
     "sinon-chai": "^3.7.0",
     "source-map-support": "^0.5.6",
     "typemoq": "^2.1.0",
-    "typescript": "~5.0.2"
+    "typescript": "~5.3.3"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

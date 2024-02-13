@@ -65,7 +65,7 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-webpack-tools": "workspace:*",
     "@itwin/ecsql-common": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.44",
+    "@itwin/eslint-plugin": "4.0.0-dev.50",
     "@opentelemetry/api": "1.0.4",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
@@ -93,7 +93,7 @@
     "sinon": "^17.0.1",
     "source-map-loader": "^4.0.0",
     "ts-node": "^10.8.2",
-    "typescript": "~5.0.2",
+    "typescript": "~5.3.3",
     "webpack": "^5.76.0"
   },
   "dependencies": {
