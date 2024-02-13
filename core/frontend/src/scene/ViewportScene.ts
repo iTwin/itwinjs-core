@@ -10,8 +10,8 @@ import { Id64String, assert } from "@itwin/core-bentley";
 import { Viewport, ViewportDecorator } from "../Viewport";
 import { HitDetail } from "../HitDetail";
 import { SceneContext } from "../ViewContext";
-import { AmbientOcclusion, ContextRealityModelProps, Environment, FeatureAppearance, PlanarClipMaskSettings, RealityDataSourceKey, RealityModelDisplaySettings, SolarShadowSettings, SpatialClassifiers, ViewFlags } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
+import { AmbientOcclusion, ColorDef, ContextRealityModelProps, Environment, FeatureAppearance, PlanarClipMaskSettings, RealityDataSourceKey, RealityModelDisplaySettings, SolarShadowSettings, SpatialClassifiers, ViewFlags } from "@itwin/core-common";
+import { SpatialView } from "./View";
 
 // Describes the common interface for all SceneObjects.
 // For documentation and type-checking purposes only - SceneObject is a union type.
@@ -29,7 +29,6 @@ export interface ISceneObject extends ViewportDecorator {
 }
 
 export interface SceneRealityModel extends ISceneObject {
-  readonly type: "realityModel";
   readonly rdSourceKey: RealityDataSourceKey;
   readonly name: string;
   readonly description: string;
@@ -50,17 +49,31 @@ export namespace SceneRealityModel {
   }
 }
 
-export interface SceneRealityModels extends Iterable<SceneRealityModel> {
+export interface RealityModelSceneObject extends ISceneObject {
+  readonly type: "realityModel";
+  readonly model: SceneRealityModel;
+}
+export interface SceneRealityModels extends Iterable<RealityModelSceneObject> {
   
 }
 
+// ###TODO
 export interface SceneMap extends ISceneObject {
   readonly type: "map";
 }
 
-export interface ScenePresentation extends ISceneObject {
-  readonly type: "environment";
-  viewFlags: ViewFlags;
+export interface IScenePresentation extends ISceneObject {
+  readonly type: "presentation";
+  readonly backgroundColor: ColorDef;
+  readonly viewFlags: ViewFlags;
+}
+
+export interface ScenePresentation2d extends IScenePresentation {
+  readonly is3d: false;
+}
+
+export interface ScenePresentation3d extends IScenePresentation {
+  readonly is3d: true;
   environment: Environment;
   toggleSkyBox(display?: boolean): void;
   toggleAtmosphere(display?: boolean): void;
@@ -72,6 +85,8 @@ export interface ScenePresentation extends ISceneObject {
   solarShadows: SolarShadowSettings;
 }
 
+export type ScenePresentation = ScenePresentation2d | ScenePresentation3d;
+
 export interface CustomSceneObject extends ISceneObject {
   readonly type: "custom";
   readonly customType: string;
@@ -81,19 +96,19 @@ export interface CustomSceneObjects extends Iterable<CustomSceneObject> {
 
 }
 
-export interface IIModelSceneObject extends ISceneObject {
-  readonly type: "imodel";
-  readonly iModel: IModelConnection;
+export interface IViewSceneObject extends ISceneObject {
+  readonly type: "view";
 }
 
-export interface SpatialViewSceneObject extends IIModelSceneObject {
+export interface SpatialViewSceneObject extends IViewSceneObject {
   readonly viewType: "spatial";
+  readonly view: SpatialView;
 }
 
-export type IModelSceneObject = SpatialViewSceneObject;
+export type ViewSceneObject = SpatialViewSceneObject;
 
 // This union type is open for future expansion - the `type` field should be treated as non-exhaustive.
-export type SceneObject = SceneRealityModel | SceneMap | ScenePresentation | CustomSceneObject | IModelSceneObject;
+export type SceneObject = RealityModelSceneObject| SceneMap | ScenePresentation | CustomSceneObject | ViewSceneObject;
 
 // Exists for documentation + type-checking only.
 export interface IViewportScene {
@@ -105,7 +120,7 @@ export interface SpatialViewportScene extends IViewportScene, Iterable<SceneObje
   readonly realityModels: SceneRealityModels;
   // Will we need/want individual SceneObjects for each map layer, and the globe, and whatever?
   readonly maps: SceneMap;
-  readonly presentation: ScenePresentation;
+  readonly presentation: ScenePresentation3d;
   readonly customObjects: CustomSceneObjects;
 
   // Something for computing/providing a coordinate reference frame for nav cube and standard orientations.
