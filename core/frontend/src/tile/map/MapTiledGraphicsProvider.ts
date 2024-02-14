@@ -69,7 +69,7 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     const clearMapLayers = (loadedTileTree: TileTree, mapTileTreeToClear: MapTileTreeReference) => {
       const trees = new DisclosedTileTreeSet();
       mapTileTreeToClear.discloseTileTrees(trees);
-      if (trees.size > 1&& trees.has(loadedTileTree)) {
+      if (trees.has(loadedTileTree)) {
         mapTileTreeToClear.clearLayers();
       }
     };
