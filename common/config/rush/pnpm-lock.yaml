@@ -2897,7 +2897,7 @@ importers:
       mocha-junit-reporter: ^2.0.2
       rimraf: ^3.0.2
       tree-kill: ^1.2.2
-      typedoc: ^0.23.28
+      typedoc: ^0.25.8
       typedoc-plugin-merge-modules: ^4.0.1
       typescript: ~5.3.3
       wtfnode: ^0.9.1
@@ -2913,8 +2913,8 @@ importers:
       mocha-junit-reporter: 2.0.2_mocha@10.2.0
       rimraf: 3.0.2
       tree-kill: 1.2.2
-      typedoc: 0.23.28_typescript@5.3.3
-      typedoc-plugin-merge-modules: 4.0.1_typedoc@0.23.28
+      typedoc: 0.25.8_typescript@5.3.3
+      typedoc-plugin-merge-modules: 4.0.1_typedoc@0.25.8
       typescript: 5.3.3
       wtfnode: 0.9.1
       yargs: 17.4.0
@@ -9979,13 +9979,6 @@ packages:
     dependencies:
       brace-expansion: 2.0.1
 
-  /minimatch/7.4.6:
-    resolution: {integrity: sha512-sBz8G/YjVniEz6lKPNpKxXwazJe4c19fEfV2GDMX6AjFz+MX9uDWIZW8XreVhkFW3fkIdTv/gxWr/Kks5FFAVw==}
-    engines: {node: '>=10'}
-    dependencies:
-      brace-expansion: 2.0.1
-    dev: false
-
   /minimatch/9.0.3:
     resolution: {integrity: sha512-RHiac9mvaRw0x3AYRgDC1CxAP7HTcNrrECeA8YYJeWnpo+2Q5CegtZjaotWTWxDG3UeGA1coE05iH1mPjT/2mg==}
     engines: {node: '>=16 || 14 >=14.17'}
@@ -12601,24 +12594,24 @@ packages:
     dependencies:
       is-typedarray: 1.0.0
 
-  /typedoc-plugin-merge-modules/4.0.1_typedoc@0.23.28:
+  /typedoc-plugin-merge-modules/4.0.1_typedoc@0.25.8:
     resolution: {integrity: sha512-peuoWT/xcpEO71kNuaTBAS2IVwc8qm5tiIXnJc0vW/Cy9HHoVGkYecarkwtLBl5VmrhZjZN6LQNriqYfgHA1+A==}
     peerDependencies:
       typedoc: 0.23.x
     dependencies:
-      typedoc: 0.23.28_typescript@5.3.3
+      typedoc: 0.25.8_typescript@5.3.3
     dev: false
 
-  /typedoc/0.23.28_typescript@5.3.3:
-    resolution: {integrity: sha512-9x1+hZWTHEQcGoP7qFmlo4unUoVJLB0H/8vfO/7wqTnZxg4kPuji9y3uRzEu0ZKez63OJAUmiGhUrtukC6Uj3w==}
-    engines: {node: '>= 14.14'}
+  /typedoc/0.25.8_typescript@5.3.3:
+    resolution: {integrity: sha512-mh8oLW66nwmeB9uTa0Bdcjfis+48bAjSH3uqdzSuSawfduROQLlXw//WSNZLYDdhmMVB7YcYZicq6e8T0d271A==}
+    engines: {node: '>= 16'}
     hasBin: true
     peerDependencies:
-      typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x
+      typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x || 5.1.x || 5.2.x || 5.3.x
     dependencies:
       lunr: 2.3.9
       marked: 4.3.0
-      minimatch: 7.4.6
+      minimatch: 9.0.3
       shiki: 0.14.7
       typescript: 5.3.3
     dev: false
