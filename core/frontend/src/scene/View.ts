@@ -105,8 +105,6 @@ export abstract class View {
   return !this.is3d();
  }
 
- abstract allow3dManipulations(): boolean;
- 
  abstract computeFitRange(): Range3d;
 
  abstract viewsModel(modelId: Id64String): boolean;
@@ -271,8 +269,6 @@ export abstract class View3d extends View {
   return this.getDisplayStyle3d();
  }
  
- abstract setAllow3dManipulations(allow: boolean): void;
-
  /** @internal */
  abstract getModelClip(modelId: Id64String): RenderClipVolume | undefined;
  
