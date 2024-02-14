@@ -9,7 +9,7 @@
 import { Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { FeatureAppearance, PlanProjectionSettings, PlanarClipMaskSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlagsProperties } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
-import { TileTreeReference } from "../core-frontend";
+import { TileTreeReference } from "../tile/internal";
 
 /** ###TODO optional properties have no effect. shadows, clipVolume, lighting, and thematicDisplay can't be enabled if they are globally disabled, I think.
  */

@@ -11,8 +11,13 @@ import { View3dStyle, ViewStyle, ViewStyleFlags } from "./ViewStyle";
 import { FeatureAppearance, ModelClipGroups, SubCategoryOverride } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { GeometricModelState } from "../ModelState";
-import { ComputeDisplayTransformArgs, DecorateContext, DisclosedTileTreeSet, ModelDisplayTransformProvider, RenderClipVolume, RenderMemory, SceneContext, TileTreeReference, Viewport } from "../core-frontend";
 import { Range3d, Transform } from "@itwin/core-geometry";
+import { DisclosedTileTreeSet, TileTreeReference } from "../tile/internal";
+import { RenderMemory } from "../render/RenderMemory";
+import { DecorateContext, SceneContext } from "../ViewContext";
+import { ComputeDisplayTransformArgs, ModelDisplayTransformProvider } from "../ViewState";
+import { Viewport } from "../Viewport";
+import { RenderClipVolume } from "../render/RenderClipVolume";
 
 export abstract class ViewCategorySelector {
  /** @internal */

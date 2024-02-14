@@ -77,3 +77,15 @@ export interface IViewVolume {
   /** @internal */
   // ###TODO readonly maxGlobalScopeFactor: number;
 }
+
+export interface ViewVolume3d extends IViewVolume {
+  readonly is3d: true;
+  is2d?: never;
+}
+
+export interface TestViewVolume2d extends IViewVolume {
+  readonly is2d: true;
+  is3d?: never;
+}
+
+export type ViewVolume = TestViewVolume2d | ViewVolume3d;

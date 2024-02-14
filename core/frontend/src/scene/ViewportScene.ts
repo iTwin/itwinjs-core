@@ -11,7 +11,7 @@ import { HitDetail } from "../HitDetail";
 import { SceneContext } from "../ViewContext";
 import { AmbientOcclusion, ColorDef, Environment, FeatureAppearance, PlanarClipMaskSettings, RealityDataSourceKey, RealityModelDisplaySettings, SolarShadowSettings, SpatialClassifiers, ViewFlags } from "@itwin/core-common";
 import { SpatialView, View, View2d } from "./View";
-import { TiledGraphicsProvider } from "../core-frontend";
+import { TiledGraphicsProvider } from "../tile/internal";
 
 // Describes the common interface for all SceneObjects.
 // For documentation and type-checking purposes only - SceneObject is a union type.
