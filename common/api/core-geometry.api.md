@@ -2845,7 +2845,7 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
 
 // @public
 export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisitor {
-    protected constructor(facets: IndexedPolyface, numWrap: number);
+    protected constructor(polyface: IndexedPolyface, numWrap: number);
     clearArrays(): void;
     clientAuxIndex(i: number): number;
     clientColorIndex(i: number): number;
@@ -4590,10 +4590,10 @@ export class PolyfaceData {
     resizeAllArrays(length: number): void;
     // @deprecated
     resizeAllDataArrays(length: number): void;
-    reverseIndices(facetStartIndex?: number[]): void;
     static reverseIndices<T>(facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean;
-    reverseIndicesSingleFacet(facetIndex: number, facetStartIndex: number[]): void;
+    reverseIndices(facetStartIndex?: number[]): void;
     static reverseIndicesSingleFacet<T>(facetIndex: number, facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean;
+    reverseIndicesSingleFacet(facetIndex: number, facetStartIndex: number[]): void;
     reverseNormals(): void;
     setTaggedNumericData(data: TaggedNumericData | undefined): void;
     taggedNumericData: TaggedNumericData | undefined;
