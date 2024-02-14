@@ -67,6 +67,30 @@ describe("Property merger tests", () => {
       TestStruct: {
         schemaItemType: "StructClass",
       },
+      ConstraintEntity: {
+        schemaItemType: "EntityClass",
+      },
+      TestRelationship: {
+        schemaItemType: "RelationshipClass",
+        strength: "Embedding",
+        strengthDirection: "Forward",
+        source: {
+          multiplicity: "(1..1)",
+          polymorphic: true,
+          roleLabel: "contains",
+          constraintClasses: [
+            "TestSchema.ConstraintEntity",
+          ],
+        },
+        target: {
+          multiplicity: "(0..*)",
+          roleLabel: "is contained by",
+          polymorphic: true,
+          constraintClasses: [
+            "TestSchema.ConstraintEntity",
+          ],
+        },
+      },
     },
   };
 
@@ -380,6 +404,40 @@ describe("Property merger tests", () => {
         maxOccurs: 105,
       }]);
     });
+
+    it("should merge missing navigation property", async () => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        references: [
+          {
+            name: "TestSchema",
+            version: "01.00.15",
+          },
+        ],
+        items: {
+          TestEntity: {
+            schemaItemType: "EntityClass",
+            properties: [{
+              name: "NavigationProp",
+              type: "NavigationProperty",
+              description: "Description for navigation property",
+              direction: "Backward",
+              relationshipName: "TestSchema.TestRelationship",
+            }],
+          },
+        },
+      }, sourceContext);
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+      }, targetContext);
+
+      const merger = new SchemaMerger();
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const sourceItem = await sourceSchema.getItem<EntityClass>("TestEntity");
+      const mergedItem = await mergedSchema.getItem<EntityClass>("TestEntity");
+      expect(mergedItem!.toJSON().properties).deep.eq(sourceItem!.toJSON().properties);
+    });
   });
 
   describe("Property delta tests", () => {
@@ -458,6 +516,8 @@ describe("Property merger tests", () => {
               typeName: "int",
               label: "Integer Array Property",
               description: "Description for int array property",
+              minValue: 1,
+              maxValue: 100,
               minOccurs: 3,
               maxOccurs: 306,
             }],
@@ -474,6 +534,8 @@ describe("Property merger tests", () => {
               name: "IntArrayProp",
               type: "PrimitiveArrayProperty",
               typeName: "int",
+              minValue: 0,
+              maxValue: 50,
             }],
           },
         },
@@ -521,6 +583,10 @@ describe("Property merger tests", () => {
           },
         ],
         items: {
+          TargetCategory: {
+            schemaItemType: "PropertyCategory",
+            priority: 4,
+          },
           TestStruct: {
             schemaItemType: "StructClass",
             properties: [{
@@ -528,7 +594,7 @@ describe("Property merger tests", () => {
               type: "PrimitiveProperty",
               typeName: "TestSchema.TestEnumeration",
               label: "EnumProperty",
-              category: "TestSchema.TestCategory",
+              category: "TargetSchema.TargetCategory",
             }],
           },
         },
@@ -646,6 +712,7 @@ describe("Property merger tests", () => {
               name: "StructProp",
               type: "StructProperty",
               typeName: "TargetSchema.TestStruct",
+              priority: 3,
             }],
           },
         },
@@ -728,8 +795,63 @@ describe("Property merger tests", () => {
       expect(mergedItem!.toJSON().properties).deep.eq(sourceItem!.toJSON().properties);
     });
 
+    it("should merge navigation property changes", async () => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        references: [
+          {
+            name: "TestSchema",
+            version: "01.00.15",
+          },
+        ],
+        items: {
+          TestEntity: {
+            schemaItemType: "EntityClass",
+            properties: [{
+              name: "NavProp",
+              type: "NavigationProperty",
+              description: "Description for Navigation Property",
+              label: "Some navigation label",
+              direction: "Backward",
+              relationshipName: "TestSchema.TestRelationship",
+            }],
+          },
+        },
+      }, sourceContext);
+
+      await Schema.fromJson(testJson, targetContext);
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        references: [
+          {
+            name: "TestSchema",
+            version: "01.00.15",
+          },
+        ],
+        items: {
+          TestEntity: {
+            schemaItemType: "EntityClass",
+            properties: [{
+              name: "NavProp",
+              type: "NavigationProperty",
+              description: "Description for NavigationProperty",
+              isReadOnly: true,
+              direction: "Backward",
+              relationshipName: "TestSchema.TestRelationship",
+            }],
+          },
+        },
+      }, targetContext);
+
+      const merger = new SchemaMerger();
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const sourceItem = await mergedSchema.getItem<EntityClass>("TestEntity");
+      const mergedItem = await mergedSchema.getItem<EntityClass>("TestEntity");
+      expect(mergedItem!.toJSON().properties).deep.eq(sourceItem!.toJSON().properties);
+    });
+
     // Negative cases
-    it("should throw an error when merging properties typeName changed from int to boolean", async () => {
+    it("should throw an error when merging properties primitive type changed from int to boolean", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
@@ -759,7 +881,42 @@ describe("Property merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Changing the property 'Prop' primitiveType is not supported.");
+      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Changing the property 'TestStruct.Prop' primitiveType is not supported.");
+    });
+
+    it("should throw an error when merging array properties primitive type changed from double to string", async () => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          TestCA: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "AnyProperty",
+            properties: [{
+              name: "ArrProp",
+              type: "PrimitiveArrayProperty",
+              typeName: "string",
+            }],
+          },
+        },
+      }, sourceContext);
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          TestCA: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "AnyProperty",
+            properties: [{
+              name: "ArrProp",
+              type: "PrimitiveArrayProperty",
+              typeName: "double",
+            }],
+          },
+        },
+      }, targetContext);
+
+      const merger = new SchemaMerger();
+      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Changing the property 'TestCA.ArrProp' primitiveType is not supported.");
     });
 
     it("should throw an error when merging properties type changed from PrimitiveArrayProperty to PrimitiveProperty", async () => {
@@ -792,12 +949,18 @@ describe("Property merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Changing the property 'Prop' type is not supported.");
+      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Changing the property 'TestEntity.Prop' type is not supported.");
     });
 
-    it("should throw an error when merging properties category changed", async () => {
+    it("should throw an error when merging properties kind of quantity changed", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
+        references: [
+          {
+            name: "TestSchema",
+            version: "01.00.15",
+          },
+        ],
         items: {
           TestEntity: {
             schemaItemType: "EntityClass",
@@ -805,6 +968,7 @@ describe("Property merger tests", () => {
               name: "Prop",
               type: "PrimitiveProperty",
               typeName: "string",
+              kindOfQuantity: "TestSchema.TestKoq",
             }],
           },
         },
@@ -817,7 +981,7 @@ describe("Property merger tests", () => {
             schemaItemType: "EntityClass",
             properties: [{
               name: "Prop",
-              type: "PrimitiveArrayProperty",
+              type: "PrimitiveProperty",
               typeName: "string",
             }],
           },
@@ -825,7 +989,7 @@ describe("Property merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Changing the property 'Prop' type is not supported.");
+      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Changing the property 'TestEntity.Prop' kind of quantity is not supported.");
     });
 
     it("should throw an error when merging struct properties structClass changed", async () => {
@@ -867,7 +1031,7 @@ describe("Property merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Changing the property 'StructProp' structClass is not supported.");
+      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Changing the property 'TestEntity.StructProp' structClass is not supported.");
     });
 
     it("should throw an error when merging struct array properties structClass changed", async () => {
@@ -906,7 +1070,7 @@ describe("Property merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Changing the property 'StructArrayProp' structClass is not supported.");
+      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Changing the property 'TestStruct.StructArrayProp' structClass is not supported.");
     });
 
     it("should throw an error when merging enumeration properties enumeration changed", async () => {
@@ -956,7 +1120,7 @@ describe("Property merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Changing the property 'EnumProp' enumeration is not supported.");
+      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Changing the property 'TestEntity.EnumProp' enumeration is not supported.");
     });
 
     it("should throw an error when merging enumeration array properties enumeration changed", async () => {
@@ -1011,7 +1175,124 @@ describe("Property merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Changing the property 'EnumArrayProp' enumeration is not supported.");
+      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Changing the property 'TestEntity.EnumArrayProp' enumeration is not supported.");
+    });
+
+    it("should throw an error when merging navigation properties direction changed", async () => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        references: [
+          {
+            name: "TestSchema",
+            version: "01.00.15",
+          },
+        ],
+        items: {
+          TestEntity: {
+            schemaItemType: "EntityClass",
+            properties: [{
+              name: "NavProp",
+              type: "NavigationProperty",
+              relationshipName: "TestSchema.TestRelationship",
+              direction: "Backward",
+            }],
+          },
+        },
+      }, sourceContext);
+
+      await Schema.fromJson(testJson, targetContext);
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        references: [
+          {
+            name: "TestSchema",
+            version: "01.00.15",
+          },
+        ],
+        items: {
+          TestEntity: {
+            schemaItemType: "EntityClass",
+            properties: [{
+              name: "NavProp",
+              type: "NavigationProperty",
+              relationshipName: "TestSchema.TestRelationship",
+              direction: "Forward",
+            }],
+          },
+        },
+      }, targetContext);
+
+      const merger = new SchemaMerger();
+      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Changing the property 'TestEntity.NavProp' direction is not supported.");
+    });
+
+    it("should throw an error when merging navigation properties relationship class changed", async () => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        references: [
+          {
+            name: "TestSchema",
+            version: "01.00.15",
+          },
+        ],
+        items: {
+          SourceRelationship: {
+            schemaItemType: "RelationshipClass",
+            strength: "Referencing",
+            strengthDirection: "Forward",
+            source: {
+              multiplicity: "(1..1)",
+              polymorphic: true,
+              roleLabel: "is base model for",
+              constraintClasses: [
+                "TestSchema.ConstraintEntity",
+              ],
+            },
+            target: {
+              multiplicity: "(0..*)",
+              roleLabel: "has base",
+              polymorphic: true,
+              constraintClasses: [
+                "TestSchema.ConstraintEntity",
+              ],
+            },
+          },
+          TestEntity: {
+            schemaItemType: "EntityClass",
+            properties: [{
+              name: "NavProp",
+              type: "NavigationProperty",
+              relationshipName: "SourceSchema.SourceRelationship",
+              direction: "Forward",
+            }],
+          },
+        },
+      }, sourceContext);
+
+      await Schema.fromJson(testJson, targetContext);
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        references: [
+          {
+            name: "TestSchema",
+            version: "01.00.15",
+          },
+        ],
+        items: {
+          TestEntity: {
+            schemaItemType: "EntityClass",
+            properties: [{
+              name: "NavProp",
+              type: "NavigationProperty",
+              relationshipName: "TestSchema.TestRelationship",
+              direction: "Forward",
+            }],
+          },
+        },
+      }, targetContext);
+
+      const merger = new SchemaMerger();
+      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Changing the property 'TestEntity.NavProp' relationship class is not supported.");
     });
   });
 });

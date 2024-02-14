@@ -8,7 +8,7 @@
 
 import {
   DelayedPromiseWithProps, ECClassModifier, ECObjectsError, ECObjectsStatus, EntityClass, EntityClassProps,
-  Mixin, RelationshipClass, SchemaItemKey, SchemaItemType, SchemaKey, StrengthDirection,
+  Mixin, NavigationPropertyProps, RelationshipClass, SchemaItemKey, SchemaItemType, SchemaKey, StrengthDirection,
 } from "@itwin/ecschema-metadata";
 import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
@@ -140,7 +140,7 @@ export class Entities extends ECClasses {
   }
 
   public async createNavigationProperty(entityKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<PropertyEditResults> {
-    const entity = (await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(entityKey));
+    const entity = await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(entityKey);
 
     if (entity === undefined)
       throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${entityKey.fullName} not found in schema context.`);
@@ -150,6 +150,17 @@ export class Entities extends ECClasses {
 
     await entity.createNavigationProperty(name, relationship, direction);
     return { itemKey: entityKey, propertyName: name };
+  }
+
+  public async createNavigationPropertyFromProps(classKey: SchemaItemKey, navigationProps: NavigationPropertyProps): Promise<PropertyEditResults> {
+    const entity = await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(classKey);
+    if (entity === undefined)
+      return { itemKey: classKey, propertyName: navigationProps.name, errorMessage: `Entity Class ${classKey.fullName} not found in schema context.`};
+
+    const navigationProperty  = await entity.createNavigationProperty(navigationProps.name, navigationProps.relationshipName, navigationProps.direction);
+    await navigationProperty.fromJSON(navigationProps);
+
+    return { itemKey: classKey, propertyName: navigationProps.name };
   }
 
   /**
