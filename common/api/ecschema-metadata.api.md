@@ -1304,57 +1304,57 @@ export interface PropertyProps {
 // @beta (undocumented)
 export enum PropertyType {
     // (undocumented)
-    Binary = 257,
+    Binary = 257,// PropertyFlags.Struct
     // (undocumented)
-    Binary_Array = 261,
+    Binary_Array = 261,// PropertyFlags.Struct | PropertyFlags.Array
     // (undocumented)
-    Boolean = 513,
+    Boolean = 513,// PropertyFlags.Navigation
     // (undocumented)
-    Boolean_Array = 517,
+    Boolean_Array = 517,// PrimitiveType.Binary
     // (undocumented)
-    DateTime = 769,
+    DateTime = 769,// PrimitiveType.Binary | PropertyFlags.Array
     // (undocumented)
-    DateTime_Array = 773,
+    DateTime_Array = 773,// PrimitiveType.Boolean
     // (undocumented)
-    Double = 1025,
+    Double = 1025,// PrimitiveType.Boolean | PropertyFlags.Array
     // (undocumented)
-    Double_Array = 1029,
+    Double_Array = 1029,// PrimitiveType.DateTime
     // (undocumented)
-    IGeometry = 2561,
+    IGeometry = 2561,// PrimitiveType.DateTime | PropertyFlags.Array
     // (undocumented)
-    IGeometry_Array = 2565,
+    IGeometry_Array = 2565,// PrimitiveType.Double
     // (undocumented)
-    Integer = 1281,
+    Integer = 1281,// PrimitiveType.Double | PropertyFlags.Array
     // (undocumented)
-    Integer_Array = 1285,
+    Integer_Array = 1285,// PrimitiveType.Integer
     // (undocumented)
-    Integer_Enumeration = 1297,
+    Integer_Enumeration = 1297,// PrimitiveType.Integer | PropertyFlags.Array
     // (undocumented)
-    Integer_Enumeration_Array = 1301,
+    Integer_Enumeration_Array = 1301,// PrimitiveType.Integer | PropertyFlags.Enumeration
     // (undocumented)
-    Long = 1537,
+    Long = 1537,// PrimitiveType.Integer | PropertyFlags.Enumeration | PropertyFlags.Array
     // (undocumented)
-    Long_Array = 1541,
+    Long_Array = 1541,// PrimitiveType.Long
     // (undocumented)
-    Navigation = 8,
+    Navigation = 8,// PrimitiveType.Long | PropertyFlags.Array
     // (undocumented)
-    Point2d = 1793,
+    Point2d = 1793,// PrimitiveType.Point2d
     // (undocumented)
-    Point2d_Array = 1797,
+    Point2d_Array = 1797,// PrimitiveType.Point2d | PropertyFlags.Array
     // (undocumented)
-    Point3d = 2049,
+    Point3d = 2049,// PrimitiveType.Point3d
     // (undocumented)
-    Point3d_Array = 2053,
+    Point3d_Array = 2053,// PrimitiveType.Point3d | PropertyFlags.Array
     // (undocumented)
-    String = 2305,
+    String = 2305,// PrimitiveType.String
     // (undocumented)
-    String_Array = 2309,
+    String_Array = 2309,// PrimitiveType.String | PropertyFlags.Array
     // (undocumented)
-    String_Enumeration = 2321,
+    String_Enumeration = 2321,// PrimitiveType.String | PropertyFlags.Enumeration
     // (undocumented)
-    String_Enumeration_Array = 2325,
+    String_Enumeration_Array = 2325,// PrimitiveType.String | PropertyFlags.Enumeration | PropertyFlags.Array
     // (undocumented)
-    Struct = 2,
+    Struct = 2,// PrimitiveType.IGeometry
     // (undocumented)
     Struct_Array = 6
 }

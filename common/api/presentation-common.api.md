@@ -491,7 +491,7 @@ export const DEFAULT_KEYS_BATCH_SIZE = 5000;
 
 // @public
 export enum DefaultContentDisplayTypes {
-    Grid = "Grid",
+    Grid = "Grid",// eslint-disable-line id-blacklist
     List = "List",
     PropertyPane = "PropertyPane",
     Undefined = "Undefined",
@@ -2846,9 +2846,9 @@ export enum RuleTypes {
     // (undocumented)
     Content = "Content",
     // (undocumented)
-    ContentModifier = "ContentModifier",
+    ContentModifier = "ContentModifier",// eslint-disable-line @typescript-eslint/no-shadow
     // (undocumented)
-    DefaultPropertyCategoryOverride = "DefaultPropertyCategoryOverride",
+    DefaultPropertyCategoryOverride = "DefaultPropertyCategoryOverride",// eslint-disable-line @typescript-eslint/no-shadow
     // (undocumented)
     DisabledSorting = "DisabledSorting",
     // (undocumented)

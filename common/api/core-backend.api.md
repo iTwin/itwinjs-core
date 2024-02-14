@@ -3197,9 +3197,9 @@ export namespace IModelDb {
     // @internal
     export enum TileContentState {
         // (undocumented)
-        Loading = 2,
+        Loading = 2,// Request was just created and enqueued.
         // (undocumented)
-        New = 0,
+        New = 0,// Request is enqueued but not yet being processed.
         // (undocumented)
         Pending = 1
     }

@@ -560,9 +560,9 @@ export enum DiagnosticType {
     // (undocumented)
     CustomAttributeContainer = 4,
     // (undocumented)
-    None = 0,
+    None = 0,// eslint-disable-line @typescript-eslint/no-shadow
     // (undocumented)
-    Property = 3,
+    Property = 3,// eslint-disable-line @typescript-eslint/no-shadow
     // (undocumented)
     RelationshipConstraint = 5,
     // (undocumented)

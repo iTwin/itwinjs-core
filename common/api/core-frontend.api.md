@@ -1051,7 +1051,7 @@ export interface AcquireImdlParserArgs {
 // @public (undocumented)
 export enum ACSDisplayOptions {
     // (undocumented)
-    Active = 1,
+    Active = 1,// used for testing individual bits.
     // (undocumented)
     CheckVisible = 8,
     // (undocumented)
@@ -2142,7 +2142,7 @@ export enum ChangeFlag {
     NeverDrawn = 2,
     None = 0,
     Overrides = 268435319,
-    ViewedCategories = 4,
+    ViewedCategories = 4,// eslint-disable-line no-shadow
     ViewedCategoriesPerModel = 64,
     ViewedModels = 8,
     ViewState = 128
@@ -2412,7 +2412,7 @@ export enum CoordinateLockOverrides {
     // (undocumented)
     All = 65535,
     // (undocumented)
-    Grid = 4,
+    Grid = 4,// also overrides unit lock
     // (undocumented)
     None = 0
 }
@@ -2781,7 +2781,7 @@ export interface DepthPointOptions {
 
 // @public
 export enum DepthPointSource {
-    ACS = 5,
+    ACS = 5,// eslint-disable-line @typescript-eslint/no-shadow
     BackgroundMap = 2,
     Geometry = 0,
     Grid = 4,
@@ -2878,7 +2878,7 @@ export namespace DisplayParams {
     // (undocumented)
     export enum ComparePurpose {
         // (undocumented)
-        Merge = 0,
+        Merge = 0,// considers colors equivalent if both have or both lack transparency
         // (undocumented)
         Strict = 1
     }
@@ -4580,7 +4580,7 @@ export interface Gltf2Material extends GltfChildOfRootProperty {
                     index: number;
                     texCoord: number;
                 };
-                [k: string]: unknown | undefined;
+                [k: string]: unknown;
             };
         };
     };
@@ -9357,15 +9357,15 @@ export enum MeshPrimitiveType {
 // @public
 export enum MessageBoxIconType {
     // (undocumented)
-    Critical = 4,
+    Critical = 4,// Means Don't draw Symbol
     // (undocumented)
-    Information = 1,
+    Information = 1,// Lower Case i
     // (undocumented)
-    NoSymbol = 0,
+    NoSymbol = 0,// Question Mark
     // (undocumented)
-    Question = 2,
+    Question = 2,// Exclamation Point
     // (undocumented)
-    Success = 5,
+    Success = 5,// Stop Sign
     // (undocumented)
     Warning = 3
 }
@@ -9669,7 +9669,7 @@ export type ModelSubCategoryHiliteMode = "union" | "intersection";
 export enum ModifyElementSource {
     DragSelect = 3,
     Selected = 1,
-    SelectionSet = 2,
+    SelectionSet = 2,// eslint-disable-line @typescript-eslint/no-shadow
     Unknown = 0
 }
 
@@ -9752,9 +9752,9 @@ export class NoRenderApp {
 // @internal
 export enum NormalMode {
     // (undocumented)
-    Always = 1,
+    Always = 1,// Never generate normals
     // (undocumented)
-    CurvedSurfacesOnly = 2,
+    CurvedSurfacesOnly = 2,// Always generate normals
     // (undocumented)
     Never = 0
 }
@@ -10387,7 +10387,7 @@ export namespace Pixel {
         readonly viewAttachmentId?: Id64String;
     }
     export enum GeometryType {
-        Edge = 4,
+        Edge = 4,// Geometry was not selected, or type could not be determined
         Linear = 3,
         None = 1,
         Silhouette = 5,
@@ -10419,7 +10419,7 @@ export namespace Pixel {
     export type Receiver = (pixels: Buffer | undefined) => void;
     export enum Selector {
         All = 5,
-        Feature = 1,
+        Feature = 1,// eslint-disable-line @typescript-eslint/no-shadow
         GeometryAndDistance = 4,
         // (undocumented)
         None = 0
@@ -12898,7 +12898,7 @@ export enum SnapHeat {
     // (undocumented)
     InRange = 2,
     // (undocumented)
-    None = 0,
+    None = 0,// "of interest", but out of range
     // (undocumented)
     NotInRange = 1
 }
