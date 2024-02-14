@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/map-layers-formats",
-      "comment": "Fix an issue where the background map would become blank after adding a new map-layer",
+      "comment": "Fix an issue where the background map would become blank after adding a new map layer",
       "type": "none"
     }
   ],
