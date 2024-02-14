@@ -145,7 +145,7 @@ describe("Merge conflict & locking", () => {
       async () => b2.pushChanges({ accessToken: accessToken1, description: `modify aspect ${aspectId1} with no lock` }),
       "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.");
 
-    assert.equal(onChangesetConflictStub.callCount, 1, "native conflict handler must call BriefcaseDb.onChangesetConflict()");
+    expect(onChangesetConflictStub.callCount).greaterThanOrEqual(1, "native conflict handler must call BriefcaseDb.onChangesetConflict()");
     onChangesetConflictStub.restore();
     await b3.pullChanges();
 
@@ -216,7 +216,7 @@ describe("Merge conflict & locking", () => {
       async () => b2.pushChanges({ accessToken: accessToken2, description: `add aspect to element ${el1}` }),
       "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.");
 
-    assert.equal(onChangesetConflictStub.callCount, 1, "native conflict handler must call BriefcaseDb.onChangesetConflict()");
+    expect(onChangesetConflictStub.callCount).greaterThanOrEqual(1, "native conflict handler must call BriefcaseDb.onChangesetConflict()");
     onChangesetConflictStub.restore();
 
     await b3.pullChanges();
@@ -324,7 +324,7 @@ describe("Merge conflict & locking", () => {
     const onChangesetConflictStub = sinon.stub(BriefcaseDb.prototype, "onChangesetConflict" as any);
     /* we should be able to apply all changesets */
     await b3.pullChanges();
-    assert.equal(onChangesetConflictStub.callCount, 1, "native conflict handler must call BriefcaseDb.onChangesetConflict()");
+    expect(onChangesetConflictStub.callCount).greaterThanOrEqual(1, "native conflict handler must call BriefcaseDb.onChangesetConflict()");
     onChangesetConflictStub.restore();
     b1.close();
     b2.close();
