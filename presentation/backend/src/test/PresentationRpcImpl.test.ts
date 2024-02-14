@@ -695,20 +695,23 @@ describe("PresentationRpcImpl", () => {
 
       it("calls manager", async () => {
         const result = [createRandomNodePathElement(0), createRandomNodePathElement(0)];
-        const rpcOptions: PresentationRpcRequestOptions<FilterByTextHierarchyRequestOptions<never, RulesetVariableJSON>> = {
-          ...defaultRpcParams,
-          rulesetOrId: testData.rulesetOrId,
-          filterText: "filter",
-        };
         const managerOptions: WithCancelEvent<FilterByTextHierarchyRequestOptions<IModelDb>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           filterText: "filter",
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getFilteredNodePaths(managerOptions))
-          .returns(async () => result)
-          .verifiable();
+        const rpcOptions: PresentationRpcRequestOptions<FilterByTextHierarchyRequestOptions<never, RulesetVariableJSON>> = {
+          ...defaultRpcParams,
+          rulesetOrId: managerOptions.rulesetOrId,
+          filterText: managerOptions.filterText,
+        };
+        const presentationManagerDetailStub = {
+          getFilteredNodePaths: sinon.spy(async () => result),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         const actualResult = await impl.getFilteredNodePaths(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         // eslint-disable-next-line deprecation/deprecation
@@ -722,12 +725,6 @@ describe("PresentationRpcImpl", () => {
       it("calls manager", async () => {
         const result = [createRandomNodePathElement(0), createRandomNodePathElement(0)];
         const keyArray: InstanceKey[][] = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
-        const rpcOptions: PresentationRpcRequestOptions<FilterByInstancePathsHierarchyRequestOptions<never, RulesetVariableJSON>> = {
-          ...defaultRpcParams,
-          rulesetOrId: testData.rulesetOrId,
-          instancePaths: keyArray,
-          markedIndex: 1,
-        };
         const managerOptions: WithCancelEvent<FilterByInstancePathsHierarchyRequestOptions<IModelDb>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
@@ -735,9 +732,18 @@ describe("PresentationRpcImpl", () => {
           markedIndex: 1,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getNodePaths(managerOptions))
-          .returns(async () => result)
-          .verifiable();
+        const rpcOptions: PresentationRpcRequestOptions<FilterByInstancePathsHierarchyRequestOptions<never, RulesetVariableJSON>> = {
+          ...defaultRpcParams,
+          rulesetOrId: managerOptions.rulesetOrId,
+          instancePaths: managerOptions.instancePaths,
+          markedIndex: managerOptions.markedIndex,
+        };
+        const presentationManagerDetailStub = {
+          getNodePaths: sinon.spy(async () => result),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         const actualResult = await impl.getNodePaths(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         // eslint-disable-next-line deprecation/deprecation
@@ -791,6 +797,7 @@ describe("PresentationRpcImpl", () => {
             imodel: testData.imodelMock.object,
             rulesetOrId: testData.rulesetOrId,
             displayType: testData.displayType,
+            contentFlags: ContentFlags.DescriptorOnly,
             keys,
             transport: "unparsed-json",
             cancelEvent: new BeEvent<() => void>(),
@@ -819,6 +826,7 @@ describe("PresentationRpcImpl", () => {
             imodel: testData.imodelMock.object,
             rulesetOrId: testData.rulesetOrId,
             displayType: testData.displayType,
+            contentFlags: ContentFlags.DescriptorOnly,
             keys,
             transport: "unparsed-json",
             cancelEvent: new BeEvent<() => void>(),
@@ -850,6 +858,7 @@ describe("PresentationRpcImpl", () => {
             imodel: testData.imodelMock.object,
             rulesetOrId: testData.rulesetOrId,
             displayType: testData.displayType,
+            contentFlags: ContentFlags.DescriptorOnly,
             keys,
             cancelEvent: new BeEvent<() => void>(),
           };
@@ -867,12 +876,14 @@ describe("PresentationRpcImpl", () => {
             ...defaultRpcParams,
             rulesetOrId: testData.rulesetOrId,
             displayType: testData.displayType,
+            contentFlags: ContentFlags.ShowLabels,
             keys: keys.toJSON(),
           };
           const managerOptions: WithCancelEvent<ContentDescriptorRequestOptions<IModelDb, KeySet>> = {
             imodel: testData.imodelMock.object,
             rulesetOrId: testData.rulesetOrId,
             displayType: testData.displayType,
+            contentFlags: ContentFlags.ShowLabels | ContentFlags.DescriptorOnly,
             keys,
             cancelEvent: new BeEvent<() => void>(),
           };
@@ -1367,9 +1378,12 @@ describe("PresentationRpcImpl", () => {
           fieldDescriptor: managerOptions.fieldDescriptor,
           paging: testData.pageOptions,
         };
-        presentationManagerMock.setup(async (x) => x.getPagedDistinctValues(managerOptions))
-          .returns(async () => distinctValues)
-          .verifiable();
+        const presentationManagerDetailStub = {
+          getPagedDistinctValues: sinon.spy(async () => distinctValues),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         const actualResult = await impl.getPagedDistinctValues(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(distinctValues);
@@ -1406,9 +1420,12 @@ describe("PresentationRpcImpl", () => {
           fieldDescriptor: managerOptions.fieldDescriptor,
           paging: { start: 0, size: MAX_ALLOWED_PAGE_SIZE + 1 },
         };
-        presentationManagerMock.setup(async (x) => x.getPagedDistinctValues(managerOptions))
-          .returns(async () => distinctValues)
-          .verifiable();
+        const presentationManagerDetailStub = {
+          getPagedDistinctValues: sinon.spy(async () => distinctValues),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         const actualResult = await impl.getPagedDistinctValues(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(distinctValues);
@@ -1446,9 +1463,12 @@ describe("PresentationRpcImpl", () => {
           paging: { start: 5 },
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getPagedDistinctValues(managerOptions))
-          .returns(async () => distinctValues)
-          .verifiable();
+        const presentationManagerDetailStub = {
+          getPagedDistinctValues: sinon.spy(async () => distinctValues),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         const actualResult = await impl.getPagedDistinctValues(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(distinctValues);
@@ -1485,9 +1505,12 @@ describe("PresentationRpcImpl", () => {
           fieldDescriptor: managerOptions.fieldDescriptor,
           paging: undefined,
         };
-        presentationManagerMock.setup(async (x) => x.getPagedDistinctValues(managerOptions))
-          .returns(async () => distinctValues)
-          .verifiable();
+        const presentationManagerDetailStub = {
+          getPagedDistinctValues: sinon.spy(async () => distinctValues),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         const actualResult = await impl.getPagedDistinctValues(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(distinctValues);

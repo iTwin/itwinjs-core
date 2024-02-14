@@ -680,9 +680,15 @@ describe("PresentationManager", () => {
     });
 
     const setup = (addonResponse: any) => {
+      if (addonResponse === undefined) {
+        nativePlatformMock
+          .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined))
+          .returns(async () => ({ result: "null" }));
+        return undefined;
+      }
       const serialized = JSON.stringify(addonResponse);
       nativePlatformMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined))
-        .returns(async () => ({ result: JSON.stringify(addonResponse) }));
+        .returns(async () => ({ result: serialized }));
       return JSON.parse(serialized);
     };
     const verifyMockRequest = (expectedParams: any) => {
@@ -960,6 +966,30 @@ describe("PresentationManager", () => {
         };
         const result = await manager.getNodesDescriptor(options);
         verifyWithSnapshot(result, expectedParams);
+      });
+
+      it("handles undefined descriptor", async () => {
+        // what the addon receives
+        const parentNodeKey = createRandomECInstancesNodeKey();
+        const expectedParams = {
+          requestId: NativePlatformRequestTypes.GetNodesDescriptor,
+          params: {
+            nodeKey: parentNodeKey,
+            rulesetId: manager.getRulesetId(testData.rulesetOrId),
+          },
+        };
+
+        // what the addon returns
+        setup(undefined);
+
+        // test
+        const options: HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey> = {
+          imodel: imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          parentKey: parentNodeKey,
+        };
+        const result = await manager.getNodesDescriptor(options);
+        verifyWithExpectedResult(result, undefined, expectedParams);
       });
 
     });

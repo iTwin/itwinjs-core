@@ -216,6 +216,13 @@ export interface MultiElementPropertiesRequestOptions<TIModel, TParsedContent = 
    * @beta
    */
   contentParser?: (descriptor: Descriptor, item: Item) => TParsedContent;
+
+  /**
+   * The properties of multiple elements are going to be retrieved and returned in batches. Depending on the batch
+   * size load on CPU vs MEMORY load may vary, so changing this attribute allows to fine tune the performance.
+   * Defaults to `1000`.
+   */
+  batchSize?: number;
 }
 
 /**

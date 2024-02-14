@@ -5,7 +5,7 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import {
-  ECClassModifier, ECObjectsError, ECVersion, EntityClass, EntityClassProps, Schema, SchemaContext, SchemaItemKey, SchemaItemType, SchemaKey,
+  ECClassModifier, ECVersion, EntityClass, EntityClassProps, Schema, SchemaContext, SchemaItemKey, SchemaItemType, SchemaKey,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
@@ -93,7 +93,10 @@ describe("Entities tests", () => {
   it("try creating a new entity class with base class from unknown schema, returns error", async () => {
     const badSchemaKey = new SchemaKey("badSchema", new ECVersion(1,0,0));
     const baseClassKey = new SchemaItemKey("testBaseClass", badSchemaKey);
-    await expect(testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", baseClassKey)).to.be.rejectedWith(ECObjectsError, `Schema Key ${badSchemaKey.toString(true)} not found in context`);
+    const result = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", baseClassKey);
+    expect(result).to.not.be.undefined;
+    expect(result.errorMessage).to.not.be.undefined;
+    expect(result.errorMessage).to.equal(`Schema Key ${badSchemaKey.toString(true)} not found in context`);
   });
 
   it("try creating a new entity class with a base class that cannot be located, returns error", async () => {
@@ -204,8 +207,11 @@ describe("Entities tests", () => {
   it("try adding base class with unknown schema to existing entity class, returns error", async () => {
     const badSchemaKey = new SchemaKey("badSchema", new ECVersion(1,0,0));
     const baseClassKey = new SchemaItemKey("testBaseClass", badSchemaKey);
-    const result = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
-    await expect(testEditor.entities.setBaseClass(result.itemKey!, baseClassKey)).to.be.rejectedWith(ECObjectsError, `Schema Key ${badSchemaKey.toString(true)} not found in context`);
+    const entityResult = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
+    const result = await testEditor.entities.setBaseClass(entityResult.itemKey!, baseClassKey);
+    expect(result).to.not.be.undefined;
+    expect(result.errorMessage).to.not.be.undefined;
+    expect(result.errorMessage).to.equal(`Schema Key ${badSchemaKey.toString(true)} not found in context`);
   });
 
   it("try adding base class to an existing entity class where the base class cannot be located, returns error", async () => {

@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { ByteStream, Id64String } from "@itwin/core-bentley";
+import { ByteStream, Id64Set, Id64String } from "@itwin/core-bentley";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, decodeTileContentDescription, TileReadError, TileReadStatus,
@@ -67,6 +67,7 @@ export interface ImdlReaderCreateArgs {
   containsTransformNodes?: boolean; // default false
   /** Supplied if the graphics in the tile are to be split up based on the nodes in the timeline. */
   timeline?: ImdlTimeline;
+  modelGroups?: Id64Set[];
 }
 
 /** @internal */
@@ -97,6 +98,7 @@ export async function readImdlContent(args: ImdlReaderCreateArgs & { parseDocume
     maxVertexTableSize: IModelApp.renderSystem.maxTextureSize,
     omitEdges: false === args.loadEdges,
     createUntransformedRootNode: args.containsTransformNodes,
+    modelGroups: args.modelGroups,
   };
 
   const document = args.parseDocument ? (await args.parseDocument(parseOpts)) : parseImdlDocument({ ...parseOpts, timeline: args.timeline });

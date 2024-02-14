@@ -6,23 +6,38 @@ import { compareStrings, SortedArray } from "@itwin/core-bentley";
 
 // cspell:ignore vsps nvsp
 
+/* eslint-disable @typescript-eslint/naming-convention */
+
+export interface NamedVSPSProps {
+  _name: string;
+  _viewStatePropsString: string;
+  _selectedElements?: string;
+  _overrideElements?: string;
+  _displayTransforms?: string;
+}
+
+/* eslint-enable @typescript-eslint/naming-convention */
+
 export class NamedViewStatePropsString {
   private _name: string;
   private _viewStatePropsString: string;
-  private _selectedElements?: string;
-  private _overrideElements?: string;
+  private _selectedElements: string | undefined;
+  private _overrideElements: string | undefined;
+  private _displayTransforms: string | undefined;
 
-  public constructor(name: string, viewState: string, selectedElements?: string, overrideElements?: string) {
-    this._name = name;
-    this._viewStatePropsString = viewState;
-    this._selectedElements = selectedElements;
-    this._overrideElements = overrideElements;
+  public constructor(props: NamedVSPSProps) {
+    this._name = props._name;
+    this._viewStatePropsString = props._viewStatePropsString;
+    this._selectedElements = props._selectedElements;
+    this._overrideElements = props._overrideElements;
+    this._displayTransforms = props._displayTransforms;
   }
 
   public get name(): string { return this._name; }
   public get viewStatePropsString(): string { return this._viewStatePropsString; }
   public get selectedElements(): string | undefined { return this._selectedElements; }
   public get overrideElements(): string | undefined { return this._overrideElements; }
+  public get displayTransforms(): string | undefined { return this._displayTransforms; }
 }
 
 export class NamedVSPSList extends SortedArray<NamedViewStatePropsString> {
@@ -82,10 +97,9 @@ export class NamedVSPSList extends SortedArray<NamedViewStatePropsString> {
   public loadFromString(esvString: string): void {
     this.clear();
     if (undefined !== esvString && "" !== esvString) {
-      const namedVSPs = JSON.parse(esvString) as any[];
+      const namedVSPs = JSON.parse(esvString) as NamedVSPSProps[];
       for (const obj of namedVSPs) {
-        const esvProps: NamedViewStatePropsString = new NamedViewStatePropsString(obj._name, obj._viewStatePropsString, obj._selectedElements, obj._overrideElements);
-        this.insert(esvProps);
+        this.insert(new NamedViewStatePropsString(obj));
       }
     }
   }

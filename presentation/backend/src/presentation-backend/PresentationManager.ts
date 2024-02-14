@@ -475,8 +475,8 @@ export class PresentationManager {
    */
   public async getNodesDescriptor(requestOptions: WithCancelEvent<Prioritized<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined> {
     const response = await this._detail.getNodesDescriptor(requestOptions);
-    const reviver = (key: string, value: any) => key === "" ? Descriptor.fromJSON(value) : value;
-    return JSON.parse(response, reviver);
+    const descriptor = Descriptor.fromJSON(JSON.parse(response));
+    return descriptor ? this._localizationHelper.getLocalizedContentDescriptor(descriptor) : undefined;
   }
 
   /**
@@ -485,7 +485,8 @@ export class PresentationManager {
    * @public
    */
   public async getNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]> {
-    return this._detail.getNodePaths(requestOptions);
+    const result = await this._detail.getNodePaths(requestOptions);
+    return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
 
   /**
@@ -494,7 +495,8 @@ export class PresentationManager {
    * @public
    */
   public async getFilteredNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]> {
-    return this._detail.getFilteredNodePaths(requestOptions);
+    const result = await this._detail.getFilteredNodePaths(requestOptions);
+    return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
 
   /**
@@ -512,8 +514,7 @@ export class PresentationManager {
    */
   public async getContentDescriptor(requestOptions: WithCancelEvent<Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined> {
     const response = await this._detail.getContentDescriptor(requestOptions);
-    const reviver = (key: string, value: any) => key === "" ? Descriptor.fromJSON(value) : value;
-    const descriptor = JSON.parse(response, reviver);
+    const descriptor = Descriptor.fromJSON(JSON.parse(response));
     return descriptor ? this._localizationHelper.getLocalizedContentDescriptor(descriptor) : undefined;
   }
 
@@ -579,7 +580,12 @@ export class PresentationManager {
    * @public
    */
   public async getPagedDistinctValues(requestOptions: WithCancelEvent<Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>> {
-    return this._detail.getPagedDistinctValues(requestOptions);
+    const result = await this._detail.getPagedDistinctValues(requestOptions);
+    return {
+      ...result,
+      // eslint-disable-next-line deprecation/deprecation
+      items: result.items.map((g) => this._localizationHelper.getLocalizedDisplayValueGroup(g)),
+    };
   }
 
   /**
@@ -611,7 +617,7 @@ export class PresentationManager {
     requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute,
   ): Promise<MultiElementPropertiesResponse<TParsedContent>> {
     type TParser = Required<MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>["contentParser"];
-    const { elementClasses, contentParser, ...contentOptions } = requestOptions;
+    const { elementClasses, contentParser, batchSize, ...contentOptions } = requestOptions;
     const parser: TParser = contentParser ?? buildElementProperties as TParser;
     const workerThreadsCount = (this._props.workerThreadsCount ?? 2);
 
@@ -672,7 +678,7 @@ export class PresentationManager {
             classFullName: of(classFullName),
             ruleset: of(ruleset),
             descriptor: from(getContentDescriptor(ruleset)),
-            batches: from(getBatchedClassElementIds(requestOptions.imodel, classFullName, 1000)),
+            batches: from(getBatchedClassElementIds(requestOptions.imodel, classFullName, batchSize ?? /* istanbul ignore next */ 1000)),
           }).pipe(
             // split incoming stream into individual batch requests
             mergeMap(({ descriptor, batches }) => from(batches.map((batch) => ({ classFullName, descriptor, batch })))),

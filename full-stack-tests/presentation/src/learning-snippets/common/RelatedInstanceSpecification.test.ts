@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { IModel } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { KeySet, Ruleset, StandardNodeTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
@@ -26,7 +27,7 @@ describe("Learning Snippets", () => {
 
   describe("RelatedInstanceSpecification", () => {
 
-    it("using in instance filter", async () => {
+    it("using in instance filter with relationship path", async () => {
       // __PUBLISH_EXTRACT_START__ Presentation.RelatedInstanceSpecification.UsingInInstanceFilter.Ruleset
       // This ruleset defines a specification that returns content for `bis.ViewDefinition` instances. In addition,
       // there's a related instance specification, that describes a path to a related display style, and an
@@ -68,6 +69,49 @@ describe("Learning Snippets", () => {
       content!.contentSet.forEach((record) => {
         expect(record.displayValues[field.name]).to.contain("View");
       });
+    });
+
+    it("using in instance filter with target instance ids", async () => {
+      // __PUBLISH_EXTRACT_START__ Presentation.RelatedInstanceSpecification.UsingInInstanceFilterWithTargetInstances.Ruleset
+      // This ruleset defines a specification that returns content for `bis.ViewDefinition` instances. In addition,
+      // there's a related instance specification for the root Subject, and an instance filter that filters using its property.
+      const ruleset: Ruleset = {
+        id: "example",
+        rules: [
+          {
+            ruleType: "Content",
+            specifications: [
+              {
+                specType: "ContentInstancesOfSpecificClasses",
+                classes: { schemaName: "BisCore", classNames: ["ViewDefinition"], arePolymorphic: true },
+                relatedInstances: [
+                  {
+                    targetInstances: {
+                      class: { schemaName: "BisCore", className: "Subject" },
+                      instanceIds: [IModel.rootSubjectId],
+                    },
+                    alias: "root_subject",
+                    isRequired: true,
+                  },
+                ],
+                instanceFilter: `root_subject.Description = this.Description`,
+              },
+            ],
+          },
+        ],
+      };
+      // __PUBLISH_EXTRACT_END__
+      printRuleset(ruleset);
+
+      // Ensure that 4 `bis.ViewDefinition` instances are selected.
+      const content = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        keys: new KeySet(),
+        descriptor: {},
+      });
+
+      expect(content!.contentSet.length).to.eq(4);
     });
 
     it("using for customization", async () => {

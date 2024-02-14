@@ -19,6 +19,9 @@ export class Formats {
   public constructor(protected _schemaEditor: SchemaContextEditor) { }
   public async create(schemaKey: SchemaKey, name: string, formatType: FormatType, displayLabel?: string, units?: SchemaItemKey[]): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
+    if (schema === undefined)
+      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+
     const newFormat = (await schema.createFormat(name)) as MutableFormat;
     if (newFormat === undefined) {
       return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };

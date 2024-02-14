@@ -113,12 +113,14 @@ beta;RpcInterfaceStatus
 public;shallowClone
 public;SortedArray
 public;SpanKind
+deprecated;SpanKind
 alpha;class StatusCategory
 alpha;StatusCategoryHandler = (error: BentleyError) => StatusCategory | undefined
 internal;StatusCodeWithMessage
 public;StopWatch
 alpha;class SuccessCategory 
 public;Tracing
+deprecated;Tracing
 public;TransientIdSequence
 public;TupleKeyedMap
 public;TypedArrayBuilder

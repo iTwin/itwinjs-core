@@ -1,94 +1,94 @@
 # ECSql Syntax & Features
 
 1. Operators
-    1. [Bitwise operator](#bitwise-operator)
-    1. [Arithmetic operator](#arithmetic-operator)
-    1. [String operator](#string-operator)
-    1. [Boolean operator](#boolean-operator)
+   1. [Bitwise operator](#bitwise-operator)
+   1. [Arithmetic operator](#arithmetic-operator)
+   1. [String operator](#string-operator)
+   1. [Boolean operator](#boolean-operator)
 1. Built-in functions
-    1. [Scalar SQLite built-in functions](#scalar-sqlite-built-in-functions)
-    1. [ECSQL Built-In functions](#ecsql-built-in-functions)
+   1. [Scalar SQLite built-in functions](#scalar-sqlite-built-in-functions)
+   1. [ECSQL Built-In functions](#ecsql-built-in-functions)
 1. [JSON1 virtual classes](#json1-virtual-classes)
-    1. [json_tree()](#json_tree)
-    1. [json_each()](#json_each)
+   1. [json_tree()](#json_tree)
+   1. [json_each()](#json_each)
 1. [Polymorphic vs non-polymorphic query](#polymorphic-vs-non-polymorphic-query)
 1. [ECSQLOPTIONS or OPTIONS clause](#ecsqloptions-or-options-clause)
 1. [Window functions](#window-functions)
 1. [DATE, TIME & TIMESTAMP Literals](#date-time--timestamp-literals)
 1. [NULL, NUMBER, STRING & BOOLEAN Literals](#null-number-string--boolean-literals)
 1. [CASE-WHEN-THEN-ELSE](#case-when-then-else)
-1. [IIF (*condition-expr*, *true-expr*, *false-expr*)](#iif-condition-expr-true-expr-false-expr)
+1. [IIF (_condition-expr_, _true-expr_, _false-expr_)](#iif-condition-expr-true-expr-false-expr)
 1. [LIKE operator](#like-operator)
 1. [CAST operator](#cast-operator)
 1. [LIMIT clause](#limit-clause)
 1. [GROUP BY clause](#group-by-clause)
-1. [CTE (*Common table expression*)](#common-table-expression)
+1. [CTE (_Common table expression_)](#common-table-expression)
 1. [Type filter](#type-filter)
 1. [ORDER BY clause](#order-by-clause)
 1. [ECSQL Parameters](#ecsql-parameters)
 1. [Compound SELECT](#compound-select)
 1. JOINs
-    1. [JOIN USING](#join-using)
-    1. [INNER JOIN](#inner-join)
-    1. [OUTER JOIN](#outer-join)
+   1. [JOIN USING](#join-using)
+   1. [INNER JOIN](#inner-join)
+   1. [OUTER JOIN](#outer-join)
 1. [Instance query](#instance-query)
 1. [Pragmas](#pragmas)
-    1. [help](#pragma-help)
-    1. [ecdb_ver](#pragma-ecdb_ver)
-    1. [experimental_features_enabled](#pragma-experimental_features_enabled)
-    1. [integrity_check](#pragma-integrity_check-experimental)
+   1. [help](#pragma-help)
+   1. [ecdb_ver](#pragma-ecdb_ver)
+   1. [experimental_features_enabled](#pragma-experimental_features_enabled)
+   1. [integrity_check](#pragma-integrity_check-experimental)
 1. [ECSQL Keywords](#ecsql-keywords)
 1. [Escaping keywords](#escaping-keywords)
 
 ## Bitwise operator
 
-| Operator | Description         | Example                                          |
-|----------|---------------------|--------------------------------------------------|
-| `&`      | Bitwise AND         | `(4&2 )`  *output `0`*                           |
-| `~`      | Bitwise NOT urinary | `( ~1 )`   *output `-2` or `0xfffffffffffffffe`* |
-| `\|`     | Bitwise OR          | `(3\|4 )` *output `7`*                           |
-| `<<`     | Bitwise shift left  | `(1<<2)` *output `4`*                            |
-| `>>`     | Bitwise shift right | `(4>>1)` *output `2`*                            |
+| Operator | Description         | Example                                        |
+| -------- | ------------------- | ---------------------------------------------- |
+| `&`      | Bitwise AND         | `(4&2 )` _output `0`_                          |
+| `~`      | Bitwise NOT urinary | `( ~1 )` _output `-2` or `0xfffffffffffffffe`_ |
+| `\|`     | Bitwise OR          | `(3\|4 )` _output `7`_                         |
+| `<<`     | Bitwise shift left  | `(1<<2)` _output `4`_                          |
+| `>>`     | Bitwise shift right | `(4>>1)` _output `2`_                          |
 
 ## Arithmetic operator
 
 | Operator | Description | Example                |
-|----------|-------------|------------------------|
-| `+`      | Add         | `(1 + 1)` *output `2`* |
-| `-`      | Subtract    | `(2 - 1)` *output `1`* |
-| `*`      | Multiply    | `(2 * 2)` *output `4`* |
-| `/`      | Divide      | `(4 / 2)` *output `2`* |
-| `%`      | Modulo      | `(4 % 2)` *output `0`* |
+| -------- | ----------- | ---------------------- |
+| `+`      | Add         | `(1 + 1)` _output `2`_ |
+| `-`      | Subtract    | `(2 - 1)` _output `1`_ |
+| `*`      | Multiply    | `(2 * 2)` _output `4`_ |
+| `/`      | Divide      | `(4 / 2)` _output `2`_ |
+| `%`      | Modulo      | `(4 % 2)` _output `0`_ |
 
 ## String operator
 
-| Operator | Description | Example                |
-|----------|-------------|------------------------|
-| `\|\|`   | Concatenate | `'Hello'\|\| ',' \|\| 'World'` *output `Hello,World`* |
+| Operator | Description | Example                                               |
+| -------- | ----------- | ----------------------------------------------------- |
+| `\|\|`   | Concatenate | `'Hello'\|\| ',' \|\| 'World'` _output `Hello,World`_ |
 
 ## Boolean operator
 
 | Operator | Description         | Example                         |
-|----------|---------------------|---------------------------------|
-| `=`      | Equal               | `(1 = 3)` *output `FALSE`*      |
-| `>`      | Greater than        | `(1 > 3)` *output `FALSE`*      |
-| `<`      | Less than           | `(1 < 3)` *output `TRUE`*       |
-| `>=`     | Greater or equal to | `(3 >= 3)` *output `TRUE`*      |
-| `<=`     | Less or equal to    | `(3 <= 5)` *output `TRUE`*      |
-| `<>`     | Not equal           | `(1 <> 3)` *output `TRUE`*      |
-| `!=`     | Not equal           | `(1 != 3)` *output `TRUE`*      |
-| `OR`     | OR op               | `(1=2 OR 1=1)` *output `TRUE`*  |
-| `AND`    | AND op              | `(1=1 AND 1=1)` *output `TRUE`* |
-| `NOT`    | NOT unary op        | `NOT (1=1)` *output `FALSE`*    |
+| -------- | ------------------- | ------------------------------- |
+| `=`      | Equal               | `(1 = 3)` _output `FALSE`_      |
+| `>`      | Greater than        | `(1 > 3)` _output `FALSE`_      |
+| `<`      | Less than           | `(1 < 3)` _output `TRUE`_       |
+| `>=`     | Greater or equal to | `(3 >= 3)` _output `TRUE`_      |
+| `<=`     | Less or equal to    | `(3 <= 5)` _output `TRUE`_      |
+| `<>`     | Not equal           | `(1 <> 3)` _output `TRUE`_      |
+| `!=`     | Not equal           | `(1 != 3)` _output `TRUE`_      |
+| `OR`     | OR op               | `(1=2 OR 1=1)` _output `TRUE`_  |
+| `AND`    | AND op              | `(1=1 AND 1=1)` _output `TRUE`_ |
+| `NOT`    | NOT unary op        | `NOT (1=1)` _output `FALSE`_    |
 
 ## Scalar SQLite built-in functions
 
 Following is list of built-in scalar functions
 
 | Function             | Description                                                                                                                                                                                                                                        |
-|----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `abs(X)`             | The `abs(X)` function returns the absolute value of the numeric argument `X`. [Read more.](https://www.sqlite.org/lang_corefunc.html#abs)                                                                                                          |
-| `char(X1,X2,...,XN)` | The `char(X1,X2,...,XN)` function returns a string composed of characters having the unicode code point values of integers `X1` through `XN`, respectively.[Read more.](https://www.sqlite.org/lang_corefunc.html#char)                                                                                                                                                                                       |
+| `char(X1,X2,...,XN)` | The `char(X1,X2,...,XN)` function returns a string composed of characters having the unicode code point values of integers `X1` through `XN`, respectively.[Read more.](https://www.sqlite.org/lang_corefunc.html#char)                            |
 | `coalesce(X,Y,...)`  | The `coalesce()` function returns a copy of its first non-NULL argument, or `NULL` if all arguments are `NULL`. [Read more.](https://www.sqlite.org/lang_corefunc.html#coalesce)                                                                   |
 | `format(FORMAT,...)` | The `format(FORMAT,...)` SQL function works like the `sqlite3_mprintf()`. [Read more.](https://www.sqlite.org/lang_corefunc.html#format)                                                                                                           |
 | `glob(X,Y)`          | The `glob(X,Y)` use glob syntax. [Read more.](https://www.sqlite.org/lang_corefunc.html#glob)                                                                                                                                                      |
@@ -98,25 +98,25 @@ Following is list of built-in scalar functions
 | `length(X)`          | Return length of a value according to its type. [Read more.](https://www.sqlite.org/lang_corefunc.html#length)                                                                                                                                     |
 | `like(X,Y[,Z])`      | The `like()` function is used to implement the `Y LIKE X [ESCAPE Z]` expression. [Read more.](https://www.sqlite.org/lang_corefunc.html#like)                                                                                                      |
 | `lower(X)`           | The `lower(X)` function returns a copy of string `X` with all ASCII characters converted to lower case. [Read more.](https://www.sqlite.org/lang_corefunc.html#lower)                                                                              |
-| `ltrim(X,Y[,Z])`     | The `ltrim(X,Y)` function returns a string formed by removing any and all characters that appear in `Y` from the left side of `X`. [Read more.](https://www.sqlite.org/lang_corefunc.html#ltrim)                                                                                                                                                                                      |
-| `max(X,Y,...)`       | The multi-argument `max()` function returns the argument with the maximum value, or return `NULL` if any argument is `NULL`. [Read more.](https://www.sqlite.org/lang_corefunc.html#max)                                                                                                                                                                                        |
-| `min(X,Y,...)`       | The multi-argument `min()` function returns the argument with the minimum value.[Read more.](https://www.sqlite.org/lang_corefunc.html#min)                                                                                                                                                                                        |
-| `nullif(X,Y)`        | The `nullif(X,Y)` function returns its first argument if the arguments are different and `NULL` if the arguments are the same. [Read more.](https://www.sqlite.org/lang_corefunc.html#nullif)                                                                                                                                                                                     |
-| `octet_length(X)`    | The `octet_length(X)` function returns the number of bytes in the encoding of text string `X`.[Read more.](https://www.sqlite.org/lang_corefunc.html#octet_length)                                                                                                                                                                               |
-| `printf(FORMAT,...)` | The `printf()` SQL function is an alias for the `format()` SQL function. [Read more.](https://www.sqlite.org/lang_corefunc.html#printf)                                                                                                                                                                                     |
-| `quote(X)`           | The `quote(X)` function returns the text of an SQL literal which is the value of its argument suitable for inclusion into an SQL statement. [Read more.](https://www.sqlite.org/lang_corefunc.html#quote)                                                                                                                                                                                      |
-| `random()`           | The `random()` function returns a pseudo-random integer between `-9223372036854775808` and `+9223372036854775807`. [Read more.](https://www.sqlite.org/lang_corefunc.html#random)                                                                                                                                                                                     |
-| `randomblob(N)`      | The `randomblob(N)` function return an N-byte blob containing pseudo-random bytes. [Read more.](https://www.sqlite.org/lang_corefunc.html#randomblob)                                                                                                                                                                                 |
-| `replace(X,Y,Z)`     | The `replace(X,Y,Z)` function returns a string formed by substituting string `Z` for every occurrence of string `Y` in string `X`.[Read more.](https://www.sqlite.org/lang_corefunc.html#replace)                                                                                                                                                                                    |
-| `round(X[,Y])`       | The `round(X,Y)` function returns a floating-point value `X` rounded to `Y` digits to the right of the decimal point. [Read more.](https://www.sqlite.org/lang_corefunc.html#round)                                                                                                                                                                                      |
-| `rtrim(X[,Y])`       | The `rtrim(X,Y)` function returns a string formed by removing any and all characters that appear in `Y` from the right side of `X`.[Read more.](https://www.sqlite.org/lang_corefunc.html#rtrim)                                                                                                                                                                                      |
-| `sign(X)`            | The `sign(X)` function returns `-1`, `0`, or `+1` if the argument `X` is a numeric value that is negative, zero, or positive, respectively. [Read more.](https://www.sqlite.org/lang_corefunc.html#sign)                                                                                                                                                                                       |
-| `soundex(X)`         | The `soundex(X)` function returns a string that is the soundex encoding of the string `X`. [Read more.](https://www.sqlite.org/lang_corefunc.html#soundex)                                                                                                                                                                                    |
-| `substr(X,Y[,Z])`    | The `substr(X,Y,Z)` function returns a substring of input string `X` that begins with the `Y-th` character and which is `Z` characters long. [Read more.](https://www.sqlite.org/lang_corefunc.html#substr)                                                                                                                                                                                     |
-| `trim(X[,Y])`        | The `trim(X,Y)` function returns a string formed by removing any and all characters that appear in `Y` from both ends of `X`. [Read more.](https://www.sqlite.org/lang_corefunc.html#trim)                                                                                                                                                                                       |
-| `typeof(X)`          | The `typeof(X)` function returns a string that indicates the datatype of the expression `X`: "null", "integer", "real", "text", or "blob". [Read more.](https://www.sqlite.org/lang_corefunc.html#typeof)                                                                                                                                                                                     |
-| `unhex(X[,Y])`       | The `unhex(X,Y)` function returns a `BLOB` value which is the decoding of the hexadecimal string `X`. [Read more.](https://www.sqlite.org/lang_corefunc.html#unhex)                                                                                                                                                                                      |
-| `upper(X)`           | The `upper(X)` function returns a copy of input string `X` in which all lower-case ASCII characters are converted to their upper-case equivalent. [Read more.](https://www.sqlite.org/lang_corefunc.html#upper)                                                                                                                                                                                      |
+| `ltrim(X,Y[,Z])`     | The `ltrim(X,Y)` function returns a string formed by removing any and all characters that appear in `Y` from the left side of `X`. [Read more.](https://www.sqlite.org/lang_corefunc.html#ltrim)                                                   |
+| `max(X,Y,...)`       | The multi-argument `max()` function returns the argument with the maximum value, or return `NULL` if any argument is `NULL`. [Read more.](https://www.sqlite.org/lang_corefunc.html#max)                                                           |
+| `min(X,Y,...)`       | The multi-argument `min()` function returns the argument with the minimum value.[Read more.](https://www.sqlite.org/lang_corefunc.html#min)                                                                                                        |
+| `nullif(X,Y)`        | The `nullif(X,Y)` function returns its first argument if the arguments are different and `NULL` if the arguments are the same. [Read more.](https://www.sqlite.org/lang_corefunc.html#nullif)                                                      |
+| `octet_length(X)`    | The `octet_length(X)` function returns the number of bytes in the encoding of text string `X`.[Read more.](https://www.sqlite.org/lang_corefunc.html#octet_length)                                                                                 |
+| `printf(FORMAT,...)` | The `printf()` SQL function is an alias for the `format()` SQL function. [Read more.](https://www.sqlite.org/lang_corefunc.html#printf)                                                                                                            |
+| `quote(X)`           | The `quote(X)` function returns the text of an SQL literal which is the value of its argument suitable for inclusion into an SQL statement. [Read more.](https://www.sqlite.org/lang_corefunc.html#quote)                                          |
+| `random()`           | The `random()` function returns a pseudo-random integer between `-9223372036854775808` and `+9223372036854775807`. [Read more.](https://www.sqlite.org/lang_corefunc.html#random)                                                                  |
+| `randomblob(N)`      | The `randomblob(N)` function return an N-byte blob containing pseudo-random bytes. [Read more.](https://www.sqlite.org/lang_corefunc.html#randomblob)                                                                                              |
+| `replace(X,Y,Z)`     | The `replace(X,Y,Z)` function returns a string formed by substituting string `Z` for every occurrence of string `Y` in string `X`.[Read more.](https://www.sqlite.org/lang_corefunc.html#replace)                                                  |
+| `round(X[,Y])`       | The `round(X,Y)` function returns a floating-point value `X` rounded to `Y` digits to the right of the decimal point. [Read more.](https://www.sqlite.org/lang_corefunc.html#round)                                                                |
+| `rtrim(X[,Y])`       | The `rtrim(X,Y)` function returns a string formed by removing any and all characters that appear in `Y` from the right side of `X`.[Read more.](https://www.sqlite.org/lang_corefunc.html#rtrim)                                                   |
+| `sign(X)`            | The `sign(X)` function returns `-1`, `0`, or `+1` if the argument `X` is a numeric value that is negative, zero, or positive, respectively. [Read more.](https://www.sqlite.org/lang_corefunc.html#sign)                                           |
+| `soundex(X)`         | The `soundex(X)` function returns a string that is the soundex encoding of the string `X`. [Read more.](https://www.sqlite.org/lang_corefunc.html#soundex)                                                                                         |
+| `substr(X,Y[,Z])`    | The `substr(X,Y,Z)` function returns a substring of input string `X` that begins with the `Y-th` character and which is `Z` characters long. [Read more.](https://www.sqlite.org/lang_corefunc.html#substr)                                        |
+| `trim(X[,Y])`        | The `trim(X,Y)` function returns a string formed by removing any and all characters that appear in `Y` from both ends of `X`. [Read more.](https://www.sqlite.org/lang_corefunc.html#trim)                                                         |
+| `typeof(X)`          | The `typeof(X)` function returns a string that indicates the datatype of the expression `X`: "null", "integer", "real", "text", or "blob". [Read more.](https://www.sqlite.org/lang_corefunc.html#typeof)                                          |
+| `unhex(X[,Y])`       | The `unhex(X,Y)` function returns a `BLOB` value which is the decoding of the hexadecimal string `X`. [Read more.](https://www.sqlite.org/lang_corefunc.html#unhex)                                                                                |
+| `upper(X)`           | The `upper(X)` function returns a copy of input string `X` in which all lower-case ASCII characters are converted to their upper-case equivalent. [Read more.](https://www.sqlite.org/lang_corefunc.html#upper)                                    |
 
 ## ECSQL Built-In functions
 
@@ -131,17 +131,17 @@ ECSQL allows use of these built-in functions:
 1. `strToGuid()` - covert string guid to binary guid.
 1. `guidToStr()` - covert binary guid to string guid.
 
-## ec_classname( *ecclassId* [, *format-string* | *format-id*] )
+## ec_classname( _ecclassId_ [, *format-string* | *format-id*] )
 
 For the specified ecClassId, returns the class name as a string formatted according to the specified format-string
 
 ### Parameters
 
 `ecclassId`: An integer which could be a constant, column or a parameter.
-`format-string | format-id`:  Optional format specifier and could be one of the following values. `NULL` is also valid value -- this is the same as not specifying the second parameter at all
+`format-string | format-id`: Optional format specifier and could be one of the following values. `NULL` is also valid value -- this is the same as not specifying the second parameter at all
 
 | format-id | format-string | output                    |
-|-----------|---------------|---------------------------|
+| --------- | ------------- | ------------------------- |
 | 0         | `s:c`         | BisCore:Element (default) |
 | 1         | `a:c`         | bis:Element               |
 | 2         | `s`           | BisCore                   |
@@ -175,11 +175,11 @@ SELECT * FROM [BisCore].[Element] WHERE ec_classname([ECClassId], 3) = 'bis'
 SELECT * FROM [BisCore].[Element] WHERE ec_classname([ECClassId], 'c') = 'PUMP'
 ```
 
-## ec_classId('*schema-name-or-alias* : | . *classname*' )
+## ec_classId('_schema-name-or-alias_ : | . _classname_' )
 
 For the specified (qualified) class name, returns the `ECCassId`.
 
-Note that this function can also take in two arguments - in the following form where *schema-name-or-alias* and *classname* can be specified separately.
+Note that this function can also take in two arguments - in the following form where _schema-name-or-alias_ and _classname_ can be specified separately.
 `ec_classid[ '<schema-name-or-alias>',  '<classname>')`
 
 ## Parameters
@@ -211,7 +211,7 @@ SELECT * FROM [BisCore].[Element] WHERE [ECClassId] IN (ec_classid('OpenPlant', 
 
 ```
 
-### REGEXP ( *regex*, *value* )
+### REGEXP ( _regex_, _value_ )
 
 Regex uses [google/re2](https://github.com/google/re2/wiki/Syntax) engine.
 
@@ -232,7 +232,7 @@ Terrain Spot Elevation
 Terrain Void
 ```
 
-### REGEXP_EXTRACT ( *value*, *regex* [, *rewrite*] )
+### REGEXP_EXTRACT ( _value_, _regex_ [, *rewrite*] )
 
 Regex uses [google/re2](https://github.com/google/re2/wiki/Syntax) engine.
 This function can be used to extract or rewrite the output. Parameter `rewrite` is made of group reference where `\0` refer to text captured by whole regex specified. `\1`, `\2` `...` refer to regex capture group in that order.
@@ -258,7 +258,7 @@ Spot,Terrain
 Void,Terrain
 ```
 
-### StrToGuid( *guid-string* )
+### StrToGuid( _guid-string_ )
 
 When `GUID` is stored a binary, it need to be converted for comparison purpose.
 
@@ -266,7 +266,7 @@ When `GUID` is stored a binary, it need to be converted for comparison purpose.
 SELECT * FROM [BisCore].[Element] WHERE FederationGuid = StrToGuid('407bfa18-944d-11ee-b9d1-0242ac120002')
 ```
 
-### GuidToString( *binary-guid* )
+### GuidToString( _binary-guid_ )
 
 When `GUID` is stored a binary, it need to be converted for comparison purpose.
 
@@ -294,18 +294,18 @@ select s.* from json1.json_tree('{
     }') s;
 ```
 
-key                 |value               |type                |atom                |parent   |fullkey             |path
---------------------|--------------------|--------------------|---------------------|---------|-----------------------|---------------------
-NULL                |{"planet":"mars","gravity":"3.721 m/sy","surface_area":"144800000 kmy","distance_from_sun":"227900000 km","radius":"3389.5 km","orbital_period":"687 days","moons":["Phobos","Deimos"]}|object              |NULL                |NULL     |$                   |$
-planet              |mars                |text                |mars                |0        |$.planet            |$
-gravity             |3.721 m/sy          |text                |3.721 m/sy          |0        |$.gravity           |$
-surface_area        |144800000 kmy       |text                |144800000 kmy       |0        |$."surface_area"    |$
-distance_from_sun   |227900000 km        |text                |227900000 km        |0        |$."distance_from_sun"|$
-radius              |3389.5 km           |text                |3389.5 km           |0        |$.radius            |$
-orbital_period      |687 days            |text                |687 days            |0        |$."orbital_period"  |$
-moons               |["Phobos","Deimos"] |array               |NULL                |0        |$.moons             |$
-0                   |Phobos              |text                |Phobos              |14       |$.moons[0]          |$.moons
-1                   |Deimos              |text                |Deimos              |14       |$.moons[1]          |$.moons
+| key               | value                                                                                                                                                                                   | type   | atom          | parent | fullkey               | path    |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ------------- | ------ | --------------------- | ------- |
+| NULL              | {"planet":"mars","gravity":"3.721 m/sy","surface_area":"144800000 kmy","distance_from_sun":"227900000 km","radius":"3389.5 km","orbital_period":"687 days","moons":["Phobos","Deimos"]} | object | NULL          | NULL   | $                     | $       |
+| planet            | mars                                                                                                                                                                                    | text   | mars          | 0      | $.planet              | $       |
+| gravity           | 3.721 m/sy                                                                                                                                                                              | text   | 3.721 m/sy    | 0      | $.gravity             | $       |
+| surface_area      | 144800000 kmy                                                                                                                                                                           | text   | 144800000 kmy | 0      | $."surface_area"      | $       |
+| distance_from_sun | 227900000 km                                                                                                                                                                            | text   | 227900000 km  | 0      | $."distance_from_sun" | $       |
+| radius            | 3389.5 km                                                                                                                                                                               | text   | 3389.5 km     | 0      | $.radius              | $       |
+| orbital_period    | 687 days                                                                                                                                                                                | text   | 687 days      | 0      | $."orbital_period"    | $       |
+| moons             | ["Phobos","Deimos"]                                                                                                                                                                     | array  | NULL          | 0      | $.moons               | $       |
+| 0                 | Phobos                                                                                                                                                                                  | text   | Phobos        | 14     | $.moons[0]            | $.moons |
+| 1                 | Deimos                                                                                                                                                                                  | text   | Deimos        | 14     | $.moons[1]            | $.moons |
 
 ### json_each()
 
@@ -325,15 +325,15 @@ select s.* from json1.json_each('{
 
 outputs following result
 
-key                 |value               |type                |atom                |parent   |fullkey             |path
---------------------|---------------------|-------------------|---------------------|--------|--------------------|--------------------------
-planet              |mars                |text                |mars                |NULL     |$.planet            |$
-gravity             |3.721 m/sy          |text                |3.721 m/sy          |NULL     |$.gravity           |$
-surface_area        |144800000 kmy       |text                |144800000 kmy       |NULL     |$."surface_area"    |$
-distance_from_sun   |227900000 km        |text                |227900000 km        |NULL     |$."distance_from_sun"|$
-radius              |3389.5 km           |text                |3389.5 km           |NULL     |$.radius            |$
-orbital_period      |687 days            |text                |687 days            |NULL     |$."orbital_period"  |$
-moons               |["Phobos","Deimos"] |array               |NULL                |NULL     |$.moons             |$
+| key               | value               | type  | atom          | parent | fullkey               | path |
+| ----------------- | ------------------- | ----- | ------------- | ------ | --------------------- | ---- |
+| planet            | mars                | text  | mars          | NULL   | $.planet              | $    |
+| gravity           | 3.721 m/sy          | text  | 3.721 m/sy    | NULL   | $.gravity             | $    |
+| surface_area      | 144800000 kmy       | text  | 144800000 kmy | NULL   | $."surface_area"      | $    |
+| distance_from_sun | 227900000 km        | text  | 227900000 km  | NULL   | $."distance_from_sun" | $    |
+| radius            | 3389.5 km           | text  | 3389.5 km     | NULL   | $.radius              | $    |
+| orbital_period    | 687 days            | text  | 687 days      | NULL   | $."orbital_period"    | $    |
+| moons             | ["Phobos","Deimos"] | array | NULL          | NULL   | $.moons               | $    |
 
 ## Polymorphic vs non-polymorphic query
 
@@ -521,7 +521,7 @@ If a `FILTER` clause is provided, then only rows for which the expr is true are 
 ECSql supports the following built-in window functions:
 
 | Function                      | Description                                                                                                                                                                                                                                                                                                                                     |
-|-------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `row_number()`                | The `row_number()` function returns a number of the row within the current partition. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                                                                                                                                       |
 | `rank()`                      | The `rank()` function returns a row_number() of the first peer in each group - the rank of the current row with gaps. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                                                                                                       |
 | `dense_rank()`                | The `dense_rank()` function returns a number of the current row's peer group within its partition - the rank of the current row without gaps. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                                                                               |
@@ -536,7 +536,7 @@ ECSql supports the following built-in window functions:
 | `lead(expr, offset, default)` | If `default` is also provided, then it is returned instead of `NULL` if the row identified by `offset` does not exist. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                                                                                                      |
 | `first_value(expr)`           | The function `first_value(expr)` calculates the window frame for each row in the same way as an aggregate window function. It returns the value of `expr` evaluated against the first row in thw window frame for each row. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                 |
 | `last_value(expr)`            | The function `last_value(expr)` calculates the window frame for each row in the same way as an aggregate window function. It returns the value of `expr` evaluated against the last row in the window frame for each row. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                   |
-| `nth_value(expr, N)`          | The functions `nth_value(expr, N)` calculates the window frame for each row in the same way as an aggregate window function. It returns the value of `expr` evaluated against the row `N` in the window frame. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)
+| `nth_value(expr, N)`          | The functions `nth_value(expr, N)` calculates the window frame for each row in the same way as an aggregate window function. It returns the value of `expr` evaluated against the row `N` in the window frame. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                              |
 
 ## DATE, TIME & TIMESTAMP Literals
 
@@ -614,15 +614,15 @@ output
 ECSQL support following primitive types but not all can be declared as literal in ECSQL though can be inserted/updated and queried in ECSQL.
 
 | Type      | Declared in ECSQL | Descriptions                                |
-|-----------|-------------------|---------------------------------------------|
+| --------- | ----------------- | ------------------------------------------- |
 | `Integer` | Yes               | 32bit integer                               |
 | `Long`    | Yes               | 64bit integer                               |
 | `Double`  | Yes               | Stored as 8-byte IEEE floating point number |
 | `String`  | Yes               | UTF-8 encoded string                        |
 | `Boolean` | Yes               | True/False. stored as single byte integer   |
-| `Point2d` | No                | *Cannot be declared in ECSQL*               |
-| `Point3d` | No                | *Cannot be declared in ECSQL*               |
-| `Binary`  | No                | *Cannot be declared in ECSQL*               |
+| `Point2d` | No                | _Cannot be declared in ECSQL_               |
+| `Point3d` | No                | _Cannot be declared in ECSQL_               |
+| `Binary`  | No                | _Cannot be declared in ECSQL_               |
 
 ```sql
 -- integer / long
@@ -690,7 +690,7 @@ SELECT
 FROM [test].[Foo]
 ```
 
-## IIF (*condition-expr*, *true-expr*, *false-expr*)
+## IIF (_condition-expr_, _true-expr_, _false-expr_)
 
 ECSQL supports IIF(), which is really shorthand for `CASE WHEN <condition-expr> THEN <true-expr> ELSE <false-expr> END`
 
@@ -698,9 +698,9 @@ ECSQL supports IIF(), which is really shorthand for `CASE WHEN <condition-expr> 
 
 `condition-expr`: A condition expression that resolve into a boolean value. e.g. Length > 1.0.
 
-`true-expr`: Value returned when the `condition-expr` is evaluated to a *true* value.
+`true-expr`: Value returned when the `condition-expr` is evaluated to a _true_ value.
 
-`false-expr`: Value returned when the `condition-expr` is evaluated to a *false* value.
+`false-expr`: Value returned when the `condition-expr` is evaluated to a _false_ value.
 
 ### Example
 
@@ -804,14 +804,15 @@ Count instances of each type of class.
     FROM [BisCore].[Element]
     GROUP BY [ECClassId]
     LIMIT 3
-    /*
-    ClassName                   | InstanceCount
-    ----------------------------|--------------
-    BisCore:DrawingCategory     | 328
-    BisCore:AnnotationTextStyle | 22
-    BisCore:AuxCoordSystem2d    | 2
-    */
 ```
+
+Will produce:
+
+| ClassName                   | InstanceCount |
+| --------------------------- | ------------- |
+| BisCore:DrawingCategory     | 328           |
+| BisCore:AnnotationTextStyle | 22            |
+| BisCore:AuxCoordSystem2d    | 2s            |
 
 Count instances of each type of class by filter out group with count less then 10.
 
@@ -821,14 +822,15 @@ Count instances of each type of class by filter out group with count less then 1
     GROUP BY [ECClassId]
     HAVING COUNT(*)>10
     LIMIT 3;
-    /*
-    ClassName                   | InstanceCount
-    ----------------------------|--------------
-    BisCore:DrawingCategory     | 328
-    BisCore:AnnotationTextStyle | 22
-    BisCore:CategorySelector    | 313
-    */
 ```
+
+Will produce:
+
+| ClassName                   | InstanceCount |
+| --------------------------- | ------------- |
+| BisCore:DrawingCategory     | 328           |
+| BisCore:AnnotationTextStyle | 22            |
+| BisCore:CategorySelector    | 313           |
 
 ## Common table expression
 
@@ -1135,9 +1137,9 @@ Following ECSQL will return only properties declared in `BisCore.Element`
     SELECT * FROM [BisCore].[Element] WHERE ECInstanceId = 0xc000000018a
 ```
 
-|ECInstanceId|ECClassId|Model|Last Modified|Code Specification|Code Scope|Code|User Label|Parent|Federation GUID|JSON Properties|
-|------------|---------|-----|-------------|------------------|----------|----|----------|------|---------------|---------------|
-|`0x8000000014c`|`0x710`|`{Id:0x80000000003,RelECClassId:0x51}`|`2020-09-13T21:03:39.281Z`|`{Id:0x1,RelECClassId:0x59}`|`{Id:0x1,RelECClassId:0x5b}`|`NULL`|`Computer`|`NULL`|`NULL`|`NULL`|
+| ECInstanceId    | ECClassId | Model                                  | Last Modified              | Code Specification           | Code Scope                   | Code   | User Label | Parent | Federation GUID | JSON Properties |
+| --------------- | --------- | -------------------------------------- | -------------------------- | ---------------------------- | ---------------------------- | ------ | ---------- | ------ | --------------- | --------------- |
+| `0x8000000014c` | `0x710`   | `{Id:0x80000000003,RelECClassId:0x51}` | `2020-09-13T21:03:39.281Z` | `{Id:0x1,RelECClassId:0x59}` | `{Id:0x1,RelECClassId:0x5b}` | `NULL` | `Computer` | `NULL` | `NULL`          | `NULL`          |
 
 While following return all properties of respective derived class of `BisCore.Element`
 
@@ -1237,9 +1239,9 @@ Take a property `Asset_Tag` which might be property that exist on some instance 
     SELECT [ECInstanceId] FROM [BisCore].[Element] WHERE $->[Asset_Tag] ='COMPUTER 005'
 ```
 
-|ECInstanceId|
-|-------------|
-|0x8000000014c|
+| ECInstanceId  |
+| ------------- |
+| 0x8000000014c |
 
 Similarly we can read any set of properties and also filter by them
 
@@ -1247,9 +1249,9 @@ Similarly we can read any set of properties and also filter by them
     SELECT $->[RevitId], $->[LastModifier]  FROM [BisCore].[Element] WHERE $->[Asset_Tag] ='COMPUTER 005'
 ```
 
-|$ -> RevitId        | $ -> LastModifier  |
-|--------------------|--------------------|
-|381840              |kiran.patkar        |
+| $ -> RevitId | $ -> LastModifier |
+| ------------ | ----------------- |
+| 381840       | kiran.patkar      |
 
 ECSql will apply a property filter on selected rows such that those instances which has at least one property out of set of instance property must exists. This improve performance.
 
@@ -1286,9 +1288,9 @@ While composite properties are returned as `JSON`.
 
 above will return following
 
-|$ -> Model|
-|--------------------|
-|`{"Id":"0x80000000003","RelECClassId":"0x51"}`|
+| $ -> Model                                     |
+| ---------------------------------------------- |
+| `{"Id":"0x80000000003","RelECClassId":"0x51"}` |
 
 While following will not return any row
 
@@ -1304,15 +1306,15 @@ But you can still do following to get child property
 
 above will return following
 
-|ModelId|
-|--------------------|
-|`0x80000000003`|
+| ModelId         |
+| --------------- |
+| `0x80000000003` |
 
 ## Optional and non-optional instance properties
 
 By default, all properties accessed via instance accessor i.e. `$->prop` must exist in the class identifying the row for that row to qualify for output.
 
-If the user uses `?` after a property accessor e.g. `$->prop?`  then it will be considered optional, and the row class will not be checked to see if the `prop` exists or not.
+If the user uses `?` after a property accessor e.g. `$->prop?` then it will be considered optional, and the row class will not be checked to see if the `prop` exists or not.
 
 The following query will return no row if there is no subclass of `Bis.Element` that has both properties `CodeValue` and `Foo` in it.
 
@@ -1430,16 +1432,16 @@ Print out list of pragma supported by ECSQL.
 PRAGMA help
 ```
 
-| pragma                        | type   | descr                                                                 |
-|-------------------------------|--------|-----------------------------------------------------------------------|
+| pragma                        | type   | descr                                                                       |
+| ----------------------------- | ------ | --------------------------------------------------------------------------- |
 | checksum                      | global | checksum([ec_schema OR ec_map OR db_schema]) return sha1 checksum for data. |
-| ecdb_ver                      | global | return current and file profile versions                              |
-| experimental_features_enabled | global | enable/disable experimental features                                  |
-| explain_query                 | global | explain query plan                                                    |
-| help                          | global | return list of pragma supported                                       |
-| integrity_check               | global | performs integrity checks on ECDb                                     |
-| parse_tree                    | global | parse_tree(ecsql) return parse tree of ecsql.                         |
-| disqualify_type_index         | class  | set/get disqualify_type_index flag for a given ECClass                |
+| ecdb_ver                      | global | return current and file profile versions                                    |
+| experimental_features_enabled | global | enable/disable experimental features                                        |
+| explain_query                 | global | explain query plan                                                          |
+| help                          | global | return list of pragma supported                                             |
+| integrity_check               | global | performs integrity checks on ECDb                                           |
+| parse_tree                    | global | parse_tree(ecsql) return parse tree of ecsql.                               |
+| disqualify_type_index         | class  | set/get disqualify_type_index flag for a given ECClass                      |
 
 ### `PRAGMA ecdb_ver`
 
@@ -1450,7 +1452,7 @@ PRAGMA ecdb_ver
 ```
 
 | current | file    |
-|---------|---------|
+| ------- | ------- |
 | 4.0.0.4 | 4.0.0.2 |
 
 ### `PRAGMA experimental_features_enabled`
@@ -1479,13 +1481,13 @@ PRAGMA experimental_features_enabled
 
 ### `PRAGMA integrity_check` (experimental)
 
-1. `check_ec_profile` - checks if the profile table, indexes, and triggers are present. Does not check of be_* tables. Issues are returned as a list of tables/indexes/triggers which was not found or have different DDL.
-2. `check_data_schema` - checks if all the required data tables and indexes exist for mapped classes.  Issues are returned as a list of tables/columns which was not found or have different DDL.
+1. `check_ec_profile` - checks if the profile table, indexes, and triggers are present. Does not check of be\_\* tables. Issues are returned as a list of tables/indexes/triggers which was not found or have different DDL.
+2. `check_data_schema` - checks if all the required data tables and indexes exist for mapped classes. Issues are returned as a list of tables/columns which was not found or have different DDL.
 3. `check_data_columns` - checks if all the required columns exist in data tables. Issues are returned as a list of those tables/columns.
 4. `check_nav_class_ids` - checks if `RelClassId` of a Navigation property is a valid ECClassId. It does not check the value to match the relationship class.
 5. `check_nav_ids` - checks if `Id` of a Navigation property matches a valid row primary class.
-6. `check_linktable_fk_class_ids` - checks if `SourceECClassId` or `TargetECClassId`  of a link table matches a valid ECClassId.
-7. `check_linktable_fk_ids`- checks if `SourceECInstanceId` or `TargetECInstanceId`  of a link table matches a valid row in primary class.
+6. `check_linktable_fk_class_ids` - checks if `SourceECClassId` or `TargetECClassId` of a link table matches a valid ECClassId.
+7. `check_linktable_fk_ids`- checks if `SourceECInstanceId` or `TargetECInstanceId` of a link table matches a valid row in primary class.
 8. `check_class_ids`- checks persisted `ECClassId` in all data tables and make sure they are valid.
 9. `check_schema_load` - checks if all schemas can be loaded into memory.
 
@@ -1496,7 +1498,7 @@ PRAGMA integrity_check ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES;
 output of above will look like listing all check with result and time took to run the test.
 
 | sno | check                        | result | elapsed_sec |
-|-----|------------------------------|--------|-------------|
+| --- | ---------------------------- | ------ | ----------- |
 | 1   | check_data_columns           | True   | 0.005       |
 | 2   | check_ec_profile             | True   | 0.001       |
 | 3   | check_nav_class_ids          | True   | 0.179       |
@@ -1510,7 +1512,7 @@ output of above will look like listing all check with result and time took to ru
 ## ECSQL Keywords
 
 | Key | Keywords                                                                                                                                |
-|-----|-----------------------------------------------------------------------------------------------------------------------------------------|
+| --- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | A   | `ALL`, `AND`, `ANY`, `AS`, `ASC`, `AVG`                                                                                                 |
 | B   | `BACKWARD`, `BETWEEN`, `BINARY`, `BLOB`, `BOOLEAN`, `BY`                                                                                |
 | C   | `CASE`, `CAST`, `COLLATE`, `COUNT`, `CROSS`. `CUME_DIST`, `CURRENT`, `CURRENT_DATE`, `CURRENT_TIME`, `CURRENT_TIMESTAMP`                |
@@ -1535,10 +1537,10 @@ output of above will look like listing all check with result and time took to ru
 
 ECSQL has large set of [keywords](#ecsql-keywords). Keywords sometime appear in query as class name, property name or parameter name, cte block name or aliases and will result in query to fail. To fix it the keyword need to be quoted or escaped. Following is different ways keywords can be escaped. In ECSQL is preferred to escape using square brackets e.g. `[keyword]`.
 
-| Escape | description
-|---------|--------------|
-|**"*keyword*"**|A keyword in double-quotes is an identifier.|
-|**[*keyword*]**|A keyword enclosed in square brackets is an identifier. This is not standard SQL. This quoting mechanism is used by MS Access and SQL Server and is included in SQLite for compatibility.|
-|**\`*keyword*\`** |A keyword enclosed in grave accents (ASCII code 96) is an identifier. This is not standard SQL. This quoting mechanism is used by MySQL and is included in SQLite for compatibility.|
+| Escape            | description                                                                                                                                                                               |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **"_keyword_"**   | A keyword in double-quotes is an identifier.                                                                                                                                              |
+| **[*keyword*]**   | A keyword enclosed in square brackets is an identifier. This is not standard SQL. This quoting mechanism is used by MS Access and SQL Server and is included in SQLite for compatibility. |
+| **\`_keyword_\`** | A keyword enclosed in grave accents (ASCII code 96) is an identifier. This is not standard SQL. This quoting mechanism is used by MySQL and is included in SQLite for compatibility.      |
 
->As best practice it good idea to escape at least escape all user defined identifiers like alias and properties name even when they are not currently keywords. They may become keyword in future as ECSQL evolve and may break your query.
+> As best practice it good idea to escape at least escape all user defined identifiers like alias and properties name even when they are not currently keywords. They may become keyword in future as ECSQL evolve and may break your query.
