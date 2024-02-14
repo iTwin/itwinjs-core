@@ -1009,7 +1009,7 @@ export class MapTileTreeReference extends TileTreeReference {
         if (layerTree !== undefined) {
           hasLoadedTileTree = true;
         } else {
-          // Let's continue, there might loaded tileTree in the list
+          // Let's continue, there might be loaded tile tree in the list
           continue;
         }
 
