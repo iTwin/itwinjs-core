@@ -2185,6 +2185,7 @@ export interface CheckboxFormatPropEditorSpec extends CustomFormatPropEditorSpec
 
 // @public
 export class CheckpointConnection extends IModelConnection {
+    protected constructor(props: IModelConnectionProps, fromIpc: boolean);
     close(): Promise<void>;
     get iModelId(): GuidString;
     isCheckpointConnection(): this is CheckpointConnection;
@@ -2192,7 +2193,7 @@ export class CheckpointConnection extends IModelConnection {
     // (undocumented)
     protected _isClosed?: boolean;
     get iTwinId(): GuidString;
-    static openRemote(iTwinId: string, iModelId: string, version?: IModelVersion): Promise<CheckpointConnection>;
+    static openRemote(iTwinId: GuidString, iModelId: GuidString, version?: IModelVersion): Promise<CheckpointConnection>;
 }
 
 // @public

@@ -2,6 +2,18 @@
   "name": "@itwin/build-tools",
   "entries": [
     {
+      "version": "4.4.0",
+      "tag": "@itwin/build-tools_v4.4.0",
+      "date": "Mon, 12 Feb 2024 18:15:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix extract api summary script to work with additional '.' symbols in path"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.3.3",
       "tag": "@itwin/build-tools_v4.3.3",
       "date": "Wed, 03 Jan 2024 19:28:38 GMT",
