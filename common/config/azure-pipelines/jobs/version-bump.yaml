@@ -187,7 +187,40 @@ jobs:
         displayName: Get Branch Name
 
       - bash: git checkout -b $(releaseBranchName)
-        displayName: Create and publish branch
+        displayName: Create release branch and checkout
+
+      - bash: |
+          docsYamlPath="common/config/azure-pipelines/templates/gather-docs.yaml"
+          releaseBranch=$(releaseBranchName)
+
+          # delimiter
+          IFS="."
+          read -ra splitArray <<< "$releaseBranch"
+
+          currentMinorVersion=${splitArray[1]}
+          previousMinorVersion=$((currentMinorVersion - 1))
+
+          # check if this release is major or minor version release
+          # if minor version bump, use last recent minor version
+          # if major version bump, `gather-docs.yaml` needs to be edited
+          # manually to be the most recent previous major release
+          # e.g. if this release is `release/5.0.x`, value in `gather-docs.yaml`
+          # should be `release/4.<whatever_last_minor_release_version_was>.x`
+          if [ $((previousMinorVersion)) -lt 0 ]
+          then
+            echo "This is is a major release. Edit \"gather-docs.yaml\" manually."
+          else
+            previousReleaseBranch="${releaseBranch/"$currentMinorVersion.x"/"$previousMinorVersion.x"}"
+            escapedReleaseBranchName="${previousReleaseBranch//\//\\\/}"
+            search="branchName: refs\/heads\/master"
+            replace="branchName: refs\/heads\/"$escapedReleaseBranchName""
+            echo "$search"
+            echo "$replace"
+            sed -i "s/$search/$replace/g" "$docsYamlPath"
+            git add "$docsYamlPath"
+            git commit -m "Update 'gather-docs.yaml'"
+          fi
+        displayName: Update 'gather-docs.yaml' and commit to release branch
 
       - bash: git push --set-upstream https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(releaseBranchName) -q
         displayName: Publish the release branch
