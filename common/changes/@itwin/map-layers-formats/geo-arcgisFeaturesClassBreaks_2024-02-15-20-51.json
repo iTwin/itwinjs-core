@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/map-layers-formats",
-      "comment": "Add supported for ArcGIS class breaks symbology.",
+      "comment": "Added support for ArcGIS class breaks symbology.",
       "type": "none"
     }
   ],
