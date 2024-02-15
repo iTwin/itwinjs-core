@@ -6,8 +6,9 @@
 
 import * as sinon from "sinon";
 import { NewYorkDataset } from "./NewYorkDataset";
-import { ArcGisDashLineStyle, ArcGisSymbologyRenderer, ArcGisUniqueValueSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
+import { ArcGisClassBreaksSymbologyRenderer, ArcGisDashLineStyle, ArcGisSymbologyRenderer, ArcGisUniqueValueSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
+import { EarthquakeSince1970Dataset } from "./EarthquakeSince1970Dataset";
 import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS , EsriSMS, EsriUniqueValueRenderer } from "../../ArcGisFeature/EsriSymbology";
 import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset";
 
@@ -464,4 +465,39 @@ describe("ArcGisSymbologyRenderer", () => {
     expect(fakeContext.image.src).to.eq(getRefImageSrc(refSymbol));
 
   });
+
+  it("should draw marker using class breaks PMS renderer definition", async () => {
+    // Clone renderer definition and make adjustments for the test purposes.
+    const rendererDef = structuredClone(EarthquakeSince1970Dataset.Earthquakes1970LayerCapabilities.drawingInfo.renderer);
+    const provider = TestUtils.createSymbologyRenderer("esriGeometryPoint", rendererDef) as ArcGisClassBreaksSymbologyRenderer;
+
+    sandbox.stub(HTMLImageElement.prototype, "addEventListener").callsFake(function _(_type: string, listener: EventListenerOrEventListenerObject, _options?: boolean | AddEventListenerOptions) {
+      // Simple call the listener in order to resolved the wrapping promise (i.e. EsriRenderer.initialize() is non-blocking )
+      (listener as any)();
+    });
+    await provider.renderer!.initialize();
+
+    // Now set proper attribute
+    // eslint-disable-next-line quote-props, @typescript-eslint/naming-convention
+    provider.setActiveFeatureAttributes({"magnitude": 5.1});
+
+    let pms = provider.symbol as EsriPMS;
+
+    // Make sure the right image was picked after setting the active feature attributes
+    expect(pms.props.imageData).to.equals(EarthquakeSince1970Dataset.Earthquakes1970LayerCapabilities.drawingInfo.renderer.classBreakInfos[1].symbol.imageData);
+
+    provider.setActiveFeatureAttributes({magnitude: 1.7});
+    pms = provider.symbol as EsriPMS;
+    expect(pms.props.imageData).to.equals(EarthquakeSince1970Dataset.Earthquakes1970LayerCapabilities.drawingInfo.renderer.classBreakInfos[0].symbol.imageData);
+
+    provider.setActiveFeatureAttributes({magnitude: 0.5});
+    pms = provider.symbol as EsriPMS;
+    expect(pms.props.imageData).to.equals((provider.defaultSymbol as EsriPMS).imageData);
+
+    provider.setActiveFeatureAttributes({magnitude: 10});
+    pms = provider.symbol as EsriPMS;
+    expect(pms.props.imageData).to.equals((provider.defaultSymbol as EsriPMS).imageData);
+
+  });
+
 }); // end test suite
