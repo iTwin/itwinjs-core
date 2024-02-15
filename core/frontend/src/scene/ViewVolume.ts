@@ -6,13 +6,14 @@
  * @module Views
  */
 
-import { Frustum } from "@itwin/core-common";
-import { ClipVector, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Point3d, Range3d, Vector3d, XYAndZ, XYZ } from "@itwin/core-geometry";
-import { ViewPose } from "../ViewPose";
+import { Camera, Cartographic, Frustum } from "@itwin/core-common";
+import { Angle, ClipVector, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Point3d, Range3d, Vector3d, XYAndZ, XYZ } from "@itwin/core-geometry";
+import { ViewPose, ViewPose3d } from "../ViewPose";
 import { StandardViewId } from "../StandardView";
 import { ViewStatus } from "../ViewStatus";
 import { MarginOptions, OnViewExtentsError } from "../ViewAnimation";
-import { ExtentLimits } from "../ViewState";
+import { ExtentLimits, LookAtOrthoArgs, LookAtPerspectiveArgs, LookAtUsingLensAngle } from "../ViewState";
+import { GlobalLocation } from "../ViewGlobalLocation";
 
 export interface IViewVolume {
   allow3dManipulations(): boolean;
@@ -81,6 +82,72 @@ export interface IViewVolume {
 export interface ViewVolume3d extends IViewVolume {
   readonly is3d: true;
   is2d?: never;
+
+  readonly origin: Point3d;
+  readonly extents: Vector3d;
+  readonly rotation: Matrix3d;
+
+  readonly isCameraOn: boolean;
+  readonly camera: Camera;
+  /** @internal */
+  enableCamera(): void;
+  supportsCamera(): boolean;
+  minimumFrontDistance(): number;
+  turnCameraOff(): boolean;
+  readonly isCameraValid: boolean;
+  calcLensAngle(): Angle;
+
+  forceMinFrontDist: number;
+
+  allow3dManipulations(): boolean;
+  setAllow3dManipulations(allow: boolean): void;
+
+  savePose(): ViewPose3d;
+  applyPose(pose: ViewPose): this;
+
+  lookAt(args: LookAtPerspectiveArgs | LookAtOrthoArgs | LookAtUsingLensAngle): ViewStatus;
+  /** @internal */
+  changeFocusDistance(newDist: number): ViewStatus;
+  /** @internal */
+  changeFocusFromPoint(pt: Point3d): void;
+  moveCameraLocal(distance: Vector3d): ViewStatus;
+  moveCameraWorld(distance: Vector3d): ViewStatus;
+  rotateCameraLocal(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus;
+  rotateCameraWorld(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus;
+
+  centerEyePoint(backDistance?: number): void;
+  centerFocusDistance(): void;
+  verifyFocusPlane(): void;
+  getEyePoint(): Point3d;
+  getEyeOrOrthographicViewPoint(): Point3d;
+  setEyePoint(eye: XYAndZ): void;
+  getLensAngle(): Angle;
+  setLensAngle(angle: Angle): void;
+  getFocusDistance(): number;
+  setFocusDistance(distance: number): void;
+
+  
+  // ###TODO global/cartographic stuff here, or on Scene and/or SceneMap and/or SceneObject?
+  getEarthFocalPoint(): Point3d | undefined;
+  alignToGlobe(target: Point3d, transition?: boolean): ViewStatus;
+  readonly isGlobalView: boolean;
+  readonly globalScopeFactor: number;
+  globalViewTransition(): number;
+  getCartographicHeight(point: XYAndZ): number | undefined;
+  getEyeCartographicHeight(): number | undefined;
+  isEyePointGlobalView(eyePoint: XYAndZ): boolean;
+  lookAtGlobalLocation(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): number;
+  lookAtGlobalLocationFromGcs(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): Promise<number>;
+  rootToCartographic(root: XYAndZ, result?: Cartographic): Cartographic | undefined;
+  cartographicToRoot(cartographic: Cartographic, result?: Point3d): Point3d | undefined;
+  rootToCartographicFromGcs(root: XYAndZ, result?: Cartographic): Promise<Cartographic | undefined>;
+  rootToCartographicUsingGcs(root: XYAndZ[]): Promise<Cartographic[] | undefined>;
+  cartographicToRootFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d | undefined>;
+  cartographicToRootUsingGcs(cartographic: Cartographic[]): Promise<Point3d[] | undefined>;
+
+
+  // ###TODO this assumes z-up
+  isEyePointAbove(elevation: number): boolean;
 }
 
 export interface TestViewVolume2d extends IViewVolume {
