@@ -59,8 +59,8 @@ import { BaseSettings, SettingDictionary, SettingName, SettingResolver, Settings
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
 
 import type { BlobContainer } from "./BlobContainerService";
-
-interface ChangesetConflictArgs {
+/** @internal */
+export interface ChangesetConflictArgs {
   cause: DbConflictCause;
   opcode: DbOpcode;
   indirect: boolean;
@@ -2761,18 +2761,7 @@ export class BriefcaseDb extends IModelDb {
        * Note: If DbConflictCause = NotFound, the primary key was not found, and returning DbConflictResolution::Replace is
        * not an option at all - this will cause a BE_SQLITE_MISUSE error.
        */
-      if (args.opcode === DbOpcode.Delete) {
-        // Caused by CASCADE DELETE on a foreign key, and is usually not a problem.
-        return DbConflictResolution.Skip;
-      }
-
-      if (args.opcode === DbOpcode.Update && args.tableName.startsWith("ec_")) {
-        // Caused by a ON DELETE SET NULL constraint on a foreign key - this is known to happen with "ec_" tables, but needs investigation if it happens otherwise
-        return DbConflictResolution.Skip;
-      }
-
-      // Refer to comment below
-      return args.opcode === DbOpcode.Update ? DbConflictResolution.Skip : DbConflictResolution.Replace;
+      return DbConflictResolution.Skip;
     }
 
     if (args.cause === DbConflictCause.Constraint) {
