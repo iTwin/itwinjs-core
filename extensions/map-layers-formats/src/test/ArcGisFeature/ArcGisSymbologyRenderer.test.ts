@@ -466,16 +466,10 @@ describe("ArcGisSymbologyRenderer", () => {
 
   });
 
-  it("should draw marker using class breaks PMS renderer definition", async () => {
+  it("should pick the right class based of class breaks", async () => {
     // Clone renderer definition and make adjustments for the test purposes.
     const rendererDef = structuredClone(EarthquakeSince1970Dataset.Earthquakes1970LayerCapabilities.drawingInfo.renderer);
     const provider = TestUtils.createSymbologyRenderer("esriGeometryPoint", rendererDef) as ArcGisClassBreaksSymbologyRenderer;
-
-    sandbox.stub(HTMLImageElement.prototype, "addEventListener").callsFake(function _(_type: string, listener: EventListenerOrEventListenerObject, _options?: boolean | AddEventListenerOptions) {
-      // Simple call the listener in order to resolved the wrapping promise (i.e. EsriRenderer.initialize() is non-blocking )
-      (listener as any)();
-    });
-    await provider.renderer!.initialize();
 
     // Now set proper attribute
     // eslint-disable-next-line quote-props, @typescript-eslint/naming-convention
@@ -498,6 +492,30 @@ describe("ArcGisSymbologyRenderer", () => {
     pms = provider.symbol as EsriPMS;
     expect(pms.props.imageData).to.equals((provider.defaultSymbol as EsriPMS).imageData);
 
+  });
+
+  it("should pick the right class based of class breaks (classMinValue defined)", async () => {
+    // Clone renderer definition and make adjustments for the test purposes.
+    const rendererDef = structuredClone(EarthquakeSince1970Dataset.Earthquakes1970LayerCapabilities.drawingInfo.renderer);
+    rendererDef.classBreakInfos[0].classMinValue = 3;
+    const provider = TestUtils.createSymbologyRenderer("esriGeometryPoint", rendererDef) as ArcGisClassBreaksSymbologyRenderer;
+
+    // Now set proper attribute
+    // eslint-disable-next-line quote-props, @typescript-eslint/naming-convention
+    provider.setActiveFeatureAttributes({"magnitude": 5.1});
+
+    let pms = provider.symbol as EsriPMS;
+
+    // Make sure the right image was picked after setting the active feature attributes
+    expect(pms.props.imageData).to.equals(EarthquakeSince1970Dataset.Earthquakes1970LayerCapabilities.drawingInfo.renderer.classBreakInfos[1].symbol.imageData);
+
+    provider.setActiveFeatureAttributes({magnitude: 3.1});
+    pms = provider.symbol as EsriPMS;
+    expect(pms.props.imageData).to.equals(EarthquakeSince1970Dataset.Earthquakes1970LayerCapabilities.drawingInfo.renderer.classBreakInfos[0].symbol.imageData);
+
+    provider.setActiveFeatureAttributes({magnitude: 2});
+    pms = provider.symbol as EsriPMS;
+    expect(pms.props.imageData).to.equals((provider.defaultSymbol as EsriPMS).imageData);
   });
 
 }); // end test suite
