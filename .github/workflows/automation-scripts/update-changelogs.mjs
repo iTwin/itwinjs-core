@@ -46,19 +46,15 @@ function fixChangeLogs(files) {
   }
 }
 
-function editFileInPlace(filePath, stringToSearch, strintToReplace) {
-  fs.readFile(filePath, 'utf8', function (err, content) {
-    if (err) {
-      return console.log(`Error while reading "${filePath}".`);
-    }
-    const result = content.replace(stringToSearch, strintToReplace);
-
-    fs.writeFile(filePath, result, 'utf8', function (err) {
-      if (err) {
-        return console.log(`Error while writing to "${filePath}".`);
-      }
-    });
-  });
+function editFileInPlaceSynchronously(filePath, stringToSearch, stringToReplace) {
+  try {
+    const contentRead = fs.readFileSync(filePath, { encoding: 'utf-8' });
+    const contentToWrite = contentRead.replace(stringToSearch, stringToReplace);
+    fs.writeFileSync(filePath, contentToWrite, { encoding: 'utf-8' });
+  }
+  catch (err) {
+    console.log(`Error while reading or writing to "${filePath}": ${err}`)
+  }
 }
 
 const targetPath = "./temp-target-changelogs"
@@ -99,7 +95,7 @@ await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -ex
 // if it is a major or minor release, we need to update `gather-docs.yaml`'s branchName value to be the release branch
 if (commitMessage.endsWith(".0")) {
   const docsYamlPath = "common/config/azure-pipelines/templates/gather-docs.yaml";
-  editFileInPlace(docsYamlPath, /release\/\d+\.\d+\.\w+/g, currentBranch);
+  editFileInPlaceSynchronously(docsYamlPath, /release\/\d+\.\d+\.\w+/g, currentBranch);
   // commit these changes to our release branch
   await $`git add ${docsYamlPath}`;
   await $`git commit -m "Update gather-docs.yaml's branch name to the release branch"`;
@@ -137,7 +133,7 @@ if (commitMessage.endsWith(".0")) {
 
   // also need to add reference to this new md in leftNav.md
   const leftNavMdPath = "docs/changehistory/leftNav.md";
-  editFileInPlace(leftNavMdPath, "### Versions\n", `### Versions\n\n- [${commitMessage}](./${commitMessage}.md)`);
+  editFileInPlaceSynchronously(leftNavMdPath, "### Versions\n", `### Versions\n\n- [${commitMessage}](./${commitMessage}.md)`);
 }
 // # regen CHANGELOG.md
 await $`rush publish --regenerate-changelogs`;
