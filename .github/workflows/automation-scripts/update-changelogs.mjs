@@ -46,27 +46,19 @@ function fixChangeLogs(files) {
   }
 }
 
-async function fixGatherDocsYaml(releaseBranchName) {
-  const docsYamlPath = "common/config/azure-pipelines/templates/gather-docs.yaml";
-  const currentBranch = releaseBranchName;
-
-  fs.readFile(docsYamlPath, 'utf8', function (err, content) {
+function editFileInPlace(filePath, stringToSearch, strintToReplace) {
+  fs.readFile(filePath, 'utf8', function (err, content) {
     if (err) {
-      return console.log(`Error while reading "gather-docs.yaml" file.`);
+      return console.log(`Error while reading "${filePath}".`);
     }
-    const result = content.replace(/release\/\d+\.\d+\.\w+/g, currentBranch);
+    const result = content.replace(stringToSearch, strintToReplace);
 
-    fs.writeFile(docsYamlPath, result, 'utf8', function (err) {
+    fs.writeFile(filePath, result, 'utf8', function (err) {
       if (err) {
-        return console.log(`Error while writing to "gather-docs.yaml" file.`);
+        return console.log(`Error while writing to "${filePath}".`);
       }
     });
   });
-
-  // commit these changes to our release branch
-  await $`git add ${docsYamlPath}`;
-  await $`git commit -m "Update gather-docs.yaml's branch name to the release branch"`;
-  await $`git push origin HEAD:${currentBranch}`;
 }
 
 const targetPath = "./temp-target-changelogs"
@@ -106,7 +98,12 @@ await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -ex
 // before checking out to target branch
 // if it is a major or minor release, we need to update `gather-docs.yaml`'s branchName value to be the release branch
 if (commitMessage.endsWith(".0")) {
-  await fixGatherDocsYaml(currentBranch);
+  const docsYamlPath = "common/config/azure-pipelines/templates/gather-docs.yaml";
+  editFileInPlace(docsYamlPath, /release\/\d+\.\d+\.\w+/g, currentBranch);
+  // commit these changes to our release branch
+  await $`git add ${docsYamlPath}`;
+  await $`git commit -m "Update gather-docs.yaml's branch name to the release branch"`;
+  await $`git push origin HEAD:${currentBranch}`;
 }
 
 targetBranch = targetBranch.replace("origin/", "");
@@ -137,6 +134,10 @@ await $`rm -r ${incomingPath}`;
 // copy {release-version}.md to target branch if the commit that triggered this script run is from a major or minor version bump
 if (commitMessage.endsWith(".0")) {
   await $`git checkout ${currentBranch} docs/changehistory/${commitMessage}.md`
+
+  // also need to add reference to this new md in leftNav.md
+  const leftNavMdPath = "docs/changehistory/leftNav.md";
+  editFileInPlace(leftNavMdPath, "### Versions\n", `### Versions\n\n- [${commitMessage}](./${commitMessage}.md)`);
 }
 // # regen CHANGELOG.md
 await $`rush publish --regenerate-changelogs`;
