@@ -12,8 +12,9 @@ import { ViewPose, ViewPose3d } from "../ViewPose";
 import { StandardViewId } from "../StandardView";
 import { ViewStatus } from "../ViewStatus";
 import { MarginOptions, OnViewExtentsError } from "../ViewAnimation";
-import { ExtentLimits, LookAtOrthoArgs, LookAtPerspectiveArgs, LookAtUsingLensAngle } from "../ViewState";
+import { ExtentLimits, LookAtOrthoArgs, LookAtPerspectiveArgs, LookAtUsingLensAngle, ViewState3d } from "../ViewState";
 import { GlobalLocation } from "../ViewGlobalLocation";
+import { sceneVolume3dFromViewState } from "./impl/SceneVolumeImpl";
 
 export interface ISceneVolume {
   allow3dManipulations(): boolean;
@@ -29,10 +30,10 @@ export interface ISceneVolume {
   setCenter(center: Point3d): void;
 
   savePose(): ViewPose;
-  applyPose(pose: ViewPose): this;
+  applyPose(pose: ViewPose): void;
   
   setStandardRotation(id: StandardViewId): void;
-  setStandardGlobalRotation(_id: StandardViewId): void;
+  // ###TODO on Scene setStandardGlobalRotation(_id: StandardViewId): void;
 
   getTargetPoint(result?: Point3d): Point3d;
 
@@ -50,9 +51,8 @@ export interface ISceneVolume {
   
   adjustAspectRatio(aspect: number): void;
   
-  getAspectRatio(): number;
-  getAspectRatioSkew(): number;
-  setAspectRatioSke(skew: number): void;
+  readonly aspectRatio: number;
+  aspectRatioSkew: number;
 
   /** @internal */
   adjustViewDelta(delta: Vector3d, origin: XYZ, rot: Matrix3d, aspect?: number, opts?: OnViewExtentsError): ViewStatus;
@@ -61,16 +61,16 @@ export interface ISceneVolume {
   getYVector(result?: Vector3d): Vector3d;
   getZVector(result?: Vector3d): Vector3d;
 
-  // ###TODO this probably belongs on ScenePresentation...
-  getViewClip(): ClipVector | undefined;
-  setViewClip(clip?: ClipVector): void;
+  // ###TODO move to ScenePresentation. Possibly an IModelView may want to have its own clip separate from view clip - revisit later.
+  // getViewClip(): ClipVector | undefined;
+  // setViewClip(clip?: ClipVector): void;
 
   lookAtVolume(volume: LowAndHighXYZ | LowAndHighXY, aspect?: number, options?: MarginOptions & OnViewExtentsError): void;
   lookAtViewAlignedVolume(volume: Range3d, aspect?: number, options?: MarginOptions & OnViewExtentsError): void;
 
   setRotationAboutPoint(rotation: Matrix3d, point?: Point3d): void;
 
-  getUpVector(point: Point3d): Vector3d;
+  // ###TODO on Scene getUpVector(point: Point3d): Vector3d;
 
   // ###TODO getIsViewingProject(): boolean;
   // ###TODO getGlobeRotation(): Matrix3d | undefined;
@@ -89,11 +89,9 @@ export interface SceneVolume3d extends ISceneVolume {
 
   readonly isCameraOn: boolean;
   readonly camera: Camera;
-  /** @internal */
-  enableCamera(): void;
   supportsCamera(): boolean;
   minimumFrontDistance(): number;
-  turnCameraOff(): boolean;
+  turnCameraOff(): void;
   readonly isCameraValid: boolean;
   calcLensAngle(): Angle;
 
@@ -103,7 +101,7 @@ export interface SceneVolume3d extends ISceneVolume {
   setAllow3dManipulations(allow: boolean): void;
 
   savePose(): ViewPose3d;
-  applyPose(pose: ViewPose): this;
+  applyPose(pose: ViewPose): void;
 
   lookAt(args: LookAtPerspectiveArgs | LookAtOrthoArgs | LookAtUsingLensAngle): ViewStatus;
   /** @internal */
@@ -126,8 +124,10 @@ export interface SceneVolume3d extends ISceneVolume {
   getFocusDistance(): number;
   setFocusDistance(distance: number): void;
 
+  // ###TODO this assumes z-up
+  isEyePointAbove(elevation: number): boolean;
   
-  // ###TODO global/cartographic stuff here, or on Scene and/or SceneMap and/or SceneObject?
+  /* ###TODO global/cartographic stuff here, or on Scene and/or SceneMap and/or SceneObject?
   getEarthFocalPoint(): Point3d | undefined;
   alignToGlobe(target: Point3d, transition?: boolean): ViewStatus;
   readonly isGlobalView: boolean;
@@ -144,10 +144,7 @@ export interface SceneVolume3d extends ISceneVolume {
   rootToCartographicUsingGcs(root: XYAndZ[]): Promise<Cartographic[] | undefined>;
   cartographicToRootFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d | undefined>;
   cartographicToRootUsingGcs(cartographic: Cartographic[]): Promise<Point3d[] | undefined>;
-
-
-  // ###TODO this assumes z-up
-  isEyePointAbove(elevation: number): boolean;
+  */
 }
 
 export interface TestSceneVolume2d extends ISceneVolume {
@@ -156,3 +153,9 @@ export interface TestSceneVolume2d extends ISceneVolume {
 }
 
 export type SceneVolume = TestSceneVolume2d | SceneVolume3d;
+
+export namespace SceneVolume3d {
+  export function fromViewState(view: ViewState3d): SceneVolume3d {
+    return sceneVolume3dFromViewState(view);
+  }
+}
