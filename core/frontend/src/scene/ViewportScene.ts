@@ -62,11 +62,11 @@ export interface RealityModelSceneObjects extends Iterable<RealityModelSceneObje
   
 }
 
-export interface ViewSceneObject extends ISceneObject, Omit<BaseSceneObject, "view"> {
+export interface IModelSceneObject extends ISceneObject, Omit<BaseSceneObject, "view"> {
   readonly view: IModelView;
 }
 
-export interface ViewSceneObjects<T extends IModelView> extends Iterable<T> {
+export interface IModelSceneObjects<T extends IModelView> extends Iterable<T> {
   
 }
 
@@ -113,14 +113,14 @@ export interface TiledGraphicsSceneObjects extends Iterable<TiledGraphicsSceneOb
   
 }
 
-export type SceneObject = RealityModelSceneObject | ViewSceneObject | PresentationSceneObject | CustomSceneObject | MapSceneObject | TiledGraphicsSceneObject;
+export type SceneObject = RealityModelSceneObject | IModelSceneObject | PresentationSceneObject | CustomSceneObject | MapSceneObject | TiledGraphicsSceneObject;
 
 export interface SpatialScene {
   readonly isSpatial: true;
   volume: SceneVolume3d;
   readonly realityModels: RealityModelSceneObjects;
   readonly maps: MapSceneObject;
-  readonly views: ViewSceneObjects<SpatialView>;
+  readonly iModels: IModelSceneObjects<SpatialView>;
   readonly custom: CustomSceneObjects;
   readonly presentation: ScenePresentation3d;
   readonly tiledGraphicsProviders: TiledGraphicsSceneObjects;
@@ -129,7 +129,7 @@ export interface SpatialScene {
 export interface TestScene2d {
   isSpatial?: false;
   volume: TestSceneVolume2d;
-  readonly views: ViewSceneObjects<IModelView2d>;
+  readonly views: IModelSceneObjects<IModelView2d>;
   readonly presentation: ScenePresentation2d;
   readonly tiledGraphicsProviders: TiledGraphicsSceneObjects;
   readonly custom: CustomSceneObjects;
