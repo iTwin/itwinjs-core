@@ -25,8 +25,10 @@ export interface ISceneObject extends ViewportDecorator {
 
   draw(context: SceneContext): void;
 
-  // need higher-level abstraction?
+  // ###TODO need higher-level abstraction?
   // collectStatistics(stats: RenderMemory.Statistics): void;
+
+  // ###TODO reprojection between local and scene coordinate spaces
 }
 
 export interface BaseSceneObject {
