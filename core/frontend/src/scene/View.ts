@@ -23,8 +23,6 @@ export abstract class ViewCategorySelector {
  /** @internal */
  protected constructor() { }
  
- abstract get iModel(): IModelConnection;
-
  abstract categories: Set<string>;
  abstract equalState(other: ViewCategorySelector): boolean;
 

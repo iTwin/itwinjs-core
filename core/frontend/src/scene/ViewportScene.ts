@@ -12,6 +12,7 @@ import { SceneContext } from "../ViewContext";
 import { AmbientOcclusion, ColorDef, Environment, FeatureAppearance, PlanarClipMaskSettings, RealityDataSourceKey, RealityModelDisplaySettings, SolarShadowSettings, SpatialClassifiers, ViewFlags } from "@itwin/core-common";
 import { SpatialView, View, View2d } from "./View";
 import { TiledGraphicsProvider } from "../tile/internal";
+import { SceneVolume3d, TestSceneVolume2d } from "./SceneVolume";
 
 // Describes the common interface for all SceneObjects.
 // For documentation and type-checking purposes only - SceneObject is a union type.
@@ -42,7 +43,8 @@ export interface RealityModel {
   readonly name: string;
   readonly description: string;
   readonly realityDataId?: string;
-  // SpatialClassifiers is implemented on top of a JSON container, it's weird.
+  // ###TODO SpatialClassifiers is implemented on top of a JSON container, it's weird.
+  // It also contains model Ids that assume a specific iModel
   readonly classifiers?: SpatialClassifiers;
   planarClipMaskSettings?: PlanarClipMaskSettings;
   appearanceOverrides?: FeatureAppearance;
@@ -115,6 +117,7 @@ export type SceneObject = RealityModelSceneObject | ViewSceneObject | Presentati
 
 export interface SpatialScene {
   readonly isSpatial: true;
+  volume: SceneVolume3d;
   readonly realityModels: RealityModelSceneObjects;
   readonly maps: MapSceneObject;
   readonly views: ViewSceneObjects<SpatialView>;
@@ -125,6 +128,7 @@ export interface SpatialScene {
 
 export interface TestScene2d {
   isSpatial?: false;
+  volume: TestSceneVolume2d;
   readonly views: ViewSceneObjects<View2d>;
   readonly presentation: ScenePresentation2d;
   readonly tiledGraphicsProviders: TiledGraphicsSceneObjects;
