@@ -6,9 +6,9 @@
  * @module Views
  */
 
-import { Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
-import { View2dStyle, View3dStyle, ViewStyle, ViewStyleFlags } from "./ViewStyle";
-import { AxisAlignedBox3d, FeatureAppearance, ModelClipGroups, SubCategoryOverride } from "@itwin/core-common";
+import { Id64Arg, Id64String } from "@itwin/core-bentley";
+import { View3dStyle, ViewStyle, ViewStyleFlags } from "./ViewStyle";
+import { AxisAlignedBox3d, ModelClipGroups } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { GeometricModelState } from "../ModelState";
 import { Range3d, Transform } from "@itwin/core-geometry";
@@ -36,9 +36,9 @@ export interface IView {
   displayStyle: ViewStyle;
   viewFlags: ViewStyleFlags;
 
- isSpatial(): this is SpatialView;
- isDrawing(): this is DrawingView;
- isSheet(): this is SheetView;
+  isSpatial(): this is SpatialView;
+  isDrawing(): this is DrawingView;
+  isSheet(): this is SheetView;
 
   // ###TODO scheduleScript, scheduleScriptReference
   // ###TODO analysisStyle
