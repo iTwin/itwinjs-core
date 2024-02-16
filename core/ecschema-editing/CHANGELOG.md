@@ -1,6 +1,11 @@
 # Change Log - @itwin/ecschema-editing
 
-This log was last generated on Fri, 16 Feb 2024 14:17:48 GMT and should not be manually modified.
+This log was last generated on Fri, 16 Feb 2024 14:22:01 GMT and should not be manually modified.
+
+## 4.4.2
+Fri, 16 Feb 2024 14:22:01 GMT
+
+_Version update only_
 
 ## 4.4.1
 Fri, 16 Feb 2024 14:17:48 GMT
