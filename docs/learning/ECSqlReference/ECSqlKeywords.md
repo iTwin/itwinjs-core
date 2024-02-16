@@ -13,7 +13,7 @@
 | J   | `JOIN`                                                                                                                                  |
 | L   | `LAG`, `LAST`, `LAST_VALUE`, `LEAD`, `LEFT`, `LIKE`, `LIMIT`, `LONG`                                                                    |
 | M   | `MATCH`, `MAX` ,`MIN`                                                                                                                   |
-| N   | `NATURAL`, `NO`, `NOCASE`, `NOT`, `NTH_VALUE`, `NTILE`, `NULL`, `NULLS`                                                                 |
+| N   | `NATURAL`, `NAVIGATION_VALUE` `NO`, `NOCASE`, `NOT`, `NTH_VALUE`, `NTILE`, `NULL`, `NULLS`                                              |
 | O   | `OFFSET`, `ON`, `ONLY`, `OPTIONS`, `OR`, `ORDER`, `OTHERS`, `OUTER`, `OVER`                                                             |
 | P   | `PARTITION`, `PERCENT_RANK`, `PRAGMA`, `PRECEDING`, `RANGE`, `RANK`, `REAL`, `RECURSIVE`, `RIGHT`, `ROW`, `ROW_NUMBER`, `ROWS`, `RTRIM` |
 | S   | `SELECT`, `SET`, `SOME`, `STRING`, `SUM`                                                                                                |

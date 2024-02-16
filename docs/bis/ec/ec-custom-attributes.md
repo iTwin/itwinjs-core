@@ -43,4 +43,17 @@ Custom attributes allow any custom metadata to be applied because they are defin
     </ECCustomAttributeClass>
 ```
 
+It is also possible to query custom attributes:
+
+```sql
+--returns all custom attributes applied to the property
+SELECT * FROM meta.PropertyCustomAttribute
+
+--returns all custom attributes applied to the class
+SELECT * FROM meta.ClassCustomAttribute
+
+--returns all custom attributes applied to the schema
+SELECT * FROM meta.SchemaCustomAttribute
+```
+
 For more details about custom attributes see [ECCustomAttributeClass](./ec-custom-attribute-class.md)

@@ -10,6 +10,7 @@ ECSQL allows use of these built-in functions:
 1. [`regexp_extract()`](#regexp_extract--value-regex--rewrite) - extract and rewrite matching regex group from a string value.
 1. [`strToGuid()`](#strtoguid-guid-string) - covert string guid to binary guid.
 1. [`guidToStr()`](#guidtostring-binary-guid) - covert binary guid to string guid.
+1. [`navigation_value()`](#navigation_value-ecnavigationproperty-path-id--RelECClassId) - Constructs an ECNavigation value, given ECNavigation property, Id and optionaly, RelECClassId.
 
 ## ec_classname( _ecclassId_ [, _format-string_ | _format-id_] )
 
@@ -152,6 +153,36 @@ When `GUID` is stored a binary, it need to be converted for comparison purpose.
 
 ```sql
 SELECT * FROM [BisCore].[Element] WHERE GuidToString(FederationGuid) = '407bfa18-944d-11ee-b9d1-0242ac120002'
+```
+
+## NAVIGATION_VALUE( _ECNavigationProperty-path_, _Id_ [, _RelECClassId_] )
+
+Constructs an ECNavigation property from the provided values.
+
+## Parameters
+
+Can take either two or three parameters:
+`ECNavigationProperty-path`: The path must consist of Schema name or alias, Class name and Property Name. The property should always be an ECNavigation property.
+`Id`: The Id that will be applied to the ECNavigation value
+`RelECClassId`: The RelECClassId that will be applied to the ECNavigation value
+
+The `RelECClassId` argument is optional and when it is missing, the RelECClassId will be taken from the ECNavigationProperty ECRelationship class
+
+### Returns
+
+The function returns an ECNavigation property.
+
+### Example
+
+```sql
+-- returns an ECNavigation value with Id equal to 1 and RelECClassId equal to ClassId of the ECRelationshipClass (in this case, id of the ModelContainsElements)
+SELECT NAVIGATION_VALUE(bis.Element.Model, 1)
+
+-- returns an ECNavigation value with Id equal to 1 and RelECClassId equal to 2
+SELECT NAVIGATION_VALUE(bis.Element.Model, 1, 2)
+
+-- properties can be passed to the Id and RelECClassId arguments as well, but FROM clause should be specified
+SELECT NAVIGATION_VALUE(bis.Element.Model, Model.Id, Model.RelECClassId) [MyNavProp] FROM bis.Model
 ```
 
 [ECSql Syntax](./index.md)
