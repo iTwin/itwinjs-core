@@ -10,7 +10,7 @@ import { ViewportDecorator } from "../Viewport";
 import { HitDetail } from "../HitDetail";
 import { SceneContext } from "../ViewContext";
 import { AmbientOcclusion, ColorDef, Environment, FeatureAppearance, PlanarClipMaskSettings, RealityDataSourceKey, RealityModelDisplaySettings, SolarShadowSettings, SpatialClassifiers, ViewFlags } from "@itwin/core-common";
-import { SpatialView, View, View2d } from "./View";
+import { SpatialView, IModelView, IModelView2d } from "./View";
 import { TiledGraphicsProvider } from "../tile/internal";
 import { SceneVolume3d, TestSceneVolume2d } from "./SceneVolume";
 
@@ -63,10 +63,10 @@ export interface RealityModelSceneObjects extends Iterable<RealityModelSceneObje
 }
 
 export interface ViewSceneObject extends ISceneObject, Omit<BaseSceneObject, "view"> {
-  readonly view: View;
+  readonly view: IModelView;
 }
 
-export interface ViewSceneObjects<T extends View> extends Iterable<T> {
+export interface ViewSceneObjects<T extends IModelView> extends Iterable<T> {
   
 }
 
@@ -129,7 +129,7 @@ export interface SpatialScene {
 export interface TestScene2d {
   isSpatial?: false;
   volume: TestSceneVolume2d;
-  readonly views: ViewSceneObjects<View2d>;
+  readonly views: ViewSceneObjects<IModelView2d>;
   readonly presentation: ScenePresentation2d;
   readonly tiledGraphicsProviders: TiledGraphicsSceneObjects;
   readonly custom: CustomSceneObjects;

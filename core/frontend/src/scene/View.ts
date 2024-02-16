@@ -29,7 +29,7 @@ export interface ViewCategorySelector {
   changeCategoryDisplay(arg: Id64Arg, add: boolean): void;
 }
 
-export interface IView {
+export interface IIModelView {
   readonly iModel: IModelConnection;
 
   categorySelector: ViewCategorySelector;
@@ -109,7 +109,7 @@ export interface IView {
   modelClipGroups: ModelClipGroups;
 }
 
-export interface View3d extends IView {
+export interface IModelView3d extends IIModelView {
   readonly is3d: true;
   readonly is2d?: never;
 
@@ -119,7 +119,7 @@ export interface View3d extends IView {
   getModelClip(modelId: Id64String): RenderClipVolume | undefined;
 }
 
-export interface View2d extends IView {
+export interface IModelView2d extends IIModelView {
   readonly is2d: true;
   readonly is3d: never;
 }
@@ -131,16 +131,16 @@ export interface ViewModelSelector {
  dropModels(models: Id64Arg): void;
 }
 
-export interface SpatialView extends View3d {
+export interface SpatialView extends IModelView3d {
  computeSpatialFitRange(options?: ComputeSpatialViewFitRangeOptions): AxisAlignedBox3d;
 }
 
-export interface DrawingView extends View2d {
+export interface DrawingView extends IModelView2d {
  
 }
 
-export interface SheetView extends View2d {
+export interface SheetView extends IModelView2d {
  
 }
 
-export type View = DrawingView | SheetView | SpatialView | View3d | View2d;
+export type IModelView = DrawingView | SheetView | SpatialView | IModelView3d | IModelView2d;
