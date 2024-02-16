@@ -117,7 +117,10 @@ export type SceneObject = RealityModelSceneObject | IModelSceneObject | Presenta
 
 export interface SpatialScene {
   readonly isSpatial: true;
+  readonly is2d?: never;
+
   volume: SceneVolume3d;
+
   readonly realityModels: RealityModelSceneObjects;
   readonly maps: MapSceneObject;
   readonly iModels: IModelSceneObjects<SpatialView>;
@@ -127,8 +130,11 @@ export interface SpatialScene {
 }
 
 export interface TestScene2d {
-  isSpatial?: false;
+  readonly is2d: true;
+  readonly isSpatial?: never;
+
   volume: TestSceneVolume2d;
+
   readonly views: IModelSceneObjects<IModelView2d>;
   readonly presentation: ScenePresentation2d;
   readonly tiledGraphicsProviders: TiledGraphicsSceneObjects;
