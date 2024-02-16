@@ -218,7 +218,7 @@ jobs:
             echo "$replace"
             sed -i "s/$search/$replace/g" "$docsYamlPath"
             git add "$docsYamlPath"
-            git commit -m "Update 'gather-docs.yaml'"
+            git commit -m "Update 'gather-docs.yaml' to previous release branch name"
           fi
         displayName: Update 'gather-docs.yaml' and commit to release branch
 
