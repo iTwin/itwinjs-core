@@ -2,6 +2,12 @@
   "name": "@itwin/map-layers-auth",
   "entries": [
     {
+      "version": "4.4.1",
+      "tag": "@itwin/map-layers-auth_v4.4.1",
+      "date": "Fri, 16 Feb 2024 14:17:48 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.4.0",
       "tag": "@itwin/map-layers-auth_v4.4.0",
       "date": "Mon, 12 Feb 2024 18:15:58 GMT",
