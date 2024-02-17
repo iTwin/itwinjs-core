@@ -132,6 +132,8 @@ export interface ViewModelSelector {
 }
 
 export interface SpatialView extends IModelView3d {
+  modelSelector: ViewModelSelector;
+
  computeSpatialFitRange(options?: ComputeSpatialViewFitRangeOptions): AxisAlignedBox3d;
 }
 
