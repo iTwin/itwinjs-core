@@ -7,7 +7,7 @@
  */
 
 import { Id64Arg, Id64String } from "@itwin/core-bentley";
-import { View3dStyle, ViewStyle, ViewStyleFlags } from "./ViewStyle";
+import { View2dStyle, View3dStyle, ViewStyle, ViewStyleFlags } from "./ViewStyle";
 import { AxisAlignedBox3d, ModelClipGroups } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { GeometricModelState } from "../ModelState";
@@ -22,7 +22,7 @@ import { ComputeSpatialViewFitRangeOptions } from "../SpatialViewState";
 
 export interface ViewCategorySelector {
   categories: Set<string>;
-  equalState(other: ViewCategorySelector): boolean;
+  equals(other: ViewCategorySelector): boolean;
 
   addCategories(arg: Id64Arg): void;
   dropCategories(arg: Id64Arg): void;
@@ -32,7 +32,7 @@ export interface ViewCategorySelector {
 export interface IIModelView {
   readonly iModel: IModelConnection;
 
-  categorySelector: ViewCategorySelector;
+  readonly categorySelector: ViewCategorySelector;
   displayStyle: ViewStyle;
   viewFlags: ViewStyleFlags;
 
@@ -123,17 +123,19 @@ export interface IModelView3d extends IIModelView {
 export interface IModelView2d extends IIModelView {
   readonly is2d: true;
   readonly is3d: never;
+
+  displayStyle: View2dStyle;
 }
 
 export interface ViewModelSelector {
  models: Set<Id64String>;
- equalState(other: ViewModelSelector): boolean;
+ equals(other: ViewModelSelector): boolean;
  addModels(models: Id64Arg): void;
  dropModels(models: Id64Arg): void;
 }
 
 export interface IModelSpatialView extends IModelView3d {
-  modelSelector: ViewModelSelector;
+  readonly modelSelector: ViewModelSelector;
 
   computeSpatialFitRange(options?: ComputeSpatialViewFitRangeOptions): AxisAlignedBox3d;
 }
