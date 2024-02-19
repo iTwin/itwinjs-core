@@ -22,7 +22,7 @@ import { ComputeSpatialViewFitRangeOptions } from "../SpatialViewState";
 
 export interface ViewCategorySelector {
   categories: Set<string>;
-  equals(other: ViewCategorySelector): boolean;
+  isEquivalentTo(other: ViewCategorySelector): boolean;
 
   addCategories(arg: Id64Arg): void;
   dropCategories(arg: Id64Arg): void;
@@ -42,9 +42,6 @@ export interface IIModelView {
 
   // ###TODO scheduleScript, scheduleScriptReference
   // ###TODO analysisStyle
-
-  // ###TODO is this needed?
-  equals(other: this): boolean;
 
   readonly areAllTileTreesLoaded: boolean;
 
@@ -129,7 +126,7 @@ export interface IModelView2d extends IIModelView {
 
 export interface ViewModelSelector {
  models: Set<Id64String>;
- equals(other: ViewModelSelector): boolean;
+ isEquivalentTo(other: ViewModelSelector): boolean;
  addModels(models: Id64Arg): void;
  dropModels(models: Id64Arg): void;
 }

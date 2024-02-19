@@ -10,13 +10,14 @@ import { Id64, Id64Arg, Id64String, ObservableSet } from "@itwin/core-bentley";
 import { ModelSelectorProps } from "@itwin/core-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
+import { ViewModelSelector } from "./scene/IModelView";
 
 /** The state of a [ModelSelector]($backend). It holds a set of ids of GeometricModels for a [[SpatialViewState]].
  * It defines the set of [[ModelState]]s drawn within the view as a set of IDs.
  * @public
  * @extensions
  */
-export class ModelSelectorState extends ElementState {
+export class ModelSelectorState extends ElementState implements ViewModelSelector {
   public static override get className() { return "ModelSelector"; }
 
   private readonly _models = new ObservableSet<string>();
@@ -53,14 +54,8 @@ export class ModelSelectorState extends ElementState {
     return val;
   }
 
-  /** Determine if this model selector is logically equivalent to the specified model selector. Two model selectors are logically equivalent is
-   * they have the same name and Id and contain the same set of models.
-   * @param other The model selector to which to compare.
-   * @returns true if the model selectors are logically equivalent.
-   * @public
-   */
-  public equalState(other: ModelSelectorState): boolean {
-    if (this.models.size !== other.models.size || this.id !== other.id || this.name !== other.name)
+  public isEquivalentTo(other: ViewModelSelector): boolean {
+    if (this.models.size !== other.models.size)
       return false;
 
     for (const model of this.models)
@@ -68,6 +63,16 @@ export class ModelSelectorState extends ElementState {
         return false;
 
     return true;
+  }
+
+  /** Determine if this model selector is logically equivalent to the specified model selector. Two model selectors are logically equivalent is
+   * they have the same name and Id and contain the same set of models.
+   * @param other The model selector to which to compare.
+   * @returns true if the model selectors are logically equivalent.
+   * @public
+   */
+  public equalState(other: ModelSelectorState): boolean {
+    return this.id === other.id && this.name === other.name && this.isEquivalentTo(other);
   }
 
   /** Add one or more models to this ModelSelectorState */

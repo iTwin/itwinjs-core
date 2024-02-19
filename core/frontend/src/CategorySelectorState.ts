@@ -9,6 +9,7 @@ import { Id64, Id64Arg, Id64String, ObservableSet } from "@itwin/core-bentley";
 import { CategorySelectorProps } from "@itwin/core-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
+import { ViewCategorySelector } from "./scene/IModelView";
 
 /** A set of Categories to be displayed in a [[ViewState]].
  * Elements belonging to categories not specified in the category selector will not be drawn in the view.
@@ -20,7 +21,7 @@ import { IModelConnection } from "./IModelConnection";
  * @public
  * @extensions
  */
-export class CategorySelectorState extends ElementState {
+export class CategorySelectorState extends ElementState implements ViewCategorySelector {
   public static override get className() { return "CategorySelector"; }
 
   private readonly _categories = new ObservableSet<string>();
@@ -53,18 +54,22 @@ export class CategorySelectorState extends ElementState {
     return val;
   }
 
+  public isEquivalentTo(other: ViewCategorySelector): boolean {
+    if (this.categories.size !== other.categories.size)
+      return false;
+
+    for (const category of this.categories)
+      if (!other.categories.has(category))
+        return false;
+
+    return true;
+  }
+
   /** Returns true if this category selector is logically equivalent to the specified category selector.
    * Two category selectors are logically equivalent if they have the same name and Id and contain the same set of category Ids.
    */
   public equalState(other: CategorySelectorState): boolean {
-    if (this.categories.size !== other.categories.size || this.name !== other.name || this.id !== other.id)
-      return false;
-
-    for (const cat of this.categories)
-      if (!other.categories.has(cat))
-        return false;
-
-    return true;
+    return this.id === other.id && this.name === other.name && this.isEquivalentTo(other);
   }
 
   /** The name of this CategorySelector */
