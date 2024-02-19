@@ -33,7 +33,7 @@ export interface IIModelView {
   readonly iModel: IModelConnection;
 
   readonly categorySelector: ViewCategorySelector;
-  displayStyle: ViewStyle;
+  style: ViewStyle;
   viewFlags: ViewStyleFlags;
 
   isSpatial(): this is IModelSpatialView;
@@ -103,25 +103,25 @@ export interface IIModelView {
    * @internal
    */
   getAttachmentViewport(_id: Id64String): Viewport | undefined;
-
-  modelClipGroups: ModelClipGroups;
 }
 
 export interface IModelView3d extends IIModelView {
-  readonly is3d: true;
-  readonly is2d?: never;
+  readonly is3dView: true;
+  readonly is2dView?: never;
 
-  displayStyle: View3dStyle;
+  style: View3dStyle;
+
+  modelClipGroups: ModelClipGroups;
 
   /** @internal */
   getModelClip(modelId: Id64String): RenderClipVolume | undefined;
 }
 
 export interface IModelView2d extends IIModelView {
-  readonly is2d: true;
-  readonly is3d: never;
+  readonly is2dView: true;
+  readonly is3dView?: never;
 
-  displayStyle: View2dStyle;
+  style: View2dStyle;
 }
 
 export interface ViewModelSelector {
