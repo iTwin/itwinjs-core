@@ -42,6 +42,7 @@ import { Viewport } from "./Viewport";
 import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 import { ViewStatus } from "./ViewStatus";
 import { EnvironmentDecorations } from "./EnvironmentDecorations";
+import { ISceneVolume, SceneVolume3d } from "./scene/SceneVolume";
 
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
@@ -205,7 +206,7 @@ export type AttachToViewportArgs = Viewport;
  * @public
  * @extensions
  */
-export abstract class ViewState extends ElementState {
+export abstract class ViewState extends ElementState implements ISceneVolume {
   public static override get className() { return "ViewDefinition"; }
 
   private _auxCoordSystem?: AuxCoordSystemState;
@@ -687,10 +688,10 @@ export abstract class ViewState extends ElementState {
     return box;
   }
 
-  public calculateFocusCorners() {
+  public calculateFocusCorners(): Point3d[] {
     const map = this.computeWorldToNpc()!.map!;
     const focusNpcZ = Geometry.clamp(map.transform0.multiplyPoint3dQuietNormalize(this.getTargetPoint()).z, 0, 1.0);
-    const pts = [new Point3d(0.0, 0.0, focusNpcZ), new Point3d(1.0, 0.0, focusNpcZ), new Point3d(0.0, 1.0, focusNpcZ), new Point3d(1.0, 1.0, focusNpcZ)];
+    const pts: [Point3d, Point3d, Point3d, Point3d] = [new Point3d(0.0, 0.0, focusNpcZ), new Point3d(1.0, 0.0, focusNpcZ), new Point3d(0.0, 1.0, focusNpcZ), new Point3d(1.0, 1.0, focusNpcZ)];
     map.transform1.multiplyPoint3dArrayQuietNormalize(pts);
     return pts;
   }
@@ -1378,7 +1379,8 @@ export abstract class ViewState extends ElementState {
  * @public
  * @extensions
  */
-export abstract class ViewState3d extends ViewState {
+export abstract class ViewState3d extends ViewState implements SceneVolume3d {
+  public readonly is3dVolume = true;
   private readonly _details: ViewDetails3d;
   private readonly _modelClips: Array<RenderClipVolume | undefined> = [];
   private _environmentDecorations?: EnvironmentDecorations;

@@ -38,8 +38,8 @@ export interface ISceneVolume {
   getTargetPoint(result?: Point3d): Point3d;
 
   computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d, enforceFrontToBackRatio?: boolean): { map: Map4d | undefined, frustFraction: number };
-  calculateFrustum(result?: Frustum): Frustum | undefined;
-  calculateFocusCorners(): [Point3d, Point3d, Point3d, Point3d];
+  calculateFrustum(result?: Frustum): Frustum | undefined; 
+  calculateFocusCorners(): Point3d[]; // ###TODO document that it always returns exactly 4 points
 
   setupFromFrustum(inFrustum: Frustum, opts?: OnViewExtentsError): ViewStatus;
 
@@ -51,8 +51,9 @@ export interface ISceneVolume {
   
   adjustAspectRatio(aspect: number): void;
   
-  readonly aspectRatio: number;
-  aspectRatioSkew: number;
+  getAspectRatio(): number;
+  getAspectRatioSkew(): number;
+  setAspectRatioSkew(skew: number): void;
 
   /** @internal */
   adjustViewDelta(delta: Vector3d, origin: XYZ, rot: Matrix3d, aspect?: number, opts?: OnViewExtentsError): ViewStatus;
@@ -80,8 +81,8 @@ export interface ISceneVolume {
 }
 
 export interface SceneVolume3d extends ISceneVolume {
-  readonly is3d: true;
-  is2d?: never;
+  readonly is3dVolume: true;
+  readonly is2dVolume?: never;
 
   readonly origin: Point3d;
   readonly extents: Vector3d;
@@ -148,8 +149,8 @@ export interface SceneVolume3d extends ISceneVolume {
 }
 
 export interface TestSceneVolume2d extends ISceneVolume {
-  readonly is2d: true;
-  is3d?: never;
+  readonly is2dVolume: true;
+  readonly is3dVolume?: never;
 }
 
 export type SceneVolume = TestSceneVolume2d | SceneVolume3d;
