@@ -36,7 +36,7 @@ export interface IIModelView {
   displayStyle: ViewStyle;
   viewFlags: ViewStyleFlags;
 
-  isSpatial(): this is SpatialView;
+  isSpatial(): this is IModelSpatialView;
   isDrawing(): this is DrawingView;
   isSheet(): this is SheetView;
 
@@ -61,6 +61,7 @@ export interface IIModelView {
   /** @internal */
   forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void;
 
+  // ###TODO will this be needed externally (or at all)? Hopefully not.
   forEachTileTreeRef(func: (treeRef: TileTreeReference) => void): void;
 
   /** @internal */
@@ -131,10 +132,10 @@ export interface ViewModelSelector {
  dropModels(models: Id64Arg): void;
 }
 
-export interface SpatialView extends IModelView3d {
+export interface IModelSpatialView extends IModelView3d {
   modelSelector: ViewModelSelector;
 
- computeSpatialFitRange(options?: ComputeSpatialViewFitRangeOptions): AxisAlignedBox3d;
+  computeSpatialFitRange(options?: ComputeSpatialViewFitRangeOptions): AxisAlignedBox3d;
 }
 
 export interface DrawingView extends IModelView2d {
@@ -145,4 +146,4 @@ export interface SheetView extends IModelView2d {
  
 }
 
-export type IModelView = DrawingView | SheetView | SpatialView | IModelView3d | IModelView2d;
+export type IModelView = DrawingView | SheetView | IModelSpatialView | IModelView3d | IModelView2d;

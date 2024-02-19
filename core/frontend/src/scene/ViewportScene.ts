@@ -10,7 +10,7 @@ import { ViewportDecorator } from "../Viewport";
 import { HitDetail } from "../HitDetail";
 import { SceneContext } from "../ViewContext";
 import { AmbientOcclusion, ColorDef, Environment, FeatureAppearance, PlanarClipMaskSettings, RealityDataSourceKey, RealityModelDisplaySettings, SolarShadowSettings, SpatialClassifiers, ViewFlags } from "@itwin/core-common";
-import { SpatialView, IModelView, IModelView2d } from "./IModelView";
+import { IModelSpatialView, IModelView, IModelView2d } from "./IModelView";
 import { TiledGraphicsProvider } from "../tile/internal";
 import { SceneVolume3d, TestSceneVolume2d } from "./SceneVolume";
 
@@ -125,7 +125,7 @@ export interface SpatialScene {
 
   readonly realityModels: RealityModelSceneObjects;
   readonly maps: MapSceneObject;
-  readonly iModels: IModelSceneObjects<SpatialView>;
+  readonly iModels: IModelSceneObjects<IModelSpatialView>;
   readonly custom: CustomSceneObjects;
   readonly presentation: ScenePresentation3d;
   readonly tiledGraphicsProviders: TiledGraphicsSceneObjects;

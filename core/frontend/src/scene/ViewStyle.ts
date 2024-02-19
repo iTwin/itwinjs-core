@@ -8,8 +8,6 @@
 
 import { Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { FeatureAppearance, PlanProjectionSettings, PlanarClipMaskSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlagsProperties } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
-import { TileTreeReference } from "../tile/internal";
 
 /** ###TODO optional properties have no effect. shadows, clipVolume, lighting, and thematicDisplay can't be enabled if they are globally disabled, I think.
  */
@@ -17,7 +15,6 @@ export type ViewStyleFlags = ViewFlagsProperties; // Optional<ViewFlagsPropertie
 
 export interface IViewStyle {
   viewFlags: ViewStyleFlags;
-  readonly iModel: IModelConnection;
 
   planarClipMasks: Map<Id64String, PlanarClipMaskSettings>;
 
@@ -44,9 +41,6 @@ export interface IViewStyle {
   dropExcludedElement(id: Id64String): void;
   dropExcludedElements(id: Id64String | Iterable<Id64String>): void;
   clearExcludedElements(): void;
-
-  // ###TODO yuck
-  forEachTileTreeRef(func: (ref: TileTreeReference) => void): void;
 }
 
 export interface View3dStyle extends IViewStyle {
