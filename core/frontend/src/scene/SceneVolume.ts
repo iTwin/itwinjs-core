@@ -14,7 +14,6 @@ import { ViewStatus } from "../ViewStatus";
 import { MarginOptions, OnViewExtentsError } from "../ViewAnimation";
 import { ExtentLimits, LookAtOrthoArgs, LookAtPerspectiveArgs, LookAtUsingLensAngle, ViewState, ViewState2d, ViewState3d } from "../ViewState";
 import { GlobalLocation } from "../ViewGlobalLocation";
-import { sceneVolume3dFromViewState } from "./impl/SceneVolumeImpl";
 import { assert } from "@itwin/core-bentley";
 
 export interface ISceneVolume {
@@ -154,22 +153,3 @@ export interface TestSceneVolume2d extends ISceneVolume {
 }
 
 export type SceneVolume = TestSceneVolume2d | SceneVolume3d;
-
-export namespace SceneVolume {
-  export function fromViewState3d(view: ViewState3d): SceneVolume3d {
-    return sceneVolume3dFromViewState(view);
-  }
-
-  export function fromViewState2d(view: ViewState2d): TestSceneVolume2d {
-    assert(undefined !== view);
-    throw new Error("###TODO");
-  }
-
-  export function fromViewState(view: ViewState): SceneVolume {
-    if (view.is3d())
-      return fromViewState3d(view);
-
-    assert(view.is2d());
-    return fromViewState2d(view);
-  }
-}

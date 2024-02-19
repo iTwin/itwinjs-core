@@ -10,7 +10,6 @@ import { Id64String, OrderedId64Iterable, assert } from "@itwin/core-bentley";
 import {
   FeatureAppearance, PlanProjectionSettings, PlanarClipMaskSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlags,
 } from "@itwin/core-common";
-import { view2dStyleFromDisplayStyle2dState, view3dStyleFromDisplayStyle3dState } from "./impl/ViewStyleImpl";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "../DisplayStyleState";
 
 /** ###TODO optional properties have no effect. shadows, clipVolume, lighting, and thematicDisplay can't be enabled if they are globally disabled, I think.
@@ -39,8 +38,8 @@ export interface IViewStyle {
 }
 
 export interface View3dStyle extends IViewStyle {
-  readonly is3d: true;
-  is2d?: never;
+  readonly is3dStyle: true;
+  is2dStyle?: never;
   
   // ###TODO permit Scene's HiddenLine.Settings to be overridden/replaced?
 
@@ -50,26 +49,9 @@ export interface View3dStyle extends IViewStyle {
 }
 
 export interface View2dStyle extends IViewStyle {
-  readonly is2d: true;
-  is3d?: never;
+  readonly is2dStyle: true;
+  is3dStyle?: never;
 }
 
 export type ViewStyle = View2dStyle | View3dStyle;
 
-export namespace ViewStyle {
-  export function fromDisplayStyle2dState(style: DisplayStyle2dState): View2dStyle {
-    return view2dStyleFromDisplayStyle2dState(style);
-  }
-
-  export function fromDisplayStyle3dState(style: DisplayStyle3dState): View3dStyle {
-    return view3dStyleFromDisplayStyle3dState(style);
-  }
-
-  export function fromDisplayStyleState(style: DisplayStyleState): ViewStyle {
-    if (style.is3d())
-      return fromDisplayStyle3dState(style);
-
-    assert(style instanceof DisplayStyle2dState);
-    return fromDisplayStyle2dState(style);
-  }
-}
