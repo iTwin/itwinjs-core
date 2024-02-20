@@ -47,7 +47,7 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.50",
+    "@itwin/eslint-plugin": "4.0.0-dev.52",
     "@itwin/object-storage-core": "^2.2.2",
     "@types/chai": "4.3.1",
     "@types/flatbuffers": "~1.10.0",

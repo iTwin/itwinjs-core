@@ -61,7 +61,7 @@
   "devDependencies": {
     "@itwin/perf-tools": "workspace:*",
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.50",
+    "@itwin/eslint-plugin": "4.0.0-dev.52",
     "browserslist-to-esbuild": "^1.2.0",
     "@types/body-parser": "^1.17.0",
     "@types/express": "^4.17.20",

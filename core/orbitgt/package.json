@@ -33,7 +33,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.50",
+    "@itwin/eslint-plugin": "4.0.0-dev.52",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
     "@types/node": "~18.16.20",

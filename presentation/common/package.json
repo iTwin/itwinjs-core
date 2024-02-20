@@ -58,7 +58,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.50",
+    "@itwin/eslint-plugin": "4.0.0-dev.52",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.8",

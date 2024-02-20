@@ -42,7 +42,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.50",
+    "@itwin/eslint-plugin": "4.0.0-dev.52",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/google-protobuf": "~3.15.6",

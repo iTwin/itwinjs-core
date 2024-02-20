@@ -67,7 +67,7 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.50",
+    "@itwin/eslint-plugin": "4.0.0-dev.52",
     "cache-require-paths": "^0.3.0",
     "cross-env": "^5.1.4",
     "dotenv": "^10.0.0",

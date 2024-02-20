@@ -46,7 +46,7 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecschema-rpcinterface-common": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.50",
+    "@itwin/eslint-plugin": "4.0.0-dev.52",
     "eslint": "^8.44.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.3.3"
