@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecsql-common",
-  "version": "4.5.0-dev.10",
+  "version": "4.5.0-dev.14",
   "description": "ECSql component that can be reference on backend and frontend",
   "main": "lib/cjs/ecsql-common.js",
   "module": "lib/esm/ecsql-common.js",
@@ -40,6 +40,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
     "chai": "^4.3.10",
