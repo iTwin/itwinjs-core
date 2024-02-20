@@ -25,7 +25,6 @@ describe("Learning Snippets", () => {
   });
 
   describe("RelatedInstanceSpecification", () => {
-
     it("using in instance filter with relationship path", async () => {
       // __PUBLISH_EXTRACT_START__ Presentation.RelatedInstanceSpecification.UsingInInstanceFilter.Ruleset
       // This ruleset defines a specification that returns content for `bis.ViewDefinition` instances. In addition,
