@@ -2551,6 +2551,7 @@ export interface RelatedClassInfo {
     relationshipInfo: ClassInfo;
     sourceClassInfo: ClassInfo;
     targetClassInfo: ClassInfo;
+    targetInstanceIds?: Id64String[];
 }
 
 // @public (undocumented)
@@ -2583,6 +2584,8 @@ export interface RelatedClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
     sourceClassInfo: TClassInfoJSON;
     // (undocumented)
     targetClassInfo: TClassInfoJSON;
+    // (undocumented)
+    targetInstanceIds?: Id64String[];
 }
 
 // @public
@@ -2602,6 +2605,19 @@ export namespace RelatedClassInfoWithOptionalRelationship {
 export type RelatedClassInfoWithOptionalRelationshipJSON<TClassInfoJSON = ClassInfoJSON> = PartialBy<RelatedClassInfoJSON<TClassInfoJSON>, "relationshipInfo" | "isForwardRelationship" | "isPolymorphicRelationship">;
 
 // @public
+export interface RelatedInstanceByPathSpecification extends RelatedInstanceSpecificationBase {
+    relationshipPath: RelationshipPathSpecification;
+}
+
+// @public
+export interface RelatedInstanceByTargetInstancesSpecification extends RelatedInstanceSpecificationBase {
+    targetInstances: {
+        class: SingleSchemaClassSpecification;
+        instanceIds: Id64String[];
+    };
+}
+
+// @public
 export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
     instanceFilter?: string;
     relationshipPaths: RepeatableRelationshipPathSpecification[];
@@ -2609,10 +2625,12 @@ export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificatio
 }
 
 // @public
-export interface RelatedInstanceSpecification {
+export type RelatedInstanceSpecification = RelatedInstanceByPathSpecification | RelatedInstanceByTargetInstancesSpecification;
+
+// @public
+export interface RelatedInstanceSpecificationBase {
     alias: string;
     isRequired?: boolean;
-    relationshipPath: RelationshipPathSpecification;
 }
 
 // @public
