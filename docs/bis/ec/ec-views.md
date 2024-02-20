@@ -1,20 +1,25 @@
-# Views
+# ECViews
 
-It is possible to define an abstract class with a custom attribute `ECDbMap.View`, in which it is possible to provide an ECSql query.
+A view is a special kind of [ECEntityClass](ec-entity-class.md). The concept is realized through an [ECCustomAttribute](ec-custom-attributes.md) which is defined in the `ECDbMap` schema.
 
-Some things need to be considered:
+The custom attribute allows defining an abstract entity class which is not backed by actual data but rather by an ECSQL query which is executed to obtain instances of the class.
 
-- Query property and type should match the view class definition.
-- System properties (ECInstanceId, ECClassId).
-- If the view query does not return system properties, then the view class will not have it. `SELECT * FROM ts.ViewClass` will only return data properties.
-- All types of properties and computed expressions can be returned by view query if the class definition defines those properties and their types correctly.
-- Views can be applied only to the ECEntityClass or ECRelationshipClass. If it is applied to ECRelationshipClass, then source and target classes must be view classes as well.
-- View classes must be mapped to a virtual table and not a physical table.
-- View ECCustomAttribute must be applied to an `Abstract` class.
+The following rules apply to views:
+
+- The custom attribute `ECDbMap.View` must be applied to a standalone abstract entity class.
 - View cannot be derived from another class
 - View class definition cannot have derived classes.
+- All columns selected in the ECSQL query except for ECInstanceId must have corresponding ECProperties defined on the class.
+- Query column type and property type have to match (int for integers, string for strings etc.).
+- The query has to return an ECInstanceId column
+- The query may return an ECClassId column, if it does not, the class id of the abstract class is automatically being used.
+- All types of properties and computed expressions can be returned by view query if the class definition defines those properties and their types correctly.
+- Views can be applied only to the ECEntityClass or ECRelationshipClass.
+- For relationship classes, a different custom attribute `ECDbMap.ImplicitView` can be used instead, which will make the runtime go and check both sides for a navigation property which matches the relationship. If one is found, a view for the relationship is automatically generated.
+- Support for relationship views other than ImplicitView is currently limited. Using it for linktable relationships is not currently allowed.
+- Any metadata like property category or kind of quantity is taken from the property definitions. Metadata that may come from the view query is overridden by these.
 
-For example, let's have a look at this schema:
+Example of a schema using a view:
 
 ```xml
 <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
@@ -43,7 +48,7 @@ For example, let's have a look at this schema:
 </ECSchema>
 ```
 
-And `JsonObject` is filled with this data:
+`JsonObject` could be filled with this data:
 
 ```
 {"type": "pipe", "diameter": 10, "length": 100, "material": "steel"}
@@ -69,3 +74,5 @@ Length   |Diameter |Material
 200      |15       |copper
 150      |20       |plastic
 ```
+
+A view may contain navigation properties, for these, the query can use the `navigation_value`function provided by ECSQL [ECSqlFunctions](./../../learning/ECSqlReference/ECSqlFunctions.md)
