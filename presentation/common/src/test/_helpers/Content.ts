@@ -1,11 +1,28 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import {
-  CategoryDescription, ClassInfo, Descriptor, DescriptorSource, DisplayValuesMap, EditorDescription, Field, InstanceKey, Item, LabelDefinition,
-  NestedContentField, PropertiesField, Property, PropertyValueFormat, RelationshipPath, RendererDescription, SelectClassInfo, StructTypeDescription,
-  TypeDescription, ValuesMap,
+  CategoryDescription,
+  ClassInfo,
+  Descriptor,
+  DescriptorSource,
+  DisplayValuesMap,
+  EditorDescription,
+  Field,
+  InstanceKey,
+  Item,
+  LabelDefinition,
+  NestedContentField,
+  PropertiesField,
+  Property,
+  PropertyValueFormat,
+  RelationshipPath,
+  RendererDescription,
+  SelectClassInfo,
+  StructTypeDescription,
+  TypeDescription,
+  ValuesMap,
 } from "../../presentation-common";
 import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
 import { createTestECClassInfo, createTestECInstanceKey, createTestRelationshipPath } from "./EC";
@@ -123,8 +140,9 @@ export function createTestNestedContentField(props: {
     !!props.autoExpand,
     props.renderer,
   );
-  if (props.relationshipMeaning)
+  if (props.relationshipMeaning) {
     field.relationshipMeaning = props.relationshipMeaning;
+  }
   field.rebuildParentship();
   return field;
 }

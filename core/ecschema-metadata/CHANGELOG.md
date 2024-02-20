@@ -1,6 +1,25 @@
 # Change Log - @itwin/ecschema-metadata
 
-This log was last generated on Wed, 03 Jan 2024 19:29:41 GMT and should not be manually modified.
+This log was last generated on Fri, 16 Feb 2024 14:23:08 GMT and should not be manually modified.
+
+## 4.4.2
+Fri, 16 Feb 2024 14:22:01 GMT
+
+_Version update only_
+
+## 4.4.1
+Fri, 16 Feb 2024 14:17:48 GMT
+
+_Version update only_
+
+## 4.4.0
+Mon, 12 Feb 2024 18:15:58 GMT
+
+### Updates
+
+- Added setters for property attribute values used in schema merging
+- Added setters for relationship or relationshipconstraint properties
+- Added setter for koq persistenceUnit used in schema merging
 
 ## 4.3.3
 Wed, 03 Jan 2024 19:28:38 GMT

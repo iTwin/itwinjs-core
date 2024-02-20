@@ -21,7 +21,7 @@ import { PointString3d } from "./PointString3d";
  * ```ts
  *   function processGeometryQuery(q: GeometryQuery): void {
  *     if ("solid" === q.geometryCategory)
- *       alert("Solid type = " + q.solidPrimitiveType; // compiler knows q is an instance of SolidPrimitive
+ *       alert("Solid type = " + q.solidPrimitiveType); // compiler knows q is an instance of SolidPrimitive
  *    // ...etc...
  * ```
  *
@@ -32,7 +32,7 @@ import { PointString3d } from "./PointString3d";
  *  - "solid" => [[SolidPrimitive]]
  *  - "point" => [[CoordinateXYZ]]
  *  - "pointCollection" => [[PointString3d]]
- *  - "bsurf" => [[BSpline2dNd]]  (which is an intermediate class shared by [[BSplineSurface3d]] and [[BSplineSurface3dH]])
+ *  - "bsurf" => [[BSpline2dNd]] (which is an intermediate class shared by [[BSplineSurface3d]] and [[BSplineSurface3dH]])
  *
  *  @see [[AnyGeometryQuery]]
  * @public
@@ -47,22 +47,23 @@ export type GeometryQueryCategory = "polyface" | "curvePrimitive" | "curveCollec
 export type AnyGeometryQuery = Polyface | CurvePrimitive | CurveCollection | SolidPrimitive | CoordinateXYZ | PointString3d | BSpline2dNd;
 
 /**
- * Queries to be supported by Curve, Surface, and Solid objects
+ * Queries to be supported by Curve, Surface, and Solid objects.
  * * `GeometryQuery` is an abstract base class with (abstract) methods for querying curve, solid primitive, mesh,
- * and bspline surfaces
+ * and bspline surfaces.
  * @public
  */
 export abstract class GeometryQuery {
   /** Type discriminator. */
   public abstract readonly geometryCategory: GeometryQueryCategory;
-  /** Return the range of the entire GeometryQuery tree */
+  /** Return the range of the entire GeometryQuery tree. */
   public range(transform?: Transform, result?: Range3d): Range3d {
-    if (result) result.setNull();
+    if (result)
+      result.setNull();
     const range = result ? result : Range3d.createNull();
     this.extendRange(range, transform);
     return range;
   }
-  /** Extend rangeToExtend by the range of this geometry multiplied by the transform */
+  /** Extend `rangeToExtend` by the range of this geometry multiplied by the `transform`. */
   public abstract extendRange(rangeToExtend: Range3d, transform?: Transform): void;
   /**
    * Attempt to transform in place.
@@ -70,7 +71,7 @@ export abstract class GeometryQuery {
    * * Some geometry types may fail if scaling is non-uniform.
    */
   public abstract tryTransformInPlace(transform: Transform): boolean;
-  /** Try to move the geometry by dx,dy,dz */
+  /** Try to move the geometry by dx,dy,dz. */
   public tryTranslateInPlace(dx: number, dy: number = 0.0, dz: number = 0.0): boolean {
     return this.tryTransformInPlace(Transform.createTranslationXYZ(dx, dy, dz));
   }
@@ -82,15 +83,17 @@ export abstract class GeometryQuery {
    * Return GeometryQuery children for recursive queries.
    * * leaf classes do not need to implement.
    */
-  public get children(): GeometryQuery[] | undefined { return undefined; }
-  /** Test if (other instanceof this.Type).  REQUIRED IN ALL CONCRETE CLASSES */
+  public get children(): GeometryQuery[] | undefined {
+    return undefined;
+  }
+  /** Test `if (other instanceof this.Type)`. REQUIRED IN ALL CONCRETE CLASSES. */
   public abstract isSameGeometryClass(other: GeometryQuery): boolean;
   /**
    * Test for exact structure and nearly identical geometry.
-   * *  Leaf classes must implement !!!
-   * *  base class implementation recurses through children.
-   * *  base implementation is complete for classes with children and no properties.
-   * *  classes with both children and properties must implement for properties, call super for children.
+   * *  Leaf classes must implement.
+   * *  Base class implementation recurses through children.
+   * *  Base implementation is complete for classes with children and no properties.
+   * *  Classes with both children and properties must implement for properties, call super for children.
    */
   public isAlmostEqual(other: GeometryQuery): boolean {
     if (this.isSameGeometryClass(other)) {
@@ -100,22 +103,22 @@ export abstract class GeometryQuery {
         if (childrenA.length !== childrenB.length)
           return false;
         for (let i = 0; i < childrenA.length; i++) {
-          if (!childrenA[i].isAlmostEqual(childrenB[i])) return false;
+          if (!childrenA[i].isAlmostEqual(childrenB[i]))
+            return false;
         }
         return true;
-      } else if (childrenA || childrenB) {  // CurveCollections start with empty arrays for children.  So these null pointer cases are never reached.
-        return false;   // plainly different .
+      } else if (childrenA || childrenB) { // CurveCollections start with empty arrays for children so these null pointer cases are never reached.
+        return false; // plainly different
       } else {
-        // both children null. call it equal?   This class should probably have implemented.
-        return true;
+        return true; // both children null; call it equal
       }
     }
     return false;
   }
   /**
    * Apply instance method [[isAlmostEqual]] if both are defined.
-   * * both undefined returns true
-   * * single defined returns false
+   * * Both undefined returns true.
+   * * Single defined returns false.
    */
   public static areAlmostEqual(a: GeometryQuery | undefined, b: GeometryQuery | undefined): boolean {
     if (a instanceof GeometryQuery && b instanceof GeometryQuery)
@@ -125,11 +128,11 @@ export abstract class GeometryQuery {
     return false;
   }
   /**
-   * * "double dispatch" call pattern.
-   * * User code implements a `GeometryHandler` with specialized methods to handle `LineSegment3d`, `Arc3d` etc as
+   * Double Dispatch call pattern.
+   * * User code implements a `GeometryHandler` with specialized methods to handle `LineSegment3d`, `Arc3d`, etc as
    * relevant to its use case.
    * * Each such `GeometryQuery` class implements this method as a one-line method containing the appropriate call
-   * such as `handler.handleLineSegment3d ()`
+   * such as `handler.handleLineSegment3d())`
    * * This allows each type-specific method to be called without a switch or `instanceof` test.
    * @param handler handler to be called by the particular geometry class
    */

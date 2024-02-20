@@ -20,7 +20,7 @@ import { RpcTrace } from "./rpc/tracing";
 
 import type { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb";
 
-// spell:ignore logmsg httpcode
+// spell:ignore logmsg httpcode daemonless cachefile cacheslots ddthh
 
 /**
  * Types for accessing SQLite databases stored in cloud containers.
@@ -31,11 +31,12 @@ export namespace CloudSqlite {
   const logInfo = (msg: string) => Logger.logInfo("CloudSqlite", msg);
   const logError = (msg: string) => Logger.logError("CloudSqlite", msg);
 
+  export type RequestTokenArgs = Optional<BlobContainer.RequestTokenProps, "userToken">;
   /**
    * Request a new AccessToken for a cloud container using the [[BlobContainer]] service.
    * If the service is unavailable or returns an error, an empty token is returned.
    */
-  export async function requestToken(args: Optional<BlobContainer.RequestTokenProps, "userToken">): Promise<AccessToken> {
+  export async function requestToken(args: RequestTokenArgs): Promise<AccessToken> {
     // allow the userToken to be supplied via Rpc. If not supplied, or blank, use the backend's accessToken.
     const userToken = args.userToken ? args.userToken : (await IModelHost.getAccessToken());
     const response = await BlobContainer.service?.requestToken({ ...args, userToken });
@@ -55,7 +56,7 @@ export namespace CloudSqlite {
    * @note After the container is successfully connected to a CloudCache, it will begin auto-refreshing its accessToken every `tokenRefreshSeconds` seconds (default is 1 hour)
    * until it is disconnected. However, if the container is public, or if `tokenRefreshSeconds` is <=0, auto-refresh is not enabled.
    */
-  export function createCloudContainer(args: ContainerAccessProps & { accessLevel?: BlobContainer.RequestAccessLevel }): CloudContainer {
+  export function createCloudContainer(args: ContainerAccessProps & { accessLevel?: BlobContainer.RequestAccessLevel, tokenFn?: (args: RequestTokenArgs) => Promise<AccessToken> }): CloudContainer {
     const container = new NativeLibrary.nativeLib.CloudContainer(args) as CloudContainerInternal;
     const refreshSeconds = (undefined !== args.tokenRefreshSeconds) ? args.tokenRefreshSeconds : 60 * 60; // default is 1 hour
     container.lockExpireSeconds = args.lockExpireSeconds ?? 60 * 60; // default is 1 hour
@@ -67,7 +68,7 @@ export namespace CloudSqlite {
         let newToken: AccessToken | undefined;
         const url = `[${tokenProps.baseUri}/${tokenProps.containerId}]`;
         try {
-          newToken = await CloudSqlite.requestToken(tokenProps);
+          newToken = await (args.tokenFn ?? CloudSqlite.requestToken)(tokenProps);
           logInfo(`Refreshed token for container ${url}`);
         } catch (err: any) {
           logError(`Error refreshing token for container ${url}: ${err.message}`);

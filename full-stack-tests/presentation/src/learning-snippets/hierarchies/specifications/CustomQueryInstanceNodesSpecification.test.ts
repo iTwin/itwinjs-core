@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Ruleset } from "@itwin/presentation-common";
@@ -10,7 +10,6 @@ import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
 
 describe("Learning Snippets", () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
@@ -24,51 +23,69 @@ describe("Learning Snippets", () => {
   });
 
   describe("Hierarchy Specifications", () => {
-
     describe("CustomQueryInstanceNodesSpecification", () => {
-
       it("uses `queries` attribute with StringQuerySpecification", async () => {
         // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.CustomQueryInstanceNodesSpecification.StringQuerySpecification.Ruleset
         // The ruleset has a root nodes' specification that uses a given query to get all `bis.Model` instances.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "RootNodes",
-            specifications: [{
-              specType: "CustomQueryInstanceNodes",
-              queries: [{
-                specType: "String",
-                class: { schemaName: "BisCore", className: "Model" },
-                query: `SELECT * FROM bis.Model`,
-              }],
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "RootNodes",
+              specifications: [
+                {
+                  specType: "CustomQueryInstanceNodes",
+                  queries: [
+                    {
+                      specType: "String",
+                      class: { schemaName: "BisCore", className: "Model" },
+                      query: `SELECT * FROM bis.Model`,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
         // Verify that Model nodes are returned
         const classGroupingNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
-        expect(classGroupingNodes).to.have.lengthOf(7).and.to.containSubset([{
-          label: { displayValue: "Definition Model" },
-        }, {
-          label: { displayValue: "Dictionary Model" },
-        }, {
-          label: { displayValue: "Document List" },
-        }, {
-          label: { displayValue: "Group Model" },
-        }, {
-          label: { displayValue: "Link Model" },
-        }, {
-          label: { displayValue: "Physical Model" },
-        }, {
-          label: { displayValue: "Repository Model" },
-        }]);
+        expect(classGroupingNodes)
+          .to.have.lengthOf(7)
+          .and.to.containSubset([
+            {
+              label: { displayValue: "Definition Model" },
+            },
+            {
+              label: { displayValue: "Dictionary Model" },
+            },
+            {
+              label: { displayValue: "Document List" },
+            },
+            {
+              label: { displayValue: "Group Model" },
+            },
+            {
+              label: { displayValue: "Link Model" },
+            },
+            {
+              label: { displayValue: "Physical Model" },
+            },
+            {
+              label: { displayValue: "Repository Model" },
+            },
+          ]);
 
         const modelNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNodes[5].key });
-        expect(modelNodes).to.have.lengthOf(1).and.to.containSubset([{
-          label: { displayValue: "Properties_60InstancesWithUrl2" },
-        }]);
+        expect(modelNodes)
+          .to.have.lengthOf(1)
+          .and.to.containSubset([
+            {
+              label: { displayValue: "Properties_60InstancesWithUrl2" },
+            },
+          ]);
       });
 
       it("uses `queries` attribute with ECPropertyValueQuerySpecification", async () => {
@@ -78,25 +95,34 @@ describe("Learning Snippets", () => {
         // parent nodes using `ChildrenQuery` property value of the parent element.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "RootNodes",
-            specifications: [{
-              specType: "InstanceNodesOfSpecificClasses",
-              classes: { schemaName: "MyDomain", classNames: ["MyParentElement"], arePolymorphic: true },
-              groupByClass: false,
-            }],
-          }, {
-            ruleType: "ChildNodes",
-            condition: `ParentNode.IsOfClass("MyParentElement", "MyDomain")`,
-            specifications: [{
-              specType: "CustomQueryInstanceNodes",
-              queries: [{
-                specType: "ECPropertyValue",
-                class: { schemaName: "MyDomain", className: "MyChildElement" },
-                parentPropertyName: "ChildrenQuery",
-              }],
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "RootNodes",
+              specifications: [
+                {
+                  specType: "InstanceNodesOfSpecificClasses",
+                  classes: { schemaName: "MyDomain", classNames: ["MyParentElement"], arePolymorphic: true },
+                  groupByClass: false,
+                },
+              ],
+            },
+            {
+              ruleType: "ChildNodes",
+              condition: `ParentNode.IsOfClass("MyParentElement", "MyDomain")`,
+              specifications: [
+                {
+                  specType: "CustomQueryInstanceNodes",
+                  queries: [
+                    {
+                      specType: "ECPropertyValue",
+                      class: { schemaName: "MyDomain", className: "MyChildElement" },
+                      parentPropertyName: "ChildrenQuery",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -106,9 +132,6 @@ describe("Learning Snippets", () => {
         const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
         expect(nodes).to.be.empty;
       });
-
     });
-
   });
-
 });

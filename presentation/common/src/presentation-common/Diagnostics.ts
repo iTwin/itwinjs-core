@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Core
  */
@@ -22,13 +22,19 @@ export type DiagnosticsLoggerSeverity = "error" | "warning" | "info" | "debug" |
  * @internal
  */
 export function combineDiagnosticsSeverities(lhs: undefined | boolean | DiagnosticsLoggerSeverity, rhs: undefined | boolean | DiagnosticsLoggerSeverity) {
-  if (!lhs && !rhs)
+  if (!lhs && !rhs) {
     return undefined;
+  }
   const combinedSeverity: DiagnosticsLoggerSeverity =
-    (lhs === "trace" || rhs === "trace") ? "trace" :
-      (lhs === "debug" || lhs === true || rhs === "debug" || rhs === true) ? "debug" :
-        (lhs === "info" || rhs === "info") ? "info" :
-          (lhs === "warning" || rhs === "warning") ? "warning" : "error";
+    lhs === "trace" || rhs === "trace"
+      ? "trace"
+      : lhs === "debug" || lhs === true || rhs === "debug" || rhs === true
+        ? "debug"
+        : lhs === "info" || rhs === "info"
+          ? "info"
+          : lhs === "warning" || rhs === "warning"
+            ? "warning"
+            : "error";
   return combinedSeverity;
 }
 
@@ -45,18 +51,23 @@ export function combineDiagnosticsSeverities(lhs: undefined | boolean | Diagnost
  * @internal
  */
 export function compareDiagnosticsSeverities(lhs: undefined | boolean | DiagnosticsLoggerSeverity, rhs: undefined | boolean | DiagnosticsLoggerSeverity) {
-  const normalizedLhs: DiagnosticsLoggerSeverity = (lhs === undefined || lhs === false) ? "error" : lhs === true ? "debug" : lhs;
-  const normalizedRhs: DiagnosticsLoggerSeverity = (rhs === undefined || rhs === false) ? "error" : rhs === true ? "debug" : rhs;
-  if (normalizedLhs === normalizedRhs)
+  const normalizedLhs: DiagnosticsLoggerSeverity = lhs === undefined || lhs === false ? "error" : lhs === true ? "debug" : lhs;
+  const normalizedRhs: DiagnosticsLoggerSeverity = rhs === undefined || rhs === false ? "error" : rhs === true ? "debug" : rhs;
+  if (normalizedLhs === normalizedRhs) {
     return 0;
-  if (normalizedLhs === "error")
+  }
+  if (normalizedLhs === "error") {
     return 1;
-  if (normalizedLhs === "warning")
+  }
+  if (normalizedLhs === "warning") {
     return normalizedRhs === "error" ? -1 : 1;
-  if (normalizedLhs === "info")
+  }
+  if (normalizedLhs === "info") {
     return normalizedRhs === "warning" || normalizedRhs === "error" ? -1 : 1;
-  if (normalizedLhs === "debug")
+  }
+  if (normalizedLhs === "debug") {
     return normalizedRhs === "info" || normalizedRhs === "warning" || normalizedRhs === "error" ? -1 : 1;
+  }
   return -1;
 }
 
@@ -155,7 +166,8 @@ export type DiagnosticsLogEntry = DiagnosticsLogMessage | DiagnosticsScopeLogs;
  * Functions related to diagnostics log entry.
  * @beta
  */
-export namespace DiagnosticsLogEntry { // eslint-disable-line @typescript-eslint/no-redeclare
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export namespace DiagnosticsLogEntry {
   export function isMessage(entry: DiagnosticsLogEntry): entry is DiagnosticsLogMessage {
     return !!(entry as any).message;
   }
