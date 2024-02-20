@@ -154,6 +154,7 @@ import { NavigationBindingValue } from '@itwin/core-common';
 import { NavigationValue } from '@itwin/core-common';
 import { NormalMapProps } from '@itwin/core-common';
 import { OpenBriefcaseProps } from '@itwin/core-common';
+import { OpenCheckpointArgs } from '@itwin/core-common';
 import { OpenMode } from '@itwin/core-bentley';
 import { Optional } from '@itwin/core-bentley';
 import * as os from 'os';
@@ -858,6 +859,8 @@ export class CheckpointManager {
     static readonly onDownloadV1: BeEvent<(job: DownloadJob) => void>;
     // (undocumented)
     static readonly onDownloadV2: BeEvent<(job: DownloadJob) => void>;
+    // (undocumented)
+    static toCheckpointProps(args: OpenCheckpointArgs): Promise<CheckpointProps>;
     static tryOpenLocalFile(request: DownloadRequest): SnapshotDb | undefined;
     // (undocumented)
     static updateToRequestedVersion(request: DownloadRequest): Promise<void>;
@@ -1058,6 +1061,7 @@ export namespace CloudSqlite {
     }
     export function createCloudContainer(args: ContainerAccessProps & {
         accessLevel?: BlobContainer.RequestAccessLevel;
+        tokenFn?: (args: RequestTokenArgs) => Promise<AccessToken>;
     }): CloudContainer;
     export class DbAccess<DbType extends VersionedSqliteDb, ReadMethods = DbType, WriteMethods = DbType> {
         constructor(args: {
@@ -1137,7 +1141,9 @@ export namespace CloudSqlite {
         minRequests?: number;
         timeout?: number;
     }
-    export function requestToken(args: Optional<BlobContainer.RequestTokenProps, "userToken">): Promise<AccessToken>;
+    export function requestToken(args: RequestTokenArgs): Promise<AccessToken>;
+    // (undocumented)
+    export type RequestTokenArgs = Optional<BlobContainer.RequestTokenProps, "userToken">;
     export function startCloudPrefetch(container: CloudContainer, dbName: string, args?: PrefetchProps): CloudPrefetch;
     // @internal (undocumented)
     export function transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise<void>;
@@ -3110,7 +3116,7 @@ export abstract class IModelDb extends IModel {
     // @alpha
     queryTextureData(props: TextureLoadProps): Promise<TextureData | undefined>;
     // @internal (undocumented)
-    refreshContainer(_userAccessToken: AccessToken): Promise<void>;
+    refreshContainerForRpc(_userAccessToken: AccessToken): Promise<void>;
     // @internal (undocumented)
     reinstateTxn(): IModelStatus;
     get relationships(): Relationships;
@@ -4976,15 +4982,15 @@ export class SnapshotDb extends IModelDb {
     static readonly onOpen: BeEvent<(path: LocalFileName, opts?: SnapshotDbOpenArgs) => void>;
     // (undocumented)
     static readonly onOpened: BeEvent<(_iModelDb: SnapshotDb) => void>;
-    // @internal
-    static openCheckpointV1(fileName: LocalFileName, checkpoint: CheckpointProps): SnapshotDb;
-    // @internal
-    static openCheckpointV2(checkpoint: CheckpointProps): Promise<SnapshotDb>;
+    // @beta
+    static openCheckpoint(args: OpenCheckpointArgs): Promise<SnapshotDb>;
+    // @internal (undocumented)
+    static openCheckpointFromRpc(checkpoint: CheckpointProps): Promise<SnapshotDb>;
     static openFile(path: LocalFileName, opts?: SnapshotDbOpenArgs): SnapshotDb;
     // @internal
     static openForApplyChangesets(path: LocalFileName, props?: SnapshotDbOpenArgs): SnapshotDb;
     // @internal
-    refreshContainer(userAccessToken: AccessToken): Promise<void>;
+    refreshContainerForRpc(userAccessToken: AccessToken): Promise<void>;
     // (undocumented)
     static tryFindByKey(key: string): SnapshotDb | undefined;
 }
@@ -5691,6 +5697,8 @@ export class V1CheckpointManager {
     static getFileName(checkpoint: CheckpointProps): LocalFileName;
     // (undocumented)
     static getFolder(iModelId: GuidString): LocalDirName;
+    // (undocumented)
+    static openCheckpointV1(fileName: LocalFileName, checkpoint: CheckpointProps): SnapshotDb;
 }
 
 // @internal
@@ -5712,10 +5720,8 @@ export class V2CheckpointManager {
     // (undocumented)
     static cleanup(): void;
     // (undocumented)
-    static readonly cloudCacheName = "v2Checkpoints";
+    static readonly cloudCacheName = "Checkpoints";
     static downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId>;
-    // (undocumented)
-    static getFileName(checkpoint: CheckpointProps): LocalFileName;
     // (undocumented)
     static getFolder(): LocalDirName;
 }

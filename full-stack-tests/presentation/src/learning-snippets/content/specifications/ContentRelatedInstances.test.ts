@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { KeySet, Ruleset } from "@itwin/presentation-common";
@@ -11,7 +11,6 @@ import { getFieldByLabel } from "../../../Utils";
 import { printRuleset } from "../../Utils";
 
 describe("Learning Snippets", () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
@@ -25,9 +24,7 @@ describe("Learning Snippets", () => {
   });
 
   describe("Content Specifications", () => {
-
     describe("ContentInstancesOfSpecificClasses", () => {
-
       it("uses `relationshipPaths` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Presentation.ContentRelatedInstances.RelationshipPaths.Ruleset
         // This ruleset returns content for `bis.Element` instances that are related to input `bis.Model` instances
@@ -37,14 +34,18 @@ describe("Learning Snippets", () => {
           rules: [
             {
               ruleType: "Content",
-              specifications: [{
-                specType: "ContentRelatedInstances",
-                relationshipPaths: [{
-                  relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
-                  direction: "Forward",
-                  targetClass: { schemaName: "BisCore", className: "Element" },
-                }],
-              }],
+              specifications: [
+                {
+                  specType: "ContentRelatedInstances",
+                  relationshipPaths: [
+                    {
+                      relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
+                      direction: "Forward",
+                      targetClass: { schemaName: "BisCore", className: "Element" },
+                    },
+                  ],
+                },
+              ],
             },
           ],
         };
@@ -69,22 +70,26 @@ describe("Learning Snippets", () => {
         // This ruleset returns content of all `bis.SpatialViewDefinition` instances whose `Pitch` property is greater or equal to 0.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "Content",
-            specifications: [{
-              specType: "ContentRelatedInstances",
-              relationshipPaths: [
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
                 {
-                  relationship: {
-                    schemaName: "BisCore",
-                    className: "SpatialViewDefinitionUsesModelSelector",
-                  },
-                  direction: "Backward",
+                  specType: "ContentRelatedInstances",
+                  relationshipPaths: [
+                    {
+                      relationship: {
+                        schemaName: "BisCore",
+                        className: "SpatialViewDefinitionUsesModelSelector",
+                      },
+                      direction: "Backward",
+                    },
+                  ],
+                  instanceFilter: "this.Pitch >= 0",
                 },
               ],
-              instanceFilter: "this.Pitch >= 0",
-            }],
-          }],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
 
@@ -101,9 +106,6 @@ describe("Learning Snippets", () => {
         const field = getFieldByLabel(content!.descriptor.fields, "Pitch");
         expect(content!.contentSet[0].values[field.name]).to.be.not.below(0);
       });
-
     });
-
   });
-
 });

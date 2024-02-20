@@ -604,6 +604,7 @@ interface MapTreeId {
   tileUserId: number;
   applyTerrain: boolean;
   terrainProviderName: string;
+  terrainDataSource: string;
   terrainHeightOrigin: number;
   terrainHeightOriginMode: number;
   terrainExaggeration: number;
@@ -671,13 +672,16 @@ class MapTreeSupplier implements TileTreeSupplier {
                           // Terrain-only settings.
                           cmp = compareStrings(lhs.terrainProviderName, rhs.terrainProviderName);
                           if (0 === cmp) {
-                            cmp = compareNumbers(lhs.terrainHeightOrigin, rhs.terrainHeightOrigin);
+                            cmp = compareStringsOrUndefined(lhs.terrainDataSource, rhs.terrainDataSource);
                             if (0 === cmp) {
-                              cmp = compareNumbers(lhs.terrainHeightOriginMode, rhs.terrainHeightOriginMode);
+                              cmp = compareNumbers(lhs.terrainHeightOrigin, rhs.terrainHeightOrigin);
                               if (0 === cmp) {
-                                cmp = compareNumbers(lhs.terrainExaggeration, rhs.terrainExaggeration);
-                                if (0 === cmp)
-                                  cmp = compareBooleansOrUndefined(lhs.produceGeometry, rhs.produceGeometry);
+                                cmp = compareNumbers(lhs.terrainHeightOriginMode, rhs.terrainHeightOriginMode);
+                                if (0 === cmp) {
+                                  cmp = compareNumbers(lhs.terrainExaggeration, rhs.terrainExaggeration);
+                                  if (0 === cmp)
+                                    cmp = compareBooleansOrUndefined(lhs.produceGeometry, rhs.produceGeometry);
+                                }
                               }
                             }
                           }
@@ -725,6 +729,7 @@ class MapTreeSupplier implements TileTreeSupplier {
       wantSkirts: id.wantSkirts,
       exaggeration: id.terrainExaggeration,
       wantNormals: id.wantNormals,
+      dataSource: id.terrainDataSource,
     };
 
     if (id.applyTerrain) {
@@ -922,6 +927,7 @@ export class MapTileTreeReference extends TileTreeReference {
       tileUserId: this._tileUserId,
       applyTerrain: this.settings.applyTerrain && !this._isDrape,
       terrainProviderName: this.settings.terrainSettings.providerName,
+      terrainDataSource: this.settings.terrainSettings.dataSource,
       terrainHeightOrigin: this.settings.terrainSettings.heightOrigin,
       terrainHeightOriginMode: this.settings.terrainSettings.heightOriginMode,
       terrainExaggeration: this.settings.terrainSettings.exaggeration,

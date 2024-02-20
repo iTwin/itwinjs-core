@@ -20,7 +20,8 @@
     "test:integration": "",
     "test:performance": "mocha --no-config --grep \"#performance\" --no-timeouts",
     "copy:config": "internal-tools copy-config",
-    "cover": "npm run -s test"
+    "cover": "npm run -s test",
+    "prettier:fix": "prettier --write ."
   },
   "dependencies": {
     "@itwin/core-backend": "workspace:*",
@@ -72,9 +73,11 @@
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
     "eslint": "^8.44.0",
+    "eslint-config-prettier": "^9.1.0",
     "internal-tools": "workspace:*",
     "jsdom": "^19.0.0",
     "jsdom-global": "3.0.2",
+    "prettier": "^3.2.5",
     "sanitize-filename": "^1.6.3",
     "typescript": "~5.0.2",
     "i18next-http-backend": "^1.4.4"

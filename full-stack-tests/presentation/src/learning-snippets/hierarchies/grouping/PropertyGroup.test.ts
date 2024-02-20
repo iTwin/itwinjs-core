@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Ruleset, StandardNodeTypes } from "@itwin/presentation-common";
@@ -10,7 +10,6 @@ import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
 
 describe("Learning Snippets", () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
@@ -24,9 +23,7 @@ describe("Learning Snippets", () => {
   });
 
   describe("Hierarchy Grouping", () => {
-
     describe("PropertyGroup", () => {
-
       it("uses `createGroupForUnspecifiedValues` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Grouping.PropertyGroup.CreateGroupForUnspecifiedValues.Ruleset
         // The ruleset contains a root nodes rule for `bis.Element` instances and a grouping rule that groups them
@@ -35,36 +32,46 @@ describe("Learning Snippets", () => {
         // the `createGroupForUnspecifiedValues` attribute.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "RootNodes",
-            specifications: [{
-              specType: "InstanceNodesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
-              groupByClass: false,
-            }],
-            customizationRules: [{
-              ruleType: "Grouping",
-              class: { schemaName: "BisCore", className: "Element" },
-              groups: [{
-                specType: "Property",
-                propertyName: "UserLabel",
-                createGroupForUnspecifiedValues: false,
-              }],
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "RootNodes",
+              specifications: [
+                {
+                  specType: "InstanceNodesOfSpecificClasses",
+                  classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
+                  groupByClass: false,
+                },
+              ],
+              customizationRules: [
+                {
+                  ruleType: "Grouping",
+                  class: { schemaName: "BisCore", className: "Element" },
+                  groups: [
+                    {
+                      specType: "Property",
+                      propertyName: "UserLabel",
+                      createGroupForUnspecifiedValues: false,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
         // Confirm there's no "Not Specified" node
         const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
-        expect(nodes).to.not.containSubset([{
-          key: {
-            type: StandardNodeTypes.ECPropertyGroupingNode,
-            propertyName: "UserLabel",
-            groupingValues: [null],
+        expect(nodes).to.not.containSubset([
+          {
+            key: {
+              type: StandardNodeTypes.ECPropertyGroupingNode,
+              propertyName: "UserLabel",
+              groupingValues: [null],
+            },
           },
-        }]);
+        ]);
       });
 
       it("uses `imageId` attribute", async () => {
@@ -73,24 +80,32 @@ describe("Learning Snippets", () => {
         // by `UserLabel` property. The grouping rule also sets an image identifier for all grouping nodes.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "RootNodes",
-            specifications: [{
-              specType: "InstanceNodesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
-              groupByClass: false,
-            }],
-            customizationRules: [{
-              ruleType: "Grouping",
-              class: { schemaName: "BisCore", className: "Element" },
-              groups: [{
-                specType: "Property",
-                propertyName: "UserLabel",
-                imageId: "my-icon-identifier",
-                createGroupForSingleItem: true,
-              }],
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "RootNodes",
+              specifications: [
+                {
+                  specType: "InstanceNodesOfSpecificClasses",
+                  classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
+                  groupByClass: false,
+                },
+              ],
+              customizationRules: [
+                {
+                  ruleType: "Grouping",
+                  class: { schemaName: "BisCore", className: "Element" },
+                  groups: [
+                    {
+                      specType: "Property",
+                      propertyName: "UserLabel",
+                      imageId: "my-icon-identifier",
+                      createGroupForSingleItem: true,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -117,52 +132,66 @@ describe("Learning Snippets", () => {
         // by `Yaw` property into 3 ranges: "Negative", "Positive" and "Zero".
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "RootNodes",
-            specifications: [{
-              specType: "InstanceNodesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["GeometricElement3d"], arePolymorphic: true },
-              groupByClass: false,
-            }],
-            customizationRules: [{
-              ruleType: "Grouping",
-              class: { schemaName: "BisCore", className: "GeometricElement3d" },
-              groups: [{
-                specType: "Property",
-                propertyName: "Yaw",
-                ranges: [{
-                  fromValue: "0",
-                  toValue: "0",
-                  label: "Zero",
-                }, {
-                  fromValue: "-360",
-                  toValue: "0",
-                  label: "Negative",
-                }, {
-                  fromValue: "0",
-                  toValue: "360",
-                  label: "Positive",
-                }],
-              }],
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "RootNodes",
+              specifications: [
+                {
+                  specType: "InstanceNodesOfSpecificClasses",
+                  classes: { schemaName: "BisCore", classNames: ["GeometricElement3d"], arePolymorphic: true },
+                  groupByClass: false,
+                },
+              ],
+              customizationRules: [
+                {
+                  ruleType: "Grouping",
+                  class: { schemaName: "BisCore", className: "GeometricElement3d" },
+                  groups: [
+                    {
+                      specType: "Property",
+                      propertyName: "Yaw",
+                      ranges: [
+                        {
+                          fromValue: "0",
+                          toValue: "0",
+                          label: "Zero",
+                        },
+                        {
+                          fromValue: "-360",
+                          toValue: "0",
+                          label: "Negative",
+                        },
+                        {
+                          fromValue: "0",
+                          toValue: "360",
+                          label: "Positive",
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
         // Confirm that elements were correctly grouped into ranges
         const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
-        expect(nodes).to.have.lengthOf(2).and.to.containSubset([{
-          key: { type: StandardNodeTypes.ECPropertyGroupingNode, propertyName: "Yaw", groupedInstancesCount: 2 },
-          label: { displayValue: "Negative" },
-        }, {
-          key: { type: StandardNodeTypes.ECPropertyGroupingNode, propertyName: "Yaw", groupedInstancesCount: 60 },
-          label: { displayValue: "Zero" },
-        }]);
+        expect(nodes)
+          .to.have.lengthOf(2)
+          .and.to.containSubset([
+            {
+              key: { type: StandardNodeTypes.ECPropertyGroupingNode, propertyName: "Yaw", groupedInstancesCount: 2 },
+              label: { displayValue: "Negative" },
+            },
+            {
+              key: { type: StandardNodeTypes.ECPropertyGroupingNode, propertyName: "Yaw", groupedInstancesCount: 60 },
+              label: { displayValue: "Zero" },
+            },
+          ]);
       });
-
     });
-
   });
-
 });

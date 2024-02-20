@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { KeySet, Ruleset } from "@itwin/presentation-common";
@@ -10,7 +10,6 @@ import { initialize, terminate } from "../../IntegrationTests";
 import { printRuleset } from "../Utils";
 
 describe("Learning Snippets", () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
@@ -24,7 +23,6 @@ describe("Learning Snippets", () => {
   });
 
   describe("RelationshipPathSpecification", () => {
-
     it("using single-step specification", async () => {
       // __PUBLISH_EXTRACT_START__ Presentation.RelationshipPathSpecification.SingleStep.Ruleset
       // This ruleset defines a specification that returns content for given `bis.Model` instances. The
@@ -32,20 +30,24 @@ describe("Learning Snippets", () => {
       // relationship and picking only `bis.PhysicalElement` type of elements.
       const ruleset: Ruleset = {
         id: "example",
-        rules: [{
-          ruleType: "Content",
-          condition: `SelectedNode.IsOfClass("Model", "BisCore")`,
-          specifications: [
-            {
-              specType: "ContentRelatedInstances",
-              relationshipPaths: [{
-                relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
-                direction: "Forward",
-                targetClass: { schemaName: "BisCore", className: "PhysicalElement" },
-              }],
-            },
-          ],
-        }],
+        rules: [
+          {
+            ruleType: "Content",
+            condition: `SelectedNode.IsOfClass("Model", "BisCore")`,
+            specifications: [
+              {
+                specType: "ContentRelatedInstances",
+                relationshipPaths: [
+                  {
+                    relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
+                    direction: "Forward",
+                    targetClass: { schemaName: "BisCore", className: "PhysicalElement" },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
       };
       // __PUBLISH_EXTRACT_END__
       printRuleset(ruleset);
@@ -76,22 +78,29 @@ describe("Learning Snippets", () => {
       // `bis.GeometricElement3dIsInCategory` relationships.
       const ruleset: Ruleset = {
         id: "example",
-        rules: [{
-          ruleType: "Content",
-          condition: `SelectedNode.IsOfClass("GeometricModel3d", "BisCore")`,
-          specifications: [
-            {
-              specType: "ContentRelatedInstances",
-              relationshipPaths: [[{
-                relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
-                direction: "Forward",
-              }, {
-                relationship: { schemaName: "BisCore", className: "GeometricElement3dIsInCategory" },
-                direction: "Forward",
-              }]],
-            },
-          ],
-        }],
+        rules: [
+          {
+            ruleType: "Content",
+            condition: `SelectedNode.IsOfClass("GeometricModel3d", "BisCore")`,
+            specifications: [
+              {
+                specType: "ContentRelatedInstances",
+                relationshipPaths: [
+                  [
+                    {
+                      relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
+                      direction: "Forward",
+                    },
+                    {
+                      relationship: { schemaName: "BisCore", className: "GeometricElement3dIsInCategory" },
+                      direction: "Forward",
+                    },
+                  ],
+                ],
+              },
+            ],
+          },
+        ],
       };
       // __PUBLISH_EXTRACT_END__
       printRuleset(ruleset);
@@ -105,7 +114,5 @@ describe("Learning Snippets", () => {
       });
       expect(physicalModelContent!.contentSet.length).to.eq(1);
     });
-
   });
-
 });

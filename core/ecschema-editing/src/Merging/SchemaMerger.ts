@@ -84,10 +84,16 @@ export class SchemaMerger {
 
     // TODO: For now we just do simple copy and merging of properties and classes. For more complex types
     //       with bases classes or relationships, this might need to get extended.
-    await CAClassMerger.mergeChanges(mergeContext, itemChanges.customAttributeClasses);
-    await StructClassMerger.mergeChanges(mergeContext, itemChanges.structClasses);
-    await EntityClassMerger.mergeChanges(mergeContext, itemChanges.entityClasses);
-    await MixinMerger.mergeChanges(mergeContext, itemChanges.mixins);
+    await CAClassMerger.mergeItemStubChanges(mergeContext, itemChanges.customAttributeClasses);
+    await StructClassMerger.mergeItemStubChanges(mergeContext, itemChanges.structClasses);
+    await EntityClassMerger.mergeItemStubChanges(mergeContext, itemChanges.entityClasses);
+    await MixinMerger.mergeItemStubChanges(mergeContext, itemChanges.mixins);
+
+    // 2nd pass to complete merge changes such as properties, baseClasses and mixins.
+    await CAClassMerger.mergeItemContentChanges(mergeContext, itemChanges.customAttributeClasses);
+    await StructClassMerger.mergeItemContentChanges(mergeContext, itemChanges.structClasses);
+    await EntityClassMerger.mergeItemContentChanges(mergeContext, itemChanges.entityClasses);
+    await MixinMerger.mergeItemContentChanges(mergeContext, itemChanges.mixins);
 
     await mergeCustomAttributes(mergeContext, schemaChanges.customAttributeChanges.values(), async (ca) => {
       return mergeContext.editor.addCustomAttribute(mergeContext.targetSchema.schemaKey, ca);

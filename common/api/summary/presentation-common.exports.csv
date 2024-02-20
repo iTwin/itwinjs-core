@@ -67,6 +67,7 @@ public;ContentSpecificationBase
 public;ContentSpecificationTypes
 alpha;ContentUpdateInfo = typeof UPDATE_FULL
 public;createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean): FieldHierarchy[]
+public;CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule
 public;CustomNodeSpecification 
 public;CustomQueryInstanceNodesSpecification 
 public;CustomRendererSpecification
