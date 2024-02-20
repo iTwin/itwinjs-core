@@ -2356,6 +2356,17 @@ export abstract class ViewState2d extends ViewState implements /* ###TODO TestSc
     return val;
   }
 
+  public override get displayStyle(): DisplayStyle2dState {
+    assert(super.displayStyle instanceof DisplayStyle2dState); // constructor enforces this
+    return super.displayStyle;
+  }
+
+  public override set displayStyle(style: DisplayStyleState) {
+    // Public base class API unfortunately permits people to pass in a 3d display style to a 2d view...
+    assert(style instanceof DisplayStyle2dState);
+    super.displayStyle = style;
+  }
+
   public get style(): View2dStyle { return this.displayStyle; }
   
   /** See [[ViewState.is3d]]. */

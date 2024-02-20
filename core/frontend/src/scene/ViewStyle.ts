@@ -27,9 +27,11 @@ export interface IViewStyle {
   readonly modelAppearanceOverrides: ReadonlyMap<Id64String, Readonly<FeatureAppearance>>;  
 
   // For persistent reality models only.
+  // ###TODO consolidate these into a Map a la subCategoryOverrides
   getRealityModelDisplaySettings(modelId: Id64String): RealityModelDisplaySettings | undefined;
   setRealityModelDisplaySettings(modelId: Id64String, settings: RealityModelDisplaySettings | undefined): void;
 
+  // ###TOOD consolidate these into a single object
   readonly excludedElementIds: OrderedId64Iterable;
   addExcludedElements(id: Id64String | Iterable<Id64String>): void;
   dropExcludedElement(id: Id64String): void;

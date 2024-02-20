@@ -33,7 +33,7 @@ export interface IIModelView {
   readonly iModel: IModelConnection;
 
   readonly categorySelector: ViewCategorySelector;
-  style: ViewStyle;
+  readonly style: ViewStyle;
   viewFlags: ViewStyleFlags;
 
   isSpatial(): this is IModelSpatialView;
