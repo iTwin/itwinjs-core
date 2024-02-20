@@ -228,11 +228,15 @@ export class PresentationManager implements IDisposable {
     }
   }
 
-  private async onConnection(imodel: IModelConnection) {
+  private onConnection(imodel: IModelConnection) {
     if (!this._connections.has(imodel)) {
       this._connections.set(imodel, this.initializeIModel(imodel));
     }
-    await this._connections.get(imodel);
+  }
+
+  private async waitForConnection(iModel: IModelConnection) {
+    this.onConnection(iModel);
+    await this._connections.get(iModel);
   }
 
   private async initializeIModel(imodel: IModelConnection) {
@@ -371,7 +375,7 @@ export class PresentationManager implements IDisposable {
   public async getNodes(
     requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute,
   ): Promise<Node[]> {
-    await this.onConnection(requestOptions.imodel);
+    this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
     const result = await buildPagedArrayResponse(options.paging, async (partialPageOptions) =>
@@ -385,7 +389,7 @@ export class PresentationManager implements IDisposable {
   public async getNodesCount(
     requestOptions: HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<number> {
-    await this.onConnection(requestOptions.imodel);
+    this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
     return this._requestsHandler.getNodesCount(rpcOptions);
@@ -395,7 +399,7 @@ export class PresentationManager implements IDisposable {
   public async getNodesAndCount(
     requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute,
   ): Promise<{ count: number; nodes: Node[] }> {
-    await this.onConnection(requestOptions.imodel);
+    this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
     const result = await buildPagedArrayResponse(options.paging, async (partialPageOptions) =>
@@ -415,7 +419,7 @@ export class PresentationManager implements IDisposable {
   public async getNodesDescriptor(
     requestOptions: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<Descriptor | undefined> {
-    await this.onConnection(requestOptions.imodel);
+    this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
     const result = await this._requestsHandler.getNodesDescriptor(rpcOptions);
@@ -427,7 +431,7 @@ export class PresentationManager implements IDisposable {
   public async getNodePaths(
     requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<NodePathElement[]> {
-    await this.onConnection(requestOptions.imodel);
+    this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
     const result = await this._requestsHandler.getNodePaths(rpcOptions);
@@ -439,7 +443,7 @@ export class PresentationManager implements IDisposable {
   public async getFilteredNodePaths(
     requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<NodePathElement[]> {
-    await this.onConnection(requestOptions.imodel);
+    this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const result = await this._requestsHandler.getFilteredNodePaths(this.toRpcTokenOptions(options));
     // eslint-disable-next-line deprecation/deprecation
@@ -452,7 +456,7 @@ export class PresentationManager implements IDisposable {
    * @public
    */
   public async getContentSources(requestOptions: ContentSourcesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<SelectClassInfo[]> {
-    await this.onConnection(requestOptions.imodel);
+    this.onConnection(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions(requestOptions);
     const result = await this._requestsHandler.getContentSources(rpcOptions);
     return SelectClassInfo.listFromCompressedJSON(result.sources, result.classesMap);
@@ -462,7 +466,7 @@ export class PresentationManager implements IDisposable {
   public async getContentDescriptor(
     requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<Descriptor | undefined> {
-    await this.onConnection(requestOptions.imodel);
+    this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
       ...options,
@@ -477,7 +481,7 @@ export class PresentationManager implements IDisposable {
   public async getContentSetSize(
     requestOptions: ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<number> {
-    await this.onConnection(requestOptions.imodel);
+    this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
       ...options,
@@ -498,7 +502,7 @@ export class PresentationManager implements IDisposable {
   public async getContentAndSize(
     requestOptions: Paged<ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & ClientDiagnosticsAttribute,
   ): Promise<{ content: Content; size: number } | undefined> {
-    await this.onConnection(requestOptions.imodel);
+    this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
       ...options,
@@ -543,7 +547,7 @@ export class PresentationManager implements IDisposable {
   public async getPagedDistinctValues(
     requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<PagedResponse<DisplayValueGroup>> {
-    await this.onConnection(requestOptions.imodel);
+    this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = {
       ...this.toRpcTokenOptions(options),
@@ -567,7 +571,7 @@ export class PresentationManager implements IDisposable {
   public async getElementProperties(
     requestOptions: SingleElementPropertiesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute,
   ): Promise<ElementProperties | undefined> {
-    await this.onConnection(requestOptions.imodel);
+    await this.waitForConnection(requestOptions.imodel);
     const results = await this._requestsHandler.getElementProperties(this.toRpcTokenOptions(requestOptions));
     // istanbul ignore if
     if (!results) {
@@ -583,7 +587,7 @@ export class PresentationManager implements IDisposable {
   public async getContentInstanceKeys(
     requestOptions: ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<{ total: number; items: () => AsyncGenerator<InstanceKey> }> {
-    await this.onConnection(requestOptions.imodel);
+    this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = {
       ...this.toRpcTokenOptions(options),
@@ -612,7 +616,7 @@ export class PresentationManager implements IDisposable {
   public async getDisplayLabelDefinition(
     requestOptions: DisplayLabelRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute,
   ): Promise<LabelDefinition> {
-    await this.onConnection(requestOptions.imodel);
+    this.onConnection(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions({ ...requestOptions });
     const result = await this._requestsHandler.getDisplayLabelDefinition(rpcOptions);
     return this._localizationHelper.getLocalizedLabelDefinition(result);
@@ -622,7 +626,7 @@ export class PresentationManager implements IDisposable {
   public async getDisplayLabelDefinitions(
     requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute,
   ): Promise<LabelDefinition[]> {
-    await this.onConnection(requestOptions.imodel);
+    this.onConnection(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions({ ...requestOptions });
     const result = await buildPagedArrayResponse(undefined, async (partialPageOptions) => {
       const partialKeys = !partialPageOptions.start ? rpcOptions.keys : rpcOptions.keys.slice(partialPageOptions.start);
