@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbConflictCause, DbConflictResolution, DbOpcode, DbResult, GuidString, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
+import { DbConflictCause, DbConflictResolution, DbOpcode, DbResult, Guid, GuidString, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import {
   ElementAspectProps,
   IModel,
@@ -66,6 +66,11 @@ describe("Changeset conflict handler", () => {
   function insertPhysicalObject(b: BriefcaseDb) {
     return b.elements.insertElement(IModelTestUtils.createPhysicalObject(b1, modelId, spatialCategoryId).toJSON());
   }
+  function updatePhysicalObject(b: BriefcaseDb, el1: string, federationGuid: string) {
+    const props = b.elements.getElement(el1);
+    props.federationGuid = federationGuid;
+    b.elements.updateElement(props.toJSON());
+  }
   function insertExternalSourceAspect(b: BriefcaseDb, elementId: Id64String, identifier: string) {
     return b.elements.insertAspect({
       classFullName: "BisCore:ExternalSourceAspect",
@@ -125,9 +130,16 @@ describe("Changeset conflict handler", () => {
   });
 
   afterEach(async () => {
-    b1.close();
-    b2.close();
-    b3.close();
+    sinon.restore();
+
+    if (b1.isOpen)
+      b1.close();
+
+    if (b2.isOpen)
+      b2.close();
+
+    if (b3.isOpen)
+      b3.close();
   });
 
   async function spyChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, test: (s: sinon.SinonSpy<ChangesetConflictArgs[], DbConflictResolution>) => void) {
@@ -150,7 +162,6 @@ describe("Changeset conflict handler", () => {
     }
   }
   it("DbConflictCause.Conflict - duplicate primary key cause abort)", async () => {
-    Logger.setLevel("Changeset", LogLevel.Trace);
     await b1.pullChanges();
     await b2.pullChanges();
 
@@ -198,7 +209,6 @@ describe("Changeset conflict handler", () => {
     );
   });
   it("DbConflictCause.Data - indirect change is not considered as data conflict & replaces existing change)", async () => {
-    Logger.setLevel("Changeset", LogLevel.Trace);
     await b1.pullChanges();
     await b2.pullChanges();
 
@@ -267,7 +277,6 @@ describe("Changeset conflict handler", () => {
     );
   });
   it("DbConflictCause.NotFound - deleted row", async () => {
-    Logger.setLevel("Changeset", LogLevel.Trace);
     const el1 = insertPhysicalObject(b1);
 
     b1.saveChanges();
@@ -310,6 +319,49 @@ describe("Changeset conflict handler", () => {
         expect(arg.opcode).eq(DbOpcode.Delete);
         expect(arg.indirect).true;
         expect(arg.tableName).eq("bis_GeometricElement3d");
+      },
+    );
+  });
+  it.skip("DbConflictCause.Constraint - duplicate userLabels", async () => {
+    await b1.pullChanges();
+    await b2.pullChanges();
+    const nonUniqueGuid = Guid.createValue();
+    const el1 = insertPhysicalObject(b1);
+    updatePhysicalObject(b1, el1, nonUniqueGuid);
+    b1.saveChanges();
+
+    const el2 = insertPhysicalObject(b2);
+    updatePhysicalObject(b2, el2, nonUniqueGuid);
+    b2.saveChanges();
+
+    await b1.pushChanges({ accessToken: accessToken1, description: "" });
+
+    await spyChangesetConflictHandler(
+      b1,
+      async () => b1.pushChanges({ accessToken: accessToken1, description: "" }),
+      (spy) => expect(spy.callCount).eq(0, "changeset conflict handler should not be called"),
+    );
+
+    await spyChangesetConflictHandler(
+      b2,
+      async () => assertThrowsAsync(
+        async () => b2.pushChanges({ accessToken: accessToken1, description: "" }),
+        "Error in native callback"),
+      (spy) => {
+        expect(spy.callCount).eq(2);
+        expect(spy.returnValues[0]).eq(DbConflictResolution.Skip);
+        const arg0 = spy.args[0][0];
+        expect(arg0.cause).eq(DbConflictCause.Constraint);
+        expect(arg0.opcode).eq(DbOpcode.Insert);
+        expect(arg0.indirect).false;
+        expect(arg0.tableName).eq("bis_Element");
+
+        expect(spy.returnValues[1]).eq(DbConflictResolution.Replace);
+        const arg1 = spy.args[1][0];
+        expect(arg1.cause).eq(DbConflictCause.Data);
+        expect(arg1.opcode).eq(DbOpcode.Update);
+        expect(arg1.indirect).true;
+        expect(arg1.tableName).eq("bis_Model");
       },
     );
   });
