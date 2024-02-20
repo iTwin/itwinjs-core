@@ -15,7 +15,7 @@ import { ArcGisFeatureResponse, ArcGisResponseData } from "./ArcGisFeatureRespon
 import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
 
 import { ArcGisCanvasRenderer } from "./ArcGisCanvasRenderer";
-import { EsriPMS, EsriPMSProps, EsriRenderer, EsriSFS, EsriSFSProps, EsriSLS, EsriSLSProps, EsriSymbol, EsriUniqueValueRenderer } from "./EsriSymbology";
+import { EsriPMS, EsriPMSProps, EsriRenderer, EsriSFS, EsriSFSProps, EsriSLS, EsriSLSProps, EsriSymbol } from "./EsriSymbology";
 const loggerCategory = "MapLayersFormats.ArcGISFeature";
 
 /**
