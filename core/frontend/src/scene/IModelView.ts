@@ -134,7 +134,9 @@ export interface ViewModelSelector {
 export interface IModelSpatialView extends IModelView3d {
   readonly modelSelector: ViewModelSelector;
 
-  computeSpatialFitRange(options?: ComputeSpatialViewFitRangeOptions): AxisAlignedBox3d;
+  // ###TODO used by ViewCreator3d when model extents are known before tile trees are loaded.
+  // Needed here? Generalize so base extents can be passed to Scene/SceneObject range c:w
+  // computeSpatialFitRange(options?: ComputeSpatialViewFitRangeOptions): AxisAlignedBox3d;
 }
 
 export interface DrawingView extends IModelView2d {
