@@ -211,12 +211,12 @@ export class PolyfaceData {
     return this.point.getPoint3dAtCheckedPointIndex(i, result);
   }
   /** Return indexed norma at index `i`. This is the COPY to the normal, not a reference. */
-  public getNormal(i: number): Vector3d | undefined {
-    return this.normal ? this.normal.getVector3dAtCheckedVectorIndex(i) : undefined;
+  public getNormal(i: number, result?: Vector3d): Vector3d | undefined {
+    return this.normal ? this.normal.getVector3dAtCheckedVectorIndex(i, result) : undefined;
   }
   /** Return indexed param at index `i`. This is the COPY of the coordinates, not a reference. */
-  public getParam(i: number): Point2d | undefined {
-    return this.param ? this.param.getPoint2dAtCheckedPointIndex(i) : undefined;
+  public getParam(i: number, result?: Point2d): Point2d | undefined {
+    return this.param ? this.param.getPoint2dAtCheckedPointIndex(i, result) : undefined;
   }
   /** Return indexed color at index `i`.  Index `i` is not checked for validity. */
   public getColor(i: number): number {
@@ -248,15 +248,15 @@ export class PolyfaceData {
   public copyPointTo(i: number, dest: Point3d): void {
     this.point.getPoint3dAtUncheckedPointIndex(i, dest);
   }
-  /** Copy the contents (not pointer) of `normal[i]` into `dest`. */
+  /** Copy the contents (not pointer) of `normal[i]` into `dest`. Index `i` is not checked for validity. */
   public copyNormalTo(i: number, dest: Vector3d): void {
     if (this.normal)
-      this.normal.getVector3dAtCheckedVectorIndex(i, dest);
+      this.normal.getVector3dAtUncheckedVectorIndex(i, dest);
   }
-  /** Copy the contents (not pointer) of `param[i]` into `dest`. */
+  /** Copy the contents (not pointer) of `param[i]` into `dest`. Index `i` is not checked for validity. */
   public copyParamTo(i: number, dest: Point2d): void {
     if (this.param)
-      this.param.getPoint2dAtCheckedPointIndex(i, dest);
+      this.param.getPoint2dAtUncheckedPointIndex(i, dest);
   }
   /** Test if param at a index `i` matches the given uv */
   public isAlmostEqualParamIndexUV(i: number, u: number, v: number): boolean {
