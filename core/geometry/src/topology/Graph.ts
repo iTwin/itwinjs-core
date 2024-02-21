@@ -1516,7 +1516,6 @@ export class HalfEdgeGraph {
   }
   /** Returns the number of vertex loops in a graph structure. */
   public countVertexLoops(): number {
-    this.clearMask(HalfEdgeMask.VISITED);
     let count = 0;
     this.announceVertexLoops(
       (_graph: HalfEdgeGraph, _seed: HalfEdge) => {
@@ -1528,7 +1527,6 @@ export class HalfEdgeGraph {
   }
   /** Returns the number of face loops in a graph structure. */
   public countFaceLoops(): number {
-    this.clearMask(HalfEdgeMask.VISITED);
     let count = 0;
     this.announceFaceLoops(
       (_graph: HalfEdgeGraph, _seed: HalfEdge) => {
@@ -1540,7 +1538,6 @@ export class HalfEdgeGraph {
   }
   /** Returns the number of face loops satisfying a filter function with mask argument. */
   public countFaceLoopsWithMaskFilter(filter: HalfEdgeAndMaskToBooleanFunction, mask: HalfEdgeMask): number {
-    this.clearMask(HalfEdgeMask.VISITED);
     let count = 0;
     this.announceFaceLoops(
       (_graph: HalfEdgeGraph, seed: HalfEdge) => {
