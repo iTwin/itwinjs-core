@@ -265,8 +265,8 @@ export class PresentationManager implements IDisposable {
   public startiModelInitialization(_: IModelConnection) {}
 
   /**
-   * Function that should be called to finish initialization that was started at {@link PresentationManager.startiModelInitialization}.
-   * Can be removed when {@link FavoritePropertiesManager.has} and {@link FavoritePropertiesManager.sortFields} are removed.
+   * Function that should be called to finish initialization that was started at [[PresentationManager.startiModelInitialization]].
+   * Can be removed when [[FavoritePropertiesManager.has]] and [[FavoritePropertiesManager.sortFields]] are removed.
    * @internal
    */
   public async ensureiModelInitialized(_: IModelConnection) {}
