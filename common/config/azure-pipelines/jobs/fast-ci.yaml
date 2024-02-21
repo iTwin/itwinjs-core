@@ -120,7 +120,7 @@ jobs:
     dependsOn:
     - CheckLinkedPR
     - Build
-    condition: and(succeeded(), eq(dependencies.CheckLinkedPR.outputs['checkForPr.RUN_BUILD'], 'true'))
+    condition: and(succeeded(), eq(dependencies.CheckLinkedPR.outputs['checkForPr.RUN_BUILD'], 'true'), eq(variables['Build.Reason'], 'PullRequest'))
     displayName: Post Success
     pool:
       vmImage: ubuntu-latest
