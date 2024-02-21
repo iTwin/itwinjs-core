@@ -6,7 +6,7 @@
 import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
 import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Matrix4d, Point3d, Range2d, Transform } from "@itwin/core-geometry";
-import { ArcGisErrorCode, ArcGisGraphicsRenderer, ArcGISImageryProvider, ArcGISServiceMetadata, ArcGisUtilities, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId } from "@itwin/core-frontend";
+import { ArcGisErrorCode, ArcGisGraphicsRenderer, ArcGISImageryProvider, ArcGISServiceMetadata, ArcGisUtilities, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId, setRequestTimeout } from "@itwin/core-frontend";
 import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
 import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureGeometryType, ArcGisFeatureQuery, ArcGisFeatureResultType, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
 import { ArcGisPbfFeatureReader } from "./ArcGisPbfFeatureReader";
@@ -275,7 +275,12 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     if (cached) {
       extentJson = cached;
     } else {
-      const response = await this.fetch(tmpUrl, { method: "GET" });
+      // Some server are struggling computing the extent for a layer (outdated spatial index I presume), lets wait 10s max.
+      // Worst case scenario we will end up with a map-layer with no 'Zoom-To-Layer' functionality.
+      const opts: RequestInit = { method: "GET" };
+      setRequestTimeout(opts, 10000);
+      const response = await this.fetch(tmpUrl, opts);
+
       extentJson = await response.json();
       ArcGisFeatureProvider._extentCache.set(tmpUrl.toString(), extentJson);
     }
