@@ -98,7 +98,7 @@ export class FavoritePropertiesManager implements IDisposable {
 
   /**
    * Initialize favorite properties for the provided IModelConnection.
-   * @deprecated in 4.5. Initialization is performed automatically by all async methods and only needed for {@link has} and {@link sortFields}.
+   * @deprecated in 4.5. Initialization is performed automatically by all async methods and only needed for {@link FavoritePropertiesManager.has} and {@link FavoritePropertiesManager.sortFields}.
    */
   public initializeConnection = async (imodel: IModelConnection) => {
     const imodelId = imodel.iModelId!;
@@ -163,8 +163,8 @@ export class FavoritePropertiesManager implements IDisposable {
   }
 
   /**
-   * Checks if {@link initializeConnection} has been called for a given imodel.
-   * Can be removed when {@link has} and {@link sortFields} are removed.
+   * Checks if {@link FavoritePropertiesManager.initializeConnection} has been called for a given imodel.
+   * Can be removed when {@link FavoritePropertiesManager.has} and {@link FavoritePropertiesManager.sortFields} are removed.
    */
   private validateInitialization(imodel: IModelConnection) {
     const iTwinId = imodel.iTwinId!;
@@ -177,7 +177,7 @@ export class FavoritePropertiesManager implements IDisposable {
   }
 
   /**
-   * Calls {@link initializeConnection} and caches the promise which should be awaited by calling {@link ensureInitialized}.
+   * Calls {@link FavoritePropertiesManager.initializeConnection} and caches the promise which should be awaited by calling {@link FavoritePropertiesManager.ensureInitialized}.
    * @internal
    */
   public startConnectionInitialization(imodel: IModelConnection) {
@@ -188,7 +188,7 @@ export class FavoritePropertiesManager implements IDisposable {
   }
 
   /**
-   * Performs the initialization process or finishes the one that was started by {@link startConnectionInitialization}.
+   * Performs the initialization process or finishes the one that was started by {@link FavoritePropertiesManager.startConnectionInitialization}.
    * @internal
    */
   public async ensureInitialized(imodel: IModelConnection) {
@@ -340,7 +340,7 @@ export class FavoritePropertiesManager implements IDisposable {
    * @param imodel IModelConnection.
    * @param scope FavoritePropertiesScope to check for favorite properties. It also checks the more general scopes.
    * @note `initializeConnection` must be called with the `imodel` before calling this function.
-   * @deprecated in 4.5. Use [[FavoritePropertiesManager.hasAsync]] instead. This method is not async, therefore it cannot call {@link initializeConnection}.
+   * @deprecated in 4.5. Use [[FavoritePropertiesManager.hasAsync]] instead. This method is not async, therefore it cannot call {@link FavoritePropertiesManager.initializeConnection}.
    */
   public has(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): boolean {
     this.validateInitialization(imodel);
@@ -373,7 +373,7 @@ export class FavoritePropertiesManager implements IDisposable {
    * @param imodel IModelConnection.
    * @param fields Array of Field's that needs to be sorted.
    * @note `initializeConnection` must be called with the `imodel` before calling this function.
-   * @deprecated in 4.5. Use [[FavoritePropertiesManager.sortFieldsAsync]] instead. This method is not async, therefore it cannot call {@link initializeConnection}.
+   * @deprecated in 4.5. Use [[FavoritePropertiesManager.sortFieldsAsync]] instead. This method is not async, therefore it cannot call {@link FavoritePropertiesManager.initializeConnection}.
    */
   public sortFields = (imodel: IModelConnection, fields: Field[]): Field[] => {
     this.validateInitialization(imodel);
