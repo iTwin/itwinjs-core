@@ -91,9 +91,9 @@ export class Presentation {
         storage: props?.favorites ? props.favorites.storage : createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.Noop),
       });
     }
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    presentationManager.startiModelInitialization = (imodel) => favoritePropertiesManager.startConnectionInitialization(imodel);
-    presentationManager.ensureiModelInitialized = (imodel) => favoritePropertiesManager.ensureInitialized(imodel);
+
+    presentationManager.startIModelInitialization = (imodel) => favoritePropertiesManager?.startConnectionInitialization(imodel);
+    presentationManager.ensureIModelInitialized = async (imodel) => favoritePropertiesManager?.ensureInitialized(imodel);
 
     await FrontendLocalizationHelper.registerNamespaces();
     for (const handler of initializationHandlers) {

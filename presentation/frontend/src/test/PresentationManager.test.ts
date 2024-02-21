@@ -220,7 +220,7 @@ describe("PresentationManager", () => {
 
   describe("onConnection", () => {
     it("calls `startiModelInitialization`", async () => {
-      const spy = sinon.stub(manager, "startiModelInitialization");
+      const spy = sinon.stub(manager, "startIModelInitialization");
       const onCloseEvent = new BeEvent();
       const imodelMock = moq.Mock.ofType<IModelConnection>();
       imodelMock.setup((x) => x.onClose).returns(() => onCloseEvent);
@@ -649,7 +649,7 @@ describe("PresentationManager", () => {
 
     it("calls `ensureiModelInitialized", async () => {
       const stub = sinon.fake.returns(Promise.resolve());
-      manager.ensureiModelInitialized = stub;
+      manager.ensureIModelInitialized = stub;
 
       const parentNodeKey = createRandomECInstancesNodeKey();
       const result = createTestContentDescriptor({ fields: [] });
@@ -771,7 +771,7 @@ describe("PresentationManager", () => {
 
     it("calls `ensureiModelInitialized", async () => {
       const stub = sinon.fake.returns(Promise.resolve());
-      manager.ensureiModelInitialized = stub;
+      manager.ensureIModelInitialized = stub;
       const testOptions = createTestOptions();
       await manager.getContentDescriptor(testOptions);
       expect(stub).to.be.calledOnce;
@@ -861,7 +861,7 @@ describe("PresentationManager", () => {
   describe("getContent", () => {
     it("calls `ensureiModelInitialized", async () => {
       const stub = sinon.fake.returns(Promise.resolve());
-      manager.ensureiModelInitialized = stub;
+      manager.ensureIModelInitialized = stub;
       const keyset = new KeySet();
       const descriptor = createTestContentDescriptor({ fields: [] });
       const result = {
@@ -1047,7 +1047,7 @@ describe("PresentationManager", () => {
   describe("getContentAndContentSize", () => {
     it("calls `ensureiModelInitialized", async () => {
       const stub = sinon.fake.returns(Promise.resolve());
-      manager.ensureiModelInitialized = stub;
+      manager.ensureIModelInitialized = stub;
       const keyset = new KeySet();
       const descriptor = createTestContentDescriptor({ fields: [] });
       const result = {
