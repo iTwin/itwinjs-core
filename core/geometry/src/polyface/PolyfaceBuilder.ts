@@ -1622,17 +1622,20 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public addGeometryQuery(g: GeometryQuery) { g.dispatchToGeometryHandler(this); }
 
   /**
-   *
-   * * Visit all faces
-   * * Test each face with f(node) for any node on the face.
-   * * For each face that passes, pass its coordinates to the builder.
-   * * Rely on the builder's compress step to find common vertex coordinates
+   * Add a graph to the builder.
+   * * Visit one node per face
+   * * If `acceptFaceFunction(node)` returns true, pass face coordinates to the builder
+   * * Accepted face edge visibility is determined by `isEdgeVisibleFunction`.
+   * * Rely on the builder's compress step to find common vertex coordinates.
+   * @param graph faces to add as facets
+   * @param acceptFaceFunction optional test for whether to add a given face. Default: ignore exterior faces
+   * @param isEdgeVisibleFunction optional test for whether to hide an edge. Default: hide interior edges
    * @internal
    */
   public addGraph(
     graph: HalfEdgeGraph,
     acceptFaceFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testNodeMaskNotExterior(node),
-    isEdgeVisibleFunction: HalfEdgeToBooleanFunction | undefined = (node) => HalfEdge.testMateMaskExterior(node),
+    isEdgeVisibleFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testMateMaskExterior(node),
   ) {
     let index = 0;
     const needNormals = this._options.needNormals;
@@ -1683,12 +1686,22 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this._polyface.terminateFacet();
     }
   }
-  /** Create a polyface containing the faces of a HalfEdgeGraph, with test function to filter faces.
+  /**
+   * Create a polyface containing the faces of a HalfEdgeGraph, with test functions to filter faces and hide edges.
+   * * This is a static wrapper of [[addGraph]].
+   * @param graph faces to add as facets
+   * @param acceptFaceFunction optional test for whether to add a given face. Default: ignore exterior faces
+   * @param isEdgeVisibleFunction optional test for whether to hide an edge. Default: hide interior edges
    * @internal
    */
-  public static graphToPolyface(graph: HalfEdgeGraph, options?: StrokeOptions, acceptFaceFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testNodeMaskNotExterior(node)): IndexedPolyface {
+  public static graphToPolyface(
+    graph: HalfEdgeGraph,
+    options?: StrokeOptions,
+    acceptFaceFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testNodeMaskNotExterior(node),
+    isEdgeVisibleFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testMateMaskExterior(node),
+    ): IndexedPolyface {
     const builder = PolyfaceBuilder.create(options);
-    builder.addGraph(graph, acceptFaceFunction);
+    builder.addGraph(graph, acceptFaceFunction, isEdgeVisibleFunction);
     builder.endFace();
     return builder.claimPolyface();
   }
