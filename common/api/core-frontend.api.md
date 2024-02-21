@@ -2185,6 +2185,7 @@ export interface CheckboxFormatPropEditorSpec extends CustomFormatPropEditorSpec
 
 // @public
 export class CheckpointConnection extends IModelConnection {
+    protected constructor(props: IModelConnectionProps, fromIpc: boolean);
     close(): Promise<void>;
     get iModelId(): GuidString;
     isCheckpointConnection(): this is CheckpointConnection;
@@ -2192,7 +2193,7 @@ export class CheckpointConnection extends IModelConnection {
     // (undocumented)
     protected _isClosed?: boolean;
     get iTwinId(): GuidString;
-    static openRemote(iTwinId: string, iModelId: string, version?: IModelVersion): Promise<CheckpointConnection>;
+    static openRemote(iTwinId: GuidString, iModelId: GuidString, version?: IModelVersion): Promise<CheckpointConnection>;
 }
 
 // @public
@@ -5629,6 +5630,9 @@ export interface GroupMark {
     // (undocumented)
     start: number;
 }
+
+// @internal
+export function headersIncludeAuthMethod(headers: Headers, query: string[]): boolean;
 
 // @internal (undocumented)
 export interface Hilites {
@@ -12660,6 +12664,15 @@ export interface SelectReplaceEvent {
     // (undocumented)
     type: SelectionSetEventType.Replace;
 }
+
+// @internal
+export function setBasicAuthorization(headers: Headers, credentials: RequestBasicCredentials): void;
+
+// @internal (undocumented)
+export function setBasicAuthorization(headers: Headers, user: string, password: string): void;
+
+// @internal
+export function setRequestTimeout(opts: RequestInit, ms: number, abortController?: AbortController): void;
 
 // @public
 export class SetupCameraTool extends PrimitiveTool {

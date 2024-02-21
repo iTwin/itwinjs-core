@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
 import { Guid, Id64 } from "@itwin/core-bentley";
@@ -13,22 +13,26 @@ import { initialize, resetBackend, terminate } from "../IntegrationTests";
 
 const RULESET: Ruleset = {
   id: "ruleset vars test",
-  rules: [{
-    ruleType: RuleTypes.RootNodes,
-    specifications: [{
-      specType: ChildNodeSpecificationTypes.CustomNode,
-      type: "root",
-      label: "root",
-    }],
-  }, {
-    ruleType: RuleTypes.LabelOverride,
-    condition: "ThisNode.Type = \"root\"",
-    label: "GetVariableStringValue(\"variable_id\")",
-  }],
+  rules: [
+    {
+      ruleType: RuleTypes.RootNodes,
+      specifications: [
+        {
+          specType: ChildNodeSpecificationTypes.CustomNode,
+          type: "root",
+          label: "root",
+        },
+      ],
+    },
+    {
+      ruleType: RuleTypes.LabelOverride,
+      condition: 'ThisNode.Type = "root"',
+      label: 'GetVariableStringValue("variable_id")',
+    },
+  ],
 };
 
 describe("Ruleset Variables", async () => {
-
   let variables: RulesetVariablesManager;
 
   beforeEach(async () => {
@@ -101,22 +105,13 @@ describe("Ruleset Variables", async () => {
   });
 
   it("adds and modifies Id64[] variable", async () => {
-    let valueArray = [
-      createRandomId(),
-      createRandomId(),
-      createRandomId(),
-    ];
+    let valueArray = [createRandomId(), createRandomId(), createRandomId()];
     const variableId = faker.random.word();
     await variables.setId64s(variableId, valueArray);
     let actualValueArray = await variables.getId64s(variableId);
     expect(actualValueArray).to.deep.equal(valueArray);
 
-    valueArray = [
-      createRandomId(),
-      createRandomId(),
-      createRandomId(),
-      createRandomId(),
-    ];
+    valueArray = [createRandomId(), createRandomId(), createRandomId(), createRandomId()];
     await variables.setId64s(variableId, valueArray);
     actualValueArray = await variables.getId64s(variableId);
     expect(actualValueArray).to.deep.equal(valueArray);
@@ -134,7 +129,7 @@ describe("Ruleset Variables", async () => {
     expect(id64ArrayValue.length).to.equal(valueArray.length);
     for (const value of valueArray) {
       const id = Id64.fromLocalAndBriefcaseIds(value, 0);
-      expect(id64ArrayValue.find((x) => x === (id))).to.not.be.equal(undefined);
+      expect(id64ArrayValue.find((x) => x === id)).to.not.be.equal(undefined);
     }
 
     const id64Value = await variables.getId64(variableId);
@@ -229,12 +224,7 @@ describe("Ruleset Variables", async () => {
   });
 
   it("accessing Id64[] variable with different types", async () => {
-    const valueArray = [
-      createRandomId(),
-      createRandomId(),
-      createRandomId(),
-      createRandomId(),
-    ];
+    const valueArray = [createRandomId(), createRandomId(), createRandomId(), createRandomId()];
     const variableId = faker.random.word();
     await variables.setId64s(variableId, valueArray);
 
@@ -255,7 +245,6 @@ describe("Ruleset Variables", async () => {
   });
 
   describe("Multiple frontends for one backend", async () => {
-
     let imodel: IModelConnection;
     let frontends: PresentationManager[];
 
@@ -279,11 +268,9 @@ describe("Ruleset Variables", async () => {
         });
       }
     });
-
   });
 
   describe("Multiple backends for one frontend", async () => {
-
     let imodel: IModelConnection;
     let frontend: PresentationManager;
 
@@ -318,11 +305,9 @@ describe("Ruleset Variables", async () => {
       expect(await vars.getString(var1[0])).to.eq(var1[1]);
       expect(await vars.getInt(var2[0])).to.eq(var2[1]);
     });
-
   });
 
   describe("Using variables in rules", () => {
-
     let imodel: IModelConnection;
 
     beforeEach(async () => {
@@ -336,14 +321,18 @@ describe("Ruleset Variables", async () => {
     it("can specify lots of ids with Id64[] overload", async () => {
       const ruleset: Ruleset = {
         id: Guid.createValue(),
-        rules: [{
-          ruleType: RuleTypes.Content,
-          specifications: [{
-            specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-            classes: { schemaName: "PCJ_TestSchema", classNames: ["TestClass"] },
-            instanceFilter: `GetVariableIntValues("ids").AnyMatch(id => id = this.ECInstanceId)`,
-          }],
-        }],
+        rules: [
+          {
+            ruleType: RuleTypes.Content,
+            specifications: [
+              {
+                specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+                classes: { schemaName: "PCJ_TestSchema", classNames: ["TestClass"] },
+                instanceFilter: `GetVariableIntValues("ids").AnyMatch(id => id = this.ECInstanceId)`,
+              },
+            ],
+          },
+        ],
       };
 
       let content = await Presentation.presentation.getContent({ imodel, rulesetOrId: ruleset, keys: new KeySet(), descriptor: {} });
@@ -360,7 +349,5 @@ describe("Ruleset Variables", async () => {
       expect(content!.contentSet.length).to.eq(1);
       expect(content!.contentSet[0].primaryKeys[0]).to.deep.eq({ className: "PCJ_TestSchema:TestClass", id: "0x61" });
     });
-
   });
-
 });

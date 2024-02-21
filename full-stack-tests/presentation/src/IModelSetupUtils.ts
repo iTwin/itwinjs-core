@@ -93,11 +93,11 @@ export function insertPhysicalElement(db: IModelDb, label: string, modelId: Id64
     userLabel: label,
     ...(parentId
       ? {
-        parent: {
-          id: parentId,
-          relClassName: "BisCore:PhysicalElementAssemblesElements",
-        },
-      }
+          parent: {
+            id: parentId,
+            relClassName: "BisCore:PhysicalElementAssemblesElements",
+          },
+        }
       : undefined),
   } as PhysicalElementProps);
   return { className, id };
@@ -113,8 +113,9 @@ function setupOutputFileLocation(fileName: string): LocalFileName {
     allowedFileNameLength = 260 - 12 - 1 - ext.length - (testOutputDir.length + 1);
   }
   if (allowedFileNameLength) {
-    if (allowedFileNameLength <= 0)
+    if (allowedFileNameLength <= 0) {
       throw new Error("Trying to create an iModel too deep in the directory structure, file name is going to be too long");
+    }
 
     const pieceLength = (allowedFileNameLength - 3) / 2;
     fileName = `${fileName.slice(0, pieceLength)}...${fileName.slice(fileName.length - pieceLength)}`;

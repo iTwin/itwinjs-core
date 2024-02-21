@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
 import { NodePathElement } from "../../presentation-common/hierarchy/NodePathElement";
@@ -10,9 +10,7 @@ import { createRandomNodePathElement, createRandomNodePathElementJSON } from "..
 /* eslint-disable deprecation/deprecation */
 
 describe("NodePathElement", () => {
-
   describe("toJSON", () => {
-
     it("serializes NodePathElement", () => {
       const npe = { ...createRandomNodePathElement(), isMarked: true };
       const json = NodePathElement.toJSON(npe);
@@ -30,11 +28,9 @@ describe("NodePathElement", () => {
       const json = NodePathElement.toJSON(npe);
       expect(json).to.matchSnapshot();
     });
-
   });
 
   describe("fromJSON", () => {
-
     it("creates valid NodePathElement from JSON", () => {
       const json = createRandomNodePathElementJSON();
       const node = NodePathElement.fromJSON(json);
@@ -46,11 +42,9 @@ describe("NodePathElement", () => {
       const node = NodePathElement.fromJSON(JSON.stringify(json));
       expect(node).to.matchSnapshot();
     });
-
   });
 
   describe("listFromJSON", () => {
-
     it("creates valid NodePathElement[] from JSON", () => {
       const json = [createRandomNodePathElementJSON(), createRandomNodePathElementJSON()];
       const nodes = NodePathElement.listFromJSON(json);
@@ -62,7 +56,5 @@ describe("NodePathElement", () => {
       const nodes = NodePathElement.listFromJSON(JSON.stringify(json));
       expect(nodes).to.matchSnapshot();
     });
-
   });
-
 });
