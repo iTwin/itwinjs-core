@@ -75,6 +75,7 @@ export class FavoritePropertiesManager implements IDisposable {
   private _iTwinProperties: Map<string, Set<PropertyFullName>>;
   private _imodelProperties: Map<string, Set<PropertyFullName>>;
   private _imodelBaseClassesByClass: Map<string, { [className: string]: string[] }>;
+  private _imodelInitializationPromises: Map<IModelConnection, Promise<void>>;
 
   /** Property order is saved only in iModel scope */
   private _propertiesOrder: Map<string, FavoritePropertiesOrderInfo[]>;
@@ -85,6 +86,7 @@ export class FavoritePropertiesManager implements IDisposable {
     this._imodelProperties = new Map<string, Set<PropertyFullName>>();
     this._propertiesOrder = new Map<string, FavoritePropertiesOrderInfo[]>();
     this._imodelBaseClassesByClass = new Map<string, { [className: string]: string[] }>();
+    this._imodelInitializationPromises = new Map<IModelConnection, Promise<void>>();
   }
 
   public dispose() {
@@ -96,6 +98,7 @@ export class FavoritePropertiesManager implements IDisposable {
 
   /**
    * Initialize favorite properties for the provided IModelConnection.
+   * @deprecated in 4.5. Initialization is performed automatically by all async methods and only needed for {@link has} and {@link sortFields}.
    */
   public initializeConnection = async (imodel: IModelConnection) => {
     const imodelId = imodel.iModelId!;
@@ -153,10 +156,20 @@ export class FavoritePropertiesManager implements IDisposable {
     propertiesOrder.forEach((oi) => (oi.priority = priority--));
   };
 
+  private isInitialized(imodel: IModelConnection): boolean {
+    const iTwinId = imodel.iTwinId!;
+    const imodelId = imodel.iModelId!;
+    return this._imodelProperties.has(getiModelInfo(iTwinId, imodelId));
+  }
+
+  /**
+   * Checks if {@link initializeConnection} has been called for a given imodel.
+   * Can be removed when {@link has} and {@link sortFields} are removed.
+   */
   private validateInitialization(imodel: IModelConnection) {
     const iTwinId = imodel.iTwinId!;
     const imodelId = imodel.iModelId!;
-    if (!this._imodelProperties.has(getiModelInfo(iTwinId, imodelId))) {
+    if (!this.isInitialized(imodel)) {
       throw Error(
         `Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${iTwinId}'. Call initializeConnection() with an IModelConnection to initialize.`,
       );
@@ -164,14 +177,38 @@ export class FavoritePropertiesManager implements IDisposable {
   }
 
   /**
+   * Calls {@link initializeConnection} and caches the promise which should be awaited by calling {@link ensureInitialized}.
+   * @internal
+   */
+  public startConnectionInitialization(imodel: IModelConnection) {
+    if (!this.isInitialized(imodel) && !this._imodelInitializationPromises.has(imodel)) {
+      // eslint-disable-next-line deprecation/deprecation
+      this._imodelInitializationPromises.set(imodel, this.initializeConnection(imodel));
+    }
+  }
+
+  /**
+   * Performs the initialization process or finishes the one that was started by {@link startConnectionInitialization}.
+   * @internal
+   */
+  public async ensureInitialized(imodel: IModelConnection) {
+    if (this.isInitialized(imodel)) {
+      return;
+    }
+
+    // eslint-disable-next-line deprecation/deprecation
+    const promise = this._imodelInitializationPromises.get(imodel) ?? this.initializeConnection(imodel);
+    await promise;
+  }
+
+  /**
    * Adds favorite properties into a certain scope.
    * @param field Field that contains properties. If field contains multiple properties, all of them will be favorited.
    * @param imodel IModelConnection.
    * @param scope FavoritePropertiesScope to put the favorite properties into.
-   * @note `initializeConnection` must be called with the `imodel` before calling this function.
    */
   public async add(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void> {
-    this.validateInitialization(imodel);
+    await this.ensureInitialized(imodel);
     const iTwinId = imodel.iTwinId!;
     const imodelId = imodel.iModelId!;
 
@@ -212,10 +249,9 @@ export class FavoritePropertiesManager implements IDisposable {
    * @param field Field that contains properties. If field contains multiple properties, all of them will be un-favorited.
    * @param imodel IModelConnection.
    * @param scope FavoritePropertiesScope to remove the favorite properties from. It also removes from more general scopes.
-   * @note `initializeConnection` must be called with the `imodel` before calling this function.
    */
   public async remove(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void> {
-    this.validateInitialization(imodel);
+    await this.ensureInitialized(imodel);
     const iTwinId = imodel.iTwinId!;
     const imodelId = imodel.iModelId!;
 
@@ -264,10 +300,9 @@ export class FavoritePropertiesManager implements IDisposable {
    * Removes all favorite properties from a certain scope.
    * @param imodel IModelConnection.
    * @param scope FavoritePropertiesScope to remove the favorite properties from.
-   * @note `initializeConnection` must be called with the `imodel` before calling this function.
    */
   public async clear(imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void> {
-    this.validateInitialization(imodel);
+    await this.ensureInitialized(imodel);
     const iTwinId = imodel.iTwinId!;
     const imodelId = imodel.iModelId!;
 
@@ -305,6 +340,7 @@ export class FavoritePropertiesManager implements IDisposable {
    * @param imodel IModelConnection.
    * @param scope FavoritePropertiesScope to check for favorite properties. It also checks the more general scopes.
    * @note `initializeConnection` must be called with the `imodel` before calling this function.
+   * @deprecated in 4.5. Use [[FavoritePropertiesManager.hasAsync]] instead. This method is not async, therefore it cannot call {@link initializeConnection}.
    */
   public has(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): boolean {
     this.validateInitialization(imodel);
@@ -320,11 +356,24 @@ export class FavoritePropertiesManager implements IDisposable {
   }
 
   /**
+   * Check if field contains at least one favorite property.
+   * @param field Field that contains properties.
+   * @param imodel IModelConnection.
+   * @param scope FavoritePropertiesScope to check for favorite properties. It also checks the more general scopes.
+   */
+  public async hasAsync(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<boolean> {
+    await this.ensureInitialized(imodel);
+    // eslint-disable-next-line deprecation/deprecation
+    return this.has(field, imodel, scope);
+  }
+
+  /**
    * Sorts an array of fields with respect to favorite property order.
    * Non-favorited fields get sorted by their default priority and always have lower priority than favorited fields.
    * @param imodel IModelConnection.
    * @param fields Array of Field's that needs to be sorted.
    * @note `initializeConnection` must be called with the `imodel` before calling this function.
+   * @deprecated in 4.5. Use [[FavoritePropertiesManager.sortFieldsAsync]] instead. This method is not async, therefore it cannot call {@link initializeConnection}.
    */
   public sortFields = (imodel: IModelConnection, fields: Field[]): Field[] => {
     this.validateInitialization(imodel);
@@ -350,6 +399,18 @@ export class FavoritePropertiesManager implements IDisposable {
 
     return fields.sort(sortFunction);
   };
+
+  /**
+   * Sorts an array of fields with respect to favorite property order.
+   * Non-favorited fields get sorted by their default priority and always have lower priority than favorited fields.
+   * @param imodel IModelConnection.
+   * @param fields Array of Field's that needs to be sorted.
+   */
+  public async sortFieldsAsync(imodel: IModelConnection, fields: Field[]): Promise<Field[]> {
+    await this.ensureInitialized(imodel);
+    // eslint-disable-next-line deprecation/deprecation
+    return this.sortFields(imodel, fields);
+  }
 
   private getFieldPriority(field: Field, iTwinId: string, imodelId: string): number {
     const orderInfos = this._propertiesOrder.get(getiModelInfo(iTwinId, imodelId))!;
@@ -407,7 +468,6 @@ export class FavoritePropertiesManager implements IDisposable {
    * @param field Field that priority is being changed.
    * @param afterField Field that goes before the moved field. If undefined the moving field is changed to the highest priority (to the top).
    * @param visibleFields Array of fields to move the field in.
-   * @note `initializeConnection` must be called with the `imodel` before calling this function.
    */
   public async changeFieldPriority(imodel: IModelConnection, field: Field, afterField: Field | undefined, visibleFields: Field[]) {
     /**
@@ -422,7 +482,7 @@ export class FavoritePropertiesManager implements IDisposable {
      * 4. Irrelevant orderInfos's get moved after `orderInfo` (depends on the direction)
      * 5. All `field` orderInfo's get moved after `afterOrderInfo`
      */
-    this.validateInitialization(imodel);
+    await this.ensureInitialized(imodel);
     const iTwinId = imodel.iTwinId!;
     const imodelId = imodel.iModelId!;
 

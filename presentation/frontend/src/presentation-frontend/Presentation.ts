@@ -92,7 +92,9 @@ export class Presentation {
       });
     }
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    presentationManager.onNewiModelConnection = favoritePropertiesManager.initializeConnection.bind(favoritePropertiesManager);
+    presentationManager.startiModelInitialization = favoritePropertiesManager.startConnectionInitialization.bind(favoritePropertiesManager);
+    presentationManager.ensureiModelInitialized = favoritePropertiesManager.ensureInitialized.bind(favoritePropertiesManager);
+
     await FrontendLocalizationHelper.registerNamespaces();
     for (const handler of initializationHandlers) {
       const cleanup = await handler();
