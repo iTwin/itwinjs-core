@@ -1246,7 +1246,7 @@ describe("RegionOps2", () => {
             x += xDelta;
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x, y);
             // verify triangulation with no degenerate triangles
-            const visitor = mesh.createVisitor() as IndexedPolyfaceVisitor;
+            const visitor = mesh.createVisitor();
             for (; visitor.moveToNextFacet();) {
               ck.testExactNumber(3, visitor.numEdgesThisFacet, "facet is triangular");
               ck.testFalse(visitor.pointIndex[0] === visitor.pointIndex[1], "first two point indices are different");
