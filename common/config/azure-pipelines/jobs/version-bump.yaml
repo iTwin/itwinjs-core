@@ -52,7 +52,7 @@ jobs:
 
           # Add link to leftNav.md
           cat docs/changehistory/leftNav.md
-          (Get-Content -Raw -Path docs/changehistory/leftNav.md) -replace "### Versions`n", "### Versions`n`n- [$version](./$version.md)`n" | Set-Content -Path docs/changehistory/leftNav.md
+          (Get-Content -Raw -Path docs/changehistory/leftNav.md) -replace "### Versions`n", "### Versions`n`n- [$version](./$version.md)" | Set-Content -Path docs/changehistory/leftNav.md
 
         failOnStderr: true
         displayName: leftNav.md edit
