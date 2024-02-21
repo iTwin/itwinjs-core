@@ -406,12 +406,16 @@ export class PresentationManager implements IDisposable {
   public async getNodesDescriptor(
     requestOptions: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<Descriptor | undefined> {
-    await this.ensureIModelInitialized(requestOptions.imodel);
-    const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const rpcOptions = this.toRpcTokenOptions({ ...options });
-    const result = await this._requestsHandler.getNodesDescriptor(rpcOptions);
-    const descriptor = Descriptor.fromJSON(result);
-    return descriptor ? this._localizationHelper.getLocalizedContentDescriptor(descriptor) : undefined;
+    this.startIModelInitialization(requestOptions.imodel);
+    try {
+      const options = await this.addRulesetAndVariablesToOptions(requestOptions);
+      const rpcOptions = this.toRpcTokenOptions({ ...options });
+      const result = await this._requestsHandler.getNodesDescriptor(rpcOptions);
+      const descriptor = Descriptor.fromJSON(result);
+      return descriptor ? this._localizationHelper.getLocalizedContentDescriptor(descriptor) : undefined;
+    } finally {
+      await this.ensureIModelInitialized(requestOptions.imodel);
+    }
   }
 
   /** Retrieves paths from root nodes to children nodes according to specified keys. Intersecting paths will be merged. */
@@ -453,15 +457,19 @@ export class PresentationManager implements IDisposable {
   public async getContentDescriptor(
     requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<Descriptor | undefined> {
-    await this.ensureIModelInitialized(requestOptions.imodel);
-    const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const rpcOptions = this.toRpcTokenOptions({
-      ...options,
-      keys: stripTransientElementKeys(options.keys).toJSON(),
-    });
-    const result = await this._requestsHandler.getContentDescriptor(rpcOptions);
-    const descriptor = Descriptor.fromJSON(result);
-    return descriptor ? this._localizationHelper.getLocalizedContentDescriptor(descriptor) : undefined;
+    this.startIModelInitialization(requestOptions.imodel);
+    try {
+      const options = await this.addRulesetAndVariablesToOptions(requestOptions);
+      const rpcOptions = this.toRpcTokenOptions({
+        ...options,
+        keys: stripTransientElementKeys(options.keys).toJSON(),
+      });
+      const result = await this._requestsHandler.getContentDescriptor(rpcOptions);
+      const descriptor = Descriptor.fromJSON(result);
+      return descriptor ? this._localizationHelper.getLocalizedContentDescriptor(descriptor) : undefined;
+    } finally {
+      await this.ensureIModelInitialized(requestOptions.imodel);
+    }
   }
 
   /** Retrieves overall content set size. */
@@ -489,45 +497,49 @@ export class PresentationManager implements IDisposable {
   public async getContentAndSize(
     requestOptions: Paged<ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & ClientDiagnosticsAttribute,
   ): Promise<{ content: Content; size: number } | undefined> {
-    await this.ensureIModelInitialized(requestOptions.imodel);
-    const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const rpcOptions = this.toRpcTokenOptions({
-      ...options,
-      descriptor: getDescriptorOverrides(requestOptions.descriptor),
-      keys: stripTransientElementKeys(requestOptions.keys).toJSON(),
-      ...(!requestOptions.omitFormattedValues && this._schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined),
-    });
-    let descriptor = requestOptions.descriptor instanceof Descriptor ? requestOptions.descriptor : undefined;
-    const result = await buildPagedArrayResponse(options.paging, async (partialPageOptions, requestIndex) => {
-      if (0 === requestIndex && !descriptor) {
-        const content = await this._requestsHandler.getPagedContent({ ...rpcOptions, paging: partialPageOptions });
-        if (content) {
-          descriptor = Descriptor.fromJSON(content.descriptor);
-          return content.contentSet;
+    this.startIModelInitialization(requestOptions.imodel);
+    try {
+      const options = await this.addRulesetAndVariablesToOptions(requestOptions);
+      const rpcOptions = this.toRpcTokenOptions({
+        ...options,
+        descriptor: getDescriptorOverrides(requestOptions.descriptor),
+        keys: stripTransientElementKeys(requestOptions.keys).toJSON(),
+        ...(!requestOptions.omitFormattedValues && this._schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined),
+      });
+      let descriptor = requestOptions.descriptor instanceof Descriptor ? requestOptions.descriptor : undefined;
+      const result = await buildPagedArrayResponse(options.paging, async (partialPageOptions, requestIndex) => {
+        if (0 === requestIndex && !descriptor) {
+          const content = await this._requestsHandler.getPagedContent({ ...rpcOptions, paging: partialPageOptions });
+          if (content) {
+            descriptor = Descriptor.fromJSON(content.descriptor);
+            return content.contentSet;
+          }
+          return { total: 0, items: [] };
         }
-        return { total: 0, items: [] };
+        return this._requestsHandler.getPagedContentSet({ ...rpcOptions, paging: partialPageOptions });
+      });
+      if (!descriptor) {
+        return undefined;
       }
-      return this._requestsHandler.getPagedContentSet({ ...rpcOptions, paging: partialPageOptions });
-    });
-    if (!descriptor) {
-      return undefined;
-    }
 
-    const items = result.items.map((itemJson) => Item.fromJSON(itemJson)).filter<Item>((item): item is Item => item !== undefined);
-    const resultContent = new Content(descriptor, items);
-    if (!requestOptions.omitFormattedValues && this._schemaContextProvider) {
-      const koqPropertyFormatter = new KoqPropertyValueFormatter(this._schemaContextProvider(requestOptions.imodel), this._defaultFormats);
-      const contentFormatter = new ContentFormatter(
-        new ContentPropertyValueFormatter(koqPropertyFormatter),
-        requestOptions.unitSystem ?? this._explicitActiveUnitSystem ?? IModelApp.quantityFormatter.activeUnitSystem,
-      );
-      await contentFormatter.formatContent(resultContent);
-    }
+      const items = result.items.map((itemJson) => Item.fromJSON(itemJson)).filter<Item>((item): item is Item => item !== undefined);
+      const resultContent = new Content(descriptor, items);
+      if (!requestOptions.omitFormattedValues && this._schemaContextProvider) {
+        const koqPropertyFormatter = new KoqPropertyValueFormatter(this._schemaContextProvider(requestOptions.imodel), this._defaultFormats);
+        const contentFormatter = new ContentFormatter(
+          new ContentPropertyValueFormatter(koqPropertyFormatter),
+          requestOptions.unitSystem ?? this._explicitActiveUnitSystem ?? IModelApp.quantityFormatter.activeUnitSystem,
+        );
+        await contentFormatter.formatContent(resultContent);
+      }
 
-    return {
-      size: result.total,
-      content: this._localizationHelper.getLocalizedContent(resultContent),
-    };
+      return {
+        size: result.total,
+        content: this._localizationHelper.getLocalizedContent(resultContent),
+      };
+    } finally {
+      await this.ensureIModelInitialized(requestOptions.imodel);
+    }
   }
 
   /** Retrieves distinct values of specific field from the content. */
