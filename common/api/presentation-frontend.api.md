@@ -313,7 +313,7 @@ export class PresentationManager implements IDisposable {
     // (undocumented)
     dispose(): void;
     // @internal
-    ensureiModelInitialized(_: IModelConnection): Promise<void>;
+    ensureIModelInitialized(_: IModelConnection): Promise<void>;
     getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & ClientDiagnosticsAttribute): Promise<Content | undefined>;
     getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & ClientDiagnosticsAttribute): Promise<{
         content: Content;
@@ -350,7 +350,7 @@ export class PresentationManager implements IDisposable {
     get rpcRequestsHandler(): RpcRequestsHandler;
     rulesets(): RulesetManager;
     // @internal
-    startiModelInitialization(_: IModelConnection): void;
+    startIModelInitialization(_: IModelConnection): void;
     vars(rulesetId: string): RulesetVariablesManager;
 }
 
