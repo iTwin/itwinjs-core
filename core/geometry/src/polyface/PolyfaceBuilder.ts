@@ -112,8 +112,8 @@ class FacetSector {
    */
   public loadIndexedPointAndDerivativeCoordinatesFromPackedArrays(i: number, packedXYZ: GrowableXYZArray, packedDerivatives?: GrowableXYZArray, fractions?: GrowableFloat64Array, v?: number) {
     packedXYZ.getPoint3dAtCheckedPointIndex(i, this.xyz);
-    if (fractions && v !== undefined) { }
-    // this.uv = Point2d.create(fractions.atUncheckedIndex(i), v);
+    if (this.uv && fractions && v !== undefined)
+      this.uv.set(fractions.atUncheckedIndex(i), v);
     this.xyzIndex = -1;
     this.normalIndex = -1;
     this.uvIndex = -1;
