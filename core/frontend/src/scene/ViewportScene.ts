@@ -121,12 +121,13 @@ export interface SpatialScene {
   readonly isSpatial: true;
   readonly is2d?: never;
 
-  volume: SceneVolume3d;
+  readonly volume: SceneVolume3d;
 
   readonly realityModels: RealityModelSceneObjects;
   readonly maps: MapSceneObject;
   readonly iModels: IModelSceneObjects<IModelSpatialView>;
-  readonly custom: CustomSceneObjects;
+  // ###TODO want to keep SceneObject interface open for expansion for now, without incurring backwards compatibility tax
+  // readonly custom: CustomSceneObjects;
   readonly presentation: ScenePresentation3d;
   readonly tiledGraphicsProviders: TiledGraphicsSceneObjects;
 }
@@ -135,12 +136,13 @@ export interface TestScene2d {
   readonly is2d: true;
   readonly isSpatial?: never;
 
-  volume: TestSceneVolume2d;
+  readonly volume: TestSceneVolume2d;
 
   readonly views: IModelSceneObjects<IModelView2d>;
   readonly presentation: ScenePresentation2d;
   readonly tiledGraphicsProviders: TiledGraphicsSceneObjects;
-  readonly custom: CustomSceneObjects;
+  // ###TODO want to keep SceneObject interface open for expansion for now, without incurring backwards compatibility tax
+  // readonly custom: CustomSceneObjects;
 }
 
 export type ViewportScene = SpatialScene | TestScene2d;
