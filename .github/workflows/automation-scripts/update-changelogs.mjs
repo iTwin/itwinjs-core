@@ -140,7 +140,7 @@ if (commitMessage.endsWith(".0")) {
   editFileInPlaceSynchronously(leftNavMdPath, "### Versions\n", `### Versions\n\n- [${commitMessage}](./${commitMessage}.md)`);
 }
 // # regen CHANGELOG.md
-await $`rush publish --regenerate-changelogs`;
+// await $`rush publish --regenerate-changelogs`;
 /*********************************************************************
 * Uncomment For Manual runs and fix branch name to appropriate version
 * the version should match your incoming branch
