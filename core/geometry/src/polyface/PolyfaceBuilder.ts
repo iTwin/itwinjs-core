@@ -825,8 +825,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         this.addIndexedTriangleNormalIndexes(sectorA0.normalIndex, sectorA1.normalIndex, sectorA2.normalIndex);
       if (this._options.needParams)
         this.addIndexedTriangleParamIndexes(sectorA0.uvIndex, sectorA1.uvIndex, sectorA2.uvIndex);
-      this.addIndexedTrianglePointIndexes(sectorA0.xyzIndex, sectorA1.xyzIndex, sectorA2.xyzIndex);
-      this._polyface.terminateFacet();
+      this.addIndexedTrianglePointIndexes(sectorA0.xyzIndex, sectorA1.xyzIndex, sectorA2.xyzIndex, true);
     }
   }
   private addSectorQuadA01B01(sectorA0: FacetSector, sectorA1: FacetSector, sectorB0: FacetSector, sectorB1: FacetSector) {
@@ -840,8 +839,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         this.addIndexedQuadNormalIndexes(sectorA0.normalIndex, sectorA1.normalIndex, sectorB0.normalIndex, sectorB1.normalIndex);
       if (this._options.needParams)
         this.addIndexedQuadParamIndexes(sectorA0.uvIndex, sectorA1.uvIndex, sectorB0.uvIndex, sectorB1.uvIndex);
-      this.addIndexedQuadPointIndexes(sectorA0.xyzIndex, sectorA1.xyzIndex, sectorB0.xyzIndex, sectorB1.xyzIndex);
-      this._polyface.terminateFacet();
+      this.addIndexedQuadPointIndexes(sectorA0.xyzIndex, sectorA1.xyzIndex, sectorB0.xyzIndex, sectorB1.xyzIndex, true);
     }
   }
 
