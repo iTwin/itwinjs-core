@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-frontend",
+      "comment": "Make initialization of a new iModel connection non-blocking in most cases and move the responsibility of doing that to the `FavoritePropertiesManager` class.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-frontend"
+}
