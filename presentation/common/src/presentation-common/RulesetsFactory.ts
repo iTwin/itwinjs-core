@@ -103,7 +103,7 @@ export type PrimitivePropertyValue = string | number | boolean | Point | Instanc
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 type Point = { x: number; y: number; z?: number };
 
-const toString = (displayValue: Value | DisplayValue): string => {
+const toString = (displayValue: string | undefined): string => {
   if (!displayValue) {
     return "NULL";
   }
@@ -178,7 +178,7 @@ const getPropertyValue = (record: Item, field: Field): PrimitiveValueDef => {
     value = value[0].values[currFieldName];
     currFieldName = fieldNamesStack.pop();
   }
-  if (!isPrimitivePropertyValue(value)) {
+  if (!isPrimitivePropertyValue(value) || !(typeof displayValue === "undefined" || typeof displayValue === "string")) {
     throw new Error("Can only create 'similar instances' ruleset for primitive values");
   }
   return { raw: value, display: toString(displayValue) };

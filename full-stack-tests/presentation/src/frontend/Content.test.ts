@@ -1171,12 +1171,7 @@ describe("Content", () => {
       // mock `Promise.race` to always reject
       // eslint-disable-next-line @typescript-eslint/unbound-method
       const realRace = Promise.race;
-      const rejectedPromise = Promise.reject();
-      raceStub = sinon.stub(Promise, "race").callsFake(async (values) => {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        (values as Array<Promise<any>>).splice(0, 0, rejectedPromise);
-        return realRace.call(Promise, values);
-      });
+      raceStub = sinon.stub(Promise, "race").callsFake(async (values) => realRace.call(Promise, [Promise.reject(), ...values]));
     });
 
     afterEach(async () => {
