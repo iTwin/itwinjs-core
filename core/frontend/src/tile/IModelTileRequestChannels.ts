@@ -67,14 +67,17 @@ class LocalStorageCacheChannel extends TileRequestChannel {
       const initialObjectStore = this._db.createObjectStore("tile-cache", { keyPath: "contentId" });
       console.log("create initial data store");
 
-      initialObjectStore.createIndex("tile", "tile", {unique: false});
+      initialObjectStore.createIndex("hasGraphic", "hasGraphic", {unique: false});
+      initialObjectStore.createIndex("contentRange", "contentRange", {unique: false});
+      initialObjectStore.createIndex("isLeaf", "isLeaf", {unique: false});
+      initialObjectStore.createIndex("sizeMultiplier", "sizeMultiplier", {unique: false});
+      initialObjectStore.createIndex("emptySubRangeMask", "emptySubRangeMask", {unique: false});
       initialObjectStore.createIndex("timeOfStorage", "timeOfStorage", {unique: false});
+
     };
   }
 
   public async requestLocalCachedTileContent(tile: Tile): Promise<TileRequest.Response> {
-    let returnVal;
-
     console.log("MADE IT TO REQUESTING FROM THE CACHE");
     const getTransaction = await this._db.transaction("tile-cache", "readonly");
     const storedResponse = await getTransaction.objectStore("tile-cache").get(tile.contentId);
@@ -92,39 +95,37 @@ class LocalStorageCacheChannel extends TileRequestChannel {
         // If this time since is within our time limit (for now, two minutes), pass the stored response along
         if ( timeSince <= 120000) {
           console.log("Stored response still valid");
-          returnVal = storedResponse.result.tile.content;
+          const result = storedResponse.result;
+
+          const content = {
+            contentId: tile.contentId,
+            hasGraphic: result.hasGraphic,
+            graphic: result.hasGraphic ? IModelApp.renderSystem.createGraphicList([]) : undefined,
+            contentRange: result.contentRange?.clone(),
+            isLeaf: result.isLeaf,
+            sizeMultiplier: result.sizeMultiplier,
+            emptySubRangeMask: result.emptySubRangeMask,
+          };
+
+          return content;
         }
 
         // Otherwise, delete the cache entry and go along with the initial request
         else {
-          await this.doDeleteTransaction(tile);
+          await this.doDeleteTransaction(tile.contentId);
         }
       } else {
         console.log("NO RESULT");
         console.log("No Tile found in cache.");
-        await this.doAddTransaction(tile);
       }
+      return undefined;
     };
-    return returnVal;
-    // storedResponse.onerror = (event: any) => {
-    //   console.log(event);
-    // };
-
-    // getTransaction.oncomplete = () => {
-    //   console.log("Get Transaction Complete");
-    // };
-
-    // // If we've gotten here, no matching cached tile was found
-    // // so add the tile to storage and return undefined
-
+    return undefined;
   }
 
-  public async doDeleteTransaction(tile: Tile) {
+  public async doDeleteTransaction(contentId: string) {
     const deleteTransaction = await this._db.transaction("tile-cache", "readwrite");
-    const objectStore = await deleteTransaction.objectStore("tile-cache");
-
-    // since this is on a per tile basis, we can't just clear the whole thing. We need to find the specific tile and delete that.
-    const requestDelete = await objectStore.clear();
+    const requestDelete = await deleteTransaction.objectStore("tile-cache").delete(contentId);
 
     requestDelete.onsuccess = () => {
       console.log("Old response successfully deleted.");
@@ -135,31 +136,31 @@ class LocalStorageCacheChannel extends TileRequestChannel {
     };
 
     deleteTransaction.oncomplete = async () => {
-      console.log("delete transaction completed, now storing new response");
-      await this.doAddTransaction(tile);
+      console.log("delete transaction completed");
     };
   }
 
-  public async doAddTransaction(tile: Tile) {
+  public async doAddTransaction(tile: Tile, content: IModelTileContent) {
+
+    console.log("in add trans func");
+    // to do this we probably need to re-request the tile, get the data, and then store it.
+    // need to somehow not request the same tile multiple times.
     const addTransaction = await this._db.transaction("tile-cache", "readwrite");
     const objectStore = await addTransaction.objectStore("tile-cache");
 
     const tileData = {
       contentId: tile.contentId,
-
-      // to store in IDB, this needs to be serializable. Need to change how we're storing this.
-      tile,
-
+      hasGraphic: undefined !== content.graphic,
+      contentRange: content.contentRange?.clone(),
+      isLeaf: content.isLeaf,
+      sizeMultiplier: content.sizeMultiplier,
+      emptySubRangeMask: content.emptySubRangeMask,
       timeOfStorage: Date.now(),
     };
 
     const requestAdd = await objectStore.add(tileData);
-    requestAdd.onsuccess = (event: any) => {
-      if (event.target.result === URL) {
-        console.log("add request success, time of storage:", tileData.timeOfStorage);
-      } else {
-        console.log("add request failure");
-      }
+    requestAdd.onsuccess = () => {
+      console.log("Add request success");
     };
 
     addTransaction.onsuccess = (event: any) => {
@@ -275,10 +276,22 @@ class IModelTileMetadataCacheChannel extends TileRequestChannel {
   }
 
   public registerChannel(channel: TileRequestChannel): void {
-    channel.contentCallback = (tile, content) => this.cache(tile, content);
+    channel.contentCallback = async (tile, content) => this.cache(tile, content, channel);
   }
 
-  private cache(tile: Tile, content: IModelTileContent): void {
+  private async cache(tile: Tile, content: IModelTileContent, channel: TileRequestChannel): Promise<void> {
+
+    console.log("in cache func");
+
+    if (channel.name === "itwinjs-tile-rpc") {
+      console.log("rpc, returning out");
+      return;
+    }
+    if (channel instanceof LocalStorageCacheChannel) {
+      await channel.doAddTransaction(tile,content);
+      return;
+    }
+
     assert(tile instanceof IModelTile);
     let trees = this._cacheByIModel.get(tile.iModel);
     if (!trees)
@@ -305,7 +318,7 @@ class IModelTileMetadataCacheChannel extends TileRequestChannel {
  */
 export class IModelTileRequestChannels {
   private _cloudStorage: TileRequestChannel;
-  private _localStorage: TileRequestChannel;
+  private _localStorage: LocalStorageCacheChannel;
   private readonly _contentCache?: IModelTileMetadataCacheChannel;
   public readonly rpc: TileRequestChannel;
 
@@ -317,7 +330,7 @@ export class IModelTileRequestChannels {
   }) {
     const channelName = "itwinjs-tile-rpc";
     this.rpc = args.usesHttp ? new TileRequestChannel(channelName, args.concurrency) : new IModelTileChannel(channelName, args.concurrency);
-
+    this.rpc.contentCallback = async (tile, content) => this._localStorage.doAddTransaction(tile,content);
     if (args.cacheMetadata) {
       this._contentCache = new IModelTileMetadataCacheChannel();
       this._contentCache.registerChannel(this.rpc);
