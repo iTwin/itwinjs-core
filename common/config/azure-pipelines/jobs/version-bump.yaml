@@ -147,15 +147,11 @@ jobs:
     - bash: |
         echo Committing version bump $(getVersion.version)...
 
-        git commit -m "$(getVersion.version)" --author="imodeljs-admin <38288322+imodeljs-admin@users.noreply.github.com>"
       displayName: Commit version bump
 
     - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
       - bash: 'git tag -a release/$(getVersion.version) -m "v$(getVersion.version)"'
         displayName: Create git tag
-
-    - bash: 'git push --follow-tags https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:$(Build.SourceBranch)'
-      displayName: Push version bump
 
   - ${{ if eq(parameters.BumpType, 'releaseCandidate') }}:
     - job: CreateBranch
@@ -167,10 +163,10 @@ jobs:
 
       steps:
       - checkout: self
-      - bash: |
-          git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
-          git config --local user.name imodeljs-admin
-        displayName: Setup Git
+      # - bash: |
+      #     git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
+      #     git config --local user.name imodeljs-admin
+      #   displayName: Setup Git
 
       - bash: git checkout --track origin/$(Build.SourceBranchName)
         displayName: Switching to source branch
@@ -217,13 +213,13 @@ jobs:
             echo "$search"
             echo "$replace"
             sed -i "s/$search/$replace/g" "$docsYamlPath"
-            git add "$docsYamlPath"
-            git commit -m "Update 'gather-docs.yaml' to previous release branch name"
+            # git add "$docsYamlPath"
+            git branch
+            git status
+            cat common/config/azure-pipelines/templates/gather-docs.yaml
+            cat docs/changehistory/leftNav.md
           fi
         displayName: Update 'gather-docs.yaml' and commit to release branch
-
-      - bash: git push --set-upstream https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(releaseBranchName) -q
-        displayName: Publish the release branch
 
   - ${{ if eq(parameters.BumpType, 'releaseCandidate') }}:
     - job: UpdateMaster
@@ -239,10 +235,10 @@ jobs:
           versionSpec: 20.x
           checkLatest: true
 
-      - bash: |
-          git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
-          git config --local user.name imodeljs-admin
-        displayName: 'Setup Git'
+      # - bash: |
+      #     git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
+      #     git config --local user.name imodeljs-admin
+      #   displayName: 'Setup Git'
 
       - bash: git checkout --track origin/$(Build.SourceBranchName)
         displayName: Switching to source branch
@@ -290,10 +286,5 @@ jobs:
           Write-Host The new version is $newVersion
           Write-Host Committing version bump...
 
-          git commit -m "$newVersion" --author="imodeljs-admin <38288322+imodeljs-admin@users.noreply.github.com>"
-
           git status
         displayName: Get version and committing
-
-      - bash: git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(Build.SourceBranchName) -q
-        displayName: 'Push version bump'
