@@ -125,7 +125,7 @@ jobs:
               Rename-Item -Path $sourceFile -NewName "$(getVersion.version).md"
 
               # Add link to leftNav.md
-              (Get-Content -Raw -Path docs/changehistory/leftNav.md) -replace "### Versions`n", "### Versions`n`n- [$(getVersion.version)](./$(getVersion.version).md)" | Set-Content -Path docs/changehistory/leftNav.md
+              (Get-Content -Raw -Path docs/changehistory/leftNav.md) -replace "### Versions`n", "### Versions`n`n- [$(getVersion.version)](./$(getVersion.version).md)`n" | Set-Content -Path docs/changehistory/leftNav.md
 
               # Create new NextVersion.md
               New-Item $sourceFile
