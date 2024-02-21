@@ -5,8 +5,9 @@
 import { expect } from "chai";
 import { randomInt } from "crypto";
 import * as fs from "fs";
+import { CloneFunction, Dictionary, OrderedComparator } from "@itwin/core-bentley";
 import { ClipUtilities } from "../../clipping/ClipUtils";
-import { FacetFaceData } from "../../core-geometry";
+import { FacetFaceData, GrowableXYArray } from "../../core-geometry";
 import { Arc3d } from "../../curve/Arc3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
@@ -29,9 +30,9 @@ import { Transform } from "../../geometry3d/Transform";
 import { XAndY, XYAndZ } from "../../geometry3d/XYZProps";
 import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
 import { MomentData } from "../../geometry4d/MomentData";
-import { IndexedPolyfaceVisitor } from "../../polyface/IndexedPolyfaceVisitor";
 import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { PolyfaceData } from "../../polyface/PolyfaceData";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
@@ -40,9 +41,11 @@ import { Cone } from "../../solid/Cone";
 import { SolidPrimitive } from "../../solid/SolidPrimitive";
 import { Sphere } from "../../solid/Sphere";
 import { TorusPipe } from "../../solid/TorusPipe";
+import { Triangulator } from "../../topology/Triangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
+import { ImportedSample } from "../testInputs/ImportedSamples";
 
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimeter is expected to be hidden
 function exercisePolyface(ck: Checker, polyface: Polyface,
@@ -1428,7 +1431,7 @@ it("AddSweptIndexedPolyface", () => {
     baseMesh.data.point.setXYZAtCheckedPointIndex(i, xyz.x, xyz.y, xyz.z + (i % 2 ? -1 : 1) * (randomInt(0, seed) / seed) / 2);
   }
   const normal = Vector3d.create();
-  const visitor = baseMesh.createVisitor(0) as IndexedPolyfaceVisitor;
+  const visitor = baseMesh.createVisitor(0);
   while (visitor.moveToNextFacet()) {
     const pts = visitor.point.getPoint3dArray();
     pts[0].crossProductToPoints(pts[1], pts[2], normal).normalizeInPlace();
@@ -1493,7 +1496,7 @@ it("VisitorParamQueries", () => {
     // builder.toggleReversedFacetFlag();
     s.dispatchToGeometryHandler(builder);
     const polyface = builder.claimPolyface(true);
-    const visitor = polyface.createVisitor(0) as IndexedPolyfaceVisitor;
+    const visitor = polyface.createVisitor(0);
     let facetIndex = 0;
     const distanceRange = Range2d.createNull();
     const fractionRange = Range2d.createNull();
@@ -1518,7 +1521,7 @@ it("VisitorQueryFailures", () => {
   const cone = Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 5), 1.0, 0.5, true)!;
   builder.addCone(cone);
   const polyface = builder.claimPolyface(true);
-  const visitor = polyface.createVisitor(0) as IndexedPolyfaceVisitor;
+  const visitor = polyface.createVisitor(0);
   if (ck.testTrue(visitor.moveToNextFacet())) {
     // exercise failure cases in parameter queries.
     // edge index is tested first . .
@@ -1587,7 +1590,7 @@ it("VisitorQueryFailures", () => {
   const cone = Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 5), 1.0, 0.5, true)!;
   builder.addCone(cone);
   const polyface = builder.claimPolyface(true);
-  const visitor = polyface.createVisitor(0) as IndexedPolyfaceVisitor;
+  const visitor = polyface.createVisitor(0);
   if (ck.testTrue(visitor.moveToNextFacet())) {
     // exercise failure cases in parameter queries.
     // edge index is tested first . .
@@ -1906,3 +1909,145 @@ function createPolyfaceFromSynchroA(geom: any): Polyface {
 
   return polyface;
 }
+
+// lexicographical order, with slop for equality
+const compareNormals: OrderedComparator<Vector3d> = (v0: Vector3d, v1: Vector3d) => { // lexicographical order, with slop for equality
+  if (v0.isAlmostEqual(v1)) return 0;
+  if (!Geometry.isAlmostEqualNumber(v0.x, v1.x)) { if (v0.x < v1.x) return -1; if (v0.x > v1.x) return 1; }
+  if (!Geometry.isAlmostEqualNumber(v0.y, v1.y)) { if (v0.y < v1.y) return -1; if (v0.y > v1.y) return 1; }
+  if (!Geometry.isAlmostEqualNumber(v0.z, v1.z)) { if (v0.z < v1.z) return -1; if (v0.z > v1.z) return 1; }
+  return 0;
+};
+
+const cloneNormal: CloneFunction<Vector3d> = (v: Vector3d) => {
+  return v.clone();
+};
+
+function sectorsWithSameNormalAtVertexShareUVParamAndColor(ck: Checker, data: PolyfaceData): void {
+  if (data.normal && data.normalIndex && ((data.param && data.paramIndex) || (data.color && data.colorIndex))) {
+    const normal = Vector3d.createZero();
+    for (let vi = 0; vi < data.pointCount; ++vi) {
+      const sectors: number[] = [];
+      for (let readIndex = 0; readIndex < data.pointIndex.length; ++readIndex) {
+        if (data.pointIndex[readIndex] === vi)
+          sectors.push(readIndex);
+      }
+      const normalToAuxIndex = new Dictionary<Vector3d, number>(compareNormals, cloneNormal);
+      for (const auxIndices of [data.paramIndex, data.colorIndex]) {
+        if (!auxIndices)
+          continue;
+        normalToAuxIndex.clear();
+        for (const readIndex of sectors) {
+          const iNormal: number = data.normalIndex[readIndex];
+          ck.testPointer(data.getNormal(iNormal, normal));
+          const iAuxData = auxIndices[readIndex];
+          const inserted = normalToAuxIndex.insert(normal, iAuxData);
+          if (!inserted)
+            ck.testExactNumber(normalToAuxIndex.get(normal)!, iAuxData, "at a vertex, sectors with same normal have same uv/color");
+        }
+      }
+    }
+  }
+}
+
+describe("Polyface", () => {
+  it("TriangulateAuxiliaryData", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const mesh = ImportedSample.createPolyhedron62();
+    if (!ck.testPointer(mesh, "imported mesh"))
+      return;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
+
+    // preserve per-facet colors
+    let colors: number[] | undefined;
+    const normal = Vector3d.createZero();
+    const normalToColorIndex = new Dictionary<Vector3d, number>(compareNormals, cloneNormal);
+    if (
+      ck.testDefined(mesh.data.color, "input mesh has colors") && mesh.data.color !== undefined &&
+      ck.testDefined(mesh.data.colorIndex, "input mesh has color indices") && mesh.data.colorIndex !== undefined &&
+      ck.testDefined(mesh.data.normal, "input mesh has normals") && mesh.data.normal !== undefined
+    ) {
+      colors = mesh.data.color.slice();
+      for (const visitor = mesh.createVisitor(); visitor.moveToNextFacet();)
+        ck.testTrue(normalToColorIndex.insert(visitor.getNormal(0, normal)!, visitor.colorIndex![0]), "associate normal to color of face");
+    }
+
+    // preserve per-sector uv-parameters
+    let params: GrowableXYArray | undefined;
+    const vertexIndexToSector = [];
+    if (
+      ck.testDefined(mesh.data.param, "input mesh has params") && mesh.data.param !== undefined &&
+      ck.testDefined(mesh.data.paramIndex, "input mesh has param indices") && mesh.data.paramIndex !== undefined &&
+      ck.testDefined(mesh.data.normal, "input mesh has normals") && mesh.data.normal !== undefined
+    ) {
+      params = mesh.data.param.clone();
+      for (let vi = 0; vi < mesh.data.point.length; ++vi) {
+        const normalToParamIndex = new Dictionary<Vector3d, number>(compareNormals, cloneNormal);
+        for (const visitor = mesh.createVisitor(); visitor.moveToNextFacet();) {
+          for (let i = 0; i < visitor.numEdgesThisFacet; ++i) {
+            if (visitor.pointIndex[i] === vi)
+              normalToParamIndex.insert(visitor.getNormal(i, normal)!, visitor.paramIndex![i]);
+          }
+        }
+        vertexIndexToSector.push(normalToParamIndex);
+      }
+    }
+
+    // triangulate via graph roundtrip (loses normals, params, colors)
+    const graph = PolyfaceQuery.convertToHalfEdgeGraph(mesh);
+    ck.testTrue(Triangulator.triangulateAllInteriorFaces(graph, true), "triangulated the graph");
+    const mesh1 = PolyfaceBuilder.graphToPolyface(graph, undefined, () => true, () => true);
+    ck.testTrue(!mesh1.isEmpty, "triangulated the mesh");
+
+    ck.testExactNumber(mesh1.pointCount, mesh.pointCount, "triangulation didn't add any vertices");
+    ck.testExactNumber(mesh1.facetCount, 54 + mesh.facetCount, "triangulation produced expected facet count");
+    ck.testExactNumber(mesh1.data.pointIndex.length, 108 + mesh.data.pointIndex.length, "triangulation produced expected edge count");
+    ck.testExactNumber(mesh1.pointCount - (mesh1.data.pointIndex.length / 2) + mesh1.facetCount, 2, "triangulation satisfies Euler equation");
+
+    // reinstall per-facet normals
+    PolyfaceQuery.buildPerFaceNormals(mesh1);
+    ck.testDefined(mesh1.data.normal, "normals successfully installed");
+
+    // restore per-facet colors
+    if (colors) {
+      for (const visitor = mesh1.createVisitor(); visitor.moveToNextFacet();) {
+        const colorIndex = normalToColorIndex.get(visitor.getNormal(0, normal)!);
+        if (ck.testDefined(colorIndex, "found color index in map") && colorIndex !== undefined) {
+          for (let i = 0; i < visitor.numEdgesThisFacet; ++i)
+            mesh1.addColorIndex(colorIndex);
+        }
+      }
+      mesh1.data.color = colors;
+    }
+
+    // restore per-sector uv-parameters
+    if (params) {
+      const vertex0 = Point3d.createZero();
+      const vertex1 = Point3d.createZero();
+      mesh1.data.paramIndex = [];
+      mesh1.data.paramIndex.length = mesh1.data.pointIndex.length;
+      for (let vi = 0; vi < mesh1.data.point.length; ++vi) {
+        mesh1.data.getPoint(vi, vertex0);
+        for (const visitor = mesh1.createVisitor(); visitor.moveToNextFacet();) {
+          for (let i = 0; i < visitor.numEdgesThisFacet; ++i) {
+            if (vertex0.isAlmostEqual(visitor.getPoint(i, vertex1)!)) {
+              const uvIndex = vertexIndexToSector[vi].get(visitor.getNormal(i, normal)!);
+              if (ck.testDefined(uvIndex, "found uv index in map") && uvIndex !== undefined)
+                mesh1.data.paramIndex[mesh1.facetIndex0(visitor.currentReadIndex()) + i] = uvIndex;
+            }
+          }
+        }
+      }
+      mesh1.data.param = params;
+    }
+
+    mesh1.data.compress();
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh1, 10);
+    sectorsWithSameNormalAtVertexShareUVParamAndColor(ck, mesh1.data);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "TriangulateAuxiliaryData");
+    expect(ck.getNumErrors()).equals(0);
+  });
+});
