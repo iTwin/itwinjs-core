@@ -44,7 +44,12 @@ export class TileStorage {
     if (this._initializedIModels.has(iModelId))
       return;
     if (!(await this.storage.baseDirectoryExists({ baseDirectory: iModelId }))) {
-      await this.storage.createBaseDirectory({ baseDirectory: iModelId });
+      try {
+        await this.storage.createBaseDirectory({ baseDirectory: iModelId });
+      } catch (e: any) {
+        if(e.statusCode !== 409)
+          throw e;
+      }
     }
     this._initializedIModels.add(iModelId);
   }
