@@ -20,10 +20,9 @@ let pull_requests = await octokit.request('GET /repos/{owner}/{repo}/pulls', {
 })
 
 for (let i = 0; i < pull_requests.data.length; i++) {
-  console.log(pull_requests.data[i].head.ref)
   let pr_sha = pull_requests.data[i].head.sha;
 
-  if (!pull_requests.data[i].draft) {
+  if (!pull_requests.data[i].draft && pull_requests.data[i].base.ref === 'master') {
     await octokit.request('POST /repos/{owner}/{repo}/statuses/{sha}', {
       owner: 'iTwin',
       repo: 'itwinjs-core',
