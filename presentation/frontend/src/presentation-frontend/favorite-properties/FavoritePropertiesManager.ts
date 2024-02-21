@@ -196,9 +196,19 @@ export class FavoritePropertiesManager implements IDisposable {
       return;
     }
 
-    // eslint-disable-next-line deprecation/deprecation
-    const promise = this._imodelInitializationPromises.get(imodel) ?? this.initializeConnection(imodel);
+    let promise = this._imodelInitializationPromises.get(imodel);
+    if (!promise) {
+      // eslint-disable-next-line deprecation/deprecation
+      promise = this.initializeConnection(imodel);
+
+      // Put the promise in the map to avoid possible multiple initializations from different promises.
+      this._imodelInitializationPromises.set(imodel, promise);
+    }
+
     await promise;
+
+    // Remove this promise from the map, because the next time this method is called, `this.isInitialized` should return true.
+    this._imodelInitializationPromises.delete(imodel);
   }
 
   /**
