@@ -40,154 +40,32 @@ pool:
   vmImage: ubuntu-latest
 
 jobs:
-  - job: CheckPrevCommit
-    displayName: Check Previous Commit
-    condition: and(eq('${{ parameters.BumpType }}', 'nightly'), eq(variables['Build.Reason'], 'Schedule'))
-    steps:
-      - checkout: self
-
-      - bash: |
-          prevAuthor=$(git log -1 --pretty=format:'%an')
-          prevCommit=$(git log -1 --pretty=format:'%B')
-          authorCheck='imodeljs-admin'
-          commitCheck='^[0-9]+\.[0-9]+\.[0-9]+-dev\.[0-9]+$'
-          if [[ $prevAuthor =~ $authorCheck ]] && [[ $prevCommit =~ $commitCheck ]]; then
-            echo "Previous commit appears to be from a prior nightly build. Skipping current nightly bump."
-            exit 1
-          fi
-        continueOnError: true
-
   - job: Bump
     displayName: Bump Version
-    dependsOn: CheckPrevCommit
-    condition: in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped')
     steps:
     - checkout: self
 
-    - task: NodeTool@0
-      displayName: Use Node 20.x
-      inputs:
-        versionSpec: 20.x
-        checkLatest: true
-
-    - bash: |
-        git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
-        git config --local user.name imodeljs-admin
-      displayName: Setup Git
-
-    - script: node common/scripts/install-run-rush.js install
-      displayName: rush install
-
-    - bash: node common/scripts/install-run-rush.js audit
-      displayName: rush audit
-
-    # Can be run on any branch to do a standard version bump. Which is currently -dev bumps.
-    - ${{ if or(eq(parameters.BumpType, 'nightly'), eq(parameters.BumpType, 'releaseCandidate')) }}:
-      - bash: 'node common/scripts/install-run-rush version --bump'
-        displayName: Rush version --bump
-
-    # Support two separate bump types on release branches
-    - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
-      - bash: 'node common/scripts/install-run-rush version --override-bump ${{ parameters.BumpType }} --version-policy prerelease-monorepo-lockStep --bump'
-        displayName: Release version bump
-        condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
-
-    - bash: |
-        version=$(jq '.[] | .version' common/config/rush/version-policies.json)
-
-        # Remove quotes or else vso task complains
-        quotelessVersion=$(sed -e 's/^"//' -e 's/"$//' <<<"$version")
-        echo "##vso[build.updatebuildnumber]iModel.js_$quotelessVersion"
-        echo "##vso[task.setvariable variable=version;isOutput=true]$quotelessVersion"
-      displayName: Get new version number
-      name: getVersion
-
     # When creating a minor release, the NextVersion.md need to be cleared and the contents placed into a {Version Number}.md file
-    - ${{ if eq(parameters.BumpType, 'minor') }}:
+    - ${{ if eq(parameters.BumpType, 'releaseCandidate') }}:
       - powershell: |
-          $sourceFile = 'docs/changehistory/NextVersion.md'
-
-          # If NextVersion has content do work
-          IF ((Get-Content -Path $sourceFile -ReadCount 1 | Measure-Object -line).Lines -gt 5) {
-              # Replace placeholder header
-              (Get-Content $sourceFile ) -replace 'NextVersion', "$(getVersion.version) Change Notes" | Set-Content $sourceFile
-
-              # Remove old frontmatter
-              (Get-Content $sourceFile | Select-Object -Skip 3) | Set-Content $sourceFile
-
-              # Copy NextVersion to index.md
-              Copy-Item $sourceFile docs/changehistory/index.md -Force
-
-              # Add relevant frontmatter
-              "---`ndeltaDoc: true`nversion: '$(getVersion.version)'`n---`n" + (Get-Content $sourceFile | Out-String) | Set-Content $sourceFile
-
-              # Rename NextVersion
-              Rename-Item -Path $sourceFile -NewName "$(getVersion.version).md"
-
-              # Add link to leftNav.md
-              (Get-Content -Raw -Path docs/changehistory/leftNav.md) -replace "### Versions`n", "### Versions`n`n- [$(getVersion.version)](./$(getVersion.version).md)" | Set-Content -Path docs/changehistory/leftNav.md
-
-              # Create new NextVersion.md
-              New-Item $sourceFile
-
-              # Update NextVersion.md with template
-              "---`npublish: false`n---`n# NextVersion`n" + (Get-Content $sourceFile | Out-String) | Set-Content $sourceFile
-          }
-
-          # Change header tab in docSite.json
-          (Get-Content 'docs/config/docSites.json') -replace '\".*?\":\s.?\"changehistory\"', "`"v$(getVersion.version)`": `"changehistory`"" | Set-Content 'docs/config/docSites.json'
+          $version = '4.5.0'
+          # Add link to leftNav.md
+          (Get-Content -Raw -Path docs/changehistory/leftNav.md) -replace "### Versions`n", "### Versions`n`n- [$(version)](./$(version).md)`n" | Set-Content -Path docs/changehistory/leftNav.md
 
         failOnStderr: true
-        displayName: NextVersion.md rename and replace
-        condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
-
-    - bash: 'git add .'
-      displayName: Git add
-
-    - bash: |
-        echo Committing version bump $(getVersion.version)...
-
-      displayName: Commit version bump
-
-    - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
-      - bash: 'git tag -a release/$(getVersion.version) -m "v$(getVersion.version)"'
-        displayName: Create git tag
+        displayName: leftNav.md edit
 
   - ${{ if eq(parameters.BumpType, 'releaseCandidate') }}:
     - job: CreateBranch
-      displayName: Create branch for next release
-      dependsOn: Bump
-      condition: and(in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'), eq(dependencies.Bump.result, 'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-      variables:
-        version: $[ dependencies.Bump.outputs['getVersion.version'] ]
-
       steps:
       - checkout: self
-      # - bash: |
-      #     git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
-      #     git config --local user.name imodeljs-admin
-      #   displayName: Setup Git
-
-      - bash: git checkout --track origin/$(Build.SourceBranchName)
-        displayName: Switching to source branch
 
       - bash: |
-          echo  The current version is $(version)
-          officialVersion=$(sed -e 's/.[0-9]*-dev.*$/.x/' <<<"$(version)")
+          cat common/config/azure-pipelines/templates/gather-docs.yaml
+          cat docs/changehistory/leftNav.md
 
-          branchName="release/"$officialVersion
-
-          echo Release branch name is $branchName
-
-          echo "##vso[task.setvariable variable=releaseBranchName]$branchName"
-        displayName: Get Branch Name
-
-      - bash: git checkout -b $(releaseBranchName)
-        displayName: Create release branch and checkout
-
-      - bash: |
           docsYamlPath="common/config/azure-pipelines/templates/gather-docs.yaml"
-          releaseBranch=$(releaseBranchName)
+          releaseBranch="release"/4.5.x
 
           # delimiter
           IFS="."
@@ -220,71 +98,3 @@ jobs:
             cat docs/changehistory/leftNav.md
           fi
         displayName: Update 'gather-docs.yaml' and commit to release branch
-
-  - ${{ if eq(parameters.BumpType, 'releaseCandidate') }}:
-    - job: UpdateMaster
-      displayName: Update master to next minor version
-      dependsOn: CreateBranch
-      condition: and(eq(dependencies.CreateBranch.result, 'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-
-      steps:
-      - checkout: self
-      - task: NodeTool@0
-        displayName: 'Use Node 20.x'
-        inputs:
-          versionSpec: 20.x
-          checkLatest: true
-
-      # - bash: |
-      #     git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
-      #     git config --local user.name imodeljs-admin
-      #   displayName: 'Setup Git'
-
-      - bash: git checkout --track origin/$(Build.SourceBranchName)
-        displayName: Switching to source branch
-
-      # Running this rush command will bump the version number to the next minor version, which in turn deletes everything within common/change.
-      - bash: node common/scripts/install-run-rush version --override-bump minor --version-policy prerelease-monorepo-lockStep --bump
-        displayName: Update to new dev version on master
-
-      # Only add the changes which delete the changelogs, we do not want them on master anymore.
-      - bash: git add common
-        displayName: 'Add changelog deletion'
-
-      - bash: |
-          # Resets all changes, other than the deletion of the changelogs.
-          git checkout -- .
-
-          # Cleans up all untracked files. This could happen if there are new packages that do not have change logs yet.
-          git clean -f -d
-
-          git status
-        displayName: Reset all changes besides changelog
-
-      # The real rush command that we would like to run.
-      # Sets the version number to the next version's first pre-release version.
-      - bash: node common/scripts/install-run-rush version --override-bump preminor --version-policy prerelease-monorepo-lockStep --bump --override-prerelease-id dev
-        displayName: Rush version to new pre-release version
-
-      - powershell: |
-          # Clear the current NextVersion.md to prepare for the next version on master.
-          $sourceFile = 'docs/changehistory/NextVersion.md'
-
-          # Overwrite everything with just the header
-          "---`npublish: false`n---`n# NextVersion`n" | Set-Content $sourceFile
-        displayName: 'Clear current NextVersion.md'
-
-      - bash: git add .
-        displayName: Git add all changes
-
-      - powershell: |
-          # Get the new dev version number. (Hint this is different than the overall version number used elsewhere)
-          $json = Get-Content -Raw -Path common/config/rush/version-policies.json | ConvertFrom-Json
-
-          $newVersion = $json[0].version
-
-          Write-Host The new version is $newVersion
-          Write-Host Committing version bump...
-
-          git status
-        displayName: Get version and committing
