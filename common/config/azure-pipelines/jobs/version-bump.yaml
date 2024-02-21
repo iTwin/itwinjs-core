@@ -49,20 +49,16 @@ jobs:
     - ${{ if eq(parameters.BumpType, 'releaseCandidate') }}:
       - powershell: |
           $version = '4.5.0'
+
           # Add link to leftNav.md
-          (Get-Content -Raw -Path docs/changehistory/leftNav.md) -replace "### Versions`n", "### Versions`n`n- [$(version)](./$(version).md)`n" | Set-Content -Path docs/changehistory/leftNav.md
+          cat docs/changehistory/leftNav.md
+          (Get-Content -Raw -Path docs/changehistory/leftNav.md) -replace "### Versions`n", "### Versions`n`n- [$version](./$version.md)`n" | Set-Content -Path docs/changehistory/leftNav.md
 
         failOnStderr: true
         displayName: leftNav.md edit
 
-  - ${{ if eq(parameters.BumpType, 'releaseCandidate') }}:
-    - job: CreateBranch
-      steps:
-      - checkout: self
-
       - bash: |
           cat common/config/azure-pipelines/templates/gather-docs.yaml
-          cat docs/changehistory/leftNav.md
 
           docsYamlPath="common/config/azure-pipelines/templates/gather-docs.yaml"
           releaseBranch="release"/4.5.x
