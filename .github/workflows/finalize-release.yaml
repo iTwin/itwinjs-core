@@ -23,10 +23,10 @@ jobs:
           token: ${{ secrets.IMJS_ADMIN_GH_TOKEN }}
           ref: ${{ github.ref }} # checkouts the branch that triggered the workflow
           fetch-depth: 0
-      - name: Set Git Config
-        run: |
-          git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
-          git config --local user.name imodeljs-admin
+      # - name: Set Git Config
+      #   run: |
+      #     git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
+      #     git config --local user.name imodeljs-admin
       - name: Run update-changelogs.mjs
         run: |
           npm i -g zx

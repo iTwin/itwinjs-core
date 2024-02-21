@@ -67,7 +67,7 @@ await $`mkdir ${incomingPath}`
 // find the latest release branch, and make that the target for the changelogs
 let targetBranch = await $`git branch -a --list "origin/release/[0-9]*.[0-9]*.x" | tail -n1 | sed 's/  remotes\\///'`;
 let currentBranch = await $`git branch --show-current`;
-let commitMessage = await $`git log --format=%B -n 1`;
+let commitMessage = "4.5.0";
 
 // remove extra null and new line characters from git cmds
 targetBranch = String(targetBranch).replace(/\n/g, '');
@@ -97,9 +97,13 @@ if (commitMessage.endsWith(".0")) {
   const docsYamlPath = "common/config/azure-pipelines/templates/gather-docs.yaml";
   editFileInPlaceSynchronously(docsYamlPath, /release\/\d+\.\d+\.\w+/g, currentBranch);
   // commit these changes to our release branch
-  await $`git add ${docsYamlPath}`;
-  await $`git commit -m "Update gather-docs.yaml's branch name to the release branch"`;
-  await $`git push origin HEAD:${currentBranch}`;
+  // await $`git add ${docsYamlPath}`;
+  // await $`git commit -m "Update gather-docs.yaml's branch name to the release branch"`;
+  // await $`git push origin HEAD:${currentBranch}`;
+  await $`git branch`;
+  await $`git status`;
+  await $`cat docs/changehistory/leftNav.md`;
+  await $`cat common/config/azure-pipelines/templates/gather-docs.yaml`;
 }
 
 targetBranch = targetBranch.replace("origin/", "");
@@ -143,9 +147,13 @@ await $`rush publish --regenerate-changelogs`;
 *********************************************************************/
 // await $`git checkout -b finalize-release-X.X.X`;
 // targetBranch = "finalize-release-X.X.X"
-await $`git add .`;
-await $`git commit -m "${commitMessage} Changelogs"`;
-await $`rush change --bulk --message "" --bump-type none`;
-await $`git add .`;
-await $`git commit --amend --no-edit`;
-await $`git push origin HEAD:${targetBranch}`;
+// await $`git add .`;
+// await $`git commit -m "${commitMessage} Changelogs"`;
+// await $`rush change --bulk --message "" --bump-type none`;
+// await $`git add .`;
+// await $`git commit --amend --no-edit`;
+// await $`git push origin HEAD:${targetBranch}`;
+await $`git branch`;
+await $`git status`;
+await $`cat docs/changehistory/leftNav.md`;
+await $`cat common/config/azure-pipelines/templates/gather-docs.yaml`;
