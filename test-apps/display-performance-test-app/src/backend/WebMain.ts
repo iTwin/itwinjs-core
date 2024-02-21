@@ -57,8 +57,7 @@ function startWebServer() {
     else if (arg === "chrome" || arg === "edge" || arg === "firefox" || arg === "safari")
       browser = arg;
     else if (arg === "headless"){
-      chromeFlags.push("--headless=new");
-      chromeFlags.push("--disable-gpu");
+      chromeFlags.push("--headless");
     } else if (arg === "headless-new"){
       chromeFlags.push("--headless=new");
     }
