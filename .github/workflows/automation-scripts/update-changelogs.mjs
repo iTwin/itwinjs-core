@@ -133,7 +133,7 @@ if (commitMessage.endsWith(".0")) {
 
   // also need to add reference to this new md in leftNav.md
   const leftNavMdPath = "docs/changehistory/leftNav.md";
-  editFileInPlaceSynchronously(leftNavMdPath, "### Versions\n", `### Versions\n\n- [${commitMessage}](./${commitMessage}.md)`);
+  editFileInPlaceSynchronously(leftNavMdPath, "### Versions\n", `### Versions\n\n- [${commitMessage}](./${commitMessage}.md)\n`);
 }
 // # regen CHANGELOG.md
 await $`rush publish --regenerate-changelogs`;
