@@ -4637,9 +4637,9 @@ export class PolyfaceQuery {
     static boundaryOfVisibleSubset(polyface: IndexedPolyface, visibilitySelect: 0 | 1 | 2, vectorToEye: Vector3d, sideAngleTolerance?: Angle): CurveCollection | undefined;
     static buildAverageNormals(polyface: IndexedPolyface, toleranceAngle?: Angle): void;
     static buildPerFaceNormals(polyface: IndexedPolyface): void;
-    static cloneByFacetDuplication(source: Polyface, includeSingletons: boolean, clusterSelector: DuplicateFacetClusterSelector): Polyface;
+    static cloneByFacetDuplication(polyface: Polyface, includeSingletons: boolean, clusterSelector: DuplicateFacetClusterSelector): Polyface;
     static cloneFiltered(source: Polyface | PolyfaceVisitor, filter: (visitor: PolyfaceVisitor) => boolean): IndexedPolyface;
-    static cloneOffset(source: IndexedPolyface, signedOffsetDistance: number, offsetOptions?: OffsetMeshOptions): IndexedPolyface;
+    static cloneOffset(polyface: IndexedPolyface, signedOffsetDistance: number, offsetOptions?: OffsetMeshOptions): IndexedPolyface;
     static clonePartitions(polyface: Polyface | PolyfaceVisitor, partitions: number[][]): Polyface[];
     static cloneWithColinearEdgeFixup(polyface: Polyface): Polyface;
     static cloneWithDanglingEdgesRemoved(source: Polyface | PolyfaceVisitor): IndexedPolyface;
@@ -4687,8 +4687,8 @@ export class PolyfaceQuery {
     static sweepLineStringToFacetsXYReturnSweptFacets(lineStringPoints: GrowableXYZArray, polyface: Polyface): Polyface;
     // @deprecated (undocumented)
     static sweepLinestringToFacetsXYreturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface;
-    static visitorClientFacetCount(visitor: Polyface | PolyfaceVisitor): number;
-    static visitorClientPointCount(visitor: Polyface | PolyfaceVisitor): number;
+    static visitorClientFacetCount(source: Polyface | PolyfaceVisitor): number;
+    static visitorClientPointCount(source: Polyface | PolyfaceVisitor): number;
     static visitorToLoop(visitor: PolyfaceVisitor): Loop;
 }
 

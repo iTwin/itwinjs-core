@@ -46,3 +46,17 @@ This generates the following graph. Black numbers on the graph are point coordin
 
 As you can see the shared edge leads to duplicate data in `data.point`. To remove duplicate data, we call `pf.data.compress()` which results into the following graph:
 ![>](./figs/Polyface/polyfaceDataAfterCompress.png)
+
+
+# `Polyface Dihedral Angles`
+
+Polyface dihedral angles are the angles between centroid normals of the polyface facets. These angles are calculated in `PolyfaceQuery.dihedralAngleSummary`. This is test for overall convexity of a polyface, i.e., if all dihedral angles are positive, then the polyface is probably convex with outward normals.
+
+Below is an example showing 2 facets of a polyface (black lines), their normals (red vectors `A` and `B`), and their face loops (orange vectors). The green vector `D` is the shared edge direction on the left facet .
+![>](./figs/Polyface/dihedralAnglePositive.png)
+
+To calculate the dihedral angle between the 2 facets, `PolyfaceQuery.dihedralAngleSummary` calls `Vector3d.signedAngleTo` function:
+```
+theta = A.signedAngleTo(B,D)
+```
+The angle `theta` is positive because the direction of cross product `AxB` is same as `D` (the right hand rule). Please note that if we reverse the normal directions, the angle `theta` would be negative because the direction of cross product `AxB` is reverse of `D`.
