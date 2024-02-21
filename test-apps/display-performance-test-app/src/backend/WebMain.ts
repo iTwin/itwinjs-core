@@ -56,8 +56,12 @@ function startWebServer() {
       DisplayPerfRpcInterface.jsonFilePath = arg;
     else if (arg === "chrome" || arg === "edge" || arg === "firefox" || arg === "safari")
       browser = arg;
-    else if (arg === "headless")
-      chromeFlags.push("--headless");
+    else if (arg === "headless"){
+      chromeFlags.push("--headless=new");
+      chromeFlags.push("--disable-gpu");
+    } else if (arg === "headless-new"){
+      chromeFlags.push("--headless=new");
+    }
   });
 
   if (serverConfig === undefined) {
