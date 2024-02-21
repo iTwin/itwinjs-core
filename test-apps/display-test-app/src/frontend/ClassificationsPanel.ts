@@ -429,12 +429,12 @@ function runClassify() {
   const data = [{
     id: "0xffffff0000000001",
     range: [{ x: 11.466576, y: 7.52628, z: -109.554264 },
-    { x: 12.466576, y: 8.52628, z: -108.554264 }],
+    { x: 12.466576, y: 8.52628, z: -100.554264 }],
   },
   {
     id: "0xffffff0000000002",
     range: [{ x: 11.466576, y: 5.52628, z: -109.554264 },
-    { x: 12.466576, y: 6.52628, z: -108.554264 }],
+    { x: 12.466576, y: 6.52628, z: -100.554264 }],
   }];
 
   const c1 = new SpatialClassifier(data, "My Test Classifier 1", SpatialClassifierFlags.fromJSON({
@@ -455,14 +455,14 @@ function runClassify() {
 function runClassify2() {
 
   const data = [{
-    id: "0xffffff0000000001",
+    id: "0xffffff0000000008",
     range: [{ x: 6.466576, y: 7.52628, z: -109.554264 },
-    { x: 7.466576, y: 8.52628, z: -108.554264 }],
+    { x: 7.466576, y: 8.52628, z: -100.554264 }],
   },
   {
-    id: "0xffffff0000000002",
+    id: "0xffffff0000000009",
     range: [{ x: 9.466576, y: 7.52628, z: -109.554264 },
-    { x: 10.466576, y: 8.52628, z: -108.554264 }],
+    { x: 10.466576, y: 8.52628, z: -100.554264 }],
   }];
 
   const c1 = new SpatialClassifier(data, "My Test Classifier 2", SpatialClassifierFlags.fromJSON({

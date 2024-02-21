@@ -187,8 +187,8 @@ class GeometryDecorator {
 
 export async function openDecorationGeometryExample(viewer: Viewer) {
   const viewIndependentOrigin = undefined; // new Point3d(4, 0, 0) -- uncomment for testing.
-  const gd = new GeometryDecorator(viewer.viewport, undefined, undefined, viewIndependentOrigin);
-  IModelApp.viewManager.addDecorator(gd);
+  // const gd = new GeometryDecorator(viewer.viewport, undefined, undefined, viewIndependentOrigin);
+  // IModelApp.viewManager.addDecorator(gd);
 
   assert(viewer.viewport.view.is3d());
   viewer.viewport.setStandardRotation(StandardViewId.Iso);
@@ -215,5 +215,5 @@ export async function openDecorationGeometryExample(viewer: Viewer) {
   const nMapEl = await imageElementFromUrl("brick05normal.jpg");
   const normalMap = IModelApp.renderSystem.createTexture({ image: { source: nMapEl, transparency: TextureTransparency.Opaque }, ownership: "external" });
 
-  gd.setTextures(texture, normalMap);
+  // gd.setTextures(texture, normalMap);
 }

@@ -7,7 +7,7 @@
  */
 import { comparePossiblyUndefined, compareStrings, compareStringsOrUndefined, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BatchType, ClassifierTileTreeId, iModelTileTreeIdToString, RenderMode, RenderSchedule, SpatialClassifier, SpatialClassifiers, ViewFlagsProperties,
+  BatchType, ClassifierTileTreeId, ColorDef, iModelTileTreeIdToString, PackedFeatureModelTable, RenderMode, RenderSchedule, RenderTexture, SpatialClassifier, SpatialClassifiers, ViewFlagsProperties,
 } from "@itwin/core-common";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
@@ -20,7 +20,7 @@ import {
 } from "./internal";
 import { GraphicType } from "../render/GraphicBuilder";
 import { GraphicList } from "../render/RenderGraphic";
-import { Box, Range3d, Transform } from "@itwin/core-geometry";
+import { Box, Range3d } from "@itwin/core-geometry";
 
 interface ClassifierTreeId extends ClassifierTileTreeId {
   modelId: Id64String;
@@ -102,6 +102,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   private readonly _iModel: IModelConnection;
   private readonly _classifiedTree: TileTreeReference;
   private _owner: TileTreeOwner;
+  private _graphicList: GraphicList | undefined = undefined;
 
   public constructor(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState) {
     super();
@@ -125,6 +126,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     if (0 !== compareIds(this._id, newId)) {
       this._id = newId;
       this._owner = classifierTreeSupplier.getOwner(this._id, this._iModel);
+      this._graphicList = undefined;
     }
 
     return this._owner;
@@ -169,29 +171,25 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     if (undefined === classifier)
       return;
 
-    let graphicList: GraphicList | undefined = undefined;
-
     if (typeof classifier.modelId === "string") {
       const classifierTree = this.treeOwner.load();
       if (undefined === classifierTree)
         return;
-    } else {
+    } else if (!this._graphicList) {
 
-      graphicList = [];
+      this._graphicList = classifier.modelId.map((m) => {
 
-      classifier.modelId.forEach((m) => {
-
-        const builder = context.renderSystem.createGraphic({ type: GraphicType.Scene, viewport: context.viewport, pickable: { id: m.id } });
-        builder.activatePickableId(m.id);
+        const builder = context.renderSystem.createGraphic({ type: GraphicType.Scene, viewport: context.viewport, pickable: { id: m.id, modelId: m.id } });
+        builder.setSymbology(ColorDef.red.withTransparency(255), ColorDef.red.withTransparency(255), 1);
         const box = Box.createRange(Range3d.fromJSON(m.range), true);
         if (box) {
           builder.addSolidPrimitive(box);
         }
-        graphicList?.push(builder.finish());
+        return builder.finish();
       });
     }
 
-    context.setVolumeClassifier(classifier, classifiedTree.modelId, graphicList);
+    context.setVolumeClassifier(classifier, classifiedTree.modelId, this._graphicList);
 
     super.addToScene(context);
   }
