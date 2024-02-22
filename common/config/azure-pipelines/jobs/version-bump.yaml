@@ -86,6 +86,9 @@ jobs:
             replace="branchName: refs\/heads\/"$escapedReleaseBranchName""
             echo "$search"
             echo "$replace"
+            # The replacement here is global instead of first match since the logic is that
+            # if something is being pulled from master but needs to be changed to being pulled from release branch instead,
+            # it is likely that any other thing that was being pulled from master probably also needs to be pulled from release branch instead
             sed -i "s/$search/$replace/g" "$docsYamlPath"
             # git add "$docsYamlPath"
             git branch
