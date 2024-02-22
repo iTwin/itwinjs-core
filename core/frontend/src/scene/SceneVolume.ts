@@ -6,15 +6,12 @@
  * @module Views
  */
 
-import { Camera, Cartographic, Frustum } from "@itwin/core-common";
-import { Angle, ClipVector, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Point3d, Range3d, Vector3d, XYAndZ, XYZ } from "@itwin/core-geometry";
+import { Camera, Frustum } from "@itwin/core-common";
+import { Angle, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Point3d, Range3d, Vector3d, XYAndZ, XYZ } from "@itwin/core-geometry";
 import { ViewPose, ViewPose3d } from "../ViewPose";
-import { StandardViewId } from "../StandardView";
 import { ViewStatus } from "../ViewStatus";
 import { MarginOptions, OnViewExtentsError } from "../ViewAnimation";
-import { ExtentLimits, LookAtOrthoArgs, LookAtPerspectiveArgs, LookAtUsingLensAngle, ViewState, ViewState2d, ViewState3d } from "../ViewState";
-import { GlobalLocation } from "../ViewGlobalLocation";
-import { assert } from "@itwin/core-bentley";
+import { ExtentLimits, LookAtOrthoArgs, LookAtPerspectiveArgs, LookAtUsingLensAngle } from "../ViewState";
 
 export interface ISceneVolume {
   allow3dManipulations(): boolean;
@@ -103,7 +100,7 @@ export interface SceneVolume3d extends ISceneVolume {
   setAllow3dManipulations(allow: boolean): void;
 
   savePose(): ViewPose3d;
-  applyPose(pose: ViewPose): void;
+  applyPose(pose: ViewPose3d): void;
 
   lookAt(args: LookAtPerspectiveArgs | LookAtOrthoArgs | LookAtUsingLensAngle): ViewStatus;
   /** @internal */
@@ -127,7 +124,7 @@ export interface SceneVolume3d extends ISceneVolume {
   setFocusDistance(distance: number): void;
 
   // ###TODO this assumes z-up
-  isEyePointAbove(elevation: number): boolean;
+  // isEyePointAbove(elevation: number): boolean;
   
   /* ###TODO global/cartographic stuff here, or on Scene and/or SceneMap and/or SceneObject?
   getEarthFocalPoint(): Point3d | undefined;
