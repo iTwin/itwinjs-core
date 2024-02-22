@@ -45,3 +45,4 @@
   - [integrity_check (experimental)](./Pragmas.md#pragma-integrity_check-experimental)
 - [ECSQL Keywords](./ECSqlKeywords.md)
   - [Escaping keywords](./ECSqlKeywords.md#escaping-keywords)
+- [Views](./Views.md)

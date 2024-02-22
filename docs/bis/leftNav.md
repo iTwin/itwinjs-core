@@ -141,7 +141,6 @@ defaultState: activeOpen
 - [ECRelationshipClass](./ec/ec-relationship-class.md)
 - [ECProperty](./ec/ec-property.md)
 - [ECCustomAttributes](./ec/ec-custom-attributes.md)
-- [ECViews](./ec/ec-views.md)
 - [ECEnumeration](./ec/ec-enumeration.md)
 - [KindOfQuantity](./ec/kindofQuantity.md)
 - [PropertyCategory](./ec/property-category.md)
