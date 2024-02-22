@@ -265,7 +265,7 @@ export class PresentationManager implements IDisposable {
   public startIModelInitialization(_: IModelConnection) {}
 
   /**
-   * Function that should be called to finish initialization that was started at [[PresentationManager.startiModelInitialization]].
+   * Function that should be called to finish initialization that was started at [[PresentationManager.startIModelInitialization]].
    * Can be removed when [[FavoritePropertiesManager.has]] and [[FavoritePropertiesManager.sortFields]] are removed.
    * @internal
    */
