@@ -128,12 +128,12 @@ describe("Presentation", () => {
 
       const startInitializationSpy = sinon.spy(favoriteProperties, "startConnectionInitialization");
       const ensureInitializedSpy = sinon.spy(favoriteProperties, "ensureInitialized");
-      const imodel = moq.Mock.ofType<IModelConnection>();
+      const imodel = {} as unknown as IModelConnection;
 
-      manager.startIModelInitialization(imodel.object);
+      manager.startIModelInitialization(imodel);
       expect(startInitializationSpy).to.be.called;
 
-      await manager.ensureIModelInitialized(imodel.object);
+      await manager.ensureIModelInitialized(imodel);
       expect(ensureInitializedSpy).to.be.called;
     });
   });
