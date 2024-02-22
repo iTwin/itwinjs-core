@@ -9,9 +9,16 @@ import {
 } from "@itwin/core-common";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "../../DisplayStyleState";
 import { IViewStyle, View2dStyle, View3dStyle } from "../ViewStyle";
+import { ViewState, ViewState2d, ViewState3d } from "../../ViewState";
 
 export abstract class ViewStyleImpl implements IViewStyle {
-  protected constructor(protected readonly _style: DisplayStyleState) { }
+  protected _style: DisplayStyleState;
+  
+  protected constructor(view: ViewState) {
+    this._style = view.displayStyle;
+
+    view.onDisplayStyleChanged.addListener((style) => this._style = style);
+  }
 
   get viewFlags() { return this._style.viewFlags; }
   set viewFlags(flags: ViewFlags) { this._style.viewFlags = flags; }
@@ -35,8 +42,8 @@ export abstract class ViewStyleImpl implements IViewStyle {
 export class View2dStyleImpl extends ViewStyleImpl implements View2dStyle {
   readonly is2dStyle: true = true;
 
-  constructor(style: DisplayStyle2dState) {
-    super(style);
+  constructor(view: ViewState2d) {
+    super(view);
   }
 }
 
@@ -45,8 +52,8 @@ export class View3dStyleImpl extends ViewStyleImpl implements View3dStyle {
 
   private get _style3d() { return this._style as DisplayStyle3dState; }
 
-  constructor(style: DisplayStyle3dState) {
-    super(style);
+  constructor(view: ViewState3d) {
+    super(view);
   }
 
   get planProjectionSettings() { return this._style3d.planProjectionSettings; }
