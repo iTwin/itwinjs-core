@@ -65,9 +65,9 @@ export abstract class ViewImpl implements IIModelView {
   get viewFlags() { return this.style.viewFlags; }
   set viewFlags(flags: ViewFlags) { this.style.viewFlags = flags; }
 
-  abstract isSpatial(): boolean;
-  abstract isDrawing(): boolean;
-  abstract isSheet(): boolean;
+  isSpatial() { return this._view.isSpatialView(); }
+  isDrawing() { return this._view.isDrawingView(); }
+  isSheet() { return this._view.isSheetView(); }
 
   get areAllTileTreesLoaded() { return this._view.areAllTileTreesLoaded; }
 
@@ -162,8 +162,4 @@ export class IModelSpatialViewImpl extends View3dImpl implements IModelSpatialVi
     super(view);
     this.modelSelector = new ViewModelSelectorImpl(view);
   }
-
-  override isSpatial(): true { return true; }
-  override isDrawing(): false { return false; }
-  override isSheet(): false { return false; }
 }

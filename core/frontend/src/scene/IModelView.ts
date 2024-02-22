@@ -130,9 +130,6 @@ export interface ViewModelSelector {
 
 export interface IModelSpatialView extends IModelView3d {
   readonly modelSelector: ViewModelSelector;
-  isSpatial(): true;
-  isDrawing(): false;
-  isSheet(): false;
 
   // ###TODO used by ViewCreator3d when model extents are known before tile trees are loaded.
   // Needed here? Generalize so base extents can be passed to Scene/SceneObject range c:w
@@ -140,15 +137,11 @@ export interface IModelSpatialView extends IModelView3d {
 }
 
 export interface DrawingView extends IModelView2d {
-  isDrawing(): true;
-  isSheet(): false;
-  isSpatial(): false;
+
 }
 
 export interface SheetView extends IModelView2d {
-  isSheet(): true;
-  isDrawing(): false;
-  isSpatial(): false;
+
 }
 
-export type IModelView = DrawingView | SheetView | IModelSpatialView | IModelView3d | IModelView2d;
+export type IModelView = DrawingView | SheetView | IModelSpatialView;
