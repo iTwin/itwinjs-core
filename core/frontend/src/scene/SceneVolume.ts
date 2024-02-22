@@ -32,7 +32,8 @@ export interface ISceneVolume {
   savePose(): ViewPose;
   applyPose(pose: ViewPose): void;
   
-  setStandardRotation(id: StandardViewId): void;
+  // ###TODO probably belongs on Scene since it needs to know what "up", "left", and "front" are.
+  // setStandardRotation(id: StandardViewId): void;
   // ###TODO on Scene setStandardGlobalRotation(_id: StandardViewId): void;
 
   getTargetPoint(result?: Point3d): Point3d;
