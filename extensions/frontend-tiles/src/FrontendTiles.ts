@@ -25,7 +25,7 @@ function createMeshExportServiceQueryUrl(args: { iModelId: string, urlPrefix?: s
   if (args.enableCDN)
     url = `${url}&cdn=1`;
 
-  url = `${url}&version=1`;
+  url = `${url}&tileVersion=1&exportType=IMODEL`;
 
   return url;
 }
