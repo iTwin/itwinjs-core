@@ -60,8 +60,9 @@ function startWebServer() {
       chromeFlags.push("--headless");
     } else if (arg === "headless-new"){
       chromeFlags.push("--headless=new");
-    } else if (arg === "disable-gpu"){
-      chromeFlags.push("--disable-gpu");
+    } else if (arg === "egl"){
+      chromeFlags.push("--use-gl=angle");
+      chromeFlags.push("--use-angle=gl-egl");
     }
   });
 
