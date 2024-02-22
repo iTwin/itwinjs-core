@@ -19,6 +19,7 @@ export type ViewStyleFlags = ViewFlags; // Optional<ViewFlagsProperties, "acsTri
 export interface IViewStyle {
   viewFlags: ViewStyleFlags;
 
+  // Clip masks applied to persistent reality models.
   readonly planarClipMasks: Map<Id64String, PlanarClipMaskSettings>;
 
   // ###TODO renderTimeline Id and scheduleScriptProps
