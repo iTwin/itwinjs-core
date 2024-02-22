@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@itwin/ecschema-rpcinterface-common"
+    }
+  ],
+  "packageName": "@itwin/ecschema-rpcinterface-common",
+  "email": "aruniverse@users.noreply.github.com"
+}
