@@ -452,21 +452,15 @@ export class PolyfaceData {
    */
   public resizeAllDataArrays(length: number): void {
     if (length > this.point.length) {
-      while (this.point.length < length)
-        this.point.push(Point3d.create());
-      while (this.pointIndex.length < length)
-        this.pointIndex.push(-1);
+      while (this.point.length < length) this.point.push(Point3d.create());
+      while (this.pointIndex.length < length) this.pointIndex.push(-1);
+      while (this.edgeVisible.length < length) this.edgeVisible.push(false);
       if (this.normal)
-        while (this.normal.length < length)
-          this.normal.push(Vector3d.create());
+        while (this.normal.length < length) this.normal.push(Vector3d.create());
       if (this.param)
-        while (this.param.length < length)
-          this.param.push(Point2d.create());
+        while (this.param.length < length) this.param.push(Point2d.create());
       if (this.color)
-        while (this.color.length < length)
-          this.color.push(0);
-      while (this.edgeVisible.length < length)
-        this.edgeVisible.push(false);
+        while (this.color.length < length) this.color.push(0);
       if (this.auxData) {
         for (const channel of this.auxData.channels) {
           for (const channelData of channel.data) {
@@ -476,14 +470,11 @@ export class PolyfaceData {
       }
     } else if (length < this.point.length) {
       this.point.resize(length);
-      this.pointIndex.length = length;
-      if (this.normal)
-        this.normal.resize(length);
-      if (this.param)
-        this.param.resize(length);
-      if (this.color)
-        this.color.length = length;
       this.edgeVisible.length = length;
+      this.pointIndex.length = length;
+      if (this.normal) this.normal.resize(length);
+      if (this.param) this.param.resize(length);
+      if (this.color) this.color.length = length;
       if (this.auxData) {
         for (const channel of this.auxData.channels) {
           for (const channelData of channel.data) {
