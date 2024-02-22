@@ -6,22 +6,24 @@
 
 import { AccessToken } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
-import { SpatialTileTreeReferences } from '@itwin/core-frontend';
 
 // @beta
 export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
 
-// @internal (undocumented)
-export const createFallbackSpatialTileTreeReferences: typeof SpatialTileTreeReferences.create;
-
 // @beta
 export interface FrontendTilesOptions {
     computeSpatialTilesetBaseUrl?: ComputeSpatialTilesetBaseUrl;
+    enableCDN?: boolean;
+    // @internal
+    enableEdges?: boolean;
     maxLevelsToSkip?: number;
 }
 
-// @internal (undocumented)
-export function getMaxLevelsToSkip(): number;
+// @internal
+export const frontendTilesOptions: {
+    maxLevelsToSkip: number;
+    enableEdges: boolean;
+};
 
 // @beta
 export function initializeFrontendTiles(options: FrontendTilesOptions): void;
@@ -68,6 +70,7 @@ export function obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs)
 // @beta
 export interface ObtainMeshExportTilesetUrlArgs {
     accessToken: AccessToken;
+    enableCDN?: boolean;
     iModel: IModelConnection;
     requireExactChangeset?: boolean;
     urlPrefix?: string;
@@ -80,6 +83,7 @@ export function queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableItera
 export interface QueryMeshExportsArgs {
     accessToken: AccessToken;
     changesetId?: string;
+    enableCDN?: boolean;
     iModelId: string;
     includeIncomplete?: boolean;
     urlPrefix?: string;

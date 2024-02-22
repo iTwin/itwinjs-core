@@ -1,9 +1,8 @@
 sep=;
 Release Tag;API Item
 beta;ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise
-internal;createFallbackSpatialTileTreeReferences: typeof SpatialTileTreeReferences.create
 beta;FrontendTilesOptions
-internal;getMaxLevelsToSkip(): number
+internal;frontendTilesOptions:
 beta;initializeFrontendTiles(options: FrontendTilesOptions): void
 beta;MeshExport
 internal;MeshExports
