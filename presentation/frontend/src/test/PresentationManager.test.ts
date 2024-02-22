@@ -647,7 +647,7 @@ describe("PresentationManager", () => {
       parentKey,
     });
 
-    it("calls `ensureiModelInitialized", async () => {
+    it("calls `ensureIModelInitialized", async () => {
       const stub = sinon.fake.returns(Promise.resolve());
       manager.ensureIModelInitialized = stub;
 
@@ -859,7 +859,7 @@ describe("PresentationManager", () => {
   });
 
   describe("getContent", () => {
-    it("calls `ensureiModelInitialized", async () => {
+    it("calls `ensureIModelInitialized", async () => {
       const stub = sinon.fake.returns(Promise.resolve());
       manager.ensureIModelInitialized = stub;
       const keyset = new KeySet();
@@ -1045,7 +1045,7 @@ describe("PresentationManager", () => {
   });
 
   describe("getContentAndContentSize", () => {
-    it("calls `ensureiModelInitialized", async () => {
+    it("calls `ensureIModelInitialized", async () => {
       const stub = sinon.fake.returns(Promise.resolve());
       manager.ensureIModelInitialized = stub;
       const keyset = new KeySet();

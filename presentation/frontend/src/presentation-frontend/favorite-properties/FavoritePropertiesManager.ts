@@ -163,8 +163,8 @@ export class FavoritePropertiesManager implements IDisposable {
   }
 
   /**
-   * Checks if {@link FavoritePropertiesManager.initializeConnection} has been called for a given imodel.
-   * Can be removed when {@link FavoritePropertiesManager.has} and {@link FavoritePropertiesManager.sortFields} are removed.
+   * Checks if [[FavoritePropertiesManager.initializeConnection]] has been called for a given imodel.
+   * Can be removed when [[FavoritePropertiesManager.has]] and [[FavoritePropertiesManager.sortFields]] are removed.
    */
   private validateInitialization(imodel: IModelConnection) {
     const iTwinId = imodel.iTwinId!;
