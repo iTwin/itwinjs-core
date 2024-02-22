@@ -12,11 +12,12 @@ import { Range3d, Transform } from "@itwin/core-geometry";
 import { DisclosedTileTreeSet, TileTreeReference } from "../../tile/internal";
 import { RenderMemory } from "../../render/RenderMemory";
 import { DecorateContext, SceneContext } from "../../ViewContext";
-import { ComputeDisplayTransformArgs, ModelDisplayTransformProvider, ViewState } from "../../ViewState";
+import { ComputeDisplayTransformArgs, ModelDisplayTransformProvider, ViewState, ViewState3d } from "../../ViewState";
 import { Viewport } from "../../Viewport";
 import { RenderClipVolume } from "../../render/RenderClipVolume";
-import { ComputeSpatialViewFitRangeOptions } from "../../SpatialViewState";
+import { ComputeSpatialViewFitRangeOptions, SpatialViewState } from "../../SpatialViewState";
 import { IIModelView, IModelView3d, IModelSpatialView, ViewCategorySelector, ViewModelSelector } from "../IModelView";
+import { View3dStyleImpl } from "./ViewStyleImpl";
 
 function equalIdSets(a: Set<Id64String>, b: Set<Id64String>): boolean {
   if (a.size !== b.size)
@@ -48,23 +49,25 @@ export class ViewCategorySelectorImpl implements ViewCategorySelector {
 
 export abstract class ViewImpl implements IIModelView {
   protected readonly _view: ViewState;
+  protected readonly _style: ViewStyle;
   readonly categorySelector: ViewCategorySelector;
-  readonly style: ViewStyle;
 
   protected constructor(view: ViewState, style: ViewStyle) {
     this._view = view;
     this.categorySelector = new ViewCategorySelectorImpl(view);
-    this.style = style;
+    this._style = style;
   }
 
   get iModel() { return this._view.iModel; }
   
+  get style() { return this._style; }
+
   get viewFlags() { return this.style.viewFlags; }
   set viewFlags(flags: ViewFlags) { this.style.viewFlags = flags; }
 
-  isSpatial() { return this._view.isSpatialView(); }
-  isDrawing() { return this._view.isDrawingView(); }
-  isSheet() { return this._view.isSheetView(); }
+  abstract isSpatial(): boolean;
+  abstract isDrawing(): boolean;
+  abstract isSheet(): boolean;
 
   get areAllTileTreesLoaded() { return this._view.areAllTileTreesLoaded; }
 
@@ -117,4 +120,50 @@ export abstract class ViewImpl implements IIModelView {
 
   get secondaryViewports() { return this._view.secondaryViewports; }
   getAttachmentViewport(id: Id64String) { return this._view.getAttachmentViewport(id); }
+}
+
+export abstract class View3dImpl extends ViewImpl implements IModelView3d {
+  readonly is3dView: true = true;
+
+  protected constructor(view: ViewState3d) {
+    super(view, new View3dStyleImpl(view));
+  }
+
+  override get style() { return this._style as View3dStyle; }
+
+  protected get _view3d() { return this._view as ViewState3d; }
+
+  get modelClipGroups() { return this._view3d.modelClipGroups; }
+  set modelClipGroups(groups: ModelClipGroups) { this._view3d.modelClipGroups = groups; }
+
+  getModelClip(modelId: Id64String) { return this._view3d.getModelClip(modelId); }
+}
+
+export class ViewModelSelectorImpl implements ViewModelSelector {
+  constructor(private readonly _view: SpatialViewState) { }
+
+  private get _selector() { return this._view.modelSelector; }
+
+  get models() { return this._selector.models; }
+  set models(models: Set<Id64String>) { this._selector.models = models; }
+
+  isEquivalentTo(other: ViewModelSelector) {
+    return equalIdSets(this.models, other.models);
+  }
+
+  addModels(models: Id64Arg) { this._selector.addModels(models); }
+  dropModels(models: Id64Arg) { this._selector.dropModels(models); }
+}
+
+export class IModelSpatialViewImpl extends View3dImpl implements IModelSpatialView {
+  readonly modelSelector: ViewModelSelector;
+  
+  constructor(view: SpatialViewState) {
+    super(view);
+    this.modelSelector = new ViewModelSelectorImpl(view);
+  }
+
+  override isSpatial(): true { return true; }
+  override isDrawing(): false { return false; }
+  override isSheet(): false { return false; }
 }
