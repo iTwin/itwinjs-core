@@ -58,12 +58,12 @@ export type SceneObjectClassifierParams = ModelClassifierParams | {
 };
 
 export interface SceneObjectClassifier {
-  source: GuidString;
-  name: string;
-  inside: "on" | "off" | "dimmed" | "hilite" | "source";
-  outside: "on" | "off" | "dimmed";
-  isVolume: boolean;
-  params?: SceneObjectClassifierParams;
+  readonly source: GuidString;
+  readonly name: string;
+  readonly inside: "on" | "off" | "dimmed" | "hilite" | "source";
+  readonly outside: "on" | "off" | "dimmed";
+  readonly isVolume: boolean;
+  readonly params?: SceneObjectClassifierParams;
 }
 
 export interface SceneObjectClassifiers extends Iterable<SceneObjectClassifier> {
@@ -78,6 +78,52 @@ export interface SceneObjectClassifiers extends Iterable<SceneObjectClassifier> 
   clear(): void;
 }
 
+export interface ModelClipMaskParams {
+  readonly type: "imodel";
+  readonly models: Iterable<Id64String>;
+  readonly elements?: never;
+  readonly subCategories?: never;
+}
+
+export interface SubCategoryClipMaskParams {
+  readonly type: "imodel";
+  readonly models?: Iterable<Id64String>;
+  readonly subCategories: Iterable<Id64String>;
+  readonly elements?: never;
+}
+
+export interface ElementClipMaskParams {
+  readonly type: "imodel";
+  readonly models?: Iterable<Id64String>;
+  readonly elements: Iterable<Id64String>;
+  readonly exclude?: boolean;
+  readonly subCategories?: never;
+}
+
+export type IModelClipMaskParams = ModelClipMaskParams | SubCategoryClipMaskParams | ElementClipMaskParams;
+export type ClipMaskParams = IModelClipMaskParams | { type: unknown };
+
+export interface SceneObjectClipMask {
+  readonly source: GuidString;
+  readonly params?: ClipMaskParams;
+}
+export interface BaseClipMaskSettings {
+  readonly invert: boolean;
+  readonly transparency?: number;
+}
+
+export interface PriorityClipMaskSettings extends BaseClipMaskSettings {
+  readonly priority: number;
+  readonly mask?: never;
+}
+
+export interface SceneObjectClipMaskSettings extends BaseClipMaskSettings {
+  readonly mask: SceneObjectClipMask;
+  readonly priority?: never;
+}
+
+export type ClipMaskSettings = PriorityClipMaskSettings | SceneObjectClipMaskSettings;
+
 export interface RealityModel {
   readonly rdSourceKey: RealityDataSourceKey;
   readonly name: string;
@@ -86,7 +132,7 @@ export interface RealityModel {
   // ###TODO SpatialClassifiers is implemented on top of a JSON container, it's weird.
   // It also contains model Ids that assume a specific iModel
   readonly classifiers: SceneObjectClassifiers;
-  planarClipMaskSettings?: PlanarClipMaskSettings;
+  clipMask?: ClipMaskSettings;
   appearanceOverrides?: FeatureAppearance;
   displaySettings: RealityModelDisplaySettings;
   // Is this actually needed, or just confusing?
