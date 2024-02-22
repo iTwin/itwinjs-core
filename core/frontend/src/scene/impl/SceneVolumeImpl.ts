@@ -11,7 +11,7 @@ import { MarginOptions, OnViewExtentsError } from "../../ViewAnimation";
 import { ExtentLimits, LookAtOrthoArgs, LookAtPerspectiveArgs, LookAtUsingLensAngle, ViewState, ViewState3d } from "../../ViewState";
 import { ISceneVolume, SceneVolume3d } from "../SceneVolume";
 
-abstract class SceneVolumeImpl implements ISceneVolume {
+export abstract class SceneVolumeImpl implements ISceneVolume {
   protected readonly _view: ViewState;
 
   protected constructor(view: ViewState) {
@@ -74,7 +74,7 @@ abstract class SceneVolumeImpl implements ISceneVolume {
   }
 }
 
-class SceneVolume3dImpl extends SceneVolumeImpl implements SceneVolume3d {
+export class SceneVolume3dImpl extends SceneVolumeImpl implements SceneVolume3d {
   readonly is3dVolume: true = true;
   
   constructor(view: ViewState3d) {

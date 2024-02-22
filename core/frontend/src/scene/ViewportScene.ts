@@ -158,19 +158,20 @@ export interface IModelSceneObjects<T extends IModelView> extends Iterable<T> {
 
 export interface ScenePresentation2d {
   is2d: true;
-  is3d?: false;
+  is3d?: never;
   viewFlags: ViewFlags;
   backgroundColor: ColorDef;
 }
 
 export interface ScenePresentation3d {
   is3d: true;
-  is2d?: false;
+  is2d?: never;
   viewFlags: ViewFlags;
   backgroundColor:  ColorDef;
-  environment: Environment;
-  toggleSkyBox(display?: boolean): void;
-  toggleAtmosphere(display?: boolean): void;
+  // ###TODO Environment contains iModel-specific things like texture Ids.
+  // environment: Environment;
+  // toggleSkyBox(display?: boolean): void;
+  // toggleAtmosphere(display?: boolean): void;
   ambientOcclusion: AmbientOcclusion.Settings;
   solarShadows: SolarShadowSettings;
 }
