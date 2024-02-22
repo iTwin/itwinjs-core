@@ -13,10 +13,17 @@ import { AmbientOcclusion, ColorDef, Environment, FeatureAppearance, PlanarClipM
 import { IModelSpatialView, IModelView, IModelView2d } from "./IModelView";
 import { TiledGraphicsProvider } from "../tile/internal";
 import { SceneVolume3d, TestSceneVolume2d } from "./SceneVolume";
+import { GuidString } from "@itwin/core-bentley";
 
 // Describes the common interface for all SceneObjects.
 // For documentation and type-checking purposes only - SceneObject is a union type.
 export interface ISceneObject extends ViewportDecorator {
+  /** A GUID uniquely identifying this scene object. GUIDs can be used to define relationships between scene objects.
+   * If no GUID is supplied when creating a scene object, one will be generated and assigned.
+   */
+  readonly guid: GuidString;
+  /** Specifies whether this scene object is currently being rendered into the [[Viewport]]. */
+  isDisplayed: boolean;
   readonly scene: ViewportScene;
   readonly isLoadingComplete: boolean;
   readonly isGlobal: boolean;
