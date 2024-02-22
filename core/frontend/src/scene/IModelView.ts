@@ -68,13 +68,10 @@ export interface IIModelView {
   collectStatistics(stats: RenderMemory.Statistics): void;
 
   /** @internal */
-  collectNonTileTreeStatistics(_stats: RenderMemory.Statistics): void;
-
-  /** @internal */
   createScene(context: SceneContext): void;
 
   /** @internal */
-  decorate(context: DecorateContext): void;
+  // ###TODO draw sheet border, ground plane maybe; don't draw sky box, grid. decorate(context: DecorateContext): void;
 
   // get/setViewClip in addition to scene clip?
 
@@ -84,7 +81,7 @@ export interface IIModelView {
   /** Determine whether this ViewState has the same coordinate system as another one.
    * They must be from the same iModel, and view a model in common.
    */
-  hasSameCoordinates(other: this): boolean;
+  hasSameCoordinates(other: IIModelView): boolean;
 
   /** @internal strictly for plan projection models. */
   getModelElevation(modelId: Id64String): number;

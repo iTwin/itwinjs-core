@@ -546,6 +546,11 @@ export class SheetViewState extends ViewState2d {
   /** @internal */
   public override decorate(context: DecorateContext): void {
     super.decorate(context);
+    this.drawBorder(context);
+  }
+
+  /** @internal */
+  public drawBorder(context: DecorateContext): void {
     if (this.sheetSize !== undefined) {
       const border = this.createBorder(this.sheetSize.x, this.sheetSize.y, context);
       context.setViewBackground(border);
