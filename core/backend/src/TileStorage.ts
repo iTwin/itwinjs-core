@@ -47,6 +47,8 @@ export class TileStorage {
       try {
         await this.storage.createBaseDirectory({ baseDirectory: iModelId });
       } catch (e: any) {
+        // Ignore 409 errors. This is what Azure blob storage returns when the container already exists.
+        // Usually this means multiple backends tried to initialize tile storage at the same time.
         if(e.statusCode !== 409)
           throw e;
       }
