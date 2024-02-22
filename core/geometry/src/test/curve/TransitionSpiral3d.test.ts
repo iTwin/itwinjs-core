@@ -1004,20 +1004,20 @@ describe("TransitionSpiral3d", () => {
     integratedSpiralReversed.reverseInPlace();
 
     // Full clone
-    const cloneA = simpleCubic.clonePartialCurve(0.0, 1.0)!;
-    const cloneB = simpleCubic.clonePartialCurve(1.0, 0.0)!;
+    const cloneA = simpleCubic.clonePartialCurve(0.0, 1.0);
+    const cloneB = simpleCubic.clonePartialCurve(1.0, 0.0);
     ck.testTrue(cloneA.isAlmostEqual(simpleCubic));
     ck.testTrue(cloneB.isAlmostEqual(simpleCubicReversed));
 
-    const cloneC = integratedSpiral.clonePartialCurve(0.0, 1.0)!;
-    const cloneD = integratedSpiral.clonePartialCurve(1.0, 0.0)!;
+    const cloneC = integratedSpiral.clonePartialCurve(0.0, 1.0);
+    const cloneD = integratedSpiral.clonePartialCurve(1.0, 0.0);
     ck.testTrue(cloneC.isAlmostEqual(integratedSpiral));
     ck.testTrue(cloneD.isAlmostEqual(integratedSpiralReversed));
 
     // For each input spiral, clone partial and validate points/tangents and lengths are the same
     for (const spiral of [simpleCubic, simpleCubicReversed, integratedSpiral, integratedSpiralReversed]) {
       // GeometryCoreTestIO.consoleLog(spiral.spiralType);
-      const partial = spiral.clonePartialCurve(0.2, 0.8)!;
+      const partial = spiral.clonePartialCurve(0.2, 0.8);
       ck.testTrue(spiral.spiralType === partial.spiralType);
       ck.testType(partial, TransitionSpiral3d);
       ck.testLT(partial.curveLength(), spiral.curveLength());

@@ -55,7 +55,7 @@ export class AtmosphereEditor {
     const checkbox = checkboxInterface.checkbox;
     const checkboxLabel = checkboxInterface.label;
 
-    const atmosphereControlsDiv = document.createElement("div")!;
+    const atmosphereControlsDiv = document.createElement("div");
     const showHideControls = (show: boolean) => {
       const display = show ? "block" : "none";
       atmosphereControlsDiv.style.display = display;

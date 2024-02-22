@@ -23,7 +23,7 @@ import { prettyPrint } from "../testFunctions";
 // (assume points are distinct ...)
 function exerciseWithTransformedPoints(ck: Checker, frame: Transform, points: Point3d[]) {
   const rangeA = Range3d.createTransformedArray(frame, points);
-  const transformedPoints = frame.multiplyPoint3dArray(points)!;
+  const transformedPoints = frame.multiplyPoint3dArray(points);
   const inverseFrame = frame.inverse();
   if (inverseFrame) {
     const rangeQ = Range3d.createArray(points);
@@ -242,7 +242,7 @@ describe("Range3d", () => {
   it("Distance", () => {
     const ck = new Checker();
     const lattice1 = Sample.createPoint3dLattice(-1, 1.3, 4);
-    const range = Range3d.createArray(lattice1)!;
+    const range = Range3d.createArray(lattice1);
     range.scaleAboutCenterInPlace(0.45);
     const rangeX = Range1d.createXX(range.low.x, range.high.x);
     const rangeY = Range1d.createXX(range.low.y, range.high.y);

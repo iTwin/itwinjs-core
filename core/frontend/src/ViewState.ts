@@ -688,7 +688,7 @@ export abstract class ViewState extends ElementState {
   }
 
   public calculateFocusCorners() {
-    const map = this.computeWorldToNpc()!.map!;
+    const map = this.computeWorldToNpc().map!;
     const focusNpcZ = Geometry.clamp(map.transform0.multiplyPoint3dQuietNormalize(this.getTargetPoint()).z, 0, 1.0);
     const pts = [new Point3d(0.0, 0.0, focusNpcZ), new Point3d(1.0, 0.0, focusNpcZ), new Point3d(0.0, 1.0, focusNpcZ), new Point3d(1.0, 1.0, focusNpcZ)];
     map.transform1.multiplyPoint3dArrayQuietNormalize(pts);

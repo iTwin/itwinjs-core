@@ -39,7 +39,7 @@ export type TestType = "timing" | "readPixels" | "image" | "both";
 /** Specifies symbology overrides to apply to elements in a TestConfig. */
 export interface ElementOverrideProps {
   /** The Id of the affected element, or "-default-" to apply to all elements not otherwise overridden. */
-  id: Id64String | "-default-";
+  id: Id64String | "-default-";  // eslint-disable-line @typescript-eslint/no-redundant-type-constituents
   /** The symbology overrides to apply. */
   fsa: string; // A stringified FeatureAppearanceProps. Why is all the JSON double-stringified???
 }

@@ -31,7 +31,7 @@ describe("MapSubLayerSettings", () => {
     const roundTrip = (input: MapSubLayerProps, expected: MapSubLayerProps | "input") => {
       if ("input" === expected)
         expected = JSON.parse(JSON.stringify(input)) as MapSubLayerProps;
-      const settings = MapSubLayerSettings.fromJSON(input)!;
+      const settings = MapSubLayerSettings.fromJSON(input);
       expect(settings).not.to.be.undefined;
       const output = settings.toJSON();
       expectMatch(output, expected);
@@ -89,7 +89,7 @@ describe("ImageMapLayerSettings", () => {
       if ("input" === expected)
         expected = JSON.parse(JSON.stringify(input)) as ImageMapLayerProps;
 
-      const settings = ImageMapLayerSettings.fromJSON(input)!;
+      const settings = ImageMapLayerSettings.fromJSON(input);
       expect(settings).not.to.be.undefined;
       const output = settings.toJSON();
       expectMatches(output, expected);
@@ -127,7 +127,7 @@ describe("ImageMapLayerSettings", () => {
     clone(testMapLayer3, { transparency: .5 }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1], transparency: .5, visible: true });
 
     // Test settings not part of ImageMapLayerProps
-    const settings1 = ImageMapLayerSettings.fromJSON(testMapLayer0)!;
+    const settings1 = ImageMapLayerSettings.fromJSON(testMapLayer0);
     settings1.setCredentials("TestUser", "TestPassword");
     cloneSettings(settings1);
   });

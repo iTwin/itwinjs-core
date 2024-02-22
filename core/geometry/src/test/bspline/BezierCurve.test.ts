@@ -239,11 +239,11 @@ describe("BsplineCurve", () => {
       // output each bezier, clipped off near the end points to emphasize that they are separate.
       let bezierIndex = 0;
       for (const bezier of allBeziers) {
-        const bezier1 = bezier.clonePartialCurve(f0, f1)!;
+        const bezier1 = bezier.clonePartialCurve(f0, f1);
         GeometryCoreTestIO.captureGeometry(geometry, bezier1, x0, y1);
         const detail0 = bezier.moveSignedDistanceFromFraction(0.0, setbackDistance, false);
         const detail1 = bezier.moveSignedDistanceFromFraction(1.0, -setbackDistance, false);
-        const bezier2 = bezier.clonePartialCurve(detail0.fraction, detail1.fraction)!;
+        const bezier2 = bezier.clonePartialCurve(detail0.fraction, detail1.fraction);
         GeometryCoreTestIO.captureGeometry(geometry, bezier2, x0, y2);
         if (bezierIndex === 0)
           GeometryCoreTestIO.createAndCaptureXYCircle(geometry, bezier.fractionToPoint(0.0), setbackDistance, x0, y2);
@@ -253,9 +253,9 @@ describe("BsplineCurve", () => {
         const g1 = 0.82342367;
         GeometryCoreTestIO.captureGeometry(geometry, bezier.clone(), x0, y3);
 
-        const bezier4 = bezier.clonePartialCurve(g0, 1.0)!;
-        const bezier5 = bezier4.clonePartialCurve(0.0, (g1 - g0) / (1 - g0))!;  // Remark:  This uses the opposite left/right order of what happen in clone partial.  (Same result expected)
-        const bezier6 = bezier.clonePartialCurve(g0, g1)!;
+        const bezier4 = bezier.clonePartialCurve(g0, 1.0);
+        const bezier5 = bezier4.clonePartialCurve(0.0, (g1 - g0) / (1 - g0));  // Remark:  This uses the opposite left/right order of what happen in clone partial.  (Same result expected)
+        const bezier6 = bezier.clonePartialCurve(g0, g1);
         ck.testTrue(bezier5.isAlmostEqual(bezier6), "bezier subdivision");  // wow, math is right.
         GeometryCoreTestIO.captureGeometry(geometry, bezier4, x0, y4);
         GeometryCoreTestIO.captureGeometry(geometry, bezier5, x0, y4);

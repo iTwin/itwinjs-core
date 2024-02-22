@@ -240,6 +240,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     this._constraintClasses.forEach( (item, index) => {
       const constraintName = item.fullName;
       if(constraintName === constraint.fullName)
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._constraintClasses?.splice(index,1);
     });
   }

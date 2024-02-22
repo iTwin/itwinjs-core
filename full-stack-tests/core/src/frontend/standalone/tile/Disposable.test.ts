@@ -269,7 +269,7 @@ describe("Disposal of WebGL Resources", () => {
       fbo = target._fbo as FrameBuffer;
       expect(fbo).not.to.be.undefined;
       expect(fbo.isDisposed).to.be.false;
-      const tx = fbo.getColor(0)!;
+      const tx = fbo.getColor(0);
       expect(tx).not.to.be.undefined;
       expect(tx.isDisposed).to.be.false;
 
@@ -443,7 +443,7 @@ describe("Disposal of WebGL Resources", () => {
     // eslint-disable-next-line deprecation/deprecation
     const textureParams = new RenderTexture.Params("-192837465");
     // eslint-disable-next-line deprecation/deprecation
-    let texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1)!, imodel0, textureParams);
+    let texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1), imodel0, textureParams);
     const graphicBuilder = target.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
     graphicBuilder.addArc(Arc3d.createCircularStartMiddleEnd(new Point3d(-100, 0, 0), new Point3d(0, 100, 0), new Point3d(100, 0, 0)) as Arc3d, false, false);
     const graphic = graphicBuilder.finish();
@@ -462,7 +462,7 @@ describe("Disposal of WebGL Resources", () => {
     assert.isTrue(isDisposed(graphic));
 
     // eslint-disable-next-line deprecation/deprecation
-    texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1)!, imodel0, textureParams);
+    texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1), imodel0, textureParams);
     assert.isFalse(isDisposed(texture));
 
     // Get references to target members before they are modified due to disposing

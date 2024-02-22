@@ -1511,7 +1511,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public getModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T {
       const modelJson = this.tryGetModelJson<T>(modelIdArg);
       if (undefined === modelJson) {
-        throw new IModelError(IModelStatus.NotFound, `Model=${modelIdArg}`);
+        throw new IModelError(IModelStatus.NotFound, `Model=(id: ${modelIdArg.id}, code: ${modelIdArg.code})`);
       }
       return modelJson;
     }
@@ -1682,7 +1682,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public getElementJson<T extends ElementProps>(elementId: ElementLoadProps): T {
       const elementProps = this.tryGetElementJson<T>(elementId);
       if (undefined === elementProps)
-        throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`);
+        throw new IModelError(IModelStatus.NotFound, `reading element={id: ${elementId.id} federationGuid: ${elementId.federationGuid}, code: ${elementId.code}}`);
       return elementProps;
     }
 
@@ -1740,8 +1740,12 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T {
       const element = this.tryGetElement<T>(elementId, elementClass);
-      if (undefined === element)
-        throw new IModelError(IModelStatus.NotFound, `Element=${elementId}`);
+      if (undefined === element) {
+        if (typeof elementId === "string" || elementId instanceof Code)
+          throw new IModelError(IModelStatus.NotFound, `Element=${elementId}`);
+        else
+          throw new IModelError(IModelStatus.NotFound, `Element={id: ${elementId.id} federationGuid: ${elementId.federationGuid}, code: ${elementId.code}}`);
+      }
       return element;
     }
 

@@ -429,8 +429,8 @@ describe("Solids", () => {
     const rectangleB = Path.create(Sample.createRectangleXY(0, 0, 2, 1, 1));
     const rectangleC = Path.create(Sample.createRectangleXY(0, 0, 2, 1, 2));
 
-    const sweep2 = RuledSweep.create([rectangleA.clone()!, rectangleB.clone()!], false)!;
-    const sweep3 = RuledSweep.create([rectangleA.clone()!, rectangleB.clone()!, rectangleC.clone()!], false)!;
+    const sweep2 = RuledSweep.create([rectangleA.clone(), rectangleB.clone()], false)!;
+    const sweep3 = RuledSweep.create([rectangleA.clone(), rectangleB.clone(), rectangleC.clone()], false)!;
     ck.testFalse(sweep2.isAlmostEqual(sweep3));
     expect(ck.getNumErrors()).equals(0);
   });
@@ -463,8 +463,8 @@ describe("Solids", () => {
     const contourA = SweepContour.createForLinearSweep(path)!;
     const contourB = contourA.cloneTransformed(Transform.createTranslationXYZ(5, 0, 0))!;
     const allGeometry: GeometryQuery[] = [];
-    GeometryCoreTestIO.captureGeometry(allGeometry, contourA.getCurves()!.clone(), 0, 0, 0);
-    GeometryCoreTestIO.captureGeometry(allGeometry, contourB.getCurves()!.clone(), 0, 0, 0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, contourA.getCurves().clone(), 0, 0, 0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, contourB.getCurves().clone(), 0, 0, 0);
     ck.testFalse(contourA.isAlmostEqual(contourB));
     ck.testFalse(contourA.isAlmostEqual(path));
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "SweepContour");

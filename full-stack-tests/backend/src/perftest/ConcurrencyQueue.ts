@@ -32,7 +32,7 @@ export class ConcurrencyQueue<T> {
   private async pushPending(pending: Promise<T>): Promise<T> {
     const wrapped = pending.then((resolvedValue) => {
       // Remove this promise from the _pending array, and replace it with the next task in the queue.
-      this._pending = this._pending.filter((p) => p !== wrapped);
+      this._pending = this._pending.filter((p) => p !== wrapped);  // eslint-disable-line @typescript-eslint/no-floating-promises
       this.startNextInQueue();
 
       // Need to pass through the task's original return value.

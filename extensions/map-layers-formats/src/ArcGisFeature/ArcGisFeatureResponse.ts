@@ -42,7 +42,7 @@ export class ArcGisFeatureResponse {
   }
 
   public async getResponseData(): Promise<ArcGisResponseData|undefined> {
-    let data: any|undefined;
+    let data: any;
     try {
       const tileResponse = await this._response;
       if (tileResponse === undefined || tileResponse.status !== 200  )

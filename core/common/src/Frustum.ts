@@ -32,6 +32,7 @@ export enum Npc {
   /** Right top front */
   _111 = 7,
 
+  /* eslint-disable @typescript-eslint/no-duplicate-enum-values */
   LeftBottomRear = 0,
   RightBottomRear = 1,
   LeftTopRear = 2,
@@ -40,6 +41,7 @@ export enum Npc {
   RightBottomFront = 5,
   LeftTopFront = 6,
   RightTopFront = 7,
+  /* eslint-enable @typescript-eslint/no-duplicate-enum-values */
   /** useful for sizing arrays */
   CORNER_COUNT = 8,
 }

@@ -104,7 +104,7 @@ function exerciseLineString3d(ck: Checker, lsA: LineString3d) {
     Matrix3d.createScale(a, a, a));
   const lsB = lsA.clone();
   lsB.reverseInPlace();
-  const lsC = lsA.clone()!;
+  const lsC = lsA.clone();
   ck.testTrue(lsC.tryTransformInPlace(scaleTransform));
   // exercise evaluation logic within each segment.
   // force evaluations in zero segment linestring

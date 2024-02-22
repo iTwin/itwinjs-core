@@ -30,7 +30,7 @@ function testVaryingLineSegments(
   geometryAMid: Point3d,
   geometryAEnd: Point3d,
 ) {
-  const arc0 = Arc3d.createXY(geometryAMid, 4)!;
+  const arc0 = Arc3d.createXY(geometryAMid, 4);
   const arc1 = Arc3d.createCircularStartMiddleEnd(Point3d.create(0, 9), Point3d.create(6, 3), Point3d.create(3, -3))!;
   const fractions = [0.0, 0.1, 0.2, 0.3, 0.4, 0.6, 0.8, 0.9, 1.0];
   let x0 = 0;
@@ -414,7 +414,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const maxDistance = 2.5;
     const geometryA = Arc3d.create(
       Point3d.create(0, 0), Vector3d.create(2, 0), Vector3d.create(0, 3), AngleSweep.createStartEndRadians(0, Math.PI),
-    )!;
+    );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const geometryB = LineSegment3d.createXYXY(-5, 3, 5, 3);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);

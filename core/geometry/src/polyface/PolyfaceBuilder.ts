@@ -1204,7 +1204,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       pointIndices.push(index0!);
       if (n > 1) {
         let indexA = index0;
-        let indexB;
+        let indexB: number | undefined;
         for (let i = 1; i + 1 < n; i++) {
           indexB = this.findOrAddPointInLineString(ls, i, transform, indexA);
           pointIndices.push(indexB!);
@@ -1220,7 +1220,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       const normalIndex0 = this.findOrAddNormalInLineString(ls, 0, transform);
       normalIndices.push(normalIndex0!);
       let normalIndexA = normalIndex0;
-      let normalIndexB;
+      let normalIndexB: number | undefined;
       if (n > 1) {
         for (let i = 1; i + 1 < n; i++) {
           normalIndexB = this.findOrAddNormalInLineString(ls, i, transform, normalIndexA);
@@ -1237,7 +1237,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       const uvIndex0 = this.findOrAddParamInLineString(ls, 0, vParam);
       uvIndices.push(uvIndex0!);
       let uvIndexA = uvIndex0;
-      let uvIndexB;
+      let uvIndexB: number | undefined;
       if (n > 1) {
         for (let i = 1; i + 1 < n; i++) {
           uvIndexB = this.findOrAddParamInLineString(ls, i, vParam, uvIndexA);

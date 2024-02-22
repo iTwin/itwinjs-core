@@ -288,7 +288,7 @@ describe("AnalyticRoots.SolveCubic", () => {
 
         if (Checker.noisy.cubicRoots) {
           GeometryCoreTestIO.consoleLog(`  (target ${a}) (b ${b} + )`);
-          GeometryCoreTestIO.consoleLog(`  (actual ${actual}) (eMax ${eMax})`);
+          GeometryCoreTestIO.consoleLog(`  (actual ${JSON.stringify(actual)}) (eMax ${eMax})`);
         }
       }
     }

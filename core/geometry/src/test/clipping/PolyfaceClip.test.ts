@@ -82,7 +82,7 @@ describe("PolyfaceClip", () => {
     const clipper = ClipPlane.createNormalAndPointXYZXYZ(1, 1, 0, 1, 1, 1)!;
 
     const leftClip = PolyfaceClip.clipPolyface(polyface, clipper)!;
-    const rightClip = PolyfaceClip.clipPolyfaceClipPlane(polyface, clipper, false)!;
+    const rightClip = PolyfaceClip.clipPolyfaceClipPlane(polyface, clipper, false);
     const area = PolyfaceQuery.sumFacetAreas(polyface);
     const areaLeft = PolyfaceQuery.sumFacetAreas(leftClip);
     const areaRight = PolyfaceQuery.sumFacetAreas(rightClip);
@@ -102,7 +102,7 @@ describe("PolyfaceClip", () => {
     const clipper = ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, 1, 0, 0)!;
 
     const leftClip = PolyfaceClip.clipPolyface(polyface, clipper)!;
-    const rightClip = PolyfaceClip.clipPolyfaceClipPlane(polyface, clipper, false)!;
+    const rightClip = PolyfaceClip.clipPolyfaceClipPlane(polyface, clipper, false);
     const area = PolyfaceQuery.sumFacetAreas(polyface);
     const areaLeft = PolyfaceQuery.sumFacetAreas(leftClip);
     const areaRight = PolyfaceQuery.sumFacetAreas(rightClip);
@@ -280,7 +280,7 @@ describe("PolyfaceClip", () => {
           });
       for (let q = 1; q <= multiplier + 1.5; q++) {
         const clipper = ClipPlane.createNormalAndPointXYZXYZ(q, 1, 0, q, q, 1)!;
-        const section = PolyfaceClip.sectionPolyfaceClipPlane(polyface, clipper)!;
+        const section = PolyfaceClip.sectionPolyfaceClipPlane(polyface, clipper);
         // save with zShift to separate cleanly from the background mesh . .
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, 0, zShift);
         GeometryCoreTestIO.captureGeometry(allGeometry, section, x0, 0, 0);

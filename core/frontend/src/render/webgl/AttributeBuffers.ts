@@ -14,13 +14,13 @@ import { GL } from "./GL";
 import { System } from "./System";
 
 /** Describes a connection between a BufferHandle and an arbitrary number of attributes associated with that BufferHandle. */
-interface BufferHandleLinkage {
+interface BufferHandleLinkage {  // eslint-disable-line @typescript-eslint/no-unsafe-declaration-merging
   buffer: BufferHandle;
   params: BufferParameters[]; // If empty, means no vertex attrib details are necessary (index buffer probably)
 }
 
 /** Provides convenience methods for creating a BufferHandleLinkage interface. */
-class BufferHandleLinkage {
+class BufferHandleLinkage {  // eslint-disable-line @typescript-eslint/no-unsafe-declaration-merging
   private constructor() { }
   public static create(buffer: BufferHandle, params: BufferParameters[]): BufferHandleLinkage {
     return { buffer, params };

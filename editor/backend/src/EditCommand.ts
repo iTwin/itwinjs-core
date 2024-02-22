@@ -50,7 +50,7 @@ export class EditCommand implements EditCommandIpc {
    * If it is not currently possible to finish, return any string other than "done" and the other EditCommand will have to wait and retry,
    * potentially showing the returned string to the user.
    */
-  public async requestFinish(): Promise<"done" | string> {
+  public async requestFinish(): Promise<"done" | string> {  // eslint-disable-line @typescript-eslint/no-redundant-type-constituents
     this.onFinish(); // TODO: temporary, remove
     return "done";
   }

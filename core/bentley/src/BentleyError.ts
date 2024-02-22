@@ -697,8 +697,9 @@ export class BentleyError extends Error {
       if (typeof error.msg === "string")
         return error.msg;
 
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       if (error.toString() !== "[object Object]")
-        return error.toString();
+        return error.toString();  // eslint-disable-line @typescript-eslint/no-base-to-string
     }
 
     return "";

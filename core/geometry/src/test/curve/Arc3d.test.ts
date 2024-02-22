@@ -84,8 +84,8 @@ function exerciseArc3d(ck: Checker, arc: Arc3d) {
     "arc length smaller than circle on max radius");
   const fA = 0.35;
   const fB = 0.51;
-  const arc3A = arc.clonePartialCurve(fA, fB)!;
-  const arc3B = arc.clonePartialCurve(fB, fA)!;
+  const arc3A = arc.clonePartialCurve(fA, fB);
+  const arc3B = arc.clonePartialCurve(fB, fA);
   ck.testCoordinate(arc3A.curveLength(), arc3B.curveLength(), "Reversed partials match length");
   const length1 = arc1.curveLength();
   const fuzzyLengthRange = Range1d.createXX(0.5 * length1, 2.0 * length1);
@@ -103,7 +103,7 @@ describe("Arc3d", () => {
       Arc3d.create(
         Point3d.create(1, 2, 5),
         Vector3d.create(1, 0, 0),
-        Vector3d.create(0, 2, 0), AngleSweep.createStartEndDegrees(0, 90))!);
+        Vector3d.create(0, 2, 0), AngleSweep.createStartEndDegrees(0, 90)));
 
     ck.testTrue(Arc3d.createCircularStartMiddleEnd(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(4, 0, 0)) instanceof LineString3d);
 
@@ -327,7 +327,7 @@ describe("Arc3d", () => {
       x0 = 0;
       y0 += dx;
     }
-    GeometryCoreTestIO.consoleLog(`chord error range ${rangeE.toJSON()}`);
+    GeometryCoreTestIO.consoleLog(`chord error range ${JSON.stringify(rangeE.toJSON())}`);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "PreciseRange");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -525,7 +525,7 @@ describe("Arc3d", () => {
 
     for (const fraction of [0.0, 0.125]) {
       const circleCurvature = circle.fractionToCurvature(fraction)!;
-      const circleDerivatives = circle.fractionToPointAnd2Derivatives(0.0)!;
+      const circleDerivatives = circle.fractionToPointAnd2Derivatives(0.0);
       ck.testCoordinate(circleCurvature, curvature, "curvature from full circle");
       assert.isTrue(Geometry.isAlmostEqualNumber(circleCurvature, curvature));
 

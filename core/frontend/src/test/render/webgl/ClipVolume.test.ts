@@ -39,7 +39,7 @@ describe("ClipVolume", async () => {
     const shape = ClipShape.createShape(points, 1.0, 2.0)!;
     expect(shape).not.to.be.undefined;
 
-    const clipVector = ClipVector.create([ shape ])!;
+    const clipVector = ClipVector.create([ shape ]);
     expect(clipVector).not.to.be.undefined;
 
     const clipVolume = ClipVolume.create(clipVector)!;

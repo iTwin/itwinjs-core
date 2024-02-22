@@ -74,9 +74,9 @@ describe("constructorsAndImodelJson", () => {
     // circular arc with 3-point construction
     emitIModelJson("Arc3d.createCircularStartMiddleEnd", "arc passing through 3 points", Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC)!);
 
-    emitIModelJson("Arc3d.create", "circular arc", Arc3d.create(pointA, vectorAB, vectorAD, AngleSweep.createStartEndDegrees(-45, 90))!);
+    emitIModelJson("Arc3d.create", "circular arc", Arc3d.create(pointA, vectorAB, vectorAD, AngleSweep.createStartEndDegrees(-45, 90)));
     // elliptic arc -- larger vector90 . . .
-    emitIModelJson("Arc3d.create", "elliptic arc", Arc3d.create(pointA, vectorAB, vectorAD.scale(2.0), AngleSweep.createStartEndDegrees(-45, 190))!);
+    emitIModelJson("Arc3d.create", "elliptic arc", Arc3d.create(pointA, vectorAB, vectorAD.scale(2.0), AngleSweep.createStartEndDegrees(-45, 190)));
 
     emitIModelJson("BSplineCurve3d.create", "curve by poles", BSplineCurve3d.create(
       [pointA, pointB, pointC, pointD],

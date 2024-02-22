@@ -483,7 +483,7 @@ export interface Gltf2Material extends GltfChildOfRootProperty {
         // Diffuse texture.
         // eslint-disable-next-line @typescript-eslint/naming-convention
         u_diffuse?: { index: number, texCoord: number };
-        [k: string]: unknown | undefined;
+        [k: string]: unknown;
       };
     };
   };
@@ -538,7 +538,9 @@ export interface GltfAccessor extends GltfChildOfRootProperty {
 
 /** @internal */
 export namespace GltfStructuralMetadata {
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   export type ClassPropertyType = "SCALAR" | "STRING" | "BOOLEAN" | "ENUM" | "VEC2" | "VEC3" | "VEC4" | "MAT2" | "MAT3" | "MAT4" | string;
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   export type ClassPropertyComponentType = "INT8" | "UINT8" | "INT16" | "UINT16" | "INT32" | "UINT32" | "INT64" | "UINT64" | "FLOAT32" | "FLOAT64" | string;
 
   // Ignoring VECN and MATN types because they complicate offset, scale, min, and max, all of which are otherwise only relevant to SCALAR in which case they're all just numbers.
@@ -570,7 +572,7 @@ export namespace GltfStructuralMetadata {
   export interface Enum extends GltfProperty {
     values: EnumValue[];
     // Default: UINT16
-    valueType?: "INT8" | "UINT8" | "INT16" | "UINT16" | "INT32" | "UINT32" | "INT64" | "UINT64" | string;
+    valueType?: "INT8" | "UINT8" | "INT16" | "UINT16" | "INT32" | "UINT32" | "INT64" | "UINT64" | string;  // eslint-disable-line @typescript-eslint/no-redundant-type-constituents
     name?: string;
     description?: string;
   }
@@ -597,8 +599,8 @@ export namespace GltfStructuralMetadata {
     values: GltfId;
     arrayOffsets?: GltfId;
     stringOffsets?: GltfId;
-    arrayOffsetType?: "UINT8" | "UINT16" | "UINT32" | "UINT64" | string;
-    stringOffsetType?: "UINT8" | "UINT16" | "UINT32" | "UINT64" | string;
+    arrayOffsetType?: "UINT8" | "UINT16" | "UINT32" | "UINT64" | string;  // eslint-disable-line @typescript-eslint/no-redundant-type-constituents
+    stringOffsetType?: "UINT8" | "UINT16" | "UINT32" | "UINT64" | string;  // eslint-disable-line @typescript-eslint/no-redundant-type-constituents
     offset?: number;
     scale?: number;
     min?: number;

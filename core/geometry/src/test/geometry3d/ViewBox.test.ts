@@ -92,7 +92,7 @@ function collectViewableGeometry(ck: Checker, geometry: GeometryQuery[], rightVe
 //
 function collectViewableGeometryByXYZ(geometry: GeometryQuery[], x: number, y: number, z: number) {
   const geometry0 = makeViewableGeometry();
-  const axes0 = Matrix3d.createRigidViewAxesZTowardsEye(x, y, z)!;
+  const axes0 = Matrix3d.createRigidViewAxesZTowardsEye(x, y, z);
   /*
   const frame0 = Transform.createOriginAndMatrix(Point3d.create(xShift, yShift - 4, 0), axes0);
 

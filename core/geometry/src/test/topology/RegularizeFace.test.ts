@@ -371,7 +371,7 @@ function testRegularize(
     if (sweepUp && sweepDown) { // With both sweeps it SHOULD be a complete facet set ...
       const ex = 0.2 * range.xLength();
       const ey = 0.2 * range.yLength();
-      const ls1 = Sample.createRectangleXY(range.low.x - ex, range.low.y - ey, range.xLength() + 2 * ex, range.yLength() + 2 * ey)!;
+      const ls1 = Sample.createRectangleXY(range.low.x - ex, range.low.y - ey, range.xLength() + 2 * ex, range.yLength() + 2 * ey);
       GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(ls1), dx + ax, dy, 0.0);
     }
     GeometryCoreTestIO.captureGeometry(allGeometry, mesh1, dx + ax, dy, 0.0);
@@ -444,7 +444,7 @@ function testFullGraphRegularize(
     if (sweepUp && sweepDown) { // With both sweeps it SHOULD be a complete facet set ...
       const ex = 0.2 * range.xLength();
       const ey = 0.2 * range.yLength();
-      const ls1 = Sample.createRectangleXY(range.low.x - ex, range.low.y - ey, range.xLength() + 2 * ex, range.yLength() + 2 * ey)!;
+      const ls1 = Sample.createRectangleXY(range.low.x - ex, range.low.y - ey, range.xLength() + 2 * ex, range.yLength() + 2 * ey);
       GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(ls1), dx + ax, dy, 0.0);
     }
     GeometryCoreTestIO.captureGeometry(allGeometry, mesh1.clone(), dx + ax, dy, 0.0);

@@ -40,6 +40,7 @@ export class ArcGISTileMap {
     this._restBaseUrl = restBaseUrl;
     this._fetchFunc = fetchFunc;
     this._settings = settings;
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this._callQueues = new Array<Promise<boolean[]>>(ArcGISTileMap.maxLod).fill(Promise.resolve<boolean[]>(nonVisibleChildren));
 
   }

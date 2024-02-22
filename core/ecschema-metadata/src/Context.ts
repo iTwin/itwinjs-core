@@ -119,7 +119,7 @@ export class SchemaCache implements ISchemaLocater {
    */
   public async addSchemaPromise(schemaInfo: SchemaInfo, schema: Schema, schemaPromise: Promise<Schema>) {
     if (this.schemaExists(schemaInfo.schemaKey))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schemaPromise.toString()}, already exists within this cache.`);
+      throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schemaInfo.schemaKey.toString()}, already exists within this cache.`);
 
     this._schema.push({ schemaInfo, schema, schemaPromise });
 
