@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/frontend-tiles",
-      "comment": "Add 'cdn' and 'version' parameters to mesh-export/get-exports query in Front",
+      "comment": "Add support for enabling CDN and filtering exports by version",
       "type": "none"
     }
   ],
