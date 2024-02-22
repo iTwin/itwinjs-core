@@ -13,7 +13,7 @@ import { AmbientOcclusion, ColorDef, Environment, FeatureAppearance, PlanarClipM
 import { IModelSpatialView, IModelView, IModelView2d } from "./IModelView";
 import { TiledGraphicsProvider } from "../tile/internal";
 import { SceneVolume3d, TestSceneVolume2d } from "./SceneVolume";
-import { GuidString } from "@itwin/core-bentley";
+import { GuidString, Id64String } from "@itwin/core-bentley";
 
 // Describes the common interface for all SceneObjects.
 // For documentation and type-checking purposes only - SceneObject is a union type.
@@ -39,12 +39,43 @@ export interface ISceneObject extends ViewportDecorator {
 }
 
 export interface BaseSceneObject {
-  customType?: never;
-  view?: never;
-  presentation?: never;
-  realityModel?: never;
-  graphicsProvider?: never;
-  map?: never;
+  readonly customType?: never;
+  readonly view?: never;
+  readonly presentation?: never;
+  readonly realityModel?: never;
+  readonly graphicsProvider?: never;
+  readonly map?: never;
+}
+
+export interface ModelClassifierParams {
+  readonly type: "model";
+  readonly modelId: Id64String;
+  readonly expand: number; // default 0
+}
+
+export type SceneObjectClassifierParams = ModelClassifierParams | {
+  readonly type: unknown;
+};
+
+export interface SceneObjectClassifier {
+  source: GuidString;
+  name: string;
+  inside: "on" | "off" | "dimmed" | "hilite" | "source";
+  outside: "on" | "off" | "dimmed";
+  isVolume: boolean;
+  params?: SceneObjectClassifierParams;
+}
+
+export interface SceneObjectClassifiers extends Iterable<SceneObjectClassifier> {
+  active: SceneObjectClassifier | undefined;
+  readonly size: number;
+  find(criterion: (classifier: SceneObjectClassifier) => boolean): SceneObjectClassifier | undefined;
+  findEquivalent(classifier: SceneObjectClassifier): SceneObjectClassifier | undefined;
+  has(classifier: SceneObjectClassifier): boolean;
+  add(classifier: SceneObjectClassifier): SceneObjectClassifier;
+  replace(toReplace: SceneObjectClassifier, replaceWith: SceneObjectClassifier): boolean;
+  delete(classifier: SceneObjectClassifier): SceneObjectClassifier | undefined;
+  clear(): void;
 }
 
 export interface RealityModel {
@@ -54,7 +85,7 @@ export interface RealityModel {
   readonly realityDataId?: string;
   // ###TODO SpatialClassifiers is implemented on top of a JSON container, it's weird.
   // It also contains model Ids that assume a specific iModel
-  readonly classifiers?: SpatialClassifiers;
+  readonly classifiers: SceneObjectClassifiers;
   planarClipMaskSettings?: PlanarClipMaskSettings;
   appearanceOverrides?: FeatureAppearance;
   displaySettings: RealityModelDisplaySettings;
