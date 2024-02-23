@@ -75,7 +75,7 @@ export abstract class SceneVolumeImpl implements ISceneVolume {
 }
 
 export class SceneVolume3dImpl extends SceneVolumeImpl implements SceneVolume3d {
-  readonly is3dVolume: true = true;
+  readonly is3d: true = true;
   
   constructor(view: ViewState3d) {
     super(view);

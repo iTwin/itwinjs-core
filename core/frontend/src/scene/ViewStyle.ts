@@ -41,8 +41,8 @@ export interface IViewStyle {
 }
 
 export interface View3dStyle extends IViewStyle {
-  readonly is3dStyle: true;
-  is2dStyle?: never;
+  readonly is3d: true;
+  readonly is2d?: never;
   
   // ###TODO permit Scene's HiddenLine.Settings to be overridden/replaced?
 
@@ -52,8 +52,8 @@ export interface View3dStyle extends IViewStyle {
 }
 
 export interface View2dStyle extends IViewStyle {
-  readonly is2dStyle: true;
-  is3dStyle?: never;
+  readonly is2d: true;
+  readonly is3d?: never;
 }
 
 export type ViewStyle = View2dStyle | View3dStyle;

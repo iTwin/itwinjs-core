@@ -79,8 +79,8 @@ export interface ISceneVolume {
 }
 
 export interface SceneVolume3d extends ISceneVolume {
-  readonly is3dVolume: true;
-  readonly is2dVolume?: never;
+  readonly is3d: true;
+  readonly is2d?: never;
 
   readonly origin: Point3d;
   readonly extents: Vector3d;
@@ -147,8 +147,8 @@ export interface SceneVolume3d extends ISceneVolume {
 }
 
 export interface TestSceneVolume2d extends ISceneVolume {
-  readonly is2dVolume: true;
-  readonly is3dVolume?: never;
+  readonly is2d: true;
+  readonly is3d?: never;
 }
 
 export type SceneVolume = TestSceneVolume2d | SceneVolume3d;

@@ -122,7 +122,7 @@ export abstract class IModelViewImpl implements IIModelView {
 }
 
 export abstract class View3dImpl extends IModelViewImpl implements IModelView3d {
-  readonly is3dView: true = true;
+  readonly is3d: true = true;
 
   protected constructor(view: ViewState3d) {
     super(view, new View3dStyleImpl(view));

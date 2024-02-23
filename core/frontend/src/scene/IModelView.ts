@@ -95,8 +95,8 @@ export interface IIModelView {
 }
 
 export interface IModelView3d extends IIModelView {
-  readonly is3dView: true;
-  readonly is2dView?: never;
+  readonly is3d: true;
+  readonly is2d?: never;
 
   readonly style: View3dStyle;
 
@@ -107,8 +107,8 @@ export interface IModelView3d extends IIModelView {
 }
 
 export interface IModelView2d extends IIModelView {
-  readonly is2dView: true;
-  readonly is3dView?: never;
+  readonly is2d: true;
+  readonly is3d?: never;
 
   readonly style: View2dStyle;
 }

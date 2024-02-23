@@ -40,7 +40,7 @@ export abstract class ViewStyleImpl implements IViewStyle {
 }
 
 export class View2dStyleImpl extends ViewStyleImpl implements View2dStyle {
-  readonly is2dStyle: true = true;
+  readonly is2d: true = true;
 
   constructor(view: ViewState2d) {
     super(view);
@@ -48,7 +48,7 @@ export class View2dStyleImpl extends ViewStyleImpl implements View2dStyle {
 }
 
 export class View3dStyleImpl extends ViewStyleImpl implements View3dStyle {
-  readonly is3dStyle: true = true;
+  readonly is3d: true = true;
 
   private get _style3d() { return this._style as DisplayStyle3dState; }
 
