@@ -1,4 +1,4 @@
-import { concat, from, mergeMap, Observable, of, range } from "rxjs";
+import { concat, filter, from, map, merge, mergeMap, Observable, of, range } from "rxjs";
 import { PageOptions } from "@itwin/presentation-common/src/presentation-common/PresentationManagerOptions";
 import { eachValueFrom } from "rxjs-for-await";
 
@@ -11,7 +11,7 @@ export interface PageData<TItem> {
 /** @internal */
 export interface PagedResponseGeneratorProps<TItem> {
   parallelism?: number;
-  pageOptions: Required<PageOptions>;
+  pageOptions?: PageOptions;
   getPage(page: Required<PageOptions>): Promise<PageData<TItem>>;
 }
 
@@ -21,51 +21,78 @@ export interface PagedResponseGeneratorProps<TItem> {
  * @internal
  */
 export class PagedResponseGenerator<TPagedResponseItem> {
-  // private _total?: number;
+  private _total: number = 0;
   constructor(private readonly _props: PagedResponseGeneratorProps<TPagedResponseItem>) {}
 
-  // /**
-  //  * Get total number of pages.
-  //  * This value should be available when either [[PagedResponseGenerator.iterator]] or [[PagedResponseGenerator.observable]] are retrieved.
-  //  */
-  // public get total(): number | undefined {
-  //   return this._total;
-  // }
+  /**
+   * Get total number of pages.
+   * This value should be available when either [[PagedResponseGenerator.iterator]] or [[PagedResponseGenerator.observable]] are retrieved.
+   */
+  public get total(): number {
+    return this._total;
+  }
 
   /** Async iterator of pages. */
   public get iterator(): AsyncIterableIterator<TPagedResponseItem[]> {
     return eachValueFrom(this.observable);
   }
 
+  public async getAllItems(): Promise<TPagedResponseItem[]> {
+    const result: TPagedResponseItem[] = [];
+    for await (const value of this.iterator) {
+      result.push(...value);
+    }
+    return result;
+  }
+
+  private handleEmptyPageResult(pageStart: number) {
+    if (pageStart >= this._total) {
+      throw new Error(`Requested page with start index ${pageStart} is out of bounds. Total number of items: ${total}`);
+    }
+    throw new Error("Paged request returned non zero total count but no items");
+  }
+
   /** RXJS Observable of pages. */
   public get observable(): Observable<TPagedResponseItem[]> {
-    const pageSize = this._props.pageOptions.size;
+    const pageStart = this._props.pageOptions?.start ?? 0;
     const parallelism = this._props.parallelism;
+    let pageSize = this._props.pageOptions?.size ?? 0;
 
-    // const setTotal = (x: number) => {
-    //   this._total = x;
-    // };
-
-    return from(this._props.getPage(this._props.pageOptions)).pipe(
+    return from(this._props.getPage({ start: pageStart, size: pageSize })).pipe(
       mergeMap((response) => {
         const total = response.total;
-        // setTotal(total);
+        this._total = total;
 
-        if (total === 0 || pageSize === 0) {
+        // If there are no items, return a single empty page.
+        if (total === 0) {
           return of([]);
         }
 
-        const numPages = Math.ceil(total / pageSize);
-        if (numPages === 1) {
+        // If the response is empty, something went wrong.
+        if (!response.items.length) {
+          this.handleEmptyPageResult(pageStart);
+        }
+
+        // If page size is not defined, use the result of the first request as a page size.
+        // We must have a constant positive page size in order to parallelize the requests.
+        pageSize = pageSize || response.items.length;
+
+        if (pageSize === total) {
           return of(response.items);
         }
 
+        const numPages = Math.ceil(total / pageSize);
+        // Return the first page and then stream the remaining ones.
+        // If at some point the pages become empty, this shouldn't be an issue.
         return concat(
           of(response.items),
           range(1, numPages - 1).pipe(
             mergeMap(async (idx) => {
               const start = pageSize * idx;
               const page = await this._props.getPage({ start, size: pageSize });
+              if (!page.items.length) {
+                this.handleEmptyPageResult(start);
+              }
               return page.items;
             }, parallelism),
           ),
