@@ -33,45 +33,28 @@ describe.only("PagedResponseGenerator", () => {
     await collectGenerator(generator.iterator);
   }).timeout(100);
 
-  // it("should produce valid and sequential pages", async () => {
-  //   const items = [0, 1, 2, 3, 4, 5];
-  //   const pageSize = 2;
-  //   const props: PagedResponseGeneratorProps<number> = {
-  //     pageOptions: { start: 0, size: pageSize },
-  //     getPage: async (page) => ({ total: items.length, items: items.slice(page.start, page.start + page.size) }),
-  //   };
-  //   const generator = new PagedResponseGenerator(props);
-  //   let index = 0;
-  //   for await (const page of generator.iterator) {
-  //     expect(page).to.have.lengthOf(pageSize);
-  //     expect(page[0]).to.equal(index * pageSize);
-  //     expect(page[1]).to.equal(index * pageSize + 1);
-  //     index++;
-  //   }
-  // });
+  it("should handle a single page", async () => {
+    const items = [1, 2, 3, 4];
+    const props: PagedResponseGeneratorProps<number> = {
+      pageOptions: { start: 0, size: 8 },
+      getPage: async (page) => ({ total: items.length, items: items.slice(page.start, page.start + page.size) }),
+    };
+    const generator = new PagedResponseGenerator(props);
+    const iterator = generator.iterator;
+    expect((await iterator.next()).value).to.deep.equal(items);
+  });
 
-  // it("should handle a single page", async () => {
-  //   const items = [1, 2, 3, 4];
-  //   const props: PagedResponseGeneratorProps<number> = {
-  //     pageOptions: { start: 0, size: 8 },
-  //     getPage: async (page) => ({ total: items.length, items: items.slice(page.start, page.start + page.size) }),
-  //   };
-  //   const generator = new PagedResponseGenerator(props);
-  //   const iterator = generator.iterator;
-  //   expect((await iterator.next()).value).to.deep.equal(items);
-  // });
-
-  // it("should handle unevenly divided pages", async () => {
-  //   const items = [1, 2, 3, 4, 5, 6, 7];
-  //   const props: PagedResponseGeneratorProps<number> = {
-  //     pageOptions: { start: 0, size: 4 },
-  //     getPage: async (page) => ({ total: items.length, items: items.slice(page.start, page.start + page.size) }),
-  //   };
-  //   const generator = new PagedResponseGenerator(props);
-  //   const iterator = generator.iterator;
-  //   expect((await iterator.next()).value).to.deep.equal([1, 2, 3, 4]);
-  //   expect((await iterator.next()).value).to.deep.equal([5, 6, 7]);
-  // });
+  it("should handle unevenly divided pages", async () => {
+    const items = [1, 2, 3, 4, 5, 6, 7];
+    const props: PagedResponseGeneratorProps<number> = {
+      pageOptions: { start: 0, size: 4 },
+      getPage: async (page) => ({ total: items.length, items: items.slice(page.start, page.start + page.size) }),
+    };
+    const generator = new PagedResponseGenerator(props);
+    const iterator = generator.iterator;
+    expect((await iterator.next()).value).to.deep.equal([1, 2, 3, 4]);
+    expect((await iterator.next()).value).to.deep.equal([5, 6, 7]);
+  });
 
   it("should respect the provided parallelism", async () => {
     const items = [...new Array(100).keys()];
