@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/perf-tools",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/perf-tools"
+}
