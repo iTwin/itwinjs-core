@@ -47,7 +47,7 @@ steps:
       Write-Host "##vso[build.updatebuildnumber]$newBuildNumber"
     displayName: Set build number
     workingDirectory: ${{ parameters.workingDir }}
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['System.JobAttempt'], '1'), not(${{ parameters.nativePrVal }}))
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['System.JobAttempt'], '1'), ${{ eq(parameters.nativePrVal, false) }}))
 
   - script: node common/scripts/set-rush-write-cache-variables.js
     displayName: "Set Rush Write Cache Variables"
