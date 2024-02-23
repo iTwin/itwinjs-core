@@ -14200,7 +14200,7 @@ export namespace TileAdmin {
         aggressive: number;
         relaxed: number;
     };
-    const // (undocumented)
+    const // @internal
     nonMobileUndefinedGpuMemoryLimit: number;
     const mobileGpuMemoryLimits: {
         default: number;
