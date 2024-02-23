@@ -453,7 +453,11 @@
 			repositoryURL = "https://github.com/iTwin/mobile-native-ios";
 			requirement = {
 				kind = exactVersion;
+<<<<<<< HEAD
 				version = 4.5.1;
+=======
+				version = 4.4.6;
+>>>>>>> 1bed09cc1e (@bentley/imodeljs-native 4.4.6 (#6462))
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

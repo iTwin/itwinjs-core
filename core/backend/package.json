@@ -97,7 +97,11 @@
     "webpack": "^5.76.0"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@bentley/imodeljs-native": "4.5.1",
+=======
+    "@bentley/imodeljs-native": "4.4.6",
+>>>>>>> 1bed09cc1e (@bentley/imodeljs-native 4.4.6 (#6462))
     "@itwin/cloud-agnostic-core": "^2.1.0",
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/object-storage-azure": "^2.2.2",
