@@ -18,7 +18,6 @@ import { SceneContext } from "./ViewContext";
 import { IModelConnection } from "./IModelConnection";
 import { AttachToViewportArgs, ViewState3d } from "./ViewState";
 import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
-import { IModelSpatialView } from "./scene/IModelView";
 
 /** Options supplied to [[SpatialViewState.computeFitRange]].
  * @public
@@ -33,7 +32,7 @@ export interface ComputeSpatialViewFitRangeOptions {
  * @public
  * @extensions
  */
-export class SpatialViewState extends ViewState3d implements IModelSpatialView {
+export class SpatialViewState extends ViewState3d {
   public static override get className() { return "SpatialViewDefinition"; }
 
   private readonly _treeRefs: SpatialTileTreeReferences;

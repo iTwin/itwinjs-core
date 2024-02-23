@@ -76,8 +76,8 @@ export abstract class IModelViewImpl implements IIModelView {
   isSheet() { return this.impl.isSheetView(); }
 
   isSubCategoryVisible(id: Id64String) { return this.impl.isSubCategoryVisible(id); }
-  enableAllLoadedSubCategories(categoryIds: Id64Arg) { return this.impl.enableAllLoadedSubCategories(categoryIds); }
-  setSubCategoryVisible(subCategoryId: Id64String, visible: boolean) { return this.impl.setSubCategoryVisible(subCategoryId, visible); }
+  enableAllLoadedSubCategories(categoryIds: Id64Arg) { return this.impl.displayStyle.enableAllLoadedSubCategories(categoryIds); }
+  setSubCategoryVisible(subCategoryId: Id64String, visible: boolean) { return this.impl.displayStyle.setSubCategoryVisible(subCategoryId, visible); }
 
   computeFitRange() { return this.impl.computeFitRange(); }
   viewsModel(modelId: Id64String) { return this.impl.viewsModel(modelId); }
@@ -132,8 +132,8 @@ export abstract class View3dImpl extends IModelViewImpl implements IModelView3d 
 
   protected get _view3d() { return this.impl as ViewState3d; }
 
-  get modelClipGroups() { return this._view3d.modelClipGroups; }
-  set modelClipGroups(groups: ModelClipGroups) { this._view3d.modelClipGroups = groups; }
+  get modelClipGroups() { return this._view3d.details.modelClipGroups; }
+  set modelClipGroups(groups: ModelClipGroups) { this._view3d.details.modelClipGroups = groups; }
 
   getModelClip(modelId: Id64String) { return this._view3d.getModelClip(modelId); }
 }

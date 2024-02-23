@@ -22,7 +22,6 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { getCesiumOSMBuildingsUrl, MapLayerIndex, TileTreeReference } from "./tile/internal";
-import { IViewStyle, View2dStyle, View3dStyle } from "./scene/ViewStyle";
 
 /** @internal */
 export class TerrainDisplayOverrides {
@@ -47,7 +46,7 @@ export interface OsmBuildingDisplayOptions {
  * @public
  * @extensions
  */
-export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps, IViewStyle {
+export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   public static override get className() { return "DisplayStyle"; }
   private _scriptReference?: RenderSchedule.ScriptReference;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
@@ -838,41 +837,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const model = this.iModel.models.getLoaded(modelId)?.asSpatialModel;
     return (model && model.isRealityModel) ? this._attachedRealityModelPlanarClipMasks.get(modelId) : undefined;
   }
-
-  get planarClipMasks(): Map<Id64String, PlanarClipMaskSettings> {
-    return this.settings.planarClipMasks;
-  }
-
-  get subCategoryOverrides(): Map<Id64String, SubCategoryOverride> {
-    return this.settings.subCategoryOverrides;
-  }
-
-  get modelAppearanceOverrides(): Map<Id64String, FeatureAppearance> {
-    return this.settings.modelAppearanceOverrides;
-  }
-
-  getRealityModelDisplaySettings(modelId: Id64String): RealityModelDisplaySettings | undefined {
-    return this.settings.getRealityModelDisplaySettings(modelId);
-  }
-
-  setRealityModelDisplaySettings(modelId: Id64String, settings: RealityModelDisplaySettings | undefined): void {
-    this.settings.setRealityModelDisplaySettings(modelId, settings);
-  }
-
-  get excludedElementIds() { return this.settings.excludedElementIds; }
-  addExcludedElements(id: Id64String | Iterable<Id64String>) { this.settings.addExcludedElements(id); }
-  dropExcludedElement(id: Id64String) { this.settings.dropExcludedElement(id); }
-  dropExcludedElements(id: Id64String | Iterable<Id64String>) { this.settings.dropExcludedElements(id); }
-  clearExcludedElements() { this.settings.clearExcludedElements; }
 }
 
 /** A display style that can be applied to 2d views.
  * @public
  * @extensions
  */
-export class DisplayStyle2dState extends DisplayStyleState implements View2dStyle {
+export class DisplayStyle2dState extends DisplayStyleState {
   public static override get className() { return "DisplayStyle2d"; }
-  public readonly is2dStyle = true;
   private readonly _settings: DisplayStyleSettings;
 
   public get settings(): DisplayStyleSettings { return this._settings; }
@@ -896,9 +868,8 @@ export class DisplayStyle2dState extends DisplayStyleState implements View2dStyl
  * @public
  * @extensions
  */
-export class DisplayStyle3dState extends DisplayStyleState implements View3dStyle {
+export class DisplayStyle3dState extends DisplayStyleState {
   public static override get className() { return "DisplayStyle3d"; }
-  public readonly is3dStyle = true;
   private _settings: DisplayStyle3dSettings;
 
   public get settings(): DisplayStyle3dSettings { return this._settings; }
@@ -973,17 +944,5 @@ export class DisplayStyle3dState extends DisplayStyleState implements View3dStyl
       return ovr;
     }
     return undefined;
-  }
-
-  get planProjectionSettings(): Iterable<[Id64String, PlanProjectionSettings]> | undefined {
-    return this.settings.planProjectionSettings;
-   }
-
-  getPlanProjectionSettings(modelId: Id64String) {
-    return this.settings.getPlanProjectionSettings(modelId);
-  }
-
-  setPlanProjectionSettings(modelId: Id64String, settings: PlanProjectionSettings | undefined) {
-    this.settings.setPlanProjectionSettings(modelId, settings);
   }
 }

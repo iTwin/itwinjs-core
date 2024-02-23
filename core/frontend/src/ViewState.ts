@@ -42,9 +42,6 @@ import { Viewport } from "./Viewport";
 import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 import { ViewStatus } from "./ViewStatus";
 import { EnvironmentDecorations } from "./EnvironmentDecorations";
-import { ISceneVolume, SceneVolume3d } from "./scene/SceneVolume";
-import { DrawingView, IIModelView, IModelSpatialView, IModelView2d, IModelView3d, SheetView } from "./scene/IModelView";
-import { View2dStyle, View3dStyle, ViewStyle } from "./scene/ViewStyle";
 
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
@@ -208,7 +205,7 @@ export type AttachToViewportArgs = Viewport;
  * @public
  * @extensions
  */
-export abstract class ViewState extends ElementState implements ISceneVolume, IIModelView {
+export abstract class ViewState extends ElementState {
   public static override get className() { return "ViewDefinition"; }
 
   private _auxCoordSystem?: AuxCoordSystemState;
@@ -254,9 +251,6 @@ export abstract class ViewState extends ElementState implements ISceneVolume, II
     }
   }
 
-  public abstract get style(): ViewStyle;
-  public abstract set style(style: ViewStyle);
-  
   /** The style that controls how the contents of the view are displayed. */
   public get displayStyle(): DisplayStyleState {
     return this._displayStyle;
@@ -445,14 +439,6 @@ export abstract class ViewState extends ElementState implements ISceneVolume, II
     return !ovr.invisible;
   }
 
-  public enableAllLoadedSubCategories(categoryIds: Id64Arg): boolean {
-    return this.displayStyle.enableAllLoadedSubCategories(categoryIds);
-  }
-
-  public setSubCategoryVisible(subCategoryId: Id64String, visible: boolean): boolean {
-    return this.displayStyle.setSubCategoryVisible(subCategoryId, visible);
-  }
-
   /** Provides access to optional detail settings for this view. */
   public abstract get details(): ViewDetails;
 
@@ -462,13 +448,10 @@ export abstract class ViewState extends ElementState implements ISceneVolume, II
   public is2d(): this is ViewState2d { return !this.is3d(); }
   /** Returns true if this ViewState is-a [[SpatialViewState]] */
   public abstract isSpatialView(): this is SpatialViewState;
-  public isSpatial(): this is IModelSpatialView { return this.isSpatialView(); }
   /** Returns true if this ViewState is-a [[DrawingViewState]] */
   public abstract isDrawingView(): this is DrawingViewState;
-  public isDrawing(): this is DrawingView { return this.isDrawingView(); }
   /** Returns true if this ViewState is-a [[SheetViewState]] */
   public isSheetView(): this is SheetViewState { return false; }
-  public isSheet(): this is SheetView { return this.isSheetView(); }
   /** Returns true if [[ViewTool]]s are allowed to operate in three dimensions on this view. */
   public abstract allow3dManipulations(): boolean;
   /** @internal */
@@ -1395,9 +1378,7 @@ export abstract class ViewState extends ElementState implements ISceneVolume, II
  * @public
  * @extensions
  */
-export abstract class ViewState3d extends ViewState implements SceneVolume3d, IModelView3d {
-  public readonly is3dView = true;
-  public readonly is3dVolume = true;
+export abstract class ViewState3d extends ViewState {
   private readonly _details: ViewDetails3d;
   private readonly _modelClips: Array<RenderClipVolume | undefined> = [];
   private _environmentDecorations?: EnvironmentDecorations;
@@ -1419,16 +1400,6 @@ export abstract class ViewState3d extends ViewState implements SceneVolume3d, IM
     return this._details;
   }
 
-  public get modelClipGroups(): ModelClipGroups {
-    return this.details.modelClipGroups;
-  }
-
-  public set modelClipGroups(groups: ModelClipGroups) {
-    this._details.modelClipGroups = groups;
-  }
-
-  public get style(): View3dStyle { return this.displayStyle; }
-  
   public allow3dManipulations(): boolean {
     return this.details.allow3dManipulations;
   }
@@ -2315,8 +2286,7 @@ export abstract class ViewState3d extends ViewState implements SceneVolume3d, IM
  * @public
  * @extensions
  */
-export abstract class ViewState2d extends ViewState implements /* ###TODO TestSceneVolume2d, */ IModelView2d {
-  public readonly is2dView = true;
+export abstract class ViewState2d extends ViewState {
   private readonly _details: ViewDetails;
   public static override get className() { return "ViewDefinition2d"; }
   public readonly origin: Point2d;
@@ -2367,8 +2337,6 @@ export abstract class ViewState2d extends ViewState implements /* ###TODO TestSc
     super.displayStyle = style;
   }
 
-  public get style(): View2dStyle { return this.displayStyle; }
-  
   /** See [[ViewState.is3d]]. */
   public is3d(): this is ViewState3d { return false; }
 

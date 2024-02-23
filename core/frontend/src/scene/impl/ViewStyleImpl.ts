@@ -23,20 +23,20 @@ export abstract class ViewStyleImpl implements IViewStyle {
   get viewFlags() { return this._style.viewFlags; }
   set viewFlags(flags: ViewFlags) { this._style.viewFlags = flags; }
 
-  get planarClipMasks() { return this._style.planarClipMasks; }
-  get subCategoryOverrides() { return this._style.subCategoryOverrides; }
-  get modelAppearanceOverrides() { return this._style.modelAppearanceOverrides; }
+  get planarClipMasks() { return this._style.settings.planarClipMasks; }
+  get subCategoryOverrides() { return this._style.settings.subCategoryOverrides; }
+  get modelAppearanceOverrides() { return this._style.settings.modelAppearanceOverrides; }
 
-  getRealityModelDisplaySettings(modelId: Id64String) { return this._style.getRealityModelDisplaySettings(modelId); }
+  getRealityModelDisplaySettings(modelId: Id64String) { return this._style.settings.getRealityModelDisplaySettings(modelId); }
   setRealityModelDisplaySettings(modelId: Id64String, settings: RealityModelDisplaySettings | undefined) {
-    this._style.setRealityModelDisplaySettings(modelId, settings);
+    this._style.settings.setRealityModelDisplaySettings(modelId, settings);
   }
 
-  get excludedElementIds() { return this._style.excludedElementIds; }
-  addExcludedElements(id: Id64String | Iterable<Id64String>) { this._style.addExcludedElements(id); }
-  dropExcludedElement(id: Id64String) { this._style.dropExcludedElement(id); }
-  dropExcludedElements(id: Id64String | Iterable<Id64String>) { this._style.dropExcludedElements(id); }
-  clearExcludedElements() { this._style.clearExcludedElements(); }
+  get excludedElementIds() { return this._style.settings.excludedElementIds; }
+  addExcludedElements(id: Id64String | Iterable<Id64String>) { this._style.settings.addExcludedElements(id); }
+  dropExcludedElement(id: Id64String) { this._style.settings.dropExcludedElement(id); }
+  dropExcludedElements(id: Id64String | Iterable<Id64String>) { this._style.settings.dropExcludedElements(id); }
+  clearExcludedElements() { this._style.settings.clearExcludedElements(); }
 }
 
 export class View2dStyleImpl extends ViewStyleImpl implements View2dStyle {
@@ -56,10 +56,10 @@ export class View3dStyleImpl extends ViewStyleImpl implements View3dStyle {
     super(view);
   }
 
-  get planProjectionSettings() { return this._style3d.planProjectionSettings; }
-  getPlanProjectionSettings(modelId: Id64String) { return this._style3d.getPlanProjectionSettings(modelId); }
+  get planProjectionSettings() { return this._style3d.settings.planProjectionSettings; }
+  getPlanProjectionSettings(modelId: Id64String) { return this._style3d.settings.getPlanProjectionSettings(modelId); }
 
   setPlanProjectionSettings(modelId: Id64String, settings: PlanProjectionSettings | undefined) {
-    this._style3d.setPlanProjectionSettings(modelId, settings);
+    this._style3d.settings.setPlanProjectionSettings(modelId, settings);
   }
 }

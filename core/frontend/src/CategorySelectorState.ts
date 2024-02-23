@@ -9,7 +9,6 @@ import { Id64, Id64Arg, Id64String, ObservableSet } from "@itwin/core-bentley";
 import { CategorySelectorProps } from "@itwin/core-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
-import { ViewCategorySelector } from "./scene/IModelView";
 
 /** A set of Categories to be displayed in a [[ViewState]].
  * Elements belonging to categories not specified in the category selector will not be drawn in the view.
@@ -21,7 +20,7 @@ import { ViewCategorySelector } from "./scene/IModelView";
  * @public
  * @extensions
  */
-export class CategorySelectorState extends ElementState implements ViewCategorySelector {
+export class CategorySelectorState extends ElementState {
   public static override get className() { return "CategorySelector"; }
 
   private readonly _categories = new ObservableSet<string>();
@@ -54,7 +53,7 @@ export class CategorySelectorState extends ElementState implements ViewCategoryS
     return val;
   }
 
-  public isEquivalentTo(other: ViewCategorySelector): boolean {
+  private isEquivalentTo(other: CategorySelectorState): boolean {
     if (this.categories.size !== other.categories.size)
       return false;
 
