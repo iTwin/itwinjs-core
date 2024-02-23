@@ -125,12 +125,10 @@ export interface SceneObjectClipMaskSettings extends BaseClipMaskSettings {
 export type ClipMaskSettings = PriorityClipMaskSettings | SceneObjectClipMaskSettings;
 
 export interface RealityModel {
-  readonly rdSourceKey: RealityDataSourceKey;
+  readonly sourceKey: RealityDataSourceKey;
   readonly name: string;
   readonly description: string;
   readonly realityDataId?: string;
-  // ###TODO SpatialClassifiers is implemented on top of a JSON container, it's weird.
-  // It also contains model Ids that assume a specific iModel
   readonly classifiers: SceneObjectClassifiers;
   clipMask?: ClipMaskSettings;
   appearanceOverrides?: FeatureAppearance;

@@ -69,11 +69,18 @@ export class ContextRealityModelState extends ContextRealityModel {
   /** The tile tree reference responsible for drawing the reality model into a [[Viewport]]. */
   public get treeRef(): TileTreeReference { return this._treeRef; }
 
-  /** The transient Id assigned to this reality model at run-time. */
+  /** The transient Id assigned to this reality model at run-time.
+   * @note This property never actually returns `undefined`.
+   */
   public get modelId(): Id64String | undefined {
     return (this._treeRef instanceof RealityModelTileTree.Reference) ? this._treeRef.modelId : undefined;
   }
 
+  /** The transient Id assigned to this reality model at run-time. */
+  public getModelId(): Id64String {
+    return this._treeRef.modelId;
+  }
+  
   /** Whether the reality model spans the entire globe ellipsoid. */
   public get isGlobal(): boolean {
     return this.treeRef.isGlobal;
