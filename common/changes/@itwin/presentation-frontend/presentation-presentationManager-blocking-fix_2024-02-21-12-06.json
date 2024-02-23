@@ -1,0 +1,20 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-frontend",
+      "comment": "Made initialization of a new iModel connection non-blocking in most cases and moved the responsibility of doing that to the `FavoritePropertiesManager` class.",
+      "type": "none"
+    },
+    {
+      "packageName": "@itwin/presentation-frontend",
+      "comment": "Deprecated synchronous `FavoritePropertiesManager` functions `has` and `sortFields` in favor of `hasAsync` and `sortFieldsAsync`.",
+      "type": "none"
+    },
+    {
+      "packageName": "@itwin/presentation-frontend",
+      "comment": "Deprecated `FavoritePropertiesManager.initializeConnection` because it's not necessary to call anymore.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-frontend"
+}
