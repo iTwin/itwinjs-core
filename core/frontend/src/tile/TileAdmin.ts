@@ -249,11 +249,8 @@ export class TileAdmin {
     else
       gpuMemoryLimit = gpuMemoryLimits;
 
-    if (undefined === gpuMemoryLimit && isMobile)
-      gpuMemoryLimit = "default";
-
-    if (undefined === gpuMemoryLimit && !isMobile)
-      gpuMemoryLimit = TileAdmin.nonMobileUndefinedGpuMemoryLimit;
+    if (undefined === gpuMemoryLimit)
+      gpuMemoryLimit = isMobile ? "default" : TileAdmin.nonMobileUndefinedGpuMemoryLimit;
 
     if (undefined !== gpuMemoryLimit)
       this.gpuMemoryLimit = gpuMemoryLimit;
