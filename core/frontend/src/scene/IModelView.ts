@@ -11,7 +11,7 @@ import { View2dStyle, View3dStyle, ViewStyle, ViewStyleFlags } from "./ViewStyle
 import { AxisAlignedBox3d, ModelClipGroups } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { GeometricModelState } from "../ModelState";
-import { Range3d, Transform } from "@itwin/core-geometry";
+import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
 import { DisclosedTileTreeSet, TileTreeReference } from "../tile/internal";
 import { RenderMemory } from "../render/RenderMemory";
 import { DecorateContext, SceneContext } from "../ViewContext";
@@ -65,7 +65,7 @@ export interface IIModelView {
   /** ### TODO needed? @internal */
   collectStatistics(stats: RenderMemory.Statistics): void;
 
-  // get/setViewClip ###TODO in addition to scene clip?
+  clipVector: ClipVector | undefined;
 
   /** ### TODO needed? @internal */
   refreshForModifiedModels(modelIds: Id64Arg | undefined): boolean;

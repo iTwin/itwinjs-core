@@ -8,7 +8,7 @@ import { View2dStyle, View3dStyle, ViewStyle, ViewStyleFlags } from "../ViewStyl
 import { AxisAlignedBox3d, ModelClipGroups, ViewFlags } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { GeometricModelState } from "../../ModelState";
-import { Range3d, Transform } from "@itwin/core-geometry";
+import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
 import { DisclosedTileTreeSet, TileTreeReference } from "../../tile/internal";
 import { RenderMemory } from "../../render/RenderMemory";
 import { DecorateContext, SceneContext } from "../../ViewContext";
@@ -67,6 +67,9 @@ export abstract class IModelViewImpl implements IIModelView {
 
   get viewFlags() { return this.style.viewFlags; }
   set viewFlags(flags: ViewFlags) { this.style.viewFlags = flags; }
+
+  get clipVector(): ClipVector | undefined { return this.impl.getViewClip(); }
+  set clipVector(clip: ClipVector | undefined) { this.impl.setViewClip(clip); }
 
   isSpatial() { return this.impl.isSpatialView(); }
   isDrawing() { return this.impl.isDrawingView(); }
