@@ -16,6 +16,30 @@ async function sleep(millis: number) {
 }
 
 describe.only("PagedResponseGenerator", () => {
+  it("should provide same outputs for all getters", async () => {
+    const items = [0, 1, 2, 3, 4, 5];
+    const pageSize = 2;
+    const props: PagedResponseGeneratorProps<number> = {
+      pageOptions: { start: 0, size: pageSize },
+      getPage: async (page) => ({ total: items.length, items: items.slice(page.start, page.start + page.size) }),
+    };
+
+    const generator = new PagedResponseGenerator(props);
+    const pageArrayVariations = await Promise.all([
+      collectGenerator(generator.iterator),
+      collectGenerator(eachValueFrom(generator.observable)),
+      generator.getAllPages(),
+    ]);
+
+    for (const pageArray of pageArrayVariations) {
+      expect(pageArray).to.deep.eq([
+        [0, 1],
+        [2, 3],
+        [4, 5],
+      ]);
+    }
+  });
+
   it("should run requests concurrently", async () => {
     const items = [...new Array(1000).keys()];
     const props: PagedResponseGeneratorProps<number> = {
@@ -182,22 +206,5 @@ describe.only("PagedResponseGenerator", () => {
 
     await expect(generator.getAllItems()).to.eventually.be.rejected;
     expect(getter).to.be.called;
-  });
-
-  describe("generator and observable", () => {
-    it("should have same outputs", async () => {
-      const items = [0, 1, 2, 3, 4, 5];
-      const pageSize = 2;
-      const props: PagedResponseGeneratorProps<number> = {
-        pageOptions: { start: 0, size: pageSize },
-        getPage: async (page) => ({ total: items.length, items: items.slice(page.start, page.start + page.size) }),
-      };
-
-      const pageGenerator = new PagedResponseGenerator(props);
-      const iteratorValues = await collectGenerator(pageGenerator.iterator);
-      const observableValues = await collectGenerator(eachValueFrom(pageGenerator.observable));
-
-      expect(iteratorValues).to.deep.equal(observableValues);
-    });
   });
 });
