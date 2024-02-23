@@ -4592,8 +4592,8 @@ export class PolyfaceData {
     resizeAllDataArrays(length: number): void;
     reverseIndices(facetStartIndex?: number[]): void;
     static reverseIndices<T>(facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean;
-    reverseIndicesSingleFacet(facetId: number, facetStartIndex: number[]): void;
-    static reverseIndicesSingleFacet<T>(facetId: number, facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean;
+    reverseIndicesSingleFacet(facetIndex: number, facetStartIndex: number[]): void;
+    static reverseIndicesSingleFacet<T>(facetIndex: number, facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean;
     reverseNormals(): void;
     setTaggedNumericData(data: TaggedNumericData | undefined): void;
     taggedNumericData: TaggedNumericData | undefined;
