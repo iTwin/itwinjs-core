@@ -252,8 +252,7 @@ export class TileAdmin {
     if (undefined === gpuMemoryLimit)
       gpuMemoryLimit = isMobile ? "default" : TileAdmin.nonMobileUndefinedGpuMemoryLimit;
 
-    if (undefined !== gpuMemoryLimit)
-      this.gpuMemoryLimit = gpuMemoryLimit;
+    this.gpuMemoryLimit = gpuMemoryLimit;
 
     if (undefined !== options.maximumLevelsToSkip)
       this.maximumLevelsToSkip = Math.floor(Math.max(0, options.maximumLevelsToSkip));
