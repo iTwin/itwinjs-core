@@ -1951,9 +1951,57 @@ function sectorsWithSameNormalAtVertexShareUVParamAndColor(ck: Checker, data: Po
 }
 
 describe("Polyface", () => {
+  it("SphericalAuxiliaryData", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const normal = Vector3d.createZero();
+    const vertex = Point3d.createZero();
+
+    const mesh = ImportedSample.createPolyhedron62();
+    if (!ck.testPointer(mesh, "imported mesh"))
+      return;
+
+    mesh.data.color = undefined;
+    mesh.data.colorIndex = undefined;
+
+    // install per-vertex spherical uv-parameters
+    mesh.data.param?.clear();
+    for (let vi = 0; vi < mesh.data.pointCount; ++vi) {
+      if (mesh.data.getPoint(vi, vertex)) {
+        const theta = Math.atan2(vertex.y, vertex.x);
+        const phi = Math.asin(vertex.z);
+        mesh.addParamUV(theta, phi);
+      }
+    }
+    mesh.data.paramIndex = mesh.data.pointIndex.slice();
+
+    // install per-vertex spherical normals
+    mesh.data.normal?.clear();
+    for (let vi = 0; vi < mesh.data.pointCount; ++vi) {
+      if (mesh.data.getPoint(vi, vertex) && !vertex.isZero) {
+        normal.setFromPoint3d(vertex);
+        if (normal.normalizeInPlace())
+          mesh.addNormal(normal);
+      }
+    }
+    mesh.data.normalIndex = mesh.data.pointIndex.slice();
+
+    // This yields a mesh with uv different from, say, those computed by QV in MicroStation.
+    mesh.data.compress();
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "SphericalAuxiliaryData");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("TriangulateAuxiliaryData", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
+
+    const normal = Vector3d.createZero();
+    const vertex = Point3d.createZero();
+    const vertex1 = Point3d.createZero();
 
     const mesh = ImportedSample.createPolyhedron62();
     if (!ck.testPointer(mesh, "imported mesh"))
@@ -1962,7 +2010,6 @@ describe("Polyface", () => {
 
     // preserve per-facet colors
     let colors: number[] | undefined;
-    const normal = Vector3d.createZero();
     const normalToColorIndex = new Dictionary<Vector3d, number>(compareNormals, cloneNormal);
     if (
       ck.testDefined(mesh.data.color, "input mesh has colors") && mesh.data.color !== undefined &&
@@ -1983,7 +2030,7 @@ describe("Polyface", () => {
       ck.testDefined(mesh.data.normal, "input mesh has normals") && mesh.data.normal !== undefined
     ) {
       params = mesh.data.param.clone();
-      for (let vi = 0; vi < mesh.data.point.length; ++vi) {
+      for (let vi = 0; vi < mesh.data.pointCount; ++vi) {
         const normalToParamIndex = new Dictionary<Vector3d, number>(compareNormals, cloneNormal);
         for (const visitor = mesh.createVisitor(); visitor.moveToNextFacet();) {
           for (let i = 0; i < visitor.numEdgesThisFacet; ++i) {
@@ -2024,15 +2071,13 @@ describe("Polyface", () => {
 
     // restore per-sector uv-parameters
     if (params) {
-      const vertex0 = Point3d.createZero();
-      const vertex1 = Point3d.createZero();
       mesh1.data.paramIndex = [];
       mesh1.data.paramIndex.length = mesh1.data.pointIndex.length;
-      for (let vi = 0; vi < mesh1.data.point.length; ++vi) {
-        mesh1.data.getPoint(vi, vertex0);
+      for (let vi = 0; vi < mesh1.data.pointCount; ++vi) {
+        mesh1.data.getPoint(vi, vertex);
         for (const visitor = mesh1.createVisitor(); visitor.moveToNextFacet();) {
           for (let i = 0; i < visitor.numEdgesThisFacet; ++i) {
-            if (vertex0.isAlmostEqual(visitor.getPoint(i, vertex1)!)) {
+            if (vertex.isAlmostEqual(visitor.getPoint(i, vertex1)!)) {
               const uvIndex = vertexIndexToSector[vi].get(visitor.getNormal(i, normal)!);
               if (ck.testDefined(uvIndex, "found uv index in map") && uvIndex !== undefined)
                 mesh1.data.paramIndex[mesh1.facetIndex0(visitor.currentReadIndex()) + i] = uvIndex;
