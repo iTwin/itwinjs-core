@@ -7,6 +7,7 @@ Table of contents:
 
 - [Display](#display)
   - [Seafloor terrain](#seafloor-terrain)
+- [Electron 29 support](#electron-29-support)
 
 ## Display
 
@@ -29,3 +30,7 @@ To enable seafloor terrain, create a [TerrainSettings]($common) specifying [Cesi
 You can alternatively specify the Id of any global Cesium ION asset to which you have access. Either way, make sure you add the asset to your ION account first.
 
 The new [TerrainSettings.dataSource]($common) property can be used by custom [TerrainProvider]($frontend)s as well, to select from different sources of terrain supplied by the same provider.
+
+## Electron 29 support
+
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 29](https://www.electronjs.org/blog/electron-29-0).
