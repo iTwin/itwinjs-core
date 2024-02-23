@@ -155,7 +155,7 @@ describe.only("PagedResponseGenerator", () => {
     expect(total).to.eq(5);
   });
 
-  xit("calls getter multiple times until the whole requested page is received when requesting a page of unspecified size", async () => {
+  it("calls getter multiple times until the whole requested page is received when requesting a page of unspecified size", async () => {
     const getter = sinon.stub();
     getter.onFirstCall().resolves({ total: 5, items: [2, 3] });
     getter.onSecondCall().resolves({ total: 5, items: [4, 5] });
@@ -166,7 +166,7 @@ describe.only("PagedResponseGenerator", () => {
 
     expect(getter).to.be.calledTwice;
     expect(getter.firstCall).to.be.calledWith({ start: 1, size: 0 });
-    expect(getter.secondCall).to.be.calledWith({ start: 3, size: 0 });
+    expect(getter.secondCall).to.be.calledWith({ start: 3, size: 2 });
     expect(items).to.deep.eq([2, 3, 4, 5]);
     expect(total).to.eq(5);
   });
