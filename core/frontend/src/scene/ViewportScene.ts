@@ -155,6 +155,7 @@ export interface IModelSceneObjects<T extends IModelView> extends Iterable<T> {
 }
 
 export interface ScenePresentation2d {
+  // ###TODO grid
   is2d: true;
   is3d?: never;
   viewFlags: ViewFlags;
@@ -162,6 +163,7 @@ export interface ScenePresentation2d {
 }
 
 export interface ScenePresentation3d {
+  // ###TODO grid
   is3d: true;
   is2d?: never;
   viewFlags: ViewFlags;
