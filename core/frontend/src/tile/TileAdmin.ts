@@ -252,6 +252,9 @@ export class TileAdmin {
     if (undefined === gpuMemoryLimit && isMobile)
       gpuMemoryLimit = "default";
 
+    if (undefined === gpuMemoryLimit && !isMobile)
+      gpuMemoryLimit = TileAdmin.nonMobileUndefinedGpuMemoryLimit;
+
     if (undefined !== gpuMemoryLimit)
       this.gpuMemoryLimit = gpuMemoryLimit;
 
@@ -1255,6 +1258,8 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
     aggressive: 500 * 1024 * 1024, // 500 MB
     relaxed: 2.5 * 1024 * 1024 * 1024, // 2.5 GB
   };
+
+  export const nonMobileUndefinedGpuMemoryLimit = 6000 * 1024 * 1024; // 6,000 MB - used when nonMobile limit is undefined
 
   /** The number of bytes of GPU memory associated with the various [[GpuMemoryLimit]]s for mobile devices.
    * @see [[TileAdmin.Props.gpuMemoryLimits]] to specify the limit at startup.
