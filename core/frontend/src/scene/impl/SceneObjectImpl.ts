@@ -8,7 +8,7 @@ import { DecorateContext, SceneContext } from "../../ViewContext";
 import { ISceneObject, ViewportScene } from "../ViewportScene";
 import { HitDetail } from "../../HitDetail";
 
-export abstract class SceneObjectImpl<Scene extends ViewportScene> implements ISceneObject {
+export abstract class SceneObjectImpl<Scene extends ViewportScene = ViewportScene> implements ISceneObject {
   readonly guid: GuidString;
   readonly scene: Scene;
   isDisplayed = true;

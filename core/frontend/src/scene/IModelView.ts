@@ -43,8 +43,6 @@ export interface IIModelView {
   // ###TODO scheduleScript, scheduleScriptReference
   // ###TODO analysisStyle
 
-  readonly areAllTileTreesLoaded: boolean;
-
   isSubCategoryVisible(id: Id64String): boolean;
   enableAllLoadedSubCategories(categoryIds: Id64Arg): boolean;
   setSubCategoryVisible(subCategoryId: Id64String, visible: boolean): boolean;
@@ -55,27 +53,21 @@ export interface IIModelView {
 
   forEachModel(func: (model: GeometricModelState) => void): void;
 
-  /** @internal */
+  /** ### TODO needed? @internal */
   forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void;
 
   // ###TODO will this be needed externally (or at all)? Hopefully not.
   forEachTileTreeRef(func: (treeRef: TileTreeReference) => void): void;
 
-  /** @internal */
+  /** ### TODO needed? @internal */
   discloseTileTrees(trees: DisclosedTileTreeSet): void;
 
-  /** @internal */
+  /** ### TODO needed? @internal */
   collectStatistics(stats: RenderMemory.Statistics): void;
 
-  /** @internal */
-  createScene(context: SceneContext): void;
+  // get/setViewClip ###TODO in addition to scene clip?
 
-  /** @internal */
-  // ###TODO draw sheet border, ground plane maybe; don't draw sky box, grid. decorate(context: DecorateContext): void;
-
-  // get/setViewClip in addition to scene clip?
-
-  /** @internal */
+  /** ### TODO needed? @internal */
   refreshForModifiedModels(modelIds: Id64Arg | undefined): boolean;
 
   /** Determine whether this ViewState has the same coordinate system as another one.
@@ -83,7 +75,7 @@ export interface IIModelView {
    */
   hasSameCoordinates(other: IIModelView): boolean;
 
-  /** @internal strictly for plan projection models. */
+  /** ### TODO needed? @internal strictly for plan projection models. */
   getModelElevation(modelId: Id64String): number;
 
   modelDisplayTransformProvider: ModelDisplayTransformProvider | undefined;

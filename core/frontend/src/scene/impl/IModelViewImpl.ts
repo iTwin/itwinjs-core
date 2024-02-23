@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64Arg, Id64String } from "@itwin/core-bentley";
+import { GuidString, Id64Arg, Id64String, assert } from "@itwin/core-bentley";
 import { View2dStyle, View3dStyle, ViewStyle, ViewStyleFlags } from "../ViewStyle";
 import { AxisAlignedBox3d, ModelClipGroups, ViewFlags } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
@@ -16,8 +16,11 @@ import { ComputeDisplayTransformArgs, ModelDisplayTransformProvider, ViewState, 
 import { Viewport } from "../../Viewport";
 import { RenderClipVolume } from "../../render/RenderClipVolume";
 import { ComputeSpatialViewFitRangeOptions, SpatialViewState } from "../../SpatialViewState";
-import { IIModelView, IModelView3d, IModelSpatialView, ViewCategorySelector, ViewModelSelector } from "../IModelView";
+import { IIModelView, IModelView3d, IModelSpatialView, ViewCategorySelector, ViewModelSelector, IModelView } from "../IModelView";
 import { View3dStyleImpl } from "./ViewStyleImpl";
+import { SceneObjectImpl } from "./SceneObjectImpl";
+import { IModelSceneObject, ViewportScene } from "../ViewportScene";
+import { HitDetail } from "../../HitDetail";
 
 function equalIdSets(a: Set<Id64String>, b: Set<Id64String>): boolean {
   if (a.size !== b.size)
@@ -31,9 +34,9 @@ function equalIdSets(a: Set<Id64String>, b: Set<Id64String>): boolean {
 }
 
 export class ViewCategorySelectorImpl implements ViewCategorySelector {
-  constructor(private readonly _view: ViewState) { }
+  constructor(public readonly view: ViewState) { }
 
-  private get _selector() { return this._view.categorySelector; }
+  private get _selector() { return this.view.categorySelector; }
   
   get categories() { return this._selector.categories; }
   set categories(categories: Set<Id64String>) { this._selector.categories = categories; }
@@ -47,54 +50,47 @@ export class ViewCategorySelectorImpl implements ViewCategorySelector {
   changeCategoryDisplay(arg: Id64Arg, add: boolean) { this._selector.changeCategoryDisplay(arg, add); }
 }
 
-export abstract class ViewImpl implements IIModelView {
-  protected readonly _view: ViewState;
+export abstract class IModelViewImpl implements IIModelView {
+  public readonly impl: ViewState;
   protected readonly _style: ViewStyle;
   readonly categorySelector: ViewCategorySelector;
 
   protected constructor(view: ViewState, style: ViewStyle) {
-    this._view = view;
+    this.impl = view;
     this.categorySelector = new ViewCategorySelectorImpl(view);
     this._style = style;
   }
 
-  get iModel() { return this._view.iModel; }
+  get iModel() { return this.impl.iModel; }
   
   get style() { return this._style; }
 
   get viewFlags() { return this.style.viewFlags; }
   set viewFlags(flags: ViewFlags) { this.style.viewFlags = flags; }
 
-  isSpatial() { return this._view.isSpatialView(); }
-  isDrawing() { return this._view.isDrawingView(); }
-  isSheet() { return this._view.isSheetView(); }
+  isSpatial() { return this.impl.isSpatialView(); }
+  isDrawing() { return this.impl.isDrawingView(); }
+  isSheet() { return this.impl.isSheetView(); }
 
-  get areAllTileTreesLoaded() { return this._view.areAllTileTreesLoaded; }
+  isSubCategoryVisible(id: Id64String) { return this.impl.isSubCategoryVisible(id); }
+  enableAllLoadedSubCategories(categoryIds: Id64Arg) { return this.impl.enableAllLoadedSubCategories(categoryIds); }
+  setSubCategoryVisible(subCategoryId: Id64String, visible: boolean) { return this.impl.setSubCategoryVisible(subCategoryId, visible); }
 
-  isSubCategoryVisible(id: Id64String) { return this._view.isSubCategoryVisible(id); }
-  enableAllLoadedSubCategories(categoryIds: Id64Arg) { return this._view.enableAllLoadedSubCategories(categoryIds); }
-  setSubCategoryVisible(subCategoryId: Id64String, visible: boolean) { return this._view.setSubCategoryVisible(subCategoryId, visible); }
+  computeFitRange() { return this.impl.computeFitRange(); }
+  viewsModel(modelId: Id64String) { return this.impl.viewsModel(modelId); }
 
-  computeFitRange() { return this._view.computeFitRange(); }
-
-  createScene(context: SceneContext) {
-    // ###TODO need to ignore context reality models and not update solar shadows
-    this._view.createScene(context);
-  }
-  viewsModel(modelId: Id64String) { return this._view.viewsModel(modelId); }
-
-  forEachModel(func: (model: GeometricModelState) => void) { this._view.forEachModel(func); }
+  forEachModel(func: (model: GeometricModelState) => void) { this.impl.forEachModel(func); }
 
   forEachModelTreeRef(func: (treeRef: TileTreeReference) => void) {
-    this._view.forEachModelTreeRef(func);
+    this.impl.forEachModelTreeRef(func);
   }
 
   forEachTileTreeRef(func: (treeRef: TileTreeReference) => void) {
-    this._view.forEachModelTreeRef(func);
+    this.impl.forEachModelTreeRef(func);
   }
 
   discloseTileTrees(trees: DisclosedTileTreeSet) {
-    this._view.forEachModelTreeRef((ref) => trees.disclose(ref));
+    this.impl.forEachModelTreeRef((ref) => trees.disclose(ref));
   }
 
   collectStatistics(stats: RenderMemory.Statistics) {
@@ -103,26 +99,26 @@ export abstract class ViewImpl implements IIModelView {
     for (const tree of trees)
       tree.collectStatistics(stats);
 
-    this._view.collectNonTileTreeStatistics(stats);
+    this.impl.collectNonTileTreeStatistics(stats);
   }
 
-  refreshForModifiedModels(modelIds: Id64Arg | undefined) { return this._view.refreshForModifiedModels(modelIds); }
+  refreshForModifiedModels(modelIds: Id64Arg | undefined) { return this.impl.refreshForModifiedModels(modelIds); }
 
   hasSameCoordinates(other: IIModelView): boolean {
-    const view = other instanceof ViewImpl ? other : undefined;
-    return undefined !== view && this._view.hasSameCoordinates(view._view);
+    const view = other instanceof IModelViewImpl ? other : undefined;
+    return undefined !== view && this.impl.hasSameCoordinates(view.impl);
   }
 
-  getModelElevation(modelId: Id64String) { return this._view.getModelElevation(modelId); }
-  get modelDisplayTransformProvider() { return this._view.modelDisplayTransformProvider; }
-  set modelDisplayTransformProvider(provider: ModelDisplayTransformProvider | undefined) { this._view.modelDisplayTransformProvider = provider; }
-  computeDisplayTransform(args: ComputeDisplayTransformArgs) { return this._view.computeDisplayTransform(args); }
+  getModelElevation(modelId: Id64String) { return this.impl.getModelElevation(modelId); }
+  get modelDisplayTransformProvider() { return this.impl.modelDisplayTransformProvider; }
+  set modelDisplayTransformProvider(provider: ModelDisplayTransformProvider | undefined) { this.impl.modelDisplayTransformProvider = provider; }
+  computeDisplayTransform(args: ComputeDisplayTransformArgs) { return this.impl.computeDisplayTransform(args); }
 
-  get secondaryViewports() { return this._view.secondaryViewports; }
-  getAttachmentViewport(id: Id64String) { return this._view.getAttachmentViewport(id); }
+  get secondaryViewports() { return this.impl.secondaryViewports; }
+  getAttachmentViewport(id: Id64String) { return this.impl.getAttachmentViewport(id); }
 }
 
-export abstract class View3dImpl extends ViewImpl implements IModelView3d {
+export abstract class View3dImpl extends IModelViewImpl implements IModelView3d {
   readonly is3dView: true = true;
 
   protected constructor(view: ViewState3d) {
@@ -131,7 +127,7 @@ export abstract class View3dImpl extends ViewImpl implements IModelView3d {
 
   override get style() { return this._style as View3dStyle; }
 
-  protected get _view3d() { return this._view as ViewState3d; }
+  protected get _view3d() { return this.impl as ViewState3d; }
 
   get modelClipGroups() { return this._view3d.modelClipGroups; }
   set modelClipGroups(groups: ModelClipGroups) { this._view3d.modelClipGroups = groups; }
@@ -161,5 +157,38 @@ export class IModelSpatialViewImpl extends View3dImpl implements IModelSpatialVi
   constructor(view: SpatialViewState) {
     super(view);
     this.modelSelector = new ViewModelSelectorImpl(view);
+  }
+}
+
+type ViewImpl = IModelSpatialViewImpl /* ###TODO | DrawingViewImpl | SheetViewImpl */
+
+export class IModelSceneObjectImpl<View extends ViewImpl> extends SceneObjectImpl implements IModelSceneObject {
+  readonly _view: View;
+
+  constructor(view: View, guid: GuidString, scene: ViewportScene) {
+    super(guid, scene);
+    this._view = view;
+  }
+
+  get view(): IModelView { return this._view; }
+
+  override get isLoadingComplete() {
+    return this._view.impl.areAllTileTreesLoaded;
+  }
+
+  override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
+    // ###TODO somewhere in the element locate code is a call to viewport.view.iModel.getToolTip...should move here.
+    assert(undefined !== hit);
+    return undefined;
+  }
+
+  override decorate(context: DecorateContext): void {
+    // ###TODO ground plane, sheet border - but not skybox, grid.
+    this._view.impl.decorate(context);
+  }
+
+  override draw(context: SceneContext): void {
+    // ###TODO need to ignore context reality models and not update solar shadows
+    this._view.impl.createScene(context);
   }
 }
