@@ -15,7 +15,7 @@ async function sleep(millis: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, millis));
 }
 
-describe.only("PagedResponseGenerator", () => {
+describe("PagedResponseGenerator", () => {
   it("should provide same outputs for all getters", async () => {
     const items = [0, 1, 2, 3, 4, 5];
     const pageSize = 2;
@@ -25,11 +25,7 @@ describe.only("PagedResponseGenerator", () => {
     };
 
     const generator = new PagedResponseGenerator(props);
-    const pageArrayVariations = await Promise.all([
-      collectGenerator(generator.iterator),
-      collectGenerator(eachValueFrom(generator.observable)),
-      generator.getAllPages(),
-    ]);
+    const pageArrayVariations = await Promise.all([collectGenerator(generator.iterator), collectGenerator(eachValueFrom(generator.observable))]);
 
     for (const pageArray of pageArrayVariations) {
       expect(pageArray).to.deep.eq([
@@ -38,6 +34,8 @@ describe.only("PagedResponseGenerator", () => {
         [4, 5],
       ]);
     }
+
+    await expect(generator.getAllItems()).to.eventually.deep.eq(items);
   });
 
   it("should run requests concurrently", async () => {
@@ -121,9 +119,8 @@ describe.only("PagedResponseGenerator", () => {
     await iterator.next();
     await iterator.next();
 
-    const firstCallArgs = [{ start: 0, size: pageSize }];
-    expect(fakePageRetriever.firstCall.args).to.deep.equal(firstCallArgs);
-    expect(fakePageRetriever.getCall(1).args).not.to.deep.equal(firstCallArgs);
+    expect(fakePageRetriever.firstCall.args).to.deep.equal([{ start: 0, size: pageSize }, 0]);
+    expect(fakePageRetriever.secondCall.args).not.to.deep.equal([{ start: 0, size: pageSize }, 1]);
   });
 
   it("calls getter once with 0,0 partial page options when given `undefined` page options", async () => {

@@ -59,6 +59,7 @@ import { FrontendLocalizationHelper } from "./LocalizationHelper";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
+import { PagedResponseGenerator } from "./PagedResponseGenerator";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
@@ -365,11 +366,17 @@ export class PresentationManager implements IDisposable {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
-    const result = await buildPagedArrayResponse(options.paging, async (partialPageOptions) =>
-      this._requestsHandler.getPagedNodes({ ...rpcOptions, paging: partialPageOptions }),
-    );
+
+    const pageGenerator = new PagedResponseGenerator({
+      pageOptions: options.paging,
+      getPage: async (paging) => {
+        return this._requestsHandler.getPagedNodes({ ...rpcOptions, paging });
+      },
+    });
+    const result = await pageGenerator.getAllItems();
+
     // eslint-disable-next-line deprecation/deprecation
-    return this._localizationHelper.getLocalizedNodes(result.items.map(Node.fromJSON));
+    return this._localizationHelper.getLocalizedNodes(result.map(Node.fromJSON));
   }
 
   /** Retrieves nodes count. */
@@ -389,13 +396,19 @@ export class PresentationManager implements IDisposable {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
-    const result = await buildPagedArrayResponse(options.paging, async (partialPageOptions) =>
-      this._requestsHandler.getPagedNodes({ ...rpcOptions, paging: partialPageOptions }),
-    );
+
+    const pageGenerator = new PagedResponseGenerator({
+      pageOptions: options.paging,
+      getPage: async (paging) => {
+        return this._requestsHandler.getPagedNodes({ ...rpcOptions, paging });
+      },
+    });
+    const result = await pageGenerator.getAllItems();
+
     return {
-      count: result.total,
+      count: pageGenerator.total,
       // eslint-disable-next-line deprecation/deprecation
-      nodes: this._localizationHelper.getLocalizedNodes(result.items.map(Node.fromJSON)),
+      nodes: this._localizationHelper.getLocalizedNodes(result.map(Node.fromJSON)),
     };
   }
 
@@ -507,22 +520,30 @@ export class PresentationManager implements IDisposable {
         ...(!requestOptions.omitFormattedValues && this._schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined),
       });
       let descriptor = requestOptions.descriptor instanceof Descriptor ? requestOptions.descriptor : undefined;
-      const result = await buildPagedArrayResponse(options.paging, async (partialPageOptions, requestIndex) => {
+
+      const getPage = async (paging: Required<PageOptions>, requestIndex: number) => {
         if (0 === requestIndex && !descriptor) {
-          const content = await this._requestsHandler.getPagedContent({ ...rpcOptions, paging: partialPageOptions });
+          const content = await this._requestsHandler.getPagedContent({ ...rpcOptions, paging });
           if (content) {
             descriptor = Descriptor.fromJSON(content.descriptor);
             return content.contentSet;
           }
           return { total: 0, items: [] };
         }
-        return this._requestsHandler.getPagedContentSet({ ...rpcOptions, paging: partialPageOptions });
+        return this._requestsHandler.getPagedContentSet({ ...rpcOptions, paging });
+      };
+
+      const generator = new PagedResponseGenerator({
+        pageOptions: requestOptions.paging,
+        getPage,
       });
+
+      const result = await generator.getAllItems();
       if (!descriptor) {
         return undefined;
       }
 
-      const items = result.items.map((itemJson) => Item.fromJSON(itemJson)).filter<Item>((item): item is Item => item !== undefined);
+      const items = result.map((itemJson) => Item.fromJSON(itemJson)).filter<Item>((item): item is Item => item !== undefined);
       const resultContent = new Content(descriptor, items);
       if (!requestOptions.omitFormattedValues && this._schemaContextProvider) {
         const koqPropertyFormatter = new KoqPropertyValueFormatter(this._schemaContextProvider(requestOptions.imodel), this._defaultFormats);
@@ -534,7 +555,7 @@ export class PresentationManager implements IDisposable {
       }
 
       return {
-        size: result.total,
+        size: generator.total,
         content: this._localizationHelper.getLocalizedContent(resultContent),
       };
     } finally {
@@ -553,13 +574,19 @@ export class PresentationManager implements IDisposable {
       descriptor: getDescriptorOverrides(options.descriptor),
       keys: stripTransientElementKeys(options.keys).toJSON(),
     };
-    const result = await buildPagedArrayResponse(requestOptions.paging, async (partialPageOptions) =>
-      this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging: partialPageOptions }),
-    );
+
+    const pageGenerator = new PagedResponseGenerator({
+      pageOptions: options.paging,
+      getPage: async (paging) => {
+        return this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging });
+      },
+    });
+    const result = await pageGenerator.getAllItems();
+
     return {
-      ...result,
+      total: pageGenerator.total,
       // eslint-disable-next-line deprecation/deprecation
-      items: result.items.map(DisplayValueGroup.fromJSON).map((g) => this._localizationHelper.getLocalizedDisplayValueGroup(g)),
+      items: result.map(DisplayValueGroup.fromJSON).map((g) => this._localizationHelper.getLocalizedDisplayValueGroup(g)),
     };
   }
 
@@ -593,9 +620,9 @@ export class PresentationManager implements IDisposable {
       keys: stripTransientElementKeys(options.keys).toJSON(),
     };
 
-    const props = {
-      page: requestOptions.paging,
-      get: async (page: Required<PageOptions>) => {
+    const generator = new PagedResponseGenerator({
+      pageOptions: requestOptions.paging,
+      getPage: async (page) => {
         const keys = await this._requestsHandler.getContentInstanceKeys({ ...rpcOptions, paging: page });
         return {
           total: keys.total,
@@ -607,8 +634,18 @@ export class PresentationManager implements IDisposable {
           }, new Array<InstanceKey>()),
         };
       },
+    });
+
+    await generator.fetchFirstPage();
+    const iterator = generator.itemsIterator;
+    return {
+      total: generator.total,
+      async *items() {
+        for await (const item of iterator) {
+          yield item;
+        }
+      },
     };
-    return createPagedGeneratorResponse(props);
   }
 
   /** Retrieves display label definition of specific item. */
@@ -627,11 +664,15 @@ export class PresentationManager implements IDisposable {
   ): Promise<LabelDefinition[]> {
     this.startIModelInitialization(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions({ ...requestOptions });
-    const result = await buildPagedArrayResponse(undefined, async (partialPageOptions) => {
-      const partialKeys = !partialPageOptions.start ? rpcOptions.keys : rpcOptions.keys.slice(partialPageOptions.start);
-      return this._requestsHandler.getPagedDisplayLabelDefinitions({ ...rpcOptions, keys: partialKeys });
+    const generator = new PagedResponseGenerator({
+      getPage: async (page) => {
+        const partialKeys = !page.start ? rpcOptions.keys : rpcOptions.keys.slice(page.start);
+        return this._requestsHandler.getPagedDisplayLabelDefinitions({ ...rpcOptions, keys: partialKeys });
+      },
     });
-    return this._localizationHelper.getLocalizedLabelDefinitions(result.items);
+
+    const result = await generator.getAllItems();
+    return this._localizationHelper.getLocalizedLabelDefinitions(result);
   }
 }
 
@@ -640,61 +681,6 @@ const getDescriptorOverrides = (descriptorOrOverrides: Descriptor | DescriptorOv
     return descriptorOrOverrides.createDescriptorOverrides();
   }
   return descriptorOrOverrides;
-};
-
-interface PagedGeneratorCreateProps<TPagedResponseItem> {
-  page: PageOptions | undefined;
-  get: (pageStart: Required<PageOptions>, requestIndex: number) => Promise<{ total: number; items: TPagedResponseItem[] }>;
-}
-async function createPagedGeneratorResponse<TPagedResponseItem>(props: PagedGeneratorCreateProps<TPagedResponseItem>) {
-  let pageStart = props.page?.start ?? 0;
-  let pageSize = props.page?.size ?? 0;
-  let requestIndex = 0;
-
-  const firstPage = await props.get({ start: pageStart, size: pageSize }, requestIndex++);
-  return {
-    total: firstPage.total,
-    async *items() {
-      let partialResult = firstPage;
-      while (true) {
-        for (const item of partialResult.items) {
-          yield item;
-        }
-
-        const receivedItemsCount = partialResult.items.length;
-        if (partialResult.total !== 0 && receivedItemsCount === 0) {
-          if (pageStart >= partialResult.total) {
-            throw new Error(`Requested page with start index ${pageStart} is out of bounds. Total number of items: ${partialResult.total}`);
-          }
-          throw new Error("Paged request returned non zero total count but no items");
-        }
-
-        if ((pageSize !== 0 && receivedItemsCount >= pageSize) || receivedItemsCount >= partialResult.total - pageStart) {
-          break;
-        }
-
-        if (pageSize !== 0) {
-          pageSize -= receivedItemsCount;
-        }
-        pageStart += receivedItemsCount;
-
-        partialResult = await props.get({ start: pageStart, size: pageSize }, requestIndex++);
-      }
-    },
-  };
-}
-
-/** @internal */
-export const buildPagedArrayResponse = async <TItem>(
-  requestedPage: PageOptions | undefined,
-  getter: (page: Required<PageOptions>, requestIndex: number) => Promise<PagedResponse<TItem>>,
-): Promise<PagedResponse<TItem>> => {
-  const items = new Array<TItem>();
-  const gen = await createPagedGeneratorResponse({ page: requestedPage, get: getter });
-  for await (const item of gen.items()) {
-    items.push(item);
-  }
-  return { total: gen.total, items };
 };
 
 const stripTransientElementKeys = (keys: KeySet) => {
