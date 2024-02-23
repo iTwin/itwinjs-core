@@ -526,6 +526,7 @@ internal;OpenAPIResponses
 internal;OpenAPISchema
 public;OpenBriefcaseOptions
 public;OpenBriefcaseProps 
+beta;OpenCheckpointArgs
 public;OpenDbKey
 internal;OPERATION: unique symbol
 alpha;OrbitGtBlobProps

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module UnifiedSelection
  */
@@ -21,7 +21,7 @@ export declare type SelectionChangesListener = (args: SelectionChangeEventArgs, 
  * An event broadcasted on selection changes
  * @public
  */
-export class SelectionChangeEvent extends BeEvent<SelectionChangesListener> { }
+export class SelectionChangeEvent extends BeEvent<SelectionChangesListener> {}
 
 /**
  * The type of selection change

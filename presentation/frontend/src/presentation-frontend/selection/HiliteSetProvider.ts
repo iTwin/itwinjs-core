@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module UnifiedSelection
  */
@@ -10,9 +10,7 @@ import { from, Observable, shareReplay } from "rxjs";
 import { eachValueFrom } from "rxjs-for-await";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
-import {
-  ContentFlags, DEFAULT_KEYS_BATCH_SIZE, DefaultContentDisplayTypes, DescriptorOverrides, Item, Key, KeySet, Ruleset,
-} from "@itwin/presentation-common";
+import { ContentFlags, DEFAULT_KEYS_BATCH_SIZE, DefaultContentDisplayTypes, DescriptorOverrides, Item, Key, KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "../Presentation";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./SelectionManager";
 
@@ -49,7 +47,7 @@ export interface HiliteSetProviderProps {
  */
 export class HiliteSetProvider {
   private _imodel: IModelConnection;
-  private _cache: undefined | { keysGuid: string, observable: Observable<HiliteSet> };
+  private _cache: undefined | { keysGuid: string; observable: Observable<HiliteSet> };
 
   private constructor(props: HiliteSetProviderProps) {
     this._imodel = props.imodel;
@@ -58,7 +56,9 @@ export class HiliteSetProvider {
   /**
    * Create a hilite set provider for the specified iModel.
    */
-  public static create(props: HiliteSetProviderProps) { return new HiliteSetProvider(props); }
+  public static create(props: HiliteSetProviderProps) {
+    return new HiliteSetProvider(props);
+  }
 
   /**
    * Get hilite set for instances and/or nodes whose keys are specified in the
@@ -74,9 +74,9 @@ export class HiliteSetProvider {
 
     const iterator = this.getHiliteSetIterator(selection);
     for await (const set of iterator) {
-      modelIds.push(...set.models ?? []);
-      subCategoryIds.push(...set.subCategories ?? []);
-      elementIds.push(...set.elements ?? []);
+      modelIds.push(...(set.models ?? []));
+      subCategoryIds.push(...(set.subCategories ?? []));
+      elementIds.push(...(set.elements ?? []));
     }
 
     return {
@@ -101,9 +101,9 @@ export class HiliteSetProvider {
     return eachValueFrom(this._cache.observable);
   }
 
-  private async * createHiliteSetIterator(selection: Readonly<KeySet>) {
-    const {keys, transientIds} = this.handleTransientKeys(selection);
-    const {options, keyBatches} = this.getContentOptions(keys);
+  private async *createHiliteSetIterator(selection: Readonly<KeySet>) {
+    const { keys, transientIds } = this.handleTransientKeys(selection);
+    const { options, keyBatches } = this.getContentOptions(keys);
 
     if (transientIds.length !== 0) {
       yield { elements: transientIds };
@@ -112,7 +112,11 @@ export class HiliteSetProvider {
     for (const batch of keyBatches) {
       let loadedItems = 0;
       while (true) {
-        const content = await Presentation.presentation.getContentAndSize({...options, paging: {start: loadedItems, size: CONTENT_SET_PAGE_SIZE}, keys: batch});
+        const content = await Presentation.presentation.getContentAndSize({
+          ...options,
+          paging: { start: loadedItems, size: CONTENT_SET_PAGE_SIZE },
+          keys: batch,
+        });
         if (!content) {
           break;
         }
@@ -183,6 +187,6 @@ export class HiliteSetProvider {
 
 const CONTENT_SET_PAGE_SIZE = 1000;
 
-const isModelRecord = (rec: Item) => (rec.extendedData && rec.extendedData.isModel);
+const isModelRecord = (rec: Item) => rec.extendedData && rec.extendedData.isModel;
 
-const isSubCategoryRecord = (rec: Item) => (rec.extendedData && rec.extendedData.isSubCategory);
+const isSubCategoryRecord = (rec: Item) => rec.extendedData && rec.extendedData.isSubCategory;

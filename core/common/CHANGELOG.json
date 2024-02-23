@@ -2,6 +2,54 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "4.4.2",
+      "tag": "@itwin/core-common_v4.4.2",
+      "date": "Fri, 16 Feb 2024 14:22:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.1",
+      "tag": "@itwin/core-common_v4.4.1",
+      "date": "Fri, 16 Feb 2024 14:17:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.0",
+      "tag": "@itwin/core-common_v4.4.0",
+      "date": "Mon, 12 Feb 2024 18:15:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support to create an EcefLocation class directly from a transformation matrix"
+          },
+          {
+            "comment": "Added `GenericInstanceFilter` definition for storing information necessary for building filtering queries."
+          },
+          {
+            "comment": "Add tests for `QueryBinder`."
+          },
+          {
+            "comment": "Added support for recoloring geometry intersecting a clip volume"
+          },
+          {
+            "comment": "Bump @itwin/object-storage-core"
+          },
+          {
+            "comment": "add additional map types to RenderMaterialAssetMapsProps"
+          },
+          {
+            "comment": "Custom query parameters can now be configured on map layer objects."
+          },
+          {
+            "comment": "make case of pattern_useconstantlod match backend code"
+          },
+          {
+            "comment": "Add support for transparency in thematic display gradient."
+          }
+        ]
+      }
+    },
+    {
       "version": "4.3.3",
       "tag": "@itwin/core-common_v4.3.3",
       "date": "Wed, 03 Jan 2024 19:28:38 GMT",

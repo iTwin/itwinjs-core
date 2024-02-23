@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Core
  */
@@ -40,7 +40,6 @@ export interface RulesetManager {
  * @internal
  */
 export class RulesetManagerImpl implements RulesetManager {
-
   private _getNativePlatform: () => NativePlatformDefinition;
   private _registeredRulesets = new Map<string, RegisteredRuleset>();
 
@@ -53,13 +52,15 @@ export class RulesetManagerImpl implements RulesetManager {
    */
   public get(id: string): RegisteredRuleset | undefined {
     const foundRuleset = this._registeredRulesets.get(id);
-    if (foundRuleset)
+    if (foundRuleset) {
       return foundRuleset;
+    }
 
     const serializedRulesetsArray = this._getNativePlatform().getRulesets(id).result;
     const rulesetsArray: RulesetResponseJson[] = JSON.parse(serializedRulesetsArray);
-    if (0 === rulesetsArray.length)
+    if (0 === rulesetsArray.length) {
       return undefined;
+    }
     return this.saveRuleset(rulesetsArray[0].ruleset, rulesetsArray[0].hash, (ruleset: RegisteredRuleset) => this.remove(ruleset));
   }
 
@@ -68,8 +69,9 @@ export class RulesetManagerImpl implements RulesetManager {
    */
   public add(ruleset: Ruleset): RegisteredRuleset {
     const foundRuleset = this._registeredRulesets.get(ruleset.id);
-    if (foundRuleset)
+    if (foundRuleset) {
       return foundRuleset;
+    }
 
     const hash = this._getNativePlatform().addRuleset(JSON.stringify(ruleset)).result;
     return this.saveRuleset(ruleset, hash, (r: RegisteredRuleset) => this.remove(r));

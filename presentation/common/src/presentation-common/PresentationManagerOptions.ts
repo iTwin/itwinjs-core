@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Core
  */
@@ -93,7 +93,8 @@ export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = R
  * Params for hierarchy level descriptor requests.
  * @beta
  */
-export interface HierarchyLevelDescriptorRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
+export interface HierarchyLevelDescriptorRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable>
+  extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
   /** Key of the parent node to get hierarchy level descriptor for. */
   parentKey?: TNodeKey;
 }
@@ -102,7 +103,8 @@ export interface HierarchyLevelDescriptorRequestOptions<TIModel, TNodeKey, TRule
  * Request type of filtering hierarchies by given ECInstance paths.
  * @public
  */
-export interface FilterByInstancePathsHierarchyRequestOptions<TIModel, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
+export interface FilterByInstancePathsHierarchyRequestOptions<TIModel, TRulesetVariable = RulesetVariable>
+  extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
   /** A list of paths from root ECInstance to target ECInstance. */
   instancePaths: InstanceKey[][];
 
@@ -135,7 +137,8 @@ export interface ContentSourcesRequestOptions<TIModel> extends RequestOptions<TI
  * Request type for content descriptor requests.
  * @public
  */
-export interface ContentDescriptorRequestOptions<TIModel, TKeySet, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
+export interface ContentDescriptorRequestOptions<TIModel, TKeySet, TRulesetVariable = RulesetVariable>
+  extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
   /**
    * Content display type.
    * @see [[DefaultContentDisplayTypes]]
@@ -156,7 +159,8 @@ export interface ContentDescriptorRequestOptions<TIModel, TKeySet, TRulesetVaria
  * Request type for content requests.
  * @public
  */
-export interface ContentRequestOptions<TIModel, TDescriptor, TKeySet, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
+export interface ContentRequestOptions<TIModel, TDescriptor, TKeySet, TRulesetVariable = RulesetVariable>
+  extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
   /** Content descriptor for customizing the returned content */
   descriptor: TDescriptor;
   /** Input keys for getting the content */
@@ -173,7 +177,8 @@ export interface ContentRequestOptions<TIModel, TDescriptor, TKeySet, TRulesetVa
  * Request type for distinct values' requests.
  * @public
  */
-export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet, TRulesetVariable = RulesetVariable> extends Paged<RequestOptionsWithRuleset<TIModel, TRulesetVariable>> {
+export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet, TRulesetVariable = RulesetVariable>
+  extends Paged<RequestOptionsWithRuleset<TIModel, TRulesetVariable>> {
   /** Content descriptor for customizing the returned content */
   descriptor: TDescriptor;
   /** Input keys for getting the content */
@@ -187,7 +192,9 @@ export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet, TRu
  * @public
  * @deprecated in 4.x. Use [[SingleElementPropertiesRequestOptions]] or [[MultiElementPropertiesRequestOptions]] directly.
  */
-export type ElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> = SingleElementPropertiesRequestOptions<TIModel> | MultiElementPropertiesRequestOptions<TIModel, TParsedContent>;
+export type ElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> =
+  | SingleElementPropertiesRequestOptions<TIModel>
+  | MultiElementPropertiesRequestOptions<TIModel, TParsedContent>;
 
 /**
  * Request type for single element properties requests.
@@ -229,7 +236,8 @@ export interface MultiElementPropertiesRequestOptions<TIModel, TParsedContent = 
  * Request type for content instance keys' requests.
  * @public
  */
-export interface ContentInstanceKeysRequestOptions<TIModel, TKeySet, TRulesetVariable = RulesetVariable> extends Paged<RequestOptionsWithRuleset<TIModel, TRulesetVariable>> {
+export interface ContentInstanceKeysRequestOptions<TIModel, TKeySet, TRulesetVariable = RulesetVariable>
+  extends Paged<RequestOptionsWithRuleset<TIModel, TRulesetVariable>> {
   /**
    * Content display type.
    * @see [[DefaultContentDisplayTypes]]
@@ -261,7 +269,7 @@ export interface DisplayLabelsRequestOptions<TIModel, TInstanceKey> extends Requ
  * Request options used for selection scope related requests
  * @public
  */
-export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> { } // eslint-disable-line @typescript-eslint/no-empty-interface
+export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> {} // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
  * Request options used for calculating selection based on given instance keys and selection scope.
@@ -272,7 +280,9 @@ export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<
   scope: SelectionScopeProps;
 }
 /** @internal */
-export function isComputeSelectionRequestOptions<TIModel>(options: ComputeSelectionRequestOptions<TIModel> | SelectionScopeRequestOptions<TIModel>): options is ComputeSelectionRequestOptions<TIModel> {
+export function isComputeSelectionRequestOptions<TIModel>(
+  options: ComputeSelectionRequestOptions<TIModel> | SelectionScopeRequestOptions<TIModel>,
+): options is ComputeSelectionRequestOptions<TIModel> {
   return !!(options as ComputeSelectionRequestOptions<TIModel>).elementIds;
 }
 
@@ -326,7 +336,9 @@ export type Prioritized<TOptions extends {}> = TOptions & {
  * Checks if supplied request options are for single or multiple element properties.
  * @internal
  */
-export function isSingleElementPropertiesRequestOptions<TIModel, TParsedContent = any>(options: SingleElementPropertiesRequestOptions<TIModel> | MultiElementPropertiesRequestOptions<TIModel, TParsedContent>): options is SingleElementPropertiesRequestOptions<TIModel> {
+export function isSingleElementPropertiesRequestOptions<TIModel, TParsedContent = any>(
+  options: SingleElementPropertiesRequestOptions<TIModel> | MultiElementPropertiesRequestOptions<TIModel, TParsedContent>,
+): options is SingleElementPropertiesRequestOptions<TIModel> {
   return (options as SingleElementPropertiesRequestOptions<TIModel>).elementId !== undefined;
 }
 

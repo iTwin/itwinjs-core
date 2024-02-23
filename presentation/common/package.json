@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-common",
-  "version": "4.5.0-dev.7",
+  "version": "4.5.0-dev.15",
   "description": "Common pieces for iModel.js presentation packages",
   "license": "MIT",
   "repository": {
@@ -43,13 +43,14 @@
     "pseudolocalize:assets": "betools pseudolocalize --englishDir ./assets/locales/en --out ./lib/cjs/assets/locales/en-PSEUDO",
     "pseudolocalize:public": "betools pseudolocalize --englishDir ./assets/locales/en --out ./lib/public/locales/en-PSEUDO",
     "test": "mocha --config ../.mocharc.json --file ./lib/cjs/test/index.test.js \"./lib/cjs/test/**/*.test.js\"",
-    "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
+    "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch",
+    "prettier:fix": "prettier --write ."
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.5.0-dev.7",
-    "@itwin/core-common": "workspace:^4.5.0-dev.7",
-    "@itwin/core-quantity": "workspace:^4.5.0-dev.7",
-    "@itwin/ecschema-metadata": "workspace:^4.5.0-dev.7"
+    "@itwin/core-bentley": "workspace:^4.5.0-dev.15",
+    "@itwin/core-common": "workspace:^4.5.0-dev.15",
+    "@itwin/core-quantity": "workspace:^4.5.0-dev.15",
+    "@itwin/ecschema-metadata": "workspace:^4.5.0-dev.15"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -76,10 +77,12 @@
     "cross-env": "^5.1.4",
     "deep-equal": "^1",
     "eslint": "^8.44.0",
+    "eslint-config-prettier": "^9.1.0",
     "faker": "^4.1.0",
     "json-schema-faker": "0.5.0-rc16",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
+    "prettier": "^3.2.5",
     "rimraf": "^3.0.2",
     "sinon": "^17.0.1",
     "sinon-chai": "^3.7.0",

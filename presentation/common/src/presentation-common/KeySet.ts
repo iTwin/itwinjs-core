@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Core
  */
@@ -19,7 +19,8 @@ import { NodeKey, NodeKeyJSON } from "./hierarchy/Key";
 export type Key = Readonly<NodeKey> | Readonly<InstanceKey> | Readonly<EntityProps>;
 
 /** @public */
-export namespace Key { // eslint-disable-line @typescript-eslint/no-redeclare
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export namespace Key {
   /** Check if the supplied key is a `NodeKey` */
   export function isNodeKey(key: Key): key is NodeKey {
     return !!(key as NodeKey).type;
@@ -76,8 +77,9 @@ export class KeySet {
     this._lowerCaseMap = new Map();
     this._nodeKeys = new Set();
     this.recalculateGuid();
-    if (source)
+    if (source) {
       this.add(source);
+    }
   }
 
   private recalculateGuid() {
@@ -90,7 +92,9 @@ export class KeySet {
    * does not uniquely identify contents of the keyset, but it can be
    * used to check whether keyset has changed.
    */
-  public get guid(): GuidString { return this._guid; }
+  public get guid(): GuidString {
+    return this._guid;
+  }
 
   /**
    * Get a map of instance keys stored in this KeySet
@@ -100,8 +104,9 @@ export class KeySet {
    */
   public get instanceKeys(): Map<string, Set<InstanceId>> {
     const map = new Map<string, Set<InstanceId>>();
-    for (const entry of this._instanceKeys)
+    for (const entry of this._instanceKeys) {
       map.set(this._lowerCaseMap.get(entry["0"])!, new Set([...entry["1"]].map((key: string) => Id64.fromJSON(key))));
+    }
     return map;
   }
 
@@ -110,7 +115,7 @@ export class KeySet {
    */
   public get instanceKeysCount(): number {
     let count = 0;
-    this._instanceKeys.forEach((set: Set<string>) => count += set.size);
+    this._instanceKeys.forEach((set: Set<string>) => (count += set.size));
     return count;
   }
 
@@ -150,8 +155,9 @@ export class KeySet {
    * @returns itself
    */
   public clear(): KeySet {
-    if (this.isEmpty)
+    if (this.isEmpty) {
       return this;
+    }
 
     this._instanceKeys = new Map();
     this._lowerCaseMap = new Map();
@@ -163,8 +169,9 @@ export class KeySet {
   private addKeySet(keyset: Readonly<KeySet>, pred?: (key: Key) => boolean): void {
     for (const key of (keyset as any)._nodeKeys) {
       // eslint-disable-next-line deprecation/deprecation
-      if (!pred || pred(NodeKey.fromJSON(JSON.parse(key))))
+      if (!pred || pred(NodeKey.fromJSON(JSON.parse(key)))) {
         this._nodeKeys.add(key);
+      }
     }
     for (const entry of (keyset as any)._instanceKeys) {
       let set = this._instanceKeys.get(entry["0"]);
@@ -175,24 +182,22 @@ export class KeySet {
         this._lowerCaseMap.set(entry["0"], className);
       }
       entry["1"].forEach((id: Id64String) => {
-        if (!pred || pred({ className, id }))
+        if (!pred || pred({ className, id })) {
           set!.add(id);
+        }
       });
     }
   }
 
   private addKeySetJSON(keyset: Readonly<KeySetJSON>): void {
-    for (const key of keyset.nodeKeys)
+    for (const key of keyset.nodeKeys) {
       this._nodeKeys.add(JSON.stringify(key));
+    }
     for (const entry of keyset.instanceKeys) {
       const lcClassName = entry["0"].toLowerCase();
       const idsJson: string | Id64String[] = entry["1"];
       const ids: Set<Id64String> =
-        typeof idsJson === "string"
-          ? idsJson === Id64.invalid
-            ? new Set([Id64.invalid])
-            : CompressedId64Set.decompressSet(idsJson)
-          : new Set(idsJson);
+        typeof idsJson === "string" ? (idsJson === Id64.invalid ? new Set([Id64.invalid]) : CompressedId64Set.decompressSet(idsJson)) : new Set(idsJson);
       this._instanceKeys.set(lcClassName, ids);
       this._lowerCaseMap.set(lcClassName, entry["0"]);
     }
@@ -205,8 +210,9 @@ export class KeySet {
    * @returns itself
    */
   public add(value: Keys | Key, pred?: (key: Key) => boolean): KeySet {
-    if (!value)
+    if (!value) {
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
+    }
     const sizeBefore = this.size;
     if (this.isKeySet(value)) {
       this.addKeySet(value, pred);
@@ -229,14 +235,16 @@ export class KeySet {
         throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
       }
     }
-    if (this.size !== sizeBefore)
+    if (this.size !== sizeBefore) {
       this.recalculateGuid();
+    }
     return this;
   }
 
   private deleteKeySet(keyset: Readonly<KeySet>): void {
-    for (const key of (keyset as any)._nodeKeys)
+    for (const key of (keyset as any)._nodeKeys) {
       this._nodeKeys.delete(key);
+    }
     for (const entry of (keyset as any)._instanceKeys) {
       const set = this._instanceKeys.get(entry["0"].toLowerCase());
       if (set) {
@@ -253,27 +261,31 @@ export class KeySet {
    * @returns itself
    */
   public delete(value: Keys | Key): KeySet {
-    if (!value)
+    if (!value) {
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
+    }
     const sizeBefore = this.size;
     if (this.isKeySet(value)) {
       this.deleteKeySet(value);
     } else if (this.isKeysArray(value)) {
-      for (const key of value)
+      for (const key of value) {
         this.delete(key);
+      }
     } else if (Key.isEntityProps(value)) {
       this.delete({ className: value.classFullName, id: value.id! } as InstanceKey);
     } else if (Key.isInstanceKey(value)) {
       const set = this._instanceKeys.get(value.className.toLowerCase());
-      if (set)
+      if (set) {
         set.delete(value.id);
+      }
     } else if (Key.isNodeKey(value)) {
       this._nodeKeys.delete(JSON.stringify(value));
     } else {
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
     }
-    if (this.size !== sizeBefore)
+    if (this.size !== sizeBefore) {
       this.recalculateGuid();
+    }
     return this;
   }
 
@@ -282,16 +294,19 @@ export class KeySet {
    * @param value The key to check.
    */
   public has(value: Key): boolean {
-    if (!value)
+    if (!value) {
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
-    if (Key.isEntityProps(value))
+    }
+    if (Key.isEntityProps(value)) {
       return this.has({ className: value.classFullName, id: value.id! } as InstanceKey);
+    }
     if (Key.isInstanceKey(value)) {
       const set = this._instanceKeys.get(value.className.toLowerCase());
       return !!(set && set.has(value.id));
     }
-    if (Key.isNodeKey(value))
+    if (Key.isNodeKey(value)) {
       return this._nodeKeys.has(JSON.stringify(value));
+    }
     throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
   }
 
@@ -300,46 +315,55 @@ export class KeySet {
     const keys = readonlyKeys as KeySet;
 
     if (checkType === "all") {
-      if (this._nodeKeys.size < keys._nodeKeys.size || this._instanceKeys.size < keys._instanceKeys.size)
+      if (this._nodeKeys.size < keys._nodeKeys.size || this._instanceKeys.size < keys._instanceKeys.size) {
         return false;
-      if ([...keys._nodeKeys].some((key) => !this._nodeKeys.has(key)))
+      }
+      if ([...keys._nodeKeys].some((key) => !this._nodeKeys.has(key))) {
         return false;
+      }
       for (const otherEntry of keys._instanceKeys) {
         const thisEntryKeys = this._instanceKeys.get(otherEntry["0"].toLowerCase());
-        if (!thisEntryKeys || thisEntryKeys.size < otherEntry["1"].size)
+        if (!thisEntryKeys || thisEntryKeys.size < otherEntry["1"].size) {
           return false;
-        if ([...otherEntry["1"]].some((key) => !thisEntryKeys.has(key)))
+        }
+        if ([...otherEntry["1"]].some((key) => !thisEntryKeys.has(key))) {
           return false;
+        }
       }
       return true;
     }
 
     // "any" check type
-    if ([...keys._nodeKeys].some((key) => this._nodeKeys.has(key)))
+    if ([...keys._nodeKeys].some((key) => this._nodeKeys.has(key))) {
       return true;
+    }
     for (const otherEntry of keys._instanceKeys) {
       const thisEntryKeys = this._instanceKeys.get(otherEntry["0"].toLowerCase());
-      if (thisEntryKeys && [...otherEntry["1"]].some((key) => thisEntryKeys.has(key)))
+      if (thisEntryKeys && [...otherEntry["1"]].some((key) => thisEntryKeys.has(key))) {
         return true;
+      }
     }
     return false;
   }
 
   private hasKeysArray(keys: ReadonlyArray<Key>, checkType: "all" | "any"): boolean {
     if (checkType === "all") {
-      if (this.size < keys.length)
+      if (this.size < keys.length) {
         return false;
+      }
       for (const key of keys) {
-        if (!this.has(key))
+        if (!this.has(key)) {
           return false;
+        }
       }
       return true;
     }
 
     // "any" check type
     for (const key of keys) {
-      if (this.has(key))
+      if (this.has(key)) {
         return true;
+      }
     }
     return false;
   }
@@ -349,12 +373,15 @@ export class KeySet {
    * @param keys The keys to check.
    */
   public hasAll(keys: Keys): boolean {
-    if (!keys)
+    if (!keys) {
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${keys}`);
-    if (this.isKeySet(keys))
+    }
+    if (this.isKeySet(keys)) {
       return this.hasKeySet(keys, "all");
-    if (this.isKeysArray(keys))
+    }
+    if (this.isKeysArray(keys)) {
       return this.hasKeysArray(keys, "all");
+    }
     throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: keys = ${keys}`);
   }
 
@@ -363,12 +390,15 @@ export class KeySet {
    * @param keys The keys to check.
    */
   public hasAny(keys: Keys): boolean {
-    if (!keys)
+    if (!keys) {
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${keys}`);
-    if (this.isKeySet(keys))
+    }
+    if (this.isKeySet(keys)) {
       return this.hasKeySet(keys, "any");
-    if (this.isKeysArray(keys))
+    }
+    if (this.isKeysArray(keys)) {
       return this.hasKeysArray(keys, "any");
+    }
     throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: keys = ${keys}`);
   }
 
@@ -378,8 +408,9 @@ export class KeySet {
   public get size(): number {
     const nodeKeysCount = this._nodeKeys.size;
     let instanceIdsCount = 0;
-    for (const set of this._instanceKeys.values())
+    for (const set of this._instanceKeys.values()) {
       instanceIdsCount += set.size;
+    }
     return nodeKeysCount + instanceIdsCount;
   }
 
@@ -394,8 +425,9 @@ export class KeySet {
   public some(callback: (key: Key) => boolean) {
     for (const entry of this._instanceKeys) {
       const className = this._lowerCaseMap.get(entry["0"].toLowerCase())!;
-      if (some(entry[1], (id: Id64String) => callback({ className, id })))
+      if (some(entry[1], (id: Id64String) => callback({ className, id }))) {
         return true;
+      }
     }
     // eslint-disable-next-line deprecation/deprecation
     return some(this._nodeKeys, (serializedKey: string) => callback(NodeKey.fromJSON(JSON.parse(serializedKey))));
@@ -428,7 +460,7 @@ export class KeySet {
     this.forEach((key, index) => {
       batch.add(key);
       ++currBatchSize;
-      if (currBatchSize === batchSize || index === (size - 1)) {
+      if (currBatchSize === batchSize || index === size - 1) {
         callback(batch, batchIndex++);
         batch = new KeySet();
         currBatchSize = 0;
@@ -451,8 +483,9 @@ export class KeySet {
     }
     // eslint-disable-next-line deprecation/deprecation
     const nodeKeys: NodeKeyJSON[] = [];
-    for (const serializedKey of this._nodeKeys.values())
+    for (const serializedKey of this._nodeKeys.values()) {
       nodeKeys.push(JSON.parse(serializedKey));
+    }
     return {
       instanceKeys,
       nodeKeys,
@@ -472,8 +505,9 @@ export class KeySet {
 
 const some = <TItem>(set: Set<TItem>, cb: (item: TItem) => boolean) => {
   for (const item of set) {
-    if (cb(item))
+    if (cb(item)) {
       return true;
+    }
   }
   return false;
 };
