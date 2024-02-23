@@ -121,12 +121,21 @@ export class FavoritePropertiesManager implements IDisposable {
     // (undocumented)
     dispose(): void;
     // @internal
+    ensureInitialized(imodel: IModelConnection): Promise<void>;
+    // @internal
     static FAVORITES_IDENTIFIER_PREFIX: string;
+    // @deprecated
     has(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): boolean;
+    hasAsync(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<boolean>;
+    // @deprecated
     initializeConnection: (imodel: IModelConnection) => Promise<void>;
     onFavoritesChanged: BeEvent<() => void>;
     remove(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
+    // @deprecated
     sortFields: (imodel: IModelConnection, fields: Field[]) => Field[];
+    sortFieldsAsync(imodel: IModelConnection, fields: Field[]): Promise<Field[]>;
+    // @internal
+    startConnectionInitialization(imodel: IModelConnection): void;
 }
 
 // @public
@@ -303,6 +312,8 @@ export class PresentationManager implements IDisposable {
     static create(props?: PresentationManagerProps): PresentationManager;
     // (undocumented)
     dispose(): void;
+    // @internal
+    ensureIModelInitialized(_: IModelConnection): Promise<void>;
     getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & ClientDiagnosticsAttribute): Promise<Content | undefined>;
     getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & ClientDiagnosticsAttribute): Promise<{
         content: Content;
@@ -335,11 +346,11 @@ export class PresentationManager implements IDisposable {
     onIModelContentChanged: BeEvent<(args: IModelContentChangeEventArgs) => void>;
     // @alpha
     onIModelHierarchyChanged: BeEvent<(args: IModelHierarchyChangeEventArgs) => void>;
-    // @internal
-    onNewiModelConnection(_: IModelConnection): Promise<void>;
     // @internal (undocumented)
     get rpcRequestsHandler(): RpcRequestsHandler;
     rulesets(): RulesetManager;
+    // @internal
+    startIModelInitialization(_: IModelConnection): void;
     vars(rulesetId: string): RulesetVariablesManager;
 }
 
