@@ -1259,7 +1259,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
     relaxed: 2.5 * 1024 * 1024 * 1024, // 2.5 GB
   };
 
-  // @internal
+  /** @internal exported for tests */
   export const nonMobileUndefinedGpuMemoryLimit = 6000 * 1024 * 1024; // 6,000 MB - used when nonMobile limit is undefined
 
   /** The number of bytes of GPU memory associated with the various [[GpuMemoryLimit]]s for mobile devices.
