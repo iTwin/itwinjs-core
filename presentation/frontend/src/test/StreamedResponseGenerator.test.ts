@@ -1,31 +1,24 @@
-import { PagedResponseGenerator, PagedResponseGeneratorProps } from "../presentation-frontend/PagedResponseGenerator";
+import { StreamedResponseGenerator, StreamedResponseGeneratorProps } from "../presentation-frontend/StreamedResponseGenerator";
 import { expect } from "chai";
 import { eachValueFrom } from "rxjs-for-await";
 import sinon from "sinon";
-
-async function collectGenerator<T>(generator: AsyncIterableIterator<T>) {
-  const result = [];
-  for await (const item of generator) {
-    result.push(item);
-  }
-  return result;
-}
+import { collectAsyncIterable } from "../presentation-frontend/AsyncGenerators";
 
 async function sleep(millis: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, millis));
 }
 
-describe("PagedResponseGenerator", () => {
+describe("StreamedResponseGenerator", () => {
   it("should provide same outputs for all getters", async () => {
     const items = [0, 1, 2, 3, 4, 5];
     const pageSize = 2;
-    const props: PagedResponseGeneratorProps<number> = {
-      pageOptions: { start: 0, size: pageSize },
-      getPage: async (page) => ({ total: items.length, items: items.slice(page.start, page.start + page.size) }),
+    const props: StreamedResponseGeneratorProps<number> = {
+      batch: { start: 0, size: pageSize },
+      getBatch: async (page) => ({ total: items.length, items: items.slice(page.start, page.start + page.size) }),
     };
 
-    const generator = new PagedResponseGenerator(props);
-    const pageArrayVariations = await Promise.all([collectGenerator(generator.iterator), collectGenerator(eachValueFrom(generator.pages))]);
+    const generator = new StreamedResponseGenerator(props);
+    const pageArrayVariations = [await collectAsyncIterable(generator.batchesIterator), await collectAsyncIterable(eachValueFrom(generator.batches))];
 
     for (const pageArray of pageArrayVariations) {
       expect(pageArray).to.deep.eq([
@@ -35,14 +28,14 @@ describe("PagedResponseGenerator", () => {
       ]);
     }
 
-    await expect(generator.getAllItems()).to.eventually.deep.eq(items);
+    await expect(generator.getItems()).to.eventually.deep.eq(items);
   });
 
   it("should run requests concurrently", async () => {
     const items = [...new Array(1000).keys()];
-    const props: PagedResponseGeneratorProps<number> = {
-      pageOptions: { start: 0, size: 2 },
-      getPage: async (page) => {
+    const props: StreamedResponseGeneratorProps<number> = {
+      batch: { start: 0, size: 2 },
+      getBatch: async (page) => {
         await sleep(5);
         return {
           total: items.length,
@@ -51,29 +44,29 @@ describe("PagedResponseGenerator", () => {
       },
     };
 
-    const generator = new PagedResponseGenerator(props);
-    await collectGenerator(generator.iterator);
+    const generator = new StreamedResponseGenerator(props);
+    await collectAsyncIterable(generator.batchesIterator);
   }).timeout(100);
 
   it("should handle a single page", async () => {
     const items = [1, 2, 3, 4];
-    const props: PagedResponseGeneratorProps<number> = {
-      pageOptions: { start: 0, size: 8 },
-      getPage: async (page) => ({ total: items.length, items: items.slice(page.start, page.start + page.size) }),
+    const props: StreamedResponseGeneratorProps<number> = {
+      batch: { start: 0, size: 8 },
+      getBatch: async (page) => ({ total: items.length, items: items.slice(page.start, page.start + page.size) }),
     };
-    const generator = new PagedResponseGenerator(props);
-    const iterator = generator.iterator;
+    const generator = new StreamedResponseGenerator(props);
+    const iterator = generator.batchesIterator;
     expect((await iterator.next()).value).to.deep.equal(items);
   });
 
   it("should handle unevenly divided pages", async () => {
     const items = [1, 2, 3, 4, 5, 6, 7];
-    const props: PagedResponseGeneratorProps<number> = {
-      pageOptions: { start: 0, size: 4 },
-      getPage: async (page) => ({ total: items.length, items: items.slice(page.start, page.start + page.size) }),
+    const props: StreamedResponseGeneratorProps<number> = {
+      batch: { start: 0, size: 4 },
+      getBatch: async (page) => ({ total: items.length, items: items.slice(page.start, page.start + page.size) }),
     };
-    const generator = new PagedResponseGenerator(props);
-    const iterator = generator.iterator;
+    const generator = new StreamedResponseGenerator(props);
+    const iterator = generator.batchesIterator;
     expect((await iterator.next()).value).to.deep.equal([1, 2, 3, 4]);
     expect((await iterator.next()).value).to.deep.equal([5, 6, 7]);
   });
@@ -85,14 +78,14 @@ describe("PagedResponseGenerator", () => {
       total: items.length,
       items: items.slice(page.start, page.start + page.size),
     }));
-    const props: PagedResponseGeneratorProps<number> = {
-      pageOptions: { start: 0, size: 2 },
-      getPage: fakePageRetriever,
+    const props: StreamedResponseGeneratorProps<number> = {
+      batch: { start: 0, size: 2 },
+      getBatch: fakePageRetriever,
       parallelism,
     };
 
-    const generator = new PagedResponseGenerator(props);
-    const iterator = generator.iterator;
+    const generator = new StreamedResponseGenerator(props);
+    const iterator = generator.batchesIterator;
 
     // The call for the first page should happen immediately
     expect(fakePageRetriever).to.be.calledOnce;
@@ -109,13 +102,13 @@ describe("PagedResponseGenerator", () => {
       total: items.length,
       items: items.slice(page.start, page.start + page.size),
     }));
-    const props: PagedResponseGeneratorProps<number> = {
-      pageOptions: { start: 0, size: pageSize },
-      getPage: fakePageRetriever,
+    const props: StreamedResponseGeneratorProps<number> = {
+      batch: { start: 0, size: pageSize },
+      getBatch: fakePageRetriever,
     };
 
-    const generator = new PagedResponseGenerator(props);
-    const iterator = generator.iterator;
+    const generator = new StreamedResponseGenerator(props);
+    const iterator = generator.batchesIterator;
     await iterator.next();
     await iterator.next();
 
@@ -125,19 +118,19 @@ describe("PagedResponseGenerator", () => {
 
   it("calls getter once with 0,0 partial page options when given `undefined` page options", async () => {
     const getter = sinon.stub().resolves({ total: 0, items: [] });
-    await new PagedResponseGenerator({ getPage: getter }).getAllItems();
+    await new StreamedResponseGenerator({ getBatch: getter }).getItems();
     expect(getter).to.be.calledOnceWith({ start: 0, size: 0 });
   });
 
   it("calls getter once with 0,0 partial page options when given empty page options", async () => {
     const getter = sinon.stub().resolves({ total: 0, items: [] });
-    await new PagedResponseGenerator({ pageOptions: {}, getPage: getter }).getAllItems();
+    await new StreamedResponseGenerator({ batch: {}, getBatch: getter }).getItems();
     expect(getter).to.be.calledOnceWith({ start: 0, size: 0 });
   });
 
   it("calls getter once with partial page options equal to given page options", async () => {
     const getter = sinon.stub().resolves({ total: 0, items: [] });
-    await new PagedResponseGenerator({ pageOptions: { start: 1, size: 2 }, getPage: getter }).getAllItems();
+    await new StreamedResponseGenerator({ batch: { start: 1, size: 2 }, getBatch: getter }).getItems();
     expect(getter).to.be.calledOnceWith({ start: 1, size: 2 });
   });
 
@@ -148,8 +141,8 @@ describe("PagedResponseGenerator", () => {
     getter.onSecondCall().resolves({ total, items: [3] });
     getter.onThirdCall().resolves({ total, items: [4] });
 
-    const generator = new PagedResponseGenerator({ pageOptions: { start: 1, size: 3 }, getPage: getter });
-    const items = await generator.getAllItems();
+    const generator = new StreamedResponseGenerator({ batch: { start: 1, size: 3 }, getBatch: getter });
+    const items = await generator.getItems();
 
     expect(getter).to.be.calledThrice;
     expect(getter.firstCall).to.be.calledWith({ start: 1, size: 3 });
@@ -164,8 +157,8 @@ describe("PagedResponseGenerator", () => {
     getter.onFirstCall().resolves({ total: 5, items: [2, 3] });
     getter.onSecondCall().resolves({ total: 5, items: [4, 5] });
 
-    const generator = new PagedResponseGenerator({ pageOptions: { start: 1 }, getPage: getter });
-    const items = await generator.getAllItems();
+    const generator = new StreamedResponseGenerator({ batch: { start: 1 }, getBatch: getter });
+    const items = await generator.getItems();
     const total = generator.total;
 
     expect(getter).to.be.calledTwice;
@@ -178,9 +171,9 @@ describe("PagedResponseGenerator", () => {
   it("throws when page start index is larger than total number of items", async () => {
     const getter = sinon.stub();
     getter.resolves({ total: 5, items: [] });
-    const generator = new PagedResponseGenerator({ pageOptions: { start: 9 }, getPage: getter });
+    const generator = new StreamedResponseGenerator({ batch: { start: 9 }, getBatch: getter });
 
-    await expect(generator.getAllItems()).to.eventually.be.rejected;
+    await expect(generator.getItems()).to.eventually.be.rejected;
     expect(getter).to.be.calledOnce;
     expect(getter).to.be.calledWith({ start: 9, size: 0 });
   });
@@ -188,9 +181,9 @@ describe("PagedResponseGenerator", () => {
   it("throws when partial request returns no items", async () => {
     const getter = sinon.stub();
     getter.resolves({ total: 5, items: [] });
-    const generator = new PagedResponseGenerator({ pageOptions: { start: 1 }, getPage: getter });
+    const generator = new StreamedResponseGenerator({ batch: { start: 1 }, getBatch: getter });
 
-    await expect(generator.getAllItems()).to.eventually.be.rejected;
+    await expect(generator.getItems()).to.eventually.be.rejected;
     expect(getter).to.be.calledOnce;
     expect(getter).to.be.calledWith({ start: 1, size: 0 });
   });
@@ -199,9 +192,9 @@ describe("PagedResponseGenerator", () => {
     const getter = sinon.stub();
     getter.onFirstCall().resolves({ total: 5, items: [2, 3] });
     getter.onSecondCall().resolves({ total: 5, items: [] });
-    const generator = new PagedResponseGenerator({ pageOptions: { start: 1 }, getPage: getter });
+    const generator = new StreamedResponseGenerator({ batch: { start: 1 }, getBatch: getter });
 
-    await expect(generator.getAllItems()).to.eventually.be.rejected;
+    await expect(generator.getItems()).to.eventually.be.rejected;
     expect(getter).to.be.called;
   });
 });

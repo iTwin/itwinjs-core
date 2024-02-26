@@ -59,7 +59,7 @@ import { FrontendLocalizationHelper } from "./LocalizationHelper";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
-import { PagedResponseGenerator } from "./PagedResponseGenerator";
+import { StreamedResponseGenerator } from "./StreamedResponseGenerator";
 import { map, Observable } from "rxjs";
 import { collectObservable } from "./AsyncGenerators";
 
@@ -361,24 +361,32 @@ export class PresentationManager implements IDisposable {
     return { ...options, rulesetOrId: foundRulesetOrId, rulesetVariables: variables };
   }
 
-  /** Retrieves nodes */
-  public async getNodes(
+  public async getNodeStream(
     requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute,
-  ): Promise<Node[]> {
+  ): Promise<StreamedResponseGenerator<Node>> {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
 
-    const pageGenerator = new PagedResponseGenerator({
-      pageOptions: options.paging,
-      getPage: async (paging) => {
-        return this._requestsHandler.getPagedNodes({ ...rpcOptions, paging });
+    return new StreamedResponseGenerator({
+      batch: options.paging,
+      getBatch: async (paging) => {
+        const result = await this._requestsHandler.getPagedNodes({ ...rpcOptions, paging });
+        return {
+          total: result.total,
+          // eslint-disable-next-line deprecation/deprecation
+          items: this._localizationHelper.getLocalizedNodes(result.items.map(Node.fromJSON)),
+        };
       },
     });
-    const result = await pageGenerator.getAllItems();
+  }
 
-    // eslint-disable-next-line deprecation/deprecation
-    return this._localizationHelper.getLocalizedNodes(result.map(Node.fromJSON));
+  /** Retrieves nodes */
+  public async getNodes(
+    requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute,
+  ): Promise<Node[]> {
+    const stream = await this.getNodeStream(requestOptions);
+    return stream.getItems(requestOptions?.paging?.size);
   }
 
   /** Retrieves nodes count. */
@@ -395,22 +403,13 @@ export class PresentationManager implements IDisposable {
   public async getNodesAndCount(
     requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute,
   ): Promise<{ count: number; nodes: Node[] }> {
-    this.startIModelInitialization(requestOptions.imodel);
-    const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const rpcOptions = this.toRpcTokenOptions({ ...options });
-
-    const pageGenerator = new PagedResponseGenerator({
-      pageOptions: options.paging,
-      getPage: async (paging) => {
-        return this._requestsHandler.getPagedNodes({ ...rpcOptions, paging });
-      },
-    });
-    const result = await pageGenerator.getAllItems();
-
+    const stream = await this.getNodeStream(requestOptions);
+    await stream.fetchFirstBatch();
+    const count = stream.total;
+    const nodes = await stream.getItems(requestOptions.paging?.size);
     return {
-      count: pageGenerator.total,
-      // eslint-disable-next-line deprecation/deprecation
-      nodes: this._localizationHelper.getLocalizedNodes(result.map(Node.fromJSON)),
+      count,
+      nodes,
     };
   }
 
@@ -535,12 +534,12 @@ export class PresentationManager implements IDisposable {
         return this._requestsHandler.getPagedContentSet({ ...rpcOptions, paging });
       };
 
-      const generator = new PagedResponseGenerator({
-        pageOptions: requestOptions.paging,
-        getPage,
+      const generator = new StreamedResponseGenerator({
+        batch: requestOptions.paging,
+        getBatch: getPage,
       });
 
-      const result = await generator.getAllItems();
+      const result = await generator.getItems(requestOptions?.paging?.size);
       if (!descriptor) {
         return undefined;
       }
@@ -577,9 +576,9 @@ export class PresentationManager implements IDisposable {
       keys: stripTransientElementKeys(options.keys).toJSON(),
     };
 
-    const pageGenerator = new PagedResponseGenerator({
-      pageOptions: options.paging,
-      getPage: async (paging) => {
+    const pageGenerator = new StreamedResponseGenerator({
+      batch: options.paging,
+      getBatch: async (paging) => {
         return this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging });
       },
     });
@@ -633,9 +632,9 @@ export class PresentationManager implements IDisposable {
       keys: stripTransientElementKeys(options.keys).toJSON(),
     };
 
-    const generator = new PagedResponseGenerator({
-      pageOptions: requestOptions.paging,
-      getPage: async (page) => {
+    const generator = new StreamedResponseGenerator({
+      batch: requestOptions.paging,
+      getBatch: async (page) => {
         const keys = await this._requestsHandler.getContentInstanceKeys({ ...rpcOptions, paging: page });
         return {
           total: keys.total,
@@ -649,8 +648,9 @@ export class PresentationManager implements IDisposable {
       },
     });
 
-    await generator.fetchFirstPage();
-    const iterator = generator.itemsIterator;
+    await generator.fetchFirstBatch();
+    const pageSize = requestOptions?.paging?.size;
+    const iterator = pageSize ? generator.getLimitedItemsIterator(pageSize) : generator.itemsIterator;
     return {
       total: generator.total,
       async *items() {
@@ -677,14 +677,14 @@ export class PresentationManager implements IDisposable {
   ): Promise<LabelDefinition[]> {
     this.startIModelInitialization(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions({ ...requestOptions });
-    const generator = new PagedResponseGenerator({
-      getPage: async (page) => {
+    const generator = new StreamedResponseGenerator({
+      getBatch: async (page) => {
         const partialKeys = !page.start ? rpcOptions.keys : rpcOptions.keys.slice(page.start);
         return this._requestsHandler.getPagedDisplayLabelDefinitions({ ...rpcOptions, keys: partialKeys });
       },
     });
 
-    const result = await generator.getAllItems();
+    const result = await generator.getItems();
     return this._localizationHelper.getLocalizedLabelDefinitions(result);
   }
 }

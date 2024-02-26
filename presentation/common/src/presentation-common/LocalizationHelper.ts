@@ -144,7 +144,7 @@ export class LocalizationHelper {
     return category;
   }
 
-  private getLocalizedNode(node: Node) {
+  public getLocalizedNode(node: Node) {
     return {
       ...node,
       label: this.getLocalizedLabelDefinition(node.label),
