@@ -8,7 +8,7 @@
  */
 import { assert, BeDuration, BeTimePoint, ByteStream, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
-import { nextPoint3d64FromByteStream, OctEncodedNormal, QPoint2d } from "@itwin/core-common";
+import { CesiumTerrainAssetId, nextPoint3d64FromByteStream, OctEncodedNormal, QPoint2d } from "@itwin/core-common";
 import { MessageSeverity } from "@itwin/appui-abstract";
 import { request, RequestOptions } from "../../request/Request";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
@@ -43,8 +43,7 @@ export function getCesiumOSMBuildingsUrl(): string | undefined {
 }
 
 /** @internal */
-export async function getCesiumAccessTokenAndEndpointUrl(assetId = 1, requestKey?: string): Promise<{ token?: string, url?: string }> {
-
+export async function getCesiumAccessTokenAndEndpointUrl(assetId: string, requestKey?: string): Promise<{ token?: string, url?: string }> {
   if (undefined === requestKey) {
     requestKey = IModelApp.tileAdmin.cesiumIonKey;
     if (undefined === requestKey)
@@ -80,7 +79,7 @@ function notifyTerrainError(detailedDescription?: string): void {
 
 /** @internal */
 export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions): Promise<TerrainMeshProvider | undefined> {
-  const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl();
+  const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl(opts.dataSource || CesiumTerrainAssetId.Default);
   if (!accessTokenAndEndpointUrl.token || !accessTokenAndEndpointUrl.url) {
     notifyTerrainError(IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.MissingCesiumToken`));
     return undefined;
@@ -161,6 +160,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
   private readonly _tileAvailability?: TileAvailability;
   private readonly _metaDataAvailableLevel?: number;
   private readonly _exaggeration: number;
+  private readonly _assetId: string;
 
   private static _scratchQPoint2d = QPoint2d.fromScalars(0, 0);
   private static _scratchPoint2d = Point2d.createZero();
@@ -188,6 +188,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     this._tilingScheme = tilingScheme;
     this._tileAvailability = tileAvailability;
     this._metaDataAvailableLevel = metaDataAvailableLevel;
+    this._assetId = opts.dataSource || CesiumTerrainAssetId.Default;
 
     this._tokenTimeOut = BeTimePoint.now().plus(CesiumTerrainProvider._tokenTimeoutInterval);
   }
@@ -197,7 +198,11 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
       return;
 
     cards.dataset.cesiumIonLogoCard = "true";
-    const card = IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/cesium-ion.svg`, heading: "Cesium Ion", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution") });
+    let notice = IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution");
+    if (this._assetId === CesiumTerrainAssetId.Bathymetry)
+      notice = `${notice}\n${IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumBathymetryAttribution")}`;
+
+    const card = IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/cesium-ion.svg`, heading: "Cesium Ion", notice });
     cards.appendChild(card);
   }
 
@@ -234,7 +239,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     // ###TODO why does he update the access token when reading the mesh instead of when requesting it?
     // This function only returns undefined if it fails to acquire token - but it doesn't need the token...
     if (BeTimePoint.now().milliseconds > this._tokenTimeOut.milliseconds) {
-      const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl();
+      const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl(this._assetId);
       if (!accessTokenAndEndpointUrl.token || args.isCanceled())
         return undefined;
 

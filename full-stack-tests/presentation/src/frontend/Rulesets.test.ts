@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { using } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
@@ -11,30 +11,37 @@ import { initialize, resetBackend, terminate } from "../IntegrationTests";
 
 const RULESET_1: Ruleset = {
   id: "ruleset_1",
-  rules: [{
-    ruleType: RuleTypes.RootNodes,
-    specifications: [{
-      specType: ChildNodeSpecificationTypes.CustomNode,
-      type: "test 1",
-      label: "label 1",
-    }],
-  }],
+  rules: [
+    {
+      ruleType: RuleTypes.RootNodes,
+      specifications: [
+        {
+          specType: ChildNodeSpecificationTypes.CustomNode,
+          type: "test 1",
+          label: "label 1",
+        },
+      ],
+    },
+  ],
 };
 
 const RULESET_2: Ruleset = {
   id: "ruleset_2",
-  rules: [{
-    ruleType: RuleTypes.RootNodes,
-    specifications: [{
-      specType: ChildNodeSpecificationTypes.CustomNode,
-      type: "test 2",
-      label: "label 2",
-    }],
-  }],
+  rules: [
+    {
+      ruleType: RuleTypes.RootNodes,
+      specifications: [
+        {
+          specType: ChildNodeSpecificationTypes.CustomNode,
+          type: "test 2",
+          label: "label 2",
+        },
+      ],
+    },
+  ],
 };
 
 describe("Rulesets", async () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
@@ -88,7 +95,6 @@ describe("Rulesets", async () => {
   });
 
   describe("Multiple frontends for one backend", async () => {
-
     let frontends: PresentationManager[];
 
     beforeEach(async () => {
@@ -100,13 +106,16 @@ describe("Rulesets", async () => {
     });
 
     it("handles multiple simultaneous requests from different frontends with different rulesets with same id", async () => {
-      const rulesets = [{
-        ...RULESET_1,
-        id: "test",
-      }, {
-        ...RULESET_2,
-        id: "test",
-      }];
+      const rulesets = [
+        {
+          ...RULESET_1,
+          id: "test",
+        },
+        {
+          ...RULESET_2,
+          id: "test",
+        },
+      ];
 
       const registeredRulesets = await Promise.all(frontends.map(async (f, i) => f.rulesets().add(rulesets[i])));
 
@@ -117,11 +126,9 @@ describe("Rulesets", async () => {
 
       registeredRulesets.forEach((r) => r.dispose());
     });
-
   });
 
   describe("Multiple backends for one frontend", async () => {
-
     let frontend: PresentationManager;
 
     beforeEach(async () => {
@@ -147,7 +154,5 @@ describe("Rulesets", async () => {
         expect(rootNodes2).to.deep.eq(rootNodes1);
       });
     });
-
   });
-
 });

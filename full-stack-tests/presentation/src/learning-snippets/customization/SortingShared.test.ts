@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Ruleset } from "@itwin/presentation-common";
@@ -10,7 +10,6 @@ import { initialize, terminate } from "../../IntegrationTests";
 import { printRuleset } from "../Utils";
 
 describe("Learning Snippets", () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
@@ -24,9 +23,7 @@ describe("Learning Snippets", () => {
   });
 
   describe("Customization Rules", () => {
-
     describe("Sorting", () => {
-
       it("uses `requiredSchemas` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Presentation.Sorting.RequiredSchemas.Ruleset
         // The ruleset has root node rule that returns `bis.SpatialViewDefinition` instances with labels
@@ -35,30 +32,35 @@ describe("Learning Snippets", () => {
         // If this requirement is not met sorting rule does not take effect.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "RootNodes",
-            specifications: [{
-              specType: "InstanceNodesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
-              groupByClass: false,
-              groupByLabel: false,
-            }],
-          }, {
-            ruleType: "InstanceLabelOverride",
-            class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
-            values: [{
-              specType: "Composite",
-              separator: " x ",
-              parts: [
-                { spec: { specType: "Property", propertyName: "Roll" } },
-                { spec: { specType: "Property", propertyName: "Pitch" } },
+          rules: [
+            {
+              ruleType: "RootNodes",
+              specifications: [
+                {
+                  specType: "InstanceNodesOfSpecificClasses",
+                  classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
+                  groupByClass: false,
+                  groupByLabel: false,
+                },
               ],
-            }],
-          }, {
-            ruleType: "PropertySorting",
-            requiredSchemas: [{ name: "BisCore", minVersion: "1.0.2" }],
-            propertyName: "Pitch",
-          }],
+            },
+            {
+              ruleType: "InstanceLabelOverride",
+              class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
+              values: [
+                {
+                  specType: "Composite",
+                  separator: " x ",
+                  parts: [{ spec: { specType: "Property", propertyName: "Roll" } }, { spec: { specType: "Property", propertyName: "Pitch" } }],
+                },
+              ],
+            },
+            {
+              ruleType: "PropertySorting",
+              requiredSchemas: [{ name: "BisCore", minVersion: "1.0.2" }],
+              propertyName: "Pitch",
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -73,9 +75,6 @@ describe("Learning Snippets", () => {
         expect(nodes[2]).to.containSubset({ label: { displayValue: "-107.42 x -160.99" } });
         expect(nodes[3]).to.containSubset({ label: { displayValue: "0.00 x 90.00" } });
       });
-
     });
-
   });
-
 });

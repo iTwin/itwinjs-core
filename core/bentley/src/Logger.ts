@@ -224,15 +224,12 @@ export class Logger {
     return BentleyError.getErrorMessage(err) + stack;
   }
 
-  /** Log the specified exception. The special "ExceptionType" property will be added as metadata,
-   * in addition to any other metadata that may be supplied by the caller, unless the
-   * metadata supplied by the caller already includes this property.
+  /** Log the specified exception. The special "ExceptionType" property will be added as metadata.
    * @param category  The category of the message.
    * @param err  The exception object.
    * @param log The logger output function to use - defaults to Logger.logError
-   * @param metaData  Optional data for the message
    */
-  public static logException(category: string, err: any, log: LogFunction = (_category, message) => Logger.logError(_category, message)): void {
+  public static logException(category: string, err: any, log: LogFunction = (_category, message, metaData) => Logger.logError(_category, message, metaData)): void {
     log(category, Logger.getExceptionMessage(err), () => {
       return { ...BentleyError.getErrorMetadata(err), exceptionType: err.constructor.name };
     });
