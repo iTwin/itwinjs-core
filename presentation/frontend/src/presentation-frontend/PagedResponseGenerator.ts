@@ -1,7 +1,6 @@
 import { concat, from, mergeAll, mergeMap, Observable, of, range } from "rxjs";
-import { PageOptions } from "@itwin/presentation-common/src/presentation-common/PresentationManagerOptions";
 import { eachValueFrom } from "rxjs-for-await";
-import { PagedResponse } from "@itwin/presentation-common";
+import { PagedResponse, PageOptions } from "@itwin/presentation-common";
 
 /** @internal */
 export interface PagedResponseGeneratorProps<TItem> {

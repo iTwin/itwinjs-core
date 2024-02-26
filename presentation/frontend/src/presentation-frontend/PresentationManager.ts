@@ -60,6 +60,8 @@ import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
 import { PagedResponseGenerator } from "./PagedResponseGenerator";
+import { map, Observable } from "rxjs";
+import { collectObservable } from "./AsyncGenerators";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
@@ -564,9 +566,9 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves distinct values of specific field from the content. */
-  public async getPagedDistinctValues(
+  public async getDistinctValuesStream(
     requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute,
-  ): Promise<PagedResponse<DisplayValueGroup>> {
+  ): Promise<Observable<DisplayValueGroup>> {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = {
@@ -581,12 +583,23 @@ export class PresentationManager implements IDisposable {
         return this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging });
       },
     });
-    const result = await pageGenerator.getAllItems();
 
-    return {
-      total: pageGenerator.total,
+    return pageGenerator.items.pipe(
       // eslint-disable-next-line deprecation/deprecation
-      items: result.map(DisplayValueGroup.fromJSON).map((g) => this._localizationHelper.getLocalizedDisplayValueGroup(g)),
+      map(DisplayValueGroup.fromJSON),
+      map((g) => this._localizationHelper.getLocalizedDisplayValueGroup(g)),
+    );
+  }
+
+  /** Retrieves distinct values of specific field from the content. */
+  public async getPagedDistinctValues(
+    requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute,
+  ): Promise<PagedResponse<DisplayValueGroup>> {
+    const observable = await this.getDistinctValuesStream(requestOptions);
+    const items = await collectObservable(observable);
+    return {
+      total: items.length,
+      items,
     };
   }
 
