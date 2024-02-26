@@ -15,7 +15,7 @@ import { ArcGisFeatureResponse, ArcGisResponseData } from "./ArcGisFeatureRespon
 import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
 
 import { ArcGisCanvasRenderer } from "./ArcGisCanvasRenderer";
-import { EsriPMS, EsriPMSProps, EsriRenderer, EsriSFS, EsriSFSProps, EsriSLS, EsriSLSProps, EsriSymbol, EsriUniqueValueRenderer } from "./EsriSymbology";
+import { EsriPMS, EsriPMSProps, EsriRenderer, EsriSFS, EsriSFSProps, EsriSLS, EsriSLSProps, EsriSymbol } from "./EsriSymbology";
 const loggerCategory = "MapLayersFormats.ArcGISFeature";
 
 /**
@@ -468,12 +468,8 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     }
 
     const geomOverride: ArcGisGeometry | undefined = (refineEnvelope ? { geom: refineEnvelope, type: "esriGeometryEnvelope" } : undefined);
-    let outFields: string|undefined;
-    if (this._renderer?.type === "uniqueValue" ) {
-      const uvRenderer = this._renderer as EsriUniqueValueRenderer;
-      if (uvRenderer.field1)
-        outFields = uvRenderer.field1;
-    }
+    const fields = this._renderer?.fields;
+    const outFields = fields ? fields.join(",") : undefined;
     const tileUrl = this.constructFeatureUrl(row, column, zoomLevel, this.format, "tile", geomOverride, outFields);
     if (!tileUrl || tileUrl.url.length === 0) {
       Logger.logError(loggerCategory, `Could not construct feature query URL for tile ${zoomLevel}/${row}/${column}`);
