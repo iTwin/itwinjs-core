@@ -54,10 +54,37 @@ export default {
     },
     ChangedEntity: {
       schemaItemType: "EntityClass",
+      properties: [{
+        name: "BooleanProperty",
+        type: "PrimitiveProperty",
+        typeName: "boolean",
+      }],
     },
     ChangedBaseClassEntity: {
       schemaItemType: "EntityClass",
       baseClass: "TargetSchema.ChangedEntity",
+    },
+    RelationshipEntity: {
+      schemaItemType: "RelationshipClass",
+      name: "TestRelationship",
+      strength: "Embedding",
+      strengthDirection: "Forward",
+      source: {
+        polymorphic: true,
+        multiplicity: "(0..*)",
+        roleLabel: "Source RoleLabel",
+        abstractConstraint: "TargetSchema.ChangedEntity",
+        constraintClasses: [
+        ],
+      },
+      target: {
+        polymorphic: true,
+        multiplicity: "(0..*)",
+        roleLabel: "Target RoleLabel",
+        abstractConstraint: "TargetSchema.ChangedEntity",
+        constraintClasses: [
+        ],
+      },
     },
   },
 };

@@ -112,6 +112,21 @@ export default {
         "SourceSchema.MissingMixin",
       ],
       customAttributes: [{ className: "CustomAttributeSchema.MissingCA" }],
+      properties: [{
+        name: "BooleanProperty",
+        type: "PrimitiveProperty",
+        typeName: "boolean",
+        customAttributes: [{ className: "CustomAttributeSchema.InternalId" }],
+      },
+      {
+        name: "StructProperty",
+        type: "StructArrayProperty",
+        typeName: "SourceSchema.MissingStruct",
+      }],
+    },
+    ChangedEntityBaseClass: {
+      schemaItemType: "EntityClass",
+      baseClass: "SourceSchema.ChangedEntity",
     },
     RelationshipSourceEntity: {
       schemaItemType: "EntityClass",
@@ -132,7 +147,7 @@ export default {
       source: {
         polymorphic: true,
         multiplicity: "(0..*)",
-        roleLabel: "Source RoleLabel",
+        roleLabel: "New Source RoleLabel",
         abstractConstraint: "SourceSchema.RelationshipSourceEntity",
         constraintClasses: [
           "SourceSchema.RelationshipSourceEntity",
@@ -151,7 +166,7 @@ export default {
     },
     ChangedBaseClassEntity: {
       schemaItemType: "EntityClass",
-      baseClass: "SourceSchema.EmptyAbstractEntity",
+      baseClass: "SourceSchema.ChangedEntityBaseClass",
     },
   },
 };

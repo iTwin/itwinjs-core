@@ -8,8 +8,12 @@
 
 import { SchemaChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
+import { SchemaDifferenceConflict } from "./SchemaConflicts";
 import { SchemaDiagnosticVisitor } from "./SchemaDiagnosticVisitor";
-import type { Schema } from "@itwin/ecschema-metadata";
+import type {
+  AnyEnumerator, AnyPropertyProps, AnySchemaItemProps, RelationshipConstraintProps, Schema,
+  SchemaProps, SchemaReferenceProps,
+} from "@itwin/ecschema-metadata";
 
 /**
  * @internal
@@ -26,7 +30,7 @@ export namespace SchemaDifference {
    * @param sourceSchema  The schema to get merged in the target.
    * @returns             An [[SchemaDifference]] object.
    */
-  export async function fromSchemas(targetSchema: Schema, sourceSchema: Schema): Promise<SchemaDifference> {
+  export async function fromSchemas(targetSchema: Schema, sourceSchema: Schema): Promise<SchemaDifferences> {
     const changesList: SchemaChanges[] = [];
     const schemaComparer = new SchemaComparer({ report: changesList.push.bind(changesList) });
     await schemaComparer.compareSchemas(sourceSchema, targetSchema);
@@ -40,10 +44,12 @@ export namespace SchemaDifference {
    * @param schemaChanges   A changes report of two schemas.
    * @returns               An [[SchemaDifference]] object.
    */
-  export async function fromSchemaChanges(targetSchema: Schema, schemaChanges: SchemaChanges): Promise<SchemaDifference> {
-    const schemaDifference: SchemaDifference = {
+  export async function fromSchemaChanges(targetSchema: Schema, schemaChanges: SchemaChanges): Promise<SchemaDifferences> {
+    const schemaDifference: SchemaDifferences = {
       sourceSchemaName: schemaChanges.schema.schemaKey.toString(),
       targetSchemaName: targetSchema.schemaKey.toString(),
+      changes: [],
+      conflicts: [],
     };
 
     const visitor = new SchemaDiagnosticVisitor(schemaDifference);
@@ -55,282 +61,76 @@ export namespace SchemaDifference {
   }
 }
 
+type MutualPartial<T> = {
+  -readonly [P in keyof T]?: T[P];
+};
+
 /**
  * @internal
  */
-export interface SchemaDifference {
+export interface SchemaDifferences {
 
   readonly sourceSchemaName: string;
   readonly targetSchemaName: string;
 
-  label?: string;
-  description?: string;
-
-  references?: SchemaReferenceDifference[];
-  customAttributes?: CustomAttributeDifference[];
-
-  items?: {
-    [name: string]: SchemaItemDifference;
-  };
+  readonly changes: AnySchemaDifference[];
+  readonly conflicts: SchemaDifferenceConflict[];
 }
 
-/**
- * @internal
- */
-export interface CustomAttributeDifference {
-  readonly $changeType: DifferenceType;
-  readonly className: string;
-  [value: string]: unknown;
+export type AnySchemaDifference = SchemaDifference | SchemaItemDifference | SchemaPropertyDifference | SchemaReferenceDifference | SchemaEnumeratorDifference | SchemaClassMixinDifference | SchemaRelationshipConstraintDifference | SchemaRelationshipConstraintClassDifference;
+
+export interface SchemaDifference {
+  changeType: "modify";
+  item: "schema";
+  path?: undefined;
+  json: MutualPartial<SchemaProps>;
 }
 
-/**
- * @internal
- */
+export interface SchemaItemDifference<T extends AnySchemaItemProps = AnySchemaItemProps> {
+  changeType: "add" | "modify" | "remove";
+  item: string;
+  path?: string;
+  json: MutualPartial<T>;
+}
+
+export interface SchemaPropertyDifference<T extends AnyPropertyProps = AnyPropertyProps> {
+  changeType: "add" | "modify" | "remove";
+  item: string;
+  path: string;
+  json: MutualPartial<T>;
+}
+
 export interface SchemaReferenceDifference {
-  readonly $changeType: DifferenceType;
-  readonly name: string;
-  readonly version: string;
+  changeType: "add" | "modify" | "remove";
+  item: "schema";
+  path: "$references";
+  json: MutualPartial<SchemaReferenceProps>;
 }
 
-/**
- * @internal
- */
-export interface SchemaItemDifference {
-  readonly $changeType: DifferenceType;
-  label?: string;
-  description?: string;
-  customAttributes?: CustomAttributeDifference[];
+export interface SchemaEnumeratorDifference {
+  changeType: "add" | "modify" | "remove";
+  item: string;
+  path: string;
+  json: MutualPartial<AnyEnumerator>;
 }
 
-/**
- * @internal
- */
-export interface EnumerationDifference extends SchemaItemDifference {
-  type?: string;
-  isStrict?: boolean;
-  enumerators?: EnumeratorDifference[];
+export interface SchemaClassMixinDifference {
+  changeType: "modify";
+  item: string;
+  path: "$mixins";
+  json: string[];
 }
 
-/**
- * @internal
- */
-export interface EnumeratorDifference {
-  readonly $changeType: DifferenceType;
-  readonly name: string;
-  value?: string | number;
-  label?: string;
-  description?: string;
+export interface SchemaRelationshipConstraintDifference {
+  changeType: "modify";
+  item: string;
+  path: string;
+  json: MutualPartial<RelationshipConstraintProps>;
 }
 
-/**
- * @internal
- */
-export interface KindOfQuantityDifference extends SchemaItemDifference {
-  persistenceUnit?: string;
-  presentationUnits?: string | string[];
-  relativeError?: number;
+export interface SchemaRelationshipConstraintClassDifference {
+  changeType: "modify";
+  item: string;
+  path: string;
+  json: string[];
 }
-
-/**
- * @internal
- */
-export interface PropertyCategoryDifference extends SchemaItemDifference {
-  priority?: number;
-}
-
-/**
- * @internal
- */
-export interface ConstantDifference extends SchemaItemDifference {
-  phenomenon?: string;
-  definition?: string;
-  numerator?: number;
-  denominator?: number;
-}
-
-/**
- * @internal
- */
-export interface FormatDifference extends SchemaItemDifference {
-  type?: string;
-  precision?: number;
-  roundFactor?: number;
-  minWidth?: number;
-  showSignOption?: string;
-  formatTraits?: string | string[];
-  decimalSeparator?: string;
-  thousandSeparator?: string;
-  uomSeparator?: string;
-  scientificType?: string;
-  stationOffsetSize?: number;
-  stationSeparator?: string;
-  composite?: {
-    spacer?: string;
-    includeZero?: boolean;
-    units: Array<{
-      name: string;
-      label?: string;
-    }>;
-  };
-}
-
-/**
- * @internal
- */
-export interface InvertedUnitDifference extends SchemaItemDifference {
-  invertsUnit?: string;
-  unitSystem?: string;
-}
-
-/**
- * @internal
- */
-export interface PhenomenonDifference extends SchemaItemDifference {
-  definition?: string;
-}
-
-/**
- * @internal
- */
-export type UnitSystemDifference = SchemaItemDifference;
-
-/**
- * @internal
- */
-export interface UnitDifference extends SchemaItemDifference {
-  phenomenon?: string;
-  unitSystem?: string;
-  definition?: string;
-  numerator?: number;
-  denominator?: number;
-  offset?: number;
-}
-
-/**
- * @internal
- */
-export interface ClassDifference extends SchemaItemDifference {
-  modifier?: string;
-  baseClass?: {
-    readonly $changeType: DifferenceType;
-    readonly className: string;
-  };
-  properties?: PropertyDifference[];
-}
-
-/**
- * @internal
- */
-export interface EntityClassDifference extends ClassDifference {
-  mixins?: string[];
-}
-
-/**
- * @internal
- */
-export interface MixinDifference extends ClassDifference {
-  appliesTo?: string;
-}
-
-/**
- * @internal
- */
-export type StructClassDifference = ClassDifference;
-
-/**
- * @internal
- */
-export interface CustomAttributeClassDifference extends ClassDifference {
-  appliesTo?: string;
-}
-
-/**
- * @internal
- */
-export interface RelationshipClassDifference extends ClassDifference {
-  strength?: string;
-  strengthDirection?: string;
-  source?: RelationshipConstraintDifference;
-  target?: RelationshipConstraintDifference;
-}
-
-/**
- * @internal
- */
-export interface RelationshipConstraintDifference {
-  readonly $changeType: DifferenceType;
-  multiplicity?: string;
-  roleLabel?: string;
-  polymorphic?: boolean;
-  abstractConstraint?: string;
-  constraintClasses?: string[];
-  customAttributes?: CustomAttributeDifference[];
-}
-
-/**
- * @internal
- */
-export interface PropertyDifference {
-  readonly $changeType: DifferenceType;
-  readonly name: string;
-  type?: string;
-  description?: string;
-  label?: string;
-  isReadOnly?: boolean;
-  category?: string;
-  priority?: number;
-  inherited?: boolean;
-  kindOfQuantity?: string;
-  customAttributes?: CustomAttributeDifference[];
-}
-
-/**
- * @internal
- */
-export interface PrimitivePropertyDifference extends PropertyDifference {
-  typeName?: string;
-  extendedTypeName?: string;
-  minLength?: number;
-  maxLength?: number;
-  minValue?: number;
-  maxValue?: number;
-}
-
-/**
- * @internal
- */
-export type EnumerationPropertyDifference = PrimitivePropertyDifference;
-
-/**
- * @internal
- */
-export interface NavigationPropertyDifference extends PrimitivePropertyDifference {
-  relationshipName?: string;
-  direction?: string;
-}
-
-/**
- * @internal
- */
-export interface StructPropertyDifference extends PropertyDifference {
-  typeName?: string;
-}
-
-/**
- * @internal
- */
-export interface ArrayPropertyDifference extends PrimitivePropertyDifference {
-  typeName?: string;
-  minOccurs?: number;
-  maxOccurs?: number;
-}
-
-/**
- * @internal
- */
-export type PrimitiveArrayPropertyDifference = ArrayPropertyDifference;
-
-/**
- * @internal
- */
-export type StructArrayPropertyDifference = ArrayPropertyDifference;
