@@ -387,6 +387,12 @@ export class ECClasses {
     return {};
   }
 
+  /**
+   * Sets the Category to the Property.
+   * @param classKey The SchemaItemKey of the class.
+   * @param propertyName The name of the property.
+   * @param categoryKey The SchemaItemKey of the PropertyCategory assigned to the property.
+   */
   public async setPropertyCategory(classKey: SchemaItemKey, propertyName: string, categoryKey: SchemaItemKey): Promise<PropertyEditResults> {
     let mutableClass: MutableClass;
     try {

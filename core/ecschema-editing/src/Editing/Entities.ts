@@ -152,10 +152,18 @@ export class Entities extends ECClasses {
     return { itemKey: entityKey, propertyName: name };
   }
 
+  /**
+   * Creates a Navigation Property through a NavigationPropertyProps.
+   * @param classKey a SchemaItemKey of the Entity Class that will house the new property.
+   * @param navigationProps a json object that will be used to populate the new Navigation Property.
+   */
   public async createNavigationPropertyFromProps(classKey: SchemaItemKey, navigationProps: NavigationPropertyProps): Promise<PropertyEditResults> {
     const entity = await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(classKey);
     if (entity === undefined)
       return { itemKey: classKey, propertyName: navigationProps.name, errorMessage: `Entity Class ${classKey.fullName} not found in schema context.`};
+
+    if (entity.schemaItemType !== SchemaItemType.EntityClass)
+      return { itemKey: classKey, propertyName: navigationProps.name, errorMessage: `Expected ${classKey.fullName} to be of type EntityClass.` };
 
     const navigationProperty  = await entity.createNavigationProperty(navigationProps.name, navigationProps.relationshipName, navigationProps.direction);
     await navigationProperty.fromJSON(navigationProps);

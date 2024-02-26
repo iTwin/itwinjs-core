@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CustomAttributeClass, EntityClass, Schema, SchemaContext, StructClass } from "@itwin/ecschema-metadata";
+import { CustomAttributeClass, EntityClass, Mixin, Schema, SchemaContext, StructClass } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -405,7 +405,7 @@ describe("Property merger tests", () => {
       }]);
     });
 
-    it("should merge missing navigation property", async () => {
+    it("should merge missing entityclass navigation property", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         references: [
@@ -430,12 +430,64 @@ describe("Property merger tests", () => {
 
       const targetSchema = await Schema.fromJson({
         ...targetJson,
+        items: {
+          TestEntity: {
+            schemaItemType: "EntityClass",
+          },
+        },
       }, targetContext);
 
       const merger = new SchemaMerger();
       const mergedSchema = await merger.merge(targetSchema, sourceSchema);
       const sourceItem = await sourceSchema.getItem<EntityClass>("TestEntity");
       const mergedItem = await mergedSchema.getItem<EntityClass>("TestEntity");
+      expect(mergedItem!.toJSON().properties).deep.eq(sourceItem!.toJSON().properties);
+    });
+
+    it("should merge missing mixin navigation property", async () => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        references: [
+          {
+            name: "TestSchema",
+            version: "01.00.15",
+          },
+        ],
+        items: {
+          TestEntity: {
+            schemaItemType: "EntityClass",
+          },
+          TestMixin: {
+            schemaItemType: "Mixin",
+            appliesTo: "SourceSchema.TestEntity",
+            properties: [{
+              name: "NavigationProp",
+              type: "NavigationProperty",
+              description: "Description for navigation property",
+              direction: "Backward",
+              relationshipName: "TestSchema.TestRelationship",
+            }],
+          },
+        },
+      }, sourceContext);
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          TestEntity: {
+            schemaItemType: "EntityClass",
+          },
+          TestMixin: {
+            schemaItemType: "Mixin",
+            appliesTo: "TargetSchema.TestEntity",
+          },
+        },
+      }, targetContext);
+
+      const merger = new SchemaMerger();
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const sourceItem = await sourceSchema.getItem<Mixin>("TestMixin");
+      const mergedItem = await mergedSchema.getItem<Mixin>("TestMixin");
       expect(mergedItem!.toJSON().properties).deep.eq(sourceItem!.toJSON().properties);
     });
   });

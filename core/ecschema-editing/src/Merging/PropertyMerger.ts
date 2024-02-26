@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AnyArrayProperty, AnyEnumerationProperty, AnyPrimitiveProperty, AnyStructProperty,  Enumeration, KindOfQuantity, NavigationProperty, Property, PropertyCategory, PropertyProps, propertyTypeToString, RelationshipClass, SchemaItem, SchemaItemKey, SchemaKey, StructClass } from "@itwin/ecschema-metadata";
+import { AnyArrayProperty, AnyEnumerationProperty, AnyPrimitiveProperty, AnyStructProperty,  Enumeration, KindOfQuantity, NavigationProperty, Property, PropertyCategory, PropertyProps, propertyTypeToString, RelationshipClass, SchemaItem, SchemaItemKey, SchemaItemType, schemaItemTypeToString, SchemaKey, StructClass } from "@itwin/ecschema-metadata";
 import { SchemaMergeContext } from "./SchemaMerger";
 import { PropertyEditResults } from "../Editing/Editor";
 import { MutableProperty } from "../Editing/Mutable/MutableProperty";
@@ -271,7 +271,13 @@ export namespace NavigationPropertyMerger {
       relationshipName: type.fullName,
     };
 
-    return context.editor.entities.createNavigationPropertyFromProps(classKey, navigationProps);
+    if (property.class.schemaItemType === SchemaItemType.EntityClass)
+      return context.editor.entities.createNavigationPropertyFromProps(classKey, navigationProps);
+    if (property.class.schemaItemType === SchemaItemType.Mixin)
+      return context.editor.mixins.createNavigationPropertyFromProps(classKey, navigationProps);
+    if (property.class.schemaItemType === SchemaItemType.RelationshipClass)
+      return context.editor.relationships.createNavigationPropertyFromProps(classKey, navigationProps);
+    return { errorMessage: `Navigation property can't be added to ${schemaItemTypeToString(property.class.schemaItemType)}.` };
   }
 
   export async function mergeAttributes(context: SchemaMergeContext, property: NavigationProperty, attributeName: string, attributeNewValue: any, attributeOldValue: any): Promise<PropertyEditResults | boolean> {
