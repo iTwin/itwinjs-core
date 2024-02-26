@@ -53,39 +53,6 @@ export interface PagedResponse<T> {
 }
 
 /**
- * Async iterator that can be collected to an array.
- * @public
- */
-export class AsyncCollectable<TItem> implements AsyncIterableIterator<TItem> {
-  constructor(private readonly _iter: AsyncIterableIterator<TItem>) {}
-
-  public [Symbol.asyncIterator](): AsyncIterableIterator<TItem> {
-    return this._iter;
-  }
-
-  public async next(...args: [] | [undefined]): Promise<IteratorResult<TItem, any>> {
-    return this._iter.next(...args);
-  }
-
-  public async collect(): Promise<TItem[]> {
-    const result = new Array<TItem>();
-    for await (const item of this) {
-      result.push(item);
-    }
-    return result;
-  }
-}
-
-/**
- * A structure for streamed responses.
- * @public
- */
-export interface StreamedResponse<TItem> {
-  total: number;
-  items: AsyncCollectable<TItem>;
-}
-
-/**
  * Get total number of instances included in the supplied key set. The
  * count is calculated by adding all of the following:
  * - `keys.instanceKeysCount`
