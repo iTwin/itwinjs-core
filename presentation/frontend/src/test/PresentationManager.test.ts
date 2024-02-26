@@ -75,7 +75,7 @@ import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "../presentation-frontend/selection/SelectionManager";
 
-describe("PresentationManager", () => {
+describe.only("PresentationManager", () => {
   const rulesetsManagerMock = moq.Mock.ofType<RulesetManagerImpl>();
   const rpcRequestsHandlerMock = moq.Mock.ofType<RpcRequestsHandler>();
   let manager: PresentationManager;
@@ -112,11 +112,9 @@ describe("PresentationManager", () => {
   });
 
   function recreateManager(props?: Partial<PresentationManagerProps>) {
-    manager && manager.dispose();
-    manager = PresentationManager.create({
-      rpcRequestsHandler: rpcRequestsHandlerMock.object,
-      ...props,
-    });
+    manager?.dispose();
+    (props ??= {}).rpcRequestsHandler ??= rpcRequestsHandlerMock.object;
+    manager = PresentationManager.create(props);
   }
 
   const mockI18N = () => {
@@ -504,7 +502,7 @@ describe("PresentationManager", () => {
         .returns(async () => ({ total: count, items: [Node.toJSON(node1)] }))
         .verifiable();
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey, paging: { start: 1, size: 0 } })))
+        .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey, paging: { start: 1, size: 1 } })))
         // eslint-disable-next-line deprecation/deprecation
         .returns(async () => ({ total: count, items: [Node.toJSON(node2)] }))
         .verifiable();
@@ -594,7 +592,7 @@ describe("PresentationManager", () => {
         .returns(async () => ({ total: count, items: [Node.toJSON(node1)] }))
         .verifiable();
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey, paging: { start: 1, size: 0 } })))
+        .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey, paging: { start: 1, size: 1 } })))
         // eslint-disable-next-line deprecation/deprecation
         .returns(async () => ({ total: count, items: [Node.toJSON(node2)] }))
         .verifiable();
@@ -1143,28 +1141,34 @@ describe("PresentationManager", () => {
         descriptor: descriptor.createDescriptorOverrides(),
         keys: keyset,
       };
+      const total = 5;
       rpcRequestsHandlerMock
         .setup(async (x) =>
           x.getPagedContent(
             toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON(), paging: { start: 0, size: 2 } }),
           ),
         )
-        .returns(async () => ({ descriptor: descriptor.toJSON(), contentSet: { total: 5, items: [item1.toJSON()] } }))
+        .returns(async () => ({ descriptor: descriptor.toJSON(), contentSet: { total, items: [item1.toJSON()] } }))
         .verifiable();
-      rpcRequestsHandlerMock
-        .setup(async (x) =>
-          x.getPagedContentSet(
-            toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON(), paging: { start: 1, size: 1 } }),
-          ),
-        )
-        .returns(async () => ({ total: 5, items: [item2.toJSON()] }))
-        .verifiable();
+
+      // Set up rpc request handler to return item2 for the remaining requests
+      for (let i = 1; i < total; ++i) {
+        rpcRequestsHandlerMock
+          .setup(async (x) =>
+            x.getPagedContentSet(
+              toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON(), paging: { start: i, size: 1 } }),
+            ),
+          )
+          .returns(async () => ({ total: 5, items: [item2.toJSON()] }))
+          .verifiable();
+      }
+
       const actualResult = await manager.getContentAndSize(options);
       expect(actualResult).to.deep.eq({
         size: 5,
         content: {
           descriptor,
-          contentSet: [item1, item2],
+          contentSet: [item1, item2, item2, item2, item2],
         },
       });
       rpcRequestsHandlerMock.verifyAll();
@@ -1263,7 +1267,7 @@ describe("PresentationManager", () => {
         .returns(async () => ({ total: 2, items: [DisplayValueGroup.toJSON(item1)] }))
         .verifiable();
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getPagedDistinctValues({ ...rpcHandlerOptions, paging: { start: 1, size: 0 } }))
+        .setup(async (x) => x.getPagedDistinctValues({ ...rpcHandlerOptions, paging: { start: 1, size: 1 } }))
         // eslint-disable-next-line deprecation/deprecation
         .returns(async () => ({ total: 2, items: [DisplayValueGroup.toJSON(item2)] }))
         .verifiable();
@@ -1347,7 +1351,7 @@ describe("PresentationManager", () => {
         .returns(async () => ({ total: 4, items: new KeySet(instanceKeys1).toJSON() }))
         .verifiable();
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getContentInstanceKeys({ ...rpcHandlerOptions, paging: { start: 2, size: 0 } }))
+        .setup(async (x) => x.getContentInstanceKeys({ ...rpcHandlerOptions, paging: { start: 2, size: 2 } }))
         .returns(async () => ({ total: 4, items: new KeySet(instanceKeys2).toJSON() }))
         .verifiable();
       const actualResult = await manager.getContentInstanceKeys(managerOptions);

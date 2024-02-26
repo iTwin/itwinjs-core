@@ -83,28 +83,29 @@ export class PagedResponseGenerator<TPagedResponseItem> {
         }
 
         // If the response is empty, something went wrong.
-        if (!response.items.length) {
+        const receivedItemsLength = response.items.length;
+        if (!receivedItemsLength) {
           this.handleEmptyPageResult(pageStart);
         }
 
         // If page size is not defined, use the result of the first request as a page size.
         // We must have a constant positive page size in order to parallelize the requests.
         let pageSize = originalPageSize ?? 0;
-        if (!pageSize || response.items.length < pageSize) {
-          pageSize = response.items.length;
+        if (!pageSize || receivedItemsLength < pageSize) {
+          pageSize = receivedItemsLength;
         }
 
         if (pageSize === this._total) {
           return of(response.items);
         }
 
-        const itemsToFetch = this._total - pageStart - 1;
-        const numPages = Math.ceil(itemsToFetch / pageSize);
+        const itemsToFetch = this._total - pageStart - receivedItemsLength;
+        const remainingPages = Math.ceil(itemsToFetch / pageSize);
+
         // Return the first page and then stream the remaining ones.
-        // If at some point the pages become empty, this shouldn't be an issue.
         return concat(
           of(response.items),
-          range(1, numPages - 1).pipe(
+          range(1, remainingPages).pipe(
             mergeMap(async (idx) => {
               const start = pageStart + idx * pageSize;
               const page = await this._props.getPage({ start, size: pageSize }, idx);
