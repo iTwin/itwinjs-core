@@ -48,12 +48,12 @@ export class PagedResponseGenerator<TPagedResponseItem> {
 
   /** Async iterator of pages. */
   public get iterator(): AsyncIterableIterator<TPagedResponseItem[]> {
-    return eachValueFrom(this.observable);
+    return eachValueFrom(this.pages);
   }
 
   /** Async iterator of all items. */
   public get itemsIterator(): AsyncIterableIterator<TPagedResponseItem> {
-    return eachValueFrom(this.itemsObservable);
+    return eachValueFrom(this.items);
   }
 
   /** Fetches all items and collects to an array. */
@@ -65,12 +65,13 @@ export class PagedResponseGenerator<TPagedResponseItem> {
     return result;
   }
 
-  public get itemsObservable(): Observable<TPagedResponseItem> {
-    return this.observable.pipe(mergeAll());
+  /** RXJS observable of all items. */
+  public get items(): Observable<TPagedResponseItem> {
+    return this.pages.pipe(mergeAll());
   }
 
   /** RXJS Observable of pages. */
-  public get observable(): Observable<TPagedResponseItem[]> {
+  public get pages(): Observable<TPagedResponseItem[]> {
     const pageStart = this._props.pageOptions?.start ?? 0;
     const parallelism = this._props.parallelism;
     const originalPageSize = this._props.pageOptions?.size;

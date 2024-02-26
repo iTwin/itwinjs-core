@@ -25,7 +25,7 @@ describe("PagedResponseGenerator", () => {
     };
 
     const generator = new PagedResponseGenerator(props);
-    const pageArrayVariations = await Promise.all([collectGenerator(generator.iterator), collectGenerator(eachValueFrom(generator.observable))]);
+    const pageArrayVariations = await Promise.all([collectGenerator(generator.iterator), collectGenerator(eachValueFrom(generator.pages))]);
 
     for (const pageArray of pageArrayVariations) {
       expect(pageArray).to.deep.eq([
