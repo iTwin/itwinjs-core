@@ -25,12 +25,12 @@ import {
   DisplayLabelsRequestOptions,
   DisplayValueGroup,
   DistinctValuesRequestOptions,
+  ECInstancesNodeKey,
   ElementProperties,
   FieldDescriptor,
   FieldDescriptorType,
   FilterByInstancePathsHierarchyRequestOptions,
   FilterByTextHierarchyRequestOptions,
-  HierarchyLevelDescriptorRequestOptions,
   HierarchyRequestOptions,
   InstanceKey,
   Item,
@@ -219,8 +219,8 @@ describe("PresentationManager", () => {
   });
 
   describe("onConnection", () => {
-    it("caches IModelConnection and calls `onNewiModelConnection` for the first time", async () => {
-      const spy = sinon.stub(manager, "onNewiModelConnection");
+    it("calls `startiModelInitialization`", async () => {
+      const spy = sinon.stub(manager, "startIModelInitialization");
       const onCloseEvent = new BeEvent();
       const imodelMock = moq.Mock.ofType<IModelConnection>();
       imodelMock.setup((x) => x.onClose).returns(() => onCloseEvent);
@@ -232,14 +232,6 @@ describe("PresentationManager", () => {
         rulesetOrId: testData.rulesetId,
       });
       expect(spy).to.be.calledOnceWith(imodelMock.object);
-      spy.resetHistory();
-
-      // expect the spy to not be called second time
-      await manager.getNodesCount({
-        imodel: imodelMock.object,
-        rulesetOrId: testData.rulesetId,
-      });
-      expect(spy).to.not.be.called;
       spy.resetHistory();
 
       // simulate imodel close
@@ -649,14 +641,30 @@ describe("PresentationManager", () => {
   });
 
   describe("getNodesDescriptor", () => {
+    const createTestOptions = (parentKey: ECInstancesNodeKey = createRandomECInstancesNodeKey()) => ({
+      imodel: testData.imodelMock.object,
+      rulesetOrId: testData.rulesetId,
+      parentKey,
+    });
+
+    it("calls `ensureIModelInitialized", async () => {
+      const stub = sinon.fake.returns(Promise.resolve());
+      manager.ensureIModelInitialized = stub;
+
+      const parentNodeKey = createRandomECInstancesNodeKey();
+      const result = createTestContentDescriptor({ fields: [] });
+      const options = createTestOptions();
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getNodesDescriptor(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey })))
+        .returns(async () => result.toJSON());
+      await manager.getNodesDescriptor(options);
+      expect(stub).to.be.calledOnce;
+    });
+
     it("requests child nodes descriptor from proxy", async () => {
       const parentNodeKey = createRandomECInstancesNodeKey();
       const result = createTestContentDescriptor({ fields: [] });
-      const options: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey> = {
-        imodel: testData.imodelMock.object,
-        rulesetOrId: testData.rulesetId,
-        parentKey: parentNodeKey,
-      };
+      const options = createTestOptions(parentNodeKey);
       rpcRequestsHandlerMock
         .setup(async (x) => x.getNodesDescriptor(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey })))
         .returns(async () => result.toJSON())
@@ -668,11 +676,7 @@ describe("PresentationManager", () => {
 
     it("handles undefined descriptor", async () => {
       const parentNodeKey = createRandomECInstancesNodeKey();
-      const options: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey> = {
-        imodel: testData.imodelMock.object,
-        rulesetOrId: testData.rulesetId,
-        parentKey: parentNodeKey,
-      };
+      const options = createTestOptions(parentNodeKey);
       rpcRequestsHandlerMock
         .setup(async (x) => x.getNodesDescriptor(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey })))
         .returns(async () => undefined)
@@ -758,15 +762,25 @@ describe("PresentationManager", () => {
   });
 
   describe("getContentDescriptor", () => {
+    const createTestOptions = (keys: KeySet = new KeySet()): ContentDescriptorRequestOptions<IModelConnection, KeySet> => ({
+      imodel: testData.imodelMock.object,
+      rulesetOrId: testData.rulesetId,
+      displayType: "test",
+      keys,
+    });
+
+    it("calls `ensureiModelInitialized", async () => {
+      const stub = sinon.fake.returns(Promise.resolve());
+      manager.ensureIModelInitialized = stub;
+      const testOptions = createTestOptions();
+      await manager.getContentDescriptor(testOptions);
+      expect(stub).to.be.calledOnce;
+    });
+
     it("requests descriptor from proxy", async () => {
       const keyset = new KeySet();
       const result = createTestContentDescriptor({ fields: [] });
-      const options: ContentDescriptorRequestOptions<IModelConnection, KeySet> = {
-        imodel: testData.imodelMock.object,
-        rulesetOrId: testData.rulesetId,
-        displayType: "test",
-        keys: keyset,
-      };
+      const options = createTestOptions(keyset);
       rpcRequestsHandlerMock
         .setup(async (x) => x.getContentDescriptor(toRulesetRpcOptions({ ...options, keys: keyset.toJSON() })))
         .returns(async () => result.toJSON())
@@ -781,12 +795,7 @@ describe("PresentationManager", () => {
       const persistentKey = createRandomECInstanceKey();
       const transientKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: createRandomTransientId() };
       const keyset = new KeySet([persistentKey, transientKey]);
-      const options: ContentDescriptorRequestOptions<IModelConnection, KeySet> = {
-        imodel: testData.imodelMock.object,
-        rulesetOrId: testData.rulesetId,
-        displayType: "test",
-        keys: keyset,
-      };
+      const options = createTestOptions(keyset);
       rpcRequestsHandlerMock
         .setup(async (x) => x.getContentDescriptor(toRulesetRpcOptions({ ...options, keys: new KeySet([persistentKey]).toJSON() })))
         .returns(async () => createTestContentDescriptor({ fields: [] }).toJSON())
@@ -797,12 +806,7 @@ describe("PresentationManager", () => {
 
     it("handles undefined descriptor", async () => {
       const keyset = new KeySet();
-      const options: ContentDescriptorRequestOptions<IModelConnection, KeySet> = {
-        imodel: testData.imodelMock.object,
-        rulesetOrId: testData.rulesetId,
-        displayType: "test",
-        keys: keyset,
-      };
+      const options = createTestOptions(keyset);
       rpcRequestsHandlerMock
         .setup(async (x) => x.getContentDescriptor(toRulesetRpcOptions({ ...options, keys: keyset.toJSON() })))
         .returns(async () => undefined)
@@ -855,6 +859,32 @@ describe("PresentationManager", () => {
   });
 
   describe("getContent", () => {
+    it("calls `ensureIModelInitialized", async () => {
+      const stub = sinon.fake.returns(Promise.resolve());
+      manager.ensureIModelInitialized = stub;
+      const keyset = new KeySet();
+      const descriptor = createTestContentDescriptor({ fields: [] });
+      const result = {
+        total: 999,
+        items: [new Item([], "", "", undefined, {}, {}, [])],
+      };
+      const options: Paged<ContentRequestOptions<IModelConnection, Descriptor, KeySet>> = {
+        imodel: testData.imodelMock.object,
+        rulesetOrId: testData.rulesetId,
+        paging: testData.pageOptions,
+        descriptor,
+        keys: keyset,
+      };
+      rpcRequestsHandlerMock
+        .setup(async (x) =>
+          x.getPagedContentSet(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })),
+        )
+        .returns(async () => ({ ...result, items: result.items.map((i) => i.toJSON()) }))
+        .verifiable();
+      await manager.getContent(options);
+      expect(stub).to.be.calledOnce;
+    });
+
     it("requests content from proxy", async () => {
       const keyset = new KeySet();
       const descriptor = createTestContentDescriptor({ fields: [] });
@@ -1015,6 +1045,33 @@ describe("PresentationManager", () => {
   });
 
   describe("getContentAndContentSize", () => {
+    it("calls `ensureIModelInitialized", async () => {
+      const stub = sinon.fake.returns(Promise.resolve());
+      manager.ensureIModelInitialized = stub;
+      const keyset = new KeySet();
+      const descriptor = createTestContentDescriptor({ fields: [] });
+      const result = {
+        total: 999,
+        items: [new Item([], "", "", undefined, {}, {}, [])],
+      };
+      const options: Paged<ContentRequestOptions<IModelConnection, Descriptor, KeySet>> = {
+        imodel: testData.imodelMock.object,
+        rulesetOrId: testData.rulesetId,
+        paging: testData.pageOptions,
+        descriptor,
+        keys: keyset,
+      };
+      rpcRequestsHandlerMock
+        .setup(async (x) =>
+          x.getPagedContentSet(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })),
+        )
+        .returns(async () => ({ ...result, items: result.items.map((i) => i.toJSON()) }));
+
+      await manager.getContentAndSize(options);
+
+      expect(stub).to.be.calledOnce;
+    });
+
     it("requests content and contentSize from proxy", async () => {
       const keyset = new KeySet();
       const descriptor = createTestContentDescriptor({ fields: [] });
