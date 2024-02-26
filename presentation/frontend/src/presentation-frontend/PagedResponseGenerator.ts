@@ -1,4 +1,4 @@
-import { concat, from, mergeMap, Observable, of, range } from "rxjs";
+import { concat, from, mergeAll, mergeMap, Observable, of, range } from "rxjs";
 import { PageOptions } from "@itwin/presentation-common/src/presentation-common/PresentationManagerOptions";
 import { eachValueFrom } from "rxjs-for-await";
 import { PagedResponse } from "@itwin/presentation-common";
@@ -22,12 +22,18 @@ export class PagedResponseGenerator<TPagedResponseItem> {
 
   /**
    * Get total number of pages.
-   * This value should be available when either [[PagedResponseGenerator.iterator]] or [[PagedResponseGenerator.observable]] are retrieved.
+   * This value should be updated after calling [[PagedResponseGenerator.fetchFirstPage]],
+   * or after polling a value from [[PagedResponseGenerator.iterator]] or [[PagedResponseGenerator.observable]].
    */
   public get total(): number {
     return this._total;
   }
 
+  /**
+   * Fetches and caches the first page.
+   * This function can be called in order to retrieve the total items count.
+   * @returns response for the first page.
+   */
   public async fetchFirstPage(): Promise<PagedResponse<TPagedResponseItem>> {
     if (this._firstPage) {
       return this._firstPage;
@@ -60,14 +66,14 @@ export class PagedResponseGenerator<TPagedResponseItem> {
   }
 
   public get itemsObservable(): Observable<TPagedResponseItem> {
-    return this.observable.pipe(mergeMap((x) => from(x)));
+    return this.observable.pipe(mergeAll());
   }
 
   /** RXJS Observable of pages. */
   public get observable(): Observable<TPagedResponseItem[]> {
     const pageStart = this._props.pageOptions?.start ?? 0;
     const parallelism = this._props.parallelism;
-    let pageSize = this._props.pageOptions?.size ?? 0;
+    const originalPageSize = this._props.pageOptions?.size;
 
     return from(this.fetchFirstPage()).pipe(
       mergeMap((response) => {
@@ -83,7 +89,10 @@ export class PagedResponseGenerator<TPagedResponseItem> {
 
         // If page size is not defined, use the result of the first request as a page size.
         // We must have a constant positive page size in order to parallelize the requests.
-        pageSize = pageSize || response.items.length;
+        let pageSize = originalPageSize ?? 0;
+        if (!pageSize || response.items.length < pageSize) {
+          pageSize = response.items.length;
+        }
 
         if (pageSize === this._total) {
           return of(response.items);
