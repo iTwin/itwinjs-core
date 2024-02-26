@@ -179,7 +179,7 @@ importers:
 
   ../../core/ecschema-editing:
     specifiers:
-      '@bentley/units-schema': ^1.0.7
+      '@bentley/units-schema': ^1.0.8
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
@@ -205,7 +205,7 @@ importers:
       sinon: ^17.0.1
       typescript: ~5.0.2
     devDependencies:
-      '@bentley/units-schema': 1.0.7
+      '@bentley/units-schema': 1.0.8
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
@@ -248,7 +248,7 @@ importers:
       '@bentley/quantity-takeoffs-aspects-schema': ^1.0.1
       '@bentley/spatial-composition-schema': ^1.0.1
       '@bentley/structural-physical-schema': ^1.0.1
-      '@bentley/units-schema': ^1.0.7
+      '@bentley/units-schema': ^1.0.8
       '@itwin/build-tools': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
@@ -291,7 +291,7 @@ importers:
       '@bentley/quantity-takeoffs-aspects-schema': 1.0.1
       '@bentley/spatial-composition-schema': 1.0.1
       '@bentley/structural-physical-schema': 1.0.1
-      '@bentley/units-schema': 1.0.7
+      '@bentley/units-schema': 1.0.8
       '@itwin/build-tools': link:../../tools/build
       '@itwin/ecschema-metadata': link:../ecschema-metadata
       '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
@@ -314,7 +314,7 @@ importers:
 
   ../../core/ecschema-metadata:
     specifiers:
-      '@bentley/units-schema': ^1.0.7
+      '@bentley/units-schema': ^1.0.8
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-quantity': workspace:*
@@ -341,7 +341,7 @@ importers:
     dependencies:
       almost-equal: 1.1.0
     devDependencies:
-      '@bentley/units-schema': 1.0.7
+      '@bentley/units-schema': 1.0.8
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-quantity': link:../quantity
@@ -3797,8 +3797,8 @@ packages:
     resolution: {integrity: sha512-ND+R4BwoZlOhq0nNgF82v87LhtVW9Oydl6+ExezqPn3G3CdBjoPkTzT7LDVyXX7cOOIQOD3efvwOWBiGh3sShQ==}
     dev: true
 
-  /@bentley/units-schema/1.0.7:
-    resolution: {integrity: sha512-yVPl8DLeD0sczWp1AFnKR+4+whQRvYgJupToQUOFUrlCGeVCvzyJw+mp38ciO3tRdWYZmW/k7lOx/by1hAiyrg==}
+  /@bentley/units-schema/1.0.8:
+    resolution: {integrity: sha512-mib0MBPNxT6xS1Spihn/VZeYGRvhbfjZ/O2/FaRDHc9J3dymtCqL/1Q/iTY5fscqUWvr9TdJjx+ICPmb5Wr4HQ==}
     dev: true
 
   /@colors/colors/1.6.0:
