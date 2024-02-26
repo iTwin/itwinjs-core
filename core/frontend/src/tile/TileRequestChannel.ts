@@ -203,7 +203,6 @@ export class TileRequestChannel {
    * @internal
    */
   public recordCompletion(tile: Tile, content: TileContent, elapsedMilliseconds: number): void {
-    console.log("record completion", tile.channel.name);
     this._statistics.recordCompletion(tile, elapsedMilliseconds);
 
     if (this.contentCallback)
