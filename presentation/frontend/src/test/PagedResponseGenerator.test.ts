@@ -143,20 +143,20 @@ describe("PagedResponseGenerator", () => {
 
   it("calls getter multiple times until the whole requested page is received when requesting a page of specified size", async () => {
     const getter = sinon.stub();
-    getter.onFirstCall().resolves({ total: 5, items: [2] });
-    getter.onSecondCall().resolves({ total: 5, items: [3] });
-    getter.onThirdCall().resolves({ total: 5, items: [4] });
+    const total = 4;
+    getter.onFirstCall().resolves({ total, items: [2] });
+    getter.onSecondCall().resolves({ total, items: [3] });
+    getter.onThirdCall().resolves({ total, items: [4] });
 
     const generator = new PagedResponseGenerator({ pageOptions: { start: 1, size: 3 }, getPage: getter });
     const items = await generator.getAllItems();
-    const total = generator.total;
 
     expect(getter).to.be.calledThrice;
     expect(getter.firstCall).to.be.calledWith({ start: 1, size: 3 });
     expect(getter.secondCall).to.be.calledWith({ start: 2, size: 1 });
     expect(getter.thirdCall).to.be.calledWith({ start: 3, size: 1 });
     expect(items).to.deep.eq([2, 3, 4]);
-    expect(total).to.eq(5);
+    expect(generator.total).to.eq(total);
   });
 
   it("calls getter multiple times until the whole requested page is received when requesting a page of unspecified size", async () => {
