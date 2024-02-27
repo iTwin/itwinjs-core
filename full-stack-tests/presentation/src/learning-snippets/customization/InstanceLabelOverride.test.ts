@@ -96,7 +96,7 @@ describe("Learning Snippets", () => {
             },
             {
               ruleType: "InstanceLabelOverride",
-              priority: 1,
+              priority: 1000,
               class: { schemaName: "BisCore", className: "GeometricModel3d" },
               values: [
                 {
@@ -107,7 +107,7 @@ describe("Learning Snippets", () => {
             },
             {
               ruleType: "InstanceLabelOverride",
-              priority: 2,
+              priority: 2000,
               class: { schemaName: "BisCore", className: "GeometricModel3d" },
               values: [
                 {
@@ -153,7 +153,7 @@ describe("Learning Snippets", () => {
             },
             {
               ruleType: "InstanceLabelOverride",
-              priority: 1,
+              priority: 1000,
               onlyIfNotHandled: true,
               class: { schemaName: "BisCore", className: "GeometricModel3d" },
               values: [
@@ -165,7 +165,7 @@ describe("Learning Snippets", () => {
             },
             {
               ruleType: "InstanceLabelOverride",
-              priority: 2,
+              priority: 2000,
               class: { schemaName: "BisCore", className: "GeometricModel3d" },
               values: [
                 {
