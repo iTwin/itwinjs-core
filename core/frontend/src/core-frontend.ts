@@ -164,6 +164,7 @@ export * from "./BackgroundMapGeometry";
 export * from "./ViewCreator2d";
 export * from "./ViewCreator3d";
 export * from "./LocalhostIpcApp";
+export * from "./request/utils";
 export * from "./RealityDataSource";
 // TODO/FIX: "./extension/ExtensionRuntime" import has to be last to avoid circular dependency errors.
 import "./extension/ExtensionRuntime";
