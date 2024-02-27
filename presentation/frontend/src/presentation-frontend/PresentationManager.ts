@@ -382,11 +382,11 @@ export class PresentationManager implements IDisposable {
   /** Returns an iterator that polls nodes asynchronously. */
   public async getNodesIterator(
     requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute,
-  ): Promise<{ count: number; items: AsyncIterableIterator<Node> }> {
+  ): Promise<{ total: number; items: AsyncIterableIterator<Node> }> {
     const generator = await this.getNodesGenerator(requestOptions);
     await generator.fetchFirstBatch();
     return {
-      count: generator.total,
+      total: generator.total,
       items: generator.itemsIterator,
     };
   }
@@ -395,8 +395,8 @@ export class PresentationManager implements IDisposable {
   public async getNodes(
     requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute,
   ): Promise<Node[]> {
-    const stream = await this.getNodesGenerator(requestOptions);
-    return stream.getItems();
+    const result = await this.getNodesIterator(requestOptions);
+    return collect(result.items);
   }
 
   /** Retrieves nodes count. */
@@ -413,11 +413,10 @@ export class PresentationManager implements IDisposable {
   public async getNodesAndCount(
     requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute,
   ): Promise<{ count: number; nodes: Node[] }> {
-    const generator = await this.getNodesGenerator(requestOptions);
-    await generator.fetchFirstBatch();
+    const result = await this.getNodesIterator(requestOptions);
     return {
-      count: generator.total,
-      nodes: await generator.getItems(),
+      count: result.total,
+      nodes: await collect(result.items),
     };
   }
 
@@ -612,11 +611,10 @@ export class PresentationManager implements IDisposable {
   public async getPagedDistinctValues(
     requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<PagedResponse<DisplayValueGroup>> {
-    const generator = await this.getDistinctValuesGenerator(requestOptions);
-    const items = await generator.getItems();
+    const result = await this.getDistinctValuesIterator(requestOptions);
     return {
-      total: generator.total,
-      items,
+      total: result.total,
+      items: await collect(result.items),
     };
   }
 
@@ -730,3 +728,11 @@ const stripTransientElementKeys = (keys: KeySet) => {
   });
   return copy;
 };
+
+async function collect<T>(iter: AsyncIterable<T>): Promise<T[]> {
+  const result = new Array<T>();
+  for await (const value of iter) {
+    result.push(value);
+  }
+  return result;
+}
