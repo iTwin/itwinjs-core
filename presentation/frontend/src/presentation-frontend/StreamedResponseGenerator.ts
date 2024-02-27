@@ -1,25 +1,21 @@
-import { concat, from, mergeAll, mergeMap, Observable, of, range, take } from "rxjs";
+import { concat, from, mergeAll, mergeMap, Observable, of, range } from "rxjs";
 import { eachValueFrom } from "rxjs-for-await";
 import { PagedResponse, PageOptions } from "@itwin/presentation-common";
-import { collectObservable } from "./AsyncGenerators";
-
-/**
- * Options for batches that will be sent in parallel.
- */
-export type BatchOptions = PageOptions;
 
 /**
  * Properties for streaming the results.
+ * @internal
  */
 export interface StreamedResponseGeneratorProps<TItem> {
-  batch?: BatchOptions;
+  paging?: PageOptions;
   parallelism?: number;
-  getBatch(page: Required<BatchOptions>, requestIdx: number): Promise<PagedResponse<TItem>>;
+  getBatch(page: Required<PageOptions>, requestIdx: number): Promise<PagedResponse<TItem>>;
 }
 
 /**
  * This class allows to stream paged content.
  * Pages are prefetched in advanced according to the `parallelism` argument.
+ * @internal
  */
 export class StreamedResponseGenerator<TPagedResponseItem> {
   private _total: number = 0;
@@ -45,26 +41,23 @@ export class StreamedResponseGenerator<TPagedResponseItem> {
       return this._firstBatch;
     }
 
-    const start = this._props.batch?.start ?? 0;
-    const batchSize = this._props.batch?.size ?? 0;
+    const start = this._props.paging?.start ?? 0;
+    const batchSize = this._props.paging?.size ?? 0;
     this._firstBatch = await this._props.getBatch({ start, size: batchSize }, 0);
     this._total = this._firstBatch.total;
     return this._firstBatch;
   }
 
-  /** Creates an stream of items with a certain limit. */
-  public getLimitedItemsIterator(limit: number): AsyncIterableIterator<TPagedResponseItem> {
-    return eachValueFrom(this.getLimitedItemsObservable(limit));
-  }
-
-  /** Creates an stream of items with a certain limit. */
-  public getLimitedItemsObservable(limit: number): Observable<TPagedResponseItem> {
-    return this.items.pipe(take(limit));
-  }
-
-  /** Fetches items and collects to an array. */
-  public async getItems(limit?: number): Promise<TPagedResponseItem[]> {
-    return collectObservable(limit ? this.getLimitedItemsObservable(limit) : this.items);
+  /**
+   * Fetches items and collects to an array.
+   * If page size is specified in the properties, then it will return only the
+   */
+  public async getItems(): Promise<TPagedResponseItem[]> {
+    const result = new Array<TPagedResponseItem>();
+    for await (const value of this.itemsIterator) {
+      result.push(value);
+    }
+    return result;
   }
 
   /** Async iterator of all items. */
@@ -72,20 +65,18 @@ export class StreamedResponseGenerator<TPagedResponseItem> {
     return eachValueFrom(this.items);
   }
 
-  /** Async iterator of all item batches. */
-  public get batchesIterator(): AsyncIterableIterator<TPagedResponseItem[]> {
-    return eachValueFrom(this.batches);
-  }
-
-  /** RXJS observable of all items. */
+  /**
+   * RXJS observable of items.
+   * Items count will be limited to the page size, if one is specified in the configuration.
+   */
   public get items(): Observable<TPagedResponseItem> {
-    return this.batches.pipe(mergeAll());
+    return this._batches.pipe(mergeAll());
   }
 
-  public get batches(): Observable<TPagedResponseItem[]> {
-    const batchStart = this._props.batch?.start ?? 0;
+  private get _batches(): Observable<TPagedResponseItem[]> {
+    const pageStart = this._props.paging?.start ?? 0;
     const parallelism = this._props.parallelism;
-    const originalBatchSize = this._props.batch?.size;
+    const pageSize = this._props.paging?.size;
 
     return from(this.fetchFirstBatch()).pipe(
       mergeMap((response) => {
@@ -97,21 +88,24 @@ export class StreamedResponseGenerator<TPagedResponseItem> {
         // If the response is empty, something went wrong.
         const receivedItemsLength = response.items.length;
         if (!receivedItemsLength) {
-          this.handleEmptyPageResult(batchStart);
+          this.handleEmptyPageResult(pageStart);
         }
 
-        // If page size is not defined, use the result of the first request as a page size.
-        // We must have a constant positive page size in order to parallelize the requests.
-        let batchSize = originalBatchSize ?? 0;
-        if (!batchSize || receivedItemsLength < batchSize) {
-          batchSize = receivedItemsLength;
-        }
-
-        if (batchSize === this._total) {
+        const totalItemsToFetch = this._total - pageStart;
+        if (receivedItemsLength === totalItemsToFetch) {
           return of(response.items);
         }
 
-        const itemsToFetch = this._total - batchStart - receivedItemsLength;
+        let itemsToFetch: number;
+        let batchSize: number;
+        if (pageSize) {
+          itemsToFetch = Math.min(totalItemsToFetch, pageSize) - receivedItemsLength;
+          batchSize = Math.min(pageSize, receivedItemsLength);
+        } else {
+          itemsToFetch = totalItemsToFetch - receivedItemsLength;
+          batchSize = receivedItemsLength;
+        }
+
         const remainingBatches = Math.ceil(itemsToFetch / batchSize);
 
         // Return the first page and then stream the remaining ones.
@@ -119,8 +113,9 @@ export class StreamedResponseGenerator<TPagedResponseItem> {
           of(response.items),
           range(1, remainingBatches).pipe(
             mergeMap(async (idx) => {
-              const start = batchStart + idx * batchSize;
-              const page = await this._props.getBatch({ start, size: batchSize }, idx);
+              const start = pageStart + idx * batchSize;
+              const size = Math.min(this._total - start, batchSize);
+              const page = await this._props.getBatch({ start, size }, idx);
               if (!page.items.length) {
                 this.handleEmptyPageResult(start);
               }

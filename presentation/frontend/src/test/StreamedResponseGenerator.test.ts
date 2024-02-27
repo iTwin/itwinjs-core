@@ -1,74 +1,38 @@
 import { StreamedResponseGenerator, StreamedResponseGeneratorProps } from "../presentation-frontend/StreamedResponseGenerator";
 import { expect } from "chai";
-import { eachValueFrom } from "rxjs-for-await";
 import sinon from "sinon";
-import { collectAsyncIterable } from "../presentation-frontend/AsyncGenerators";
+import { PageOptions } from "@itwin/presentation-common";
 
 async function sleep(millis: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, millis));
 }
 
 describe("StreamedResponseGenerator", () => {
-  it("should provide same outputs for all getters", async () => {
-    const items = [0, 1, 2, 3, 4, 5];
-    const pageSize = 2;
-    const props: StreamedResponseGeneratorProps<number> = {
-      batch: { start: 0, size: pageSize },
-      getBatch: async (page) => ({ total: items.length, items: items.slice(page.start, page.start + page.size) }),
-    };
-
-    const generator = new StreamedResponseGenerator(props);
-    const pageArrayVariations = [await collectAsyncIterable(generator.batchesIterator), await collectAsyncIterable(eachValueFrom(generator.batches))];
-
-    for (const pageArray of pageArrayVariations) {
-      expect(pageArray).to.deep.eq([
-        [0, 1],
-        [2, 3],
-        [4, 5],
-      ]);
-    }
-
-    await expect(generator.getItems()).to.eventually.deep.eq(items);
-  });
-
   it("should run requests concurrently", async () => {
     const items = [...new Array(1000).keys()];
     const props: StreamedResponseGeneratorProps<number> = {
-      batch: { start: 0, size: 2 },
       getBatch: async (page) => {
         await sleep(5);
         return {
           total: items.length,
-          items: items.slice(page.start, page.start + page.size),
+          items: items.slice(page.start, page.start + 10),
         };
       },
     };
 
     const generator = new StreamedResponseGenerator(props);
-    await collectAsyncIterable(generator.batchesIterator);
+    await generator.getItems();
   }).timeout(100);
 
-  it("should handle a single page", async () => {
+  it("should handle a page larger than the item count", async () => {
     const items = [1, 2, 3, 4];
     const props: StreamedResponseGeneratorProps<number> = {
-      batch: { start: 0, size: 8 },
+      paging: { start: 0, size: 8 },
       getBatch: async (page) => ({ total: items.length, items: items.slice(page.start, page.start + page.size) }),
     };
     const generator = new StreamedResponseGenerator(props);
-    const iterator = generator.batchesIterator;
-    expect((await iterator.next()).value).to.deep.equal(items);
-  });
-
-  it("should handle unevenly divided pages", async () => {
-    const items = [1, 2, 3, 4, 5, 6, 7];
-    const props: StreamedResponseGeneratorProps<number> = {
-      batch: { start: 0, size: 4 },
-      getBatch: async (page) => ({ total: items.length, items: items.slice(page.start, page.start + page.size) }),
-    };
-    const generator = new StreamedResponseGenerator(props);
-    const iterator = generator.batchesIterator;
-    expect((await iterator.next()).value).to.deep.equal([1, 2, 3, 4]);
-    expect((await iterator.next()).value).to.deep.equal([5, 6, 7]);
+    const receivedValues = await generator.getItems();
+    expect(receivedValues).to.deep.equal(items);
   });
 
   it("should respect the provided parallelism", async () => {
@@ -76,16 +40,15 @@ describe("StreamedResponseGenerator", () => {
     const parallelism = 2;
     const fakePageRetriever = sinon.fake(async (page) => ({
       total: items.length,
-      items: items.slice(page.start, page.start + page.size),
+      items: items.slice(page.start, page.start + 10),
     }));
     const props: StreamedResponseGeneratorProps<number> = {
-      batch: { start: 0, size: 2 },
       getBatch: fakePageRetriever,
       parallelism,
     };
 
     const generator = new StreamedResponseGenerator(props);
-    const iterator = generator.batchesIterator;
+    const iterator = generator.itemsIterator;
 
     // The call for the first page should happen immediately
     expect(fakePageRetriever).to.be.calledOnce;
@@ -95,25 +58,45 @@ describe("StreamedResponseGenerator", () => {
     expect(fakePageRetriever.callCount).to.equal(parallelism * 2 + 1);
   });
 
-  it("should reuse the first page", async () => {
-    const items = [0, 1, 2, 3, 4, 5, 6];
-    const pageSize = 2;
+  it("should fetch items up to requested page size", async () => {
+    const items = [...new Array(100).keys()];
     const fakePageRetriever = sinon.fake(async (page) => ({
       total: items.length,
-      items: items.slice(page.start, page.start + page.size),
+      items: items.slice(page.start, page.start + 2),
     }));
     const props: StreamedResponseGeneratorProps<number> = {
-      batch: { start: 0, size: pageSize },
+      paging: { size: 6 },
       getBatch: fakePageRetriever,
     };
 
     const generator = new StreamedResponseGenerator(props);
-    const iterator = generator.batchesIterator;
-    await iterator.next();
-    await iterator.next();
+    const generatedItems = await generator.getItems();
 
-    expect(fakePageRetriever.firstCall.args).to.deep.equal([{ start: 0, size: pageSize }, 0]);
-    expect(fakePageRetriever.secondCall.args).not.to.deep.equal([{ start: 0, size: pageSize }, 1]);
+    expect(generatedItems).to.deep.eq([0, 1, 2, 3, 4, 5]);
+    expect(fakePageRetriever).to.be.calledThrice;
+  });
+
+  it("should fetch each batch once", async () => {
+    const items = [0, 1, 2, 3, 4, 5, 6];
+    const requestedBatches = new Set<Required<PageOptions>>();
+    const fakePageRetriever = sinon.fake(async (page) => {
+      if (requestedBatches.has(page)) {
+        throw new Error(`Page requested multiple times: ${JSON.stringify(page)}`);
+      }
+
+      requestedBatches.add(page);
+      return {
+        total: items.length,
+        items: items.slice(page.start, page.start + 2),
+      };
+    });
+
+    const props: StreamedResponseGeneratorProps<number> = {
+      getBatch: fakePageRetriever,
+    };
+
+    const generator = new StreamedResponseGenerator(props);
+    await generator.getItems();
   });
 
   it("calls getter once with 0,0 partial page options when given `undefined` page options", async () => {
@@ -124,24 +107,24 @@ describe("StreamedResponseGenerator", () => {
 
   it("calls getter once with 0,0 partial page options when given empty page options", async () => {
     const getter = sinon.stub().resolves({ total: 0, items: [] });
-    await new StreamedResponseGenerator({ batch: {}, getBatch: getter }).getItems();
+    await new StreamedResponseGenerator({ paging: {}, getBatch: getter }).getItems();
     expect(getter).to.be.calledOnceWith({ start: 0, size: 0 });
   });
 
   it("calls getter once with partial page options equal to given page options", async () => {
     const getter = sinon.stub().resolves({ total: 0, items: [] });
-    await new StreamedResponseGenerator({ batch: { start: 1, size: 2 }, getBatch: getter }).getItems();
+    await new StreamedResponseGenerator({ paging: { start: 1, size: 2 }, getBatch: getter }).getItems();
     expect(getter).to.be.calledOnceWith({ start: 1, size: 2 });
   });
 
   it("calls getter multiple times until the whole requested page is received when requesting a page of specified size", async () => {
     const getter = sinon.stub();
-    const total = 4;
+    const total = 5;
     getter.onFirstCall().resolves({ total, items: [2] });
     getter.onSecondCall().resolves({ total, items: [3] });
     getter.onThirdCall().resolves({ total, items: [4] });
 
-    const generator = new StreamedResponseGenerator({ batch: { start: 1, size: 3 }, getBatch: getter });
+    const generator = new StreamedResponseGenerator({ paging: { start: 1, size: 3 }, getBatch: getter });
     const items = await generator.getItems();
 
     expect(getter).to.be.calledThrice;
@@ -157,7 +140,7 @@ describe("StreamedResponseGenerator", () => {
     getter.onFirstCall().resolves({ total: 5, items: [2, 3] });
     getter.onSecondCall().resolves({ total: 5, items: [4, 5] });
 
-    const generator = new StreamedResponseGenerator({ batch: { start: 1 }, getBatch: getter });
+    const generator = new StreamedResponseGenerator({ paging: { start: 1 }, getBatch: getter });
     const items = await generator.getItems();
     const total = generator.total;
 
@@ -171,7 +154,7 @@ describe("StreamedResponseGenerator", () => {
   it("throws when page start index is larger than total number of items", async () => {
     const getter = sinon.stub();
     getter.resolves({ total: 5, items: [] });
-    const generator = new StreamedResponseGenerator({ batch: { start: 9 }, getBatch: getter });
+    const generator = new StreamedResponseGenerator({ paging: { start: 9 }, getBatch: getter });
 
     await expect(generator.getItems()).to.eventually.be.rejected;
     expect(getter).to.be.calledOnce;
@@ -181,7 +164,7 @@ describe("StreamedResponseGenerator", () => {
   it("throws when partial request returns no items", async () => {
     const getter = sinon.stub();
     getter.resolves({ total: 5, items: [] });
-    const generator = new StreamedResponseGenerator({ batch: { start: 1 }, getBatch: getter });
+    const generator = new StreamedResponseGenerator({ paging: { start: 1 }, getBatch: getter });
 
     await expect(generator.getItems()).to.eventually.be.rejected;
     expect(getter).to.be.calledOnce;
@@ -192,7 +175,7 @@ describe("StreamedResponseGenerator", () => {
     const getter = sinon.stub();
     getter.onFirstCall().resolves({ total: 5, items: [2, 3] });
     getter.onSecondCall().resolves({ total: 5, items: [] });
-    const generator = new StreamedResponseGenerator({ batch: { start: 1 }, getBatch: getter });
+    const generator = new StreamedResponseGenerator({ paging: { start: 1 }, getBatch: getter });
 
     await expect(generator.getItems()).to.eventually.be.rejected;
     expect(getter).to.be.called;

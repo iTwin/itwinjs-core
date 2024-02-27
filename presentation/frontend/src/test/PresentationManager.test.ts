@@ -112,9 +112,11 @@ describe("PresentationManager", () => {
   });
 
   function recreateManager(props?: Partial<PresentationManagerProps>) {
-    manager?.dispose();
-    (props ??= {}).rpcRequestsHandler ??= rpcRequestsHandlerMock.object;
-    manager = PresentationManager.create(props);
+    manager && manager.dispose();
+    manager = PresentationManager.create({
+      rpcRequestsHandler: rpcRequestsHandlerMock.object,
+      ...props,
+    });
   }
 
   const mockI18N = () => {
@@ -524,7 +526,7 @@ describe("PresentationManager", () => {
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions(options)))
         // eslint-disable-next-line deprecation/deprecation
-        .returns(async () => ({ total: 666, items: result.map(Node.toJSON) }))
+        .returns(async () => ({ total: result.length, items: result.map(Node.toJSON) }))
         .verifiable();
       const actualResult = await manager.getNodes(options);
       expect(actualResult).to.deep.eq(result);
@@ -1141,34 +1143,29 @@ describe("PresentationManager", () => {
         descriptor: descriptor.createDescriptorOverrides(),
         keys: keyset,
       };
-      const total = 5;
       rpcRequestsHandlerMock
         .setup(async (x) =>
           x.getPagedContent(
             toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON(), paging: { start: 0, size: 2 } }),
           ),
         )
-        .returns(async () => ({ descriptor: descriptor.toJSON(), contentSet: { total, items: [item1.toJSON()] } }))
+        .returns(async () => ({ descriptor: descriptor.toJSON(), contentSet: { total: 5, items: [item1.toJSON()] } }))
         .verifiable();
-
-      // Set up rpc request handler to return item2 for the remaining requests
-      for (let i = 1; i < total; ++i) {
-        rpcRequestsHandlerMock
-          .setup(async (x) =>
-            x.getPagedContentSet(
-              toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON(), paging: { start: i, size: 1 } }),
-            ),
-          )
-          .returns(async () => ({ total: 5, items: [item2.toJSON()] }))
-          .verifiable();
-      }
+      rpcRequestsHandlerMock
+        .setup(async (x) =>
+          x.getPagedContentSet(
+            toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON(), paging: { start: 1, size: 1 } }),
+          ),
+        )
+        .returns(async () => ({ total: 5, items: [item2.toJSON()] }))
+        .verifiable();
 
       const actualResult = await manager.getContentAndSize(options);
       expect(actualResult).to.deep.eq({
         size: 5,
         content: {
           descriptor,
-          contentSet: [item1, item2, item2, item2, item2],
+          contentSet: [item1, item2],
         },
       });
       rpcRequestsHandlerMock.verifyAll();

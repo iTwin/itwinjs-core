@@ -60,8 +60,6 @@ import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
 import { StreamedResponseGenerator } from "./StreamedResponseGenerator";
-import { map, Observable } from "rxjs";
-import { collectObservable } from "./AsyncGenerators";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
@@ -361,7 +359,7 @@ export class PresentationManager implements IDisposable {
     return { ...options, rulesetOrId: foundRulesetOrId, rulesetVariables: variables };
   }
 
-  public async getNodeStream(
+  private async getNodesGenerator(
     requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute,
   ): Promise<StreamedResponseGenerator<Node>> {
     this.startIModelInitialization(requestOptions.imodel);
@@ -369,7 +367,7 @@ export class PresentationManager implements IDisposable {
     const rpcOptions = this.toRpcTokenOptions({ ...options });
 
     return new StreamedResponseGenerator({
-      batch: options.paging,
+      paging: options.paging,
       getBatch: async (paging) => {
         const result = await this._requestsHandler.getPagedNodes({ ...rpcOptions, paging });
         return {
@@ -381,12 +379,24 @@ export class PresentationManager implements IDisposable {
     });
   }
 
+  /** Returns an iterator that polls nodes asynchronously. */
+  public async getNodesIterator(
+    requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute,
+  ): Promise<{ count: number; items: AsyncIterableIterator<Node> }> {
+    const generator = await this.getNodesGenerator(requestOptions);
+    await generator.fetchFirstBatch();
+    return {
+      count: generator.total,
+      items: generator.itemsIterator,
+    };
+  }
+
   /** Retrieves nodes */
   public async getNodes(
     requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute,
   ): Promise<Node[]> {
-    const stream = await this.getNodeStream(requestOptions);
-    return stream.getItems(requestOptions?.paging?.size);
+    const stream = await this.getNodesGenerator(requestOptions);
+    return stream.getItems();
   }
 
   /** Retrieves nodes count. */
@@ -403,13 +413,11 @@ export class PresentationManager implements IDisposable {
   public async getNodesAndCount(
     requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute,
   ): Promise<{ count: number; nodes: Node[] }> {
-    const stream = await this.getNodeStream(requestOptions);
-    await stream.fetchFirstBatch();
-    const count = stream.total;
-    const nodes = await stream.getItems(requestOptions.paging?.size);
+    const generator = await this.getNodesGenerator(requestOptions);
+    await generator.fetchFirstBatch();
     return {
-      count,
-      nodes,
+      count: generator.total,
+      nodes: await generator.getItems(),
     };
   }
 
@@ -535,11 +543,11 @@ export class PresentationManager implements IDisposable {
       };
 
       const generator = new StreamedResponseGenerator({
-        batch: requestOptions.paging,
+        paging: requestOptions.paging,
         getBatch: getPage,
       });
 
-      const result = await generator.getItems(requestOptions?.paging?.size);
+      const result = await generator.getItems();
       if (!descriptor) {
         return undefined;
       }
@@ -564,10 +572,9 @@ export class PresentationManager implements IDisposable {
     }
   }
 
-  /** Retrieves distinct values of specific field from the content. */
-  public async getDistinctValuesStream(
+  private async getDistinctValuesGenerator(
     requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute,
-  ): Promise<Observable<DisplayValueGroup>> {
+  ): Promise<StreamedResponseGenerator<DisplayValueGroup>> {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = {
@@ -576,28 +583,39 @@ export class PresentationManager implements IDisposable {
       keys: stripTransientElementKeys(options.keys).toJSON(),
     };
 
-    const pageGenerator = new StreamedResponseGenerator({
-      batch: options.paging,
+    return new StreamedResponseGenerator({
+      paging: options.paging,
       getBatch: async (paging) => {
-        return this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging });
+        const response = await this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging });
+        return {
+          total: response.total,
+          // eslint-disable-next-line deprecation/deprecation
+          items: response.items.map((x) => this._localizationHelper.getLocalizedDisplayValueGroup(DisplayValueGroup.fromJSON(x))),
+        };
       },
     });
+  }
 
-    return pageGenerator.items.pipe(
-      // eslint-disable-next-line deprecation/deprecation
-      map(DisplayValueGroup.fromJSON),
-      map((g) => this._localizationHelper.getLocalizedDisplayValueGroup(g)),
-    );
+  /** Returns an iterator that asynchronously polls distinct values of specific field from the content. */
+  public async getDistinctValuesIterator(
+    requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute,
+  ): Promise<{ total: number; items: AsyncIterableIterator<DisplayValueGroup> }> {
+    const generator = await this.getDistinctValuesGenerator(requestOptions);
+    await generator.fetchFirstBatch();
+    return {
+      total: generator.total,
+      items: generator.itemsIterator,
+    };
   }
 
   /** Retrieves distinct values of specific field from the content. */
   public async getPagedDistinctValues(
     requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<PagedResponse<DisplayValueGroup>> {
-    const observable = await this.getDistinctValuesStream(requestOptions);
-    const items = await collectObservable(observable);
+    const generator = await this.getDistinctValuesGenerator(requestOptions);
+    const items = await generator.getItems();
     return {
-      total: items.length,
+      total: generator.total,
       items,
     };
   }
@@ -633,7 +651,7 @@ export class PresentationManager implements IDisposable {
     };
 
     const generator = new StreamedResponseGenerator({
-      batch: requestOptions.paging,
+      paging: requestOptions.paging,
       getBatch: async (page) => {
         const keys = await this._requestsHandler.getContentInstanceKeys({ ...rpcOptions, paging: page });
         return {
@@ -649,8 +667,7 @@ export class PresentationManager implements IDisposable {
     });
 
     await generator.fetchFirstBatch();
-    const pageSize = requestOptions?.paging?.size;
-    const iterator = pageSize ? generator.getLimitedItemsIterator(pageSize) : generator.itemsIterator;
+    const iterator = generator.itemsIterator;
     return {
       total: generator.total,
       async *items() {
