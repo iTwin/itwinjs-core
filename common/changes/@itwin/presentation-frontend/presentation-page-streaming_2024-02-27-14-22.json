@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-frontend",
+      "comment": "Add `getNodesIterator` and `getDistinctValuesIterator` methods to `PresentationManager` which return iterators that can be polled asynchronously.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-frontend"
+}
