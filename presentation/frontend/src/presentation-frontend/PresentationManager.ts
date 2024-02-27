@@ -89,22 +89,26 @@ export interface IModelContentChangeEventArgs {
 
 /**
  * Options for requests that can return a page of a certain size.
+ * @public
  */
 export type PagedRequestOptions<TOptions extends {}> = Paged<TOptions> & StreamingOptions;
 
 /**
  * Options for requests that retrieve nodes.
+ * @public
  */
 export type GetNodesRequestOptions = HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute;
 
 /**
  * Options for requests that retrieve content.
+ * @public
  */
 export type GetContentRequestOptions = ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> &
   ClientDiagnosticsAttribute;
 
 /**
  * Options for requests that retrieve distinct values.
+ * @public
  */
 export type GetDistinctValuesRequestOptions = DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> &
   ClientDiagnosticsAttribute;
