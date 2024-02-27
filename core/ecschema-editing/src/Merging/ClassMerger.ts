@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ECClass, ECClassModifier, Mixin, parseClassModifier, SchemaItemKey, SchemaItemType, schemaItemTypeToString, SchemaKey } from "@itwin/ecschema-metadata";
+import { ECClass, ECClassModifier, Mixin, parseClassModifier, Property, SchemaItemKey, SchemaItemType, schemaItemTypeToString, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaItemEditResults } from "../Editing/Editor";
 import { MutableClass } from "../Editing/Mutable/MutableClass";
 import { SchemaMergeContext } from "./SchemaMerger";
-import { BaseClassDelta, ChangeType, ClassChanges, EntityMixinChanges, PropertyValueChange } from "../Validation/SchemaChanges";
-import { ClassPropertyMerger } from "./ClassPropertyMerger";
+import { BaseClassDelta, ChangeType, ClassChanges, EntityMixinChanges, PropertyChanges, PropertyValueChange } from "../Validation/SchemaChanges";
 import { mergeCustomAttributes } from "./CustomAttributeMerger";
+import { createPropertyFromProps, mergePropertyAttributeValueChanges } from "./PropertyMerger";
 
 /**
  * @internal
@@ -133,6 +133,42 @@ export class ClassMerger<TClass extends ECClass> {
     }
   }
 
+  private async mergePropertyChanges(itemKey: SchemaItemKey, propertyChanges: Iterable<PropertyChanges>): Promise<SchemaItemEditResults> {
+    const targetItem = await this.context.targetSchema.lookupItem<TClass>(itemKey);
+    if (targetItem === undefined) {
+      return { errorMessage: `'${itemKey.name}' class could not be located in the merged schema.`};
+    }
+
+    for (const change of propertyChanges) {
+      if (change.propertyMissing?.changeType === ChangeType.Missing) {
+        if (await targetItem.getProperty(change.ecTypeName) !== undefined) {
+          return { errorMessage: `Merged schema already contains a class '${itemKey.name}' property '${change.ecTypeName}'.`};
+        }
+
+        const sourceProperty = change.propertyMissing.diagnostic.ecDefinition as unknown as Property;
+        const results  = await createPropertyFromProps(this.context, itemKey, sourceProperty);
+        if (results.errorMessage !== undefined) {
+          return { errorMessage: results.errorMessage};
+        }
+      } else {
+        const targetProperty = (await targetItem.getProperty(change.ecTypeName))!;
+        const results = await mergePropertyAttributeValueChanges(this.context, targetProperty, change.propertyValueChanges);
+        if (results.errorMessage !== undefined) {
+          return results;
+        }
+      }
+
+      const mergeResults = await mergeCustomAttributes(this.context, change.customAttributeChanges.values(), async (ca) => {
+        return this.context.editor.entities.addCustomAttributeToProperty(itemKey, change.ecTypeName, ca);
+      });
+
+      if (mergeResults.errorMessage !== undefined) {
+        return { errorMessage: mergeResults.errorMessage};
+      }
+    }
+    return { itemKey };
+  }
+
   // First pass to create missing changes
   public static async mergeItemStubChanges(context: SchemaMergeContext, classChanges: Iterable<ClassChanges>) {
     const merger = new this(context);
@@ -179,10 +215,15 @@ export class ClassMerger<TClass extends ECClass> {
         }
       }
 
+      // merge class attribute values
       await merger.mergeAttributeValueChanges(targetItemKey, change.propertyValueChanges);
-      mergeResults  = await ClassPropertyMerger.mergeChanges(context, targetItemKey, change.propertyChanges.values());
-      if (mergeResults.errorMessage !== undefined) {
-        throw new Error(mergeResults.errorMessage);
+
+      // merge class property attribute values
+      if (change.propertyChanges.size > 0) {
+        mergeResults = await merger.mergePropertyChanges(targetItemKey, change.propertyChanges.values());
+        if (mergeResults.errorMessage !== undefined) {
+          throw new Error(mergeResults.errorMessage);
+        }
       }
 
       // merge custom attributes

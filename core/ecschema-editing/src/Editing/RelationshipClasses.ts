@@ -130,8 +130,13 @@ export class RelationshipClasses extends ECClasses {
     return { itemKey: relationshipKey, propertyName: name };
   }
 
+  /**
+   * Creates a Navigation Property through a NavigationPropertyProps.
+   * @param classKey a SchemaItemKey of the Relationship Class that will house the new property.
+   * @param navigationProps a json object that will be used to populate the new Navigation Property.
+   */
   public async createNavigationPropertyFromProps(relationshipKey: SchemaItemKey, navigationProps: NavigationPropertyProps): Promise<PropertyEditResults> {
-    const relationshipClass = (await this._schemaEditor.schemaContext.getSchemaItem<MutableRelationshipClass>(relationshipKey));
+    const relationshipClass = await this._schemaEditor.schemaContext.getSchemaItem<MutableRelationshipClass>(relationshipKey);
 
     if (relationshipClass === undefined)
       return { itemKey: relationshipKey, propertyName: navigationProps.name, errorMessage: `Relationship Class ${relationshipKey.fullName} not found in schema context.` };
