@@ -98,6 +98,12 @@ export type PagedRequestProperties<TOptions extends {}> = Paged<TOptions> & Stre
 export type GetNodesRequestProperties = HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute;
 
 /**
+ * Options for request that retrieve content.
+ */
+export type GetContentRequestProperties = ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> &
+  ClientDiagnosticsAttribute;
+
+/**
  * Properties used to configure [[PresentationManager]]
  * @public
  */
@@ -496,9 +502,7 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves overall content set size. */
-  public async getContentSetSize(
-    requestOptions: ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute,
-  ): Promise<number> {
+  public async getContentSetSize(requestOptions: GetContentRequestProperties): Promise<number> {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
@@ -510,16 +514,12 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves content which consists of a content descriptor and a page of records. */
-  public async getContent(
-    requestOptions: Paged<ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & ClientDiagnosticsAttribute,
-  ): Promise<Content | undefined> {
+  public async getContent(requestOptions: PagedRequestProperties<GetContentRequestProperties>): Promise<Content | undefined> {
     return (await this.getContentAndSize(requestOptions))?.content;
   }
 
   /** Retrieves content set size and content which consists of a content descriptor and a page of records. */
-  public async getContentAndSize(
-    requestOptions: Paged<ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & ClientDiagnosticsAttribute,
-  ): Promise<{ content: Content; size: number } | undefined> {
+  public async getContentAndSize(requestOptions: PagedRequestProperties<GetContentRequestProperties>): Promise<{ content: Content; size: number } | undefined> {
     this.startIModelInitialization(requestOptions.imodel);
     try {
       const options = await this.addRulesetAndVariablesToOptions(requestOptions);
