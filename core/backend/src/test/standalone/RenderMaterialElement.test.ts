@@ -158,7 +158,7 @@ describe("RenderMaterialElement", () => {
         pattern_scalemode: 3,
         pattern_mapping: 4,
         pattern_weight: 0.5,
-        pattern_useConstantLod: true,
+        pattern_useconstantlod: true,
         pattern_constantlod_repetitions: 0.333,
         pattern_constantlod_offset: [1000, 2000],
         pattern_constantlod_mindistanceclamp: 4,

@@ -7,25 +7,38 @@ Related instance specification is used in [content](../content/contentRule.md#at
 with its related instance and allow using the related instance for:
 
 - [Filtering](#using-related-instances-in-instance-filter), when used in `instanceFilter`.
-- [Customization](#using-related-instances-for-customizing), when used in [customization rules](../customization/index.md).
+- [Customization](#using-related-instances-for-customization), when used in [customization rules](../customization/index.md).
 - [Grouping](#using-related-instances-for-grouping), when used in [grouping rules](../hierarchies/GroupingRule.md).
 
 ## Attributes
 
-| Name                                             | Required? | Type                                                                  | Default |
-| ------------------------------------------------ | --------- | --------------------------------------------------------------------- | ------- |
-| [`relationshipPath`](#attribute-relationshipath) | Yes       | [`RelationshipPathSpecification`](./RelationshipPathSpecification.md) |         |
-| [`alias`](#attribute-alias)                      | Yes       | `string`                                                              |         |
-| [`isRequired`](#attribute-isrequired)            | No        | `boolean`                                                             | `false` |
+| Name                                              | Required?                                | Type                                                                   | Default |
+| ------------------------------------------------- | ---------------------------------------- | ---------------------------------------------------------------------- | ------- |
+| [`relationshipPath`](#attribute-relationshippath) | Yes, if `targetInstances` not specified  | [`RelationshipPathSpecification`](./RelationshipPathSpecification.md)  |         |
+| [`targetInstances`](#attribute-targetinstances)   | Yes, if `relationshipPath` not specified | `{ class: SingleSchemaClassSpecification; instanceIds: Id64String[] }` |         |
+| [`alias`](#attribute-alias)                       | Yes                                      | `string`                                                               |         |
+| [`isRequired`](#attribute-isrequired)             | No                                       | `boolean`                                                              | `false` |
 
 ### Attribute: `relationshipPath`
 
 Specifies a chain of [relationship path specifications](./RelationshipPathSpecification.md) that forms a path from the primary instance to the related instances.
 
-|                 |                                                                       |
-| --------------- | --------------------------------------------------------------------- |
-| **Type**        | [`RelationshipPathSpecification`](./RelationshipPathSpecification.md) |
-| **Is Required** | Yes                                                                   |
+|                 |                                                                          |
+| --------------- | ------------------------------------------------------------------------ |
+| **Type**        | [`RelationshipPathSpecification`](./RelationshipPathSpecification.md)    |
+| **Is Required** | Yes, if [`targetInstances`](#attribute-targetinstances) is not specified |
+
+### Attribute: `targetInstances`
+
+Specifies a target class and IDs of its ECInstances to relate to the primary instance.
+
+This may be useful when you want to use information of a completely unrelated (or related by means other than an ECRelationship) ECInstance in instance filter,
+conditions or grouping.
+
+|                 |                                                                            |
+| --------------- | -------------------------------------------------------------------------- |
+| **Type**        | `{ class: SingleSchemaClassSpecification; instanceIds: Id64String[] }`     |
+| **Is Required** | Yes, if [`relationshipPath`](#attribute-relationshippath) is not specified |
 
 ### Attribute: `alias`
 
@@ -51,7 +64,7 @@ Specifies whether to omit the primary instance from the result if the other end 
 
 ## Examples
 
-### Using related instances in instance filter
+### Using related instances with relationship path in instance filter
 
 ```ts
 [[include:Presentation.RelatedInstanceSpecification.UsingInInstanceFilter.Ruleset]]
@@ -61,6 +74,12 @@ Specifies whether to omit the primary instance from the result if the other end 
 | ----------------------- | ------------------------------------------------------------------------------------------------------ |
 | Without instance filter | ![Example without instance filter](./media/relatedinstancespecification-usage-in-instancefilter-1.png) |
 | With instance filter    | ![Example with instance filter](./media/relatedinstancespecification-usage-in-instancefilter-2.png)    |
+
+### Using related instances with target instance IDs in instance filter
+
+```ts
+[[include:Presentation.RelatedInstanceSpecification.UsingInInstanceFilterWithTargetInstances.Ruleset]]
+```
 
 ### Using related instances for customization
 

@@ -604,6 +604,7 @@ interface MapTreeId {
   tileUserId: number;
   applyTerrain: boolean;
   terrainProviderName: string;
+  terrainDataSource: string;
   terrainHeightOrigin: number;
   terrainHeightOriginMode: number;
   terrainExaggeration: number;
@@ -671,13 +672,16 @@ class MapTreeSupplier implements TileTreeSupplier {
                           // Terrain-only settings.
                           cmp = compareStrings(lhs.terrainProviderName, rhs.terrainProviderName);
                           if (0 === cmp) {
-                            cmp = compareNumbers(lhs.terrainHeightOrigin, rhs.terrainHeightOrigin);
+                            cmp = compareStringsOrUndefined(lhs.terrainDataSource, rhs.terrainDataSource);
                             if (0 === cmp) {
-                              cmp = compareNumbers(lhs.terrainHeightOriginMode, rhs.terrainHeightOriginMode);
+                              cmp = compareNumbers(lhs.terrainHeightOrigin, rhs.terrainHeightOrigin);
                               if (0 === cmp) {
-                                cmp = compareNumbers(lhs.terrainExaggeration, rhs.terrainExaggeration);
-                                if (0 === cmp)
-                                  cmp = compareBooleansOrUndefined(lhs.produceGeometry, rhs.produceGeometry);
+                                cmp = compareNumbers(lhs.terrainHeightOriginMode, rhs.terrainHeightOriginMode);
+                                if (0 === cmp) {
+                                  cmp = compareNumbers(lhs.terrainExaggeration, rhs.terrainExaggeration);
+                                  if (0 === cmp)
+                                    cmp = compareBooleansOrUndefined(lhs.produceGeometry, rhs.produceGeometry);
+                                }
                               }
                             }
                           }
@@ -725,6 +729,7 @@ class MapTreeSupplier implements TileTreeSupplier {
       wantSkirts: id.wantSkirts,
       exaggeration: id.terrainExaggeration,
       wantNormals: id.wantNormals,
+      dataSource: id.terrainDataSource,
     };
 
     if (id.applyTerrain) {
@@ -922,6 +927,7 @@ export class MapTileTreeReference extends TileTreeReference {
       tileUserId: this._tileUserId,
       applyTerrain: this.settings.applyTerrain && !this._isDrape,
       terrainProviderName: this.settings.terrainSettings.providerName,
+      terrainDataSource: this.settings.terrainSettings.dataSource,
       terrainHeightOrigin: this.settings.terrainSettings.heightOrigin,
       terrainHeightOriginMode: this.settings.terrainSettings.heightOriginMode,
       terrainExaggeration: this.settings.terrainSettings.exaggeration,
@@ -974,13 +980,16 @@ export class MapTileTreeReference extends TileTreeReference {
   }
 
   public initializeLayers(context: SceneContext): boolean {
+    let hasLoadedTileTree = false;
     const tree = this.treeOwner.load() as MapTileTree;
-    if (undefined === tree)
-      return false;     // Not loaded yet.
+    if (undefined === tree) {
+      return hasLoadedTileTree;     // Not loaded yet.
+    }
 
     tree.layerImageryTrees.length = 0;
-    if (0 === this._layerTrees.length)
+    if (0 === this._layerTrees.length) {
       return !this.isOverlay;
+    }
 
     let treeIndex = this._layerTrees.length - 1;
     // Start displaying at the highest completely opaque layer...
@@ -997,9 +1006,14 @@ export class MapTileTreeReference extends TileTreeReference {
       if (layerTreeRef && TileTreeLoadStatus.NotFound !== layerTreeRef.treeOwner.loadStatus
         && !layerTreeRef.layerSettings.allSubLayersInvisible) {
         const layerTree = layerTreeRef.treeOwner.load();
-        if (undefined === layerTree)
-          return false; // Not loaded yet.
+        if (layerTree !== undefined) {
+          hasLoadedTileTree = true;
+        } else {
+          // Let's continue, there might be loaded tile tree in the list
+          continue;
+        }
 
+        // Add loaded TileTree
         const baseImageryLayer = this._baseImageryLayerIncluded && (treeIndex === 0);
         if (layerTree instanceof ImageryMapTileTree) {
           tree.addImageryLayer(layerTree, layerTreeRef.layerSettings, treeIndex, baseImageryLayer);
@@ -1008,7 +1022,7 @@ export class MapTileTreeReference extends TileTreeReference {
       }
     }
 
-    return true;
+    return hasLoadedTileTree;
   }
 
   /** Adds this reference's graphics to the scene. By default this invokes [[TileTree.drawScene]] on the referenced TileTree, if it is loaded. */

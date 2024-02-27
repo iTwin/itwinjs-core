@@ -50,3 +50,13 @@ export function setBasicAuthorization(headers: Headers, userOrCreds: string|Requ
     headers.set("Authorization", `Basic ${Base64EncodedString.encode(`${username}:${pwd}`)}`);
 }
 
+/**
+ * Set number of milliseconds a request can take before automatically being terminated
+ * @internal
+ */
+export function setRequestTimeout(opts: RequestInit, ms: number, abortController?: AbortController ): void {
+  const controller = abortController ?? new AbortController();
+  setTimeout(() => controller.abort(), ms);
+  opts.signal = controller.signal;
+}
+

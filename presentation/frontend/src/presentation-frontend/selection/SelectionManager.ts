@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module UnifiedSelection
  */
@@ -29,7 +29,7 @@ export interface SelectionManagerProps {
  */
 export class SelectionManager implements ISelectionProvider {
   private _selectionContainerMap = new Map<IModelConnection, SelectionContainer>();
-  private _imodelToolSelectionSyncHandlers = new Map<IModelConnection, { requestorsCount: number, handler: ToolSelectionSyncHandler }>();
+  private _imodelToolSelectionSyncHandlers = new Map<IModelConnection, { requestorsCount: number; handler: ToolSelectionSyncHandler }>();
   private _hiliteSetProviders = new Map<IModelConnection, HiliteSetProvider>();
 
   /** An event which gets broadcasted on selection changes */
@@ -66,7 +66,9 @@ export class SelectionManager implements ISelectionProvider {
 
   /** @internal */
   // istanbul ignore next
-  public getToolSelectionSyncHandler(imodel: IModelConnection) { return this._imodelToolSelectionSyncHandlers.get(imodel)?.handler; }
+  public getToolSelectionSyncHandler(imodel: IModelConnection) {
+    return this._imodelToolSelectionSyncHandlers.get(imodel)?.handler;
+  }
 
   /**
    * Request the manager to sync with imodel's tool selection (see `IModelConnection.selectionSet`).
@@ -98,8 +100,9 @@ export class SelectionManager implements ISelectionProvider {
    */
   public suspendIModelToolSelectionSync(imodel: IModelConnection): IDisposable {
     const registration = this._imodelToolSelectionSyncHandlers.get(imodel);
-    if (!registration)
-      return { dispose: () => { } };
+    if (!registration) {
+      return { dispose: () => {} };
+    }
 
     const wasSuspended = registration.handler.isSuspended;
     registration.handler.isSuspended = true;
@@ -139,8 +142,9 @@ export class SelectionManager implements ISelectionProvider {
         break;
     }
 
-    if (selectedItemsSet.guid === guidBefore)
+    if (selectedItemsSet.guid === guidBefore) {
       return;
+    }
 
     container.clear(evt.level + 1);
     this.selectionChange.raiseEvent(evt, this);
@@ -238,7 +242,14 @@ export class SelectionManager implements ISelectionProvider {
    * @param level Selection level (see [selection levels documentation section]($docs/presentation/unified-selection/index#selection-levels))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
-  public async addToSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
+  public async addToSelectionWithScope(
+    source: string,
+    imodel: IModelConnection,
+    ids: Id64Arg,
+    scope: SelectionScopeProps | SelectionScope | string,
+    level: number = 0,
+    rulesetId?: string,
+  ): Promise<void> {
     const scopedKeys = await this.scopes.computeSelection(imodel, ids, scope);
     this.addToSelection(source, imodel, scopedKeys, level, rulesetId);
   }
@@ -252,7 +263,14 @@ export class SelectionManager implements ISelectionProvider {
    * @param level Selection level (see [selection levels documentation section]($docs/presentation/unified-selection/index#selection-levels))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
-  public async removeFromSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
+  public async removeFromSelectionWithScope(
+    source: string,
+    imodel: IModelConnection,
+    ids: Id64Arg,
+    scope: SelectionScopeProps | SelectionScope | string,
+    level: number = 0,
+    rulesetId?: string,
+  ): Promise<void> {
     const scopedKeys = await this.scopes.computeSelection(imodel, ids, scope);
     this.removeFromSelection(source, imodel, scopedKeys, level, rulesetId);
   }
@@ -266,7 +284,14 @@ export class SelectionManager implements ISelectionProvider {
    * @param level Selection level (see [selection levels documentation section]($docs/presentation/unified-selection/index#selection-levels))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
-  public async replaceSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
+  public async replaceSelectionWithScope(
+    source: string,
+    imodel: IModelConnection,
+    ids: Id64Arg,
+    scope: SelectionScopeProps | SelectionScope | string,
+    level: number = 0,
+    rulesetId?: string,
+  ): Promise<void> {
     const scopedKeys = await this.scopes.computeSelection(imodel, ids, scope);
     this.replaceSelection(source, imodel, scopedKeys, level, rulesetId);
   }
@@ -317,8 +342,9 @@ class SelectionContainer {
   public getSelectionLevels(): number[] {
     const levels = new Array<number>();
     for (const entry of this._selectedItemsSetMap.entries()) {
-      if (!entry[1].isEmpty)
+      if (!entry[1].isEmpty) {
         levels.push(entry[0]);
+      }
     }
     return levels.sort();
   }
@@ -339,7 +365,6 @@ export const TRANSIENT_ELEMENT_CLASSNAME = "/TRANSIENT";
 
 /** @internal */
 export class ToolSelectionSyncHandler implements IDisposable {
-
   private _selectionSourceName = "Tool";
   private _logicalSelection: SelectionManager;
   private _imodel: IModelConnection;
@@ -358,18 +383,22 @@ export class ToolSelectionSyncHandler implements IDisposable {
   }
 
   /** note: used only it tests */
-  public get pendingAsyncs() { return this._asyncsTracker.pendingAsyncs; }
+  public get pendingAsyncs() {
+    return this._asyncsTracker.pendingAsyncs;
+  }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private onToolSelectionChanged = async (ev: SelectionSetEvent): Promise<void> => {
     // ignore selection change event if the handler is suspended
-    if (this.isSuspended)
+    if (this.isSuspended) {
       return;
+    }
 
     // this component only cares about its own imodel
     const imodel = ev.set.iModel;
-    if (imodel !== this._imodel)
+    if (imodel !== this._imodel) {
       return;
+    }
 
     // determine the level of selection changes
     // wip: may want to allow selecting at different levels?
@@ -392,7 +421,12 @@ export class ToolSelectionSyncHandler implements IDisposable {
     // makes sure we're adding to selection keys with concrete classes and not "BisCore:Element", which
     // we can't because otherwise our keys compare fails (presentation components load data with
     // concrete classes)
-    const changer = new ScopedSelectionChanger(this._selectionSourceName, this._imodel, this._logicalSelection, createSelectionScopeProps(this._logicalSelection.scopes.activeScope));
+    const changer = new ScopedSelectionChanger(
+      this._selectionSourceName,
+      this._imodel,
+      this._logicalSelection,
+      createSelectionScopeProps(this._logicalSelection.scopes.activeScope),
+    );
 
     // we know what to do immediately on `clear` events
     if (SelectionSetEventType.Clear === ev.type) {
@@ -417,17 +451,19 @@ export class ToolSelectionSyncHandler implements IDisposable {
   };
 }
 
-const parseIds = (ids: Id64Arg): { persistent: Id64Arg, transient: Id64Arg } => {
+const parseIds = (ids: Id64Arg): { persistent: Id64Arg; transient: Id64Arg } => {
   let allPersistent = true;
   let allTransient = true;
   for (const id of Id64.iterable(ids)) {
-    if (Id64.isTransient(id))
+    if (Id64.isTransient(id)) {
       allPersistent = false;
-    else
+    } else {
       allTransient = false;
+    }
 
-    if (!allPersistent && !allTransient)
+    if (!allPersistent && !allTransient) {
       break;
+    }
   }
 
   // avoid making a copy if ids are only persistent or only transient
@@ -442,18 +478,20 @@ const parseIds = (ids: Id64Arg): { persistent: Id64Arg, transient: Id64Arg } => 
   const persistentElementIds: Id64Array = [];
   const transientElementIds: Id64Array = [];
   for (const id of Id64.iterable(ids)) {
-    if (Id64.isTransient(id))
+    if (Id64.isTransient(id)) {
       transientElementIds.push(id);
-    else
+    } else {
       persistentElementIds.push(id);
+    }
   }
 
   return { persistent: persistentElementIds, transient: transientElementIds };
 };
 
 function addTransientKeys(transientIds: Id64Arg, keys: KeySet): void {
-  for (const id of Id64.iterable(transientIds))
+  for (const id of Id64.iterable(transientIds)) {
     keys.add({ className: TRANSIENT_ELEMENT_CLASSNAME, id });
+  }
 }
 
 /** @internal */

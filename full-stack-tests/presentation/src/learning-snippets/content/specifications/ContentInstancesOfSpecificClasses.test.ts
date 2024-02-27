@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { KeySet, Ruleset } from "@itwin/presentation-common";
@@ -10,7 +10,6 @@ import { initialize, terminate } from "../../../IntegrationTests";
 import { getFieldByLabel } from "../../../Utils";
 
 describe("Learning Snippets", () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
@@ -24,20 +23,23 @@ describe("Learning Snippets", () => {
   });
 
   describe("Content Specifications", () => {
-
     describe("SelectedNodeInstances", () => {
       it("uses `classes` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Presentation.ContentInstancesOfSpecificClasses.Classes.Ruleset
         // The specification returns content of all `bis.PhysicalModel` classes.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "Content",
-            specifications: [{
-              specType: "ContentInstancesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["PhysicalModel"], arePolymorphic: false },
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "ContentInstancesOfSpecificClasses",
+                  classes: { schemaName: "BisCore", classNames: ["PhysicalModel"], arePolymorphic: false },
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
 
@@ -58,14 +60,18 @@ describe("Learning Snippets", () => {
         // The specification returns content of all classes derived from `bis.Model` except for excluded `bis.PhysicalModel` class.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "Content",
-            specifications: [{
-              specType: "ContentInstancesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["Model"], arePolymorphic: true },
-              excludedClasses: { schemaName: "BisCore", classNames: ["PhysicalModel"] },
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "ContentInstancesOfSpecificClasses",
+                  classes: { schemaName: "BisCore", classNames: ["Model"], arePolymorphic: true },
+                  excludedClasses: { schemaName: "BisCore", classNames: ["PhysicalModel"] },
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
 
@@ -77,9 +83,9 @@ describe("Learning Snippets", () => {
           descriptor: {},
         });
 
-        expect(content!.contentSet).to.have.lengthOf(7).and.not.containSubset([
-          { classInfo: { name: "BisCore:PhysicalModel" } },
-        ]);
+        expect(content!.contentSet)
+          .to.have.lengthOf(7)
+          .and.not.containSubset([{ classInfo: { name: "BisCore:PhysicalModel" } }]);
       });
 
       it("uses `handlePropertiesPolymorphically` attribute", async () => {
@@ -87,14 +93,18 @@ describe("Learning Snippets", () => {
         // This ruleset returns content of all `bis.ViewDefinition` instances, including all properties from derived classes.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "Content",
-            specifications: [{
-              specType: "ContentInstancesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["ViewDefinition"], arePolymorphic: true },
-              handlePropertiesPolymorphically: true,
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "ContentInstancesOfSpecificClasses",
+                  classes: { schemaName: "BisCore", classNames: ["ViewDefinition"], arePolymorphic: true },
+                  handlePropertiesPolymorphically: true,
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
 
@@ -105,25 +115,27 @@ describe("Learning Snippets", () => {
           keys: new KeySet(),
           descriptor: {},
         });
-        expect(content!.descriptor.fields).to.containSubset([
-          { label: "Category Selector" },
-          { label: "Code" },
-          { label: "Description" },
-          { label: "Display Style" },
-          { label: "Extents" },
-          { label: "Eye Point" },
-          { label: "Focus Distance" },
-          { label: "Is Camera On" },
-          { label: "Is Private" },
-          { label: "Lens Angle" },
-          { label: "Model" },
-          { label: "Model Selector" },
-          { label: "Origin" },
-          { label: "Pitch" },
-          { label: "Roll" },
-          { label: "User Label" },
-          { label: "Yaw" },
-        ]).and.to.have.lengthOf(17);
+        expect(content!.descriptor.fields)
+          .to.containSubset([
+            { label: "Category Selector" },
+            { label: "Code" },
+            { label: "Description" },
+            { label: "Display Style" },
+            { label: "Extents" },
+            { label: "Eye Point" },
+            { label: "Focus Distance" },
+            { label: "Is Camera On" },
+            { label: "Is Private" },
+            { label: "Lens Angle" },
+            { label: "Model" },
+            { label: "Model Selector" },
+            { label: "Origin" },
+            { label: "Pitch" },
+            { label: "Roll" },
+            { label: "User Label" },
+            { label: "Yaw" },
+          ])
+          .and.to.have.lengthOf(17);
 
         expect(content!.contentSet.length).to.eq(4);
       });
@@ -133,14 +145,18 @@ describe("Learning Snippets", () => {
         // This ruleset returns content of all `bis.SpatialViewDefinition` instances whose `Pitch` property is greater or equal to 0.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "Content",
-            specifications: [{
-              specType: "ContentInstancesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
-              instanceFilter: "this.Pitch >= 0",
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "ContentInstancesOfSpecificClasses",
+                  classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
+                  instanceFilter: "this.Pitch >= 0",
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
 
@@ -158,9 +174,6 @@ describe("Learning Snippets", () => {
           expect(record.values[field.name]).to.be.not.below(0);
         });
       });
-
     });
-
   });
-
 });

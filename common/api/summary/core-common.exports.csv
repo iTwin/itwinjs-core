@@ -91,6 +91,7 @@ public;CartographicProps
 public;CartographicRange
 public;CategoryProps 
 public;CategorySelectorProps 
+public;CesiumTerrainAssetId
 internal;ChangeData
 public;ChangedElements
 public;ChangedEntities
@@ -279,6 +280,16 @@ public;Frustum
 public;FrustumPlanes
 public;FrustumPlanes
 public;FunctionalElementProps 
+beta;GenericInstanceFilter
+beta;GenericInstanceFilter
+beta;GenericInstanceFilterRelatedInstanceDescription
+beta;GenericInstanceFilterRelationshipStep
+beta;GenericInstanceFilterRule
+beta;GenericInstanceFilterRuleGroup
+beta;GenericInstanceFilterRuleGroupOperator = "and" | "or"
+beta;GenericInstanceFilterRuleOperator = "is-equal" | "is-not-equal" | "is-null" | "is-not-null" | "is-true" | "is-false" | "less" | "less-or-equal" | "greater" | "greater-or-equal" | "like"
+beta;GenericInstanceFilterRuleValue
+beta;GenericInstanceFilterRuleValue
 public;GeocentricTransform 
 public;GeocentricTransformProps
 beta;GeoCoordinatesRequestProps
@@ -515,6 +526,7 @@ internal;OpenAPIResponses
 internal;OpenAPISchema
 public;OpenBriefcaseOptions
 public;OpenBriefcaseProps 
+beta;OpenCheckpointArgs
 public;OpenDbKey
 internal;OPERATION: unique symbol
 alpha;OrbitGtBlobProps

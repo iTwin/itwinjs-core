@@ -28,26 +28,38 @@ import { GeometryQuery } from "./GeometryQuery";
 export class PointString3d extends GeometryQuery implements BeJSONFunctions {
   /** String name for schema properties */
   public readonly geometryCategory = "pointCollection";
-
   /** Test if `other` is a PointString3d */
-  public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof PointString3d; }
+  public isSameGeometryClass(other: GeometryQuery): boolean {
+    return other instanceof PointString3d;
+  }
   private _points: Point3d[];
-  /** return a clone of the points array. */
-  public get points(): Point3d[] { return this._points; }
+  /** Return a clone of the points array. */
+  public get points(): Point3d[] {
+    return this._points;
+  }
   private constructor() {
     super();
     this._points = [];
   }
   /** Clone and apply a transform. */
-  public cloneTransformed(transform: Transform): PointString3d {  // we know tryTransformInPlace succeeds.
+  public cloneTransformed(transform: Transform): PointString3d {
     const c = this.clone();
-    c.tryTransformInPlace(transform);
+    c.tryTransformInPlace(transform); // we know tryTransformInPlace succeeds
     return c;
   }
+  /**
+   * Turn any array (possibly nested) into a "flat" array of objects that are not arrays. This allows processing
+   * the objects without recursion into nested arrays.
+   */
   private static flattenArray(arr: any): any {
-    return arr.reduce((flat: any, toFlatten: any) => {
-      return flat.concat(Array.isArray(toFlatten) ? PointString3d.flattenArray(toFlatten) : toFlatten);
-    }, []);
+    return arr.reduce(
+      // a callback function to execute for each element in the array. Its return value becomes
+      // the value of the "flat" parameter on the next invocation of the callback function.
+      (flat: any, toFlatten: any) => {
+        return flat.concat(Array.isArray(toFlatten) ? PointString3d.flattenArray(toFlatten) : toFlatten);
+      },
+      [], // initial value (empty array)
+    );
   }
   /** Create a PointString3d from points. */
   public static create(...points: any[]): PointString3d {
@@ -55,8 +67,7 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
     result.addPoints(points);
     return result;
   }
-
-  /** Add multiple points to the PointString3d */
+  /** Add multiple points to the PointString3d. */
   public addPoints(...points: any[]) {
     const toAdd: any[] = PointString3d.flattenArray(points);
     for (const p of toAdd) {
@@ -64,26 +75,25 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
         this._points.push(p);
     }
   }
-  /** Add a single point to the PointString3d */
+  /** Add a single point to the PointString3d. */
   public addPoint(point: Point3d) {
     this._points.push(point);
   }
-  /** Remove the last point added to the PointString3d */
+  /** Remove the last point added to the PointString3d. */
   public popPoint() {
     this._points.pop();
   }
-
-  /** Replace this PointString3d's point array by a clone of the array in `other` */
+  /** Replace this PointString3d's point array by a clone of the array in `other`. */
   public setFrom(other: PointString3d) {
     this._points = Point3dArray.clonePoint3dArray(other._points);
   }
-  /** Create from an array of Point3d */
+  /** Create from an array of Point3d. */
   public static createPoints(points: Point3d[]): PointString3d {
     const ps = new PointString3d();
     ps._points = Point3dArray.clonePoint3dArray(points);
     return ps;
   }
-  /** Create a PointString3d from xyz coordinates packed in a Float64Array */
+  /** Create a PointString3d from xyz coordinates packed in a Float64Array. */
   public static createFloat64Array(xyzData: Float64Array): PointString3d {
     const ps = new PointString3d();
     for (let i = 0; i + 3 <= xyzData.length; i += 3)
@@ -96,7 +106,7 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
     retVal.setFrom(this);
     return retVal;
   }
-  /** Replace this instance's points by those from a json array, e.g. `[[1,2,3], [4,2,2]]` */
+  /** Replace this instance's points by those from a json array, e.g. `[[1,2,3], [4,5,6]]`. */
   public setFromJSON(json?: any) {
     this._points.length = 0;
     if (Array.isArray(json)) {
@@ -107,35 +117,42 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
   }
   /**
    * Convert an PointString3d to a JSON object.
-   * @return {*} [[x,y,z],...[x,y,z]]
+   * @return {*} e.g., `[[1,2,3], [4,5,6]]`.
    */
   public toJSON(): XYZProps[] {
     const value = [];
-    for (const p of this._points) value.push(p.toJSON());
+    for (const p of this._points)
+      value.push(p.toJSON());
     return value;
   }
-  /** Create a PointString3d from a json array, e.g. `[[1,2,3], [4,2,2]]` */
+  /** Create a PointString3d from a json array, e.g. `[[1,2,3], [4,5,6]]`. */
   public static fromJSON(json?: any): PointString3d {
-    const ps = new PointString3d(); ps.setFromJSON(json); return ps;
+    const ps = new PointString3d();
+    ps.setFromJSON(json);
+    return ps;
   }
   /** Access a single point by index. */
   public pointAt(i: number, result?: Point3d): Point3d | undefined {
     if (i >= 0 && i < this._points.length) {
-      if (result) { result.setFrom(this._points[i]); return result; }
+      if (result) {
+        result.setFrom(this._points[i]);
+        return result;
+      }
       return this._points[i].clone();
     }
     return undefined;
   }
   /** Return the number of points. */
-  public numPoints(): number { return this._points.length; }
-
+  public numPoints(): number {
+    return this._points.length;
+  }
   /** Reverse the point order */
   public reverseInPlace(): void {
     if (this._points.length >= 2) {
       let i0 = 0;
       let i1 = this._points.length - 1;
       while (i0 < i1) {
-        const a = this._points[i0];
+        const a = this._points[i1];
         this._points[i1] = this._points[i0];
         this._points[i0] = a;
         i0++;
@@ -143,7 +160,7 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
       }
     }
   }
-  /** Return the number of points. */
+  /** Apply transform on points in place. */
   public tryTransformInPlace(transform: Transform): boolean {
     transform.multiplyPoint3dArrayInPlace(this._points);
     return true;
@@ -162,7 +179,7 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
     return Point3dArray.isCloseToPlane(this._points, plane, Geometry.smallMetricDistance);
   }
-  /** Extend a range to include the points in this PointString3d. */
+  /** Extend a range to include the points in this PointString3d (optionally transformed). */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
     rangeToExtend.extendArray(this._points, transform);
   }
@@ -173,10 +190,11 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
     return Point3dArray.isAlmostEqual(this._points, other._points);
   }
   /** Reduce to empty set of points. */
-  public clear() { this._points.length = 0; }
-  /** Second step of double dispatch:  call `handler.handlePointString(this)` */
+  public clear() {
+    this._points.length = 0;
+  }
+  /** Second step of double dispatch: call `handler.handlePointString(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handlePointString3d(this);
   }
-
 }
