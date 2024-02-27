@@ -44,7 +44,6 @@ import { NodeKey } from '@itwin/presentation-common';
 import { NodePathElement } from '@itwin/presentation-common';
 import { Paged } from '@itwin/presentation-common';
 import { PagedResponse } from '@itwin/presentation-common';
-import { PageOptions } from '@itwin/presentation-common';
 import { RegisteredRuleset } from '@itwin/presentation-common';
 import { RpcRequestsHandler } from '@itwin/presentation-common';
 import { Ruleset } from '@itwin/presentation-common';
@@ -77,9 +76,6 @@ export class BrowserLocalFavoritePropertiesStorage implements IFavoritePropertie
     // (undocumented)
     savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string): Promise<void>;
 }
-
-// @internal (undocumented)
-export const buildPagedArrayResponse: <TItem>(requestedPage: PageOptions | undefined, getter: (page: Required<PageOptions>, requestIndex: number) => Promise<PagedResponse<TItem>>) => Promise<PagedResponse<TItem>>;
 
 // @beta
 export function consoleDiagnosticsHandler(diagnostics: ClientDiagnostics): void;
@@ -165,8 +161,17 @@ export enum FavoritePropertiesScope {
     ITwin = 1
 }
 
+// @public
+export type GetContentRequestOptions = ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute;
+
+// @public
+export type GetDistinctValuesRequestOptions = DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute;
+
 // @internal (undocumented)
 export const getFieldInfos: (field: Field) => Set<PropertyFullName>;
+
+// @public
+export type GetNodesRequestOptions = HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute;
 
 // @public @deprecated
 export function getScopeId(scope: SelectionScope | string | undefined): string;
@@ -278,6 +283,9 @@ export interface OfflineCachingFavoritePropertiesStorageProps {
 }
 
 // @public
+export type PagedRequestOptions<TOptions extends {}> = Paged<TOptions> & StreamingOptions;
+
+// @public
 export class Presentation {
     static get favoriteProperties(): FavoritePropertiesManager;
     static initialize(props?: PresentationProps): Promise<void>;
@@ -314,32 +322,40 @@ export class PresentationManager implements IDisposable {
     dispose(): void;
     // @internal
     ensureIModelInitialized(_: IModelConnection): Promise<void>;
-    getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & ClientDiagnosticsAttribute): Promise<Content | undefined>;
-    getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & ClientDiagnosticsAttribute): Promise<{
+    getContent(requestOptions: PagedRequestOptions<GetContentRequestOptions>): Promise<Content | undefined>;
+    getContentAndSize(requestOptions: PagedRequestOptions<GetContentRequestOptions>): Promise<{
         content: Content;
         size: number;
     } | undefined>;
     getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<Descriptor | undefined>;
-    getContentInstanceKeys(requestOptions: ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<{
+    getContentInstanceKeys(requestOptions: StreamingOptions & ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<{
         total: number;
         items: () => AsyncGenerator<InstanceKey>;
     }>;
-    getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<number>;
+    getContentSetSize(requestOptions: GetContentRequestOptions): Promise<number>;
     getContentSources(requestOptions: ContentSourcesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<SelectClassInfo[]>;
     getDisplayLabelDefinition(requestOptions: DisplayLabelRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute): Promise<LabelDefinition>;
-    getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute): Promise<LabelDefinition[]>;
+    getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & StreamingOptions): Promise<LabelDefinition[]>;
+    getDistinctValuesIterator(requestOptions: PagedRequestOptions<GetDistinctValuesRequestOptions>): Promise<{
+        total: number;
+        items: AsyncIterableIterator<DisplayValueGroup>;
+    }>;
     getElementProperties(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<ElementProperties | undefined>;
     getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]>;
     getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]>;
-    getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute): Promise<Node_2[]>;
-    getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute): Promise<{
+    getNodes(requestOptions: PagedRequestOptions<GetNodesRequestOptions>): Promise<Node_2[]>;
+    getNodesAndCount(requestOptions: PagedRequestOptions<GetNodesRequestOptions>): Promise<{
         count: number;
         nodes: Node_2[];
     }>;
-    getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute): Promise<number>;
+    getNodesCount(requestOptions: GetNodesRequestOptions): Promise<number>;
     // @beta
     getNodesDescriptor(requestOptions: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute): Promise<Descriptor | undefined>;
-    getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>>;
+    getNodesIterator(requestOptions: PagedRequestOptions<GetNodesRequestOptions>): Promise<{
+        total: number;
+        items: AsyncIterableIterator<Node_2>;
+    }>;
+    getPagedDistinctValues(requestOptions: PagedRequestOptions<GetDistinctValuesRequestOptions>): Promise<PagedResponse<DisplayValueGroup>>;
     // @internal (undocumented)
     get ipcRequestsHandler(): IpcRequestsHandler | undefined;
     // @alpha
