@@ -26,6 +26,13 @@ async function mergePropertyAttributes(context: SchemaMergeContext, property: Pr
   return false;
 }
 
+/**
+ * Updates property with attribute value changes.
+ * @param context The current merging context.
+ * @param property The Property object to be changed.
+ * @param propertyValueChanges The changes to be applied to the property.
+ * @internal
+ */
 export async function mergePropertyAttributeValueChanges(context: SchemaMergeContext, property: Property, propertyValueChanges: PropertyValueChange[]): Promise<PropertyEditResults> {
   for (const change of propertyValueChanges) {
     const [attributeName, attributeNewValue, attributeOldValue] = change.diagnostic.messageArgs!;
@@ -40,6 +47,13 @@ export async function mergePropertyAttributeValueChanges(context: SchemaMergeCon
   return { itemKey: property.class.key, propertyName: property.name };
 }
 
+/**
+ * Creates a Property through a PropertyProps.
+ * @param context The current merging context.
+ * @param classKey The SchemaItemKey of the class.
+ * @param property The Property object to be cloned.
+ * @internal
+ */
 export async function createPropertyFromProps(context: SchemaMergeContext, classKey: SchemaItemKey, property: Property): Promise<PropertyEditResults> {
   let props = {} as PropertyProps;
 
@@ -80,6 +94,9 @@ export async function createPropertyFromProps(context: SchemaMergeContext, class
   return { errorMessage: `Unsupported Property Type: ${propertyTypeToString(property.propertyType)}` };
 }
 
+/**
+ * @internal
+ */
 namespace PropertyMerger {
   export async function mergeAttributes(context: SchemaMergeContext, property: Property, attributeName: string, attributeNewValue: any, _attributeOldValue: any): Promise<PropertyEditResults | boolean> {
     const mutableProperty = property as unknown as MutableProperty;
@@ -112,6 +129,9 @@ namespace PropertyMerger {
   }
 }
 
+/**
+ * @internal
+ */
 namespace ArrayPropertyMerger {
   export async function mergeAttributes(context: SchemaMergeContext, property: AnyArrayProperty, attributeName: string, attributeNewValue: any, attributeOldValue: any): Promise<PropertyEditResults | boolean> {
     const mutableProperty = property as unknown as MutableArrayProperty;
@@ -128,6 +148,9 @@ namespace ArrayPropertyMerger {
   }
 }
 
+/**
+ * @internal
+ */
 namespace PrimitiveOrEnumPropertyMerger {
   export async function mergeAttributes(context: SchemaMergeContext, property: AnyPrimitiveProperty | AnyEnumerationProperty, attributeName: string, attributeNewValue: any, attributeOldValue: any): Promise<PropertyEditResults | boolean> {
     const mutableProperty = property as unknown as MutablePrimitiveOrEnumPropertyBase;
@@ -160,7 +183,10 @@ namespace PrimitiveOrEnumPropertyMerger {
   }
 }
 
-export namespace EnumPropertyMerger {
+/**
+ * @internal
+ */
+namespace EnumPropertyMerger {
   export async function createFromProps(context: SchemaMergeContext, classKey: SchemaItemKey, property: AnyEnumerationProperty, props: PropertyProps): Promise<PropertyEditResults> {
     if (property.enumeration === undefined) {
       return { errorMessage: `Property ${property.fullName} is missing the required 'enumeration' attribute.` };
@@ -197,7 +223,10 @@ export namespace EnumPropertyMerger {
   }
 }
 
-export namespace PrimitivePropertyMerger {
+/**
+ * @internal
+ */
+namespace PrimitivePropertyMerger {
   export async function createFromProps(context: SchemaMergeContext, classKey: SchemaItemKey, property: AnyPrimitiveProperty, props: PropertyProps): Promise<PropertyEditResults> {
     const primitiveProps = {
       ...property.toJSON(),
@@ -219,7 +248,10 @@ export namespace PrimitivePropertyMerger {
   }
 }
 
-export namespace StructPropertyMerger {
+/**
+ * @internal
+ */
+namespace StructPropertyMerger {
   export async function createFromProps(context: SchemaMergeContext, classKey: SchemaItemKey, property: AnyStructProperty, props: PropertyProps): Promise<PropertyEditResults> {
     const itemKey = new SchemaItemKey(property.structClass.name, context.sourceSchema.schemaKey.matches(property.structClass.schema.schemaKey)
       ? context.targetSchema.schemaKey
@@ -254,7 +286,10 @@ export namespace StructPropertyMerger {
   }
 }
 
-export namespace NavigationPropertyMerger {
+/**
+ * @internal
+ */
+namespace NavigationPropertyMerger {
   export async function createFromProps(context: SchemaMergeContext, classKey: SchemaItemKey, property: NavigationProperty, props: PropertyProps): Promise<PropertyEditResults> {
     const itemKey = new SchemaItemKey(property.relationshipClass.name, context.sourceSchema.schemaKey.matches(property.relationshipClass.schemaKey)
       ? context.targetSchema.schemaKey
