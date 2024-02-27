@@ -32,6 +32,8 @@ public;CompressedId64Set = string
 public;CompressedId64Set
 public;ComputePriorityFunction
 public;Constructor
+internal;DbConflictCause
+internal;DbConflictResolution
 public;DbOpcode
 public;DbResult
 public;Dictionary

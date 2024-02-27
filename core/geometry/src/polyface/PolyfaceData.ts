@@ -46,11 +46,11 @@ export class PolyfaceData {
   public point: GrowableXYZArray;
   /** Indices of points at facet vertices. */
   public pointIndex: number[];
-  /** booleans indicating visibility of corresponding edges */
+  /** Booleans indicating visibility of corresponding edges. */
   public edgeVisible: boolean[];
-  /** Coordinates of normal vectors, packed as numbers in a contiguous array */
+  /** Coordinates of normal vectors, packed as numbers in a contiguous array. */
   public normal: GrowableXYZArray | undefined;
-  /** indices of normals at facet vertices. */
+  /** Indices of normals at facet vertices. */
   public normalIndex: number[] | undefined;
   /** Coordinates of uv parameters, packed as numbers in a contiguous array. */
   public param?: GrowableXYArray;
@@ -69,7 +69,7 @@ export class PolyfaceData {
   /** Tagged geometry data */
   public taggedNumericData: TaggedNumericData | undefined;
   private _twoSided: boolean;
-  /** boolean tag indicating if the facets are viewable from the back */
+  /** boolean tag indicating if the facets are to be considered viewable from the back */
   public get twoSided(): boolean { return this._twoSided; }
   public set twoSided(value: boolean) { this._twoSided = value; }
 
@@ -78,7 +78,11 @@ export class PolyfaceData {
     this.taggedNumericData = data;
   }
   private _expectedClosure: number;
-  /** boolean tag indicating if the facets are viewable from the back */
+  /**
+   * Flag indicating if the mesh closure is unknown (0), open sheet (1), closed solid (2).
+   * * A boundary edge of a mesh is defined as an edge with only one connected facet.
+   * * Closed solid is a mesh with no boundary edge. Open sheet is a mesh that has boundary edge(s).
+   */
   public get expectedClosure(): number { return this._expectedClosure; }
   public set expectedClosure(value: number) { this._expectedClosure = value; }
   /** Constructor for facets.
@@ -285,9 +289,13 @@ export class PolyfaceData {
         this.auxData.indices[numEdge + i] = this.auxData.indices[i];
     }
   }
-  private static trimArray(data: any[] | undefined, length: number) { if (data && length < data.length) data.length = length; }
-  /** Trim all index arrays to stated length.
-   * * This is called by PolyfaceBuilder to clean up after an aborted construction sequence.
+  private static trimArray(data: any[] | undefined, length: number) {
+    if (data && length < data.length)
+      data.length = length;
+  }
+  /**
+   * Trim all index arrays to the stated length.
+   * This is called by PolyfaceBuilder to clean up after an aborted construction sequence.
    */
   public trimAllIndexArrays(length: number): void {
     PolyfaceData.trimArray(this.pointIndex, length);

@@ -115,7 +115,7 @@ export class RenderMaterialElement extends DefinitionElement {
       choose(baseProps, "pattern_scalemode");
       choose(baseProps, "pattern_mapping");
       choose(baseProps, "pattern_weight");
-      choose(baseProps, "pattern_useConstantLod");
+      choose(baseProps, "pattern_useconstantlod");
       choose(baseProps, "pattern_constantlod_repetitions");
       choose(baseProps, "pattern_constantlod_offset");
       choose(baseProps, "pattern_constantlod_mindistanceclamp");

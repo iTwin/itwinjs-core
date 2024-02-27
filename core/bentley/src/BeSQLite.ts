@@ -26,6 +26,29 @@ export enum DbOpcode {
   Update = 23,
 }
 
+/** Cause of conflict when applying a changeset
+ * @internal
+ */
+export enum DbConflictCause {
+  Data = 1,
+  NotFound = 2,
+  Conflict = 3,
+  Constraint = 4,
+  ForeignKey = 5,
+}
+
+/** Conflict resolution strategy
+ * @internal
+ */
+export enum DbConflictResolution {
+  /** Skip incoming change */
+  Skip = 0,
+  /** Replace local row with incoming changed row */
+  Replace = 1,
+  /** Abort apply changeset */
+  Abort = 2,
+}
+
 /** Values for return codes from BeSQLite functions. Consult SQLite documentation for further explanations.
  * @public
  */

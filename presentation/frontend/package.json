@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "4.5.0-dev.3",
+  "version": "4.5.0-dev.14",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/cjs/presentation-frontend.js",
   "module": "lib/esm/presentation-frontend.js",
@@ -38,19 +38,20 @@
     "extract-api": "betools extract-api --entry=presentation-frontend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha -r jsdom-global/register --config ../.mocharc.json \"./lib/cjs/test/**/*.test.js\"",
-    "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
+    "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch",
+    "prettier:fix": "prettier --write ."
   },
   "dependencies": {
     "rxjs": "^7.8.1",
     "rxjs-for-await": "^1.0.0"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.5.0-dev.3",
-    "@itwin/core-common": "workspace:^4.5.0-dev.3",
-    "@itwin/core-frontend": "workspace:^4.5.0-dev.3",
-    "@itwin/core-quantity": "workspace:^4.5.0-dev.3",
-    "@itwin/ecschema-metadata": "workspace:^4.5.0-dev.3",
-    "@itwin/presentation-common": "workspace:^4.5.0-dev.3"
+    "@itwin/core-bentley": "workspace:^4.5.0-dev.14",
+    "@itwin/core-common": "workspace:^4.5.0-dev.14",
+    "@itwin/core-frontend": "workspace:^4.5.0-dev.14",
+    "@itwin/core-quantity": "workspace:^4.5.0-dev.14",
+    "@itwin/ecschema-metadata": "workspace:^4.5.0-dev.14",
+    "@itwin/presentation-common": "workspace:^4.5.0-dev.14"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -77,11 +78,13 @@
     "cross-env": "^5.1.4",
     "deep-equal": "^1",
     "eslint": "^8.44.0",
+    "eslint-config-prettier": "^9.1.0",
     "faker": "^4.1.0",
     "jsdom": "^19.0.0",
     "jsdom-global": "3.0.2",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
+    "prettier": "^3.2.5",
     "rimraf": "^3.0.2",
     "sinon": "^17.0.1",
     "sinon-chai": "^3.7.0",

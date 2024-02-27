@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module PresentationRules
  */
@@ -115,5 +115,7 @@ export interface DefaultGroupingPropertiesContainer {
  * @public
  */
 export type ChildNodeSpecification =
-  CustomNodeSpecification | InstanceNodesOfSpecificClassesSpecification |
-  RelatedInstanceNodesSpecification | CustomQueryInstanceNodesSpecification;
+  | CustomNodeSpecification
+  | InstanceNodesOfSpecificClassesSpecification
+  | RelatedInstanceNodesSpecification
+  | CustomQueryInstanceNodesSpecification;
