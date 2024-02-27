@@ -1,16 +1,24 @@
 import { concat, from, mergeAll, mergeMap, Observable, of, range } from "rxjs";
 import { eachValueFrom } from "rxjs-for-await";
-import { PagedResponse, PageOptions } from "@itwin/presentation-common";
+import { Paged, PagedResponse, PageOptions } from "@itwin/presentation-common";
+
+/**
+ * Options for requests that send smaller requests in batches.
+ */
+export interface StreamingOptions {
+  /** Number of parallel requests. Default: unlimited. */
+  parallelism?: number;
+}
 
 /**
  * Properties for streaming the results.
  * @internal
  */
-export interface StreamedResponseGeneratorProps<TItem> {
-  paging?: PageOptions;
-  parallelism?: number;
-  getBatch(page: Required<PageOptions>, requestIdx: number): Promise<PagedResponse<TItem>>;
-}
+export type StreamedResponseGeneratorProps<TItem> = Paged<
+  StreamingOptions & {
+    getBatch(page: Required<PageOptions>, requestIdx: number): Promise<PagedResponse<TItem>>;
+  }
+>;
 
 /**
  * This class allows to stream paged content.

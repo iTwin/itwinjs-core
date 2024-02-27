@@ -59,7 +59,7 @@ import { FrontendLocalizationHelper } from "./LocalizationHelper";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
-import { StreamedResponseGenerator } from "./StreamedResponseGenerator";
+import { StreamedResponseGenerator, StreamingOptions } from "./StreamedResponseGenerator";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
@@ -86,6 +86,16 @@ export interface IModelContentChangeEventArgs {
   /** Key of iModel that was used to create content. It matches [[IModelConnection.key]] property. */
   imodelKey: string;
 }
+
+/**
+ * Options for requests that can return a page of a certain size.
+ */
+export type PagedRequestProperties<TOptions extends {}> = Paged<TOptions> & StreamingOptions;
+
+/**
+ * Options for requests that retrieve nodes.
+ */
+export type GetNodesRequestProperties = HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute;
 
 /**
  * Properties used to configure [[PresentationManager]]
@@ -359,15 +369,13 @@ export class PresentationManager implements IDisposable {
     return { ...options, rulesetOrId: foundRulesetOrId, rulesetVariables: variables };
   }
 
-  private async getNodesGenerator(
-    requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute,
-  ): Promise<StreamedResponseGenerator<Node>> {
+  private async getNodesGenerator(requestOptions: PagedRequestProperties<GetNodesRequestProperties>): Promise<StreamedResponseGenerator<Node>> {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
 
     return new StreamedResponseGenerator({
-      paging: options.paging,
+      ...requestOptions,
       getBatch: async (paging) => {
         const result = await this._requestsHandler.getPagedNodes({ ...rpcOptions, paging });
         return {
@@ -381,7 +389,7 @@ export class PresentationManager implements IDisposable {
 
   /** Returns an iterator that polls nodes asynchronously. */
   public async getNodesIterator(
-    requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute,
+    requestOptions: PagedRequestProperties<GetNodesRequestProperties>,
   ): Promise<{ total: number; items: AsyncIterableIterator<Node> }> {
     const generator = await this.getNodesGenerator(requestOptions);
     await generator.fetchFirstBatch();
@@ -392,17 +400,13 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves nodes */
-  public async getNodes(
-    requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute,
-  ): Promise<Node[]> {
+  public async getNodes(requestOptions: PagedRequestProperties<GetNodesRequestProperties>): Promise<Node[]> {
     const result = await this.getNodesIterator(requestOptions);
     return collect(result.items);
   }
 
   /** Retrieves nodes count. */
-  public async getNodesCount(
-    requestOptions: HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute,
-  ): Promise<number> {
+  public async getNodesCount(requestOptions: GetNodesRequestProperties): Promise<number> {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
@@ -410,9 +414,7 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves total nodes count and a single page of nodes. */
-  public async getNodesAndCount(
-    requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute,
-  ): Promise<{ count: number; nodes: Node[] }> {
+  public async getNodesAndCount(requestOptions: PagedRequestProperties<GetNodesRequestProperties>): Promise<{ count: number; nodes: Node[] }> {
     const result = await this.getNodesIterator(requestOptions);
     return {
       count: result.total,
