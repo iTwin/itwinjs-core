@@ -103,6 +103,9 @@ export type GetNodesRequestProperties = HierarchyRequestOptions<IModelConnection
 export type GetContentRequestProperties = ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> &
   ClientDiagnosticsAttribute;
 
+export type GetDistinctValuesRequestOptions = DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> &
+  ClientDiagnosticsAttribute;
+
 /**
  * Properties used to configure [[PresentationManager]]
  * @public
@@ -544,7 +547,7 @@ export class PresentationManager implements IDisposable {
       };
 
       const generator = new StreamedResponseGenerator({
-        paging: requestOptions.paging,
+        ...requestOptions,
         getBatch: getPage,
       });
 
@@ -574,7 +577,7 @@ export class PresentationManager implements IDisposable {
   }
 
   private async getDistinctValuesGenerator(
-    requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute,
+    requestOptions: PagedRequestProperties<GetDistinctValuesRequestOptions>,
   ): Promise<StreamedResponseGenerator<DisplayValueGroup>> {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
@@ -585,7 +588,7 @@ export class PresentationManager implements IDisposable {
     };
 
     return new StreamedResponseGenerator({
-      paging: options.paging,
+      ...requestOptions,
       getBatch: async (paging) => {
         const response = await this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging });
         return {
@@ -599,7 +602,7 @@ export class PresentationManager implements IDisposable {
 
   /** Returns an iterator that asynchronously polls distinct values of specific field from the content. */
   public async getDistinctValuesIterator(
-    requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute,
+    requestOptions: PagedRequestProperties<GetDistinctValuesRequestOptions>,
   ): Promise<{ total: number; items: AsyncIterableIterator<DisplayValueGroup> }> {
     const generator = await this.getDistinctValuesGenerator(requestOptions);
     await generator.fetchFirstBatch();
@@ -610,9 +613,7 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves distinct values of specific field from the content. */
-  public async getPagedDistinctValues(
-    requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute,
-  ): Promise<PagedResponse<DisplayValueGroup>> {
+  public async getPagedDistinctValues(requestOptions: PagedRequestProperties<GetDistinctValuesRequestOptions>): Promise<PagedResponse<DisplayValueGroup>> {
     const result = await this.getDistinctValuesIterator(requestOptions);
     return {
       total: result.total,
@@ -641,7 +642,7 @@ export class PresentationManager implements IDisposable {
    * @public
    */
   public async getContentInstanceKeys(
-    requestOptions: ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute,
+    requestOptions: StreamingOptions & ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<{ total: number; items: () => AsyncGenerator<InstanceKey> }> {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
@@ -651,7 +652,7 @@ export class PresentationManager implements IDisposable {
     };
 
     const generator = new StreamedResponseGenerator({
-      paging: requestOptions.paging,
+      ...requestOptions,
       getBatch: async (page) => {
         const keys = await this._requestsHandler.getContentInstanceKeys({ ...rpcOptions, paging: page });
         return {
@@ -690,11 +691,12 @@ export class PresentationManager implements IDisposable {
 
   /** Retrieves display label definition of specific items. */
   public async getDisplayLabelDefinitions(
-    requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute,
+    requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & StreamingOptions,
   ): Promise<LabelDefinition[]> {
     this.startIModelInitialization(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions({ ...requestOptions });
     const generator = new StreamedResponseGenerator({
+      ...requestOptions,
       getBatch: async (page) => {
         const partialKeys = !page.start ? rpcOptions.keys : rpcOptions.keys.slice(page.start);
         return this._requestsHandler.getPagedDisplayLabelDefinitions({ ...rpcOptions, keys: partialKeys });
