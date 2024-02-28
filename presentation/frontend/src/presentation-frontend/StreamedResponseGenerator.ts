@@ -21,7 +21,7 @@ export type StreamedResponseGeneratorProps<TItem> = Paged<
 >;
 
 /**
- * This class allows to stream paged content.
+ * This class allows loading values in multiple parallel batches and return them either as an array or an async iterator.
  * Pages are prefetched in advanced according to the `parallelism` argument.
  * @internal
  */
