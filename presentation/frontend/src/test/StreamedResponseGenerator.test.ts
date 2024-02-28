@@ -3,8 +3,9 @@ import { expect } from "chai";
 import sinon from "sinon";
 import { PagedResponse, PageOptions } from "@itwin/presentation-common";
 import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
+import { helpers } from "faker";
 
-describe("StreamedResponseGenerator", () => {
+describe.only("StreamedResponseGenerator", () => {
   it("should run requests concurrently", async () => {
     const total = 10;
     const firstBatchPromise = new ResolvablePromise<PagedResponse<number>>();
@@ -32,6 +33,29 @@ describe("StreamedResponseGenerator", () => {
     await restBatchesPromise.resolve({ total, items: [3, 4] });
     const expectedResult = [1, 2].concat(...[...new Array(expectedCallCount - 1).keys()].map(() => [3, 4]));
     await expect(getItemsPromise).to.eventually.deep.eq(expectedResult);
+  });
+
+  it("should return values in a correct order", async () => {
+    const total = 10;
+    const fakePromises = [...new Array(total / 2 - 1).keys()].map(() => new ResolvablePromise());
+    const generator = new StreamedResponseGenerator({
+      getBatch: async (_, idx) => {
+        if (idx === 0) {
+          return { total, items: [0, 1] };
+        }
+
+        return fakePromises[idx - 1] as unknown as Promise<PagedResponse<unknown>>;
+      },
+    });
+
+    const itemsPromise = generator.getItems();
+    const shuffledPromises = helpers.shuffle(fakePromises.map((x, i) => [i + 1, x] as const));
+    for (const [idx, promise] of shuffledPromises) {
+      await promise.resolve({ total, items: [idx * 2, idx * 2 + 1] });
+    }
+
+    const items = await itemsPromise;
+    expect(items).to.deep.eq([...new Array(total).keys()]);
   });
 
   it("should handle a page larger than the item count", async () => {
