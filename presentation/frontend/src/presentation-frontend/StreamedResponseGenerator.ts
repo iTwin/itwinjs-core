@@ -1,3 +1,7 @@
+/*---------------------------------------------------------------------------------------------
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { concat, concatAll, from, map, mergeMap, Observable, of, range, scan } from "rxjs";
 import { eachValueFrom } from "rxjs-for-await";
 import { Paged, PagedResponse, PageOptions } from "@itwin/presentation-common";
