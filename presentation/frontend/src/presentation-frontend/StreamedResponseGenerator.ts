@@ -1,6 +1,7 @@
-import { concat, from, mergeAll, mergeMap, Observable, of, range } from "rxjs";
+import { concat, concatAll, from, map, mergeMap, Observable, of, range, scan } from "rxjs";
 import { eachValueFrom } from "rxjs-for-await";
 import { Paged, PagedResponse, PageOptions } from "@itwin/presentation-common";
+import { SortedArray } from "@itwin/core-bentley";
 
 /**
  * Options for requests that send smaller requests in batches.
@@ -78,7 +79,7 @@ export class StreamedResponseGenerator<TPagedResponseItem> {
    * Items count will be limited to the page size, if one is specified in the configuration.
    */
   public get items(): Observable<TPagedResponseItem> {
-    return this._batches.pipe(mergeAll());
+    return this._batches.pipe(concatAll());
   }
 
   private get _batches(): Observable<TPagedResponseItem[]> {
@@ -127,8 +128,48 @@ export class StreamedResponseGenerator<TPagedResponseItem> {
               if (!page.items.length) {
                 this.handleEmptyPageResult(start);
               }
-              return page.items;
+
+              // Pass along the index, so that the items could be sorted.
+              return { idx, items: page.items };
             }, parallelism),
+            scan(
+              // Collect the emitted pages an emit them in the correct order.
+              (acc, value) => {
+                let { lastEmitted } = acc;
+                const { accumulatedBatches } = acc;
+                const { idx } = value;
+
+                // If current batch is not in order, put it in the accumulator
+                if (idx - 1 !== lastEmitted) {
+                  accumulatedBatches.insert(value);
+                  return { lastEmitted, accumulatedBatches, itemsToEmit: [] };
+                }
+
+                // Collect all batches to emit in order.
+                lastEmitted = idx;
+                const batchesToEmit = [value];
+                for (const batch of accumulatedBatches) {
+                  if (batch.idx - 1 === lastEmitted) {
+                    lastEmitted = batch.idx;
+                    batchesToEmit.push(batch);
+                  }
+                }
+
+                // Remove batches to emit from the accumulator.
+                for (const batch of batchesToEmit) {
+                  accumulatedBatches.remove(batch);
+                }
+
+                const itemsToEmit = batchesToEmit.flatMap((x) => x.items);
+                return { lastEmitted, accumulatedBatches, itemsToEmit };
+              },
+              {
+                lastEmitted: 0,
+                accumulatedBatches: new SortedArray<{ idx: number; items: TPagedResponseItem[] }>((a, b) => a.idx - b.idx),
+                itemsToEmit: new Array<TPagedResponseItem>(),
+              },
+            ),
+            map(({ itemsToEmit }) => itemsToEmit),
           ),
         );
       }),

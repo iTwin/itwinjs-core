@@ -3,9 +3,8 @@ import { expect } from "chai";
 import sinon from "sinon";
 import { PagedResponse, PageOptions } from "@itwin/presentation-common";
 import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
-import { helpers } from "faker";
 
-describe.only("StreamedResponseGenerator", () => {
+describe("StreamedResponseGenerator", () => {
   it("should run requests concurrently", async () => {
     const total = 10;
     const firstBatchPromise = new ResolvablePromise<PagedResponse<number>>();
@@ -36,26 +35,36 @@ describe.only("StreamedResponseGenerator", () => {
   });
 
   it("should return values in a correct order", async () => {
-    const total = 10;
-    const fakePromises = [...new Array(total / 2 - 1).keys()].map(() => new ResolvablePromise());
-    const generator = new StreamedResponseGenerator({
-      getBatch: async (_, idx) => {
-        if (idx === 0) {
-          return { total, items: [0, 1] };
-        }
+    const total = 4;
+    const promiseResolutionOrderings = [
+      [0, 1, 2],
+      [0, 2, 1],
+      [1, 0, 2],
+      [1, 2, 0],
+      [2, 0, 1],
+      [2, 1, 0],
+    ];
 
-        return fakePromises[idx - 1] as unknown as Promise<PagedResponse<unknown>>;
-      },
-    });
+    for (const ordering of promiseResolutionOrderings) {
+      const fakePromises = [...new Array(total - 1).keys()].map(() => new ResolvablePromise());
+      const generator = new StreamedResponseGenerator({
+        getBatch: async (_, idx) => {
+          if (idx === 0) {
+            return { total, items: [0] };
+          }
 
-    const itemsPromise = generator.getItems();
-    const shuffledPromises = helpers.shuffle(fakePromises.map((x, i) => [i + 1, x] as const));
-    for (const [idx, promise] of shuffledPromises) {
-      await promise.resolve({ total, items: [idx * 2, idx * 2 + 1] });
+          return fakePromises[idx - 1] as unknown as Promise<PagedResponse<unknown>>;
+        },
+      });
+
+      const itemsPromise = generator.getItems();
+      for (const idx of ordering) {
+        await fakePromises[idx].resolve({ total, items: [idx + 1] });
+      }
+
+      const items = await itemsPromise;
+      expect(items).to.deep.eq([...new Array(total).keys()]);
     }
-
-    const items = await itemsPromise;
-    expect(items).to.deep.eq([...new Array(total).keys()]);
   });
 
   it("should handle a page larger than the item count", async () => {
