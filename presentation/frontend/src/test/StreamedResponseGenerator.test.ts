@@ -1,28 +1,38 @@
 import { StreamedResponseGenerator, StreamedResponseGeneratorProps } from "../presentation-frontend/StreamedResponseGenerator";
 import { expect } from "chai";
 import sinon from "sinon";
-import { PageOptions } from "@itwin/presentation-common";
-
-async function sleep(millis: number) {
-  return new Promise<void>((resolve) => setTimeout(resolve, millis));
-}
+import { PagedResponse, PageOptions } from "@itwin/presentation-common";
+import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
 
 describe("StreamedResponseGenerator", () => {
   it("should run requests concurrently", async () => {
-    const items = [...new Array(1000).keys()];
-    const props: StreamedResponseGeneratorProps<number> = {
-      getBatch: async (page) => {
-        await sleep(5);
-        return {
-          total: items.length,
-          items: items.slice(page.start, page.start + 10),
-        };
-      },
-    };
+    const total = 10;
+    const firstBatchPromise = new ResolvablePromise<PagedResponse<number>>();
+    const restBatchesPromise = new ResolvablePromise<PagedResponse<number>>();
+    const fakeGetBatch = sinon.fake(async (_, idx: number) => {
+      const result = idx ? restBatchesPromise : firstBatchPromise;
+      return result as unknown as Promise<PagedResponse<number>>;
+    });
 
-    const generator = new StreamedResponseGenerator(props);
-    await generator.getItems();
-  }).timeout(100);
+    const generator = new StreamedResponseGenerator({ getBatch: fakeGetBatch });
+    const getItemsPromise = generator.getItems();
+    expect(fakeGetBatch).to.be.calledOnce;
+    expect(fakeGetBatch).to.be.calledWith({ start: 0, size: 0 }, 0);
+
+    await firstBatchPromise.resolve({ total, items: [1, 2] });
+    const expectedCallCount = total / 2;
+    expect(fakeGetBatch.callCount).to.eq(expectedCallCount);
+    const expectedCalls = [...new Array(expectedCallCount - 1).keys()].map((i) => [{ start: (i + 1) * 2, size: 2 }, i + 1]);
+    const actualCalls = fakeGetBatch
+      .getCalls()
+      .slice(1)
+      .map((x) => x.args);
+    expect(actualCalls).to.deep.eq(expectedCalls);
+
+    await restBatchesPromise.resolve({ total, items: [3, 4] });
+    const expectedResult = [1, 2].concat(...[...new Array(expectedCallCount - 1).keys()].map(() => [3, 4]));
+    await expect(getItemsPromise).to.eventually.deep.eq(expectedResult);
+  });
 
   it("should handle a page larger than the item count", async () => {
     const items = [1, 2, 3, 4];
