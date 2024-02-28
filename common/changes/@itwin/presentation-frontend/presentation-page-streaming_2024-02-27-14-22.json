@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-frontend",
-      "comment": "Add `getNodesIterator` and `getDistinctValuesIterator` methods to `PresentationManager` which return async iterators and load data using multiple parallel requests.",
+      "comment": "Add `getNodesIterator`, `getDistinctValuesIterator`, `getContentIterator` and `getDisplayLabelDefinitionIterator` methods to `PresentationManager` which return async iterators and load data using multiple parallel requests.",
       "type": "none"
     }
   ],
