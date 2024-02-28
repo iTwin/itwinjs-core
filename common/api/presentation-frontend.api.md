@@ -245,6 +245,11 @@ export interface ISelectionProvider {
     selectionChange: SelectionChangeEvent;
 }
 
+// @public
+export type MultipleValuesRequestOptions = Paged<{
+    maxParallelRequests?: number;
+}>;
+
 // @internal (undocumented)
 export class NoopFavoritePropertiesStorage implements IFavoritePropertiesStorage {
     // (undocumented)
@@ -283,9 +288,6 @@ export interface OfflineCachingFavoritePropertiesStorageProps {
 }
 
 // @public
-export type PagedRequestOptions<TOptions extends {}> = Paged<TOptions> & StreamingOptions;
-
-// @public
 export class Presentation {
     static get favoriteProperties(): FavoritePropertiesManager;
     static initialize(props?: PresentationProps): Promise<void>;
@@ -322,40 +324,40 @@ export class PresentationManager implements IDisposable {
     dispose(): void;
     // @internal
     ensureIModelInitialized(_: IModelConnection): Promise<void>;
-    getContent(requestOptions: PagedRequestOptions<GetContentRequestOptions>): Promise<Content | undefined>;
-    getContentAndSize(requestOptions: PagedRequestOptions<GetContentRequestOptions>): Promise<{
+    getContent(requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions): Promise<Content | undefined>;
+    getContentAndSize(requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions): Promise<{
         content: Content;
         size: number;
     } | undefined>;
     getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<Descriptor | undefined>;
-    getContentInstanceKeys(requestOptions: StreamingOptions & ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<{
+    getContentInstanceKeys(requestOptions: ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions): Promise<{
         total: number;
         items: () => AsyncGenerator<InstanceKey>;
     }>;
     getContentSetSize(requestOptions: GetContentRequestOptions): Promise<number>;
     getContentSources(requestOptions: ContentSourcesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<SelectClassInfo[]>;
     getDisplayLabelDefinition(requestOptions: DisplayLabelRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute): Promise<LabelDefinition>;
-    getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & StreamingOptions): Promise<LabelDefinition[]>;
-    getDistinctValuesIterator(requestOptions: PagedRequestOptions<GetDistinctValuesRequestOptions>): Promise<{
+    getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions): Promise<LabelDefinition[]>;
+    getDistinctValuesIterator(requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions): Promise<{
         total: number;
         items: AsyncIterableIterator<DisplayValueGroup>;
     }>;
     getElementProperties(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<ElementProperties | undefined>;
     getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]>;
     getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]>;
-    getNodes(requestOptions: PagedRequestOptions<GetNodesRequestOptions>): Promise<Node_2[]>;
-    getNodesAndCount(requestOptions: PagedRequestOptions<GetNodesRequestOptions>): Promise<{
+    getNodes(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<Node_2[]>;
+    getNodesAndCount(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<{
         count: number;
         nodes: Node_2[];
     }>;
     getNodesCount(requestOptions: GetNodesRequestOptions): Promise<number>;
     // @beta
     getNodesDescriptor(requestOptions: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute): Promise<Descriptor | undefined>;
-    getNodesIterator(requestOptions: PagedRequestOptions<GetNodesRequestOptions>): Promise<{
+    getNodesIterator(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<{
         total: number;
         items: AsyncIterableIterator<Node_2>;
     }>;
-    getPagedDistinctValues(requestOptions: PagedRequestOptions<GetDistinctValuesRequestOptions>): Promise<PagedResponse<DisplayValueGroup>>;
+    getPagedDistinctValues(requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions): Promise<PagedResponse<DisplayValueGroup>>;
     // @internal (undocumented)
     get ipcRequestsHandler(): IpcRequestsHandler | undefined;
     // @alpha

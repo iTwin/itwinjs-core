@@ -33,7 +33,6 @@ public;ISelectionProvider
 internal;NoopFavoritePropertiesStorage 
 internal;OfflineCachingFavoritePropertiesStorage 
 internal;OfflineCachingFavoritePropertiesStorageProps
-public;PagedRequestOptions
 public;Presentation
 public;PresentationFrontendLoggerCategory
 public;PresentationManager 

@@ -1683,26 +1683,7 @@ export class LocalizationHelper {
     // (undocumented)
     getLocalizedLabelDefinitions(labelDefinitions: LabelDefinition[]): LabelDefinition[];
     // (undocumented)
-    getLocalizedNode(node: Node_2): {
-        description?: string | undefined;
-        label: LabelDefinition;
-        key: NodeKey;
-        imageId?: string | undefined;
-        foreColor?: string | undefined;
-        backColor?: string | undefined;
-        fontStyle?: string | undefined;
-        hasChildren?: boolean | undefined;
-        isSelectionDisabled?: boolean | undefined;
-        isEditable?: boolean | undefined;
-        isExpanded?: boolean | undefined;
-        isCheckboxVisible?: boolean | undefined;
-        isChecked?: boolean | undefined;
-        isCheckboxEnabled?: boolean | undefined;
-        supportsFiltering?: boolean | undefined;
-        extendedData?: {
-            [key: string]: any;
-        } | undefined;
-    };
+    getLocalizedNode(node: Node_2): Node_2;
     // (undocumented)
     getLocalizedNodePathElement(npe: NodePathElement): NodePathElement;
     // (undocumented)
