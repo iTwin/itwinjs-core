@@ -410,11 +410,7 @@ export class PresentationManager implements IDisposable {
     requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions,
   ): Promise<{ total: number; items: AsyncIterableIterator<Node> }> {
     const generator = await this.getNodesGenerator(requestOptions);
-    await generator.fetchFirstBatch();
-    return {
-      total: generator.total,
-      items: generator.itemsIterator,
-    };
+    return generator.createAsyncIteratorResponse();
   }
 
   /** Retrieves nodes */
@@ -562,7 +558,7 @@ export class PresentationManager implements IDisposable {
         getBatch: getPage,
       });
 
-      const result = await generator.getItems();
+      const { total, items: result } = await generator.createItemsResponse();
       if (!descriptor) {
         return undefined;
       }
@@ -579,7 +575,7 @@ export class PresentationManager implements IDisposable {
       }
 
       return {
-        size: generator.total,
+        size: total,
         content: this._localizationHelper.getLocalizedContent(resultContent),
       };
     } finally {
@@ -616,11 +612,7 @@ export class PresentationManager implements IDisposable {
     requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions,
   ): Promise<{ total: number; items: AsyncIterableIterator<DisplayValueGroup> }> {
     const generator = await this.getDistinctValuesGenerator(requestOptions);
-    await generator.fetchFirstBatch();
-    return {
-      total: generator.total,
-      items: generator.itemsIterator,
-    };
+    return generator.createAsyncIteratorResponse();
   }
 
   /** Retrieves distinct values of specific field from the content. */
@@ -680,12 +672,11 @@ export class PresentationManager implements IDisposable {
       },
     });
 
-    await generator.fetchFirstBatch();
-    const iterator = generator.itemsIterator;
+    const { total, items } = await generator.createAsyncIteratorResponse();
     return {
-      total: generator.total,
+      total,
       async *items() {
-        for await (const item of iterator) {
+        for await (const item of items) {
           yield item;
         }
       },
@@ -716,8 +707,8 @@ export class PresentationManager implements IDisposable {
       },
     });
 
-    const result = await generator.getItems();
-    return this._localizationHelper.getLocalizedLabelDefinitions(result);
+    const { items } = await generator.createItemsResponse();
+    return this._localizationHelper.getLocalizedLabelDefinitions(items);
   }
 }
 
