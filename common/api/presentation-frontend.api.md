@@ -34,6 +34,7 @@ import { IDisposable } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
 import { InstanceKey } from '@itwin/presentation-common';
 import { InternetConnectivityStatus } from '@itwin/core-common';
+import { Item } from '@itwin/presentation-common';
 import { Key } from '@itwin/presentation-common';
 import { Keys } from '@itwin/presentation-common';
 import { KeySet } from '@itwin/presentation-common';
@@ -334,9 +335,18 @@ export class PresentationManager implements IDisposable {
         total: number;
         items: () => AsyncGenerator<InstanceKey>;
     }>;
+    getContentIterator(requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions): Promise<{
+        descriptor: Descriptor;
+        total: number;
+        items(): AsyncGenerator<Item>;
+    } | undefined>;
     getContentSetSize(requestOptions: GetContentRequestOptions): Promise<number>;
     getContentSources(requestOptions: ContentSourcesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<SelectClassInfo[]>;
     getDisplayLabelDefinition(requestOptions: DisplayLabelRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute): Promise<LabelDefinition>;
+    getDisplayLabelDefinitionIterator(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions): Promise<{
+        total: number;
+        items: AsyncIterableIterator<LabelDefinition>;
+    }>;
     getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions): Promise<LabelDefinition[]>;
     getDistinctValuesIterator(requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions): Promise<{
         total: number;
