@@ -35,6 +35,7 @@ import {
   HierarchyUpdateInfo,
   InstanceKey,
   Item,
+  ItemJSON,
   Key,
   KeySet,
   KoqPropertyValueFormatter,
@@ -521,6 +522,90 @@ export class PresentationManager implements IDisposable {
     return this._requestsHandler.getContentSetSize(rpcOptions);
   }
 
+  private async getContentIteratorImpl(
+    requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
+  ): Promise<{ descriptor: Descriptor; total: number; items: AsyncIterableIterator<Item> } | undefined> {
+    const options = await this.addRulesetAndVariablesToOptions(requestOptions);
+    const rpcOptions = this.toRpcTokenOptions({
+      ...options,
+      descriptor: getDescriptorOverrides(requestOptions.descriptor),
+      keys: stripTransientElementKeys(requestOptions.keys).toJSON(),
+      ...(!requestOptions.omitFormattedValues && this._schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined),
+    });
+
+    let contentFormatter: ContentFormatter | undefined;
+    if (!requestOptions.omitFormattedValues && this._schemaContextProvider) {
+      const koqPropertyFormatter = new KoqPropertyValueFormatter(this._schemaContextProvider(requestOptions.imodel), this._defaultFormats);
+      contentFormatter = new ContentFormatter(
+        new ContentPropertyValueFormatter(koqPropertyFormatter),
+        requestOptions.unitSystem ?? this._explicitActiveUnitSystem ?? IModelApp.quantityFormatter.activeUnitSystem,
+      );
+    }
+
+    let descriptor = requestOptions.descriptor instanceof Descriptor ? requestOptions.descriptor : undefined;
+    let firstPage: PagedResponse<ItemJSON> | undefined;
+    if (!descriptor) {
+      const firstPageResponse = await this._requestsHandler.getPagedContent(rpcOptions);
+      if (!firstPageResponse?.descriptor || !firstPageResponse.contentSet) {
+        return undefined;
+      }
+      descriptor = Descriptor.fromJSON(firstPageResponse?.descriptor);
+      firstPage = firstPageResponse?.contentSet;
+    }
+
+    // istanbul ignore if
+    if (!descriptor) {
+      return undefined;
+    }
+
+    const getPage = async (paging: Required<PageOptions>, requestIndex: number) => {
+      let contentSet = requestIndex === 0 ? firstPage : undefined;
+      contentSet ??= await this._requestsHandler.getPagedContentSet({ ...rpcOptions, paging });
+
+      let items = contentSet.items.map((x) => Item.fromJSON(x)).filter((x): x is Item => x !== undefined);
+      if (contentFormatter) {
+        items = await contentFormatter.formatContentItems(items, descriptor!);
+      }
+
+      items = this._localizationHelper.getLocalizedContentItems(items);
+      return {
+        total: contentSet.total,
+        items,
+      };
+    };
+
+    const generator = new StreamedResponseGenerator({
+      ...requestOptions,
+      getBatch: getPage,
+    });
+
+    return {
+      ...(await generator.createAsyncIteratorResponse()),
+      descriptor,
+    };
+  }
+
+  /** Retrieves a content descriptor, item count and async generator for the items themselves. */
+  public async getContentIterator(
+    requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
+  ): Promise<{ descriptor: Descriptor; total: number; items(): AsyncGenerator<Item> } | undefined> {
+    const ensureInitialized = this.ensureIModelInitialized(requestOptions.imodel);
+    const response = await this.getContentIteratorImpl(requestOptions);
+    if (!response) {
+      return undefined;
+    }
+
+    return {
+      ...response,
+      async *items() {
+        for await (const item of response.items) {
+          await ensureInitialized;
+          yield item;
+        }
+      },
+    };
+  }
+
   /** Retrieves content which consists of a content descriptor and a page of records. */
   public async getContent(requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions): Promise<Content | undefined> {
     return (await this.getContentAndSize(requestOptions))?.content;
@@ -530,57 +615,17 @@ export class PresentationManager implements IDisposable {
   public async getContentAndSize(
     requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
   ): Promise<{ content: Content; size: number } | undefined> {
-    this.startIModelInitialization(requestOptions.imodel);
-    try {
-      const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-      const rpcOptions = this.toRpcTokenOptions({
-        ...options,
-        descriptor: getDescriptorOverrides(requestOptions.descriptor),
-        keys: stripTransientElementKeys(requestOptions.keys).toJSON(),
-        ...(!requestOptions.omitFormattedValues && this._schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined),
-      });
-      let descriptor = requestOptions.descriptor instanceof Descriptor ? requestOptions.descriptor : undefined;
-
-      const getPage = async (paging: Required<PageOptions>, requestIndex: number) => {
-        if (0 === requestIndex && !descriptor) {
-          const content = await this._requestsHandler.getPagedContent({ ...rpcOptions, paging });
-          if (content) {
-            descriptor = Descriptor.fromJSON(content.descriptor);
-            return content.contentSet;
-          }
-          return { total: 0, items: [] };
-        }
-        return this._requestsHandler.getPagedContentSet({ ...rpcOptions, paging });
-      };
-
-      const generator = new StreamedResponseGenerator({
-        ...requestOptions,
-        getBatch: getPage,
-      });
-
-      const { total, items: result } = await generator.createItemsResponse();
-      if (!descriptor) {
-        return undefined;
-      }
-
-      const items = result.map((itemJson) => Item.fromJSON(itemJson)).filter<Item>((item): item is Item => item !== undefined);
-      const resultContent = new Content(descriptor, items);
-      if (!requestOptions.omitFormattedValues && this._schemaContextProvider) {
-        const koqPropertyFormatter = new KoqPropertyValueFormatter(this._schemaContextProvider(requestOptions.imodel), this._defaultFormats);
-        const contentFormatter = new ContentFormatter(
-          new ContentPropertyValueFormatter(koqPropertyFormatter),
-          requestOptions.unitSystem ?? this._explicitActiveUnitSystem ?? IModelApp.quantityFormatter.activeUnitSystem,
-        );
-        await contentFormatter.formatContent(resultContent);
-      }
-
-      return {
-        size: total,
-        content: this._localizationHelper.getLocalizedContent(resultContent),
-      };
-    } finally {
-      await this.ensureIModelInitialized(requestOptions.imodel);
+    const response = await this.getContentIterator(requestOptions);
+    if (!response) {
+      return undefined;
     }
+
+    const { descriptor, total } = response;
+    const items = await collect(response.items());
+    return {
+      content: new Content(descriptor, items),
+      size: total,
+    };
   }
 
   private async getDistinctValuesGenerator(
