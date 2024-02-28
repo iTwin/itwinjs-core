@@ -694,21 +694,30 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves display label definition of specific items. */
-  public async getDisplayLabelDefinitions(
+  public async getDisplayLabelDefinitionIterator(
     requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions,
-  ): Promise<LabelDefinition[]> {
+  ): Promise<{ total: number; items: AsyncIterableIterator<LabelDefinition> }> {
     this.startIModelInitialization(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions({ ...requestOptions });
     const generator = new StreamedResponseGenerator({
       ...requestOptions,
       getBatch: async (page) => {
         const partialKeys = !page.start ? rpcOptions.keys : rpcOptions.keys.slice(page.start);
-        return this._requestsHandler.getPagedDisplayLabelDefinitions({ ...rpcOptions, keys: partialKeys });
+        const result = await this._requestsHandler.getPagedDisplayLabelDefinitions({ ...rpcOptions, keys: partialKeys });
+        result.items = this._localizationHelper.getLocalizedLabelDefinitions(result.items);
+        return result;
       },
     });
 
-    const { items } = await generator.createItemsResponse();
-    return this._localizationHelper.getLocalizedLabelDefinitions(items);
+    return generator.createAsyncIteratorResponse();
+  }
+
+  /** Retrieves display label definition of specific items. */
+  public async getDisplayLabelDefinitions(
+    requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions,
+  ): Promise<LabelDefinition[]> {
+    const { items } = await this.getDisplayLabelDefinitionIterator(requestOptions);
+    return collect(items);
   }
 }
 
