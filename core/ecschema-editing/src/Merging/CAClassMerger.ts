@@ -17,11 +17,6 @@ export default class CAClassMerger extends ClassMerger<CustomAttributeClass> {
   }
 
   protected override async mergeAttributes(ecClass: CustomAttributeClass, attributeName: string, attributeNewValue: any, attributeOldValue: any): Promise<SchemaItemEditResults | boolean> {
-    const results = await super.mergeAttributes(ecClass, attributeName, attributeNewValue, attributeOldValue);
-    if (results === true || this.isSchemaItemEditResults(results) && results.errorMessage !== undefined) {
-      return results;
-    }
-
     const mutableCAClass = ecClass as unknown as MutableCAClass;
     switch(attributeName) {
       case "appliesTo":
@@ -34,6 +29,6 @@ export default class CAClassMerger extends ClassMerger<CustomAttributeClass> {
         }
         return true;
     }
-    return false;
+    return super.mergeAttributes(ecClass, attributeName, attributeNewValue, attributeOldValue);
   }
 }

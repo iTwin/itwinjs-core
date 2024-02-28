@@ -21,6 +21,7 @@ import StructClassMerger from "./StructClassMerger";
 import MixinMerger from "./MixinMerger";
 import { mergeCustomAttributes } from "./CustomAttributeMerger";
 import KindOfQuantityMerger from "./KindOfQuantityMerger";
+import RelationshipClassMerger from "./RelationshipClassMerger";
 
 /**
  * Defines the context of a Schema merging run.
@@ -88,12 +89,14 @@ export class SchemaMerger {
     await StructClassMerger.mergeItemStubChanges(mergeContext, itemChanges.structClasses);
     await EntityClassMerger.mergeItemStubChanges(mergeContext, itemChanges.entityClasses);
     await MixinMerger.mergeItemStubChanges(mergeContext, itemChanges.mixins);
+    await RelationshipClassMerger.mergeItemStubChanges(mergeContext, itemChanges.relationships);
 
     // 2nd pass to complete merge changes such as properties, baseClasses and mixins.
     await CAClassMerger.mergeItemContentChanges(mergeContext, itemChanges.customAttributeClasses);
     await StructClassMerger.mergeItemContentChanges(mergeContext, itemChanges.structClasses);
     await EntityClassMerger.mergeItemContentChanges(mergeContext, itemChanges.entityClasses);
     await MixinMerger.mergeItemContentChanges(mergeContext, itemChanges.mixins);
+    await RelationshipClassMerger.mergeItemContentChanges(mergeContext, itemChanges.relationships);
 
     await mergeCustomAttributes(mergeContext, schemaChanges.customAttributeChanges.values(), async (ca) => {
       return mergeContext.editor.addCustomAttribute(mergeContext.targetSchema.schemaKey, ca);
@@ -111,16 +114,17 @@ export class SchemaMerger {
  */
 function getSchemaItemChanges(schemaChanges: SchemaChanges) {
   return {
-    get entityClasses() { return filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.EntityClass); },
     get constants() { return filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.Constant); },
     get customAttributeClasses() { return filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.CustomAttributeClass); },
+    get entityClasses() { return filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.EntityClass); },
     get enumeratations() { return schemaChanges.enumerationChanges.values(); },
     get kindOfQuantities() { return schemaChanges.kindOfQuantityChanges.values(); },
+    get mixins() { return filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.Mixin); },
     get phenomenons() { return filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.Phenomenon); },
     get propertyCategories() { return filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.PropertyCategory); },
-    get unitSystems() { return filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.UnitSystem); },
+    get relationships() { return filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.RelationshipClass); },
     get structClasses() { return filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.StructClass); },
-    get mixins() { return filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.Mixin); },
+    get unitSystems() { return filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.UnitSystem); },
   };
 }
 
