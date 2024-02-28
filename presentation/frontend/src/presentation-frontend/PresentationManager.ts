@@ -59,7 +59,7 @@ import { FrontendLocalizationHelper } from "./LocalizationHelper";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
-import { StreamedResponseGenerator, StreamingOptions } from "./StreamedResponseGenerator";
+import { StreamedResponseGenerator } from "./StreamedResponseGenerator";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
@@ -88,10 +88,12 @@ export interface IModelContentChangeEventArgs {
 }
 
 /**
- * Options for requests that can return a page of a certain size.
+ * Options for requests that can return multiple pages of items concurrently.
  * @public
  */
-export type PagedRequestOptions<TOptions extends {}> = Paged<TOptions> & StreamingOptions;
+export type MultipleValuesRequestOptions = Paged<{
+  maxParallelRequests?: number;
+}>;
 
 /**
  * Options for requests that retrieve nodes.
@@ -385,7 +387,7 @@ export class PresentationManager implements IDisposable {
     return { ...options, rulesetOrId: foundRulesetOrId, rulesetVariables: variables };
   }
 
-  private async getNodesGenerator(requestOptions: PagedRequestOptions<GetNodesRequestOptions>): Promise<StreamedResponseGenerator<Node>> {
+  private async getNodesGenerator(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<StreamedResponseGenerator<Node>> {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
@@ -404,7 +406,9 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Returns an iterator that polls nodes asynchronously. */
-  public async getNodesIterator(requestOptions: PagedRequestOptions<GetNodesRequestOptions>): Promise<{ total: number; items: AsyncIterableIterator<Node> }> {
+  public async getNodesIterator(
+    requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions,
+  ): Promise<{ total: number; items: AsyncIterableIterator<Node> }> {
     const generator = await this.getNodesGenerator(requestOptions);
     await generator.fetchFirstBatch();
     return {
@@ -414,7 +418,7 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves nodes */
-  public async getNodes(requestOptions: PagedRequestOptions<GetNodesRequestOptions>): Promise<Node[]> {
+  public async getNodes(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<Node[]> {
     const result = await this.getNodesIterator(requestOptions);
     return collect(result.items);
   }
@@ -428,7 +432,7 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves total nodes count and a single page of nodes. */
-  public async getNodesAndCount(requestOptions: PagedRequestOptions<GetNodesRequestOptions>): Promise<{ count: number; nodes: Node[] }> {
+  public async getNodesAndCount(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<{ count: number; nodes: Node[] }> {
     const result = await this.getNodesIterator(requestOptions);
     return {
       count: result.total,
@@ -522,12 +526,14 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves content which consists of a content descriptor and a page of records. */
-  public async getContent(requestOptions: PagedRequestOptions<GetContentRequestOptions>): Promise<Content | undefined> {
+  public async getContent(requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions): Promise<Content | undefined> {
     return (await this.getContentAndSize(requestOptions))?.content;
   }
 
   /** Retrieves content set size and content which consists of a content descriptor and a page of records. */
-  public async getContentAndSize(requestOptions: PagedRequestOptions<GetContentRequestOptions>): Promise<{ content: Content; size: number } | undefined> {
+  public async getContentAndSize(
+    requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
+  ): Promise<{ content: Content; size: number } | undefined> {
     this.startIModelInitialization(requestOptions.imodel);
     try {
       const options = await this.addRulesetAndVariablesToOptions(requestOptions);
@@ -582,7 +588,7 @@ export class PresentationManager implements IDisposable {
   }
 
   private async getDistinctValuesGenerator(
-    requestOptions: PagedRequestOptions<GetDistinctValuesRequestOptions>,
+    requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions,
   ): Promise<StreamedResponseGenerator<DisplayValueGroup>> {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
@@ -607,7 +613,7 @@ export class PresentationManager implements IDisposable {
 
   /** Returns an iterator that asynchronously polls distinct values of specific field from the content. */
   public async getDistinctValuesIterator(
-    requestOptions: PagedRequestOptions<GetDistinctValuesRequestOptions>,
+    requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions,
   ): Promise<{ total: number; items: AsyncIterableIterator<DisplayValueGroup> }> {
     const generator = await this.getDistinctValuesGenerator(requestOptions);
     await generator.fetchFirstBatch();
@@ -618,7 +624,9 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves distinct values of specific field from the content. */
-  public async getPagedDistinctValues(requestOptions: PagedRequestOptions<GetDistinctValuesRequestOptions>): Promise<PagedResponse<DisplayValueGroup>> {
+  public async getPagedDistinctValues(
+    requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions,
+  ): Promise<PagedResponse<DisplayValueGroup>> {
     const result = await this.getDistinctValuesIterator(requestOptions);
     return {
       total: result.total,
@@ -647,7 +655,7 @@ export class PresentationManager implements IDisposable {
    * @public
    */
   public async getContentInstanceKeys(
-    requestOptions: StreamingOptions & ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute,
+    requestOptions: ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions,
   ): Promise<{ total: number; items: () => AsyncGenerator<InstanceKey> }> {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
@@ -696,7 +704,7 @@ export class PresentationManager implements IDisposable {
 
   /** Retrieves display label definition of specific items. */
   public async getDisplayLabelDefinitions(
-    requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & StreamingOptions,
+    requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions,
   ): Promise<LabelDefinition[]> {
     this.startIModelInitialization(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions({ ...requestOptions });

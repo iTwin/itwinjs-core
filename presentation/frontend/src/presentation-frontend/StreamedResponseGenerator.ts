@@ -4,26 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 import { concat, concatAll, from, map, mergeMap, Observable, of, range, scan } from "rxjs";
 import { eachValueFrom } from "rxjs-for-await";
-import { Paged, PagedResponse, PageOptions } from "@itwin/presentation-common";
+import { PagedResponse, PageOptions } from "@itwin/presentation-common";
 import { SortedArray } from "@itwin/core-bentley";
-
-/**
- * Options for requests that send smaller requests in batches.
- */
-export interface StreamingOptions {
-  /** Number of parallel requests. Default: unlimited. */
-  parallelism?: number;
-}
+import { MultipleValuesRequestOptions } from "./PresentationManager";
 
 /**
  * Properties for streaming the results.
  * @internal
  */
-export type StreamedResponseGeneratorProps<TItem> = Paged<
-  StreamingOptions & {
-    getBatch(page: Required<PageOptions>, requestIdx: number): Promise<PagedResponse<TItem>>;
-  }
->;
+export type StreamedResponseGeneratorProps<TItem> = MultipleValuesRequestOptions & {
+  getBatch(page: Required<PageOptions>, requestIdx: number): Promise<PagedResponse<TItem>>;
+};
 
 /**
  * This class allows loading values in multiple parallel batches and return them either as an array or an async iterator.
@@ -88,7 +79,7 @@ export class StreamedResponseGenerator<TPagedResponseItem> {
 
   private get _batches(): Observable<TPagedResponseItem[]> {
     const pageStart = this._props.paging?.start ?? 0;
-    const parallelism = this._props.parallelism;
+    const maxParallelRequests = this._props.maxParallelRequests;
     const pageSize = this._props.paging?.size;
 
     return from(this.fetchFirstBatch()).pipe(
@@ -135,7 +126,7 @@ export class StreamedResponseGenerator<TPagedResponseItem> {
 
               // Pass along the index, so that the items could be sorted.
               return { idx, items: page.items };
-            }, parallelism),
+            }, maxParallelRequests),
             scan(
               // Collect the emitted pages an emit them in the correct order.
               (acc, value) => {

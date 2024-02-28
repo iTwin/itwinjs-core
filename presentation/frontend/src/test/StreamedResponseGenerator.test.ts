@@ -80,14 +80,14 @@ describe("StreamedResponseGenerator", () => {
 
   it("should respect the provided parallelism", async () => {
     const items = [...new Array(100).keys()];
-    const parallelism = 2;
+    const maxParallelRequests = 2;
     const fakePageRetriever = sinon.fake(async (page) => ({
       total: items.length,
       items: items.slice(page.start, page.start + 10),
     }));
     const props: StreamedResponseGeneratorProps<number> = {
       getBatch: fakePageRetriever,
-      parallelism,
+      maxParallelRequests,
     };
 
     const generator = new StreamedResponseGenerator(props);
@@ -98,7 +98,7 @@ describe("StreamedResponseGenerator", () => {
 
     // Then after polling the first page, it should prefetch `2 * parallelism` pages in advance.
     await iterator.next();
-    expect(fakePageRetriever.callCount).to.equal(parallelism * 2 + 1);
+    expect(fakePageRetriever.callCount).to.equal(maxParallelRequests * 2 + 1);
   });
 
   it("should fetch items up to requested page size", async () => {
