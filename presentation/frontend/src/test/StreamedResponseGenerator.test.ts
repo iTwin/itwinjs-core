@@ -56,7 +56,7 @@ describe("StreamedResponseGenerator", () => {
       [2, 1, 0],
       [2, 0, 1],
     ]) {
-      const fakePromises = [...new Array(total - 1).keys()].map(() => new ResolvablePromise());
+      const fakePromises: ResolvablePromise<PagedResponse<number>>[] = [...new Array(total - 1).keys()].map(() => new ResolvablePromise());
       const generator = new StreamedResponseGenerator({
         getBatch: async (_, idx) => {
           if (idx === 0) {
