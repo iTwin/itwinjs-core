@@ -61,6 +61,8 @@ import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
 import { StreamedResponseGenerator } from "./StreamedResponseGenerator";
+import { mergeMap, Observable } from "rxjs";
+import { eachValueFrom } from "rxjs-for-await";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
@@ -525,9 +527,9 @@ export class PresentationManager implements IDisposable {
     return this._requestsHandler.getContentSetSize(rpcOptions);
   }
 
-  private async getContentIteratorImpl(
+  private async getContentObservableImpl(
     requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
-  ): Promise<{ descriptor: Descriptor; total: number; items: AsyncIterableIterator<Item> } | undefined> {
+  ): Promise<{ descriptor: Descriptor; total: number; items: Observable<Item> } | undefined> {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
       ...options,
@@ -583,30 +585,45 @@ export class PresentationManager implements IDisposable {
     });
 
     return {
-      ...(await generator.createAsyncIteratorResponse()),
+      ...(await generator.createObservableResponse()),
       descriptor,
     };
   }
 
-  /** Retrieves a content descriptor, item count and async generator for the items themselves. */
-  public async getContentIterator(
+  /** @internal */
+  public async getContentObservable(
     requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
-  ): Promise<{ descriptor: Descriptor; total: number; items(): AsyncIterableIterator<Item> } | undefined> {
+  ): Promise<{ descriptor: Descriptor; total: number; items: Observable<Item> } | undefined> {
     const ensureInitialized = this.ensureIModelInitialized(requestOptions.imodel);
-    const response = await this.getContentIteratorImpl(requestOptions);
+    const response = await this.getContentObservableImpl(requestOptions);
     if (!response) {
       return undefined;
     }
 
     return {
       ...response,
-      async *items() {
-        for await (const item of response.items) {
-          await ensureInitialized;
-          yield item;
-        }
-      },
+      items: response.items.pipe(
+        mergeMap(async (item, idx) => {
+          if (idx === 0) {
+            await ensureInitialized;
+          }
+          return item;
+        }),
+      ),
     };
+  }
+
+  /** Retrieves a content descriptor, item count and async generator for the items themselves. */
+  public async getContentIterator(
+    requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
+  ): Promise<{ descriptor: Descriptor; total: number; items: AsyncIterableIterator<Item> } | undefined> {
+    const response = await this.getContentObservable(requestOptions);
+    return (
+      response && {
+        ...response,
+        items: eachValueFrom(response.items),
+      }
+    );
   }
 
   /**
@@ -631,7 +648,7 @@ export class PresentationManager implements IDisposable {
     }
 
     const { descriptor, total } = response;
-    const items = await collect(response.items());
+    const items = await collect(response.items);
     return {
       content: new Content(descriptor, items),
       size: total,

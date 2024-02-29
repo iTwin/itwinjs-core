@@ -6,7 +6,7 @@
  * @module UnifiedSelection
  */
 
-import { from, Observable, shareReplay } from "rxjs";
+import { concat, filter, from, map, mergeMap, Observable, of, shareReplay, toArray } from "rxjs";
 import { eachValueFrom } from "rxjs-for-await";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
@@ -94,42 +94,32 @@ export class HiliteSetProvider {
     if (!this._cache || this._cache.keysGuid !== selection.guid) {
       this._cache = {
         keysGuid: selection.guid,
-        observable: from(this.createHiliteSetIterator(selection)).pipe(shareReplay({ refCount: true })),
+        observable: this.createHiliteSetObservable(selection).pipe(shareReplay({ refCount: true })),
       };
     }
 
     return eachValueFrom(this._cache.observable);
   }
 
-  private async *createHiliteSetIterator(selection: Readonly<KeySet>) {
+  private createHiliteSetObservable(selection: Readonly<KeySet>): Observable<HiliteSet> {
     const { keys, transientIds } = this.handleTransientKeys(selection);
     const { options, keyBatches } = this.getContentOptions(keys);
 
-    if (transientIds.length !== 0) {
-      yield { elements: transientIds };
-    }
-
-    for (const batch of keyBatches) {
-      let loadedItems = 0;
-      while (true) {
-        const content = await Presentation.presentation.getContentAndSize({
-          ...options,
-          paging: { start: loadedItems, size: CONTENT_SET_PAGE_SIZE },
-          keys: batch,
-        });
-        if (!content) {
-          break;
-        }
-
-        const result = this.createHiliteSet(content.content.contentSet);
-        yield result;
-
-        loadedItems += content.content.contentSet.length;
-        if (loadedItems >= content.size) {
-          break;
-        }
-      }
-    }
+    return concat(
+      transientIds.length ? of({ elements: transientIds }) : of(),
+      from(keyBatches).pipe(
+        mergeMap(async (batch) =>
+          Presentation.presentation.getContentObservable({
+            ...options,
+            keys: batch,
+          }),
+        ),
+        filter((x): x is Exclude<typeof x, undefined> => !!x),
+        mergeMap(({ items }) => items),
+        toArray(),
+        map((items) => this.createHiliteSet(items)),
+      ),
+    );
   }
 
   private createHiliteSet(records: Item[]): HiliteSet {
@@ -184,8 +174,6 @@ export class HiliteSetProvider {
     };
   }
 }
-
-const CONTENT_SET_PAGE_SIZE = 1000;
 
 const isModelRecord = (rec: Item) => rec.extendedData && rec.extendedData.isModel;
 
