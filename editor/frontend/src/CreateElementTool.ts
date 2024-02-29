@@ -304,6 +304,21 @@ export abstract class CreateElementTool extends PrimitiveTool {
 
 /** Placement tool base class for creating new elements that use dynamics to show intermediate results.
  * @beta
+ * @usage The class expects any programmer extending this class to override the following methods in addition to the
+ * abstract methods.  See the method descriptions for more details:
+ * - Customize to the child tool: `isComplete`, `updateElementData`, `doCreateElement`, `setupAccuDraw`, `cancelPoint`
+ * - As necessary: `wantAccuSnap`, `wantDynamics`
+ * - Ensure the parent's implementation is called: `setupAndPromptForNextAction`, `onPostInstall`
+ *
+ * Programmers extending this class are expected to call `setupAndPromptForNextAction` as moving between the child tool's internal state.
+ * @note To trigger an element to be inserted on `dataButtonDown`, ensure `isComplete` returns `true`
+ * @caution Programmer should exercise caution when overriding the following methods.  See their alternatives:
+ * - `onMouseMotion`: See `updateElementData`.
+ * - `onDataButtonDown`: The functionality the method covers can be wide, see the following methods and their intended use:
+ * - - See `updateElementData` for accepting data points.
+ * - - See `isComplete` & `doCreateElement` for creating the finalized element.
+ * - - (With caution) See `acceptPoint` for preventing the mouse click event from propagating to the parent tools.
+ * - `onResetButtonUp`: See `cancelPoint`.
  */
 export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
   protected _graphicsProvider?: DynamicGraphicsProvider;
@@ -318,6 +333,13 @@ export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
     this._graphicsProvider = undefined;
   }
 
+  /**
+   * This method is intended to update the dynamic graphics displayed by the tool.
+   *
+   * It expects `updateDynamicData` to return true. If it returns false, no graphics are created.
+   *
+   * It expects `getPlacementProps` and `getGeometryProps` to be defined as it uses these functions to create the dynamic graphic.
+   */
   protected async createGraphics(ev: BeButtonEvent): Promise<void> {
     if (!await this.updateDynamicData(ev))
       return;
@@ -353,9 +375,29 @@ export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
   protected abstract getGeometryProps(placement: PlacementProps): JsonGeometryStream | FlatBufferGeometryStream | undefined;
   protected abstract getElementProps(placement: PlacementProps): GeometricElementProps | undefined;
 
+  /**
+   * Creates a new element in the iModel by interfacing with the core/editor backend.
+   *
+   * This method is called by `dataButtonDown` only if `isComplete` is true.
+   *
+   * @param _props Directly created by the `getElementProps` method and passed in.
+   * @param _data Created based on the Geometry Stream returned by `getGeometryProps` and passed in.
+   */
   protected async doCreateElement(_props: GeometricElementProps, _data?: ElementGeometryBuilderParams): Promise<void> {}
+
+  /** This method is intended to update information related to the element. This method is called in 2 scenarios:
+   * 1. `onMouseMotion` as a dynamics
+   * 2. `onDataButtonDown` when accepting the next point of the tool
+   * @param ev - The mouse event triggering this call.
+   * @param isDynamics it is `true` in scenario [1] and `false` in scenario [2].
+   */
   protected async updateElementData(_ev: BeButtonEvent, _isDynamics: boolean): Promise<void> {}
 
+  /**
+   * This function does not handle updating data itself, instead, it directly calls `updateElementData` to handle that.
+   * @returns `true` if dynamics are active, `false` otherwise.
+   * @note You should avoid overriding this method.
+   */
   protected async updateDynamicData(ev: BeButtonEvent): Promise<boolean> {
     if (!IModelApp.viewManager.inDynamicsMode)
       return false; // Don't need to create graphic if dynamics aren't yet active...
@@ -388,6 +430,9 @@ export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
     return this.doCreateElement(elemProps, data);
   }
 
+  /** Intended to be used to setupAccuSnap.  Is called by `setupAndPromptForNextAction`.
+   * @note Has not checked for `wantAccuSnap` at this point. Directly, *after* this method is called in `setupAndPromptForNextAction`, AccuSnap will be enabled/disabled based on `wantAccuSnap`.
+   */
   protected setupAccuDraw(): void { }
 
   protected override setupAndPromptForNextAction(): void {
@@ -395,19 +440,31 @@ export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
     super.setupAndPromptForNextAction();
   }
 
+  /** Called by onDataButtonDown.
+   * @returns return `false` if the event has been handled.
+   */
   protected async acceptPoint(ev: BeButtonEvent): Promise<boolean> {
     await this.updateElementData(ev, false);
     return true;
   }
 
+  /** Invoked when the data button is pressed.
+   * Propagates event to `updateElementData` by way of `acceptPoint`.
+   */
   public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (!await this.acceptPoint(ev))
       return EventHandled.Yes;
     return super.onDataButtonDown(ev);
   }
 
+  /** Called by onResetButtonUp.
+   * @returns return false if the event has been handled.
+   */
   protected async cancelPoint(_ev: BeButtonEvent): Promise<boolean> { return true; }
 
+  /** Invoked when the reset button is released.
+   * Propagates event to `cancelPoint`.
+  */
   public override async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     if (!await this.cancelPoint(ev))
       return EventHandled.Yes;
