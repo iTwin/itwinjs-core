@@ -721,9 +721,7 @@ export class PresentationManager implements IDisposable {
     return {
       total,
       async *items() {
-        for await (const item of items) {
-          yield item;
-        }
+        yield* items;
       },
     };
   }
