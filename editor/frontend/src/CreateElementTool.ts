@@ -336,7 +336,7 @@ export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
   /**
    * This method is intended to update the dynamic graphics displayed by the tool.
    *
-   * It expects [[updateDynamicData]] to return true. If it returns false, no graphics are created.
+   * It expects [[updateDynamicData]] to return `true`. If it returns `false`, no graphics are created.
    *
    * It expects [[getPlacementProps]] and [[getGeometryProps]] to be defined as it uses these functions to create the dynamic graphic.
    */
