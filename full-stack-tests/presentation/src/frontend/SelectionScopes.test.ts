@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
@@ -9,7 +9,6 @@ import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
 
 describe("Selection Scopes", () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
@@ -96,5 +95,4 @@ describe("Selection Scopes", () => {
     expect(selection.size).to.eq(1);
     expect(selection.has({ className: "BisCore:Model", id: Id64.fromUint32Pair(28, 0) }));
   });
-
 });

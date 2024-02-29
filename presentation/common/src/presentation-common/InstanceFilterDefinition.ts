@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Core
  */
@@ -61,9 +61,8 @@ export interface InstanceFilterDefinition {
  * Related instance definition for accessing properties of a related instance in [[InstanceFilterDefinition.expression]].
  * @beta
  */
-export type InstanceFilterRelatedInstanceDefinition =
-  InstanceFilterRelatedInstancePath
-  & (InstanceFilterRelatedInstanceTargetAlias | InstanceFilterRelatedInstanceRelationshipAlias);
+export type InstanceFilterRelatedInstanceDefinition = InstanceFilterRelatedInstancePath &
+  (InstanceFilterRelatedInstanceTargetAlias | InstanceFilterRelatedInstanceRelationshipAlias);
 
 /**
  * Partial definition of common attributes for [[InstanceFilterRelatedInstanceDefinition]].

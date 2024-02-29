@@ -18,7 +18,7 @@ export enum RpcResponseCacheControl {
 
 /** RPC protocol event types.
  * @public
- * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
+ * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in the future.
  */
 export enum RpcProtocolEvent {
   RequestCreated,
@@ -38,7 +38,7 @@ export enum RpcProtocolEvent {
 
 /** The status of an RPC operation request.
  * @public
- * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
+ * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in the future.
  */
 export enum RpcRequestStatus {
   Unknown,
@@ -58,7 +58,7 @@ export enum RpcRequestStatus {
   TooManyRequests
 }
 
-/** @public @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0. */
+/** @public @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in the future. */
 export namespace RpcRequestStatus { // eslint-disable-line @typescript-eslint/no-redeclare
   export function isTransientError(status: RpcRequestStatus) {
     return status === RpcRequestStatus.BadGateway || status === RpcRequestStatus.ServiceUnavailable || status === RpcRequestStatus.GatewayTimeout
@@ -68,7 +68,7 @@ export namespace RpcRequestStatus { // eslint-disable-line @typescript-eslint/no
 
 /** RPC request event types.
  * @public
- * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
+ * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in the future.
  */
 export enum RpcRequestEvent {
   StatusChanged,
@@ -78,7 +78,7 @@ export enum RpcRequestEvent {
 
 /** RPC content types.
  * @public
- * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
+ * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in the future.
  */
 export enum RpcContentType {
   Unknown,
@@ -90,7 +90,7 @@ export enum RpcContentType {
 
 /** Endpoints for RPC protocols.
  * @public
- * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
+ * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in the future.
  */
 export enum RpcEndpoint {
   Frontend,

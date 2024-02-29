@@ -32,14 +32,15 @@ describe("TileAdmin", () => {
 
     const mobileLimits = TileAdmin.mobileGpuMemoryLimits;
     const desktopLimits = TileAdmin.nonMobileGpuMemoryLimits;
+    const desktopUndefinedLimit = TileAdmin.nonMobileUndefinedGpuMemoryLimit;
     const keys: Array<"relaxed" | "default" | "aggressive"> = ["relaxed", "default", "aggressive"];
 
     it("defaults to 'default' on mobile", () => {
       expectAdmin(true, undefined, "default", mobileLimits.default);
     });
 
-    it("defaults to 'none' on desktop", () => {
-      expectAdmin(false, undefined, "none", undefined);
+    it("defaults to desktopUndefinedLimit on desktop", () => {
+      expectAdmin(false, undefined, desktopUndefinedLimit, desktopUndefinedLimit);
     });
 
     it("can be specified at initialization", () => {

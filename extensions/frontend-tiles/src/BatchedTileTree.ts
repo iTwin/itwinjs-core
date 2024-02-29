@@ -3,14 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BeTimePoint, Id64String } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
+import { BeTimePoint, Id64Set, Id64String } from "@itwin/core-bentley";
 import { BatchType, RenderMode, RenderSchedule, ViewFlagOverrides } from "@itwin/core-common";
 import {
   acquireImdlDecoder, ImdlDecoder, IModelApp, Tile, TileDrawArgs, TileTree, TileTreeParams,
 } from "@itwin/core-frontend";
 import { BatchedTile, BatchedTileParams } from "./BatchedTile";
-import { BatchedTilesetReader } from "./BatchedTilesetReader";
+import { BatchedTilesetReader, ModelMetadata } from "./BatchedTilesetReader";
 import { frontendTilesOptions } from "./FrontendTiles";
 
 const defaultViewFlags: ViewFlagOverrides = {
@@ -23,7 +22,8 @@ export interface BatchedTileTreeParams extends TileTreeParams {
   rootTile: BatchedTileParams;
   reader: BatchedTilesetReader;
   script?: RenderSchedule.Script;
-  includedModels?: Map<Id64String, Range3d>;
+  models: Map<Id64String, ModelMetadata>;
+  modelGroups: Id64Set[] | undefined;
 }
 
 /** @internal */
@@ -32,12 +32,14 @@ export class BatchedTileTree extends TileTree {
   public readonly reader: BatchedTilesetReader;
   public readonly scheduleScript?: RenderSchedule.Script;
   public readonly decoder: ImdlDecoder;
+  public readonly modelGroups: Id64Set[] | undefined;
 
   public constructor(params: BatchedTileTreeParams) {
     super(params);
     this._rootTile = new BatchedTile(params.rootTile, this);
     this.reader = params.reader;
     this.scheduleScript = params.script;
+    this.modelGroups = params.modelGroups;
 
     this.decoder = acquireImdlDecoder({
       type: BatchType.Primary,

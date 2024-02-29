@@ -1,4 +1,3 @@
-
 # Class Filter Expression
 
 ECSQL allows filters by class
@@ -11,43 +10,43 @@ ECSQL allows filters by class
 
 > **Try it yourself**
 >
-> *Goal:* Returns elements only if it's either of class GeometricElement3d, GeometricElement2d, or any of their sub-classes
+> _Goal:_ Returns elements only if it's either of class GeometricElement3d, GeometricElement2d, or any of their sub-classes
 >
-> *ECSQL*
+> _ECSQL_
 >
 > ```sql
 > SELECT * FROM bis.Element WHERE ECClassId IS (bis.GeometricElement3d, bis.GeometricElement2d
 > ```
->
-<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT * FROM bis.Element WHERE ECClassId IS (bis.GeometricElement3d, bis.GeometricElement2d)"></iframe>
+
+<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT * FROM bis.Element WHERE ECClassId IS (bis.GeometricElement3d, bis.GeometricElement2d)"></iframe>
 
 ---
 
 > **Try it yourself**
 >
-> *Goal:* Returns elements only if it's exactly of the specified classess - sub-classes are not included
+> _Goal:_ Returns elements only if it's exactly of the specified classess - sub-classes are not included
 >
-> *ECSQL*
+> _ECSQL_
 >
 > ```sql
 > SELECT * FROM bis.Element WHERE ECClassId IS (ONLY Generic.PhysicalObject, ONLY BisCore.LightLocation)
 > ```
->
-<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT * FROM bis.Element WHERE ECClassId IS (ONLY Generic.PhysicalObject, ONLY BisCore.LightLocation)"></iframe>
+
+<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT * FROM bis.Element WHERE ECClassId IS (ONLY Generic.PhysicalObject, ONLY BisCore.LightLocation)"></iframe>
 
 ---
 
 > **Try it yourself**
 >
-> *Goal:* Inverts the selection set
+> _Goal:_ Inverts the selection set
 >
-> *ECSQL*
+> _ECSQL_
 >
 > ```sql
 > SELECT * FROM bis.Element WHERE ECClassId IS NOT (ONLY Generic.PhysicalObject, ONLY BisCore.LightLocation)
 > ```
->
-<iframe class="embedded-console" src="/console/?imodel=HouseSample&query=SELECT * FROM bis.Element WHERE ECClassId IS NOT (ONLY Generic.PhysicalObject, ONLY Biscore.LightLocation)"></iframe>
+
+<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=HouseSample&query=SELECT * FROM bis.Element WHERE ECClassId IS NOT (ONLY Generic.PhysicalObject, ONLY Biscore.LightLocation)"></iframe>
 
 ---
 

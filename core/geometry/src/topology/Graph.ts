@@ -259,7 +259,7 @@ export class HalfEdge implements HalfEdgeUserData {
    * * The two edges are joined as edgeMate pair.
    * * The two edges are a 2-half-edge face loop in both the faceSuccessor and facePredecessor directions.
    * * Properties x,y,z,i are inserted in each half edge.
-   * @returns the reference to the first half edge created.
+   * @returns the reference to the first half edge created, set with "A" properties.
    */
   public static createHalfEdgePairWithCoordinates(
     xA: number = 0, yA: number = 0, zA: number = 0, iA: number = 0,
@@ -1361,8 +1361,9 @@ export class HalfEdgeGraph {
    * * The two half edges are a 2-half-edge face loop in both the faceSuccessor and facePredecessor directions.
    * * The two half edges are added to the graph's HalfEdge set.
    * * Coordinates are set to zero.
-   * * IDs are installed in the two half edges.
-   * @returns pointer to the first half edge created, with ID set to iA.
+   * @param iA `i` property of the first created HalfEdge
+   * @param iB `i` property of the second created HalfEdge
+   * @returns pointer to the first half edge created, with `i` property set to iA.
    */
   public createEdgeIdId(iA: number = 0, iB: number = 0): HalfEdge {
     return HalfEdge.createHalfEdgePairWithCoordinates(0.0, 0.0, 0.0, iA, 0.0, 0.0, 0.0, iB, this.allHalfEdges);

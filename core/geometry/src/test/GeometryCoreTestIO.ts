@@ -338,12 +338,10 @@ export class GeometryCoreTestIO {
         const corners = range.corners();
         if (placement)
           placement.multiplyPoint3dArrayInPlace(corners);
-        this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0]), dx, dy, dz);
-        if (!Geometry.isSameCoordinate(range.high.z, range.low.z)) {
-          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [4, 5, 7, 6, 4]), dx, dy, dz);
-          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 4, 6, 2]), dx, dy, dz);
-          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [1, 5, 7, 3]), dx, dy, dz);
-        }
+        if (!Geometry.isSameCoordinate(range.high.z, range.low.z))
+          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0, 4, 5, 7, 6, 4, 2, 6, 3, 7, 1, 5]), dx, dy, dz);
+        else
+          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0]), dx, dy, dz);
       } else if (range instanceof Range2d) {
         const corners = range.corners3d(true, 0);
         if (placement)
@@ -363,9 +361,13 @@ export class GeometryCoreTestIO {
    * @param dz z shift
    */
   public static captureRangeEdges(
-    collection: GeometryQuery[], range?: Range2d | Range3d, dx: number = 0, dy: number = 0, dz: number = 0,
+    collection: GeometryQuery[], range?: Range2d | Range3d | Range2d[] | Range3d[], dx: number = 0, dy: number = 0, dz: number = 0,
   ) {
-    this.captureTransformedRangeEdges(collection, range, undefined, dx, dy, dz);
+    if (Array.isArray(range)) {
+      for (const r of range)
+        this.captureTransformedRangeEdges(collection, r, undefined, dx, dy, dz);
+    } else
+      this.captureTransformedRangeEdges(collection, range, undefined, dx, dy, dz);
   }
   public static showMomentData(
     collection: GeometryQuery[],

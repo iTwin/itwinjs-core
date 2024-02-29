@@ -15,7 +15,7 @@ import {
 import {
   AxisAlignedBox3d, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
   MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
-  QPoint3dList, Quantization, RenderMaterial, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus,
+  QPoint3dList, Quantization, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
@@ -37,7 +37,7 @@ import { MeshPrimitiveType } from "../common/render/primitives/MeshPrimitive";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
 import { TextureImageSource } from "../common/render/TextureParams";
 import {
-  DracoMeshCompression, getGltfNodeMeshIds, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDataType, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId,
+  DracoMeshCompression, getGltfNodeMeshIds, Gltf2Node, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDataType, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId,
   GltfImage, GltfMaterial, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material, traverseGltfNodes,
 } from "../common/gltf/GltfSchema";
 
@@ -296,6 +296,18 @@ function colorFromMaterial(material: GltfMaterial, isTransparent: boolean): Colo
   return color;
 }
 
+function trsMatrix(translation: [number, number, number] | undefined, rotation: [number, number, number, number] | undefined, scale: [number, number, number] | undefined, result?: Transform): Transform {
+  // SPEC: To compose the local transformation matrix, TRS properties MUST be converted to matrices and postmultiplied in the T * R * S order;
+  // first the scale is applied to the vertices, then the rotation, and then the translation.
+  const scaleTf = Transform.createRefs(undefined, scale ? Matrix3d.createScale(scale[0], scale[1], scale[2]) : Matrix3d.identity);
+  const rotTf = Transform.createRefs(undefined, rotation ? Matrix3d.createFromQuaternion(Point4d.create(rotation[0], rotation[1], rotation[2], rotation[3])) : Matrix3d.identity);
+  rotTf.matrix.transposeInPlace(); // See comment on Matrix3d.createFromQuaternion
+  const transTf = Transform.createTranslation(translation ? new Point3d(translation[0], translation[1], translation[2]) : Point3d.createZero());
+  const tf = scaleTf.multiplyTransformTransform(rotTf, result);
+  transTf.multiplyTransformTransform(tf, tf);
+  return tf;
+}
+
 class TransformStack {
   private readonly _stack: Array<Transform | undefined> = [];
 
@@ -324,15 +336,7 @@ class TransformStack {
 
       nodeTransform = Transform.createOriginAndMatrix(origin, matrix);
     } else if (node.rotation || node.scale || node.translation) {
-      // SPEC: To compose the local transformation matrix, TRS properties MUST be converted to matrices and postmultiplied in the T * R * S order;
-      // first the scale is applied to the vertices, then the rotation, and then the translation.
-      const scale = Transform.createRefs(undefined, node.scale ? Matrix3d.createScale(node.scale[0], node.scale[1], node.scale[2]) : Matrix3d.identity);
-      const rot = Transform.createRefs(undefined, node.rotation ? Matrix3d.createFromQuaternion(Point4d.create(node.rotation[0], node.rotation[1], node.rotation[2], node.rotation[3])) : Matrix3d.identity);
-      rot.matrix.transposeInPlace(); // See comment on Matrix3d.createFromQuaternion
-      const trans = Transform.createTranslation(node.translation ? new Point3d(node.translation[0], node.translation[1], node.translation[2]) : Point3d.createZero());
-
-      nodeTransform = scale.multiplyTransformTransform(rot);
-      trans.multiplyTransformTransform(nodeTransform, nodeTransform);
+      nodeTransform = trsMatrix(node.translation, node.rotation, node.scale);
     }
 
     const top = this.transform;
@@ -450,6 +454,10 @@ export abstract class GltfReader {
     return this.traverseNodes(this._sceneNodes);
   }
 
+  protected get viewFlagOverrides(): ViewFlagOverrides | undefined {
+    return undefined;
+  }
+
   private getTileTransform(transformToRoot?: Transform, pseudoRtcBias?: Vector3d): Transform | undefined {
     let transform;
 
@@ -505,18 +513,27 @@ export abstract class GltfReader {
       renderGraphic = this._system.createGraphicList(renderGraphicList);
 
     const transform = this.getTileTransform(transformToRoot, pseudoRtcBias);
+
+    // Compute range in tileset/world space.
     let range = contentRange;
     const invTransform = transform?.inverse();
     if (invTransform)
       range = invTransform.multiplyRange(contentRange);
 
+    // The batch range needs to be in tile coordinate space.
+    // If we computed the content range ourselves, it's already in tile space.
+    // If the content range was supplied by the caller, it's in tileset space and needs to be transformed to tile space.
     if (featureTable)
-      renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), range);
+      renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), this._computedContentRange ? contentRange : range);
 
-    if (transform) {
+    const viewFlagOverrides = this.viewFlagOverrides;
+    if (transform || viewFlagOverrides) {
       const branch = new GraphicBranch(true);
+      if (viewFlagOverrides)
+        branch.setViewFlagOverrides(viewFlagOverrides);
+
       branch.add(renderGraphic);
-      renderGraphic = this._system.createBranch(branch, transform);
+      renderGraphic = this._system.createBranch(branch, transform ?? Transform.createIdentity());
     }
 
     return {
@@ -575,13 +592,88 @@ export abstract class GltfReader {
     return mesh.getGraphics(this._system, instances);
   }
 
-  private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: GltfNode, featureTable: FeatureTable | undefined, transformStack: TransformStack, instances?: InstancedGraphicParams, pseudoRtcBias?: Vector3d): TileReadStatus {
+  private readInstanceAttributes(node: Gltf2Node, featureTable: FeatureTable | undefined): InstancedGraphicParams | undefined {
+    const ext = node.extensions?.EXT_mesh_gpu_instancing;
+    if (!ext || !ext.attributes) {
+      return undefined;
+    }
+
+    const translationsView = this.getBufferView(ext.attributes, "TRANSLATION");
+    const translations = translationsView?.toBufferData(GltfDataType.Float);
+    const rotations = this.getBufferView(ext.attributes, "ROTATION")?.toBufferData(GltfDataType.Float);
+    const scales = this.getBufferView(ext.attributes, "SCALE")?.toBufferData(GltfDataType.Float);
+
+    // All attributes must specify the same count, count must be greater than zero, and at least one attribute must be specified.
+    const count = translations?.count ?? rotations?.count ?? scales?.count;
+    if (!count || (rotations && rotations.count !== count) || (scales && scales.count !== count)) {
+      return undefined;
+    }
+
+    const transformCenter = new Point3d();
+    const trMin = translationsView?.accessor.min;
+    const trMax = translationsView?.accessor.max;
+    if (trMin && trMax) {
+      const half = (idx: number): number => trMin[idx] + (trMax[idx] - trMin[idx]) / 2;
+      transformCenter.set(half(0), half(1), half(2));
+    }
+
+    const getTranslation = (index: number): [number, number, number] | undefined => {
+      if (!translations) {
+        return undefined;
+      }
+
+      index *= 3;
+      return [
+        translations.buffer[index + 0] - transformCenter.x,
+        translations.buffer[index + 1] - transformCenter.y,
+        translations.buffer[index + 2] - transformCenter.z,
+      ];
+    };
+
+    const getRotation = (index: number): [number, number, number, number] | undefined => {
+      index *= 4;
+      return rotations ? [rotations.buffer[index], rotations.buffer[index + 1], rotations.buffer[index + 2], rotations.buffer[index + 3]] : undefined;
+    };
+
+    const getScale = (index: number): [number, number, number] | undefined => {
+      index *= 3;
+      return scales ? [scales.buffer[index], scales.buffer[index + 1], scales.buffer[index + 2]] : undefined;
+    };
+
+    const transforms = new Float32Array(3 * 4 * count);
+    const transform = Transform.createIdentity();
+    for (let i = 0; i < count; i++) {
+      const tf = trsMatrix(getTranslation(i), getRotation(i), getScale(i), transform);
+      const idx = i * 3 * 4;
+      transforms[idx + 0] = tf.matrix.coffs[0];
+      transforms[idx + 1] = tf.matrix.coffs[1];
+      transforms[idx + 2] = tf.matrix.coffs[2];
+      transforms[idx + 3] = tf.origin.x;
+      transforms[idx + 4] = tf.matrix.coffs[3];
+      transforms[idx + 5] = tf.matrix.coffs[4];
+      transforms[idx + 6] = tf.matrix.coffs[5];
+      transforms[idx + 7] = tf.origin.y;
+      transforms[idx + 8] = tf.matrix.coffs[6];
+      transforms[idx + 9] = tf.matrix.coffs[7];
+      transforms[idx + 10] = tf.matrix.coffs[8];
+      transforms[idx + 11] = tf.origin.z;
+    }
+
+    // ###TODO? The extension currently provides no way of specifying per-instance feature Ids.
+    // For now, assume that if the feature table contains exactly one feature, all the instances belong to that feature.
+    const featureIds = featureTable && featureTable.isUniform ? new Uint8Array(3 * count) : undefined;
+    return { count, transforms, transformCenter, featureIds };
+  }
+
+  private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: GltfNode, featureTable: FeatureTable | undefined, transformStack: TransformStack, batchInstances?: InstancedGraphicParams, pseudoRtcBias?: Vector3d): TileReadStatus {
     if (undefined === node)
       return TileReadStatus.InvalidTileData;
 
     // IMPORTANT: Do not return without popping this node from the stack.
     transformStack.push(node);
     const thisTransform = transformStack.transform;
+
+    const nodeInstances = !batchInstances && undefined !== node.mesh ? this.readInstanceAttributes(node, featureTable) : undefined;
 
     /**
      * This is a workaround for tiles generated by
@@ -598,16 +690,16 @@ export abstract class GltfReader {
     for (const meshKey of getGltfNodeMeshIds(node)) {
       const nodeMesh = this._meshes[meshKey];
       if (nodeMesh?.primitives) {
-        const meshes = this.readMeshPrimitives(node, featureTable, thisTransform, thisBias);
+        const meshes = this.readMeshPrimitives(node, featureTable, thisTransform, thisBias, nodeInstances);
 
         let renderGraphic: RenderGraphic | undefined;
         if (0 !== meshes.length) {
           if (1 === meshes.length) {
-            renderGraphic = this.graphicFromMeshData(meshes[0], instances);
+            renderGraphic = this.graphicFromMeshData(meshes[0], batchInstances ?? nodeInstances);
           } else {
             const thisList: RenderGraphic[] = [];
             for (const mesh of meshes) {
-              renderGraphic = this.graphicFromMeshData(mesh, instances);
+              renderGraphic = this.graphicFromMeshData(mesh, batchInstances ?? nodeInstances);
               if (undefined !== renderGraphic)
                 thisList.push(renderGraphic);
             }
@@ -633,7 +725,7 @@ export abstract class GltfReader {
       for (const childId of node.children) {
         const child = this._nodes[childId];
         if (child)
-          this.readNodeAndCreateGraphics(renderGraphicList, child, featureTable, transformStack, instances);
+          this.readNodeAndCreateGraphics(renderGraphicList, child, featureTable, transformStack, batchInstances ?? nodeInstances);
       }
     }
 
@@ -895,10 +987,11 @@ export abstract class GltfReader {
       textureMapping = undefined;
 
     }
-    return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.Always, renderMaterial, undefined, hasBakedLighting, textureMapping);
+
+    return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.None, renderMaterial, undefined, hasBakedLighting, textureMapping);
   }
 
-  private readMeshPrimitives(node: GltfNode, featureTable?: FeatureTable, thisTransform?: Transform, thisBias?: Vector3d): GltfPrimitiveData[] {
+  private readMeshPrimitives(node: GltfNode, featureTable?: FeatureTable, thisTransform?: Transform, thisBias?: Vector3d, instances?: InstancedGraphicParams): GltfPrimitiveData[] {
     const meshes: GltfPrimitiveData[] = [];
     for (const meshKey of getGltfNodeMeshIds(node)) {
       const nodeMesh = this._meshes[meshKey];
@@ -908,9 +1001,34 @@ export abstract class GltfReader {
           if (mesh) {
             meshes.push(mesh);
             if (this._computedContentRange && mesh.pointRange) {
-              const invTransform = thisTransform?.inverse();
-              const meshRange = invTransform ? invTransform.multiplyRange(mesh.pointRange) : mesh.pointRange;
-              this._computedContentRange.extendRange(meshRange);
+              const meshRange = thisTransform ? thisTransform .multiplyRange(mesh.pointRange) : mesh.pointRange;
+              if (!instances) {
+                this._computedContentRange.extendRange(meshRange);
+              } else {
+                const tfs = instances.transforms;
+                const nodeRange = new Range3d();
+                const extendTransformedRange = (i: number, x: number, y: number, z: number) => {
+                  nodeRange.extendXYZ(tfs[i + 3] + tfs[i + 0] * x + tfs[i + 1] * y + tfs[i + 2] * z,
+                    tfs[i + 7] + tfs[i + 4] * x + tfs[i + 5] * y + tfs[i + 6] * z,
+                    tfs[i + 11] + tfs[i + 8] * x + tfs[i + 9] * y + tfs[i + 10] * z);
+                };
+
+                for (let i = 0; i < tfs.length; i += 3 * 4) {
+                  extendTransformedRange(i, meshRange.low.x, meshRange.low.y, meshRange.low.z);
+                  extendTransformedRange(i, meshRange.low.x, meshRange.low.y, meshRange.high.z);
+                  extendTransformedRange(i, meshRange.low.x, meshRange.high.y, meshRange.low.z);
+                  extendTransformedRange(i, meshRange.low.x, meshRange.high.y, meshRange.high.z);
+                  extendTransformedRange(i, meshRange.high.x, meshRange.low.y, meshRange.low.z);
+                  extendTransformedRange(i, meshRange.high.x, meshRange.low.y, meshRange.high.z);
+                  extendTransformedRange(i, meshRange.high.x, meshRange.high.y, meshRange.low.z);
+                  extendTransformedRange(i, meshRange.high.x, meshRange.high.y, meshRange.high.z);
+                }
+
+                nodeRange.low.addInPlace(instances.transformCenter);
+                nodeRange.high.addInPlace(instances.transformCenter);
+
+                this._computedContentRange.extendRange(nodeRange);
+              }
             }
           }
         }
@@ -1829,6 +1947,13 @@ export class GltfGraphicsReader extends GltfReader {
       this._featureTable = new FeatureTable(1, args.pickableOptions?.modelId ?? pickableId, BatchType.Primary);
       this._featureTable.insert(new Feature(pickableId));
     }
+  }
+
+  protected override get viewFlagOverrides(): ViewFlagOverrides {
+    return {
+      whiteOnWhiteReversal: false,
+      renderMode: RenderMode.SmoothShade,
+    };
   }
 
   public async read(): Promise<GltfReaderResult> {

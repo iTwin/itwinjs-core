@@ -39,7 +39,6 @@ packageClassification:
           "core-react",
           "components-react",
           "imodel-components-react",
-          "appui-layout-react",
           "appui-react",
         ],
     },
@@ -72,6 +71,11 @@ packageClassification:
     },
     {
       "order": "7",
+      "header": "Connector Framework",
+      "packages": ["connector-framework"],
+    },
+    {
+      "order": "8",
       "header": "Authorization",
       "packages":
         [

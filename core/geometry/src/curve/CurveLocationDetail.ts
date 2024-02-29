@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { Geometry } from "../Geometry";
+import { Geometry, ICloneable } from "../Geometry";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { CurvePrimitive } from "./CurvePrimitive";
@@ -41,17 +41,14 @@ export enum CurveSearchStatus {
 }
 
 /**
- * Use to update a vector in case where source and prior result are both possibly undefined.
+ * Use to update a cloneable object when source and/or prior result are possibly undefined.
  * * Any undefined source returns undefined.
  * * For defined source, reuse optional result if available.
  * @param source optional source
  * @param result optional result
  */
-function optionalVectorUpdate(source: Vector3d | undefined, result: Vector3d | undefined): Vector3d | undefined {
-  if (source) {
-    return source.clone(result);
-  }
-  return undefined;
+function optionalUpdate<T extends ICloneable<T>>(source: T | undefined, result: T | undefined): T | undefined {
+  return source ? source.clone(result) : undefined;
 }
 
 /**
@@ -150,12 +147,11 @@ export class CurveLocationDetail {
     result.curve = this.curve;
     result.fraction = this.fraction;
     result.fraction1 = this.fraction1;
-    result.point1 = this.point1;
+    result.point1 = optionalUpdate<Point3d>(this.point1, result.point1);
     result.point.setFromPoint3d(this.point);
-    result.vectorInCurveLocationDetail = optionalVectorUpdate(
-      this.vectorInCurveLocationDetail, result.vectorInCurveLocationDetail,
-    );
+    result.vectorInCurveLocationDetail = optionalUpdate<Vector3d>(this.vectorInCurveLocationDetail, result.vectorInCurveLocationDetail);
     result.a = this.a;
+    result.childDetail = optionalUpdate<CurveLocationDetail>(this.childDetail, result.childDetail);
     result.curveSearchStatus = this.curveSearchStatus;
     return result;
   }
@@ -170,8 +166,8 @@ export class CurveLocationDetail {
    */
   public setFP(fraction: number, point: Point3d, vector?: Vector3d, a: number = 0.0): void {
     this.fraction = fraction;
-    this.point.setFrom(point);
-    this.vectorInCurveLocationDetail = optionalVectorUpdate(vector, this.vectorInCurveLocationDetail);
+    this.point.setFromPoint3d(point);
+    this.vectorInCurveLocationDetail = optionalUpdate<Vector3d>(vector, this.vectorInCurveLocationDetail);
     this.a = a;
   }
   /**
@@ -209,6 +205,7 @@ export class CurveLocationDetail {
     result.point.setFromPoint3d(point);
     result.vectorInCurveLocationDetail = undefined;
     result.a = 0.0;
+    result.childDetail = undefined;
     result.curveSearchStatus = undefined;
     return result;
   }
@@ -237,6 +234,7 @@ export class CurveLocationDetail {
     result.point.setFromPoint3d(point);
     result.vectorInCurveLocationDetail = undefined;
     result.a = distance;
+    result.childDetail = undefined;
     result.curveSearchStatus = status;
     return result;
   }
@@ -266,9 +264,10 @@ export class CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
     result.fraction = endFraction;
-    result.point = curve.fractionToPoint(endFraction, result.point);
+    curve.fractionToPoint(endFraction, result.point);
     result.vectorInCurveLocationDetail = undefined;
     result.a = a;
+    result.childDetail = undefined;
     result.curveSearchStatus = status;
     return result;
   }
@@ -279,10 +278,11 @@ export class CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
     result.fraction = fraction;
-    result.point = curve.fractionToPoint(fraction);
+    curve.fractionToPoint(fraction, result.point);
     result.vectorInCurveLocationDetail = undefined;
-    result.curveSearchStatus = undefined;
     result.a = 0.0;
+    result.childDetail = undefined;
+    result.curveSearchStatus = undefined;
     return result;
   }
   /** Create with CurvePrimitive pointer and fraction for evaluation. */
@@ -293,10 +293,11 @@ export class CurveLocationDetail {
     result.curve = curve;
     result.fraction = fraction;
     const ray = curve.fractionToPointAndDerivative(fraction);
-    result.point = ray.origin;
+    result.point.setFromPoint3d(ray.origin);
     result.vectorInCurveLocationDetail = ray.direction;
-    result.curveSearchStatus = undefined;
     result.a = 0.0;
+    result.childDetail = undefined;
+    result.curveSearchStatus = undefined;
     return result;
   }
   /** Create with CurvePrimitive pointer and 2 fractions for evaluation. */
@@ -306,12 +307,13 @@ export class CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
     result.fraction = fraction0;
-    result.point = curve.fractionToPoint(fraction0);
+    curve.fractionToPoint(fraction0, result.point);
     result.fraction1 = fraction1;
-    result.point1 = curve.fractionToPoint(fraction1);
+    result.point1 = curve.fractionToPoint(fraction1, result.point1);
     result.vectorInCurveLocationDetail = undefined;
-    result.curveSearchStatus = undefined;
     result.a = 0.0;
+    result.childDetail = undefined;
+    result.curveSearchStatus = undefined;
     return result;
   }
   /** Create with CurvePrimitive pointer, fraction, and point coordinates. */
@@ -328,6 +330,7 @@ export class CurveLocationDetail {
     result.point.setFromPoint3d(point);
     result.vectorInCurveLocationDetail = undefined;
     result.a = a;
+    result.childDetail = undefined;
     result.curveSearchStatus = undefined;
     return result;
   }

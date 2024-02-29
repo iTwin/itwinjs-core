@@ -10,7 +10,17 @@ Various subclasses of [IModelConnection]($frontend) are used depending on the ty
 - [SnapshotConnection]($frontend)
 - [BlankConnection](./BlankConnection.md)
 
-[CheckpointConnection]($frontend) is used for **readonly** web frontends connected over HTTP to Checkpoint iModels opened by cloud-based backends. A `CheckpointConnection` is initiated via the static [CheckpointConnection.openRemote]($frontend) method. Due to the stateless nature of HTTP connections, it is important to understand that the backend servicing calls to a `CheckpointConnection` can change during a session, and requests may be directed to more than one backend at the same time. For this reason, `CheckpointConnection`s may only use Checkpoint iModels, so identical copies of the checkpoint will be found on all equivalent backends.
+[CheckpointConnection]($frontend) is used to create a **readonly** connection to a Checkpoint of an iModel. A `CheckpointConnection` is initiated via [CheckpointConnection.openRemote]($frontend).
+
+If the current process is a browser frontend, the connection will be to a remote backend using RPC. In that case, due to the nature of RPC requests, the backend servicing this connection may be servicing many simultaneous frontends, and may even change over time.
+
+If the current process is connected to a private backend over IPC (e.g. on a desktop via Electron), the connection will be to an IModelDb of a Checkpoint from that private backend.
+
+The primary difference between a CheckpointConnection using RPC vs. IPC is the lifetime of the [IModelDb]($backend) on the backend. For RPC, only the first client causes the IModelDb to be opened, and [CheckpointConnection.close](($frontend)) is ignored (because there can be
+more than one client). For IPC, every call to [CheckpointConnection.openRemote](($frontend)) attempts to open the IModelDb and [CheckpointConnection.close]($frontend)
+closes it.
+
+Obviously (because Checkpoints are immutable) `CheckpointConnection`s only allow readonly access.
 
 A [SnapshotConnection]($frontend) can be used for readonly connections to a Snapshot iModel. It uses RPC, so may be used from web or native applications.
 

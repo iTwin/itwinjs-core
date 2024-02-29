@@ -9,28 +9,16 @@
 
 import { ClipUtilities } from "../clipping/ClipUtils";
 import { Geometry } from "../Geometry";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
+import { IndexedXYZCollection, LineStringDataVariant, MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { PointStreamXYZXYZHandlerBase, VariantPointDataStream } from "../geometry3d/PointStreaming";
 import { Range1d, Range2d } from "../geometry3d/Range";
-import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
+import { XAndY } from "../geometry3d/XYZProps";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { MarkedEdgeSet } from "./HalfEdgeMarkSet";
 import { InsertAndRetriangulateContext } from "./InsertAndRetriangulateContext";
-
-/**
- * type for use as signature for xyz data of a single linestring appearing in a parameter list.
- * @public
- */
-export type LineStringDataVariant = IndexedXYZCollection | XYAndZ[] | XAndY[] | number[][];
-
-/**
- * type for use as signature for multiple xyz data of multiple linestrings appearing in a parameter list.
- * @public
- */
-export type MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[];
 
 /**
  * (static) methods for triangulating polygons

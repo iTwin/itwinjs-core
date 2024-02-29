@@ -785,6 +785,8 @@ export enum IModelHubStatus {
 // @public
 export enum IModelStatus {
     // (undocumented)
+    Aborted = 65608,
+    // (undocumented)
     AlreadyLoaded = 65537,
     // (undocumented)
     AlreadyOpen = 65538,
@@ -1520,7 +1522,7 @@ export class SortedArray<T> extends ReadonlySortedArray<T> {
     slice(start?: number, end?: number): SortedArray<T>;
 }
 
-// @public
+// @public @deprecated
 export enum SpanKind {
     // (undocumented)
     CLIENT = 2,
@@ -1541,7 +1543,7 @@ export abstract class StatusCategory {
     // (undocumented)
     abstract error: boolean;
     // (undocumented)
-    static for(error: BentleyError): StatusCategory;
+    static for(error: Error): StatusCategory;
     // (undocumented)
     static handlers: Set<StatusCategoryHandler>;
     // (undocumented)
@@ -1549,7 +1551,7 @@ export abstract class StatusCategory {
 }
 
 // @alpha (undocumented)
-export type StatusCategoryHandler = (error: BentleyError) => StatusCategory | undefined;
+export type StatusCategoryHandler = (error: Error) => StatusCategory | undefined;
 
 // @internal
 export interface StatusCodeWithMessage<ErrorCodeType> {
@@ -1579,9 +1581,11 @@ export abstract class SuccessCategory extends StatusCategory {
     error: boolean;
 }
 
-// @public
+// @public @deprecated
 export class Tracing {
     static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry): void;
+    // @internal
+    static recordException(e: Error): void;
     static setAttributes(attributes: SpanAttributes): void;
     static withSpan<T>(name: string, fn: () => Promise<T>, options?: SpanOptions, parentContext?: SpanContext): Promise<T>;
 }

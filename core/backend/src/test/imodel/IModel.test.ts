@@ -2167,7 +2167,7 @@ describe("iModel", () => {
     iModel3.close();
   });
 
-  it("should be able to open checkpoints", async () => {
+  it("should be able to open checkpoints for RPC", async () => {
     const changeset: ChangesetIdWithIndex = { id: "fakeChangeSetId", index: 10 };
     const iTwinId = "fakeIModelId";
     const iModelId = "fakeIModelId";
@@ -2207,7 +2207,7 @@ describe("iModel", () => {
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
 
     const accessToken = "token";
-    const checkpoint = await SnapshotDb.openCheckpointV2({ accessToken, iTwinId, iModelId, changeset });
+    const checkpoint = await SnapshotDb.openCheckpointFromRpc({ accessToken, iTwinId, iModelId, changeset });
     isOpen = true;
     expect(openDgnDbStub.calledOnce).to.be.true;
     expect(openDgnDbStub.firstCall.firstArg.path).to.equal("fakeDb");
@@ -2221,7 +2221,7 @@ describe("iModel", () => {
 
     errorLogStub.resetHistory();
     expect(cloudContainer.accessToken).equal("sas");
-    await checkpoint.refreshContainer(accessToken);
+    await checkpoint.refreshContainerForRpc(accessToken);
     expect(cloudContainer.accessToken).equal("testSAS");
 
     assert.equal(errorLogStub.callCount, 1);
@@ -2234,7 +2234,7 @@ describe("iModel", () => {
     queryStub.callsFake(async () => {
       throw new Error("no checkpoint");
     });
-    await expect(checkpoint.refreshContainer(accessToken)).to.eventually.be.rejectedWith("no checkpoint");
+    await expect(checkpoint.refreshContainerForRpc(accessToken)).to.eventually.be.rejectedWith("no checkpoint");
 
     checkpoint.close();
   });
@@ -2245,14 +2245,14 @@ describe("iModel", () => {
     sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => undefined);
 
     const accessToken = "token";
-    const error = await getIModelError(SnapshotDb.openCheckpointV2({ accessToken, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
+    const error = await getIModelError(SnapshotDb.openCheckpointFromRpc({ accessToken, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
   });
 
   it("attempting to re-attach a non-checkpoint snapshot should be a no-op", async () => {
     process.env.CHECKPOINT_CACHE_DIR = "/foo/";
     const accessToken = "token";
-    await imodel1.refreshContainer(accessToken);
+    await imodel1.refreshContainerForRpc(accessToken);
   });
 
   function hasClassView(db: IModelDb, name: string): boolean {

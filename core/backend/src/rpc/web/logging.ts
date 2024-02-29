@@ -31,7 +31,7 @@ export class WebAppRpcLoggingBackend extends WebAppRpcLogging {
     const result = await invocation.result;
     const errorMessage = result.message ? result.message : result.objects; // Can be an error or an RpcSerializedValue
 
-    Logger.logInfo(CommonLoggerCategory.RpcInterfaceBackend, `${message}.${operationDescriptor}`, () => ({
+    const metadata = {
       method: invocation.request.method,
       path: invocation.request.path,
       status: invocation.status,
@@ -40,6 +40,8 @@ export class WebAppRpcLoggingBackend extends WebAppRpcLogging {
       ActivityId: invocation.request.id, // eslint-disable-line @typescript-eslint/naming-convention
       MachineName: this.getHostname(), // eslint-disable-line @typescript-eslint/naming-convention
       ...pathIds,
-    }));
+    };
+
+    Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, `${message}.${operationDescriptor}`, metadata);
   }
 }

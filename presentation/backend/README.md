@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@itwin/presentation-backend__ package contains types and classes that backend code
+The **@itwin/presentation-backend** package contains types and classes that backend code
 can use query presentation data directly from iModels.
 
 ## Documentation

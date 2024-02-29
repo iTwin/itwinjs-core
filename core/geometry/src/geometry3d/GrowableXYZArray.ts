@@ -9,8 +9,7 @@
 
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Matrix4d } from "../geometry4d/Matrix4d";
-import { MultiLineStringDataVariant } from "../topology/Triangulation";
-import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
+import { IndexedReadWriteXYZCollection, IndexedXYZCollection, MultiLineStringDataVariant } from "./IndexedXYZCollection";
 import { Matrix3d } from "./Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Point2d } from "./Point2dVector2d";
@@ -182,7 +181,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     this.ensureCapacity(this._xyzInUse + points.length, false);
     for (const p of points) this.push(p);
   }
-  /** Push points from variant sources.
+  /** Push copies of points from variant sources.
    * Valid inputs are:
    * * Point2d
    * * Point3d

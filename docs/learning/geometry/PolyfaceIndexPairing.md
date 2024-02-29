@@ -36,8 +36,8 @@ The (static) method `PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface)
 - Returns true if all partners are found
 - Returns false if any facet edges have either (a) not partner, (b) more than one partner with the same indices or (c) a partner with indices that are not reversed.
 
-|  |  | |
----|---|---|
-| Geometry  | ![>](./figs/Polyface/CappedCone.png) |![>](./figs/Polyface/UncappedCone.png) |
-| return from `PolyfaceQuery.isPolyfaceClosedByEdgePairing` | `true` | `false` |
-| return from `PolyfaceQuery.boundaryEdges ()` | (none !!) | ![>](./figs/Polyface/UncappedConeBoundaryEdges.png)|
+|                                                           |                                      |                                                     |
+| --------------------------------------------------------- | ------------------------------------ | --------------------------------------------------- |
+| Geometry                                                  | ![>](./figs/Polyface/CappedCone.png) | ![>](./figs/Polyface/UncappedCone.png)              |
+| return from `PolyfaceQuery.isPolyfaceClosedByEdgePairing` | `true`                               | `false`                                             |
+| return from `PolyfaceQuery.boundaryEdges ()`              | (none !!)                            | ![>](./figs/Polyface/UncappedConeBoundaryEdges.png) |

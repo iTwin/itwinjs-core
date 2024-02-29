@@ -464,11 +464,7 @@ export type ContentUpdateInfo = typeof UPDATE_FULL;
 export function createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean): FieldHierarchy[];
 
 // @public
-export type CustomizationRule = InstanceLabelOverride | CheckBoxRule | // eslint-disable-line deprecation/deprecation
-GroupingRule | ImageIdOverride | // eslint-disable-line deprecation/deprecation
-LabelOverride | // eslint-disable-line deprecation/deprecation
-SortingRule | StyleOverride | // eslint-disable-line deprecation/deprecation
-ExtendedDataRule | NodeArtifactsRule;
+export type CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule;
 
 // @public
 export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
@@ -1679,11 +1675,15 @@ export class LocalizationHelper {
     // (undocumented)
     getLocalizedContentItems(items: Item[]): Item[];
     // (undocumented)
+    getLocalizedDisplayValueGroup(group: DisplayValueGroup): DisplayValueGroup;
+    // (undocumented)
     getLocalizedElementProperties(elem: ElementProperties): ElementProperties;
     // (undocumented)
     getLocalizedLabelDefinition(labelDefinition: LabelDefinition): LabelDefinition;
     // (undocumented)
     getLocalizedLabelDefinitions(labelDefinitions: LabelDefinition[]): LabelDefinition[];
+    // (undocumented)
+    getLocalizedNodePathElement(npe: NodePathElement): NodePathElement;
     // (undocumented)
     getLocalizedNodes(nodes: Node_2[]): Node_2[];
     // (undocumented)
@@ -1698,6 +1698,7 @@ export interface LocalizationHelperProps {
 
 // @public
 export interface MultiElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> extends RequestOptions<TIModel> {
+    batchSize?: number;
     // @beta
     contentParser?: (descriptor: Descriptor, item: Item) => TParsedContent;
     elementClasses?: string[];
@@ -2550,6 +2551,7 @@ export interface RelatedClassInfo {
     relationshipInfo: ClassInfo;
     sourceClassInfo: ClassInfo;
     targetClassInfo: ClassInfo;
+    targetInstanceIds?: Id64String[];
 }
 
 // @public (undocumented)
@@ -2582,6 +2584,8 @@ export interface RelatedClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
     sourceClassInfo: TClassInfoJSON;
     // (undocumented)
     targetClassInfo: TClassInfoJSON;
+    // (undocumented)
+    targetInstanceIds?: Id64String[];
 }
 
 // @public
@@ -2601,6 +2605,19 @@ export namespace RelatedClassInfoWithOptionalRelationship {
 export type RelatedClassInfoWithOptionalRelationshipJSON<TClassInfoJSON = ClassInfoJSON> = PartialBy<RelatedClassInfoJSON<TClassInfoJSON>, "relationshipInfo" | "isForwardRelationship" | "isPolymorphicRelationship">;
 
 // @public
+export interface RelatedInstanceByPathSpecification extends RelatedInstanceSpecificationBase {
+    relationshipPath: RelationshipPathSpecification;
+}
+
+// @public
+export interface RelatedInstanceByTargetInstancesSpecification extends RelatedInstanceSpecificationBase {
+    targetInstances: {
+        class: SingleSchemaClassSpecification;
+        instanceIds: Id64String[];
+    };
+}
+
+// @public
 export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
     instanceFilter?: string;
     relationshipPaths: RepeatableRelationshipPathSpecification[];
@@ -2608,10 +2625,12 @@ export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificatio
 }
 
 // @public
-export interface RelatedInstanceSpecification {
+export type RelatedInstanceSpecification = RelatedInstanceByPathSpecification | RelatedInstanceByTargetInstancesSpecification;
+
+// @public
+export interface RelatedInstanceSpecificationBase {
     alias: string;
     isRequired?: boolean;
-    relationshipPath: RelationshipPathSpecification;
 }
 
 // @public
@@ -2763,7 +2782,7 @@ export class RpcRequestsHandler {
     getPagedNodes(options: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON>> & ClientDiagnosticsAttribute): Promise<PagedResponse<NodeJSON>>;
     // (undocumented)
     getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<SelectionScope[]>;
-    request<TResult, TOptions extends (RequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute), TArg = any>(func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<TOptions>, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...additionalOptions: TArg[]): Promise<TResult>;
+    request<TResult, TOptions extends RequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute, TArg = any>(func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<TOptions>, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...additionalOptions: TArg[]): Promise<TResult>;
     readonly timeout: number;
 }
 

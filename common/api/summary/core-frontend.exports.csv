@@ -78,6 +78,7 @@ internal;BackgroundMapGeometry
 beta;class BaseUnitFormattingSettingsProvider 
 internal;BatchedTileIdMap
 public;BatchOptions
+beta;BatchTableProperties
 public;BeButton
 public;BeButtonEvent 
 public;BeButtonEventProps
@@ -357,6 +358,7 @@ public;GraphicSolidPrimitive
 public;GraphicType
 internal;GroundPlaneDecorations
 alpha;GroupMark
+internal;headersIncludeAuthMethod(headers: Headers, query: string[]): boolean
 internal;Hilites
 public;HiliteSet
 public;HitDetail
@@ -777,6 +779,9 @@ public;SelectionTool
 internal;SelectParent
 public;SelectRemoveEvent
 public;SelectReplaceEvent
+internal;setBasicAuthorization(headers: Headers, credentials: RequestBasicCredentials): void
+internal;setBasicAuthorization(headers: Headers, user: string, password: string): void
+internal;setRequestTimeout(opts: RequestInit, ms: number, abortController?: AbortController): void
 public;SetupCameraTool 
 public;SetupWalkCameraTool 
 public;SheetModelState 

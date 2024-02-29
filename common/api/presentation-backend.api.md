@@ -52,7 +52,6 @@ import { SelectionScopeRequestOptions } from '@itwin/presentation-common';
 import { SingleElementPropertiesRequestOptions } from '@itwin/presentation-common';
 import { UnitSystemFormat as UnitSystemFormat_2 } from '@itwin/presentation-common';
 import { UnitSystemKey } from '@itwin/core-quantity';
-import { UpdateInfo } from '@itwin/presentation-common';
 import { VariableValue } from '@itwin/presentation-common';
 import { VariableValueTypes } from '@itwin/presentation-common';
 import { WithCancelEvent } from '@itwin/presentation-common';
@@ -308,7 +307,7 @@ export interface PresentationManagerProps {
     // @alpha
     schemaContextProvider?: (imodel: IModelDb) => SchemaContext;
     supplementalRulesetDirectories?: string[];
-    // @beta
+    // @beta @deprecated
     updatesPollInterval?: number;
     // @beta
     useMmap?: boolean | number;

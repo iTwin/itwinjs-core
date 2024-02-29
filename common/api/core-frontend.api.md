@@ -1716,7 +1716,8 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
 export class BatchedTileIdMap {
     constructor(iModel: IModelConnection);
     getBatchId(properties: any): Id64String;
-    getBatchProperties(id: Id64String): any;
+    // (undocumented)
+    getFeatureProperties(id: Id64String): Record<string, any> | undefined;
 }
 
 // @public
@@ -1727,6 +1728,11 @@ export interface BatchOptions {
     noHilite?: boolean;
     // @beta
     tileId?: string;
+}
+
+// @beta
+export interface BatchTableProperties {
+    getFeatureProperties(id: Id64String): Record<string, any> | undefined;
 }
 
 // @public (undocumented)
@@ -2179,6 +2185,7 @@ export interface CheckboxFormatPropEditorSpec extends CustomFormatPropEditorSpec
 
 // @public
 export class CheckpointConnection extends IModelConnection {
+    protected constructor(props: IModelConnectionProps, fromIpc: boolean);
     close(): Promise<void>;
     get iModelId(): GuidString;
     isCheckpointConnection(): this is CheckpointConnection;
@@ -2186,7 +2193,7 @@ export class CheckpointConnection extends IModelConnection {
     // (undocumented)
     protected _isClosed?: boolean;
     get iTwinId(): GuidString;
-    static openRemote(iTwinId: string, iModelId: string, version?: IModelVersion): Promise<CheckpointConnection>;
+    static openRemote(iTwinId: GuidString, iModelId: GuidString, version?: IModelVersion): Promise<CheckpointConnection>;
 }
 
 // @public
@@ -3022,6 +3029,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     protected queryRenderTimelineProps(timelineId: Id64String): Promise<RenderTimelineProps | undefined>;
     // @internal (undocumented)
     protected _queryRenderTimelinePropsPromise?: Promise<RenderTimelineProps | undefined>;
+    get realityModels(): Iterable<ContextRealityModelState>;
     // @internal (undocumented)
     protected registerSettingsEventListeners(): void;
     get scheduleScript(): RenderSchedule.Script | undefined;
@@ -4263,7 +4271,7 @@ export type GeoServicesOptions = Omit<GeoConverterOptions, "datum">;
 export function getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect;
 
 // @internal (undocumented)
-export function getCesiumAccessTokenAndEndpointUrl(assetId?: number, requestKey?: string): Promise<{
+export function getCesiumAccessTokenAndEndpointUrl(assetId: string, requestKey?: string): Promise<{
     token?: string;
     url?: string;
 }>;
@@ -4586,6 +4594,16 @@ export interface Gltf2Material extends GltfChildOfRootProperty {
 
 // @internal
 export interface Gltf2Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
+    // (undocumented)
+    extensions?: GltfExtensions & {
+        EXT_mesh_gpu_instancing?: {
+            attributes?: {
+                TRANSLATION?: GltfId;
+                ROTATION?: GltfId;
+                SCALE?: GltfId;
+            };
+        };
+    };
     mesh?: GltfId;
     // (undocumented)
     meshes?: never;
@@ -4800,6 +4818,8 @@ export class GltfGraphicsReader extends GltfReader {
     get scenes(): GltfDictionary<GltfScene>;
     // (undocumented)
     get textures(): GltfDictionary<GltfTexture>;
+    // (undocumented)
+    protected get viewFlagOverrides(): ViewFlagOverrides;
 }
 
 // @internal
@@ -4930,10 +4950,10 @@ export interface GltfNodeBaseProps {
     camera?: GltfId;
     children?: GltfId[];
     matrix?: number[];
-    rotation?: number[];
-    scale?: number[];
+    rotation?: [number, number, number, number];
+    scale?: [number, number, number];
     skin?: GltfId;
-    translation?: number[];
+    translation?: [number, number, number];
 }
 
 // @internal
@@ -5064,6 +5084,8 @@ export abstract class GltfReader {
     protected readonly _version: number;
     // (undocumented)
     protected readonly _vertexTableRequired: boolean;
+    // (undocumented)
+    protected get viewFlagOverrides(): ViewFlagOverrides | undefined;
     // (undocumented)
     protected readonly _yAxisUp: boolean;
 }
@@ -5369,6 +5391,8 @@ export class GraphicBranch implements IDisposable {
     dispose(): void;
     readonly entries: RenderGraphic[];
     getViewFlags(flags: ViewFlags): ViewFlags;
+    // @internal
+    groupNodeId?: number;
     get isEmpty(): boolean;
     readonly ownsEntries: boolean;
     // @beta
@@ -5606,6 +5630,9 @@ export interface GroupMark {
     // (undocumented)
     start: number;
 }
+
+// @internal
+export function headersIncludeAuthMethod(headers: Headers, query: string[]): boolean;
 
 // @internal (undocumented)
 export interface Hilites {
@@ -6042,13 +6069,12 @@ export interface ImdlDecodeArgs {
     isCanceled?: () => boolean;
     // (undocumented)
     isLeaf?: boolean;
+    modelGroups?: Id64Set[];
     // (undocumented)
     options?: BatchOptions | false;
     // (undocumented)
     sizeMultiplier?: number;
-    // (undocumented)
     stream: ByteStream;
-    // (undocumented)
     system: RenderSystem;
 }
 
@@ -6206,6 +6232,8 @@ export namespace ImdlModel {
         // (undocumented)
         animationNodeId: number;
         // (undocumented)
+        groupId?: never;
+        // (undocumented)
         layerId?: never;
         // (undocumented)
         primitives: NodePrimitive[];
@@ -6220,6 +6248,8 @@ export namespace ImdlModel {
         animationId?: never;
         // (undocumented)
         animationNodeId?: never;
+        // (undocumented)
+        groupId?: never;
         // (undocumented)
         layerId?: never;
         // (undocumented)
@@ -6257,6 +6287,20 @@ export namespace ImdlModel {
     }
     // (undocumented)
     export type FeatureTable = SingleModelFeatureTable | MultiModelFeatureTable;
+    export interface GroupNode {
+        // (undocumented)
+        animationId?: never;
+        // (undocumented)
+        animationNodeId?: never;
+        // (undocumented)
+        groupId: number;
+        // (undocumented)
+        layerId?: never;
+        // (undocumented)
+        nodes: PrimitivesNode[];
+        // (undocumented)
+        primitives?: never;
+    }
     // (undocumented)
     export interface IndexedEdgeParams {
         // (undocumented)
@@ -6287,6 +6331,8 @@ export namespace ImdlModel {
         animationId?: never;
         // (undocumented)
         animationNodeId?: never;
+        // (undocumented)
+        groupId?: never;
         // (undocumented)
         layerId: string;
         // (undocumented)
@@ -6319,7 +6365,7 @@ export namespace ImdlModel {
         numSubCategories: number;
     }
     // (undocumented)
-    export type Node = BasicNode | AnimationNode | Layer;
+    export type Node = PrimitivesNode | GroupNode;
     // (undocumented)
     export type NodePrimitive = Primitive | {
         params: AreaPatternParams;
@@ -6366,6 +6412,7 @@ export namespace ImdlModel {
     };
     // (undocumented)
     export type PrimitiveModifier = Instances | ViewIndependentOrigin;
+    export type PrimitivesNode = BasicNode | AnimationNode | Layer;
     // (undocumented)
     export interface SegmentEdgeParams {
         // (undocumented)
@@ -6509,8 +6556,9 @@ export interface ImdlParserOptions {
     data: Uint8Array;
     // (undocumented)
     is3d: boolean;
-    // (undocumented)
     maxVertexTableSize: number;
+    // (undocumented)
+    modelGroups?: Id64Set[];
     // (undocumented)
     omitEdges?: boolean;
 }
@@ -6567,6 +6615,8 @@ export interface ImdlReaderCreateArgs {
     isLeaf?: boolean;
     // (undocumented)
     loadEdges?: boolean;
+    // (undocumented)
+    modelGroups?: Id64Set[];
     // (undocumented)
     modelId: Id64String;
     // (undocumented)
@@ -7845,6 +7895,8 @@ export abstract class MapLayerImageryProvider {
     // @internal (undocumented)
     protected get _filterByCartoRange(): boolean;
     // @internal (undocumented)
+    protected _firstRequestPromise: Promise<void> | undefined;
+    // @internal (undocumented)
     generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
     protected _generateChildIds(quadId: QuadId, resolveChildren: (childIds: QuadId[]) => void): void;
     // @internal
@@ -7883,6 +7935,8 @@ export abstract class MapLayerImageryProvider {
     getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
     protected _hasSuccessfullyFetchedTile: boolean;
+    // @internal (undocumented)
+    protected _includeUserCredentials: boolean;
     initialize(): Promise<void>;
     loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;
     // @internal (undocumented)
@@ -7899,6 +7953,8 @@ export abstract class MapLayerImageryProvider {
     protected _missingTileData?: Uint8Array;
     // (undocumented)
     get mutualExclusiveSubLayer(): boolean;
+    // @internal (undocumented)
+    protected readonly onFirstRequestCompleted: BeEvent<() => void>;
     // (undocumented)
     readonly onStatusChanged: BeEvent<(provider: MapLayerImageryProvider) => void>;
     // @internal
@@ -11361,6 +11417,8 @@ export class RealityTileRegion {
 export class RealityTileTree extends TileTree {
     // @internal
     constructor(params: RealityTileTreeParams);
+    // @beta
+    get batchTableProperties(): BatchTableProperties | undefined;
     // @internal (undocumented)
     cartesianRange: Range3d;
     // @internal (undocumented)
@@ -12607,6 +12665,15 @@ export interface SelectReplaceEvent {
     type: SelectionSetEventType.Replace;
 }
 
+// @internal
+export function setBasicAuthorization(headers: Headers, credentials: RequestBasicCredentials): void;
+
+// @internal (undocumented)
+export function setBasicAuthorization(headers: Headers, user: string, password: string): void;
+
+// @internal
+export function setRequestTimeout(opts: RequestInit, ms: number, abortController?: AbortController): void;
+
 // @public
 export class SetupCameraTool extends PrimitiveTool {
     // (undocumented)
@@ -13665,6 +13732,7 @@ export abstract class TerrainMeshProvider {
 
 // @public
 export interface TerrainMeshProviderOptions {
+    dataSource?: string;
     exaggeration: number;
     wantNormals: boolean;
     wantSkirts: boolean;
@@ -14132,6 +14200,8 @@ export namespace TileAdmin {
         aggressive: number;
         relaxed: number;
     };
+    const // @internal
+    nonMobileUndefinedGpuMemoryLimit: number;
     const mobileGpuMemoryLimits: {
         default: number;
         aggressive: number;
@@ -14204,6 +14274,8 @@ export interface TileDrawArgParams {
     boundingRange?: Range3d;
     clipVolume?: RenderClipVolume;
     context: SceneContext;
+    // @internal
+    groupNodeId?: number;
     hiddenLineSettings?: HiddenLine.Settings;
     intersectionClip?: ClipVector;
     location: Transform;
@@ -14245,6 +14317,8 @@ export class TileDrawArgs {
     // @internal (undocumented)
     getTileRadius(tile: Tile): number;
     readonly graphics: GraphicBranch;
+    // @internal (undocumented)
+    readonly groupNodeId?: number;
     hiddenLineSettings?: HiddenLine.Settings;
     insertMissing(tile: Tile): void;
     intersectionClip?: ClipVector;
@@ -14630,6 +14704,8 @@ export abstract class TileTreeReference {
     protected getAnimationTransformNodeId(_tree: TileTree): number | undefined;
     protected getAppearanceProvider(_tree: TileTree): FeatureAppearanceProvider | undefined;
     protected getClipVolume(tree: TileTree): RenderClipVolume | undefined;
+    // @internal (undocumented)
+    protected getGroupNodeId(_tree: TileTree): number | undefined;
     protected getHiddenLineSettings(_tree: TileTree): HiddenLine.Settings | undefined;
     getLocation(): Transform | undefined;
     // @alpha
@@ -16637,6 +16713,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     // @internal
     onRequestStateChanged(): void;
     readonly onResized: BeEvent<(vp: Viewport) => void>;
+    // @beta
+    readonly onSceneInvalidated: BeEvent<(vp: Viewport) => void>;
     readonly onViewChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesPerModelChanged: BeEvent<(vp: Viewport) => void>;
@@ -17506,6 +17584,7 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
 
 // @internal (undocumented)
 export class WmsUtilities {
+    static fetchXml(url: string, credentials?: RequestBasicCredentials): Promise<string>;
     // (undocumented)
     static getBaseUrl(url: string): string;
 }

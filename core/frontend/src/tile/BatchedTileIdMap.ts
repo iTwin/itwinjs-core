@@ -43,8 +43,8 @@ export class BatchedTileIdMap {
     return entry.id;
   }
 
-  /** Obtain the JSON properties associated with the specified Id64String, or undefined if none exist. */
-  public getBatchProperties(id: Id64String): any {
-    return undefined !== this._idMap ? this._idMap.get(id) : undefined;
+  public getFeatureProperties(id: Id64String): Record<string, any> | undefined {
+    const props = this._idMap?.get(id);
+    return typeof props === "object" ? props : undefined;
   }
 }
