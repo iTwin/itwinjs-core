@@ -1159,6 +1159,10 @@ export type LogFunction = (category: string, message: string, metaData: LoggingM
 
 // @public
 export class Logger {
+    // @internal (undocumented)
+    static get categoryFilter(): {
+        [x: string]: LogLevel;
+    };
     static configureLevels(cfg: LoggerLevelsConfig): void;
     static getLevel(category: string): LogLevel | undefined;
     static getMetaData(metaData?: LoggingMetaData): object;
@@ -1181,6 +1185,8 @@ export class Logger {
     static logWarning(category: string, message: string, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logWarning: LogFunction | undefined;
+    // @internal (undocumented)
+    static get minLevel(): LogLevel | undefined;
     static parseLogLevel(str: string): LogLevel;
     static setLevel(category: string, minLevel: LogLevel): void;
     static setLevelDefault(minLevel: LogLevel): void;
