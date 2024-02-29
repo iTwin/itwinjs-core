@@ -8,6 +8,7 @@ import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../IntegrationTests";
 import { printRuleset } from "../Utils";
+import { collect } from "../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -101,10 +102,12 @@ describe("Learning Snippets", () => {
 
         // __PUBLISH_EXTRACT_START__ Presentation.ExtendedDataRule.Condition.Result
         // Ensure only "B" node has `extendedData` property.
-        const nodes = await Presentation.presentation.getNodes({
-          imodel,
-          rulesetOrId: ruleset,
-        });
+        const nodes = await Presentation.presentation
+          .getNodesIterator({
+            imodel,
+            rulesetOrId: ruleset,
+          })
+          .then(async (x) => collect(x.items));
         expect(nodes)
           .to.be.lengthOf(2)
           .and.to.containSubset([
@@ -154,10 +157,12 @@ describe("Learning Snippets", () => {
 
         // __PUBLISH_EXTRACT_START__ Presentation.ExtendedDataRule.Items.Result
         // Ensure node has `extendedData` property containing items defined in rule.
-        const nodes = await Presentation.presentation.getNodes({
-          imodel,
-          rulesetOrId: ruleset,
-        });
+        const nodes = await Presentation.presentation
+          .getNodesIterator({
+            imodel,
+            rulesetOrId: ruleset,
+          })
+          .then(async (x) => collect(x.items));
         expect(nodes)
           .to.be.lengthOf(1)
           .and.to.containSubset([

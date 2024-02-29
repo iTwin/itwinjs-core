@@ -10,6 +10,7 @@ import { ChildNodeSpecificationTypes, ContentSpecificationTypes, KeySet, Ruleset
 import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
 import { initialize, resetBackend, terminate } from "../IntegrationTests";
+import { collect } from "../Utils";
 
 const RULESET: Ruleset = {
   id: "ruleset vars test",
@@ -262,7 +263,7 @@ describe("Ruleset Variables", async () => {
     it("handles multiple simultaneous requests from different frontends with ruleset variables", async () => {
       for (let i = 0; i < 100; ++i) {
         frontends.forEach(async (f, fi) => f.vars(RULESET.id).setString("variable_id", `${i}_${fi}`));
-        const nodes = await Promise.all(frontends.map(async (f) => f.getNodes({ imodel, rulesetOrId: RULESET })));
+        const nodes = await Promise.all(frontends.map(async (f) => f.getNodesIterator({ imodel, rulesetOrId: RULESET }).then(async (x) => collect(x.items))));
         frontends.forEach((_f, fi) => {
           expect(nodes[fi][0].label.displayValue).to.eq(`${i}_${fi}`);
         });

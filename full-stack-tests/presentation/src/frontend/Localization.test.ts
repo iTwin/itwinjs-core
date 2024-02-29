@@ -7,7 +7,7 @@ import { IModelApp, IModelConnection, SnapshotConnection } from "@itwin/core-fro
 import { ChildNodeSpecificationTypes, DefaultContentDisplayTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { initialize, terminate, testLocalization } from "../IntegrationTests";
-import { getFieldByLabel } from "../Utils";
+import { collect, getFieldByLabel } from "../Utils";
 
 describe("Localization", async () => {
   let imodel: IModelConnection;
@@ -27,14 +27,15 @@ describe("Localization", async () => {
   });
 
   it("localizes nodes", async () => {
-    const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: CUSTOM_NODES_RULESET });
+    const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: CUSTOM_NODES_RULESET }).then(async (x) => collect(x.items));
     expect(nodes.length).to.eq(1);
     expect(nodes[0].label.displayValue).to.eq("_test_ string");
     expect(nodes[0].description).to.eq("_test_ nested string");
   });
 
   it("localizes nodes when requesting with count", async () => {
-    const { nodes } = await Presentation.presentation.getNodesAndCount({ imodel, rulesetOrId: CUSTOM_NODES_RULESET });
+    const { items } = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: CUSTOM_NODES_RULESET });
+    const nodes = await collect(items);
     expect(nodes.length).to.eq(1);
     expect(nodes[0].label.displayValue).to.eq("_test_ string");
     expect(nodes[0].description).to.eq("_test_ nested string");
@@ -301,10 +302,9 @@ describe("Localization", async () => {
     it("handles multiple simultaneous requests from different frontends with different locales", async () => {
       await Promise.all(
         Array.from({ length: 100 }).map(async () => {
-          const [en, test] = await Promise.all([
-            await frontends[0].getNodes({ imodel, rulesetOrId: CUSTOM_NODES_RULESET }),
-            await frontends[1].getNodes({ imodel, rulesetOrId: CUSTOM_NODES_RULESET }),
-          ]);
+          const [en, test] = await Promise.all(
+            frontends.map(async (frontend) => frontend.getNodesIterator({ imodel, rulesetOrId: CUSTOM_NODES_RULESET }).then(async (x) => collect(x.items))),
+          );
 
           expect(en[0].label.displayValue).to.eq("test value");
           expect(en[0].description).to.eq("test nested value");

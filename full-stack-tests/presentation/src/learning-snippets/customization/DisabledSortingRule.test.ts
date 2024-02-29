@@ -8,6 +8,7 @@ import { Ruleset, VariableValueTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../IntegrationTests";
 import { printRuleset } from "../Utils";
+import { collect } from "../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -72,10 +73,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // verify that nodes are not sorted by `Pitch` property
-        const nodes = await Presentation.presentation.getNodes({
-          imodel,
-          rulesetOrId: ruleset,
-        });
+        const nodes = await Presentation.presentation
+          .getNodesIterator({
+            imodel,
+            rulesetOrId: ruleset,
+          })
+          .then(async (x) => collect(x.items));
         expect(nodes).to.be.lengthOf(4);
         expect(nodes[0]).to.containSubset({ label: { displayValue: "-107.42 x -160.99" } });
         expect(nodes[1]).to.containSubset({ label: { displayValue: "-45.00 x -35.26" } });
@@ -122,11 +125,13 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // verify that nodes are not sorted by `Pitch` property
-        const nodes = await Presentation.presentation.getNodes({
-          imodel,
-          rulesetOrId: ruleset,
-          rulesetVariables: [{ id: "SORT_INSTANCES", type: VariableValueTypes.Bool, value: true }],
-        });
+        const nodes = await Presentation.presentation
+          .getNodesIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            rulesetVariables: [{ id: "SORT_INSTANCES", type: VariableValueTypes.Bool, value: true }],
+          })
+          .then(async (x) => collect(x.items));
         expect(nodes).to.be.lengthOf(4);
         expect(nodes[0]).to.containSubset({ label: { displayValue: "Default - View 1" } });
         expect(nodes[1]).to.containSubset({ label: { displayValue: "Default - View 2" } });
@@ -181,10 +186,12 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        const nodes = await Presentation.presentation.getNodes({
-          imodel,
-          rulesetOrId: ruleset,
-        });
+        const nodes = await Presentation.presentation
+          .getNodesIterator({
+            imodel,
+            rulesetOrId: ruleset,
+          })
+          .then(async (x) => collect(x.items));
         expect(nodes).to.be.lengthOf(4);
         expect(nodes[0]).to.containSubset({ label: { displayValue: "SpatialViewDefinition - Default - View 1" } });
         expect(nodes[1]).to.containSubset({ label: { displayValue: "SpatialViewDefinition - Default - View 2" } });
@@ -240,10 +247,12 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        const nodes = await Presentation.presentation.getNodes({
-          imodel,
-          rulesetOrId: ruleset,
-        });
+        const nodes = await Presentation.presentation
+          .getNodesIterator({
+            imodel,
+            rulesetOrId: ruleset,
+          })
+          .then(async (x) => collect(x.items));
         expect(nodes).to.be.lengthOf(4);
         expect(nodes[0]).to.containSubset({ label: { displayValue: "SpatialViewDefinition - Default - View 1" } });
         expect(nodes[1]).to.containSubset({ label: { displayValue: "SpatialViewDefinition - Default - View 2" } });

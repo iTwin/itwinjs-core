@@ -8,7 +8,7 @@ import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { KeySet, Ruleset, StandardNodeTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../IntegrationTests";
-import { getFieldByLabel } from "../../Utils";
+import { collect, getFieldByLabel } from "../../Utils";
 import { printRuleset } from "../Utils";
 
 describe("Learning Snippets", () => {
@@ -162,10 +162,12 @@ describe("Learning Snippets", () => {
 
       // __PUBLISH_EXTRACT_START__ Presentation.RelatedInstanceSpecification.UsingForCustomization.Result
       // Every node should have its full class name in extended data
-      const nodes = await Presentation.presentation.getNodes({
-        imodel,
-        rulesetOrId: ruleset,
-      });
+      const nodes = await Presentation.presentation
+        .getNodesIterator({
+          imodel,
+          rulesetOrId: ruleset,
+        })
+        .then(async (x) => collect(x.items));
       expect(nodes.length).to.eq(417);
       nodes.forEach((node) => {
         const fullClassName = node.extendedData!.fullClassName;
@@ -226,10 +228,12 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Every node should have its full class name in extended data
-      const schemaNodes = await Presentation.presentation.getNodes({
-        imodel,
-        rulesetOrId: ruleset,
-      });
+      const schemaNodes = await Presentation.presentation
+        .getNodesIterator({
+          imodel,
+          rulesetOrId: ruleset,
+        })
+        .then(async (x) => collect(x.items));
       expect(schemaNodes.length).to.eq(18);
       await Promise.all(
         schemaNodes.map(async (schemaNode) => {
@@ -240,11 +244,13 @@ describe("Learning Snippets", () => {
               propertyName: "Name",
             },
           });
-          const classNodes = await Presentation.presentation.getNodes({
-            imodel,
-            rulesetOrId: ruleset,
-            parentKey: schemaNode.key,
-          });
+          const classNodes = await Presentation.presentation
+            .getNodesIterator({
+              imodel,
+              rulesetOrId: ruleset,
+              parentKey: schemaNode.key,
+            })
+            .then(async (x) => collect(x.items));
           expect(classNodes).to.not.be.empty;
         }),
       );

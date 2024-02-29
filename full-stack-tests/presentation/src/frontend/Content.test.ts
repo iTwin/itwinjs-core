@@ -32,7 +32,7 @@ import {
 import { Presentation, PresentationManager, PresentationManagerProps } from "@itwin/presentation-frontend";
 import { ECClassHierarchy, ECClassHierarchyInfo } from "../ECClasHierarchy";
 import { initialize, terminate } from "../IntegrationTests";
-import { getFieldByLabel } from "../Utils";
+import { collect, getFieldByLabel } from "../Utils";
 import { buildTestIModelConnection, insertDocumentPartition, insertPhysicalElement, insertPhysicalModel, insertSpatialCategory } from "../IModelSetupUtils";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
@@ -440,7 +440,7 @@ describe("Content", () => {
           },
         ],
       };
-      const rootNodes = await Presentation.presentation.getNodes({ imodel: testIModel, rulesetOrId: ruleset });
+      const rootNodes = await Presentation.presentation.getNodesIterator({ imodel: testIModel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(rootNodes.length).to.eq(2);
       const descriptor = await Presentation.presentation.getNodesDescriptor({ imodel: testIModel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
       assert(!!descriptor);

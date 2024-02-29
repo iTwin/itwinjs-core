@@ -30,7 +30,7 @@ import {
 import { Presentation } from "@itwin/presentation-frontend";
 import { ECClassHierarchy, ECClassInfo } from "../ECClasHierarchy";
 import { initialize, terminate } from "../IntegrationTests";
-import { getFieldsByLabel } from "../Utils";
+import { collect, getFieldsByLabel } from "../Utils";
 
 /**
  * The below specifies what iModel to use and what Fields (properties) to use for simulating DataViz
@@ -483,11 +483,13 @@ describe("#performance DataViz requests", () => {
         const idEntries = new Map<string, { elementIds: Id64String[]; childIds: Id64String[] }>();
         async function loadHierarchy(ruleset: Ruleset, parentKey?: NodeKey): Promise<InstanceKey[]> {
           ++requestsCount.elementIds;
-          const nodes = await Presentation.presentation.getNodes({
-            imodel: iModel,
-            rulesetOrId: ruleset,
-            parentKey,
-          });
+          const nodes = await Presentation.presentation
+            .getNodesIterator({
+              imodel: iModel,
+              rulesetOrId: ruleset,
+              parentKey,
+            })
+            .then(async (x) => collect(x.items));
           const keysPerNode = await Promise.all(
             nodes.map(async (node) => {
               const keys: InstanceKey[] = [];
