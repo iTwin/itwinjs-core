@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { KeySet, Ruleset } from "@itwin/presentation-common";
+import { Content, KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
+import { collect } from "../../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -46,15 +47,17 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that only `BisCore` content instances are returned.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet([
-            { className: "BisCore:SpatialViewDefinition", id: "0x25" },
-            { className: "Generic:GroupModel", id: "0x13" },
-          ]),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet([
+              { className: "BisCore:SpatialViewDefinition", id: "0x25" },
+              { className: "Generic:GroupModel", id: "0x13" },
+            ]),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
 
         expect(content!.contentSet)
           .to.have.lengthOf(1)
@@ -87,15 +90,17 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that only `bis.SpatialViewDefinition` content instances are returned.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet([
-            { className: "BisCore:SpatialViewDefinition", id: "0x25" },
-            { className: "BisCore:DictionaryModel", id: "0x10" },
-          ]),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet([
+              { className: "BisCore:SpatialViewDefinition", id: "0x25" },
+              { className: "BisCore:DictionaryModel", id: "0x10" },
+            ]),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
 
         expect(content!.contentSet)
           .to.have.lengthOf(1)
@@ -129,15 +134,17 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that only content instances of `bis.ViewDefinition` and derived classes are returned.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet([
-            { className: "BisCore:DictionaryModel", id: "0x10" },
-            { className: "BisCore:SpatialViewDefinition", id: "0x25" },
-          ]),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet([
+              { className: "BisCore:DictionaryModel", id: "0x10" },
+              { className: "BisCore:SpatialViewDefinition", id: "0x25" },
+            ]),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
 
         expect(content!.contentSet).to.have.lengthOf(1);
         expect(content!.contentSet[0].primaryKeys[0].className).to.equal("BisCore:SpatialViewDefinition");

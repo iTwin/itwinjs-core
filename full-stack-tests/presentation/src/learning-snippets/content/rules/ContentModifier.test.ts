@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { KeySet, NestedContentValue, Ruleset } from "@itwin/presentation-common";
+import { Content, KeySet, NestedContentValue, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
-import { getFieldByLabel, getFieldsByLabel, tryGetFieldByLabel } from "../../../Utils";
+import { collect, getFieldByLabel, getFieldsByLabel, tryGetFieldByLabel } from "../../../Utils";
 import { printRuleset } from "../../Utils";
 
 describe("Learning Snippets", () => {
@@ -58,12 +58,14 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure only the `bis.Category` instance has the calculated property
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet(),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
         expect(content!.descriptor.fields)
           .to.containSubset([
             {
@@ -131,12 +133,14 @@ describe("Learning Snippets", () => {
 
         // The iModel uses BisCore older than 1.0.2 - the returned content should not
         // include ExternalSourceAspect properties
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet([{ className: "BisCore:Element", id: "0x61" }]),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet([{ className: "BisCore:Element", id: "0x61" }]),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
         expect(content!.descriptor.fields)
           .to.not.containSubset([
             {
@@ -196,12 +200,14 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Expect to get one `bis.SpatialCategory` field and one related content field.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet(),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
         expect(content!.contentSet.length).to.eq(1);
         expect(content!.descriptor.fields)
           .to.containSubset([
@@ -270,12 +276,14 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet([{ className: "BisCore:ModelSelector", id: "0x35" }]),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet([{ className: "BisCore:ModelSelector", id: "0x35" }]),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
 
         expect(content!.contentSet.length).to.eq(1);
         expect(content!.descriptor.fields).to.containSubset([
@@ -347,12 +355,14 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure content contains Category's properties
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet([{ className: "BisCore:Element", id: "0x61" }]),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet([{ className: "BisCore:Element", id: "0x61" }]),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
         expect(content!.contentSet.length).to.eq(1);
         expect(content!.descriptor.fields).to.containSubset([
           {
@@ -394,12 +404,14 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure content contains the calculated property and correct value
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet([{ className: "BisCore:Element", id: "0x61" }]),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet([{ className: "BisCore:Element", id: "0x61" }]),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
         expect(content!.descriptor.fields).to.containSubset([
           {
             label: "Yaw & Pitch & Roll",
@@ -449,12 +461,14 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure all `bis.GeometricElement3d` properties are in the custom category
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet([{ className: "BisCore:Element", id: "0x61" }]),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet([{ className: "BisCore:Element", id: "0x61" }]),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
         expect(content!.descriptor.fields).to.containSubset([
           {
             label: "Category",
@@ -519,12 +533,14 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure customizations have been made
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet([{ className: "BisCore:Element", id: "0x61" }]),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet([{ className: "BisCore:Element", id: "0x61" }]),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
         expect(content!.descriptor.fields.length).to.eq(20);
         expect(tryGetFieldByLabel(content!.descriptor.fields, "User Label")).to.be.undefined;
         expect(tryGetFieldByLabel(content!.descriptor.fields, "Parent")).to.not.be.undefined;

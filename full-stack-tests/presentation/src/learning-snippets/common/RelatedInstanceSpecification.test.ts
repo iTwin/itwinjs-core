@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { IModel } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { KeySet, Ruleset, StandardNodeTypes } from "@itwin/presentation-common";
+import { Content, KeySet, Ruleset, StandardNodeTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../IntegrationTests";
 import { collect, getFieldByLabel } from "../../Utils";
@@ -59,12 +59,14 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Ensure that only `bis.ViewDefinition` instances are selected.
-      const content = await Presentation.presentation.getContent({
-        imodel,
-        rulesetOrId: ruleset,
-        keys: new KeySet(),
-        descriptor: {},
-      });
+      const content = await Presentation.presentation
+        .getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet(),
+          descriptor: {},
+        })
+        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
 
       expect(content!.contentSet.length).to.eq(3);
       const field = getFieldByLabel(content!.descriptor.fields, "Display Style");
@@ -106,12 +108,14 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Ensure that 4 `bis.ViewDefinition` instances are selected.
-      const content = await Presentation.presentation.getContent({
-        imodel,
-        rulesetOrId: ruleset,
-        keys: new KeySet(),
-        descriptor: {},
-      });
+      const content = await Presentation.presentation
+        .getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet(),
+          descriptor: {},
+        })
+        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
 
       expect(content!.contentSet.length).to.eq(4);
     });

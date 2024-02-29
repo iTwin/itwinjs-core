@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { KeySet, Ruleset } from "@itwin/presentation-common";
+import { Content, KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
-import { getFieldByLabel } from "../../../Utils";
+import { collect, getFieldByLabel } from "../../../Utils";
 import { printRuleset } from "../../Utils";
 
 describe("Learning Snippets", () => {
@@ -52,12 +52,14 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that the custom property was created
-        const content = (await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-          descriptor: {},
-        }))!;
+        const content = (await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
         expect(content.descriptor.fields).to.containSubset([
           {
             label: "My Calculated Property",
@@ -93,12 +95,14 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that the custom property was created and has a value
-        const content = (await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet([{ className: "generic.PhysicalObject", id: "0x74" }]),
-          descriptor: {},
-        }))!;
+        const content = (await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet([{ className: "generic.PhysicalObject", id: "0x74" }]),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
         const field = getFieldByLabel(content.descriptor.fields, "Element Volume");
         expect(content.contentSet)
           .to.have.lengthOf(1)
@@ -146,12 +150,14 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that the calculated property is assigned a custom category
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
         content;
         expect(content!.descriptor.fields).to.containSubset([
           {
@@ -194,12 +200,14 @@ describe("Learning Snippets", () => {
 
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.Renderer.Result
         // Ensure the calculated property field is assigned the "my-renderer" renderer
-        const content = (await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-          descriptor: {},
-        }))!;
+        const content = (await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
         expect(content.descriptor.fields).to.containSubset([
           {
             label: "My Calculated property",
@@ -242,12 +250,14 @@ describe("Learning Snippets", () => {
 
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.Editor.Result
         // Ensure the calculated property field is assigned the "my-editor" editor
-        const content = (await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-          descriptor: {},
-        }))!;
+        const content = (await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
         expect(content.descriptor.fields).to.containSubset([
           {
             label: "My Calculated property",
@@ -288,12 +298,14 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that the custom property has correct priority
-        const content = (await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-          descriptor: {},
-        }))!;
+        const content = (await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
         expect(content.descriptor.fields).to.containSubset([
           {
             label: "My Calculated Property",

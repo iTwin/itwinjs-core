@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ChildNodeSpecificationTypes, ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { ChildNodeSpecificationTypes, Content, ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
 import { initialize, resetBackend, terminate } from "../IntegrationTests";
@@ -336,7 +336,9 @@ describe("Ruleset Variables", async () => {
         ],
       };
 
-      let content = await Presentation.presentation.getContent({ imodel, rulesetOrId: ruleset, keys: new KeySet(), descriptor: {} });
+      let content = await Presentation.presentation
+        .getContentIterator({ imodel, rulesetOrId: ruleset, keys: new KeySet(), descriptor: {} })
+        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
       expect(content!.contentSet.length).to.eq(0);
 
       // https://www.sqlite.org/limits.html#max_variable_number
@@ -346,7 +348,9 @@ describe("Ruleset Variables", async () => {
       ids.push("0x61");
 
       await Presentation.presentation.vars(ruleset.id).setId64s("ids", ids);
-      content = await Presentation.presentation.getContent({ imodel, rulesetOrId: ruleset, keys: new KeySet(), descriptor: {} });
+      content = await Presentation.presentation
+        .getContentIterator({ imodel, rulesetOrId: ruleset, keys: new KeySet(), descriptor: {} })
+        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
       expect(content!.contentSet.length).to.eq(1);
       expect(content!.contentSet[0].primaryKeys[0]).to.deep.eq({ className: "PCJ_TestSchema:TestClass", id: "0x61" });
     });

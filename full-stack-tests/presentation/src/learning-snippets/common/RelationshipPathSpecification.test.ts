@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { KeySet, Ruleset } from "@itwin/presentation-common";
+import { Content, KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../IntegrationTests";
 import { printRuleset } from "../Utils";
+import { collect } from "../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -53,21 +54,25 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Ensure that all model elements are selected
-      const physicalModelContent = await Presentation.presentation.getContent({
-        imodel,
-        rulesetOrId: ruleset,
-        keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
-        descriptor: {},
-      });
+      const physicalModelContent = await Presentation.presentation
+        .getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
+          descriptor: {},
+        })
+        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
       expect(physicalModelContent!.contentSet.length).to.eq(62);
 
       // Ensure that non-physical model elements are not selected
-      const definitionModelContent = await Presentation.presentation.getContent({
-        imodel,
-        rulesetOrId: ruleset,
-        keys: new KeySet([{ className: "BisCore:DefinitionModel", id: "0x16" }]),
-        descriptor: {},
-      });
+      const definitionModelContent = await Presentation.presentation
+        .getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:DefinitionModel", id: "0x16" }]),
+          descriptor: {},
+        })
+        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
       expect(definitionModelContent).to.be.undefined;
     });
 
@@ -106,12 +111,14 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Ensure that all model elements are selected
-      const physicalModelContent = await Presentation.presentation.getContent({
-        imodel,
-        rulesetOrId: ruleset,
-        keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
-        descriptor: {},
-      });
+      const physicalModelContent = await Presentation.presentation
+        .getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
+          descriptor: {},
+        })
+        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
       expect(physicalModelContent!.contentSet.length).to.eq(1);
     });
   });

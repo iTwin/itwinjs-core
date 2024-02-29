@@ -10,6 +10,7 @@ import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
   ChildNodeSpecificationTypes,
   ClassInfo,
+  Content,
   ContentSpecificationTypes,
   DefaultContentDisplayTypes,
   Descriptor,
@@ -601,17 +602,19 @@ describe("#performance DataViz requests", () => {
           };
 
           // retrieve the content with just the filtered properties
-          const content = await Presentation.presentation.getContent({
-            imodel: iModel,
-            rulesetOrId: ruleset,
-            descriptor: {
-              fieldsSelector: {
-                type: "include",
-                fields: classFields.map((classField) => classField.filteredField.getFieldDescriptor()),
+          const content = await Presentation.presentation
+            .getContentIterator({
+              imodel: iModel,
+              rulesetOrId: ruleset,
+              descriptor: {
+                fieldsSelector: {
+                  type: "include",
+                  fields: classFields.map((classField) => classField.filteredField.getFieldDescriptor()),
+                },
               },
-            },
-            keys: new KeySet(),
-          });
+              keys: new KeySet(),
+            })
+            .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
           assert(!!content);
           ++requestsCount.elementIds;
 

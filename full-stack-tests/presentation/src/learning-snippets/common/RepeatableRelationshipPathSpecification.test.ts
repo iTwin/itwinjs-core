@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { KeySet, Ruleset } from "@itwin/presentation-common";
+import { Content, KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../IntegrationTests";
 import { printRuleset } from "../Utils";
+import { collect } from "../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -52,12 +53,14 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Ensure that content of grandparent element is returned
-      const content = await Presentation.presentation.getContent({
-        imodel,
-        rulesetOrId: ruleset,
-        keys: new KeySet([{ className: "BisCore:Element", id: "0x1b" }]),
-        descriptor: {},
-      });
+      const content = await Presentation.presentation
+        .getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Element", id: "0x1b" }]),
+          descriptor: {},
+        })
+        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
       expect(content!.contentSet)
         .to.have.lengthOf(1)
         .and.to.containSubset([
@@ -95,12 +98,14 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Ensure that content of the root subject's children is returned
-      const content = await Presentation.presentation.getContent({
-        imodel,
-        rulesetOrId: ruleset,
-        keys: new KeySet([{ className: "BisCore:Element", id: "0x1" }]),
-        descriptor: {},
-      });
+      const content = await Presentation.presentation
+        .getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Element", id: "0x1" }]),
+          descriptor: {},
+        })
+        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
       expect(content!.contentSet)
         .to.have.lengthOf(9)
         .and.to.containSubset([
@@ -175,12 +180,14 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Ensure that elements' category is returned when requesting content for those elements' model
-      const content = await Presentation.presentation.getContent({
-        imodel,
-        rulesetOrId: ruleset,
-        keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
-        descriptor: {},
-      });
+      const content = await Presentation.presentation
+        .getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
+          descriptor: {},
+        })
+        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
       expect(content!.contentSet)
         .to.have.lengthOf(1)
         .and.to.containSubset([
@@ -237,12 +244,14 @@ describe("Learning Snippets", () => {
 
       // Ensure that the count is correct (62 elements + 1 category + 1 sub-category) and both
       // categories are included. Not checking the elements...
-      const content = await Presentation.presentation.getContent({
-        imodel,
-        rulesetOrId: ruleset,
-        keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
-        descriptor: {},
-      });
+      const content = await Presentation.presentation
+        .getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
+          descriptor: {},
+        })
+        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
       expect(content!.contentSet).to.have.lengthOf(62 + 1 + 1);
       expect(content!.contentSet).to.containSubset([
         {

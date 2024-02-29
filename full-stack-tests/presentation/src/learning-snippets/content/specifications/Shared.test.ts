@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { KeySet, Ruleset } from "@itwin/presentation-common";
+import { Content, KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
-import { getFieldByLabel } from "../../../Utils";
+import { collect, getFieldByLabel } from "../../../Utils";
 import { printRuleset } from "../../Utils";
 
 describe("Learning Snippets", () => {
@@ -54,12 +54,14 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that only `bis.ViewDefinition` instances are selected.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet(),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
 
         expect(content!.contentSet.length).to.eq(4);
         const field = getFieldByLabel(content!.descriptor.fields, "Category Selector");
@@ -97,12 +99,14 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that only `bis.ViewDefinition` instances are selected.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet(),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
 
         expect(content!.contentSet.length).to.eq(2);
         const field = getFieldByLabel(content!.descriptor.fields, "Modeled Element");
@@ -139,12 +143,14 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that derived `bis.DisplayStyle` instance properties are also returned with `bis.SpatialViewDefinition` content.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet(),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
 
         expect(content!.contentSet.length).to.eq(4);
         expect(content!.descriptor.fields)
@@ -185,12 +191,14 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that derived `bis.DisplayStyle` instance properties are also returned with `bis.SpatialViewDefinition` content.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet(),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
 
         expect(content!.contentSet.length).to.eq(4);
         expect(content!.descriptor.fields)
@@ -231,12 +239,14 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that the returned content has a custom category `Camera settings` and it contains the right properties.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet(),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
 
         expect(content!.descriptor.categories).containSubset([{ label: "Camera settings" }]);
         expect(content!.descriptor.fields).to.containSubset([
@@ -278,12 +288,14 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that the returned content has an overriden property label `Container Model`.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet(),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
 
         expect(content!.contentSet.length).to.eq(4);
         expect(content!.descriptor.fields)
@@ -328,12 +340,14 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure only the `bis.ModelSelector` whose related SpatialViewDefinition with Yaw > 0 is returned.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet(),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
 
         expect(content!.contentSet.length).to.eq(1);
         const field = getFieldByLabel(content!.descriptor.fields, "Code");

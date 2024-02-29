@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelApp, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ChildNodeSpecificationTypes, DefaultContentDisplayTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { ChildNodeSpecificationTypes, Content, DefaultContentDisplayTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { initialize, terminate, testLocalization } from "../IntegrationTests";
 import { collect, getFieldByLabel } from "../Utils";
@@ -163,41 +163,43 @@ describe("Localization", async () => {
   });
 
   it("localizes content", async () => {
-    const content = await Presentation.presentation.getContent({
-      imodel,
-      rulesetOrId: {
-        id: "content",
-        rules: [
-          {
-            ruleType: "Content",
-            specifications: [
-              {
-                specType: "ContentInstancesOfSpecificClasses",
-                classes: { schemaName: "BisCore", classNames: ["Subject"] },
-                calculatedProperties: [
-                  {
-                    label: "@Test:string@",
-                    value: `"@Test:nested.string@"`,
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            ruleType: "DefaultPropertyCategoryOverride",
-            specification: {
-              id: "default",
-              label: "@Test:string@",
-              description: "@Test:nested.string@",
+    const content = await Presentation.presentation
+      .getContentIterator({
+        imodel,
+        rulesetOrId: {
+          id: "content",
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "ContentInstancesOfSpecificClasses",
+                  classes: { schemaName: "BisCore", classNames: ["Subject"] },
+                  calculatedProperties: [
+                    {
+                      label: "@Test:string@",
+                      value: `"@Test:nested.string@"`,
+                    },
+                  ],
+                },
+              ],
             },
-          },
-        ],
-      },
-      descriptor: {
-        displayType: DefaultContentDisplayTypes.PropertyPane,
-      },
-      keys: new KeySet(),
-    });
+            {
+              ruleType: "DefaultPropertyCategoryOverride",
+              specification: {
+                id: "default",
+                label: "@Test:string@",
+                description: "@Test:nested.string@",
+              },
+            },
+          ],
+        },
+        descriptor: {
+          displayType: DefaultContentDisplayTypes.PropertyPane,
+        },
+        keys: new KeySet(),
+      })
+      .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
 
     expect(content!.descriptor.categories[0].label).to.eq("_test_ string");
     expect(content!.descriptor.categories[0].description).to.eq("_test_ nested string");

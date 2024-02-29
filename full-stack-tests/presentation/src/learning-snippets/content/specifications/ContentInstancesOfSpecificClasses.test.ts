@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { KeySet, Ruleset } from "@itwin/presentation-common";
+import { Content, KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
-import { getFieldByLabel } from "../../../Utils";
+import { collect, getFieldByLabel } from "../../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -44,12 +44,14 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
 
         // Ensure only the `bis.PhysicalModel` instances are selected.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet(),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
 
         expect(content!.contentSet.length).to.eq(1);
         expect(content!.contentSet[0].primaryKeys[0].className).to.eq("BisCore:PhysicalModel");
@@ -76,12 +78,14 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
 
         // Ensure that all `bis.PhysicalModel` instances are excluded.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet(),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
 
         expect(content!.contentSet)
           .to.have.lengthOf(7)
@@ -109,12 +113,14 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
 
         // Ensure that derived `bis.ViewDefinition` instances along with their properties are also selected.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet(),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
         expect(content!.descriptor.fields)
           .to.containSubset([
             { label: "Category Selector" },
@@ -161,12 +167,14 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
 
         // Ensure that only `bis.SpatialViewDefinition` instances that have Pitch >= 0 are selected.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
+        const content = await Presentation.presentation
+          .getContentIterator({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet(),
+            descriptor: {},
+          })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
 
         expect(content!.contentSet.length).to.eq(2);
         const field = getFieldByLabel(content!.descriptor.fields, "Pitch");
