@@ -588,7 +588,7 @@ export class PresentationManager implements IDisposable {
   /** Retrieves a content descriptor, item count and async generator for the items themselves. */
   public async getContentIterator(
     requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
-  ): Promise<{ descriptor: Descriptor; total: number; items(): AsyncGenerator<Item> } | undefined> {
+  ): Promise<{ descriptor: Descriptor; total: number; items(): AsyncIterableIterator<Item> } | undefined> {
     const ensureInitialized = this.ensureIModelInitialized(requestOptions.imodel);
     const response = await this.getContentIteratorImpl(requestOptions);
     if (!response) {
