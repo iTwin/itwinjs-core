@@ -102,3 +102,15 @@ export async function waitFor<T>(check: () => Promise<T> | T, timeout?: number):
   } while (timer.current.milliseconds < timeout);
   throw lastError;
 }
+
+/**
+ * Collects items of an async iterable to an array.
+ * @internal
+ */
+export async function collect<T>(iter: AsyncIterable<T>): Promise<T[]> {
+  const result = new Array<T>();
+  for await (const item of iter) {
+    result.push(item);
+  }
+  return result;
+}
