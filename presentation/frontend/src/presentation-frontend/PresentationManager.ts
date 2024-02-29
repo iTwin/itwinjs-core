@@ -739,7 +739,7 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves display label definition of specific items. */
-  public async getDisplayLabelDefinitionIterator(
+  public async getDisplayLabelDefinitionsIterator(
     requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions,
   ): Promise<{ total: number; items: AsyncIterableIterator<LabelDefinition> }> {
     this.startIModelInitialization(requestOptions.imodel);
@@ -761,7 +761,7 @@ export class PresentationManager implements IDisposable {
   public async getDisplayLabelDefinitions(
     requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions,
   ): Promise<LabelDefinition[]> {
-    const { items } = await this.getDisplayLabelDefinitionIterator(requestOptions);
+    const { items } = await this.getDisplayLabelDefinitionsIterator(requestOptions);
     return collect(items);
   }
 }
