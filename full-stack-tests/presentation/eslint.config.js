@@ -13,4 +13,10 @@ module.exports = [
       curly: ["error", "all"],
     },
   },
+  {
+    files: ["**/*.test.ts"],
+    rules: {
+      "deprecation/deprecation": "warn",
+    },
+  },
 ];
