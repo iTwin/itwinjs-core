@@ -154,6 +154,7 @@ export abstract class Tile {
    */
   public freeMemory(): void {
     this.disposeContents();
+    this._state = TileState.Abandoned;
   }
 
   /** Dispose of resources held by this tile. */
