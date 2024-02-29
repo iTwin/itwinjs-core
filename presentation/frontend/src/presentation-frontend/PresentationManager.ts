@@ -388,12 +388,15 @@ export class PresentationManager implements IDisposable {
     return { ...options, rulesetOrId: foundRulesetOrId, rulesetVariables: variables };
   }
 
-  private async getNodesGenerator(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<StreamedResponseGenerator<Node>> {
+  /** Returns an iterator that polls nodes asynchronously. */
+  public async getNodesIterator(
+    requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions,
+  ): Promise<{ total: number; items: AsyncIterableIterator<Node> }> {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
 
-    return new StreamedResponseGenerator({
+    const generator = new StreamedResponseGenerator({
       ...requestOptions,
       getBatch: async (paging) => {
         const result = await this._requestsHandler.getPagedNodes({ ...rpcOptions, paging });
@@ -404,17 +407,14 @@ export class PresentationManager implements IDisposable {
         };
       },
     });
-  }
 
-  /** Returns an iterator that polls nodes asynchronously. */
-  public async getNodesIterator(
-    requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions,
-  ): Promise<{ total: number; items: AsyncIterableIterator<Node> }> {
-    const generator = await this.getNodesGenerator(requestOptions);
     return generator.createAsyncIteratorResponse();
   }
 
-  /** Retrieves nodes */
+  /**
+   * Retrieves nodes
+   * @deprecated in 4.5. Use [[getNodesIterator]] instead.
+   */
   public async getNodes(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<Node[]> {
     const result = await this.getNodesIterator(requestOptions);
     return collect(result.items);
@@ -428,7 +428,10 @@ export class PresentationManager implements IDisposable {
     return this._requestsHandler.getNodesCount(rpcOptions);
   }
 
-  /** Retrieves total nodes count and a single page of nodes. */
+  /**
+   * Retrieves total nodes count and a single page of nodes.
+   * @deprecated in 4.5. Use [[getNodesIterator]] instead.
+   */
   public async getNodesAndCount(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<{ count: number; nodes: Node[] }> {
     const result = await this.getNodesIterator(requestOptions);
     return {
@@ -606,12 +609,19 @@ export class PresentationManager implements IDisposable {
     };
   }
 
-  /** Retrieves content which consists of a content descriptor and a page of records. */
+  /**
+   * Retrieves content which consists of a content descriptor and a page of records.
+   * @deprecated in 4.5. Use [[getContentIterator]] instead.
+   */
   public async getContent(requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions): Promise<Content | undefined> {
+    // eslint-disable-next-line deprecation/deprecation
     return (await this.getContentAndSize(requestOptions))?.content;
   }
 
-  /** Retrieves content set size and content which consists of a content descriptor and a page of records. */
+  /**
+   * Retrieves content set size and content which consists of a content descriptor and a page of records.
+   * @deprecated in 4.5. Use [[getContentIterator]] instead.
+   */
   public async getContentAndSize(
     requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
   ): Promise<{ content: Content; size: number } | undefined> {
@@ -628,9 +638,10 @@ export class PresentationManager implements IDisposable {
     };
   }
 
-  private async getDistinctValuesGenerator(
+  /** Returns an iterator that asynchronously polls distinct values of specific field from the content. */
+  public async getDistinctValuesIterator(
     requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions,
-  ): Promise<StreamedResponseGenerator<DisplayValueGroup>> {
+  ): Promise<{ total: number; items: AsyncIterableIterator<DisplayValueGroup> }> {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = {
@@ -639,7 +650,7 @@ export class PresentationManager implements IDisposable {
       keys: stripTransientElementKeys(options.keys).toJSON(),
     };
 
-    return new StreamedResponseGenerator({
+    const generator = new StreamedResponseGenerator({
       ...requestOptions,
       getBatch: async (paging) => {
         const response = await this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging });
@@ -650,17 +661,14 @@ export class PresentationManager implements IDisposable {
         };
       },
     });
-  }
 
-  /** Returns an iterator that asynchronously polls distinct values of specific field from the content. */
-  public async getDistinctValuesIterator(
-    requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions,
-  ): Promise<{ total: number; items: AsyncIterableIterator<DisplayValueGroup> }> {
-    const generator = await this.getDistinctValuesGenerator(requestOptions);
     return generator.createAsyncIteratorResponse();
   }
 
-  /** Retrieves distinct values of specific field from the content. */
+  /**
+   * Retrieves distinct values of specific field from the content.
+   * @deprecated in 4.5. Use [[getDistinctValuesIterator]] instead.
+   */
   public async getPagedDistinctValues(
     requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions,
   ): Promise<PagedResponse<DisplayValueGroup>> {
@@ -755,7 +763,10 @@ export class PresentationManager implements IDisposable {
     return generator.createAsyncIteratorResponse();
   }
 
-  /** Retrieves display label definition of specific items. */
+  /**
+   * Retrieves display label definition of specific items.
+   * @deprecated in 4.5. Use [[getDisplayLabelDefinitionsIterator]] instead.
+   */
   public async getDisplayLabelDefinitions(
     requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions,
   ): Promise<LabelDefinition[]> {
