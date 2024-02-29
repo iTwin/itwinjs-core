@@ -109,10 +109,11 @@ export class StreamedResponseGenerator<TPagedResponseItem> {
             lastEmitted = idx;
             const batchesToEmit = [value];
             for (const batch of accumulatedBatches) {
-              if (batch.idx - 1 === lastEmitted) {
-                lastEmitted = batch.idx;
-                batchesToEmit.push(batch);
+              if (batch.idx - 1 !== lastEmitted) {
+                break;
               }
+              lastEmitted = batch.idx;
+              batchesToEmit.push(batch);
             }
 
             // Remove batches to emit from the accumulator.
