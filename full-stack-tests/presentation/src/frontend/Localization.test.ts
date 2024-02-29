@@ -209,47 +209,49 @@ describe("Localization", async () => {
   });
 
   it("localizes content when requesting with size", async () => {
-    const { content } = (await Presentation.presentation.getContentAndSize({
-      imodel,
-      rulesetOrId: {
-        id: "content",
-        rules: [
-          {
-            ruleType: "Content",
-            specifications: [
-              {
-                specType: "ContentInstancesOfSpecificClasses",
-                classes: { schemaName: "BisCore", classNames: ["Subject"] },
-                calculatedProperties: [
-                  {
-                    label: "@Test:string@",
-                    value: `"@Test:nested.string@"`,
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            ruleType: "DefaultPropertyCategoryOverride",
-            specification: {
-              id: "default",
-              label: "@Test:string@",
-              description: "@Test:nested.string@",
+    const { descriptor, items } = (await Presentation.presentation
+      .getContentIterator({
+        imodel,
+        rulesetOrId: {
+          id: "content",
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "ContentInstancesOfSpecificClasses",
+                  classes: { schemaName: "BisCore", classNames: ["Subject"] },
+                  calculatedProperties: [
+                    {
+                      label: "@Test:string@",
+                      value: `"@Test:nested.string@"`,
+                    },
+                  ],
+                },
+              ],
             },
-          },
-        ],
-      },
-      descriptor: {
-        displayType: DefaultContentDisplayTypes.PropertyPane,
-      },
-      keys: new KeySet(),
-    }))!;
+            {
+              ruleType: "DefaultPropertyCategoryOverride",
+              specification: {
+                id: "default",
+                label: "@Test:string@",
+                description: "@Test:nested.string@",
+              },
+            },
+          ],
+        },
+        descriptor: {
+          displayType: DefaultContentDisplayTypes.PropertyPane,
+        },
+        keys: new KeySet(),
+      })
+      .then(async (x) => x && { ...x, items: await collect(x.items) }))!;
 
-    expect(content.descriptor.categories[0].label).to.eq("_test_ string");
-    expect(content.descriptor.categories[0].description).to.eq("_test_ nested string");
+    expect(descriptor.categories[0].label).to.eq("_test_ string");
+    expect(descriptor.categories[0].description).to.eq("_test_ nested string");
 
-    const field = getFieldByLabel(content.descriptor.fields, "_test_ string");
-    expect(content.contentSet[0].displayValues[field.name]).to.eq("_test_ nested string");
+    const field = getFieldByLabel(descriptor.fields, "_test_ string");
+    expect(items[0].displayValues[field.name]).to.eq("_test_ nested string");
   });
 
   it("localizes distinct values", async () => {
