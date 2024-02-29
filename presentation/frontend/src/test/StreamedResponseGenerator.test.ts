@@ -51,18 +51,12 @@ describe("StreamedResponseGenerator", () => {
     await expect(getItemsPromise).to.eventually.deep.eq(expectedResult);
   });
 
-  it("should return values in a correct order", async () => {
+  it("returns values in correct order when requests resolve when requests resolve in different order than being made", async () => {
     const total = 4;
-    const promiseResolutionOrderings = [
-      [0, 1, 2],
-      [0, 2, 1],
-      [1, 0, 2],
-      [1, 2, 0],
-      [2, 0, 1],
+    for (const ordering of [
       [2, 1, 0],
-    ];
-
-    for (const ordering of promiseResolutionOrderings) {
+      [2, 0, 1],
+    ]) {
       const fakePromises = [...new Array(total - 1).keys()].map(() => new ResolvablePromise());
       const generator = new StreamedResponseGenerator({
         getBatch: async (_, idx) => {
