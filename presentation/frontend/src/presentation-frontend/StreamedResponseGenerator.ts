@@ -24,19 +24,6 @@ export type StreamedResponseGeneratorProps<TItem> = MultipleValuesRequestOptions
 export class StreamedResponseGenerator<TPagedResponseItem> {
   constructor(private readonly _props: StreamedResponseGeneratorProps<TPagedResponseItem>) {}
 
-  /** Creates a response with the total item count and an array of items for the requested page. */
-  public async createItemsResponse(): Promise<{ total: number; items: TPagedResponseItem[] }> {
-    const response = await this.createAsyncIteratorResponse();
-    const items = new Array<TPagedResponseItem>();
-    for await (const value of response.items) {
-      items.push(value);
-    }
-    return {
-      total: response.total,
-      items,
-    };
-  }
-
   /** Creates a response with the total item count and an async iterator. */
   public async createAsyncIteratorResponse(): Promise<{ total: number; items: AsyncIterableIterator<TPagedResponseItem> }> {
     const firstPage = await this.fetchFirstPage();
