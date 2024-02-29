@@ -75,8 +75,6 @@ import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "../presentation-frontend/selection/SelectionManager";
 
-/* eslint-disable deprecation/deprecation */
-
 describe("PresentationManager", () => {
   const rulesetsManagerMock = moq.Mock.ofType<RulesetManagerImpl>();
   const rpcRequestsHandlerMock = moq.Mock.ofType<RpcRequestsHandler>();
