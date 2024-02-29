@@ -8,6 +8,8 @@ Table of contents:
 - [Display](#display)
   - [Seafloor terrain](#seafloor-terrain)
 - [Electron 29 support](#electron-29-support)
+- [Presentation](#presentation)
+  - [Deprecation of array batches in favor of async iterators](#deprecation-of-array-batches-in-favor-of-async-iterators)
 
 ## Display
 
@@ -34,3 +36,9 @@ The new [TerrainSettings.dataSource]($common) property can be used by custom [Te
 ## Electron 29 support
 
 In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 29](https://www.electronjs.org/blog/electron-29-0).
+
+## Presentation
+
+### Deprecation of array batches in favor of async iterators
+
+Some of the methods in frontend's `PresentationManager` class (e.g. `getNodes`) return arrays of items. These methods may take a lot of time to complete which prevents the consumer from continuing. For each such method, alternative methods have been added, which return async iterators. Old methods which return arrays have been deprecated.
