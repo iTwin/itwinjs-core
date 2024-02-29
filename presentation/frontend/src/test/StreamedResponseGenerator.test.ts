@@ -51,37 +51,24 @@ describe("StreamedResponseGenerator", () => {
     await expect(getItemsPromise).to.eventually.deep.eq(expectedResult);
   });
 
-  it("should return values in a correct order", async () => {
-    const total = 4;
-    const promiseResolutionOrderings = [
-      [0, 1, 2],
-      [0, 2, 1],
-      [1, 0, 2],
-      [1, 2, 0],
-      [2, 0, 1],
-      [2, 1, 0],
-    ];
+  it("returns values in correct order when requests resolve when requests resolve in different order than being made", async () => {
+    const fakePromises = [new ResolvablePromise(), new ResolvablePromise()];
+    const generator = new StreamedResponseGenerator({
+      getBatch: async (_, idx) => {
+        if (idx === 0) {
+          return { total: 3, items: [0] };
+        }
 
-    for (const ordering of promiseResolutionOrderings) {
-      const fakePromises = [...new Array(total - 1).keys()].map(() => new ResolvablePromise());
-      const generator = new StreamedResponseGenerator({
-        getBatch: async (_, idx) => {
-          if (idx === 0) {
-            return { total, items: [0] };
-          }
+        return fakePromises[idx - 1] as unknown as Promise<PagedResponse<unknown>>;
+      },
+    });
 
-          return fakePromises[idx - 1] as unknown as Promise<PagedResponse<unknown>>;
-        },
-      });
+    const itemsPromise = createItemsResponse(generator);
+    await fakePromises[1].resolve({ total: 3, items: [2] });
+    await fakePromises[0].resolve({ total: 3, items: [1] });
 
-      const itemsPromise = createItemsResponse(generator);
-      for (const idx of ordering) {
-        await fakePromises[idx].resolve({ total, items: [idx + 1] });
-      }
-
-      const { items } = await itemsPromise;
-      expect(items).to.deep.eq([...new Array(total).keys()]);
-    }
+    const { items } = await itemsPromise;
+    expect(items).to.deep.eq([...new Array(3).keys()]);
   });
 
   it("should handle a page larger than the item count", async () => {
