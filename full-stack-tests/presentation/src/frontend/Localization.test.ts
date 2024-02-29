@@ -280,14 +280,16 @@ describe("Localization", async () => {
       keys: new KeySet(),
     });
     const field = getFieldByLabel(descriptor!.fields, "_test_ string");
-    const distinctValues = await Presentation.presentation.getPagedDistinctValues({
-      imodel,
-      rulesetOrId: ruleset,
-      descriptor: descriptor!,
-      keys: new KeySet(),
-      fieldDescriptor: field.getFieldDescriptor(),
-    });
-    expect(distinctValues.items[0].displayValue).to.eq("_test_ nested string");
+    const distinctValues = await Presentation.presentation
+      .getDistinctValuesIterator({
+        imodel,
+        rulesetOrId: ruleset,
+        descriptor: descriptor!,
+        keys: new KeySet(),
+        fieldDescriptor: field.getFieldDescriptor(),
+      })
+      .then(async (x) => collect(x.items));
+    expect(distinctValues[0].displayValue).to.eq("_test_ nested string");
   });
 
   describe("Multiple frontends for one backend", async () => {

@@ -198,14 +198,16 @@ describe("#performance DataViz requests", () => {
                 // we select related fields as direct ones, so need to clear the relationship path
                 fieldDescriptor.pathFromSelectToPropertyClass = [];
               }
-              const res = await Presentation.presentation.getPagedDistinctValues({
-                imodel: iModel,
-                rulesetOrId: ruleset,
-                descriptor: {},
-                keys: new KeySet(),
-                fieldDescriptor,
-              });
-              res.items.map((dv) => {
+              const res = await Presentation.presentation
+                .getDistinctValuesIterator({
+                  imodel: iModel,
+                  rulesetOrId: ruleset,
+                  descriptor: {},
+                  keys: new KeySet(),
+                  fieldDescriptor,
+                })
+                .then(async (x) => collect(x.items));
+              res.map((dv) => {
                 const displayValue = dv.displayValue ? dv.displayValue.toString() : "";
                 pushValues(distinctValues, displayValue, dv.groupedRawValues);
               });
@@ -265,14 +267,16 @@ describe("#performance DataViz requests", () => {
         // make a `getPagedDistinctValues` request with the above ruleset for every filtered field
         const distinctValues = new Map<string, Set<Value>>();
         for (const filteredField of filteredFields) {
-          const res = await Presentation.presentation.getPagedDistinctValues({
-            imodel: iModel,
-            rulesetOrId: ruleset,
-            keys: new KeySet(),
-            descriptor: descriptor.createDescriptorOverrides(),
-            fieldDescriptor: filteredField.getFieldDescriptor(),
-          });
-          res.items.map((dv) => {
+          const res = await Presentation.presentation
+            .getDistinctValuesIterator({
+              imodel: iModel,
+              rulesetOrId: ruleset,
+              keys: new KeySet(),
+              descriptor: descriptor.createDescriptorOverrides(),
+              fieldDescriptor: filteredField.getFieldDescriptor(),
+            })
+            .then(async (x) => collect(x.items));
+          res.map((dv) => {
             const displayValue = dv.displayValue ? dv.displayValue.toString() : "";
             pushValues(distinctValues, displayValue, dv.groupedRawValues);
           });
