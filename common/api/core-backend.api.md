@@ -3319,8 +3319,6 @@ export class IModelHost {
     }): string;
     // (undocumented)
     static configuration?: IModelHostOptions;
-    // @internal (undocumented)
-    static flushLog(): void;
     static getAccessToken(): Promise<AccessToken>;
     // @internal
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
