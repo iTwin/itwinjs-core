@@ -8,6 +8,7 @@ Table of contents:
 - [Display](#display)
   - [Seafloor terrain](#seafloor-terrain)
 - [Electron 29 support](#electron-29-support)
+- [Editor](#editor)
 
 ## Display
 
@@ -34,3 +35,14 @@ The new [TerrainSettings.dataSource]($common) property can be used by custom [Te
 ## Electron 29 support
 
 In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 29](https://www.electronjs.org/blog/electron-29-0).
+
+## Editor
+
+Changes to @beta BasicManipulationCommandIpc class:
+
+- BasicManipulationCommandIpc.insertGeometricElement no longer takes an optional ElementGeometryBuilderParams as this can be specified in GeometricElementProps.
+- BasicManipulationCommandIpc.insertGeometryPart no longer takes an optional ElementGeometryBuilderParamsForPart as this can be specified in GeometryPartProps.
+
+Changes to @beta CreateElementWithDynamicsTool class:
+
+- CreateElementWithDynamicsTool.doCreateElement no longer takes an optional ElementGeometryBuilderParams as it will be set on the supplied GeometricElementProps.

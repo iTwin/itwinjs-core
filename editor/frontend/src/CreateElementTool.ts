@@ -9,7 +9,7 @@
 
 import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { Constant, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { DynamicGraphicsRequest2dProps, DynamicGraphicsRequest3dProps, ElementGeometryBuilderParams, FlatBufferGeometryStream, GeometricElementProps, IModelError, isPlacement3dProps, JsonGeometryStream, PlacementProps } from "@itwin/core-common";
+import { DynamicGraphicsRequest2dProps, DynamicGraphicsRequest3dProps, FlatBufferGeometryStream, GeometricElementProps, IModelError, isPlacement3dProps, JsonGeometryStream, PlacementProps } from "@itwin/core-common";
 import { BeButtonEvent, CoordSystem, CoreTools, DynamicsContext, EventHandled, GraphicBranch, IModelApp, IModelConnection, PrimitiveTool, readElementGraphics, RenderGraphicOwner, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport } from "@itwin/core-frontend";
 
 function computeChordToleranceFromPointAndRadius(vp: Viewport, center: Point3d, radius: number): number {
@@ -353,7 +353,7 @@ export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
   protected abstract getGeometryProps(placement: PlacementProps): JsonGeometryStream | FlatBufferGeometryStream | undefined;
   protected abstract getElementProps(placement: PlacementProps): GeometricElementProps | undefined;
 
-  protected async doCreateElement(_props: GeometricElementProps, _data?: ElementGeometryBuilderParams): Promise<void> {}
+  protected async doCreateElement(_props: GeometricElementProps): Promise<void> {}
   protected async updateElementData(_ev: BeButtonEvent, _isDynamics: boolean): Promise<void> {}
 
   protected async updateDynamicData(ev: BeButtonEvent): Promise<boolean> {
@@ -377,15 +377,14 @@ export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
     if (undefined === elemProps)
       return;
 
-    let data;
     if ("flatbuffer" === geometry.format) {
-      data = { entryArray: geometry.data };
       delete elemProps.geom; // Leave unchanged until replaced by flatbuffer geometry...
+      elemProps.elementGeometryBuilderParams = { entryArray: geometry.data };
     } else {
       elemProps.geom = geometry.data;
     }
 
-    return this.doCreateElement(elemProps, data);
+    return this.doCreateElement(elemProps);
   }
 
   protected setupAccuDraw(): void { }

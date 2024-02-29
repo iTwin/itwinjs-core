@@ -10,7 +10,7 @@
 import { DialogItem, DialogProperty, DialogPropertySyncItem, PropertyDescriptionHelper } from "@itwin/appui-abstract";
 import { BentleyError } from "@itwin/core-bentley";
 import {
-  Code, ColorDef, ElementGeometry, ElementGeometryBuilderParams, FlatBufferGeometryStream, GeometricElementProps, JsonGeometryStream, PlacementProps,
+  Code, ColorDef, ElementGeometry, FlatBufferGeometryStream, GeometricElementProps, JsonGeometryStream, PlacementProps,
 } from "@itwin/core-common";
 import {
   AccuDrawHintBuilder, AngleDescription, BeButtonEvent, DynamicsContext, EventHandled, GraphicType, IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority,
@@ -78,10 +78,10 @@ export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
     return { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement };
   }
 
-  protected override async doCreateElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<void> {
+  protected override async doCreateElement(props: GeometricElementProps): Promise<void> {
     try {
       this._startedCmd = await this.startCommand();
-      await basicManipulationIpc.insertGeometricElement(props, data);
+      await basicManipulationIpc.insertGeometricElement(props);
       await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
