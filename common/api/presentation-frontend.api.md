@@ -325,7 +325,9 @@ export class PresentationManager implements IDisposable {
     dispose(): void;
     // @internal
     ensureIModelInitialized(_: IModelConnection): Promise<void>;
+    // @deprecated
     getContent(requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions): Promise<Content | undefined>;
+    // @deprecated
     getContentAndSize(requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions): Promise<{
         content: Content;
         size: number;
@@ -338,16 +340,17 @@ export class PresentationManager implements IDisposable {
     getContentIterator(requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions): Promise<{
         descriptor: Descriptor;
         total: number;
-        items(): AsyncGenerator<Item>;
+        items(): AsyncIterableIterator<Item>;
     } | undefined>;
     getContentSetSize(requestOptions: GetContentRequestOptions): Promise<number>;
     getContentSources(requestOptions: ContentSourcesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<SelectClassInfo[]>;
     getDisplayLabelDefinition(requestOptions: DisplayLabelRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute): Promise<LabelDefinition>;
-    getDisplayLabelDefinitionIterator(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions): Promise<{
+    // @deprecated
+    getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions): Promise<LabelDefinition[]>;
+    getDisplayLabelDefinitionsIterator(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions): Promise<{
         total: number;
         items: AsyncIterableIterator<LabelDefinition>;
     }>;
-    getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions): Promise<LabelDefinition[]>;
     getDistinctValuesIterator(requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions): Promise<{
         total: number;
         items: AsyncIterableIterator<DisplayValueGroup>;
@@ -355,7 +358,9 @@ export class PresentationManager implements IDisposable {
     getElementProperties(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<ElementProperties | undefined>;
     getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]>;
     getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]>;
+    // @deprecated
     getNodes(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<Node_2[]>;
+    // @deprecated
     getNodesAndCount(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<{
         count: number;
         nodes: Node_2[];
@@ -367,6 +372,7 @@ export class PresentationManager implements IDisposable {
         total: number;
         items: AsyncIterableIterator<Node_2>;
     }>;
+    // @deprecated
     getPagedDistinctValues(requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions): Promise<PagedResponse<DisplayValueGroup>>;
     // @internal (undocumented)
     get ipcRequestsHandler(): IpcRequestsHandler | undefined;
