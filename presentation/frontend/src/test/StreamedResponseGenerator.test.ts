@@ -27,8 +27,7 @@ describe("StreamedResponseGenerator", () => {
     const firstBatchPromise = new ResolvablePromise<PagedResponse<number>>();
     const restBatchesPromise = new ResolvablePromise<PagedResponse<number>>();
     const fakeGetBatch = sinon.fake(async (_, idx: number) => {
-      const result = idx ? restBatchesPromise : firstBatchPromise;
-      return result as unknown as Promise<PagedResponse<number>>;
+      return idx ? restBatchesPromise : firstBatchPromise;
     });
 
     const generator = new StreamedResponseGenerator({ getBatch: fakeGetBatch });
@@ -64,7 +63,7 @@ describe("StreamedResponseGenerator", () => {
             return { total, items: [0] };
           }
 
-          return fakePromises[idx - 1] as unknown as Promise<PagedResponse<unknown>>;
+          return fakePromises[idx - 1];
         },
       });
 
