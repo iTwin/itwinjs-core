@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { IModel } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { Content, KeySet, Ruleset, StandardNodeTypes } from "@itwin/presentation-common";
+import { Content, KeySet, Node, Ruleset, StandardNodeTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../IntegrationTests";
 import { collect, getFieldByLabel } from "../../Utils";
@@ -108,16 +108,14 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Ensure that 4 `bis.ViewDefinition` instances are selected.
-      const content = await Presentation.presentation
-        .getContentIterator({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        })
-        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
+      const content = await Presentation.presentation.getContentIterator({
+        imodel,
+        rulesetOrId: ruleset,
+        keys: new KeySet(),
+        descriptor: {},
+      });
 
-      expect(content!.contentSet.length).to.eq(4);
+      expect(content?.total).to.eq(4);
     });
 
     it("using for customization", async () => {
@@ -166,19 +164,18 @@ describe("Learning Snippets", () => {
 
       // __PUBLISH_EXTRACT_START__ Presentation.RelatedInstanceSpecification.UsingForCustomization.Result
       // Every node should have its full class name in extended data
-      const nodes = await Presentation.presentation
-        .getNodesIterator({
-          imodel,
-          rulesetOrId: ruleset,
-        })
-        .then(async (x) => collect(x.items));
-      expect(nodes.length).to.eq(417);
-      nodes.forEach((node) => {
+      const { total, items } = await Presentation.presentation.getNodesIterator({
+        imodel,
+        rulesetOrId: ruleset,
+      });
+
+      expect(total).to.eq(417);
+      for await (const node of items) {
         const fullClassName = node.extendedData!.fullClassName;
         const [schemaName, className] = fullClassName.split(".");
         expect(schemaName).to.not.be.empty;
         expect(className).to.not.be.empty;
-      });
+      }
       // __PUBLISH_EXTRACT_END__
     });
 
@@ -232,32 +229,35 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Every node should have its full class name in extended data
-      const schemaNodes = await Presentation.presentation
-        .getNodesIterator({
+      const { total, items } = await Presentation.presentation.getNodesIterator({
+        imodel,
+        rulesetOrId: ruleset,
+      });
+      expect(total).to.eq(18);
+
+      async function testSchemaNode(schemaNode: Node) {
+        expect(schemaNode).to.containSubset({
+          key: {
+            type: StandardNodeTypes.ECPropertyGroupingNode,
+            className: "ECDbMeta:ECSchemaDef",
+            propertyName: "Name",
+          },
+        });
+
+        const { total: count } = await Presentation.presentation.getNodesIterator({
           imodel,
           rulesetOrId: ruleset,
-        })
-        .then(async (x) => collect(x.items));
-      expect(schemaNodes.length).to.eq(18);
-      await Promise.all(
-        schemaNodes.map(async (schemaNode) => {
-          expect(schemaNode).to.containSubset({
-            key: {
-              type: StandardNodeTypes.ECPropertyGroupingNode,
-              className: "ECDbMeta:ECSchemaDef",
-              propertyName: "Name",
-            },
-          });
-          const classNodes = await Presentation.presentation
-            .getNodesIterator({
-              imodel,
-              rulesetOrId: ruleset,
-              parentKey: schemaNode.key,
-            })
-            .then(async (x) => collect(x.items));
-          expect(classNodes).to.not.be.empty;
-        }),
-      );
+          parentKey: schemaNode.key,
+        });
+
+        expect(count).not.to.eq(0);
+      }
+
+      const promises: Promise<void>[] = [];
+      for await (const node of items) {
+        promises.push(testSchemaNode(node));
+      }
+      await Promise.all(promises);
     });
   });
 });

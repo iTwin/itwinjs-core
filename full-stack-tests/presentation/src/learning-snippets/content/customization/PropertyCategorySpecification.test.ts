@@ -4,11 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { Content, KeySet, Ruleset } from "@itwin/presentation-common";
+import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
-import { collect } from "../../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -59,14 +58,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure the field is assigned a category with correct label
-        const content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
+        const content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
         expect(content.descriptor.fields.length).to.be.greaterThan(0);
         content.descriptor.fields.forEach((field) => {
           expect(field.category).to.containSubset({
@@ -108,14 +105,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure the field is assigned a category with correct label
-        const content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
+        const content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
         expect(content.descriptor.fields.length).to.be.greaterThan(0);
         content.descriptor.fields.forEach((field) => {
           expect(field.category).to.containSubset({
@@ -159,14 +154,12 @@ describe("Learning Snippets", () => {
 
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertyCategorySpecification.Description.Result
         // Ensure category description is assigned
-        const content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
+        const content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
         expect(content.descriptor.categories).to.containSubset([
           {
             label: "Custom Category",
@@ -214,14 +207,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure categories' hierarchy was set up correctly
-        const content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
+        const content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
         expect(content.descriptor.fields.length).to.be.greaterThan(0);
         content.descriptor.fields.forEach((field) => {
           expect(field.category).to.containSubset({
@@ -278,14 +269,12 @@ describe("Learning Snippets", () => {
 
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertyCategorySpecification.Priority.Result
         // Ensure that correct category priorities are assigned
-        const content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
+        const content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
         expect(content.descriptor.fields).to.containSubset([
           {
             label: "Code",
@@ -342,14 +331,12 @@ describe("Learning Snippets", () => {
 
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertyCategorySpecification.AutoExpand.Result
         // Ensure that categories have the `expand` flag
-        const content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
+        const content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
         expect(content.descriptor.categories).to.containSubset([
           {
             label: "Custom Category",
@@ -397,14 +384,12 @@ describe("Learning Snippets", () => {
 
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertyCategorySpecification.Renderer.Result
         // Ensure that categories have the `expand` flag
-        const content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
+        const content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
         expect(content.descriptor.categories).to.containSubset([
           {
             label: "Custom Category",

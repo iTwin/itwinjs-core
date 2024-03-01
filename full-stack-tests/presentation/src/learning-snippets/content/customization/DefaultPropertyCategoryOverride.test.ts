@@ -64,15 +64,13 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // The iModel uses BisCore older than 1.0.2 - we should use the "OLD" default category
-        const content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
-        const defaultCategory = content.descriptor.categories.find((category) => category.name === "default");
+        const content = await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        });
+        const defaultCategory = content!.descriptor.categories.find((category) => category.name === "default");
         expect(defaultCategory).to.containSubset({
           label: "Custom Category OLD",
         });
@@ -115,15 +113,13 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // The iModel uses BisCore older than 1.0.2 - we should use the "OLD" default category
-        const content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
-        const defaultCategory = content.descriptor.categories.find((category) => category.name === "default");
+        const content = await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        });
+        const defaultCategory = content!.descriptor.categories.find((category) => category.name === "default");
         expect(defaultCategory).to.containSubset({
           label: "High Priority",
         });
@@ -157,19 +153,17 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure the default property category is correctly set up
-        const content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
-        const defaultCategory = content.descriptor.categories.find((category) => category.name === "default");
+        const content = await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        });
+        const defaultCategory = content!.descriptor.categories.find((category) => category.name === "default");
         expect(defaultCategory).to.containSubset({
           label: "Test Category",
         });
-        content.descriptor.fields.forEach((field) => {
+        content!.descriptor.fields.forEach((field) => {
           expect(field.category).to.eq(defaultCategory);
         });
       });

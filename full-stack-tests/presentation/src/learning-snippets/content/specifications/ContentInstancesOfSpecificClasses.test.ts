@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { Content, KeySet, Ruleset } from "@itwin/presentation-common";
+import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { collect, getFieldByLabel } from "../../../Utils";
@@ -44,17 +44,15 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
 
         // Ensure only the `bis.PhysicalModel` instances are selected.
-        const content = await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet(),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
+        const content = await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet(),
+          descriptor: {},
+        });
 
-        expect(content!.contentSet.length).to.eq(1);
-        expect(content!.contentSet[0].primaryKeys[0].className).to.eq("BisCore:PhysicalModel");
+        expect(content!.total).to.eq(1);
+        expect((await content!.items.next()).value.primaryKeys[0].className).to.eq("BisCore:PhysicalModel");
       });
 
       it("uses `excludedClasses` attribute", async () => {
@@ -78,16 +76,15 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
 
         // Ensure that all `bis.PhysicalModel` instances are excluded.
-        const content = await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet(),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
+        const content = await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet(),
+          descriptor: {},
+        });
 
-        expect(content!.contentSet)
+        const contentSet = await collect(content!.items);
+        expect(contentSet)
           .to.have.lengthOf(7)
           .and.not.containSubset([{ classInfo: { name: "BisCore:PhysicalModel" } }]);
       });
@@ -113,15 +110,15 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
 
         // Ensure that derived `bis.ViewDefinition` instances along with their properties are also selected.
-        const content = await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet(),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
-        expect(content!.descriptor.fields)
+        const content = await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet(),
+          descriptor: {},
+        });
+
+        const { descriptor, total } = content!;
+        expect(descriptor.fields)
           .to.containSubset([
             { label: "Category Selector" },
             { label: "Code" },
@@ -143,7 +140,7 @@ describe("Learning Snippets", () => {
           ])
           .and.to.have.lengthOf(17);
 
-        expect(content!.contentSet.length).to.eq(4);
+        expect(total).to.eq(4);
       });
 
       it("uses `instanceFilter` attribute", async () => {
@@ -167,20 +164,18 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
 
         // Ensure that only `bis.SpatialViewDefinition` instances that have Pitch >= 0 are selected.
-        const content = await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet(),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
-
-        expect(content!.contentSet.length).to.eq(2);
-        const field = getFieldByLabel(content!.descriptor.fields, "Pitch");
-        content!.contentSet.forEach((record) => {
-          expect(record.values[field.name]).to.be.not.below(0);
+        const content = await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet(),
+          descriptor: {},
         });
+
+        expect(content!.total).to.eq(2);
+        const field = getFieldByLabel(content!.descriptor.fields, "Pitch");
+        for await (const record of content!.items) {
+          expect(record.values[field.name]).to.be.not.below(0);
+        }
       });
     });
   });

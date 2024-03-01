@@ -120,12 +120,10 @@ describe("Learning Snippets", () => {
           const expectedChildrenType = privateModels.includes(modelNode.label.displayValue)
             ? StandardNodeTypes.ECPropertyGroupingNode
             : StandardNodeTypes.ECInstancesNode;
-          const childNodes = await Presentation.presentation
-            .getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: modelNode.key })
-            .then(async (x) => collect(x.items));
-          childNodes.forEach((childNode) => {
+          const { items } = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: modelNode.key });
+          for await (const childNode of items) {
             expect(childNode.key.type).to.eq(expectedChildrenType, `Unexpected child node type for model "${modelNode.label.displayValue}".`);
-          });
+          }
         }),
       );
     });
@@ -167,11 +165,11 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Confirm all nodes are property grouping nodes
-      const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
-      expect(nodes).to.be.not.empty;
-      nodes.forEach((node) => {
+      const { total, items } = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset });
+      expect(total).to.be.greaterThan(0);
+      for await (const node of items) {
         expect(node.key.type).to.eq(StandardNodeTypes.ECPropertyGroupingNode);
-      });
+      }
     });
   });
 });

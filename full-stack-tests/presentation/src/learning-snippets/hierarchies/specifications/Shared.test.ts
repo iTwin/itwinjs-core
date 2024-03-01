@@ -142,10 +142,8 @@ describe("Learning Snippets", () => {
           },
         ]);
 
-      const element3dNodes = await Presentation.presentation
-        .getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key })
-        .then(async (x) => collect(x.items));
-      expect(element3dNodes).to.not.be.empty;
+      const { total } = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
+      expect(total).to.be.greaterThan(0);
     });
 
     it("uses `hideExpression` attribute", async () => {
@@ -210,10 +208,8 @@ describe("Learning Snippets", () => {
           },
         ]);
 
-      const element3dNodes = await Presentation.presentation
-        .getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key })
-        .then(async (x) => collect(x.items));
-      expect(element3dNodes).to.not.be.empty;
+      const { total } = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
+      expect(total).to.be.greaterThan(0);
     });
 
     it("uses `suppressSimilarAncestorsCheck` attribute", async () => {
@@ -453,9 +449,11 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Verify that Models were not grouped by class
-      const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
-      expect(nodes).to.not.be.empty;
-      nodes.forEach((node) => expect(NodeKey.isClassGroupingNodeKey(node.key)).to.be.false);
+      const { total, items } = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset });
+      expect(total).to.be.greaterThan(0);
+      for await (const node of items) {
+        expect(NodeKey.isClassGroupingNodeKey(node.key)).to.be.false;
+      }
     });
 
     it("uses `groupByLabel` attribute", async () => {
@@ -486,11 +484,13 @@ describe("Learning Snippets", () => {
         assert(NodeKey.isClassGroupingNodeKey(node.key));
         return node.key.className === "ECDbMeta:ECPropertyDef";
       })!;
-      const nodes = await Presentation.presentation
-        .getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNode.key })
-        .then(async (x) => collect(x.items));
-      expect(nodes).to.not.be.empty;
-      nodes.forEach((node) => expect(NodeKey.isLabelGroupingNodeKey(node.key)).to.be.false);
+
+      // Verify that Models were not grouped by class
+      const { total, items } = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNode.key });
+      expect(total).to.be.greaterThan(0);
+      for await (const node of items) {
+        expect(NodeKey.isLabelGroupingNodeKey(node.key)).to.be.false;
+      }
     });
 
     it("uses `hasChildren` attribute", async () => {

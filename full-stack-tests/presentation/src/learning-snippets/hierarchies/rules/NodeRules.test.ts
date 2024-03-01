@@ -168,8 +168,8 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // The iModel uses BisCore older than 1.0.2 - no nodes should be returned
-        const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
-        expect(nodes).to.be.empty;
+        const { total } = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset });
+        expect(total).to.eq(0);
       });
 
       it("uses `priority` attribute", async () => {

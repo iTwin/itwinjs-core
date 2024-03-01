@@ -4,11 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { Content, KeySet, Ruleset } from "@itwin/presentation-common";
+import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
-import { collect } from "../../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -65,14 +64,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure the `UserLabel` field is assigned attributes from both specifications
-        const content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
+        const content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
         expect(content.descriptor.fields).to.containSubset([
           {
             label: "B",
@@ -113,14 +110,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure the `UserLabel` field is assigned attributes from both specifications
-        const content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
+        const content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
         expect(content.descriptor.fields).to.containSubset([
           {
             label: "Custom Label",
@@ -161,14 +156,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure the `UserLabel` field has the correct category
-        const content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
+        const content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
         expect(content.descriptor.fields).to.containSubset([
           {
             label: "User Label",
@@ -207,14 +200,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure the `LastMod` is there
-        const content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
+        const content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
         expect(content.descriptor.fields).to.containSubset([
           {
             label: "Last Modified",
@@ -249,26 +240,22 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure the property is not displayed when value is not set
-        let content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
+        let content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
         expect(content.descriptor.fields).to.be.empty;
 
         // Ensure the property is displayed when value is set to `true`
         await Presentation.presentation.vars(ruleset.id).setBool("SHOW_LABEL", true);
-        content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
+        content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
         expect(content.descriptor.fields).to.containSubset([
           {
             label: "User Label",
@@ -277,14 +264,12 @@ describe("Learning Snippets", () => {
 
         // Ensure the property is not displayed when value is set to `false`
         await Presentation.presentation.vars(ruleset.id).setBool("SHOW_LABEL", false);
-        content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
+        content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
         expect(content.descriptor.fields).to.be.empty;
       });
 
@@ -317,14 +302,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure the `UserLabel` property is not the only property in content
-        const content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
+        const content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
         expect(content.descriptor.fields)
           .to.containSubset([
             {
@@ -364,14 +347,12 @@ describe("Learning Snippets", () => {
 
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertySpecification.Renderer.Result
         // Ensure the `CodeValue` field is assigned the "my-renderer" renderer
-        const content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
+        const content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
         expect(content.descriptor.fields).to.containSubset([
           {
             label: "Code",
@@ -413,14 +394,12 @@ describe("Learning Snippets", () => {
 
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertySpecification.Editor.Result
         // Ensure the `UserLabel` field is assigned the "my-editor" editor
-        const content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
+        const content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
         expect(content.descriptor.fields).to.containSubset([
           {
             label: "User Label",
@@ -460,14 +439,12 @@ describe("Learning Snippets", () => {
 
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertySpecification.IsReadOnly.Result
         // Ensure the `UserLabel` field is read-only.
-        const content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
+        const content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
         expect(content.descriptor.fields).to.containSubset([
           {
             label: "User Label",
@@ -504,14 +481,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure the `UserLabel` field's priority is 9999, which makes it appear higher in the property grid.
-        const content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
+        const content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
         expect(content.descriptor.fields).to.containSubset([
           {
             label: "User Label",
