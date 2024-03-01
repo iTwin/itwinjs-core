@@ -563,6 +563,8 @@ export class PresentationManager implements IDisposable {
       return undefined;
     }
 
+    descriptor = this._localizationHelper.getLocalizedContentDescriptor(descriptor);
+
     const getPage = async (paging: Required<PageOptions>, requestIndex: number) => {
       let contentSet = requestIndex === 0 ? firstPage : undefined;
       contentSet ??= await this._requestsHandler.getPagedContentSet({ ...rpcOptions, paging });
