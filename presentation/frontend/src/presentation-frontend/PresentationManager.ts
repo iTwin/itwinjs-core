@@ -61,7 +61,7 @@ import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
 import { StreamedResponseGenerator } from "./StreamedResponseGenerator";
-import { mergeMap, Observable } from "rxjs";
+import { concatMap, Observable } from "rxjs";
 import { eachValueFrom } from "rxjs-for-await";
 
 /**
@@ -605,7 +605,7 @@ export class PresentationManager implements IDisposable {
     return {
       ...response,
       items: response.items.pipe(
-        mergeMap(async (item, idx) => {
+        concatMap(async (item, idx) => {
           if (idx === 0) {
             await ensureInitialized;
           }
