@@ -10,7 +10,6 @@ import { Content, DEFAULT_KEYS_BATCH_SIZE, Item, KeySet } from "@itwin/presentat
 import { createRandomECInstanceKey, createRandomTransientId, createTestContentDescriptor } from "@itwin/presentation-common/lib/cjs/test";
 import { HiliteSetProvider, Presentation, PresentationManager } from "../../presentation-frontend";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
-import { from } from "rxjs";
 
 describe("HiliteSetProvider", () => {
   const imodelMock = moq.Mock.ofType<IModelConnection>();
@@ -46,32 +45,32 @@ describe("HiliteSetProvider", () => {
         new Item([createRandomECInstanceKey()], "", "", undefined, {}, {}, [], {}), // element
       ]);
       presentationManagerMock
-        .setup(async (x) => x.getContentObservable(moq.It.isAny()))
-        .returns(async () => ({ total: 1, descriptor: resultContent.descriptor, items: from(resultContent.contentSet) }));
+        .setup(async (x) => x.getContentIterator(moq.It.isAny()))
+        .returns(async () => ({ total: 1, descriptor: resultContent.descriptor, items: iterate(resultContent.contentSet) }));
       const keys = new KeySet([createRandomECInstanceKey()]);
 
       await provider.getHiliteSet(keys);
       // records are fetched for the first request
-      presentationManagerMock.verify(async (x) => x.getContentObservable(moq.It.isAny()), moq.Times.once());
+      presentationManagerMock.verify(async (x) => x.getContentIterator(moq.It.isAny()), moq.Times.once());
 
       await provider.getHiliteSet(keys);
       // keys didn't change - result returned from cache
-      presentationManagerMock.verify(async (x) => x.getContentObservable(moq.It.isAny()), moq.Times.once());
+      presentationManagerMock.verify(async (x) => x.getContentIterator(moq.It.isAny()), moq.Times.once());
 
       keys.add(createRandomECInstanceKey());
       await provider.getHiliteSet(keys);
       // keys did change - result fetched again
-      presentationManagerMock.verify(async (x) => x.getContentObservable(moq.It.isAny()), moq.Times.exactly(2));
+      presentationManagerMock.verify(async (x) => x.getContentIterator(moq.It.isAny()), moq.Times.exactly(2));
 
       await provider.getHiliteSet(keys);
       // keys didn't change - result returned from cache
-      presentationManagerMock.verify(async (x) => x.getContentObservable(moq.It.isAny()), moq.Times.exactly(2));
+      presentationManagerMock.verify(async (x) => x.getContentIterator(moq.It.isAny()), moq.Times.exactly(2));
     });
 
     it("creates result for transient element keys", async () => {
       const transientKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: createRandomTransientId() };
 
-      presentationManagerMock.setup(async (x) => x.getContentObservable(moq.It.is((opts) => opts.keys.isEmpty))).returns(async () => undefined);
+      presentationManagerMock.setup(async (x) => x.getContentIterator(moq.It.is((opts) => opts.keys.isEmpty))).returns(async () => undefined);
 
       const result = await provider.getHiliteSet(new KeySet([transientKey]));
       expect(result.models).to.be.undefined;
@@ -86,9 +85,9 @@ describe("HiliteSetProvider", () => {
         new Item([resultKey], "", "", undefined, {}, {}, [], {}), // element
       ]);
       presentationManagerMock
-        .setup(async (x) => x.getContentObservable(moq.It.isAny()))
-        .returns(async () => ({ total: 1, descriptor: resultContent.descriptor, items: from(resultContent.contentSet) }));
-      presentationManagerMock.setup(async (x) => x.getContentObservable(moq.It.isAny())).returns(async () => undefined);
+        .setup(async (x) => x.getContentIterator(moq.It.isAny()))
+        .returns(async () => ({ total: 1, descriptor: resultContent.descriptor, items: iterate(resultContent.contentSet) }));
+      presentationManagerMock.setup(async (x) => x.getContentIterator(moq.It.isAny())).returns(async () => undefined);
 
       const result = await provider.getHiliteSet(new KeySet([persistentKey]));
       expect(result.models).to.be.undefined;
@@ -101,9 +100,9 @@ describe("HiliteSetProvider", () => {
       const resultKey = createRandomECInstanceKey();
       const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [new Item([resultKey], "", "", undefined, {}, {}, [], { isModel: true })]);
       presentationManagerMock
-        .setup(async (x) => x.getContentObservable(moq.It.isAny()))
-        .returns(async () => ({ total: 1, descriptor: resultContent.descriptor, items: from(resultContent.contentSet) }));
-      presentationManagerMock.setup(async (x) => x.getContentObservable(moq.It.isAny())).returns(async () => undefined);
+        .setup(async (x) => x.getContentIterator(moq.It.isAny()))
+        .returns(async () => ({ total: 1, descriptor: resultContent.descriptor, items: iterate(resultContent.contentSet) }));
+      presentationManagerMock.setup(async (x) => x.getContentIterator(moq.It.isAny())).returns(async () => undefined);
 
       const result = await provider.getHiliteSet(new KeySet([persistentKey]));
       expect(result.models).to.deep.eq([resultKey.id]);
@@ -118,9 +117,9 @@ describe("HiliteSetProvider", () => {
         new Item([resultKey], "", "", undefined, {}, {}, [], { isSubCategory: true }),
       ]);
       presentationManagerMock
-        .setup(async (x) => x.getContentObservable(moq.It.isAny()))
-        .returns(async () => ({ total: 1, descriptor: resultContent.descriptor, items: from(resultContent.contentSet) }));
-      presentationManagerMock.setup(async (x) => x.getContentObservable(moq.It.isAny())).returns(async () => undefined);
+        .setup(async (x) => x.getContentIterator(moq.It.isAny()))
+        .returns(async () => ({ total: 1, descriptor: resultContent.descriptor, items: iterate(resultContent.contentSet) }));
+      presentationManagerMock.setup(async (x) => x.getContentIterator(moq.It.isAny())).returns(async () => undefined);
 
       const result = await provider.getHiliteSet(new KeySet([persistentKey]));
       expect(result.models).to.be.undefined;
@@ -141,9 +140,9 @@ describe("HiliteSetProvider", () => {
         new Item([resultElementKey], "", "", undefined, {}, {}, [], {}), // element
       ]);
       presentationManagerMock
-        .setup(async (x) => x.getContentObservable(moq.It.isAny()))
-        .returns(async () => ({ total: 3, descriptor: resultContent.descriptor, items: from(resultContent.contentSet) }));
-      presentationManagerMock.setup(async (x) => x.getContentObservable(moq.It.isAny())).returns(async () => undefined);
+        .setup(async (x) => x.getContentIterator(moq.It.isAny()))
+        .returns(async () => ({ total: 3, descriptor: resultContent.descriptor, items: iterate(resultContent.contentSet) }));
+      presentationManagerMock.setup(async (x) => x.getContentIterator(moq.It.isAny())).returns(async () => undefined);
 
       const result = await provider.getHiliteSet(new KeySet([transientKey, persistentKey]));
       expect(result.models).to.deep.eq([resultModelKey.id]);
@@ -164,12 +163,12 @@ describe("HiliteSetProvider", () => {
         new Item([elementKey], "", "", undefined, {}, {}, [], {}), // element
       ]);
       presentationManagerMock
-        .setup(async (x) => x.getContentObservable(moq.It.is((opts) => opts.keys.size === DEFAULT_KEYS_BATCH_SIZE)))
-        .returns(async () => ({ total: 3, descriptor: resultContent1.descriptor, items: from(resultContent1.contentSet) }));
+        .setup(async (x) => x.getContentIterator(moq.It.is((opts) => opts.keys.size === DEFAULT_KEYS_BATCH_SIZE)))
+        .returns(async () => ({ total: 3, descriptor: resultContent1.descriptor, items: iterate(resultContent1.contentSet) }));
 
       // second request returns no content
       presentationManagerMock
-        .setup(async (x) => x.getContentObservable(moq.It.is((opts) => opts.keys.size === DEFAULT_KEYS_BATCH_SIZE)))
+        .setup(async (x) => x.getContentIterator(moq.It.is((opts) => opts.keys.size === DEFAULT_KEYS_BATCH_SIZE)))
         .returns(async () => undefined);
 
       // third request returns content with subcategory and model keys
@@ -180,8 +179,8 @@ describe("HiliteSetProvider", () => {
         new Item([modelKey], "", "", undefined, {}, {}, [], { isModel: true }),
       ]);
       presentationManagerMock
-        .setup(async (x) => x.getContentObservable(moq.It.is((opts) => opts.keys.size === 1)))
-        .returns(async () => ({ total: 2, descriptor: resultContent2.descriptor, items: from(resultContent2.contentSet) }));
+        .setup(async (x) => x.getContentIterator(moq.It.is((opts) => opts.keys.size === 1)))
+        .returns(async () => ({ total: 2, descriptor: resultContent2.descriptor, items: iterate(resultContent2.contentSet) }));
 
       const result = await provider.getHiliteSet(new KeySet(inputKeys));
       expect(result.models).to.deep.eq([modelKey.id]);
@@ -205,11 +204,11 @@ describe("HiliteSetProvider", () => {
       const resultContent2 = new Content(createTestContentDescriptor({ fields: [] }), items.slice(1000));
 
       presentationManagerMock
-        .setup(async (x) => x.getContentObservable(moq.It.is((opts) => !opts.paging?.start)))
-        .returns(async () => ({ total: 1001, descriptor: resultContent1.descriptor, items: from(resultContent1.contentSet) }));
+        .setup(async (x) => x.getContentIterator(moq.It.is((opts) => !opts.paging?.start)))
+        .returns(async () => ({ total: 1001, descriptor: resultContent1.descriptor, items: iterate(resultContent1.contentSet) }));
       presentationManagerMock
-        .setup(async (x) => x.getContentObservable(moq.It.is((opts) => (opts.paging?.start ?? 0) > 0)))
-        .returns(async () => ({ total: 1001, descriptor: resultContent2.descriptor, items: from(resultContent2.contentSet) }));
+        .setup(async (x) => x.getContentIterator(moq.It.is((opts) => (opts.paging?.start ?? 0) > 0)))
+        .returns(async () => ({ total: 1001, descriptor: resultContent2.descriptor, items: iterate(resultContent2.contentSet) }));
 
       const iterator = provider.getHiliteSetIterator(new KeySet([{ id: "0x1", className: "TestElement" }]));
       let index = 0;
@@ -225,3 +224,9 @@ describe("HiliteSetProvider", () => {
     });
   });
 });
+
+async function* iterate<T>(items: T[]): AsyncIterableIterator<T> {
+  for (const item of items) {
+    yield item;
+  }
+}

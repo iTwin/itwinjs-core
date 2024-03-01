@@ -6,7 +6,7 @@
  * @module UnifiedSelection
  */
 
-import { concat, filter, from, map, mergeMap, Observable, of, shareReplay, toArray } from "rxjs";
+import { concat, concatAll, concatMap, EMPTY, from, map, Observable, of, shareReplay, toArray } from "rxjs";
 import { eachValueFrom } from "rxjs-for-await";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
@@ -108,14 +108,15 @@ export class HiliteSetProvider {
     return concat(
       transientIds.length ? of({ elements: transientIds }) : of(),
       from(keyBatches).pipe(
-        mergeMap(async (batch) =>
-          Presentation.presentation.getContentObservable({
+        concatMap(async (batch) => {
+          const content = await Presentation.presentation.getContentIterator({
             ...options,
             keys: batch,
-          }),
-        ),
-        filter((x): x is Exclude<typeof x, undefined> => !!x),
-        mergeMap(({ items }) => items),
+          });
+
+          return content ? from(content.items) : EMPTY;
+        }),
+        concatAll(),
         toArray(),
         map((items) => this.createHiliteSet(items)),
       ),

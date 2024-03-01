@@ -61,8 +61,6 @@ import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
 import { StreamedResponseGenerator } from "./StreamedResponseGenerator";
-import { concatMap, Observable } from "rxjs";
-import { eachValueFrom } from "rxjs-for-await";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
@@ -527,9 +525,9 @@ export class PresentationManager implements IDisposable {
     return this._requestsHandler.getContentSetSize(rpcOptions);
   }
 
-  private async getContentObservableImpl(
+  private async getContentIteratorImpl(
     requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
-  ): Promise<{ descriptor: Descriptor; total: number; items: Observable<Item> } | undefined> {
+  ): Promise<{ descriptor: Descriptor; total: number; items: AsyncIterableIterator<Item> } | undefined> {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
       ...options,
@@ -587,31 +585,8 @@ export class PresentationManager implements IDisposable {
     });
 
     return {
-      ...(await generator.createObservableResponse()),
+      ...(await generator.createAsyncIteratorResponse()),
       descriptor,
-    };
-  }
-
-  /** @internal */
-  public async getContentObservable(
-    requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
-  ): Promise<{ descriptor: Descriptor; total: number; items: Observable<Item> } | undefined> {
-    const ensureInitialized = this.ensureIModelInitialized(requestOptions.imodel);
-    const response = await this.getContentObservableImpl(requestOptions);
-    if (!response) {
-      return undefined;
-    }
-
-    return {
-      ...response,
-      items: response.items.pipe(
-        concatMap(async (item, idx) => {
-          if (idx === 0) {
-            await ensureInitialized;
-          }
-          return item;
-        }),
-      ),
     };
   }
 
@@ -619,13 +594,14 @@ export class PresentationManager implements IDisposable {
   public async getContentIterator(
     requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
   ): Promise<{ descriptor: Descriptor; total: number; items: AsyncIterableIterator<Item> } | undefined> {
-    const response = await this.getContentObservable(requestOptions);
-    return (
-      response && {
-        ...response,
-        items: eachValueFrom(response.items),
-      }
-    );
+    this.startIModelInitialization(requestOptions.imodel);
+    const response = await this.getContentIteratorImpl(requestOptions);
+    if (!response) {
+      return undefined;
+    }
+
+    await this.ensureIModelInitialized(requestOptions.imodel);
+    return response;
   }
 
   /**
