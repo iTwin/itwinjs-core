@@ -690,8 +690,8 @@ describe("Hierarchies", () => {
           expression: `TRUE`,
         },
       };
-      const { items } = await Presentation.presentation.getNodesIterator(requestParams);
-      await expect(collect(items)).to.eventually.be.rejectedWith(PresentationError);
+      const iteratorPromise = Presentation.presentation.getNodesIterator(requestParams);
+      await expect(iteratorPromise).to.eventually.be.rejectedWith(PresentationError);
     });
   });
 
@@ -753,8 +753,8 @@ describe("Hierarchies", () => {
       });
 
       it("throws when result set size exceeds given limit", async () => {
-        const { items } = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset, sizeLimit: 1 });
-        await expect(collect(items)).to.eventually.be.rejectedWith(PresentationError);
+        const iteratorPromise = Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset, sizeLimit: 1 });
+        await expect(iteratorPromise).to.eventually.be.rejectedWith(PresentationError);
       });
     });
 
@@ -844,8 +844,8 @@ describe("Hierarchies", () => {
       it("throws when result set size exceeds given limit", async () => {
         const rootNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         const rootSubject = rootNodes[0];
-        const { items } = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: rootSubject.key, sizeLimit: 1 });
-        await expect(collect(items)).to.eventually.be.rejectedWith(PresentationError);
+        const iteratorPromise = Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: rootSubject.key, sizeLimit: 1 });
+        await expect(iteratorPromise).to.eventually.be.rejectedWith(PresentationError);
       });
     });
 
