@@ -43,7 +43,6 @@ import { Localization } from '@itwin/core-common';
 import { Node as Node_2 } from '@itwin/presentation-common';
 import { NodeKey } from '@itwin/presentation-common';
 import { NodePathElement } from '@itwin/presentation-common';
-import { Observable } from 'rxjs';
 import { Paged } from '@itwin/presentation-common';
 import { PagedResponse } from '@itwin/presentation-common';
 import { RegisteredRuleset } from '@itwin/presentation-common';
@@ -342,12 +341,6 @@ export class PresentationManager implements IDisposable {
         descriptor: Descriptor;
         total: number;
         items: AsyncIterableIterator<Item>;
-    } | undefined>;
-    // @internal (undocumented)
-    getContentObservable(requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions): Promise<{
-        descriptor: Descriptor;
-        total: number;
-        items: Observable<Item>;
     } | undefined>;
     getContentSetSize(requestOptions: GetContentRequestOptions): Promise<number>;
     getContentSources(requestOptions: ContentSourcesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<SelectClassInfo[]>;

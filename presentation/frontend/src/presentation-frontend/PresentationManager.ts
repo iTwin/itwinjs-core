@@ -61,6 +61,9 @@ import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
 import { StreamedResponseGenerator } from "./StreamedResponseGenerator";
+import { Observable } from "rxjs";
+import { eachValueFrom } from "rxjs-for-await";
+import { PresentationManagerExtensions } from "./PresentationManagerExtensions";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
@@ -239,6 +242,10 @@ export class PresentationManager implements IDisposable {
       this._clearEventListener = IpcApp.addListener(PresentationIpcEvents.Update, this.onUpdate);
       this._ipcRequestsHandler = props?.ipcRequestsHandler ?? new IpcRequestsHandler(this._requestsHandler.clientId);
     }
+
+    PresentationManagerExtensions.provider = {
+      getContentObservable: this.getContentObservable.bind(this),
+    };
   }
 
   /** Get / set active locale used for localizing presentation data */
@@ -525,9 +532,9 @@ export class PresentationManager implements IDisposable {
     return this._requestsHandler.getContentSetSize(rpcOptions);
   }
 
-  private async getContentIteratorImpl(
+  private async getContentObservable(
     requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
-  ): Promise<{ descriptor: Descriptor; total: number; items: AsyncIterableIterator<Item> } | undefined> {
+  ): Promise<{ descriptor: Descriptor; total: number; items: Observable<Item> } | undefined> {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
       ...options,
@@ -585,7 +592,7 @@ export class PresentationManager implements IDisposable {
     });
 
     return {
-      ...(await generator.createAsyncIteratorResponse()),
+      ...(await generator.createObservableResponse()),
       descriptor,
     };
   }
@@ -595,13 +602,16 @@ export class PresentationManager implements IDisposable {
     requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
   ): Promise<{ descriptor: Descriptor; total: number; items: AsyncIterableIterator<Item> } | undefined> {
     this.startIModelInitialization(requestOptions.imodel);
-    const response = await this.getContentIteratorImpl(requestOptions);
+    const response = await this.getContentObservable(requestOptions);
     if (!response) {
       return undefined;
     }
 
     await this.ensureIModelInitialized(requestOptions.imodel);
-    return response;
+    return {
+      ...response,
+      items: eachValueFrom(response.items),
+    };
   }
 
   /**

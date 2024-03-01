@@ -6,13 +6,13 @@
  * @module UnifiedSelection
  */
 
-import { concat, concatAll, concatMap, EMPTY, from, map, Observable, of, shareReplay, toArray } from "rxjs";
+import { concat, filter, from, map, mergeMap, Observable, of, shareReplay, toArray } from "rxjs";
 import { eachValueFrom } from "rxjs-for-await";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ContentFlags, DEFAULT_KEYS_BATCH_SIZE, DefaultContentDisplayTypes, DescriptorOverrides, Item, Key, KeySet, Ruleset } from "@itwin/presentation-common";
-import { Presentation } from "../Presentation";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./SelectionManager";
+import { PresentationManagerExtensions } from "../PresentationManagerExtensions";
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -108,15 +108,14 @@ export class HiliteSetProvider {
     return concat(
       transientIds.length ? of({ elements: transientIds }) : of(),
       from(keyBatches).pipe(
-        concatMap(async (batch) => {
-          const content = await Presentation.presentation.getContentIterator({
+        mergeMap(async (batch) =>
+          PresentationManagerExtensions.getContentObservable({
             ...options,
             keys: batch,
-          });
-
-          return content ? from(content.items) : EMPTY;
-        }),
-        concatAll(),
+          }),
+        ),
+        filter((x): x is Exclude<typeof x, undefined> => !!x),
+        mergeMap(({ items }) => items),
         toArray(),
         map((items) => this.createHiliteSet(items)),
       ),
