@@ -1,5 +1,5 @@
 // Invalidate all iTwin.js build status checks when master has a change to core/backend/package.json
-// This is specifically to catch changes to @bentley/imodeljs-native
+// This is specifically to catch changes to @bentley/imodeljs-native and should only invalidate PRs that target master branch
 // This will also invalidate PRs if there's a new nightly build, however our 3 hour rule should also invalidate the same PRs
 
 import { Octokit, App } from "octokit"
