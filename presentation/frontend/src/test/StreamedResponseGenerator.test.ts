@@ -50,7 +50,7 @@ describe("StreamedResponseGenerator", () => {
     await expect(getItemsPromise).to.eventually.deep.eq(expectedResult);
   });
 
-  it("returns values in correct order when requests resolve when requests resolve in different order than being made", async () => {
+  it("returns values in correct order when requests resolve in different order than being made", async () => {
     const total = 4;
     for (const ordering of [
       [2, 1, 0],
