@@ -131,20 +131,31 @@ export class SchemaDiagnosticVisitor {
 
   private visitChangedSchemaProperties(diagnostic: AnyDiagnostic) {
     let modifyEntry = this.lookupEntry("modify", "schema") as SchemaDifference;
+    let hasChanges = false;
     if(!modifyEntry) {
-      modifyEntry = this.addEntry({
+      modifyEntry = {
         changeType: "modify",
         item: "schema",
         json: {},
-      });
+      };
     }
 
     // Only label and description are taken from the source schema. If the schema name or alias
     // differs, those are ignored for now.
     const [propertyName, propertyValue] = diagnostic.messageArgs as [string, any];
     switch(propertyName) {
-      case "label":       return modifyEntry.json.label = propertyValue;
-      case "description": return modifyEntry.json.description = propertyValue;
+      case "label":
+        modifyEntry.json.label = propertyValue;
+        hasChanges = true;
+        break;
+      case "description":
+        modifyEntry.json.description = propertyValue;
+        hasChanges = true;
+        break;
+    }
+
+    if(hasChanges) {
+      this.addEntry(modifyEntry);
     }
   }
 

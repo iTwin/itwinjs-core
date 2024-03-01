@@ -86,7 +86,7 @@ describe("Schema Difference Reporting", () => {
     const targetSchema = await Schema.fromJson(targetJson, targetContext);
 
     schemaDifferences = await SchemaDifference.fromSchemas(targetSchema, sourceSchema);
-    expect(schemaDifferences.conflicts).has.lengthOf(0, `This test suite should not have conflicts. \n\n ${JSON.stringify(schemaDifferences.conflicts, null, 2)}`);
+    expect(schemaDifferences.conflicts).has.lengthOf(0, `This test suite should not have conflicts.`);
   });
 
   it("should have the expected source and target schema names in differences", () => {
@@ -103,6 +103,25 @@ describe("Schema Difference Reporting", () => {
         description: sourceJson.description,
       },
     });
+  });
+
+  it("should not create a modify entry if only schema name and alias differs", async () => {
+    const sourceSchema = await Schema.fromJson({
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "SourceSchema",
+      version: "1.0.0",
+      alias: "source",
+    }, new SchemaContext());
+    const targetSchema = await Schema.fromJson({
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "TargetSchema",
+      version: "1.0.0",
+      alias: "target",
+    }, new SchemaContext());
+
+    const differences = await SchemaDifference.fromSchemas(targetSchema, sourceSchema);
+    expect(differences.conflicts).has.lengthOf(0, `This test should not have conflicts.`);
+    expect(differences.changes).has.lengthOf(0, `This test should not have changes.`);
   });
 
   it("should not return items that exists in both or in target schema", () => {
