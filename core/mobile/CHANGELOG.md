@@ -1,6 +1,11 @@
 # Change Log - @itwin/core-mobile
 
-This log was last generated on Fri, 23 Feb 2024 21:27:20 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Mar 2024 18:22:07 GMT and should not be manually modified.
+
+## 4.4.4
+Fri, 01 Mar 2024 18:21:01 GMT
+
+_Version update only_
 
 ## 4.4.3
 Fri, 23 Feb 2024 21:26:07 GMT

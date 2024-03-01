@@ -9,7 +9,7 @@
 import { BentleyStatus, CompressedId64Set, DbResult, Id64, Id64Arg, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { Matrix3d, Matrix3dProps, Point3d, Range3d, Range3dProps, Transform, TransformProps, XYZProps, YawPitchRollAngles } from "@itwin/core-geometry";
 import { GeometricElement, IModelDb } from "@itwin/core-backend";
-import { BRepEntity, ColorDefProps, DynamicGraphicsRequest3dProps, EcefLocation, EcefLocationProps, ElementGeometry, ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryRequest, FilePropertyProps, GeometricElementProps, GeometryPartProps, IModelError, Placement3dProps } from "@itwin/core-common";
+import { BRepEntity, ColorDefProps, DynamicGraphicsRequest3dProps, EcefLocation, EcefLocationProps, ElementGeometry, ElementGeometryBuilderParams, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryRequest, FilePropertyProps, GeometricElementProps, GeometryPartProps, IModelError, Placement3dProps } from "@itwin/core-common";
 import { BasicManipulationCommandIpc, BlendEdgesProps, BooleanOperationProps, BRepEntityType, ChamferEdgesProps, ConnectedSubEntityProps, CutProps, DeleteSubEntityProps, EdgeParameterRangeProps, editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, EmbossProps, EvaluatedEdgeProps, EvaluatedFaceProps, EvaluatedVertexProps, FaceParameterRangeProps, FlatBufferGeometryFilter, HollowFacesProps, ImprintProps, LocateSubEntityProps, LoftProps, OffsetEdgesProps, OffsetFacesProps, PointInsideResultProps, SewSheetProps, SolidModelingCommandIpc, SpinFacesProps, SubEntityAppearanceProps, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps, SubEntityType, SweepFacesProps, SweepPathProps, ThickenSheetProps, TransformSubEntityProps } from "@itwin/editor-common";
 import { EditCommand } from "./EditCommand";
 
@@ -74,20 +74,14 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     return IModelStatus.Success;
   }
 
-  public async insertGeometricElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<Id64String> {
+  public async insertGeometricElement(props: GeometricElementProps): Promise<Id64String> {
     await this.iModel.locks.acquireLocks({ shared: props.model });
-
-    if (undefined !== data)
-      props.elementGeometryBuilderParams = { entryArray: data.entryArray, viewIndependent: data.viewIndependent };
 
     return this.iModel.elements.insertElement(props);
   }
 
-  public async insertGeometryPart(props: GeometryPartProps, data?: ElementGeometryBuilderParamsForPart): Promise<Id64String> {
+  public async insertGeometryPart(props: GeometryPartProps): Promise<Id64String> {
     await this.iModel.locks.acquireLocks({ shared: props.model });
-
-    if (undefined !== data)
-      props.elementGeometryBuilderParams = { entryArray: data.entryArray, is2dPart: data.is2dPart };
 
     return this.iModel.elements.insertElement(props);
   }
@@ -793,12 +787,14 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
       if (opts.insertProps) {
         opts.insertProps.placement = placement; // entryArray is local to this placement...
         delete opts.insertProps.geom; // Ignore geometry if present...
-        resultProps.elementId = await this.insertGeometricElement(opts.insertProps, { entryArray: info.entryArray });
+        opts.insertProps.elementGeometryBuilderParams = { entryArray: info.entryArray };
+        resultProps.elementId = await this.insertGeometricElement(opts.insertProps);
       } else {
         const updateProps = this.iModel.elements.getElementProps<GeometricElementProps>({ id });
         updateProps.category = info.categoryId; // allow category change...
         updateProps.placement = placement; // entryArray is local to this placement...
-        await this.updateGeometricElement(updateProps, { entryArray: info.entryArray });
+        updateProps.elementGeometryBuilderParams = { entryArray: info.entryArray };
+        await this.updateGeometricElement(updateProps);
         resultProps.elementId = id;
       }
 
