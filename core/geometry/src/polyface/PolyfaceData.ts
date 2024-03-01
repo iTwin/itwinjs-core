@@ -23,11 +23,13 @@ import { TaggedNumericData } from "./TaggedNumericData";
 // cspell:word internaldocs
 
 /**
- * PolyfaceData carries data arrays for point, normal, param, color and their indices (which have the same length).
- *
- * * IndexedPolyface carries a PolyfaceData as a member (NOT as a base class; it already has GeometryQuery as base).
- * * IndexedPolyfaceVisitor uses PolyfaceData as a base class. In this use, there is only a single facet in the polyfaceData.
- * * PolyfaceData does not know what indices range constitute a facet. That is managed by derived class or carrier class.
+ * `PolyfaceData` carries data arrays for point, normal, uv-parameters, and color, and index arrays for each.
+ * * Normal, uv-parameter, and color data are optional.
+ * * A given data array is defined if and only if its corresponding index array is defined.
+ * * All defined index arrays have parallel face loop order and structure, and thus the same length.
+ * * `IndexedPolyface` carries a PolyfaceData as a member (NOT as a base class; it already has `GeometryQuery` as base).
+ * * `IndexedPolyfaceVisitor` uses PolyfaceData as a base class. In this use, there is only a single facet in `PolyfaceData`.
+ * * `PolyfaceData` does not know what index range constitutes a given facet. This is managed by a derived/carrier class.
  * @public
  */
 export class PolyfaceData {
@@ -49,15 +51,17 @@ export class PolyfaceData {
   /** Indices of params at facet vertices. */
   public paramIndex: number[] | undefined;
   /**
-   * Color values. These are carried around as simple numbers, but are probably required (by display systems) map
-   * exactly to 32 bit integers.
+   * Color values. These are carried around as simple numbers, but are probably required (by display systems) to map
+   * exactly to 32-bit integers.
    */
   public color: number[] | undefined;
   /** Indices of colors at facet vertices. */
   public colorIndex: number[] | undefined;
   /**
-   * Data for a face in a polyface containing facets.
-   * * Face data will remain empty until a face is specified.
+   * Map from facet index to face data.
+   * * A "face" is a logical grouping of connected facets in the mesh, e.g., the facets that resulted from faceting
+   * a given face of a solid.
+   * * Face data remains empty until a face is specified.
    */
   public face: FacetFaceData[];
   /** Auxiliary data. */
@@ -66,10 +70,10 @@ export class PolyfaceData {
   public taggedNumericData: TaggedNumericData | undefined;
   /**
    * Booleans indicating visibility of corresponding edges.
-   * * The `edgeVisible` array is parallel to the `pointIndex` arrays.
+   * * The `edgeVisible` array is parallel to the `pointIndex` array.
    * * The visibility flag applies to the edge whose start vertex index appears in the same place in the `pointIndex` array.
-   * * For example, if a mesh has 2 triangular facets with a shared edge (suppose `pointIndex = [1,0,2, 1,2,3]`) and the
-   * shared edge is hidden, then `edgeVisible = [T,T,F, F,T,T]`.
+   * * For example, consider the mesh with 2 triangular facets given by `pointIndex = [1,0,2, 1,2,3]`. If the triangles'
+   * shared edge is hidden, then the mesh has `edgeVisible = [true,true,false, false,true,true]`.
    */
   public edgeVisible: boolean[];
   /** Boolean tag indicating if the facets are viewable from the back. */
@@ -82,10 +86,10 @@ export class PolyfaceData {
   private _expectedClosure: number;
   /**
    * Constructor for facets.
-   * @param needNormals `true` if normals will be allocated. Otherwise, if `false` or not provided.
-   * @param needParams `true` if uv parameters will be allocated.  Otherwise, if `false` or not provided.
-   * @param needColors `true` if colors will be allocated.  Otherwise, if `false` or not provided.
-   * @param twoSided `true` if the facets are to be considered viewable from the back. Otherwise, if `false` or not provided.
+   * @param needNormals `true` to allocate empty normal data and index arrays; `false` (default) to leave undefined.
+   * @param needParams `true` to allocate empty uv parameter data and index arrays; `false` (default) to leave undefined.
+   * @param needColors `true` to allocate empty color data and index arrays; `false` (default) to leave undefined.
+   * @param twoSided `true` if the facets are to be considered viewable from the back; `false` (default) if not.
    */
   public constructor(
     needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false, twoSided: boolean = false,
@@ -194,9 +198,9 @@ export class PolyfaceData {
   public get colorCount() {
     return this.color ? this.color.length : 0;
   }
-  /** Get the index count. Note that there is one count and all index arrays (point, normal, param, color) must match. */
+  /** Get the index count. Note that the point array is always indexed, and index arrays all have the same length. */
   public get indexCount() {
-    return this.pointIndex.length; // pint is always indexed and all index vectors must have same length
+    return this.pointIndex.length;
   }
   /**
    * Get the number of faces.
@@ -210,19 +214,19 @@ export class PolyfaceData {
   public getPoint(i: number, result?: Point3d): Point3d | undefined {
     return this.point.getPoint3dAtCheckedPointIndex(i, result);
   }
-  /** Return indexed norma at index `i`. This is the COPY to the normal, not a reference. */
+  /** Return indexed normal at index `i`. This is a COPY of the normal, not a reference. */
   public getNormal(i: number, result?: Vector3d): Vector3d | undefined {
     return this.normal ? this.normal.getVector3dAtCheckedVectorIndex(i, result) : undefined;
   }
-  /** Return indexed param at index `i`. This is the COPY of the coordinates, not a reference. */
+  /** Return indexed param at index `i`. This is a COPY of the coordinates, not a reference. */
   public getParam(i: number, result?: Point2d): Point2d | undefined {
     return this.param ? this.param.getPoint2dAtCheckedPointIndex(i, result) : undefined;
   }
-  /** Return indexed color at index `i`.  Index `i` is not checked for validity. */
+  /** Return indexed color at index `i`. Index `i` is not checked for validity. */
   public getColor(i: number): number {
     return this.color ? this.color[i] : 0;
   }
-  /** Return indexed visibility. at index `i`.  Index `i` is not checked for validity. */
+  /** Return indexed visibility. at index `i`. Index `i` is not checked for validity. */
   public getEdgeVisible(i: number): boolean {
     return this.edgeVisible[i];
   }
@@ -268,8 +272,7 @@ export class PolyfaceData {
   /**
    * Copy data from `other` to `this`.
    * * This is the essence of transferring coordinates spread throughout a large polyface into a visitor's single facet.
-   * * "other" is the large polyface.
-   * * "this" is the visitor.
+   * * Common usage: "other" is a Polyface, "this" is a PolyfaceVisitor to receive data from a single facet of the Polyface.
    * * Does NOT copy face data - visitors reference the FacetFaceData array for the whole polyface.
    * @param other polyface data being mined.
    * @param index0 start index in other's index arrays.
@@ -491,7 +494,8 @@ export class PolyfaceData {
     return result;
   }
   /**
-   * Reverse the indices for the specified facets in the index arrays (pointIndex, normalIndex, paramIndex, colorIndex, and edgeVisible).
+   * Reverse the indices for the specified facets in the index arrays (pointIndex, normalIndex, paramIndex, colorIndex,
+   * and edgeVisible).
    * @param facetStartIndex start indices of *consecutive* facets to be reversed.
    * * Consecutive indices in this array define where a given facet is represented in each of the parallel index arrays.
    * * The indices for facet k are `facetStartIndex[k]` up to (but not including) `facetStartIndex[k + 1]`.
@@ -511,9 +515,12 @@ export class PolyfaceData {
     }
   }
   /**
-   * Reverse the indices for the specified facet in the index arrays (pointIndex, normalIndex, paramIndex, colorIndex, and edgeVisible).
-   * @param facetIndex index of the facet to reverse. The entries of each index array to be reversed are found at `facetStartIndex[facetIndex] <= i < facetStartIndex[facetIndex + 1]`.
-   * @param facetStartIndex start indices of *consecutive* facets, e.g., an IndexedPolyface's _facetStart array. See [[reverseIndices]].
+   * Reverse the indices for the specified facet in the index arrays (pointIndex, normalIndex, paramIndex, colorIndex,
+   * and edgeVisible).
+   * @param facetIndex index of the facet to reverse. The entries of each index array to be reversed are found at
+   * `facetStartIndex[facetIndex] <= i < facetStartIndex[facetIndex + 1]`.
+   * @param facetStartIndex start indices of *consecutive* facets, e.g., an IndexedPolyface's _facetStart array.
+   * See [[reverseIndices]].
    */
   public reverseIndicesSingleFacet(facetIndex: number, facetStartIndex: number[]): void {
     PolyfaceData.reverseIndicesSingleFacet(facetIndex, facetStartIndex, this.pointIndex, true);
@@ -589,9 +596,11 @@ export class PolyfaceData {
   /**
    * Reverse the indices for the specified facets in the given index array.
    * * Parameterized over type T so non-number data (e.g., boolean visibility flags) can be reversed.
-   * @param facetStartIndex start indices of *consecutive* facets to be reversed, e.g., an IndexedPolyface's _facetStart array. See the non-static [[reverseIndices]].
+   * @param facetStartIndex start indices of *consecutive* facets to be reversed, e.g., an IndexedPolyface's _facetStart
+   * array. See the non-static [[reverseIndices]].
    * @param indices the index array, e.g., pointIndex, normalIndex, etc.
-   * @param preserveStart `true` to preserve the start index of each facet (e.g., facet [1,2,3,4] becomes [1,4,3,2]); `false` to reverse all indices (e.g., facet [1,2,3,4] becomes [4,3,2,1]).
+   * @param preserveStart `true` to preserve the start index of each facet (e.g., facet [1,2,3,4] becomes [1,4,3,2]);
+   * `false` to reverse all indices (e.g., facet [1,2,3,4] becomes [4,3,2,1]).
    */
   public static reverseIndices<T>(facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean {
     if (!indices || indices.length === 0)
@@ -628,10 +637,13 @@ export class PolyfaceData {
   /**
    * Reverse the indices for the specified facet in the specified index array.
    * * Parameterized over type T so non-number data (e.g., boolean visibility flags) can be reversed.
-   * @param facetIndex index of the facet to reverse. The entries of `indices` to be reversed are found at `facetStartIndex[facetIndex] <= i < facetStartIndex[facetIndex + 1]`.
-   * @param facetStartIndex start indices of *consecutive* facets, e.g., an IndexedPolyface's _facetStart array. See [[reverseIndices]].
+   * @param facetIndex index of the facet to reverse. The entries of `indices` to be reversed are found at
+   * `facetStartIndex[facetIndex] <= i < facetStartIndex[facetIndex + 1]`.
+   * @param facetStartIndex start indices of *consecutive* facets, e.g., an IndexedPolyface's _facetStart array.
+   * See [[reverseIndices]].
    * @param indices the index array, e.g., pointIndex, normalIndex, etc.
-   * @param preserveStart `true` to preserve the start index of each facet (e.g., facet [1,2,3,4] becomes [1,4,3,2]); `false` to reverse all indices (e.g., facet [1,2,3,4] becomes [4,3,2,1]).
+   * @param preserveStart `true` to preserve the start index of each facet (e.g., facet [1,2,3,4] becomes [1,4,3,2]);
+   * `false` to reverse all indices (e.g., facet [1,2,3,4] becomes [4,3,2,1]).
    */
   public static reverseIndicesSingleFacet<T>(
     facetIndex: number, facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean,
