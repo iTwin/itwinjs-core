@@ -141,6 +141,10 @@ export class ViewManager implements Iterable<ScreenViewport> {
       clearTimeout(this._idleWorkTimer);
       this._idleWorkTimer = undefined;
     }
+    this._viewports.map((viewport) => {
+      if (!viewport.isDisposed)
+        this.dropViewport(viewport, true);
+    });
     this._viewports.length = 0;
     this.decorators.length = 0;
     this.toolTipProviders.length = 0;

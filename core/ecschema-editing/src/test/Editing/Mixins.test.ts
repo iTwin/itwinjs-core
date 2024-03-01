@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ECClassModifier, Mixin, SchemaContext, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
+import { ECClassModifier, Mixin, NavigationProperty, NavigationPropertyProps, RelationshipClass, SchemaContext, SchemaItemKey, SchemaKey, StrengthDirection, StrengthType } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
 describe("Mixins tests", () => {
@@ -25,6 +25,25 @@ describe("Mixins tests", () => {
   it("should create a new mixin", async () => {
     const mixinResult = await testEditor.mixins.create(testKey, "testMixin", entityKey);
     expect(testEditor.schemaContext.getSchemaItemSync(mixinResult.itemKey!)?.name).to.eql("testMixin");
+  });
+
+  it("should create a new navigation property from NavigationPropertyProps", async () => {
+    const testMixinRes = await testEditor.mixins.create(testKey, "testMixin", entityKey);
+    const testRelRes = await testEditor.relationships.create(testKey, "testRelationship", ECClassModifier.None, StrengthType.Embedding, StrengthDirection.Forward);
+    const navProps: NavigationPropertyProps = {
+      name: "testProperty",
+      type: "NavigationProperty",
+      relationshipName: "testSchema.testRelationship",
+      direction: "Forward",
+    };
+
+    const mixin = await testEditor.schemaContext.getSchemaItem(testMixinRes.itemKey!) as Mixin;
+    const relClass = await testEditor.schemaContext.getSchemaItem(testRelRes.itemKey!) as RelationshipClass;
+
+    const result = await testEditor.mixins.createNavigationPropertyFromProps(mixin.key, navProps);
+    const navProperty = await mixin.getProperty(result.propertyName!) as NavigationProperty;
+    expect(await navProperty.relationshipClass).to.eql(relClass);
+    expect(navProperty.direction).to.eql(StrengthDirection.Forward);
   });
 
   it("should delete a mixin", async () => {

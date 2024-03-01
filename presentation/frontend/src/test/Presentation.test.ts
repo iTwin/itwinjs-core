@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
+import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
 import { PresentationError } from "@itwin/presentation-common";
 import { Presentation, SelectionManager } from "../presentation-frontend";
 import * as favorites from "../presentation-frontend/favorite-properties/FavoritePropertiesManager";
@@ -119,6 +119,22 @@ describe("Presentation", () => {
       Presentation.presentation.activeLocale = "other";
       expect(Presentation.presentation.activeLocale).to.eq("other");
       expect(Presentation.selection.scopes.activeLocale).to.eq("other");
+    });
+
+    it("sets `startIModelInitialization` and `ensureIModelInitialized` callbacks of `PresentationManager` as proxies to `FavoritePropertiesManager`", async () => {
+      await Presentation.initialize({ presentation: { activeLocale: "test" } });
+      const manager = Presentation.presentation;
+      const favoriteProperties = Presentation.favoriteProperties;
+
+      const startInitializationSpy = sinon.spy(favoriteProperties, "startConnectionInitialization");
+      const ensureInitializedSpy = sinon.spy(favoriteProperties, "ensureInitialized");
+      const imodel = {} as unknown as IModelConnection;
+
+      manager.startIModelInitialization(imodel);
+      expect(startInitializationSpy).to.be.called;
+
+      await manager.ensureIModelInitialized(imodel);
+      expect(ensureInitializedSpy).to.be.called;
     });
   });
 

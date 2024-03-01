@@ -233,6 +233,37 @@ export class EsriUniqueValueInfo  {
 }
 
 /** @internal */
+export interface EsriClassBreaksInfoProps {
+  classMaxValue: number;
+  classMinValue?: number;
+  label?: string;
+  description?: string;
+  symbol: EsriSymbolProps;
+}
+
+/** @internal */
+export class EsriClassBreaksValueInfo  {
+
+  public readonly classMaxValue: number;
+  public readonly classMinValue?: number;
+  public readonly label: string|undefined;
+  public readonly description: string|undefined;
+  public readonly symbol: EsriSymbol;
+
+  private constructor(json: EsriClassBreaksInfoProps) {
+    this.classMaxValue = json.classMaxValue;
+    this.classMinValue = json.classMinValue;
+    this.label = json.label;
+    this.description = json.description;
+    this.symbol = EsriSymbol.fromJSON(json.symbol);
+  }
+
+  public static fromJSON(json: EsriClassBreaksInfoProps) {
+    return new EsriClassBreaksValueInfo(json);
+  }
+}
+
+/** @internal */
 export interface EsriRendererBaseProps {
   type: EsriRendererType;
 }
@@ -240,11 +271,6 @@ export interface EsriRendererBaseProps {
 /** @internal */
 export interface EsriSimpleRendererProps extends EsriRendererBaseProps {
   symbol: EsriSymbolProps;
-}
-
-/** @internal */
-export interface EsriUniqueValueRendererProps extends EsriRendererBaseProps {
-  symbol?: EsriSymbolProps;
 }
 
 /** @internal */
@@ -257,20 +283,35 @@ export interface EsriUniqueValueRendererProps extends EsriRendererBaseProps {
 }
 
 /** @internal */
-export type EsriRendererType = "simple" | "uniqueValue";
+export type EsriClassificationMethodType = "esriClassifyDefinedInterval" | "esriClassifyEqualInterval" | "esriClassifyManual" | "esriClassifyNaturalBreaks" | "esriClassifyQuantile" | "esriClassifyStandardDeviation";
 
 /** @internal */
-export  type EsriRendererProps = EsriSimpleRendererProps | EsriUniqueValueRendererProps;
+export interface EsriClassBreaksRendererProps extends EsriRendererBaseProps {
+  field: string;
+  minValue: number;
+  defaultSymbol?: EsriSymbolProps;
+  classificationMethod: EsriClassificationMethodType;
+  classBreakInfos: EsriClassBreaksInfoProps[];
+}
+
+/** @internal */
+export type EsriRendererType = "simple" | "uniqueValue" | "classBreaks";
+
+/** @internal */
+export  type EsriRendererProps = EsriSimpleRendererProps | EsriUniqueValueRendererProps | EsriClassBreaksRendererProps;
 
 /** @internal */
 export abstract class EsriRenderer {
   public readonly abstract type: EsriRendererType;
   public abstract initialize(): Promise<void>;
+  public get fields(): string[]|undefined {return undefined;}
   public static fromJSON(json: EsriRendererProps): EsriRenderer {
     if (json.type === "simple")
       return EsriSimpleRenderer.fromJSON(json as EsriSimpleRendererProps);
     else if (json.type === "uniqueValue")
       return EsriUniqueValueRenderer.fromJSON(json as EsriUniqueValueRendererProps);
+    else if (json.type === "classBreaks")
+      return EsriClassBreaksRenderer.fromJSON(json as EsriClassBreaksRendererProps);
     else
       throw Error("Unknown renderer type");
   }
@@ -306,6 +347,18 @@ export class EsriUniqueValueRenderer extends EsriRenderer {
   public readonly defaultSymbol?: EsriSymbol;
   public readonly uniqueValueInfos: EsriUniqueValueInfo[] = [];
 
+  public override get fields() {
+    const fields: string[] = [];
+    if (this.field1)
+      fields.push(this.field1);
+    if (this.field2)
+      fields.push(this.field2);
+    if (this.field3)
+      fields.push(this.field3);
+
+    return fields;
+  }
+
   public get field1() { return this._props.field1 ?? undefined; }
   public get field2() { return this._props.field2 ?? undefined; }
   public get field3() { return this._props.field3 ?? undefined; }
@@ -338,3 +391,52 @@ export class EsriUniqueValueRenderer extends EsriRenderer {
     return new EsriUniqueValueRenderer(json);
   }
 }
+
+/** @internal */
+export class EsriClassBreaksRenderer extends EsriRenderer {
+  private _props: EsriClassBreaksRendererProps;
+  public readonly type: EsriRendererType = "classBreaks";
+  public readonly defaultSymbol?: EsriSymbol;
+  public get classificationMethod() {return this._props.classificationMethod;}
+  public readonly classBreakInfos: EsriClassBreaksValueInfo[] = [];
+
+  public override get fields() {
+    if (this.field)
+      return [this.field];
+
+    return undefined;
+  }
+
+  public get field() { return this._props.field ?? undefined; }
+  public get minValue() { return this._props.minValue ?? 0; }
+
+  protected constructor(json: EsriClassBreaksRendererProps) {
+    super();
+    if (json.defaultSymbol)
+      this.defaultSymbol = EsriSymbol.fromJSON(json.defaultSymbol);
+
+    for (const cbi of json.classBreakInfos) {
+      this.classBreakInfos.push(EsriClassBreaksValueInfo.fromJSON(cbi));
+    }
+
+    this._props = json;
+  }
+
+  public override async initialize() {
+    const promises: Promise<void>[] = [];
+    if (this.defaultSymbol?.type === "esriPMS") {
+      promises.push((this.defaultSymbol as EsriPMS).loadImage());
+    }
+    for (const cbi of this.classBreakInfos) {
+      if (cbi.symbol.type === "esriPMS") {
+        promises.push((cbi.symbol as EsriPMS).loadImage());
+      }
+    }
+    await Promise.all(promises);
+  }
+
+  public static override fromJSON(json: EsriClassBreaksRendererProps) {
+    return new EsriClassBreaksRenderer(json);
+  }
+}
+

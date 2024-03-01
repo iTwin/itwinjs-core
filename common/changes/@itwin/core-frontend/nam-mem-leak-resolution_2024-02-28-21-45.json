@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Dispose of all viewports when IModelApp.shutdown() is called to clear up WebGL resources, and avoid memory leak",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -5,7 +5,7 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import {
-  ECClassModifier, ECVersion, EntityClass, EntityClassProps, Schema, SchemaContext, SchemaItemKey, SchemaItemType, SchemaKey,
+  ECClassModifier, ECVersion, EntityClass, EntityClassProps, NavigationProperty, NavigationPropertyProps, RelationshipClass, Schema, SchemaContext, SchemaItemKey, SchemaItemType, SchemaKey, StrengthDirection, StrengthType,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
@@ -129,6 +129,25 @@ describe("Entities tests", () => {
     const result = await testEditor.entities.createFromProps(testKey, entityClassProps);
     const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result.itemKey!);
     expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(testEntityBaseRes.itemKey!));
+  });
+
+  it("should create a new navigation property from NavigationPropertyProps", async () => {
+    const testEntityRes = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None);
+    const testRelRes = await testEditor.relationships.create(testKey, "testRelationship", ECClassModifier.None, StrengthType.Embedding, StrengthDirection.Forward);
+    const navProps: NavigationPropertyProps = {
+      name: "testProperty",
+      type: "NavigationProperty",
+      relationshipName: "testSchema.testRelationship",
+      direction: "Forward",
+    };
+
+    const entityClass = await testEditor.schemaContext.getSchemaItem(testEntityRes.itemKey!) as EntityClass;
+    const relClass = await testEditor.schemaContext.getSchemaItem(testRelRes.itemKey!) as RelationshipClass;
+
+    const result = await testEditor.entities.createNavigationPropertyFromProps(entityClass.key, navProps);
+    const navProperty = await entityClass.getProperty(result.propertyName!) as NavigationProperty;
+    expect(await navProperty.relationshipClass).to.eql(relClass);
+    expect(navProperty.direction).to.eql(StrengthDirection.Forward);
   });
 
   it("should add base class to entity class with undefined base class.", async () => {

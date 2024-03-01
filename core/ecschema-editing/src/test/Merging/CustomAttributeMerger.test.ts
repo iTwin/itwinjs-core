@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { EntityClass, Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import { EntityClass, RelationshipClass, Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -304,6 +304,158 @@ describe("Custom Attribute merge", () => {
           },
         ],
       );
+    });
+
+    it("should merge missing relationship constraint custom attributes", async () => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        references: [
+          {
+            name: "TestSchema",
+            version: "01.00.15",
+          },
+        ],
+        items: {
+          BaseEntity: {
+            schemaItemType: "EntityClass",
+          },
+          TestCA: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "AnyRelationshipConstraint",
+            properties: [
+              {
+                name: "BoolProp",
+                type: "PrimitiveProperty",
+                typeName: "boolean",
+              },
+            ],
+          },
+          TestRelationship: {
+            schemaItemType: "RelationshipClass",
+            description: "Description of TestRelationship",
+            modifier: "None",
+            strength: "Referencing",
+            strengthDirection: "Forward",
+            source: {
+              customAttributes: [
+                {
+                  className: "TestSchema.TestCA",
+                  IntProp: 10,
+                },
+                {
+                  className: "SourceSchema.TestCA",
+                },
+              ],
+              multiplicity: "(0..*)",
+              roleLabel: "refers to",
+              polymorphic: true,
+              constraintClasses: [
+                "SourceSchema.BaseEntity",
+              ],
+            },
+            target: {
+              customAttributes: [
+                {
+                  className: "TestSchema.TestCA",
+                  StringPrimitiveArrayProp: ["RelationshipConstraintCustomAttribute"],
+                },
+                {
+                  className: "SourceSchema.TestCA",
+                  BoolProp: true,
+                },
+              ],
+              multiplicity: "(0..*)",
+              roleLabel: "is referenced by",
+              polymorphic: true,
+              constraintClasses: [
+                "SourceSchema.BaseEntity",
+              ],
+            },
+          },
+        },
+      }, sourceContext);
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          BaseEntity: {
+            schemaItemType: "EntityClass",
+          },
+          TestCA: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "AnyRelationshipConstraint",
+            properties: [
+              {
+                name: "BoolProp",
+                type: "PrimitiveProperty",
+                typeName: "boolean",
+              },
+            ],
+          },
+          TestRelationship: {
+            schemaItemType: "RelationshipClass",
+            description: "Description of TestRelationship",
+            modifier: "None",
+            strength: "Referencing",
+            strengthDirection: "Forward",
+            source: {
+              multiplicity: "(0..*)",
+              roleLabel: "refers to",
+              polymorphic: true,
+              constraintClasses: [
+                "TargetSchema.BaseEntity",
+              ],
+            },
+            target: {
+              multiplicity: "(0..*)",
+              roleLabel: "is referenced by",
+              polymorphic: true,
+              constraintClasses: [
+                "TargetSchema.BaseEntity",
+              ],
+            },
+          },
+        },
+      }, targetContext);
+
+      const merger = new SchemaMerger();
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const mergedRelationship = await mergedSchema.getItem<RelationshipClass>("TestRelationship");
+      expect(mergedRelationship!.toJSON().source).deep.eq({
+        customAttributes: [
+          {
+            className: "TestSchema.TestCA",
+            IntProp: 10,
+          },
+          {
+            className: "TargetSchema.TestCA",
+          },
+        ],
+        multiplicity: "(0..*)",
+        roleLabel: "refers to",
+        polymorphic: true,
+        constraintClasses: [
+          "TargetSchema.BaseEntity",
+        ],
+      });
+      expect(mergedRelationship!.toJSON().target).deep.eq({
+        customAttributes: [
+          {
+            className: "TestSchema.TestCA",
+            StringPrimitiveArrayProp: ["RelationshipConstraintCustomAttribute"],
+          },
+          {
+            className: "TargetSchema.TestCA",
+            BoolProp: true,
+          },
+        ],
+        multiplicity: "(0..*)",
+        roleLabel: "is referenced by",
+        polymorphic: true,
+        constraintClasses: [
+          "TargetSchema.BaseEntity",
+        ],
+      });
     });
   });
 });
