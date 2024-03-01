@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import { IModel } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { Content, KeySet, Node, Ruleset, StandardNodeTypes } from "@itwin/presentation-common";
+import { KeySet, Node, Ruleset, StandardNodeTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../IntegrationTests";
-import { collect, getFieldByLabel } from "../../Utils";
+import { getFieldByLabel } from "../../Utils";
 import { printRuleset } from "../Utils";
 
 describe("Learning Snippets", () => {
@@ -59,20 +59,18 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Ensure that only `bis.ViewDefinition` instances are selected.
-      const content = await Presentation.presentation
-        .getContentIterator({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        })
-        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
+      const content = (await Presentation.presentation.getContentIterator({
+        imodel,
+        rulesetOrId: ruleset,
+        keys: new KeySet(),
+        descriptor: {},
+      }))!;
 
-      expect(content!.contentSet.length).to.eq(3);
-      const field = getFieldByLabel(content!.descriptor.fields, "Display Style");
-      content!.contentSet.forEach((record) => {
+      expect(content.total).to.eq(3);
+      const field = getFieldByLabel(content.descriptor.fields, "Display Style");
+      for await (const record of content.items) {
         expect(record.displayValues[field.name]).to.contain("View");
-      });
+      }
     });
 
     it("using in instance filter with target instance ids", async () => {

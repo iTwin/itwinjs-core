@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { Content, KeySet, Ruleset } from "@itwin/presentation-common";
+import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
-import { collect, getFieldByLabel } from "../../../Utils";
+import { getFieldByLabel } from "../../../Utils";
 import { printRuleset } from "../../Utils";
 
 describe("Learning Snippets", () => {
@@ -52,14 +52,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that the custom property was created
-        const content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
+        const content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
         expect(content.descriptor.fields).to.containSubset([
           {
             label: "My Calculated Property",
@@ -95,24 +93,19 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that the custom property was created and has a value
-        const content = (await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "generic.PhysicalObject", id: "0x74" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items))))!;
+        const content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "generic.PhysicalObject", id: "0x74" }]),
+          descriptor: {},
+        }))!;
         const field = getFieldByLabel(content.descriptor.fields, "Element Volume");
-        expect(content.contentSet)
-          .to.have.lengthOf(1)
-          .and.to.containSubset([
-            {
-              values: {
-                [field.name]: "3.449493952966681",
-              },
-            },
-          ]);
+        expect(content.total).to.eq(1);
+        expect((await content.items.next()).value).to.containSubset({
+          values: {
+            [field.name]: "3.449493952966681",
+          },
+        });
       });
 
       it("uses `categoryId` attribute", async () => {

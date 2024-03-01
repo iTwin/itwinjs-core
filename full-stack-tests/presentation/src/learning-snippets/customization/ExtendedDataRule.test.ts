@@ -55,17 +55,14 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        const content = await Presentation.presentation
-          .getContentIterator({
-            imodel,
-            rulesetOrId: ruleset,
-            keys: new KeySet([{ className: "BisCore:Element", id: "0x61" }]),
-            descriptor: {},
-          })
-          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
-        expect(content?.contentSet)
-          .to.be.lengthOf(1)
-          .and.to.not.containSubset([{ extendedData: { iconName: "external-source-icon" } }]);
+        const content = await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Element", id: "0x61" }]),
+          descriptor: {},
+        });
+        expect(content!.total).to.eq(1);
+        expect((await content!.items.next()).value).not.to.containSubset({ extendedData: { iconName: "external-source-icon" } });
       });
 
       it("uses `condition` attribute", async () => {

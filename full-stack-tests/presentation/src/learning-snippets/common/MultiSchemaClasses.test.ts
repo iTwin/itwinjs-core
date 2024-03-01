@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { Content, KeySet, Ruleset } from "@itwin/presentation-common";
+import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../IntegrationTests";
 import { printRuleset } from "../Utils";
@@ -51,22 +51,22 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Ensure that `bis.PhysicalModel` and `bis.SpatialCategory` instances are selected.
-      const content = await Presentation.presentation
+      const contentSet = await Presentation.presentation
         .getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet(),
           descriptor: {},
         })
-        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
+        .then(async (x) => collect(x!.items));
 
-      expect(content!.contentSet).to.have.lengthOf(2);
-      expect(content!.contentSet).to.containSubset([
+      expect(contentSet).to.have.lengthOf(2);
+      expect(contentSet).to.containSubset([
         {
           primaryKeys: [{ className: "BisCore:PhysicalModel" }],
         },
       ]);
-      expect(content!.contentSet).to.containSubset([
+      expect(contentSet).to.containSubset([
         {
           primaryKeys: [{ className: "BisCore:SpatialCategory" }],
         },

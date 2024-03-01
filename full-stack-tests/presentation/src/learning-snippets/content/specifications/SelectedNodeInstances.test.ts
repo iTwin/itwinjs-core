@@ -98,13 +98,10 @@ describe("Learning Snippets", () => {
           descriptor: {},
         });
 
-        expect(await collect(content!.items))
-          .to.have.lengthOf(1)
-          .and.to.containSubset([
-            {
-              classInfo: { label: "Spatial View Definition" },
-            },
-          ]);
+        expect(content!.total).to.eq(1);
+        expect((await content!.items.next()).value).to.containSubset({
+          classInfo: { label: "Spatial View Definition" },
+        });
       });
 
       it("uses `acceptablePolymorphically` attribute", async () => {
