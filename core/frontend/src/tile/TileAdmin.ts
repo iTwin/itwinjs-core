@@ -130,6 +130,10 @@ export class TileAdmin {
   /** @internal */
   public readonly disableMagnification: boolean;
   /** @internal */
+  public readonly allowPreloading: boolean;
+  /** @internal */
+  public readonly percentGPUMemDisablePreload: number;
+  /** @internal */
   public readonly alwaysRequestEdges: boolean;
   /** @internal */
   public readonly alwaysSubdivideIncompleteTiles: boolean;
@@ -232,6 +236,8 @@ export class TileAdmin {
     this.ignoreAreaPatterns = options.ignoreAreaPatterns ?? defaultTileOptions.ignoreAreaPatterns;
     this.enableExternalTextures = options.enableExternalTextures ?? defaultTileOptions.enableExternalTextures;
     this.disableMagnification = options.disableMagnification ?? defaultTileOptions.disableMagnification;
+    this.allowPreloading = options.allowPreloading ?? true;
+    this.percentGPUMemDisablePreload = Math.max(0, Math.min((options.percentGPUMemDisablePreload === undefined ? 80 : options.percentGPUMemDisablePreload), 80));
     this.alwaysRequestEdges = true === options.alwaysRequestEdges;
     this.alwaysSubdivideIncompleteTiles = options.alwaysSubdivideIncompleteTiles ?? defaultTileOptions.alwaysSubdivideIncompleteTiles;
     this.maximumMajorTileFormatVersion = options.maximumMajorTileFormatVersion ?? defaultTileOptions.maximumMajorTileFormatVersion;
@@ -400,6 +406,16 @@ export class TileAdmin {
 
     this._gpuMemoryLimit = limit;
     this._maxTotalTileContentBytes = maxBytes;
+  }
+
+  /** Returns whether or not preloading for context (reality and map tiles) is currently allowed.
+   * It is not allowed on mobile devices or if [[TileAdmin.Props.allowPreloading]] is false.
+   * Otherwise it is always allowed if [[GpuMemoryLimit]] is "none".
+   * Otherwise it is only allowed if current GPU memory utilization is less than [[TileAdmin.Props.percentGPUMemDisablePreload]] of GpuMemoryLimit.
+   * @internal
+   */
+  public get isPreloadingAllowed(): boolean {
+    return !this._isMobile && this.allowPreloading && (this._maxTotalTileContentBytes === undefined || this._lruList.totalBytesUsed / this._maxTotalTileContentBytes * 100 < this.percentGPUMemDisablePreload);
   }
 
   /** Invoked from the [[ToolAdmin]] event loop to process any pending or active requests for tiles.
@@ -1169,6 +1185,24 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * @alpha
      */
     disableMagnification?: boolean;
+
+    /** Allow preloading for context (reality and map tiles).
+     * This will be ignored and treated as false for mobile devices.
+     *
+     * Default value: true
+     * @alpha
+     */
+    allowPreloading?: boolean;
+
+    /** The Percentage of GPU memory utilization at which to disable preloading for context (reality and map tiles).
+     * While GPU memory usage is at or above this percentage of the limit, preloading will be disabled. If GpuMemoryLimit is "none", then this setting is ignored.
+     *
+     * Default value: 80
+     * Minimum value 0.
+     * Maximum value 80.
+     * @alpha
+     */
+    percentGPUMemDisablePreload?: number;
 
     /** Preloading parents for context (reality and map tiles) will improve the user experience by making it more likely that tiles in nearly the required resolution will be
      * already loaded as the view is manipulated.  This value controls the depth above the the selected tile depth that will be preloaded. The default
