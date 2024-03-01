@@ -160,7 +160,7 @@ describe("Content", () => {
       // first request all pages and confirm the result is valid
       const allDistinctValues = await Presentation.presentation
         .getDistinctValuesIterator({ imodel: db, rulesetOrId: ruleset, keys, descriptor, fieldDescriptor })
-        .then(async (x) => collect(x.items));
+        .then(async (x) => ({ ...x, items: await collect(x.items) }));
       expect(allDistinctValues).to.be.deep.equal({
         total: expectedResult.length,
         items: expectedResult,
@@ -179,7 +179,7 @@ describe("Content", () => {
             fieldDescriptor,
             paging: { size: pageSize, start: i * pageSize },
           })
-          .then(async (x) => collect(x.items));
+          .then(async (x) => ({ ...x, items: await collect(x.items) }));
         expect(pagedDistinctValues).to.be.deep.equal({
           total: expectedResult.length,
           items: expectedResult.slice(i * pageSize, (i + 1) * pageSize),
