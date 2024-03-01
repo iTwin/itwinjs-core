@@ -18,6 +18,7 @@ import {
   FieldDescriptor,
   InstanceKey,
   KeySet,
+  Node,
   NodeKey,
   PropertiesField,
   PropertiesFieldDescriptor,
@@ -198,19 +199,19 @@ describe("#performance DataViz requests", () => {
                 // we select related fields as direct ones, so need to clear the relationship path
                 fieldDescriptor.pathFromSelectToPropertyClass = [];
               }
-              const res = await Presentation.presentation
-                .getDistinctValuesIterator({
-                  imodel: iModel,
-                  rulesetOrId: ruleset,
-                  descriptor: {},
-                  keys: new KeySet(),
-                  fieldDescriptor,
-                })
-                .then(async (x) => collect(x.items));
-              res.map((dv) => {
+
+              const { items } = await Presentation.presentation.getDistinctValuesIterator({
+                imodel: iModel,
+                rulesetOrId: ruleset,
+                descriptor: {},
+                keys: new KeySet(),
+                fieldDescriptor,
+              });
+
+              for await (const dv of items) {
                 const displayValue = dv.displayValue ? dv.displayValue.toString() : "";
                 pushValues(distinctValues, displayValue, dv.groupedRawValues);
-              });
+              }
             }),
           );
         }
@@ -267,19 +268,18 @@ describe("#performance DataViz requests", () => {
         // make a `getPagedDistinctValues` request with the above ruleset for every filtered field
         const distinctValues = new Map<string, Set<Value>>();
         for (const filteredField of filteredFields) {
-          const res = await Presentation.presentation
-            .getDistinctValuesIterator({
-              imodel: iModel,
-              rulesetOrId: ruleset,
-              keys: new KeySet(),
-              descriptor: descriptor.createDescriptorOverrides(),
-              fieldDescriptor: filteredField.getFieldDescriptor(),
-            })
-            .then(async (x) => collect(x.items));
-          res.map((dv) => {
+          const { items } = await Presentation.presentation.getDistinctValuesIterator({
+            imodel: iModel,
+            rulesetOrId: ruleset,
+            keys: new KeySet(),
+            descriptor: descriptor.createDescriptorOverrides(),
+            fieldDescriptor: filteredField.getFieldDescriptor(),
+          });
+
+          for await (const dv of items) {
             const displayValue = dv.displayValue ? dv.displayValue.toString() : "";
             pushValues(distinctValues, displayValue, dv.groupedRawValues);
-          });
+          }
           ++requestsCount;
         }
 
@@ -486,29 +486,34 @@ describe("#performance DataViz requests", () => {
           childElementIds: 0,
         };
         const idEntries = new Map<string, { elementIds: Id64String[]; childIds: Id64String[] }>();
+
+        async function getNodeKeys(ruleset: Ruleset, node: Node) {
+          const keys: InstanceKey[] = [];
+          const key = node.key;
+          if (NodeKey.isInstancesNodeKey(key)) {
+            pushToArrayNoSpread(keys, key.instanceKeys);
+          }
+          if (node.hasChildren) {
+            pushToArrayNoSpread(keys, await loadHierarchy(ruleset, key));
+          }
+          return keys;
+        }
+
         async function loadHierarchy(ruleset: Ruleset, parentKey?: NodeKey): Promise<InstanceKey[]> {
           ++requestsCount.elementIds;
-          const nodes = await Presentation.presentation
-            .getNodesIterator({
-              imodel: iModel,
-              rulesetOrId: ruleset,
-              parentKey,
-            })
-            .then(async (x) => collect(x.items));
-          const keysPerNode = await Promise.all(
-            nodes.map(async (node) => {
-              const keys: InstanceKey[] = [];
-              const key = node.key;
-              if (NodeKey.isInstancesNodeKey(key)) {
-                pushToArrayNoSpread(keys, key.instanceKeys);
-              }
-              if (node.hasChildren) {
-                pushToArrayNoSpread(keys, await loadHierarchy(ruleset, key));
-              }
-              return keys;
-            }),
-          );
-          return keysPerNode.reduce((keys, curr) => [...keys, ...curr], []);
+          const { items } = await Presentation.presentation.getNodesIterator({
+            imodel: iModel,
+            rulesetOrId: ruleset,
+            parentKey,
+          });
+
+          const keysPromises = [];
+          for await (const node of items) {
+            keysPromises.push(getNodeKeys(ruleset, node));
+          }
+
+          const keysPerNode = await Promise.all(keysPromises);
+          return keysPerNode.flat();
         }
         // overwhelms ECDb.ConcurrentQuery with too many queries when used like this
         // await Promise.all(
