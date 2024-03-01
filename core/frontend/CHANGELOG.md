@@ -1,6 +1,14 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 23 Feb 2024 21:26:07 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Mar 2024 18:21:01 GMT and should not be manually modified.
+
+## 4.4.4
+Fri, 01 Mar 2024 18:21:01 GMT
+
+### Updates
+
+- Change gpuMemoryLimit setting used when undefined
+- Dispose of all viewports when IModelApp.shutdown() is called to clear up WebGL resources, and avoid memory leak
 
 ## 4.4.3
 Fri, 23 Feb 2024 21:26:07 GMT

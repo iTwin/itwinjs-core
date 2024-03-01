@@ -2,6 +2,21 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "4.4.4",
+      "tag": "@itwin/core-frontend_v4.4.4",
+      "date": "Fri, 01 Mar 2024 18:21:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Change gpuMemoryLimit setting used when undefined"
+          },
+          {
+            "comment": "Dispose of all viewports when IModelApp.shutdown() is called to clear up WebGL resources, and avoid memory leak"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.4.3",
       "tag": "@itwin/core-frontend_v4.4.3",
       "date": "Fri, 23 Feb 2024 21:26:07 GMT",
