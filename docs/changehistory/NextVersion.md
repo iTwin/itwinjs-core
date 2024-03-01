@@ -9,7 +9,7 @@ Table of contents:
   - [Seafloor terrain](#seafloor-terrain)
 - [Electron 29 support](#electron-29-support)
 - [Presentation](#presentation)
-  - [Deprecation of array batches in favor of async iterators](#deprecation-of-array-batches-in-favor-of-async-iterators)
+  - [Deprecation of async array results in favor of async iterators](#deprecation-of-async-array-results-in-favor-of-async-iterators)
 
 ## Display
 
@@ -39,6 +39,34 @@ In addition to [already supported Electron versions](../learning/SupportedPlatfo
 
 ## Presentation
 
-### Deprecation of array batches in favor of async iterators
+### Deprecation of async array results in favor of async iterators
 
-Some of the methods in frontend's `PresentationManager` class (e.g. `getNodes`) return arrays of items. These methods may take a lot of time to complete which prevents the consumer from continuing. For each such method, alternative methods have been added, which return async iterators. Old methods which return arrays have been deprecated.
+`PresentationManager` contains a number of methods to retrieve sets of results like nodes, content, etc. All of these methods have been deprecated in favor of new ones that return an async iterator instead of an array:
+
+- Use `getContentIterator` instead of `getContent` and `getContentAndSize`.
+- Use `getDisplayLabelDefinitionsIterator` instead of `getDisplayLabelDefinitions`.
+- Use `getDistinctValuesIterator` instead of `getPagedDistinctValues`.
+- Use `getNodesIterator` instead of `getNodes` and `getNodesAndCount`.
+
+All of the above methods, including the deprecated ones, received ability to load large sets of results concurrently. Previously, when requesting a large set (page size > 1000), the result was created by sending a number of requests sequentially by requesting the first page, then the second, and so on, until the whole requested set was retrieved. Now, we send a request for the first page to determine total number of items and backend's page size limit, together with the first page of results, and then other requests are made all at once. At attribute `maxParallelRequests` was added to these methods to control how many parallel requests should be sent at a time.
+
+While performance-wise deprecated methods should be in line with the newly added async iterator ones, the latter have two advantages:
+
+1. Caller can start iterating over results as soon as we receive the first page, instead of having to wait for the whole set.
+2. The iterator version stops sending requests as soon as the caller stops iterating over the async iterator.
+
+> Example: Showing display labels for a large set of elements in a React component.
+>
+> The deprecated approach would be to use `PresentationManager.getDisplayLabelDefinitions` to retrieve labels of all elements. Because the API has to load all the data before returning it to the widget, user has to wait a long time to start seeing the results. Moreover, if he decides to close the widget (the component is unmounted), the `getDisplayLabelDefinitions` keeps building the array by sending requests to the backend - there's no way to cancel that.
+>
+> The new approach is to use `PresentationManager.getDisplayLabelDefinitionsIterator` to get the labels. The labels get streamed to the called as soon as the first results' page is retrieved, so user gets to see initial results quickly, while additional pages keep loading in the background. In addition, if the component is unmounted, iteration can be stopped, thus cancelling all further requests to the backend:
+>
+> ```ts
+> const { items } = await manager.getDisplayLabelDefinitionsIterator(requestProps);
+> for await (const label of items) {
+>  if (isComponentUnmounted) {
+>    break;
+>  }
+>  // update component's model to render the loaded label
+> }
+> ```
