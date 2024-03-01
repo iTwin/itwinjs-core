@@ -151,6 +151,52 @@ describe("Class merger tests", () => {
       expect(mergedItem!.toJSON()).deep.eq(sourceItem!.toJSON());
     });
 
+    it("should merge missing entity class with referenced mixin", async () => {
+      await Schema.fromJson({
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "TestSchema",
+        version: "01.00.15",
+        alias: "test",
+        items: {
+          BaseClass: {
+            schemaItemType: "EntityClass",
+          },
+          TestMixin: {
+            schemaItemType: "Mixin",
+            appliesTo: "TestSchema.BaseClass",
+          },
+        },
+      }, sourceContext);
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        references: [
+          {
+            name: "TestSchema",
+            version: "01.00.15",
+          },
+        ],
+        items: {
+          TestEntity: {
+            schemaItemType: "EntityClass",
+            label: "Test Entity",
+            description: "Description for TestEntity",
+            baseClass: "TestSchema.BaseClass",
+            mixins: ["TestSchema.TestMixin"],
+          },
+        },
+      }, sourceContext);
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+      }, targetContext);
+
+      const merger = new SchemaMerger();
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const sourceItem = await sourceSchema.getItem<EntityClass>("TestEntity");
+      const mergedItem = await mergedSchema.getItem<EntityClass>("TestEntity");
+      expect(mergedItem!.toJSON()).deep.eq(sourceItem!.toJSON());
+    });
+
     it("should merge missing mixin", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
@@ -541,7 +587,7 @@ describe("Class merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Changing the class 'TestEntity' mixins is not supported.");
+      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Changing the entity class 'TestEntity' mixins is not supported.");
     });
   });
 });

@@ -8,7 +8,7 @@
 
 import { CompressedId64Set, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { AngleProps, Matrix3dProps, Range1dProps, Range3dProps, TransformProps, XYZProps } from "@itwin/core-geometry";
-import { ColorDefProps, EcefLocationProps, ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart, ElementGeometryDataEntry, ElementGeometryInfo, ElementGeometryOpcode, GeometricElementProps, GeometryPartProps } from "@itwin/core-common";
+import { ColorDefProps, EcefLocationProps, ElementGeometryBuilderParams, ElementGeometryDataEntry, ElementGeometryInfo, ElementGeometryOpcode, GeometricElementProps, GeometryPartProps } from "@itwin/core-common";
 import { EditCommandIpc } from "./EditorIpc";
 
 /** Command ids for built in EditCommandIpc classes.
@@ -48,19 +48,17 @@ export interface BasicManipulationCommandIpc extends EditCommandIpc {
 
   /** Create and insert a new geometric element.
    * @param props Properties for the new [GeometricElement]($backend)
-   * @param data Optional binary format GeometryStream representation used in lieu of [[GeometricElementProps.geom]] or [[GeometricElementProps.elementGeometryBuilderParams]].
    * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($common)
    * @throws [[IModelError]] if unable to insert the element
    */
-  insertGeometricElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<Id64String>;
+  insertGeometricElement(props: GeometricElementProps): Promise<Id64String>;
 
   /** Create and insert a new geometry part element.
    * @param props Properties for the new [GeometryPart]($backend)
-   * @param data Optional binary format GeometryStream representation used in lieu of [[GeometryPartProps.geom]] or [[GeometryPartProps.elementGeometryBuilderParams]].
    * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($common)
    * @throws [[IModelError]] if unable to insert the element
    */
-  insertGeometryPart(props: GeometryPartProps, data?: ElementGeometryBuilderParamsForPart): Promise<Id64String>;
+  insertGeometryPart(props: GeometryPartProps): Promise<Id64String>;
 
   /** Update an existing geometric element.
    * @param propsOrId Properties or element id to update for an existing [GeometricElement]($backend)

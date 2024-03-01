@@ -30,7 +30,6 @@ import { EcefLocation } from '@itwin/core-common';
 import { EcefLocationProps } from '@itwin/core-common';
 import { EditCommandIpc } from '@itwin/editor-common';
 import { EditManipulator } from '@itwin/core-frontend';
-import { ElementGeometryBuilderParams } from '@itwin/core-common';
 import { ElementGeometryCacheFilter } from '@itwin/editor-common';
 import { ElementGeometryInfo } from '@itwin/core-common';
 import { ElementGeometryResultProps } from '@itwin/editor-common';
@@ -709,7 +708,7 @@ export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
     // (undocumented)
     protected createGraphics(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
-    protected doCreateElement(_props: GeometricElementProps, _data?: ElementGeometryBuilderParams): Promise<void>;
+    protected doCreateElement(_props: GeometricElementProps): Promise<void>;
     // (undocumented)
     protected abstract getElementProps(placement: PlacementProps): GeometricElementProps | undefined;
     // (undocumented)
@@ -819,7 +818,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementWithDynamics
     // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
-    protected doCreateElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<void>;
+    protected doCreateElement(props: GeometricElementProps): Promise<void>;
     // (undocumented)
     protected getCurrentRotation(ev: BeButtonEvent): Matrix3d;
     // (undocumented)
@@ -2526,7 +2525,7 @@ export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
     // (undocumented)
     protected current?: GeometryQuery;
     // (undocumented)
-    protected doCreateElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<void>;
+    protected doCreateElement(props: GeometricElementProps): Promise<void>;
     // (undocumented)
     protected getElementProps(placement: PlacementProps): GeometricElementProps | undefined;
     // (undocumented)
