@@ -10,27 +10,27 @@ import { Content, DEFAULT_KEYS_BATCH_SIZE, Descriptor, Item, KeySet } from "@itw
 import { createRandomECInstanceKey, createRandomTransientId, createTestContentDescriptor } from "@itwin/presentation-common/lib/cjs/test";
 import { HiliteSetProvider } from "../../presentation-frontend/selection/HiliteSetProvider";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
-import { from, Observable } from "rxjs";
 import sinon from "sinon";
 import { Presentation } from "../../presentation-frontend/Presentation";
+import { GetContentRequestOptions, MultipleValuesRequestOptions, PresentationManager } from "../../presentation-frontend";
 
 describe("HiliteSetProvider", () => {
   const imodelMock = moq.Mock.ofType<IModelConnection>();
-  const fakeGetContentObservable = sinon.stub<any[], Promise<{ total: number; descriptor: Descriptor; items: Observable<Item> }>>();
+  const fakeGetContentIterator = sinon.stub<
+    [GetContentRequestOptions & MultipleValuesRequestOptions],
+    Promise<{ descriptor: Descriptor; total: number; items: AsyncIterableIterator<Item> } | undefined>
+  >();
 
-  beforeEach(() => {
-    sinon.stub(Presentation, "presentation").get(() => ({
-      get internal() {
-        return {
-          getContentObservable: fakeGetContentObservable,
-        };
-      },
-    }));
+  before(() => {
+    const managerMock = sinon.createStubInstance(PresentationManager, {
+      getContentIterator: fakeGetContentIterator,
+    });
+    Presentation.setPresentationManager(managerMock);
   });
 
   beforeEach(() => {
     imodelMock.reset();
-    fakeGetContentObservable.reset();
+    fakeGetContentIterator.reset();
   });
 
   describe("create", () => {
@@ -52,31 +52,31 @@ describe("HiliteSetProvider", () => {
       const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
         new Item([createRandomECInstanceKey()], "", "", undefined, {}, {}, [], {}), // element
       ]);
-      fakeGetContentObservable.resolves({ total: 1, descriptor: resultContent.descriptor, items: from(resultContent.contentSet) });
+      fakeGetContentIterator.callsFake(async () => ({ total: 1, descriptor: resultContent.descriptor, items: iterate(resultContent.contentSet) }));
       const keys = new KeySet([createRandomECInstanceKey()]);
 
       await provider.getHiliteSet(keys);
       // records are fetched for the first request
-      expect(fakeGetContentObservable).to.be.calledOnce;
+      expect(fakeGetContentIterator).to.be.calledOnce;
 
       await provider.getHiliteSet(keys);
       // keys didn't change - result returned from cache
-      expect(fakeGetContentObservable).to.be.calledOnce;
+      expect(fakeGetContentIterator).to.be.calledOnce;
 
       keys.add(createRandomECInstanceKey());
       await provider.getHiliteSet(keys);
       // keys did change - result fetched again
-      expect(fakeGetContentObservable).to.be.calledTwice;
+      expect(fakeGetContentIterator).to.be.calledTwice;
 
       await provider.getHiliteSet(keys);
       // keys didn't change - result returned from cache
-      expect(fakeGetContentObservable).to.be.calledTwice;
+      expect(fakeGetContentIterator).to.be.calledTwice;
     });
 
     it("creates result for transient element keys", async () => {
       const transientKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: createRandomTransientId() };
 
-      fakeGetContentObservable.withArgs(sinon.match((opts: any) => opts.keys.isEmpty)).resolves(undefined);
+      fakeGetContentIterator.withArgs(sinon.match((opts: GetContentRequestOptions) => opts.keys.isEmpty)).resolves(undefined);
 
       const result = await provider.getHiliteSet(new KeySet([transientKey]));
       expect(result.models).to.be.undefined;
@@ -91,8 +91,10 @@ describe("HiliteSetProvider", () => {
         new Item([resultKey], "", "", undefined, {}, {}, [], {}), // element
       ]);
 
-      fakeGetContentObservable.onFirstCall().resolves({ total: 1, descriptor: resultContent.descriptor, items: from(resultContent.contentSet) });
-      fakeGetContentObservable.onSecondCall().resolves(undefined);
+      fakeGetContentIterator
+        .onFirstCall()
+        .callsFake(async () => ({ total: 1, descriptor: resultContent.descriptor, items: iterate(resultContent.contentSet) }));
+      fakeGetContentIterator.onSecondCall().resolves(undefined);
 
       const result = await provider.getHiliteSet(new KeySet([persistentKey]));
       expect(result.models).to.be.undefined;
@@ -105,8 +107,10 @@ describe("HiliteSetProvider", () => {
       const resultKey = createRandomECInstanceKey();
       const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [new Item([resultKey], "", "", undefined, {}, {}, [], { isModel: true })]);
 
-      fakeGetContentObservable.onFirstCall().resolves({ total: 1, descriptor: resultContent.descriptor, items: from(resultContent.contentSet) });
-      fakeGetContentObservable.onSecondCall().resolves(undefined);
+      fakeGetContentIterator
+        .onFirstCall()
+        .callsFake(async () => ({ total: 1, descriptor: resultContent.descriptor, items: iterate(resultContent.contentSet) }));
+      fakeGetContentIterator.onSecondCall().resolves(undefined);
 
       const result = await provider.getHiliteSet(new KeySet([persistentKey]));
       expect(result.models).to.deep.eq([resultKey.id]);
@@ -120,8 +124,10 @@ describe("HiliteSetProvider", () => {
       const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
         new Item([resultKey], "", "", undefined, {}, {}, [], { isSubCategory: true }),
       ]);
-      fakeGetContentObservable.onFirstCall().resolves({ total: 1, descriptor: resultContent.descriptor, items: from(resultContent.contentSet) });
-      fakeGetContentObservable.onSecondCall().resolves(undefined);
+      fakeGetContentIterator
+        .onFirstCall()
+        .callsFake(async () => ({ total: 1, descriptor: resultContent.descriptor, items: iterate(resultContent.contentSet) }));
+      fakeGetContentIterator.onSecondCall().resolves(undefined);
 
       const result = await provider.getHiliteSet(new KeySet([persistentKey]));
       expect(result.models).to.be.undefined;
@@ -141,8 +147,10 @@ describe("HiliteSetProvider", () => {
         new Item([resultSubCategoryKey], "", "", undefined, {}, {}, [], { isSubCategory: true }),
         new Item([resultElementKey], "", "", undefined, {}, {}, [], {}), // element
       ]);
-      fakeGetContentObservable.onFirstCall().resolves({ total: 1, descriptor: resultContent.descriptor, items: from(resultContent.contentSet) });
-      fakeGetContentObservable.onSecondCall().resolves(undefined);
+      fakeGetContentIterator
+        .onFirstCall()
+        .callsFake(async () => ({ total: 1, descriptor: resultContent.descriptor, items: iterate(resultContent.contentSet) }));
+      fakeGetContentIterator.onSecondCall().resolves(undefined);
 
       const result = await provider.getHiliteSet(new KeySet([transientKey, persistentKey]));
       expect(result.models).to.deep.eq([resultModelKey.id]);
@@ -162,10 +170,10 @@ describe("HiliteSetProvider", () => {
       const resultContent1 = new Content(createTestContentDescriptor({ fields: [] }), [
         new Item([elementKey], "", "", undefined, {}, {}, [], {}), // element
       ]);
-      fakeGetContentObservable
-        .withArgs(sinon.match((opts: any) => opts.keys.size === DEFAULT_KEYS_BATCH_SIZE))
+      fakeGetContentIterator
+        .withArgs(sinon.match((opts: GetContentRequestOptions) => opts.keys.size === DEFAULT_KEYS_BATCH_SIZE))
         .onFirstCall()
-        .resolves({ total: 1, descriptor: resultContent1.descriptor, items: from(resultContent1.contentSet) })
+        .callsFake(async () => ({ total: 1, descriptor: resultContent1.descriptor, items: iterate(resultContent1.contentSet) }))
         // second request returns no content
         .onSecondCall()
         .resolves(undefined);
@@ -177,9 +185,9 @@ describe("HiliteSetProvider", () => {
         new Item([subCategoryKey], "", "", undefined, {}, {}, [], { isSubCategory: true }),
         new Item([modelKey], "", "", undefined, {}, {}, [], { isModel: true }),
       ]);
-      fakeGetContentObservable
-        .withArgs(sinon.match((opts: any) => opts.keys.size === 1))
-        .resolves({ total: 2, descriptor: resultContent2.descriptor, items: from(resultContent2.contentSet) });
+      fakeGetContentIterator
+        .withArgs(sinon.match((opts: GetContentRequestOptions) => opts.keys.size === 1))
+        .callsFake(async () => ({ total: 2, descriptor: resultContent2.descriptor, items: iterate(resultContent2.contentSet) }));
 
       const result = await provider.getHiliteSet(new KeySet(inputKeys));
       expect(result.models).to.deep.eq([modelKey.id]);
@@ -202,13 +210,13 @@ describe("HiliteSetProvider", () => {
       const resultContent1 = new Content(createTestContentDescriptor({ fields: [] }), items.slice(0, 1000));
       const resultContent2 = new Content(createTestContentDescriptor({ fields: [] }), items.slice(1000));
 
-      fakeGetContentObservable
-        .withArgs(sinon.match((opts: any) => !opts.paging?.start))
-        .resolves({ total: 1001, descriptor: resultContent1.descriptor, items: from(resultContent1.contentSet) });
+      fakeGetContentIterator
+        .withArgs(sinon.match((opts: MultipleValuesRequestOptions) => !opts.paging?.start))
+        .callsFake(async () => ({ total: 1001, descriptor: resultContent1.descriptor, items: iterate(resultContent1.contentSet) }));
 
-      fakeGetContentObservable
-        .withArgs(sinon.match((opts: any) => !!opts.paging?.start))
-        .resolves({ total: 1001, descriptor: resultContent2.descriptor, items: from(resultContent2.contentSet) });
+      fakeGetContentIterator.withArgs(sinon.match((opts: MultipleValuesRequestOptions) => !!opts.paging?.start)).callsFake(async () => {
+        return { total: 1001, descriptor: resultContent2.descriptor, items: iterate(resultContent2.contentSet) };
+      });
 
       const iterator = provider.getHiliteSetIterator(new KeySet([{ id: "0x1", className: "TestElement" }]));
       let index = 0;
@@ -224,3 +232,9 @@ describe("HiliteSetProvider", () => {
     });
   });
 });
+
+async function* iterate<T>(items: T[]): AsyncIterableIterator<T> {
+  for (const item of items) {
+    yield item;
+  }
+}

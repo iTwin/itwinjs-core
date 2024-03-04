@@ -6,13 +6,13 @@
  * @module UnifiedSelection
  */
 
-import { concat, filter, from, map, mergeMap, Observable, of, shareReplay, toArray } from "rxjs";
+import { from, Observable, shareReplay } from "rxjs";
 import { eachValueFrom } from "rxjs-for-await";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ContentFlags, DEFAULT_KEYS_BATCH_SIZE, DefaultContentDisplayTypes, DescriptorOverrides, Item, Key, KeySet, Ruleset } from "@itwin/presentation-common";
-import { TRANSIENT_ELEMENT_CLASSNAME } from "./SelectionManager";
 import { Presentation } from "../Presentation";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "./SelectionManager";
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -94,32 +94,46 @@ export class HiliteSetProvider {
     if (!this._cache || this._cache.keysGuid !== selection.guid) {
       this._cache = {
         keysGuid: selection.guid,
-        observable: this.createHiliteSetObservable(selection).pipe(shareReplay({ refCount: true })),
+        observable: from(this.createHiliteSetIterator(selection)).pipe(shareReplay({ refCount: true })),
       };
     }
 
     return eachValueFrom(this._cache.observable);
   }
 
-  private createHiliteSetObservable(selection: Readonly<KeySet>): Observable<HiliteSet> {
+  private async *createHiliteSetIterator(selection: Readonly<KeySet>) {
     const { keys, transientIds } = this.handleTransientKeys(selection);
     const { options, keyBatches } = this.getContentOptions(keys);
 
-    return concat(
-      transientIds.length ? of({ elements: transientIds }) : of(),
-      from(keyBatches).pipe(
-        mergeMap(async (batch) =>
-          Presentation.presentation.internal.getContentObservable({
-            ...options,
-            keys: batch,
-          }),
-        ),
-        filter((x): x is Exclude<typeof x, undefined> => !!x),
-        mergeMap(({ items }) => items),
-        toArray(),
-        map((items) => this.createHiliteSet(items)),
-      ),
-    );
+    if (transientIds.length !== 0) {
+      yield { elements: transientIds };
+    }
+
+    for (const batch of keyBatches) {
+      let loadedItems = 0;
+      while (true) {
+        const content = await Presentation.presentation.getContentIterator({
+          ...options,
+          paging: { start: loadedItems, size: CONTENT_SET_PAGE_SIZE },
+          keys: batch,
+        });
+        if (!content) {
+          break;
+        }
+
+        const items = new Array<Item>();
+        for await (const item of content.items) {
+          items.push(item);
+        }
+        const result = this.createHiliteSet(items);
+        yield result;
+
+        loadedItems += items.length;
+        if (loadedItems >= content.total) {
+          break;
+        }
+      }
+    }
   }
 
   private createHiliteSet(records: Item[]): HiliteSet {
@@ -174,6 +188,8 @@ export class HiliteSetProvider {
     };
   }
 }
+
+const CONTENT_SET_PAGE_SIZE = 1000;
 
 const isModelRecord = (rec: Item) => rec.extendedData && rec.extendedData.isModel;
 

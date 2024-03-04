@@ -61,9 +61,6 @@ import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
 import { StreamedResponseGenerator } from "./StreamedResponseGenerator";
-import { Observable } from "rxjs";
-import { eachValueFrom } from "rxjs-for-await";
-import { PresentationManagerInternal } from "./PresentationManagerInternal";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
@@ -250,13 +247,6 @@ export class PresentationManager implements IDisposable {
   }
   public set activeLocale(locale: string | undefined) {
     this._localizationHelper.locale = locale;
-  }
-
-  /** @internal */
-  public get internal(): PresentationManagerInternal {
-    return new PresentationManagerInternal({
-      getContentObservable: this.getContentObservable.bind(this),
-    });
   }
 
   public dispose() {
@@ -535,9 +525,9 @@ export class PresentationManager implements IDisposable {
     return this._requestsHandler.getContentSetSize(rpcOptions);
   }
 
-  private async getContentObservable(
+  private async getContentIteratorInternal(
     requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
-  ): Promise<{ descriptor: Descriptor; total: number; items: Observable<Item> } | undefined> {
+  ): Promise<{ descriptor: Descriptor; total: number; items: AsyncIterableIterator<Item> } | undefined> {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
       ...options,
@@ -595,7 +585,7 @@ export class PresentationManager implements IDisposable {
     });
 
     return {
-      ...(await generator.createObservableResponse()),
+      ...(await generator.createAsyncIteratorResponse()),
       descriptor,
     };
   }
@@ -605,16 +595,13 @@ export class PresentationManager implements IDisposable {
     requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
   ): Promise<{ descriptor: Descriptor; total: number; items: AsyncIterableIterator<Item> } | undefined> {
     this.startIModelInitialization(requestOptions.imodel);
-    const response = await this.getContentObservable(requestOptions);
+    const response = await this.getContentIteratorInternal(requestOptions);
     if (!response) {
       return undefined;
     }
 
     await this.ensureIModelInitialized(requestOptions.imodel);
-    return {
-      ...response,
-      items: eachValueFrom(response.items),
-    };
+    return response;
   }
 
   /**

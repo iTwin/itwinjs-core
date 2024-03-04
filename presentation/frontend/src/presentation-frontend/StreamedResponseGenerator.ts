@@ -24,21 +24,12 @@ export type StreamedResponseGeneratorProps<TItem> = MultipleValuesRequestOptions
 export class StreamedResponseGenerator<TPagedResponseItem> {
   constructor(private readonly _props: StreamedResponseGeneratorProps<TPagedResponseItem>) {}
 
-  /** Creates a response with the total item count and an observable. */
-  public async createObservableResponse(): Promise<{ total: number; items: Observable<TPagedResponseItem> }> {
+  /** Creates a response with the total item count and an async iterator. */
+  public async createAsyncIteratorResponse(): Promise<{ total: number; items: AsyncIterableIterator<TPagedResponseItem> }> {
     const firstPage = await this.fetchFirstPage();
     return {
       total: firstPage.total,
-      items: this.getRemainingPages(firstPage).pipe(concatAll()),
-    };
-  }
-
-  /** Creates a response with the total item count and an async iterator. */
-  public async createAsyncIteratorResponse(): Promise<{ total: number; items: AsyncIterableIterator<TPagedResponseItem> }> {
-    const response = await this.createObservableResponse();
-    return {
-      ...response,
-      items: eachValueFrom(response.items),
+      items: eachValueFrom(this.getRemainingPages(firstPage).pipe(concatAll())),
     };
   }
 
