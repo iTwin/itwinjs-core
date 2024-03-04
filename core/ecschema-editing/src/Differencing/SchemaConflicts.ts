@@ -65,8 +65,15 @@ export enum ConflictCode {
  * @internal
  */
 export interface SchemaDifferenceConflict {
+  /**
+   * The name of the schema type which is "Schema" for a conflict on the schema, on schema items
+   * or objects that are related to schema items (properties, relationship constraints) it is the
+   * name of the related schema item.
+   */
+  readonly schemaType: string;
+
   /** The name of the schema item the conflict appears on. */
-  readonly item: string;
+  readonly itemName?: string;
 
   /** Optional path what on the item was conflicting. */
   readonly path?: string;
