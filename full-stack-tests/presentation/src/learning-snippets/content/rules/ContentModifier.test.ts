@@ -89,9 +89,9 @@ describe("Learning Snippets", () => {
           .and.to.have.lengthOf(6);
         const calculatedField = tryGetFieldByLabel(content!.descriptor.fields, "Calculated");
 
-        const items = [await content!.items.next(), await content!.items.next()];
-        expect(items[0].value.displayValues[calculatedField!.name]).to.be.undefined;
-        expect(items[1].value.displayValues[calculatedField!.name]).to.eq("PREFIX_Uncategorized");
+        const items = await collect(content!.items);
+        expect(items[0].displayValues[calculatedField!.name]).to.be.undefined;
+        expect(items[1].displayValues[calculatedField!.name]).to.eq("PREFIX_Uncategorized");
       });
 
       it("uses `requiredSchemas` attribute", async () => {
