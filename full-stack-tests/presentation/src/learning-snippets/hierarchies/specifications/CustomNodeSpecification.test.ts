@@ -8,6 +8,7 @@ import { Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
+import { collect } from "../../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -58,7 +59,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Verify that node with correct type is returned
-        const rootNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const rootNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(rootNodes)
           .to.have.lengthOf(1)
           .and.to.containSubset([
@@ -66,7 +67,9 @@ describe("Learning Snippets", () => {
               key: { type: "T_ROOT_NODE" },
             },
           ]);
-        const childNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
+        const childNodes = await Presentation.presentation
+          .getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key })
+          .then(async (x) => collect(x.items));
         expect(childNodes)
           .to.have.lengthOf(1)
           .and.to.containSubset([
@@ -98,7 +101,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Verify that node with correct label is returned
-        const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(nodes)
           .to.have.lengthOf(1)
           .and.to.containSubset([
@@ -131,7 +134,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Verify that node with correct description is returned
-        const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(nodes)
           .to.have.lengthOf(1)
           .and.to.containSubset([
@@ -165,7 +168,7 @@ describe("Learning Snippets", () => {
 
         // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.CustomNodeSpecification.ImageId.Result
         // Verify that node with correct image identifier is returned
-        const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(nodes)
           .to.have.lengthOf(1)
           .and.to.containSubset([
@@ -211,7 +214,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Verify the Parent node is not displayed
-        const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(nodes)
           .to.have.lengthOf(1)
           .and.to.containSubset([

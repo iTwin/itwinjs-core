@@ -53,16 +53,16 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Ensure that all model elements are selected
-      const physicalModelContent = await Presentation.presentation.getContent({
+      const physicalModelContent = await Presentation.presentation.getContentIterator({
         imodel,
         rulesetOrId: ruleset,
         keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
         descriptor: {},
       });
-      expect(physicalModelContent!.contentSet.length).to.eq(62);
+      expect(physicalModelContent?.total).to.eq(62);
 
       // Ensure that non-physical model elements are not selected
-      const definitionModelContent = await Presentation.presentation.getContent({
+      const definitionModelContent = await Presentation.presentation.getContentIterator({
         imodel,
         rulesetOrId: ruleset,
         keys: new KeySet([{ className: "BisCore:DefinitionModel", id: "0x16" }]),
@@ -106,13 +106,13 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Ensure that all model elements are selected
-      const physicalModelContent = await Presentation.presentation.getContent({
+      const physicalModelContent = await Presentation.presentation.getContentIterator({
         imodel,
         rulesetOrId: ruleset,
         keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
         descriptor: {},
       });
-      expect(physicalModelContent!.contentSet.length).to.eq(1);
+      expect(physicalModelContent?.total).to.eq(1);
     });
   });
 });

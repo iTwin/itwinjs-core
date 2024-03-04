@@ -8,6 +8,7 @@ import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../IntegrationTests";
 import { printRuleset } from "../Utils";
+import { collect } from "../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -54,15 +55,14 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        const content = await Presentation.presentation.getContent({
+        const content = await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:Element", id: "0x61" }]),
           descriptor: {},
         });
-        expect(content?.contentSet)
-          .to.be.lengthOf(1)
-          .and.to.not.containSubset([{ extendedData: { iconName: "external-source-icon" } }]);
+        expect(content!.total).to.eq(1);
+        expect((await content!.items.next()).value).not.to.containSubset({ extendedData: { iconName: "external-source-icon" } });
       });
 
       it("uses `condition` attribute", async () => {
@@ -101,10 +101,12 @@ describe("Learning Snippets", () => {
 
         // __PUBLISH_EXTRACT_START__ Presentation.ExtendedDataRule.Condition.Result
         // Ensure only "B" node has `extendedData` property.
-        const nodes = await Presentation.presentation.getNodes({
-          imodel,
-          rulesetOrId: ruleset,
-        });
+        const nodes = await Presentation.presentation
+          .getNodesIterator({
+            imodel,
+            rulesetOrId: ruleset,
+          })
+          .then(async (x) => collect(x.items));
         expect(nodes)
           .to.be.lengthOf(2)
           .and.to.containSubset([
@@ -154,10 +156,12 @@ describe("Learning Snippets", () => {
 
         // __PUBLISH_EXTRACT_START__ Presentation.ExtendedDataRule.Items.Result
         // Ensure node has `extendedData` property containing items defined in rule.
-        const nodes = await Presentation.presentation.getNodes({
-          imodel,
-          rulesetOrId: ruleset,
-        });
+        const nodes = await Presentation.presentation
+          .getNodesIterator({
+            imodel,
+            rulesetOrId: ruleset,
+          })
+          .then(async (x) => collect(x.items));
         expect(nodes)
           .to.be.lengthOf(1)
           .and.to.containSubset([
