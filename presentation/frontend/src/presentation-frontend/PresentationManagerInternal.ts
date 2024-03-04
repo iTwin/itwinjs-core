@@ -10,7 +10,7 @@ import { Descriptor, Item } from "@itwin/presentation-common";
  * Provider of PresentationManager functionality.
  * @internal
  */
-export interface PresentationManagerProvider {
+export interface PresentationManagerInternalImpl {
   getContentObservable(
     requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
   ): Promise<{ descriptor: Descriptor; total: number; items: Observable<Item> } | undefined>;
@@ -20,16 +20,12 @@ export interface PresentationManagerProvider {
  * This class contains additional functionality of PresentationManager that shouldn't be exposed to the API.
  * @internal
  */
-export class PresentationManagerExtensions {
-  private static _provider?: PresentationManagerProvider;
+export class PresentationManagerInternal {
+  constructor(private readonly _impl: PresentationManagerInternalImpl) {}
 
-  public static set provider(provider: PresentationManagerProvider) {
-    this._provider = provider;
-  }
-
-  public static async getContentObservable(
+  public async getContentObservable(
     requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
   ): Promise<{ descriptor: Descriptor; total: number; items: Observable<Item> } | undefined> {
-    return this._provider!.getContentObservable(requestOptions);
+    return this._impl.getContentObservable(requestOptions);
   }
 }

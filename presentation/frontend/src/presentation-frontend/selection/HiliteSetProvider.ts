@@ -12,7 +12,7 @@ import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ContentFlags, DEFAULT_KEYS_BATCH_SIZE, DefaultContentDisplayTypes, DescriptorOverrides, Item, Key, KeySet, Ruleset } from "@itwin/presentation-common";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./SelectionManager";
-import { PresentationManagerExtensions } from "../PresentationManagerExtensions";
+import { Presentation } from "../Presentation";
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -109,7 +109,7 @@ export class HiliteSetProvider {
       transientIds.length ? of({ elements: transientIds }) : of(),
       from(keyBatches).pipe(
         mergeMap(async (batch) =>
-          PresentationManagerExtensions.getContentObservable({
+          Presentation.presentation.internal.getContentObservable({
             ...options,
             keys: batch,
           }),

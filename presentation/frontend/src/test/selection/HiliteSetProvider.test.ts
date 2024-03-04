@@ -8,20 +8,24 @@ import * as moq from "typemoq";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Content, DEFAULT_KEYS_BATCH_SIZE, Descriptor, Item, KeySet } from "@itwin/presentation-common";
 import { createRandomECInstanceKey, createRandomTransientId, createTestContentDescriptor } from "@itwin/presentation-common/lib/cjs/test";
-import { HiliteSetProvider } from "../../presentation-frontend";
+import { HiliteSetProvider } from "../../presentation-frontend/selection/HiliteSetProvider";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
 import { from, Observable } from "rxjs";
 import sinon from "sinon";
-import { PresentationManagerExtensions } from "../../presentation-frontend/PresentationManagerExtensions";
+import { Presentation } from "../../presentation-frontend/Presentation";
 
 describe("HiliteSetProvider", () => {
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const fakeGetContentObservable = sinon.stub<any[], Promise<{ total: number; descriptor: Descriptor; items: Observable<Item> }>>();
 
-  before(() => {
-    PresentationManagerExtensions.provider = {
-      getContentObservable: fakeGetContentObservable,
-    };
+  beforeEach(() => {
+    sinon.stub(Presentation, "presentation").get(() => ({
+      get internal() {
+        return {
+          getContentObservable: fakeGetContentObservable,
+        };
+      },
+    }));
   });
 
   beforeEach(() => {

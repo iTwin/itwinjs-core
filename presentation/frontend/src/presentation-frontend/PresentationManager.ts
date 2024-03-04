@@ -63,7 +63,7 @@ import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
 import { StreamedResponseGenerator } from "./StreamedResponseGenerator";
 import { Observable } from "rxjs";
 import { eachValueFrom } from "rxjs-for-await";
-import { PresentationManagerExtensions } from "./PresentationManagerExtensions";
+import { PresentationManagerInternal } from "./PresentationManagerInternal";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
@@ -242,10 +242,6 @@ export class PresentationManager implements IDisposable {
       this._clearEventListener = IpcApp.addListener(PresentationIpcEvents.Update, this.onUpdate);
       this._ipcRequestsHandler = props?.ipcRequestsHandler ?? new IpcRequestsHandler(this._requestsHandler.clientId);
     }
-
-    PresentationManagerExtensions.provider = {
-      getContentObservable: this.getContentObservable.bind(this),
-    };
   }
 
   /** Get / set active locale used for localizing presentation data */
@@ -254,6 +250,13 @@ export class PresentationManager implements IDisposable {
   }
   public set activeLocale(locale: string | undefined) {
     this._localizationHelper.locale = locale;
+  }
+
+  /** @internal */
+  public get internal(): PresentationManagerInternal {
+    return new PresentationManagerInternal({
+      getContentObservable: this.getContentObservable.bind(this),
+    });
   }
 
   public dispose() {
