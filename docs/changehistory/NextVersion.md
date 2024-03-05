@@ -5,12 +5,14 @@ publish: false
 
 Table of contents:
 
-- [Display](#display)
-  - [Seafloor terrain](#seafloor-terrain)
-- [Electron 29 support](#electron-29-support)
-- [Editor](#editor)
-- [Presentation](#presentation)
-  - [Deprecation of async array results in favor of async iterators](#deprecation-of-async-array-results-in-favor-of-async-iterators)
+- [NextVersion](#nextversion)
+  - [Display](#display)
+    - [Seafloor terrain](#seafloor-terrain)
+  - [Electron 29 support](#electron-29-support)
+  - [Editor](#editor)
+  - [Lock Control](#lock-control)
+  - [Presentation](#presentation)
+    - [Deprecation of async array results in favor of async iterators](#deprecation-of-async-array-results-in-favor-of-async-iterators)
 
 ## Display
 
@@ -48,6 +50,10 @@ Changes to @beta [BasicManipulationCommandIpc]($editor-common) class:
 Changes to @beta [CreateElementWithDynamicsTool]($editor-frontend) class:
 
 - [CreateElementWithDynamicsTool.doCreateElement]($editor-frontend) no longer takes an optional [ElementGeometryBuilderParams]($common) as it will be set on the supplied [GeometricElementProps]($common).
+
+## Lock Control
+
+Changes to @beta [LockControl]($backend) class to make releaseAllLocks @internal. Should only be called internally after pushing or abandoning all changes.
 
 ## Presentation
 

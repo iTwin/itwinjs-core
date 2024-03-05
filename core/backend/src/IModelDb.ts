@@ -151,6 +151,8 @@ export interface LockControl {
   }): Promise<void>;
   /**
    * Release all locks currently held by this Briefcase from the lock server.
+   * Not possible to release locks unless push or abandon all changes. Should only be called internally.
+   * @internal
    */
   releaseAllLocks(): Promise<void>;
 }

@@ -4037,6 +4037,7 @@ export interface LockControl {
     holdsExclusiveLock(id: Id64String): boolean;
     holdsSharedLock(id: Id64String): boolean;
     readonly isServerBased: boolean;
+    // @internal
     releaseAllLocks(): Promise<void>;
 }
 
