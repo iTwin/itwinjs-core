@@ -31,6 +31,11 @@ const returnColor = `
 const applyInstanceColor = `
   color.rgb = mix(color.rgb, a_instanceRgba.rgb / 255.0, u_applyInstanceColor * extractInstanceBit(kOvrBit_Rgb));
   color.a = mix(color.a, a_instanceRgba.a / 255.0, u_applyInstanceColor * extractInstanceBit(kOvrBit_Alpha));
+
+  tc = vec2(0.0, 0.125);
+  lutColor = TEXTURE(u_vertLUT, tc);
+  lutColor.rgb /= max(0.0001, lutColor.a);
+  color = (u_shaderFlags[kShaderBit_NonUniformColor] ? lutColor : u_color);
 `;
 
 function getComputeColor(vert: VertexShaderBuilder): string {

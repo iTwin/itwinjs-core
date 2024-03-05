@@ -18,6 +18,7 @@ float extractInstanceBit(uint flag) { return extractNthBit(a_instanceOverrides.r
 `;
 
 const computeInstancedModelMatrixRTC = `
+  isInstanced = true;
   if (g_isAreaPattern) {
     vec2 spacing = u_patternParams.yz;
     float scale = u_patternParams.w;

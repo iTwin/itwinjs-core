@@ -44,6 +44,8 @@ export interface InstancedGraphicParams {
 
   /** If defined, the combined range of all instances of the geometry. */
   readonly range?: Range3d;
+
+  readonly texAtlasIndices?: Uint8Array;
 }
 
 /** Parameters for creating a [[RenderGraphic]] representing a patterned area.

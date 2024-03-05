@@ -69,6 +69,7 @@ import { ElementIdFromSourceAspectIdTool, SourceAspectIdFromElementIdTool } from
 import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
 import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecoration";
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
+import { MarkerEffect } from "./effects/Marker";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -150,6 +151,7 @@ export class FrontendDevTools {
       MapBaseColorTool,
       MapBaseTransparencyTool,
       MapBaseVisibilityTool,
+      MarkerEffect,
       MeasureTileLoadTimeTool,
       OverrideSubCategoryTool,
       OverrideSubCategoryPriorityTool,

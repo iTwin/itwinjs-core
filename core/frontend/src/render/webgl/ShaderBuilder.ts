@@ -753,6 +753,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
     const computeQPos = this.get(VertexShaderComponent.ComputeQuantizedPosition) ?? "return a_pos;";
     prelude.addFunction("vec3 computeQuantizedPosition()", computeQPos);
     main.addline("  vec3 qpos = computeQuantizedPosition();");
+    main.addline("  bool isInstanced = false;");
 
     // Initialization logic that should occur at start of main() - primarily global variables whose values
     // are too complex to compute inline or which depend on uniforms and/or other globals.

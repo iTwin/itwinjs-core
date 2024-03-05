@@ -12,6 +12,27 @@ import { IModelApp } from "../IModelApp";
 import { Viewport } from "../Viewport";
 import { ReadonlyTileUserSet, Tile, TileContent, TileRequestChannel, TileTree, TileUser } from "./internal";
 
+// Set up IDB here
+let db;
+const requestDB = self.indexedDB.open("IDB", 1);
+requestDB.onerror = () => {
+  console.log("Error opening up IDBL");
+};
+
+requestDB.onsuccess = (event) => {
+  console.log("Success opening up IDB");
+  db = event.target.result;
+};
+
+requestDB.onupgradeneeded = (event) => {
+  db = event.target.result;
+  const initialObjectStore = db.createObjectStore("TileResponse", { keyPath: "tileContentID" });
+  console.log("create initial data store");
+
+  initialObjectStore.createIndex("responseData", "responseData", {unique: false});
+  initialObjectStore.createIndex("timeOfStorage", "timeOfStorage", {unique: false});
+};
+
 /** Represents a pending or active request to load the contents of a [[Tile]]. The request coordinates with the [[Tile.requestContent]] to obtain the raw content and
  * [[Tile.readContent]] to convert the result into a [[RenderGraphic]]. TileRequests are created internally as needed; it is never necessary or useful for external code to create them.
  * @public
@@ -117,6 +138,8 @@ export class TileRequest {
     }
 
     return this.handleResponse(response);
+
+    // Here, go get cached response data and pass along instead of returning above (if we want to obviously)
   }
 
   /** Cancels this request. This leaves the associated Tile's state untouched.
@@ -192,6 +215,8 @@ export class TileRequest {
     } catch (_err) {
       this.setFailed();
     }
+
+    // Here, cache content if we want to
   }
 }
 
