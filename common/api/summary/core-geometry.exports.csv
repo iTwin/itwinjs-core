@@ -154,7 +154,6 @@ public;IndexedXYZCollectionInterval
 public;IndexedXYZCollectionPolygonOps
 public;IntegratedSpiral3d 
 public;IntegratedSpiralTypeName = "clothoid" | "bloss" | "biquadratic" | "cosine" | "sine"
-internal;interpolateColor(color0: number, fraction: number, color1: number): number
 public;InterpolationCurve3d 
 public;InterpolationCurve3dOptions
 public;InterpolationCurve3dProps

@@ -184,37 +184,8 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     if (this.normal && other.normal && index0 < other.normal.length && index1 < other.normal.length)
       this.normal.pushInterpolatedFromGrowableXYZArray(other.normal, index0, fraction, index1);
     if (this.color && other.color && index0 < other.color.length && index1 < other.color.length)
-      this.color.push(interpolateColor(other.color[index0], fraction, other.color[index1]));
+      this.color.push(Geometry.interpolateColor(other.color[index0], fraction, other.color[index1]));
   }
-}
-/**
- * Interpolate byte.
- * * Extract the single byte for red, green, blue, or alpha: shift to right by `shiftBits` and mask off the low 8 bits.
- * * Interpolate the number, truncate to floor, and mask off the low 8 bits.
- * * Move number back to its correct byte position in RGBA: shift to left by `shiftBits`.
- * * When `fraction` is within 0..1, the output number is within 0..255.
- * @internal
- */
-function interpolateByte(color0: number, fraction: number, color1: number, shiftBits: number): number {
-  color0 = (color0 >>> shiftBits) & 0xFF;
-  color1 = (color1 >>> shiftBits) & 0xFF;
-  const color = Math.floor(color0 + fraction * (color1 - color0)) & 0xFF;
-  return color << shiftBits;
-}
-/**
- * Interpolate each byte of color0 and color1 as integers.
- * @param color0 32-bit RGBA color0
- * @param fraction fractional position. This is clamped to 0..1 to prevent byte values outside their 0..255 range.
- * @param color1 32-bit RGBA color1
- * @internal
- */
-export function interpolateColor(color0: number, fraction: number, color1: number): number {
-  fraction = Geometry.clamp(fraction, 0, 1); // do not allow fractions outside the individual byte ranges
-  const byte0 = interpolateByte(color0, fraction, color1, 0); // red
-  const byte1 = interpolateByte(color0, fraction, color1, 8); // green
-  const byte2 = interpolateByte(color0, fraction, color1, 16); // blue
-  const byte3 = interpolateByte(color0, fraction, color1, 24); // alpha
-  return (byte0 | byte1 | byte2 | byte3);
 }
 /**
  * An `IndexedPolyfaceSubsetVisitor` is an `IndexedPolyfaceVisitor` which only visits a subset of facets in the polyface.
