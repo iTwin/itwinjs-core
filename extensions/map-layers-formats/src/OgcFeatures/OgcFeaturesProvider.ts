@@ -6,16 +6,14 @@
 import { MapCartoRectangle, MapLayerImageryProvider } from "@itwin/core-frontend";
 import { EsriPMS, EsriPMSProps, EsriRenderer, EsriSFS, EsriSFSProps, EsriSLS, EsriSLSProps, EsriSymbol } from "../ArcGisFeature/EsriSymbology";
 import { ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
-import { Matrix4d, Point3d } from "@itwin/core-geometry";
+import { Matrix4d, Point3d, Range2d } from "@itwin/core-geometry";
 import { ArcGisSymbologyRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer";
 import { ArcGisCanvasRenderer } from "../ArcGisFeature/ArcGisCanvasRenderer";
-import { ArcGisJsonFeatureReader } from "../ArcGisFeature/ArcGisJsonFeatureReader";
-import { ArcGisFeatureReader } from "../ArcGisFeature/ArcGisFeatureReader";
 import { base64StringToUint8Array, Logger } from "@itwin/core-bentley";
 import { OgcFeaturesReader } from "../ArcGisFeature/OgcFeaturesReader";
-import { samplePolygon } from "./GeoJsonSampleGeometries";
 import { ArcGisFeatureGeometryType } from "../ArcGisFeature/ArcGisFeatureQuery";
-
+import Flatbush from "flatbush";
+import * as Geojson from "geojson";
 const loggerCategory = "MapLayersFormats.OgcFeatures";
 
 /**  Provide tiles from a ESRI ArcGIS Feature service
@@ -24,15 +22,18 @@ const loggerCategory = "MapLayersFormats.OgcFeatures";
 export class OgcFeaturesProvider extends MapLayerImageryProvider {
 
   // Debug flags, should always be committed to FALSE !
-  private _drawDebugInfo = true;
+  private readonly _drawDebugInfo = false;
   /// ////////////////////////////
 
+  private readonly _spatialIdxNumItems = 1000;
+  private _spatialIdx: Flatbush|undefined;
   private _defaultSymbol: EsriSymbol|undefined;
   private _renderer: EsriRenderer|undefined;
 
   private static readonly _nbSubTiles = 2;     // Number of subtiles for a single axis
   public serviceJson: any;
-  private _data: any;
+  private _data: Geojson.FeatureCollection = {type: "FeatureCollection", features: []};
+  private readonly _singleRequest = true;
 
   private static readonly defaultPMS: EsriPMSProps = {
     type: "esriPMS",
@@ -90,10 +91,54 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     //   }
     // }
 
-    const url = "http://localhost:8081/collections/public.countries/items?limit=1000&f=geojson";
+    const url = `http://localhost:8081/collections/public.countries/items?limit=${this._spatialIdxNumItems}&f=geojson`;
     try {
       const response = await this.makeTileRequest(url);
       this._data = await response.json();
+      const datasetRange = new Range2d();
+      const buildPositionRange = (coords: Geojson.Position, range: Range2d) => range.extendXY(coords[0], coords[1]);
+      const buildPositionArrayRange = (coords: Geojson.Position[], range: Range2d) => coords.forEach((position) => buildPositionRange(position, range) );
+      const buildDoublePositionRange = (coords: Geojson.Position[][], range: Range2d) => coords.forEach((position) => buildPositionArrayRange(position, range) );
+      const buildTriplePositionRange = (coords: Geojson.Position[][][], range: Range2d) => coords.forEach((position) => buildDoublePositionRange(position, range) );
+
+      const readGeomCoords = (geom: Geojson.Geometry, range: Range2d) => {
+        if (geom.type === "Point")
+          buildPositionRange(geom.coordinates, range);
+        else if (geom.type === "LineString" || geom.type === "MultiPoint")
+          buildPositionArrayRange(geom.coordinates, range);
+        else if (geom.type === "Polygon" || geom.type === "MultiLineString")
+          buildDoublePositionRange(geom.coordinates, range);
+        else if (geom.type === "MultiPolygon" )
+          buildTriplePositionRange(geom.coordinates, range);
+      };
+
+      // this._spatialIdx = new Flatbush(this._spatialIdxNumItems);
+      if (this._data && Array.isArray(this._data.features)) {
+        this._spatialIdx = new Flatbush(this._data.features.length);
+        this._data.features.forEach((feature: Geojson.Feature) => {
+
+          if (feature.geometry.type === "LineString"
+          || feature.geometry.type === "MultiLineString"
+          || feature.geometry.type === "Point"
+          || feature.geometry.type === "MultiPoint"
+          || feature.geometry.type === "Polygon"
+          || feature.geometry.type === "MultiPolygon"
+          ) {
+            readGeomCoords(feature.geometry, datasetRange);
+            this._spatialIdx?.add(datasetRange.xLow, datasetRange.yLow, datasetRange.xHigh,datasetRange. yHigh);
+            datasetRange.setNull();
+          } else if (feature.geometry.type === "GeometryCollection") {
+            feature.geometry.geometries.forEach((geom) => {
+              readGeomCoords(geom, datasetRange);
+              this._spatialIdx?.add(datasetRange.xLow, datasetRange.yLow, datasetRange.xHigh,datasetRange. yHigh);
+            });
+            datasetRange.setNull();
+          }
+
+        });
+        this._spatialIdx.finish();
+      }
+
     } catch  {
       Logger.logError(loggerCategory, "Could not fetch OgcFeatures data.");
     }
@@ -113,7 +158,6 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
   }
 
   public override get tileSize(): number { return 512; }
-  // public override get tileSize(): number { return 100; }
 
   // We don't use this method inside this provider (see constructFeatureUrl), but since this is an abstract method, we need to define something
   public async constructUrl(_row: number, _column: number, _zoomLevel: number): Promise<string> {
@@ -158,23 +202,36 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
   }
 
   public override async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
-
+    const begin = performance.now();
     const canvas = document.createElement("canvas");
     canvas.width = this.tileSize;
     canvas.height = this.tileSize;
-
-    const extent4326Str = this.getEPSG4326ExtentString(row, column, zoomLevel, false);
     const extent4326 = this.getEPSG4326Extent(row, column, zoomLevel);
-    const cartoRange = MapCartoRectangle.fromDegrees(extent4326.longitudeLeft, extent4326.latitudeTop, extent4326.longitudeRight, extent4326.latitudeTop);
-    const url = `http://localhost:8081/collections/public.countries/items?f=geojson&bbox=${extent4326Str}&bbox-crs=http://www.opengis.net/def/crs/EPSG/0/4326&limit=1000`;
 
     let data: any;
-    try {
-      const response = await this.makeTileRequest(url);
-      data = await response.json();
-    } catch  {
-      Logger.logError(loggerCategory, "Could not fetch OgcFeatures data.");
+    const beginSpatialSearch = performance.now();
+    if (this._singleRequest && this._spatialIdx) {
+      const filteredData: Geojson.FeatureCollection = {type: this._data.type, features: []};
+
+      this._spatialIdx.search(extent4326.longitudeLeft, extent4326.latitudeBottom, extent4326.longitudeRight, extent4326.latitudeTop,
+        (index: number) => {
+          filteredData.features.push(this._data.features[index]);
+          return true;
+        });
+
+      data = filteredData;
+    } else {
+      const extent4326Str = this.getEPSG4326ExtentString(row, column, zoomLevel, false);
+      const url = `http://localhost:8081/collections/public.countries/items?f=geojson&bbox=${extent4326Str}&bbox-crs=http://www.opengis.net/def/crs/EPSG/0/4326&limit=1000`;
+
+      try {
+        const response = await this.makeTileRequest(url);
+        data = await response.json();
+      } catch  {
+        Logger.logError(loggerCategory, "Could not fetch OgcFeatures data.");
+      }
     }
+    const endSpatialSearch  = performance.now();
 
     const ctx = canvas.getContext("2d");
     if (ctx == null) {
@@ -192,16 +249,14 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
 
       // Create the renderer
       this._defaultSymbol = OgcFeaturesProvider.getDefaultSymbology("esriGeometryPolygon");
+      // const transfoRow = transfo!.toRows();
+      // ctx.setTransform(transfoRow[0][0], transfoRow[1][0], transfoRow[0][1], transfoRow[1][1], transfoRow[0][3], transfoRow[1][3]);
       const symbRenderer = ArcGisSymbologyRenderer.create(this._renderer, this._defaultSymbol!);
       const renderer = new ArcGisCanvasRenderer(ctx, symbRenderer, transfo);
+
       const featureReader  = new OgcFeaturesReader(this._settings);
 
-      // await featureReader.readAndRender(samplePolygon, renderer);
       await featureReader.readAndRender(data, renderer);
-      const cartoCenter = cartoRange.cartoCenter;
-      const transformedPoint = transfo!.multiplyPoint2d({ x: cartoCenter.longitudeDegrees, y: cartoCenter.latitudeDegrees });
-      console.log(transformedPoint);
-
       if (this._drawDebugInfo)
         this.drawTileDebugInfo(row, column, zoomLevel, ctx);
     } catch (e) {
@@ -212,6 +267,8 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       const dataUrl = canvas.toDataURL("image/png");
       const header = "data:image/png;base64,";
       const dataUrl2 = dataUrl.substring(header.length);
+      const end  = performance.now();
+      console.log(`${data.features.length} feature(s)  Search: ${endSpatialSearch-beginSpatialSearch}ms Overall: ${end-begin}ms`);
       return new ImageSource(base64StringToUint8Array(dataUrl2), ImageSourceFormat.Png);
     } catch (e) {
       Logger.logError(loggerCategory, `Exception occurred while rendering tile (${zoomLevel}/${row}/${column}) : ${e}.`);
