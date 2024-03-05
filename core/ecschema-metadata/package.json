@@ -34,7 +34,7 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/units-schema": "^1.0.7",
+    "@bentley/units-schema": "^1.0.8",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
