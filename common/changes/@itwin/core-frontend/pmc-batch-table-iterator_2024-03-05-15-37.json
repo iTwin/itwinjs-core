@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Added an iterator over the entries in a BatchTableProperties.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
