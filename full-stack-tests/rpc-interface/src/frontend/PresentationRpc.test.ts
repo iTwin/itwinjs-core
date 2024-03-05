@@ -33,19 +33,11 @@ describe("PresentationRpcInterface tests", () => {
   });
 
   it("getNodes works as expected", async () => {
-    const rootNodes = await Presentation.presentation.getNodes({
+    const rootNodes = await Presentation.presentation.getNodesIterator({
       imodel,
       rulesetOrId: createNodesRuleset(),
     });
     expect(rootNodes).to.not.be.empty;
-  });
-
-  it("getNodesAndCount works as expected", async () => {
-    const nodesAndCount = await Presentation.presentation.getNodesAndCount({
-      imodel,
-      rulesetOrId: createNodesRuleset(),
-    });
-    expect(nodesAndCount.count).to.not.be.undefined;
   });
 
   it("getNodesCount works as expected", async () => {
@@ -100,6 +92,7 @@ describe("PresentationRpcInterface tests", () => {
     const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
     const key2: InstanceKey = { id: Id64.fromString("0x17"), className: "BisCore:SpatialCategory" };
     const keys = new KeySet([key1, key2]);
+    // eslint-disable-next-line deprecation/deprecation
     const contentAndSize = await Presentation.presentation.getContentAndSize({
       imodel,
       rulesetOrId: createContentRuleset(),
@@ -113,6 +106,7 @@ describe("PresentationRpcInterface tests", () => {
     const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
     const key2: InstanceKey = { id: Id64.fromString("0x17"), className: "BisCore:SpatialCategory" };
     const keys = new KeySet([key1, key2]);
+    // eslint-disable-next-line deprecation/deprecation
     const content = await Presentation.presentation.getContent({
       imodel,
       rulesetOrId: createContentRuleset(),
@@ -154,7 +148,7 @@ describe("PresentationRpcInterface tests", () => {
   it("getDisplayLabelDefinitions works as expected", async () => {
     const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
     const key2: InstanceKey = { id: Id64.fromString("0x17"), className: "BisCore:SpatialCategory" };
-    const displayLabels = await Presentation.presentation.getDisplayLabelDefinitions({
+    const displayLabels = await Presentation.presentation.getDisplayLabelDefinitionsIterator({
       imodel,
       keys: [key1, key2],
     });

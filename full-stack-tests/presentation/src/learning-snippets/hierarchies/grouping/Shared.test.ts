@@ -8,6 +8,7 @@ import { Ruleset, StandardNodeTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
+import { collect } from "../../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -77,7 +78,7 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Confirm that only private models have children grouped by property
-      const modelNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+      const modelNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(modelNodes)
         .to.have.lengthOf(8)
         .and.containSubset([
@@ -119,10 +120,10 @@ describe("Learning Snippets", () => {
           const expectedChildrenType = privateModels.includes(modelNode.label.displayValue)
             ? StandardNodeTypes.ECPropertyGroupingNode
             : StandardNodeTypes.ECInstancesNode;
-          const childNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: modelNode.key });
-          childNodes.forEach((childNode) => {
+          const { items } = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: modelNode.key });
+          for await (const childNode of items) {
             expect(childNode.key.type).to.eq(expectedChildrenType, `Unexpected child node type for model "${modelNode.label.displayValue}".`);
-          });
+          }
         }),
       );
     });
@@ -164,11 +165,11 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Confirm all nodes are property grouping nodes
-      const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
-      expect(nodes).to.be.not.empty;
-      nodes.forEach((node) => {
+      const { total, items } = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset });
+      expect(total).to.be.greaterThan(0);
+      for await (const node of items) {
         expect(node.key.type).to.eq(StandardNodeTypes.ECPropertyGroupingNode);
-      });
+      }
     });
   });
 });
