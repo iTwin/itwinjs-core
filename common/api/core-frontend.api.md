@@ -1713,8 +1713,13 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
 }
 
 // @internal
-export class BatchedTileIdMap {
+export class BatchedTileIdMap implements BatchTableProperties {
     constructor(iModel: IModelConnection);
+    // (undocumented)
+    entries(): Iterable<{
+        id: Id64String;
+        properties: Record<string, any>;
+    }>;
     getBatchId(properties: any): Id64String;
     // (undocumented)
     getFeatureProperties(id: Id64String): Record<string, any> | undefined;
@@ -1732,6 +1737,10 @@ export interface BatchOptions {
 
 // @beta
 export interface BatchTableProperties {
+    entries(): Iterable<{
+        id: Id64String;
+        properties: Record<string, any>;
+    }>;
     getFeatureProperties(id: Id64String): Record<string, any> | undefined;
 }
 
