@@ -34,7 +34,7 @@ function fixChangeLogs(files) {
   for (let i = 0; i < numFiles; i++) {
     const currentJson = fs.readJsonSync(`temp-target-changelogs/${files[i]}`);
     const incomingJson = fs.readJsonSync(`temp-incoming-changelogs/${files[i]}`);
-    // .map creates an array of [changelog version string, changelog entryj] tuples, which is passed into Map and creates a key value pair of the two elements.
+    // .map creates an array of [changelog version string, changelog entry] tuples, which is passed into Map and creates a key value pair of the two elements.
     let combinedEntries = [...currentJson.entries, ...incomingJson.entries].map((obj) => [obj['version'], obj]);
     // Map objects do not allow duplicate keys, so this will remove duplicate version numbers
     let completeEntries = new Map(combinedEntries);
@@ -43,6 +43,17 @@ function fixChangeLogs(files) {
     currentJson.entries = completeEntries;
 
     fs.writeJsonSync(`temp-target-changelogs/${files[i]}`, currentJson, { spaces: 2 });
+  }
+}
+
+function editFileInPlaceSynchronously(filePath, stringToSearch, stringToReplace) {
+  try {
+    const contentRead = fs.readFileSync(filePath, { encoding: 'utf-8' });
+    const contentToWrite = contentRead.replace(stringToSearch, stringToReplace);
+    fs.writeFileSync(filePath, contentToWrite, { encoding: 'utf-8' });
+  }
+  catch (err) {
+    console.log(`Error while reading or writing to "${filePath}": ${err}`)
   }
 }
 
@@ -80,6 +91,17 @@ if (targetBranch === `origin/${currentBranch}`) {
 // copy all changelogs from the current branch to ./temp-incoming-changelogs, the files will be named: package_name_CHANGELOG.json
 await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-incoming-changelogs/$(echo "{}" | sed "s/^.\\///; s/\\//_/g")"' \\;`;
 
+// before checking out to target branch
+// if it is a major or minor release, we need to update `gather-docs.yaml`'s branchName value to be the release branch
+if (commitMessage.endsWith(".0")) {
+  const docsYamlPath = "common/config/azure-pipelines/templates/gather-docs.yaml";
+  editFileInPlaceSynchronously(docsYamlPath, /release\/\d+\.\d+\.\w+/g, currentBranch);
+  // commit these changes to our release branch
+  await $`git add ${docsYamlPath}`;
+  await $`git commit -m "Update gather-docs.yaml's branch name to the release branch"`;
+  await $`git push origin HEAD:${currentBranch}`;
+}
+
 targetBranch = targetBranch.replace("origin/", "");
 await $`git checkout ${targetBranch}`;
 // copy all changelogs from the target branch to ./temp-target-changelogs, the files will be named: package_name_CHANGELOG.json
@@ -104,9 +126,14 @@ await $`find ./temp-target-changelogs/ -type f -name "*CHANGELOG.json" -exec sh 
 // delete temps
 await $`rm -r ${targetPath}`;
 await $`rm -r ${incomingPath}`;
+// after already checking out to target branch
 // copy {release-version}.md to target branch if the commit that triggered this script run is from a major or minor version bump
 if (commitMessage.endsWith(".0")) {
   await $`git checkout ${currentBranch} docs/changehistory/${commitMessage}.md`
+
+  // also need to add reference to this new md in leftNav.md
+  const leftNavMdPath = "docs/changehistory/leftNav.md";
+  editFileInPlaceSynchronously(leftNavMdPath, "### Versions\n", `### Versions\n\n- [${commitMessage}](./${commitMessage}.md)\n`);
 }
 // # regen CHANGELOG.md
 await $`rush publish --regenerate-changelogs`;

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-frontend",
+      "comment": "Deprecate `getNodes`, `getNodesAndCount`, `getContent`, `getContentAndSize`, `getPagedDistinctValues` and `getDisplayLabelDefinitions` in favor of the alternatives which return iterators.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-frontend"
+}

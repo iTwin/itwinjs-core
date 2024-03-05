@@ -152,6 +152,9 @@ export interface BatchTableProperties {
    * @note Treat the JSON properties as read-only - do not modify them.
    */
   getFeatureProperties(id: Id64String): Record<string, any> | undefined;
+
+  /** Obtain an iterator over all of the features in the batch table and their properties. */
+  entries(): Iterable<{ id: Id64String, properties: Record<string, any> }>;
 }
 
 /** @internal */

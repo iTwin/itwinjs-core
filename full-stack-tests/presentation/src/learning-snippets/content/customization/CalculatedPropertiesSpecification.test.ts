@@ -52,7 +52,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that the custom property was created
-        const content = (await Presentation.presentation.getContent({
+        const content = (await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
@@ -93,22 +93,19 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that the custom property was created and has a value
-        const content = (await Presentation.presentation.getContent({
+        const content = (await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "generic.PhysicalObject", id: "0x74" }]),
           descriptor: {},
         }))!;
         const field = getFieldByLabel(content.descriptor.fields, "Element Volume");
-        expect(content.contentSet)
-          .to.have.lengthOf(1)
-          .and.to.containSubset([
-            {
-              values: {
-                [field.name]: "3.449493952966681",
-              },
-            },
-          ]);
+        expect(content.total).to.eq(1);
+        expect((await content.items.next()).value).to.containSubset({
+          values: {
+            [field.name]: "3.449493952966681",
+          },
+        });
       });
 
       it("uses `categoryId` attribute", async () => {
@@ -146,13 +143,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that the calculated property is assigned a custom category
-        const content = await Presentation.presentation.getContent({
+        const content = await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
           descriptor: {},
         });
-        content;
         expect(content!.descriptor.fields).to.containSubset([
           {
             label: "My Calculated Property",
@@ -194,13 +190,13 @@ describe("Learning Snippets", () => {
 
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.Renderer.Result
         // Ensure the calculated property field is assigned the "my-renderer" renderer
-        const content = (await Presentation.presentation.getContent({
+        const content = await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
           descriptor: {},
-        }))!;
-        expect(content.descriptor.fields).to.containSubset([
+        });
+        expect(content!.descriptor.fields).to.containSubset([
           {
             label: "My Calculated property",
             renderer: {
@@ -242,13 +238,13 @@ describe("Learning Snippets", () => {
 
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.Editor.Result
         // Ensure the calculated property field is assigned the "my-editor" editor
-        const content = (await Presentation.presentation.getContent({
+        const content = await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
           descriptor: {},
-        }))!;
-        expect(content.descriptor.fields).to.containSubset([
+        });
+        expect(content!.descriptor.fields).to.containSubset([
           {
             label: "My Calculated property",
             editor: {
@@ -288,13 +284,13 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that the custom property has correct priority
-        const content = (await Presentation.presentation.getContent({
+        const content = await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
           descriptor: {},
-        }))!;
-        expect(content.descriptor.fields).to.containSubset([
+        });
+        expect(content!.descriptor.fields).to.containSubset([
           {
             label: "My Calculated Property",
             priority: 9999,

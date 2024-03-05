@@ -7,7 +7,7 @@
  */
 
 import {
-  DelayedPromiseWithProps, ECClassModifier, EntityClass, LazyLoadedRelationshipConstraintClass, Mixin, NavigationPropertyProps,
+  CustomAttribute, DelayedPromiseWithProps, ECClassModifier, EntityClass, LazyLoadedRelationshipConstraintClass, Mixin, NavigationPropertyProps,
   RelationshipClass, RelationshipClassProps, RelationshipConstraint, RelationshipEnd, RelationshipMultiplicity, SchemaItemKey, SchemaItemType,
   SchemaKey, StrengthDirection, StrengthType,
 } from "@itwin/ecschema-metadata";
@@ -130,8 +130,13 @@ export class RelationshipClasses extends ECClasses {
     return { itemKey: relationshipKey, propertyName: name };
   }
 
+  /**
+   * Creates a Navigation Property through a NavigationPropertyProps.
+   * @param classKey a SchemaItemKey of the Relationship Class that will house the new property.
+   * @param navigationProps a json object that will be used to populate the new Navigation Property.
+   */
   public async createNavigationPropertyFromProps(relationshipKey: SchemaItemKey, navigationProps: NavigationPropertyProps): Promise<PropertyEditResults> {
-    const relationshipClass = (await this._schemaEditor.schemaContext.getSchemaItem<MutableRelationshipClass>(relationshipKey));
+    const relationshipClass = await this._schemaEditor.schemaContext.getSchemaItem<MutableRelationshipClass>(relationshipKey);
 
     if (relationshipClass === undefined)
       return { itemKey: relationshipKey, propertyName: navigationProps.name, errorMessage: `Relationship Class ${relationshipKey.fullName} not found in schema context.` };
@@ -213,6 +218,24 @@ export class RelationshipClasses extends ECClasses {
     const result = await this.validate(constraint);
     if (result.errorMessage) {
       mutableConstraint.addClass(ecClass);
+      return result;
+    }
+
+    return { itemKey: constraint.relationshipClass.key };
+  }
+
+  public async addCustomAttributeToConstraint(constraint: RelationshipConstraint, customAttribute: CustomAttribute): Promise<SchemaItemEditResults> {
+    const mutableConstraint = constraint as MutableRelationshipConstraint;
+    mutableConstraint.addCustomAttribute(customAttribute);
+
+    const diagnostics = Rules.validateCustomAttributeInstance(constraint, customAttribute);
+    const result: SchemaItemEditResults = { errorMessage: "" };
+    for await (const diagnostic of diagnostics) {
+      result.errorMessage += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
+    }
+
+    if (result.errorMessage) {
+      this.removeCustomAttribute(constraint, customAttribute);
       return result;
     }
 
