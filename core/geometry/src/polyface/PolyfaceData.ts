@@ -494,50 +494,6 @@ export class PolyfaceData {
     return result;
   }
   /**
-   * Reverse the indices for the specified facets in the index arrays (pointIndex, normalIndex, paramIndex, colorIndex,
-   * and edgeVisible).
-   * @param facetStartIndex start indices of *consecutive* facets to be reversed.
-   * * Consecutive indices in this array define where a given facet is represented in each of the parallel index arrays.
-   * * The indices for facet k are `facetStartIndex[k]` up to (but not including) `facetStartIndex[k + 1]`.
-   * * This implies `facetStartIndex[k + 1]` is both the upper limit of facet k's indices, and the start index of facet k+1.
-   * * For example, passing an IndexedPolyface's _facetStart array into this method reverses every facet.
-  */
-  public reverseIndices(facetStartIndex?: number[]): void {
-    if (facetStartIndex && PolyfaceData.isValidFacetStartIndexArray(facetStartIndex)) {
-      PolyfaceData.reverseIndices(facetStartIndex, this.pointIndex, true);
-      if (this.normalIndex !== this.pointIndex)
-        PolyfaceData.reverseIndices(facetStartIndex, this.normalIndex, true);
-      if (this.paramIndex !== this.pointIndex)
-        PolyfaceData.reverseIndices(facetStartIndex, this.paramIndex, true);
-      if (this.colorIndex !== this.pointIndex)
-        PolyfaceData.reverseIndices(facetStartIndex, this.colorIndex, true);
-      PolyfaceData.reverseIndices(facetStartIndex, this.edgeVisible, false);
-    }
-  }
-  /**
-   * Reverse the indices for the specified facet in the index arrays (pointIndex, normalIndex, paramIndex, colorIndex,
-   * and edgeVisible).
-   * @param facetIndex index of the facet to reverse. The entries of each index array to be reversed are found at
-   * `facetStartIndex[facetIndex] <= i < facetStartIndex[facetIndex + 1]`.
-   * @param facetStartIndex start indices of *consecutive* facets, e.g., an IndexedPolyface's _facetStart array.
-   * See [[reverseIndices]].
-   */
-  public reverseIndicesSingleFacet(facetIndex: number, facetStartIndex: number[]): void {
-    PolyfaceData.reverseIndicesSingleFacet(facetIndex, facetStartIndex, this.pointIndex, true);
-    if (this.normalIndex !== this.pointIndex)
-      PolyfaceData.reverseIndicesSingleFacet(facetIndex, facetStartIndex, this.normalIndex, true);
-    if (this.paramIndex !== this.pointIndex)
-      PolyfaceData.reverseIndicesSingleFacet(facetIndex, facetStartIndex, this.paramIndex, true);
-    if (this.colorIndex !== this.pointIndex)
-      PolyfaceData.reverseIndicesSingleFacet(facetIndex, facetStartIndex, this.colorIndex, true);
-    PolyfaceData.reverseIndicesSingleFacet(facetIndex, facetStartIndex, this.edgeVisible, false);
-  }
-  /** Scale all the normals by -1. */
-  public reverseNormals() {
-    if (this.normal)
-      this.normal.scaleInPlace(-1.0);
-  }
-  /**
    * Apply `transform` to point and normal arrays and to auxData.
    * * IMPORTANT This base class is just a data carrier. It does not know if the index order and normal directions
    * have special meaning, i.e., caller must separately reverse index order and normal direction if needed.
@@ -676,5 +632,49 @@ export class PolyfaceData {
       }
     }
     return false;
+  }
+  /**
+   * Reverse the indices for the specified facets in the index arrays (pointIndex, normalIndex, paramIndex, colorIndex,
+   * and edgeVisible).
+   * @param facetStartIndex start indices of *consecutive* facets to be reversed.
+   * * Consecutive indices in this array define where a given facet is represented in each of the parallel index arrays.
+   * * The indices for facet k are `facetStartIndex[k]` up to (but not including) `facetStartIndex[k + 1]`.
+   * * This implies `facetStartIndex[k + 1]` is both the upper limit of facet k's indices, and the start index of facet k+1.
+   * * For example, passing an IndexedPolyface's _facetStart array into this method reverses every facet.
+  */
+  public reverseIndices(facetStartIndex?: number[]): void {
+    if (facetStartIndex && PolyfaceData.isValidFacetStartIndexArray(facetStartIndex)) {
+      PolyfaceData.reverseIndices(facetStartIndex, this.pointIndex, true);
+      if (this.normalIndex !== this.pointIndex)
+        PolyfaceData.reverseIndices(facetStartIndex, this.normalIndex, true);
+      if (this.paramIndex !== this.pointIndex)
+        PolyfaceData.reverseIndices(facetStartIndex, this.paramIndex, true);
+      if (this.colorIndex !== this.pointIndex)
+        PolyfaceData.reverseIndices(facetStartIndex, this.colorIndex, true);
+      PolyfaceData.reverseIndices(facetStartIndex, this.edgeVisible, false);
+    }
+  }
+  /**
+   * Reverse the indices for the specified facet in the index arrays (pointIndex, normalIndex, paramIndex, colorIndex,
+   * and edgeVisible).
+   * @param facetIndex index of the facet to reverse. The entries of each index array to be reversed are found at
+   * `facetStartIndex[facetIndex] <= i < facetStartIndex[facetIndex + 1]`.
+   * @param facetStartIndex start indices of *consecutive* facets, e.g., an IndexedPolyface's _facetStart array.
+   * See [[reverseIndices]].
+   */
+  public reverseIndicesSingleFacet(facetIndex: number, facetStartIndex: number[]): void {
+    PolyfaceData.reverseIndicesSingleFacet(facetIndex, facetStartIndex, this.pointIndex, true);
+    if (this.normalIndex !== this.pointIndex)
+      PolyfaceData.reverseIndicesSingleFacet(facetIndex, facetStartIndex, this.normalIndex, true);
+    if (this.paramIndex !== this.pointIndex)
+      PolyfaceData.reverseIndicesSingleFacet(facetIndex, facetStartIndex, this.paramIndex, true);
+    if (this.colorIndex !== this.pointIndex)
+      PolyfaceData.reverseIndicesSingleFacet(facetIndex, facetStartIndex, this.colorIndex, true);
+    PolyfaceData.reverseIndicesSingleFacet(facetIndex, facetStartIndex, this.edgeVisible, false);
+  }
+  /** Scale all the normals by -1. */
+  public reverseNormals() {
+    if (this.normal)
+      this.normal.scaleInPlace(-1.0);
   }
 }

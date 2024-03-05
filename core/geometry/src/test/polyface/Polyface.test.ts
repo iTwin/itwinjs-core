@@ -48,39 +48,35 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 import { ImportedSample } from "../testInputs/ImportedSamples";
 
-// @param longEdgeIsHidden true if any edge longer than1/3 of face perimeter is expected to be hidden
-function exercisePolyface(ck: Checker, polyface: Polyface,
-  longEdgeIsHidden: boolean) {
+// pass "longEdgeIsHidden = true" if any edge longer than 1/3 of face perimeter is expected to be hidden
+function exercisePolyface(ck: Checker, polyface: Polyface, longEdgeIsHidden: boolean) {
   const twoSidedA = polyface.twoSided;
   polyface.twoSided = false;
   ck.testFalse(polyface.twoSided);
   polyface.twoSided = true;
   ck.testTrue(polyface.twoSided);
   polyface.twoSided = twoSidedA;
-  // create vars to be reused ...
-  const pointZ = Point3d.create();
-  const paramZ = Point2d.create();
-  const normalZ = Vector3d.create();
 
   const range = polyface.range();
   const range1 = Range3d.create();
   polyface.extendRange(range1);
+  ck.testRange3d(range, range1);
 
   const visitor = polyface.createVisitor(0);
-  const visitor1 = polyface.createVisitor(1);
-  const pointB = Point3d.create();
-  // const normalB = Vector3d.create();
-  // visitor.moveToReadIndex(0);
+  const numWrap = 1;
+  const visitor1 = polyface.createVisitor(numWrap);
   let facetIndex = 0;
   for (; visitor.moveToNextFacet(); facetIndex++) {
-    // make sure visitors move together ..
-    ck.testTrue(visitor1.moveToNextFacet(), "wrapped visitor tracks unwrapped");
-    const readIndex = visitor.currentReadIndex();
-    ck.testExactNumber(readIndex, visitor1.currentReadIndex(), "current read index");
+    ck.testTrue(visitor1.moveToNextFacet(), "move to next facet via visitor1"); // visitors move together
+    ck.testExactNumber(visitor.currentReadIndex(), visitor1.currentReadIndex(), "current read index");
     const numEdge = visitor.pointCount;
     const numPoint1 = visitor1.pointCount;
-    ck.testExactNumber(numEdge + 1, numPoint1, "wrapped visitor has extra point on each face");
+    ck.testExactNumber(numEdge + numWrap, numPoint1, "wrapped visitor has an extra point on each face");
 
+    const pointB = Point3d.create();
+    const pointZ = Point3d.create();
+    const paramZ = Point2d.create();
+    const normalZ = Vector3d.create();
     for (let i = 0; i < numPoint1; i++) {
       const pointIndexA = visitor1.clientPointIndex(i);
       const pointA = visitor1.point.getPoint3dAtUncheckedPointIndex(i);
@@ -91,7 +87,6 @@ function exercisePolyface(ck: Checker, polyface: Polyface,
         polyface.data.copyPointTo(pointIndexQ, pointB);
         ck.testPoint3d(pointQ, pointB);
       } else {
-        // check reused versus new ..
         const pointY = polyface.data.getPoint(pointIndexA)!;
         polyface.data.copyPointTo(pointIndexA, pointZ);
         ck.testPoint3d(pointY, pointZ, "polyface getPoint, copyPointTo");
@@ -110,35 +105,26 @@ function exercisePolyface(ck: Checker, polyface: Polyface,
         }
       }
     }
-    // test visibility flags
+
     if (longEdgeIsHidden) {
       let perimeter = 0;
       for (let i = 0; i < numEdge; i++) {
-        perimeter += visitor1.point.getPoint3dAtUncheckedPointIndex(i).distance(visitor1.point.getPoint3dAtUncheckedPointIndex(i + 1));
+        perimeter += visitor1.point.getPoint3dAtUncheckedPointIndex(i).distance(
+          visitor1.point.getPoint3dAtUncheckedPointIndex(i + 1),
+        );
       }
       for (let i = 0; i < numEdge; i++) {
-        const a = visitor1.point.getPoint3dAtUncheckedPointIndex(i).distance(visitor1.point.getPoint3dAtUncheckedPointIndex(i + 1));
+        const a = visitor1.point.getPoint3dAtUncheckedPointIndex(i).distance(
+          visitor1.point.getPoint3dAtUncheckedPointIndex(i + 1),
+        );
         const v = visitor1.getEdgeVisible(i);
-        if (!ck.testBoolean(a < perimeter / 3.0, v, "diagonals hidden")) {
+        if (!ck.testBoolean(a < perimeter / 3.0, v, "diagonal edges are hidden")) {
           GeometryCoreTestIO.consoleLog({ faceCounter: facetIndex, edgeIndex: i, edgeLength: a, visibilityFlag: v });
           GeometryCoreTestIO.consoleLog({ faceCounter: facetIndex, edgeIndex: i, edgeLength: a, visibilityFlag: v });
         }
       }
     }
-    /*
-        if (polyface.data.normalCount > 0) {
-          for (let i = 0; i < numPoint1; i++) {
-            const normalIndex = visitor1.clientNormalIndex(i);
-            const normalA = visitor1.normal.getVector3dAt(i);
-            polyface.data.copyNormalTo(normalIndex, normalB);
-            ck.testVector3d(normalA, normalB);
-          }
-        }
-     */
-
   }
-
-  ck.testRange3d(range, range1);
 }
 
 /**
@@ -212,8 +198,6 @@ describe("Polyface.HelloWorld", () => {
     const polyface1 = polyface0.clone();
     const mirrorX = Transform.createFixedPointAndMatrix(Point3d.createZero(), Matrix3d.createScale(-1, 1, 1));
     const polyface2 = polyface0.cloneTransformed(mirrorX);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface2);
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "HelloWorld");
     const expectedArea = (numX - 1) * (numY - 1);
     const numExpectedFacets = 2 * (numX - 1) * (numY - 1); // 2 triangles per quad
     const expectedEdgeLength = numExpectedFacets * (2.0 + Math.sqrt(2.0));
@@ -1485,8 +1469,8 @@ it("EmptyPolyface", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
-it("VisitorParamQueries", () => {
-  for (const s of [
+it("Polyface.VisitorParamQueries", () => {
+  for (const geom of [
     Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 5), 1.0, 0.5, true)!,
     Sphere.createCenterRadius(Point3d.create(0, 0, 0), 2.0, AngleSweep.createStartEndDegrees(0, 90)),
   ]) {
@@ -1495,7 +1479,7 @@ it("VisitorParamQueries", () => {
     options.needNormals = true;
     const builder = PolyfaceBuilder.create(options);
     // builder.toggleReversedFacetFlag();
-    s.dispatchToGeometryHandler(builder);
+    geom.dispatchToGeometryHandler(builder);
     const polyface = builder.claimPolyface(true);
     const visitor = polyface.createVisitor(0);
     let facetIndex = 0;
@@ -1512,7 +1496,7 @@ it("VisitorParamQueries", () => {
   }
 });
 
-it("VisitorQueryFailures", () => {
+it("Polyface.VisitorQueryFailures", () => {
   const ck = new Checker();
   const options = new StrokeOptions();
   options.needParams = false;
@@ -1524,23 +1508,18 @@ it("VisitorQueryFailures", () => {
   const polyface = builder.claimPolyface(true);
   const visitor = polyface.createVisitor(0);
   if (ck.testTrue(visitor.moveToNextFacet())) {
-    // exercise failure cases in parameter queries.
-    // edge index is tested first . .
-    ck.testUndefined(visitor.tryGetDistanceParameter(100));
-    ck.testUndefined(visitor.tryGetNormalizedParameter(100));
-    // then array presence ...
-    ck.testUndefined(visitor.tryGetDistanceParameter(0));
-    ck.testUndefined(visitor.tryGetNormalizedParameter(0));
+    ck.testUndefined(visitor.tryGetDistanceParameter(100), "invalid vertex index");
+    ck.testUndefined(visitor.tryGetNormalizedParameter(100), "invalid vertex index");
+    ck.testUndefined(visitor.tryGetDistanceParameter(0), "undefined param");
+    ck.testUndefined(visitor.tryGetNormalizedParameter(0), "undefined param");
   }
-  // for coverage, this hits both (a) undefined result and (b) bad facetIndex.
-  ck.testUndefined(PolyfaceQuery.computeFacetUnitNormal(visitor, -1), "visitor.getNormal (-1) should return undefined");
-  expect(ck.getNumErrors()).equals(0);
-
+  ck.testUndefined(PolyfaceQuery.computeFacetUnitNormal(visitor, -1), "invalid vertex index");
   const rangeLengths = PolyfaceQuery.collectRangeLengthData(polyface);
   ck.testTrue(rangeLengths.xSums.count > 0, "rangeLengths sums exist");
+  expect(ck.getNumErrors()).equals(0);
 });
 
-it("IndexValidation", () => {
+it("Polyface.IndexValidation", () => {
   const ck = new Checker();
   const indices = [0, 1, 2, 3, 4, 7, 6, 5];
   const data = [9, 8, 7, 6, 5, 4, 3, 2, 1, 100];
@@ -1581,33 +1560,6 @@ it("IndexValidation", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
-it("VisitorQueryFailures", () => {
-  const ck = new Checker();
-  const options = new StrokeOptions();
-  options.needParams = false;
-  options.needNormals = true;
-  const builder = PolyfaceBuilder.create(options);
-  builder.toggleReversedFacetFlag();
-  const cone = Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 5), 1.0, 0.5, true)!;
-  builder.addCone(cone);
-  const polyface = builder.claimPolyface(true);
-  const visitor = polyface.createVisitor(0);
-  if (ck.testTrue(visitor.moveToNextFacet())) {
-    // exercise failure cases in parameter queries.
-    // edge index is tested first . .
-    ck.testUndefined(visitor.tryGetDistanceParameter(100));
-    ck.testUndefined(visitor.tryGetNormalizedParameter(100));
-    // then array presence ...
-    ck.testUndefined(visitor.tryGetDistanceParameter(0));
-    ck.testUndefined(visitor.tryGetNormalizedParameter(0));
-  }
-  // for coverage, this hits both (a) undefined result and (b) bad facetIndex.
-  ck.testUndefined(PolyfaceQuery.computeFacetUnitNormal(visitor, -1), "visitor.getNormal (-1) should return undefined");
-  expect(ck.getNumErrors()).equals(0);
-
-  const rangeLengths = PolyfaceQuery.collectRangeLengthData(polyface);
-  ck.testTrue(rangeLengths.xSums.count > 0, "rangeLengths sums exist");
-});
 // disable naming to allow exact names from synchro mesh
 /* eslint-disable @typescript-eslint/naming-convention */
 /**
@@ -1913,10 +1865,26 @@ function createPolyfaceFromSynchroA(geom: any): Polyface {
 
 // lexicographical order, with slop for equality
 const compareNormals: OrderedComparator<Vector3d> = (v0: Vector3d, v1: Vector3d) => { // lexicographical order, with slop for equality
-  if (v0.isAlmostEqual(v1)) return 0;
-  if (!Geometry.isAlmostEqualNumber(v0.x, v1.x)) { if (v0.x < v1.x) return -1; if (v0.x > v1.x) return 1; }
-  if (!Geometry.isAlmostEqualNumber(v0.y, v1.y)) { if (v0.y < v1.y) return -1; if (v0.y > v1.y) return 1; }
-  if (!Geometry.isAlmostEqualNumber(v0.z, v1.z)) { if (v0.z < v1.z) return -1; if (v0.z > v1.z) return 1; }
+  if (v0.isAlmostEqual(v1))
+    return 0;
+  if (!Geometry.isAlmostEqualNumber(v0.x, v1.x)) {
+    if (v0.x < v1.x)
+      return -1;
+    if (v0.x > v1.x)
+      return 1;
+  }
+  if (!Geometry.isAlmostEqualNumber(v0.y, v1.y)) {
+    if (v0.y < v1.y)
+      return -1;
+    if (v0.y > v1.y)
+      return 1;
+  }
+  if (!Geometry.isAlmostEqualNumber(v0.z, v1.z)) {
+    if (v0.z < v1.z)
+      return -1;
+    if (v0.z > v1.z)
+      return 1;
+  }
   return 0;
 };
 
