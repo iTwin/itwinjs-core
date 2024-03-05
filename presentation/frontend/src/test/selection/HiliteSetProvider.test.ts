@@ -6,23 +6,31 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import { IModelConnection } from "@itwin/core-frontend";
-import { Content, DEFAULT_KEYS_BATCH_SIZE, Item, KeySet } from "@itwin/presentation-common";
+import { Content, DEFAULT_KEYS_BATCH_SIZE, Descriptor, Item, KeySet } from "@itwin/presentation-common";
 import { createRandomECInstanceKey, createRandomTransientId, createTestContentDescriptor } from "@itwin/presentation-common/lib/cjs/test";
-import { HiliteSetProvider, Presentation, PresentationManager } from "../../presentation-frontend";
+import { HiliteSetProvider } from "../../presentation-frontend/selection/HiliteSetProvider";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
+import sinon from "sinon";
+import { Presentation } from "../../presentation-frontend/Presentation";
+import { GetContentRequestOptions, MultipleValuesRequestOptions, PresentationManager } from "../../presentation-frontend";
 
 describe("HiliteSetProvider", () => {
   const imodelMock = moq.Mock.ofType<IModelConnection>();
-  const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
+  const fakeGetContentIterator = sinon.stub<
+    [GetContentRequestOptions & MultipleValuesRequestOptions],
+    Promise<{ descriptor: Descriptor; total: number; items: AsyncIterableIterator<Item> } | undefined>
+  >();
+
+  before(() => {
+    const managerMock = sinon.createStubInstance(PresentationManager, {
+      getContentIterator: fakeGetContentIterator,
+    });
+    Presentation.setPresentationManager(managerMock);
+  });
 
   beforeEach(() => {
     imodelMock.reset();
-    presentationManagerMock.reset();
-    Presentation.setPresentationManager(presentationManagerMock.object);
-  });
-
-  afterEach(() => {
-    Presentation.terminate();
+    fakeGetContentIterator.reset();
   });
 
   describe("create", () => {
@@ -44,31 +52,31 @@ describe("HiliteSetProvider", () => {
       const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
         new Item([createRandomECInstanceKey()], "", "", undefined, {}, {}, [], {}), // element
       ]);
-      presentationManagerMock.setup(async (x) => x.getContentAndSize(moq.It.isAny())).returns(async () => ({ size: 1, content: resultContent }));
+      fakeGetContentIterator.callsFake(async () => ({ total: 1, descriptor: resultContent.descriptor, items: iterate(resultContent.contentSet) }));
       const keys = new KeySet([createRandomECInstanceKey()]);
 
       await provider.getHiliteSet(keys);
       // records are fetched for the first request
-      presentationManagerMock.verify(async (x) => x.getContentAndSize(moq.It.isAny()), moq.Times.once());
+      expect(fakeGetContentIterator).to.be.calledOnce;
 
       await provider.getHiliteSet(keys);
       // keys didn't change - result returned from cache
-      presentationManagerMock.verify(async (x) => x.getContentAndSize(moq.It.isAny()), moq.Times.once());
+      expect(fakeGetContentIterator).to.be.calledOnce;
 
       keys.add(createRandomECInstanceKey());
       await provider.getHiliteSet(keys);
       // keys did change - result fetched again
-      presentationManagerMock.verify(async (x) => x.getContentAndSize(moq.It.isAny()), moq.Times.exactly(2));
+      expect(fakeGetContentIterator).to.be.calledTwice;
 
       await provider.getHiliteSet(keys);
       // keys didn't change - result returned from cache
-      presentationManagerMock.verify(async (x) => x.getContentAndSize(moq.It.isAny()), moq.Times.exactly(2));
+      expect(fakeGetContentIterator).to.be.calledTwice;
     });
 
     it("creates result for transient element keys", async () => {
       const transientKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: createRandomTransientId() };
 
-      presentationManagerMock.setup(async (x) => x.getContentAndSize(moq.It.is((opts) => opts.keys.isEmpty))).returns(async () => undefined);
+      fakeGetContentIterator.withArgs(sinon.match((opts: GetContentRequestOptions) => opts.keys.isEmpty)).resolves(undefined);
 
       const result = await provider.getHiliteSet(new KeySet([transientKey]));
       expect(result.models).to.be.undefined;
@@ -82,8 +90,11 @@ describe("HiliteSetProvider", () => {
       const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
         new Item([resultKey], "", "", undefined, {}, {}, [], {}), // element
       ]);
-      presentationManagerMock.setup(async (x) => x.getContentAndSize(moq.It.isAny())).returns(async () => ({ size: 1, content: resultContent }));
-      presentationManagerMock.setup(async (x) => x.getContentAndSize(moq.It.isAny())).returns(async () => undefined);
+
+      fakeGetContentIterator
+        .onFirstCall()
+        .callsFake(async () => ({ total: 1, descriptor: resultContent.descriptor, items: iterate(resultContent.contentSet) }));
+      fakeGetContentIterator.onSecondCall().resolves(undefined);
 
       const result = await provider.getHiliteSet(new KeySet([persistentKey]));
       expect(result.models).to.be.undefined;
@@ -95,8 +106,11 @@ describe("HiliteSetProvider", () => {
       const persistentKey = createRandomECInstanceKey();
       const resultKey = createRandomECInstanceKey();
       const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [new Item([resultKey], "", "", undefined, {}, {}, [], { isModel: true })]);
-      presentationManagerMock.setup(async (x) => x.getContentAndSize(moq.It.isAny())).returns(async () => ({ size: 1, content: resultContent }));
-      presentationManagerMock.setup(async (x) => x.getContentAndSize(moq.It.isAny())).returns(async () => undefined);
+
+      fakeGetContentIterator
+        .onFirstCall()
+        .callsFake(async () => ({ total: 1, descriptor: resultContent.descriptor, items: iterate(resultContent.contentSet) }));
+      fakeGetContentIterator.onSecondCall().resolves(undefined);
 
       const result = await provider.getHiliteSet(new KeySet([persistentKey]));
       expect(result.models).to.deep.eq([resultKey.id]);
@@ -110,8 +124,10 @@ describe("HiliteSetProvider", () => {
       const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
         new Item([resultKey], "", "", undefined, {}, {}, [], { isSubCategory: true }),
       ]);
-      presentationManagerMock.setup(async (x) => x.getContentAndSize(moq.It.isAny())).returns(async () => ({ size: 1, content: resultContent }));
-      presentationManagerMock.setup(async (x) => x.getContentAndSize(moq.It.isAny())).returns(async () => undefined);
+      fakeGetContentIterator
+        .onFirstCall()
+        .callsFake(async () => ({ total: 1, descriptor: resultContent.descriptor, items: iterate(resultContent.contentSet) }));
+      fakeGetContentIterator.onSecondCall().resolves(undefined);
 
       const result = await provider.getHiliteSet(new KeySet([persistentKey]));
       expect(result.models).to.be.undefined;
@@ -131,8 +147,10 @@ describe("HiliteSetProvider", () => {
         new Item([resultSubCategoryKey], "", "", undefined, {}, {}, [], { isSubCategory: true }),
         new Item([resultElementKey], "", "", undefined, {}, {}, [], {}), // element
       ]);
-      presentationManagerMock.setup(async (x) => x.getContentAndSize(moq.It.isAny())).returns(async () => ({ size: 3, content: resultContent }));
-      presentationManagerMock.setup(async (x) => x.getContentAndSize(moq.It.isAny())).returns(async () => undefined);
+      fakeGetContentIterator
+        .onFirstCall()
+        .callsFake(async () => ({ total: 1, descriptor: resultContent.descriptor, items: iterate(resultContent.contentSet) }));
+      fakeGetContentIterator.onSecondCall().resolves(undefined);
 
       const result = await provider.getHiliteSet(new KeySet([transientKey, persistentKey]));
       expect(result.models).to.deep.eq([resultModelKey.id]);
@@ -152,14 +170,13 @@ describe("HiliteSetProvider", () => {
       const resultContent1 = new Content(createTestContentDescriptor({ fields: [] }), [
         new Item([elementKey], "", "", undefined, {}, {}, [], {}), // element
       ]);
-      presentationManagerMock
-        .setup(async (x) => x.getContentAndSize(moq.It.is((opts) => opts.keys.size === DEFAULT_KEYS_BATCH_SIZE)))
-        .returns(async () => ({ size: 1, content: resultContent1 }));
-
-      // second request returns no content
-      presentationManagerMock
-        .setup(async (x) => x.getContentAndSize(moq.It.is((opts) => opts.keys.size === DEFAULT_KEYS_BATCH_SIZE)))
-        .returns(async () => undefined);
+      fakeGetContentIterator
+        .withArgs(sinon.match((opts: GetContentRequestOptions) => opts.keys.size === DEFAULT_KEYS_BATCH_SIZE))
+        .onFirstCall()
+        .callsFake(async () => ({ total: 1, descriptor: resultContent1.descriptor, items: iterate(resultContent1.contentSet) }))
+        // second request returns no content
+        .onSecondCall()
+        .resolves(undefined);
 
       // third request returns content with subcategory and model keys
       const subCategoryKey = createRandomECInstanceKey();
@@ -168,9 +185,9 @@ describe("HiliteSetProvider", () => {
         new Item([subCategoryKey], "", "", undefined, {}, {}, [], { isSubCategory: true }),
         new Item([modelKey], "", "", undefined, {}, {}, [], { isModel: true }),
       ]);
-      presentationManagerMock
-        .setup(async (x) => x.getContentAndSize(moq.It.is((opts) => opts.keys.size === 1)))
-        .returns(async () => ({ size: 2, content: resultContent2 }));
+      fakeGetContentIterator
+        .withArgs(sinon.match((opts: GetContentRequestOptions) => opts.keys.size === 1))
+        .callsFake(async () => ({ total: 2, descriptor: resultContent2.descriptor, items: iterate(resultContent2.contentSet) }));
 
       const result = await provider.getHiliteSet(new KeySet(inputKeys));
       expect(result.models).to.deep.eq([modelKey.id]);
@@ -193,12 +210,13 @@ describe("HiliteSetProvider", () => {
       const resultContent1 = new Content(createTestContentDescriptor({ fields: [] }), items.slice(0, 1000));
       const resultContent2 = new Content(createTestContentDescriptor({ fields: [] }), items.slice(1000));
 
-      presentationManagerMock
-        .setup(async (x) => x.getContentAndSize(moq.It.is((opts) => opts.paging?.start === 0)))
-        .returns(async () => ({ size: 1001, content: resultContent1 }));
-      presentationManagerMock
-        .setup(async (x) => x.getContentAndSize(moq.It.is((opts) => (opts.paging?.start ?? 0) > 0)))
-        .returns(async () => ({ size: 1001, content: resultContent2 }));
+      fakeGetContentIterator
+        .withArgs(sinon.match((opts: MultipleValuesRequestOptions) => !opts.paging?.start))
+        .callsFake(async () => ({ total: 1001, descriptor: resultContent1.descriptor, items: iterate(resultContent1.contentSet) }));
+
+      fakeGetContentIterator.withArgs(sinon.match((opts: MultipleValuesRequestOptions) => !!opts.paging?.start)).callsFake(async () => {
+        return { total: 1001, descriptor: resultContent2.descriptor, items: iterate(resultContent2.contentSet) };
+      });
 
       const iterator = provider.getHiliteSetIterator(new KeySet([{ id: "0x1", className: "TestElement" }]));
       let index = 0;
@@ -214,3 +232,9 @@ describe("HiliteSetProvider", () => {
     });
   });
 });
+
+async function* iterate<T>(items: T[]): AsyncIterableIterator<T> {
+  for (const item of items) {
+    yield item;
+  }
+}

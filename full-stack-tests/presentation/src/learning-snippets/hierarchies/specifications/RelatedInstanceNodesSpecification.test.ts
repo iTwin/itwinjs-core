@@ -8,6 +8,7 @@ import { Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
+import { collect } from "../../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -64,7 +65,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Verify that correct Model Elements are returned, grouped by class
-        const modelNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const modelNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(modelNodes)
           .to.have.lengthOf(1)
           .and.to.containSubset([
@@ -73,7 +74,9 @@ describe("Learning Snippets", () => {
             },
           ]);
 
-        const elementClassGroupingNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: modelNodes[0].key });
+        const elementClassGroupingNodes = await Presentation.presentation
+          .getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: modelNodes[0].key })
+          .then(async (x) => collect(x.items));
         expect(elementClassGroupingNodes)
           .to.have.lengthOf(2)
           .and.to.containSubset([
@@ -85,7 +88,9 @@ describe("Learning Snippets", () => {
             },
           ]);
 
-        const elementNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: elementClassGroupingNodes[0].key });
+        const elementNodes = await Presentation.presentation
+          .getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: elementClassGroupingNodes[0].key })
+          .then(async (x) => collect(x.items));
         expect(elementNodes)
           .to.have.lengthOf(2)
           .and.to.containSubset([

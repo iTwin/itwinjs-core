@@ -1,6 +1,18 @@
 # Change Log - @itwin/frontend-tiles
 
-This log was last generated on Fri, 16 Feb 2024 14:23:08 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Mar 2024 18:22:07 GMT and should not be manually modified.
+
+## 4.4.4
+Fri, 01 Mar 2024 18:21:01 GMT
+
+_Version update only_
+
+## 4.4.3
+Fri, 23 Feb 2024 21:26:07 GMT
+
+### Updates
+
+- Add support for enabling CDN and filtering exports by version
 
 ## 4.4.2
 Fri, 16 Feb 2024 14:22:01 GMT

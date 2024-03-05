@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Change gpuMemoryLimit setting used when undefined",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -9,6 +9,7 @@ import { NodeKey, Ruleset, StandardNodeTypes } from "@itwin/presentation-common"
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
+import { collect } from "../../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -58,7 +59,7 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Verify PhysicalModel's class grouping node is displayed, but the instance node - not
-      const classGroupingNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+      const classGroupingNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(classGroupingNodes)
         .to.have.lengthOf(1)
         .and.to.containSubset([
@@ -67,7 +68,9 @@ describe("Learning Snippets", () => {
           },
         ]);
 
-      const customNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNodes[0].key });
+      const customNodes = await Presentation.presentation
+        .getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNodes[0].key })
+        .then(async (x) => collect(x.items));
       expect(customNodes)
         .to.have.lengthOf(1)
         .and.to.containSubset([
@@ -128,7 +131,7 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Verify that only 3d elements' custom node is loaded
-      const rootNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+      const rootNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(rootNodes)
         .to.have.lengthOf(1)
         .and.to.containSubset([
@@ -139,8 +142,8 @@ describe("Learning Snippets", () => {
           },
         ]);
 
-      const element3dNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
-      expect(element3dNodes).to.not.be.empty;
+      const { total } = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
+      expect(total).to.be.greaterThan(0);
     });
 
     it("uses `hideExpression` attribute", async () => {
@@ -194,7 +197,7 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Verify that only 3d elements' custom node is loaded
-      const rootNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+      const rootNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(rootNodes)
         .to.have.lengthOf(1)
         .and.to.containSubset([
@@ -205,8 +208,8 @@ describe("Learning Snippets", () => {
           },
         ]);
 
-      const element3dNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
-      expect(element3dNodes).to.not.be.empty;
+      const { total } = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
+      expect(total).to.be.greaterThan(0);
     });
 
     it("uses `suppressSimilarAncestorsCheck` attribute", async () => {
@@ -280,7 +283,7 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Verify that RepositoryModel is repeated in the hierarchy
-      const rootSubjectNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+      const rootSubjectNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(rootSubjectNodes)
         .to.have.lengthOf(1)
         .and.to.containSubset([
@@ -290,7 +293,9 @@ describe("Learning Snippets", () => {
           },
         ]);
 
-      const rootSubjectChildNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: rootSubjectNodes[0].key });
+      const rootSubjectChildNodes = await Presentation.presentation
+        .getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: rootSubjectNodes[0].key })
+        .then(async (x) => collect(x.items));
       expect(rootSubjectChildNodes)
         .to.have.lengthOf(1)
         .and.to.containSubset([
@@ -299,7 +304,9 @@ describe("Learning Snippets", () => {
           },
         ]);
 
-      const repositoryModelChildNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: rootSubjectChildNodes[0].key });
+      const repositoryModelChildNodes = await Presentation.presentation
+        .getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: rootSubjectChildNodes[0].key })
+        .then(async (x) => collect(x.items));
       expect(repositoryModelChildNodes)
         .to.have.lengthOf(11)
         .and.to.containSubset([
@@ -338,11 +345,13 @@ describe("Learning Snippets", () => {
           },
         ]);
 
-      const repositoryModelNodes2 = await Presentation.presentation.getNodes({
-        imodel,
-        rulesetOrId: ruleset,
-        parentKey: repositoryModelChildNodes.find((n) => n.label.displayValue === "DgnV8Bridge")!.key,
-      });
+      const repositoryModelNodes2 = await Presentation.presentation
+        .getNodesIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          parentKey: repositoryModelChildNodes.find((n) => n.label.displayValue === "DgnV8Bridge")!.key,
+        })
+        .then(async (x) => collect(x.items));
       expect(repositoryModelNodes2)
         .to.have.lengthOf(1)
         .and.to.containSubset([
@@ -380,7 +389,7 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Verify that SpatialCategory comes before PhysicalModel
-      const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+      const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(nodes).to.have.lengthOf(2);
       expect(nodes[0]).to.containSubset({
         label: { displayValue: "Spatial Category" },
@@ -412,7 +421,7 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Verify that nodes were returned unsorted
-      const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+      const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       const sorted = [...nodes].sort((lhs, rhs) => lhs.label.displayValue.localeCompare(rhs.label.displayValue));
       expect(nodes).to.not.deep.eq(sorted);
     });
@@ -440,9 +449,11 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Verify that Models were not grouped by class
-      const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
-      expect(nodes).to.not.be.empty;
-      nodes.forEach((node) => expect(NodeKey.isClassGroupingNodeKey(node.key)).to.be.false);
+      const { total, items } = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset });
+      expect(total).to.be.greaterThan(0);
+      for await (const node of items) {
+        expect(NodeKey.isClassGroupingNodeKey(node.key)).to.be.false;
+      }
     });
 
     it("uses `groupByLabel` attribute", async () => {
@@ -468,14 +479,18 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Verify that instances were not grouped by label
-      const classGroupingNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+      const classGroupingNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       const classGroupingNode = classGroupingNodes.find((node) => {
         assert(NodeKey.isClassGroupingNodeKey(node.key));
         return node.key.className === "ECDbMeta:ECPropertyDef";
       })!;
-      const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNode.key });
-      expect(nodes).to.not.be.empty;
-      nodes.forEach((node) => expect(NodeKey.isLabelGroupingNodeKey(node.key)).to.be.false);
+
+      // Verify that Models were not grouped by class
+      const { total, items } = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNode.key });
+      expect(total).to.be.greaterThan(0);
+      for await (const node of items) {
+        expect(NodeKey.isLabelGroupingNodeKey(node.key)).to.be.false;
+      }
     });
 
     it("uses `hasChildren` attribute", async () => {
@@ -513,7 +528,7 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Verify that the custom node has `hasChildren` flag and children
-      const rootNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+      const rootNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(rootNodes)
         .to.have.lengthOf(1)
         .and.to.containSubset([
@@ -523,7 +538,9 @@ describe("Learning Snippets", () => {
           },
         ]);
 
-      const modelClassGroupingNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
+      const modelClassGroupingNodes = await Presentation.presentation
+        .getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key })
+        .then(async (x) => collect(x.items));
       expect(modelClassGroupingNodes)
         .to.have.lengthOf(7)
         .and.to.containSubset([
@@ -593,7 +610,7 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Verify that Elements whose Category contains "a" in either UserLabel or CodeValue are returned
-      const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+      const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(nodes)
         .to.have.lengthOf(2)
         .and.to.containSubset([
@@ -650,7 +667,7 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Verify that PhysicalModel node has a child node
-      const rootNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+      const rootNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(rootNodes)
         .to.have.lengthOf(2)
         .and.to.containSubset([
@@ -664,7 +681,9 @@ describe("Learning Snippets", () => {
           },
         ]);
 
-      const modelChildren = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[1].key });
+      const modelChildren = await Presentation.presentation
+        .getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[1].key })
+        .then(async (x) => collect(x.items));
       expect(modelChildren)
         .to.have.lengthOf(1)
         .and.to.containSubset([

@@ -23,11 +23,6 @@ export default class MixinMerger extends ClassMerger<Mixin> {
   }
 
   protected override async mergeAttributes(ecClass: Mixin, attributeName: string, attributeNewValue: any, attributeOldValue: any): Promise<SchemaItemEditResults | boolean> {
-    const results = await super.mergeAttributes(ecClass, attributeName, attributeNewValue, attributeOldValue);
-    if (results === true || this.isSchemaItemEditResults(results) && results.errorMessage !== undefined) {
-      return results;
-    }
-
     switch(attributeName) {
       case "appliesTo":
         if (attributeOldValue !== undefined) {
@@ -35,6 +30,6 @@ export default class MixinMerger extends ClassMerger<Mixin> {
         }
         return true;
     }
-    return false;
+    return super.mergeAttributes(ecClass, attributeName, attributeNewValue, attributeOldValue);
   }
 }

@@ -67,7 +67,7 @@ export enum StandardViewIndex {
   /** Negative X to right, Z up */
   Back = 6,
   /** Isometric: view towards origin from (-1,-1,1) */
-  Iso = 7, //
+  Iso = 7,
   /** Right isometric: view towards origin from (1,-1,1) */
   RightIso = 8,
 }

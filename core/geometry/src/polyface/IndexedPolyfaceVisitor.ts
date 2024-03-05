@@ -64,7 +64,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     this._currentFacetIndex = facetIndex;
     this._nextFacetIndex = facetIndex + 1;
     this._numEdges = this._polyface.numEdgeInFacet(facetIndex);
-    this.resizeAllDataArrays(this._numEdges + this._numWrap);
+    this.resizeAllArrays(this._numEdges + this._numWrap);
     this.gatherIndexedData(this._polyface.data, this._polyface.facetIndex0(this._currentFacetIndex), this._polyface.facetIndex1(this._currentFacetIndex), this._numWrap);
     return true;
   }
