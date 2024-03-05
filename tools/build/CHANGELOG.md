@@ -1,6 +1,11 @@
 # Change Log - @itwin/build-tools
 
-This log was last generated on Fri, 01 Mar 2024 18:22:07 GMT and should not be manually modified.
+This log was last generated on Tue, 05 Mar 2024 20:38:30 GMT and should not be manually modified.
+
+## 4.4.5
+Tue, 05 Mar 2024 20:37:18 GMT
+
+_Version update only_
 
 ## 4.4.4
 Fri, 01 Mar 2024 18:21:01 GMT
