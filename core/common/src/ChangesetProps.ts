@@ -77,6 +77,10 @@ export interface ChangesetProps {
   userCreated: string;
   /** The size, in bytes, of this changeset */
   size: number;
+  /** id of the synchronization task */
+  taskId?: string;
+  /** List of source file names that contained changes which were synchronized to this changeset */
+  changedFiles?: string[];
 }
 
 /** Properties of a changeset file
