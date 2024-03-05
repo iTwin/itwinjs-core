@@ -48,7 +48,7 @@
     "@bentley/quantity-takeoffs-aspects-schema": "^1.0.1",
     "@bentley/spatial-composition-schema": "^1.0.1",
     "@bentley/structural-physical-schema": "^1.0.1",
-    "@bentley/units-schema": "^1.0.7",
+    "@bentley/units-schema": "^1.0.8",
     "@itwin/build-tools": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/eslint-plugin": "4.0.0-dev.44",
