@@ -16,7 +16,7 @@ import { PolyfaceData } from "./PolyfaceData";
 
 /**
  * An `IndexedPolyfaceVisitor` is an iterator-like object that "visits" facets of a mesh.
- * * The visitor extends a `PolyfaceData` class, so it can at any time hold all the data of a single facet.
+ * * The visitor extends `PolyfaceData`, so it can at any time hold all the data of a single facet.
  * @public
  */
 export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisitor {
@@ -220,7 +220,7 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
     }
     return false;
   }
-  /** Advance the iterator to a the next facet in the client polyface. */
+  /** Advance the iterator to the next facet in the client polyface. */
   public override moveToNextFacet(): boolean {
     if (this._nextActiveIndex < this._parentFacetIndices.length) {
       const result = this.moveToReadIndex(this._nextActiveIndex);
