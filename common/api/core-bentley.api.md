@@ -806,6 +806,8 @@ export enum IModelHubStatus {
 // @public
 export enum IModelStatus {
     // (undocumented)
+    Aborted = 65608,
+    // (undocumented)
     AlreadyLoaded = 65537,
     // (undocumented)
     AlreadyOpen = 65538,
@@ -1562,7 +1564,7 @@ export abstract class StatusCategory {
     // (undocumented)
     abstract error: boolean;
     // (undocumented)
-    static for(error: BentleyError): StatusCategory;
+    static for(error: Error): StatusCategory;
     // (undocumented)
     static handlers: Set<StatusCategoryHandler>;
     // (undocumented)
@@ -1570,7 +1572,7 @@ export abstract class StatusCategory {
 }
 
 // @alpha (undocumented)
-export type StatusCategoryHandler = (error: BentleyError) => StatusCategory | undefined;
+export type StatusCategoryHandler = (error: Error) => StatusCategory | undefined;
 
 // @internal
 export interface StatusCodeWithMessage<ErrorCodeType> {

@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ECClass, ECClassModifier, Mixin, parseClassModifier, Property, SchemaItemKey, SchemaItemType, schemaItemTypeToString, SchemaKey } from "@itwin/ecschema-metadata";
+import { ECClass, ECClassModifier, parseClassModifier, Property, SchemaItemKey, SchemaItemType, schemaItemTypeToString, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaItemEditResults } from "../Editing/Editor";
 import { MutableClass } from "../Editing/Mutable/MutableClass";
 import { SchemaMergeContext } from "./SchemaMerger";
-import { BaseClassDelta, ChangeType, ClassChanges, EntityMixinChanges, PropertyChanges, PropertyValueChange } from "../Validation/SchemaChanges";
+import { BaseClassDelta, ChangeType, ClassChanges, PropertyChanges, PropertyValueChange } from "../Validation/SchemaChanges";
 import { mergeCustomAttributes } from "./CustomAttributeMerger";
 import { createPropertyFromProps, mergePropertyAttributeValueChanges } from "./PropertyMerger";
 
@@ -24,8 +24,8 @@ export class ClassMerger<TClass extends ECClass> {
     return { errorMessage: `${schemaItemTypeToString(ecClass.schemaItemType)} class type is not implemented.`};
   }
 
-  protected async addMixin(itemKey: SchemaItemKey, mixin: Mixin): Promise<SchemaItemEditResults> {
-    return { errorMessage: `Adding mixin '${mixin.name}' to '${itemKey.name}' class is not implemented.` };
+  protected async merge(itemKey: SchemaItemKey, _change: ClassChanges): Promise<SchemaItemEditResults> {
+    return { itemKey };
   }
 
   protected async mergeAttributes(ecClass: TClass, attributeName: string, attributeNewValue: any, attributeOldValue: any): Promise<SchemaItemEditResults | boolean> {
@@ -96,65 +96,55 @@ export class ClassMerger<TClass extends ECClass> {
     return { errorMessage: `Changing the class '${itemKey.name}' baseClass is not supported.`};
   }
 
-  private async addMixins(itemKey: SchemaItemKey, entityMixinChanges: Iterable<EntityMixinChanges>, changeType?: ChangeType): Promise<SchemaItemEditResults> {
-    if (changeType === ChangeType.Missing) {
-      for (const entityMixinChange of entityMixinChanges) {
-        for (const change of entityMixinChange.entityMixinChange) {
-          const mixins = change.diagnostic.messageArgs! as unknown as [Mixin];
-          for (const mixin of mixins) {
-            const result = await this.addMixin(itemKey, mixin);
-            if (result.errorMessage !== undefined) {
-              return result;
-            }
-          }
+  private async mergeAttributeValueChanges(itemKey: SchemaItemKey, propertyValueChanges: PropertyValueChange[]): Promise<SchemaItemEditResults> {
+    if (propertyValueChanges.length > 0) {
+
+      const targetItem = await this.context.targetSchema.lookupItem<TClass>(itemKey);
+      if (targetItem === undefined) {
+        return { errorMessage: `'${itemKey.name}' class could not be located in the merged schema.` };
+      }
+
+      for (const change of propertyValueChanges) {
+        const [attributeName, attributeNewValue, attributeOldValue] = change.diagnostic.messageArgs!;
+        const results = await this.mergeAttributes(targetItem, attributeName, attributeNewValue, attributeOldValue);
+        if (this.isSchemaItemEditResults(results) && results.errorMessage !== undefined) {
+          return results;
         }
       }
-      return {};
     }
-    return { errorMessage: `Changing the class '${itemKey.name}' mixins is not supported.`};
+
+    return { itemKey };
   }
 
-  private async mergeAttributeValueChanges(itemKey: SchemaItemKey, propertyValueChanges: PropertyValueChange[]) {
-    if (propertyValueChanges.length === 0) {
-      return;
-    }
-
-    const targetItem = await this.context.targetSchema.lookupItem<TClass>(itemKey);
-    if (targetItem === undefined) {
-      throw new Error(`'${itemKey.name}' class could not be located in the merged schema.`);
-    }
-
-    for (const change of propertyValueChanges) {
-      const [attributeName, attributeNewValue, attributeOldValue] = change.diagnostic.messageArgs!;
-      const results = await this.mergeAttributes(targetItem, attributeName, attributeNewValue, attributeOldValue);
-      if (this.isSchemaItemEditResults(results) && results.errorMessage !== undefined) {
-        throw new Error(results.errorMessage);
-      }
+  private async handleError(callback: Promise<SchemaItemEditResults>) {
+    const result = await callback;
+    if (result.errorMessage) {
+      throw new Error(result.errorMessage);
     }
   }
 
   private async mergePropertyChanges(itemKey: SchemaItemKey, propertyChanges: Iterable<PropertyChanges>): Promise<SchemaItemEditResults> {
     const targetItem = await this.context.targetSchema.lookupItem<TClass>(itemKey);
     if (targetItem === undefined) {
-      return { errorMessage: `'${itemKey.name}' class could not be located in the merged schema.`};
+      return { itemKey, errorMessage: `'${itemKey.name}' class could not be located in the merged schema.`};
     }
 
     for (const change of propertyChanges) {
       if (change.propertyMissing?.changeType === ChangeType.Missing) {
         if (await targetItem.getProperty(change.ecTypeName) !== undefined) {
-          return { errorMessage: `Merged schema already contains a class '${itemKey.name}' property '${change.ecTypeName}'.`};
+          return { itemKey, errorMessage: `Merged schema already contains a class '${itemKey.name}' property '${change.ecTypeName}'.`};
         }
 
         const sourceProperty = change.propertyMissing.diagnostic.ecDefinition as unknown as Property;
         const results  = await createPropertyFromProps(this.context, itemKey, sourceProperty);
         if (results.errorMessage !== undefined) {
-          return { errorMessage: results.errorMessage};
+          return { itemKey, errorMessage:  results.errorMessage };
         }
       } else {
         const targetProperty = (await targetItem.getProperty(change.ecTypeName))!;
         const results = await mergePropertyAttributeValueChanges(this.context, targetProperty, change.propertyValueChanges);
         if (results.errorMessage !== undefined) {
-          return results;
+          return { itemKey, errorMessage: results.errorMessage  };
         }
       }
 
@@ -163,7 +153,7 @@ export class ClassMerger<TClass extends ECClass> {
       });
 
       if (mergeResults.errorMessage !== undefined) {
-        return { errorMessage: mergeResults.errorMessage};
+        return { itemKey, errorMessage: mergeResults.errorMessage};
       }
     }
     return { itemKey };
@@ -184,10 +174,7 @@ export class ClassMerger<TClass extends ECClass> {
           throw new Error(`Merged schema already contains a class '${change.ecTypeName}'.`);
         }
 
-        const results = await merger.create(context.targetSchema.schemaKey, sourceItem);
-        if (results.errorMessage !== undefined) {
-          throw new Error(results.errorMessage);
-        }
+        await merger.handleError(merger.create(context.targetSchema.schemaKey, sourceItem));
       }
     }
   }
@@ -195,45 +182,29 @@ export class ClassMerger<TClass extends ECClass> {
   // 2nd pass to merge baseClass, properties, mixins and CA.
   public static async mergeItemContentChanges(context: SchemaMergeContext, classChanges: Iterable<ClassChanges>){
     const merger = new this(context);
-    let mergeResults: SchemaItemEditResults;
-
     for (const change of classChanges) {
       const targetItemKey = new SchemaItemKey(change.ecTypeName, context.targetSchema.schemaKey);
       const changeType = change.schemaItemMissing?.changeType;
 
       if (change.baseClassDelta !== undefined) {
-        const results = await merger.setBaseClass(targetItemKey, change.baseClassDelta, changeType);
-        if (results.errorMessage !== undefined) {
-          throw new Error(results.errorMessage);
-        }
+        await merger.handleError(merger.setBaseClass(targetItemKey, change.baseClassDelta, changeType));
       }
 
-      if (change.entityMixinChanges.size > 0) {
-        const results = await merger.addMixins(targetItemKey, change.entityMixinChanges.values(), changeType);
-        if (results.errorMessage !== undefined) {
-          throw new Error(results.errorMessage);
-        }
-      }
+      // merge class attributes
+      await merger.handleError(merger.mergeAttributeValueChanges(targetItemKey, change.propertyValueChanges));
 
-      // merge class attribute values
-      await merger.mergeAttributeValueChanges(targetItemKey, change.propertyValueChanges);
+      // merge class mixins/constraints/etc
+      await merger.handleError(merger.merge(targetItemKey, change));
 
       // merge class property attribute values
       if (change.propertyChanges.size > 0) {
-        mergeResults = await merger.mergePropertyChanges(targetItemKey, change.propertyChanges.values());
-        if (mergeResults.errorMessage !== undefined) {
-          throw new Error(mergeResults.errorMessage);
-        }
+        await merger.handleError(merger.mergePropertyChanges(targetItemKey, change.propertyChanges.values()));
       }
 
       // merge custom attributes
-      mergeResults = await mergeCustomAttributes(merger.context, change.customAttributeChanges.values(), async (ca) => {
+      await merger.handleError(mergeCustomAttributes(merger.context, change.customAttributeChanges.values(), async (ca) => {
         return merger.context.editor.entities.addCustomAttribute(targetItemKey, ca);
-      });
-
-      if (mergeResults.errorMessage !== undefined) {
-        throw new Error(mergeResults.errorMessage);
-      }
+      }));
     }
   }
 }

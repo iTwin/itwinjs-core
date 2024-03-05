@@ -56,7 +56,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that the custom property was created
-        const content = (await Presentation.presentation.getContent({
+        const content = (await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x12" }]),
@@ -114,7 +114,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that the custom property was created
-        const content = (await Presentation.presentation.getContent({
+        const content = (await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x12" }]),
@@ -176,7 +176,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that all related properties are placed into a category nested under the default category
-        const content = (await Presentation.presentation.getContent({
+        const content = (await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
@@ -251,7 +251,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that the two related properties are picked up
-        const content = (await Presentation.presentation.getContent({
+        const content = (await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
@@ -305,7 +305,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure the field has `autoExpand` attribute set to `true`
-        const content = (await Presentation.presentation.getContent({
+        const content = (await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
@@ -386,7 +386,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure only one related property is loaded
-        const content = (await Presentation.presentation.getContent({
+        const content = (await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
@@ -445,7 +445,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure properties of physical partition and repository link are loaded
-        const content = (await Presentation.presentation.getContent({
+        const content = (await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
@@ -501,7 +501,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that the relationship property is picked up
-        const content = (await Presentation.presentation.getContent({
+        const content = (await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "ECDbMeta:ECClassDef", id: "0x3b" }]),
@@ -556,7 +556,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that the related property is categorized under relationship category.
-        const content = (await Presentation.presentation.getContent({
+        const content = (await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),

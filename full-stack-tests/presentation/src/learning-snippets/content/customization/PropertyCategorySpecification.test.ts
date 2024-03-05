@@ -58,7 +58,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure the field is assigned a category with correct label
-        const content = (await Presentation.presentation.getContent({
+        const content = (await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
@@ -105,7 +105,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure the field is assigned a category with correct label
-        const content = (await Presentation.presentation.getContent({
+        const content = (await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
@@ -154,7 +154,7 @@ describe("Learning Snippets", () => {
 
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertyCategorySpecification.Description.Result
         // Ensure category description is assigned
-        const content = (await Presentation.presentation.getContent({
+        const content = (await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
@@ -207,7 +207,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure categories' hierarchy was set up correctly
-        const content = (await Presentation.presentation.getContent({
+        const content = (await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
@@ -269,7 +269,7 @@ describe("Learning Snippets", () => {
 
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertyCategorySpecification.Priority.Result
         // Ensure that correct category priorities are assigned
-        const content = (await Presentation.presentation.getContent({
+        const content = (await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
@@ -331,7 +331,7 @@ describe("Learning Snippets", () => {
 
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertyCategorySpecification.AutoExpand.Result
         // Ensure that categories have the `expand` flag
-        const content = (await Presentation.presentation.getContent({
+        const content = (await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
@@ -384,7 +384,7 @@ describe("Learning Snippets", () => {
 
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertyCategorySpecification.Renderer.Result
         // Ensure that categories have the `expand` flag
-        const content = (await Presentation.presentation.getContent({
+        const content = (await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),

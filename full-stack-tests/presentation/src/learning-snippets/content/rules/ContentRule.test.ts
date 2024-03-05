@@ -8,6 +8,7 @@ import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
+import { collect } from "../../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -62,22 +63,22 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Expect element content when providing `bis.Element` input
-        const elementContent = await Presentation.presentation.getContent({
+        const elementContent = await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]),
           descriptor: {},
         });
-        expect(elementContent!.contentSet.length).to.eq(1);
-        expect(elementContent!.contentSet[0].primaryKeys).to.deep.eq([{ className: "Generic:PhysicalObject", id: "0x74" }]);
+        expect(elementContent!.total).to.eq(1);
+        expect((await elementContent!.items.next()).value.primaryKeys).to.deep.eq([{ className: "Generic:PhysicalObject", id: "0x74" }]);
 
-        const modelContent = await Presentation.presentation.getContent({
+        const modelContent = await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
           descriptor: {},
         });
-        expect(modelContent!.contentSet.length).to.eq(62);
+        expect(modelContent!.total).to.eq(62);
       });
 
       it("uses ruleset variables in rule condition", async () => {
@@ -113,7 +114,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // No variables set - no content
-        let content = await Presentation.presentation.getContent({
+        let content = await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet(),
@@ -123,13 +124,14 @@ describe("Learning Snippets", () => {
 
         // Set DISPLAY_CATEGORIES to get content of all Category instances in the imodel
         await Presentation.presentation.vars(ruleset.id).setBool("DISPLAY_CATEGORIES", true);
-        content = await Presentation.presentation.getContent({
+        content = await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet(),
           descriptor: {},
         });
-        expect(content!.contentSet)
+        let contentSet = await collect(content!.items);
+        expect(contentSet)
           .to.containSubset([
             {
               primaryKeys: [{ className: "BisCore:SpatialCategory", id: "0x17" }],
@@ -139,13 +141,14 @@ describe("Learning Snippets", () => {
 
         // Set DISPLAY_MODELS to also get geometric model instances' content
         await Presentation.presentation.vars(ruleset.id).setBool("DISPLAY_MODELS", true);
-        content = await Presentation.presentation.getContent({
+        content = await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet(),
           descriptor: {},
         });
-        expect(content!.contentSet)
+        contentSet = await collect(content!.items);
+        expect(contentSet)
           .to.containSubset([
             {
               primaryKeys: [{ className: "BisCore:SpatialCategory", id: "0x17" }],
@@ -186,7 +189,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // The iModel uses BisCore older than 1.0.2 - no content should be returned
-        const content = await Presentation.presentation.getContent({
+        const content = await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet(),
@@ -229,13 +232,14 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Expect GeometricModel record to be first even though category rule was defined first
-        const content = await Presentation.presentation.getContent({
+        const content = await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet(),
           descriptor: {},
         });
-        expect(content!.contentSet)
+        const contentSet = await collect(content!.items);
+        expect(contentSet)
           .to.containSubset([
             {
               primaryKeys: [{ className: "BisCore:PhysicalModel", id: "0x1c" }],
@@ -282,13 +286,14 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Expect only `GeometricModel` record, as the rule for `SpatialCategory` is skipped due to `onlyIfNotHandled` attribute
-        const content = await Presentation.presentation.getContent({
+        const content = await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet(),
           descriptor: {},
         });
-        expect(content!.contentSet)
+        const contentSet = await collect(content!.items);
+        expect(contentSet)
           .to.containSubset([
             {
               primaryKeys: [{ className: "BisCore:PhysicalModel", id: "0x1c" }],

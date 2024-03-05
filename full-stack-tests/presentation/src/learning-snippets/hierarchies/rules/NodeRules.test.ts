@@ -8,6 +8,7 @@ import { Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
+import { collect } from "../../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -57,14 +58,16 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Expect A root node with a B child
-        const rootNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const rootNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(rootNodes).to.containSubset([
           {
             label: { displayValue: "A" },
           },
         ]);
 
-        const childNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
+        const childNodes = await Presentation.presentation
+          .getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key })
+          .then(async (x) => collect(x.items));
         expect(childNodes).to.containSubset([
           {
             label: { displayValue: "B" },
@@ -107,12 +110,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // No variables set - no nodes
-        let nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        let nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(nodes).to.be.empty;
 
         // Set DISPLAY_B_NODES to get node B
         await Presentation.presentation.vars(ruleset.id).setBool("DISPLAY_B_NODES", true);
-        nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(nodes)
           .to.have.lengthOf(1)
           .and.to.containSubset([
@@ -123,7 +126,7 @@ describe("Learning Snippets", () => {
 
         // Set DISPLAY_A_NODES to also get node A
         await Presentation.presentation.vars(ruleset.id).setBool("DISPLAY_A_NODES", true);
-        nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(nodes)
           .to.have.lengthOf(2)
           .and.to.containSubset([
@@ -165,8 +168,8 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // The iModel uses BisCore older than 1.0.2 - no nodes should be returned
-        const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
-        expect(nodes).to.be.empty;
+        const { total } = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset });
+        expect(total).to.eq(0);
       });
 
       it("uses `priority` attribute", async () => {
@@ -204,7 +207,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Verify B comes before A
-        const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(nodes).to.be.lengthOf(2);
         expect(nodes[0]).containSubset({
           label: { displayValue: "B" },
@@ -251,7 +254,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Expect only "B" node, as the rule for "A" is skipped due to `onlyIfNotHandled` attribute
-        const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(nodes)
           .to.have.lengthOf(1)
           .and.to.containSubset([
@@ -307,7 +310,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Expect global label override to be applied on "A" and nested label override to be applied on "B"
-        const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(nodes)
           .to.have.lengthOf(2)
           .and.to.containSubset([
@@ -361,7 +364,7 @@ describe("Learning Snippets", () => {
 
         // The root node rule meets schema requirement, but only the first sub-condition's condition
         // attribute evaluates to `true` - expect only the "A" node.
-        const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(nodes)
           .to.have.lengthOf(1)
           .and.to.containSubset([
@@ -406,7 +409,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // The root node is expected to have `isExpanded = true`
-        const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(nodes)
           .to.have.lengthOf(1)
           .and.to.containSubset([

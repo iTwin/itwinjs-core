@@ -8,6 +8,7 @@ import { Ruleset, StandardNodeTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
+import { collect } from "../../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -62,7 +63,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Confirm there's no "Not Specified" node
-        const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(nodes).to.not.containSubset([
           {
             key: {
@@ -112,7 +113,7 @@ describe("Learning Snippets", () => {
 
         // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Grouping.PropertyGroup.ImageId.Result
         // Confirm that all grouping nodes got the `imageId`
-        const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(nodes).to.not.be.empty;
         nodes.forEach((node) => {
           expect(node).to.containSubset({
@@ -178,7 +179,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Confirm that elements were correctly grouped into ranges
-        const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(nodes)
           .to.have.lengthOf(2)
           .and.to.containSubset([

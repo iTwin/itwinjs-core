@@ -8,6 +8,7 @@ import { Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
 import { printRuleset } from "./Utils";
+import { collect } from "../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -58,14 +59,14 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // No variable set - the request should return 0 nodes
-      const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+      const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(nodes.length).to.eq(0);
 
       // Set variable to "models" and ensure we get model grouping nodes
       // __PUBLISH_EXTRACT_START__ Presentation.RulesetVariables.InRuleCondition.SetToModels
       await Presentation.presentation.vars(ruleset.id).setString("TREE_TYPE", "models");
       // __PUBLISH_EXTRACT_END__
-      const modelNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+      const modelNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(modelNodes).to.containSubset([
         {
           label: { displayValue: "Definition Model" },
@@ -94,7 +95,7 @@ describe("Learning Snippets", () => {
       // __PUBLISH_EXTRACT_START__ Presentation.RulesetVariables.InRuleCondition.SetToElements
       await Presentation.presentation.vars(ruleset.id).setString("TREE_TYPE", "elements");
       // __PUBLISH_EXTRACT_END__
-      const elementNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+      const elementNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(elementNodes).to.containSubset([
         {
           label: { displayValue: "3D Display Style" },
@@ -177,7 +178,7 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // No variable set - the request should return grouping nodes of all elements
-      let nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+      let nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(nodes).to.containSubset([
         {
           label: { displayValue: "3D Display Style" },
@@ -239,7 +240,7 @@ describe("Learning Snippets", () => {
       // __PUBLISH_EXTRACT_START__ Presentation.RulesetVariables.InInstanceFilter.SetIds
       await Presentation.presentation.vars(ruleset.id).setId64s("ELEMENT_IDS", ["0x1", "0x74", "0x40"]);
       // __PUBLISH_EXTRACT_END__
-      nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+      nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(nodes).to.containSubset([
         {
           label: { displayValue: "Physical Object" },
@@ -254,7 +255,7 @@ describe("Learning Snippets", () => {
 
       // Set the value to different element IDs and ensure we get their class grouping nodes
       await Presentation.presentation.vars(ruleset.id).setId64s("ELEMENT_IDS", ["0x17", "0x16"]);
-      nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+      nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(nodes).to.containSubset([
         {
           label: { displayValue: "Definition Partition" },
@@ -268,7 +269,7 @@ describe("Learning Snippets", () => {
       // __PUBLISH_EXTRACT_START__ Presentation.RulesetVariables.InInstanceFilter.Unset
       await Presentation.presentation.vars(ruleset.id).unset("ELEMENT_IDS");
       // __PUBLISH_EXTRACT_END__
-      nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+      nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(nodes).to.containSubset([
         {
           label: { displayValue: "3D Display Style" },
@@ -363,7 +364,7 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // No variable set - the request should return nodes without any prefix
-      let nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+      let nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(nodes).to.containSubset([
         {
           label: { displayValue: "Default - View 1" },
@@ -383,7 +384,7 @@ describe("Learning Snippets", () => {
       // __PUBLISH_EXTRACT_START__ Presentation.RulesetVariables.InCustomizationRuleValueExpression.SetValue
       await Presentation.presentation.vars(ruleset.id).setString("PREFIX", "test");
       // __PUBLISH_EXTRACT_END__
-      nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+      nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(nodes).to.containSubset([
         {
           label: { displayValue: "test Default - View 1" },

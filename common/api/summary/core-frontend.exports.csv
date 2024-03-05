@@ -76,7 +76,7 @@ internal;AzureMapsLayerImageryProvider
 internal;B3dmReader 
 internal;BackgroundMapGeometry
 beta;class BaseUnitFormattingSettingsProvider 
-internal;BatchedTileIdMap
+internal;BatchedTileIdMap 
 public;BatchOptions
 beta;BatchTableProperties
 public;BeButton

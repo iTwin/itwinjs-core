@@ -9,7 +9,6 @@ import { ColorDefProps } from '@itwin/core-common';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { EcefLocationProps } from '@itwin/core-common';
 import { ElementGeometryBuilderParams } from '@itwin/core-common';
-import { ElementGeometryBuilderParamsForPart } from '@itwin/core-common';
 import { ElementGeometryDataEntry } from '@itwin/core-common';
 import { ElementGeometryInfo } from '@itwin/core-common';
 import { ElementGeometryOpcode } from '@itwin/core-common';
@@ -27,8 +26,8 @@ import { XYZProps } from '@itwin/core-geometry';
 export interface BasicManipulationCommandIpc extends EditCommandIpc {
     // (undocumented)
     deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
-    insertGeometricElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<Id64String>;
-    insertGeometryPart(props: GeometryPartProps, data?: ElementGeometryBuilderParamsForPart): Promise<Id64String>;
+    insertGeometricElement(props: GeometricElementProps): Promise<Id64String>;
+    insertGeometryPart(props: GeometryPartProps): Promise<Id64String>;
     requestElementGeometry(id: Id64String, filter?: FlatBufferGeometryFilter): Promise<ElementGeometryInfo | undefined>;
     // (undocumented)
     rotatePlacement(ids: CompressedId64Set, matrix: Matrix3dProps, aboutCenter: boolean): Promise<IModelStatus>;
