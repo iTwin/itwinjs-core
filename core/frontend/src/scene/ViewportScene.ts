@@ -36,6 +36,8 @@ export interface ISceneObject extends ViewportDecorator {
   // collectStatistics(stats: RenderMemory.Statistics): void;
 
   // ###TODO reprojection between local and scene coordinate spaces
+  // ###TODO query bounding boxes (or union thereof) for scene entities
+  // ###TODO bounding box of the entire scene object
 }
 
 export interface BaseSceneObject {
