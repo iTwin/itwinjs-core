@@ -144,17 +144,13 @@ export interface RealityModelSceneObject extends ISceneObject, Omit<BaseSceneObj
   readonly realityModel: RealityModel;
 }
 
-export interface RealityModelSceneObjects extends Iterable<RealityModelSceneObject> {
-  
-}
+export type RealityModelSceneObjects = Iterable<RealityModelSceneObject>;
 
 export interface IModelSceneObject extends ISceneObject, Omit<BaseSceneObject, "view"> {
   readonly view: IModelView;
 }
 
-export interface IModelSceneObjects<T extends IModelView> extends Iterable<T> {
-  
-}
+export type IModelSceneObjects<T extends IModelView> = Iterable<T>;
 
 export interface ScenePresentation2d {
   // ###TODO grid
@@ -186,9 +182,7 @@ export interface CustomSceneObject extends ISceneObject, Omit<BaseSceneObject, "
   customType?: string;
 }
 
-export interface CustomSceneObjects extends Iterable<CustomSceneObject> {
-  
-}
+export type CustomSceneObjects = Iterable<CustomSceneObject>;
 
 export interface MapSceneObject extends ISceneObject, Omit<BaseSceneObject, "map"> {
   readonly map: any; // ###TODO
@@ -198,9 +192,7 @@ export interface TiledGraphicsSceneObject extends ISceneObject, Omit<BaseSceneOb
   readonly graphicsProvider: TiledGraphicsProvider;
 }
 
-export interface TiledGraphicsSceneObjects extends Iterable<TiledGraphicsSceneObject> {
-  
-}
+export type TiledGraphicsSceneObjects = Iterable<TiledGraphicsSceneObject>;
 
 export type SceneObject = RealityModelSceneObject | IModelSceneObject | PresentationSceneObject | CustomSceneObject | MapSceneObject | TiledGraphicsSceneObject;
 

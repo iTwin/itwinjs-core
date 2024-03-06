@@ -15,7 +15,7 @@ export const ITWINJS_CORE_VERSION = packageJson.version as string;
 const COPYRIGHT_NOTICE = 'Copyright © 2017-2024 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
 import { UiAdmin } from "@itwin/appui-abstract";
-import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
+import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger, ProcessDetector, TransientIdSequence } from "@itwin/core-bentley";
 import {
   AuthorizationClient, IModelStatus, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity,
 } from "@itwin/core-common";
@@ -212,6 +212,7 @@ export class IModelApp {
   private static _hubAccess?: FrontendHubAccess;
   private static _realityDataAccess?: RealityDataAccess;
   private static _publicPath: string;
+  private static _transientIds: TransientIdSequence;
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
@@ -261,6 +262,11 @@ export class IModelApp {
    * @beta
    */
   public static get userPreferences(): UserPreferencesAccess | undefined { return this._userPreferences; }
+  /** A sequence of transient [Id64String]($bentley)s that can be used as unique identifiers for things like pickable [[Decorator]]s. The Ids are unique only within
+   * the duration of a session - i.e., between calls to [[startup]] and [[shutdown]] - after which the sequence is reset.
+   * So, a transient Id generated during one session should not be reused during a different session.
+   */
+  public static get transientIds(): TransientIdSequence { return this._transientIds; }
   /** The Id of this application. Applications must set this to the Global Product Registry ID (GPRID) for usage logging. */
   public static get applicationId(): string { return this._applicationId; }
   /** The version of this application. Must be set for usage logging. */
@@ -417,6 +423,7 @@ export class IModelApp {
     this._realityDataSourceProviders = new RealityDataSourceProviderRegistry();
     this._realityDataAccess = opts.realityDataAccess;
     this._publicPath = opts.publicPath ?? "";
+    this._transientIds = new TransientIdSequence();
 
     [
       this.renderSystem,

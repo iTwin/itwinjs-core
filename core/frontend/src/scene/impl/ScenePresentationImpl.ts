@@ -40,7 +40,7 @@ export class ScenePresentation3dImpl extends ScenePresentationImpl implements Sc
   }
 
   private get _style3d() { return this._style as DisplayStyle3dState; }
-  
+
   get ambientOcclusion() { return this._style3d.settings.ambientOcclusionSettings; }
   set ambientOcclusion(settings: AmbientOcclusion.Settings) { this._style3d.settings.ambientOcclusionSettings = settings; }
 

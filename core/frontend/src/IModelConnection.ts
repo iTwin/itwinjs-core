@@ -78,8 +78,11 @@ export abstract class IModelConnection extends IModel {
    * @internal
    */
   public get subcategories(): SubCategoriesCache { return this.categories.cache; }
-  /** Generator for unique Ids of transient graphics for this IModelConnection. */
-  public readonly transientIds = new TransientIdSequence();
+  /** Generator for unique Ids of transient graphics for this IModelConnection.
+   * This is just an alias for [[IModelApp.transientIds]].
+   * @SCENE_DEPRECATE Use [[IModelApp.transientIds]].
+   */
+  public get transientIds(): TransientIdSequence { return IModelApp.transientIds; }
   /** The Geographic location services available for this iModelConnection. */
   public readonly geoServices: GeoServices;
   /** @internal Whether GCS has been disabled for this iModelConnection. */

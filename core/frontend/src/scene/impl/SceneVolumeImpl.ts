@@ -17,7 +17,7 @@ export abstract class SceneVolumeImpl implements ISceneVolume {
   protected constructor(view: ViewState) {
     this._view = view;
   }
-  
+
   allow3dManipulations() { return this._view.allow3dManipulations(); }
 
   getOrigin() { return this._view.getOrigin(); }
@@ -76,7 +76,7 @@ export abstract class SceneVolumeImpl implements ISceneVolume {
 
 export class SceneVolume3dImpl extends SceneVolumeImpl implements SceneVolume3d {
   readonly is3d: true = true;
-  
+
   constructor(view: ViewState3d) {
     super(view);
   }
@@ -105,67 +105,67 @@ export class SceneVolume3dImpl extends SceneVolumeImpl implements SceneVolume3d 
   lookAt(args: LookAtPerspectiveArgs | LookAtOrthoArgs | LookAtUsingLensAngle): ViewStatus {
     return this._view3d.lookAt(args);
   }
-  
+
   changeFocusDistance(newDist: number): ViewStatus {
     return this._view3d.changeFocusDistance(newDist);
   }
-  
+
   changeFocusFromPoint(pt: Point3d) {
     this._view3d.changeFocusFromPoint(pt);
   }
-  
+
   moveCameraLocal(distance: Vector3d): ViewStatus {
     return this._view3d.moveCameraLocal(distance);
   }
-  
+
   moveCameraWorld(distance: Vector3d): ViewStatus {
     return this._view3d.moveCameraWorld(distance);
   }
-  
+
   rotateCameraLocal(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus {
     return this._view3d.rotateCameraLocal(angle, axis, aboutPt);
   }
-  
+
   rotateCameraWorld(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus {
     return this._view3d.rotateCameraWorld(angle, axis, aboutPt);
   }
-  
+
   centerEyePoint(backDistance?: number): void {
     return this._view3d.centerEyePoint(backDistance);
   }
-  
+
   centerFocusDistance(): void {
     return this._view3d.centerFocusDistance();
   }
-  
+
   verifyFocusPlane(): void {
     return this._view3d.verifyFocusPlane();
   }
-  
+
   getEyePoint(): Point3d {
     return this._view3d.getEyePoint();
   }
-  
+
   getEyeOrOrthographicViewPoint(): Point3d {
     return this._view3d.getEyeOrOrthographicViewPoint();
   }
-  
+
   setEyePoint(eye: XYAndZ): void {
     return this._view3d.setEyePoint(eye);
   }
-  
+
   getLensAngle(): Angle {
     return this._view3d.getLensAngle();
   }
-  
+
   setLensAngle(angle: Angle): void {
     return this._view3d.setLensAngle(angle);
   }
-  
+
   getFocusDistance(): number {
     return this._view3d.getFocusDistance();
   }
-  
+
   setFocusDistance(distance: number): void {
     return this._view3d.setFocusDistance(distance);
   }

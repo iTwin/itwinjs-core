@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64String, OrderedId64Iterable, assert } from "@itwin/core-bentley";
+import { assert, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
-  FeatureAppearance, PlanProjectionSettings, PlanarClipMaskSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlags,
+  FeatureAppearance, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlags,
 } from "@itwin/core-common";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "../../DisplayStyleState";
 import { IViewStyle, View2dStyle, View3dStyle } from "../ViewStyle";
@@ -13,7 +13,7 @@ import { ViewState, ViewState2d, ViewState3d } from "../../ViewState";
 
 export abstract class ViewStyleImpl implements IViewStyle {
   protected _style: DisplayStyleState;
-  
+
   protected constructor(view: ViewState) {
     this._style = view.displayStyle;
 

@@ -78,10 +78,12 @@ class TestApp extends MockRender.App {
 }
 
 describe("IModelApp", () => {
-  before(async () => {
+  async function startupTestApp() {
     await TestApp.startup();
-    await IModelApp.localization.registerNamespace("TestApp");  // we must wait for the localization read to finish.
-  });
+    return IModelApp.localization.registerNamespace("TestApp");  // we must wait for the localization read to finish.
+  }
+
+  before(async () => startupTestApp());
   after(async () => TestApp.shutdown());
 
   it("TestApp should override correctly", async () => {
@@ -169,5 +171,19 @@ describe("IModelApp", () => {
   it("Should create mock render system without WebGL", () => {
     expect(IModelApp.hasRenderSystem).to.be.true;
     expect(IModelApp.renderSystem).instanceof(MockRender.System);
+  });
+
+  describe("transientIds", () => {
+    it("resets on shutdown", async () => {
+      const first = IModelApp.transientIds.getNext();
+      const second = IModelApp.transientIds.getNext();
+      expect(first).not.to.equal(second);
+
+      await TestApp.shutdown();
+      await startupTestApp();
+
+      expect(IModelApp.transientIds.getNext()).to.equal(first);
+      expect(IModelApp.transientIds.getNext()).to.equal(second);
+    });
   });
 });

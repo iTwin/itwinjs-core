@@ -28,7 +28,7 @@ export interface ISceneVolume {
 
   savePose(): ViewPose;
   applyPose(pose: ViewPose): void;
-  
+
   // ###TODO probably belongs on Scene since it needs to know what "up", "left", and "front" are.
   // setStandardRotation(id: StandardViewId): void;
   // ###TODO on Scene setStandardGlobalRotation(_id: StandardViewId): void;
@@ -36,7 +36,7 @@ export interface ISceneVolume {
   getTargetPoint(result?: Point3d): Point3d;
 
   computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d, enforceFrontToBackRatio?: boolean): { map: Map4d | undefined, frustFraction: number };
-  calculateFrustum(result?: Frustum): Frustum | undefined; 
+  calculateFrustum(result?: Frustum): Frustum | undefined;
   calculateFocusCorners(): Point3d[]; // ###TODO document that it always returns exactly 4 points
 
   setupFromFrustum(inFrustum: Frustum, opts?: OnViewExtentsError): ViewStatus;
@@ -46,9 +46,9 @@ export interface ISceneVolume {
 
   /** @internal */
   fixAspectRatio(windowAspect: number): void;
-  
+
   adjustAspectRatio(aspect: number): void;
-  
+
   getAspectRatio(): number;
   getAspectRatioSkew(): number;
   setAspectRatioSkew(skew: number): void;
@@ -125,7 +125,7 @@ export interface SceneVolume3d extends ISceneVolume {
 
   // ###TODO this assumes z-up
   // isEyePointAbove(elevation: number): boolean;
-  
+
   /* ###TODO global/cartographic stuff here, or on Scene and/or SceneMap and/or SceneObject?
   getEarthFocalPoint(): Point3d | undefined;
   alignToGlobe(target: Point3d, transition?: boolean): ViewStatus;

@@ -6,9 +6,9 @@
  * @module Views
  */
 
-import { Id64String, OrderedId64Iterable, assert } from "@itwin/core-bentley";
+import { assert, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
-  FeatureAppearance, PlanProjectionSettings, PlanarClipMaskSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlags,
+  FeatureAppearance, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlags,
 } from "@itwin/core-common";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "../DisplayStyleState";
 
@@ -24,8 +24,8 @@ export interface IViewStyle {
 
   // ###TODO renderTimeline Id and scheduleScriptProps
 
-  readonly subCategoryOverrides: ReadonlyMap<Id64String, Readonly<SubCategoryOverride>>;  
-  readonly modelAppearanceOverrides: ReadonlyMap<Id64String, Readonly<FeatureAppearance>>;  
+  readonly subCategoryOverrides: ReadonlyMap<Id64String, Readonly<SubCategoryOverride>>;
+  readonly modelAppearanceOverrides: ReadonlyMap<Id64String, Readonly<FeatureAppearance>>;
 
   // For persistent reality models only.
   // ###TODO consolidate these into a Map a la subCategoryOverrides
@@ -43,7 +43,7 @@ export interface IViewStyle {
 export interface View3dStyle extends IViewStyle {
   readonly is3d: true;
   readonly is2d?: never;
-  
+
   // ###TODO permit Scene's HiddenLine.Settings to be overridden/replaced?
 
   getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;

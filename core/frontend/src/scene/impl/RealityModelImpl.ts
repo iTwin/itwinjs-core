@@ -17,7 +17,6 @@ import { GuidString, Id64String } from "@itwin/core-bentley";
 import { ModelClassifierParams, ModelClipMaskParams, RealityModel, RealityModelSceneObject, SceneObjectClassifiers, SpatialScene } from "../ViewportScene";
 import { SceneObjectImpl } from "./SceneObjectImpl";
 
-
 export class RealityModelImpl implements RealityModel {
   state: ContextRealityModelState;
 
@@ -34,7 +33,7 @@ export class RealityModelImpl implements RealityModel {
 
   // ###TODO
   public readonly classifiers = { } as unknown as SceneObjectClassifiers;
-  
+
   // ###TODO get/set clipMask
 }
 

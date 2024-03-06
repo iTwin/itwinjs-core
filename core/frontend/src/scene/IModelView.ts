@@ -114,10 +114,10 @@ export interface IModelView2d extends IIModelView {
 }
 
 export interface ViewModelSelector {
- models: Set<Id64String>;
- isEquivalentTo(other: ViewModelSelector): boolean;
- addModels(models: Id64Arg): void;
- dropModels(models: Id64Arg): void;
+  models: Set<Id64String>;
+  isEquivalentTo(other: ViewModelSelector): boolean;
+  addModels(models: Id64Arg): void;
+  dropModels(models: Id64Arg): void;
 }
 
 export interface IModelSpatialView extends IModelView3d {
@@ -128,12 +128,8 @@ export interface IModelSpatialView extends IModelView3d {
   // computeSpatialFitRange(options?: ComputeSpatialViewFitRangeOptions): AxisAlignedBox3d;
 }
 
-export interface DrawingView extends IModelView2d {
+export type DrawingView = IModelView2d;
 
-}
-
-export interface SheetView extends IModelView2d {
-
-}
+export type SheetView = IModelView2d;
 
 export type IModelView = DrawingView | SheetView | IModelSpatialView;

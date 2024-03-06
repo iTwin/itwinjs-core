@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { GuidString, Id64Arg, Id64String, assert } from "@itwin/core-bentley";
+import { assert, GuidString, Id64Arg, Id64String } from "@itwin/core-bentley";
 import { View2dStyle, View3dStyle, ViewStyle, ViewStyleFlags } from "../ViewStyle";
 import { AxisAlignedBox3d, ModelClipGroups, ViewFlags } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
@@ -16,7 +16,7 @@ import { ComputeDisplayTransformArgs, ModelDisplayTransformProvider, ViewState, 
 import { Viewport } from "../../Viewport";
 import { RenderClipVolume } from "../../render/RenderClipVolume";
 import { ComputeSpatialViewFitRangeOptions, SpatialViewState } from "../../SpatialViewState";
-import { IIModelView, IModelView3d, IModelSpatialView, ViewCategorySelector, ViewModelSelector, IModelView } from "../IModelView";
+import { IIModelView, IModelSpatialView, IModelView, IModelView3d, ViewCategorySelector, ViewModelSelector } from "../IModelView";
 import { View3dStyleImpl } from "./ViewStyleImpl";
 import { SceneObjectImpl } from "./SceneObjectImpl";
 import { IModelSceneObject, ViewportScene } from "../ViewportScene";
@@ -37,7 +37,7 @@ export class ViewCategorySelectorImpl implements ViewCategorySelector {
   constructor(public readonly view: ViewState) { }
 
   private get _selector() { return this.view.categorySelector; }
-  
+
   get categories() { return this._selector.categories; }
   set categories(categories: Set<Id64String>) { this._selector.categories = categories; }
 
@@ -62,7 +62,7 @@ export abstract class IModelViewImpl implements IIModelView {
   }
 
   get iModel() { return this.impl.iModel; }
-  
+
   get style() { return this._style; }
 
   get viewFlags() { return this.style.viewFlags; }
@@ -156,14 +156,14 @@ export class ViewModelSelectorImpl implements ViewModelSelector {
 
 export class IModelSpatialViewImpl extends View3dImpl implements IModelSpatialView {
   readonly modelSelector: ViewModelSelector;
-  
+
   constructor(view: SpatialViewState) {
     super(view);
     this.modelSelector = new ViewModelSelectorImpl(view);
   }
 }
 
-type ViewImpl = IModelSpatialViewImpl /* ###TODO | DrawingViewImpl | SheetViewImpl */
+type ViewImpl = IModelSpatialViewImpl; /* ###TODO | DrawingViewImpl | SheetViewImpl */
 
 export class IModelSceneObjectImpl<View extends ViewImpl> extends SceneObjectImpl implements IModelSceneObject {
   readonly _view: View;

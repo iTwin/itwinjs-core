@@ -80,7 +80,7 @@ export class ContextRealityModelState extends ContextRealityModel {
   public getModelId(): Id64String {
     return this._treeRef.modelId;
   }
-  
+
   /** Whether the reality model spans the entire globe ellipsoid. */
   public get isGlobal(): boolean {
     return this.treeRef.isGlobal;
