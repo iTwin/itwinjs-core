@@ -17,7 +17,6 @@ import { EcefLocationProps } from '@itwin/core-common';
 import { EdgeParameterRangeProps } from '@itwin/editor-common';
 import { EditCommandIpc } from '@itwin/editor-common';
 import { ElementGeometryBuilderParams } from '@itwin/core-common';
-import { ElementGeometryBuilderParamsForPart } from '@itwin/core-common';
 import { ElementGeometryCacheFilter } from '@itwin/editor-common';
 import { ElementGeometryInfo } from '@itwin/core-common';
 import { ElementGeometryResultOptions } from '@itwin/editor-common';
@@ -64,9 +63,9 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     // (undocumented)
     deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
     // (undocumented)
-    insertGeometricElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<Id64String>;
+    insertGeometricElement(props: GeometricElementProps): Promise<Id64String>;
     // (undocumented)
-    insertGeometryPart(props: GeometryPartProps, data?: ElementGeometryBuilderParamsForPart): Promise<Id64String>;
+    insertGeometryPart(props: GeometryPartProps): Promise<Id64String>;
     // (undocumented)
     onStart(): Promise<string>;
     // (undocumented)

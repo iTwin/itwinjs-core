@@ -11,8 +11,8 @@ import { join } from "path";
 import * as touch from "touch";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
-  IModelStatus, JsonUtils, Logger, OpenMode, UnexpectedErrors,
+  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
+  IModelStatus, JsonUtils, Logger, LogLevel, OpenMode, UnexpectedErrors,
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
@@ -21,7 +21,7 @@ import {
   ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
+  MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, OpenCheckpointArgs, ProfileOptions,
   PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps,
   SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions,
   ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
@@ -59,6 +59,17 @@ import { BaseSettings, SettingDictionary, SettingName, SettingResolver, Settings
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
 
 import type { BlobContainer } from "./BlobContainerService";
+/** @internal */
+export interface ChangesetConflictArgs {
+  cause: DbConflictCause;
+  opcode: DbOpcode;
+  indirect: boolean;
+  tableName: string;
+  changesetFile?: string;
+  getForeignKeyConflicts: () => number;
+  dump: () => void;
+  setLastError: (message: string) => void;
+}
 
 // spell:ignore fontid fontmap
 
@@ -151,6 +162,8 @@ export interface LockControl {
   }): Promise<void>;
   /**
    * Release all locks currently held by this Briefcase from the lock server.
+   * Not possible to release locks unless push or abandon all changes. Should only be called internally.
+   * @internal
    */
   releaseAllLocks(): Promise<void>;
 }
@@ -393,7 +406,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public async refreshContainer(_userAccessToken: AccessToken): Promise<void> { }
+  public async refreshContainerForRpc(_userAccessToken: AccessToken): Promise<void> { }
 
   /** Event called when the iModel is about to be closed. */
   public readonly onBeforeClose = new BeEvent<() => void>();
@@ -960,6 +973,13 @@ export abstract class IModelDb extends IModel {
 
     try {
       const nativeDb = new IModelHost.platform.DgnDb();
+      const container = props?.container;
+      if (container) {
+        // temp files for cloud-based Dbs should be in the profileDir in a subdirectory named for their container
+        const baseDir = join(IModelHost.profileDir, "CloudDbTemp", container.containerId);
+        IModelJsFs.recursiveMkDirSync(baseDir);
+        props = { ...props, tempFileBase: join(baseDir, file.path) };
+      }
       nativeDb.openIModel(file.path, openMode, upgradeOptions, props, props?.container);
       return nativeDb;
     } catch (err: any) {
@@ -2660,6 +2680,140 @@ export class BriefcaseDb extends IModelDb {
     return briefcaseDb;
   }
 
+  /* This is called by native code when applying a changeset */
+  private onChangesetConflict(args: ChangesetConflictArgs): DbConflictResolution | undefined {
+    // returning undefined will result in native handler to resolve conflict
+
+    const category = "DgnCore";
+    const interpretConflictCause = (cause: DbConflictCause) => {
+      switch (cause) {
+        case DbConflictCause.Data:
+          return "data";
+        case DbConflictCause.NotFound:
+          return "not found";
+        case DbConflictCause.Conflict:
+          return "conflict";
+        case DbConflictCause.Constraint:
+          return "constraint";
+        case DbConflictCause.ForeignKey:
+          return "foreign key";
+      }
+    };
+
+    if (args.cause === DbConflictCause.Data && !args.indirect) {
+      /*
+      * From SQLite Docs CHANGESET_DATA as the second argument
+      * when processing a DELETE or UPDATE change if a row with the required
+      * PRIMARY KEY fields is present in the database, but one or more other
+      * (non primary-key) fields modified by the update do not contain the
+      * expected "before" values.
+      *
+      * The conflicting row, in this case, is the database row with the matching
+      * primary key.
+      *
+      * Another reason this will be invoked is when SQLITE_CHANGESETAPPLY_FKNOACTION
+      * is passed ApplyChangeset(). The flag will disable CASCADE action and treat
+      * them as CASCADE NONE resulting in conflict handler been called.
+      */
+      if (!this.txns.hasPendingTxns) {
+        // This changeset is bad. However, it is already in the timeline. We must allow services such as
+        // checkpoint-creation, change history, and other apps to apply any changeset that is in the timeline.
+        Logger.logWarning(category, "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.");
+        args.dump();
+      } else {
+        const msg = "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.";
+        args.setLastError(msg);
+        Logger.logError(category, msg);
+        args.dump();
+        return DbConflictResolution.Abort;
+      }
+    }
+
+    // Handle some special cases
+    if (args.cause === DbConflictCause.Conflict) {
+      // From the SQLite docs: "CHANGESET_CONFLICT is passed as the second argument to the conflict handler while processing an INSERT change if the operation would result in duplicate primary key values."
+      // This is always a fatal error - it can happen only if the app started with a briefcase that is behind the tip and then uses the same primary key values (e.g., ElementIds)
+      // that have already been used by some other app using the SAME briefcase ID that recently pushed changes. That can happen only if the app makes changes without first pulling and acquiring locks.
+      if (!this.txns.hasPendingTxns) {
+        // This changeset is bad. However, it is already in the timeline. We must allow services such as
+        // checkpoint-creation, change history, and other apps to apply any changeset that is in the timeline.
+        Logger.logWarning(category, "PRIMARY KEY INSERT CONFLICT - resolved by replacing the existing row with the incoming row");
+        args.dump();
+      } else {
+        const msg = "PRIMARY KEY INSERT CONFLICT - rejecting this changeset";
+        args.setLastError(msg);
+        Logger.logError(category, msg);
+        args.dump();
+        return DbConflictResolution.Abort;
+      }
+    }
+
+    if (args.cause === DbConflictCause.ForeignKey) {
+      // Note: No current or conflicting row information is provided if it's a FKey conflict
+      // Since we abort on FKey conflicts, always try and provide details about the error
+      const nConflicts = args.getForeignKeyConflicts();
+
+      // Note: There is no performance implication of follow code as it happen toward end of
+      // apply_changeset only once so we be querying value for 'DebugAllowFkViolations' only once.
+      if (this.nativeDb.queryLocalValue("DebugAllowFkViolations")) {
+        Logger.logError(category, `Detected ${nConflicts} foreign key conflicts in changeset. Continuing merge as 'DebugAllowFkViolations' flag is set. Run 'PRAGMA foreign_key_check' to get list of violations.`);
+        return DbConflictResolution.Skip;
+      } else {
+        const msg = `Detected ${nConflicts} foreign key conflicts in ChangeSet. Aborting merge.`;
+        args.setLastError(msg);
+        return DbConflictResolution.Abort;
+      }
+    }
+
+    if (args.cause === DbConflictCause.NotFound) {
+      /*
+       * Note: If DbConflictCause = NotFound, the primary key was not found, and returning DbConflictResolution::Replace is
+       * not an option at all - this will cause a BE_SQLITE_MISUSE error.
+       */
+      return DbConflictResolution.Skip;
+    }
+
+    if (args.cause === DbConflictCause.Constraint) {
+      if (Logger.isEnabled(category, LogLevel.Info)) {
+        Logger.logInfo(category, "------------------------------------------------------------------");
+        Logger.logInfo(category, `Conflict detected - Cause: ${interpretConflictCause(args.cause)}`);
+        args.dump();
+      }
+
+      Logger.logWarning(category, "Constraint conflict handled by rejecting incoming change. Constraint conflicts are NOT expected. These happen most often when two clients both insert elements with the same code. That indicates a bug in the client or the code server.");
+      return DbConflictResolution.Skip;
+    }
+
+    /*
+     * If we don't have a control, we always accept the incoming revision in cases of conflicts:
+     *
+     * + In a briefcase with no local changes, the state of a row in the Db (i.e., the final state of a previous revision)
+     *   may not exactly match the initial state of the incoming revision. This will cause a conflict.
+     *      - The final state of the incoming (later) revision will always be setup exactly right to accommodate
+     *        cases where dependency handlers won't be available (for instance on the server), and we have to rely on
+     *        the revision to correctly set the final state of the row in the Db. Therefore it's best to resolve the
+     *        conflict in favor of the incoming change.
+     * + In a briefcase with local changes, the state of relevant dependent properties (due to propagated indirect changes)
+     *   may not correspond with the initial state of these properties in an incoming revision. This will cause a conflict.
+     *      - Resolving the conflict in favor of the incoming revision may cause some dependent properties to be set
+     *        incorrectly, but the dependency handlers will run anyway and set this right. The new changes will be part of
+     *        a subsequent revision generated from that briefcase.
+     *
+     * + Note that conflicts can NEVER happen between direct changes made locally and direct changes in the incoming revision.
+     *      - Only one user can make a direct change at one time, and the next user has to pull those changes before getting a
+     *        lock to the same element
+     *
+     * + Also see comments in TxnManager::MergeDataChanges()
+     */
+    if (Logger.isEnabled(category, LogLevel.Info)) {
+      Logger.logInfo(category, "------------------------------------------------------------------");
+      Logger.logInfo(category, `Conflict detected - Cause: ${interpretConflictCause(args.cause)}`);
+      args.dump();
+      Logger.logInfo(category, "Conflicting resolved by replacing the existing entry with the change");
+    }
+    return DbConflictResolution.Replace;
+  }
+
   /** If the briefcase is read-only, reopen the native briefcase for writing.
    * Execute the supplied function.
    * If the briefcase was read-only, reopen the native briefcase as read-only.
@@ -2793,11 +2947,11 @@ class RefreshV2CheckpointSas {
 export class SnapshotDb extends IModelDb {
   public override get isSnapshot() { return true; }
   private _refreshSas: RefreshV2CheckpointSas | undefined;
-  /** Timer used to restart the default txn on the snapshotdb after some inactivity. This is only used for v2 checkpoints, and is useful because it aids in the process of cachefile management.
-   *  Restarting the default txn lets CloudSQLite know that any blocks that may have been read during the lifetime of that txn can now be safely added to the LRU list that CloudSQLite manages.
-   *  Without restarting the default txn, CloudSQLite is more likely to get into a state where it can not evict any blocks to make space for more blocks.
+  /** Timer used to restart the default txn on the SnapshotDb after some inactivity. This is only used for checkpoints.
+   *  Restarting the default txn lets CloudSqlite know that any blocks that may have been read may now be ejected.
+   *  Without restarting the default txn, CloudSQLite can get into a state where it can not evict any blocks to make space for more blocks.
    */
-  private _restartDefaultTxnTimer: NodeJS.Timeout | undefined;
+  private _restartDefaultTxnTimer?: NodeJS.Timeout;
   private _createClassViewsOnClose?: boolean;
   public static readonly onOpen = new BeEvent<(path: LocalFileName, opts?: SnapshotDbOpenArgs) => void>();
   public static readonly onOpened = new BeEvent<(_iModelDb: SnapshotDb) => void>();
@@ -2894,32 +3048,15 @@ export class SnapshotDb extends IModelDb {
     return db;
   }
 
-  /** Open a previously downloaded V1 checkpoint file.
-   * @note The key is generated by this call is predictable and is formed from the IModelId and ChangeSetId.
-   * This is so every backend working on the same checkpoint will use the same key, to permit multiple backends
-   * servicing the same checkpoint.
-   * @internal
-   */
-  public static openCheckpointV1(fileName: LocalFileName, checkpoint: CheckpointProps) {
-    const snapshot = this.openFile(fileName, { key: CheckpointManager.getKey(checkpoint) });
-    snapshot._iTwinId = checkpoint.iTwinId;
-    return snapshot;
-  }
-
-  /** Open a V2 *checkpoint*, a special form of snapshot iModel that represents a read-only snapshot of an iModel from iModelHub at a particular point in time.
-   * > Note: The checkpoint daemon must already be running and a checkpoint must already exist in iModelHub's storage *before* this function is called.
-   * @param checkpoint The checkpoint to open
-   * @note The key generated by this call is predictable and is formed from the IModelId and ChangeSetId.
-   * This is so every backend working on the same checkpoint will use the same key, to permit multiple backends
-   * servicing the same checkpoint.
-   * @throws [[IModelError]] If the checkpoint is not found in iModelHub or the checkpoint daemon is not supported in the current environment.
-   * @internal
-   */
-  public static async openCheckpointV2(checkpoint: CheckpointProps): Promise<SnapshotDb> {
+  private static async attachAndOpenCheckpoint(checkpoint: CheckpointProps): Promise<SnapshotDb> {
     const { dbName, container } = await V2CheckpointManager.attach(checkpoint);
     const key = CheckpointManager.getKey(checkpoint);
-    const tempFileBase = join(IModelHost.cacheDir, `${checkpoint.iModelId}\$${checkpoint.changeset.id}`); // temp files for this checkpoint should go in the cacheDir.
-    const snapshot = SnapshotDb.openFile(dbName, { key, tempFileBase, container });
+    return SnapshotDb.openFile(dbName, { key, container });
+  }
+
+  /** @internal */
+  public static async openCheckpointFromRpc(checkpoint: CheckpointProps): Promise<SnapshotDb> {
+    const snapshot = await this.attachAndOpenCheckpoint(checkpoint);
     snapshot._iTwinId = checkpoint.iTwinId;
     try {
       CheckpointManager.validateCheckpointGuids(checkpoint, snapshot);
@@ -2931,16 +3068,25 @@ export class SnapshotDb extends IModelDb {
     // unref timer, so it doesn't prevent a process from shutting down.
     snapshot._restartDefaultTxnTimer = setTimeout(() => {
       snapshot.restartDefaultTxn();
-    }, (10 * 60) * 1000).unref(); // 10 * 60 is 10 minutes in seconds, then converted to milliseconds (* 1000);
-    snapshot._refreshSas = new RefreshV2CheckpointSas(container.accessToken, checkpoint.reattachSafetySeconds);
+    }, (10 * 60) * 1000).unref(); // 10 minutes
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    snapshot._refreshSas = new RefreshV2CheckpointSas(snapshot.nativeDb.cloudContainer!.accessToken, checkpoint.reattachSafetySeconds);
     return snapshot;
+  }
+
+  /**
+   * Open a Checkpoint directly from its cloud container.
+   * @beta
+   */
+  public static async openCheckpoint(args: OpenCheckpointArgs): Promise<SnapshotDb> {
+    return this.attachAndOpenCheckpoint(await CheckpointManager.toCheckpointProps(args));
   }
 
   /** Used to refresh the container sasToken using the current user's accessToken.
    * Also restarts the timer which causes the default txn to be restarted on db if the timer activates.
    * @internal
    */
-  public override async refreshContainer(userAccessToken: AccessToken): Promise<void> {
+  public override async refreshContainerForRpc(userAccessToken: AccessToken): Promise<void> {
     this._restartDefaultTxnTimer?.refresh();
     return this._refreshSas?.refreshSas(userAccessToken, this);
   }

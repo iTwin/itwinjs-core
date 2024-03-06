@@ -15,17 +15,18 @@ import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { IModelRoutingContext } from "./IModelRoutingContext";
+import { IpcApp } from "./IpcApp";
 
 const loggerCategory = FrontendLoggerCategory.IModelConnection;
 
 /**
- * An IModelConnection to a checkpoint of an iModel, hosted on a remote backend over RPC.
- * Due to the nature of RPC requests, the backend servicing this connection may change over time, and there may even be more than one backend
- * at servicing requests at the same time. For this reason, this type of connection may only be used with Checkpoint iModels that are
- * guaranteed to be the same on every backend. Obviously Checkpoint iModels only allow readonly access.
+ * An IModelConnection to a Checkpoint of an iModel.
+ * @see [CheckpointConnection]($docs/learning/frontend/IModelConnection)
  * @public
  */
 export class CheckpointConnection extends IModelConnection {
+  private readonly _fromIpc: boolean;
+
   /** The Guid that identifies the iTwin that owns this iModel. */
   public override get iTwinId(): GuidString { return super.iTwinId!; }
   /** The Guid that identifies this iModel. */
@@ -35,28 +36,35 @@ export class CheckpointConnection extends IModelConnection {
   public get isClosed(): boolean { return this._isClosed ? true : false; }
   protected _isClosed?: boolean;
 
+  protected constructor(props: IModelConnectionProps, fromIpc: boolean) {
+    super(props);
+    this._fromIpc = fromIpc;
+  }
+
   /** Type guard for instanceof [[CheckpointConnection]] */
   public override isCheckpointConnection(): this is CheckpointConnection { return true; }
 
   /**
-   * Open a readonly IModelConnection to an iModel over RPC.
+   * Open a readonly IModelConnection to a Checkpoint of an iModel.
    */
-  public static async openRemote(iTwinId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<CheckpointConnection> {
-    const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
-    const accessToken = await IModelApp.getAccessToken();
-
+  public static async openRemote(iTwinId: GuidString, iModelId: GuidString, version = IModelVersion.latest()): Promise<CheckpointConnection> {
     if (undefined === IModelApp.hubAccess)
-      throw new Error("Missing an implementation of FrontendHubAccess on IModelApp, it is required to open a remote iModel Connection. Please provide an implementation to the IModelApp.startup using IModelAppOptions.hubAccess.");
+      throw new Error("Missing an implementation of IModelApp.hubAccess");
 
+    const accessToken = await IModelApp.getAccessToken();
     const changeset = await IModelApp.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version });
 
-    const iModelRpcProps: IModelRpcOpenProps = { iTwinId, iModelId, changeset };
-    const openResponse = await this.callOpen(iModelRpcProps, routingContext);
-
-    const connection = new this(openResponse);
-    RpcManager.setIModel(connection);
-    connection.routingContext = routingContext;
-    RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
+    let connection: CheckpointConnection;
+    const iModelProps = { iTwinId, iModelId, changeset };
+    if (IpcApp.isValid) {
+      connection = new this(await IpcApp.appFunctionIpc.openCheckpoint(iModelProps), true);
+    } else {
+      const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
+      connection = new this(await this.callOpen(iModelProps, routingContext), false);
+      RpcManager.setIModel(connection);
+      connection.routingContext = routingContext;
+      RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
+    }
 
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
@@ -141,7 +149,11 @@ export class CheckpointConnection extends IModelConnection {
       return;
 
     this.beforeClose();
-    RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
+    if (this._fromIpc)
+      await IpcApp.appFunctionIpc.closeIModel(this._fileKey);
+    else
+      RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
+
     this._isClosed = true;
   }
 }

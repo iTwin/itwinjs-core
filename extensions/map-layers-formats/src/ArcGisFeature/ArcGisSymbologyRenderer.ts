@@ -5,7 +5,7 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
-import { EsriPMS, EsriRenderer, EsriSFS, EsriSimpleRenderer, EsriSLS, EsriSLSStyle, EsriSMS, EsriSymbol, EsriUniqueValueRenderer } from "./EsriSymbology";
+import { EsriClassBreaksRenderer, EsriPMS, EsriRenderer, EsriSFS, EsriSimpleRenderer, EsriSLS, EsriSLSStyle, EsriSMS, EsriSymbol, EsriUniqueValueRenderer } from "./EsriSymbology";
 import { ArcGisAttributeDrivenSymbology } from "@itwin/core-frontend";
 import { Angle } from "@itwin/core-geometry";
 
@@ -25,6 +25,8 @@ export abstract class ArcGisSymbologyRenderer {
   public static create(renderer: EsriRenderer|undefined, defaultSymbol: EsriSymbol) {
     if (renderer?.type === "uniqueValue") {
       return new ArcGisUniqueValueSymbologyRenderer(renderer as EsriUniqueValueRenderer, defaultSymbol);
+    } else if (renderer?.type === "classBreaks") {
+      return new ArcGisClassBreaksSymbologyRenderer(renderer as EsriClassBreaksRenderer, defaultSymbol);
     } else {
       return new ArcGisSimpleSymbologyRenderer(renderer, defaultSymbol);
     }
@@ -367,6 +369,69 @@ export class ArcGisUniqueValueSymbologyRenderer extends ArcGisSimpleSymbologyRen
     // Fallback to default symbology to make sure we render something
     if (!newSymbolApplied) {
       this._symbol = this.defaultSymbol;
+    }
+  }
+}
+
+/** @internal */
+export class ArcGisClassBreaksSymbologyRenderer extends ArcGisSimpleSymbologyRenderer implements ArcGisAttributeDrivenSymbology {
+  public override isAttributeDriven(): this is ArcGisAttributeDrivenSymbology {return true;}
+  protected _activeFeatureAttributes:  {[key: string]: any} | undefined;
+  protected cbRenderer: EsriClassBreaksRenderer;
+
+  public get rendererFields() {
+    if (this.cbRenderer)
+      return [this.cbRenderer.field];
+    else
+      return undefined;
+  }
+
+  public  constructor(renderer: EsriClassBreaksRenderer, defaultSymbol: EsriSymbol) {
+    super(renderer, defaultSymbol);
+
+    this.cbRenderer = (this.renderer as EsriClassBreaksRenderer);
+    if (this.cbRenderer.defaultSymbol) {
+      this._defaultSymbol = this.cbRenderer.defaultSymbol;
+      this._symbol = this.defaultSymbol;
+    }
+  }
+
+  public setActiveFeatureAttributes(attributes: { [key: string]: any }) {
+    this._activeFeatureAttributes = attributes;
+
+    const newSymbolApplied = false;
+    if (this._activeFeatureAttributes) {
+      if (Object.keys(this._activeFeatureAttributes).includes(this.cbRenderer.field)) {
+
+        const queryValue = this._activeFeatureAttributes[this.cbRenderer.field];
+
+        if (queryValue !== null && queryValue !== undefined) {
+          let currentMinValue: number|undefined;
+          let currentClassIdx = 0;
+          do {
+            const currentClass = this.cbRenderer.classBreakInfos[currentClassIdx];
+            if (currentClass.classMinValue !== undefined) {
+              currentMinValue = currentClass.classMinValue;
+            } else if (currentClass.classMinValue === undefined && currentClassIdx > 0) {
+              currentMinValue = this.cbRenderer.classBreakInfos[currentClassIdx-1].classMaxValue;
+            } else {
+              currentMinValue = this.cbRenderer.minValue;
+            }
+
+            if ( queryValue >=  currentMinValue
+              && queryValue <=  currentClass.classMaxValue) {
+              this._symbol = currentClass.symbol;
+              return;
+            }
+          }
+          while (++currentClassIdx < this.cbRenderer.classBreakInfos.length);
+        }
+      }
+
+      // Fallback to default symbology to make sure we render something
+      if (!newSymbolApplied) {
+        this._symbol = this.defaultSymbol;
+      }
     }
   }
 }

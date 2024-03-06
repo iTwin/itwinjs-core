@@ -7,7 +7,7 @@
  */
 
 import { GuidString } from "@itwin/core-bentley";
-import { ChangesetIdWithIndex, LocalFileName } from "./ChangesetProps";
+import { ChangesetIdWithIndex, ChangesetIndexOrId, LocalFileName } from "./ChangesetProps";
 import { IModelEncryptionProps, OpenDbKey } from "./IModel";
 import { IModelVersionProps } from "./IModelVersion";
 
@@ -161,6 +161,20 @@ export interface RequestNewBriefcaseProps {
 
   /** Id of the change set of the new briefcase. If undefined, use latest. */
   asOf?: IModelVersionProps;
+}
+
+/**
+ * Arguments to open a Checkpoint directly from its cloud container
+ * @beta
+ */
+export interface OpenCheckpointArgs {
+  readonly iTwinId: GuidString;
+
+  /** Id of the iModel */
+  readonly iModelId: GuidString;
+
+  /** changeset for the checkpoint. If undefined, attempt to open the checkpoint for the latest changeset. */
+  readonly changeset?: ChangesetIndexOrId;
 }
 
 /**

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
 import * as sinon from "sinon";
@@ -10,21 +10,20 @@ import { Id64, Id64Arg, Id64String, using } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, SelectionSet, SelectionSetEventType } from "@itwin/core-frontend";
 import { InstanceKey, KeySet, SelectionScope } from "@itwin/presentation-common";
 import {
-  createRandomECInstanceKey, createRandomId, createRandomSelectionScope, createRandomTransientId, waitForPendingAsyncs,
+  createRandomECInstanceKey,
+  createRandomId,
+  createRandomSelectionScope,
+  createRandomTransientId,
+  waitForPendingAsyncs,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { HiliteSetProvider, SelectionManager, SelectionScopesManager } from "../../presentation-frontend";
 import { ToolSelectionSyncHandler, TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
 
 const generateSelection = (): InstanceKey[] => {
-  return [
-    createRandomECInstanceKey(),
-    createRandomECInstanceKey(),
-    createRandomECInstanceKey(),
-  ];
+  return [createRandomECInstanceKey(), createRandomECInstanceKey(), createRandomECInstanceKey()];
 };
 
 describe("SelectionManager", () => {
-
   let selectionManager: SelectionManager;
   let baseSelection: InstanceKey[];
   const imodelMock = moq.Mock.ofType<IModelConnection>();
@@ -47,7 +46,6 @@ describe("SelectionManager", () => {
   });
 
   describe("getSelectionLevels", () => {
-
     it("returns empty list when there're no selection levels", () => {
       expect(selectionManager.getSelectionLevels(imodelMock.object)).to.be.empty;
     });
@@ -64,11 +62,9 @@ describe("SelectionManager", () => {
       selectionManager.addToSelection("", imodelMock.object, [], 2);
       expect(selectionManager.getSelectionLevels(imodelMock.object)).to.deep.eq([0, 1]);
     });
-
   });
 
   describe("addToSelection", () => {
-
     it("adds selection on an empty selection", () => {
       selectionManager.addToSelection(source, imodelMock.object, baseSelection);
       const selectedItemsSet = selectionManager.getSelection(imodelMock.object);
@@ -132,11 +128,9 @@ describe("SelectionManager", () => {
       const selectedItemsSet = selectionManager.getSelection(imodelMock.object, 1);
       expect(selectedItemsSet.isEmpty).to.be.false;
     });
-
   });
 
   describe("replaceSelection", () => {
-
     it("replaces selection on an empty selection", () => {
       selectionManager.replaceSelection(source, imodelMock.object, baseSelection);
       const selectedItemsSet = selectionManager.getSelection(imodelMock.object);
@@ -199,11 +193,9 @@ describe("SelectionManager", () => {
       const selectedItemsSet = selectionManager.getSelection(imodelMock.object, 1);
       expect(selectedItemsSet.isEmpty).to.be.false;
     });
-
   });
 
   describe("clearSelection", () => {
-
     it("clears empty selection", () => {
       selectionManager.clearSelection(source, imodelMock.object);
       const selectedItemsSet = selectionManager.getSelection(imodelMock.object);
@@ -264,11 +256,9 @@ describe("SelectionManager", () => {
       const selectedItemsSet = selectionManager.getSelection(imodelMock.object, 1);
       expect(selectedItemsSet.isEmpty).to.be.false;
     });
-
   });
 
   describe("removeFromSelection", () => {
-
     it("removes part of the selection", () => {
       selectionManager.addToSelection(source, imodelMock.object, baseSelection);
       selectionManager.removeFromSelection(source, imodelMock.object, [baseSelection[1], baseSelection[2]]);
@@ -339,11 +329,9 @@ describe("SelectionManager", () => {
       const selectedItemsSet = selectionManager.getSelection(imodelMock.object, 1);
       expect(selectedItemsSet.isEmpty).to.be.false;
     });
-
   });
 
   describe("addToSelectionWithSelectionScope", () => {
-
     let scope: SelectionScope;
     let ids: Id64String[];
 
@@ -351,7 +339,10 @@ describe("SelectionManager", () => {
       scope = createRandomSelectionScope();
       ids = [createRandomId()];
       scopesMock.setup(async (x) => x.getSelectionScopes(imodelMock.object)).returns(async () => [scope]);
-      scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, ids, scope)).returns(async () => new KeySet(baseSelection)).verifiable();
+      scopesMock
+        .setup(async (x) => x.computeSelection(imodelMock.object, ids, scope))
+        .returns(async () => new KeySet(baseSelection))
+        .verifiable();
     });
 
     it("adds scoped selection", async () => {
@@ -363,11 +354,9 @@ describe("SelectionManager", () => {
       }
       scopesMock.verifyAll();
     });
-
   });
 
   describe("replaceSelectionWithSelectionScope", () => {
-
     let scope: SelectionScope;
     let ids: Id64String[];
 
@@ -375,7 +364,10 @@ describe("SelectionManager", () => {
       scope = createRandomSelectionScope();
       ids = [createRandomId()];
       scopesMock.setup(async (x) => x.getSelectionScopes(imodelMock.object)).returns(async () => [scope]);
-      scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, ids, scope)).returns(async () => new KeySet(baseSelection)).verifiable();
+      scopesMock
+        .setup(async (x) => x.computeSelection(imodelMock.object, ids, scope))
+        .returns(async () => new KeySet(baseSelection))
+        .verifiable();
     });
 
     it("replaces empty selection with scoped selection", async () => {
@@ -387,11 +379,9 @@ describe("SelectionManager", () => {
       }
       scopesMock.verifyAll();
     });
-
   });
 
   describe("removeFromSelectionWithSelectionScope", () => {
-
     let scope: SelectionScope;
     let ids: Id64String[];
 
@@ -399,7 +389,10 @@ describe("SelectionManager", () => {
       scope = createRandomSelectionScope();
       ids = [createRandomId()];
       scopesMock.setup(async (x) => x.getSelectionScopes(imodelMock.object)).returns(async () => [scope]);
-      scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, ids, scope)).returns(async () => new KeySet(baseSelection)).verifiable();
+      scopesMock
+        .setup(async (x) => x.computeSelection(imodelMock.object, ids, scope))
+        .returns(async () => new KeySet(baseSelection))
+        .verifiable();
     });
 
     it("removes scoped selection", async () => {
@@ -411,11 +404,9 @@ describe("SelectionManager", () => {
       expect(selectedItemsSet.has(additionalKey)).true;
       scopesMock.verifyAll();
     });
-
   });
 
   describe("handleEvent", () => {
-
     it("fires `selectionChange` event after `addToSelection`, `replaceSelection`, `clearSelection`, `removeFromSelection`", () => {
       const raiseEventSpy = sinon.spy(selectionManager.selectionChange, "raiseEvent");
       selectionManager.addToSelection(source, imodelMock.object, baseSelection);
@@ -433,11 +424,9 @@ describe("SelectionManager", () => {
       selectionManager.replaceSelection(source, imodelMock.object, []);
       expect(raiseEventSpy, "Expected selectionChange.raiseEvent to not be called").to.not.have.been.called;
     });
-
   });
 
   describe("setSyncWithIModelToolSelection", () => {
-
     let ss: SelectionSet;
 
     beforeEach(() => {
@@ -482,22 +471,23 @@ describe("SelectionManager", () => {
     });
 
     describe("syncing with imodel tool selection", () => {
-
       let syncer: ToolSelectionSyncHandler;
 
-      const matchKeyset = (keys: KeySet) => sinon.match((value: KeySet) => {
-        return (value instanceof KeySet)
-          && value.size === keys.size
-          && value.hasAll(keys);
-      });
+      const matchKeyset = (keys: KeySet) =>
+        sinon.match((value: KeySet) => {
+          return value instanceof KeySet && value.size === keys.size && value.hasAll(keys);
+        });
 
       const equalId64Arg = (lhs: Id64Arg, rhs: Id64Arg) => {
-        if (Id64.sizeOf(lhs) !== Id64.sizeOf(rhs))
+        if (Id64.sizeOf(lhs) !== Id64.sizeOf(rhs)) {
           return false;
+        }
 
-        for (const lhsId of Id64.iterable(lhs))
-          if (!Id64.has(rhs, lhsId))
+        for (const lhsId of Id64.iterable(lhs)) {
+          if (!Id64.has(rhs, lhsId)) {
             return false;
+          }
+        }
 
         return true;
       };
@@ -507,10 +497,10 @@ describe("SelectionManager", () => {
       });
 
       describe("choosing scope", () => {
-
-        it("uses \"element\" scope when `activeScope = undefined`", async () => {
+        it('uses "element" scope when `activeScope = undefined`', async () => {
           scopesMock.setup((x) => x.activeScope).returns(() => undefined);
-          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), { id: "element" }))
+          scopesMock
+            .setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), { id: "element" }))
             .returns(async () => new KeySet([createRandomECInstanceKey()]))
             .verifiable();
           ss.add(createRandomId());
@@ -519,9 +509,10 @@ describe("SelectionManager", () => {
           expect(selectionManager.getSelection(imodelMock.object).size).to.eq(1);
         });
 
-        it("uses \"element\" scope when `activeScope = \"element\"`", async () => {
+        it('uses "element" scope when `activeScope = "element"`', async () => {
           scopesMock.setup((x) => x.activeScope).returns(() => "element");
-          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), { id: "element" }))
+          scopesMock
+            .setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), { id: "element" }))
             .returns(async () => new KeySet([createRandomECInstanceKey()]))
             .verifiable();
           ss.add(createRandomId());
@@ -529,11 +520,9 @@ describe("SelectionManager", () => {
           scopesMock.verifyAll();
           expect(selectionManager.getSelection(imodelMock.object).size).to.eq(1);
         });
-
       });
 
       describe("changing logical selection", () => {
-
         let transientElementId: Id64String;
         let transientElementKey: InstanceKey;
         let persistentElementId: Id64String;
@@ -554,9 +543,15 @@ describe("SelectionManager", () => {
           selectionManager.selectionChange.addListener(logicalSelectionChangesListener);
 
           scopesMock.setup((x) => x.activeScope).returns(() => scope);
-          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, [], moq.It.isAny()))
-            .returns(async () => new KeySet());
-          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.is((v) => equalId64Arg(v, [persistentElementId])), moq.It.isAny()))
+          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, [], moq.It.isAny())).returns(async () => new KeySet());
+          scopesMock
+            .setup(async (x) =>
+              x.computeSelection(
+                imodelMock.object,
+                moq.It.is((v) => equalId64Arg(v, [persistentElementId])),
+                moq.It.isAny(),
+              ),
+            )
             .returns(async () => new KeySet([scopedKey]));
         });
 
@@ -723,15 +718,11 @@ describe("SelectionManager", () => {
           const selection = selectionManager.getSelection(imodelMock.object);
           expect(selection.size).to.eq(0);
         });
-
       });
-
     });
-
   });
 
   describe("suspendIModelToolSelectionSync", () => {
-
     let ss: SelectionSet;
 
     beforeEach(() => {
@@ -776,11 +767,9 @@ describe("SelectionManager", () => {
       });
       expect(spy).to.be.called;
     });
-
   });
 
   describe("getHiliteSet", () => {
-
     let factory: sinon.SinonStub<[{ imodel: IModelConnection }], HiliteSetProvider>;
 
     beforeEach(() => {
@@ -815,11 +804,9 @@ describe("SelectionManager", () => {
       await selectionManager.getHiliteSet(imodelMock1.object);
       expect(factory).to.not.be.called;
     });
-
   });
 
   describe("getHiliteSetIterator", () => {
-
     let factory: sinon.SinonStub<[{ imodel: IModelConnection }], HiliteSetProvider>;
 
     beforeEach(() => {
@@ -854,7 +841,5 @@ describe("SelectionManager", () => {
       selectionManager.getHiliteSetIterator(imodelMock1.object);
       expect(factory).to.not.be.called;
     });
-
   });
-
 });

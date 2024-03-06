@@ -12,7 +12,7 @@ import {
 } from "@itwin/appui-abstract";
 import { BentleyError, Id64String } from "@itwin/core-bentley";
 import {
-  Code, ColorDef, ElementGeometry, ElementGeometryBuilderParams, ElementGeometryInfo, FlatBufferGeometryStream, GeometricElementProps, GeometryParams,
+  Code, ColorDef, ElementGeometry, ElementGeometryInfo, FlatBufferGeometryStream, GeometricElementProps, GeometryParams,
   GeometryStreamProps, isPlacement3dProps, JsonGeometryStream, LinePixels, PlacementProps,
 } from "@itwin/core-common";
 import {
@@ -651,13 +651,13 @@ export abstract class CreateOrContinuePathTool extends CreateElementWithDynamics
     return { classFullName: "BisCore:DrawingGraphic", model, category, code: Code.createEmpty(), placement };
   }
 
-  protected override async doCreateElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<void> {
+  protected override async doCreateElement(props: GeometricElementProps): Promise<void> {
     try {
       this._startedCmd = await this.startCommand();
       if (undefined === props.id)
-        await basicManipulationIpc.insertGeometricElement(props, data);
+        await basicManipulationIpc.insertGeometricElement(props);
       else
-        await basicManipulationIpc.updateGeometricElement(props, data);
+        await basicManipulationIpc.updateGeometricElement(props);
       await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));

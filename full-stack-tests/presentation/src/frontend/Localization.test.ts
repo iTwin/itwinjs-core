@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelApp, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ChildNodeSpecificationTypes, DefaultContentDisplayTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { ChildNodeSpecificationTypes, Content, DefaultContentDisplayTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { initialize, terminate, testLocalization } from "../IntegrationTests";
-import { getFieldByLabel } from "../Utils";
+import { collect, getFieldByLabel } from "../Utils";
 
 describe("Localization", async () => {
   let imodel: IModelConnection;
@@ -27,14 +27,15 @@ describe("Localization", async () => {
   });
 
   it("localizes nodes", async () => {
-    const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: CUSTOM_NODES_RULESET });
+    const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: CUSTOM_NODES_RULESET }).then(async (x) => collect(x.items));
     expect(nodes.length).to.eq(1);
     expect(nodes[0].label.displayValue).to.eq("_test_ string");
     expect(nodes[0].description).to.eq("_test_ nested string");
   });
 
   it("localizes nodes when requesting with count", async () => {
-    const { nodes } = await Presentation.presentation.getNodesAndCount({ imodel, rulesetOrId: CUSTOM_NODES_RULESET });
+    const { items } = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: CUSTOM_NODES_RULESET });
+    const nodes = await collect(items);
     expect(nodes.length).to.eq(1);
     expect(nodes[0].label.displayValue).to.eq("_test_ string");
     expect(nodes[0].description).to.eq("_test_ nested string");
@@ -162,41 +163,43 @@ describe("Localization", async () => {
   });
 
   it("localizes content", async () => {
-    const content = await Presentation.presentation.getContent({
-      imodel,
-      rulesetOrId: {
-        id: "content",
-        rules: [
-          {
-            ruleType: "Content",
-            specifications: [
-              {
-                specType: "ContentInstancesOfSpecificClasses",
-                classes: { schemaName: "BisCore", classNames: ["Subject"] },
-                calculatedProperties: [
-                  {
-                    label: "@Test:string@",
-                    value: `"@Test:nested.string@"`,
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            ruleType: "DefaultPropertyCategoryOverride",
-            specification: {
-              id: "default",
-              label: "@Test:string@",
-              description: "@Test:nested.string@",
+    const content = await Presentation.presentation
+      .getContentIterator({
+        imodel,
+        rulesetOrId: {
+          id: "content",
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "ContentInstancesOfSpecificClasses",
+                  classes: { schemaName: "BisCore", classNames: ["Subject"] },
+                  calculatedProperties: [
+                    {
+                      label: "@Test:string@",
+                      value: `"@Test:nested.string@"`,
+                    },
+                  ],
+                },
+              ],
             },
-          },
-        ],
-      },
-      descriptor: {
-        displayType: DefaultContentDisplayTypes.PropertyPane,
-      },
-      keys: new KeySet(),
-    });
+            {
+              ruleType: "DefaultPropertyCategoryOverride",
+              specification: {
+                id: "default",
+                label: "@Test:string@",
+                description: "@Test:nested.string@",
+              },
+            },
+          ],
+        },
+        descriptor: {
+          displayType: DefaultContentDisplayTypes.PropertyPane,
+        },
+        keys: new KeySet(),
+      })
+      .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
 
     expect(content!.descriptor.categories[0].label).to.eq("_test_ string");
     expect(content!.descriptor.categories[0].description).to.eq("_test_ nested string");
@@ -206,47 +209,49 @@ describe("Localization", async () => {
   });
 
   it("localizes content when requesting with size", async () => {
-    const { content } = (await Presentation.presentation.getContentAndSize({
-      imodel,
-      rulesetOrId: {
-        id: "content",
-        rules: [
-          {
-            ruleType: "Content",
-            specifications: [
-              {
-                specType: "ContentInstancesOfSpecificClasses",
-                classes: { schemaName: "BisCore", classNames: ["Subject"] },
-                calculatedProperties: [
-                  {
-                    label: "@Test:string@",
-                    value: `"@Test:nested.string@"`,
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            ruleType: "DefaultPropertyCategoryOverride",
-            specification: {
-              id: "default",
-              label: "@Test:string@",
-              description: "@Test:nested.string@",
+    const { descriptor, items } = (await Presentation.presentation
+      .getContentIterator({
+        imodel,
+        rulesetOrId: {
+          id: "content",
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "ContentInstancesOfSpecificClasses",
+                  classes: { schemaName: "BisCore", classNames: ["Subject"] },
+                  calculatedProperties: [
+                    {
+                      label: "@Test:string@",
+                      value: `"@Test:nested.string@"`,
+                    },
+                  ],
+                },
+              ],
             },
-          },
-        ],
-      },
-      descriptor: {
-        displayType: DefaultContentDisplayTypes.PropertyPane,
-      },
-      keys: new KeySet(),
-    }))!;
+            {
+              ruleType: "DefaultPropertyCategoryOverride",
+              specification: {
+                id: "default",
+                label: "@Test:string@",
+                description: "@Test:nested.string@",
+              },
+            },
+          ],
+        },
+        descriptor: {
+          displayType: DefaultContentDisplayTypes.PropertyPane,
+        },
+        keys: new KeySet(),
+      })
+      .then(async (x) => x && { ...x, items: await collect(x.items) }))!;
 
-    expect(content.descriptor.categories[0].label).to.eq("_test_ string");
-    expect(content.descriptor.categories[0].description).to.eq("_test_ nested string");
+    expect(descriptor.categories[0].label).to.eq("_test_ string");
+    expect(descriptor.categories[0].description).to.eq("_test_ nested string");
 
-    const field = getFieldByLabel(content.descriptor.fields, "_test_ string");
-    expect(content.contentSet[0].displayValues[field.name]).to.eq("_test_ nested string");
+    const field = getFieldByLabel(descriptor.fields, "_test_ string");
+    expect(items[0].displayValues[field.name]).to.eq("_test_ nested string");
   });
 
   it("localizes distinct values", async () => {
@@ -277,14 +282,16 @@ describe("Localization", async () => {
       keys: new KeySet(),
     });
     const field = getFieldByLabel(descriptor!.fields, "_test_ string");
-    const distinctValues = await Presentation.presentation.getPagedDistinctValues({
-      imodel,
-      rulesetOrId: ruleset,
-      descriptor: descriptor!,
-      keys: new KeySet(),
-      fieldDescriptor: field.getFieldDescriptor(),
-    });
-    expect(distinctValues.items[0].displayValue).to.eq("_test_ nested string");
+    const distinctValues = await Presentation.presentation
+      .getDistinctValuesIterator({
+        imodel,
+        rulesetOrId: ruleset,
+        descriptor: descriptor!,
+        keys: new KeySet(),
+        fieldDescriptor: field.getFieldDescriptor(),
+      })
+      .then(async (x) => collect(x.items));
+    expect(distinctValues[0].displayValue).to.eq("_test_ nested string");
   });
 
   describe("Multiple frontends for one backend", async () => {
@@ -301,10 +308,9 @@ describe("Localization", async () => {
     it("handles multiple simultaneous requests from different frontends with different locales", async () => {
       await Promise.all(
         Array.from({ length: 100 }).map(async () => {
-          const [en, test] = await Promise.all([
-            await frontends[0].getNodes({ imodel, rulesetOrId: CUSTOM_NODES_RULESET }),
-            await frontends[1].getNodes({ imodel, rulesetOrId: CUSTOM_NODES_RULESET }),
-          ]);
+          const [en, test] = await Promise.all(
+            frontends.map(async (frontend) => frontend.getNodesIterator({ imodel, rulesetOrId: CUSTOM_NODES_RULESET }).then(async (x) => collect(x.items))),
+          );
 
           expect(en[0].label.displayValue).to.eq("test value");
           expect(en[0].description).to.eq("test nested value");

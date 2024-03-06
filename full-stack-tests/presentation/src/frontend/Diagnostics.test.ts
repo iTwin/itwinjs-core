@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
@@ -10,7 +10,6 @@ import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
 
 describe("Diagnostics", async () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
@@ -49,13 +48,10 @@ describe("Diagnostics", async () => {
     expect(handler).to.be.calledOnce;
     expect(handler.firstCall.args[0].backendVersion).to.match(/\d+\.\d+\.\d+/);
   });
-
 });
 
 describe("Learning Snippets", () => {
-
   describe("Diagnostics", async () => {
-
     let imodel: IModelConnection;
 
     before(async () => {
@@ -90,7 +86,5 @@ describe("Learning Snippets", () => {
       const expectedBackendVersion = require("@itwin/presentation-backend/package.json").version;
       expect(log).to.be.calledOnceWith(`Backend version: ${expectedBackendVersion}`);
     });
-
   });
-
 });

@@ -2,6 +2,42 @@
   "name": "@itwin/ecschema-rpcinterface-common",
   "entries": [
     {
+      "version": "4.4.5",
+      "tag": "@itwin/ecschema-rpcinterface-common_v4.4.5",
+      "date": "Tue, 05 Mar 2024 20:37:18 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.4",
+      "tag": "@itwin/ecschema-rpcinterface-common_v4.4.4",
+      "date": "Fri, 01 Mar 2024 18:21:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.3",
+      "tag": "@itwin/ecschema-rpcinterface-common_v4.4.3",
+      "date": "Fri, 23 Feb 2024 21:26:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.2",
+      "tag": "@itwin/ecschema-rpcinterface-common_v4.4.2",
+      "date": "Fri, 16 Feb 2024 14:22:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.1",
+      "tag": "@itwin/ecschema-rpcinterface-common_v4.4.1",
+      "date": "Fri, 16 Feb 2024 14:17:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.0",
+      "tag": "@itwin/ecschema-rpcinterface-common_v4.4.0",
+      "date": "Mon, 12 Feb 2024 18:15:58 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.3.3",
       "tag": "@itwin/ecschema-rpcinterface-common_v4.3.3",
       "date": "Wed, 03 Jan 2024 19:28:38 GMT",

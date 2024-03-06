@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
+import { Id64, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BisCodeSpec, IModelVersion, QueryBinder, QueryRowFormat, RelatedElement } from "@itwin/core-common";
 import {
   CategorySelectorState, CheckpointConnection, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection,
@@ -116,40 +116,44 @@ describe("IModelConnection (#integration)", () => {
     const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.noVersions);
     const noVersionsIModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
     assert.isNotNull(noVersionsIModel);
+    await noVersionsIModel.close();
 
     const noVersionsIModel2 = await CheckpointConnection.openRemote(iTwinId, iModelId);
     assert.isNotNull(noVersionsIModel2);
+    await noVersionsIModel2.close();
 
     const noVersionsIModel3 = await CheckpointConnection.openRemote(iTwinId, iModelId, IModelVersion.asOfChangeSet(""));
     assert.isNotNull(noVersionsIModel3);
+    await noVersionsIModel3.close();
   });
 
-  it("should be able to open the same IModel many times", async () => {
-    const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
-    const iModelId = await TestUtility.queryIModelIdByName(iTwinId, "ReadOnlyTest");
+  // this test isn't correct under IPC. It shouldn't really be true for RPC, but i guess this attempts to simulate
+  // multiple frontend processes by using a single process. I guess it works because "close" doesn't really close the file for web backends.
+  // I think it should be eliminated.
+  if (!ProcessDetector.isElectronAppFrontend) {
+    it("should be able to open the same IModel many times", async () => {
+      const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+      const iModelId = await TestUtility.queryIModelIdByName(iTwinId, "ReadOnlyTest");
 
-    const readOnlyTest = await CheckpointConnection.openRemote(iTwinId, iModelId, IModelVersion.latest());
-    assert.isNotNull(readOnlyTest);
+      const readOnlyTest = await CheckpointConnection.openRemote(iTwinId, iModelId, IModelVersion.latest());
+      assert.isNotNull(readOnlyTest);
 
-    const promises = new Array<Promise<void>>();
-    let n = 0;
-    while (++n < 25) {
-      const promise = CheckpointConnection.openRemote(iTwinId, iModelId)
-        .then((readOnlyTest2: IModelConnection) => {
-          assert.isNotNull(readOnlyTest2);
-          assert.isTrue(readOnlyTest.key === readOnlyTest2.key);
-        });
-      promises.push(promise);
-    }
+      const promises = new Array<Promise<void>>();
+      let n = 0;
+      while (++n < 25) {
+        const promise = CheckpointConnection.openRemote(iTwinId, iModelId)
+          .then((readOnlyTest2: IModelConnection) => {
+            assert.isNotNull(readOnlyTest2);
+            assert.isTrue(readOnlyTest.key === readOnlyTest2.key);
+          });
+        promises.push(promise);
+      }
 
-    await Promise.all(promises);
-  });
+      await Promise.all(promises);
+    });
+  }
 
   it("should be able to request tiles from an IModelConnection", async () => {
-    const testITwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
-    const testIModelId = await TestUtility.queryIModelIdByName(testITwinId, "ConnectionReadTest");
-    iModel = await CheckpointConnection.openRemote(testITwinId, testIModelId);
-
     const modelProps = await iModel.models.queryProps({ from: "BisCore.PhysicalModel" });
     expect(modelProps.length).to.equal(1);
 

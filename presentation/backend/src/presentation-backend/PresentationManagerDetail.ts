@@ -1,26 +1,63 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import * as hash from "object-hash";
 import * as path from "path";
 import { IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
 import { BeEvent, IDisposable, Logger } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
-  Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor,
-  DescriptorOverrides, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
-  DistinctValuesRequestOptions, ElementProperties, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
+  Content,
+  ContentDescriptorRequestOptions,
+  ContentFlags,
+  ContentRequestOptions,
+  ContentSourcesRequestOptions,
+  DefaultContentDisplayTypes,
+  Descriptor,
+  DescriptorOverrides,
+  DiagnosticsOptions,
+  DiagnosticsScopeLogs,
+  DisplayLabelRequestOptions,
+  DisplayLabelsRequestOptions,
+  DisplayValueGroup,
+  DistinctValuesRequestOptions,
+  ElementProperties,
+  FilterByInstancePathsHierarchyRequestOptions,
+  FilterByTextHierarchyRequestOptions,
   FormatsMap,
-  HierarchyLevelDescriptorRequestOptions, HierarchyRequestOptions, InstanceKey, Item, Key, KeySet, LabelDefinition, NodeKey, NodePathElement, Paged,
-  PagedResponse, PresentationError, PresentationIpcEvents, PresentationStatus, Prioritized, Ruleset, RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions,
+  HierarchyLevelDescriptorRequestOptions,
+  HierarchyRequestOptions,
+  InstanceKey,
+  Item,
+  Key,
+  KeySet,
+  LabelDefinition,
+  NodeKey,
+  NodePathElement,
+  Paged,
+  PagedResponse,
+  PresentationError,
+  PresentationIpcEvents,
+  PresentationStatus,
+  Prioritized,
+  Ruleset,
+  RulesetVariable,
+  SelectClassInfo,
+  SingleElementPropertiesRequestOptions,
   UpdateInfo,
   WithCancelEvent,
 } from "@itwin/presentation-common";
 import { buildElementProperties } from "./ElementPropertiesHelper";
 import {
-  createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePlatformResponse, NativePresentationDefaultUnitFormats,
-  NativePresentationKeySetJSON, NativePresentationUnitSystem, PresentationNativePlatformResponseError,
+  createDefaultNativePlatform,
+  NativePlatformDefinition,
+  NativePlatformRequestTypes,
+  NativePlatformResponse,
+  NativePresentationDefaultUnitFormats,
+  NativePresentationKeySetJSON,
+  NativePresentationUnitSystem,
+  PresentationNativePlatformResponseError,
 } from "./NativePlatform";
 import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerProps } from "./PresentationManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
@@ -40,20 +77,18 @@ export class PresentationManagerDetail implements IDisposable {
   constructor(params: PresentationManagerProps) {
     this._disposed = false;
 
-    this._nativePlatform = params.addon ?? createNativePlatform(
-      params.id ?? "",
-      params.workerThreadsCount ?? 2,
-      IpcHost.isValid ? ipcUpdatesHandler : noopUpdatesHandler,
-      params.caching,
-      params.defaultFormats,
-      params.useMmap,
-    );
+    this._nativePlatform =
+      params.addon ??
+      createNativePlatform(
+        params.id ?? "",
+        params.workerThreadsCount ?? 2,
+        IpcHost.isValid ? ipcUpdatesHandler : noopUpdatesHandler,
+        params.caching,
+        params.defaultFormats,
+        params.useMmap,
+      );
 
-    setupRulesets(
-      this._nativePlatform,
-      params.supplementalRulesetDirectories ?? [],
-      params.rulesetDirectories ?? [],
-    );
+    setupRulesets(this._nativePlatform, params.supplementalRulesetDirectories ?? [], params.rulesetDirectories ?? []);
     this.activeUnitSystem = params.defaultUnitSystem;
 
     this._onManagerUsed = undefined;
@@ -74,10 +109,7 @@ export class PresentationManagerDetail implements IDisposable {
 
   public getNativePlatform(): NativePlatformDefinition {
     if (this._disposed) {
-      throw new PresentationError(
-        PresentationStatus.NotInitialized,
-        "Attempting to use Presentation manager after disposal",
-      );
+      throw new PresentationError(PresentationStatus.NotInitialized, "Attempting to use Presentation manager after disposal");
     }
 
     return this._nativePlatform!;
@@ -87,7 +119,9 @@ export class PresentationManagerDetail implements IDisposable {
     this._onManagerUsed = handler;
   }
 
-  public async getNodes(requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<string> {
+  public async getNodes(
+    requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute,
+  ): Promise<string> {
     const { rulesetOrId, parentKey, ...strippedOptions } = requestOptions;
     const params = {
       requestId: parentKey ? NativePlatformRequestTypes.GetChildren : NativePlatformRequestTypes.GetRootNodes,
@@ -98,7 +132,9 @@ export class PresentationManagerDetail implements IDisposable {
     return this.request(params);
   }
 
-  public async getNodesCount(requestOptions: WithCancelEvent<Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number> {
+  public async getNodesCount(
+    requestOptions: WithCancelEvent<Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute,
+  ): Promise<number> {
     const { rulesetOrId, parentKey, ...strippedOptions } = requestOptions;
     const params = {
       requestId: parentKey ? NativePlatformRequestTypes.GetChildrenCount : NativePlatformRequestTypes.GetRootNodesCount,
@@ -109,7 +145,9 @@ export class PresentationManagerDetail implements IDisposable {
     return JSON.parse(await this.request(params));
   }
 
-  public async getNodesDescriptor(requestOptions: WithCancelEvent<Prioritized<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<string> {
+  public async getNodesDescriptor(
+    requestOptions: WithCancelEvent<Prioritized<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute,
+  ): Promise<string> {
     const { rulesetOrId, parentKey, ...strippedOptions } = requestOptions;
     const params = {
       requestId: NativePlatformRequestTypes.GetNodesDescriptor,
@@ -120,7 +158,9 @@ export class PresentationManagerDetail implements IDisposable {
     return this.request(params);
   }
 
-  public async getNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]> {
+  public async getNodePaths(
+    requestOptions: WithCancelEvent<Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute,
+  ): Promise<NodePathElement[]> {
     const { rulesetOrId, instancePaths, ...strippedOptions } = requestOptions;
     const params = {
       requestId: NativePlatformRequestTypes.GetNodePaths,
@@ -131,7 +171,9 @@ export class PresentationManagerDetail implements IDisposable {
     return JSON.parse(await this.request(params), NodePathElement.listReviver);
   }
 
-  public async getFilteredNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]> {
+  public async getFilteredNodePaths(
+    requestOptions: WithCancelEvent<Prioritized<FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute,
+  ): Promise<NodePathElement[]> {
     const { rulesetOrId, ...strippedOptions } = requestOptions;
     const params = {
       requestId: NativePlatformRequestTypes.GetFilteredNodePaths,
@@ -153,7 +195,9 @@ export class PresentationManagerDetail implements IDisposable {
     return this.request(params);
   }
 
-  public async getContentSources(requestOptions: WithCancelEvent<Prioritized<ContentSourcesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<SelectClassInfo[]> {
+  public async getContentSources(
+    requestOptions: WithCancelEvent<Prioritized<ContentSourcesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute,
+  ): Promise<SelectClassInfo[]> {
     const params = {
       requestId: NativePlatformRequestTypes.GetContentSources,
       rulesetId: "ElementProperties",
@@ -165,7 +209,10 @@ export class PresentationManagerDetail implements IDisposable {
     return JSON.parse(await this.request(params), reviver);
   }
 
-  public async getContentSetSize(requestOptions: WithCancelEvent<Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number> {
+  public async getContentSetSize(
+    requestOptions: WithCancelEvent<Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> &
+      BackendDiagnosticsAttribute,
+  ): Promise<number> {
     const { rulesetOrId, descriptor, ...strippedOptions } = requestOptions;
     const params = {
       requestId: NativePlatformRequestTypes.GetContentSetSize,
@@ -177,7 +224,10 @@ export class PresentationManagerDetail implements IDisposable {
     return JSON.parse(await this.request(params));
   }
 
-  public async getContentSet(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Item[]> {
+  public async getContentSet(
+    requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> &
+      BackendDiagnosticsAttribute,
+  ): Promise<Item[]> {
     const { rulesetOrId, descriptor, ...strippedOptions } = requestOptions;
     const params = {
       requestId: NativePlatformRequestTypes.GetContentSet,
@@ -190,7 +240,10 @@ export class PresentationManagerDetail implements IDisposable {
     return JSON.parse(await this.request(params), Item.listReviver);
   }
 
-  public async getContent(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Content | undefined> {
+  public async getContent(
+    requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> &
+      BackendDiagnosticsAttribute,
+  ): Promise<Content | undefined> {
     const { rulesetOrId, descriptor, ...strippedOptions } = requestOptions;
     const params = {
       requestId: NativePlatformRequestTypes.GetContent,
@@ -202,7 +255,10 @@ export class PresentationManagerDetail implements IDisposable {
     return JSON.parse(await this.request(params), (key, value) => Content.reviver(key, value));
   }
 
-  public async getPagedDistinctValues(requestOptions: WithCancelEvent<Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>> {
+  public async getPagedDistinctValues(
+    requestOptions: WithCancelEvent<Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> &
+      BackendDiagnosticsAttribute,
+  ): Promise<PagedResponse<DisplayValueGroup>> {
     const { rulesetOrId, ...strippedOptions } = requestOptions;
     const { descriptor, keys, ...strippedOptionsNoDescriptorAndKeys } = strippedOptions;
     const params = {
@@ -213,16 +269,20 @@ export class PresentationManagerDetail implements IDisposable {
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
     const reviver = (key: string, value: any) => {
-      return key === "" ? {
-        total: value.total,
-        // eslint-disable-next-line deprecation/deprecation
-        items: value.items.map(DisplayValueGroup.fromJSON),
-      } : value;
+      return key === ""
+        ? {
+            total: value.total,
+            // eslint-disable-next-line deprecation/deprecation
+            items: value.items.map(DisplayValueGroup.fromJSON),
+          }
+        : value;
     };
     return JSON.parse(await this.request(params), reviver);
   }
 
-  public async getDisplayLabelDefinition(requestOptions: WithCancelEvent<Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition> {
+  public async getDisplayLabelDefinition(
+    requestOptions: WithCancelEvent<Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>>> & BackendDiagnosticsAttribute,
+  ): Promise<LabelDefinition> {
     const params = {
       requestId: NativePlatformRequestTypes.GetDisplayLabel,
       ...requestOptions,
@@ -230,12 +290,17 @@ export class PresentationManagerDetail implements IDisposable {
     return JSON.parse(await this.request(params));
   }
 
-  public async getDisplayLabelDefinitions(requestOptions: WithCancelEvent<Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition[]> {
-    const concreteKeys = requestOptions.keys.map((k) => {
-      if (k.className === "BisCore:Element")
-        return getElementKey(requestOptions.imodel, k.id);
-      return k;
-    }).filter<InstanceKey>((k): k is InstanceKey => !!k);
+  public async getDisplayLabelDefinitions(
+    requestOptions: WithCancelEvent<Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>> & BackendDiagnosticsAttribute,
+  ): Promise<LabelDefinition[]> {
+    const concreteKeys = requestOptions.keys
+      .map((k) => {
+        if (k.className === "BisCore:Element") {
+          return getElementKey(requestOptions.imodel, k.id);
+        }
+        return k;
+      })
+      .filter<InstanceKey>((k): k is InstanceKey => !!k);
     const contentRequestOptions: ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet> = {
       ...requestOptions,
       rulesetOrId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
@@ -248,13 +313,16 @@ export class PresentationManagerDetail implements IDisposable {
     const content = await this.getContent(contentRequestOptions);
     return concreteKeys.map((key) => {
       const item = content ? content.contentSet.find((it) => it.primaryKeys.length > 0 && InstanceKey.compare(it.primaryKeys[0], key) === 0) : undefined;
-      if (!item)
+      if (!item) {
         return { displayValue: "", rawValue: "", typeName: "" };
+      }
       return item.label;
     });
   }
 
-  public async getElementProperties(requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<ElementProperties | undefined> {
+  public async getElementProperties(
+    requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute,
+  ): Promise<ElementProperties | undefined> {
     const { elementId, ...optionsNoElementId } = requestOptions;
     const content = await this.getContent({
       ...optionsNoElementId,
@@ -290,20 +358,17 @@ export class PresentationManagerDetail implements IDisposable {
     this._onManagerUsed?.();
     const { requestId, imodel, unitSystem, diagnostics: requestDiagnostics, cancelEvent, ...strippedParams } = params;
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
-    const response = await withOptionalDiagnostics(
-      [this._diagnosticsOptions, requestDiagnostics],
-      async (diagnosticsOptions) => {
-        const nativeRequestParams: any = {
-          requestId,
-          params: {
-            unitSystem: toOptionalNativeUnitSystem(unitSystem ?? this.activeUnitSystem),
-            ...strippedParams,
-            ...(diagnosticsOptions ? { diagnostics: diagnosticsOptions } : undefined),
-          },
-        };
-        return this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams), cancelEvent);
-      },
-    );
+    const response = await withOptionalDiagnostics([this._diagnosticsOptions, requestDiagnostics], async (diagnosticsOptions) => {
+      const nativeRequestParams: any = {
+        requestId,
+        params: {
+          unitSystem: toOptionalNativeUnitSystem(unitSystem ?? this.activeUnitSystem),
+          ...strippedParams,
+          ...(diagnosticsOptions ? { diagnostics: diagnosticsOptions } : undefined),
+        },
+      };
+      return this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams), cancelEvent);
+    });
     return response.result;
   }
 }
@@ -342,11 +407,7 @@ interface RequestParams {
   cancelEvent?: BeEvent<() => void>;
 }
 
-function setupRulesets(
-  nativePlatform: NativePlatformDefinition,
-  supplementalRulesetDirectories: string[],
-  primaryRulesetDirectories: string[],
-): void {
+function setupRulesets(nativePlatform: NativePlatformDefinition, supplementalRulesetDirectories: string[], primaryRulesetDirectories: string[]): void {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const elementPropertiesRuleset: Ruleset = require("./primary-presentation-rules/ElementProperties.PresentationRuleSet.json");
   nativePlatform.addRuleset(JSON.stringify(elementPropertiesRuleset));
@@ -522,10 +583,14 @@ function toOptionalNativeUnitSystem(unitSystem: UnitSystemKey | undefined): Nati
 
 function toNativeUnitSystem(unitSystem: UnitSystemKey): NativePresentationUnitSystem {
   switch (unitSystem) {
-    case "imperial": return NativePresentationUnitSystem.BritishImperial;
-    case "metric": return NativePresentationUnitSystem.Metric;
-    case "usCustomary": return NativePresentationUnitSystem.UsCustomary;
-    case "usSurvey": return NativePresentationUnitSystem.UsSurvey;
+    case "imperial":
+      return NativePresentationUnitSystem.BritishImperial;
+    case "metric":
+      return NativePresentationUnitSystem.Metric;
+    case "usCustomary":
+      return NativePresentationUnitSystem.UsCustomary;
+    case "usSurvey":
+      return NativePresentationUnitSystem.UsSurvey;
   }
 }
 
@@ -533,20 +598,23 @@ function collateAssetDirectories(dirs: string[]): string[] {
   return [...new Set(dirs)];
 }
 const createContentDescriptorOverrides = (descriptorOrOverrides: Descriptor | DescriptorOverrides): DescriptorOverrides => {
-  if (descriptorOrOverrides instanceof Descriptor)
+  if (descriptorOrOverrides instanceof Descriptor) {
     return descriptorOrOverrides.createDescriptorOverrides();
+  }
   return descriptorOrOverrides;
 };
 
 function parseUpdateInfo(info: UpdateInfo | undefined) {
-  if (info === undefined)
+  if (info === undefined) {
     return undefined;
+  }
 
   const parsedInfo: UpdateInfo = {};
   for (const fileName in info) {
     // istanbul ignore if
-    if (!info.hasOwnProperty(fileName))
+    if (!info.hasOwnProperty(fileName)) {
       continue;
+    }
 
     const imodelDb = IModelDb.findByFilename(fileName);
     if (!imodelDb) {
@@ -562,11 +630,11 @@ function parseUpdateInfo(info: UpdateInfo | undefined) {
 /** @internal */
 export function ipcUpdatesHandler(info: UpdateInfo | undefined) {
   const parsed = parseUpdateInfo(info);
-  if (parsed)
+  if (parsed) {
     IpcHost.send(PresentationIpcEvents.Update, parsed);
+  }
 }
 
 /** @internal */
 // istanbul ignore next
-export function noopUpdatesHandler(_info: UpdateInfo | undefined) {
-}
+export function noopUpdatesHandler(_info: UpdateInfo | undefined) {}
