@@ -53,7 +53,7 @@ Changes to @beta [CreateElementWithDynamicsTool]($editor-frontend) class:
 
 Added [EditTools.registerProjectLocationTools]($editor-frontend) method. These tools are no longer automatically registered by [EditTools.initialize]($editor-frontend). Applications that wish to include these tools and also register the required [BasicManipulationCommand]($editor-backend) with [EditCommandAdmin]($editor-backend) should call this new method.
 
-Removal of several @alpha and @beta test tools for creating Generic:PhysicalObject class elements that didn't belong in the core package.
+Removal of several @alpha test tools for creating Generic:PhysicalObject class elements that didn't belong in the core package.
 
 ## Lock Control
 
