@@ -51,6 +51,10 @@ Changes to @beta [CreateElementWithDynamicsTool]($editor-frontend) class:
 
 - [CreateElementWithDynamicsTool.doCreateElement]($editor-frontend) no longer takes an optional [ElementGeometryBuilderParams]($common) as it will be set on the supplied [GeometricElementProps]($common).
 
+Added [EditTools.registerProjectLocationTools]($editor-frontend) method. These tools are no longer automatically registered by [EditTools.initialize]($editor-frontend). Applications that wish to include these tools and also register the required [BasicManipulationCommand]($editor-backend) with [EditCommandAdmin]($editor-backend) should call this new method.
+
+Removal of several @alpha test tools for creating Generic:PhysicalObject class elements that didn't belong in the core package.
+
 ## Lock Control
 
 Changes to @beta [LockControl]($backend) class to make releaseAllLocks @internal. Should only be called internally after pushing or abandoning all changes.
