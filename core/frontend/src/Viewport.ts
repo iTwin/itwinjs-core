@@ -65,6 +65,8 @@ import { ViewStatus } from "./ViewStatus";
 import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
 import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
+import { createViewportScene } from "./scene/impl/ViewportSceneImpl";
+import { ViewportScene } from "./scene/ViewportScene";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -501,7 +503,10 @@ export abstract class Viewport implements IDisposable, TileUser {
   private _hilite = new Hilite.Settings();
   private _emphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
   private _flash = new FlashSettings();
+  private _scene: ViewportScene;
 
+  public get scene(): ViewportScene { return this._scene; }
+  
   /** See [DisplayStyle3dSettings.lights]($common) */
   public get lightSettings(): LightSettings | undefined {
     return this.displayStyle.is3d() ? this.displayStyle.settings.lights : undefined;
@@ -1116,6 +1121,9 @@ export abstract class Viewport implements IDisposable, TileUser {
     target.assignFrameStatsCollector(this._frameStatsCollector);
     this._viewportId = TileUser.generateId();
     this._perModelCategoryVisibility = PerModelCategoryVisibility.createOverrides(this);
+
+    this._scene = createViewportScene(this);
+    
     IModelApp.tileAdmin.registerUser(this);
   }
 

@@ -203,7 +203,7 @@ export interface SpatialScene {
   readonly volume: SceneVolume3d;
 
   readonly realityModels: RealityModelSceneObjects;
-  readonly maps: MapSceneObject;
+  readonly maps?: MapSceneObject;
   readonly iModels: IModelSceneObjects<IModelSpatialView>;
   // ###TODO want to keep SceneObject interface open for expansion for now, without incurring backwards compatibility tax
   // readonly custom: CustomSceneObjects;
