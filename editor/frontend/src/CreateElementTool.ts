@@ -311,7 +311,7 @@ export abstract class CreateElementTool extends PrimitiveTool {
  * - Ensure the parent's implementation is called: [[setupAndPromptForNextAction]], [[onPostInstall]]
  *
  * This class expects subclasses to call [[setupAndPromptForNextAction]] as moving between the subclass's internal state.
- * @note To trigger an element to be inserted on [[dataButtonDown]], ensure [[isComplete]] returns `true`
+ * @note To trigger an element to be inserted on [[onDataButtonDown]], ensure [[isComplete]] returns `true`
  * @caution Subclasses typically do not override the following methods. Instead, overwrite the methods they call as described here:
  * - [[onMouseMotion]]: See [[updateElementData]].
  * - [[onDataButtonDown]]:
@@ -382,7 +382,7 @@ export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
   /**
    * Creates a new element in the iModel by interfacing with the core/editor backend.
    *
-   * This method is called by [[dataButtonDown]] only if `isComplete` is true.
+   * This method is called by [[onDataButtonDown]] only if `isComplete` is true.
    *
    * @param _props Argument passed in is based on the return value from the [[getElementProps]] method.
    */
