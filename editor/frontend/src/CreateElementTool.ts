@@ -384,7 +384,7 @@ export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
    *
    * This method is called by [[dataButtonDown]] only if `isComplete` is true.
    *
-   * @param _props Based on the return value from [[getElementProps]] method and passed.
+   * @param _props Argument passed in is based on the return value from the [[getElementProps]] method.
    */
   protected async doCreateElement(_props: GeometricElementProps): Promise<void> {}
 
