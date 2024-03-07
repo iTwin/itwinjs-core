@@ -3372,7 +3372,7 @@ export class AccuDrawHintBuilder {
   }
 
   /** Return a [[Matrix3d]] from a [[SnapDetail]].
-   * Uses [[SnapDetail.normal]] and [SnapDetail.primitive]] when available to create the most well defined rotation for the given snap location.
+   * Uses [[SnapDetail.normal]] and [[SnapDetail.primitive]] when available to create the most well defined rotation for the given snap location.
    */
   public static getSnapRotation(snap: SnapDetail, matrix?: Matrix3d): Matrix3d | undefined {
     const out = AccuDraw.getSnapRotation(snap, undefined, matrix);
