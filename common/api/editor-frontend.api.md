@@ -90,17 +90,13 @@ export abstract class CreateElementTool extends PrimitiveTool {
 
 // @beta
 export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
-    // (undocumented)
     protected acceptPoint(ev: BeButtonEvent): Promise<boolean>;
-    // (undocumented)
     protected cancelPoint(_ev: BeButtonEvent): Promise<boolean>;
     // (undocumented)
     protected clearGraphics(): void;
     // (undocumented)
     protected createElement(): Promise<void>;
-    // (undocumented)
     protected createGraphics(ev: BeButtonEvent): Promise<void>;
-    // (undocumented)
     protected doCreateElement(_props: GeometricElementProps): Promise<void>;
     // (undocumented)
     protected abstract getElementProps(placement: PlacementProps): GeometricElementProps | undefined;
@@ -112,21 +108,15 @@ export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
     protected _graphicsProvider?: DynamicGraphicsProvider;
     // (undocumented)
     onCleanup(): Promise<void>;
-    // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void;
-    // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
-    // (undocumented)
     onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
     protected setupAccuDraw(): void;
     // (undocumented)
     protected setupAndPromptForNextAction(): void;
-    // (undocumented)
     protected updateDynamicData(ev: BeButtonEvent): Promise<boolean>;
-    // (undocumented)
     protected updateElementData(_ev: BeButtonEvent, _isDynamics: boolean): Promise<void>;
     // (undocumented)
     protected get wantAccuSnap(): boolean;
