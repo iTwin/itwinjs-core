@@ -10385,7 +10385,6 @@ export class ViewFlags {
     static fromJSON(json?: ViewFlagProps): ViewFlags;
     readonly grid: boolean;
     readonly hiddenEdges: boolean;
-    // @internal (undocumented)
     hiddenEdgesVisible(): boolean;
     readonly lighting: boolean;
     readonly materials: boolean;

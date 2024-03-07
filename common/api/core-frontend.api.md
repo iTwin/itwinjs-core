@@ -657,6 +657,7 @@ export class AccuDrawHintBuilder {
     static getBoresite(spacePt: Point3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Ray3d;
     static getContextRotation(id: ContextRotationId, vp: Viewport): Matrix3d | undefined;
     static getCurrentRotation(vp: Viewport, checkAccuDraw: boolean, checkACS: boolean, matrix?: Matrix3d): Matrix3d | undefined;
+    static getSnapRotation(snap: SnapDetail, matrix?: Matrix3d): Matrix3d | undefined;
     static get isActive(): boolean;
     static get isEnabled(): boolean;
     static projectPointToLineInView(spacePt: Point3d, linePt: Point3d, lineDirection: Vector3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Point3d | undefined;
@@ -664,6 +665,7 @@ export class AccuDrawHintBuilder {
     sendHints(activate?: boolean): boolean;
     setAngle(angle: number): void;
     setDistance(distance: number): void;
+    setLastPoint(ev: BeButtonEvent): void;
     setLockAngle: boolean;
     setLockDistance: boolean;
     setLockX: boolean;
@@ -14977,6 +14979,7 @@ export class ToolAdmin {
     setPrimitiveTool(newTool?: PrimitiveTool): Promise<void>;
     // @internal (undocumented)
     setViewTool(newTool?: ViewTool): Promise<void>;
+    simulateMotionEvent(): void;
     startDefaultTool(): Promise<void>;
     // @internal (undocumented)
     startInputCollector(newTool: InputCollector): Promise<void>;
