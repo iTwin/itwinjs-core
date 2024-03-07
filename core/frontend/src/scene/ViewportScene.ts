@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { ViewportDecorator } from "../Viewport";
+import { Viewport, ViewportDecorator } from "../Viewport";
 import { HitDetail } from "../HitDetail";
 import { SceneContext } from "../ViewContext";
 import { AmbientOcclusion, ColorDef, Environment, FeatureAppearance, PlanarClipMaskSettings, RealityDataSourceKey, RealityModelDisplaySettings, SolarShadowSettings, SpatialClassifiers, ViewFlags } from "@itwin/core-common";
@@ -197,6 +197,8 @@ export type TiledGraphicsSceneObjects = Iterable<TiledGraphicsSceneObject>;
 export type SceneObject = RealityModelSceneObject | IModelSceneObject | PresentationSceneObject | CustomSceneObject | MapSceneObject | TiledGraphicsSceneObject;
 
 export interface SpatialScene {
+  readonly viewport: Viewport;
+  // ###TODO need to design ahead for future types - ViewState3d - not spatial, but not 2d.
   readonly isSpatial: true;
   readonly is2d?: never;
 
@@ -212,6 +214,7 @@ export interface SpatialScene {
 }
 
 export interface TestScene2d {
+  readonly viewport: Viewport;
   readonly is2d: true;
   readonly isSpatial?: never;
 

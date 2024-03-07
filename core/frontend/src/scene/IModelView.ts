@@ -19,6 +19,7 @@ import { ComputeDisplayTransformArgs, ModelDisplayTransformProvider } from "../V
 import { Viewport } from "../Viewport";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { ComputeSpatialViewFitRangeOptions } from "../SpatialViewState";
+import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 
 export interface ViewCategorySelector {
   categories: Set<string>;
@@ -122,6 +123,7 @@ export interface ViewModelSelector {
 
 export interface IModelSpatialView extends IModelView3d {
   readonly modelSelector: ViewModelSelector;
+  // ###TODO readonly perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
 
   // ###TODO used by ViewCreator3d when model extents are known before tile trees are loaded.
   // Needed here? Generalize so base extents can be passed to Scene/SceneObject range c:w

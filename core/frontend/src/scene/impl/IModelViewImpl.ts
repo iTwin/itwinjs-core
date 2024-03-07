@@ -34,7 +34,7 @@ function equalIdSets(a: Set<Id64String>, b: Set<Id64String>): boolean {
 }
 
 export class ViewCategorySelectorImpl implements ViewCategorySelector {
-  constructor(public readonly view: ViewState) { }
+  constructor(readonly view: ViewState) { }
 
   private get _selector() { return this.view.categorySelector; }
 
@@ -51,7 +51,7 @@ export class ViewCategorySelectorImpl implements ViewCategorySelector {
 }
 
 export abstract class IModelViewImpl implements IIModelView {
-  public readonly impl: ViewState;
+  readonly impl: ViewState;
   protected readonly _style: ViewStyle;
   readonly categorySelector: ViewCategorySelector;
 
