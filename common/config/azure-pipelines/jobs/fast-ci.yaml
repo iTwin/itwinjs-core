@@ -63,7 +63,7 @@ jobs:
             NativeUrl=$(grep -E '^imodel-native(-internal)?: https://github\.com/iTwin/imodel-native(-internal)?/pull/*' body.txt)
           else
             echo 'This run was not triggered by a Pull request.'
-            echo 'If you have a PR for this branch and wish to use a linked PR please comment in your PR "/azp run imodel-native-internal" to trigger the pipeline'
+            echo 'If you have a PR for this branch and wish to use a linked PR please comment in your PR "/azp run iTwin.js" to trigger the pipeline'
           fi
 
           # No native PRs are linked
