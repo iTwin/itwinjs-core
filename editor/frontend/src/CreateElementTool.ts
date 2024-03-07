@@ -9,7 +9,7 @@
 
 import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { Constant, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { DynamicGraphicsRequest2dProps, DynamicGraphicsRequest3dProps, ElementGeometryBuilderParams, FlatBufferGeometryStream, GeometricElementProps, IModelError, isPlacement3dProps, JsonGeometryStream, PlacementProps } from "@itwin/core-common";
+import { DynamicGraphicsRequest2dProps, DynamicGraphicsRequest3dProps, FlatBufferGeometryStream, GeometricElementProps, IModelError, isPlacement3dProps, JsonGeometryStream, PlacementProps } from "@itwin/core-common";
 import { BeButtonEvent, CoordSystem, CoreTools, DynamicsContext, EventHandled, GraphicBranch, IModelApp, IModelConnection, PrimitiveTool, readElementGraphics, RenderGraphicOwner, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport } from "@itwin/core-frontend";
 
 function computeChordToleranceFromPointAndRadius(vp: Viewport, center: Point3d, radius: number): number {
@@ -384,10 +384,9 @@ export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
    *
    * This method is called by [[dataButtonDown]] only if `isComplete` is true.
    *
-   * @param _props Directly created by the [[getElementProps]] method and passed in.
-   * @param _data Created based on the Geometry Stream returned by [[getGeometryProps]] and passed in.
+   * @param _props Based on the return value from [[getElementProps]] method and passed.
    */
-  protected async doCreateElement(_props: GeometricElementProps, _data?: ElementGeometryBuilderParams): Promise<void> {}
+  protected async doCreateElement(_props: GeometricElementProps): Promise<void> {}
 
   /** This method is intended to update information related to the element. This method is called in 2 scenarios:
    * 1. [[onMouseMotion]] as a dynamics
@@ -423,15 +422,14 @@ export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
     if (undefined === elemProps)
       return;
 
-    let data;
     if ("flatbuffer" === geometry.format) {
-      data = { entryArray: geometry.data };
       delete elemProps.geom; // Leave unchanged until replaced by flatbuffer geometry...
+      elemProps.elementGeometryBuilderParams = { entryArray: geometry.data };
     } else {
       elemProps.geom = geometry.data;
     }
 
-    return this.doCreateElement(elemProps, data);
+    return this.doCreateElement(elemProps);
   }
 
   /** Intended to be used to setupAccuSnap.  Is called by [[setupAndPromptForNextAction]].

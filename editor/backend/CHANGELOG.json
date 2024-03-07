@@ -2,6 +2,18 @@
   "name": "@itwin/editor-backend",
   "entries": [
     {
+      "version": "4.4.5",
+      "tag": "@itwin/editor-backend_v4.4.5",
+      "date": "Tue, 05 Mar 2024 20:37:18 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.4",
+      "tag": "@itwin/editor-backend_v4.4.4",
+      "date": "Fri, 01 Mar 2024 18:21:01 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.4.3",
       "tag": "@itwin/editor-backend_v4.4.3",
       "date": "Fri, 23 Feb 2024 21:26:07 GMT",

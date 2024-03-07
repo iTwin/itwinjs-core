@@ -1,5 +1,5 @@
 // Invalidate all iTwin.js build status checks when master has a change to core/backend/package.json
-// This is specifically to catch changes to @bentley/imodeljs-native
+// This is specifically to catch changes to @bentley/imodeljs-native and should only invalidate PRs that target master branch
 // This will also invalidate PRs if there's a new nightly build, however our 3 hour rule should also invalidate the same PRs
 
 import { Octokit, App } from "octokit"
@@ -20,10 +20,9 @@ let pull_requests = await octokit.request('GET /repos/{owner}/{repo}/pulls', {
 })
 
 for (let i = 0; i < pull_requests.data.length; i++) {
-  console.log(pull_requests.data[i].head.ref)
   let pr_sha = pull_requests.data[i].head.sha;
 
-  if (!pull_requests.data[i].draft) {
+  if (!pull_requests.data[i].draft && pull_requests.data[i].base.ref === 'master') {
     await octokit.request('POST /repos/{owner}/{repo}/statuses/{sha}', {
       owner: 'iTwin',
       repo: 'itwinjs-core',

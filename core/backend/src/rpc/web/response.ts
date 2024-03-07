@@ -6,7 +6,9 @@
  * @module RpcInterface
  */
 
+import { Logger } from "@itwin/core-bentley";
 import {
+  CommonLoggerCategory,
   HttpServerRequest,
   HttpServerResponse,
   ReadableFormData,
@@ -83,6 +85,8 @@ function configureStream(fulfillment: RpcRequestFulfillment) {
 
 /** @internal */
 export async function sendResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, req: HttpServerRequest, res: HttpServerResponse) {
+  logResponse(request, fulfillment.status, fulfillment.rawResult);
+
   const versionHeader = protocol.protocolVersionHeaderName;
   if (versionHeader && RpcProtocol.protocolVersion) {
     res.set(versionHeader, RpcProtocol.protocolVersion.toString());
@@ -119,4 +123,20 @@ export async function sendResponse(protocol: WebAppRpcProtocol, request: Seriali
   } else {
     res.send(responseBody);
   }
+}
+
+function logResponse(request: SerializedRpcRequest, statusCode: number, resultObj: unknown) {
+  const metadata = {
+    ActivityId: request.id, // eslint-disable-line @typescript-eslint/naming-convention
+    method: request.method,
+    path: request.path,
+    operation: request.operation,
+    statusCode,
+    error: resultObj instanceof Error ? resultObj : undefined,
+  };
+
+  if (statusCode < 400)
+    Logger.logInfo(CommonLoggerCategory.RpcInterfaceBackend, "RPC over HTTP success response", metadata);
+  else
+    Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, "RPC over HTTP failure response", metadata);
 }

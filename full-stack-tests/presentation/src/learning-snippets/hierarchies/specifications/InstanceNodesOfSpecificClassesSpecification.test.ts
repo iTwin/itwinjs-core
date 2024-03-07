@@ -8,6 +8,7 @@ import { Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
+import { collect } from "../../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -46,7 +47,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Verify that PhysicalModel nodes were returned, grouped by class
-        const classGroupingNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const classGroupingNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(classGroupingNodes)
           .to.have.lengthOf(1)
           .and.to.containSubset([
@@ -55,7 +56,9 @@ describe("Learning Snippets", () => {
             },
           ]);
 
-        const instanceNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNodes[0].key });
+        const instanceNodes = await Presentation.presentation
+          .getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNodes[0].key })
+          .then(async (x) => collect(x.items));
         expect(instanceNodes)
           .to.have.lengthOf(1)
           .and.to.containSubset([
@@ -88,7 +91,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Verify that DefinitionModel and GroupInformationModel nodes are not included
-        const classGroupingNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const classGroupingNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(classGroupingNodes)
           .to.have.lengthOf(3)
           .and.to.containSubset([
@@ -127,7 +130,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Verify that ViewDefinition nodes ending with "View 1" are not included
-        const classGroupingNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const classGroupingNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(classGroupingNodes)
           .to.have.lengthOf(1)
           .and.to.containSubset([
@@ -136,7 +139,9 @@ describe("Learning Snippets", () => {
             },
           ]);
 
-        const instanceNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNodes[0].key });
+        const instanceNodes = await Presentation.presentation
+          .getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNodes[0].key })
+          .then(async (x) => collect(x.items));
         expect(instanceNodes)
           .to.have.lengthOf(1)
           .and.to.containSubset([

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@itwin/core-bentley"
+    }
+  ],
+  "packageName": "@itwin/core-bentley",
+  "email": "38288322+imodeljs-admin@users.noreply.github.com"
+}
