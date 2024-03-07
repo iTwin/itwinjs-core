@@ -197,7 +197,7 @@ export type TiledGraphicsSceneObjects = Iterable<TiledGraphicsSceneObject>;
 export type SceneObject = RealityModelSceneObject | IModelSceneObject | PresentationSceneObject | CustomSceneObject | MapSceneObject | TiledGraphicsSceneObject;
 
 export interface SpatialScene {
-  readonly viewport: Viewport;
+  // ###TODO I'd rather not have this bidirectional coupling... readonly viewport: Viewport;
   // ###TODO need to design ahead for future types - ViewState3d - not spatial, but not 2d.
   readonly isSpatial: true;
   readonly is2d?: never;

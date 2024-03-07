@@ -334,6 +334,8 @@ export abstract class Viewport implements IDisposable, TileUser {
    * During that time it can be undefined. DO NOT assign directly to this member - use `setView()`.
    */
   private _view!: ViewState;
+  /** Initialized at the same time as _view - see above. */
+  private _scene!: ViewportScene;
   /** A function executed by `setView()` when `this._view` changes. */
   private readonly _detachFromView: VoidFunction[] = [];
   private readonly _detachFromDisplayStyle: VoidFunction[] = [];
@@ -503,7 +505,6 @@ export abstract class Viewport implements IDisposable, TileUser {
   private _hilite = new Hilite.Settings();
   private _emphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
   private _flash = new FlashSettings();
-  private _scene: ViewportScene;
 
   public get scene(): ViewportScene { return this._scene; }
   
@@ -1122,8 +1123,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     this._viewportId = TileUser.generateId();
     this._perModelCategoryVisibility = PerModelCategoryVisibility.createOverrides(this);
 
-    this._scene = createViewportScene(this);
-    
     IModelApp.tileAdmin.registerUser(this);
   }
 
@@ -1145,6 +1144,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     if (this._mapTiledGraphicsProvider)
       this._mapTiledGraphicsProvider.setView(view);
     this.detachFromView();
+    this._scene = createViewportScene(view);
     this._view = view;
     this.attachToView();
   }

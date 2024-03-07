@@ -50,7 +50,7 @@ export class ViewCategorySelectorImpl implements ViewCategorySelector {
   changeCategoryDisplay(arg: Id64Arg, add: boolean) { this._selector.changeCategoryDisplay(arg, add); }
 }
 
-export abstract class IModelViewImpl implements IIModelView {
+export abstract class IIModelViewImpl implements IIModelView {
   readonly impl: ViewState;
   protected readonly _style: ViewStyle;
   readonly categorySelector: ViewCategorySelector;
@@ -108,7 +108,7 @@ export abstract class IModelViewImpl implements IIModelView {
   refreshForModifiedModels(modelIds: Id64Arg | undefined) { return this.impl.refreshForModifiedModels(modelIds); }
 
   hasSameCoordinates(other: IIModelView): boolean {
-    const view = other instanceof IModelViewImpl ? other : undefined;
+    const view = other instanceof IIModelViewImpl ? other : undefined;
     return undefined !== view && this.impl.hasSameCoordinates(view.impl);
   }
 
@@ -121,7 +121,7 @@ export abstract class IModelViewImpl implements IIModelView {
   getAttachmentViewport(id: Id64String) { return this.impl.getAttachmentViewport(id); }
 }
 
-export abstract class View3dImpl extends IModelViewImpl implements IModelView3d {
+export abstract class View3dImpl extends IIModelViewImpl implements IModelView3d {
   readonly is3d: true = true;
 
   protected constructor(view: ViewState3d) {
@@ -163,9 +163,9 @@ export class IModelSpatialViewImpl extends View3dImpl implements IModelSpatialVi
   }
 }
 
-type ViewImpl = IModelSpatialViewImpl; /* ###TODO | DrawingViewImpl | SheetViewImpl */
+type IModelViewImpl = IModelSpatialViewImpl; /* ###TODO | DrawingViewImpl | SheetViewImpl */
 
-export class IModelSceneObjectImpl<View extends ViewImpl> extends SceneObjectImpl implements IModelSceneObject {
+export class IModelSceneObjectImpl<View extends IModelViewImpl> extends SceneObjectImpl implements IModelSceneObject {
   readonly _view: View;
 
   constructor(view: View, guid: GuidString, scene: ViewportScene) {
@@ -194,4 +194,12 @@ export class IModelSceneObjectImpl<View extends ViewImpl> extends SceneObjectImp
     // ###TODO need to ignore context reality models and not update solar shadows
     this._view.impl.createScene(context);
   }
+}
+
+export function createIModelView(view: ViewState): IModelViewImpl {
+  if (view.isSpatialView()) {
+    return new IModelSpatialViewImpl(view);
+  }
+
+  throw new Error("###TODO non-spatial IModelView impls");
 }
