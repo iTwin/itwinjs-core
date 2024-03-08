@@ -63,14 +63,14 @@ jobs:
             NativeUrl=$(grep -E '^imodel-native(-internal)?: https://github\.com/iTwin/imodel-native(-internal)?/pull/*' body.txt)
           else
             echo 'This run was not triggered by a Pull request.'
-            echo 'If you have a PR for this branch and wish to use a linked PR please comment in your PR "/azp run imodel-native-internal" to trigger the pipeline'
+            echo 'If you have a PR for this branch and wish to use a linked PR please comment in your PR "/azp run iTwin.js" to trigger the pipeline'
           fi
 
           # No native PRs are linked
           if [[ -z "$NativeUrl" ]]; then
-            echo '##vso[task.setvariable variable=RUN_BUILD;isoutput=true]true'
+            echo '##vso[task.setvariable variable=POST_STATUS;isoutput=true]true'
           else
-            echo '##vso[task.setvariable variable=RUN_BUILD;isoutput=true]false'
+            echo '##vso[task.setvariable variable=POST_STATUS;isoutput=true]false'
           fi
 
         env:
@@ -79,7 +79,7 @@ jobs:
 
   - job: Build
     dependsOn: CheckLinkedPR
-    condition: and(succeeded(), eq(dependencies.CheckLinkedPR.outputs['checkForPr.RUN_BUILD'], 'true'))
+    condition: succeeded()
     strategy:
       matrix:
         "Windows_Node_20":
@@ -120,7 +120,7 @@ jobs:
     dependsOn:
     - CheckLinkedPR
     - Build
-    condition: and(succeeded(), eq(dependencies.CheckLinkedPR.outputs['checkForPr.RUN_BUILD'], 'true'), eq(variables['Build.Reason'], 'PullRequest'))
+    condition: and(succeeded(), eq(dependencies.CheckLinkedPR.outputs['checkForPr.POST_STATUS'], 'true'), eq(variables['Build.Reason'], 'PullRequest'))
     displayName: Post Success
     pool:
       vmImage: ubuntu-latest
@@ -137,6 +137,6 @@ jobs:
           -f state='success' \
           -f target_url='$(BUILD_URL)' \
           -f context='itwinjs-core PR validation' \
-          -f description='The internal linked PR build succeeded'
+          -f description='No native PR was linked'
       env:
         GITHUB_TOKEN: $(GH_TOKEN)

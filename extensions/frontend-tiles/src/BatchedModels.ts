@@ -10,12 +10,14 @@ import { ModelMetadata } from "./BatchedTilesetReader";
 
 export class BatchedModels {
   private _viewedModels!: Set<Id64String>;
+  private readonly _projectExtents: Range3d;
   private readonly _viewedExtents = new Range3d();
   private readonly _viewedModelIdPairs = new Id64.Uint32Set();
   private readonly _metadata: Map<Id64String, ModelMetadata>;
 
   public constructor(view: SpatialViewState, metadata: Map<Id64String, ModelMetadata>) {
     this._metadata = metadata;
+    this._projectExtents = view.iModel.projectExtents;
     this.setViewedModels(view.modelSelector.models);
   }
 
@@ -30,6 +32,8 @@ export class BatchedModels {
       if (range)
         this._viewedExtents.extendRange(range);
     }
+
+    this._viewedExtents.intersect(this._projectExtents, this._viewedExtents);
   }
 
   public views(modelId: Id64String): boolean {
