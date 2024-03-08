@@ -20,22 +20,31 @@ import {
   SchemaDifferences,
   SchemaEnumeratorDifference,
   SchemaItemDifference,
+  SchemaItemTypeName,
   SchemaPropertyDifference,
   SchemaRelationshipConstraintClassDifference,
   SchemaRelationshipConstraintDifference,
+  SchemaType,
 } from "./SchemaDifference";
 import { ConflictCode, SchemaDifferenceConflict } from "./SchemaConflicts";
 
-function derivedFrom(ecClass: ECClass|undefined, name: string): boolean {
+/**
+ * Recursive syncronous function to figure whether a given class derived from
+ * a class with the given baseClassName.
+ */
+function derivedFrom(ecClass: ECClass|undefined, baseClassName: string): boolean {
   if(ecClass === undefined) {
     return false;
   }
-  if(ecClass && ecClass.name === name) {
+  if(ecClass && ecClass.name === baseClassName) {
     return true;
   }
-  return derivedFrom(ecClass.getBaseClassSync(), name);
+  return derivedFrom(ecClass.getBaseClassSync(), baseClassName);
 }
 
+/**
+ * Definition of lookup args to locate certain elements in the existing differences.
+ */
 interface LookupArgs {
   schemaType?: string;
   itemName?: string;
@@ -43,6 +52,9 @@ interface LookupArgs {
 }
 
 /**
+ * The SchemaDiagnosticVisitor is a visitor implementation for diagnostic entries
+ * from the schema comparer api. Depending on the diagnostic code, the difference
+ * result is build together.
  * @internal
  */
 export class SchemaDiagnosticVisitor {
@@ -171,7 +183,7 @@ export class SchemaDiagnosticVisitor {
     const schemaItem = diagnostic.ecDefinition as SchemaItem;
     this.addEntry({
       changeType: "add",
-      schemaType: schemaItemTypeToString(schemaItem.schemaItemType),
+      schemaType: getSchemaItemName(schemaItem.schemaItemType),
       itemName: schemaItem.name,
       json: schemaItem.toJSON(),
     });
@@ -187,7 +199,7 @@ export class SchemaDiagnosticVisitor {
     if(propertyName === "schemaItemType") {
       return this.addConflict({
         code:        ConflictCode.ConflictingItemName,
-        schemaType:  schemaItemTypeToString(schemaItem.schemaItemType),
+        schemaType:  getSchemaItemName(schemaItem.schemaItemType),
         itemName:    schemaItem.name,
         source:      sourceValue,
         target:      targetValue,
@@ -203,7 +215,7 @@ export class SchemaDiagnosticVisitor {
     if(!modifyEntry) {
       modifyEntry = this.addEntry({
         changeType: "modify",
-        schemaType: schemaItemTypeToString(schemaItem.schemaItemType),
+        schemaType: getSchemaItemName(schemaItem.schemaItemType),
         itemName: schemaItem.name,
         json: {},
       });
@@ -222,7 +234,7 @@ export class SchemaDiagnosticVisitor {
     if(propertyName === "type") {
       return this.addConflict({
         code:        ConflictCode.ConflictingEnumerationType,
-        schemaType:  schemaItemTypeToString(SchemaItemType.Enumeration),
+        schemaType:  getSchemaItemName(SchemaItemType.Enumeration),
         itemName:    enumeration.name,
         source:      sourceValue,
         target:      targetValue,
@@ -295,7 +307,7 @@ export class SchemaDiagnosticVisitor {
     if(propertyName === "value") {
       this.addConflict({
         code:        ConflictCode.ConflictingEnumeratorValue,
-        schemaType:  schemaItemTypeToString(SchemaItemType.Enumeration),
+        schemaType:  getSchemaItemName(SchemaItemType.Enumeration),
         itemName:    enumeration.name,
         path:        enumerator.name,
         source:      sourceValue,
@@ -354,7 +366,7 @@ export class SchemaDiagnosticVisitor {
     if(propertyName === "primitiveType") {
       this.addConflict({
         code:        ConflictCode.ConflictingPropertyName,
-        schemaType:  schemaItemTypeToString(ecProperty.class.schemaItemType),
+        schemaType:  getSchemaItemName(ecProperty.class.schemaItemType),
         itemName:    ecProperty.class.name,
         path:        ecProperty.name,
         source:      sourceValue,
@@ -381,7 +393,7 @@ export class SchemaDiagnosticVisitor {
     if(!modifyEntry) {
       modifyEntry = this.addEntry({
         changeType: "modify",
-        schemaType: schemaItemTypeToString(ecClass.schemaItemType),
+        schemaType: getSchemaItemName(ecClass.schemaItemType),
         itemName: ecClass.name,
         json: {},
       });
@@ -394,7 +406,7 @@ export class SchemaDiagnosticVisitor {
     if(sourceBaseClass === undefined) {
       this.addConflict({
         code:        ConflictCode.RemovingBaseClass,
-        schemaType:  schemaItemTypeToString(targetClass.schemaItemType),
+        schemaType:  getSchemaItemName(targetClass.schemaItemType),
         itemName:    targetClass.name,
         path:        "$baseClass",
         source:      undefined,
@@ -407,7 +419,7 @@ export class SchemaDiagnosticVisitor {
     if(sourceBaseClass.modifier === ECClassModifier.Sealed) {
       this.addConflict({
         code:        ConflictCode.SealedBaseClass,
-        schemaType:  schemaItemTypeToString(targetClass.schemaItemType),
+        schemaType:  getSchemaItemName(targetClass.schemaItemType),
         itemName:    targetClass.name,
         path:        "$baseClass",
         source:      sourceBaseClass.fullName,
@@ -420,7 +432,7 @@ export class SchemaDiagnosticVisitor {
     if(targetBaseClass && !derivedFrom(sourceBaseClass, targetBaseClass.name)) {
       this.addConflict({
         code:         ConflictCode.ConflictingBaseClass,
-        schemaType:   schemaItemTypeToString(targetClass.schemaItemType),
+        schemaType:   getSchemaItemName(targetClass.schemaItemType),
         itemName:     targetClass.name,
         path:         "$baseClass",
         source:       sourceBaseClass.fullName,
@@ -447,7 +459,7 @@ export class SchemaDiagnosticVisitor {
     if(!modifyEntry) {
       modifyEntry = this.addEntry({
         changeType: "modify",
-        schemaType: schemaItemTypeToString(ecClass.schemaItemType),
+        schemaType: "EntityClass",
         itemName: ecClass.name,
         path: "$mixins",
         json: [],
@@ -461,7 +473,7 @@ export class SchemaDiagnosticVisitor {
     if(mixin.appliesTo && !derivedFrom(targetClass, mixin.appliesTo.name)) {
       this.addConflict({
         code:         ConflictCode.MixinAppliedMustDeriveFromConstraint,
-        schemaType:   schemaItemTypeToString(targetClass.schemaItemType),
+        schemaType:   getSchemaItemName(targetClass.schemaItemType),
         itemName:     targetClass.name,
         path:         "$mixins",
         source:       mixin.fullName,
@@ -552,14 +564,14 @@ export class SchemaDiagnosticVisitor {
   }
 }
 
-function getItemNameAndPath(type: AnyECType) {
+function getItemNameAndPath(type: AnyECType): { schemaType: SchemaType, itemName?: string, path?: string } {
   if(Schema.isSchema(type))
     return {
       schemaType: "Schema",
     };
   if(SchemaItem.isSchemaItem(type))
     return {
-      schemaType: schemaItemTypeToString(type.schemaItemType),
+      schemaType: getSchemaItemName(type.schemaItemType),
       itemName: type.name,
     };
   if(type instanceof Property)
@@ -575,4 +587,8 @@ function getItemNameAndPath(type: AnyECType) {
       path: type.isSource ? "$source" : "$target",
     };
   throw Error("Unhandled Type");
+}
+
+function getSchemaItemName(schemaItemType: SchemaItemType) {
+  return schemaItemTypeToString(schemaItemType) as SchemaItemTypeName;
 }

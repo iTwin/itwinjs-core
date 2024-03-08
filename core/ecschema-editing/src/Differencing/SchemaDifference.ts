@@ -16,9 +16,36 @@ import type {
 } from "@itwin/ecschema-metadata";
 
 /**
+ * Defines the type of the difference operation.
  * @internal
  */
 export type DifferenceType = "add" | "modify";
+
+/**
+ * Defines a set of SchemaItem names.
+ * @internal
+ */
+export type SchemaItemTypeName =
+  "EntityClass" |
+  "Mixin" |
+  "StructClass" |
+  "CustomAttributeClass" |
+  "RelationshipClass" |
+  "Enumeration" |
+  "KindOfQuantity" |
+  "PropertyCategory" |
+  "Unit" |
+  "InvertedUnit" |
+  "Constant" |
+  "Phenomenon" |
+  "UnitSystem" |
+  "Format";
+
+/**
+ * Defines the possible values SchemaTypes that can occur in SchemaDifferences or Conflicts.
+ * @internal
+ */
+export type SchemaType = "Schema" | SchemaItemTypeName | "Property" | "RelationshipConstraint";
 
 /**
  * @internal
@@ -77,6 +104,9 @@ export interface SchemaDifferences {
   readonly conflicts: SchemaDifferenceConflict[];
 }
 
+/**
+ * @internal
+ */
 export type AnySchemaDifference =
   SchemaDifference |
   SchemaItemDifference |
@@ -88,6 +118,9 @@ export type AnySchemaDifference =
   SchemaRelationshipConstraintClassDifference |
   SchemaCustomAttributeDifference;
 
+/**
+ * @internal
+ */
 export interface SchemaDifference {
   changeType: "modify";
   schemaType: "Schema";
@@ -96,14 +129,20 @@ export interface SchemaDifference {
   json: MutualPartial<SchemaProps>;
 }
 
+/**
+ * @internal
+ */
 export interface SchemaItemDifference<T extends AnySchemaItemProps = AnySchemaItemProps> {
   changeType: "add" | "modify" | "remove";
-  schemaType: string;
+  schemaType: SchemaItemTypeName;
   itemName: string;
   path?: string;
   json: MutualPartial<T>;
 }
 
+/**
+ * @internal
+ */
 export interface SchemaPropertyDifference<T extends AnyPropertyProps = AnyPropertyProps> {
   changeType: "add" | "modify" | "remove";
   schemaType: "Property";
@@ -112,6 +151,9 @@ export interface SchemaPropertyDifference<T extends AnyPropertyProps = AnyProper
   json: MutualPartial<T>;
 }
 
+/**
+ * @internal
+ */
 export interface SchemaReferenceDifference {
   changeType: "add" | "modify" | "remove";
   schemaType: "Schema";
@@ -120,6 +162,9 @@ export interface SchemaReferenceDifference {
   json: MutualPartial<SchemaReferenceProps>;
 }
 
+/**
+ * @internal
+ */
 export interface SchemaEnumeratorDifference {
   changeType: "add" | "modify" | "remove";
   schemaType: "Enumeration";
@@ -128,14 +173,20 @@ export interface SchemaEnumeratorDifference {
   json: MutualPartial<AnyEnumerator>;
 }
 
+/**
+ * @internal
+ */
 export interface SchemaClassMixinDifference {
   changeType: "modify";
-  schemaType: string;
+  schemaType: "EntityClass";
   itemName: string;
   path: "$mixins";
   json: string[];
 }
 
+/**
+ * @internal
+ */
 export interface SchemaRelationshipConstraintDifference {
   changeType: "modify";
   schemaType: "RelationshipConstraint";
@@ -144,6 +195,9 @@ export interface SchemaRelationshipConstraintDifference {
   json: MutualPartial<RelationshipConstraintProps>;
 }
 
+/**
+ * @internal
+ */
 export interface SchemaRelationshipConstraintClassDifference {
   changeType: "modify";
   schemaType: "RelationshipClass";
@@ -152,10 +206,13 @@ export interface SchemaRelationshipConstraintClassDifference {
   json: string[];
 }
 
+/**
+ * @internal
+ */
 export interface SchemaCustomAttributeDifference {
   changeType: "add" | "modify";
-  schemaType: string;
+  schemaType: "Schema" | "EnitityClass" | "Properties" | "RelationshipConstraint";
   itemName?: string;
-  path: "";
+  path?: string;
   json: MutualPartial<CustomAttribute>;
 }

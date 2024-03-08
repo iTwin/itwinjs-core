@@ -6,6 +6,8 @@
  * @module Differencing
  */
 
+import type { SchemaType } from "./SchemaDifference";
+
 /**
  * The unique conflicts codes for Schema differencing.
  *
@@ -70,7 +72,7 @@ export interface SchemaDifferenceConflict {
    * or objects that are related to schema items (properties, relationship constraints) it is the
    * name of the related schema item.
    */
-  readonly schemaType: string;
+  readonly schemaType: SchemaType;
 
   /** The name of the schema item the conflict appears on. */
   readonly itemName?: string;
