@@ -216,7 +216,6 @@ export interface SpatialScene {
 }
 
 export interface TestScene2d {
-  readonly viewport: Viewport;
   readonly is2d: true;
   readonly isSpatial?: never;
 
