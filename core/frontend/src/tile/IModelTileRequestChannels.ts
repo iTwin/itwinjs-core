@@ -116,7 +116,7 @@ class LocalStorageCacheChannel extends TileRequestChannel {
           return returnContent;
 
         } else { // otherwise delete the tile and go on with the normal request route
-          await this.doDeleteTransaction(tile.contentId + tile.tree.id);
+          await this.deleteTileFromIDB(tile.contentId + tile.tree.id);
         }
 
       } else {
@@ -127,7 +127,7 @@ class LocalStorageCacheChannel extends TileRequestChannel {
     return undefined;
   }
 
-  public async doDeleteTransaction(uniqueId: string) {
+  public async deleteTileFromIDB(uniqueId: string) {
     const deleteTransaction = await this._db.transaction("tile-cache", "readwrite");
     const requestDelete = await deleteTransaction.objectStore("tile-cache").delete(uniqueId);
 
@@ -144,7 +144,7 @@ class LocalStorageCacheChannel extends TileRequestChannel {
     };
   }
 
-  public async doAddTransaction(tile: Tile, content: IModelTileContent) {
+  public async addTileToIDB(tile: Tile, content: IModelTileContent) {
 
     // to do this we probably need to re-request the tile, get the data, and then store it.
     // need to somehow not request the same tile multiple times.
@@ -292,7 +292,7 @@ class IModelTileMetadataCacheChannel extends TileRequestChannel {
       return;
     }
     if (channel instanceof LocalStorageCacheChannel) {
-      await channel.doAddTransaction(tile,content);
+      await channel.addTileToIDB(tile,content);
       return;
     }
 
@@ -336,7 +336,7 @@ export class IModelTileRequestChannels {
     this.rpc = args.usesHttp ? new TileRequestChannel(channelName, args.concurrency) : new IModelTileChannel(channelName, args.concurrency);
 
     // There's almost certainly a better way to do this, but for now, if the rpc channel succesfully requests a tile, cache it in localStorage.
-    this.rpc.contentCallback = async (tile, content) => this._localStorage.doAddTransaction(tile,content);
+    this.rpc.contentCallback = async (tile, content) => this._localStorage.addTileToIDB(tile,content);
     if (args.cacheMetadata) {
       this._contentCache = new IModelTileMetadataCacheChannel();
       this._contentCache.registerChannel(this.rpc);
