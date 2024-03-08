@@ -8,6 +8,7 @@ import { Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
+import { collect } from "../../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -51,7 +52,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Verify that Model nodes are returned
-        const classGroupingNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const classGroupingNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(classGroupingNodes)
           .to.have.lengthOf(7)
           .and.to.containSubset([
@@ -78,7 +79,9 @@ describe("Learning Snippets", () => {
             },
           ]);
 
-        const modelNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNodes[5].key });
+        const modelNodes = await Presentation.presentation
+          .getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNodes[5].key })
+          .then(async (x) => collect(x.items));
         expect(modelNodes)
           .to.have.lengthOf(1)
           .and.to.containSubset([
@@ -129,7 +132,7 @@ describe("Learning Snippets", () => {
 
         // our test iModel doesn't have any elements with ECSQL queries as their property values, so
         // we can't construct any ruleset that would actually return nodes for this test case
-        const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(nodes).to.be.empty;
       });
     });

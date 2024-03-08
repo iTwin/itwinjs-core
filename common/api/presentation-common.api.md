@@ -1683,6 +1683,8 @@ export class LocalizationHelper {
     // (undocumented)
     getLocalizedLabelDefinitions(labelDefinitions: LabelDefinition[]): LabelDefinition[];
     // (undocumented)
+    getLocalizedNode(node: Node_2): Node_2;
+    // (undocumented)
     getLocalizedNodePathElement(npe: NodePathElement): NodePathElement;
     // (undocumented)
     getLocalizedNodes(nodes: Node_2[]): Node_2[];

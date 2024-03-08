@@ -112,7 +112,7 @@ export class HiliteSetProvider {
     for (const batch of keyBatches) {
       let loadedItems = 0;
       while (true) {
-        const content = await Presentation.presentation.getContentAndSize({
+        const content = await Presentation.presentation.getContentIterator({
           ...options,
           paging: { start: loadedItems, size: CONTENT_SET_PAGE_SIZE },
           keys: batch,
@@ -121,11 +121,15 @@ export class HiliteSetProvider {
           break;
         }
 
-        const result = this.createHiliteSet(content.content.contentSet);
+        const items = new Array<Item>();
+        for await (const item of content.items) {
+          items.push(item);
+        }
+        const result = this.createHiliteSet(items);
         yield result;
 
-        loadedItems += content.content.contentSet.length;
-        if (loadedItems >= content.size) {
+        loadedItems += items.length;
+        if (loadedItems >= content.total) {
           break;
         }
       }
