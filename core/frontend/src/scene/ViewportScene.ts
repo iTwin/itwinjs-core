@@ -211,6 +211,8 @@ export interface SpatialScene {
   // readonly custom: CustomSceneObjects;
   readonly presentation: ScenePresentation3d;
   readonly tiledGraphicsProviders: TiledGraphicsSceneObjects;
+
+  dispose(): void;
 }
 
 export interface TestScene2d {
@@ -225,6 +227,8 @@ export interface TestScene2d {
   readonly tiledGraphicsProviders: TiledGraphicsSceneObjects;
   // ###TODO want to keep SceneObject interface open for expansion for now, without incurring backwards compatibility tax
   // readonly custom: CustomSceneObjects;
+
+  dispose(): void;
 }
 
 export type ViewportScene = SpatialScene | TestScene2d;

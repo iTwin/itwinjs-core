@@ -126,7 +126,7 @@ export interface IModelSpatialView extends IModelView3d {
   // ###TODO readonly perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
 
   // ###TODO used by ViewCreator3d when model extents are known before tile trees are loaded.
-  // Needed here? Generalize so base extents can be passed to Scene/SceneObject range c:w
+  // Needed here? Generalize so base extents can be passed to Scene/SceneObject range
   // computeSpatialFitRange(options?: ComputeSpatialViewFitRangeOptions): AxisAlignedBox3d;
 }
 

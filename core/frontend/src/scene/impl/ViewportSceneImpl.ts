@@ -11,9 +11,13 @@ import { IIModelViewImpl, createIModelView } from "./IModelViewImpl";
 import { ScenePresentation3dImpl, ScenePresentationImpl } from "./ScenePresentationImpl";
 import { SceneVolume3dImpl, SceneVolumeImpl } from "./SceneVolumeImpl";
 import { SpatialViewState } from "../../SpatialViewState";
+import { SubCategoriesCache } from "../../SubCategoriesCache";
 
 export abstract class ViewportSceneImpl {
   private _primaryView: IIModelViewImpl;
+  private readonly _subcategories = new SubCategoriesCache.Queue();
+
+  readonly tiledGraphicsProviders = []; // ###TODO
 
   /** An IModelView created from the ViewState supplied to the constructor.
    * this.presentation and this.volume are created from the same ViewState.
@@ -28,6 +32,10 @@ export abstract class ViewportSceneImpl {
   protected constructor(view: ViewState) {
     this._primaryView = createIModelView(view);
   }
+
+  dispose(): void {
+    this._subcategories.dispose();
+  }
 }
 
 // ###TODO rework this to subclass ViewportSceneImpl
@@ -38,7 +46,6 @@ export class SpatialSceneImpl extends ViewportSceneImpl implements SpatialScene 
 
   readonly realityModels = []; // ###TODO
   readonly iModels = []; // ###TODO
-  readonly tiledGraphicsProviders = []; // ###TODO
 
   constructor(view: SpatialViewState) {
     super(view);
