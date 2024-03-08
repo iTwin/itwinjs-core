@@ -1,6 +1,13 @@
 # Change Log - @itwin/frontend-tiles
 
-This log was last generated on Tue, 05 Mar 2024 20:37:18 GMT and should not be manually modified.
+This log was last generated on Fri, 08 Mar 2024 15:57:12 GMT and should not be manually modified.
+
+## 4.4.6
+Fri, 08 Mar 2024 15:57:12 GMT
+
+### Updates
+
+- Clamp the fit volume of a batched tile tree to the project extents.
 
 ## 4.4.5
 Tue, 05 Mar 2024 20:37:18 GMT
