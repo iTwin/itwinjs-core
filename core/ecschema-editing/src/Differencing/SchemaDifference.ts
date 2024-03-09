@@ -56,6 +56,7 @@ export namespace SchemaDifference {
    * @param targetSchema  The schema the differences gets merged into.
    * @param sourceSchema  The schema to get merged in the target.
    * @returns             An [[SchemaDifference]] object.
+   * @internal
    */
   export async function fromSchemas(targetSchema: Schema, sourceSchema: Schema): Promise<SchemaDifferences> {
     const changesList: SchemaChanges[] = [];
@@ -70,6 +71,7 @@ export namespace SchemaDifference {
    * @param targetSchema
    * @param schemaChanges   A changes report of two schemas.
    * @returns               An [[SchemaDifference]] object.
+   * @internal
    */
   export async function fromSchemaChanges(targetSchema: Schema, schemaChanges: SchemaChanges): Promise<SchemaDifferences> {
     const schemaDifference: SchemaDifferences = {
