@@ -6219,6 +6219,11 @@ export interface OpenDbKey {
     readonly key?: string;
 }
 
+// @public
+export interface OpenSqliteArgs {
+    readonly busyTimeout?: number;
+}
+
 // @internal (undocumented)
 export const OPERATION: unique symbol;
 
