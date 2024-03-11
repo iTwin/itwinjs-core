@@ -7,15 +7,18 @@ import { assert, expect } from "chai";
 import { join } from "path";
 import { restore as sinonRestore, spy as sinonSpy } from "sinon";
 import { Guid, Id64, OpenMode } from "@itwin/core-bentley";
-import { CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core-common";
+import { Code, CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core-common";
 import { ClassRegistry } from "../../ClassRegistry";
 import { ElementUniqueAspect, OnAspectIdArg, OnAspectPropsArg } from "../../ElementAspect";
 import {
+  ChannelAdmin,
+  DefinitionContainer,
+  DefinitionModel,
   FunctionalBreakdownElement, FunctionalComponentElement, FunctionalModel, FunctionalPartition, FunctionalSchema,
   InformationPartitionElement, OnChildElementIdArg, OnChildElementPropsArg, OnElementIdArg, OnElementInModelIdArg, OnElementInModelPropsArg,
-  OnElementPropsArg, OnModelIdArg, OnModelPropsArg, OnSubModelIdArg, OnSubModelPropsArg, Schemas, StandaloneDb,
+  OnElementPropsArg, OnModelIdArg, OnModelPropsArg, OnSubModelIdArg, OnSubModelPropsArg, Schemas, StandaloneDb, Subject,
 } from "../../core-backend";
-import { ElementOwnsChildElements, ElementOwnsUniqueAspect, SubjectOwnsPartitionElements } from "../../NavigationRelationship";
+import { ElementOwnsChildElements, ElementOwnsUniqueAspect, SubjectOwnsPartitionElements, SubjectOwnsSubjects } from "../../NavigationRelationship";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import Sinon = require("sinon");
@@ -338,20 +341,27 @@ describe("Functional Domain", () => {
 
     expect(iModelDb.channels.hasChannels).equal(false);
 
-    // create a channel subject for all elements in this test
-    const channel1 = iModelDb.channels.insertChannelSubject({ subjectName: "TestSubject", channelKey: testChannelKey });
-    iModelDb.channels.addAllowedChannel(testChannelKey);
+    // create a channel for all elements in this test
+    iModelDb.channels.addAllowedChannel(ChannelAdmin.sharedChannel);
 
-    const partitionCode = FunctionalPartition.createCode(iModelDb, channel1, "Test Functional Model");
+    const subject1Code = Subject.createCode(iModelDb, IModel.rootSubjectId, "Test Functional Subject");
+    const subject1Props = {
+      classFullName: Subject.classFullName, model: IModel.repositoryModelId,
+      parent: new SubjectOwnsSubjects(IModel.rootSubjectId), code: subject1Code,
+    };
+    const subject1Id = iModelDb.elements.insertElement(subject1Props);
+
+    const partitionCode = FunctionalPartition.createCode(iModelDb, subject1Id, "Test Functional Model");
     const partitionProps = {
       classFullName: TestFuncPartition.classFullName, model: IModel.repositoryModelId,
-      parent: new SubjectOwnsPartitionElements(channel1), code: partitionCode,
+      parent: new SubjectOwnsPartitionElements(subject1Id), code: partitionCode,
     };
 
     let partitionId = iModelDb.elements.insertElement(partitionProps);
-    const modelId = testChannel(() => iModelDb.models.insertModel({ classFullName: TestFuncModel.classFullName, modeledElement: { id: partitionId } }), [spy.model.onInsert]);
 
-    expect(() => iModelDb.channels.makeChannelRoot({ elementId: partitionId, channelKey: "nested channel" })).to.throw("may not nest");
+    iModelDb.channels.makeChannelRoot({ elementId: partitionId, channelKey: testChannelKey });
+    iModelDb.channels.addAllowedChannel(testChannelKey);
+    const modelId = testChannel(() => iModelDb.models.insertModel({ classFullName: TestFuncModel.classFullName, modeledElement: { id: partitionId } }), [spy.model.onInsert]);
 
     assert.isTrue(Id64.isValidId64(modelId));
     assert.isTrue(spy.model.onInsert.calledOnce);
@@ -366,6 +376,7 @@ describe("Functional Domain", () => {
 
     partitionProps.code.value = "Test Func 2";
     partitionId = iModelDb.elements.insertElement(partitionProps);
+    iModelDb.channels.makeChannelRoot({ elementId: partitionId, channelKey: testChannelKey });
     const modelId2 = iModelDb.models.insertModel({ classFullName: TestFuncModel.classFullName, modeledElement: { id: partitionId } });
     assert.isTrue(Id64.isValidId64(modelId2));
     assert.equal(spy.model.onInserted.getCall(1).args[0].id, modelId2, "second insert should set new id");
@@ -386,6 +397,31 @@ describe("Functional Domain", () => {
     assert.isTrue(spy.partition.onSubModelDelete.calledOnce);
     assert.isTrue(spy.partition.onSubModelDeleted.calledOnce);
     assert.equal(spy.partition.onSubModelDeleted.getCall(0).args[0].subModelId, modelId2);
+
+    const codeSpec1 = CodeSpec.create(iModelDb, "bis:DefinitionContainer", CodeScopeSpec.Type.Model);
+    iModelDb.codeSpecs.insert(codeSpec1);
+
+    const defContainerCode1 = new Code({ spec: "bis:DefinitionContainer", scope: IModel.dictionaryId, value: "Test Channel in Global-Scope" });
+    const defContainerCode1Props = {
+      classFullName: DefinitionContainer.classFullName,
+      model: IModel.dictionaryId,
+      code: defContainerCode1,
+    };
+
+    const defContainer1Id = iModelDb.elements.insertElement(defContainerCode1Props);
+    iModelDb.channels.makeChannelRoot({ elementId: defContainer1Id, channelKey: testChannelKey });
+    const defModelId = testChannel(() => iModelDb.models.insertModel({ classFullName: DefinitionModel.classFullName, modeledElement: { id: defContainer1Id } }), [spy.model.onInsert]);
+
+    const defContainerCode2 = new Code({ spec: "bis:DefinitionContainer", scope: defModelId, value: "Test Channel in Global-Scope nested" });
+    const defContainerCode2Props = {
+      classFullName: DefinitionContainer.classFullName,
+      model: defModelId,
+      code: defContainerCode2,
+    };
+
+    const defContainer2Id = iModelDb.elements.insertElement(defContainerCode2Props);
+    expect(iModelDb.channels.getChannelKey(defContainer2Id)).equals(testChannelKey);
+    expect(() => iModelDb.channels.makeChannelRoot({ elementId: defContainer2Id, channelKey: "nested channel" })).to.throw("may not nest");
 
     const breakdownProps = { classFullName: Breakdown.classFullName, model: modelId, code: { spec: codeSpec.id, scope: modelId, value: "Breakdown1" } };
     const breakdownId = testChannel(() => elements.insertElement(breakdownProps), [spy.model.onInsertElement, spy.breakdown.onInsert]);

@@ -8,7 +8,6 @@
 
 import { DbResult, Id64String, IModelStatus, RepositoryStatus } from "@itwin/core-bentley";
 import { ChannelRootAspectProps, IModel, IModelError } from "@itwin/core-common";
-import { Subject } from "./Element";
 import { IModelDb } from "./IModelDb";
 
 /** The key for a channel. Used for "allowed channels" in [[ChannelControl]]
@@ -41,20 +40,6 @@ export interface ChannelControl {
    * @note if the element is already in a channel, this will throw an error.
    */
   makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey }): void;
-  /** Insert a new Subject element that is a Channel root in this iModel.
-   * @returns the ElementId of the new Subject element.
-   * @note if the parentSubject element is already in a channel, this will add the Subject element and then throw an error without making it a Channel root.
-   */
-  insertChannelSubject(args: {
-    /** The name of the new Subject element */
-    subjectName: string;
-    /** The channel key for the new [[Subject]]. This is the string to pass to [[addAllowedChannel]]*/
-    channelKey: ChannelKey;
-    /** the Id of the parent of the new Subject. Default is [[IModel.rootSubjectId]]. */
-    parentSubjectId?: Id64String;
-    /** Optional description for new Subject. */
-    description?: string;
-  }): Id64String;
 
   /** @internal */
   verifyChannel(modelId: Id64String): void;
@@ -70,13 +55,15 @@ export namespace ChannelControl {
 export class ChannelAdmin implements ChannelControl {
   public static readonly sharedChannel = "shared";
   public static readonly channelClassName = "bis:ChannelRootAspect";
+  public static readonly subjectClassName = "bis:Subject";
   private _allowedChannels = new Set<ChannelKey>();
   private _allowedModels = new Set<Id64String>();
   private _deniedModels = new Map<Id64String, ChannelKey>();
   private _hasChannels?: boolean;
+  private _channelRootAspectClassExists?: boolean;
+  private _hasLegacyChannels?: boolean;
 
   public constructor(private _iModel: IModelDb) {
-    this._allowedChannels.add(ChannelControl.sharedChannelName);
   }
   public addAllowedChannel(channelKey: ChannelKey) {
     this._allowedChannels.add(channelKey);
@@ -86,14 +73,45 @@ export class ChannelAdmin implements ChannelControl {
     this._allowedChannels.delete(channelKey);
     this._allowedModels.clear();
   }
+  private querySchemaVersion(schemaName: string): { generation: number, write: number, read: number } | undefined {
+    return this._iModel.withPreparedStatement(
+      "SELECT VersionMajor, VersionWrite, VersionMinor FROM meta.ECSchemaDef WHERE Name=?", (stmt) => {
+        stmt.bindString(1, schemaName);
+        return DbResult.BE_SQLITE_ROW === stmt.step() ? {
+          generation: stmt.getValue(0).getInteger(),
+          write: stmt.getValue(1).getInteger(),
+          read: stmt.getValue(2).getInteger(),
+        } : undefined;
+      });
+  }
+
+  private get _bisCoreSupportsChannelRootAspect(): boolean {
+    if (undefined === this._channelRootAspectClassExists) {
+      const bisCoreVersion = this.querySchemaVersion("BisCore");
+      if (bisCoreVersion === undefined)
+        throw new Error("could not determine BisCore schema version");
+      this._channelRootAspectClassExists = (bisCoreVersion.generation === 1 && bisCoreVersion.read >= 10);
+    }
+    return this._channelRootAspectClassExists;
+  }
+
+  private get _hasAnyLegacyChannels(): boolean {
+    if (undefined === this._hasLegacyChannels) {
+      // Check if there are any old-fashion channels defined by legacy iModel Connectors via their Job-Subject's JsonProperties
+      this._hasLegacyChannels = this._iModel.withStatement(
+        `SELECT 1 FROM ${ChannelAdmin.subjectClassName} WHERE JsonProperties IS NOT NULL AND json_extract(JsonProperties, '$.Subject.Job.Bridge') IS NOT NULL`, (stmt) => stmt.step() === DbResult.BE_SQLITE_ROW, false);
+    }
+    return this._hasLegacyChannels;
+  }
   public get hasChannels(): boolean {
     if (undefined === this._hasChannels) {
-      try {
+      if (this._bisCoreSupportsChannelRootAspect)
         this._hasChannels = this._iModel.withStatement(`SELECT 1 FROM ${ChannelAdmin.channelClassName}`, (stmt) => stmt.step() === DbResult.BE_SQLITE_ROW, false);
-      } catch (e) {
-        // iModel doesn't have channel class in its BIS schema
-        this._hasChannels = false;
-      }
+
+      if (undefined === this._hasChannels || !this._hasChannels)
+        // There are no channels defined via the ChannelRootAspect class in this iModel.
+        // Check for legacy channels for backwards compatibility
+        this._hasChannels = this._hasAnyLegacyChannels;
     }
     return this._hasChannels;
   }
@@ -101,12 +119,27 @@ export class ChannelAdmin implements ChannelControl {
     if (!this.hasChannels || elementId === IModel.rootSubjectId)
       return ChannelControl.sharedChannelName;
 
-    const channel = this._iModel.withPreparedStatement(`SELECT Owner FROM ${ChannelAdmin.channelClassName} WHERE Element.Id=?`, (stmt) => {
-      stmt.bindId(1, elementId);
-      return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValue(0).getString() : undefined;
-    });
-    if (channel !== undefined)
-      return channel;
+    if (this._bisCoreSupportsChannelRootAspect) {
+      const channel = this._iModel.withPreparedStatement(`SELECT Owner FROM ${ChannelAdmin.channelClassName} WHERE Element.Id=?`, (stmt) => {
+        stmt.bindId(1, elementId);
+        return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValue(0).getString() : undefined;
+      });
+      if (channel !== undefined)
+        return channel;
+    }
+    if (this._hasAnyLegacyChannels) {
+      // FederationGuid of JobSubjects is used as ChannelKey. Legacy Connectors have their own logic to enforce
+      // write-operations against those channels. Thus, this approach primarily aims to prevent data changes on
+      // those legacy channels by iTwin.js-based code
+      const legacyChannel = this._iModel.withPreparedStatement(
+        `SELECT FederationGuid FROM ${ChannelAdmin.subjectClassName} WHERE ECInstanceId=? ` +
+        `AND json_extract(JsonProperties, '$.Subject.Job.Bridge') IS NOT NULL`, (stmt) => {
+          stmt.bindId(1, elementId);
+          return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValue(0).getString() : undefined;
+        });
+      if (legacyChannel !== undefined)
+        return legacyChannel;
+    }
     const parentId = this._iModel.withPreparedSqliteStatement("SELECT ParentId,ModelId FROM bis_Element WHERE id=?", (stmt) => {
       stmt.bindId(1, elementId);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
@@ -136,13 +169,11 @@ export class ChannelAdmin implements ChannelControl {
     if (ChannelControl.sharedChannelName !== this.getChannelKey(args.elementId))
       throw new Error("channels may not nest");
 
+    if (!this._bisCoreSupportsChannelRootAspect)
+      throw new Error("BisCore schema v1.0.10 or later is required to make ChannelRoots");
+
     const props: ChannelRootAspectProps = { classFullName: ChannelAdmin.channelClassName, element: { id: args.elementId }, owner: args.channelKey };
     this._iModel.elements.insertAspect(props);
     this._hasChannels = true;
-  }
-  public insertChannelSubject(args: { subjectName: string, channelKey: ChannelKey, parentSubjectId?: Id64String, description?: string }): Id64String {
-    const elementId = Subject.insert(this._iModel, args.parentSubjectId ?? IModel.rootSubjectId, args.subjectName, args.description);
-    this.makeChannelRoot({ elementId, channelKey: args.channelKey });
-    return elementId;
   }
 }
