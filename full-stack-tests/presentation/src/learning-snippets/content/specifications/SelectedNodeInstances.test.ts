@@ -8,6 +8,7 @@ import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
+import { collect } from "../../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -46,7 +47,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that only `BisCore` content instances are returned.
-        const content = await Presentation.presentation.getContent({
+        const content = await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([
@@ -56,7 +57,7 @@ describe("Learning Snippets", () => {
           descriptor: {},
         });
 
-        expect(content!.contentSet)
+        expect(await collect(content!.items))
           .to.have.lengthOf(1)
           .and.to.containSubset([
             {
@@ -87,7 +88,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that only `bis.SpatialViewDefinition` content instances are returned.
-        const content = await Presentation.presentation.getContent({
+        const content = await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([
@@ -97,13 +98,10 @@ describe("Learning Snippets", () => {
           descriptor: {},
         });
 
-        expect(content!.contentSet)
-          .to.have.lengthOf(1)
-          .and.to.containSubset([
-            {
-              classInfo: { label: "Spatial View Definition" },
-            },
-          ]);
+        expect(content!.total).to.eq(1);
+        expect((await content!.items.next()).value).to.containSubset({
+          classInfo: { label: "Spatial View Definition" },
+        });
       });
 
       it("uses `acceptablePolymorphically` attribute", async () => {
@@ -129,7 +127,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Ensure that only content instances of `bis.ViewDefinition` and derived classes are returned.
-        const content = await Presentation.presentation.getContent({
+        const content = await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
           keys: new KeySet([
@@ -139,8 +137,8 @@ describe("Learning Snippets", () => {
           descriptor: {},
         });
 
-        expect(content!.contentSet).to.have.lengthOf(1);
-        expect(content!.contentSet[0].primaryKeys[0].className).to.equal("BisCore:SpatialViewDefinition");
+        expect(content!.total).to.eq(1);
+        expect((await content!.items.next()).value.primaryKeys[0].className).to.equal("BisCore:SpatialViewDefinition");
       });
     });
   });

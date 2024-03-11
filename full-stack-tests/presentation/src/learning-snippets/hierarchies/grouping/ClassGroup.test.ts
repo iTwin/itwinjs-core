@@ -8,6 +8,7 @@ import { Ruleset, StandardNodeTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
+import { collect } from "../../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -60,7 +61,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Confirm there's a class grouping node for PhysicalElement
-        const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(nodes)
           .to.have.lengthOf(43)
           .and.to.containSubset([

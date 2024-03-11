@@ -9,6 +9,7 @@ import { assert, BeDuration, BeTimePoint, Guid, Id64, using } from "@itwin/core-
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
   ChildNodeSpecificationTypes,
+  Content,
   ContentFlags,
   ContentSpecificationTypes,
   DefaultContentDisplayTypes,
@@ -32,7 +33,7 @@ import {
 import { Presentation, PresentationManager, PresentationManagerProps } from "@itwin/presentation-frontend";
 import { ECClassHierarchy, ECClassHierarchyInfo } from "../ECClasHierarchy";
 import { initialize, terminate } from "../IntegrationTests";
-import { getFieldByLabel } from "../Utils";
+import { collect, getFieldByLabel } from "../Utils";
 import { buildTestIModelConnection, insertDocumentPartition, insertPhysicalElement, insertPhysicalModel, insertSpatialCategory } from "../IModelSetupUtils";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
@@ -85,24 +86,26 @@ describe("Content", () => {
           },
         ],
       };
-      const content = await Presentation.presentation.getContent({
-        imodel,
-        rulesetOrId: ruleset,
-        descriptor: {
-          contentFlags: ContentFlags.IncludeInputKeys,
-        },
+      const content = await Presentation.presentation
+        .getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          descriptor: {
+            contentFlags: ContentFlags.IncludeInputKeys,
+          },
 
-        keys: new KeySet([
-          {
-            className: "BisCore:Element",
-            id: "0x1",
-          },
-          {
-            className: "BisCore:Element",
-            id: "0x12",
-          },
-        ]),
-      });
+          keys: new KeySet([
+            {
+              className: "BisCore:Element",
+              id: "0x1",
+            },
+            {
+              className: "BisCore:Element",
+              id: "0x12",
+            },
+          ]),
+        })
+        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
       expect(content?.contentSet.length).to.eq(9);
       expect(content!.contentSet.map((item) => ({ itemId: item.primaryKeys[0].id, inputIds: item.inputKeys!.map((ik) => ik.id) }))).to.containSubset([
         {
@@ -155,7 +158,9 @@ describe("Content", () => {
       expectedResult: DisplayValueGroup[],
     ) {
       // first request all pages and confirm the result is valid
-      const allDistinctValues = await Presentation.presentation.getPagedDistinctValues({ imodel: db, rulesetOrId: ruleset, keys, descriptor, fieldDescriptor });
+      const allDistinctValues = await Presentation.presentation
+        .getDistinctValuesIterator({ imodel: db, rulesetOrId: ruleset, keys, descriptor, fieldDescriptor })
+        .then(async (x) => ({ ...x, items: await collect(x.items) }));
       expect(allDistinctValues).to.be.deep.equal({
         total: expectedResult.length,
         items: expectedResult,
@@ -165,14 +170,16 @@ describe("Content", () => {
       const pageSize = 2;
       const pagesCount = Math.ceil(expectedResult.length / pageSize);
       for (let i = 0; i < pagesCount; ++i) {
-        const pagedDistinctValues = await Presentation.presentation.getPagedDistinctValues({
-          imodel: db,
-          rulesetOrId: ruleset,
-          keys,
-          descriptor,
-          fieldDescriptor,
-          paging: { size: pageSize, start: i * pageSize },
-        });
+        const pagedDistinctValues = await Presentation.presentation
+          .getDistinctValuesIterator({
+            imodel: db,
+            rulesetOrId: ruleset,
+            keys,
+            descriptor,
+            fieldDescriptor,
+            paging: { size: pageSize, start: i * pageSize },
+          })
+          .then(async (x) => ({ ...x, items: await collect(x.items) }));
         expect(pagedDistinctValues).to.be.deep.equal({
           total: expectedResult.length,
           items: expectedResult.slice(i * pageSize, (i + 1) * pageSize),
@@ -440,7 +447,7 @@ describe("Content", () => {
           },
         ],
       };
-      const rootNodes = await Presentation.presentation.getNodes({ imodel: testIModel, rulesetOrId: ruleset });
+      const rootNodes = await Presentation.presentation.getNodesIterator({ imodel: testIModel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(rootNodes.length).to.eq(2);
       const descriptor = await Presentation.presentation.getNodesDescriptor({ imodel: testIModel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
       assert(!!descriptor);
@@ -595,26 +602,30 @@ describe("Content", () => {
         ],
       };
 
-      const content1 = await Presentation.presentation.getContent({
-        imodel,
-        rulesetOrId: ruleset,
-        descriptor: {},
-        keys: new KeySet(),
-      });
+      const content1 = await Presentation.presentation
+        .getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          descriptor: {},
+          keys: new KeySet(),
+        })
+        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
       expect(content1?.contentSet.length).to.eq(1);
       const fieldsCount = content1!.descriptor.fields.length;
 
-      const content2 = await Presentation.presentation.getContent({
-        imodel,
-        rulesetOrId: ruleset,
-        descriptor: {
-          fieldsSelector: {
-            type: "exclude",
-            fields: [content1!.descriptor.fields[0].getFieldDescriptor()],
+      const content2 = await Presentation.presentation
+        .getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          descriptor: {
+            fieldsSelector: {
+              type: "exclude",
+              fields: [content1!.descriptor.fields[0].getFieldDescriptor()],
+            },
           },
-        },
-        keys: new KeySet(),
-      });
+          keys: new KeySet(),
+        })
+        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
       expect(content2?.contentSet.length).to.eq(1);
       expect(content2!.descriptor.fields.length).to.eq(fieldsCount - 1);
     });
@@ -636,26 +647,30 @@ describe("Content", () => {
         ],
       };
 
-      const content1 = await Presentation.presentation.getContent({
-        imodel,
-        rulesetOrId: ruleset,
-        descriptor: {},
-        keys: new KeySet(),
-      });
+      const content1 = await Presentation.presentation
+        .getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          descriptor: {},
+          keys: new KeySet(),
+        })
+        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
       expect(content1?.contentSet.length).to.eq(1);
       expect(content1!.descriptor.fields.length).to.be.greaterThan(1);
 
-      const content2 = await Presentation.presentation.getContent({
-        imodel,
-        rulesetOrId: ruleset,
-        descriptor: {
-          fieldsSelector: {
-            type: "include",
-            fields: [content1!.descriptor.fields[0].getFieldDescriptor()],
+      const content2 = await Presentation.presentation
+        .getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          descriptor: {
+            fieldsSelector: {
+              type: "include",
+              fields: [content1!.descriptor.fields[0].getFieldDescriptor()],
+            },
           },
-        },
-        keys: new KeySet(),
-      });
+          keys: new KeySet(),
+        })
+        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
       expect(content2?.contentSet.length).to.eq(1);
       expect(content2!.descriptor.fields.length).to.eq(1);
     });
@@ -689,12 +704,14 @@ describe("Content", () => {
         ],
       };
 
-      const content = await Presentation.presentation.getContent({
-        imodel,
-        rulesetOrId: ruleset,
-        descriptor: {},
-        keys: new KeySet(),
-      });
+      const content = await Presentation.presentation
+        .getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          descriptor: {},
+          keys: new KeySet(),
+        })
+        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
       const field = getFieldByLabel(content!.descriptor.fields, "Test");
 
       expect(content?.contentSet.length).to.eq(1);
@@ -730,12 +747,14 @@ describe("Content", () => {
           },
         ],
       };
-      const content = await Presentation.presentation.getContent({
-        imodel: imodelConnection,
-        rulesetOrId: ruleset,
-        keys: new KeySet([instanceKey!]),
-        descriptor: {},
-      });
+      const content = await Presentation.presentation
+        .getContentIterator({
+          imodel: imodelConnection,
+          rulesetOrId: ruleset,
+          keys: new KeySet([instanceKey!]),
+          descriptor: {},
+        })
+        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
       const field = getFieldByLabel(content!.descriptor.fields, "Federation GUID");
 
       expect(content?.contentSet.length).to.eq(1);
@@ -806,12 +825,14 @@ describe("Content", () => {
           },
         ],
       };
-      const content = await Presentation.presentation.getContent({
-        imodel: imodelConnection,
-        rulesetOrId: ruleset,
-        keys: new KeySet([instanceKey!]),
-        descriptor: {},
-      });
+      const content = await Presentation.presentation
+        .getContentIterator({
+          imodel: imodelConnection,
+          rulesetOrId: ruleset,
+          keys: new KeySet([instanceKey!]),
+          descriptor: {},
+        })
+        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
 
       expect(content!.descriptor.categories).to.containSubset([{ label: "Document Partition" }, { label: "Custom Category" }]);
 
@@ -845,17 +866,19 @@ describe("Content", () => {
         ],
       };
 
-      const content = await Presentation.presentation.getContent({
-        imodel,
-        rulesetOrId: ruleset,
-        keys: new KeySet(),
-        descriptor: {
-          instanceFilter: {
-            selectClassName: "PCJ_TestSchema:TestClass",
-            expression: 'this.String_Property_4 = "Yoda"',
+      const content = await Presentation.presentation
+        .getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet(),
+          descriptor: {
+            instanceFilter: {
+              selectClassName: "PCJ_TestSchema:TestClass",
+              expression: 'this.String_Property_4 = "Yoda"',
+            },
           },
-        },
-      });
+        })
+        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
 
       expect(content?.contentSet.length).to.be.eq(6);
     });
@@ -876,30 +899,32 @@ describe("Content", () => {
         ],
       };
 
-      const content = await Presentation.presentation.getContent({
-        imodel,
-        rulesetOrId: ruleset,
-        keys: new KeySet(),
-        descriptor: {
-          instanceFilter: {
-            selectClassName: "Generic:PhysicalObject",
-            expression: "related.Btu__x002F__lb__x0020____x005B__Btu__x0020__per__x0020__pound__x0020__mass__x005D__ = 1475.699",
-            relatedInstances: [
-              {
-                pathFromSelectToPropertyClass: [
-                  {
-                    sourceClassName: "Generic:PhysicalObject",
-                    targetClassName: "DgnCustomItemTypes_MyProp:area__x0020__per__x0020__time__x0020__squaredElementAspect",
-                    relationshipName: "BisCore:ElementOwnsMultiAspects",
-                    isForwardRelationship: true,
-                  },
-                ],
-                alias: "related",
-              },
-            ],
+      const content = await Presentation.presentation
+        .getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet(),
+          descriptor: {
+            instanceFilter: {
+              selectClassName: "Generic:PhysicalObject",
+              expression: "related.Btu__x002F__lb__x0020____x005B__Btu__x0020__per__x0020__pound__x0020__mass__x005D__ = 1475.699",
+              relatedInstances: [
+                {
+                  pathFromSelectToPropertyClass: [
+                    {
+                      sourceClassName: "Generic:PhysicalObject",
+                      targetClassName: "DgnCustomItemTypes_MyProp:area__x0020__per__x0020__time__x0020__squaredElementAspect",
+                      relationshipName: "BisCore:ElementOwnsMultiAspects",
+                      isForwardRelationship: true,
+                    },
+                  ],
+                  alias: "related",
+                },
+              ],
+            },
           },
-        },
-      });
+        })
+        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
 
       expect(content?.contentSet.length).to.be.eq(1);
     });
@@ -1146,7 +1171,9 @@ describe("Content", () => {
         });
         expect(descriptor).to.not.be.undefined;
         const field = getFieldByLabel(descriptor!.fields, "cm2");
-        const content = await manager.getContent({ imodel, rulesetOrId: ruleset, keys, descriptor: descriptor!, unitSystem });
+        const content = await manager
+          .getContentIterator({ imodel, rulesetOrId: ruleset, keys, descriptor: descriptor!, unitSystem })
+          .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
         const displayValues = content!.contentSet[0].values.rc_generic_PhysicalObject_ncc_MyProp_areaElementAspect as DisplayValuesArray;
         expect(displayValues.length).is.eq(1);
         return ((displayValues[0] as DisplayValuesMap).displayValues as DisplayValuesMap)[field.name]!;

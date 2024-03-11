@@ -142,7 +142,7 @@ describe("HalfEdgeGraphSearch", () => {
       const maxFaceCount = 1000;
       const components = HalfEdgeGraphSearch.collectConnectedComponents(graph, maxFaceCount);
       for (const component of components) {
-        const subMesh = PolyfaceBuilder.graphFacesToPolyface(graph, component);
+        const subMesh = PolyfaceBuilder.graphFacesToPolyface(component);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, subMesh, xShift);
       }
       xShift += 2 * range.xLength();

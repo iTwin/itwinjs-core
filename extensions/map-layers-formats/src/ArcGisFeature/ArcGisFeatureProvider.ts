@@ -6,7 +6,7 @@
 import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
 import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Matrix4d, Point3d, Range2d, Transform } from "@itwin/core-geometry";
-import { ArcGisErrorCode, ArcGisGraphicsRenderer, ArcGISImageryProvider, ArcGISServiceMetadata, ArcGisUtilities, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId } from "@itwin/core-frontend";
+import { ArcGisErrorCode, ArcGisGraphicsRenderer, ArcGISImageryProvider, ArcGISServiceMetadata, ArcGisUtilities, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId, setRequestTimeout } from "@itwin/core-frontend";
 import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
 import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureGeometryType, ArcGisFeatureQuery, ArcGisFeatureResultType, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
 import { ArcGisPbfFeatureReader } from "./ArcGisPbfFeatureReader";
@@ -15,7 +15,7 @@ import { ArcGisFeatureResponse, ArcGisResponseData } from "./ArcGisFeatureRespon
 import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
 
 import { ArcGisCanvasRenderer } from "./ArcGisCanvasRenderer";
-import { EsriPMS, EsriPMSProps, EsriRenderer, EsriSFS, EsriSFSProps, EsriSLS, EsriSLSProps, EsriSymbol, EsriUniqueValueRenderer } from "./EsriSymbology";
+import { EsriPMS, EsriPMSProps, EsriRenderer, EsriSFS, EsriSFSProps, EsriSLS, EsriSLSProps, EsriSymbol } from "./EsriSymbology";
 const loggerCategory = "MapLayersFormats.ArcGISFeature";
 
 /**
@@ -275,7 +275,12 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     if (cached) {
       extentJson = cached;
     } else {
-      const response = await this.fetch(tmpUrl, { method: "GET" });
+      // Some server are struggling computing the extent for a layer (outdated spatial index I presume), lets wait 10s max.
+      // Worst case scenario we will end up with a map-layer with no 'Zoom-To-Layer' functionality.
+      const opts: RequestInit = { method: "GET" };
+      setRequestTimeout(opts, 10000);
+      const response = await this.fetch(tmpUrl, opts);
+
       extentJson = await response.json();
       ArcGisFeatureProvider._extentCache.set(tmpUrl.toString(), extentJson);
     }
@@ -463,12 +468,8 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     }
 
     const geomOverride: ArcGisGeometry | undefined = (refineEnvelope ? { geom: refineEnvelope, type: "esriGeometryEnvelope" } : undefined);
-    let outFields: string|undefined;
-    if (this._renderer?.type === "uniqueValue" ) {
-      const uvRenderer = this._renderer as EsriUniqueValueRenderer;
-      if (uvRenderer.field1)
-        outFields = uvRenderer.field1;
-    }
+    const fields = this._renderer?.fields;
+    const outFields = fields ? fields.join(",") : undefined;
     const tileUrl = this.constructFeatureUrl(row, column, zoomLevel, this.format, "tile", geomOverride, outFields);
     if (!tileUrl || tileUrl.url.length === 0) {
       Logger.logError(loggerCategory, `Could not construct feature query URL for tile ${zoomLevel}/${row}/${column}`);

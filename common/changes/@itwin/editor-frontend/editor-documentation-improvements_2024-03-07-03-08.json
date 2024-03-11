@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-frontend",
+      "comment": "Improved documentation for extending CreateElementWithDynamicsTool",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-frontend"
+}

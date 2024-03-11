@@ -44,8 +44,6 @@ There's a limited set of presentation rules, their attributes or attribute value
 
 - `hideExpression` attribute on the hierarchy specifications [Instance nodes of specific classes](./InstanceNodesOfSpecificClasses.md#attribute-hideexpression), [Related instance nodes](./RelatedInstanceNodes.md#attribute-hideexpression) and [Custom query instance nodes](./CustomQueryInstanceNodes.md#attribute-hideexpression).
 
-- Usage of the `parent` ECExpression symbol in `instanceFilter` attribute of either [Instance nodes of specific classes](./InstanceNodesOfSpecificClasses.md#attribute-instancefilter) or [Related instance nodes](./RelatedInstanceNodes.md#attribute-instancefilter) specifications.
-
 - Usage of some deprecated, undocumented rules or attributes.
 
 When any of the above is used to create a hierarchy level, filtering for that level is going to be disabled.

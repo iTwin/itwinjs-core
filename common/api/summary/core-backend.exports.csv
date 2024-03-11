@@ -29,6 +29,7 @@ beta;ChangeFormatArgs
 beta;ChangeInstanceKey
 beta;ChangeMetaData
 public;ChangesetArg 
+internal;ChangesetConflictArgs
 beta;ChangesetECAdaptor 
 internal;ChangesetIndexArg 
 public;ChangesetRangeArg 
