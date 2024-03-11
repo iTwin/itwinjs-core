@@ -792,13 +792,6 @@ export class ChannelAdmin implements ChannelControl {
     // (undocumented)
     get hasChannels(): boolean;
     // (undocumented)
-    insertChannelSubject(args: {
-        subjectName: string;
-        channelKey: ChannelKey;
-        parentSubjectId?: Id64String;
-        description?: string;
-    }): Id64String;
-    // (undocumented)
     makeChannelRoot(args: {
         elementId: Id64String;
         channelKey: ChannelKey;
@@ -808,6 +801,8 @@ export class ChannelAdmin implements ChannelControl {
     // (undocumented)
     static readonly sharedChannel = "shared";
     // (undocumented)
+    static readonly subjectClassName = "bis:Subject";
+    // (undocumented)
     verifyChannel(modelId: Id64String): void;
 }
 
@@ -816,12 +811,6 @@ export interface ChannelControl {
     addAllowedChannel(channelKey: ChannelKey): void;
     getChannelKey(elementId: Id64String): ChannelKey;
     get hasChannels(): boolean;
-    insertChannelSubject(args: {
-        subjectName: string;
-        channelKey: ChannelKey;
-        parentSubjectId?: Id64String;
-        description?: string;
-    }): Id64String;
     makeChannelRoot(args: {
         elementId: Id64String;
         channelKey: ChannelKey;
