@@ -65,7 +65,7 @@ Later, to disallow editing of that channel call:
     imodel.channels.removeAllowedChannel("structural-members");
 ```
 
-> Note: The "shared" channel is editable by default, so it is automatically in the set of allowed channels. To disallow writing to the shared channel, you can call `imodel.channels.removeAllowedChannel("shared")`
+> Note: The "shared" channel is not editable by default. To allow writing to the shared channel, you need to call `imodel.channels.addAllowedChannel("shared")`
 
 ### Creating New Channels
 
