@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "fix gpu timings due behavior change of query for elapsed gpu time",
+      "comment": "Fix regression in GPU timings due a  change in chromium's behavior.",
       "type": "none"
     }
   ],
