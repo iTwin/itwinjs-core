@@ -2165,6 +2165,7 @@ export class Geometry {
     static hypotenuseXYZ(x: number, y: number, z: number): number;
     static hypotenuseXYZW(x: number, y: number, z: number, w: number): number;
     static interpolate(a: number, f: number, b: number): number;
+    static interpolateColor(color0: number, fraction: number, color1: number): number;
     static inverseInterpolate(x0: number, f0: number, x1: number, f1: number, fTarget?: number, defaultResult?: number): number | undefined;
     static inverseInterpolate01(f0: number, f1: number, fTarget?: number): number | undefined;
     static inverseMetricDistance(distance: number): number | undefined;
@@ -2845,7 +2846,7 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
 
 // @public
 export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisitor {
-    protected constructor(facets: IndexedPolyface, numWrap: number);
+    protected constructor(polyface: IndexedPolyface, numWrap: number);
     clearArrays(): void;
     clientAuxIndex(i: number): number;
     clientColorIndex(i: number): number;
@@ -2978,9 +2979,6 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
 
 // @public
 export type IntegratedSpiralTypeName = "clothoid" | "bloss" | "biquadratic" | "cosine" | "sine";
-
-// @internal
-export function interpolateColor(color0: number, fraction: number, color1: number): number;
 
 // @public
 export class InterpolationCurve3d extends ProxyCurve {
@@ -4590,10 +4588,10 @@ export class PolyfaceData {
     resizeAllArrays(length: number): void;
     // @deprecated
     resizeAllDataArrays(length: number): void;
-    reverseIndices(facetStartIndex?: number[]): void;
     static reverseIndices<T>(facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean;
-    reverseIndicesSingleFacet(facetIndex: number, facetStartIndex: number[]): void;
+    reverseIndices(facetStartIndex?: number[]): void;
     static reverseIndicesSingleFacet<T>(facetIndex: number, facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean;
+    reverseIndicesSingleFacet(facetIndex: number, facetStartIndex: number[]): void;
     reverseNormals(): void;
     setTaggedNumericData(data: TaggedNumericData | undefined): void;
     taggedNumericData: TaggedNumericData | undefined;

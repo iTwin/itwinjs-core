@@ -347,7 +347,7 @@ export class ViewFlags {
     return this;
   }
 
-  /** @internal */
+  /** Returns true if edges that could be occluded by other geometry are visible for the current [[RenderMode]]. */
   public hiddenEdgesVisible(): boolean {
     switch (this.renderMode) {
       case RenderMode.SolidFill:

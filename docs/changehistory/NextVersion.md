@@ -5,12 +5,14 @@ publish: false
 
 Table of contents:
 
-- [Display](#display)
-  - [Seafloor terrain](#seafloor-terrain)
-- [Electron 29 support](#electron-29-support)
-- [Editor](#editor)
-- [Presentation](#presentation)
-  - [Deprecation of async array results in favor of async iterators](#deprecation-of-async-array-results-in-favor-of-async-iterators)
+- [NextVersion](#nextversion)
+  - [Display](#display)
+    - [Seafloor terrain](#seafloor-terrain)
+  - [Electron 29 support](#electron-29-support)
+  - [Editor](#editor)
+  - [Lock Control](#lock-control)
+  - [Presentation](#presentation)
+    - [Deprecation of async array results in favor of async iterators](#deprecation-of-async-array-results-in-favor-of-async-iterators)
 
 ## Display
 
@@ -48,6 +50,14 @@ Changes to @beta [BasicManipulationCommandIpc]($editor-common) class:
 Changes to @beta [CreateElementWithDynamicsTool]($editor-frontend) class:
 
 - [CreateElementWithDynamicsTool.doCreateElement]($editor-frontend) no longer takes an optional [ElementGeometryBuilderParams]($common) as it will be set on the supplied [GeometricElementProps]($common).
+
+Added [EditTools.registerProjectLocationTools]($editor-frontend) method. These tools are no longer automatically registered by [EditTools.initialize]($editor-frontend). Applications that wish to include these tools and also register the required [BasicManipulationCommand]($editor-backend) with [EditCommandAdmin]($editor-backend) should call this new method.
+
+Removal of several @alpha test tools for creating Generic:PhysicalObject class elements that didn't belong in the core package.
+
+## Lock Control
+
+Changes to @beta [LockControl]($backend) class to make releaseAllLocks @internal. Should only be called internally after pushing or abandoning all changes.
 
 ## Presentation
 
