@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecsql-common",
+      "comment": "Implement NAVIGATION_VALUE function",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecsql-common"
+}
