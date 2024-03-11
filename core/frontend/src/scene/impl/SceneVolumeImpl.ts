@@ -9,9 +9,9 @@ import { ViewPose, ViewPose3d } from "../../ViewPose";
 import { ViewStatus } from "../../ViewStatus";
 import { MarginOptions, OnViewExtentsError } from "../../ViewAnimation";
 import { ExtentLimits, LookAtOrthoArgs, LookAtPerspectiveArgs, LookAtUsingLensAngle, ViewState, ViewState3d } from "../../ViewState";
-import { ISceneVolume, SceneVolume3d } from "../SceneVolume";
+import { BaseSceneVolume, SceneVolume3d } from "../SceneVolume";
 
-export abstract class SceneVolumeImpl implements ISceneVolume {
+export abstract class SceneVolumeImpl implements BaseSceneVolume {
   protected readonly _view: ViewState;
 
   protected constructor(view: ViewState) {

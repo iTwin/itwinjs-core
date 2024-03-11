@@ -30,7 +30,7 @@ export interface ViewCategorySelector {
   changeCategoryDisplay(arg: Id64Arg, add: boolean): void;
 }
 
-export interface IIModelView {
+export interface BaseIModelView {
   readonly iModel: IModelConnection;
 
   readonly categorySelector: ViewCategorySelector;
@@ -74,7 +74,7 @@ export interface IIModelView {
   /** Determine whether this ViewState has the same coordinate system as another one.
    * They must be from the same iModel, and view a model in common.
    */
-  hasSameCoordinates(other: IIModelView): boolean;
+  hasSameCoordinates(other: BaseIModelView): boolean;
 
   /** ### TODO needed? @internal strictly for plan projection models. */
   getModelElevation(modelId: Id64String): number;
@@ -95,7 +95,7 @@ export interface IIModelView {
   getAttachmentViewport(_id: Id64String): Viewport | undefined;
 }
 
-export interface IModelView3d extends IIModelView {
+export interface IModelView3d extends BaseIModelView {
   readonly is3d: true;
   readonly is2d?: never;
 
@@ -107,7 +107,7 @@ export interface IModelView3d extends IIModelView {
   getModelClip(modelId: Id64String): RenderClipVolume | undefined;
 }
 
-export interface IModelView2d extends IIModelView {
+export interface IModelView2d extends BaseIModelView {
   readonly is2d: true;
   readonly is3d?: never;
 
@@ -130,8 +130,10 @@ export interface IModelSpatialView extends IModelView3d {
   // computeSpatialFitRange(options?: ComputeSpatialViewFitRangeOptions): AxisAlignedBox3d;
 }
 
+// ###TODO
 export type DrawingView = IModelView2d;
 
+// ###TODO
 export type SheetView = IModelView2d;
 
 export type IModelView = DrawingView | SheetView | IModelSpatialView;

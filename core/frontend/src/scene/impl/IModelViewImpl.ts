@@ -16,7 +16,7 @@ import { ComputeDisplayTransformArgs, ModelDisplayTransformProvider, ViewState, 
 import { Viewport } from "../../Viewport";
 import { RenderClipVolume } from "../../render/RenderClipVolume";
 import { ComputeSpatialViewFitRangeOptions, SpatialViewState } from "../../SpatialViewState";
-import { IIModelView, IModelSpatialView, IModelView, IModelView3d, ViewCategorySelector, ViewModelSelector } from "../IModelView";
+import { BaseIModelView, IModelSpatialView, IModelView, IModelView3d, ViewCategorySelector, ViewModelSelector } from "../IModelView";
 import { View3dStyleImpl } from "./ViewStyleImpl";
 import { SceneObjectImpl } from "./SceneObjectImpl";
 import { IModelSceneObject, ViewportScene } from "../ViewportScene";
@@ -50,7 +50,7 @@ export class ViewCategorySelectorImpl implements ViewCategorySelector {
   changeCategoryDisplay(arg: Id64Arg, add: boolean) { this._selector.changeCategoryDisplay(arg, add); }
 }
 
-export abstract class IIModelViewImpl implements IIModelView {
+export abstract class IIModelViewImpl implements BaseIModelView {
   readonly impl: ViewState;
   protected readonly _style: ViewStyle;
   readonly categorySelector: ViewCategorySelector;
@@ -107,7 +107,7 @@ export abstract class IIModelViewImpl implements IIModelView {
 
   refreshForModifiedModels(modelIds: Id64Arg | undefined) { return this.impl.refreshForModifiedModels(modelIds); }
 
-  hasSameCoordinates(other: IIModelView): boolean {
+  hasSameCoordinates(other: BaseIModelView): boolean {
     const view = other instanceof IIModelViewImpl ? other : undefined;
     return undefined !== view && this.impl.hasSameCoordinates(view.impl);
   }

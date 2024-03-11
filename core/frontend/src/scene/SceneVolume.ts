@@ -13,7 +13,7 @@ import { ViewStatus } from "../ViewStatus";
 import { MarginOptions, OnViewExtentsError } from "../ViewAnimation";
 import { ExtentLimits, LookAtOrthoArgs, LookAtPerspectiveArgs, LookAtUsingLensAngle } from "../ViewState";
 
-export interface ISceneVolume {
+export interface BaseSceneVolume {
   allow3dManipulations(): boolean;
 
   getOrigin(): Point3d;
@@ -78,7 +78,7 @@ export interface ISceneVolume {
   // ###TODO readonly maxGlobalScopeFactor: number;
 }
 
-export interface SceneVolume3d extends ISceneVolume {
+export interface SceneVolume3d extends BaseSceneVolume {
   readonly is3d: true;
   readonly is2d?: never;
 
@@ -146,7 +146,7 @@ export interface SceneVolume3d extends ISceneVolume {
   */
 }
 
-export interface TestSceneVolume2d extends ISceneVolume {
+export interface TestSceneVolume2d extends BaseSceneVolume {
   readonly is2d: true;
   readonly is3d?: never;
 }

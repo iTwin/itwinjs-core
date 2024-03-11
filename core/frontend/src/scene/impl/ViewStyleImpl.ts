@@ -8,10 +8,10 @@ import {
   FeatureAppearance, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlags,
 } from "@itwin/core-common";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "../../DisplayStyleState";
-import { IViewStyle, View2dStyle, View3dStyle } from "../ViewStyle";
+import { BaseViewStyle, View2dStyle, View3dStyle } from "../ViewStyle";
 import { ViewState, ViewState2d, ViewState3d } from "../../ViewState";
 
-export abstract class ViewStyleImpl implements IViewStyle {
+export abstract class ViewStyleImpl implements BaseViewStyle {
   protected _style: DisplayStyleState;
 
   protected constructor(view: ViewState) {

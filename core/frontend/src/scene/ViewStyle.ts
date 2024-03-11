@@ -6,17 +6,16 @@
  * @module Views
  */
 
-import { assert, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
   FeatureAppearance, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlags,
 } from "@itwin/core-common";
-import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "../DisplayStyleState";
 
 /** ###TODO optional properties have no effect. shadows, clipVolume, lighting, and thematicDisplay can't be enabled if they are globally disabled, I think.
  */
 export type ViewStyleFlags = ViewFlags; // Optional<ViewFlagsProperties, "acsTriad" | "grid" | "backgroundMap" | "ambientOcclusion">;
 
-export interface IViewStyle {
+export interface BaseViewStyle {
   viewFlags: ViewStyleFlags;
 
   // Clip masks applied to persistent reality models.
@@ -40,7 +39,7 @@ export interface IViewStyle {
   clearExcludedElements(): void;
 }
 
-export interface View3dStyle extends IViewStyle {
+export interface View3dStyle extends BaseViewStyle {
   readonly is3d: true;
   readonly is2d?: never;
 
@@ -51,7 +50,7 @@ export interface View3dStyle extends IViewStyle {
   readonly planProjectionSettings: Iterable<[Id64String, PlanProjectionSettings]> | undefined;
 }
 
-export interface View2dStyle extends IViewStyle {
+export interface View2dStyle extends BaseViewStyle {
   readonly is2d: true;
   readonly is3d?: never;
 }
