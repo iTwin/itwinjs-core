@@ -2,6 +2,24 @@
   "name": "@itwin/frontend-tiles",
   "entries": [
     {
+      "version": "4.4.6",
+      "tag": "@itwin/frontend-tiles_v4.4.6",
+      "date": "Fri, 08 Mar 2024 15:57:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Clamp the fit volume of a batched tile tree to the project extents."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.4.5",
+      "tag": "@itwin/frontend-tiles_v4.4.5",
+      "date": "Tue, 05 Mar 2024 20:37:18 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.4.4",
       "tag": "@itwin/frontend-tiles_v4.4.4",
       "date": "Fri, 01 Mar 2024 18:21:01 GMT",

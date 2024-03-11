@@ -636,8 +636,8 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
 /**
  * A PolyfaceVisitor manages data while walking through facets.
  * * The polyface visitor holds data for one facet at a time.
- * * The caller can request the position in the addressed polyfaceData as a "readIndex."
- * * The readIndex values (as numbers) are not promised to be sequential. (I.e. it might be a simple facet count
+ * * The caller can request the position in the addressed polyfaceData as a "readIndex".
+ * * The readIndex values (as numbers) are not promised to be sequential (i.e., it might be a simple facet count
  * or might have "gaps" at the whim of the particular PolyfaceVisitor implementation).
  * @public
  */
@@ -662,7 +662,14 @@ export interface PolyfaceVisitor extends PolyfaceData {
   clientAuxIndex(i: number): number;
   /** Return the client polyface. */
   clientPolyface(): Polyface | undefined;
-  /** Set the number of vertices to replicate in visitor arrays. */
+  /**
+   * Set the number of vertices replicated in visitor arrays (both data and index arrays).
+   * * 0,1,2 are the most common as numWrap.
+   * * Example: suppose `[6,7,8]` is the pointIndex array representing a triangle. First edge would be `6,7`. Second
+   * edge is `7,8`. Third edge is `8,6`. To access `6` for the third edge, we have to go back to the start of array.
+   * Therefore, it is useful to store `6` at the end of pointIndex array, i.e., `[6,7,8,6]` meaning `numWrap = 1`.
+   * * `numWrap = 2` is useful when vertex visit requires two adjacent vectors, e.g. for cross products.
+   */
   setNumWrap(numWrap: number): void;
   /** Clear the contents of all arrays. Use this along with `pushDataFrom` to build up new facets. */
   clearArrays(): void;
