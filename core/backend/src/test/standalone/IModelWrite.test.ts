@@ -21,7 +21,6 @@ import { ECSqlStatement } from "../../ECSqlStatement";
 import { HubMock } from "../../HubMock";
 import {
   BriefcaseDb,
-  BriefcaseDbArg,
   BriefcaseManager,
   DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, OpenBriefcaseArgs, SpatialCategory, Subject,
 } from "../../core-backend";
