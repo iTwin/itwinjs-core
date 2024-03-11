@@ -22,7 +22,6 @@ import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 
 /** Currently executing an "@" script? */
 let inScript = false;
-let logTimer: NodeJS.Timeout | undefined;
 
 interface EditorProps {
   /** Allows overriding the location of WorkspaceDbs. If not present, defaults to `${homedir}/iTwin/Workspace` */
@@ -116,13 +115,8 @@ async function askQuestion(query: string) {
   }));
 }
 
-function flushLog() {
-  IModelHost.platform.flushLog();
-}
-/** show a message, potentially flushing log messages first */
+/** show a message */
 function showMessage(msg: string) {
-  if (logTimer)
-    flushLog();
   console.log(msg);
 }
 
@@ -558,7 +552,6 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
         Logger.initializeToConsole();
         Logger.setLevel("CloudSqlite", LogLevel.Trace);
         IModelHost.appWorkspace.getCloudCache().setLogMask(CloudSqlite.LoggingMask.All);
-        logTimer = setInterval(() => flushLog(), 250); // logging from other threads is buffered. This causes it to appear every 1/4 second.
       }
 
       await cmd(args);
@@ -568,10 +561,6 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
       else
         console.log(BentleyError.getErrorMessage(e));
     } finally {
-      if (logTimer) {
-        flushLog();
-        clearInterval(logTimer);
-      }
       await IModelHost.shutdown();
     }
   };
