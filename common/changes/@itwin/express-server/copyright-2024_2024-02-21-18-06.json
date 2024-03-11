@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@itwin/express-server"
+    }
+  ],
+  "packageName": "@itwin/express-server",
+  "email": "aruniverse@users.noreply.github.com"
+}

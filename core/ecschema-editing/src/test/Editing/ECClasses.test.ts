@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import {
   ECClassModifier, ECObjectsError, EntityClass, Enumeration, EnumerationArrayProperty, EnumerationProperty, NavigationProperty,
-  PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, RelationshipClass, RelationshipClassProps,
+  PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, PropertyCategory, RelationshipClass, RelationshipClassProps,
   RelationshipConstraintProps, Schema, SchemaContext, SchemaItemKey, SchemaKey, StrengthDirection,
   StructArrayProperty, StructClass, StructProperty, UnitSystem,
 } from "@itwin/ecschema-metadata";
@@ -471,6 +471,17 @@ describe("ECClass tests", () => {
       expect(result).to.eql({ itemKey: baseClassKey, propertyName: "NewPropertyName" });
       expect(childProperty.fullName).to.eql("testEntityChild.NewPropertyName");
       expect(grandChildProperty.fullName).to.eql("testEntityGrandChild.NewPropertyName");
+    });
+
+    it("should successfully add category to property", async () => {
+      const catResult = await testEditor.propertyCategories.create(testKey, "testCategory", 2);
+      const propResult = await testEditor.entities.createPrimitiveProperty(entityKey, "testProperty", PrimitiveType.String);
+      const result = await testEditor.entities.setPropertyCategory(entityKey, propResult.propertyName!, catResult.itemKey!);
+      expect(result.errorMessage).is.undefined;
+
+      const property = await entity?.getProperty(propResult.propertyName!) as PrimitiveProperty;
+      const category = await testEditor.schemaContext.getSchemaItem(catResult.itemKey!) as PropertyCategory;
+      expect(await property.category).to.eql(category);
     });
 
     it("try renaming a non-existent property in the class, returns error.", async () => {

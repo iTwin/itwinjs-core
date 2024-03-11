@@ -1713,8 +1713,13 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
 }
 
 // @internal
-export class BatchedTileIdMap {
+export class BatchedTileIdMap implements BatchTableProperties {
     constructor(iModel: IModelConnection);
+    // (undocumented)
+    entries(): Iterable<{
+        id: Id64String;
+        properties: Record<string, any>;
+    }>;
     getBatchId(properties: any): Id64String;
     // (undocumented)
     getFeatureProperties(id: Id64String): Record<string, any> | undefined;
@@ -1732,6 +1737,10 @@ export interface BatchOptions {
 
 // @beta
 export interface BatchTableProperties {
+    entries(): Iterable<{
+        id: Id64String;
+        properties: Record<string, any>;
+    }>;
     getFeatureProperties(id: Id64String): Record<string, any> | undefined;
 }
 
@@ -5630,6 +5639,9 @@ export interface GroupMark {
     // (undocumented)
     start: number;
 }
+
+// @internal
+export function headersIncludeAuthMethod(headers: Headers, query: string[]): boolean;
 
 // @internal (undocumented)
 export interface Hilites {
@@ -12662,6 +12674,15 @@ export interface SelectReplaceEvent {
     type: SelectionSetEventType.Replace;
 }
 
+// @internal
+export function setBasicAuthorization(headers: Headers, credentials: RequestBasicCredentials): void;
+
+// @internal (undocumented)
+export function setBasicAuthorization(headers: Headers, user: string, password: string): void;
+
+// @internal
+export function setRequestTimeout(opts: RequestInit, ms: number, abortController?: AbortController): void;
+
 // @public
 export class SetupCameraTool extends PrimitiveTool {
     // (undocumented)
@@ -14188,6 +14209,8 @@ export namespace TileAdmin {
         aggressive: number;
         relaxed: number;
     };
+    const // @internal
+    nonMobileUndefinedGpuMemoryLimit: number;
     const mobileGpuMemoryLimits: {
         default: number;
         aggressive: number;
