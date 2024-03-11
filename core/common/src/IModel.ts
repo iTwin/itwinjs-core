@@ -140,7 +140,11 @@ export interface IModelEncryptionProps {
  * @public
  */
 export interface OpenSqliteArgs {
-  /** For more information https://www.sqlite.org/c3ref/busy_timeout.html. */
+  /**
+   * Specify timeout after which SQLite stop retrying to acquire lock to database file and throw SQLITE_BUSY error.
+   * Timeout is specified in milliseconds.
+   * For more information https://www.sqlite.org/c3ref/busy_timeout.html.
+   * */
   readonly busyTimeout?: number;
 }
 
