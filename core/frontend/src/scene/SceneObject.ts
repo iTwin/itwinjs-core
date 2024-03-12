@@ -55,7 +55,7 @@ export type DecoratorSceneObject = SceneObject & { readonly decorator: Decorator
 
 export type IModelViewSceneObject = SceneObject & { readonly view: IModelView; };
 export type SpatialViewSceneObject = SceneObject & { readonly view: IModelSpatialView; }
-export type TestIModelView2dSceneObject = SceneObject & { readonly view: IModelView2d; };
+export type IModelView2dSceneObject = SceneObject & { readonly view: IModelView2d; };
 
 export interface SpatialViewSceneObjects extends Iterable<SpatialViewSceneObject> {
   add(view: IModelSpatialView): SpatialViewSceneObject;

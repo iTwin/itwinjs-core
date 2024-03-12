@@ -6,5 +6,43 @@
  * @module Views
  */
 
-// ###TODO
-export type ViewportScene = any;
+import { DecoratorSceneObjects, IModelViewSceneObject, MapSceneObject, RealityModelSceneObjects, SceneObject, SpatialViewSceneObjects, IModelView2dSceneObject, TiledGraphicsSceneObjects } from "./SceneObject";
+import { ScenePresentation, ScenePresentation2d, ScenePresentation3d } from "./ScenePresentation";
+import { SceneVolume, SceneVolume3d } from "./SceneVolume";
+
+export interface ViewportScene extends Iterable<SceneObject> {
+ isSpatial(): this is SpatialScene;
+ is2dMode(): this is Model2dScene;
+
+ readonly volume: SceneVolume;
+ readonly presentation: ScenePresentation;
+ readonly iModels: Iterable<IModelViewSceneObject>;
+ readonly graphicsProviders: TiledGraphicsSceneObjects;
+ readonly decorators: DecoratorSceneObjects;
+
+ dispose(): void;
+}
+
+export interface SpatialScene extends ViewportScene {
+ isSpatial(): () => true;
+ is2dModel(): () => false;
+ 
+ readonly volume: SceneVolume3d;
+ readonly presentation: ScenePresentation3d;
+ readonly iModels: SpatialViewSceneObjects;
+ readonly realityModels: RealityModelSceneObjects;
+ readonly map?: MapSceneObject;
+}
+
+export interface Model2dScene extends ViewportScene {
+ is2dModel(): () => true;
+ isSpatial(): () => false;
+ 
+ readonly volume: SceneVolume;
+ readonly presentation: ScenePresentation2d;
+ readonly view: IModelView2dSceneObject;
+ readonly iModels: Iterable<IModelView2dSceneObject>;
+}
+
+// ###TODO export interface DrawingModelScene extends Model2dScene
+// ###TODO export interface SheetModelScene extends Model2dScene
