@@ -23,6 +23,9 @@ parameters:
   - name: useCurrentAuthClientsDocsArtifact
     type: boolean
     default: false
+  - name: useCurrentConnectorFrameworkDocsArtifact
+    type: boolean
+    default: false
 
 steps:
   # Call the copying script
@@ -99,7 +102,7 @@ steps:
       pipelineId: 5669 # iTwin.js/iTwin Connector Frameworks/iTwin.connector-framework
       artifactName: Connector-Framework Docs
       buildTag: hasDocs
-      useCurrentDocsArtifact: ${{ parameters.useCurrentAuthClientsDocsArtifact }}
+      useCurrentDocsArtifact: ${{ parameters.useCurrentConnectorFrameworkDocsArtifact }}
       stagingSteps:
         - task: CopyFiles@2
           displayName: Copy Connector Framework Docs to staging
