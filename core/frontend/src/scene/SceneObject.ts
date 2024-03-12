@@ -19,7 +19,7 @@ import { ViewportScene } from "./Scene";
 import { IModelConnection } from "../IModelConnection";
 import { Decorator } from "../ViewManager";
 
-export interface SceneObjectPayload {
+export interface SceneObject extends ViewportDecorator {
   readonly customType?: string;
   readonly view?: IModelView;
   readonly presentation?: ScenePresentation;
@@ -27,9 +27,7 @@ export interface SceneObjectPayload {
   readonly graphicsProvider?: TiledGraphicsProvider;
   readonly map?: SceneMap;
   readonly decorator?: Decorator;
-}
 
-export interface SceneObject extends ViewportDecorator, SceneObjectPayload {
   readonly guid: GuidString;
   isDisplayed: boolean;
   readonly scene: ViewportScene;
