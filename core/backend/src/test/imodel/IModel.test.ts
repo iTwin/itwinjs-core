@@ -28,13 +28,13 @@ import {
   Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, SpatialCategory, SqliteStatement,
   SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
 } from "../../core-backend";
-import { BriefcaseDb } from "../../IModelDb";
+import { BriefcaseDb, SnapshotDbOpenArgs } from "../../IModelDb";
 import { HubMock } from "../../HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { DisableNativeAssertions } from "../TestUtils";
 import { samplePngTexture } from "../imageData";
-
+import { performance } from "perf_hooks";
 // spell-checker: disable
 
 async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | undefined> {
@@ -2262,6 +2262,36 @@ describe("iModel", () => {
       return false;
     }
   }
+
+  it("Check busyTimeout option", () => {
+    const standaloneFile = IModelTestUtils.prepareOutputFile("IModel", "StandaloneReadWrite.bim");
+    const tryOpen = (fileName: string, options?: SnapshotDbOpenArgs) => {
+      const start = performance.now();
+      let didThrow = false;
+      try {
+        StandaloneDb.openFile(fileName, OpenMode.ReadWrite, options);
+      } catch (e: any) {
+        assert.strictEqual(e.errorNumber, DbResult.BE_SQLITE_BUSY, "Expect error 'Db is busy'");
+        didThrow = true;
+      }
+      assert.isTrue(didThrow);
+      return performance.now() - start;
+    };
+    const seconds = (s: number) => s * 1000;
+
+    const db = StandaloneDb.createEmpty(standaloneFile, { rootSubject: { name: "Standalone" } });
+    db.saveChanges();
+    // lock db so another connection cannot write to it.
+    db.saveFileProperty({ name: "test", namespace: "test" }, "");
+
+    assert.isAtMost(tryOpen(standaloneFile, { busyTimeout: seconds(0) }), seconds(1), "open should fail with busy error instantly");
+    assert.isAtLeast(tryOpen(standaloneFile, { busyTimeout: seconds(1) }), seconds(1), "open should fail with atleast 1 sec delay due to retry");
+    assert.isAtLeast(tryOpen(standaloneFile, { busyTimeout: seconds(2) }), seconds(2), "open should fail with atleast 2 sec delay due to retry");
+    assert.isAtLeast(tryOpen(standaloneFile, { busyTimeout: seconds(3) }), seconds(3), "open should fail with atleast 3 sec delay due to retry");
+
+    db.abandonChanges();
+    db.close();
+  });
 
   it("Standalone iModel properties", () => {
     const standaloneRootSubjectName = "Standalone";
