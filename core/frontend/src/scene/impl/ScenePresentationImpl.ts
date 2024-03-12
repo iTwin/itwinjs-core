@@ -8,7 +8,7 @@ import { ScenePresentation2d, ScenePresentation3d } from "../ScenePresentation";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "../../DisplayStyleState";
 import { ViewState, ViewState2d, ViewState3d } from "../../ViewState";
 
-export abstract class ScenePresentationImpl {
+export abstract class BaseScenePresentationImpl {
   protected _style: DisplayStyleState;
 
   protected constructor(view: ViewState) {
@@ -24,7 +24,7 @@ export abstract class ScenePresentationImpl {
   set backgroundColor(color: ColorDef) { this._style.backgroundColor = color; }
 }
 
-export class ScenePresentation2dImpl extends ScenePresentationImpl implements ScenePresentation2d {
+export class ScenePresentation2dImpl extends BaseScenePresentationImpl implements ScenePresentation2d {
   readonly is2d: true = true;
 
   constructor(view: ViewState2d) {
@@ -32,7 +32,7 @@ export class ScenePresentation2dImpl extends ScenePresentationImpl implements Sc
   }
 }
 
-export class ScenePresentation3dImpl extends ScenePresentationImpl implements ScenePresentation3d {
+export class ScenePresentation3dImpl extends BaseScenePresentationImpl implements ScenePresentation3d {
   readonly is3d: true = true;
 
   constructor(view: ViewState3d) {
@@ -47,3 +47,5 @@ export class ScenePresentation3dImpl extends ScenePresentationImpl implements Sc
   get solarShadows() { return this._style3d.solarShadows; }
   set solarShadows(shadows: SolarShadowSettings) { this._style3d.solarShadows = shadows; }
 }
+
+export type ScenePresentationImpl = ScenePresentation2dImpl | ScenePresentation3dImpl;

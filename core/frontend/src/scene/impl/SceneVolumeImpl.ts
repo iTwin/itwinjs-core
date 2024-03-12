@@ -5,13 +5,13 @@
 
 import { Camera, Frustum } from "@itwin/core-common";
 import { Angle, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Point3d, Range3d, Vector3d, XYAndZ, XYZ } from "@itwin/core-geometry";
-import { ViewPose, ViewPose3d } from "../../ViewPose";
+import { ViewPose, ViewPose2d, ViewPose3d } from "../../ViewPose";
 import { ViewStatus } from "../../ViewStatus";
 import { MarginOptions, OnViewExtentsError } from "../../ViewAnimation";
-import { ExtentLimits, LookAtOrthoArgs, LookAtPerspectiveArgs, LookAtUsingLensAngle, ViewState, ViewState3d } from "../../ViewState";
-import { BaseSceneVolume, SceneVolume3d } from "../SceneVolume";
+import { ExtentLimits, LookAtOrthoArgs, LookAtPerspectiveArgs, LookAtUsingLensAngle, ViewState, ViewState2d, ViewState3d } from "../../ViewState";
+import { BaseSceneVolume, TestSceneVolume2d, SceneVolume3d } from "../SceneVolume";
 
-export abstract class SceneVolumeImpl implements BaseSceneVolume {
+export abstract class BaseSceneVolumeImpl implements BaseSceneVolume {
   protected readonly _view: ViewState;
 
   protected constructor(view: ViewState) {
@@ -74,7 +74,7 @@ export abstract class SceneVolumeImpl implements BaseSceneVolume {
   }
 }
 
-export class SceneVolume3dImpl extends SceneVolumeImpl implements SceneVolume3d {
+export class SceneVolume3dImpl extends BaseSceneVolumeImpl implements SceneVolume3d {
   readonly is3d: true = true;
 
   constructor(view: ViewState3d) {
@@ -170,3 +170,18 @@ export class SceneVolume3dImpl extends SceneVolumeImpl implements SceneVolume3d 
     return this._view3d.setFocusDistance(distance);
   }
 }
+
+export class SceneVolume2dImpl extends BaseSceneVolumeImpl implements TestSceneVolume2d {
+  readonly is2d: true = true;
+
+  constructor(view: ViewState2d) {
+    super(view);
+  }
+
+  private get _view2d() { return this._view as ViewState2d; }
+
+  override savePose(): ViewPose2d { return this._view2d.savePose(); }
+  override applyPose(pose: ViewPose2d) { this._view2d.applyPose(pose); }
+}
+
+export type SceneVolumeImpl = SceneVolume2dImpl | SceneVolume3dImpl;

@@ -8,7 +8,7 @@ import { ViewState } from "../../ViewState";
 import { Viewport } from "../../Viewport";
 import { Model2dScene, SpatialScene, ViewportScene } from "../ViewportScene";
 import { IModelViewImpl, createIModelView } from "./IModelViewImpl";
-import { ScenePresentation3dImpl, ScenePresentationImpl } from "./ScenePresentationImpl";
+import { ScenePresentation3dImpl, BaseScenePresentationImpl, ScenePresentationImpl } from "./ScenePresentationImpl";
 import { SceneVolume3dImpl, SceneVolumeImpl } from "./SceneVolumeImpl";
 import { SpatialViewState } from "../../SpatialViewState";
 import { SubCategoriesCache } from "../../SubCategoriesCache";
@@ -44,6 +44,8 @@ export abstract class ViewportSceneImpl implements ViewportScene {
     this._subcategories.dispose();
   }
 
+  abstract [Symbol.iterator](): Iterator<SceneObject>;
+  
   protected * _iterator(): Iterable<SceneObject> {
     // ###TODO as a PresentationSceneObject yield this.presentation;
     for (const iModel of this.iModels)
