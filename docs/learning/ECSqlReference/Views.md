@@ -8,10 +8,9 @@ The following rules apply to views:
 - The custom attribute `ECDbMap.View` must be applied to a standalone abstract entity class.
 - View cannot be derived from another class
 - View class definition cannot have derived classes.
-- All columns selected in the ECSQL query except for ECInstanceId must have corresponding ECProperties defined on the class.
+- All columns selected in the ECSQL query except for ECInstanceId and ECClassId must have corresponding ECProperties defined on the class.
 - Query column type and property type have to match (int for integers, string for strings etc.).
-- The query has to return an ECInstanceId column
-- The query may return an ECClassId column, if it does not, the class id of the abstract class is automatically being used.
+- The query has to return an ECInstanceId and an ECClassId column
 - All types of properties and computed expressions can be returned by view query if the class definition defines those properties and their types correctly.
 - Views can be applied only an ECEntityClass.
 - For relationship classes, a different custom attribute `ECDbMap.ForeignKeyBasedView` can be used instead, which will make the runtime go and check both sides for a navigation property which matches the relationship. If one is found, a view for the relationship is automatically generated.
@@ -31,6 +30,7 @@ Example of a schema using a view:
                 <Query>
                     SELECT
                         jo.ECInstanceId,
+                        ec_classid('TestSchema', 'Pipe') [ECClassId],
                         CAST(json_extract(jo.json, '$.diameter') AS INTEGER) [Diameter],
                         CAST(json_extract(jo.json, '$.length') AS INTEGER) [Length],
                         json_extract(jo.json, '$.material') [Material]
@@ -84,6 +84,7 @@ One example utilizing the View concepts including navigation properties is `Clas
                 <Query>
                     SELECT
                         [ca].[ECInstanceId],
+                        ec_classid('ECDbMeta', 'ClassCustomAttribute') [ECClassId],
                         NAVIGATION_VALUE(meta.ClassCustomAttribute.Class, [ca].[ContainerId]),
                         NAVIGATION_VALUE(meta.ClassCustomAttribute.CustomAttributeClass, [ca].[Class].[Id]),
                         XmlCAToJson([ca].[Class].[Id], [ca].[Instance]) [Instance]
