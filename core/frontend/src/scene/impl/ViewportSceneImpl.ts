@@ -7,7 +7,7 @@ import { assert } from "@itwin/core-bentley";
 import { ViewState } from "../../ViewState";
 import { Viewport } from "../../Viewport";
 import { Model2dScene, SpatialScene, ViewportScene } from "../ViewportScene";
-import { IModelViewImpl, createIModelView } from "./IModelViewImpl";
+import { BaseIModelViewImpl, createIModelView } from "./IModelViewImpl";
 import { ScenePresentation3dImpl, BaseScenePresentationImpl, ScenePresentationImpl } from "./ScenePresentationImpl";
 import { SceneVolume3dImpl, SceneVolumeImpl } from "./SceneVolumeImpl";
 import { SpatialViewState } from "../../SpatialViewState";
@@ -15,7 +15,7 @@ import { SubCategoriesCache } from "../../SubCategoriesCache";
 import { IModelViewSceneObject, SceneObject } from "../SceneObject";
 
 export abstract class ViewportSceneImpl implements ViewportScene {
-  private _backingView: IModelViewImpl;
+  private _backingView: BaseIModelViewImpl;
   private readonly _subcategories = new SubCategoriesCache.Queue();
 
   readonly tiledGraphicsProviders = [] as any; // ###TODO
@@ -27,7 +27,7 @@ export abstract class ViewportSceneImpl implements ViewportScene {
    * Unless the view refers to a blank iModel, this view is also added to this.iModels.
    * This is used as a shim for deprecated Viewport methods+properties like Viewport.iModel, Viewport.perModelCategoryVisibility, etc.
    */
-  get backingView(): IModelViewImpl { return this._backingView; }
+  get backingView(): BaseIModelViewImpl { return this._backingView; }
 
   abstract isSpatial(): this is SpatialScene;
   abstract is2dModel(): this is Model2dScene;
