@@ -289,6 +289,81 @@ describe("ECSqlReader", (() => {
       });
     });
 
+    describe("Get duplicate property names", () => {
+
+      it("Get duplicate property names using iterable iterator with unspecified rowFormat", async () => {
+        const expectedIds = ["0x1", "0xe", "0x10", "0x11", "0x12"];
+        let counter = 1;
+        for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId", undefined, { limit: { count: 5 } })) {
+          const currentExpectedId = expectedIds[counter - 1];
+          assert.equal(row[0], currentExpectedId);
+          assert.equal(row.id, currentExpectedId);
+          assert.equal(row.ecinstanceid, currentExpectedId);
+          assert.equal(row.ECINSTANCEID, currentExpectedId);
+          assert.equal(row.ECInstanceId, currentExpectedId);
+          assert.equal(row.toArray()[0], currentExpectedId);
+          assert.equal(row.toRow().ECInstanceId, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+
+      it("Get duplicate property names using iterable iterator with UseJsPropertyNames rowFormat", async () => {
+        const expectedIds = ["0x1", "0xe", "0x10", "0x11", "0x12"];
+        let counter = 1;
+        for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+          const currentExpectedId = expectedIds[counter - 1];
+          assert.equal(row[0], currentExpectedId);
+          assert.equal(row.id, currentExpectedId);
+          assert.equal(row.ecinstanceid, currentExpectedId);
+          assert.equal(row.ECINSTANCEID, currentExpectedId);
+          assert.equal(row.ECInstanceId, currentExpectedId);
+          assert.equal(row.toArray()[0], currentExpectedId);
+          assert.equal(row.toRow().id, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+
+      it("Get duplicate property names using iterable iterator with UseECSqlPropertyNames rowFormat", async () => {
+        const expectedIds = ["0x1", "0xe", "0x10", "0x11", "0x12"];
+        let counter = 1;
+        for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
+          const currentExpectedId = expectedIds[counter - 1];
+          assert.equal(row[0], currentExpectedId);
+          assert.equal(row.id, currentExpectedId);
+          assert.equal(row.ecinstanceid, currentExpectedId);
+          assert.equal(row.ECINSTANCEID, currentExpectedId);
+          assert.equal(row.ECInstanceId, currentExpectedId);
+          assert.equal(row.toArray()[0], currentExpectedId);
+          assert.equal(row.toRow().ECInstanceId, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+
+      it("Get duplicate property names using iterable iterator with UseECSqlPropertyIndexes rowFormat", async () => {
+        const expectedIds = ["0x1", "0xe", "0x10", "0x11", "0x12"];
+        let counter = 1;
+        for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+          const currentExpectedId = expectedIds[counter - 1];
+          assert.equal(row[0], currentExpectedId);
+          assert.equal(row.id, currentExpectedId);
+          assert.equal(row.ecinstanceid, currentExpectedId);
+          assert.equal(row.ECINSTANCEID, currentExpectedId);
+          assert.equal(row.ECInstanceId, currentExpectedId);
+          assert.equal(row.toArray()[0], currentExpectedId);
+          assert.equal(row.toRow().ECInstanceId, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+    });
+
     describe("Get specific values", () => {
 
       it("Get only ECInstanceId with unspecified rowFormat", async () => {
