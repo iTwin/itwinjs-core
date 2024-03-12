@@ -32,6 +32,12 @@ jobs:
           versionSpec: 20.x
           checkLatest: true
 
+      - task: npmAuthenticate@0
+        displayName: 'Authenticate npm'
+        condition: and(succeeded(), ne('Windows_NT', variables['Agent.OS']))
+        inputs:
+          workingFile: $(BB_SRC_ROOT)/imodel02/iModelCore/LicensingCrossPlatform/LicensingAddon/api_package/ts/.npmrc
+
       - script: |
           git config --local user.email imodeljs-admin@users.noreply.github.com
           git config --local user.name imodeljs-admin
