@@ -5,10 +5,11 @@
 
 import { GuidString } from "@itwin/core-bentley";
 import { DecorateContext, SceneContext } from "../../ViewContext";
-import { ISceneObject, ViewportScene } from "../ViewportScene";
+import { SceneObject } from "../SceneObject";
+import { ViewportScene } from "../ViewportScene";
 import { HitDetail } from "../../HitDetail";
 
-export abstract class SceneObjectImpl<Scene extends ViewportScene = ViewportScene> implements ISceneObject {
+export abstract class SceneObjectImpl<Scene extends ViewportScene = ViewportScene> implements SceneObject {
   readonly guid: GuidString;
   readonly scene: Scene;
   isDisplayed = true;

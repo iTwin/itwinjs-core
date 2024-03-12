@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AmbientOcclusion, ColorDef, DisplayStyleSettings, SolarShadowSettings, ViewFlags } from "@itwin/core-common";
-import { ScenePresentation2d, ScenePresentation3d } from "../ViewportScene";
+import { ScenePresentation2d, ScenePresentation3d } from "../ScenePresentation";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "../../DisplayStyleState";
 import { ViewState, ViewState2d, ViewState3d } from "../../ViewState";
 

@@ -14,10 +14,12 @@ import { IModelSpatialView, IModelView, IModelView2d } from "../IModelView";
 import { TiledGraphicsProvider } from "../../tile/internal";
 import { SceneVolume3d, TestSceneVolume2d } from "../SceneVolume";
 import { GuidString, Id64String } from "@itwin/core-bentley";
-import { ModelClassifierParams, ModelClipMaskParams, RealityModel, RealityModelSceneObject, SceneObjectClassifiers, SpatialScene } from "../ViewportScene";
+import { RealityModelSceneObject } from "../SceneObject";
+import { SpatialScene } from "../ViewportScene";
+import { ModelClassifierParams, ModelClipMaskParams, SceneRealityModel, SceneObjectClassifiers } from "../SceneRealityModel";
 import { SceneObjectImpl } from "./SceneObjectImpl";
 
-export class RealityModelImpl implements RealityModel {
+export class RealityModelImpl implements SceneRealityModel {
   state: ContextRealityModelState;
 
   constructor(state: ContextRealityModelState) {

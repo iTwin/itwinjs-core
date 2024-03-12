@@ -19,7 +19,8 @@ import { ComputeSpatialViewFitRangeOptions, SpatialViewState } from "../../Spati
 import { BaseIModelView, IModelSpatialView, IModelView, IModelView3d, ViewCategorySelector, ViewModelSelector } from "../IModelView";
 import { View3dStyleImpl } from "./ViewStyleImpl";
 import { SceneObjectImpl } from "./SceneObjectImpl";
-import { IModelSceneObject, ViewportScene } from "../ViewportScene";
+import { IModelViewSceneObject } from "../SceneObject";
+import { ViewportScene } from "../ViewportScene";
 import { HitDetail } from "../../HitDetail";
 
 function equalIdSets(a: Set<Id64String>, b: Set<Id64String>): boolean {
@@ -165,7 +166,7 @@ export class IModelSpatialViewImpl extends View3dImpl implements IModelSpatialVi
 
 type IModelViewImpl = IModelSpatialViewImpl; /* ###TODO | DrawingViewImpl | SheetViewImpl */
 
-export class IModelSceneObjectImpl<View extends IModelViewImpl> extends SceneObjectImpl implements IModelSceneObject {
+export class IModelSceneObjectImpl<View extends IModelViewImpl> extends SceneObjectImpl implements IModelViewSceneObject {
   readonly _view: View;
 
   constructor(view: View, guid: GuidString, scene: ViewportScene) {

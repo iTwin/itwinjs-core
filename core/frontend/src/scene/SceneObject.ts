@@ -15,7 +15,7 @@ import { TiledGraphicsProvider } from "../tile/internal";
 import { SceneRealityModel } from "./SceneRealityModel";
 import { ScenePresentation, ScenePresentation2d, ScenePresentation3d } from "./ScenePresentation";
 import { SceneMap } from "./SceneMap";
-import { ViewportScene } from "./Scene";
+import { Model2dScene, SpatialScene, ViewportScene } from "./ViewportScene";
 import { IModelConnection } from "../IModelConnection";
 import { Decorator } from "../ViewManager";
 
@@ -42,7 +42,7 @@ export interface SceneObject extends ViewportDecorator {
   // ###TODO bounding box of the entire scene object? or unionFitRange (extents may be loaded async; global tilesets and presentation won't have bounding boxes).
 }
 
-export type RealityModelSceneObject = SceneObject & { readonly realityModel: SceneRealityModel; };
+export type RealityModelSceneObject = SceneObject & { readonly realityModel: SceneRealityModel; readonly scene: SpatialScene; };
 
 export type PresentationSceneObject = SceneObject & { readonly presentation: ScenePresentation; }
 export type Presentation2dSceneObject = SceneObject & { readonly presentation: ScenePresentation2d; }
@@ -54,8 +54,8 @@ export type MapSceneObject = SceneObject & { readonly map: SceneMap; }
 export type DecoratorSceneObject = SceneObject & { readonly decorator: Decorator; }
 
 export type IModelViewSceneObject = SceneObject & { readonly view: IModelView; };
-export type SpatialViewSceneObject = SceneObject & { readonly view: IModelSpatialView; }
-export type IModelView2dSceneObject = SceneObject & { readonly view: IModelView2d; };
+export type SpatialViewSceneObject = SceneObject & { readonly view: IModelSpatialView; readonly scene: SpatialScene; }
+export type IModelView2dSceneObject = SceneObject & { readonly view: IModelView2d; readonly scene: Model2dScene; };
 
 export interface SpatialViewSceneObjects extends Iterable<SpatialViewSceneObject> {
   add(view: IModelSpatialView): SpatialViewSceneObject;
