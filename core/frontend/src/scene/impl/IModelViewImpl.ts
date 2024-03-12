@@ -167,7 +167,7 @@ export class IModelSpatialViewImpl extends View3dImpl implements IModelSpatialVi
 
 export type IModelViewImpl = IModelSpatialViewImpl; /* ###TODO | DrawingViewImpl | SheetViewImpl */
 
-export class IModelSceneObjectImpl<View extends IModelViewImpl, Scene extends ViewportScene> extends SceneObjectImpl<Scene> implements IModelViewSceneObject {
+export class IModelViewSceneObjectImpl<View extends IModelViewImpl, Scene extends ViewportScene> extends SceneObjectImpl<Scene> implements IModelViewSceneObject {
   readonly _view: View;
 
   constructor(view: View, guid: GuidString, scene: Scene) {
@@ -198,7 +198,7 @@ export class IModelSceneObjectImpl<View extends IModelViewImpl, Scene extends Vi
   }
 }
 
-export class SpatialViewSceneObjectImpl extends IModelSceneObjectImpl<IModelSpatialViewImpl, SpatialScene> {
+export class SpatialViewSceneObjectImpl extends IModelViewSceneObjectImpl<IModelSpatialViewImpl, SpatialScene> {
   constructor(view: IModelSpatialViewImpl, guid: GuidString, scene: SpatialScene) {
     super(view, guid, scene);
   }
