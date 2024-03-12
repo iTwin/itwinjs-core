@@ -9,7 +9,7 @@ import { SceneObject } from "../SceneObject";
 import { ViewportScene } from "../ViewportScene";
 import { HitDetail } from "../../HitDetail";
 
-export abstract class SceneObjectImpl<Scene extends ViewportScene = ViewportScene> implements SceneObject {
+export abstract class SceneObjectImpl<Scene extends ViewportScene> implements SceneObject {
   readonly guid: GuidString;
   readonly scene: Scene;
   isDisplayed = true;
@@ -29,5 +29,5 @@ export abstract class SceneObjectImpl<Scene extends ViewportScene = ViewportScen
 
   abstract draw(context: SceneContext): void;
 
-  abstract getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined>;
+  getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined> { return Promise.resolve(undefined); }
 }

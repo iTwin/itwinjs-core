@@ -58,7 +58,7 @@ export type SpatialViewSceneObject = SceneObject & { readonly view: IModelSpatia
 export type IModelView2dSceneObject = SceneObject & { readonly view: IModelView2d; readonly scene: Model2dScene; };
 
 export interface SpatialViewSceneObjects extends Iterable<SpatialViewSceneObject> {
-  add(view: IModelSpatialView): SpatialViewSceneObject;
+  add(view: IModelSpatialView, options?: { guid: GuidString; }): SpatialViewSceneObject;
   delete(view: SpatialViewSceneObject): void; // ###TODO return type?
   clear(): void;
   findFirstForIModel(iModel: IModelConnection): SpatialViewSceneObject | undefined;

@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@itwin/core-bentley";
+import { assert, Guid } from "@itwin/core-bentley";
 import { ViewState } from "../../ViewState";
 import { Viewport } from "../../Viewport";
 import { Model2dScene, SpatialScene, ViewportScene } from "../ViewportScene";
-import { BaseIModelViewImpl, createIModelView } from "./IModelViewImpl";
-import { ScenePresentation3dImpl, BaseScenePresentationImpl, ScenePresentationImpl } from "./ScenePresentationImpl";
+import { BaseIModelViewImpl, createIModelView, IModelSpatialViewImpl, SpatialViewSceneObjectImpl } from "./IModelViewImpl";
+import { ScenePresentation3dImpl, BaseScenePresentationImpl, ScenePresentationImpl, PresentationSceneObjectImpl } from "./ScenePresentationImpl";
 import { SceneVolume3dImpl, SceneVolumeImpl } from "./SceneVolumeImpl";
 import { SpatialViewState } from "../../SpatialViewState";
 import { SubCategoriesCache } from "../../SubCategoriesCache";
-import { IModelViewSceneObject, SceneObject } from "../SceneObject";
+import { IModelViewSceneObject, PresentationSceneObject, SceneObject } from "../SceneObject";
 
 export abstract class ViewportSceneImpl implements ViewportScene {
   private _backingView: BaseIModelViewImpl;
@@ -32,6 +32,7 @@ export abstract class ViewportSceneImpl implements ViewportScene {
   abstract isSpatial(): this is SpatialScene;
   abstract is2dModel(): this is Model2dScene;
   
+  abstract get presentationObject(): PresentationSceneObject;
   abstract get presentation(): ScenePresentationImpl;
   abstract get volume(): SceneVolumeImpl;
   abstract get iModels(): Iterable<IModelViewSceneObject>;
@@ -47,7 +48,8 @@ export abstract class ViewportSceneImpl implements ViewportScene {
   abstract [Symbol.iterator](): Iterator<SceneObject>;
   
   protected * _iterator(): Iterable<SceneObject> {
-    // ###TODO as a PresentationSceneObject yield this.presentation;
+    yield this.presentationObject;
+
     for (const iModel of this.iModels)
       yield iModel;
 
@@ -65,7 +67,11 @@ export class SpatialSceneImpl extends ViewportSceneImpl implements SpatialScene 
   override is2dModel() { return false; }
   
   readonly volume: SceneVolume3dImpl;
-  readonly presentation: ScenePresentation3dImpl;
+  readonly presentationObject: PresentationSceneObjectImpl<ScenePresentation3dImpl, SpatialScene>;
+
+  override get presentation(): ScenePresentation3dImpl {
+    return this.presentationObject.presentation;
+  }
 
   readonly realityModels = [] as any; // ###TODO
   readonly iModels = [] as any; // ###TODO
@@ -75,7 +81,16 @@ export class SpatialSceneImpl extends ViewportSceneImpl implements SpatialScene 
     super(view);
 
     this.volume = new SceneVolume3dImpl(view);
-    this.presentation = new ScenePresentation3dImpl(view);
+    const presentation = new ScenePresentation3dImpl(view);
+    const presentationGuid = Guid.createValue(); // ###TODO round-trip GUIDs
+    this.presentationObject = new PresentationSceneObjectImpl<ScenePresentation3dImpl, SpatialScene>(presentation, presentationGuid, this);
+
+    // ###TODO move this to post-constructor initialization.
+    if (!view.iModel.isBlank) {
+      const viewGuid = Guid.createValue(); // ###TODO round-trip GUIDs
+      const spatialView = new IModelSpatialViewImpl(view);
+      this.iModels.add(spatialView, { guid: viewGuid });
+    }
   }
 
   *[Symbol.iterator]() {

@@ -7,6 +7,11 @@ import { AmbientOcclusion, ColorDef, DisplayStyleSettings, SolarShadowSettings, 
 import { ScenePresentation2d, ScenePresentation3d } from "../ScenePresentation";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "../../DisplayStyleState";
 import { ViewState, ViewState2d, ViewState3d } from "../../ViewState";
+import { SceneObject } from "../SceneObject";
+import { SceneObjectImpl } from "./SceneObjectImpl";
+import { ViewportScene } from "../ViewportScene";
+import { DecorateContext, SceneContext } from "../../ViewContext";
+import { GuidString } from "@itwin/core-bentley";
 
 export abstract class BaseScenePresentationImpl {
   protected _style: DisplayStyleState;
@@ -49,3 +54,24 @@ export class ScenePresentation3dImpl extends BaseScenePresentationImpl implement
 }
 
 export type ScenePresentationImpl = ScenePresentation2dImpl | ScenePresentation3dImpl;
+
+export class PresentationSceneObjectImpl<T extends ScenePresentationImpl, Scene extends ViewportScene> extends SceneObjectImpl<Scene> {
+  public readonly presentation: T;
+
+  constructor(presentation: T, guid: GuidString, scene: Scene) {
+    super(guid, scene);
+    this.presentation = presentation;
+  }
+
+  override draw(_context: SceneContext) {
+    // ###TODO
+  }
+
+  override decorate(_context: DecorateContext) {
+    // ###TODO
+  }
+
+  override get isLoadingComplete() {
+    return true; // ###TODO
+  }
+}

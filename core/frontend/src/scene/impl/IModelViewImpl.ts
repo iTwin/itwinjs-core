@@ -20,8 +20,9 @@ import { BaseIModelView, IModelSpatialView, IModelView, IModelView3d, ViewCatego
 import { View3dStyleImpl } from "./ViewStyleImpl";
 import { SceneObjectImpl } from "./SceneObjectImpl";
 import { IModelViewSceneObject } from "../SceneObject";
-import { ViewportScene } from "../ViewportScene";
+import { SpatialScene, ViewportScene } from "../ViewportScene";
 import { HitDetail } from "../../HitDetail";
+import { SpatialSceneImpl } from "./ViewportSceneImpl";
 
 function equalIdSets(a: Set<Id64String>, b: Set<Id64String>): boolean {
   if (a.size !== b.size)
@@ -166,10 +167,10 @@ export class IModelSpatialViewImpl extends View3dImpl implements IModelSpatialVi
 
 export type IModelViewImpl = IModelSpatialViewImpl; /* ###TODO | DrawingViewImpl | SheetViewImpl */
 
-export class IModelSceneObjectImpl<View extends IModelViewImpl> extends SceneObjectImpl implements IModelViewSceneObject {
+export class IModelSceneObjectImpl<View extends IModelViewImpl, Scene extends ViewportScene> extends SceneObjectImpl<Scene> implements IModelViewSceneObject {
   readonly _view: View;
 
-  constructor(view: View, guid: GuidString, scene: ViewportScene) {
+  constructor(view: View, guid: GuidString, scene: Scene) {
     super(guid, scene);
     this._view = view;
   }
@@ -197,10 +198,15 @@ export class IModelSceneObjectImpl<View extends IModelViewImpl> extends SceneObj
   }
 }
 
-export function createIModelView(view: ViewState): IModelViewImpl {
-  if (view.isSpatialView()) {
-    return new IModelSpatialViewImpl(view);
+export class SpatialViewSceneObjectImpl extends IModelSceneObjectImpl<IModelSpatialViewImpl, SpatialScene> {
+  constructor(view: IModelSpatialViewImpl, guid: GuidString, scene: SpatialScene) {
+    super(view, guid, scene);
   }
+}
 
-  throw new Error("###TODO non-spatial IModelView impls");
+export function createIModelView(view: ViewState): IModelViewImpl {
+  if (view.isSpatialView())
+    return new IModelSpatialViewImpl(view);
+
+  throw new Error("###TODO 2d view impls");
 }
