@@ -65,7 +65,7 @@ import { ViewStatus } from "./ViewStatus";
 import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
 import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
-import { createViewportScene } from "./scene/impl/ViewportSceneImpl";
+import { createAndPopulateViewportScene } from "./scene/impl/ViewportSceneImpl";
 import { ViewportScene } from "./scene/ViewportScene";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
@@ -1144,7 +1144,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     if (this._mapTiledGraphicsProvider)
       this._mapTiledGraphicsProvider.setView(view);
     this.detachFromView();
-    this._scene = createViewportScene(view);
+    this._scene = createAndPopulateViewportScene(view);
     this._view = view;
     this.attachToView();
   }

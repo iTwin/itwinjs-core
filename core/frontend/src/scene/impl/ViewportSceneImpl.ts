@@ -7,7 +7,7 @@ import { assert, Guid } from "@itwin/core-bentley";
 import { ViewState } from "../../ViewState";
 import { Viewport } from "../../Viewport";
 import { CreateSpatialSceneArgs, Model2dScene, SpatialScene, ViewportScene } from "../ViewportScene";
-import { BaseIModelViewImpl, createIModelView, IModelSpatialViewImpl, SpatialViewSceneObjectImpl } from "./IModelViewImpl";
+import { BaseIModelViewImpl, IModelSpatialViewImpl, SpatialViewSceneObjectImpl } from "./IModelViewImpl";
 import { ScenePresentation3dImpl, BaseScenePresentationImpl, ScenePresentationImpl, PresentationSceneObjectImpl } from "./ScenePresentationImpl";
 import { SceneVolume3dImpl, SceneVolumeImpl } from "./SceneVolumeImpl";
 import { SpatialViewState } from "../../SpatialViewState";
@@ -69,7 +69,7 @@ export class SpatialSceneImpl extends ViewportSceneImpl implements SpatialScene 
   readonly iModels = [] as any; // ###TODO
   readonly map?: any; // ###TODO
 
-  constructor(args: CreateSpatialSceneArgs) {
+  constructor(args: CreateSpatialSceneArgs, populate: boolean) {
     super(args.view);
 
     this.volume = new SceneVolume3dImpl(args.view);
@@ -78,6 +78,9 @@ export class SpatialSceneImpl extends ViewportSceneImpl implements SpatialScene 
     this.presentationObject = new PresentationSceneObjectImpl<ScenePresentation3dImpl, SpatialScene>(presentation, presentationGuid, this);
 
     // ###TODO initialize this.map
+
+    if (populate)
+      this.populateFromView(args.view);
   }
 
   *[Symbol.iterator]() {
@@ -89,17 +92,31 @@ export class SpatialSceneImpl extends ViewportSceneImpl implements SpatialScene 
 
     yield this.map;
   }
+
+  private populateFromView(view: SpatialViewState): void {
+    if (!view.iModel.isBlank) {
+      const iModelView = new IModelSpatialViewImpl(view);
+      this.iModels.add(new SpatialViewSceneObjectImpl(iModelView, Guid.createValue(), this));
+    }
+
+    this.populateRealityModels(view);
+  }
+
+  private populateRealityModels(_view: SpatialViewState): void {
+    // ###TODO
+  }
+  
 }
 
 export function createSpatialScene(args: CreateSpatialSceneArgs): SpatialSceneImpl {
-  return new SpatialSceneImpl(args);
+  return new SpatialSceneImpl(args, false);;
 }
 
-export function createViewportScene(view: ViewState): ViewportScene {
+export function createAndPopulateViewportScene(view: ViewState): ViewportScene {
   if (!view.isSpatialView())
     throw new Error("###TODO non-spatial scenes");
 
-  const scene = createSpatialScene({ view });
-  // ###TODO populate it from ViewState
+  const scene = new SpatialSceneImpl({ view }, true);
+
   return scene;
 }

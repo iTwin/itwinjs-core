@@ -12,7 +12,7 @@ import { ScenePresentation, ScenePresentation2d, ScenePresentation3d } from "./S
 import { SceneVolume, SceneVolume3d } from "./SceneVolume";
 import { SpatialViewState } from "../SpatialViewState";
 import { ViewState } from "../ViewState";
-import { createSpatialScene, createViewportScene } from "./impl/ViewportSceneImpl";
+import { createSpatialScene, createAndPopulateViewportScene } from "./impl/ViewportSceneImpl";
 
 export interface ViewportScene extends Iterable<SceneObject> {
   /** An IModelView created from the ViewState supplied to the constructor.
@@ -64,6 +64,6 @@ export namespace ViewportScene {
  }
 
  export function fromViewState(view: ViewState): ViewportScene {
-  return createViewportScene(view);
+  return createAndPopulateViewportScene(view);
  }
 }

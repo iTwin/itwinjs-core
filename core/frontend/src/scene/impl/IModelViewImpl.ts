@@ -203,10 +203,3 @@ export class SpatialViewSceneObjectImpl extends IModelSceneObjectImpl<IModelSpat
     super(view, guid, scene);
   }
 }
-
-export function createIModelView(view: ViewState): IModelViewImpl {
-  if (view.isSpatialView())
-    return new IModelSpatialViewImpl(view);
-
-  throw new Error("###TODO 2d view impls");
-}
