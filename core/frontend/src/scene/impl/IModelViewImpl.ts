@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, GuidString, Id64Arg, Id64String } from "@itwin/core-bentley";
+import { assert, Guid, GuidString, Id64Arg, Id64String } from "@itwin/core-bentley";
 import { View2dStyle, View3dStyle, ViewStyle, ViewStyleFlags } from "../ViewStyle";
 import { AxisAlignedBox3d, ModelClipGroups, ViewFlags } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
@@ -19,7 +19,7 @@ import { ComputeSpatialViewFitRangeOptions, SpatialViewState } from "../../Spati
 import { BaseIModelView, IModelSpatialView, IModelView, IModelView3d, ViewCategorySelector, ViewModelSelector } from "../IModelView";
 import { View3dStyleImpl } from "./ViewStyleImpl";
 import { SceneObjectImpl } from "./SceneObjectImpl";
-import { IModelViewSceneObject } from "../SceneObject";
+import { IModelViewSceneObject, SpatialViewSceneObject, SpatialViewSceneObjects } from "../SceneObject";
 import { SpatialScene, ViewportScene } from "../ViewportScene";
 import { HitDetail } from "../../HitDetail";
 import { SpatialSceneImpl } from "./ViewportSceneImpl";
@@ -175,7 +175,7 @@ export class IModelSceneObjectImpl<View extends IModelViewImpl, Scene extends Vi
     this._view = view;
   }
 
-  get view(): IModelView { return this._view; }
+  get view(): View { return this._view; }
 
   override get isLoadingComplete() {
     return this._view.impl.areAllTileTreesLoaded;
@@ -201,5 +201,61 @@ export class IModelSceneObjectImpl<View extends IModelViewImpl, Scene extends Vi
 export class SpatialViewSceneObjectImpl extends IModelSceneObjectImpl<IModelSpatialViewImpl, SpatialScene> {
   constructor(view: IModelSpatialViewImpl, guid: GuidString, scene: SpatialScene) {
     super(view, guid, scene);
+  }
+}
+
+export class SpatialViewSceneObjectsImpl implements SpatialViewSceneObjects {
+  private readonly _objects: SpatialViewSceneObject[] = [];
+  private readonly _scene: SpatialSceneImpl;
+
+  constructor(scene: SpatialSceneImpl) {
+    this._scene = scene;
+  }
+
+  [Symbol.iterator]() {
+    return this._objects[Symbol.iterator]();
+  }
+
+  findFirstForIModel(iModel: IModelConnection) {
+    return this._objects.find((obj) => obj.view.iModel === iModel);
+  }
+
+  add(view: IModelSpatialView, options?: { guid?: GuidString }): SpatialViewSceneObject {
+    let obj = this._objects.find((x) => x.view === view);
+    if (obj) {
+      // ###TODO log a warning?
+      return obj;
+    }
+
+    assert(view instanceof IModelSpatialViewImpl);
+    obj = new SpatialViewSceneObjectImpl(view, options?.guid ?? Guid.createValue(), this._scene);
+    this._objects.push(obj);
+
+    this._scene.onSceneContentsChanged.raiseEvent(obj, "add");
+
+    return obj;
+  }
+
+  delete(object: SpatialViewSceneObject): void {
+    const index = this._objects.indexOf(object);
+    if (-1 === this._objects.indexOf(object)) {
+      // ###TODO log a warning?
+      return;
+    }
+
+    this._objects.splice(index, 1);
+
+    this._scene.onSceneContentsChanged.raiseEvent(object, "delete");
+    
+    // ###TODO? object.dispose();
+  }
+
+  clear(): void {
+    for (const object of this) {
+      this._scene.onSceneContentsChanged.raiseEvent(object, "delete");
+      // ###TODO object.dispose?
+    }
+    
+    this._objects.length = 0;
   }
 }

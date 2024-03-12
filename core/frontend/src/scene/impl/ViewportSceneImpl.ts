@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, Guid } from "@itwin/core-bentley";
+import { assert, BeEvent, Guid } from "@itwin/core-bentley";
 import { ViewState } from "../../ViewState";
 import { Viewport } from "../../Viewport";
 import { CreateSpatialSceneArgs, Model2dScene, SpatialScene, ViewportScene } from "../ViewportScene";
-import { BaseIModelViewImpl, IModelSpatialViewImpl, SpatialViewSceneObjectImpl } from "./IModelViewImpl";
+import { BaseIModelViewImpl, IModelSpatialViewImpl, SpatialViewSceneObjectImpl, SpatialViewSceneObjectsImpl } from "./IModelViewImpl";
 import { ScenePresentation3dImpl, BaseScenePresentationImpl, ScenePresentationImpl, PresentationSceneObjectImpl } from "./ScenePresentationImpl";
 import { SceneVolume3dImpl, SceneVolumeImpl } from "./SceneVolumeImpl";
 import { SpatialViewState } from "../../SpatialViewState";
@@ -15,6 +15,7 @@ import { SubCategoriesCache } from "../../SubCategoriesCache";
 import { IModelViewSceneObject, PresentationSceneObject, SceneObject } from "../SceneObject";
 
 export abstract class ViewportSceneImpl implements ViewportScene {
+  readonly onSceneContentsChanged = new BeEvent<(object: SceneObject, change: "add" | "delete") => void>;
   readonly backingView: ViewState;
   private readonly _subcategories = new SubCategoriesCache.Queue();
 
@@ -66,7 +67,7 @@ export class SpatialSceneImpl extends ViewportSceneImpl implements SpatialScene 
   }
 
   readonly realityModels = [] as any; // ###TODO
-  readonly iModels = [] as any; // ###TODO
+  readonly iModels: SpatialViewSceneObjectsImpl;
   readonly map?: any; // ###TODO
 
   constructor(args: CreateSpatialSceneArgs, populate: boolean) {
@@ -77,6 +78,8 @@ export class SpatialSceneImpl extends ViewportSceneImpl implements SpatialScene 
     const presentationGuid = args.presentationGuid ?? Guid.createValue();
     this.presentationObject = new PresentationSceneObjectImpl<ScenePresentation3dImpl, SpatialScene>(presentation, presentationGuid, this);
 
+    this.iModels = new SpatialViewSceneObjectsImpl(this);
+    
     // ###TODO initialize this.map
 
     if (populate)
@@ -96,7 +99,7 @@ export class SpatialSceneImpl extends ViewportSceneImpl implements SpatialScene 
   private populateFromView(view: SpatialViewState): void {
     if (!view.iModel.isBlank) {
       const iModelView = new IModelSpatialViewImpl(view);
-      this.iModels.add(new SpatialViewSceneObjectImpl(iModelView, Guid.createValue(), this));
+      this.iModels.add(iModelView);
     }
 
     this.populateRealityModels(view);

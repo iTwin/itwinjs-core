@@ -6,8 +6,10 @@
  * @module Views
  */
 
-import { GuidString } from "@itwin/core-bentley";
-import { DecoratorSceneObjects, IModelViewSceneObject, MapSceneObject, RealityModelSceneObjects, SceneObject, SpatialViewSceneObjects, IModelView2dSceneObject, TiledGraphicsSceneObjects } from "./SceneObject";
+import { BeEvent, GuidString } from "@itwin/core-bentley";
+import {
+  DecoratorSceneObjects, MapSceneObject, RealityModelSceneObjects, SceneObject, SpatialViewSceneObjects, IModelView2dSceneObject, TiledGraphicsSceneObjects,
+} from "./SceneObject";
 import { ScenePresentation, ScenePresentation2d, ScenePresentation3d } from "./ScenePresentation";
 import { SceneVolume, SceneVolume3d } from "./SceneVolume";
 import { SpatialViewState } from "../SpatialViewState";
@@ -20,50 +22,52 @@ export interface ViewportScene extends Iterable<SceneObject> {
    * This is used as a shim for deprecated Viewport methods+properties like Viewport.iModel, Viewport.perModelCategoryVisibility, etc.
    * @internal
    */
- readonly backingView: ViewState;
+  readonly backingView: ViewState;
 
- isSpatial(): this is SpatialScene;
- is2dModel(): this is Model2dScene;
+  isSpatial(): this is SpatialScene;
+  is2dModel(): this is Model2dScene;
 
- readonly volume: SceneVolume;
- readonly presentation: ScenePresentation;
- // readonly iModels: Iterable<IModelViewSceneObject>; // ###TODO needed, or just confusing for 2d?
- readonly tiledGraphicsProviders: TiledGraphicsSceneObjects;
- readonly decorators: DecoratorSceneObjects;
+  readonly volume: SceneVolume;
+  readonly presentation: ScenePresentation;
+  // readonly iModels: Iterable<IModelViewSceneObject>; // ###TODO needed, or just confusing for 2d?
+  readonly tiledGraphicsProviders: TiledGraphicsSceneObjects;
+  readonly decorators: DecoratorSceneObjects;
 
- dispose(): void;
+  dispose(): void;
+
+  readonly onSceneContentsChanged: BeEvent<(object: SceneObject, change: "add" | "delete") => void>;
 }
 
 export interface SpatialScene extends ViewportScene {
- readonly volume: SceneVolume3d;
- readonly presentation: ScenePresentation3d;
- readonly iModels: SpatialViewSceneObjects;
- readonly realityModels: RealityModelSceneObjects;
- readonly map?: MapSceneObject;
+  readonly volume: SceneVolume3d;
+  readonly presentation: ScenePresentation3d;
+  readonly iModels: SpatialViewSceneObjects;
+  readonly realityModels: RealityModelSceneObjects;
+  readonly map?: MapSceneObject;
 }
 
 export interface Model2dScene extends ViewportScene {
- readonly volume: SceneVolume;
- readonly presentation: ScenePresentation2d;
- readonly view: IModelView2dSceneObject;
- // readonly iModels: Iterable<IModelView2dSceneObject>;
+  readonly volume: SceneVolume;
+  readonly presentation: ScenePresentation2d;
+  readonly view: IModelView2dSceneObject;
+  // readonly iModels: Iterable<IModelView2dSceneObject>;
 }
 
 // ###TODO export interface DrawingModelScene extends Model2dScene
 // ###TODO export interface SheetModelScene extends Model2dScene
 
 export interface CreateSpatialSceneArgs {
- view: SpatialViewState;
- mapGuid?: GuidString;
- presentationGuid?: GuidString;
+  view: SpatialViewState;
+  mapGuid?: GuidString;
+  presentationGuid?: GuidString;
 }
 
 export namespace ViewportScene {
- export function createSpatial(args: CreateSpatialSceneArgs): SpatialScene {
-  return createSpatialScene(args);
- }
+  export function createSpatial(args: CreateSpatialSceneArgs): SpatialScene {
+    return createSpatialScene(args);
+  }
 
- export function fromViewState(view: ViewState): ViewportScene {
-  return createAndPopulateViewportScene(view);
- }
+  export function fromViewState(view: ViewState): ViewportScene {
+    return createAndPopulateViewportScene(view);
+  }
 }
