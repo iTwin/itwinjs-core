@@ -51,7 +51,7 @@ export class ViewCategorySelectorImpl implements ViewCategorySelector {
   changeCategoryDisplay(arg: Id64Arg, add: boolean) { this._selector.changeCategoryDisplay(arg, add); }
 }
 
-export abstract class IIModelViewImpl implements BaseIModelView {
+export abstract class IModelViewImpl implements BaseIModelView {
   readonly impl: ViewState;
   protected readonly _style: ViewStyle;
   readonly categorySelector: ViewCategorySelector;
@@ -109,7 +109,7 @@ export abstract class IIModelViewImpl implements BaseIModelView {
   refreshForModifiedModels(modelIds: Id64Arg | undefined) { return this.impl.refreshForModifiedModels(modelIds); }
 
   hasSameCoordinates(other: BaseIModelView): boolean {
-    const view = other instanceof IIModelViewImpl ? other : undefined;
+    const view = other instanceof IModelViewImpl ? other : undefined;
     return undefined !== view && this.impl.hasSameCoordinates(view.impl);
   }
 
@@ -122,7 +122,7 @@ export abstract class IIModelViewImpl implements BaseIModelView {
   getAttachmentViewport(id: Id64String) { return this.impl.getAttachmentViewport(id); }
 }
 
-export abstract class View3dImpl extends IIModelViewImpl implements IModelView3d {
+export abstract class View3dImpl extends IModelViewImpl implements IModelView3d {
   readonly is3d: true = true;
 
   protected constructor(view: ViewState3d) {

@@ -12,21 +12,18 @@ import { SceneVolume, SceneVolume3d } from "./SceneVolume";
 
 export interface ViewportScene extends Iterable<SceneObject> {
  isSpatial(): this is SpatialScene;
- is2dMode(): this is Model2dScene;
+ is2dModel(): this is Model2dScene;
 
  readonly volume: SceneVolume;
  readonly presentation: ScenePresentation;
  readonly iModels: Iterable<IModelViewSceneObject>;
- readonly graphicsProviders: TiledGraphicsSceneObjects;
+ readonly tiledGraphicsProviders: TiledGraphicsSceneObjects;
  readonly decorators: DecoratorSceneObjects;
 
  dispose(): void;
 }
 
 export interface SpatialScene extends ViewportScene {
- isSpatial(): () => true;
- is2dModel(): () => false;
- 
  readonly volume: SceneVolume3d;
  readonly presentation: ScenePresentation3d;
  readonly iModels: SpatialViewSceneObjects;
@@ -35,9 +32,6 @@ export interface SpatialScene extends ViewportScene {
 }
 
 export interface Model2dScene extends ViewportScene {
- is2dModel(): () => true;
- isSpatial(): () => false;
- 
  readonly volume: SceneVolume;
  readonly presentation: ScenePresentation2d;
  readonly view: IModelView2dSceneObject;
