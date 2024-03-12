@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Fix the row formatting to avoid having same property name used multiple times.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
