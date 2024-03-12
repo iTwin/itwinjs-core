@@ -14,7 +14,7 @@ import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationM
 import { ScreenViewport } from "../../Viewport";
 import { GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 import { HitDetail } from "../../HitDetail";
-import { headersIncludeAuthMethod, setBasicAuthorization } from "../../request/utils";
+import { headersIncludeAuthMethod, setBasicAuthorization, setRequestTimeout } from "../../request/utils";
 
 /** @internal */
 const tileImageSize = 256, untiledImageSize = 256;
@@ -235,7 +235,7 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** @internal */
-  public async makeTileRequest(url: string): Promise<Response> {
+  public async makeTileRequest(url: string, timeoutMs?: number): Promise<Response> {
 
     // We want to complete the first request before letting other requests go;
     // this done to avoid flooding server with requests missing credentials
@@ -253,18 +253,26 @@ export abstract class MapLayerImageryProvider {
         headers = new Headers();
         this.setRequestAuthorization(headers);
       }
-      response = await fetch(url, {
+      const opts: RequestInit = {
         method: "GET",
         headers,
         credentials: this._includeUserCredentials ? "include" : undefined,
-      });
+      };
+      if (timeoutMs !== undefined)
+        setRequestTimeout(opts, timeoutMs);
+      response = await fetch(url, opts);
 
       if (response.status === 401
         && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])
         && !this._includeUserCredentials
         && !hasCreds ) {
+
+        // Removed the previous headers and make sure "include" credentials is set
+        opts.headers = undefined;
+        opts.credentials = "include";
+
         // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
-        response = await fetch(url, { method: "GET", credentials: "include" });
+        response = await fetch(url,  opts);
         if (response.status === 200) {
           this._includeUserCredentials = true;    // avoid going through 401 challenges over and over
         }

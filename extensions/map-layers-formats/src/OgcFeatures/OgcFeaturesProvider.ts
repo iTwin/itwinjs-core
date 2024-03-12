@@ -5,11 +5,11 @@
 
 import { MapCartoRectangle, MapLayerImageryProvider } from "@itwin/core-frontend";
 import { EsriPMS, EsriPMSProps, EsriRenderer, EsriSFS, EsriSFSProps, EsriSLS, EsriSLSProps, EsriSymbol } from "../ArcGisFeature/EsriSymbology";
-import { ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
+import { ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
 import { Matrix4d, Point3d, Range2d } from "@itwin/core-geometry";
 import { ArcGisSymbologyRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer";
 import { ArcGisCanvasRenderer } from "../ArcGisFeature/ArcGisCanvasRenderer";
-import { base64StringToUint8Array, Logger } from "@itwin/core-bentley";
+import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
 import { OgcFeaturesReader } from "../ArcGisFeature/OgcFeaturesReader";
 import { ArcGisFeatureGeometryType } from "../ArcGisFeature/ArcGisFeatureQuery";
 import Flatbush from "flatbush";
@@ -25,15 +25,18 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
   private readonly _drawDebugInfo = false;
   /// ////////////////////////////
 
-  private readonly _spatialIdxNumItems = 1000;
+  private readonly _limitParamMaxValue = 10000; // This is docmented in OGC Features specification; a single items request never returns more than 10 000 items
+  private readonly _tiledModeMinLod = 12;
+  private readonly _staticModeFetchTimeout = 30000;
+  private readonly _tileModeFetchTimeout = 30000;
+  private readonly _forceTileMode = true;
   private _spatialIdx: Flatbush|undefined;
   private _defaultSymbol: EsriSymbol|undefined;
   private _renderer: EsriRenderer|undefined;
 
   private static readonly _nbSubTiles = 2;     // Number of subtiles for a single axis
   public serviceJson: any;
-  private _data: Geojson.FeatureCollection = {type: "FeatureCollection", features: []};
-  private readonly _singleRequest = true;
+  private _staticData: Geojson.FeatureCollection|undefined;
 
   private static readonly defaultPMS: EsriPMSProps = {
     type: "esriPMS",
@@ -64,6 +67,9 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     super(settings, true);
   }
 
+  public override get minimumZoomLevel(): number { return this.staticMode ? super.minimumZoomLevel : this._tiledModeMinLod; }
+  public get staticMode(): boolean { return !!(this._spatialIdx && this._staticData && !this._forceTileMode); }
+
   public override async initialize(): Promise<void> {
 
     // this.cartoRange = MapCartoRectangle.fromDegrees(west, south, east, north);
@@ -91,17 +97,64 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     //   }
     // }
 
-    const url = `http://localhost:8081/collections/public.countries/items?limit=${this._spatialIdxNumItems}&f=geojson`;
+    if (!this._forceTileMode) {
+      const status = await this.fetchAllItems();
+      if (status) {
+        this.indexStaticData();
+      }
+    }
+  }
+
+  private async fetchAllItems() {
+    const url = `http://localhost:8081/collections/public.countries/items?f=geojson&limit=${this._limitParamMaxValue}`;
+    this._staticData = await this.fetchItems(url, this._staticModeFetchTimeout);
+    return this._staticData ? true : false;
+  }
+
+  private async fetchItems(url: string, timeout: number) {
+    let data: any;
+    let success = true;
     try {
-      const response = await this.makeTileRequest(url);
-      this._data = await response.json();
+      const fetchBegin = performance.now();
+      let response = await this.makeTileRequest(url, timeout);
+      let json = await response.json();
+      data = json;
+      let nextLink = json.links?.find((link: any)=>link.rel === "next");
+      while (nextLink && performance.now() - fetchBegin < timeout && success) {
+        response = await this.makeTileRequest(nextLink.href, this._staticModeFetchTimeout);
+        json = await response.json();
+        if (json?.features)
+          data!.features = [...this._staticData!.features, ...json.features];
+        else
+          success = false;
+        nextLink = json.links?.find((link: any)=>link.rel === "next");
+      }
+      if (performance.now() - fetchBegin >= this._staticModeFetchTimeout) {
+        // We ran out of time, let switch to tile mode
+        success = false;
+      }
+    } catch (e)  {
+      success = false;
+      if (e instanceof DOMException && e.name === "AbortError") {
+        Logger.logInfo(loggerCategory, "Request to fetch all features time out, switching to tile mode.");
+      } else {
+        Logger.logError(loggerCategory, "Unkown error occured when fetching OgcFeatures data.");
+      }
+    }
+    return success ? data : undefined;
+  }
+
+  // Read features range and build in-memory spatial index
+  private indexStaticData() {
+    let success = true;
+    try {
       const datasetRange = new Range2d();
       const buildPositionRange = (coords: Geojson.Position, range: Range2d) => range.extendXY(coords[0], coords[1]);
       const buildPositionArrayRange = (coords: Geojson.Position[], range: Range2d) => coords.forEach((position) => buildPositionRange(position, range) );
       const buildDoublePositionRange = (coords: Geojson.Position[][], range: Range2d) => coords.forEach((position) => buildPositionArrayRange(position, range) );
       const buildTriplePositionRange = (coords: Geojson.Position[][][], range: Range2d) => coords.forEach((position) => buildDoublePositionRange(position, range) );
 
-      const readGeomCoords = (geom: Geojson.Geometry, range: Range2d) => {
+      const readGeomRange = (geom: Geojson.Geometry, range: Range2d) => {
         if (geom.type === "Point")
           buildPositionRange(geom.coordinates, range);
         else if (geom.type === "LineString" || geom.type === "MultiPoint")
@@ -112,36 +165,43 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
           buildTriplePositionRange(geom.coordinates, range);
       };
 
-      // this._spatialIdx = new Flatbush(this._spatialIdxNumItems);
-      if (this._data && Array.isArray(this._data.features)) {
-        this._spatialIdx = new Flatbush(this._data.features.length);
-        this._data.features.forEach((feature: Geojson.Feature) => {
-
-          if (feature.geometry.type === "LineString"
-          || feature.geometry.type === "MultiLineString"
-          || feature.geometry.type === "Point"
-          || feature.geometry.type === "MultiPoint"
-          || feature.geometry.type === "Polygon"
-          || feature.geometry.type === "MultiPolygon"
-          ) {
-            readGeomCoords(feature.geometry, datasetRange);
-            this._spatialIdx?.add(datasetRange.xLow, datasetRange.yLow, datasetRange.xHigh,datasetRange. yHigh);
-            datasetRange.setNull();
-          } else if (feature.geometry.type === "GeometryCollection") {
-            feature.geometry.geometries.forEach((geom) => {
-              readGeomCoords(geom, datasetRange);
+      if (this._staticData && Array.isArray(this._staticData.features)) {
+        this._spatialIdx = new Flatbush(this._staticData.features.length);
+        this._staticData.features.forEach((feature: Geojson.Feature) => {
+          try {
+            if (feature.geometry.type === "LineString"
+            || feature.geometry.type === "MultiLineString"
+            || feature.geometry.type === "Point"
+            || feature.geometry.type === "MultiPoint"
+            || feature.geometry.type === "Polygon"
+            || feature.geometry.type === "MultiPolygon"
+            ) {
+              readGeomRange(feature.geometry, datasetRange);
               this._spatialIdx?.add(datasetRange.xLow, datasetRange.yLow, datasetRange.xHigh,datasetRange. yHigh);
-            });
-            datasetRange.setNull();
+              datasetRange.setNull();
+            } else if (feature.geometry.type === "GeometryCollection") {
+              feature.geometry.geometries.forEach((geom) => {
+                readGeomRange(geom, datasetRange);
+                this._spatialIdx?.add(datasetRange.xLow, datasetRange.yLow, datasetRange.xHigh,datasetRange. yHigh);
+              });
+              datasetRange.setNull();
+            }
+          } catch (e: any)  {
+            Logger.logInfo(loggerCategory, `Unkown error occured indexing feature: ${e.message}`);
+            success = false;
           }
-
         });
-        this._spatialIdx.finish();
+
+        if (success) {
+          this._spatialIdx.finish();
+        }
       }
 
-    } catch  {
-      Logger.logError(loggerCategory, "Could not fetch OgcFeatures data.");
+    } catch (_e)  {
+      Logger.logError(loggerCategory, "Unkown error occured when index static data");
+      success = false;
     }
+    return success;
   }
 
   public static getDefaultSymbology(geomType: ArcGisFeatureGeometryType) {
@@ -203,36 +263,41 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
 
   public override async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
     const begin = performance.now();
-    const canvas = document.createElement("canvas");
-    canvas.width = this.tileSize;
-    canvas.height = this.tileSize;
+
     const extent4326 = this.getEPSG4326Extent(row, column, zoomLevel);
 
     let data: any;
     const beginSpatialSearch = performance.now();
-    if (this._singleRequest && this._spatialIdx) {
-      const filteredData: Geojson.FeatureCollection = {type: this._data.type, features: []};
+    if (this.staticMode) {
+      // Static data mode
+      const filteredData: Geojson.FeatureCollection = {type: this._staticData!.type, features: []};
 
-      this._spatialIdx.search(extent4326.longitudeLeft, extent4326.latitudeBottom, extent4326.longitudeRight, extent4326.latitudeTop,
+      this._spatialIdx!.search(extent4326.longitudeLeft, extent4326.latitudeBottom, extent4326.longitudeRight, extent4326.latitudeTop,
         (index: number) => {
-          filteredData.features.push(this._data.features[index]);
+          filteredData.features.push(this._staticData!.features[index]);
           return true;
         });
 
       data = filteredData;
     } else {
+      // Tiled data mode
       const extent4326Str = this.getEPSG4326ExtentString(row, column, zoomLevel, false);
-      const url = `http://localhost:8081/collections/public.countries/items?f=geojson&bbox=${extent4326Str}&bbox-crs=http://www.opengis.net/def/crs/EPSG/0/4326&limit=1000`;
+      const url = `http://localhost:8081/collections/public.countries/items?f=geojson&bbox=${extent4326Str}&bbox-crs=http://www.opengis.net/def/crs/EPSG/0/4326&items=10000`;
 
       try {
-        const response = await this.makeTileRequest(url);
-        data = await response.json();
-      } catch  {
+        data = await this.fetchItems(url, this._tileModeFetchTimeout);
+      } catch (_e) {
+      }
+      if (!data) {
         Logger.logError(loggerCategory, "Could not fetch OgcFeatures data.");
       }
     }
     const endSpatialSearch  = performance.now();
 
+    // Rendering starts here
+    const canvas = document.createElement("canvas");
+    canvas.width = this.tileSize;
+    canvas.height = this.tileSize;
     const ctx = canvas.getContext("2d");
     if (ctx == null) {
       Logger.logError(loggerCategory, "No canvas context available for loading tile.");
@@ -240,7 +305,6 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     }
 
     try {
-
       // Compute transform if CoordinatesQuantization is not supported by service
       const transfo = this.computeTileWorld2CanvasTransform(row, column, zoomLevel);
       if (!transfo) {
@@ -264,8 +328,9 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     }
 
     try {
-      const dataUrl = canvas.toDataURL("image/png");
-      const header = "data:image/png;base64,";
+      const tileRasterformat = "image/png";
+      const dataUrl = canvas.toDataURL(tileRasterformat);
+      const header = `data:${tileRasterformat};base64,`;
       const dataUrl2 = dataUrl.substring(header.length);
       const end  = performance.now();
       console.log(`${data.features.length} feature(s)  Search: ${endSpatialSearch-beginSpatialSearch}ms Overall: ${end-begin}ms`);
