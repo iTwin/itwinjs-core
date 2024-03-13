@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Adding a unit test to showcase a potential bug when calling SectionDrawing.insert. Do NOT merge, the unit test will always fail.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
