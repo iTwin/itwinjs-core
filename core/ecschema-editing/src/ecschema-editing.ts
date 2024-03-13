@@ -43,3 +43,7 @@ export { SchemaMerger } from "./Merging/SchemaMerger";
  * @docs-group-description Merging
  * Set of classes used to merge schemas.
  */
+/**
+ * @docs-group-description Differencing
+ * Set of classes used to perform differences between ECSchemas.
+ */
