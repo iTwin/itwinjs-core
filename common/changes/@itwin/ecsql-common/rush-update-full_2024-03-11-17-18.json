@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@itwin/ecsql-common"
+    }
+  ],
+  "packageName": "@itwin/ecsql-common",
+  "email": "aruniverse@users.noreply.github.com"
+}
