@@ -17,6 +17,8 @@ import { TiledGraphicsSceneObjectsImpl } from "./TiledGraphicsSceneObjectImpl";
 
 export abstract class ViewportSceneImpl implements ViewportScene {
   readonly onContentsChanged = new BeEvent<(object: SceneObject, change: "add" | "delete") => void>;
+  readonly onObjectDisplayChanged = new BeEvent<(object: SceneObject) => void>();
+  
   readonly backingView: ViewState;
   readonly viewport: Viewport;
   private readonly _subcategories = new SubCategoriesCache.Queue();
@@ -37,6 +39,9 @@ export abstract class ViewportSceneImpl implements ViewportScene {
     this.viewport = viewport;
 
     this.tiledGraphicsProviders = new TiledGraphicsSceneObjectsImpl(this);
+
+    this.onObjectDisplayChanged.addListener(() => this.viewport.invalidateScene());
+    this.onContentsChanged.addListener(() => this.viewport.invalidateScene());
   }
 
   dispose(): void {
@@ -59,7 +64,6 @@ export abstract class ViewportSceneImpl implements ViewportScene {
   }
 }
 
-// ###TODO rework this to subclass ViewportSceneImpl
 export class SpatialSceneImpl extends ViewportSceneImpl implements SpatialScene {
   override isSpatial(): this is SpatialScene { return true; }
   override is2dModel() { return false; }

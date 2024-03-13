@@ -10,13 +10,25 @@ import { ViewportScene } from "../ViewportScene";
 import { HitDetail } from "../../HitDetail";
 
 export abstract class SceneObjectImpl<Scene extends ViewportScene> implements SceneObject {
+  private _isDisplayed = true;
+  
   readonly guid: GuidString;
   readonly scene: Scene;
-  isDisplayed = true;
 
   constructor(guid: GuidString, scene: Scene) {
     this.guid = guid;
     this.scene = scene;
+  }
+
+  get isDisplayed(): boolean {
+    return this._isDisplayed;
+  }
+
+  set isDisplayed(isDisplayed: boolean) {
+    if (isDisplayed !== this._isDisplayed) {
+      this._isDisplayed = isDisplayed;
+      this.scene.onObjectDisplayChanged.raiseEvent(this);
+    }
   }
 
   abstract get isLoadingComplete(): boolean;
