@@ -39,7 +39,7 @@ export interface ViewportScene extends Iterable<SceneObject> {
 
   dispose(): void;
 
-  readonly onSceneContentsChanged: BeEvent<(object: SceneObject, change: "add" | "delete") => void>;
+  readonly onContentsChanged: BeEvent<(object: SceneObject, change: "add" | "delete") => void>;
 }
 
 export interface SpatialScene extends ViewportScene {

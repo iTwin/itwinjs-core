@@ -231,7 +231,7 @@ export class SpatialViewSceneObjectsImpl implements SpatialViewSceneObjects {
     obj = new SpatialViewSceneObjectImpl(view, options?.guid ?? Guid.createValue(), this._scene);
     this._objects.push(obj);
 
-    this._scene.onSceneContentsChanged.raiseEvent(obj, "add");
+    this._scene.onContentsChanged.raiseEvent(obj, "add");
 
     return obj;
   }
@@ -245,17 +245,14 @@ export class SpatialViewSceneObjectsImpl implements SpatialViewSceneObjects {
 
     this._objects.splice(index, 1);
 
-    this._scene.onSceneContentsChanged.raiseEvent(object, "delete");
-    
-    // ###TODO? object.dispose();
+    this._scene.onContentsChanged.raiseEvent(object, "delete");
   }
 
   clear(): void {
-    for (const object of this) {
-      this._scene.onSceneContentsChanged.raiseEvent(object, "delete");
-      // ###TODO object.dispose?
+    for (let i = this._objects.length - 1; i >= 0; i++) {
+      const object = this._objects[i];
+      this._objects.length = i;
+      this._scene.onContentsChanged.raiseEvent(object, "delete");
     }
-    
-    this._objects.length = 0;
   }
 }

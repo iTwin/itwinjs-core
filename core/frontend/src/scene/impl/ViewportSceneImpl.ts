@@ -12,15 +12,16 @@ import { ScenePresentation3dImpl, BaseScenePresentationImpl, ScenePresentationIm
 import { SceneVolume3dImpl, SceneVolumeImpl } from "./SceneVolumeImpl";
 import { SpatialViewState } from "../../SpatialViewState";
 import { SubCategoriesCache } from "../../SubCategoriesCache";
-import { IModelViewSceneObject, PresentationSceneObject, SceneObject } from "../SceneObject";
+import { IModelViewSceneObject, PresentationSceneObject, SceneObject, TiledGraphicsSceneObjects } from "../SceneObject";
+import { TiledGraphicsSceneObjectsImpl } from "./TiledGraphicsSceneObjectImpl";
 
 export abstract class ViewportSceneImpl implements ViewportScene {
-  readonly onSceneContentsChanged = new BeEvent<(object: SceneObject, change: "add" | "delete") => void>;
+  readonly onContentsChanged = new BeEvent<(object: SceneObject, change: "add" | "delete") => void>;
   readonly backingView: ViewState;
   readonly viewport: Viewport;
   private readonly _subcategories = new SubCategoriesCache.Queue();
 
-  readonly tiledGraphicsProviders = [] as any; // ###TODO
+  readonly tiledGraphicsProviders: TiledGraphicsSceneObjects;
   readonly decorators = [] as any; // ###TODO
   
   abstract isSpatial(): this is SpatialScene;
@@ -34,6 +35,8 @@ export abstract class ViewportSceneImpl implements ViewportScene {
   protected constructor(viewport: Viewport, view: ViewState) {
     this.backingView = view;
     this.viewport = viewport;
+
+    this.tiledGraphicsProviders = new TiledGraphicsSceneObjectsImpl(this);
   }
 
   dispose(): void {

@@ -51,10 +51,6 @@ export class RealityModelSceneObjectImpl extends SceneObjectImpl<SpatialScene> i
     return this.realityModel.state.treeRef.isLoadingComplete;
   }
 
-  override get isGlobal(): boolean {
-    return this.realityModel.state.isGlobal;
-  }
-
   override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
     return this.realityModel.state.treeRef.getToolTip(hit);
   }

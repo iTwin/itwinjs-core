@@ -21,10 +21,6 @@ export abstract class SceneObjectImpl<Scene extends ViewportScene> implements Sc
 
   abstract get isLoadingComplete(): boolean;
 
-  get isGlobal(): boolean {
-    return false;
-  }
-
   decorate(_context: DecorateContext): void { }
 
   abstract draw(context: SceneContext): void;
