@@ -19,7 +19,7 @@ import { ComputeSpatialViewFitRangeOptions, SpatialViewState } from "../../Spati
 import { BaseIModelView, IModelSpatialView, IModelView, IModelView3d, ViewCategorySelector, ViewModelSelector } from "../IModelView";
 import { View3dStyleImpl } from "./ViewStyleImpl";
 import { SceneObjectImpl } from "./SceneObjectImpl";
-import { IModelViewSceneObject, SpatialViewSceneObject, SpatialViewSceneObjects } from "../SceneObject";
+import { AddSceneObjectArgs, IModelViewSceneObject, SpatialViewSceneObject, SpatialViewSceneObjects } from "../SceneObject";
 import { SpatialScene, ViewportScene } from "../ViewportScene";
 import { HitDetail } from "../../HitDetail";
 import { SpatialSceneImpl } from "./ViewportSceneImpl";
@@ -220,7 +220,7 @@ export class SpatialViewSceneObjectsImpl implements SpatialViewSceneObjects {
     return this._objects.find((obj) => obj.view.iModel === iModel);
   }
 
-  add(view: IModelSpatialView, options?: { guid?: GuidString }): SpatialViewSceneObject {
+  add(view: IModelSpatialView, options?: AddSceneObjectArgs): SpatialViewSceneObject {
     let obj = this._objects.find((x) => x.view === view);
     if (obj) {
       // ###TODO log a warning?

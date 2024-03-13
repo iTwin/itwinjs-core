@@ -59,8 +59,12 @@ export type IModelViewSceneObject = SceneObject & { readonly view: IModelView; }
 export type SpatialViewSceneObject = SceneObject & { readonly view: IModelSpatialView; readonly scene: SpatialScene; }
 export type IModelView2dSceneObject = SceneObject & { readonly view: IModelView2d; readonly scene: Model2dScene; };
 
+export interface AddSceneObjectArgs {
+  guid?: GuidString;
+}
+
 export interface SpatialViewSceneObjects extends Iterable<SpatialViewSceneObject> {
-  add(view: IModelSpatialView, options?: { guid?: GuidString; }): SpatialViewSceneObject;
+  add(view: IModelSpatialView, args?: AddSceneObjectArgs): SpatialViewSceneObject;
   delete(view: SpatialViewSceneObject): void; // ###TODO return type?
   clear(): void;
   findFirstForIModel(iModel: IModelConnection): SpatialViewSceneObject | undefined;
@@ -75,7 +79,7 @@ export interface RealityModelSceneObjects extends Iterable<RealityModelSceneObje
 }
 
 export interface TiledGraphicsSceneObjects extends Iterable<TiledGraphicsSceneObject> {
-  add(provider: TiledGraphicsProvider, options?: { guid: GuidString }): TiledGraphicsSceneObject;
+  add(provider: TiledGraphicsProvider, args?: AddSceneObjectArgs): TiledGraphicsSceneObject;
   delete(object: TiledGraphicsSceneObject): void;
   clear(): void;
   find(provider: TiledGraphicsProvider): TiledGraphicsSceneObject | undefined;
