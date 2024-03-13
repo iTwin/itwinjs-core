@@ -76,7 +76,7 @@ export interface RealityModelSceneObjects extends Iterable<RealityModelSceneObje
 
 export interface TiledGraphicsSceneObjects extends Iterable<TiledGraphicsSceneObject> {
   add(provider: TiledGraphicsProvider): TiledGraphicsSceneObject;
-  delete(object: TiledGraphicsSceneObject): void; // ###TODO return type?
+  delete(object: TiledGraphicsSceneObject): void;
   clear(): void;
 }
 
