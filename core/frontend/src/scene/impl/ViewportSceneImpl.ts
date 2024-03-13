@@ -6,7 +6,7 @@
 import { assert, BeEvent, Guid } from "@itwin/core-bentley";
 import { ViewState } from "../../ViewState";
 import { Viewport } from "../../Viewport";
-import { CreateSpatialSceneArgs, Model2dScene, SpatialScene, ViewportScene } from "../ViewportScene";
+import { CreateViewportSceneArgs, Model2dScene, SpatialScene, ViewportScene } from "../ViewportScene";
 import { BaseIModelViewImpl, IModelSpatialViewImpl, SpatialViewSceneObjectImpl, SpatialViewSceneObjectsImpl } from "./IModelViewImpl";
 import { ScenePresentation3dImpl, BaseScenePresentationImpl, ScenePresentationImpl, PresentationSceneObjectImpl } from "./ScenePresentationImpl";
 import { SceneVolume3dImpl, SceneVolumeImpl } from "./SceneVolumeImpl";
@@ -17,6 +17,7 @@ import { IModelViewSceneObject, PresentationSceneObject, SceneObject } from "../
 export abstract class ViewportSceneImpl implements ViewportScene {
   readonly onSceneContentsChanged = new BeEvent<(object: SceneObject, change: "add" | "delete") => void>;
   readonly backingView: ViewState;
+  readonly viewport: Viewport;
   private readonly _subcategories = new SubCategoriesCache.Queue();
 
   readonly tiledGraphicsProviders = [] as any; // ###TODO
@@ -30,8 +31,9 @@ export abstract class ViewportSceneImpl implements ViewportScene {
   abstract get volume(): SceneVolumeImpl;
   abstract get iModels(): Iterable<IModelViewSceneObject>;
   
-  protected constructor(view: ViewState) {
+  protected constructor(viewport: Viewport, view: ViewState) {
     this.backingView = view;
+    this.viewport = viewport;
   }
 
   dispose(): void {
@@ -70,8 +72,9 @@ export class SpatialSceneImpl extends ViewportSceneImpl implements SpatialScene 
   readonly iModels: SpatialViewSceneObjectsImpl;
   readonly map?: any; // ###TODO
 
-  constructor(args: CreateSpatialSceneArgs) {
-    super(args.view);
+  constructor(viewport: Viewport, args: CreateViewportSceneArgs) {
+    assert(args.view.isSpatialView());
+    super(viewport, args.view);
 
     this.volume = new SceneVolume3dImpl(args.view);
 
@@ -102,13 +105,9 @@ export class SpatialSceneImpl extends ViewportSceneImpl implements SpatialScene 
   }
 }
 
-export function createSpatialScene(args: CreateSpatialSceneArgs): SpatialSceneImpl {
-  return new SpatialSceneImpl(args);;
-}
-
-export function createViewportScene(view: ViewState): ViewportScene {
-  if (!view.isSpatialView())
+export function createViewportScene(viewport: Viewport, args: CreateViewportSceneArgs): ViewportScene {
+  if (!args.view.isSpatialView())
     throw new Error("###TODO non-spatial scenes");
 
-  return createSpatialScene({ view });
+  return new SpatialSceneImpl(viewport, args);
 }

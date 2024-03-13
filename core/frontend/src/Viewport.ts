@@ -1144,7 +1144,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     if (this._mapTiledGraphicsProvider)
       this._mapTiledGraphicsProvider.setView(view);
     this.detachFromView();
-    this._scene = createViewportScene(view);
+    this._scene = createViewportScene(this, { view });
     this._view = view;
     this.attachToView();
   }
