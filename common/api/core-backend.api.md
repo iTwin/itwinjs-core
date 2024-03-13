@@ -1689,6 +1689,8 @@ export class Drawing extends Document_2 {
     // @internal (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
+    // @internal
+    protected static get drawingModelFullClassName(): string;
     static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string): Id64String;
 }
 
@@ -4770,6 +4772,8 @@ export class SectionDrawing extends Drawing {
     static get className(): string;
     displaySpatialView: boolean;
     drawingBoundaryClip?: ClipVector;
+    // @internal (undocumented)
+    protected static get drawingModelFullClassName(): string;
     drawingToSpatialTransform?: Transform;
     sectionType: SectionType;
     sheetToSpatialTransform?: Transform;
