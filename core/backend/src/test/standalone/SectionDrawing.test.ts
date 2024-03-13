@@ -94,7 +94,6 @@ describe("SectionDrawing", () => {
 
     const insertedSectionDrawingModel = imodel.models.getModel(sectionDrawingId);
 
-    // Would have assumed a SectionDrawing would be modeled by a SectionDrawingModel, but this fails
     expect(insertedSectionDrawingModel.className).to.equal("SectionDrawingModel");
     expect(insertedSectionDrawingModel instanceof SectionDrawingModel).to.be.true;
   });
