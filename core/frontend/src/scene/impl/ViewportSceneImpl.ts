@@ -70,10 +70,11 @@ export class SpatialSceneImpl extends ViewportSceneImpl implements SpatialScene 
   readonly iModels: SpatialViewSceneObjectsImpl;
   readonly map?: any; // ###TODO
 
-  constructor(args: CreateSpatialSceneArgs, populate: boolean) {
+  constructor(args: CreateSpatialSceneArgs) {
     super(args.view);
 
     this.volume = new SceneVolume3dImpl(args.view);
+
     const presentation = new ScenePresentation3dImpl(args.view);
     const presentationGuid = args.presentationGuid ?? Guid.createValue();
     this.presentationObject = new PresentationSceneObjectImpl<ScenePresentation3dImpl, SpatialScene>(presentation, presentationGuid, this);
@@ -82,8 +83,12 @@ export class SpatialSceneImpl extends ViewportSceneImpl implements SpatialScene 
     
     // ###TODO initialize this.map
 
-    if (populate)
-      this.populateFromView(args.view);
+    if (!args.view.iModel.isBlank) {
+      const viewGuid = args.iModelViewGuid ?? Guid.createValue();
+      this.iModels.add(new IModelSpatialViewImpl(args.view), { guid: viewGuid });
+    }
+
+    // ###TODO initialize this.realityModels
   }
 
   *[Symbol.iterator]() {
@@ -95,31 +100,15 @@ export class SpatialSceneImpl extends ViewportSceneImpl implements SpatialScene 
 
     yield this.map;
   }
-
-  private populateFromView(view: SpatialViewState): void {
-    if (!view.iModel.isBlank) {
-      const iModelView = new IModelSpatialViewImpl(view);
-      this.iModels.add(iModelView);
-    }
-
-    this.populateRealityModels(view);
-  }
-
-  private populateRealityModels(_view: SpatialViewState): void {
-    // ###TODO
-  }
-  
 }
 
 export function createSpatialScene(args: CreateSpatialSceneArgs): SpatialSceneImpl {
-  return new SpatialSceneImpl(args, false);;
+  return new SpatialSceneImpl(args);;
 }
 
-export function createAndPopulateViewportScene(view: ViewState): ViewportScene {
+export function createViewportScene(view: ViewState): ViewportScene {
   if (!view.isSpatialView())
     throw new Error("###TODO non-spatial scenes");
 
-  const scene = new SpatialSceneImpl({ view }, true);
-
-  return scene;
+  return createSpatialScene({ view });
 }

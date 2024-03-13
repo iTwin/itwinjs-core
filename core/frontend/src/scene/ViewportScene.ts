@@ -8,13 +8,14 @@
 
 import { BeEvent, GuidString } from "@itwin/core-bentley";
 import {
-  DecoratorSceneObjects, MapSceneObject, RealityModelSceneObjects, SceneObject, SpatialViewSceneObjects, IModelView2dSceneObject, TiledGraphicsSceneObjects,
+  DecoratorSceneObjects, MapSceneObject, RealityModelSceneObjects, SceneObject, SpatialViewSceneObjects, IModelView2dSceneObject, TiledGraphicsSceneObjects, SceneRealityModelProps,
 } from "./SceneObject";
 import { ScenePresentation, ScenePresentation2d, ScenePresentation3d } from "./ScenePresentation";
 import { SceneVolume, SceneVolume3d } from "./SceneVolume";
 import { SpatialViewState } from "../SpatialViewState";
 import { ViewState } from "../ViewState";
-import { createSpatialScene, createAndPopulateViewportScene } from "./impl/ViewportSceneImpl";
+import { createSpatialScene, createViewportScene } from "./impl/ViewportSceneImpl";
+import { SceneRealityModel } from "./SceneRealityModel";
 
 export interface ViewportScene extends Iterable<SceneObject> {
   /** An IModelView created from the ViewState supplied to the constructor.
@@ -60,6 +61,8 @@ export interface CreateSpatialSceneArgs {
   view: SpatialViewState;
   mapGuid?: GuidString;
   presentationGuid?: GuidString;
+  iModelViewGuid?: GuidString;
+  getRealityModelGuid?: (args: { props: SceneRealityModelProps, index: number }) => GuidString | undefined;
 }
 
 export namespace ViewportScene {
@@ -68,6 +71,6 @@ export namespace ViewportScene {
   }
 
   export function fromViewState(view: ViewState): ViewportScene {
-    return createAndPopulateViewportScene(view);
+    return createViewportScene(view);
   }
 }
