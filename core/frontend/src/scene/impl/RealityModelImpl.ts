@@ -12,7 +12,7 @@ import { SceneContext } from "../../ViewContext";
 import { ContextRealityModelState } from "../../ContextRealityModelState";
 import { IModelSpatialView, IModelView, IModelView2d } from "../IModelView";
 import { TiledGraphicsProvider } from "../../tile/internal";
-import { SceneVolume3d, TestSceneVolume2d } from "../SceneVolume";
+import { SceneVolume3d, SceneVolume2d } from "../SceneVolume";
 import { GuidString, Id64String } from "@itwin/core-bentley";
 import { RealityModelSceneObject } from "../SceneObject";
 import { SpatialScene } from "../ViewportScene";

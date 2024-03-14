@@ -12,15 +12,15 @@ import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
 import { DisclosedTileTreeSet, TileTreeReference } from "../../tile/internal";
 import { RenderMemory } from "../../render/RenderMemory";
 import { DecorateContext, SceneContext } from "../../ViewContext";
-import { ComputeDisplayTransformArgs, ModelDisplayTransformProvider, ViewState, ViewState3d } from "../../ViewState";
+import { ComputeDisplayTransformArgs, ModelDisplayTransformProvider, ViewState, ViewState2d, ViewState3d } from "../../ViewState";
 import { Viewport } from "../../Viewport";
 import { RenderClipVolume } from "../../render/RenderClipVolume";
 import { ComputeSpatialViewFitRangeOptions, SpatialViewState } from "../../SpatialViewState";
-import { BaseIModelView, IModelSpatialView, IModelView, IModelView3d, ViewCategorySelector, ViewModelSelector } from "../IModelView";
-import { View3dStyleImpl } from "./ViewStyleImpl";
+import { BaseIModelView, IModelSpatialView, IModelView, IModelView2d, IModelView3d, ViewCategorySelector, ViewModelSelector } from "../IModelView";
+import { View2dStyleImpl, View3dStyleImpl } from "./ViewStyleImpl";
 import { SceneObjectImpl } from "./SceneObjectImpl";
 import { AddSceneObjectArgs, IModelViewSceneObject, SpatialViewSceneObject, SpatialViewSceneObjects } from "../SceneObject";
-import { SpatialScene, ViewportScene } from "../ViewportScene";
+import { Model2dScene, SpatialScene, ViewportScene } from "../ViewportScene";
 import { HitDetail } from "../../HitDetail";
 import { SpatialSceneImpl } from "./ViewportSceneImpl";
 
@@ -130,7 +130,7 @@ export abstract class View3dImpl extends BaseIModelViewImpl implements IModelVie
     super(view, new View3dStyleImpl(view));
   }
 
-  override get style() { return this._style as View3dStyle; }
+  override get style(): View3dStyle { return this._style as View3dStyle; }
 
   protected get _view3d() { return this.impl as ViewState3d; }
 
@@ -138,6 +138,16 @@ export abstract class View3dImpl extends BaseIModelViewImpl implements IModelVie
   set modelClipGroups(groups: ModelClipGroups) { this._view3d.details.modelClipGroups = groups; }
 
   getModelClip(modelId: Id64String) { return this._view3d.getModelClip(modelId); }
+}
+
+export class View2dImpl extends BaseIModelViewImpl implements IModelView2d {
+  readonly is2d: true = true;
+
+  constructor(view: ViewState2d) {
+    super(view, new View2dStyleImpl(view));
+  }
+
+  override get style(): View2dStyle { return this._style as View2dStyle; }
 }
 
 export class ViewModelSelectorImpl implements ViewModelSelector {
@@ -165,7 +175,7 @@ export class IModelSpatialViewImpl extends View3dImpl implements IModelSpatialVi
   }
 }
 
-export type IModelViewImpl = IModelSpatialViewImpl; /* ###TODO | DrawingViewImpl | SheetViewImpl */
+export type IModelViewImpl = IModelSpatialViewImpl | View2dImpl; /* ###TODO | DrawingViewImpl | SheetViewImpl */
 
 export class IModelViewSceneObjectImpl<View extends IModelViewImpl, Scene extends ViewportScene> extends SceneObjectImpl<Scene> implements IModelViewSceneObject {
   readonly _view: View;
@@ -196,6 +206,10 @@ export class IModelViewSceneObjectImpl<View extends IModelViewImpl, Scene extend
     // ###TODO need to ignore context reality models and not update solar shadows
     this._view.impl.createScene(context);
   }
+}
+
+export class View2dSceneObjectImpl extends IModelViewSceneObjectImpl<View2dImpl, Model2dScene> {
+  
 }
 
 export class SpatialViewSceneObjectImpl extends IModelViewSceneObjectImpl<IModelSpatialViewImpl, SpatialScene> {

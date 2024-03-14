@@ -9,7 +9,7 @@ import { ViewPose, ViewPose2d, ViewPose3d } from "../../ViewPose";
 import { ViewStatus } from "../../ViewStatus";
 import { MarginOptions, OnViewExtentsError } from "../../ViewAnimation";
 import { ExtentLimits, LookAtOrthoArgs, LookAtPerspectiveArgs, LookAtUsingLensAngle, ViewState, ViewState2d, ViewState3d } from "../../ViewState";
-import { BaseSceneVolume, TestSceneVolume2d, SceneVolume3d } from "../SceneVolume";
+import { BaseSceneVolume, SceneVolume2d, SceneVolume3d } from "../SceneVolume";
 
 export abstract class BaseSceneVolumeImpl implements BaseSceneVolume {
   protected readonly _view: ViewState;
@@ -171,7 +171,7 @@ export class SceneVolume3dImpl extends BaseSceneVolumeImpl implements SceneVolum
   }
 }
 
-export class SceneVolume2dImpl extends BaseSceneVolumeImpl implements TestSceneVolume2d {
+export class SceneVolume2dImpl extends BaseSceneVolumeImpl implements SceneVolume2d {
   readonly is2d: true = true;
 
   constructor(view: ViewState2d) {

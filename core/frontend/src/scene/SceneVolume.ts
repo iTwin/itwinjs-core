@@ -146,9 +146,10 @@ export interface SceneVolume3d extends BaseSceneVolume {
   */
 }
 
-export interface TestSceneVolume2d extends BaseSceneVolume {
+export interface SceneVolume2d extends BaseSceneVolume {
   readonly is2d: true;
   readonly is3d?: never;
+  // ###TODO probably more?
 }
 
-export type SceneVolume = TestSceneVolume2d | SceneVolume3d;
+export type SceneVolume = SceneVolume2d | SceneVolume3d;

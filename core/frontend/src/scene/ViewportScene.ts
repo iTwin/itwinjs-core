@@ -13,7 +13,7 @@ import {
 import { ScenePresentation, ScenePresentation2d, ScenePresentation3d } from "./ScenePresentation";
 import { SceneVolume, SceneVolume3d } from "./SceneVolume";
 import { SpatialViewState } from "../SpatialViewState";
-import { ViewState } from "../ViewState";
+import { ViewState, ViewState2d } from "../ViewState";
 import { createViewportScene } from "./impl/ViewportSceneImpl";
 import { SceneRealityModel } from "./SceneRealityModel";
 import { Viewport } from "../Viewport";
@@ -54,7 +54,9 @@ export interface SpatialScene extends ViewportScene {
 export interface Model2dScene extends ViewportScene {
   readonly volume: SceneVolume;
   readonly presentation: ScenePresentation2d;
-  readonly view: IModelView2dSceneObject;
+  readonly viewObject: IModelView2dSceneObject;
+  // ###TODO refine this
+  readonly view: ViewState2d;
   // readonly iModels: Iterable<IModelView2dSceneObject>;
 }
 

@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, BeEvent, Guid } from "@itwin/core-bentley";
-import { ViewState } from "../../ViewState";
+import { ViewState, ViewState2d } from "../../ViewState";
 import { Viewport } from "../../Viewport";
 import { CreateViewportSceneArgs, Model2dScene, SpatialScene, ViewportScene } from "../ViewportScene";
-import { BaseIModelViewImpl, IModelSpatialViewImpl, SpatialViewSceneObjectImpl, SpatialViewSceneObjectsImpl } from "./IModelViewImpl";
-import { ScenePresentation3dImpl, BaseScenePresentationImpl, ScenePresentationImpl, PresentationSceneObjectImpl } from "./ScenePresentationImpl";
-import { SceneVolume3dImpl, SceneVolumeImpl } from "./SceneVolumeImpl";
+import { BaseIModelViewImpl, IModelSpatialViewImpl, SpatialViewSceneObjectImpl, SpatialViewSceneObjectsImpl, View2dImpl, View2dSceneObjectImpl } from "./IModelViewImpl";
+import { ScenePresentation2dImpl, ScenePresentation3dImpl, BaseScenePresentationImpl, ScenePresentationImpl, PresentationSceneObjectImpl } from "./ScenePresentationImpl";
+import { SceneVolume2dImpl, SceneVolume3dImpl, SceneVolumeImpl } from "./SceneVolumeImpl";
 import { SpatialViewState } from "../../SpatialViewState";
 import { SubCategoriesCache } from "../../SubCategoriesCache";
-import { IModelViewSceneObject, PresentationSceneObject, SceneObject, TiledGraphicsSceneObjects } from "../SceneObject";
+import { IModelView2dSceneObject, IModelViewSceneObject, PresentationSceneObject, SceneObject, TiledGraphicsSceneObjects } from "../SceneObject";
 import { TiledGraphicsSceneObjectsImpl } from "./TiledGraphicsSceneObjectImpl";
 
 export abstract class ViewportSceneImpl implements ViewportScene {
@@ -32,7 +32,7 @@ export abstract class ViewportSceneImpl implements ViewportScene {
   abstract get presentationObject(): PresentationSceneObject;
   abstract get presentation(): ScenePresentationImpl;
   abstract get volume(): SceneVolumeImpl;
-  abstract get iModels(): Iterable<IModelViewSceneObject>;
+  // abstract get iModels(): Iterable<IModelViewSceneObject>;
   
   protected constructor(viewport: Viewport, view: ViewState) {
     this.backingView = view;
@@ -53,9 +53,6 @@ export abstract class ViewportSceneImpl implements ViewportScene {
   protected * _iterator(): Iterable<SceneObject> {
     yield this.presentationObject;
 
-    for (const iModel of this.iModels)
-      yield iModel;
-
     for (const provider of this.tiledGraphics)
       yield provider;
 
@@ -66,7 +63,7 @@ export abstract class ViewportSceneImpl implements ViewportScene {
 
 export class SpatialSceneImpl extends ViewportSceneImpl implements SpatialScene {
   override isSpatial(): this is SpatialScene { return true; }
-  override is2dModel() { return false; }
+  override is2dModel(): this is Model2dScene { return false; }
   
   readonly volume: SceneVolume3dImpl;
   readonly presentationObject: PresentationSceneObjectImpl<ScenePresentation3dImpl, SpatialScene>;
@@ -105,6 +102,9 @@ export class SpatialSceneImpl extends ViewportSceneImpl implements SpatialScene 
     for (const obj of this._iterator())
       yield obj;
 
+    for (const iModel of this.iModels)
+      yield iModel;
+    
     for (const realityModel of this.realityModels)
       yield realityModel;
 
@@ -112,9 +112,51 @@ export class SpatialSceneImpl extends ViewportSceneImpl implements SpatialScene 
   }
 }
 
-export function createViewportScene(viewport: Viewport, args: CreateViewportSceneArgs): ViewportScene {
-  if (!args.view.isSpatialView())
-    throw new Error("###TODO non-spatial scenes");
+export class Model2dSceneImpl extends ViewportSceneImpl implements Model2dScene {
+  override isSpatial(): this is SpatialScene { return false; }
+  override is2dModel(): this is Model2dScene { return true; }
 
-  return new SpatialSceneImpl(viewport, args);
+  readonly volume: SceneVolume2dImpl;
+  readonly presentationObject: PresentationSceneObjectImpl<ScenePresentation2dImpl, Model2dScene>;
+  readonly viewObject: View2dSceneObjectImpl;
+
+  constructor(viewport: Viewport, args: CreateViewportSceneArgs) {
+    assert(args.view.is2d());
+    super(viewport, args.view);
+
+    this.volume = new SceneVolume2dImpl(args.view);
+
+    const presentation = new ScenePresentation2dImpl(args.view);
+    const presentationGuid = args.presentationGuid ?? Guid.createValue();
+    this.presentationObject = new PresentationSceneObjectImpl<ScenePresentation2dImpl, Model2dScene>(presentation, presentationGuid, this);
+
+    const viewGuid = args.iModelViewGuid ?? Guid.createValue();
+    const view = new View2dImpl(args.view);
+    this.viewObject = new View2dSceneObjectImpl(view, viewGuid, this);
+  }
+
+  get view(): ViewState2d {
+    assert(this.backingView.is2d());
+    assert(this.backingView === this.viewObject.view.impl);
+    return this.backingView;
+  }
+
+  override get presentation(): ScenePresentation2dImpl {
+    return this.presentationObject.presentation;
+  }
+
+  *[Symbol.iterator]() {
+    for (const obj of this._iterator())
+      yield obj;
+
+    yield this.viewObject;
+  }
+}
+
+export function createViewportScene(viewport: Viewport, args: CreateViewportSceneArgs): ViewportScene {
+  if (args.view.isSpatialView())
+    return new SpatialSceneImpl(viewport, args);
+
+  assert(args.view.is2d());
+  return new Model2dSceneImpl(viewport, args);
 }
