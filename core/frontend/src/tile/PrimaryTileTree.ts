@@ -533,14 +533,17 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
   private _sectionCutRef?: PrimaryTreeReference;
   /** Whether `this._modelRef` is a [[PrimaryTreeReference]] (as opposed to, e.g., a reality model tree reference). */
   private readonly _isPrimaryRef: boolean;
+  /** Used to mark refs as excluded so that only their _sectionCutRef is returned by the iterator. */
+  private readonly _isExcluded: boolean;
 
-  public constructor(model: GeometricModel3dState, view: SpatialViewState) {
+  public constructor(model: GeometricModel3dState, view: SpatialViewState, excluded: boolean) {
     this._modelRef = model.createTileTreeReference(view);
     this._isPrimaryRef = this._modelRef instanceof PrimaryTreeReference;
+    this._isExcluded = excluded;
   }
 
   public *[Symbol.iterator](): Iterator<TileTreeReference> {
-    if (!this._primaryRef || !this._primaryRef.deactivated)
+    if ((!this._primaryRef || !this._primaryRef.deactivated) && !this._isExcluded)
       yield this._modelRef;
 
     for (const animated of this._animatedRefs)
@@ -553,7 +556,7 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
 
   public updateAnimated(script: RenderSchedule.ScriptReference | undefined): void {
     const ref = this._primaryRef;
-    if (!ref)
+    if (!ref || this._isExcluded)
       return;
 
     this._animatedRefs.length = 0;
@@ -693,14 +696,13 @@ class SpatialRefs implements SpatialTileTreeReferences {
     cur.clear();
 
     for (const modelId of this._view.modelSelector.models) {
-      if (this._excludedModels && this._excludedModels.has(modelId))
-        continue;
+      const excluded = (undefined !== this._excludedModels) && this._excludedModels.has(modelId);
 
       let modelRefs = prev.get(modelId);
       if (!modelRefs) {
         const model = this._view.iModel.models.getLoaded(modelId)?.asGeometricModel3d;
         if (model) {
-          modelRefs = new SpatialModelRefs(model, this._view);
+          modelRefs = new SpatialModelRefs(model, this._view, excluded);
           modelRefs.updateAnimated(this._scheduleScript);
           modelRefs.updateSectionCut(this._sectionCut);
         }
