@@ -29,6 +29,7 @@ async function initializeBranch(myITwinId: string, masterIModelId: string, myAcc
     iModelId: masterIModelId,
   });
   const masterDb = await BriefcaseDb.open({ fileName: masterDbProps.fileName });
+  masterDb.channels.addAllowedChannel("shared");
 
   // create a duplicate of master as a good starting point for our branch
   const branchIModelId = await IModelHost.hubAccess.createNewIModel({
@@ -45,6 +46,7 @@ async function initializeBranch(myITwinId: string, masterIModelId: string, myAcc
     iModelId: branchIModelId,
   });
   const branchDb = await BriefcaseDb.open({ fileName: branchDbProps.fileName });
+  branchDb.channels.addAllowedChannel("shared");
 
   // create an external source and owning repository link to use as our *Target Scope Element* for future synchronizations
   const masterLinkRepoId = branchDb.constructEntity<RepositoryLink, RepositoryLinkProps>({

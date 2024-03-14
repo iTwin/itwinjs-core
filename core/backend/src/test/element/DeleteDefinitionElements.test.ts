@@ -30,6 +30,7 @@ describe("DeleteDefinitionElements", () => {
   it("should delete if not used", async () => {
     const iModelFile: string = IModelTestUtils.prepareOutputFile("DeleteDefinitionElements", "DeleteDefinitionElements.bim");
     const iModelDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: "DeleteDefinitionElements" } });
+    iModelDb.channels.addAllowedChannel("shared");
     await ExtensiveTestScenario.prepareDb(iModelDb);
     ExtensiveTestScenario.populateDb(iModelDb);
 

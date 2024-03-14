@@ -27,6 +27,7 @@ describe("Class Registry", () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("ClassRegistry", "ClassRegistryTest.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+    imodel.channels.addAllowedChannel("shared");
     assert.exists(imodel);
   });
 
@@ -196,6 +197,7 @@ describe("Class Registry - generated classes", () => {
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
     assert.exists(imodel);
     await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
+    imodel.channels.addAllowedChannel("shared");
   });
 
   after(() => {
@@ -627,7 +629,7 @@ describe("Class Registry - generated classes", () => {
     expect(ActualDerived5.isGeneratedClass).to.be.true;
     expect(ActualDerived6.isGeneratedClass).to.be.true;
 
-    assert.isTrue(ActualTestElementWithNavProp.prototype.hasOwnProperty("collectReferenceIds" )); // should have automatic impl
+    assert.isTrue(ActualTestElementWithNavProp.prototype.hasOwnProperty("collectReferenceIds")); // should have automatic impl
     assert.isTrue(ActualDerivedWithNavProp.prototype.hasOwnProperty("collectReferenceIds"));
     assert.isTrue(ActualDerived2.prototype.hasOwnProperty("collectReferenceIds")); // non-generated; manually implements so has method
     assert.isFalse(ActualDerived3.prototype.hasOwnProperty("collectReferenceIds")); // base is non-generated so it shouldn't get the automatic impl
@@ -732,7 +734,7 @@ describe("Class Registry - generated classes", () => {
           ActualDerivedWithNavProp,
           Derived2,
           Derived4,
-        // eslint-disable-next-line @typescript-eslint/dot-notation
+          // eslint-disable-next-line @typescript-eslint/dot-notation
         ].map((e) => e.prototype["collectReferenceIds"]), // eslint-disable-line @typescript-eslint/dot-notation
       ),
     );

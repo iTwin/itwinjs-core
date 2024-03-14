@@ -145,6 +145,7 @@ describe("BriefcaseManager", async () => {
     const briefcaseId = iModelPullAndPush.briefcaseId;
     const pathname = iModelPullAndPush.pathName;
 
+    iModelPullAndPush.channels.addAllowedChannel("shared");
     const rootEl: Element = iModelPullAndPush.elements.getRootSubject();
     rootEl.userLabel = `${rootEl.userLabel}changed`;
     iModelPullAndPush.elements.updateElement(rootEl.toJSON());

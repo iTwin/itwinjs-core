@@ -48,6 +48,7 @@ describe("Changeset Reader API", async () => {
       const postPushChangeSetId = rwIModel.changeset.id;
       assert(!!postPushChangeSetId);
       expect(prePushChangeSetId !== postPushChangeSetId);
+      rwIModel.channels.addAllowedChannel("shared");
     }
     await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
     const codeProps = Code.createEmpty();

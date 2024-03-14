@@ -74,6 +74,7 @@ describe("IModelWriteTest", () => {
     sinon.stub(fs, "watch").callsFake(watchStub);
 
     const bc = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
+    bc.channels.addAllowedChannel("shared");
     const roBC = await BriefcaseDb.open({ fileName: briefcaseProps.fileName, watchForChanges: true });
 
     const code1 = IModelTestUtils.getUniqueModelCode(bc, "newPhysicalModel1");
@@ -106,6 +107,7 @@ describe("IModelWriteTest", () => {
     const rwIModelId = await HubMock.createNewIModel({ accessToken: adminAccessToken, iTwinId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
     const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken: adminAccessToken, iTwinId, iModelId: rwIModelId });
+    rwIModel.channels.addAllowedChannel("shared");
 
     // create and insert a new model with code1
     const code1 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel1");
@@ -227,6 +229,7 @@ describe("IModelWriteTest", () => {
         </ECEntityClass>
     </ECSchema>`;
     await rwIModel.importSchemaStrings([schema]);
+    rwIModel.channels.addAllowedChannel("shared");
     rwIModel.saveChanges("user 1: schema changeset");
     if ("push changes") {
       // Push the changes to the hub
@@ -311,6 +314,8 @@ describe("IModelWriteTest", () => {
         </ECEntityClass>
     </ECSchema>`;
     await rwIModel.importSchemaStrings([schema]);
+    rwIModel.channels.addAllowedChannel("shared");
+    rwIModel2.channels.addAllowedChannel("shared");
 
     rwIModel.saveChanges("user 1: schema changeset");
     if ("push changes") {
@@ -604,6 +609,7 @@ describe("IModelWriteTest", () => {
     const version0 = IModelTestUtils.resolveAssetFile("test.bim");
     const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "subModelCoveredByParentLockTest", version0 });
     const iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId });
+    iModel.channels.addAllowedChannel("shared");
 
     /*
     Job Subject

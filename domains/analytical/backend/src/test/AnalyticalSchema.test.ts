@@ -57,7 +57,7 @@ describe("AnalyticalSchema", () => {
     }
   });
 
-  it("should import Analytical schema", async () => {
+  it.only("should import Analytical schema", async () => {
     const iModelFileName: string = path.join(outputDir, "ImportAnalytical.bim");
     if (IModelJsFs.existsSync(iModelFileName)) {
       IModelJsFs.removeSync(iModelFileName);
@@ -83,6 +83,9 @@ describe("AnalyticalSchema", () => {
     assert.isDefined(iModelDb.querySchemaVersion("Analytical"), "Expect Analytical to be imported");
     assert.isDefined(iModelDb.querySchemaVersion("analytical"), "Expect case-insensitive comparison");
     assert.isUndefined(iModelDb.querySchemaVersion("NotImported"), "Expect undefined to be returned for schemas that have not been imported");
+
+    iModelDb.channels.addAllowedChannel("shared");
+
     // insert category
     const categoryId = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Category", { color: ColorDef.blue.tbgr });
     assert.isTrue(Id64.isValidId64(categoryId));
@@ -173,6 +176,8 @@ describe("AnalyticalSchema", () => {
     // Import the Analytical schema
     await iModelDb.importSchemas([AnalyticalSchema.schemaFilePath, TestAnalyticalSchema.schemaFilePath]);
     iModelDb.saveChanges("Import TestAnalytical schema");
+
+    iModelDb.channels.addAllowedChannel("shared");
 
     // Insert a SpatialCategory
     const spatialCategoryProps: CategoryProps = {

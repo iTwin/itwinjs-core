@@ -7,7 +7,7 @@ import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "@itwin/core-frontend";
-import { coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
+import { addAllowedChannels, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
 describe("BriefcaseTxns", () => {
@@ -26,6 +26,7 @@ describe("BriefcaseTxns", () => {
     const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
     async function openRW(): Promise<void> {
       rwConn = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
+      await addAllowedChannels(rwConn, ["shared"]);
     }
 
     beforeEach(async () => openRW());

@@ -312,6 +312,7 @@ describe("GeometryStream", () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+    imodel.channels.addAllowedChannel("shared");
   });
 
   after(() => {
@@ -1488,6 +1489,7 @@ describe("ElementGeometry", () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+    imodel.channels.addAllowedChannel("shared");
   });
 
   after(() => {
@@ -2331,6 +2333,7 @@ describe("BRepGeometry", () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+    imodel.channels.addAllowedChannel("shared");
   });
 
   after(() => {
@@ -2906,6 +2909,7 @@ describe("Mass Properties", () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+    imodel.channels.addAllowedChannel("shared");
   });
 
   after(() => {
@@ -2976,6 +2980,7 @@ describe("Geometry Containment", () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+    imodel.channels.addAllowedChannel("shared");
   });
 
   after(() => {

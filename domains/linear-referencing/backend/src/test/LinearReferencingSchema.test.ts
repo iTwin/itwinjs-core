@@ -94,6 +94,8 @@ describe("LinearReferencing Domain", () => {
     await iModelDb.importSchemas([LinearReferencingSchema.schemaFilePath, TestLinearReferencingSchema.schemaFilePath]);
     iModelDb.saveChanges("Import TestLinearReferencing schema");
 
+    iModelDb.channels.addAllowedChannel("shared");
+
     // Insert a SpatialCategory
     const spatialCategoryProps: CategoryProps = {
       classFullName: SpatialCategory.classFullName,

@@ -65,10 +65,14 @@ describe("iModel", () => {
 
     IModelTestUtils.registerTestBimSchema();
     imodel1 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
+    imodel1.channels.addAllowedChannel(ChannelAdmin.sharedChannel);
     imodel2 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+    imodel2.channels.addAllowedChannel(ChannelAdmin.sharedChannel);
     imodel3 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
     imodel4 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "GetSetAutoHandledArrayProperties.bim"), IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
+    imodel4.channels.addAllowedChannel(ChannelAdmin.sharedChannel);
     imodel5 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
+    imodel5.channels.addAllowedChannel(ChannelAdmin.sharedChannel);
 
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
     await imodel1.importSchemas([schemaPathname]); // will throw an exception if import fails
@@ -399,8 +403,6 @@ describe("iModel", () => {
   });
 
   it("attempt to apply material to new element in imodel5", () => {
-    imodel5.channels.addAllowedChannel(ChannelAdmin.sharedChannel);
-
     const testTextureName = "fake texture name";
     const testTextureFormat = ImageSourceFormat.Png;
     const testTextureDescription = "empty description";
@@ -1406,6 +1408,7 @@ describe("iModel", () => {
   it("should create link table relationship instances", () => {
     const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "CreateLinkTable.bim");
     const testImodel = StandaloneDb.createEmpty(snapshotFile2, { rootSubject: { name: "test1" }, allowEdit: JSON.stringify({ txns: true }) });
+    testImodel.channels.addAllowedChannel(ChannelAdmin.sharedChannel);
     const elements = testImodel.elements;
 
     // Create a new physical model
@@ -1478,6 +1481,7 @@ describe("iModel", () => {
   it("should insert DefinitionSets", () => {
     const iModelFileName: string = IModelTestUtils.prepareOutputFile("IModel", "DefinitionSets.bim");
     const iModelDb = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "DefinitionSets" }, createClassViews: true });
+    iModelDb.channels.addAllowedChannel(ChannelAdmin.sharedChannel);
     const definitionContainerId = DefinitionContainer.insert(iModelDb, IModel.dictionaryId, Code.createEmpty());
     assert.exists(iModelDb.elements.getElement<DefinitionContainer>(definitionContainerId));
     assert.exists(iModelDb.models.getModel<DefinitionModel>(definitionContainerId));
@@ -2702,6 +2706,7 @@ describe("iModel", () => {
     // test partial update of Description (auto-handled)
     imodel1.elements.updateElement({
       id: subject1.id,
+      model: subject1.model, // NOTE: workaround while expectation from elements.updateElement about "model" being passed-in is addressed
       classFullName: subject1.classFullName,
       description: "Description1-Updated",
     } as SubjectProps);
@@ -2716,6 +2721,7 @@ describe("iModel", () => {
     // test partial update of UserLabel (custom-handled)
     imodel1.elements.updateElement({
       id: subject2.id,
+      model: subject2.model, // NOTE: workaround while expectation from elements.updateElement about "model" being passed-in is addressed
       classFullName: subject2.classFullName,
       userLabel: "UserLabel2-Updated",
     } as SubjectProps);
@@ -2759,6 +2765,7 @@ describe("iModel", () => {
     const s3Fed = subject3.federationGuid;
     imodel1.elements.updateElement({
       id: subject3.id,
+      model: subject3.model, // NOTE: workaround while expectation from elements.updateElement about "model" being passed-in is addressed
       classFullName: subject3.classFullName,
       description: undefined,
     } as SubjectProps);
@@ -2773,6 +2780,7 @@ describe("iModel", () => {
     // test partial update of UserLabel to undefined
     imodel1.elements.updateElement({
       id: subject4.id,
+      model: subject4.model, // NOTE: workaround while expectation from elements.updateElement about "model" being passed-in is addressed
       classFullName: subject4.classFullName,
       userLabel: undefined,
     } as SubjectProps);
@@ -2789,6 +2797,7 @@ describe("iModel", () => {
   it('should allow untrimmed codes when using "exact" codeValueBehavior', () => {
     const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "codeValueBehavior.bim");
     const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "codeValueBehaviors" } });
+    imodel.channels.addAllowedChannel(ChannelAdmin.sharedChannel);
 
     const getNumberedCodeValAndProps = (n: number) => {
       const trimmedCodeVal = `CodeValue${n}`;

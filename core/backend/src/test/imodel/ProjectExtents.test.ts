@@ -14,6 +14,7 @@ describe("computeProjectExtents", () => {
 
   before(() => {
     imodel = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
+    imodel.channels.addAllowedChannel("shared");
   });
 
   after(() => {

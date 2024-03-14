@@ -339,8 +339,6 @@ describe("Functional Domain", () => {
     iModelDb.codeSpecs.insert(codeSpec);
     assert.isTrue(Id64.isValidId64(codeSpec.id));
 
-    expect(iModelDb.channels.hasChannels).equal(false);
-
     // create a channel for all elements in this test
     iModelDb.channels.addAllowedChannel(ChannelAdmin.sharedChannel);
 
@@ -579,9 +577,5 @@ describe("Functional Domain", () => {
 
     const filename = iModelDb.pathName;
     iModelDb.close();
-    const imodel2 = StandaloneDb.openFile(filename, OpenMode.Readonly);
-    expect(imodel2.channels.hasChannels).equal(true);
-    imodel2.close();
-
   });
 });

@@ -83,7 +83,7 @@ type GeomStreamEntry =
 function readGeomStream(iter: GeometryStreamIterator): GeomStreamEntry[] & { viewIndependent: boolean } {
   const result: GeomStreamEntry[] = [];
   for (const entry of iter) {
-    const symb: Symbology =  { categoryId: entry.geomParams.categoryId, subCategoryId: entry.geomParams.subCategoryId };
+    const symb: Symbology = { categoryId: entry.geomParams.categoryId, subCategoryId: entry.geomParams.subCategoryId };
 
     if (undefined !== entry.geomParams.lineColor)
       symb.color = entry.geomParams.lineColor;
@@ -150,6 +150,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
     });
 
     GenericSchema.registerSchema();
+    imodel.channels.addAllowedChannel("shared");
     const partitionId = imodel.elements.insertElement({
       classFullName: PhysicalPartition.classFullName,
       model: IModel.repositoryModelId,
@@ -215,7 +216,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
       geom: writer.builder.geometryStream,
       placement: {
         origin: [0, 0, 0],
-        angles: { },
+        angles: {},
       },
     };
 
@@ -312,7 +313,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
     const part1 = insertGeometryPart([
       { pos: 1 },
       { color: ColorDef.green },
-      { pos: 1.5},
+      { pos: 1.5 },
     ]);
 
     const part2 = insertGeometryPart([
@@ -354,7 +355,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
       { categoryId, subCategoryId: blueSubCategoryId },
       { pos: -1 },
       { categoryId, subCategoryId: redSubCategoryId },
-      { low: 1},
+      { low: 1 },
       { pos: 1 },
       { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.green },
       { low: 1.5 },
@@ -379,7 +380,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
       { categoryId, subCategoryId: redSubCategoryId, materialId: "0" },
       { low: 3.5 },
       { pos: 3.5 },
-      {categoryId, subCategoryId: redSubCategoryId, color: ColorDef.white, materialId },
+      { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.white, materialId },
       { low: -4 },
       { pos: -4 },
     ]);

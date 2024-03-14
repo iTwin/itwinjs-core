@@ -27,9 +27,9 @@ describe("Reacting to IModel data changes", () => {
     }
     const socketStub = {
       send: sinon.stub(),
-      addListener: sinon.stub().returns(() => {}),
+      addListener: sinon.stub().returns(() => { }),
       removeListener: sinon.stub(),
-      handle: sinon.stub().returns(() => {}),
+      handle: sinon.stub().returns(() => { }),
     };
     await IpcHost.startup({
       ipcHost: {
@@ -57,6 +57,7 @@ describe("Reacting to IModel data changes", () => {
       rootSubject: { name: "test" },
       allowEdit: JSON.stringify({ txns: true }),
     });
+    imodelDb.channels.addAllowedChannel("shared");
     updatesSpy.resetHistory();
   });
 

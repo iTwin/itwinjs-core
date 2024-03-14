@@ -22,8 +22,6 @@ export type ChannelKey = string;
  * @beta
  */
 export interface ChannelControl {
-  /** Determine whether this [[IModelDb]] has any channels in it. */
-  get hasChannels(): boolean;
   /** Add a new channel to the list of allowed channels of the [[IModelDb]] for this session.
    * @param channelKey The key for the channel to become editable in this session.
    */
@@ -59,9 +57,7 @@ export class ChannelAdmin implements ChannelControl {
   private _allowedChannels = new Set<ChannelKey>();
   private _allowedModels = new Set<Id64String>();
   private _deniedModels = new Map<Id64String, ChannelKey>();
-  private _hasChannels?: boolean;
   private _channelRootAspectClassExists?: boolean;
-  private _hasLegacyChannels?: boolean;
 
   public constructor(private _iModel: IModelDb) {
   }
@@ -94,29 +90,8 @@ export class ChannelAdmin implements ChannelControl {
     }
     return this._channelRootAspectClassExists;
   }
-
-  private get _hasAnyLegacyChannels(): boolean {
-    if (undefined === this._hasLegacyChannels) {
-      // Check if there are any old-fashion channels defined by legacy iModel Connectors via their Job-Subject's JsonProperties
-      this._hasLegacyChannels = this._iModel.withStatement(
-        `SELECT 1 FROM ${ChannelAdmin.subjectClassName} WHERE JsonProperties IS NOT NULL AND json_extract(JsonProperties, '$.Subject.Job.Bridge') IS NOT NULL`, (stmt) => stmt.step() === DbResult.BE_SQLITE_ROW, false);
-    }
-    return this._hasLegacyChannels;
-  }
-  public get hasChannels(): boolean {
-    if (undefined === this._hasChannels) {
-      if (this._bisCoreSupportsChannelRootAspect)
-        this._hasChannels = this._iModel.withStatement(`SELECT 1 FROM ${ChannelAdmin.channelClassName}`, (stmt) => stmt.step() === DbResult.BE_SQLITE_ROW, false);
-
-      if (undefined === this._hasChannels || !this._hasChannels)
-        // There are no channels defined via the ChannelRootAspect class in this iModel.
-        // Check for legacy channels for backwards compatibility
-        this._hasChannels = this._hasAnyLegacyChannels;
-    }
-    return this._hasChannels;
-  }
   public getChannelKey(elementId: Id64String): ChannelKey {
-    if (!this.hasChannels || elementId === IModel.rootSubjectId)
+    if (elementId === IModel.rootSubjectId)
       return ChannelControl.sharedChannelName;
 
     if (this._bisCoreSupportsChannelRootAspect) {
@@ -126,19 +101,6 @@ export class ChannelAdmin implements ChannelControl {
       });
       if (channel !== undefined)
         return channel;
-    }
-    if (this._hasAnyLegacyChannels) {
-      // FederationGuid of JobSubjects is used as ChannelKey. Legacy Connectors have their own logic to enforce
-      // write-operations against those channels. Thus, this approach primarily aims to prevent data changes on
-      // those legacy channels by iTwin.js-based code
-      const legacyChannel = this._iModel.withPreparedStatement(
-        `SELECT FederationGuid FROM ${ChannelAdmin.subjectClassName} WHERE ECInstanceId=? ` +
-        `AND json_extract(JsonProperties, '$.Subject.Job.Bridge') IS NOT NULL`, (stmt) => {
-          stmt.bindId(1, elementId);
-          return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValue(0).getString() : undefined;
-        });
-      if (legacyChannel !== undefined)
-        return legacyChannel;
     }
     const parentId = this._iModel.withPreparedSqliteStatement("SELECT ParentId,ModelId FROM bis_Element WHERE id=?", (stmt) => {
       stmt.bindId(1, elementId);
@@ -150,7 +112,7 @@ export class ChannelAdmin implements ChannelControl {
   }
   public verifyChannel(modelId: Id64String): void {
     // Note: indirect changes are permitted to change any channel
-    if (!this.hasChannels || this._allowedModels.has(modelId) || this._iModel.nativeDb.isIndirectChanges())
+    if (this._allowedModels.has(modelId) || this._iModel.nativeDb.isIndirectChanges())
       return;
 
     const deniedChannel = this._deniedModels.get(modelId);
@@ -174,6 +136,5 @@ export class ChannelAdmin implements ChannelControl {
 
     const props: ChannelRootAspectProps = { classFullName: ChannelAdmin.channelClassName, element: { id: args.elementId }, owner: args.channelKey };
     this._iModel.elements.insertAspect(props);
-    this._hasChannels = true;
   }
 }

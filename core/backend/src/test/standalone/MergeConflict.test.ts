@@ -76,7 +76,9 @@ describe("Merge conflict & locking", () => {
 
     // to reproduce the issue we will disable locks altogether.
     const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken1, iTwinId, iModelId: rwIModelId, noLock: true });
+    b1.channels.addAllowedChannel("shared");
     const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId, iModelId: rwIModelId, noLock: true });
+    b2.channels.addAllowedChannel("shared");
     const b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken3, iTwinId, iModelId: rwIModelId, noLock: true });
 
     // create and insert a new model with code1
@@ -172,7 +174,9 @@ describe("Merge conflict & locking", () => {
 
     // to reproduce the issue we will disable locks altogether.
     const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken1, iTwinId, iModelId: rwIModelId, noLock: true });
+    b1.channels.addAllowedChannel("shared");
     const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId, iModelId: rwIModelId, noLock: true });
+    b2.channels.addAllowedChannel("shared");
     const b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken3, iTwinId, iModelId: rwIModelId, noLock: true });
 
     // create and insert a new model with code1
@@ -239,7 +243,9 @@ describe("Merge conflict & locking", () => {
     assert.isNotEmpty(rwIModelId);
 
     const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken1, iTwinId, iModelId: rwIModelId });
+    b1.channels.addAllowedChannel("shared");
     const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId, iModelId: rwIModelId });
+    b2.channels.addAllowedChannel("shared");
     const b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken3, iTwinId, iModelId: rwIModelId });
 
     await b1.locks.acquireLocks({ shared: IModel.repositoryModelId });

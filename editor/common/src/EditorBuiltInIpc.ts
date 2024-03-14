@@ -40,6 +40,7 @@ export interface FlatBufferGeometryFilter {
  * @beta
  */
 export interface BasicManipulationCommandIpc extends EditCommandIpc {
+  addAllowedChannels(channelKeys: string[]): Promise<IModelStatus>;
   deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
   transformPlacement(ids: CompressedId64Set, transform: TransformProps): Promise<IModelStatus>;
   rotatePlacement(ids: CompressedId64Set, matrix: Matrix3dProps, aboutCenter: boolean): Promise<IModelStatus>;

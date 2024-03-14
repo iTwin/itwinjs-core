@@ -52,12 +52,14 @@ describe("RenderTimeline", () => {
     IModelJsFs.copySync(seedFileName, filename);
 
     const imodel = StandaloneDb.openFile(filename, OpenMode.ReadWrite);
+    imodel.channels.addAllowedChannel("shared");
     expect(() => insertTimeline(imodel)).to.throw("ecClass not found");
     imodel.close();
   });
 
   it("creates, queries, and updates", () => {
     const imodel = createIModel("CRUD");
+    imodel.channels.addAllowedChannel("shared");
     const timelineId = insertTimeline(imodel);
     expect(Id64.isValid(timelineId)).to.be.true;
 

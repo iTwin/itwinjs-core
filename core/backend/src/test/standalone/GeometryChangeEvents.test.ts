@@ -27,6 +27,7 @@ describe("Model geometry changes", () => {
     // Upgrade the schema to include the GeometryGuid and LastMod model properties.
     StandaloneDb.upgradeStandaloneSchemas(testFileName);
     imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
+    imodel.channels.addAllowedChannel("shared");
     modelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "TestModel");
     categoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
     imodel.saveChanges("set up");

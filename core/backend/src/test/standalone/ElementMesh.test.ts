@@ -26,6 +26,7 @@ describe("generateElementMeshes", () => {
     });
 
     GenericSchema.registerSchema();
+    imodel.channels.addAllowedChannel("shared");
     const partitionId = imodel.elements.insertElement({
       classFullName: PhysicalPartition.classFullName,
       model: IModel.repositoryModelId,
@@ -47,7 +48,7 @@ describe("generateElementMeshes", () => {
   });
 
   it("throws if source is not a geometric element", async () => {
-    await expect(imodel.nativeDb.generateElementMeshes({source: "NotAnId"})).rejectedWith("Geometric element required");
+    await expect(imodel.nativeDb.generateElementMeshes({ source: "NotAnId" })).rejectedWith("Geometric element required");
   });
 
   function insertTriangleElement(origin = [0, 0, 0]): string {
@@ -66,7 +67,7 @@ describe("generateElementMeshes", () => {
       geom,
       placement: {
         origin,
-        angles: { },
+        angles: {},
       },
     };
 
@@ -77,7 +78,7 @@ describe("generateElementMeshes", () => {
 
   it("produces a polyface", async () => {
     const source = insertTriangleElement();
-    const bytes = await imodel.nativeDb.generateElementMeshes({source});
+    const bytes = await imodel.nativeDb.generateElementMeshes({ source });
     const meshes = readElementMeshes(bytes);
     expect(meshes.length).to.equal(1);
     expect(meshes[0].range().isAlmostEqual(new Range3d(0, 0, 0, 1, 1, 0))).to.be.true;
@@ -85,7 +86,7 @@ describe("generateElementMeshes", () => {
 
   it("applies element placement transform", async () => {
     const source = insertTriangleElement([5, 0, -2]);
-    const bytes = await imodel.nativeDb.generateElementMeshes({source});
+    const bytes = await imodel.nativeDb.generateElementMeshes({ source });
     const meshes = readElementMeshes(bytes);
     expect(meshes.length).to.equal(1);
     expect(meshes[0].range().isAlmostEqual(new Range3d(5, 0, -2, 6, 1, -2))).to.be.true;
@@ -110,7 +111,7 @@ describe("generateElementMeshes", () => {
     elBldr.appendGeometryPart3d(partId, new Point3d(0, 0, -1));
     const source = insertElement(elBldr.geometryStream, [2, -4, 0]);
 
-    const bytes = await imodel.nativeDb.generateElementMeshes({source});
+    const bytes = await imodel.nativeDb.generateElementMeshes({ source });
     const meshes = readElementMeshes(bytes);
     expect(meshes.length).to.equal(2);
     expect(meshes[0].range().isAlmostEqual(new Range3d(2, -4, 1, 3, -3, 1))).to.be.true;
@@ -124,7 +125,7 @@ describe("generateElementMeshes", () => {
     bldr.appendGeometry(Loop.createPolygon([new Point3d(0, 0, 5), new Point3d(1, 0, 5), new Point3d(0, 1, 5), new Point3d(0, 0, 5)]));
     const source = insertElement(bldr.geometryStream);
 
-    const meshes = readElementMeshes(await imodel.nativeDb.generateElementMeshes({source}));
+    const meshes = readElementMeshes(await imodel.nativeDb.generateElementMeshes({ source }));
     expect(meshes.length).to.equal(2);
     expect(meshes[0].range().isAlmostEqual(new Range3d(0, 0, 0, 1, 1, 0))).to.be.true;
     expect(meshes[1].range().isAlmostEqual(new Range3d(0, 0, 5, 1, 1, 5))).to.be.true;
@@ -138,7 +139,7 @@ describe("generateElementMeshes", () => {
     bldr.appendGeometry(Loop.createPolygon([new Point3d(0, 0, 5), new Point3d(1, 0, 5), new Point3d(0, 1, 5), new Point3d(0, 0, 5)]));
     const source = insertElement(bldr.geometryStream);
 
-    const meshes = readElementMeshes(await imodel.nativeDb.generateElementMeshes({source}));
+    const meshes = readElementMeshes(await imodel.nativeDb.generateElementMeshes({ source }));
     expect(meshes.length).to.equal(2);
     expect(meshes[0].range().isAlmostEqual(new Range3d(0, 0, 0, 1, 1, 0))).to.be.true;
     expect(meshes[1].range().isAlmostEqual(new Range3d(0, 0, 5, 1, 1, 5))).to.be.true;
@@ -159,7 +160,7 @@ describe("generateElementMeshes", () => {
     bldr.appendGeometry(pf);
     const source = insertElement(bldr.geometryStream, [10, 0, 0]);
 
-    const bytes = await imodel.nativeDb.generateElementMeshes({source});
+    const bytes = await imodel.nativeDb.generateElementMeshes({ source });
     const meshes = readElementMeshes(bytes);
     expect(meshes.length).to.equal(1);
     expect(meshes[0].pointCount).to.equal(3);

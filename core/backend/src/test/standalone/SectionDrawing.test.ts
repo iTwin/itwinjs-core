@@ -15,6 +15,7 @@ describe("SectionDrawing", () => {
   it("should round-trip through JSON", () => {
     const iModelPath = IModelTestUtils.prepareOutputFile("SectionDrawing", "SectionDrawing.bim");
     const imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "SectionDrawingTest" } });
+    imodel.channels.addAllowedChannel("shared");
 
     // Insert a SectionDrawing
     const documentListModelId = DocumentListModel.insert(imodel, SnapshotDb.rootSubjectId, "DocumentList");

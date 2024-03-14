@@ -10,7 +10,7 @@ import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   BriefcaseConnection, GeometricModelState, IModelApp, MockRender, RenderGraphic, TileTree, ViewCreator3d,
 } from "@itwin/core-frontend";
-import { coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineStringElement, makeModelCode, transformElements } from "../Editing";
+import { addAllowedChannels, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineStringElement, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
 class System extends MockRender.System {
@@ -59,6 +59,7 @@ for (const watchForChanges of [false, true]) {
 
       // Populate the iModel with some initial geometry.
       rwConn = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
+      await addAllowedChannels(rwConn, ["shared"]);
       modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(rwConn.key, (await makeModelCode(rwConn, rwConn.models.repositoryModelId, Guid.createValue())));
       const dictId = await rwConn.models.getDictionaryModel();
       categoryId = await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictId, Guid.createValue(), { color: 0 });
@@ -157,7 +158,7 @@ for (const watchForChanges of [false, true]) {
 
       prevGuid = model.geometryGuid;
       prevTree = newTree;
-      const elemId2 = await insertLineStringElement(rwConn, { model: modelId, category: categoryId, color: ColorDef.red, points: [projCenter.clone(), projCenter.plus({x:2, y:0, z:0})] });
+      const elemId2 = await insertLineStringElement(rwConn, { model: modelId, category: categoryId, color: ColorDef.red, points: [projCenter.clone(), projCenter.plus({ x: 2, y: 0, z: 0 })] });
       await expectModelChanges(async () => rwConn.saveChanges());
 
       expect(model.geometryGuid).not.to.equal(prevGuid);

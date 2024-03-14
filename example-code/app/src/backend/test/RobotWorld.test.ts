@@ -31,6 +31,7 @@ describe("RobotWorld", () => {
       // expect countRobots to fail
     }
 
+    iModel.channels.addAllowedChannel("shared");
     await RobotWorld.importSchema(iModel);
     iModel.saveChanges();
 

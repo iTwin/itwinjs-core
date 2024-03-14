@@ -20,6 +20,7 @@ describe("ExternalSource", () => {
   it("should create elements and relationships like an iModel Connector would", () => {
     const iModelFileName = IModelTestUtils.prepareOutputFile("ExternalSource", "ExternalSource.bim");
     const iModelDb = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "ExternalSource Test" } });
+    iModelDb.channels.addAllowedChannel("shared");
 
     assert.isTrue(iModelDb.containsClass(SynchronizationConfigLink.classFullName));
     assert.isTrue(iModelDb.containsClass(ExternalSource.classFullName));

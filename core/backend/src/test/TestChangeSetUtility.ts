@@ -52,6 +52,7 @@ export class TestChangeSetUtility {
     this.iModelId = await HubWrappers.recreateIModel({ accessToken: this._accessToken, iTwinId: this.iTwinId, iModelName: this._iModelName, noLocks: true });
 
     this._iModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken: this._accessToken, iTwinId: this.iTwinId, iModelId: this.iModelId });
+    this._iModel.channels.addAllowedChannel("shared");
 
     // Populate sample data
     await this.addTestModel();
