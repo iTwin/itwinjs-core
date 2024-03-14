@@ -91,7 +91,10 @@ export namespace XYAndZ { // eslint-disable-line @typescript-eslint/no-redeclare
  */
 export type LowAndHighXY = Readonly<WritableLowAndHighXY>;
 
-export type LowAndHighXYProps = { low: XYProps; high: XYProps; }
+/** JSON representation of [[LowAndHighXY]].
+ * @public
+ */
+export interface LowAndHighXYProps { low: XYProps, high: XYProps }
 
 /**
  * Interface for type with readable `low` and `high` members which have `x`, `y`, and `z` number members.
@@ -99,7 +102,10 @@ export type LowAndHighXYProps = { low: XYProps; high: XYProps; }
  */
 export type LowAndHighXYZ = Readonly<WritableLowAndHighXYZ>;
 
-export type LowAndHighXYZProps = { low: XYZProps; high: XYZProps; }
+/** JSON representation of [[LowAndHighXYZ]].
+ * @public
+ */
+export interface LowAndHighXYZProps { low: XYZProps, high: XYZProps }
 
 /**
  * Interface for variant json (one of)
