@@ -23,7 +23,7 @@ export abstract class ViewportSceneImpl implements ViewportScene {
   readonly viewport: Viewport;
   private readonly _subcategories = new SubCategoriesCache.Queue();
 
-  readonly tiledGraphicsProviders: TiledGraphicsSceneObjects;
+  readonly tiledGraphics: TiledGraphicsSceneObjects;
   readonly decorators = [] as any; // ###TODO
   
   abstract isSpatial(): this is SpatialScene;
@@ -38,7 +38,7 @@ export abstract class ViewportSceneImpl implements ViewportScene {
     this.backingView = view;
     this.viewport = viewport;
 
-    this.tiledGraphicsProviders = new TiledGraphicsSceneObjectsImpl(this);
+    this.tiledGraphics = new TiledGraphicsSceneObjectsImpl(this);
 
     this.onObjectDisplayChanged.addListener(() => this.viewport.invalidateScene());
     this.onContentsChanged.addListener(() => this.viewport.invalidateScene());
@@ -56,7 +56,7 @@ export abstract class ViewportSceneImpl implements ViewportScene {
     for (const iModel of this.iModels)
       yield iModel;
 
-    for (const provider of this.tiledGraphicsProviders)
+    for (const provider of this.tiledGraphics)
       yield provider;
 
     for (const decorator of this.decorators)

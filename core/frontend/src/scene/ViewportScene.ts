@@ -34,7 +34,7 @@ export interface ViewportScene extends Iterable<SceneObject> {
   readonly volume: SceneVolume;
   readonly presentation: ScenePresentation;
   // readonly iModels: Iterable<IModelViewSceneObject>; // ###TODO needed, or just confusing for 2d?
-  readonly tiledGraphicsProviders: TiledGraphicsSceneObjects;
+  readonly tiledGraphics: TiledGraphicsSceneObjects;
   readonly decorators: DecoratorSceneObjects;
 
   dispose(): void;

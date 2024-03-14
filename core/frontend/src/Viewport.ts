@@ -1536,7 +1536,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @see [[addTiledGraphicsProvider]].
    */
   public get tiledGraphicsProviders(): Iterable<TiledGraphicsProvider> {
-    return this.scene.tiledGraphicsProviders.providers;
+    return this.scene.tiledGraphics.providers;
   }
 
   /** @internal */
@@ -1594,19 +1594,19 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @see [[dropTiledGraphicsProvider]]
    */
   public addTiledGraphicsProvider(provider: TiledGraphicsProvider): void {
-    this.scene.tiledGraphicsProviders.add(provider);
+    this.scene.tiledGraphics.add(provider);
   }
 
   /** Remove a previously-registered provider of tile graphics.
    * @see [[addTiledGraphicsProvider]]
    */
   public dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void {
-    this.scene.tiledGraphicsProviders.drop(provider);
+    this.scene.tiledGraphics.drop(provider);
   }
 
   /** Returns true if the specified provider has been registered with this viewport via [[addTiledGraphicsProvider]]. */
   public hasTiledGraphicsProvider(provider: TiledGraphicsProvider): boolean {
-    return undefined !== this.scene.tiledGraphicsProviders.find(provider);
+    return undefined !== this.scene.tiledGraphics.find(provider);
   }
 
   /** @internal */
