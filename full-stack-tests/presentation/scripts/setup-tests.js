@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 const chai = require("chai");
 const faker = require("faker");
@@ -15,7 +15,7 @@ console.log(`Backend PID: ${process.pid}`);
 
 // Do not log JSDOM errors into console
 require("jsdom-global")(undefined, {
-  virtualConsole: (new jsdom.VirtualConsole()).sendTo(console, { omitJSDOMErrors: true }),
+  virtualConsole: new jsdom.VirtualConsole().sendTo(console, { omitJSDOMErrors: true }),
 });
 
 chai.use(chaiJestSnapshot);
@@ -30,8 +30,9 @@ beforeEach(function () {
 
   // we want snapshot tests to use the same random data between runs
   let seed = 0;
-  for (let i = 0; i < currentTest.fullTitle().length; ++i)
+  for (let i = 0; i < currentTest.fullTitle().length; ++i) {
     seed += currentTest.fullTitle().charCodeAt(i);
+  }
   faker.seed(seed);
 
   const sourceFilePath = this.currentTest.file.replace("lib", "src").replace(/\.(jsx?|tsx?)$/, "");

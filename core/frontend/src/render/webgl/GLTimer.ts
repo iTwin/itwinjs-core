@@ -40,6 +40,7 @@ class DisjointTimerExtension {
 interface QueryEntry {
   label: string;
   query: WebGLQuery;
+  siblingQueries?: WebGLQuery[]; // For when the main query is broken up into pieces by intermittent child queries.
   children?: QueryEntry[];
 }
 
@@ -127,9 +128,11 @@ export class GLTimer {
         return;
       }
 
-      // It takes more one or more frames for results to become available.
+      // It takes one or more frames for results to become available.
       // Only checking time for root since it will always be the last query completed.
-      if (!this._extension.isResultAvailable(root.query)) {
+      // If there are any sibling queries then we will just check the last one.
+      const finalQuery = (undefined === root.siblingQueries ? root.query : root.siblingQueries[root.siblingQueries.length-1]);
+      if (!this._extension.isResultAvailable(finalQuery)) {
         setTimeout(queryCallback, 0);
         return;
       }
@@ -139,6 +142,16 @@ export class GLTimer {
         this._extension.deleteQuery(queryEntry.query);
 
         const result: GLTimerResult = { label: queryEntry.label, nanoseconds: time };
+
+        if (undefined !== queryEntry.siblingQueries) {
+          for (const sib of queryEntry.siblingQueries) {
+            const sibTime = this._extension.getResult(sib);
+            this._extension.deleteQuery(sib);
+            result.nanoseconds += sibTime;
+          }
+          queryEntry.siblingQueries = undefined;
+        }
+
         if (queryEntry.children === undefined)
           return result;
 
@@ -158,6 +171,11 @@ export class GLTimer {
 
   private cleanupAfterDisjointEvent(queryEntry: QueryEntry) {
     this._extension.deleteQuery(queryEntry.query);
+    if (undefined !== queryEntry.siblingQueries) {
+      for (const sib of queryEntry.siblingQueries)
+        this._extension.deleteQuery(sib);
+      queryEntry.siblingQueries = undefined;
+    }
     if (!queryEntry.children)
       return;
     for (const child of queryEntry.children)
@@ -184,7 +202,12 @@ export class GLTimer {
     this._extension.endQuery();
     this._queryStack.pop();
 
-    const activeQuery = this._queryStack[this._queryStack.length - 1];
-    this._extension.beginQuery(activeQuery.query);
+    const lastStackIndex = this._queryStack.length - 1;
+    const activeQuery = this._queryStack[lastStackIndex];
+    if (undefined === activeQuery.siblingQueries)
+      activeQuery.siblingQueries = [];
+    const newQuery = this._extension.createQuery();
+    activeQuery.siblingQueries.push(newQuery);
+    this._extension.beginQuery(newQuery);
   }
 }

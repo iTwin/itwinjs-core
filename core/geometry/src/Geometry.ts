@@ -67,7 +67,7 @@ export enum StandardViewIndex {
   /** Negative X to right, Z up */
   Back = 6,
   /** Isometric: view towards origin from (-1,-1,1) */
-  Iso = 7, //
+  Iso = 7,
   /** Right isometric: view towards origin from (1,-1,1) */
   RightIso = 8,
 }
@@ -901,6 +901,33 @@ export class Geometry {
    */
   public static interpolate(a: number, f: number, b: number): number {
     return f <= 0.5 ? a + f * (b - a) : b - (1.0 - f) * (b - a);
+  }
+  /**
+   * Interpolate the specified byte of two integers (e.g., colors).
+   * * Extract a single byte from each integer by shifting to the right by `shiftBits`, then masking off the low 8 bits.
+   * * Interpolate the number, truncate to floor, and mask off the low 8 bits.
+   * * Move interpolated byte back into position by shifting to the left by `shiftBits`.
+   * @internal
+   */
+  private static interpolateByte(color0: number, fraction: number, color1: number, shiftBits: number): number {
+    color0 = (color0 >>> shiftBits) & 0xFF;
+    color1 = (color1 >>> shiftBits) & 0xFF;
+    const color = Math.floor(color0 + fraction * (color1 - color0)) & 0xFF;   // in range [0,255]
+    return color << shiftBits;
+  }
+  /**
+   * Interpolate each byte of color0 and color1 as integers.
+   * @param color0 32-bit RGBA color0
+   * @param fraction fractional position. This is clamped to 0..1 to prevent byte values outside their 0..255 range.
+   * @param color1 32-bit RGBA color1
+   */
+  public static interpolateColor(color0: number, fraction: number, color1: number): number {
+    fraction = Geometry.clamp(fraction, 0, 1); // do not allow fractions outside the individual byte ranges
+    const byte0 = this.interpolateByte(color0, fraction, color1, 0); // red
+    const byte1 = this.interpolateByte(color0, fraction, color1, 8); // green
+    const byte2 = this.interpolateByte(color0, fraction, color1, 16); // blue
+    const byte3 = this.interpolateByte(color0, fraction, color1, 24); // alpha
+    return (byte0 | byte1 | byte2 | byte3);
   }
   /**
    * Given an `axisOrder` (e.g. XYZ, YZX, etc) and an `index`, return the `axis` at the given index.

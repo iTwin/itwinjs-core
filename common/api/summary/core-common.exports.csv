@@ -528,6 +528,7 @@ public;OpenBriefcaseOptions
 public;OpenBriefcaseProps 
 beta;OpenCheckpointArgs
 public;OpenDbKey
+public;OpenSqliteArgs
 internal;OPERATION: unique symbol
 alpha;OrbitGtBlobProps
 beta;OverriddenBy

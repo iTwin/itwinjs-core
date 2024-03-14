@@ -324,7 +324,7 @@ export class RpcInvocation {
       fulfillment.rawResult = status;
     }
 
-    if (rawResult instanceof BentleyError) {
+    if (rawResult instanceof Error) {
       fulfillment.status = StatusCategory.for(rawResult).code;
     }
   }

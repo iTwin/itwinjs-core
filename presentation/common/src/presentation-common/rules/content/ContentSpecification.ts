@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module PresentationRules
  */
@@ -67,4 +67,7 @@ export interface ContentSpecificationBase extends ContentModifiersList {
  *
  * @public
  */
-export declare type ContentSpecification = ContentInstancesOfSpecificClassesSpecification | ContentRelatedInstancesSpecification | SelectedNodeInstancesSpecification;
+export declare type ContentSpecification =
+  | ContentInstancesOfSpecificClassesSpecification
+  | ContentRelatedInstancesSpecification
+  | SelectedNodeInstancesSpecification;

@@ -32,6 +32,8 @@ public;CompressedId64Set = string
 public;CompressedId64Set
 public;ComputePriorityFunction
 public;Constructor
+internal;DbConflictCause
+internal;DbConflictResolution
 public;DbOpcode
 public;DbResult
 public;Dictionary
@@ -115,7 +117,7 @@ public;SortedArray
 public;SpanKind
 deprecated;SpanKind
 alpha;class StatusCategory
-alpha;StatusCategoryHandler = (error: BentleyError) => StatusCategory | undefined
+alpha;StatusCategoryHandler = (error: Error) => StatusCategory | undefined
 internal;StatusCodeWithMessage
 public;StopWatch
 alpha;class SuccessCategory 

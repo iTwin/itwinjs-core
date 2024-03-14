@@ -51,6 +51,8 @@ import { Constructor } from '@itwin/core-bentley';
 import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
+import { DbConflictCause } from '@itwin/core-bentley';
+import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
 import { DefinitionElementProps } from '@itwin/core-common';
 import { DisplayStyle3dProps } from '@itwin/core-common';
@@ -154,6 +156,7 @@ import { NormalMapProps } from '@itwin/core-common';
 import { OpenBriefcaseProps } from '@itwin/core-common';
 import { OpenCheckpointArgs } from '@itwin/core-common';
 import { OpenMode } from '@itwin/core-bentley';
+import { OpenSqliteArgs } from '@itwin/core-common';
 import { Optional } from '@itwin/core-bentley';
 import * as os from 'os';
 import { OverriddenBy } from '@itwin/core-common';
@@ -684,6 +687,26 @@ export interface ChangeMetaData {
 export interface ChangesetArg extends IModelIdArg {
     // (undocumented)
     readonly changeset: ChangesetIndexOrId;
+}
+
+// @internal (undocumented)
+export interface ChangesetConflictArgs {
+    // (undocumented)
+    cause: DbConflictCause;
+    // (undocumented)
+    changesetFile?: string;
+    // (undocumented)
+    dump: () => void;
+    // (undocumented)
+    getForeignKeyConflicts: () => number;
+    // (undocumented)
+    indirect: boolean;
+    // (undocumented)
+    opcode: DbOpcode;
+    // (undocumented)
+    setLastError: (message: string) => void;
+    // (undocumented)
+    tableName: string;
 }
 
 // @beta
@@ -1666,6 +1689,8 @@ export class Drawing extends Document_2 {
     // @internal (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
+    // @internal
+    protected static get drawingModelFullClassName(): string;
     static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string): Id64String;
 }
 
@@ -3074,7 +3099,7 @@ export abstract class IModelDb extends IModel {
     static openDgnDb(file: {
         path: LocalFileName;
         key?: string;
-    }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions & CloudContainerArgs): IModelJsNative.DgnDb;
+    }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions & CloudContainerArgs & OpenSqliteArgs): IModelJsNative.DgnDb;
     get pathName(): LocalFileName;
     performCheckpoint(): void;
     // @internal
@@ -3297,8 +3322,6 @@ export class IModelHost {
     }): string;
     // (undocumented)
     static configuration?: IModelHostOptions;
-    // @internal (undocumented)
-    static flushLog(): void;
     static getAccessToken(): Promise<AccessToken>;
     // @internal
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
@@ -4037,6 +4060,7 @@ export interface LockControl {
     holdsExclusiveLock(id: Id64String): boolean;
     holdsSharedLock(id: Id64String): boolean;
     readonly isServerBased: boolean;
+    // @internal
     releaseAllLocks(): Promise<void>;
 }
 
@@ -4304,7 +4328,7 @@ export interface OnSubModelPropsArg extends OnElementArg {
 }
 
 // @public
-export type OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs;
+export type OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs & OpenSqliteArgs;
 
 // @public
 export class OrthographicViewDefinition extends SpatialViewDefinition {
@@ -4748,6 +4772,8 @@ export class SectionDrawing extends Drawing {
     static get className(): string;
     displaySpatialView: boolean;
     drawingBoundaryClip?: ClipVector;
+    // @internal (undocumented)
+    protected static get drawingModelFullClassName(): string;
     drawingToSpatialTransform?: Transform;
     sectionType: SectionType;
     sheetToSpatialTransform?: Transform;
@@ -4974,7 +5000,7 @@ export class SnapshotDb extends IModelDb {
 }
 
 // @public
-export type SnapshotDbOpenArgs = SnapshotOpenOptions & CloudContainerArgs;
+export type SnapshotDbOpenArgs = SnapshotOpenOptions & CloudContainerArgs & OpenSqliteArgs;
 
 export { SourceAndTarget }
 

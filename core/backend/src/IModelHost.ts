@@ -358,11 +358,6 @@ export class IModelHost {
     }
   }
 
-  /** @internal */
-  public static flushLog() {
-    return IModelHost.platform.flushLog();
-  }
-
   private static syncNativeLogLevels() {
     this.platform.clearLogLevelCache();
   }

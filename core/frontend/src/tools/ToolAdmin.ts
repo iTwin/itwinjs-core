@@ -1807,6 +1807,11 @@ export class ToolAdmin {
     return this.onMotion(ev.viewport!, ev.viewPoint, InputSource.Touch);
   }
 
+  /** Can be called by tools to invoke their [[InteractiveTool.onDynamicFrame]] method without requiring a motion event. */
+  public simulateMotionEvent(): void {
+    this.updateDynamics(undefined, undefined, true);
+  }
+
   /** @internal */
   public setIncompatibleViewportCursor(restore: boolean) {
     if (restore) {
