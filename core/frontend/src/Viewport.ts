@@ -1534,15 +1534,10 @@ export abstract class Viewport implements IDisposable, TileUser {
 
   /** The [[TiledGraphicsProvider]]s currently registered with this viewport.
    * @see [[addTiledGraphicsProvider]].
+   * ###DEPRECATE
    */
   public get tiledGraphicsProviders(): Iterable<TiledGraphicsProvider> {
     return this.scene.tiledGraphics.providers;
-  }
-
-  /** @internal */
-  public forEachTiledGraphicsProvider(func: (provider: TiledGraphicsProvider) => void): void {
-    for (const provider of this.tiledGraphicsProviders)
-      func(provider);
   }
 
   /** @internal */
@@ -1592,6 +1587,7 @@ export abstract class Viewport implements IDisposable, TileUser {
 
   /** Register a provider of tile graphics to be drawn in this viewport.
    * @see [[dropTiledGraphicsProvider]]
+   * ###DEPRECATE
    */
   public addTiledGraphicsProvider(provider: TiledGraphicsProvider): void {
     this.scene.tiledGraphics.add(provider);
@@ -1599,12 +1595,15 @@ export abstract class Viewport implements IDisposable, TileUser {
 
   /** Remove a previously-registered provider of tile graphics.
    * @see [[addTiledGraphicsProvider]]
+   * ###DEPRECATE
    */
   public dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void {
     this.scene.tiledGraphics.drop(provider);
   }
 
-  /** Returns true if the specified provider has been registered with this viewport via [[addTiledGraphicsProvider]]. */
+  /** Returns true if the specified provider has been registered with this viewport via [[addTiledGraphicsProvider]].
+   * ###DEPRECATE
+   */
   public hasTiledGraphicsProvider(provider: TiledGraphicsProvider): boolean {
     return undefined !== this.scene.tiledGraphics.find(provider);
   }
