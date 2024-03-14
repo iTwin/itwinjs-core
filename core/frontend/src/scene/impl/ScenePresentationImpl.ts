@@ -19,6 +19,9 @@ export abstract class BaseScenePresentationImpl {
   protected constructor(view: ViewState) {
     this._style = view.displayStyle;
 
+    // ###TODO raise events when this happens. At minimum, need viewport.invalidateController.
+    // But eg UI widgets that want to know when viewFlags or backgroundColor change probably want those discrete events, or
+    // at least an event telling them any of them may have changed.
     view.onDisplayStyleChanged.addListener((style) => this._style = style);
   }
 
