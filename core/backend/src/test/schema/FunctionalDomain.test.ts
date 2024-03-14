@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import { join } from "path";
 import { restore as sinonRestore, spy as sinonSpy } from "sinon";
-import { Guid, Id64, OpenMode } from "@itwin/core-bentley";
+import { Guid, Id64 } from "@itwin/core-bentley";
 import { Code, CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core-common";
 import { ClassRegistry } from "../../ClassRegistry";
 import { ElementUniqueAspect, OnAspectIdArg, OnAspectPropsArg } from "../../ElementAspect";
@@ -575,7 +575,6 @@ describe("Functional Domain", () => {
     breakdownProps.code.value = "Breakdown 2";
     expect(() => elements.insertElement(breakdownProps)).to.throw(errMsg);
 
-    const filename = iModelDb.pathName;
     iModelDb.close();
   });
 });
