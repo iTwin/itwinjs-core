@@ -34,7 +34,14 @@ import { Presentation, PresentationManager, PresentationManagerProps } from "@it
 import { ECClassHierarchy, ECClassHierarchyInfo } from "../ECClasHierarchy";
 import { initialize, terminate } from "../IntegrationTests";
 import { collect, getFieldByLabel } from "../Utils";
-import { buildTestIModelConnection, insertDocumentPartition, insertPhysicalElement, insertPhysicalModel, insertSpatialCategory } from "../IModelSetupUtils";
+import {
+  buildTestIModelConnection,
+  importSchema,
+  insertDocumentPartition,
+  insertPhysicalElement,
+  insertPhysicalModelWithPartition,
+  insertSpatialCategory,
+} from "../IModelSetupUtils";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
@@ -398,13 +405,13 @@ describe("Content", () => {
     it("gets distinct content values based on hierarchy level descriptor", async function () {
       // create an imodel with Model -> Elements relationship
       const testIModel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
-        const categoryKey = insertSpatialCategory(db, "Category");
-        const modelKeyA = insertPhysicalModel(db, "Model A");
-        insertPhysicalElement(db, "Element A1", modelKeyA.id, categoryKey.id);
-        insertPhysicalElement(db, "Element A2", modelKeyA.id, categoryKey.id);
-        const modelKeyB = insertPhysicalModel(db, "Model B");
-        insertPhysicalElement(db, "Element B", modelKeyB.id, categoryKey.id);
-        insertPhysicalElement(db, "Element B", modelKeyB.id, categoryKey.id);
+        const categoryKey = insertSpatialCategory({ db, codeValue: "Category" });
+        const modelKeyA = insertPhysicalModelWithPartition({ db, codeValue: "Model A" });
+        insertPhysicalElement({ db, userLabel: "Element A1", modelId: modelKeyA.id, categoryId: categoryKey.id });
+        insertPhysicalElement({ db, userLabel: "Element A2", modelId: modelKeyA.id, categoryId: categoryKey.id });
+        const modelKeyB = insertPhysicalModelWithPartition({ db, codeValue: "Model B" });
+        insertPhysicalElement({ db, userLabel: "Element B", modelId: modelKeyB.id, categoryId: categoryKey.id });
+        insertPhysicalElement({ db, userLabel: "Element B", modelId: modelKeyB.id, categoryId: categoryKey.id });
       });
 
       // set up ruleset
@@ -846,6 +853,151 @@ describe("Content", () => {
           },
         },
       ]);
+    });
+  });
+
+  describe("Custom renderers & editors", () => {
+    it("assigns custom renderer and editor to struct member property", async function () {
+      let instanceKey: InstanceKey;
+      let testSchema!: ReturnType<typeof importSchema>;
+      const imodelConnection = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
+        testSchema = importSchema(
+          this,
+          db,
+          `
+          <ECSchemaReference name="BisCore" version="01.00.16" alias="bis" />
+          <ECStructClass typeName="MyStruct">
+            <ECProperty propertyName="IntProperty" typeName="int" />
+          </ECStructClass>
+          <ECEntityClass typeName="TestPhysicalObject" displayLabel="Test Physical Object" modifier="Sealed">
+            <BaseClass>bis:PhysicalElement</BaseClass>
+            <ECStructProperty propertyName="StructProperty" typeName="MyStruct" />
+          </ECEntityClass>
+          `,
+        );
+        const modelKey = insertPhysicalModelWithPartition({ db, codeValue: "test model" });
+        const categoryKey = insertSpatialCategory({ db, codeValue: "test category" });
+        instanceKey = insertPhysicalElement({
+          db,
+          classFullName: testSchema.items.TestPhysicalObject.fullName,
+          modelId: modelKey.id,
+          categoryId: categoryKey.id,
+          structProperty: {
+            intProperty: 123,
+          },
+        });
+      });
+
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [
+          {
+            ruleType: "Content",
+            specifications: [
+              {
+                specType: "SelectedNodeInstances",
+              },
+            ],
+          },
+          {
+            ruleType: "ContentModifier",
+            class: { schemaName: testSchema.schemaName, className: testSchema.items.MyStruct.fullName },
+            propertyOverrides: [
+              {
+                name: "IntProperty",
+                renderer: {
+                  rendererName: "test-renderer",
+                },
+                editor: {
+                  editorName: "test-editor",
+                },
+              },
+            ],
+          },
+        ],
+      };
+
+      const descriptor = await Presentation.presentation
+        .getContentIterator({
+          imodel: imodelConnection,
+          rulesetOrId: ruleset,
+          keys: new KeySet([instanceKey!]),
+          descriptor: {},
+        })
+        .then(async (x) => x!.descriptor);
+      const structMemberField = getFieldByLabel(descriptor.fields, "IntProperty");
+      expect(structMemberField.renderer).to.deep.eq({ name: "test-renderer" });
+      expect(structMemberField.editor).to.deep.eq({ name: "test-editor" });
+    });
+
+    it("assigns custom renderer and editor to array item property", async function () {
+      let instanceKey: InstanceKey;
+      let testSchema!: ReturnType<typeof importSchema>;
+      const imodelConnection = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
+        testSchema = importSchema(
+          this,
+          db,
+          `
+          <ECSchemaReference name="BisCore" version="01.00.16" alias="bis" />
+          <ECEntityClass typeName="TestPhysicalObject" displayLabel="Test Physical Object" modifier="Sealed">
+            <BaseClass>bis:PhysicalElement</BaseClass>
+            <ECArrayProperty propertyName="IntProperty" typeName="int" />
+          </ECEntityClass>
+          `,
+        );
+        const modelKey = insertPhysicalModelWithPartition({ db, codeValue: "test model" });
+        const categoryKey = insertSpatialCategory({ db, codeValue: "test category" });
+        instanceKey = insertPhysicalElement({
+          db,
+          classFullName: testSchema.items.TestPhysicalObject.fullName,
+          modelId: modelKey.id,
+          categoryId: categoryKey.id,
+          intProperty: [123, 456],
+        });
+      });
+
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [
+          {
+            ruleType: "Content",
+            specifications: [
+              {
+                specType: "SelectedNodeInstances",
+              },
+            ],
+          },
+          {
+            ruleType: "ContentModifier",
+            class: { schemaName: testSchema.schemaName, className: testSchema.items.TestPhysicalObject.fullName },
+            propertyOverrides: [
+              {
+                name: "IntProperty[*]",
+                renderer: {
+                  rendererName: "test-renderer",
+                },
+                editor: {
+                  editorName: "test-editor",
+                },
+              },
+            ],
+          },
+        ],
+      };
+
+      const descriptor = await Presentation.presentation
+        .getContentIterator({
+          imodel: imodelConnection,
+          rulesetOrId: ruleset,
+          keys: new KeySet([instanceKey!]),
+          descriptor: {},
+        })
+        .then(async (x) => x!.descriptor);
+      const arrayField = getFieldByLabel(descriptor.fields, "IntProperty");
+      assert(arrayField.isPropertiesField() && arrayField.isArrayPropertiesField());
+      const arrayItemField = arrayField.itemsField;
+      expect(arrayItemField.renderer).to.deep.eq({ name: "test-renderer" });
+      expect(arrayItemField.editor).to.deep.eq({ name: "test-editor" });
     });
   });
 

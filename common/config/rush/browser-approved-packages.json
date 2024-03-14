@@ -555,6 +555,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "fast-xml-parser",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "file-loader",
       "allowedCategories": [ "tools" ]
     },

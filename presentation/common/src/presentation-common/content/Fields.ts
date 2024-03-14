@@ -322,6 +322,11 @@ export class PropertiesField extends Field {
     this.properties = properties;
   }
 
+  /** Is this a an array property field */
+  public isArrayPropertiesField(): this is ArrayPropertiesField {
+    return false;
+  }
+
   public override clone() {
     const clone = new PropertiesField(
       this.category,
@@ -433,6 +438,37 @@ export class PropertiesField extends Field {
       currAncestor = currAncestor.parent;
     }
     return true;
+  }
+}
+
+/**
+ * Describes a content field that's based on one or more similar
+ * EC array properties.
+ *
+ * @public
+ */
+export class ArrayPropertiesField extends PropertiesField {
+  private _itemsField: PropertiesField;
+  public constructor(
+    category: CategoryDescription,
+    name: string,
+    label: string,
+    description: TypeDescription,
+    itemsField: PropertiesField,
+    isReadonly: boolean,
+    priority: number,
+    properties: Property[],
+    editor?: EditorDescription,
+    renderer?: RendererDescription,
+  ) {
+    super(category, name, label, description, isReadonly, priority, properties, editor, renderer);
+    this._itemsField = itemsField;
+  }
+  public override isArrayPropertiesField(): this is ArrayPropertiesField {
+    return true;
+  }
+  public get itemsField() {
+    return this._itemsField;
   }
 }
 

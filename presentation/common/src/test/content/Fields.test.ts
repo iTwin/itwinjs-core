@@ -7,6 +7,7 @@ import { Field, NestedContentField, PropertiesField } from "../../presentation-c
 import { FieldDescriptor, FieldDescriptorType } from "../../presentation-common/content/Fields";
 import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
 import {
+  createTestArrayPropertiesContentField,
   createTestCategoryDescription,
   createTestNestedContentField,
   createTestPropertiesContentField,
@@ -420,6 +421,31 @@ describe("PropertiesField", () => {
       const clone = field.clone();
       expect(clone).to.be.instanceOf(PropertiesField);
       expect(clone.toJSON()).to.deep.eq(field.toJSON());
+    });
+  });
+
+  describe("isArrayPropertiesField", () => {
+    it("returns false for non-array properties field", () => {
+      const field = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo() }],
+      });
+      expect(field.isArrayPropertiesField()).to.be.false;
+    });
+  });
+});
+
+describe("ArrayPropertiesField", () => {
+  describe("isArrayPropertiesField", () => {
+    it("returns true", () => {
+      const itemsField = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ type: "string" }) }],
+      });
+      const field = createTestArrayPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ type: "string[]" }) }],
+        itemsField,
+      });
+      expect(field.isArrayPropertiesField()).to.be.true;
+      expect(field.itemsField).to.eq(itemsField);
     });
   });
 });

@@ -1,6 +1,7 @@
 sep=;
 Release Tag;API Item
 public;addFieldHierarchy(rootHierarchies: FieldHierarchy[], hierarchy: FieldHierarchy): void
+public;ArrayPropertiesField 
 public;ArrayTypeDescription 
 internal;AsyncTasksTracker
 public;BaseFieldJSON
