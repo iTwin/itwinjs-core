@@ -22,7 +22,7 @@ import { HubMock } from "../../HubMock";
 import {
   BriefcaseDb,
   BriefcaseManager,
-  DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, SpatialCategory, Subject,
+  DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, OpenBriefcaseArgs, SpatialCategory, Subject,
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 chai.use(chaiAsPromised);
@@ -52,6 +52,44 @@ describe("IModelWriteTest", () => {
     iTwinId = HubMock.iTwinId;
   });
   after(() => HubMock.shutdown());
+
+  it("Check busyTimeout option", async () => {
+    const iModelProps = {
+      iModelName: "ReadWriteTest",
+      iTwinId,
+    };
+
+    const iModelId = await HubMock.createNewIModel(iModelProps);
+    const briefcaseProps = await BriefcaseManager.downloadBriefcase({ accessToken: "test token", iTwinId, iModelId });
+
+    const tryOpen = async (args: OpenBriefcaseArgs) => {
+      const start = performance.now();
+      let didThrow = false;
+      try {
+        await BriefcaseDb.open(args);
+
+      } catch (e: any) {
+        assert.strictEqual(e.errorNumber, DbResult.BE_SQLITE_BUSY, "Expect error 'Db is busy'");
+        didThrow = true;
+      }
+      assert.isTrue(didThrow);
+      return performance.now() - start;
+    };
+    const seconds = (s: number) => s * 1000;
+
+    const db = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
+    db.saveChanges();
+    // lock db so another connection cannot write to it.
+    db.saveFileProperty({ name: "test", namespace: "test" }, "");
+
+    assert.isAtMost(await tryOpen({ fileName: briefcaseProps.fileName, busyTimeout: seconds(0) }), seconds(1), "open should fail with busy error instantly");
+    assert.isAtLeast(await tryOpen({ fileName: briefcaseProps.fileName, busyTimeout: seconds(1) }), seconds(1), "open should fail with atleast 1 sec delay due to retry");
+    assert.isAtLeast(await tryOpen({ fileName: briefcaseProps.fileName, busyTimeout: seconds(2) }), seconds(2), "open should fail with atleast 2 sec delay due to retry");
+    assert.isAtLeast(await tryOpen({ fileName: briefcaseProps.fileName, busyTimeout: seconds(3) }), seconds(3), "open should fail with atleast 3 sec delay due to retry");
+
+    db.abandonChanges();
+    db.close();
+  });
 
   it("WatchForChanges", async () => {
     const iModelProps = {
