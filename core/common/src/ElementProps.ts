@@ -8,7 +8,7 @@
 
 import { GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  AngleProps, ClipVectorProps, Range2dProps, Range3dProps, TransformProps, XYProps, XYZProps, YawPitchRollProps,
+  AngleProps, ClipVectorProps, LowAndHighXYProps, LowAndHighXYZProps, TransformProps, XYProps, XYZProps, YawPitchRollProps,
 } from "@itwin/core-geometry";
 import { CodeProps } from "./Code";
 import { EntityProps } from "./EntityProps";
@@ -121,7 +121,7 @@ export interface GeometricElementProps extends ElementProps {
 export interface Placement3dProps {
   origin: XYZProps;
   angles: YawPitchRollProps;
-  bbox?: Range3dProps;
+  bbox?: LowAndHighXYZProps;
 }
 
 /** Properties of a [[Placement2d]]
@@ -131,7 +131,7 @@ export interface Placement3dProps {
 export interface Placement2dProps {
   origin: XYProps;
   angle: AngleProps;
-  bbox?: Range2dProps;
+  bbox?: LowAndHighXYProps;
 }
 
 /**
@@ -234,7 +234,7 @@ export interface GeometryPartProps extends ElementProps {
    * @beta
    */
   elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
-  bbox?: Range3dProps;
+  bbox?: LowAndHighXYZProps;
 }
 
 /** Properties for a [ViewAttachment]($backend)
