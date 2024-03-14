@@ -13,6 +13,7 @@ Table of contents:
   - [Lock Control](#lock-control)
   - [Presentation](#presentation)
     - [Deprecation of async array results in favor of async iterators](#deprecation-of-async-array-results-in-favor-of-async-iterators)
+  - [Fixed PlacementProps types](#fixed-placementprops-types)
 
 ## Display
 
@@ -92,3 +93,9 @@ While performance-wise deprecated methods should be in line with the newly added
 >  // update component's model to render the loaded label
 > }
 > ```
+
+## Fixed PlacementProps types
+
+The `bbox` properties of [Placement2dProps]($common) and [Placement3dProps]($common) were incorrectly typed as [LowAndHighXY]($geometry) and [LowAndHighXYZ]($geometry), respectively. In actuality, they may also be of the type `{ low: number[]; high: number[]; }`, and will always be in this form when returned from the backend by functions like `getElementProps`. The types have been adjusted to [LowAndHighXYProps]($geometry) and [LowAndHighXYZProps]($geometry) to reflect this.
+
+An analogous adjustment was made to the `bbox` property of [GeometryPartProps]($common).
