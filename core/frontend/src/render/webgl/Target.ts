@@ -870,7 +870,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     if (cullingFrustum)
       this._renderCommands.setCheckRange(cullingFrustum);
 
-    this._renderCommands.initForReadPixels(this.graphics);
+    this._renderCommands.initForReadPixels(this.graphics, this.activeVolumeClassifierGeometry);
     this._renderCommands.clearCheckRange();
     this.endPerfMetricRecord(true);
   }

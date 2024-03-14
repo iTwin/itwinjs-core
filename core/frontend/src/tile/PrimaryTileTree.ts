@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, comparePossiblyUndefined, compareStrings, Id64, Id64String,
+  assert, comparePossiblyUndefined, compareStrings, Id64String,
 } from "@itwin/core-bentley";
 import {
   BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, ModelMapLayerSettings,

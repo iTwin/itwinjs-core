@@ -6,7 +6,7 @@
 import { assert, compareStringsOrUndefined, GuidString } from "@itwin/core-bentley";
 import { ComboBox, ComboBoxEntry, createCheckBox, createComboBox, createNestedMenu, createNumericInput, NestedMenu } from "@itwin/frontend-devtools";
 import {
-  CartographicRange, ContextRealityModelProps, ModelProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, SpatialClassifier, SpatialClassifierFlags, SpatialClassifierFlagsProps, SpatialClassifierInsideDisplay,
+  CartographicRange, ColorDef, ContextRealityModelProps, ModelProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, SpatialClassifier, SpatialClassifierFlags, SpatialClassifierFlagsProps, SpatialClassifierInsideDisplay,
   SpatialClassifierOutsideDisplay, SpatialClassifiers,
 } from "@itwin/core-common";
 import {
@@ -15,6 +15,7 @@ import {
 import { DisplayTestApp } from "./App";
 import { ToolBarDropDown } from "./ToolBar";
 import { ITwinRealityData, RealityDataAccessClient, RealityDataClientOptions, RealityDataQueryCriteria, RealityDataResponse } from "@itwin/reality-data-client";
+import { Angle, AxisIndex, Box, Matrix3d, Point3d, Range3d, Transform, Vector3d, XYZ } from "@itwin/core-geometry";
 
 function clearElement(element: HTMLElement): void {
   while (element.hasChildNodes())
@@ -426,15 +427,45 @@ export class ClassificationsPanel extends ToolBarDropDown {
 // Testing code
 function runClassify() {
 
+  const p = [{ x: 10.466576, y: 7.52628, z: -109.554264 },
+    { x: 12.466576, y: 7.52628, z: -109.554264 },
+    { x: 10.466576, y: 9.52628, z: -109.554264 },
+    { x: 12.466576, y: 9.52628, z: -109.554264 },
+    { x: 10.466576, y: 7.52628, z: -100.554264 },
+    { x: 12.466576, y: 7.52628, z: -100.554264 },
+    { x: 10.466576, y: 9.52628, z: -100.554264 },
+    { x: 13, y: 9.52628, z: -100.554264 }];
+
+  const points = p.map((c) => Point3d.fromJSON(c));
+
+  const xVector = points[1].unitVectorTo(points[0])?.normalize();
+  const yVector = points[points.length - 1].unitVectorTo(points[0])?.normalize();
+
+  // const range = Range3d.fromJSON([
+  //   { x: 10.466576, y: 7.52628, z: -109.554264 },
+  //   { x: 12.466576, y: 9.52628, z: -100.554264 }
+  // ])
+
+  const p1 = Point3d.create(p[0].x, p[0].y, p[0].z);
+
+  // const x = Vector3d.create(0.5, 0, 0);
+  // const y = Vector3d.create(0, 0.5, 0);
+  // const z = Vector3d.create(0, 0, 0);
+
+  const t = Transform.createOriginAndMatrixColumns(p1, xVector ?? Vector3d.create(), yVector ?? Vector3d.create(), xVector?.crossProduct(yVector ?? Vector3d.create()) ?? Vector3d.create());
+
   const data = [{
-    id: "0xffffff0000000001",
-    range: [{ x: 11.466576, y: 7.52628, z: -109.554264 },
-    { x: 12.466576, y: 8.52628, z: -100.554264 }],
+    id: IModelApp.viewManager.selectedView?.iModel.transientIds.getNext() ?? "",
+    points: p,
+    color: ColorDef.blue,
+    transform: t,
   },
   {
-    id: "0xffffff0000000002",
-    range: [{ x: 11.466576, y: 5.52628, z: -109.554264 },
-    { x: 12.466576, y: 6.52628, z: -100.554264 }],
+    id: IModelApp.viewManager.selectedView?.iModel.transientIds.getNext() ?? "",
+    points: [{ x: 11.466576, y: 5.52628, z: -109.554264 },
+      { x: 12.466576, y: 6.52628, z: -100.554264 }],
+    color: ColorDef.red,
+    transform: t,
   }];
 
   const c1 = new SpatialClassifier(data, "My Test Classifier 1", SpatialClassifierFlags.fromJSON({
@@ -454,15 +485,23 @@ function runClassify() {
 }
 function runClassify2() {
 
+  const range = Range3d.fromJSON([
+    { x: 5.466576, y: 6.52628, z: -109.554264 },
+    { x: 7.466576, y: 8.52628, z: -100.554264 },
+  ]);
+
   const data = [{
     id: "0xffffff0000000008",
-    range: [{ x: 6.466576, y: 7.52628, z: -109.554264 },
-    { x: 7.466576, y: 8.52628, z: -100.554264 }],
+    points: range.corners(),
+    color: ColorDef.green,
+    transform: range.getLocalToWorldTransform(),
   },
   {
     id: "0xffffff0000000009",
-    range: [{ x: 9.466576, y: 7.52628, z: -109.554264 },
-    { x: 10.466576, y: 8.52628, z: -100.554264 }],
+    points: [{ x: 9.466576, y: 7.52628, z: -109.554264 },
+      { x: 10.466576, y: 8.52628, z: -100.554264 }],
+    color: ColorDef.white,
+    transform: range.getLocalToWorldTransform(),
   }];
 
   const c1 = new SpatialClassifier(data, "My Test Classifier 2", SpatialClassifierFlags.fromJSON({

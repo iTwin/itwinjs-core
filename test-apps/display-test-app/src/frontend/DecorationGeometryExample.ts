@@ -5,7 +5,7 @@
 import { assert } from "@itwin/core-bentley";
 import { Box, Cone, Point3d, Range3d, Sphere, Transform } from "@itwin/core-geometry";
 import { ColorDef, Feature, GeometryClass, GraphicParams, RenderMode, RenderTexture, SkyBox, TextureMapping, TextureTransparency } from "@itwin/core-common";
-import { CreateRenderMaterialArgs, DecorateContext, GraphicBranch, GraphicBuilder, GraphicType, imageElementFromUrl, IModelApp, IModelConnection, MaterialTextureMappingProps, StandardViewId, Viewport } from "@itwin/core-frontend";
+import { CreateRenderMaterialArgs, DecorateContext, GraphicBranch, GraphicBuilder, GraphicType, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, MaterialTextureMappingProps, StandardViewId, Viewport } from "@itwin/core-frontend";
 import { Viewer } from "./Viewer";
 
 class GeometryDecorator {
@@ -65,6 +65,23 @@ class GeometryDecorator {
   public setTextures(texture: RenderTexture | undefined, normalMap: RenderTexture | undefined) {
     this._texture = texture;
     this._normalMap = normalMap;
+  }
+
+  public testDecorationHit(id: string): boolean {
+
+    id;
+    return true;
+  }
+
+  public async getDecorationToolTip(hit: HitDetail): Promise<string | HTMLElement> {
+
+    hit;
+    const h3 = document.createElement("h3");
+    h3.innerText = "My Tooltip";
+    h3.style.background = "white";
+
+    return new Promise((resolve) => resolve(h3));
+
   }
 
   public decorate(context: DecorateContext): void {
@@ -187,8 +204,8 @@ class GeometryDecorator {
 
 export async function openDecorationGeometryExample(viewer: Viewer) {
   const viewIndependentOrigin = undefined; // new Point3d(4, 0, 0) -- uncomment for testing.
-  // const gd = new GeometryDecorator(viewer.viewport, undefined, undefined, viewIndependentOrigin);
-  // IModelApp.viewManager.addDecorator(gd);
+  const gd = new GeometryDecorator(viewer.viewport, undefined, undefined, viewIndependentOrigin);
+  IModelApp.viewManager.addDecorator(gd);
 
   assert(viewer.viewport.view.is3d());
   viewer.viewport.setStandardRotation(StandardViewId.Iso);
@@ -198,7 +215,7 @@ export async function openDecorationGeometryExample(viewer: Viewer) {
   viewer.viewport.viewFlags = viewer.viewport.viewFlags.copy({
     renderMode: RenderMode.SmoothShade,
     lighting: true,
-    visibleEdges: true,
+    visibleEdges: false,
     whiteOnWhiteReversal: false,
     backgroundMap: true,
   });

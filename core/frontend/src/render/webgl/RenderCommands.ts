@@ -515,7 +515,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
     this._addTranslucentAsOpaque = false;
   }
 
-  public initForReadPixels(gfx: TargetGraphics): void {
+  public initForReadPixels(gfx: TargetGraphics, activeVolumeClassifierGeometry?: GraphicList): void {
     this.clear();
 
     // Set flag to force translucent geometry to be put into the opaque pass.
@@ -530,6 +530,10 @@ export class RenderCommands implements Iterable<DrawCommands> {
 
     // Also background map is pickable
     this.addBackgroundMapGraphics(gfx.background);
+
+    if (undefined !== activeVolumeClassifierGeometry && 0 < activeVolumeClassifierGeometry.length) {
+      this.addGraphics(activeVolumeClassifierGeometry, RenderPass.Classification);
+    }
 
     this._addTranslucentAsOpaque = false;
 

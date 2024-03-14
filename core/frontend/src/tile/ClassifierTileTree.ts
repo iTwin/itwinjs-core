@@ -7,8 +7,9 @@
  */
 import { comparePossiblyUndefined, compareStrings, compareStringsOrUndefined, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BatchType, ClassifierTileTreeId, ColorDef, iModelTileTreeIdToString, PackedFeatureModelTable, RenderMode, RenderSchedule, RenderTexture, SpatialClassifier, SpatialClassifiers, ViewFlagsProperties,
+  BatchType, ClassifierTileTreeId, iModelTileTreeIdToString, RenderMode, RenderSchedule, SpatialClassifier, SpatialClassifiers, ViewFlagsProperties, VolumeClassifierModelProps,
 } from "@itwin/core-common";
+import { Box, Point3d, Range3d } from "@itwin/core-geometry";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -20,7 +21,6 @@ import {
 } from "./internal";
 import { GraphicType } from "../render/GraphicBuilder";
 import { GraphicList } from "../render/RenderGraphic";
-import { Box, Range3d } from "@itwin/core-geometry";
 
 interface ClassifierTreeId extends ClassifierTileTreeId {
   modelId: Id64String;
@@ -158,6 +158,32 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     };
   }
 
+  private createVolumeClassifierGeometry(context: SceneContext, modelId: VolumeClassifierModelProps[]) {
+
+    this._graphicList = modelId.map((m) => {
+
+      const builder = context.renderSystem.createGraphic({ type: GraphicType.Scene, viewport: context.viewport, pickable: { id: m.id } });
+      builder.setSymbology(m.color, m.color, 1);
+      const points = m.points.map((p) => {
+
+        let point3d = Point3d.fromJSON(p);
+        if (m.transform) {
+          point3d = m.transform?.multiplyPoint3d(point3d) ?? Point3d.create();
+        }
+        return point3d;
+      });
+
+      const range = Range3d.createArray(points);
+
+      const box = Box.createRange(range, true);
+      const inv = m.transform?.inverse();
+      inv && box?.tryTransformInPlace(inv);
+      box && builder.addSolidPrimitive(box);
+      return builder.finish();
+    });
+
+  }
+
   // Add volume classifiers to scene (planar classifiers are added seperately.)
   public override addToScene(context: SceneContext): void {
     if (this.isPlanar)
@@ -176,17 +202,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
       if (undefined === classifierTree)
         return;
     } else if (!this._graphicList) {
-
-      this._graphicList = classifier.modelId.map((m) => {
-
-        const builder = context.renderSystem.createGraphic({ type: GraphicType.Scene, viewport: context.viewport, pickable: { id: m.id, modelId: m.id } });
-        builder.setSymbology(ColorDef.red.withTransparency(255), ColorDef.red.withTransparency(255), 1);
-        const box = Box.createRange(Range3d.fromJSON(m.range), true);
-        if (box) {
-          builder.addSolidPrimitive(box);
-        }
-        return builder.finish();
-      });
+      this.createVolumeClassifierGeometry(context, classifier.modelId);
     }
 
     context.setVolumeClassifier(classifier, classifiedTree.modelId, this._graphicList);
