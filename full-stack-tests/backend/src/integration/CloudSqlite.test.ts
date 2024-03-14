@@ -477,5 +477,12 @@ describe("CloudSqlite", () => {
     clock.restore();
     sinon.restore();
   });
+
+  it("should throw error if BlobContainer.service is undefined", async () => {
+    const contain1 = testContainers[0];
+    const contProps = { baseUri: AzuriteTest.baseUri, containerId: contain1.containerId, storageType: AzuriteTest.storageType, writeable: true };
+    const accessToken = await CloudSqlite.requestToken(contProps);
+    expect(() => accessToken).throws("BlobContainer.service is not defined");
+  });
 });
 
