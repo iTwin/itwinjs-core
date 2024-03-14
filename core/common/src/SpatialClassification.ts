@@ -115,13 +115,13 @@ export class SpatialClassifierFlags {
 }
 
 /**
- * Contains the data required to create a box volume classifier.
+ * Contains the data required to create a volume classifier.
  * @public
  * @extensions
- * @param id transient id that is used to identify the volume classifier(for eg: to show tooltip).
+ * @param id transient id that is used to identify the volume classifier(for eg: to show the tooltip).
  * @param color color of the volume classifier geometry.
- * @param points array of points that will be used to create to form a volume classifier box geometry.
- * @param transform tranform of the geometry.
+ * @param points array of points that will be used to create box geometry for volume classification.
+ * @param transform transform of the geometry.
  */
 export interface VolumeClassifierModelProps {
   id: Id64String;
