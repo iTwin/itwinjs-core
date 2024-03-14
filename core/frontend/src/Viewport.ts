@@ -500,7 +500,6 @@ export abstract class Viewport implements IDisposable, TileUser {
   private _alwaysDrawn?: Id64Set;
   private _alwaysDrawnExclusive: boolean = false;
   private readonly _featureOverrideProviders: FeatureOverrideProvider[] = [];
-  private readonly _tiledGraphicsProviders = new Set<TiledGraphicsProvider>();
   private _mapTiledGraphicsProvider?: MapTiledGraphicsProvider;
   private _hilite = new Hilite.Settings();
   private _emphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
@@ -1537,18 +1536,18 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @see [[addTiledGraphicsProvider]].
    */
   public get tiledGraphicsProviders(): Iterable<TiledGraphicsProvider> {
-    return this._tiledGraphicsProviders;
+    return this.scene.tiledGraphicsProviders.providers;
   }
 
   /** @internal */
   public forEachTiledGraphicsProvider(func: (provider: TiledGraphicsProvider) => void): void {
-    for (const provider of this._tiledGraphicsProviders)
+    for (const provider of this.tiledGraphicsProviders)
       func(provider);
   }
 
   /** @internal */
   protected forEachTiledGraphicsProviderTree(func: (ref: TileTreeReference) => void): void {
-    for (const provider of this._tiledGraphicsProviders)
+    for (const provider of this.tiledGraphicsProviders)
       provider.forEachTileTreeRef(this, (ref) => func(ref));
   }
 
@@ -1575,7 +1574,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     if (this._mapTiledGraphicsProvider && !TiledGraphicsProvider.isLoadingComplete(this._mapTiledGraphicsProvider, this))
       return false;
 
-    for (const provider of this._tiledGraphicsProviders)
+    for (const provider of this.tiledGraphicsProviders)
       if (!TiledGraphicsProvider.isLoadingComplete(provider, this))
         return false;
 
@@ -1595,21 +1594,19 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @see [[dropTiledGraphicsProvider]]
    */
   public addTiledGraphicsProvider(provider: TiledGraphicsProvider): void {
-    this._tiledGraphicsProviders.add(provider);
-    this.invalidateScene();
+    this.scene.tiledGraphicsProviders.add(provider);
   }
 
   /** Remove a previously-registered provider of tile graphics.
    * @see [[addTiledGraphicsProvider]]
    */
   public dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void {
-    this._tiledGraphicsProviders.delete(provider);
-    this.invalidateScene();
+    this.scene.tiledGraphicsProviders.drop(provider);
   }
 
   /** Returns true if the specified provider has been registered with this viewport via [[addTiledGraphicsProvider]]. */
   public hasTiledGraphicsProvider(provider: TiledGraphicsProvider): boolean {
-    return this._tiledGraphicsProviders.has(provider);
+    return undefined !== this.scene.tiledGraphicsProviders.find(provider);
   }
 
   /** @internal */
@@ -2411,7 +2408,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     if (this._mapTiledGraphicsProvider)
       TiledGraphicsProvider.addToScene(this._mapTiledGraphicsProvider, context);
 
-    for (const provider of this._tiledGraphicsProviders)
+    for (const provider of this.tiledGraphicsProviders)
       TiledGraphicsProvider.addToScene(provider, context);
   }
 

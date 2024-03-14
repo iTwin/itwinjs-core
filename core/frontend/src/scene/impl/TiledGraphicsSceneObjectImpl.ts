@@ -78,11 +78,29 @@ export class TiledGraphicsSceneObjectsImpl implements TiledGraphicsSceneObjects 
     this._scene.onContentsChanged.raiseEvent(object, "delete");
   }
 
+  drop(provider: TiledGraphicsProvider): void {
+    const index = this.findIndex(provider);
+    if (-1 !== index) {
+      const object = this._objects[index];
+      this._objects.splice(index, 1);
+      this._scene.onContentsChanged.raiseEvent(object, "delete");
+    }
+  }
+
   clear(): void {
     for (let i = this._objects.length - 1; i >= 0; i++) {
       const object = this._objects[i];
       this._objects.length = i;
       this._scene.onContentsChanged.raiseEvent(object, "delete");
     }
+  }
+
+  private * _getProviders() {
+    for (const object of this)
+      yield object.graphicsProvider;
+  }
+
+  get providers(): Iterable<TiledGraphicsProvider> {
+    return this._getProviders();
   }
 }

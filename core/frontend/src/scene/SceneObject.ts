@@ -81,8 +81,10 @@ export interface RealityModelSceneObjects extends Iterable<RealityModelSceneObje
 export interface TiledGraphicsSceneObjects extends Iterable<TiledGraphicsSceneObject> {
   add(provider: TiledGraphicsProvider, args?: AddSceneObjectArgs): TiledGraphicsSceneObject;
   delete(object: TiledGraphicsSceneObject): void;
+  drop(provider: TiledGraphicsProvider): void;
   clear(): void;
   find(provider: TiledGraphicsProvider): TiledGraphicsSceneObject | undefined;
+  readonly providers: Iterable<TiledGraphicsProvider>;
 }
 
 // For Decorators registered with ViewManager.
