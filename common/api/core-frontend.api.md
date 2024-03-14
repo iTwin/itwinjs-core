@@ -14062,6 +14062,8 @@ export class TileAdmin {
     // @internal (undocumented)
     invalidateAllScenes(): void;
     // @internal
+    get isPreloadingAllowed(): boolean;
+    // @internal
     isTileInUse(marker: TileUsageMarker): boolean;
     // @internal
     markTileUsed(marker: TileUsageMarker, user: TileUser): void;
@@ -14087,6 +14089,8 @@ export class TileAdmin {
     readonly onTileTreeLoad: BeEvent<(tileTree: TileTreeOwner) => void>;
     // @internal (undocumented)
     readonly optimizeBRepProcessing: boolean;
+    // @internal (undocumented)
+    readonly percentGPUMemDisablePreload: number;
     // @internal
     process(): void;
     // @internal
@@ -14163,6 +14167,8 @@ export namespace TileAdmin {
         mobileRealityTileMinToleranceRatio?: number;
         // @internal
         optimizeBRepProcessing?: boolean;
+        // @alpha
+        percentGPUMemDisablePreload?: number;
         retryInterval?: number;
         tileExpirationTime?: number;
         // @beta
