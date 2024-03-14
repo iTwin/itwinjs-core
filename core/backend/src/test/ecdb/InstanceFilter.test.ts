@@ -13,7 +13,6 @@ describe.only("GenericInstanceSerializer", () => {
     console.log(ecsql);
     const filter = GenericInstanceFilterFromECSqlAstDeserializer.deserialize(exp);
     console.log(JSON.stringify(filter));
-
   });
 
 });
