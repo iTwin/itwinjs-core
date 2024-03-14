@@ -135,7 +135,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public isFadeOutActive = false;
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: SpatialClassifier;
-  public activeVolumeClassifierGeometry: GraphicList | undefined = undefined;
+  public activeVolumeClassifierGeometry?: GraphicList;
   public activeVolumeClassifierModelId?: Id64String;
   private _currentAnimationTransformNodeId?: number;
 

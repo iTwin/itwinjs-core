@@ -146,7 +146,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   public get viewFlags(): Partial<ViewFlagsProperties> {
     return {
       renderMode: RenderMode.SmoothShade,
-      transparency: true,      // Igored for point clouds as they don't support transparency.
+      transparency: true,      // Ignored for point clouds as they don't support transparency.
       textures: false,
       lighting: false,
       shadows: false,
@@ -158,27 +158,23 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     };
   }
 
+  // Create a box geometries that can be used for volume classification.
   private createVolumeClassifierGeometry(context: SceneContext, modelId: VolumeClassifierModelProps[]) {
 
     this._graphicList = modelId.map((m) => {
 
       const builder = context.renderSystem.createGraphic({ type: GraphicType.Scene, viewport: context.viewport, pickable: { id: m.id } });
       builder.setSymbology(m.color, m.color, 1);
-      const points = m.points.map((p) => {
 
-        let point3d = Point3d.fromJSON(p);
-        if (m.transform) {
-          point3d = m.transform?.multiplyPoint3d(point3d) ?? Point3d.create();
-        }
-        return point3d;
-      });
-
+      const points = m.points.map(p => m.transform?.multiplyPoint3d(Point3d.fromJSON(p)) ?? Point3d.fromJSON(p));
       const range = Range3d.createArray(points);
 
       const box = Box.createRange(range, true);
-      const inv = m.transform?.inverse();
-      inv && box?.tryTransformInPlace(inv);
-      box && builder.addSolidPrimitive(box);
+      if (box) {
+        const inverseTranform = m.transform?.inverse();
+        inverseTranform && box.tryTransformInPlace(inverseTranform);
+        builder.addSolidPrimitive(box);
+      }
       return builder.finish();
     });
 
@@ -201,6 +197,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
       const classifierTree = this.treeOwner.load();
       if (undefined === classifierTree)
         return;
+
     } else if (!this._graphicList) {
       this.createVolumeClassifierGeometry(context, classifier.modelId);
     }

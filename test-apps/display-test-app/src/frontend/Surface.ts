@@ -131,9 +131,7 @@ export class Surface {
       iconUnicode: "\ue9d8", // "property-data"
       tooltip: "Open Blank Connection",
       click: async () => {
-        await this.openBlankConnection({
-          location: Cartographic.fromDegrees({ longitude: -0.8835, latitude: 53.2255, height: 100 }),
-        });
+        await this.openBlankConnection();
       },
     }));
 
@@ -174,7 +172,6 @@ export class Surface {
     });
 
     const viewer = await this.createViewer({ iModel });
-    void openDecorationGeometryExample(viewer);
     viewer.dock(Dock.Full);
     return viewer;
   }

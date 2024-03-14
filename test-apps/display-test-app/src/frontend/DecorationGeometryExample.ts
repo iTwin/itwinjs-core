@@ -67,23 +67,6 @@ class GeometryDecorator {
     this._normalMap = normalMap;
   }
 
-  public testDecorationHit(id: string): boolean {
-
-    id;
-    return true;
-  }
-
-  public async getDecorationToolTip(hit: HitDetail): Promise<string | HTMLElement> {
-
-    hit;
-    const h3 = document.createElement("h3");
-    h3.innerText = "My Tooltip";
-    h3.style.background = "white";
-
-    return new Promise((resolve) => resolve(h3));
-
-  }
-
   public decorate(context: DecorateContext): void {
     if (context.viewport.iModel !== this._iModel)
       return;
@@ -215,7 +198,7 @@ export async function openDecorationGeometryExample(viewer: Viewer) {
   viewer.viewport.viewFlags = viewer.viewport.viewFlags.copy({
     renderMode: RenderMode.SmoothShade,
     lighting: true,
-    visibleEdges: false,
+    visibleEdges: true,
     whiteOnWhiteReversal: false,
     backgroundMap: true,
   });
@@ -232,5 +215,5 @@ export async function openDecorationGeometryExample(viewer: Viewer) {
   const nMapEl = await imageElementFromUrl("brick05normal.jpg");
   const normalMap = IModelApp.renderSystem.createTexture({ image: { source: nMapEl, transparency: TextureTransparency.Opaque }, ownership: "external" });
 
-  // gd.setTextures(texture, normalMap);
+  gd.setTextures(texture, normalMap);
 }
