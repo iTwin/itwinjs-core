@@ -20,6 +20,8 @@ import { TransformProps } from '@itwin/core-geometry';
 // @beta
 export interface BasicManipulationCommandIpc extends EditCommandIpc {
     // (undocumented)
+    addAllowedChannels(channelKeys: string[]): Promise<IModelStatus>;
+    // (undocumented)
     deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
     insertGeometricElement(props: GeometricElementProps): Promise<Id64String>;
     insertGeometryPart(props: GeometryPartProps): Promise<Id64String>;

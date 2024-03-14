@@ -980,7 +980,7 @@ export abstract class IModelDb extends IModel {
         IModelJsFs.recursiveMkDirSync(baseDir);
         props = { ...props, tempFileBase: join(baseDir, file.path) };
       }
-      nativeDb.openIModel(file.path, openMode, upgradeOptions, props, props?.container, props);
+      nativeDb.openIModel(file.path, openMode, upgradeOptions, props, props?.container);
       return nativeDb;
     } catch (err: any) {
       throw new IModelError(err.errorNumber, `${err.message}, ${file.path}`);

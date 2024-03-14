@@ -791,8 +791,6 @@ export class ChannelAdmin implements ChannelControl {
     // (undocumented)
     getChannelKey(elementId: Id64String): ChannelKey;
     // (undocumented)
-    get hasChannels(): boolean;
-    // (undocumented)
     makeChannelRoot(args: {
         elementId: Id64String;
         channelKey: ChannelKey;
@@ -811,7 +809,6 @@ export class ChannelAdmin implements ChannelControl {
 export interface ChannelControl {
     addAllowedChannel(channelKey: ChannelKey): void;
     getChannelKey(elementId: Id64String): ChannelKey;
-    get hasChannels(): boolean;
     makeChannelRoot(args: {
         elementId: Id64String;
         channelKey: ChannelKey;
