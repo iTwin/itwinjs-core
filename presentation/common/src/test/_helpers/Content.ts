@@ -3,6 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import {
+  ArrayItemsField,
   ArrayPropertiesField,
   CategoryDescription,
   ClassInfo,
@@ -26,7 +27,7 @@ import {
   ValuesMap,
 } from "../../presentation-common";
 import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
-import { createTestECClassInfo, createTestECInstanceKey, createTestPropertyInfo, createTestRelationshipPath } from "./EC";
+import { createTestECClassInfo, createTestECInstanceKey, createTestRelationshipPath } from "./EC";
 
 /**
  * @internal Used for testing only.
@@ -108,7 +109,7 @@ export function createTestArrayPropertiesContentField(props: {
   properties: Property[];
   category?: CategoryDescription;
   type?: TypeDescription;
-  itemsField?: PropertiesField;
+  itemsField?: ArrayItemsField;
   name?: string;
   label?: string;
   isReadonly?: boolean;
@@ -129,8 +130,7 @@ export function createTestArrayPropertiesContentField(props: {
       },
     },
     props.itemsField ??
-      createTestPropertiesContentField({
-        properties: [{ property: createTestPropertyInfo() }],
+      ArrayItemsField.fromJSON({
         type: { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
       }),
     props.isReadonly ?? false,

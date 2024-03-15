@@ -24,12 +24,47 @@ import { UnitSystemKey } from '@itwin/core-quantity';
 export function addFieldHierarchy(rootHierarchies: FieldHierarchy[], hierarchy: FieldHierarchy): void;
 
 // @public
+export class ArrayItemsField implements Pick<Field, "editor" | "renderer" | "type"> {
+    constructor(type: TypeDescription, editor?: EditorDescription, renderer?: RendererDescription);
+    // (undocumented)
+    clone(): ArrayItemsField;
+    editor?: EditorDescription;
+    static fromJSON(json: ArrayItemsFieldJSON): ArrayItemsField;
+    renderer?: RendererDescription;
+    toJSON(): ArrayItemsFieldJSON;
+    type: TypeDescription;
+}
+
+// @public
+export interface ArrayItemsFieldJSON {
+    // (undocumented)
+    editor?: EditorDescription;
+    // (undocumented)
+    renderer?: RendererDescription;
+    // (undocumented)
+    type: TypeDescription;
+}
+
+// @public
 export class ArrayPropertiesField extends PropertiesField {
-    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, itemsField: PropertiesField, isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription, renderer?: RendererDescription);
+    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, itemsField: ArrayItemsField, isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription, renderer?: RendererDescription);
+    // (undocumented)
+    clone(): ArrayPropertiesField;
+    static fromCompressedJSON(json: ArrayPropertiesFieldJSON<Id64String>, classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }, categories: CategoryDescription[]): ArrayPropertiesField | undefined;
+    static fromJSON(json: ArrayPropertiesFieldJSON | undefined, categories: CategoryDescription[]): ArrayPropertiesField | undefined;
     // (undocumented)
     isArrayPropertiesField(): this is ArrayPropertiesField;
     // (undocumented)
-    get itemsField(): PropertiesField;
+    itemsField: ArrayItemsField;
+    toJSON(): ArrayPropertiesFieldJSON;
+}
+
+// @public
+export interface ArrayPropertiesFieldJSON<TClassInfoJSON = ClassInfo> extends PropertiesFieldJSON<TClassInfoJSON> {
+    // (undocumented)
+    itemsField: ArrayItemsFieldJSON;
 }
 
 // @public
@@ -1030,7 +1065,7 @@ export interface FieldHierarchy {
 }
 
 // @public
-export type FieldJSON<TClassInfoJSON = ClassInfoJSON> = BaseFieldJSON | PropertiesFieldJSON<TClassInfoJSON> | NestedContentFieldJSON<TClassInfoJSON>;
+export type FieldJSON<TClassInfoJSON = ClassInfoJSON> = BaseFieldJSON | PropertiesFieldJSON<TClassInfoJSON> | ArrayPropertiesFieldJSON<TClassInfoJSON> | NestedContentFieldJSON<TClassInfoJSON>;
 
 // @public
 export interface FilterByInstancePathsHierarchyRequestOptions<TIModel, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {

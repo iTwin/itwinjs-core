@@ -12,6 +12,7 @@ Table of contents:
   - [Editor](#editor)
   - [Lock Control](#lock-control)
   - [Presentation](#presentation)
+    - [Custom renderer and editor support for array items](#custom-renderer-and-editor-support-for-array-items)
     - [Deprecation of async array results in favor of async iterators](#deprecation-of-async-array-results-in-favor-of-async-iterators)
   - [Fixed bounding box types](#fixed-bounding-box-types)
 
@@ -61,6 +62,29 @@ Removal of several @alpha test tools for creating Generic:PhysicalObject class e
 Changes to @beta [LockControl]($backend) class to make releaseAllLocks @internal. Should only be called internally after pushing or abandoning all changes.
 
 ## Presentation
+
+### Custom renderer and editor support for array items
+
+Support for custom renderers and editors has been added for array items. A renderer / editor may be assigned to items of specific array by creating a [ContentModifier]($presentation-common) for
+a class that has the property and adding a property override for the array property with `[*]` suffix. Example:
+
+```json
+{
+  "ruleType": "ContentModifier",
+  "class": { "schemaName": "MySchemaName", "className": "MyClassName" },
+  "propertyOverrides": [
+    {
+      "name": "MyArrayProperty[*]",
+      "renderer": {
+        "rendererName": "test-renderer"
+      },
+      "editor": {
+        "editorName": "test-editor"
+      }
+    }
+  ]
+}
+```
 
 ### Deprecation of async array results in favor of async iterators
 

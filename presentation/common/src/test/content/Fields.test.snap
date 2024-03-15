@@ -1,5 +1,91 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`ArrayPropertiesField fromJSON creates valid ArrayPropertiesField from valid JSON 1`] = `
+Object {
+  "category": "test-category",
+  "editor": undefined,
+  "isReadonly": false,
+  "itemsField": Object {
+    "editor": undefined,
+    "renderer": undefined,
+    "type": Object {
+      "typeName": "string",
+      "valueFormat": "Primitive",
+    },
+  },
+  "label": "Properties Field",
+  "name": "PropertiesField",
+  "priority": 0,
+  "properties": Array [
+    Object {
+      "property": Object {
+        "classInfo": Object {
+          "id": "0x1",
+          "label": "Class Label",
+          "name": "SchemaName:ClassName",
+        },
+        "name": "PropertyName",
+        "type": "string[]",
+      },
+    },
+  ],
+  "renderer": undefined,
+  "type": Object {
+    "memberType": Object {
+      "typeName": "string",
+      "valueFormat": "Primitive",
+    },
+    "typeName": "string[]",
+    "valueFormat": "Array",
+  },
+}
+`;
+
+exports[`Field fromJSON creates valid ArrayPropertiesField from valid JSON 1`] = `
+Object {
+  "category": "test-category",
+  "editor": undefined,
+  "isReadonly": false,
+  "itemsField": Object {
+    "editor": Object {
+      "name": "custom-editor",
+    },
+    "renderer": Object {
+      "name": "custom-renderer",
+    },
+    "type": Object {
+      "typeName": "string",
+      "valueFormat": "Primitive",
+    },
+  },
+  "label": "Properties Field",
+  "name": "PropertiesField",
+  "priority": 0,
+  "properties": Array [
+    Object {
+      "property": Object {
+        "classInfo": Object {
+          "id": "0x1",
+          "label": "Class Label",
+          "name": "SchemaName:ClassName",
+        },
+        "name": "PropertyName",
+        "type": "string",
+      },
+    },
+  ],
+  "renderer": undefined,
+  "type": Object {
+    "memberType": Object {
+      "typeName": "string",
+      "valueFormat": "Primitive",
+    },
+    "typeName": "string[]",
+    "valueFormat": "Array",
+  },
+}
+`;
+
 exports[`Field fromJSON creates valid Field from valid JSON 1`] = `
 Object {
   "category": "test-category",

@@ -52,6 +52,24 @@ export interface PropertiesFieldJSON<TClassInfoJSON = ClassInfoJSON> extends Bas
 }
 
 /**
+ * Data structure defining an item in [[ArrayPropertiesField]]
+ * @public
+ */
+export interface ArrayItemsFieldJSON {
+  type: TypeDescription;
+  renderer?: RendererDescription;
+  editor?: EditorDescription;
+}
+
+/**
+ * Data structure for a [[ArrayPropertiesField]] serialized to JSON.
+ * @public
+ */
+export interface ArrayPropertiesFieldJSON<TClassInfoJSON = ClassInfo> extends PropertiesFieldJSON<TClassInfoJSON> {
+  itemsField: ArrayItemsFieldJSON;
+}
+
+/**
  * Data structure for a [[NestedContentField]] serialized to JSON.
  * @public
  */
@@ -71,11 +89,20 @@ export interface NestedContentFieldJSON<TClassInfoJSON = ClassInfoJSON> extends 
  * @public
  */
 // eslint-disable-next-line deprecation/deprecation
-export type FieldJSON<TClassInfoJSON = ClassInfoJSON> = BaseFieldJSON | PropertiesFieldJSON<TClassInfoJSON> | NestedContentFieldJSON<TClassInfoJSON>;
+export type FieldJSON<TClassInfoJSON = ClassInfoJSON> =
+  | BaseFieldJSON
+  | PropertiesFieldJSON<TClassInfoJSON>
+  | ArrayPropertiesFieldJSON<TClassInfoJSON>
+  | NestedContentFieldJSON<TClassInfoJSON>;
 
 /** Is supplied field a properties field. */
 const isPropertiesField = (field: FieldJSON | Field): field is PropertiesFieldJSON<any> | PropertiesField => {
   return !!(field as any).properties;
+};
+
+/** Is supplied field an array properties field. */
+const isArrayPropertiesField = (field: FieldJSON | Field): field is ArrayPropertiesFieldJSON<any> | ArrayPropertiesField => {
+  return !!(field as ArrayPropertiesFieldJSON).itemsField;
 };
 
 /** Is supplied field a nested content field. */
@@ -210,6 +237,9 @@ export class Field {
       return undefined;
     }
     if (isPropertiesField(json)) {
+      if (isArrayPropertiesField(json)) {
+        return ArrayPropertiesField.fromJSON(json, categories);
+      }
       return PropertiesField.fromJSON(json, categories);
     }
     if (isNestedContentField(json)) {
@@ -233,6 +263,9 @@ export class Field {
     }
 
     if (isPropertiesField(json)) {
+      if (isArrayPropertiesField(json)) {
+        return ArrayPropertiesField.fromCompressedJSON(json, classesMap, categories);
+      }
       return PropertiesField.fromCompressedJSON(json, classesMap, categories);
     }
 
@@ -442,19 +475,64 @@ export class PropertiesField extends Field {
 }
 
 /**
+ * Defines an array item field of [[ArrayPropertiesField]].
+ * @public
+ */
+export class ArrayItemsField implements Pick<Field, "editor" | "renderer" | "type"> {
+  /** Description of this field's values data type */
+  public type: TypeDescription;
+  /** Property renderer used to render values of this field */
+  public renderer?: RendererDescription;
+  /** Property editor used to edit values of this field */
+  public editor?: EditorDescription;
+
+  /**
+   * Creates an instance of Field.
+   * @param type Description of this field's values data type
+   * @param editor Property editor used to edit values of this field
+   * @param renderer Property renderer used to render values of this field
+   */
+  public constructor(type: TypeDescription, editor?: EditorDescription, renderer?: RendererDescription) {
+    this.type = type;
+    this.editor = editor;
+    this.renderer = renderer;
+  }
+
+  public clone() {
+    return new ArrayItemsField(this.type, this.editor, this.renderer);
+  }
+
+  /** Serialize this object to JSON */
+  public toJSON(): ArrayItemsFieldJSON {
+    return {
+      type: this.type,
+      renderer: this.renderer,
+      editor: this.editor,
+    };
+  }
+
+  /** Deserialize [[ArrayItemField]] from JSON */
+  public static fromJSON(json: ArrayItemsFieldJSON): ArrayItemsField {
+    const field = Object.create(ArrayItemsField.prototype);
+    return Object.assign(field, json);
+  }
+}
+
+/**
  * Describes a content field that's based on one or more similar
  * EC array properties.
  *
  * @public
  */
 export class ArrayPropertiesField extends PropertiesField {
-  private _itemsField: PropertiesField;
+  public itemsField: ArrayItemsField;
+
   public constructor(
     category: CategoryDescription,
     name: string,
     label: string,
     description: TypeDescription,
-    itemsField: PropertiesField,
+    itemsField: ArrayItemsField,
     isReadonly: boolean,
     priority: number,
     properties: Property[],
@@ -462,13 +540,66 @@ export class ArrayPropertiesField extends PropertiesField {
     renderer?: RendererDescription,
   ) {
     super(category, name, label, description, isReadonly, priority, properties, editor, renderer);
-    this._itemsField = itemsField;
+    this.itemsField = itemsField;
   }
+
   public override isArrayPropertiesField(): this is ArrayPropertiesField {
     return true;
   }
-  public get itemsField() {
-    return this._itemsField;
+
+  public override clone() {
+    const clone = new ArrayPropertiesField(
+      this.category,
+      this.name,
+      this.label,
+      this.type,
+      this.itemsField.clone(),
+      this.isReadonly,
+      this.priority,
+      this.properties,
+      this.editor,
+      this.renderer,
+    );
+    clone.rebuildParentship(this.parent);
+    return clone;
+  }
+
+  /** Serialize this object to JSON */
+  public override toJSON(): ArrayPropertiesFieldJSON {
+    return {
+      ...super.toJSON(),
+      itemsField: this.itemsField.toJSON(),
+    };
+  }
+
+  /** Deserialize [[ArrayPropertiesField]] from JSON */
+  public static override fromJSON(json: ArrayPropertiesFieldJSON | undefined, categories: CategoryDescription[]): ArrayPropertiesField | undefined {
+    if (!json) {
+      return undefined;
+    }
+
+    const field = Object.create(ArrayPropertiesField.prototype);
+    return Object.assign(field, json, {
+      category: this.getCategoryFromFieldJson(json, categories),
+      itemsField: ArrayItemsField.fromJSON(json.itemsField),
+    });
+  }
+
+  /**
+   * Deserialize a [[PropertiesField]] from compressed JSON.
+   * @public
+   */
+  public static override fromCompressedJSON(
+    json: ArrayPropertiesFieldJSON<Id64String>,
+    classesMap: { [id: string]: CompressedClassInfoJSON },
+    categories: CategoryDescription[],
+  ): ArrayPropertiesField | undefined {
+    const field = Object.create(ArrayPropertiesField.prototype);
+    return Object.assign(field, json, {
+      category: this.getCategoryFromFieldJson(json, categories),
+      properties: json.properties.map((propertyJson) => fromCompressedPropertyJSON(propertyJson, classesMap)),
+      itemsField: ArrayItemsField.fromJSON(json.itemsField),
+    });
   }
 }
 

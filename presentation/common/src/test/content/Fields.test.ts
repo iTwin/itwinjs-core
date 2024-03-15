@@ -3,8 +3,8 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Field, NestedContentField, PropertiesField } from "../../presentation-common";
-import { FieldDescriptor, FieldDescriptorType } from "../../presentation-common/content/Fields";
+import { Field, NestedContentField, PrimitiveTypeDescription, PropertiesField, PropertyValueFormat } from "../../presentation-common";
+import { ArrayItemsField, ArrayPropertiesField, FieldDescriptor, FieldDescriptorType } from "../../presentation-common/content/Fields";
 import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
 import {
   createTestArrayPropertiesContentField,
@@ -29,6 +29,26 @@ describe("Field", () => {
       const json = createTestPropertiesContentField({
         category,
         properties: [{ property: createTestPropertyInfo() }],
+      }).toJSON();
+      const field = Field.fromJSON(json, [category]);
+      expect(field).to.matchSnapshot();
+    });
+
+    it("creates valid ArrayPropertiesField from valid JSON", () => {
+      const category = createTestCategoryDescription();
+      const itemType: PrimitiveTypeDescription = {
+        valueFormat: PropertyValueFormat.Primitive,
+        typeName: "string",
+      };
+      const json = createTestArrayPropertiesContentField({
+        category,
+        properties: [{ property: createTestPropertyInfo() }],
+        type: {
+          valueFormat: PropertyValueFormat.Array,
+          typeName: `${itemType.typeName}[]`,
+          memberType: itemType,
+        },
+        itemsField: new ArrayItemsField(itemType, { name: "custom-editor" }, { name: "custom-renderer" }),
       }).toJSON();
       const field = Field.fromJSON(json, [category]);
       expect(field).to.matchSnapshot();
@@ -435,17 +455,47 @@ describe("PropertiesField", () => {
 });
 
 describe("ArrayPropertiesField", () => {
+  describe("fromJSON", () => {
+    it("creates valid ArrayPropertiesField from valid JSON", () => {
+      const category = createTestCategoryDescription();
+      const itemsField = new ArrayItemsField({ valueFormat: PropertyValueFormat.Primitive, typeName: "string" });
+      const json = createTestArrayPropertiesContentField({
+        category,
+        properties: [{ property: createTestPropertyInfo({ type: "string[]" }) }],
+        itemsField,
+      }).toJSON();
+      const field = ArrayPropertiesField.fromJSON(json, [category]);
+      expect(field).to.matchSnapshot();
+    });
+
+    it("returns undefined for undefined JSON", () => {
+      const field = ArrayPropertiesField.fromJSON(undefined, []);
+      expect(field).to.be.undefined;
+    });
+  });
+
   describe("isArrayPropertiesField", () => {
     it("returns true", () => {
-      const itemsField = createTestPropertiesContentField({
-        properties: [{ property: createTestPropertyInfo({ type: "string" }) }],
-      });
+      const itemsField = new ArrayItemsField({ valueFormat: PropertyValueFormat.Primitive, typeName: "string" });
       const field = createTestArrayPropertiesContentField({
         properties: [{ property: createTestPropertyInfo({ type: "string[]" }) }],
         itemsField,
       });
       expect(field.isArrayPropertiesField()).to.be.true;
       expect(field.itemsField).to.eq(itemsField);
+    });
+  });
+
+  describe("clone", () => {
+    it("returns exact copy of itself", () => {
+      const itemsField = new ArrayItemsField({ valueFormat: PropertyValueFormat.Primitive, typeName: "string" });
+      const field = createTestArrayPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ type: "string[]" }) }],
+        itemsField,
+      });
+      const clone = field.clone();
+      expect(clone).to.be.instanceOf(ArrayPropertiesField);
+      expect(clone.toJSON()).to.deep.eq(field.toJSON());
     });
   });
 });

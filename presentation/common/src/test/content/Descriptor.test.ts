@@ -135,6 +135,30 @@ describe("Descriptor", () => {
             ],
           },
           {
+            name: "test-array-properties-field",
+            label: "Test Array Properties Field",
+            type: {
+              valueFormat: PropertyValueFormat.Array,
+              typeName: "string[]",
+              memberType: { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
+            },
+            category: category.name,
+            isReadonly: false,
+            priority: 0,
+            properties: [
+              {
+                property: {
+                  classInfo: ids[0],
+                  name: "PropertyName",
+                  type: "TestPropertyType",
+                },
+              },
+            ],
+            itemsField: {
+              type: { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
+            },
+          },
+          {
             name: "test-nested-content-field",
             label: "Test Nested Content Field",
             type: {
