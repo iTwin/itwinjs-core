@@ -1868,12 +1868,12 @@ export class ClassNameExpr extends ClassRefExpr {
     if (!match) {
       throw new Error("ECSQL className must follow syntax: [+][ALL|ONLY] [tablespace.][.|:][schemaOrAlias]][.|:][className] [AS] [alias");
     }
-    const plus = match.at(2);
-    const allOrOnlyStr = match.at(3);
-    const tablespace = match.at(5);
-    const schemaOrAlias = match.at(6);
-    const className = match.at(7);
-    const alias = match.at(11);
+    const plus = match[2];
+    const allOrOnlyStr = match[3];
+    const tablespace = match[5];
+    const schemaOrAlias = match[6];
+    const className = match[7];
+    const alias = match[11];
     if (!schemaOrAlias || !className)
       throw new Error("ECSQL className must follow syntax: [+][ALL|ONLY] [tablespace.][.|:][schemaOrAlias]][.|:][className] [AS] [alias");
     let polyInfo: PolymorphicInfo | undefined;
