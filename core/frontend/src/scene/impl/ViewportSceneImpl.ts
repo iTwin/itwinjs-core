@@ -6,7 +6,7 @@
 import { assert, BeEvent, Guid } from "@itwin/core-bentley";
 import { ViewState, ViewState2d } from "../../ViewState";
 import { Viewport } from "../../Viewport";
-import { CreateViewportSceneArgs, Model2dScene, SpatialScene, ViewportScene } from "../ViewportScene";
+import { CreateModel2dSceneArgs, CreateSpatialSceneArgs, CreateViewportSceneArgs, Model2dScene, SpatialScene, ViewportScene } from "../ViewportScene";
 import { BaseIModelViewImpl, IModelSpatialViewImpl, SpatialViewSceneObjectImpl, SpatialViewSceneObjectsImpl, View2dImpl, View2dSceneObjectImpl } from "./IModelViewImpl";
 import { ScenePresentation2dImpl, ScenePresentation3dImpl, BaseScenePresentationImpl, ScenePresentationImpl, PresentationSceneObjectImpl } from "./ScenePresentationImpl";
 import { SceneVolume2dImpl, SceneVolume3dImpl, SceneVolumeImpl } from "./SceneVolumeImpl";
@@ -18,14 +18,14 @@ import { SceneContext } from "../../ViewContext";
 import { Decorations } from "../../core-frontend";
 
 export abstract class ViewportSceneImpl implements ViewportScene {
+  private readonly _detach: Array<() => void> = [];
   readonly onContentsChanged = new BeEvent<(object: SceneObject, change: "add" | "delete") => void>;
   readonly onObjectDisplayChanged = new BeEvent<(object: SceneObject) => void>();
   
   readonly backingView: ViewState;
-  readonly viewport: Viewport;
   private readonly _subcategories = new SubCategoriesCache.Queue();
 
-  readonly tiledGraphics: TiledGraphicsSceneObjects;
+  readonly tiledGraphics: TiledGraphicsSceneObjectsImpl;
   readonly decorators = [] as any; // ###TODO
   
   abstract isSpatial(): this is SpatialScene;
@@ -36,18 +36,46 @@ export abstract class ViewportSceneImpl implements ViewportScene {
   abstract get volume(): SceneVolumeImpl;
   // abstract get iModels(): Iterable<IModelViewSceneObject>;
   
-  protected constructor(viewport: Viewport, view: ViewState) {
+  protected constructor(view: ViewState) {
     this.backingView = view;
-    this.viewport = viewport;
 
     this.tiledGraphics = new TiledGraphicsSceneObjectsImpl(this);
-
-    this.onObjectDisplayChanged.addListener(() => this.viewport.invalidateScene());
-    this.onContentsChanged.addListener(() => this.viewport.invalidateScene());
   }
 
   dispose(): void {
     this._subcategories.dispose();
+  }
+
+  get isAttachedToViewport(): boolean {
+    return this._detach.length > 0;
+  }
+
+  attachToViewport(viewport: Viewport): void {
+    if (this.isAttachedToViewport) {
+      throw new Error("Attempting to attach a ViewportScene that is already attached to a Viewport.");
+    }
+
+    this._detach.push(this.onObjectDisplayChanged.addListener(() => viewport.invalidateScene()));
+    this._detach.push(this.onContentsChanged.addListener(() => viewport.invalidateScene()));
+    this.tiledGraphics.attachToViewport(viewport);
+
+    this.backingView.attachToViewport(viewport);
+  }
+
+  detachFromViewport(): void {
+    this.backingView.detachFromViewport();
+    this.tiledGraphics.detachFromViewport();
+
+    for (const detach of this._detach) {
+      detach();
+    }
+
+    this._detach.length = 0;
+  }
+
+  changeBackingView(_view: ViewState): ViewportScene {
+    // ###TODO
+    return this;
   }
 
   abstract [Symbol.iterator](): Iterator<SceneObject>;
@@ -89,9 +117,8 @@ export class SpatialSceneImpl extends ViewportSceneImpl implements SpatialScene 
   readonly iModels: SpatialViewSceneObjectsImpl;
   readonly map?: any; // ###TODO
 
-  constructor(viewport: Viewport, args: CreateViewportSceneArgs) {
-    assert(args.view.isSpatialView());
-    super(viewport, args.view);
+  constructor(args: CreateSpatialSceneArgs) {
+    super(args.view);
 
     this.volume = new SceneVolume3dImpl(args.view);
 
@@ -133,9 +160,8 @@ export class Model2dSceneImpl extends ViewportSceneImpl implements Model2dScene 
   readonly presentationObject: PresentationSceneObjectImpl<ScenePresentation2dImpl, Model2dScene>;
   readonly viewObject: View2dSceneObjectImpl;
 
-  constructor(viewport: Viewport, args: CreateViewportSceneArgs) {
-    assert(args.view.is2d());
-    super(viewport, args.view);
+  constructor(args: CreateModel2dSceneArgs) {
+    super(args.view);
 
     this.volume = new SceneVolume2dImpl(args.view);
 
@@ -166,10 +192,19 @@ export class Model2dSceneImpl extends ViewportSceneImpl implements Model2dScene 
   }
 }
 
-export function createViewportScene(viewport: Viewport, args: CreateViewportSceneArgs): ViewportScene {
-  if (args.view.isSpatialView())
-    return new SpatialSceneImpl(viewport, args);
+export function createSpatialScene(args: CreateSpatialSceneArgs): SpatialScene {
+  return new SpatialSceneImpl(args);
+}
+
+export function createModel2dScene(args: CreateModel2dSceneArgs): Model2dScene {
+  return new Model2dSceneImpl(args);
+}
+
+export function createViewportScene(args: CreateViewportSceneArgs): ViewportScene {
+  if (args.view.isSpatialView()) {
+    return createSpatialScene(args as CreateSpatialSceneArgs);
+  }
 
   assert(args.view.is2d());
-  return new Model2dSceneImpl(viewport, args);
+  return createModel2dScene(args as CreateModel2dSceneArgs);
 }

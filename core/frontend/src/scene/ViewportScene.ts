@@ -12,13 +12,12 @@ import {
 } from "./SceneObject";
 import { ScenePresentation, ScenePresentation2d, ScenePresentation3d } from "./ScenePresentation";
 import { SceneVolume, SceneVolume3d } from "./SceneVolume";
-import { SpatialViewState } from "../SpatialViewState";
 import { ViewState, ViewState2d } from "../ViewState";
-import { createViewportScene } from "./impl/ViewportSceneImpl";
-import { SceneRealityModel } from "./SceneRealityModel";
-import { Viewport } from "../Viewport";
 import { Decorations } from "../render/Decorations";
 import { SceneContext } from "../ViewContext";
+import { Viewport } from "../Viewport";
+import { SpatialViewState } from "../SpatialViewState";
+import { createSpatialScene, createViewportScene } from "./impl/ViewportSceneImpl";
 
 export interface ViewportScene extends Iterable<SceneObject> {
   /** An IModelView created from the ViewState supplied to the constructor.
@@ -27,8 +26,6 @@ export interface ViewportScene extends Iterable<SceneObject> {
    * @internal
    */
   readonly backingView: ViewState;
-
-  readonly viewport: Viewport;
 
   isSpatial(): this is SpatialScene;
   is2dModel(): this is Model2dScene;
@@ -49,6 +46,15 @@ export interface ViewportScene extends Iterable<SceneObject> {
 
   /** @internal */
   decorate(): Decorations;
+
+  /** @internal */
+  attachToViewport(viewport: Viewport): void;
+
+  /** @internal */
+  detachFromViewport(): void;
+
+  /** @internal */
+  changeBackingView(view: ViewState): ViewportScene;
 }
 
 export interface SpatialScene extends ViewportScene {
@@ -73,8 +79,26 @@ export interface Model2dScene extends ViewportScene {
 
 export interface CreateViewportSceneArgs {
   view: ViewState;
-  mapGuid?: GuidString;
-  presentationGuid?: GuidString;
   iModelViewGuid?: GuidString;
+  presentationGuid?: GuidString;
+}
+
+export interface CreateSpatialSceneArgs extends CreateViewportSceneArgs {
+  view: SpatialViewState;
+  mapGuid?: GuidString;
   getRealityModelGuid?: (args: { props: SceneRealityModelProps, index: number }) => GuidString | undefined;
+}
+
+export interface CreateModel2dSceneArgs extends CreateViewportSceneArgs {
+  view: ViewState2d;
+}
+
+export namespace ViewportScene {
+  export function create(args: CreateViewportSceneArgs): ViewportScene {
+    return createViewportScene(args);
+  }
+
+  export function createSpatial(args: CreateSpatialSceneArgs): SpatialScene {
+    return createSpatialScene(args);
+  }
 }

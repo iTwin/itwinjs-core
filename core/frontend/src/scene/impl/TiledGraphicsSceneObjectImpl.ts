@@ -9,14 +9,18 @@ import { SceneObjectImpl } from "./SceneObjectImpl";
 import { TiledGraphicsProvider } from "../../tile/internal";
 import { HitDetail } from "../../HitDetail";
 import { SceneContext } from "../../ViewContext";
-import { Guid, GuidString } from "@itwin/core-bentley";
+import { Guid, GuidString, assert } from "@itwin/core-bentley";
+import { Viewport } from "../../Viewport";
 
 export class TiledGraphicsSceneObjectImpl extends SceneObjectImpl<ViewportScene> implements TiledGraphicsSceneObject {
   public readonly graphicsProvider: TiledGraphicsProvider;
+  /** A given instance of TiledGraphicsProvider can be associated with multiple Viewports - the Viewport is passed as context to its methods. */
+  public viewport?: Viewport;
 
-  constructor(guid: GuidString, scene: ViewportScene, provider: TiledGraphicsProvider) {
+  constructor(guid: GuidString, scene: ViewportScene, provider: TiledGraphicsProvider, viewport: Viewport | undefined) {
     super(guid, scene);
     this.graphicsProvider = provider;
+    this.viewport = viewport;
   }
 
   override draw(context: SceneContext): void {
@@ -25,7 +29,7 @@ export class TiledGraphicsSceneObjectImpl extends SceneObjectImpl<ViewportScene>
   }
 
   override get isLoadingComplete(): boolean {
-    return TiledGraphicsProvider.isLoadingComplete(this.graphicsProvider, this.scene.viewport);
+    return undefined !== this.viewport && TiledGraphicsProvider.isLoadingComplete(this.graphicsProvider, this.viewport);
   }
 
   override async getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined> {
@@ -36,7 +40,8 @@ export class TiledGraphicsSceneObjectImpl extends SceneObjectImpl<ViewportScene>
 
 export class TiledGraphicsSceneObjectsImpl implements TiledGraphicsSceneObjects {
   private readonly _scene: ViewportScene;
-  private readonly _objects: TiledGraphicsSceneObject[] = [];
+  private readonly _objects: TiledGraphicsSceneObjectImpl[] = [];
+  private _viewport?: Viewport;
   
   constructor(scene: ViewportScene) {
     this._scene = scene;
@@ -50,7 +55,7 @@ export class TiledGraphicsSceneObjectsImpl implements TiledGraphicsSceneObjects 
     return this._objects[Symbol.iterator]();
   }
 
-  find(provider: TiledGraphicsProvider): TiledGraphicsSceneObject | undefined {
+  find(provider: TiledGraphicsProvider): TiledGraphicsSceneObjectImpl | undefined {
     const index = this.findIndex(provider);
     return index !== -1 ? this._objects[index] : undefined;
   }
@@ -62,13 +67,14 @@ export class TiledGraphicsSceneObjectsImpl implements TiledGraphicsSceneObjects 
       return object;
     }
 
-    object = new TiledGraphicsSceneObjectImpl(options?.guid ?? Guid.createValue(), this._scene, provider);
+    object = new TiledGraphicsSceneObjectImpl(options?.guid ?? Guid.createValue(), this._scene, provider, this._viewport);
     this._objects.push(object);
     this._scene.onContentsChanged.raiseEvent(object, "add");
     return object;
   }
 
   delete(object: TiledGraphicsSceneObject): void {
+    assert(object instanceof TiledGraphicsSceneObjectImpl);
     const index = this._objects.indexOf(object);
     if (-1 === index) {
       // ###TODO log warning?
@@ -103,5 +109,19 @@ export class TiledGraphicsSceneObjectsImpl implements TiledGraphicsSceneObjects 
 
   get providers(): Iterable<TiledGraphicsProvider> {
     return this._getProviders();
+  }
+
+  attachToViewport(viewport: Viewport): void {
+    this._viewport = viewport;
+    for (const object of this) {
+      object.viewport = viewport;
+    }
+  }
+
+  detachFromViewport(): void {
+    this._viewport = undefined;
+    for (const obj of this) {
+      obj.viewport = undefined;
+    }
   }
 }
