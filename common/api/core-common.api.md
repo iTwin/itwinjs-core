@@ -7186,6 +7186,8 @@ export enum QueryParamType {
 // @public (undocumented)
 export interface QueryPropertyMetaData {
     // (undocumented)
+    accessString: string;
+    // (undocumented)
     className: string;
     // (undocumented)
     extendType: string;

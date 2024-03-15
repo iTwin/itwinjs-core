@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added check to verify access string in column info.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

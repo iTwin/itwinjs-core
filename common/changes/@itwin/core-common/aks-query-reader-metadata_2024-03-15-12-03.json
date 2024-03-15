@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Added the accessString property to the QueryPropertyMetaData interface.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
