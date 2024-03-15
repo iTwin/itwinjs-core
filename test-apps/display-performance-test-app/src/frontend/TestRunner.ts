@@ -278,7 +278,7 @@ export class TestRunner {
         this.lastRestartConfig = this.curConfig;
       }
 
-      IModelApp.stopEventLoop(); // experiment
+      // IModelApp.stopEventLoop(); // experiment 1
 
       // Run test against all iModels matching the test config.
       const iModelNames = await this.getIModelNames();

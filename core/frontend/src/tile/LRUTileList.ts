@@ -261,7 +261,8 @@ export class LRUTileList {
     // Insert just before the sentinel, indicating this is the most-recently-used non-selected tile.
     this._totalBytesUsed += tile.bytesUsed;
     this.append(tile);
-    this.moveBeforeSentinel(tile);
+    // this.moveBeforeSentinel(tile);
+    this.moveAfterSentinel(tile);  // try moving just after sentinel instead - experiment 2
   }
 
   /** Remove the tile from the list and deduct its previously-used GPU memory from the list's running total.
@@ -416,5 +417,17 @@ export class LRUTileList {
       this._head = tile;
     else
       tile.previous.next = tile;
+  }
+
+  protected moveAfterSentinel(tile: Tile): void {
+    this.unlink(tile);
+    tile.next = this._sentinel.next;
+    this._sentinel.next = tile;
+    tile.previous = this._sentinel;
+
+    if (!tile.next)
+      this._tail = tile;
+    else
+      tile.next.previous = tile;
   }
 }
