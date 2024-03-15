@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Disable tile preloading when under memory pressure",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

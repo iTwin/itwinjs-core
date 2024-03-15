@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added busyTimeout parameter to allow read/write connection to set it.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

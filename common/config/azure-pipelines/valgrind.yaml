@@ -12,9 +12,9 @@ schedules:
 
 jobs:
   - job:
-    timeoutInMinutes: 180
+    timeoutInMinutes: 360
     pool:
-      name: iModelTechCI
+      name: iModelTechLnxDeb11
       demands:
       - Agent.OS -equals Linux
     variables:
@@ -27,10 +27,16 @@ jobs:
         clean: true
 
       - task: NodeTool@0
-        displayName: "Use Node 16"
+        displayName: "Use Node 20.x"
         inputs:
-          versionSpec: 16.15.0
+          versionSpec: 20.x
           checkLatest: true
+
+      - task: npmAuthenticate@0
+        displayName: 'Authenticate npm'
+        condition: and(succeeded(), ne('Windows_NT', variables['Agent.OS']))
+        inputs:
+          workingFile: $(Build.SourcesDirectory)/common/config/rush/.npmrc
 
       - script: |
           git config --local user.email imodeljs-admin@users.noreply.github.com

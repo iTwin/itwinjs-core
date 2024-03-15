@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix regression in GPU timings due a  change in chromium's behavior.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

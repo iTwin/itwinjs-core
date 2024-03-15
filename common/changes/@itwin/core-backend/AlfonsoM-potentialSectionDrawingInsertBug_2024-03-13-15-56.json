@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fix SectionDrawing.insert to insert a SectionDrawingModel, not a DrawingModel.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
