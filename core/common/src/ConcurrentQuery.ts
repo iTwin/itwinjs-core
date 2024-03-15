@@ -46,6 +46,7 @@ export interface QueryLimit {
 /** @public */
 export interface QueryPropertyMetaData {
   className: string;
+  accessString: string;
   generated: boolean;
   index: number;
   jsonName: string;

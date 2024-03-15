@@ -2880,6 +2880,8 @@ describe("ECSqlStatement", () => {
         const colInfo0: ECSqlColumnInfo = val0.columnInfo;
 
         assert.equal(colInfo0.getPropertyName(), "MyAlias");
+        const accessString0 = colInfo0.getAccessString();
+        assert.equal(accessString0, "MyAlias");
         const originPropertyName = colInfo0.getOriginPropertyName();
         assert.isDefined(originPropertyName);
         assert.equal(originPropertyName, "MyProperty");
@@ -2888,6 +2890,8 @@ describe("ECSqlStatement", () => {
         const colInfo1: ECSqlColumnInfo = val1.columnInfo;
 
         assert.equal(colInfo1.getPropertyName(), "MyGenerated");
+        const accessString1 = colInfo1.getAccessString();
+        assert.equal(accessString1, "MyGenerated");
         assert.isUndefined(colInfo1.getOriginPropertyName());
       });
     });
