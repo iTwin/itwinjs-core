@@ -56,6 +56,7 @@ export class RealityModelSceneObjectImpl extends SceneObjectImpl<SpatialScene> i
   }
 
   draw(context: SceneContext): void {
-    this.realityModel.state.treeRef.addToScene(context);
+    if (this.isDisplayed)
+      this.realityModel.state.treeRef.addToScene(context);
   }
 }

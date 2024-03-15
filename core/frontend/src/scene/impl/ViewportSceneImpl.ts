@@ -14,6 +14,8 @@ import { SpatialViewState } from "../../SpatialViewState";
 import { SubCategoriesCache } from "../../SubCategoriesCache";
 import { IModelView2dSceneObject, IModelViewSceneObject, PresentationSceneObject, SceneObject, TiledGraphicsSceneObjects } from "../SceneObject";
 import { TiledGraphicsSceneObjectsImpl } from "./TiledGraphicsSceneObjectImpl";
+import { SceneContext } from "../../ViewContext";
+import { Decorations } from "../../core-frontend";
 
 export abstract class ViewportSceneImpl implements ViewportScene {
   readonly onContentsChanged = new BeEvent<(object: SceneObject, change: "add" | "delete") => void>;
@@ -58,6 +60,17 @@ export abstract class ViewportSceneImpl implements ViewportScene {
 
     for (const decorator of this.decorators)
       yield decorator;
+  }
+
+  draw(context: SceneContext) {
+    for (const object of this)
+      object.draw(context);
+  }
+
+  decorate(): Decorations {
+    const decorations = new Decorations();
+    // ###TODO
+    return decorations;
   }
 }
 

@@ -203,6 +203,9 @@ export class IModelViewSceneObjectImpl<View extends IModelViewImpl, Scene extend
   }
 
   override draw(context: SceneContext): void {
+    if (!this.isDisplayed)
+      return;
+    
     // ###TODO need to ignore context reality models and not update solar shadows
     this._view.impl.createScene(context);
   }

@@ -20,7 +20,8 @@ export class TiledGraphicsSceneObjectImpl extends SceneObjectImpl<ViewportScene>
   }
 
   override draw(context: SceneContext): void {
-    TiledGraphicsProvider.addToScene(this.graphicsProvider, context);
+    if (this.isDisplayed)
+      TiledGraphicsProvider.addToScene(this.graphicsProvider, context);
   }
 
   override get isLoadingComplete(): boolean {

@@ -17,6 +17,8 @@ import { ViewState, ViewState2d } from "../ViewState";
 import { createViewportScene } from "./impl/ViewportSceneImpl";
 import { SceneRealityModel } from "./SceneRealityModel";
 import { Viewport } from "../Viewport";
+import { Decorations } from "../render/Decorations";
+import { SceneContext } from "../ViewContext";
 
 export interface ViewportScene extends Iterable<SceneObject> {
   /** An IModelView created from the ViewState supplied to the constructor.
@@ -41,6 +43,12 @@ export interface ViewportScene extends Iterable<SceneObject> {
 
   readonly onContentsChanged: BeEvent<(object: SceneObject, change: "add" | "delete") => void>;
   readonly onObjectDisplayChanged: BeEvent<(object: SceneObject) => void>;
+
+  /** @internal */
+  draw(context: SceneContext): void;
+
+  /** @internal */
+  decorate(): Decorations;
 }
 
 export interface SpatialScene extends ViewportScene {
