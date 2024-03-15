@@ -73,9 +73,17 @@ export abstract class ViewportSceneImpl implements ViewportScene {
     this._detach.length = 0;
   }
 
-  changeBackingView(_view: ViewState): ViewportScene {
-    // ###TODO
-    return this;
+  changeBackingView(view: ViewState): ViewportScene {
+    const scene = createViewportScene({ view });
+
+    for (const obj of this.tiledGraphics) {
+      scene.tiledGraphics.add(obj.graphicsProvider, { guid: obj.guid });
+    }
+
+    // ###TODO Copy over FeatureOverrideProviders
+    // ###TODO anything else?
+
+    return scene;
   }
 
   abstract [Symbol.iterator](): Iterator<SceneObject>;
