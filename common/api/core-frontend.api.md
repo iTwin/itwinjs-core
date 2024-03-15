@@ -14006,8 +14006,8 @@ export class TileAdmin {
     readonly alwaysRequestEdges: boolean;
     // @internal (undocumented)
     readonly alwaysSubdivideIncompleteTiles: boolean;
-    // @beta (undocumented)
-    readonly cesiumIonKey?: string;
+    // (undocumented)
+    get cesiumIonKey(): string | undefined;
     // (undocumented)
     readonly channels: TileRequestChannels;
     clearTilesForUser(user: TileUser): void;
@@ -14152,7 +14152,7 @@ export namespace TileAdmin {
         alwaysSubdivideIncompleteTiles?: boolean;
         // @internal
         cacheTileMetadata?: boolean;
-        cesiumIonKey?: string;
+        cesiumIonKey?: string | (() => string | undefined);
         // @alpha
         contextPreloadParentDepth?: number;
         // @alpha

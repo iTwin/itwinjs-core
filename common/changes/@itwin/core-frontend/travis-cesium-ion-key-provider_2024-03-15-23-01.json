@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Allow the use of a provider function for cesiumIonKey.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
