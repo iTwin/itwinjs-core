@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-geometry",
-  "version": "4.5.0-dev.31",
+  "version": "4.5.0-dev.32",
   "description": "iTwin.js Core Geometry library",
   "main": "lib/cjs/core-geometry.js",
   "module": "lib/esm/core-geometry.js",
@@ -20,7 +20,8 @@
     "extract-api-test": "betools extract-api --entry=core-geometry",
     "docs": "betools docs --tsIndexFile=./core-geometry.ts --json=../../generated-docs/core/core-geometry/file.json --onlyJson",
     "cover": "nyc npm -s test",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "repository": {
     "type": "git",
