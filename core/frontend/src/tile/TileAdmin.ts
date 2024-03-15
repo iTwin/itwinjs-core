@@ -158,7 +158,16 @@ export class TileAdmin {
   /** @internal */
   public readonly contextPreloadParentSkip: number;
   /** @beta */
-  public readonly cesiumIonKey?: string;
+  private readonly _cesiumIonKey?: string | (() => string | undefined);
+  public get cesiumIonKey(): string | undefined {
+    if (this._cesiumIonKey === undefined) {
+      return undefined;
+    }
+    if (typeof this._cesiumIonKey === "string") {
+      return this._cesiumIonKey;
+    }
+    return this._cesiumIonKey();
+  }
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _totalElided = 0;
   private _rpcInitialized = false;
@@ -242,7 +251,7 @@ export class TileAdmin {
     this.optimizeBRepProcessing = options.optimizeBRepProcessing ?? defaultTileOptions.optimizeBRepProcessing;
     this.useLargerTiles = options.useLargerTiles ?? defaultTileOptions.useLargerTiles;
     this.mobileRealityTileMinToleranceRatio = Math.max(options.mobileRealityTileMinToleranceRatio ?? 3.0, 1.0);
-    this.cesiumIonKey = options.cesiumIonKey;
+    this._cesiumIonKey = options.cesiumIonKey;
     this._cloudStorage = options.tileStorage;
 
     const gpuMemoryLimits = options.gpuMemoryLimits;
@@ -1249,11 +1258,11 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      */
     minimumSpatialTolerance?: number;
 
-    /** An API key that can be used to access content from [Cesium ION](https://cesium.com/platform/cesium-ion/) like terrain meshes and OpenStreetMap Buildings meshes.
+    /** An API key or a function to provide an API key that can be used to access content from [Cesium ION](https://cesium.com/platform/cesium-ion/) like terrain meshes and OpenStreetMap Buildings meshes.
      * If a valid key is not supplied, such content can neither be obtained nor displayed.
      * @public
      */
-    cesiumIonKey?: string;
+    cesiumIonKey?: string | (() => string | undefined);
 
     /** If true, when applying a schedule script to a view, ordinary tiles will be requested and then reprocessed on the frontend to align with the script's
      * animation nodes. This permits the use of schedule scripts not stored in the iModel and improves utilization of the tile cache for animated views.
