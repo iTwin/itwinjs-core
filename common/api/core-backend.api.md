@@ -798,10 +798,6 @@ export class ChannelAdmin implements ChannelControl {
     // (undocumented)
     removeAllowedChannel(channelKey: ChannelKey): void;
     // (undocumented)
-    static readonly sharedChannel = "shared";
-    // (undocumented)
-    static readonly subjectClassName = "bis:Subject";
-    // (undocumented)
     verifyChannel(modelId: Id64String): void;
 }
 

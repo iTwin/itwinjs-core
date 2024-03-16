@@ -24,6 +24,8 @@ import { TransformProps } from '@itwin/core-geometry';
 export class BasicManipulationCommand extends EditCommand implements BasicManipulationCommandIpc {
     constructor(iModel: IModelDb, _str: string);
     // (undocumented)
+    addAllowedChannel(channelKey: string): Promise<IModelStatus>;
+    // (undocumented)
     static commandId: string;
     // (undocumented)
     deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
@@ -33,6 +35,8 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     insertGeometryPart(props: GeometryPartProps): Promise<Id64String>;
     // (undocumented)
     onStart(): Promise<string>;
+    // (undocumented)
+    removeAllowedChannel(channelKey: string): Promise<IModelStatus>;
     // (undocumented)
     requestElementGeometry(elementId: Id64String, filter?: FlatBufferGeometryFilter): Promise<ElementGeometryInfo | undefined>;
     // (undocumented)
