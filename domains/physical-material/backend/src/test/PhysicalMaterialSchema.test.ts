@@ -34,7 +34,6 @@ describe("PhysicalMaterialSchema", () => {
     }
     const iModelDb = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "PhysicalMaterialSchema" }, createClassViews: true });
     await iModelDb.importSchemas([PhysicalMaterialSchema.schemaFilePath]);
-    iModelDb.channels.addAllowedChannel("shared");
     for (let i = 1; i <= 3; i++) {
       Aggregate.create(iModelDb, IModel.dictionaryId, `${Aggregate.className}${i}`).insert();
       Aluminum.create(iModelDb, IModel.dictionaryId, `${Aluminum.className}${i}`).insert();

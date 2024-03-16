@@ -60,7 +60,6 @@ describe("exportGraphics", () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("ExportGraphics", "ExportGraphicsTest.bim");
     iModel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-    iModel.channels.addAllowedChannel("shared");
 
     // Get known model/category from seed element a la GeometryStream.test.ts
     const seedElement = iModel.elements.getElement<GeometricElement>("0x1d");

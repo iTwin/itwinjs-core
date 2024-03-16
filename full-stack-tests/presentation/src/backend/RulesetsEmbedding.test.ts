@@ -50,7 +50,6 @@ describe("RulesEmbedding", () => {
         name: "presentation-full-stack-tests/RulesetEmbedding",
       },
     });
-    imodel.channels.addAllowedChannel("shared");
     embedder = new RulesetEmbedder({ imodel });
     ruleset = {
       id: "test-ruleset",

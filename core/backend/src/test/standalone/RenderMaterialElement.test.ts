@@ -46,7 +46,6 @@ describe("RenderMaterialElement", () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("ExportGraphics", "ExportGraphicsTest.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-    imodel.channels.addAllowedChannel("shared");
   });
 
   after(() => imodel.close());

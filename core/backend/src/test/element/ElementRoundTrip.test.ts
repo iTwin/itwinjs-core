@@ -470,7 +470,6 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     const imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "RoundTripTest" } });
     await imodel.importSchemas([testSchemaPath]);
-    imodel.channels.addAllowedChannel("shared");
     imodel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
@@ -485,7 +484,6 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
   it("Roundtrip all type of properties via ElementApi, ConcurrentQuery and ECSqlStatement via insert and update", async () => {
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_correct_data.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
-    imodel.channels.addAllowedChannel("shared");
     const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
     const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
 
@@ -559,7 +557,6 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
   it("Roundtrip all type of properties via ElementAspectApi, ConcurrentQuery and ECSqlStatement via insert and update", async () => {
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_apsect_correct_data.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
-    imodel.channels.addAllowedChannel("shared");
     const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
     const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
 
@@ -647,7 +644,6 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
   it("Roundtrip all type of properties via ElementRefersToElements, ConcurrentQuery and ECSqlStatement via insert and update", async () => {
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_relationships_correct_data.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
-    imodel.channels.addAllowedChannel("shared");
     const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
     const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
 
@@ -760,7 +756,6 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     ) => {
       const imodelPath = IModelTestUtils.prepareOutputFile(subDirName, `roundtrip_placement-${name}.bim`);
       let imodel = IModelTestUtils.createSnapshotFromSeed(imodelPath, iModelPath);
-      imodel.channels.addAllowedChannel("shared");
       const modelId = PhysicalModel.insert(imodel, IModelDb.rootSubjectId, "model");
       const categoryId = SpatialCategory.insert(imodel, IModelDb.dictionaryId, "model", {});
 

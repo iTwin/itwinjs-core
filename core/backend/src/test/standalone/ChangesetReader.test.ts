@@ -14,6 +14,7 @@ import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { SqliteChangesetReader } from "../../SqliteChangesetReader";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { ChannelControl } from "../../core-backend";
 
 describe("Changeset Reader API", async () => {
   let iTwinId: GuidString;
@@ -48,7 +49,7 @@ describe("Changeset Reader API", async () => {
       const postPushChangeSetId = rwIModel.changeset.id;
       assert(!!postPushChangeSetId);
       expect(prePushChangeSetId !== postPushChangeSetId);
-      rwIModel.channels.addAllowedChannel("shared");
+      rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     }
     await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
     const codeProps = Code.createEmpty();

@@ -37,7 +37,6 @@ describe("Generic Domain", () => {
       guid: Guid.createValue(),
       createClassViews: true,
     });
-    iModelDb.channels.addAllowedChannel("shared");
 
     // Create and populate a DefinitionModel
     const definitionModelId: Id64String = DefinitionModel.insert(iModelDb, IModel.rootSubjectId, "Test DefinitionModel");

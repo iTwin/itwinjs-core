@@ -23,17 +23,13 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
 
   public override async onStart() { return BasicManipulationCommand.commandId; }
 
-  public async addAllowedChannels(channelKeys: string[]): Promise<IModelStatus> {
-    for (const channelKey of channelKeys)
-      this.iModel.channels.addAllowedChannel(channelKey);
-
+  public async addAllowedChannel(channelKey: string): Promise<IModelStatus> {
+    this.iModel.channels.addAllowedChannel(channelKey);
     return IModelStatus.Success;
   }
 
-  public async removeAllowedChannels(channelKeys: string[]): Promise<IModelStatus> {
-    for (const channelKey of channelKeys)
-      this.iModel.channels.removeAllowedChannel(channelKey);
-
+  public async removeAllowedChannel(channelKey: string): Promise<IModelStatus> {
+    this.iModel.channels.removeAllowedChannel(channelKey);
     return IModelStatus.Success;
   }
 

@@ -20,7 +20,6 @@ describe("Category", () => {
       projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
       guid: Guid.createValue(),
     });
-    imodel.channels.addAllowedChannel("shared");
   });
 
   after(() => {

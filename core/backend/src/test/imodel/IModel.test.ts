@@ -21,7 +21,7 @@ import {
 import { V2CheckpointAccessProps } from "../../BackendHubAccess";
 import { V2CheckpointManager } from "../../CheckpointManager";
 import {
-  BisCoreSchema, Category, ChannelAdmin, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
+  BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
   DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
   ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
   GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation, LinkPartition,
@@ -65,14 +65,10 @@ describe("iModel", () => {
 
     IModelTestUtils.registerTestBimSchema();
     imodel1 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
-    imodel1.channels.addAllowedChannel(ChannelAdmin.sharedChannel);
     imodel2 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
-    imodel2.channels.addAllowedChannel(ChannelAdmin.sharedChannel);
     imodel3 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
     imodel4 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "GetSetAutoHandledArrayProperties.bim"), IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
-    imodel4.channels.addAllowedChannel(ChannelAdmin.sharedChannel);
     imodel5 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
-    imodel5.channels.addAllowedChannel(ChannelAdmin.sharedChannel);
 
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
     await imodel1.importSchemas([schemaPathname]); // will throw an exception if import fails
@@ -1408,7 +1404,6 @@ describe("iModel", () => {
   it("should create link table relationship instances", () => {
     const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "CreateLinkTable.bim");
     const testImodel = StandaloneDb.createEmpty(snapshotFile2, { rootSubject: { name: "test1" }, allowEdit: JSON.stringify({ txns: true }) });
-    testImodel.channels.addAllowedChannel(ChannelAdmin.sharedChannel);
     const elements = testImodel.elements;
 
     // Create a new physical model
@@ -1481,7 +1476,6 @@ describe("iModel", () => {
   it("should insert DefinitionSets", () => {
     const iModelFileName: string = IModelTestUtils.prepareOutputFile("IModel", "DefinitionSets.bim");
     const iModelDb = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "DefinitionSets" }, createClassViews: true });
-    iModelDb.channels.addAllowedChannel(ChannelAdmin.sharedChannel);
     const definitionContainerId = DefinitionContainer.insert(iModelDb, IModel.dictionaryId, Code.createEmpty());
     assert.exists(iModelDb.elements.getElement<DefinitionContainer>(definitionContainerId));
     assert.exists(iModelDb.models.getModel<DefinitionModel>(definitionContainerId));
@@ -2827,7 +2821,6 @@ describe("iModel", () => {
   it('should allow untrimmed codes when using "exact" codeValueBehavior', () => {
     const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "codeValueBehavior.bim");
     const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "codeValueBehaviors" } });
-    imodel.channels.addAllowedChannel(ChannelAdmin.sharedChannel);
 
     const getNumberedCodeValAndProps = (n: number) => {
       const trimmedCodeVal = `CodeValue${n}`;

@@ -13,7 +13,6 @@ describe("Texture", () => {
 
   before(async () => {
     imodel = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
-    imodel.channels.addAllowedChannel("shared");
   });
 
   after(() => {

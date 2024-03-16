@@ -11,10 +11,7 @@ import { Code, CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core
 import { ClassRegistry } from "../../ClassRegistry";
 import { ElementUniqueAspect, OnAspectIdArg, OnAspectPropsArg } from "../../ElementAspect";
 import {
-  ChannelAdmin,
-  DefinitionContainer,
-  DefinitionModel,
-  FunctionalBreakdownElement, FunctionalComponentElement, FunctionalModel, FunctionalPartition, FunctionalSchema,
+  DefinitionContainer, DefinitionModel, FunctionalBreakdownElement, FunctionalComponentElement, FunctionalModel, FunctionalPartition, FunctionalSchema,
   InformationPartitionElement, OnChildElementIdArg, OnChildElementPropsArg, OnElementIdArg, OnElementInModelIdArg, OnElementInModelPropsArg,
   OnElementPropsArg, OnModelIdArg, OnModelPropsArg, OnSubModelIdArg, OnSubModelPropsArg, Schemas, StandaloneDb, Subject,
 } from "../../core-backend";
@@ -340,8 +337,6 @@ describe("Functional Domain", () => {
     assert.isTrue(Id64.isValidId64(codeSpec.id));
 
     // create a channel for all elements in this test
-    iModelDb.channels.addAllowedChannel(ChannelAdmin.sharedChannel);
-
     const subject1Code = Subject.createCode(iModelDb, IModel.rootSubjectId, "Test Functional Subject");
     const subject1Props = {
       classFullName: Subject.classFullName, model: IModel.repositoryModelId,

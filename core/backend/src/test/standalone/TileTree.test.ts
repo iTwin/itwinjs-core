@@ -98,7 +98,6 @@ describe("tile tree", () => {
 
     const name = `Test_${(++uniqueId)}.bim`;
     db = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("TileTree", name), props);
-    db.channels.addAllowedChannel("shared");
     modelId = insertPhysicalModel(db);
 
     // NB: The model needs to contain at least one element with a range - otherwise tile tree will have null range.

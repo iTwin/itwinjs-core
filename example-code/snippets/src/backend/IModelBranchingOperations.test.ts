@@ -6,7 +6,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import {
-  BriefcaseDb, BriefcaseManager, ExternalSource, ExternalSourceIsInRepository, HubMock, IModelDb, IModelHost, PhysicalModel, PhysicalObject,
+  BriefcaseDb, BriefcaseManager, ChannelControl, ExternalSource, ExternalSourceIsInRepository, HubMock, IModelDb, IModelHost, PhysicalModel, PhysicalObject,
   PhysicalPartition, RepositoryLink, SnapshotDb, SpatialCategory,
 } from "@itwin/core-backend";
 import { IModelTestUtils as BackendTestUtils, HubWrappers, TestUserType } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
@@ -29,7 +29,7 @@ async function initializeBranch(myITwinId: string, masterIModelId: string, myAcc
     iModelId: masterIModelId,
   });
   const masterDb = await BriefcaseDb.open({ fileName: masterDbProps.fileName });
-  masterDb.channels.addAllowedChannel("shared");
+  masterDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
   // create a duplicate of master as a good starting point for our branch
   const branchIModelId = await IModelHost.hubAccess.createNewIModel({
@@ -46,7 +46,7 @@ async function initializeBranch(myITwinId: string, masterIModelId: string, myAcc
     iModelId: branchIModelId,
   });
   const branchDb = await BriefcaseDb.open({ fileName: branchDbProps.fileName });
-  branchDb.channels.addAllowedChannel("shared");
+  branchDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
   // create an external source and owning repository link to use as our *Target Scope Element* for future synchronizations
   const masterLinkRepoId = branchDb.constructEntity<RepositoryLink, RepositoryLinkProps>({

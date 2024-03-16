@@ -57,7 +57,6 @@ describe("Reacting to IModel data changes", () => {
       rootSubject: { name: "test" },
       allowEdit: JSON.stringify({ txns: true }),
     });
-    imodelDb.channels.addAllowedChannel("shared");
     updatesSpy.resetHistory();
   });
 

@@ -27,7 +27,6 @@ describe("Class Registry", () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("ClassRegistry", "ClassRegistryTest.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-    imodel.channels.addAllowedChannel("shared");
     assert.exists(imodel);
   });
 
@@ -197,7 +196,6 @@ describe("Class Registry - generated classes", () => {
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
     assert.exists(imodel);
     await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
-    imodel.channels.addAllowedChannel("shared");
   });
 
   after(() => {

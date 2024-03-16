@@ -17,7 +17,6 @@ describe("SectionDrawing", () => {
   before(() => {
     const iModelPath = IModelTestUtils.prepareOutputFile("SectionDrawing", "SectionDrawing.bim");
     imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "SectionDrawingTest" } });
-    imodel.channels.addAllowedChannel("shared");
     documentListModelId = DocumentListModel.insert(imodel, SnapshotDb.rootSubjectId, "DocumentList");
   });
 

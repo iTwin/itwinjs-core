@@ -11,7 +11,7 @@ import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "
 import {
   BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, TileLoadPriority,
 } from "@itwin/core-frontend";
-import { addAllowedChannels, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing";
+import { addAllowedChannel, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
 const expect = chai.expect;
@@ -91,7 +91,7 @@ describe("GraphicalEditingScope", () => {
     async function openWritable(): Promise<BriefcaseConnection> {
       expect(imodel).to.be.undefined;
       const rwConn = await BriefcaseConnection.openStandalone(newFilePath, OpenMode.ReadWrite);
-      await addAllowedChannels(rwConn, ["shared"]);
+      await addAllowedChannel(rwConn, "shared");
       return rwConn;
     }
 

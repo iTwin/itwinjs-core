@@ -65,7 +65,6 @@ describe("ViewDefinition", () => {
       projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
       guid: Guid.createValue(),
     });
-    iModel.channels.addAllowedChannel("shared");
 
     const dbName = join(KnownTestLocations.outputDir, "viewDefTest.db");
     ViewStore.ViewDb.createNewDb(dbName);

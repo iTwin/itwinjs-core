@@ -44,7 +44,6 @@ describe("TxnManager", () => {
     performUpgrade(testFileName);
     imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     await imodel.importSchemas([schemaFileName]); // will throw an exception if import fails
-    imodel.channels.addAllowedChannel("shared");
 
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 0, 0)));

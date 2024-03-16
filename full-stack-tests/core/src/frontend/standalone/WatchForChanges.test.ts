@@ -10,7 +10,7 @@ import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   BriefcaseConnection, GeometricModelState, IModelApp, MockRender, RenderGraphic, TileTree, ViewCreator3d,
 } from "@itwin/core-frontend";
-import { addAllowedChannels, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineStringElement, makeModelCode, transformElements } from "../Editing";
+import { addAllowedChannel, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineStringElement, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
 class System extends MockRender.System {
@@ -59,7 +59,7 @@ for (const watchForChanges of [false, true]) {
 
       // Populate the iModel with some initial geometry.
       rwConn = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
-      await addAllowedChannels(rwConn, ["shared"]);
+      await addAllowedChannel(rwConn, "shared");
       modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(rwConn.key, (await makeModelCode(rwConn, rwConn.models.repositoryModelId, Guid.createValue())));
       const dictId = await rwConn.models.getDictionaryModel();
       categoryId = await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictId, Guid.createValue(), { color: 0 });

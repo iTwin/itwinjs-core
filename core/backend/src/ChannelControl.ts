@@ -51,9 +51,7 @@ export namespace ChannelControl {
 
 /** @internal */
 export class ChannelAdmin implements ChannelControl {
-  public static readonly sharedChannel = "shared";
   public static readonly channelClassName = "bis:ChannelRootAspect";
-  public static readonly subjectClassName = "bis:Subject";
   private _allowedChannels = new Set<ChannelKey>();
   private _allowedModels = new Set<Id64String>();
   private _deniedModels = new Map<Id64String, ChannelKey>();
@@ -69,38 +67,19 @@ export class ChannelAdmin implements ChannelControl {
     this._allowedChannels.delete(channelKey);
     this._allowedModels.clear();
   }
-  private querySchemaVersion(schemaName: string): { generation: number, write: number, read: number } | undefined {
-    return this._iModel.withPreparedStatement(
-      "SELECT VersionMajor, VersionWrite, VersionMinor FROM meta.ECSchemaDef WHERE Name=?", (stmt) => {
-        stmt.bindString(1, schemaName);
-        return DbResult.BE_SQLITE_ROW === stmt.step() ? {
-          generation: stmt.getValue(0).getInteger(),
-          write: stmt.getValue(1).getInteger(),
-          read: stmt.getValue(2).getInteger(),
-        } : undefined;
-      });
-  }
-
-  private get _bisCoreSupportsChannelRootAspect(): boolean {
-    if (undefined === this._channelRootAspectClassExists) {
-      const bisCoreVersion = this.querySchemaVersion("BisCore");
-      if (bisCoreVersion === undefined)
-        throw new Error("could not determine BisCore schema version");
-      this._channelRootAspectClassExists = (bisCoreVersion.generation === 1 && bisCoreVersion.read >= 10);
-    }
-    return this._channelRootAspectClassExists;
-  }
   public getChannelKey(elementId: Id64String): ChannelKey {
     if (elementId === IModel.rootSubjectId)
       return ChannelControl.sharedChannelName;
 
-    if (this._bisCoreSupportsChannelRootAspect) {
+    try {
       const channel = this._iModel.withPreparedStatement(`SELECT Owner FROM ${ChannelAdmin.channelClassName} WHERE Element.Id=?`, (stmt) => {
         stmt.bindId(1, elementId);
         return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValue(0).getString() : undefined;
       });
       if (channel !== undefined)
         return channel;
+    } catch {
+      return ChannelControl.sharedChannelName;
     }
     const parentId = this._iModel.withPreparedSqliteStatement("SELECT ParentId,ModelId FROM bis_Element WHERE id=?", (stmt) => {
       stmt.bindId(1, elementId);
@@ -130,9 +109,6 @@ export class ChannelAdmin implements ChannelControl {
   public makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey }) {
     if (ChannelControl.sharedChannelName !== this.getChannelKey(args.elementId))
       throw new Error("channels may not nest");
-
-    if (!this._bisCoreSupportsChannelRootAspect)
-      throw new Error("BisCore schema v1.0.10 or later is required to make ChannelRoots");
 
     const props: ChannelRootAspectProps = { classFullName: ChannelAdmin.channelClassName, element: { id: args.elementId }, owner: args.channelKey };
     this._iModel.elements.insertAspect(props);

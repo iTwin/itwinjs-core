@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import path from "path";
 import sanitize from "sanitize-filename";
-import { IModelDb, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
+import { ChannelControl, IModelDb, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
 import { GuidString, Id64String } from "@itwin/core-bentley";
 import { BisCodeSpec, Code, IModel, LocalFileName, PhysicalElementProps } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
@@ -19,7 +19,7 @@ export function createValidIModelFileName(imodelName: string) {
 export async function buildTestIModelDb(name: string, cb: (db: IModelDb) => Promise<void>) {
   const outputFile = setupOutputFileLocation(createValidIModelFileName(name));
   const db = SnapshotDb.createEmpty(outputFile, { rootSubject: { name } });
-  db.channels.addAllowedChannel("shared");
+  db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
   try {
     await cb(db);
   } catch (e) {

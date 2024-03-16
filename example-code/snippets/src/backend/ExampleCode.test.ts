@@ -18,7 +18,6 @@ describe("Example Code", () => {
 
   before(async () => {
     iModel = IModelTestUtils.openIModelForWrite("test.bim");
-    iModel.channels.addAllowedChannel("shared");
   });
 
   after(() => {

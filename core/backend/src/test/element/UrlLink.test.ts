@@ -17,7 +17,6 @@ const iModelPath = IModelTestUtils.prepareOutputFile(subDirName, testFileName);
 describe("UrlLink tests", () => {
   it("Link should construct properly", () => {
     const imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "UrlLinkTest" } });
-    imodel.channels.addAllowedChannel("shared");
     const linkProps: RepositoryLinkProps = {
       description: "This is a test repository link",
       url: "http://itwinjs.org",

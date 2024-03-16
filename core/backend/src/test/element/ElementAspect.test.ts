@@ -19,7 +19,6 @@ describe("ElementAspect", () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("ElementAspectTest.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("ElementAspect", "ElementAspectTest.bim");
     iModel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-    iModel.channels.addAllowedChannel("shared");
   });
 
   after(() => {
@@ -279,7 +278,6 @@ describe("ElementAspect", () => {
   it("should be able to insert ExternalSourceAspects", () => {
     const fileName = IModelTestUtils.prepareOutputFile("ElementAspect", "ExternalSourceAspect.bim");
     let iModelDb = SnapshotDb.createEmpty(fileName, { rootSubject: { name: "ExternalSourceAspect" } });
-    iModelDb.channels.addAllowedChannel("shared");
     const elementId: Id64String = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Category", new SubCategoryAppearance());
     assert.isTrue(Id64.isValidId64(elementId));
 
@@ -319,7 +317,6 @@ describe("ElementAspect", () => {
   it("should be able to insert multiple ExternalSourceAspects", () => {
     const fileName = IModelTestUtils.prepareOutputFile("MultipleElementAspects", "ExternalSourceAspect.bim");
     let iModelDb = SnapshotDb.createEmpty(fileName, { rootSubject: { name: "MultipleExternalSourceAspects" } });
-    iModelDb.channels.addAllowedChannel("shared");
     const e1: Id64String = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Category1", new SubCategoryAppearance());
     const e2: Id64String = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Category2", new SubCategoryAppearance());
 

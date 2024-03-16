@@ -26,7 +26,6 @@ describe("generateElementMeshes", () => {
     });
 
     GenericSchema.registerSchema();
-    imodel.channels.addAllowedChannel("shared");
     const partitionId = imodel.elements.insertElement({
       classFullName: PhysicalPartition.classFullName,
       model: IModel.repositoryModelId,
