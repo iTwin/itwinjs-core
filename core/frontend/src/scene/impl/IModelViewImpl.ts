@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, Guid, GuidString, Id64Arg, Id64String } from "@itwin/core-bentley";
-import { View2dStyle, View3dStyle, ViewStyle, ViewStyleFlags } from "../ViewStyle";
-import { AxisAlignedBox3d, ModelClipGroups, ViewFlags } from "@itwin/core-common";
+import { View2dStyle, View3dStyle, ViewStyle } from "../ViewStyle";
+import { AxisAlignedBox3d, ModelClipGroups } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { GeometricModelState } from "../../ModelState";
 import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
@@ -66,9 +66,6 @@ export abstract class BaseIModelViewImpl implements BaseIModelView {
   get iModel() { return this.impl.iModel; }
 
   get style() { return this._style; }
-
-  get viewFlags() { return this.style.viewFlags; }
-  set viewFlags(flags: ViewFlags) { this.style.viewFlags = flags; }
 
   get clipVector(): ClipVector | undefined { return this.impl.getViewClip(); }
   set clipVector(clip: ClipVector | undefined) { this.impl.setViewClip(clip); }

@@ -7,7 +7,7 @@
  */
 
 import { Id64Arg, Id64String } from "@itwin/core-bentley";
-import { View2dStyle, View3dStyle, ViewStyle, ViewStyleFlags } from "./ViewStyle";
+import { View2dStyle, View3dStyle, ViewStyle } from "./ViewStyle";
 import { AxisAlignedBox3d, ModelClipGroups } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { GeometricModelState } from "../ModelState";
@@ -35,7 +35,6 @@ export interface BaseIModelView {
 
   readonly categorySelector: ViewCategorySelector;
   readonly style: ViewStyle;
-  viewFlags: ViewStyleFlags;
 
   isSpatial(): this is IModelSpatialView;
   isDrawing(): this is DrawingView;

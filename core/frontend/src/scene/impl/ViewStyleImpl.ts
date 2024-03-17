@@ -5,7 +5,7 @@
 
 import { assert, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
-  FeatureAppearance, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlags,
+  FeatureAppearance, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryOverride,
 } from "@itwin/core-common";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "../../DisplayStyleState";
 import { BaseViewStyle, View2dStyle, View3dStyle } from "../ViewStyle";
@@ -19,9 +19,6 @@ export abstract class ViewStyleImpl implements BaseViewStyle {
 
     view.onDisplayStyleChanged.addListener((style) => this._style = style);
   }
-
-  get viewFlags() { return this._style.viewFlags; }
-  set viewFlags(flags: ViewFlags) { this._style.viewFlags = flags; }
 
   get planarClipMasks() { return this._style.settings.planarClipMasks; }
   get subCategoryOverrides() { return this._style.settings.subCategoryOverrides; }

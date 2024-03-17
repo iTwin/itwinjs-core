@@ -8,16 +8,10 @@
 
 import { Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
-  FeatureAppearance, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlags,
+  FeatureAppearance, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryOverride,
 } from "@itwin/core-common";
 
-/** ###TODO optional properties have no effect. shadows, clipVolume, lighting, and thematicDisplay can't be enabled if they are globally disabled, I think.
- */
-export type ViewStyleFlags = ViewFlags; // Optional<ViewFlagsProperties, "acsTriad" | "grid" | "backgroundMap" | "ambientOcclusion">;
-
 export interface BaseViewStyle {
-  viewFlags: ViewStyleFlags;
-
   // Clip masks applied to persistent reality models.
   readonly planarClipMasks: Map<Id64String, PlanarClipMaskSettings>;
 
