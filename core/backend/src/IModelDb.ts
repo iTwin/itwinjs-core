@@ -3200,8 +3200,6 @@ export class StandaloneDb extends BriefcaseDb {
         throw new IModelError(IModelStatus.WrongIModel, `${filePath} is not a Standalone iModel. iTwinId=${iTwinId}`);
       assert(undefined !== file.key);
       const db = new StandaloneDb({ nativeDb, key: file.key, openMode, briefcaseId: BriefcaseIdValue.Unassigned });
-      if (openMode !== OpenMode.Readonly)
-        db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
       return db;
     } catch (error) {
       nativeDb.closeFile();

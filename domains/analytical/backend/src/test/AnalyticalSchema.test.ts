@@ -57,7 +57,7 @@ describe("AnalyticalSchema", () => {
     }
   });
 
-  it.only("should import Analytical schema", async () => {
+  it("should import Analytical schema", async () => {
     const iModelFileName: string = path.join(outputDir, "ImportAnalytical.bim");
     if (IModelJsFs.existsSync(iModelFileName)) {
       IModelJsFs.removeSync(iModelFileName);

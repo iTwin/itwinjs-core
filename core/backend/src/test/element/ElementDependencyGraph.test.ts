@@ -161,6 +161,7 @@ describe("ElementDependencyGraph", () => {
     performUpgrade(testFileName);
     const imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     await imodel.importSchemas([schemaFileName]); // will throw an exception if import fails
+    imodel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const physicalModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "EDGTestModel");
     const codeSpecId = imodel.codeSpecs.insert(CodeSpec.create(imodel, "EDGTestCodeSpec", CodeScopeSpec.Type.Model));
     const spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "EDGTestSpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));

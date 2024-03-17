@@ -54,7 +54,7 @@ describe("IModelWriteTest", () => {
   });
   after(() => HubMock.shutdown());
 
-  it.only("Check busyTimeout option", async () => {
+  it("Check busyTimeout option", async () => {
     const iModelProps = {
       iModelName: "ReadWriteTest",
       iTwinId,

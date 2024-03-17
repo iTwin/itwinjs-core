@@ -55,7 +55,6 @@ export class ChannelAdmin implements ChannelControl {
   private _allowedChannels = new Set<ChannelKey>();
   private _allowedModels = new Set<Id64String>();
   private _deniedModels = new Map<Id64String, ChannelKey>();
-  private _channelRootAspectClassExists?: boolean;
 
   public constructor(private _iModel: IModelDb) {
   }
@@ -79,6 +78,8 @@ export class ChannelAdmin implements ChannelControl {
       if (channel !== undefined)
         return channel;
     } catch {
+      // Exception happens if the iModel is too old: ChannelRootAspect class not present in the BisCore schema (older than v1.0.10).
+      // In that case all data in such iModel is assumed to be in the shared channel.
       return ChannelControl.sharedChannelName;
     }
     const parentId = this._iModel.withPreparedSqliteStatement("SELECT ParentId,ModelId FROM bis_Element WHERE id=?", (stmt) => {
