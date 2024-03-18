@@ -106,7 +106,7 @@ describe("Schema Difference Reporting", () => {
     expectPartiallyEquals(findEntry({ changeType: "modify", schemaType: "Schema" }), {
       changeType: "modify",
       schemaType: "Schema",
-      json: {
+      difference: {
         label: sourceJson.label,
         description: sourceJson.description,
       },
@@ -148,7 +148,7 @@ describe("Schema Difference Reporting", () => {
         changeType: "modify",
         schemaType: "Schema",
         path:       "$references",
-        json: {
+        difference: {
           name:      "EmptySchema",
           version:   "01.00.01",
         },
@@ -156,7 +156,7 @@ describe("Schema Difference Reporting", () => {
         changeType: "add",
         schemaType: "Schema",
         path:       "$references",
-        json: {
+        difference: {
           name:      "MissingSchema",
           version:   "04.00.00",
         },
@@ -169,7 +169,7 @@ describe("Schema Difference Reporting", () => {
       changeType: "add",
       schemaType: "CustomAttribute",
       path:       "$schema",
-      json: {
+      difference: {
         className: "CustomAttributeSchema.MissingCA",
       },
     });
@@ -180,7 +180,7 @@ describe("Schema Difference Reporting", () => {
       changeType: "add",
       schemaType: "CustomAttribute",
       itemName:   "ChangedEntity",
-      json: {
+      difference: {
         className: "CustomAttributeSchema.MissingCA",
       },
     });
@@ -192,7 +192,7 @@ describe("Schema Difference Reporting", () => {
       schemaType: "CustomAttribute",
       itemName:   "ChangedEntity",
       path:       "BooleanProperty",
-      json: {
+      difference: {
         className: "CustomAttributeSchema.InternalId",
       },
     });
@@ -204,7 +204,7 @@ describe("Schema Difference Reporting", () => {
       schemaType: "CustomAttribute",
       itemName:   "RelationshipEntity",
       path:       "$target",
-      json: {
+      difference: {
         className: "CustomAttributeSchema.MissingCA",
       },
     });
@@ -215,7 +215,7 @@ describe("Schema Difference Reporting", () => {
       changeType:   "add",
       schemaType:   "UnitSystem",
       itemName:     "TestUnitSystem",
-      json: {
+      difference: {
         label:       "Imperial",
         // [...]
       },
@@ -227,7 +227,7 @@ describe("Schema Difference Reporting", () => {
       changeType:   "add",
       schemaType:   "Enumeration",
       itemName:     "MissingEnumeration",
-      json: {
+      difference: {
         type: "int",
         isStrict: true,
         enumerators: [{
@@ -245,7 +245,7 @@ describe("Schema Difference Reporting", () => {
       schemaType: "Enumeration",
       itemName:   "ChangedEnumeration",
       path:       "$enumerators.EnumeratorTwo",
-      json: {
+      difference: {
         label: "Enumerator Two",
       },
     });
@@ -257,7 +257,7 @@ describe("Schema Difference Reporting", () => {
       schemaType: "Enumeration",
       itemName:   "ChangedEnumeration",
       path:       "$enumerators",
-      json: {
+      difference: {
         name:  "EnumeratorThree",
         label: "Enumerator Three",
         value: "3",
@@ -270,7 +270,7 @@ describe("Schema Difference Reporting", () => {
       changeType: "add",
       schemaType: "StructClass",
       itemName:   "MissingStruct",
-      json: {
+      difference: {
         properties: [{
           name: "BooleanProperty",
           type: "PrimitiveProperty",
@@ -294,7 +294,7 @@ describe("Schema Difference Reporting", () => {
       schemaType: "Property",
       itemName:   "ChangedEntity",
       path:       "StructProperty",
-      json: {
+      difference: {
         name: "StructProperty",
         type: "StructArrayProperty",
         typeName: "SourceSchema.MissingStruct",
@@ -307,7 +307,7 @@ describe("Schema Difference Reporting", () => {
       changeType: "modify",
       schemaType: "EntityClass",
       itemName:   "ChangedBaseClassEntity",
-      json: {
+      difference: {
         baseClass: "SourceSchema.ChangedEntityBaseClass",
         // [...]
       },
@@ -322,7 +322,7 @@ describe("Schema Difference Reporting", () => {
       schemaType: "EntityClass",
       itemName:   "ChangedEntity",
       path:       "$mixins",
-      json: [
+      difference: [
         "SourceSchema.MissingMixin",
       ],
     });
@@ -334,7 +334,7 @@ describe("Schema Difference Reporting", () => {
       schemaType: "RelationshipClass",
       itemName:   "RelationshipEntity",
       path:       "$source",
-      json: {
+      difference: {
         roleLabel: "New Source RoleLabel",
         abstractConstraint: "SourceSchema.RelationshipSourceEntity",
       },
@@ -346,7 +346,7 @@ describe("Schema Difference Reporting", () => {
       changeType: "add",
       schemaType: "RelationshipClass",
       itemName:   "RelationshipEntity",
-      json: [
+      difference: [
         "SourceSchema.RelationshipSourceEntity",
       ],
     });

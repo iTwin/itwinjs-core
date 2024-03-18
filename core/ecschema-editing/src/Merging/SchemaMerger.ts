@@ -125,7 +125,7 @@ export class SchemaMerger {
 }
 
 async function mergeSchemaProperties(schema: MutableSchema, changes: SchemaDifference) {
-  for (const [name, value] of Object.entries(changes.json)) {
+  for (const [name, value] of Object.entries(changes.difference)) {
     switch(name) {
       case "label":
         schema.setDisplayLabel(value);

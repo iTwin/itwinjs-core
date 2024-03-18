@@ -14,19 +14,19 @@ export const phenomenonMerger: SchemaMergerHandler<PhenomenonDifference> = {
   add: async (context, change) => {
     return context.editor.phenomenons.createFromProps(context.targetSchemaKey, {
       name: change.itemName,
-      ...change.json,
+      ...change.difference,
     });
   },
   modify: async (_context, change, itemKey, phenomenon: MutablePhenomenon) => {
-    if(change.json.label) {
-      phenomenon.setDisplayLabel(change.json.label);
+    if(change.difference.label) {
+      phenomenon.setDisplayLabel(change.difference.label);
     }
-    if(change.json.definition) {
+    if(change.difference.definition) {
       // It would be better if the validation would be part of phenomenon.setDefinition.
-      if (phenomenon.definition !== "" && change.json.definition.toLowerCase() !== phenomenon.definition.toLowerCase())
+      if (phenomenon.definition !== "" && change.difference.definition.toLowerCase() !== phenomenon.definition.toLowerCase())
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${itemKey.name} has an invalid 'definition' attribute.`);
 
-      await phenomenon.setDefinition(change.json.definition);
+      await phenomenon.setDefinition(change.difference.definition);
     }
     return {};
   },

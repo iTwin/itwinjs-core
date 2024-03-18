@@ -128,7 +128,7 @@ export type AnySchemaDifference =
 export interface SchemaDifference {
   readonly changeType: "modify";
   readonly schemaType: "Schema";
-  readonly json: {
+  readonly difference: {
     label?: string;
     description?: string;
   };
@@ -137,7 +137,7 @@ export interface SchemaDifference {
 export interface SchemaReferenceDifference {
   readonly changeType: "add" | "modify";
   readonly schemaType: "Schema";
-  readonly json: SchemaReferenceProps;
+  readonly difference: SchemaReferenceProps;
 }
 
 /**
@@ -171,7 +171,7 @@ export type ClassItemDifference =
  */
 interface SchemaItemDifference<T extends SchemaItem> {
   readonly itemName: string;
-  readonly json: SchemaItemProperties<ReturnType<T["toJSON"]>>;
+  readonly difference: SchemaItemProperties<ReturnType<T["toJSON"]>>;
 }
 
 /**
@@ -182,7 +182,7 @@ export interface ClassPropertyDifference {
   readonly schemaType: "Property";
   readonly itemName: string;
   readonly path: string;
-  readonly json: Editable<AnyPropertyProps>;
+  readonly difference: Editable<AnyPropertyProps>;
 }
 
 /**
@@ -217,7 +217,7 @@ export interface CustomAttributeSchemaDifference {
   readonly changeType: "add";
   readonly schemaType: "CustomAttribute";
   readonly path: "$schema";
-  readonly json: Editable<CustomAttribute>;
+  readonly difference: Editable<CustomAttribute>;
 }
 
 /**
@@ -227,7 +227,7 @@ export interface CustomAttributeSchemaItemDifference {
   readonly changeType: "add";
   readonly schemaType: "CustomAttribute";
   readonly itemName: string;
-  readonly json: Editable<CustomAttribute>;
+  readonly difference: Editable<CustomAttribute>;
 }
 
 /**
@@ -238,7 +238,7 @@ export interface CustomAttributePropertyDifference {
   readonly schemaType: "CustomAttribute";
   readonly itemName: string;
   readonly path: string;
-  readonly json: Editable<CustomAttribute>;
+  readonly difference: Editable<CustomAttribute>;
 }
 
 /**
@@ -249,7 +249,7 @@ export interface CustomAttributeRelationshipDifference {
   readonly schemaType: "CustomAttribute";
   readonly itemName: string;
   readonly path: "$source" | "$target";
-  readonly json: Editable<CustomAttribute>;
+  readonly difference: Editable<CustomAttribute>;
 }
 
 /**
@@ -268,7 +268,7 @@ export interface EntityClassMixinDifference {
   readonly schemaType: SchemaItemTypeName.EntityClass;
   readonly itemName: string;
   readonly path: "$mixins";
-  readonly json: string[];
+  readonly difference: string[];
 }
 
 /**
@@ -287,7 +287,7 @@ export interface EnumeratorDifference {
   readonly schemaType: SchemaItemTypeName.Enumeration;
   readonly itemName: string;
   readonly path: "$enumerators";
-  readonly json: Editable<AnyEnumerator>;
+  readonly difference: Editable<AnyEnumerator>;
 }
 
 /**
@@ -338,7 +338,7 @@ export interface RelationshipConstraintDifference {
   readonly schemaType: SchemaItemTypeName.RelationshipClass;
   readonly itemName: string;
   readonly path: "$source" | "$target";
-  readonly json: Editable<Omit<RelationshipConstraintProps, "constraintClasses">>;
+  readonly difference: Editable<Omit<RelationshipConstraintProps, "constraintClasses">>;
 }
 
 /**
@@ -349,7 +349,7 @@ export interface RelationshipConstraintClassDifference {
   readonly schemaType: SchemaItemTypeName.RelationshipClass;
   readonly itemName: string;
   readonly path: "$source.constraintClasses" | "$target.constraintClasses";
-  readonly json: string[];
+  readonly difference: string[];
 }
 
 /**

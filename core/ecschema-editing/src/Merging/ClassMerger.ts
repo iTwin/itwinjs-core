@@ -26,8 +26,8 @@ export async function * mergeClassItems(context: SchemaMergeContext, classChange
       // Make a copy of the change instance, we don't want to alter the actual instance.
       const changeCopy = {
         ...change,
-        json: {
-          ...change.json,
+        difference: {
+          ...change.difference,
           // Remove everything we want to validate before setting
           baseClass: undefined,
           mixins: undefined,
@@ -90,22 +90,22 @@ async function iterateClassChanges(classChanges: AnySchemaItemDifference[], hand
  */
 export async function modifyClass(context: SchemaMergeContext, change: ClassItemDifference, itemKey: SchemaItemKey, item: ECClass): Promise<SchemaEditResults> {
   const mutableClass = item as MutableClass;
-  if(change.json.label) {
-    mutableClass.setDisplayLabel(change.json.label);
+  if(change.difference.label) {
+    mutableClass.setDisplayLabel(change.difference.label);
   }
-  if(change.json.description) {
-    mutableClass.setDescription(change.json.description);
+  if(change.difference.description) {
+    mutableClass.setDescription(change.difference.description);
   }
 
-  if(change.json.baseClass) {
-    const result = await setBaseClass(context, item, change.json.baseClass, change.changeType === "add");
+  if(change.difference.baseClass) {
+    const result = await setBaseClass(context, item, change.difference.baseClass, change.changeType === "add");
     if(result.errorMessage) {
       return result;
     }
   }
 
-  if(change.json.modifier) {
-    const result = await setClassModifier(mutableClass, change.json.modifier);
+  if(change.difference.modifier) {
+    const result = await setClassModifier(mutableClass, change.difference.modifier);
     if(result.errorMessage) {
       return result;
     }
@@ -160,7 +160,7 @@ const structClassMerger: SchemaMergerHandler<StructClassDifference> = {
   async add(context, change) {
     return context.editor.structs.createFromProps(context.targetSchemaKey, {
       name: change.itemName,
-      ...change.json,
+      ...change.difference,
     });
   },
   modify: modifyClass,

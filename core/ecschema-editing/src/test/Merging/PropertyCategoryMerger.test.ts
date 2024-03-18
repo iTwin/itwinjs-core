@@ -28,7 +28,7 @@ describe("PropertyCategory merge tests", () => {
           changeType: "add",
           schemaType: SchemaItemTypeName.PropertyCategory,
           itemName: "TestPropertyCategory",
-          json: {
+          difference: {
             schemaItemType: "PropertyCategory",
             label: "ValueTrack Metadata",
             priority: 100000,
@@ -66,7 +66,7 @@ describe("PropertyCategory merge tests", () => {
           changeType: "modify",
           schemaType: SchemaItemTypeName.PropertyCategory,
           itemName: "TestPropertyCategory",
-          json: {
+          difference: {
             priority: 99,
           },
         },

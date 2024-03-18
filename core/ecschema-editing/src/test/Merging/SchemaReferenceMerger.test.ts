@@ -6,8 +6,6 @@ import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 
-/* eslint-disable @typescript-eslint/naming-convention */
-
 describe("Schema reference merging tests", () => {
 
   const sourceJson = {
@@ -50,7 +48,7 @@ describe("Schema reference merging tests", () => {
         changeType: "add",
         schemaType: "Schema",
         path: "$references",
-        json: {
+        difference: {
           name: "BisCore",
           version:"01.00.15",
         },
@@ -58,7 +56,7 @@ describe("Schema reference merging tests", () => {
         changeType: "add",
         schemaType: "Schema",
         path: "$references",
-        json:{
+        difference:{
           name: "CoreCustomAttributes",
           version:"01.00.03",
         },

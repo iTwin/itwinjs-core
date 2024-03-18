@@ -25,7 +25,7 @@ describe("Unit system merger tests", () => {
         changeType: "add",
         schemaType: SchemaItemTypeName.UnitSystem,
         itemName: "testUnitSystem",
-        json: {
+        difference: {
           schemaItemType: "UnitSystem",
           label: "Imperial",
         },

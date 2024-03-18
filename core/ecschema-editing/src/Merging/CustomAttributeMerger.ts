@@ -22,17 +22,17 @@ import { updateSchemaItemKey } from "./SchemaItemMerger";
  */
 export async function mergeCustomAttribute(context: SchemaMergeContext, change: CustomAttributeDifference): Promise<SchemaEditResults> {
   if (change.changeType === "add") {
-    const schemaItemKey = await updateSchemaItemKey(context, change.json.className);
+    const schemaItemKey = await updateSchemaItemKey(context, change.difference.className);
 
     const targetCustomAttributeClass = await context.targetSchema.lookupItem<CustomAttributeClass>(schemaItemKey);
     if (targetCustomAttributeClass === undefined) {
       return { errorMessage: `Unable to locate the custom attribute class ${schemaItemKey.name} in the merged schema.`};
     }
 
-    change.json.className = schemaItemKey.fullName;
+    change.difference.className = schemaItemKey.fullName;
 
     if(isSchemaDifference(change)) {
-      return context.editor.addCustomAttribute(context.targetSchemaKey, change.json);
+      return context.editor.addCustomAttribute(context.targetSchemaKey, change.difference);
     }
     if(isRelationshipConstraintDifference(change)) {
       const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
@@ -44,16 +44,16 @@ export async function mergeCustomAttribute(context: SchemaMergeContext, change: 
         ? relationshipClass.source
         : relationshipClass.target;
 
-      return context.editor.relationships.addCustomAttributeToConstraint(constraint, change.json);
+      return context.editor.relationships.addCustomAttributeToConstraint(constraint, change.difference);
     }
     if(isPropertyDifference(change)) {
       const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
       const [propertyName] = change.path.split(".");
-      return context.editor.entities.addCustomAttributeToProperty(itemKey, propertyName, change.json);
+      return context.editor.entities.addCustomAttributeToProperty(itemKey, propertyName, change.difference);
     }
     if(isSchemaItemDifference(change)) {
       const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
-      return context.editor.entities.addCustomAttribute(itemKey, change.json);
+      return context.editor.entities.addCustomAttribute(itemKey, change.difference);
     }
     return {};
   } else {

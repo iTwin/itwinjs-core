@@ -15,14 +15,14 @@ export const customAttributeClassMerger: SchemaMergerHandler<CustomAttributeClas
   async add(context, change) {
     return context.editor.customAttributes.createFromProps(context.targetSchemaKey, {
       name: change.itemName,
-      ...change.json,
+      ...change.difference,
     });
   },
   async modify(context, change, itemKey, item: MutableCAClass) {
-    if(change.json.appliesTo) {
+    if(change.difference.appliesTo) {
       const currentValue = containerTypeToString(item.containerType);
-      if (currentValue !== "" && change.json.appliesTo !== currentValue) {
-        const containerType = parseCustomAttributeContainerType(`${currentValue}, ${change.json.appliesTo}`);
+      if (currentValue !== "" && change.difference.appliesTo !== currentValue) {
+        const containerType = parseCustomAttributeContainerType(`${currentValue}, ${change.difference.appliesTo}`);
         if (containerType === undefined) {
           return { errorMessage: "An invalid custom attribute class containerType has been provided."};
         }

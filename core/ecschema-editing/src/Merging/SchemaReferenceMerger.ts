@@ -17,7 +17,7 @@ export default async function mergeSchemaReferences(context: SchemaMergeContext,
   // If the target schema does not have a reference to a schema yet, it can be added
   // but should be checked if it's schema references have collisions with existing references.
   if(change.changeType === "add") {
-    const referencedSchema = await locateSchema(context.editor, change.json.name, change.json.version);
+    const referencedSchema = await locateSchema(context.editor, change.difference.name, change.difference.version);
     await context.editor.addSchemaReference(context.targetSchemaKey, referencedSchema);
   }
 
@@ -26,7 +26,7 @@ export default async function mergeSchemaReferences(context: SchemaMergeContext,
   // the source schema is compatible to the existing one. This is not be checked by the
   // schema instance when added.
   if(change.changeType === "modify") {
-    const referencedSchema = await locateSchema(context.editor, change.json.name, change.json.version);
+    const referencedSchema = await locateSchema(context.editor, change.difference.name, change.difference.version);
     const existingSchema  = (await context.targetSchema.getReference(referencedSchema.name))!;
 
     const [older, latest] = compareSchemas(existingSchema, referencedSchema);

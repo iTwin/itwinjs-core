@@ -12,7 +12,7 @@ export const unitSystemMerger: SchemaMergerHandler<UnitSystemDifference> = {
   async add(context, change) {
     return context.editor.unitSystems.createFromProps(context.targetSchemaKey, {
       name: change.itemName,
-      ...change.json,
+      ...change.difference,
     });
   },
 };

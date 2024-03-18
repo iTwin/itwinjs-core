@@ -26,14 +26,14 @@ interface PropertyMerger<T extends AnyPropertyProps> {
  */
 export async function mergePropertyDifference(context: SchemaMergeContext, change: ClassPropertyDifference): Promise<SchemaEditResults> {
   const classKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
-  return mergeClassProperty(context, change, classKey, Object.assign(change.json, { name: change.path }));
+  return mergeClassProperty(context, change, classKey, Object.assign(change.difference, { name: change.path }));
 }
 
 /**
  * @internal
  */
 export async function mergeClassProperties(context: SchemaMergeContext, change: ClassItemDifference, itemKey: SchemaItemKey): Promise<SchemaEditResults> {
-  for(const property of change.json.properties || []) {
+  for(const property of change.difference.properties || []) {
     const result = await mergeClassProperty(context, change, itemKey, property);
     if(result.errorMessage) {
       return result;

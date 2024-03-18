@@ -15,15 +15,15 @@ export const entityClassMerger: SchemaMergerHandler<EntityChangeType> = {
   async add(context, change) {
     return context.editor.entities.createFromProps(context.targetSchemaKey, {
       name: change.itemName,
-      ...change.json,
+      ...change.difference,
     });
   },
   async modify(context, change, itemKey, item: MutableEntityClass) {
     if(isMixinDifference(change)) {
       return { errorMessage: `Changing the entity class '${itemKey.name}' mixins is not supported.`};
     }
-    if(change.json.mixins) {
-      for(const mixin of change.json.mixins) {
+    if(change.difference.mixins) {
+      for(const mixin of change.difference.mixins) {
         const mixinKey = await updateSchemaItemKey(context, mixin);
         const result = await context.editor.entities.addMixin(itemKey, mixinKey);
         if(result.errorMessage) {

@@ -27,7 +27,7 @@ describe("Phenomenon merger tests", () => {
           changeType: "add",
           schemaType: SchemaItemTypeName.Phenomenon,
           itemName: "testPhenomenon",
-          json: {
+          difference: {
             schemaItemType: "Phenomenon",
             label: "Area",
             description: "Area description",
@@ -69,7 +69,7 @@ describe("Phenomenon merger tests", () => {
           changeType: "modify",
           schemaType: SchemaItemTypeName.Phenomenon,
           itemName: "testPhenomenon",
-          json: {
+          difference: {
             definition: "Units.LENGTH(2)",
           },
         },

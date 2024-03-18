@@ -161,7 +161,7 @@ export class SchemaDiagnosticVisitor {
       modifyEntry = {
         changeType: "modify",
         schemaType: "Schema",
-        json: {},
+        difference: {},
       };
     }
 
@@ -170,11 +170,11 @@ export class SchemaDiagnosticVisitor {
     const [propertyName, propertyValue] = diagnostic.messageArgs as [string, any];
     switch(propertyName) {
       case "label":
-        modifyEntry.json.label = propertyValue;
+        modifyEntry.difference.label = propertyValue;
         hasChanges = true;
         break;
       case "description":
-        modifyEntry.json.description = propertyValue;
+        modifyEntry.difference.description = propertyValue;
         hasChanges = true;
         break;
     }
@@ -190,7 +190,7 @@ export class SchemaDiagnosticVisitor {
       changeType: "add",
       schemaType: getSchemaItemName(schemaItem.schemaItemType) as any,
       itemName: schemaItem.name,
-      json: schemaItem.toJSON(),
+      difference: schemaItem.toJSON(),
     });
   }
 
@@ -222,11 +222,11 @@ export class SchemaDiagnosticVisitor {
         changeType: "modify",
         schemaType: getSchemaItemName(schemaItem.schemaItemType) as any,
         itemName: schemaItem.name,
-        json: {} as any,
+        difference: {} as any,
       });
     }
 
-    (modifyEntry.json  as any)[propertyName] = sourceValue;
+    (modifyEntry.difference  as any)[propertyName] = sourceValue;
   }
 
   private visitChangedEnumeration(diagnostic: AnyDiagnostic) {
@@ -262,7 +262,7 @@ export class SchemaDiagnosticVisitor {
       schemaType: SchemaItemTypeName.Enumeration,
       itemName: enumeration.name,
       path: "$enumerators",
-      json: enumerator,
+      difference: enumerator,
     });
   }
 
@@ -272,7 +272,7 @@ export class SchemaDiagnosticVisitor {
       && change.schemaType === "Enumeration"
       && change.itemName === item
       && change.path === "$enumerators"
-      && (change.json as AnyEnumerator).name === enumeratorName;
+      && (change.difference as AnyEnumerator).name === enumeratorName;
     });
   }
 
@@ -299,12 +299,12 @@ export class SchemaDiagnosticVisitor {
         schemaType: SchemaItemTypeName.Enumeration,
         itemName: enumeration.name,
         path: enumeratorPath,
-        json: {} as any,
+        difference: {} as any,
       });
     }
 
     if(sourceValue !== undefined) {
-      (modifyEntry.json  as any)[propertyName] = sourceValue;
+      (modifyEntry.difference  as any)[propertyName] = sourceValue;
     }
   }
 
@@ -336,7 +336,7 @@ export class SchemaDiagnosticVisitor {
       schemaType: "Property",
       itemName: property.class.name,
       path: property.name,
-      json:  property.toJSON() as AnyPropertyProps,
+      difference:  property.toJSON() as AnyPropertyProps,
     });
   }
 
@@ -358,12 +358,12 @@ export class SchemaDiagnosticVisitor {
         schemaType: "Property",
         itemName: property.class.name,
         path: property.name,
-        json: {} as any,
+        difference: {} as any,
       });
     }
 
     if(propertyName !== "name" && sourceValue !== undefined) {
-      (modifyEntry.json  as any)[propertyName] = sourceValue;
+      (modifyEntry.difference  as any)[propertyName] = sourceValue;
     }
   }
 
@@ -400,11 +400,11 @@ export class SchemaDiagnosticVisitor {
         changeType: "modify",
         schemaType: getSchemaItemName<ClassItemDifference>(ecClass.schemaItemType),
         itemName: ecClass.name,
-        json: {} as any,
+        difference: {} as any,
       });
     }
 
-    modifyEntry.json.baseClass = sourceBaseClass.fullName;
+    modifyEntry.difference.baseClass = sourceBaseClass.fullName;
   }
 
   private validateBaseClassChange(targetClass: ECClass, sourceBaseClass?: ECClass, targetBaseClass?: ECClass): boolean {
@@ -467,11 +467,11 @@ export class SchemaDiagnosticVisitor {
         schemaType: SchemaItemTypeName.EntityClass,
         itemName: ecClass.name,
         path: "$mixins",
-        json: [],
+        difference: [],
       });
     }
 
-    modifyEntry.json.push(mixin.fullName);
+    modifyEntry.difference.push(mixin.fullName);
   }
 
   private validateMixin(targetClass: ECClass, mixin: Mixin): boolean {
@@ -506,12 +506,12 @@ export class SchemaDiagnosticVisitor {
         schemaType: SchemaItemTypeName.RelationshipClass,
         itemName: className,
         path: constraintPath,
-        json: [],
+        difference: [],
       });
     }
 
     const [constraintClass] = diagnostic.messageArgs as [ECClass];
-    modifyEntry.json.push(constraintClass.fullName);
+    modifyEntry.difference.push(constraintClass.fullName);
   }
 
   private visitChangedRelationshipConstraint(diagnostic: AnyDiagnostic) {
@@ -529,13 +529,13 @@ export class SchemaDiagnosticVisitor {
         schemaType: SchemaItemTypeName.RelationshipClass,
         itemName: className,
         path: constraintPath,
-        json: {} as any,
+        difference: {} as any,
       });
     }
 
     const [propertyName, propertyValue] = diagnostic.messageArgs as [keyof RelationshipConstraintProps, any];
     if(propertyValue !== undefined) {
-      (modifyEntry.json  as any)[propertyName] = propertyValue;
+      (modifyEntry.difference as any)[propertyName] = propertyValue;
     }
   }
 
@@ -545,7 +545,7 @@ export class SchemaDiagnosticVisitor {
       changeType,
       schemaType: "Schema",
       path: "$references",
-      json: {
+      difference: {
         name:     referencedSchema.name,
         version:  referencedSchema.schemaKey.version.toString(),
       },
@@ -560,7 +560,7 @@ export class SchemaDiagnosticVisitor {
         changeType: "add",
         schemaType: "CustomAttribute",
         path: "$schema",
-        json: customAttribute,
+        difference: customAttribute,
       });
     }
 
@@ -573,7 +573,7 @@ export class SchemaDiagnosticVisitor {
         changeType: "add",
         schemaType: "CustomAttribute",
         itemName: ecType.name,
-        json: customAttribute,
+        difference: customAttribute,
       });
     }
 
@@ -588,7 +588,7 @@ export class SchemaDiagnosticVisitor {
         schemaType: "CustomAttribute",
         itemName: ecType.class.name,
         path: ecType.name,
-        json: customAttribute,
+        difference: customAttribute,
       });
     }
 
@@ -602,7 +602,7 @@ export class SchemaDiagnosticVisitor {
         schemaType: "CustomAttribute",
         itemName: ecType.relationshipClass.name,
         path: ecType.isSource ? "$source" : "$target",
-        json: customAttribute,
+        difference: customAttribute,
       });
     }
     return;

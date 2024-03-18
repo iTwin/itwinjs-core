@@ -7,8 +7,6 @@ import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 import "chai-as-promised";
 
-/* eslint-disable @typescript-eslint/naming-convention */
-
 describe("Schema merge tests", () => {
   it("should merge label and description from schema", async () => {
     const targetContext = new SchemaContext();
@@ -29,7 +27,7 @@ describe("Schema merge tests", () => {
       changes:[{
         changeType: "modify",
         schemaType: "Schema",
-        json: {
+        difference: {
           description: newDescription,
           label: newLabel,
         },

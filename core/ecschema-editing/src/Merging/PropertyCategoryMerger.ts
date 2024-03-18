@@ -13,16 +13,16 @@ export const propertyCategoryMerger: SchemaMergerHandler<PropertyCategoryDiffere
   async add(context, change) {
     return context.editor.propertyCategories.createFromProps(context.targetSchemaKey, {
       name: change.itemName,
-      ...change.json,
+      ...change.difference,
     });
   },
   async modify(context, change, itemKey, item: MutablePropertyCategory) {
-    if(change.json.label) {
-      item.setDisplayLabel(change.json.label);
+    if(change.difference.label) {
+      item.setDisplayLabel(change.difference.label);
     }
-    if(change.json.priority !== undefined) {
+    if(change.difference.priority !== undefined) {
       // TODO: inconsistency: setPriority does not return a result whether the priority was set successfully.
-      await context.editor.propertyCategories.setPriority(itemKey, change.json.priority);
+      await context.editor.propertyCategories.setPriority(itemKey, change.difference.priority);
     }
     return {};
   },

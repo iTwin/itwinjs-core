@@ -26,7 +26,7 @@ export const relationshipClassMerger: SchemaMergerHandler<RelationshipDifference
     }
     return context.editor.relationships.createFromProps(context.targetSchemaKey, {
       name: change.itemName,
-      ...change.json,
+      ...change.difference,
     });
   },
   async modify(context, change, itemKey, item: MutableRelationshipClass) {
@@ -44,22 +44,22 @@ async function modifyRelationshipClass(context: SchemaMergeContext, change: Rela
   // The following modifications will only be applied if the items gets modified
   // and not the 2nd pass when adding a RelationshipClass.
   if(change.changeType === "modify") {
-    if(change.json.strength) {
+    if(change.difference.strength) {
       if (item.strength === undefined) {
-        const strength = parseStrength(change.json.strength);
+        const strength = parseStrength(change.difference.strength);
         if (strength === undefined) {
-          return { itemKey, errorMessage: `An invalid relationship class strength value '${change.json.strength}' has been provided.` };
+          return { itemKey, errorMessage: `An invalid relationship class strength value '${change.difference.strength}' has been provided.` };
         }
         item.setStrength(strength);
         return {};
       }
       return { itemKey, errorMessage: `Changing the relationship '${itemKey.name}' strength is not supported.` };
     }
-    if(change.json.strengthDirection) {
+    if(change.difference.strengthDirection) {
       if (item.strengthDirection === undefined) {
-        const strengthDirection = parseStrengthDirection(change.json.strengthDirection);
+        const strengthDirection = parseStrengthDirection(change.difference.strengthDirection);
         if (strengthDirection === undefined) {
-          return { itemKey, errorMessage: `An invalid relationship class strengthDirection value '${change.json.strengthDirection}' has been provided.` };
+          return { itemKey, errorMessage: `An invalid relationship class strengthDirection value '${change.difference.strengthDirection}' has been provided.` };
         }
         item.setStrengthDirection(strengthDirection);
         return {};
@@ -72,20 +72,20 @@ async function modifyRelationshipClass(context: SchemaMergeContext, change: Rela
 
 async function modifyRelationshipConstraint(context: SchemaMergeContext, change: RelationshipConstraintDifference, item: MutableRelationshipClass) {
   const constraint = item[parseConstraint(change.path)];
-  if(change.json.roleLabel) {
-    constraint.roleLabel = change.json.roleLabel;
+  if(change.difference.roleLabel) {
+    constraint.roleLabel = change.difference.roleLabel;
   }
-  if(change.json.polymorphic) {
-    const result = await context.editor.relationships.setConstraintPolymorphic(constraint, change.json.polymorphic);
+  if(change.difference.polymorphic) {
+    const result = await context.editor.relationships.setConstraintPolymorphic(constraint, change.difference.polymorphic);
     if(result.errorMessage) {
       return result;
     }
   }
-  if(change.json.multiplicity) {
+  if(change.difference.multiplicity) {
     if (constraint.multiplicity === undefined) {
-      const multiplicity = RelationshipMultiplicity.fromString(change.json.multiplicity);
+      const multiplicity = RelationshipMultiplicity.fromString(change.difference.multiplicity);
       if (multiplicity === undefined) {
-        return { errorMessage: `An invalid relationship constraint multiplicity value '${change.json.multiplicity}' has been provided.` };
+        return { errorMessage: `An invalid relationship constraint multiplicity value '${change.difference.multiplicity}' has been provided.` };
       }
       const result = await context.editor.relationships.setConstraintMultiplicity(constraint, multiplicity);
       if(result.errorMessage) {
@@ -94,11 +94,11 @@ async function modifyRelationshipConstraint(context: SchemaMergeContext, change:
     }
     return { errorMessage: `Changing the relationship constraint '${constraint.fullName}' multiplicity is not supported.` };
   }
-  if(change.json.abstractConstraint) {
-    const itemKey = await updateSchemaItemKey(context, change.json.abstractConstraint);
+  if(change.difference.abstractConstraint) {
+    const itemKey = await updateSchemaItemKey(context, change.difference.abstractConstraint);
     const abstractConstraint = await context.editor.schemaContext.getSchemaItem<ConstraintClassTypes>(itemKey);
     if (abstractConstraint === undefined) {
-      return { itemKey: constraint.relationshipClass.key, errorMessage: `Unable to locate the abstract constraint class ${change.json.abstractConstraint} in the context schema.`};
+      return { itemKey: constraint.relationshipClass.key, errorMessage: `Unable to locate the abstract constraint class ${change.difference.abstractConstraint} in the context schema.`};
     }
     return context.editor.relationships.setAbstractConstraint(constraint, abstractConstraint);
   }
@@ -107,7 +107,7 @@ async function modifyRelationshipConstraint(context: SchemaMergeContext, change:
 
 async function modifyRelationshipClassConstraint(context: SchemaMergeContext, change: RelationshipConstraintClassDifference, item: MutableRelationshipClass) {
   const constraint = item[parseConstraint(change.path)];
-  for(const constraintName of change.json) {
+  for(const constraintName of change.difference) {
     const constraintClassKey = await updateSchemaItemKey(context, constraintName);
     const constraintClass = await context.editor.schemaContext.getSchemaItem<ConstraintClassTypes>(constraintClassKey);
     if(constraintClass === undefined) {

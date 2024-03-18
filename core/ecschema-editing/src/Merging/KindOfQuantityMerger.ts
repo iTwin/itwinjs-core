@@ -11,32 +11,32 @@ import { type MutableKindOfQuantity } from "../Editing/Mutable/MutableKindOfQuan
  */
 export const kindOfQuantityMerger: SchemaMergerHandler<KindOfQuantityDifference> = {
   async add(context, change) {
-    change.json.persistenceUnit = await updateSchemaItemFullName(context, change.json.persistenceUnit);
-    if(change.json.presentationUnits) {
-      if(Array.isArray(change.json.presentationUnits)) {
-        for(let index = 0; index < change.json.presentationUnits.length; index++) {
-          const updatedReference = await updateSchemaItemFullName(context, change.json.presentationUnits[index]);
-          change.json.presentationUnits[index] = updatedReference;
+    change.difference.persistenceUnit = await updateSchemaItemFullName(context, change.difference.persistenceUnit);
+    if(change.difference.presentationUnits) {
+      if(Array.isArray(change.difference.presentationUnits)) {
+        for(let index = 0; index < change.difference.presentationUnits.length; index++) {
+          const updatedReference = await updateSchemaItemFullName(context, change.difference.presentationUnits[index]);
+          change.difference.presentationUnits[index] = updatedReference;
         }
       } else {
-        const updatedReference = await updateSchemaItemFullName(context, change.json.presentationUnits);
-        change.json.presentationUnits = updatedReference;
+        const updatedReference = await updateSchemaItemFullName(context, change.difference.presentationUnits);
+        change.difference.presentationUnits = updatedReference;
       }
     }
 
     return context.editor.kindOfQuantities.createFromProps(context.targetSchemaKey, {
       name: change.itemName,
-      ...change.json,
+      ...change.difference,
     });
   },
   async modify(_context, change, itemKey, item: MutableKindOfQuantity) {
-    if(change.json.label) {
-      item.setDisplayLabel(change.json.label);
+    if(change.difference.label) {
+      item.setDisplayLabel(change.difference.label);
     }
-    if(change.json.relativeError) {
+    if(change.difference.relativeError) {
       // TODO: Not settable through the interface
     }
-    if(change.json.persistenceUnit) {
+    if(change.difference.persistenceUnit) {
       // TODO: It should be checked if the unit is the same, but referring to the source schema.
       throw new Error(`Changing the kind of quantity '${itemKey.name}' persistenceUnit is not supported.`);
     }

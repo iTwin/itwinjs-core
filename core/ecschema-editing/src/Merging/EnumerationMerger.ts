@@ -16,33 +16,33 @@ export const enumerationMerger: SchemaMergerHandler<ChangeTypes> = {
   async add(context, change) {
     if(isEnumeratorDifference(change)) {
       const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
-      await context.editor.enumerations.addEnumerator(itemKey, change.json);
+      await context.editor.enumerations.addEnumerator(itemKey, change.difference);
       return {};
     }
 
     return context.editor.enumerations.createFromProps(context.targetSchemaKey, {
       name: change.itemName,
-      ...change.json,
+      ...change.difference,
     });
   },
   async modify(context, change, itemKey, item: MutableEnumeration) {
     if(isEnumeratorDifference(change)) {
       const [_path, enumeratorName] = change.path.split(".");
-      if(change.json.description) {
-        await context.editor.enumerations.setEnumeratorDescription(itemKey, enumeratorName, change.json.description);
+      if(change.difference.description) {
+        await context.editor.enumerations.setEnumeratorDescription(itemKey, enumeratorName, change.difference.description);
       }
-      if(change.json.label) {
-        await context.editor.enumerations.setEnumeratorLabel(itemKey, enumeratorName, change.json.label);
+      if(change.difference.label) {
+        await context.editor.enumerations.setEnumeratorLabel(itemKey, enumeratorName, change.difference.label);
       }
       return {};
     }
 
-    if(change.json.label) {
-      item.setDisplayLabel(change.json.label);
+    if(change.difference.label) {
+      item.setDisplayLabel(change.difference.label);
     }
 
-    if(change.json.isStrict) {
-      item.setIsStrict(change.json.isStrict);
+    if(change.difference.isStrict) {
+      item.setIsStrict(change.difference.isStrict);
     }
 
     return {};
