@@ -278,7 +278,7 @@ describe("exportGraphics", () => {
 
     /** return 2x2 array of uvParams: [vNegate][meters] given raw uv and the [1][1] entry */
     const mutateUV = (uvRaw: Float32Array, uvVNegatedMeters: Float32Array): Float32Array[][] => {
-      const uvArray: Float32Array[][] = [[], []];
+      const uvArray: Float32Array[][] = [[],[]];
       uvArray[1].push(Float32Array.from(uvRaw, negateV));
       uvArray[1].push(uvVNegatedMeters);
       for (let i = 0; i < 2; ++i)
@@ -286,7 +286,7 @@ describe("exportGraphics", () => {
       return uvArray;
     };
 
-    const materials: Id64String[][] = [["", ""], ["", ""]];
+    const materials: Id64String[][] = [["",""], ["",""]];
     const getMaterial = (vNegate: boolean, meters: boolean): Id64String => {
       const i = vNegate ? 1 : 0;
       const j = meters ? 1 : 0;

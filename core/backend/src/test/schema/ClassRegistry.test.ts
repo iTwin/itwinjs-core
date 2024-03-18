@@ -627,7 +627,7 @@ describe("Class Registry - generated classes", () => {
     expect(ActualDerived5.isGeneratedClass).to.be.true;
     expect(ActualDerived6.isGeneratedClass).to.be.true;
 
-    assert.isTrue(ActualTestElementWithNavProp.prototype.hasOwnProperty("collectReferenceIds")); // should have automatic impl
+    assert.isTrue(ActualTestElementWithNavProp.prototype.hasOwnProperty("collectReferenceIds" )); // should have automatic impl
     assert.isTrue(ActualDerivedWithNavProp.prototype.hasOwnProperty("collectReferenceIds"));
     assert.isTrue(ActualDerived2.prototype.hasOwnProperty("collectReferenceIds")); // non-generated; manually implements so has method
     assert.isFalse(ActualDerived3.prototype.hasOwnProperty("collectReferenceIds")); // base is non-generated so it shouldn't get the automatic impl

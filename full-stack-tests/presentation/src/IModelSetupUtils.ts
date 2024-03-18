@@ -94,11 +94,11 @@ export function insertPhysicalElement(db: IModelDb, label: string, modelId: Id64
     userLabel: label,
     ...(parentId
       ? {
-        parent: {
-          id: parentId,
-          relClassName: "BisCore:PhysicalElementAssemblesElements",
-        },
-      }
+          parent: {
+            id: parentId,
+            relClassName: "BisCore:PhysicalElementAssemblesElements",
+          },
+        }
       : undefined),
   } as PhysicalElementProps);
   return { className, id };
