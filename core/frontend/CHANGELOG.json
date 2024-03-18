@@ -2,6 +2,18 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "4.4.7",
+      "tag": "@itwin/core-frontend_v4.4.7",
+      "date": "Fri, 15 Mar 2024 19:15:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Disable tile preloading when under memory pressure"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.4.6",
       "tag": "@itwin/core-frontend_v4.4.6",
       "date": "Fri, 08 Mar 2024 15:57:11 GMT",
