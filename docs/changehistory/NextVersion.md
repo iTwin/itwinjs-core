@@ -12,6 +12,7 @@ Table of contents:
   - [Editor](#editor)
   - [Lock Control](#lock-control)
   - [Presentation](#presentation)
+    - [RPC interface version bump](#rpc-interface-version-bump)
     - [Custom renderer and editor support for array items](#custom-renderer-and-editor-support-for-array-items)
     - [Support for property overrides on ECStruct member properties](#support-for-property-overrides-on-ecstruct-member-properties)
     - [Deprecation of async array results in favor of async iterators](#deprecation-of-async-array-results-in-favor-of-async-iterators)
@@ -64,9 +65,15 @@ Changes to @beta [LockControl]($backend) class to make releaseAllLocks @internal
 
 ## Presentation
 
+### RPC interface version bump
+
+The presentation backend now sends more properties-related information to the frontend than it did in previous version, and the frontend relies on that information for formatting and rendering the properties. As a result, the version of [PresentationRpcInterface]($presentation-common) has been bumped from `4.0.0` to `4.1.0`.
+
 ### Custom renderer and editor support for array items
 
-Support for custom renderers and editors has been added for array items. A renderer / editor may be assigned to items of specific array by creating a [ContentModifier]($presentation-common) for
+Support for custom renderers and editors has been added for array items.
+
+A renderer / editor may be assigned to items of specific array by creating a [ContentModifier]($presentation-common) for
 a class that has the property and adding a property override for the array property with `[*]` suffix. Example:
 
 ```json
@@ -89,7 +96,9 @@ a class that has the property and adding a property override for the array prope
 
 ### Support for property overrides on ECStruct member properties
 
-Support for property overrides has been added for struct member properties. The overrides may be assigned to members of specific ECStruct class by creating a [ContentModifier]($presentation-common) for
+Support for property overrides has been added for struct member properties.
+
+The overrides may be assigned to members of specific ECStruct class by creating a [ContentModifier]($presentation-common) for
 the struct class and adding property overrides for the members. Example:
 
 ```json
