@@ -6,10 +6,11 @@
  * @module Merging
  */
 
-import { CustomAttributeClass, SchemaItem, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
+import { CustomAttributeClass, RelationshipClass, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { type SchemaMergeContext } from "./SchemaMerger";
-import { type SchemaCustomAttributeDifference } from "../Differencing/SchemaDifference";
+import { type CustomAttributeDifference, CustomAttributePropertyDifference, CustomAttributeRelationshipDifference, CustomAttributeSchemaDifference, CustomAttributeSchemaItemDifference } from "../Differencing/SchemaDifference";
 import { type SchemaEditResults } from "../Editing/Editor";
+import { updateSchemaItemKey } from "./SchemaItemMerger";
 
 /**
  * Merges the custom attributes of the given changes iterable. The third parameter is a callback to pass
@@ -19,38 +20,59 @@ import { type SchemaEditResults } from "../Editing/Editor";
  * @returns         A EditResults object.
  * @internal
  */
-export async function mergeCustomAttribute(context: SchemaMergeContext, change: SchemaCustomAttributeDifference): Promise<SchemaEditResults> {
+export async function mergeCustomAttribute(context: SchemaMergeContext, change: CustomAttributeDifference): Promise<SchemaEditResults> {
   if (change.changeType === "add") {
-    const [schemaName, itemName]  = SchemaItem.parseFullName(change.json.className);
-    const schemaItemKey = new SchemaItemKey(itemName, context.sourceSchemaKey.compareByName(schemaName)
-      ? context.targetSchemaKey
-      : new SchemaKey(schemaName),
-    );
+    const schemaItemKey = await updateSchemaItemKey(context, change.json.className);
 
     const targetCustomAttributeClass = await context.targetSchema.lookupItem<CustomAttributeClass>(schemaItemKey);
     if (targetCustomAttributeClass === undefined) {
       return { errorMessage: `Unable to locate the custom attribute class ${schemaItemKey.name} in the merged schema.`};
     }
 
-    if(change.schemaType === "Schema") {
+    change.json.className = schemaItemKey.fullName;
+
+    if(isSchemaDifference(change)) {
       return context.editor.addCustomAttribute(context.targetSchemaKey, change.json);
     }
-    if(change.schemaType === "EntityClass") {
-      const itemKey = new SchemaItemKey(change.itemName!, context.targetSchemaKey);
-      return context.editor.entities.addCustomAttribute(itemKey, change.json);
+    if(isRelationshipConstraintDifference(change)) {
+      const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
+      const relationshipClass = await context.targetSchema.lookupItem<RelationshipClass>(itemKey);
+      if(relationshipClass === undefined) {
+        return { errorMessage: `Unable to locate the relationship class ${itemKey.name} in the merged schema.`};
+      }
+      const constraint = change.path === "$source"
+        ? relationshipClass.source
+        : relationshipClass.target;
+
+      return context.editor.relationships.addCustomAttributeToConstraint(constraint, change.json);
     }
-    if(change.schemaType === "Properties") {
-      const itemKey = new SchemaItemKey(change.itemName!, context.targetSchemaKey);
-      const [propertyName] = change.path!.split(".");
+    if(isPropertyDifference(change)) {
+      const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
+      const [propertyName] = change.path.split(".");
       return context.editor.entities.addCustomAttributeToProperty(itemKey, propertyName, change.json);
     }
-    if(change.schemaType === "RelationshipConstraint") {
-      // return context.editor.relationships.addCustomAttributeToConstraint();
-      // TODO parse constraint name (source/target)
-      throw new Error("RelationshipConstraint CAs not implemented yet");
+    if(isSchemaItemDifference(change)) {
+      const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
+      return context.editor.entities.addCustomAttribute(itemKey, change.json);
     }
     return {};
   } else {
-    return { errorMessage: `Changes of Custom Attribute ${change.itemName} on merge is not implemented.`};
+    return { errorMessage: `Changes of Custom Attribute on merge is not implemented.`};
   }
+}
+
+function isSchemaDifference(change: CustomAttributeDifference): change is CustomAttributeSchemaDifference {
+  return "path" in change && change.path === "$schema";
+}
+
+function isPropertyDifference(change: CustomAttributeDifference): change is CustomAttributePropertyDifference {
+  return "itemName" in change && "path" in change;
+}
+
+function isRelationshipConstraintDifference(change: CustomAttributeDifference): change is CustomAttributeRelationshipDifference {
+  return "path" in change && (change.path === "$source" || change.path === "$target");
+}
+
+function isSchemaItemDifference(change: CustomAttributeDifference): change is CustomAttributeSchemaItemDifference {
+  return "itemName" in change && !("path" in change);
 }

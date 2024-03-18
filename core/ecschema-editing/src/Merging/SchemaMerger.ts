@@ -8,11 +8,11 @@
 
 import { Schema, type SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../Editing/Editor";
-import { AnySchemaItemDifference, SchemaCustomAttributeDifference, SchemaDifference, SchemaDifferences, SchemaReferenceDifference } from "../Differencing/SchemaDifference";
-import mergeSchemaReferences from "./SchemaReferenceMerger";
+import { MutableSchema } from "../Editing/Mutable/MutableSchema";
+import { AnySchemaItemDifference, CustomAttributeDifference, SchemaDifference, SchemaDifferences, SchemaReferenceDifference } from "../Differencing/SchemaDifference";
 import { mergeCustomAttribute } from "./CustomAttributeMerger";
 import { mergeSchemaItems } from "./SchemaItemMerger";
-import { MutableSchema } from "../Editing/Mutable/MutableSchema";
+import mergeSchemaReferences from "./SchemaReferenceMerger";
 
 /**
  * Defines the context of a Schema merging run.
@@ -100,11 +100,11 @@ export class SchemaMerger {
     }
 
     const schemaChanges = differences.changes.filter((entry) => entry.schemaType === "Schema");
-    for (const referenceChange of schemaChanges.filter((entry) => entry.path === "$references")) {
+    for (const referenceChange of schemaChanges.filter((entry) => "path" in entry && entry.path === "$references")) {
       await mergeSchemaReferences(context, referenceChange as SchemaReferenceDifference);
     }
 
-    for (const changes of schemaChanges.filter((entry) => entry.path === undefined)) {
+    for (const changes of schemaChanges.filter((entry) => !("path" in entry))) {
       await mergeSchemaProperties(schema, changes as SchemaDifference);
     }
 
@@ -116,8 +116,8 @@ export class SchemaMerger {
 
     // At last the custom attributes gets merged because it could be that the CustomAttributes
     // depend on classes that has to get merged in as items before.
-    for (const customAttributeChange of differences.changes.filter((entry) => entry.path?.endsWith("$customAttributes"))) {
-      await mergeCustomAttribute(context, customAttributeChange as SchemaCustomAttributeDifference);
+    for (const customAttributeChange of differences.changes.filter((entry) => entry.schemaType === "CustomAttribute")) {
+      await mergeCustomAttribute(context, customAttributeChange as CustomAttributeDifference);
     }
 
     return schema;

@@ -7,7 +7,7 @@ import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 /* eslint-disable @typescript-eslint/naming-convention */
 
-describe.skip("Custom Attribute merge", () => {
+describe("Custom Attribute merge", () => {
   let sourceContext: SchemaContext;
   let targetContext: SchemaContext;
 

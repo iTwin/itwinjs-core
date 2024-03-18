@@ -565,7 +565,8 @@ export class SchemaDiagnosticVisitor {
     }
 
     if(SchemaItem.isSchemaItem(ecType)) {
-      if(this.lookupEntry("add", { itemName: ecType.name })) {
+      const schemaType = getSchemaItemName(ecType.schemaItemType);
+      if(this.lookupEntry("add", { schemaType, itemName: ecType.name })) {
         return;
       }
       return this.addEntry<CustomAttributeSchemaItemDifference>({
@@ -577,8 +578,9 @@ export class SchemaDiagnosticVisitor {
     }
 
     if(ecType instanceof Property) {
-      if(this.lookupEntry("add", { itemName: ecType.name })
-      || this.lookupEntry("add", { itemName: ecType.class.name, path: ecType.name })  ) {
+      const schemaType = getSchemaItemName(ecType.class.schemaItemType);
+      if(this.lookupEntry("add", { schemaType, itemName: ecType.name })
+      || this.lookupEntry("add", { schemaType, itemName: ecType.class.name, path: ecType.name })  ) {
         return;
       }
       return this.addEntry<CustomAttributePropertyDifference>({
@@ -591,6 +593,10 @@ export class SchemaDiagnosticVisitor {
     }
 
     if(ecType instanceof RelationshipConstraint) {
+      const schemaType = getSchemaItemName(ecType.relationshipClass.schemaItemType);
+      if(this.lookupEntry("add", { schemaType, itemName: ecType.relationshipClass.name })) {
+        return;
+      }
       return this.addEntry<CustomAttributeRelationshipDifference>({
         changeType: "add",
         schemaType: "CustomAttribute",

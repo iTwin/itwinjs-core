@@ -54,8 +54,6 @@ async function addClassProperty(context: SchemaMergeContext, itemKey: SchemaItem
     property.category = await updateSchemaItemFullName(context, property.category);
   }
 
-  // TODO: Custom Attributes
-
   if(enumerationProperty.is(property)) {
     return enumerationProperty.add(context, itemKey, property);
   }
