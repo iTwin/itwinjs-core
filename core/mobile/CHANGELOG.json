@@ -2,6 +2,12 @@
   "name": "@itwin/core-mobile",
   "entries": [
     {
+      "version": "4.4.7",
+      "tag": "@itwin/core-mobile_v4.4.7",
+      "date": "Fri, 15 Mar 2024 19:15:14 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.4.6",
       "tag": "@itwin/core-mobile_v4.4.6",
       "date": "Fri, 08 Mar 2024 15:57:11 GMT",
