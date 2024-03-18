@@ -9,21 +9,25 @@
 import type { AnyDiagnostic } from "../Validation/Diagnostic";
 import { SchemaCompareCodes } from "../Validation/SchemaCompareDiagnostics";
 import {
-  AnyECType, AnyEnumerator, AnySchemaItemProps, CustomAttribute, ECClass, ECClassModifier, Enumeration, Mixin, Property, PropertyProps,
+  AnyEnumerator, AnyPropertyProps, AnySchemaItemProps, CustomAttribute, ECClass, ECClassModifier, Enumeration, Mixin, Property, PropertyProps,
   RelationshipConstraint, RelationshipConstraintProps, Schema, SchemaItem, SchemaItemType, schemaItemTypeToString,
 } from "@itwin/ecschema-metadata";
 import {
   AnySchemaDifference,
+  AnySchemaItemDifference,
+  ClassItemDifference,
+  ClassPropertyDifference,
+  CustomAttributePropertyDifference,
+  CustomAttributeRelationshipDifference,
+  CustomAttributeSchemaDifference,
+  CustomAttributeSchemaItemDifference,
   DifferenceType,
-  SchemaClassMixinDifference,
+  EntityClassMixinDifference,
+  EnumerationDifference,
+  RelationshipConstraintClassDifference,
+  RelationshipConstraintDifference,
   SchemaDifference,
-  SchemaEnumeratorDifference,
-  SchemaItemDifference,
   SchemaItemTypeName,
-  SchemaPropertyDifference,
-  SchemaRelationshipConstraintClassDifference,
-  SchemaRelationshipConstraintDifference,
-  SchemaType,
 } from "./SchemaDifference";
 import { ConflictCode, SchemaDifferenceConflict } from "./SchemaConflicts";
 
@@ -72,7 +76,7 @@ export class SchemaDiagnosticVisitor {
   }
 
   private lookupEntry(changeType: DifferenceType, args: LookupArgs) {
-    return this._changes && this._changes.find((change) => {
+    return this._changes && this._changes.find((change: any) => {
       return (change.changeType === changeType)
       && (!args.schemaType || change.schemaType === args.schemaType)
       && (!args.itemName || change.itemName === args.itemName)
@@ -182,9 +186,9 @@ export class SchemaDiagnosticVisitor {
 
   private visitMissingSchemaItem(diagnostic: AnyDiagnostic) {
     const schemaItem = diagnostic.ecDefinition as SchemaItem;
-    this.addEntry({
+    this.addEntry<AnySchemaItemDifference>({
       changeType: "add",
-      schemaType: getSchemaItemName(schemaItem.schemaItemType),
+      schemaType: getSchemaItemName(schemaItem.schemaItemType) as any,
       itemName: schemaItem.name,
       json: schemaItem.toJSON(),
     });
@@ -212,17 +216,17 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.lookupEntry("modify", { itemName: schemaItem.name }) as SchemaItemDifference;
+    let modifyEntry = this.lookupEntry("modify", { itemName: schemaItem.name }) as AnySchemaItemDifference;
     if(!modifyEntry) {
-      modifyEntry = this.addEntry({
+      modifyEntry = this.addEntry<AnySchemaItemDifference>({
         changeType: "modify",
-        schemaType: getSchemaItemName(schemaItem.schemaItemType),
+        schemaType: getSchemaItemName(schemaItem.schemaItemType) as any,
         itemName: schemaItem.name,
-        json: {},
+        json: {} as any,
       });
     }
 
-    modifyEntry.json[propertyName] = sourceValue;
+    (modifyEntry.json  as any)[propertyName] = sourceValue;
   }
 
   private visitChangedEnumeration(diagnostic: AnyDiagnostic) {
@@ -255,7 +259,7 @@ export class SchemaDiagnosticVisitor {
     const [enumerator] = diagnostic.messageArgs as [AnyEnumerator];
     this.addEntry({
       changeType: "add",
-      schemaType: "Enumeration",
+      schemaType: SchemaItemTypeName.Enumeration,
       itemName: enumeration.name,
       path: "$enumerators",
       json: enumerator,
@@ -263,7 +267,7 @@ export class SchemaDiagnosticVisitor {
   }
 
   private lookupEnumeratorEntry(changeType: DifferenceType, item: string, enumeratorName: string) {
-    return this._changes && this._changes.find((change) => {
+    return this._changes && this._changes.find((change: any) => {
       return change.changeType === changeType
       && change.schemaType === "Enumeration"
       && change.itemName === item
@@ -288,19 +292,19 @@ export class SchemaDiagnosticVisitor {
     }
 
     const enumeratorPath = `$enumerators.${enumerator.name}`;
-    let modifyEntry = this.lookupEntry("modify", { itemName: enumeration.name, path: enumeratorPath}) as SchemaEnumeratorDifference;
+    let modifyEntry = this.lookupEntry("modify", { itemName: enumeration.name, path: enumeratorPath}) as EnumerationDifference;
     if(!modifyEntry) {
       modifyEntry = this.addEntry({
         changeType: "modify",
-        schemaType: "Enumeration",
+        schemaType: SchemaItemTypeName.Enumeration,
         itemName: enumeration.name,
         path: enumeratorPath,
-        json: {},
+        json: {} as any,
       });
     }
 
     if(sourceValue !== undefined) {
-      modifyEntry.json[propertyName] = sourceValue;
+      (modifyEntry.json  as any)[propertyName] = sourceValue;
     }
   }
 
@@ -323,7 +327,7 @@ export class SchemaDiagnosticVisitor {
 
   private visitMissingProperty(diagnostic: AnyDiagnostic) {
     const property = diagnostic.ecDefinition as Property;
-    if(this.lookupEntry("add", { itemName: property.class.name })) {
+    if(this.lookupEntry("add", { schemaType: getSchemaItemName(property.class.schemaItemType), itemName: property.class.name })) {
       return;
     }
 
@@ -332,7 +336,7 @@ export class SchemaDiagnosticVisitor {
       schemaType: "Property",
       itemName: property.class.name,
       path: property.name,
-      json:  property.toJSON(),
+      json:  property.toJSON() as AnyPropertyProps,
     });
   }
 
@@ -347,19 +351,19 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.lookupEntry("modify", { itemName: property.class.name, path: property.name}) as SchemaPropertyDifference;
+    let modifyEntry = this.lookupEntry("modify", { itemName: property.class.name, path: property.name}) as ClassPropertyDifference;
     if(!modifyEntry) {
       modifyEntry = this.addEntry({
         changeType: "modify",
         schemaType: "Property",
         itemName: property.class.name,
         path: property.name,
-        json: {},
+        json: {} as any,
       });
     }
 
     if(propertyName !== "name" && sourceValue !== undefined) {
-      modifyEntry.json[propertyName] = sourceValue;
+      (modifyEntry.json  as any)[propertyName] = sourceValue;
     }
   }
 
@@ -390,13 +394,13 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.lookupEntry("modify",{ itemName: ecClass.name }) as SchemaItemDifference<{ baseClass: string }>;
+    let modifyEntry = this.lookupEntry("modify",{ itemName: ecClass.name }) as ClassItemDifference;
     if(!modifyEntry) {
-      modifyEntry = this.addEntry({
+      modifyEntry = this.addEntry<ClassItemDifference>({
         changeType: "modify",
-        schemaType: getSchemaItemName(ecClass.schemaItemType),
+        schemaType: getSchemaItemName<ClassItemDifference>(ecClass.schemaItemType),
         itemName: ecClass.name,
-        json: {},
+        json: {} as any,
       });
     }
 
@@ -447,7 +451,7 @@ export class SchemaDiagnosticVisitor {
 
   private visitMissingMixinOnClass(diagnostic: AnyDiagnostic) {
     const ecClass = diagnostic.ecDefinition as ECClass;
-    if(this.lookupEntry("add", { itemName: ecClass.name })) {
+    if(this.lookupEntry("add", { schemaType: getSchemaItemName(ecClass.schemaItemType), itemName: ecClass.name })) {
       return;
     }
 
@@ -456,11 +460,11 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.lookupEntry("modify", { itemName: ecClass.name, path: "$mixins" }) as SchemaClassMixinDifference;
+    let modifyEntry = this.lookupEntry("modify", { itemName: ecClass.name, path: "$mixins" }) as EntityClassMixinDifference;
     if(!modifyEntry) {
       modifyEntry = this.addEntry({
         changeType: "modify",
-        schemaType: "EntityClass",
+        schemaType: SchemaItemTypeName.EntityClass,
         itemName: ecClass.name,
         path: "$mixins",
         json: [],
@@ -495,11 +499,11 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.lookupEntry("modify", { itemName: className, path: constraintPath}) as SchemaRelationshipConstraintClassDifference;
+    let modifyEntry = this.lookupEntry("modify", { itemName: className, path: constraintPath}) as RelationshipConstraintClassDifference;
     if(!modifyEntry) {
       modifyEntry = this.addEntry({
         changeType: "add",
-        schemaType: "RelationshipClass",
+        schemaType: SchemaItemTypeName.RelationshipClass,
         itemName: className,
         path: constraintPath,
         json: [],
@@ -518,20 +522,20 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.lookupEntry("modify", { itemName: className, path: constraintPath }) as SchemaRelationshipConstraintDifference;
+    let modifyEntry = this.lookupEntry("modify", { itemName: className, path: constraintPath }) as RelationshipConstraintDifference;
     if(!modifyEntry) {
       modifyEntry = this.addEntry({
         changeType: "modify",
-        schemaType: "RelationshipClass",
+        schemaType: SchemaItemTypeName.RelationshipClass,
         itemName: className,
         path: constraintPath,
-        json: {},
+        json: {} as any,
       });
     }
 
     const [propertyName, propertyValue] = diagnostic.messageArgs as [keyof RelationshipConstraintProps, any];
     if(propertyValue !== undefined) {
-      modifyEntry.json[propertyName] = propertyValue;
+      (modifyEntry.json  as any)[propertyName] = propertyValue;
     }
   }
 
@@ -549,48 +553,56 @@ export class SchemaDiagnosticVisitor {
   }
 
   private visitMissingCustomAttributeInstance(diagnostic: AnyDiagnostic) {
-    const { schemaType, itemName, path } = getItemNameAndPath(diagnostic.ecDefinition);
-    if(itemName && (this.lookupEntry("add", { itemName }) || this.lookupEntry("add", { itemName, path }))) {
-      return;
+    const [customAttribute] = diagnostic.messageArgs as [CustomAttribute];
+    const ecType = diagnostic.ecDefinition;
+    if(Schema.isSchema(ecType)) {
+      return this.addEntry<CustomAttributeSchemaDifference>({
+        changeType: "add",
+        schemaType: "CustomAttribute",
+        path: "$schema",
+        json: customAttribute,
+      });
     }
 
-    const [customAttribute] = diagnostic.messageArgs as [CustomAttribute];
-    this.addEntry({
-      changeType: "add",
-      schemaType,
-      itemName: itemName!,
-      path: `${path ? `${path}.` : ""}$customAttributes`,
-      json: customAttribute as any,
-    });
+    if(SchemaItem.isSchemaItem(ecType)) {
+      if(this.lookupEntry("add", { itemName: ecType.name })) {
+        return;
+      }
+      return this.addEntry<CustomAttributeSchemaItemDifference>({
+        changeType: "add",
+        schemaType: "CustomAttribute",
+        itemName: ecType.name,
+        json: customAttribute,
+      });
+    }
+
+    if(ecType instanceof Property) {
+      if(this.lookupEntry("add", { itemName: ecType.name })
+      || this.lookupEntry("add", { itemName: ecType.class.name, path: ecType.name })  ) {
+        return;
+      }
+      return this.addEntry<CustomAttributePropertyDifference>({
+        changeType: "add",
+        schemaType: "CustomAttribute",
+        itemName: ecType.class.name,
+        path: ecType.name,
+        json: customAttribute,
+      });
+    }
+
+    if(ecType instanceof RelationshipConstraint) {
+      return this.addEntry<CustomAttributeRelationshipDifference>({
+        changeType: "add",
+        schemaType: "CustomAttribute",
+        itemName: ecType.relationshipClass.name,
+        path: ecType.isSource ? "$source" : "$target",
+        json: customAttribute,
+      });
+    }
+    return;
   }
 }
 
-function getItemNameAndPath(type: AnyECType): { schemaType: SchemaType, itemName?: string, path?: string } {
-  if(Schema.isSchema(type))
-    return {
-      schemaType: "Schema",
-    };
-  if(SchemaItem.isSchemaItem(type))
-    return {
-      schemaType: getSchemaItemName(type.schemaItemType),
-      itemName: type.name,
-    };
-  if(type instanceof Property)
-    return {
-      schemaType: "Property",
-      itemName: type.class.name,
-      path: type.name,
-    };
-  if(type instanceof RelationshipConstraint)
-    throw Error("Unhandled Type");
-    // return {
-    //   schemaType: "RelationshipClass",
-    //   itemName: type.relationshipClass.name,
-    //   path: type.isSource ? "$source" : "$target",
-    // };
-  throw Error("Unhandled Type");
-}
-
-function getSchemaItemName(schemaItemType: SchemaItemType) {
-  return schemaItemTypeToString(schemaItemType) as SchemaItemTypeName;
+function getSchemaItemName<T extends AnySchemaItemDifference=AnySchemaItemDifference>(schemaItemType: SchemaItemType): Extract<SchemaItemTypeName, T["schemaType"]> {
+  return schemaItemTypeToString(schemaItemType) as Extract<SchemaItemTypeName, T["schemaType"]>;
 }
