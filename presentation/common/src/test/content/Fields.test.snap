@@ -6,9 +6,27 @@ Object {
   "editor": undefined,
   "isReadonly": false,
   "itemsField": Object {
+    "category": "test-category",
     "editor": Object {
       "name": "custom-editor",
     },
+    "isReadonly": false,
+    "label": "Properties Field",
+    "name": "PropertiesField",
+    "priority": 0,
+    "properties": Array [
+      Object {
+        "property": Object {
+          "classInfo": Object {
+            "id": "0x1",
+            "label": "Class Label",
+            "name": "SchemaName:ClassName",
+          },
+          "name": "PropertyName",
+          "type": "string",
+        },
+      },
+    ],
     "renderer": Object {
       "name": "custom-renderer",
     },

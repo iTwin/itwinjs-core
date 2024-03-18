@@ -1,7 +1,6 @@
 sep=;
 Release Tag;API Item
 public;addFieldHierarchy(rootHierarchies: FieldHierarchy[], hierarchy: FieldHierarchy): void
-public;ArrayItemsField 
 public;ArrayItemsFieldJSON
 public;ArrayPropertiesField 
 public;ArrayPropertiesFieldJSON

@@ -77,7 +77,21 @@ Object {
       "editor": undefined,
       "isReadonly": false,
       "itemsField": Object {
+        "category": "test-category",
         "editor": undefined,
+        "isReadonly": false,
+        "label": "Array Items Field",
+        "name": "array-items-field",
+        "priority": 0,
+        "properties": Array [
+          Object {
+            "property": Object {
+              "classInfo": "0x1",
+              "name": "PropertyName",
+              "type": "string",
+            },
+          },
+        ],
         "renderer": undefined,
         "type": Object {
           "typeName": "string",

@@ -3,7 +3,6 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import {
-  ArrayItemsField,
   ArrayPropertiesField,
   CategoryDescription,
   ClassInfo,
@@ -110,7 +109,7 @@ export function createTestArrayPropertiesContentField(props: {
   properties: Property[];
   category?: CategoryDescription;
   type?: TypeDescription;
-  itemsField?: ArrayItemsField;
+  itemsField?: PropertiesField;
   name?: string;
   label?: string;
   isReadonly?: boolean;
@@ -130,10 +129,7 @@ export function createTestArrayPropertiesContentField(props: {
         typeName: "string",
       },
     },
-    props.itemsField ??
-      ArrayItemsField.fromJSON({
-        type: { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
-      }),
+    props.itemsField ?? createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo() }] }),
     props.isReadonly ?? false,
     props.priority ?? 0,
     props.properties,

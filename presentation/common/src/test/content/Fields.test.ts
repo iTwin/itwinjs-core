@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Field, NestedContentField, PrimitiveTypeDescription, PropertiesField, PropertyValueFormat } from "../../presentation-common";
-import { ArrayItemsField, ArrayPropertiesField, FieldDescriptor, FieldDescriptorType, StructPropertiesField } from "../../presentation-common/content/Fields";
+import { ArrayPropertiesField, FieldDescriptor, FieldDescriptorType, StructPropertiesField } from "../../presentation-common/content/Fields";
 import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
 import {
   createTestArrayPropertiesContentField,
@@ -49,7 +49,11 @@ describe("Field", () => {
           typeName: `${itemType.typeName}[]`,
           memberType: itemType,
         },
-        itemsField: new ArrayItemsField(itemType, { name: "custom-editor" }, { name: "custom-renderer" }),
+        itemsField: createTestPropertiesContentField({
+          properties: [{ property: createTestPropertyInfo() }],
+          renderer: { name: "custom-renderer" },
+          editor: { name: "custom-editor" },
+        }),
       }).toJSON();
       const field = Field.fromJSON(json, [category]);
       expect(field).to.matchSnapshot();
@@ -507,22 +511,19 @@ describe("PropertiesField", () => {
 describe("ArrayPropertiesField", () => {
   describe("isArrayPropertiesField", () => {
     it("returns true", () => {
-      const itemsField = new ArrayItemsField({ valueFormat: PropertyValueFormat.Primitive, typeName: "string" });
       const field = createTestArrayPropertiesContentField({
         properties: [{ property: createTestPropertyInfo({ type: "string[]" }) }],
-        itemsField,
+        itemsField: createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo() }] }),
       });
       expect(field.isArrayPropertiesField()).to.be.true;
-      expect(field.itemsField).to.eq(itemsField);
     });
   });
 
   describe("clone", () => {
     it("returns exact copy of itself", () => {
-      const itemsField = new ArrayItemsField({ valueFormat: PropertyValueFormat.Primitive, typeName: "string" });
       const field = createTestArrayPropertiesContentField({
         properties: [{ property: createTestPropertyInfo({ type: "string[]" }) }],
-        itemsField,
+        itemsField: createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo() }] }),
       });
       const clone = field.clone();
       expect(clone).to.be.instanceOf(ArrayPropertiesField);

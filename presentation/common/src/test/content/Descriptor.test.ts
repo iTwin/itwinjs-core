@@ -155,7 +155,21 @@ describe("Descriptor", () => {
               },
             ],
             itemsField: {
+              name: "array-items-field",
+              label: "Array Items Field",
               type: { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
+              category: category.name,
+              isReadonly: false,
+              priority: 0,
+              properties: [
+                {
+                  property: {
+                    classInfo: ids[0],
+                    name: "PropertyName",
+                    type: "string",
+                  },
+                },
+              ],
             },
           },
           {
