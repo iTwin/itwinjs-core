@@ -115,561 +115,558 @@ describe("Relationship Class merger tests", () => {
     sourceContext = new SchemaContext();
   });
 
-  describe("Relationship Class missing tests", () => {
-    it("should merge missing relationship class", async () => {
-      await Schema.fromJson(testJson, sourceContext);
-      const sourceSchema = await Schema.fromJson({
-        ...sourceJson,
-        references: [
-          {
-            name: "TestSchema",
-            version: "01.00.15",
-          },
-        ],
-        items: {
-          ... createBaseRelationship(
-            {
-              abstractConstraint: "TestSchema.SourceBaseEntity",
-              constraintClasses: [
-                "TestSchema.SourceEntity",
-              ],
-            },
-            {
-              abstractConstraint: "TestSchema.TargetBaseEntity",
-              constraintClasses: [
-                "TestSchema.TargetEntity",
-              ],
-            },
-          ),
+  it("should merge missing relationship class", async () => {
+    await Schema.fromJson(testJson, sourceContext);
+    await Schema.fromJson(testJson, targetContext);
+    const sourceSchema = await Schema.fromJson({
+      ...sourceJson,
+      references: [
+        {
+          name: "TestSchema",
+          version: "01.00.15",
         },
-      }, sourceContext);
+      ],
+      items: {
+        ... createBaseRelationship(
+          {
+            abstractConstraint: "TestSchema.SourceBaseEntity",
+            constraintClasses: [
+              "TestSchema.SourceEntity",
+            ],
+          },
+          {
+            abstractConstraint: "TestSchema.TargetBaseEntity",
+            constraintClasses: [
+              "TestSchema.TargetEntity",
+            ],
+          },
+        ),
+      },
+    }, sourceContext);
 
-      const targetSchema = await Schema.fromJson({
-        ...targetJson,
-      }, targetContext);
+    const targetSchema = await Schema.fromJson({
+      ...targetJson,
+    }, targetContext);
 
-      const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
-      const sourceEntity = await sourceSchema.getItem<RelationshipClass>("BaseRelationship");
-      const mergedEntity = await mergedSchema.getItem<RelationshipClass>("BaseRelationship");
-      expect(mergedEntity!.toJSON()).deep.eq(sourceEntity!.toJSON());
-    });
+    const merger = new SchemaMerger(targetSchema.context);
+    const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+    const sourceEntity = await sourceSchema.getItem<RelationshipClass>("BaseRelationship");
+    const mergedEntity = await mergedSchema.getItem<RelationshipClass>("BaseRelationship");
+    expect(mergedEntity!.toJSON()).deep.eq(sourceEntity!.toJSON());
   });
 
-  describe("Relationship Class delta tests", () => {
-    it("should merge class and constraint attribute changes", async () => {
-      await Schema.fromJson(testJson, sourceContext);
-      const sourceSchema = await Schema.fromJson({
-        ...sourceJson,
-        references: [
-          {
-            name: "TestSchema",
-            version: "01.00.15",
+  it("should merge class and constraint attribute changes", async () => {
+    await Schema.fromJson(testJson, sourceContext);
+    const sourceSchema = await Schema.fromJson({
+      ...sourceJson,
+      references: [
+        {
+          name: "TestSchema",
+          version: "01.00.15",
+        },
+      ],
+      items: {
+        TestRelationship: {
+          schemaItemType: "RelationshipClass",
+          description: "Changes of TestRelationship",
+          modifier: "None",
+          strength: "Referencing",
+          strengthDirection: "Forward",
+          source: {
+            multiplicity: "(0..*)",
+            roleLabel: "is base model for",
+            polymorphic: true,
+            abstractConstraint: "TestSchema.SourceBaseEntity",
+            constraintClasses: [
+              "TestSchema.SourceEntity",
+            ],
           },
-        ],
-        items: {
-          TestRelationship: {
-            schemaItemType: "RelationshipClass",
-            description: "Changes of TestRelationship",
-            modifier: "None",
-            strength: "Referencing",
-            strengthDirection: "Forward",
-            source: {
-              multiplicity: "(0..*)",
-              roleLabel: "is base model for",
-              polymorphic: true,
-              abstractConstraint: "TestSchema.SourceBaseEntity",
-              constraintClasses: [
-                "TestSchema.SourceEntity",
-              ],
-            },
-            target: {
-              multiplicity: "(0..*)",
-              roleLabel: "has base",
-              polymorphic: true,
-              abstractConstraint: "TestSchema.TargetBaseEntity",
-              constraintClasses: [
-                "TestSchema.TargetEntity",
-              ],
-            },
+          target: {
+            multiplicity: "(0..*)",
+            roleLabel: "has base",
+            polymorphic: true,
+            abstractConstraint: "TestSchema.TargetBaseEntity",
+            constraintClasses: [
+              "TestSchema.TargetEntity",
+            ],
           },
         },
-      }, sourceContext);
+      },
+    }, sourceContext);
 
-      await Schema.fromJson(testJson, targetContext);
-      const targetSchema = await Schema.fromJson({
-        ...targetJson,
-        references: [
-          {
-            name: "TestSchema",
-            version: "01.00.15",
+    await Schema.fromJson(testJson, targetContext);
+    const targetSchema = await Schema.fromJson({
+      ...targetJson,
+      references: [
+        {
+          name: "TestSchema",
+          version: "01.00.15",
+        },
+      ],
+      items: {
+        TestRelationship: {
+          schemaItemType: "RelationshipClass",
+          description: "Description of TestRelationship",
+          modifier: "Abstract",
+          strength: "Referencing",
+          strengthDirection: "Forward",
+          source: {
+            multiplicity: "(0..*)",
+            roleLabel: "refers to",
+            polymorphic: true,
+            abstractConstraint: "TestSchema.SourceBaseEntity",
+            constraintClasses: [
+              "TestSchema.SourceEntity",
+            ],
           },
-        ],
-        items: {
-          TestRelationship: {
-            schemaItemType: "RelationshipClass",
-            description: "Description of TestRelationship",
-            modifier: "Abstract",
-            strength: "Referencing",
-            strengthDirection: "Forward",
-            source: {
-              multiplicity: "(0..*)",
-              roleLabel: "refers to",
-              polymorphic: true,
-              abstractConstraint: "TestSchema.SourceBaseEntity",
-              constraintClasses: [
-                "TestSchema.SourceEntity",
-              ],
-            },
-            target: {
-              multiplicity: "(0..*)",
-              roleLabel: "is referenced by",
-              polymorphic: false,
-              abstractConstraint: "TestSchema.TargetBaseEntity",
-              constraintClasses: [
-                "TestSchema.TargetEntity",
-              ],
-            },
+          target: {
+            multiplicity: "(0..*)",
+            roleLabel: "is referenced by",
+            polymorphic: false,
+            abstractConstraint: "TestSchema.TargetBaseEntity",
+            constraintClasses: [
+              "TestSchema.TargetEntity",
+            ],
           },
         },
-      }, targetContext);
+      },
+    }, targetContext);
 
-      const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
-      const sourceEntity = await sourceSchema.getItem<RelationshipClass>("TestRelationship");
-      const mergedEntity = await mergedSchema.getItem<RelationshipClass>("TestRelationship");
-      expect(mergedEntity!.toJSON()).deep.eq(sourceEntity!.toJSON());
-    });
+    const merger = new SchemaMerger(targetSchema.context);
+    const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+    const sourceEntity = await sourceSchema.getItem<RelationshipClass>("TestRelationship");
+    const mergedEntity = await mergedSchema.getItem<RelationshipClass>("TestRelationship");
+    expect(mergedEntity!.toJSON()).deep.eq(sourceEntity!.toJSON());
+  });
 
-    it("should merge missing constraint class", async () => {
-      await Schema.fromJson(testJson, sourceContext);
-      const sourceSchema = await Schema.fromJson({
-        ...sourceJson,
-        references: [
-          {
-            name: "TestSchema",
-            version: "01.00.15",
-          },
-        ],
-        items: {
-          ... createBaseRelationship(
-            {
-              abstractConstraint: "TestSchema.SourceBaseEntity",
-              constraintClasses: [
-                "TestSchema.SourceChildEntity",
-              ],
-            },
-            {
-              abstractConstraint: "TestSchema.TargetBaseEntity",
-              constraintClasses: [
-                "TestSchema.TargetEntity",
-              ],
-            },
-          ),
+  it("should merge missing constraint class", async () => {
+    await Schema.fromJson(testJson, sourceContext);
+    const sourceSchema = await Schema.fromJson({
+      ...sourceJson,
+      references: [
+        {
+          name: "TestSchema",
+          version: "01.00.15",
         },
-      }, sourceContext);
-
-      await Schema.fromJson(testJson, targetContext);
-      const targetSchema = await Schema.fromJson({
-        ...targetJson,
-        references: [
+      ],
+      items: {
+        ... createBaseRelationship(
           {
-            name: "TestSchema",
-            version: "01.00.15",
+            abstractConstraint: "TestSchema.SourceBaseEntity",
+            constraintClasses: [
+              "TestSchema.SourceChildEntity",
+            ],
           },
-        ],
-        items: {
-          ... createBaseRelationship(
-            {
-              abstractConstraint: "TestSchema.SourceBaseEntity",
-              constraintClasses: [
-                "TestSchema.SourceEntity",
-              ],
-            },
-            {
-              abstractConstraint: "TestSchema.TargetBaseEntity",
-              constraintClasses: [
-                "TestSchema.TargetChildEntity",
-              ],
-            },
-          ),
+          {
+            abstractConstraint: "TestSchema.TargetBaseEntity",
+            constraintClasses: [
+              "TestSchema.TargetEntity",
+            ],
+          },
+        ),
+      },
+    }, sourceContext);
+
+    await Schema.fromJson(testJson, targetContext);
+    const targetSchema = await Schema.fromJson({
+      ...targetJson,
+      references: [
+        {
+          name: "TestSchema",
+          version: "01.00.15",
         },
-      }, targetContext);
-
-      const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
-      const mergedEntity = await mergedSchema.getItem<RelationshipClass>("BaseRelationship");
-      expect(mergedEntity!.toJSON().source.constraintClasses).deep.eq([
-        "TestSchema.SourceEntity",
-        "TestSchema.SourceChildEntity",
-      ]);
-      expect(mergedEntity!.toJSON().target.constraintClasses).deep.eq([
-        "TestSchema.TargetChildEntity",
-        "TestSchema.TargetEntity",
-      ]);
-    });
-
-    it("should throw an error merging multiple constraint classes without abstract constraint defined", async () => {
-      await Schema.fromJson(testJson, sourceContext);
-      const sourceSchema = await Schema.fromJson({
-        ...sourceJson,
-        references: [
+      ],
+      items: {
+        ... createBaseRelationship(
           {
-            name: "TestSchema",
-            version: "01.00.15",
+            abstractConstraint: "TestSchema.SourceBaseEntity",
+            constraintClasses: [
+              "TestSchema.SourceEntity",
+            ],
           },
-        ],
-        items: {
-          ... createBaseRelationship(
-            { constraintClasses: ["TestSchema.SourceBaseEntity"] },
-            { constraintClasses: ["TestSchema.TargetBaseEntity"] },
-          ),
+          {
+            abstractConstraint: "TestSchema.TargetBaseEntity",
+            constraintClasses: [
+              "TestSchema.TargetChildEntity",
+            ],
+          },
+        ),
+      },
+    }, targetContext);
+
+    const merger = new SchemaMerger(targetSchema.context);
+    const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+    const mergedEntity = await mergedSchema.getItem<RelationshipClass>("BaseRelationship");
+    expect(mergedEntity!.toJSON().source.constraintClasses).deep.eq([
+      "TestSchema.SourceEntity",
+      "TestSchema.SourceChildEntity",
+    ]);
+    expect(mergedEntity!.toJSON().target.constraintClasses).deep.eq([
+      "TestSchema.TargetChildEntity",
+      "TestSchema.TargetEntity",
+    ]);
+  });
+
+  it("should throw an error merging multiple constraint classes without abstract constraint defined", async () => {
+    await Schema.fromJson(testJson, sourceContext);
+    const sourceSchema = await Schema.fromJson({
+      ...sourceJson,
+      references: [
+        {
+          name: "TestSchema",
+          version: "01.00.15",
         },
-      }, sourceContext);
+      ],
+      items: {
+        ... createBaseRelationship(
+          { constraintClasses: ["TestSchema.SourceBaseEntity"] },
+          { constraintClasses: ["TestSchema.TargetBaseEntity"] },
+        ),
+      },
+    }, sourceContext);
 
-      await Schema.fromJson(testJson, targetContext);
-      const targetSchema = await Schema.fromJson({
-        ...targetJson,
-        references: [
-          {
-            name: "TestSchema",
-            version: "01.00.15",
-          },
-        ],
-        items: {
-          ... createBaseRelationship(
-            { constraintClasses: ["TestSchema.SourceEntity"] },
-            { constraintClasses: ["TestSchema.TargetBaseEntity"] },
-          ),
+    await Schema.fromJson(testJson, targetContext);
+    const targetSchema = await Schema.fromJson({
+      ...targetJson,
+      references: [
+        {
+          name: "TestSchema",
+          version: "01.00.15",
         },
-      }, targetContext);
+      ],
+      items: {
+        ... createBaseRelationship(
+          { constraintClasses: ["TestSchema.SourceEntity"] },
+          { constraintClasses: ["TestSchema.TargetBaseEntity"] },
+        ),
+      },
+    }, targetContext);
 
-      const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "ECObjects-1601: The Source-Constraint of 'TargetSchema.BaseRelationship' has multiple constraint classes which requires an abstract constraint to be defined.");
-    });
+    const merger = new SchemaMerger(targetSchema.context);
+    await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "ECObjects-1601: The Source-Constraint of 'TargetSchema.BaseRelationship' has multiple constraint classes which requires an abstract constraint to be defined.");
+  });
 
-    it("should throw an error merging constraint classes not supported by base class constraint", async () => {
-      await Schema.fromJson(testJson, sourceContext);
-      const sourceSchema = await Schema.fromJson({
-        ...sourceJson,
-        references: [
-          {
-            name: "TestSchema",
-            version: "01.00.15",
-          },
-        ],
-        items: {
-          ... createBaseRelationship(
-            { constraintClasses: ["TestSchema.TestEntity"] },
-            {
-              abstractConstraint: "TestSchema.TargetBaseEntity",
-              constraintClasses: [
-                "TestSchema.TargetEntity",
-              ],
-            },
-          ),
+  it("should throw an error merging constraint classes not supported by base class constraint", async () => {
+    await Schema.fromJson(testJson, sourceContext);
+    const sourceSchema = await Schema.fromJson({
+      ...sourceJson,
+      references: [
+        {
+          name: "TestSchema",
+          version: "01.00.15",
         },
-      }, sourceContext);
-
-      await Schema.fromJson(testJson, targetContext);
-      const targetSchema = await Schema.fromJson({
-        ...targetJson,
-        references: [
+      ],
+      items: {
+        ... createBaseRelationship(
+          { constraintClasses: ["TestSchema.TestEntity"] },
           {
-            name: "TestSchema",
-            version: "01.00.15",
+            abstractConstraint: "TestSchema.TargetBaseEntity",
+            constraintClasses: [
+              "TestSchema.TargetEntity",
+            ],
           },
-        ],
-        items: {
-          ... createBaseRelationship(
-            {
-              abstractConstraint: "TestSchema.SourceBaseEntity",
-              constraintClasses: [
-                "TestSchema.SourceEntity",
-              ],
-            },
-            {
-              abstractConstraint: "TestSchema.TargetBaseEntity",
-              constraintClasses: [
-                "TestSchema.TargetEntity",
-              ],
-            },
-          ),
+        ),
+      },
+    }, sourceContext);
+
+    await Schema.fromJson(testJson, targetContext);
+    const targetSchema = await Schema.fromJson({
+      ...targetJson,
+      references: [
+        {
+          name: "TestSchema",
+          version: "01.00.15",
         },
-      }, targetContext);
-
-      const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "ECObjects-1502: The constraint class 'TestSchema.TestEntity' on the Source-Constraint of 'TargetSchema.BaseRelationship' is not derived from the abstract constraint class 'TestSchema.SourceBaseEntity'.");
-    });
-
-    it("should throw an error merging constraint classes not supported by base class constraint", async () => {
-      await Schema.fromJson(testJson, sourceContext);
-      const sourceSchema = await Schema.fromJson({
-        ...sourceJson,
-        references: [
+      ],
+      items: {
+        ... createBaseRelationship(
           {
-            name: "TestSchema",
-            version: "01.00.15",
+            abstractConstraint: "TestSchema.SourceBaseEntity",
+            constraintClasses: [
+              "TestSchema.SourceEntity",
+            ],
           },
-        ],
-        items: {
-          ... createChildRelationship(
-            { constraintClasses: ["TestSchema.SourceEntity"] },
-            { constraintClasses: ["TestSchema.TargetBaseEntity"] },
-          ),
+          {
+            abstractConstraint: "TestSchema.TargetBaseEntity",
+            constraintClasses: [
+              "TestSchema.TargetEntity",
+            ],
+          },
+        ),
+      },
+    }, targetContext);
+
+    const merger = new SchemaMerger(targetSchema.context);
+    await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "ECObjects-1502: The constraint class 'TestSchema.TestEntity' on the Source-Constraint of 'TargetSchema.BaseRelationship' is not derived from the abstract constraint class 'TestSchema.SourceBaseEntity'.");
+  });
+
+  it("should throw an error merging constraint classes not supported by base class constraint", async () => {
+    await Schema.fromJson(testJson, sourceContext);
+    const sourceSchema = await Schema.fromJson({
+      ...sourceJson,
+      references: [
+        {
+          name: "TestSchema",
+          version: "01.00.15",
         },
-      }, sourceContext);
+      ],
+      items: {
+        ... createChildRelationship(
+          { constraintClasses: ["TestSchema.SourceEntity"] },
+          { constraintClasses: ["TestSchema.TargetBaseEntity"] },
+        ),
+      },
+    }, sourceContext);
 
-      await Schema.fromJson(testJson, targetContext);
-      const targetSchema = await Schema.fromJson({
-        ...targetJson,
-        references: [
-          {
-            name: "TestSchema",
-            version: "01.00.15",
-          },
-        ],
-        items: {
-          ... createChildRelationship(
-            { constraintClasses: ["TestSchema.TargetBaseEntity"] },
-            { constraintClasses: ["TestSchema.TargetChildEntity"] },
-          ),
+    await Schema.fromJson(testJson, targetContext);
+    const targetSchema = await Schema.fromJson({
+      ...targetJson,
+      references: [
+        {
+          name: "TestSchema",
+          version: "01.00.15",
         },
-      }, targetContext);
+      ],
+      items: {
+        ... createChildRelationship(
+          { constraintClasses: ["TestSchema.TargetBaseEntity"] },
+          { constraintClasses: ["TestSchema.TargetChildEntity"] },
+        ),
+      },
+    }, targetContext);
 
-      const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, `ECObjects-1501: The constraint class 'TestSchema.TargetBaseEntity' on the Source-Constraint of 'TargetSchema.ChildRelationship' is not supported by the base class constraint in 'TestSchema.BaseRelationship'.\r\nECObjects-1502: The constraint class 'TestSchema.TargetBaseEntity' on the Source-Constraint of 'TargetSchema.ChildRelationship' is not derived from the abstract constraint class 'TestSchema.SourceBaseEntity'.`);
-    });
+    const merger = new SchemaMerger(targetSchema.context);
+    await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, `ECObjects-1501: The constraint class 'TestSchema.TargetBaseEntity' on the Source-Constraint of 'TargetSchema.ChildRelationship' is not supported by the base class constraint in 'TestSchema.BaseRelationship'.\r\nECObjects-1502: The constraint class 'TestSchema.TargetBaseEntity' on the Source-Constraint of 'TargetSchema.ChildRelationship' is not derived from the abstract constraint class 'TestSchema.SourceBaseEntity'.`);
+  });
 
-    it("should throw an error merging relationship class strengthDirection", async () => {
-      await Schema.fromJson(testJson, sourceContext);
-      const sourceSchema = await Schema.fromJson({
-        ...sourceJson,
-        references: [
-          {
-            name: "TestSchema",
-            version: "01.00.15",
-          },
-        ],
-        items: {
-          BaseRelationship: {
-            schemaItemType: "RelationshipClass",
-            description: "Description of TestRelationship",
-            modifier: "None",
-            strength: "Referencing",
-            strengthDirection: "Backward",
-            source: {
-              multiplicity: "(0..*)",
-              polymorphic: true,
-              roleLabel: "refers to",
-              constraintClasses: [
-                "TestSchema.SourceBaseEntity",
-              ],
-            },
-            target: {
-              multiplicity: "(0..*)",
-              roleLabel: "is referenced by",
-              polymorphic: true,
-              constraintClasses: [
-                "TestSchema.TargetBaseEntity",
-              ],
-            },
-          },
+  it("should throw an error merging relationship class strengthDirection", async () => {
+    await Schema.fromJson(testJson, sourceContext);
+    const sourceSchema = await Schema.fromJson({
+      ...sourceJson,
+      references: [
+        {
+          name: "TestSchema",
+          version: "01.00.15",
         },
-      }, sourceContext);
-
-      await Schema.fromJson(testJson, targetContext);
-      const targetSchema = await Schema.fromJson({
-        ...targetJson,
-        references: [
-          {
-            name: "TestSchema",
-            version: "01.00.15",
+      ],
+      items: {
+        BaseRelationship: {
+          schemaItemType: "RelationshipClass",
+          description: "Description of TestRelationship",
+          modifier: "None",
+          strength: "Referencing",
+          strengthDirection: "Backward",
+          source: {
+            multiplicity: "(0..*)",
+            polymorphic: true,
+            roleLabel: "refers to",
+            constraintClasses: [
+              "TestSchema.SourceBaseEntity",
+            ],
           },
-        ],
-        items: {
-          BaseRelationship: {
-            schemaItemType: "RelationshipClass",
-            description: "Description of TestRelationship",
-            modifier: "None",
-            strength: "Referencing",
-            strengthDirection: "Forward",
-            source: {
-              multiplicity: "(0..*)",
-              polymorphic: true,
-              roleLabel: "refers to",
-              constraintClasses: [
-                "TestSchema.SourceBaseEntity",
-              ],
-            },
-            target: {
-              multiplicity: "(0..*)",
-              roleLabel: "is referenced by",
-              polymorphic: true,
-              constraintClasses: [
-                "TestSchema.TargetBaseEntity",
-              ],
-            },
+          target: {
+            multiplicity: "(0..*)",
+            roleLabel: "is referenced by",
+            polymorphic: true,
+            constraintClasses: [
+              "TestSchema.TargetBaseEntity",
+            ],
           },
         },
-      }, targetContext);
+      },
+    }, sourceContext);
 
-      const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, `Changing the relationship 'BaseRelationship' strengthDirection is not supported.`);
-    });
-
-    it("should throw an error merging relationship class strength", async () => {
-      await Schema.fromJson(testJson, sourceContext);
-      const sourceSchema = await Schema.fromJson({
-        ...sourceJson,
-        references: [
-          {
-            name: "TestSchema",
-            version: "01.00.15",
+    await Schema.fromJson(testJson, targetContext);
+    const targetSchema = await Schema.fromJson({
+      ...targetJson,
+      references: [
+        {
+          name: "TestSchema",
+          version: "01.00.15",
+        },
+      ],
+      items: {
+        BaseRelationship: {
+          schemaItemType: "RelationshipClass",
+          description: "Description of TestRelationship",
+          modifier: "None",
+          strength: "Referencing",
+          strengthDirection: "Forward",
+          source: {
+            multiplicity: "(0..*)",
+            polymorphic: true,
+            roleLabel: "refers to",
+            constraintClasses: [
+              "TestSchema.SourceBaseEntity",
+            ],
           },
-        ],
-        items: {
-          BaseRelationship: {
-            schemaItemType: "RelationshipClass",
-            description: "Description of TestRelationship",
-            modifier: "None",
-            strength: "Embedding",
-            strengthDirection: "Forward",
-            source: {
-              multiplicity: "(0..*)",
-              polymorphic: true,
-              roleLabel: "refers to",
-              constraintClasses: [
-                "TestSchema.SourceBaseEntity",
-              ],
-            },
-            target: {
-              multiplicity: "(0..*)",
-              roleLabel: "is referenced by",
-              polymorphic: true,
-              constraintClasses: [
-                "TestSchema.TargetBaseEntity",
-              ],
-            },
+          target: {
+            multiplicity: "(0..*)",
+            roleLabel: "is referenced by",
+            polymorphic: true,
+            constraintClasses: [
+              "TestSchema.TargetBaseEntity",
+            ],
           },
         },
-      }, sourceContext);
+      },
+    }, targetContext);
 
-      await Schema.fromJson(testJson, targetContext);
-      const targetSchema = await Schema.fromJson({
-        ...targetJson,
-        references: [
-          {
-            name: "TestSchema",
-            version: "01.00.15",
+    const merger = new SchemaMerger(targetSchema.context);
+    await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, `Changing the relationship 'BaseRelationship' strengthDirection is not supported.`);
+  });
+
+  it("should throw an error merging relationship class strength", async () => {
+    await Schema.fromJson(testJson, sourceContext);
+    const sourceSchema = await Schema.fromJson({
+      ...sourceJson,
+      references: [
+        {
+          name: "TestSchema",
+          version: "01.00.15",
+        },
+      ],
+      items: {
+        BaseRelationship: {
+          schemaItemType: "RelationshipClass",
+          description: "Description of TestRelationship",
+          modifier: "None",
+          strength: "Embedding",
+          strengthDirection: "Forward",
+          source: {
+            multiplicity: "(0..*)",
+            polymorphic: true,
+            roleLabel: "refers to",
+            constraintClasses: [
+              "TestSchema.SourceBaseEntity",
+            ],
           },
-        ],
-        items: {
-          BaseRelationship: {
-            schemaItemType: "RelationshipClass",
-            description: "Description of TestRelationship",
-            modifier: "None",
-            strength: "Referencing",
-            strengthDirection: "Forward",
-            source: {
-              multiplicity: "(0..*)",
-              polymorphic: true,
-              roleLabel: "refers to",
-              constraintClasses: [
-                "TestSchema.SourceBaseEntity",
-              ],
-            },
-            target: {
-              multiplicity: "(0..*)",
-              roleLabel: "is referenced by",
-              polymorphic: true,
-              constraintClasses: [
-                "TestSchema.TargetBaseEntity",
-              ],
-            },
+          target: {
+            multiplicity: "(0..*)",
+            roleLabel: "is referenced by",
+            polymorphic: true,
+            constraintClasses: [
+              "TestSchema.TargetBaseEntity",
+            ],
           },
         },
-      }, targetContext);
+      },
+    }, sourceContext);
 
-      const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, `Changing the relationship 'BaseRelationship' strength is not supported.`);
-    });
-
-    it("should throw an error merging relationship constraint multiplicity", async () => {
-      await Schema.fromJson(testJson, sourceContext);
-      const sourceSchema = await Schema.fromJson({
-        ...sourceJson,
-        references: [
-          {
-            name: "TestSchema",
-            version: "01.00.15",
+    await Schema.fromJson(testJson, targetContext);
+    const targetSchema = await Schema.fromJson({
+      ...targetJson,
+      references: [
+        {
+          name: "TestSchema",
+          version: "01.00.15",
+        },
+      ],
+      items: {
+        BaseRelationship: {
+          schemaItemType: "RelationshipClass",
+          description: "Description of TestRelationship",
+          modifier: "None",
+          strength: "Referencing",
+          strengthDirection: "Forward",
+          source: {
+            multiplicity: "(0..*)",
+            polymorphic: true,
+            roleLabel: "refers to",
+            constraintClasses: [
+              "TestSchema.SourceBaseEntity",
+            ],
           },
-        ],
-        items: {
-          BaseRelationship: {
-            schemaItemType: "RelationshipClass",
-            description: "Description of TestRelationship",
-            modifier: "None",
-            strength: "Referencing",
-            strengthDirection: "Forward",
-            source: {
-              multiplicity: "(1..1)",
-              polymorphic: true,
-              roleLabel: "refers to",
-              constraintClasses: [
-                "TestSchema.SourceBaseEntity",
-              ],
-            },
-            target: {
-              multiplicity: "(0..*)",
-              roleLabel: "is referenced by",
-              polymorphic: true,
-              constraintClasses: [
-                "TestSchema.TargetBaseEntity",
-              ],
-            },
+          target: {
+            multiplicity: "(0..*)",
+            roleLabel: "is referenced by",
+            polymorphic: true,
+            constraintClasses: [
+              "TestSchema.TargetBaseEntity",
+            ],
           },
         },
-      }, sourceContext);
+      },
+    }, targetContext);
 
-      await Schema.fromJson(testJson, targetContext);
-      const targetSchema = await Schema.fromJson({
-        ...targetJson,
-        references: [
-          {
-            name: "TestSchema",
-            version: "01.00.15",
+    const merger = new SchemaMerger(targetSchema.context);
+    await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, `Changing the relationship 'BaseRelationship' strength is not supported.`);
+  });
+
+  it("should throw an error merging relationship constraint multiplicity", async () => {
+    await Schema.fromJson(testJson, sourceContext);
+    const sourceSchema = await Schema.fromJson({
+      ...sourceJson,
+      references: [
+        {
+          name: "TestSchema",
+          version: "01.00.15",
+        },
+      ],
+      items: {
+        BaseRelationship: {
+          schemaItemType: "RelationshipClass",
+          description: "Description of TestRelationship",
+          modifier: "None",
+          strength: "Referencing",
+          strengthDirection: "Forward",
+          source: {
+            multiplicity: "(1..1)",
+            polymorphic: true,
+            roleLabel: "refers to",
+            constraintClasses: [
+              "TestSchema.SourceBaseEntity",
+            ],
           },
-        ],
-        items: {
-          BaseRelationship: {
-            schemaItemType: "RelationshipClass",
-            description: "Description of TestRelationship",
-            modifier: "None",
-            strength: "Referencing",
-            strengthDirection: "Forward",
-            source: {
-              multiplicity: "(0..*)",
-              polymorphic: true,
-              roleLabel: "refers to",
-              constraintClasses: [
-                "TestSchema.SourceBaseEntity",
-              ],
-            },
-            target: {
-              multiplicity: "(0..*)",
-              roleLabel: "is referenced by",
-              polymorphic: true,
-              constraintClasses: [
-                "TestSchema.TargetBaseEntity",
-              ],
-            },
+          target: {
+            multiplicity: "(0..*)",
+            roleLabel: "is referenced by",
+            polymorphic: true,
+            constraintClasses: [
+              "TestSchema.TargetBaseEntity",
+            ],
           },
         },
-      }, targetContext);
+      },
+    }, sourceContext);
 
-      const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, `Changing the relationship constraint 'BaseRelationship:Source' multiplicity is not supported.`);
-    });
+    await Schema.fromJson(testJson, targetContext);
+    const targetSchema = await Schema.fromJson({
+      ...targetJson,
+      references: [
+        {
+          name: "TestSchema",
+          version: "01.00.15",
+        },
+      ],
+      items: {
+        BaseRelationship: {
+          schemaItemType: "RelationshipClass",
+          description: "Description of TestRelationship",
+          modifier: "None",
+          strength: "Referencing",
+          strengthDirection: "Forward",
+          source: {
+            multiplicity: "(0..*)",
+            polymorphic: true,
+            roleLabel: "refers to",
+            constraintClasses: [
+              "TestSchema.SourceBaseEntity",
+            ],
+          },
+          target: {
+            multiplicity: "(0..*)",
+            roleLabel: "is referenced by",
+            polymorphic: true,
+            constraintClasses: [
+              "TestSchema.TargetBaseEntity",
+            ],
+          },
+        },
+      },
+    }, targetContext);
+
+    const merger = new SchemaMerger(targetSchema.context);
+    await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, `Changing the relationship constraint 'BaseRelationship:Source' multiplicity is not supported.`);
   });
 });

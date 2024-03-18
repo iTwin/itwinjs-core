@@ -1,67 +1,45 @@
-/*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
-import { Format, InvertedUnit, KindOfQuantity, OverrideFormat, SchemaItem, SchemaItemKey, Unit } from "@itwin/ecschema-metadata";
-import { PropertyValueResolver, SchemaItemMerger } from "./SchemaItemMerger";
-import { KindOfQuantityChanges } from "../Validation/SchemaChanges";
+// /*---------------------------------------------------------------------------------------------
+// * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+// * See LICENSE.md in the project root for license terms and full copyright notice.
+// *--------------------------------------------------------------------------------------------*/
+import { type KindOfQuantityDifference } from "../Differencing/SchemaDifference";
+import { type SchemaMergerHandler, updateSchemaItemFullName } from "./SchemaItemMerger";
+import { type MutableKindOfQuantity } from "../Editing/Mutable/MutableKindOfQuantity";
 
 /**
  * @internal
  */
-export default class KindOfQuantityMerger extends SchemaItemMerger<KindOfQuantity> {
-
-  protected override async merge(itemKey: SchemaItemKey, source: KindOfQuantity, changes: KindOfQuantityChanges) {
-    for (const presentationUnitChange of changes.presentationUnitChanges.values()) {
-      for (const change of presentationUnitChange.presentationUnitChange) {
-        const format = change.diagnostic.messageArgs![0];
-        const isDefault = source.defaultPresentationFormat === format;
-
-        if (OverrideFormat.isOverrideFormat(format)) {
-          const parentFormat = await this.lookup<Format>(format.parent);
-          if (parentFormat === undefined) {
-            throw new Error(`Unable to locate the format class ${format.parent.name} in the merged schema.`);
-          }
-
-          const unitAndLabels: Array<[Unit | InvertedUnit, string | undefined]> | undefined = [];
-          if (format.units !== undefined) {
-            for (const [unit, label] of format.units) {
-              const targetUnit = await this.lookup<Unit | InvertedUnit>(unit);
-              if (targetUnit === undefined) {
-                throw new Error(`Unable to locate the unit class ${unit.name} in the merged schema.`);
-              }
-              unitAndLabels.push([targetUnit, label]);
-            }
-          }
-          const overrideFormat = await this.context.editor.kindOfQuantities.createFormatOverride(itemKey, parentFormat.key, format.precision, unitAndLabels);
-          await this.context.editor.kindOfQuantities.addPresentationOverrideFormat(itemKey, overrideFormat, isDefault);
-        } else {
-          const targetFormat = await this.lookup<Format>(format);
-          if (targetFormat === undefined) {
-            throw new Error(`Unable to locate the format class ${format.name} in the merged schema.`);
-          }
-          await this.context.editor.kindOfQuantities.addPresentationFormat(itemKey, targetFormat.key, isDefault);
+export const kindOfQuantityMerger: SchemaMergerHandler<KindOfQuantityDifference> = {
+  async add(context, change) {
+    change.json.persistenceUnit = await updateSchemaItemFullName(context, change.json.persistenceUnit);
+    if(change.json.presentationUnits) {
+      if(Array.isArray(change.json.presentationUnits)) {
+        for(let index = 0; index < change.json.presentationUnits.length; index++) {
+          const updatedReference = await updateSchemaItemFullName(context, change.json.presentationUnits[index]);
+          change.json.presentationUnits[index] = updatedReference;
         }
+      } else {
+        const updatedReference = await updateSchemaItemFullName(context, change.json.presentationUnits);
+        change.json.presentationUnits = updatedReference;
       }
     }
-  }
 
-  /**
-   *
-   * Creates the property value resolver for [[KindOfQuantity]] items.
-   */
-  protected override async createPropertyValueResolver(): Promise<PropertyValueResolver<KindOfQuantity>> {
-    return {
-      persistenceUnit: (newValue, targetItemKey, oldValue) => {
-        if (oldValue !== undefined && oldValue !== newValue) {
-          throw new Error(`Changing the kind of quantity '${targetItemKey.name}' persistenceUnit is not supported.`);
-        }
-        const [schemaName, itemName] = SchemaItem.parseFullName(newValue);
-        if (this.context.targetSchema.getReferenceSync(schemaName) === undefined) {
-          return `${targetItemKey.schemaName}.${itemName}`;
-        }
-        return newValue;
-      },
-    };
-  }
-}
+    return context.editor.kindOfQuantities.createFromProps(context.targetSchemaKey, {
+      name: change.itemName,
+      ...change.json,
+    });
+  },
+  async modify(_context, change, itemKey, item: MutableKindOfQuantity) {
+    if(change.json.label) {
+      item.setDisplayLabel(change.json.label);
+    }
+    if(change.json.relativeError) {
+      // TODO: Not settable through the interface
+    }
+    if(change.json.persistenceUnit) {
+      // TODO: It should be checked if the unit is the same, but referring to the source schema.
+      throw new Error(`Changing the kind of quantity '${itemKey.name}' persistenceUnit is not supported.`);
+    }
+    return {};
+  },
+};

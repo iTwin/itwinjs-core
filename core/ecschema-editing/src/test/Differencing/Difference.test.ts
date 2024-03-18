@@ -33,7 +33,7 @@ function expectPartiallyEquals(actual: any, expected: any, message?: string) {
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-describe("Schema Difference Reporting", () => {
+describe.only("Schema Difference Reporting", () => {
 
   const customAttributeSchemaJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",

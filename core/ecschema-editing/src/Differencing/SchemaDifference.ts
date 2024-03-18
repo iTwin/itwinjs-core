@@ -11,8 +11,12 @@ import { SchemaComparer } from "../Validation/SchemaComparer";
 import { SchemaDifferenceConflict } from "./SchemaConflicts";
 import { SchemaDiagnosticVisitor } from "./SchemaDiagnosticVisitor";
 import type {
-  AnyEnumerator, AnyPropertyProps, AnySchemaItemProps, CustomAttribute, RelationshipConstraintProps, Schema,
-  SchemaProps, SchemaReferenceProps,
+  AnyEnumerator, AnyPropertyProps, AnySchemaItemProps, Constant, CustomAttribute, CustomAttributeClass, EntityClass, Enumeration, KindOfQuantity, Mixin, Phenomenon, PropertyCategory, RelationshipClass, RelationshipConstraintProps, Schema,
+  SchemaItem,
+  SchemaItemProps,
+  SchemaReferenceProps,
+  StructClass,
+  UnitSystem,
 } from "@itwin/ecschema-metadata";
 
 /**
@@ -25,21 +29,22 @@ export type DifferenceType = "add" | "modify";
  * Defines a set of SchemaItem names.
  * @internal
  */
-export type SchemaItemTypeName =
-  "EntityClass" |
-  "Mixin" |
-  "StructClass" |
-  "CustomAttributeClass" |
-  "RelationshipClass" |
-  "Enumeration" |
-  "KindOfQuantity" |
-  "PropertyCategory" |
-  "Unit" |
-  "InvertedUnit" |
-  "Constant" |
-  "Phenomenon" |
-  "UnitSystem" |
-  "Format";
+export enum SchemaItemTypeName {
+  EntityClass = "EntityClass",
+  Mixin = "Mixin",
+  StructClass = "StructClass",
+  CustomAttributeClass = "CustomAttributeClass",
+  RelationshipClass = "RelationshipClass",
+  Enumeration = "Enumeration",
+  KindOfQuantity = "KindOfQuantity",
+  PropertyCategory = "PropertyCategory",
+  Unit = "Unit",
+  InvertedUnit = "InvertedUnit",
+  Constant = "Constant",
+  Phenomenon = "Phenomenon",
+  UnitSystem = "UnitSystem",
+  Format = "Format",
+}
 
 /**
  * Defines the possible values SchemaTypes that can occur in SchemaDifferences or Conflicts.
@@ -74,25 +79,32 @@ export namespace SchemaDifference {
    * @internal
    */
   export async function fromSchemaChanges(targetSchema: Schema, schemaChanges: SchemaChanges): Promise<SchemaDifferences> {
-    const schemaDifference: SchemaDifferences = {
-      sourceSchemaName: schemaChanges.schema.schemaKey.toString(),
-      targetSchemaName: targetSchema.schemaKey.toString(),
-      changes: [],
-      conflicts: [],
-    };
+    const changes: AnySchemaDifference[] = [];
+    const conflicts: SchemaDifferenceConflict[] = [];
 
-    const visitor = new SchemaDiagnosticVisitor(schemaDifference);
+    const visitor = new SchemaDiagnosticVisitor(changes, conflicts);
     for(const diagnostic of schemaChanges.allDiagnostics) {
       visitor.visit(diagnostic);
     }
 
-    return schemaDifference;
+    return {
+      sourceSchemaName: schemaChanges.schema.schemaKey.toString(),
+      targetSchemaName: targetSchema.schemaKey.toString(),
+      changes: changes.length > 0 ? changes : undefined,
+      conflicts: conflicts.length > 0 ? conflicts : undefined,
+    };
   }
 }
 
 type MutualPartial<T> = {
   -readonly [P in keyof T]?: T[P];
 };
+type Editable<T> = {
+  -readonly [P in keyof T]: T[P];
+};
+
+type SchemaItemProperties<T extends SchemaItemProps> =
+  Editable<Omit<T, keyof Omit<SchemaItemProps, "label" | "description">>>;
 
 /**
  * @internal
@@ -102,8 +114,8 @@ export interface SchemaDifferences {
   readonly sourceSchemaName: string;
   readonly targetSchemaName: string;
 
-  readonly changes: AnySchemaDifference[];
-  readonly conflicts: SchemaDifferenceConflict[];
+  readonly changes?: AnySchemaDifference[];
+  readonly conflicts?: SchemaDifferenceConflict[];
 }
 
 /**
@@ -124,97 +136,221 @@ export type AnySchemaDifference =
  * @internal
  */
 export interface SchemaDifference {
-  changeType: "modify";
-  schemaType: "Schema";
-  itemName?: undefined;
-  path?: undefined;
-  json: MutualPartial<SchemaProps>;
+  readonly changeType: "modify";
+  readonly schemaType: "Schema";
+  readonly itemName?: never;
+  readonly path?: string;
+  readonly json: {
+    label?: string;
+    description?: string;
+  };
 }
 
 /**
  * @internal
  */
 export interface SchemaItemDifference<T extends AnySchemaItemProps = AnySchemaItemProps> {
-  changeType: "add" | "modify" | "remove";
-  schemaType: SchemaItemTypeName;
-  itemName: string;
-  path?: string;
-  json: MutualPartial<T>;
+  readonly changeType: "add" | "modify" | "remove";
+  readonly schemaType: SchemaItemTypeName;
+  readonly itemName: string;
+  readonly path?: string;
+  readonly json: MutualPartial<T>;
+}
+
+export type AnySchemaItemDifference =
+  ClassItemDifference |
+  ClassPropertyDifference |
+  ConstantsDifference |
+  EnumerationDifference |
+  EnumeratorDifference |
+  EntityClassMixinDifference |
+  KindOfQuantityDifference |
+  PhenomenonDifference |
+  PropertyCategoryDifference |
+  RelationshipConstraintDifference |
+  RelationshipConstraintClassDifference |
+  UnitSystemDifference;
+
+export type ClassItemDifference =
+  CustomAttributeClassDifference |
+  EntityClassDifference |
+  MixinClassDifference |
+  RelationshipClassDifference |
+  StructClassDifference;
+
+export interface SchemaItemBase<T extends SchemaItem> {
+  readonly itemName: string;
+  readonly json: SchemaItemProperties<ReturnType<T["toJSON"]>>;
+}
+
+export interface ClassPropertyDifference {
+  readonly changeType: "add" | "modify";
+  readonly schemaType: "Property";
+  readonly itemName: string;
+  readonly path: string;
+  readonly json: Editable<AnyPropertyProps>;
+}
+
+export interface ConstantsDifference extends SchemaItemBase<Constant> {
+  readonly changeType: "add" | "modify";
+  readonly schemaType: SchemaItemTypeName.Constant;
+}
+
+export interface CustomAttributeClassDifference extends SchemaItemBase<CustomAttributeClass> {
+  readonly changeType: "add" | "modify";
+  readonly schemaType: SchemaItemTypeName.CustomAttributeClass;
+}
+
+export interface EntityClassDifference extends SchemaItemBase<EntityClass> {
+  readonly changeType: "add" | "modify";
+  readonly schemaType: SchemaItemTypeName.EntityClass;
+}
+
+export interface EntityClassMixinDifference {
+  readonly changeType: "modify";
+  readonly schemaType: SchemaItemTypeName.EntityClass;
+  readonly itemName: string;
+  readonly path: "$mixins";
+  readonly json: string[];
+}
+
+export interface EnumerationDifference extends SchemaItemBase<Enumeration> {
+  readonly changeType: "add" | "modify";
+  readonly schemaType: SchemaItemTypeName.Enumeration;
+}
+
+export interface EnumeratorDifference {
+  readonly changeType: "add" | "modify";
+  readonly schemaType: SchemaItemTypeName.Enumeration;
+  readonly itemName: string;
+  readonly path: "$enumerators";
+  readonly json: Editable<AnyEnumerator>;
+}
+
+export interface KindOfQuantityDifference extends SchemaItemBase<KindOfQuantity> {
+  readonly changeType: "add" | "modify";
+  readonly schemaType: SchemaItemTypeName.KindOfQuantity;
+}
+
+export interface MixinClassDifference extends SchemaItemBase<Mixin> {
+  readonly changeType: "add" | "modify";
+  readonly schemaType: SchemaItemTypeName.Mixin;
+}
+
+export interface PhenomenonDifference extends SchemaItemBase<Phenomenon> {
+  readonly changeType: "add" | "modify";
+  readonly schemaType: SchemaItemTypeName.Phenomenon;
+}
+
+export interface PropertyCategoryDifference extends SchemaItemBase<PropertyCategory> {
+  readonly changeType: "add" | "modify";
+  readonly schemaType: SchemaItemTypeName.PropertyCategory;
+}
+
+export interface RelationshipClassDifference extends SchemaItemBase<RelationshipClass> {
+  readonly changeType: "add" | "modify";
+  readonly schemaType: SchemaItemTypeName.RelationshipClass;
+}
+
+export interface RelationshipConstraintDifference {
+  readonly changeType: "modify";
+  readonly schemaType: SchemaItemTypeName.RelationshipClass;
+  readonly itemName: string;
+  readonly path: "$source" | "$target";
+  readonly json: Editable<Omit<RelationshipConstraintProps, "constraintClasses">>;
+}
+
+export interface RelationshipConstraintClassDifference {
+  readonly changeType: "add";
+  readonly schemaType: SchemaItemTypeName.RelationshipClass;
+  readonly itemName: string;
+  readonly path: "$source.constraintClasses" | "$target.constraintClasses";
+  readonly json: string[];
+}
+
+export interface StructClassDifference extends SchemaItemBase<StructClass> {
+  readonly changeType: "add" | "modify";
+  readonly schemaType: SchemaItemTypeName.StructClass;
+}
+
+export interface UnitSystemDifference extends SchemaItemBase<UnitSystem> {
+  readonly changeType: "add";
+  readonly schemaType: SchemaItemTypeName.UnitSystem;
 }
 
 /**
  * @internal
  */
 export interface SchemaPropertyDifference<T extends AnyPropertyProps = AnyPropertyProps> {
-  changeType: "add" | "modify" | "remove";
-  schemaType: "Property";
-  itemName: string;
-  path: string;
-  json: MutualPartial<T>;
+  readonly changeType: "add" | "modify" | "remove";
+  readonly schemaType: "Property";
+  readonly itemName: string;
+  readonly path: string;
+  readonly json: MutualPartial<T>;
 }
 
 /**
  * @internal
  */
 export interface SchemaReferenceDifference {
-  changeType: "add" | "modify" | "remove";
-  schemaType: "Schema";
-  itemName?: undefined;
-  path: "$references";
-  json: MutualPartial<SchemaReferenceProps>;
+  readonly changeType: "add" | "modify" | "remove";
+  readonly schemaType: "Schema";
+  readonly itemName?: undefined;
+  readonly path: "$references";
+  readonly json: MutualPartial<SchemaReferenceProps>;
 }
 
 /**
  * @internal
  */
 export interface SchemaEnumeratorDifference {
-  changeType: "add" | "modify" | "remove";
-  schemaType: "Enumeration";
-  itemName: string;
-  path: string;
-  json: MutualPartial<AnyEnumerator>;
+  readonly changeType: "add" | "modify" | "remove";
+  readonly schemaType: "Enumeration";
+  readonly itemName: string;
+  readonly path: string;
+  readonly json: MutualPartial<AnyEnumerator>;
 }
 
 /**
  * @internal
  */
 export interface SchemaClassMixinDifference {
-  changeType: "modify";
-  schemaType: "EntityClass";
-  itemName: string;
-  path: "$mixins";
-  json: string[];
+  readonly changeType: "modify";
+  readonly schemaType: "EntityClass";
+  readonly itemName: string;
+  readonly path: "$mixins";
+  readonly json: string[];
 }
 
 /**
  * @internal
  */
 export interface SchemaRelationshipConstraintDifference {
-  changeType: "modify";
-  schemaType: "RelationshipConstraint";
-  itemName: string;
-  path: string;
-  json: MutualPartial<RelationshipConstraintProps>;
+  readonly changeType: "modify";
+  readonly schemaType: "RelationshipClass";
+  readonly itemName: string;
+  readonly path: "$source" | "$target";
+  readonly json: MutualPartial<RelationshipConstraintProps>;
 }
 
 /**
  * @internal
  */
 export interface SchemaRelationshipConstraintClassDifference {
-  changeType: "modify";
-  schemaType: "RelationshipClass";
-  itemName: string;
-  path: string;
-  json: string[];
+  readonly changeType: "add" | "modify";
+  readonly schemaType: "RelationshipClass";
+  readonly itemName: string;
+  readonly path: "$source.constraintClasses" | "$target.constraintClasses";
+  readonly json: string[];
 }
 
 /**
  * @internal
  */
 export interface SchemaCustomAttributeDifference {
-  changeType: "add" | "modify";
-  schemaType: "Schema" | "EnitityClass" | "Properties" | "RelationshipConstraint";
-  itemName?: string;
-  path?: string;
-  json: MutualPartial<CustomAttribute>;
+  readonly changeType: "add" | "modify";
+  readonly schemaType: "Schema" | "EntityClass" | "Properties" | "RelationshipConstraint";
+  readonly itemName?: string;
+  readonly path?: string;
+  readonly json: CustomAttribute;
 }

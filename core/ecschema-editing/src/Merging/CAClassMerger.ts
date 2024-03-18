@@ -1,34 +1,34 @@
-/*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
-import { CustomAttributeClass, parseCustomAttributeContainerType, SchemaKey } from "@itwin/ecschema-metadata";
-import { ClassMerger } from "./ClassMerger";
-import { SchemaItemEditResults } from "../Editing/Editor";
-import { MutableCAClass } from "../Editing/Mutable/MutableCAClass";
+// /*---------------------------------------------------------------------------------------------
+// * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+// * See LICENSE.md in the project root for license terms and full copyright notice.
+// *--------------------------------------------------------------------------------------------*/
+import { type CustomAttributeClassDifference } from "../Differencing/SchemaDifference";
+import { type SchemaMergerHandler } from "./SchemaItemMerger";
+import { type MutableCAClass } from "../Editing/Mutable/MutableCAClass";
+import { containerTypeToString, parseCustomAttributeContainerType } from "@itwin/ecschema-metadata";
+import { modifyClass } from "./ClassMerger";
 
 /**
  * @internal
  */
-export default class CAClassMerger extends ClassMerger<CustomAttributeClass> {
-
-  protected override async create(schemaKey: SchemaKey, ecClass: CustomAttributeClass): Promise<SchemaItemEditResults> {
-    return this.context.editor.customAttributes.create(schemaKey, ecClass.name, ecClass.containerType);
-  }
-
-  protected override async mergeAttributes(ecClass: CustomAttributeClass, attributeName: string, attributeNewValue: any, attributeOldValue: any): Promise<SchemaItemEditResults | boolean> {
-    const mutableCAClass = ecClass as unknown as MutableCAClass;
-    switch(attributeName) {
-      case "appliesTo":
-        if (attributeOldValue !== undefined && attributeOldValue !== attributeNewValue) {
-          const containerType = parseCustomAttributeContainerType(`${attributeOldValue}, ${attributeNewValue}`);
-          if (containerType === undefined) {
-            return { errorMessage: "An invalid custom attribute class containerType has been provided."};
-          }
-          mutableCAClass.setContainerType(containerType);
+export const customAttributeClassMerger: SchemaMergerHandler<CustomAttributeClassDifference> = {
+  async add(context, change) {
+    return context.editor.customAttributes.createFromProps(context.targetSchemaKey, {
+      name: change.itemName,
+      ...change.json,
+    });
+  },
+  async modify(context, change, itemKey, item: MutableCAClass) {
+    if(change.json.appliesTo) {
+      const currentValue = containerTypeToString(item.containerType);
+      if (currentValue !== "" && change.json.appliesTo !== currentValue) {
+        const containerType = parseCustomAttributeContainerType(`${currentValue}, ${change.json.appliesTo}`);
+        if (containerType === undefined) {
+          return { errorMessage: "An invalid custom attribute class containerType has been provided."};
         }
-        return true;
+        item.setContainerType(containerType);
+      }
     }
-    return super.mergeAttributes(ecClass, attributeName, attributeNewValue, attributeOldValue);
-  }
-}
+    return modifyClass(context, change, itemKey, item);
+  },
+};

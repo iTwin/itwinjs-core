@@ -17,7 +17,6 @@ import {
   DifferenceType,
   SchemaClassMixinDifference,
   SchemaDifference,
-  SchemaDifferences,
   SchemaEnumeratorDifference,
   SchemaItemDifference,
   SchemaItemTypeName,
@@ -59,19 +58,21 @@ interface LookupArgs {
  */
 export class SchemaDiagnosticVisitor {
 
-  private readonly _differenceReport: SchemaDifferences;
+  private readonly _changes: Array<AnySchemaDifference>;
+  private readonly _conflicts: Array<SchemaDifferenceConflict>;
 
-  constructor(differenceReport: SchemaDifferences) {
-    this._differenceReport = differenceReport;
+  constructor(changes: Array<AnySchemaDifference>, conflicts: Array<SchemaDifferenceConflict>) {
+    this._changes = changes;
+    this._conflicts = conflicts;
   }
 
   private addEntry<T extends AnySchemaDifference>(entry: T): T {
-    this._differenceReport.changes.push(entry);
+    this._changes.push(entry);
     return entry;
   }
 
   private lookupEntry(changeType: DifferenceType, args: LookupArgs) {
-    return this._differenceReport.changes && this._differenceReport.changes.find((change) => {
+    return this._changes && this._changes.find((change) => {
       return (change.changeType === changeType)
       && (!args.schemaType || change.schemaType === args.schemaType)
       && (!args.itemName || change.itemName === args.itemName)
@@ -80,7 +81,7 @@ export class SchemaDiagnosticVisitor {
   }
 
   private addConflict(conflict: SchemaDifferenceConflict) {
-    this._differenceReport.conflicts.push(conflict);
+    this._conflicts.push(conflict);
   }
 
   /**
@@ -262,7 +263,7 @@ export class SchemaDiagnosticVisitor {
   }
 
   private lookupEnumeratorEntry(changeType: DifferenceType, item: string, enumeratorName: string) {
-    return this._differenceReport.changes && this._differenceReport.changes.find((change) => {
+    return this._changes && this._changes.find((change) => {
       return change.changeType === changeType
       && change.schemaType === "Enumeration"
       && change.itemName === item
@@ -489,7 +490,7 @@ export class SchemaDiagnosticVisitor {
   private visitMissingRelationshipConstraintClass(diagnostic: AnyDiagnostic) {
     const constraint = diagnostic.ecDefinition as RelationshipConstraint;
     const className = constraint.relationshipClass.name;
-    const constraintPath = `$${constraint.isSource ? "source" : "target"}.constraintClasses`;
+    const constraintPath = constraint.isSource ? "$source.constraintClasses" : "$target.constraintClasses";
     if(this.lookupEntry("add", { itemName: className })) {
       return;
     }
@@ -497,7 +498,7 @@ export class SchemaDiagnosticVisitor {
     let modifyEntry = this.lookupEntry("modify", { itemName: className, path: constraintPath}) as SchemaRelationshipConstraintClassDifference;
     if(!modifyEntry) {
       modifyEntry = this.addEntry({
-        changeType: "modify",
+        changeType: "add",
         schemaType: "RelationshipClass",
         itemName: className,
         path: constraintPath,
@@ -512,7 +513,7 @@ export class SchemaDiagnosticVisitor {
   private visitChangedRelationshipConstraint(diagnostic: AnyDiagnostic) {
     const constraint = diagnostic.ecDefinition as RelationshipConstraint;
     const className = constraint.relationshipClass.name;
-    const constraintPath = `$${constraint.isSource ? "source" : "target"}`;
+    const constraintPath = constraint.isSource ? "$source" : "$target";
     if(this.lookupEntry("add", { itemName: className })) {
       return;
     }
@@ -521,7 +522,7 @@ export class SchemaDiagnosticVisitor {
     if(!modifyEntry) {
       modifyEntry = this.addEntry({
         changeType: "modify",
-        schemaType: "RelationshipConstraint",
+        schemaType: "RelationshipClass",
         itemName: className,
         path: constraintPath,
         json: {},
@@ -581,11 +582,12 @@ function getItemNameAndPath(type: AnyECType): { schemaType: SchemaType, itemName
       path: type.name,
     };
   if(type instanceof RelationshipConstraint)
-    return {
-      schemaType: "RelationshipClass",
-      itemName: type.relationshipClass.name,
-      path: type.isSource ? "$source" : "$target",
-    };
+    throw Error("Unhandled Type");
+    // return {
+    //   schemaType: "RelationshipClass",
+    //   itemName: type.relationshipClass.name,
+    //   path: type.isSource ? "$source" : "$target",
+    // };
   throw Error("Unhandled Type");
 }
 
