@@ -70,6 +70,14 @@ export interface ArrayPropertiesFieldJSON<TClassInfoJSON = ClassInfo> extends Pr
 }
 
 /**
+ * Data structure for a [[StructPropertiesField]] serialized to JSON.
+ * @public
+ */
+export interface StructPropertiesFieldJSON<TClassInfoJSON = ClassInfo> extends PropertiesFieldJSON<TClassInfoJSON> {
+  memberFields: PropertiesFieldJSON<TClassInfoJSON>[];
+}
+
+/**
  * Data structure for a [[NestedContentField]] serialized to JSON.
  * @public
  */
@@ -93,22 +101,36 @@ export type FieldJSON<TClassInfoJSON = ClassInfoJSON> =
   | BaseFieldJSON
   | PropertiesFieldJSON<TClassInfoJSON>
   | ArrayPropertiesFieldJSON<TClassInfoJSON>
+  | StructPropertiesFieldJSON<TClassInfoJSON>
   | NestedContentFieldJSON<TClassInfoJSON>;
 
 /** Is supplied field a properties field. */
-const isPropertiesField = (field: FieldJSON | Field): field is PropertiesFieldJSON<any> | PropertiesField => {
+function isPropertiesField(field: FieldJSON): field is PropertiesFieldJSON<any>;
+function isPropertiesField(field: Field): field is PropertiesField;
+function isPropertiesField(field: FieldJSON | Field) {
   return !!(field as any).properties;
-};
+}
 
 /** Is supplied field an array properties field. */
-const isArrayPropertiesField = (field: FieldJSON | Field): field is ArrayPropertiesFieldJSON<any> | ArrayPropertiesField => {
+function isArrayPropertiesField(field: FieldJSON): field is ArrayPropertiesFieldJSON<any>;
+function isArrayPropertiesField(field: Field): field is ArrayPropertiesField;
+function isArrayPropertiesField(field: FieldJSON | Field) {
   return !!(field as ArrayPropertiesFieldJSON).itemsField;
-};
+}
+
+/** Is supplied field an array properties field. */
+function isStructPropertiesField(field: FieldJSON): field is StructPropertiesFieldJSON<any>;
+function isStructPropertiesField(field: Field): field is StructPropertiesField;
+function isStructPropertiesField(field: FieldJSON | Field) {
+  return !!(field as StructPropertiesFieldJSON).memberFields;
+}
 
 /** Is supplied field a nested content field. */
-const isNestedContentField = (field: FieldJSON | Field): field is NestedContentFieldJSON<any> | NestedContentField => {
+function isNestedContentField(field: FieldJSON): field is NestedContentFieldJSON<any>;
+function isNestedContentField(field: Field): field is NestedContentField;
+function isNestedContentField(field: FieldJSON | Field) {
   return !!(field as any).nestedFields;
-};
+}
 
 /**
  * Describes a single content field. A field is usually represented as a grid column
@@ -209,25 +231,7 @@ export class Field {
   }
 
   /** Serialize this object to compressed JSON */
-  public toCompressedJSON(classesMap: { [id: string]: CompressedClassInfoJSON }): FieldJSON<string> {
-    if (this.isPropertiesField()) {
-      return {
-        ...this.toJSON(),
-        properties: this.properties.map((property) => Property.toCompressedJSON(property, classesMap)),
-      };
-    }
-
-    if (this.isNestedContentField()) {
-      const { id, ...leftOverInfo } = this.contentClassInfo;
-      classesMap[id] = leftOverInfo;
-      return {
-        ...this.toJSON(),
-        contentClassInfo: id,
-        pathToPrimaryClass: this.pathToPrimaryClass.map((classInfo) => RelatedClassInfo.toCompressedJSON(classInfo, classesMap)),
-        nestedFields: this.nestedFields.map((field) => field.toCompressedJSON(classesMap)),
-      };
-    }
-
+  public toCompressedJSON(_classesMap: { [id: string]: CompressedClassInfoJSON }): FieldJSON<string> {
     return this.toJSON();
   }
 
@@ -237,9 +241,6 @@ export class Field {
       return undefined;
     }
     if (isPropertiesField(json)) {
-      if (isArrayPropertiesField(json)) {
-        return ArrayPropertiesField.fromJSON(json, categories);
-      }
       return PropertiesField.fromJSON(json, categories);
     }
     if (isNestedContentField(json)) {
@@ -263,9 +264,6 @@ export class Field {
     }
 
     if (isPropertiesField(json)) {
-      if (isArrayPropertiesField(json)) {
-        return ArrayPropertiesField.fromCompressedJSON(json, classesMap, categories);
-      }
       return PropertiesField.fromCompressedJSON(json, classesMap, categories);
     }
 
@@ -359,6 +357,10 @@ export class PropertiesField extends Field {
   public isArrayPropertiesField(): this is ArrayPropertiesField {
     return false;
   }
+  /** Is this a an struct property field */
+  public isStructPropertiesField(): this is StructPropertiesField {
+    return false;
+  }
 
   public override clone() {
     const clone = new PropertiesField(
@@ -384,10 +386,25 @@ export class PropertiesField extends Field {
     };
   }
 
+  /** Serialize this object to compressed JSON */
+  public override toCompressedJSON(classesMap: { [id: string]: CompressedClassInfoJSON }): PropertiesFieldJSON<string> {
+    return {
+      ...super.toCompressedJSON(classesMap),
+      properties: this.properties.map((property) => Property.toCompressedJSON(property, classesMap)),
+    };
+  }
+
   /** Deserialize [[PropertiesField]] from JSON */
   public static override fromJSON(json: PropertiesFieldJSON | undefined, categories: CategoryDescription[]): PropertiesField | undefined {
     if (!json) {
       return undefined;
+    }
+
+    if (isArrayPropertiesField(json)) {
+      return ArrayPropertiesField.fromJSON(json, categories);
+    }
+    if (isStructPropertiesField(json)) {
+      return StructPropertiesField.fromJSON(json, categories);
     }
 
     const field = Object.create(PropertiesField.prototype);
@@ -405,6 +422,12 @@ export class PropertiesField extends Field {
     classesMap: { [id: string]: CompressedClassInfoJSON },
     categories: CategoryDescription[],
   ): PropertiesField | undefined {
+    if (isArrayPropertiesField(json)) {
+      return ArrayPropertiesField.fromCompressedJSON(json, classesMap, categories);
+    }
+    if (isStructPropertiesField(json)) {
+      return StructPropertiesField.fromCompressedJSON(json, classesMap, categories);
+    }
     const field = Object.create(PropertiesField.prototype);
     return Object.assign(field, json, {
       category: this.getCategoryFromFieldJson(json, categories),
@@ -519,9 +542,7 @@ export class ArrayItemsField implements Pick<Field, "editor" | "renderer" | "typ
 }
 
 /**
- * Describes a content field that's based on one or more similar
- * EC array properties.
- *
+ * Describes a content field that's based on one or more similar EC array properties.
  * @public
  */
 export class ArrayPropertiesField extends PropertiesField {
@@ -572,12 +593,16 @@ export class ArrayPropertiesField extends PropertiesField {
     };
   }
 
-  /** Deserialize [[ArrayPropertiesField]] from JSON */
-  public static override fromJSON(json: ArrayPropertiesFieldJSON | undefined, categories: CategoryDescription[]): ArrayPropertiesField | undefined {
-    if (!json) {
-      return undefined;
-    }
+  /** Serialize this object to compressed JSON */
+  public override toCompressedJSON(classesMap: { [id: string]: CompressedClassInfoJSON }): ArrayPropertiesFieldJSON<string> {
+    return {
+      ...super.toCompressedJSON(classesMap),
+      itemsField: this.itemsField.toJSON(),
+    };
+  }
 
+  /** Deserialize [[ArrayPropertiesField]] from JSON */
+  public static override fromJSON(json: ArrayPropertiesFieldJSON, categories: CategoryDescription[]): ArrayPropertiesField {
     const field = Object.create(ArrayPropertiesField.prototype);
     return Object.assign(field, json, {
       category: this.getCategoryFromFieldJson(json, categories),
@@ -586,19 +611,106 @@ export class ArrayPropertiesField extends PropertiesField {
   }
 
   /**
-   * Deserialize a [[PropertiesField]] from compressed JSON.
+   * Deserialize an [[ArrayPropertiesField]] from compressed JSON.
    * @public
    */
   public static override fromCompressedJSON(
     json: ArrayPropertiesFieldJSON<Id64String>,
     classesMap: { [id: string]: CompressedClassInfoJSON },
     categories: CategoryDescription[],
-  ): ArrayPropertiesField | undefined {
+  ): ArrayPropertiesField {
     const field = Object.create(ArrayPropertiesField.prototype);
     return Object.assign(field, json, {
       category: this.getCategoryFromFieldJson(json, categories),
       properties: json.properties.map((propertyJson) => fromCompressedPropertyJSON(propertyJson, classesMap)),
       itemsField: ArrayItemsField.fromJSON(json.itemsField),
+    });
+  }
+}
+
+/**
+ * Describes a content field that's based on one or more similar EC struct properties.
+ * @public
+ */
+export class StructPropertiesField extends PropertiesField {
+  public memberFields: PropertiesField[];
+
+  public constructor(
+    category: CategoryDescription,
+    name: string,
+    label: string,
+    description: TypeDescription,
+    memberFields: PropertiesField[],
+    isReadonly: boolean,
+    priority: number,
+    properties: Property[],
+    editor?: EditorDescription,
+    renderer?: RendererDescription,
+  ) {
+    super(category, name, label, description, isReadonly, priority, properties, editor, renderer);
+    this.memberFields = memberFields;
+  }
+
+  public override isStructPropertiesField(): this is StructPropertiesField {
+    return true;
+  }
+
+  public override clone() {
+    const clone = new StructPropertiesField(
+      this.category,
+      this.name,
+      this.label,
+      this.type,
+      this.memberFields.map((m) => m.clone()),
+      this.isReadonly,
+      this.priority,
+      this.properties,
+      this.editor,
+      this.renderer,
+    );
+    clone.rebuildParentship(this.parent);
+    return clone;
+  }
+
+  /** Serialize this object to JSON */
+  public override toJSON(): StructPropertiesFieldJSON {
+    return {
+      ...super.toJSON(),
+      memberFields: this.memberFields.map((m) => m.toJSON()),
+    };
+  }
+
+  /** Serialize this object to compressed JSON */
+  public override toCompressedJSON(classesMap: { [id: string]: CompressedClassInfoJSON }): StructPropertiesFieldJSON<string> {
+    return {
+      ...super.toCompressedJSON(classesMap),
+      memberFields: this.memberFields.map((m) => m.toCompressedJSON(classesMap)),
+    };
+  }
+
+  /** Deserialize [[StructPropertiesField]] from JSON */
+  public static override fromJSON(json: StructPropertiesFieldJSON, categories: CategoryDescription[]): StructPropertiesField {
+    const field = Object.create(StructPropertiesField.prototype);
+    return Object.assign(field, json, {
+      category: this.getCategoryFromFieldJson(json, categories),
+      memberFields: json.memberFields.map((m) => PropertiesField.fromJSON(m, categories)),
+    });
+  }
+
+  /**
+   * Deserialize a [[StructPropertiesField]] from compressed JSON.
+   * @public
+   */
+  public static override fromCompressedJSON(
+    json: StructPropertiesFieldJSON<Id64String>,
+    classesMap: { [id: string]: CompressedClassInfoJSON },
+    categories: CategoryDescription[],
+  ): StructPropertiesField {
+    const field = Object.create(StructPropertiesField.prototype);
+    return Object.assign(field, json, {
+      category: this.getCategoryFromFieldJson(json, categories),
+      properties: json.properties.map((propertyJson) => fromCompressedPropertyJSON(propertyJson, classesMap)),
+      memberFields: json.memberFields.map((m) => PropertiesField.fromCompressedJSON(m, classesMap, categories)),
     });
   }
 }
@@ -718,6 +830,18 @@ export class NestedContentField extends Field {
       actualPrimaryClassIds: this.actualPrimaryClassIds,
       nestedFields: this.nestedFields.map((field: Field) => field.toJSON()),
       autoExpand: this.autoExpand,
+    };
+  }
+
+  /** Serialize this object to compressed JSON */
+  public override toCompressedJSON(classesMap: { [id: string]: CompressedClassInfoJSON }): NestedContentFieldJSON<string> {
+    const { id, ...leftOverInfo } = this.contentClassInfo;
+    classesMap[id] = leftOverInfo;
+    return {
+      ...super.toCompressedJSON(classesMap),
+      contentClassInfo: id,
+      pathToPrimaryClass: this.pathToPrimaryClass.map((classInfo) => RelatedClassInfo.toCompressedJSON(classInfo, classesMap)),
+      nestedFields: this.nestedFields.map((field) => field.toCompressedJSON(classesMap)),
     };
   }
 

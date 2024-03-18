@@ -159,6 +159,58 @@ describe("Descriptor", () => {
             },
           },
           {
+            name: "test-struct-properties-field",
+            label: "Test Struct Properties Field",
+            type: {
+              valueFormat: PropertyValueFormat.Struct,
+              typeName: "TestStruct",
+              members: [
+                {
+                  name: "test-member-1",
+                  label: "Test Member 1",
+                  type: {
+                    valueFormat: PropertyValueFormat.Primitive,
+                    typeName: "string",
+                  },
+                },
+              ],
+            },
+            category: category.name,
+            isReadonly: false,
+            priority: 0,
+            properties: [
+              {
+                property: {
+                  classInfo: ids[0],
+                  name: "PropertyName",
+                  type: "TestPropertyType",
+                },
+              },
+            ],
+            memberFields: [
+              {
+                name: "test-struct-member-field",
+                label: "Test Struct Member Field",
+                type: {
+                  valueFormat: PropertyValueFormat.Primitive,
+                  typeName: "string",
+                },
+                category: category.name,
+                isReadonly: false,
+                priority: 0,
+                properties: [
+                  {
+                    property: {
+                      classInfo: ids[4],
+                      name: "StructMemberProperty",
+                      type: "string",
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+          {
             name: "test-nested-content-field",
             label: "Test Nested Content Field",
             type: {

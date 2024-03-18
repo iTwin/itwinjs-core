@@ -52,12 +52,15 @@ export class ArrayPropertiesField extends PropertiesField {
     clone(): ArrayPropertiesField;
     static fromCompressedJSON(json: ArrayPropertiesFieldJSON<Id64String>, classesMap: {
         [id: string]: CompressedClassInfoJSON;
-    }, categories: CategoryDescription[]): ArrayPropertiesField | undefined;
-    static fromJSON(json: ArrayPropertiesFieldJSON | undefined, categories: CategoryDescription[]): ArrayPropertiesField | undefined;
+    }, categories: CategoryDescription[]): ArrayPropertiesField;
+    static fromJSON(json: ArrayPropertiesFieldJSON, categories: CategoryDescription[]): ArrayPropertiesField;
     // (undocumented)
     isArrayPropertiesField(): this is ArrayPropertiesField;
     // (undocumented)
     itemsField: ArrayItemsField;
+    toCompressedJSON(classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): ArrayPropertiesFieldJSON<string>;
     toJSON(): ArrayPropertiesFieldJSON;
 }
 
@@ -1025,7 +1028,7 @@ export class Field {
     rebuildParentship(parentField?: NestedContentField): void;
     renderer?: RendererDescription;
     resetParentship(): void;
-    toCompressedJSON(classesMap: {
+    toCompressedJSON(_classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }): FieldJSON<string>;
     toJSON(): FieldJSON;
@@ -1065,7 +1068,7 @@ export interface FieldHierarchy {
 }
 
 // @public
-export type FieldJSON<TClassInfoJSON = ClassInfoJSON> = BaseFieldJSON | PropertiesFieldJSON<TClassInfoJSON> | ArrayPropertiesFieldJSON<TClassInfoJSON> | NestedContentFieldJSON<TClassInfoJSON>;
+export type FieldJSON<TClassInfoJSON = ClassInfoJSON> = BaseFieldJSON | PropertiesFieldJSON<TClassInfoJSON> | ArrayPropertiesFieldJSON<TClassInfoJSON> | StructPropertiesFieldJSON<TClassInfoJSON> | NestedContentFieldJSON<TClassInfoJSON>;
 
 // @public
 export interface FilterByInstancePathsHierarchyRequestOptions<TIModel, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
@@ -1838,6 +1841,9 @@ export class NestedContentField extends Field {
     rebuildParentship(parentField?: NestedContentField): void;
     relationshipMeaning: RelationshipMeaning;
     resetParentship(): void;
+    toCompressedJSON(classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): NestedContentFieldJSON<string>;
     toJSON(): NestedContentFieldJSON;
 }
 
@@ -2336,9 +2342,13 @@ export class PropertiesField extends Field {
     static fromJSON(json: PropertiesFieldJSON | undefined, categories: CategoryDescription[]): PropertiesField | undefined;
     getFieldDescriptor(): FieldDescriptor;
     isArrayPropertiesField(): this is ArrayPropertiesField;
+    isStructPropertiesField(): this is StructPropertiesField;
     // @beta
     matchesDescriptor(descriptor: FieldDescriptor): boolean;
     properties: Property[];
+    toCompressedJSON(classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): PropertiesFieldJSON<string>;
     toJSON(): PropertiesFieldJSON;
 }
 
@@ -3159,6 +3169,31 @@ export interface StructFieldMemberDescription {
     label: string;
     name: string;
     type: TypeDescription;
+}
+
+// @public
+export class StructPropertiesField extends PropertiesField {
+    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, memberFields: PropertiesField[], isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription, renderer?: RendererDescription);
+    // (undocumented)
+    clone(): StructPropertiesField;
+    static fromCompressedJSON(json: StructPropertiesFieldJSON<Id64String>, classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }, categories: CategoryDescription[]): StructPropertiesField;
+    static fromJSON(json: StructPropertiesFieldJSON, categories: CategoryDescription[]): StructPropertiesField;
+    // (undocumented)
+    isStructPropertiesField(): this is StructPropertiesField;
+    // (undocumented)
+    memberFields: PropertiesField[];
+    toCompressedJSON(classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): StructPropertiesFieldJSON<string>;
+    toJSON(): StructPropertiesFieldJSON;
+}
+
+// @public
+export interface StructPropertiesFieldJSON<TClassInfoJSON = ClassInfo> extends PropertiesFieldJSON<TClassInfoJSON> {
+    // (undocumented)
+    memberFields: PropertiesFieldJSON<TClassInfoJSON>[];
 }
 
 // @public

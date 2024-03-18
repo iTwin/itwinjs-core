@@ -13,6 +13,7 @@ Table of contents:
   - [Lock Control](#lock-control)
   - [Presentation](#presentation)
     - [Custom renderer and editor support for array items](#custom-renderer-and-editor-support-for-array-items)
+    - [Support for property overrides on ECStruct member properties](#support-for-property-overrides-on-ecstruct-member-properties)
     - [Deprecation of async array results in favor of async iterators](#deprecation-of-async-array-results-in-favor-of-async-iterators)
   - [Fixed bounding box types](#fixed-bounding-box-types)
 
@@ -80,6 +81,26 @@ a class that has the property and adding a property override for the array prope
       },
       "editor": {
         "editorName": "test-editor"
+      }
+    }
+  ]
+}
+```
+
+### Support for property overrides on ECStruct member properties
+
+Support for property overrides has been added for struct member properties. The overrides may be assigned to members of specific ECStruct class by creating a [ContentModifier]($presentation-common) for
+the struct class and adding property overrides for the members. Example:
+
+```json
+{
+  "ruleType": "ContentModifier",
+  "class": { "schemaName": "MySchemaName", "className": "MyStructClassName" },
+  "propertyOverrides": [
+    {
+      "name": "StructMemberProperty",
+      "renderer": {
+        "rendererName": "test-renderer"
       }
     }
   ]

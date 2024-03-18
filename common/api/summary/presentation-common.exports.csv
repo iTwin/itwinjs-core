@@ -431,6 +431,8 @@ deprecated;StringRulesetVariableJSON
 public;StrippedRelatedClassInfo
 public;StrippedRelationshipPath = StrippedRelatedClassInfo[]
 public;StructFieldMemberDescription
+public;StructPropertiesField 
+public;StructPropertiesFieldJSON
 public;StructTypeDescription 
 public;StyleOverride 
 deprecated;StyleOverride 

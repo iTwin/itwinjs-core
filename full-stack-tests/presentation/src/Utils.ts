@@ -25,6 +25,11 @@ function tryGetFieldByLabelInternal(fields: Field[], label: string, allFields: F
       if (nestedMatchingField) {
         return nestedMatchingField;
       }
+    } else if (field.isPropertiesField() && field.isStructPropertiesField()) {
+      const matchingMemberField = tryGetFieldByLabelInternal(field.memberFields, label, allFields);
+      if (matchingMemberField) {
+        return matchingMemberField;
+      }
     }
 
     allFields.push(field);
