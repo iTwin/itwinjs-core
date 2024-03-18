@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import path from "path";
 import sanitize from "sanitize-filename";
-import { ChannelControl, IModelDb, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
+import { IModelDb, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
 import { GuidString, Id64String } from "@itwin/core-bentley";
 import { BisCodeSpec, Code, IModel, LocalFileName, PhysicalElementProps } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
@@ -93,11 +93,11 @@ export function insertPhysicalElement(db: IModelDb, label: string, modelId: Id64
     userLabel: label,
     ...(parentId
       ? {
-        parent: {
-          id: parentId,
-          relClassName: "BisCore:PhysicalElementAssemblesElements",
-        },
-      }
+          parent: {
+            id: parentId,
+            relClassName: "BisCore:PhysicalElementAssemblesElements",
+          },
+        }
       : undefined),
   } as PhysicalElementProps);
   return { className, id };
