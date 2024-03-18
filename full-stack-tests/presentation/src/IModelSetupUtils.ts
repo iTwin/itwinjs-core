@@ -19,7 +19,6 @@ export function createValidIModelFileName(imodelName: string) {
 export async function buildTestIModelDb(name: string, cb: (db: IModelDb) => Promise<void>) {
   const outputFile = setupOutputFileLocation(createValidIModelFileName(name));
   const db = SnapshotDb.createEmpty(outputFile, { rootSubject: { name } });
-  db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
   try {
     await cb(db);
   } catch (e) {
@@ -94,11 +93,11 @@ export function insertPhysicalElement(db: IModelDb, label: string, modelId: Id64
     userLabel: label,
     ...(parentId
       ? {
-          parent: {
-            id: parentId,
-            relClassName: "BisCore:PhysicalElementAssemblesElements",
-          },
-        }
+        parent: {
+          id: parentId,
+          relClassName: "BisCore:PhysicalElementAssemblesElements",
+        },
+      }
       : undefined),
   } as PhysicalElementProps);
   return { className, id };
