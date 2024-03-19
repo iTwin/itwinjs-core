@@ -372,7 +372,9 @@ export enum ContentFlags {
 
 // @alpha (undocumented)
 export class ContentFormatter {
-    constructor(_propertyValueFormatter: ContentPropertyValueFormatter, _unitSystem?: UnitSystemKey | undefined);
+    constructor(_propertyValueFormatter: {
+        formatPropertyValue: (field: Field, value: Value, unitSystem?: UnitSystemKey) => Promise<DisplayValue>;
+    }, _unitSystem?: UnitSystemKey | undefined);
     // (undocumented)
     formatContent(content: Content): Promise<Content>;
     // (undocumented)

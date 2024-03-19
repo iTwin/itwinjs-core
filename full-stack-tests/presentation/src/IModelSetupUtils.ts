@@ -10,6 +10,7 @@ import {
   BisCodeSpec,
   CategoryProps,
   Code,
+  ElementAspectProps,
   GeometricModel3dProps,
   IModel,
   InformationPartitionElementProps,
@@ -183,6 +184,23 @@ export function insertPhysicalElement<TAdditionalProps extends {}>(
       : undefined),
     ...elementProps,
   } as PhysicalElementProps);
+  return { className, id };
+}
+
+/** Insert an aspect into created imodel, return its key */
+export function insertElementAspect<TAdditionalProps extends {}>(
+  props: { db: IModelDb; elementId: Id64String } & Partial<Omit<ElementAspectProps, "element">> & TAdditionalProps,
+) {
+  const { db, classFullName, elementId, ...aspectProps } = props;
+  const defaultClassName = "BisCore:ElementMultiAspect";
+  const className = classFullName ?? defaultClassName;
+  const id = db.elements.insertAspect({
+    classFullName: className,
+    element: {
+      id: elementId,
+    },
+    ...aspectProps,
+  } as ElementAspectProps);
   return { className, id };
 }
 

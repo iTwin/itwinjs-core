@@ -16,8 +16,6 @@ import {
   Descriptor,
   DisplayValue,
   DisplayValueGroup,
-  DisplayValuesArray,
-  DisplayValuesMap,
   Field,
   FieldDescriptor,
   FormatsMap,
@@ -29,6 +27,7 @@ import {
   RelationshipDirection,
   Ruleset,
   RuleTypes,
+  Value,
 } from "@itwin/presentation-common";
 import { Presentation, PresentationManager, PresentationManagerProps } from "@itwin/presentation-frontend";
 import { ECClassHierarchy, ECClassHierarchyInfo } from "../ECClasHierarchy";
@@ -38,6 +37,7 @@ import {
   buildTestIModelConnection,
   importSchema,
   insertDocumentPartition,
+  insertElementAspect,
   insertPhysicalElement,
   insertPhysicalModelWithPartition,
   insertSpatialCategory,
@@ -48,14 +48,14 @@ import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
 
 describe("Content", () => {
   let imodel: IModelConnection;
-  const openIModel = async () => {
+  const openDefaultIModel = async () => {
     if (!imodel || !imodel.isOpen) {
       imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
     }
     expect(imodel).is.not.null;
   };
 
-  const closeIModel = async () => {
+  const closeDefaultIModel = async () => {
     if (imodel && imodel.isOpen) {
       await imodel.close();
     }
@@ -63,11 +63,11 @@ describe("Content", () => {
 
   before(async () => {
     await initialize();
-    await openIModel();
+    await openDefaultIModel();
   });
 
   after(async () => {
-    await imodel.close();
+    await closeDefaultIModel();
     await terminate();
   });
 
@@ -1319,73 +1319,279 @@ describe("Content", () => {
         },
       ],
     };
-    const keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
-    const baseFormatProps = {
-      formatTraits: "KeepSingleZero|KeepDecimalPoint|ShowUnitLabel",
-      type: "Decimal",
-      precision: 4,
-      uomSeparator: " ",
-    };
 
-    it("formats property with default kind of quantity format when it doesn't have format for requested unit system", async () => {
-      expect(await getAreaDisplayValue("imperial")).to.eq("150.1235 cm²");
-    });
+    describe("with formats from different sources", () => {
+      const key = { className: "Generic:PhysicalObject", id: "0x74" };
+      const baseFormatProps = {
+        formatTraits: "KeepSingleZero|KeepDecimalPoint|ShowUnitLabel",
+        type: "Decimal",
+        precision: 4,
+        uomSeparator: " ",
+      };
 
-    it("formats property value using default format when the property doesn't have format for requested unit system", async () => {
-      const formatProps = {
-        ...baseFormatProps,
-        composite: {
-          units: [{ label: "ft²", name: "Units.SQ_FT" }],
-        },
-      };
-      const defaultFormats = {
-        area: [{ unitSystems: ["imperial" as UnitSystemKey], format: formatProps }],
-      };
-      expect(await getAreaDisplayValue("imperial", defaultFormats)).to.eq("0.1616 ft²");
-    });
+      it("formats property with default kind of quantity format when it doesn't have format for requested unit system", async () => {
+        expect(await getAreaDisplayValue("imperial")).to.eq("150.1235 cm²");
+      });
 
-    it("formats property value using property format when it has one for requested unit system in addition to default format", async () => {
-      const formatProps = {
-        ...baseFormatProps,
-        composite: {
-          units: [{ label: "ft²", name: "Units.SQ_FT" }],
-        },
-      };
-      const defaultFormats = {
-        area: [{ unitSystems: ["metric" as UnitSystemKey], format: formatProps }],
-      };
-      expect(await getAreaDisplayValue("metric", defaultFormats)).to.eq("150.1235 cm²");
-    });
+      it("formats property value using default format when the property doesn't have format for requested unit system", async () => {
+        const formatProps = {
+          ...baseFormatProps,
+          composite: {
+            units: [{ label: "ft²", name: "Units.SQ_FT" }],
+          },
+        };
+        const defaultFormats = {
+          area: [{ unitSystems: ["imperial" as UnitSystemKey], format: formatProps }],
+        };
+        expect(await getAreaDisplayValue("imperial", defaultFormats)).to.eq("0.1616 ft²");
+      });
 
-    it("formats property value using different unit system formats in defaults formats map", async () => {
-      const defaultFormats = {
-        area: [
-          {
-            unitSystems: ["imperial", "usCustomary"] as UnitSystemKey[],
-            format: {
-              ...baseFormatProps,
-              composite: {
-                units: [{ label: "in²", name: "Units.SQ_IN" }],
+      it("formats property value using property format when it has one for requested unit system in addition to default format", async () => {
+        const formatProps = {
+          ...baseFormatProps,
+          composite: {
+            units: [{ label: "ft²", name: "Units.SQ_FT" }],
+          },
+        };
+        const defaultFormats = {
+          area: [{ unitSystems: ["metric" as UnitSystemKey], format: formatProps }],
+        };
+        expect(await getAreaDisplayValue("metric", defaultFormats)).to.eq("150.1235 cm²");
+      });
+
+      it("formats property value using different unit system formats in defaults formats map", async () => {
+        const defaultFormats = {
+          area: [
+            {
+              unitSystems: ["imperial", "usCustomary"] as UnitSystemKey[],
+              format: {
+                ...baseFormatProps,
+                composite: {
+                  units: [{ label: "in²", name: "Units.SQ_IN" }],
+                },
               },
             },
-          },
-          {
-            unitSystems: ["usSurvey"] as UnitSystemKey[],
-            format: {
-              ...baseFormatProps,
-              composite: {
-                units: [{ label: "yrd² (US Survey)", name: "Units.SQ_US_SURVEY_YRD" }],
+            {
+              unitSystems: ["usSurvey"] as UnitSystemKey[],
+              format: {
+                ...baseFormatProps,
+                composite: {
+                  units: [{ label: "yrd² (US Survey)", name: "Units.SQ_US_SURVEY_YRD" }],
+                },
               },
             },
-          },
-        ],
-      };
-      expect(await getAreaDisplayValue("imperial", defaultFormats)).to.eq("23.2692 in²");
-      expect(await getAreaDisplayValue("usCustomary", defaultFormats)).to.eq("23.2692 in²");
-      expect(await getAreaDisplayValue("usSurvey", defaultFormats)).to.eq("0.018 yrd² (US Survey)");
+          ],
+        };
+        expect(await getAreaDisplayValue("imperial", defaultFormats)).to.eq("23.2692 in²");
+        expect(await getAreaDisplayValue("usCustomary", defaultFormats)).to.eq("23.2692 in²");
+        expect(await getAreaDisplayValue("usSurvey", defaultFormats)).to.eq("0.018 yrd² (US Survey)");
+      });
+
+      async function getAreaDisplayValue(unitSystem: UnitSystemKey, defaultFormats?: FormatsMap): Promise<DisplayValue> {
+        const content = await getContent(key, unitSystem, defaultFormats);
+        return getDisplayValue(content, [getFieldByLabel(content.descriptor.fields, "area"), getFieldByLabel(content.descriptor.fields, "cm2")]);
+      }
     });
 
-    async function getAreaDisplayValue(unitSystem: UnitSystemKey, defaultFormats?: FormatsMap): Promise<DisplayValue> {
+    describe("of properties in different places of content", () => {
+      before(async () => {
+        // for these tests we want to create our own iModel, so close the default one
+        await closeDefaultIModel();
+      });
+      after(async () => {
+        // re-open the default iModel after the tests suite is complete
+        await openDefaultIModel();
+      });
+
+      it("formats direct properties", async function () {
+        let elementKey!: InstanceKey;
+        imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
+          const schema = importSchema(
+            this,
+            db,
+            `
+              <ECSchemaReference name="BisCore" version="01.00.16" alias="bis" />
+              <ECSchemaReference name="Units" version="01.00.07" alias="u" />
+              <ECSchemaReference name="Formats" version="01.00.00" alias="f" />
+              <KindOfQuantity typeName="LENGTH" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(1)[u:M]" relativeError="0.0001" />
+              <ECEntityClass typeName="X">
+                <BaseClass>bis:PhysicalElement</BaseClass>
+                <ECProperty propertyName="Prop" typeName="double" kindOfQuantity="LENGTH" />
+              </ECEntityClass>
+            `,
+          );
+          const model = insertPhysicalModelWithPartition({ db, codeValue: "model" });
+          const category = insertSpatialCategory({ db, codeValue: "category" });
+          elementKey = insertPhysicalElement({
+            db,
+            classFullName: schema.items.X.fullName,
+            modelId: model.id,
+            categoryId: category.id,
+            ["Prop"]: 123.456,
+          });
+        });
+        const content = await getContent(elementKey);
+        const displayValue = getDisplayValue(content, [getFieldByLabel(content.descriptor.fields, "Prop")]);
+        expect(displayValue).to.eq("123.5 m");
+      });
+
+      it("formats related properties", async function () {
+        let elementKey!: InstanceKey;
+        imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
+          const schema = importSchema(
+            this,
+            db,
+            `
+              <ECSchemaReference name="BisCore" version="01.00.16" alias="bis" />
+              <ECSchemaReference name="Units" version="01.00.07" alias="u" />
+              <ECSchemaReference name="Formats" version="01.00.00" alias="f" />
+              <KindOfQuantity typeName="LENGTH" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(1)[u:M]" relativeError="0.0001" />
+              <ECEntityClass typeName="A">
+                <BaseClass>bis:ElementUniqueAspect</BaseClass>
+                <ECProperty propertyName="Prop" typeName="double" kindOfQuantity="LENGTH" />
+              </ECEntityClass>
+              <ECEntityClass typeName="X">
+                <BaseClass>bis:PhysicalElement</BaseClass>
+              </ECEntityClass>
+            `,
+          );
+          const model = insertPhysicalModelWithPartition({ db, codeValue: "model" });
+          const category = insertSpatialCategory({ db, codeValue: "category" });
+          elementKey = insertPhysicalElement({
+            db,
+            classFullName: schema.items.X.fullName,
+            modelId: model.id,
+            categoryId: category.id,
+          });
+          insertElementAspect({
+            db,
+            classFullName: schema.items.A.fullName,
+            elementId: elementKey.id,
+            ["Prop"]: 123.456,
+          });
+        });
+        const content = await getContent(elementKey);
+        const displayValue = getDisplayValue(content, [getFieldByLabel(content.descriptor.fields, "A"), getFieldByLabel(content.descriptor.fields, "Prop")]);
+        expect(displayValue).to.eq("123.5 m");
+      });
+
+      it("formats array item properties", async function () {
+        let elementKey!: InstanceKey;
+        imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
+          const schema = importSchema(
+            this,
+            db,
+            `
+              <ECSchemaReference name="BisCore" version="01.00.16" alias="bis" />
+              <ECSchemaReference name="Units" version="01.00.07" alias="u" />
+              <ECSchemaReference name="Formats" version="01.00.00" alias="f" />
+              <KindOfQuantity typeName="LENGTH" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(1)[u:M]" relativeError="0.0001" />
+              <ECEntityClass typeName="X">
+                <BaseClass>bis:PhysicalElement</BaseClass>
+                <ECArrayProperty propertyName="Prop" typeName="double" kindOfQuantity="LENGTH" />
+              </ECEntityClass>
+            `,
+          );
+          const model = insertPhysicalModelWithPartition({ db, codeValue: "model" });
+          const category = insertSpatialCategory({ db, codeValue: "category" });
+          elementKey = insertPhysicalElement({
+            db,
+            classFullName: schema.items.X.fullName,
+            modelId: model.id,
+            categoryId: category.id,
+            ["Prop"]: [123.456, 456.789],
+          });
+        });
+        const content = await getContent(elementKey);
+        const displayValue = getDisplayValue(content, [getFieldByLabel(content.descriptor.fields, "Prop")]);
+        expect(displayValue).to.deep.eq(["123.5 m", "456.8 m"]);
+      });
+
+      it("formats struct member properties", async function () {
+        let elementKey!: InstanceKey;
+        imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
+          const schema = importSchema(
+            this,
+            db,
+            `
+              <ECSchemaReference name="BisCore" version="01.00.16" alias="bis" />
+              <ECSchemaReference name="Units" version="01.00.07" alias="u" />
+              <ECSchemaReference name="Formats" version="01.00.00" alias="f" />
+              <KindOfQuantity typeName="LENGTH" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(1)[u:M]" relativeError="0.0001" />
+              <ECStructClass typeName="MyStruct">
+                <ECProperty propertyName="MemberProp" typeName="double" kindOfQuantity="LENGTH" />
+              </ECStructClass>
+              <ECEntityClass typeName="X">
+                <BaseClass>bis:PhysicalElement</BaseClass>
+                <ECStructProperty propertyName="StructProp" typeName="MyStruct" />
+              </ECEntityClass>
+            `,
+          );
+          const model = insertPhysicalModelWithPartition({ db, codeValue: "model" });
+          const category = insertSpatialCategory({ db, codeValue: "category" });
+          elementKey = insertPhysicalElement({
+            db,
+            classFullName: schema.items.X.fullName,
+            modelId: model.id,
+            categoryId: category.id,
+            ["StructProp"]: {
+              ["MemberProp"]: 123.456,
+            },
+          });
+        });
+        const content = await getContent(elementKey);
+        const displayValue = getDisplayValue(content, [
+          getFieldByLabel(content.descriptor.fields, "StructProp"),
+          getFieldByLabel(content.descriptor.fields, "MemberProp"),
+        ]);
+        expect(displayValue).to.eq("123.5 m");
+      });
+
+      it("formats struct array member properties", async function () {
+        let elementKey!: InstanceKey;
+        imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
+          const schema = importSchema(
+            this,
+            db,
+            `
+              <ECSchemaReference name="BisCore" version="01.00.16" alias="bis" />
+              <ECSchemaReference name="Units" version="01.00.07" alias="u" />
+              <ECSchemaReference name="Formats" version="01.00.00" alias="f" />
+              <KindOfQuantity typeName="LENGTH" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(1)[u:M]" relativeError="0.0001" />
+              <ECStructClass typeName="MyStruct">
+                <ECProperty propertyName="MemberProp" typeName="double" kindOfQuantity="LENGTH" />
+              </ECStructClass>
+              <ECEntityClass typeName="X">
+                <BaseClass>bis:PhysicalElement</BaseClass>
+                <ECStructArrayProperty propertyName="StructArrayProp" typeName="MyStruct" />
+              </ECEntityClass>
+            `,
+          );
+          const model = insertPhysicalModelWithPartition({ db, codeValue: "model" });
+          const category = insertSpatialCategory({ db, codeValue: "category" });
+          elementKey = insertPhysicalElement({
+            db,
+            classFullName: schema.items.X.fullName,
+            modelId: model.id,
+            categoryId: category.id,
+            ["StructArrayProp"]: [
+              {
+                ["MemberProp"]: 123.456,
+              },
+              {
+                ["MemberProp"]: 456.789,
+              },
+            ],
+          });
+        });
+        const content = await getContent(elementKey);
+        const displayValue = getDisplayValue(content, [getFieldByLabel(content.descriptor.fields, "StructArrayProp")]);
+        expect(displayValue).to.deep.eq([{ ["MemberProp"]: "123.5 m" }, { ["MemberProp"]: "456.8 m" }]);
+      });
+    });
+
+    async function getContent(key: InstanceKey, unitSystem?: UnitSystemKey, defaultFormats?: FormatsMap): Promise<Content> {
+      const keys = new KeySet([key]);
       const props: PresentationManagerProps = {
         defaultFormats,
         activeLocale: "en-PSEUDO",
@@ -1404,13 +1610,11 @@ describe("Content", () => {
           unitSystem,
         });
         expect(descriptor).to.not.be.undefined;
-        const field = getFieldByLabel(descriptor!.fields, "cm2");
         const content = await manager
           .getContentIterator({ imodel, rulesetOrId: ruleset, keys, descriptor: descriptor!, unitSystem })
           .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
-        const displayValues = content!.contentSet[0].values.rc_generic_PhysicalObject_ncc_MyProp_areaElementAspect as DisplayValuesArray;
-        expect(displayValues.length).is.eq(1);
-        return ((displayValues[0] as DisplayValuesMap).displayValues as DisplayValuesMap)[field.name]!;
+        expect(content).to.not.be.undefined;
+        return content!;
       });
     }
   });
@@ -1420,14 +1624,14 @@ describe("Content", () => {
     const frontendTimeout = 50;
 
     beforeEach(async () => {
-      await closeIModel();
+      await closeDefaultIModel();
       await terminate();
       await initialize({
         // this defaults to 0, which means "no timeouts" - reinitialize with something else
         backendTimeout: 1,
         frontendTimeout,
       });
-      await openIModel();
+      await openDefaultIModel();
 
       // mock `Promise.race` to always reject
       // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -1440,7 +1644,7 @@ describe("Content", () => {
     });
 
     afterEach(async () => {
-      await closeIModel();
+      await closeDefaultIModel();
       raceStub.restore();
     });
 
@@ -1544,4 +1748,35 @@ function filterFieldsByClass(fields: Field[], classInfo: ECClassHierarchyInfo) {
     }
   });
   return filteredFields;
+}
+
+function getDisplayValue(content: Content, fieldsPath: Field[]) {
+  let { values, displayValues } = content.contentSet[0];
+  for (let i = 0; i < fieldsPath.length - 1; ++i) {
+    const currField = fieldsPath[i];
+    if (currField.isNestedContentField()) {
+      const currentValue = values[currField.name];
+      assert(Value.isNestedContent(currentValue));
+      expect(currentValue.length).to.eq(1);
+      const nestedContentItem = currentValue[0];
+      values = nestedContentItem.values;
+      displayValues = nestedContentItem.displayValues;
+      continue;
+    }
+    if (currField.isPropertiesField() && currField.isStructPropertiesField()) {
+      const currentValue = values[currField.name];
+      const currentDisplayValue = displayValues[currField.name];
+      assert(Value.isMap(currentValue) && DisplayValue.isMap(currentDisplayValue));
+      values = currentValue;
+      displayValues = currentDisplayValue;
+      continue;
+    }
+    throw new Error(
+      `Failed to find a value for field "${currField.name} at path [${fieldsPath
+        .slice(0, i)
+        .map((f) => f.name)
+        .join(", ")}]. Current values: ${JSON.stringify(values)}"`,
+    );
+  }
+  return displayValues[fieldsPath[fieldsPath.length - 1].name];
 }
