@@ -9,7 +9,7 @@ import {
   Placement3dProps, QueryRowFormat, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Angle, Arc3d, Cone, IModelJson as GeomJson, LineSegment3d, Point2d, Point3d } from "@itwin/core-geometry";
-import { ECSqlStatement, IModelDb, IModelJsFs, PhysicalModel, PhysicalObject, SnapshotDb, SpatialCategory } from "../../core-backend";
+import { ECSqlStatement, GeometricElement3d, IModelDb, IModelJsFs, PhysicalModel, PhysicalObject, SnapshotDb, SpatialCategory } from "../../core-backend";
 import { ElementRefersToElements } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -189,7 +189,7 @@ function verifyTestElementAspect(actualValue: TestElementAspect, expectedValue: 
   verifyPrimitiveArray(actualValue, expectedValue);
 }
 
-function initElemProps(className: string, _iModelName: IModelDb, modId: Id64String, catId: Id64String, autoHandledProp: any): GeometricElementProps {
+function initElemProps(className: string, _iModelName: IModelDb, modId: Id64String, catId: Id64String, autoHandledProp: any, includeGeom = true): GeometricElementProps {
   // add Geometry
   const geomArray: Arc3d[] = [
     Arc3d.createXY(Point3d.create(0, 0), 5),
@@ -207,7 +207,7 @@ function initElemProps(className: string, _iModelName: IModelDb, modId: Id64Stri
     model: modId,
     category: catId,
     code: Code.createEmpty(),
-    geom: geometryStream,
+    geom: includeGeom ? geometryStream : undefined,
   };
 
   if (autoHandledProp)
@@ -431,6 +431,16 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     p3d: new Point3d(-111.11, -222.22, -333.33),
   };
 
+  const primInst3: IPrimitiveBase = {
+    i: 4322,
+    l: 98283333,
+    d: -2343.342,
+    b: false,
+    dt: "2010-01-01T11:11:11.000",
+    s: "Test string Inst2",
+    bin: new Uint8Array([11, 21, 31, 34, 53, 21, 14, 14, 55, 22]),
+  };
+
   const primArrInst1: IPrimitiveArrayBase = {
     array_i: [101, 202, -345],
     array_l: [12334343434, 3434343434, 12],
@@ -549,6 +559,173 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElement;
       verifyTestElement(stmtRow, actualValue);
+    });
+
+    imodel.close();
+  });
+
+  it.only("Roundtrip geometric element with no geometry and undefined placement property", async () => {
+    const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_correct_data.bim");
+    const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
+    const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
+    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+
+    // create element with no geometry
+    const expectedValue = initElemProps("TestElement", imodel, newModelId, spatialCategoryId!, {
+      ...primInst1,
+    }, false) as TestElement;
+
+    assert.isUndefined(expectedValue.placement);
+
+    // create an element
+    const geomElement = imodel.elements.createElement<GeometricElement3d>(expectedValue);
+
+    // Initialized placement values
+    assert.deepEqual(geomElement.placement.angles.pitch, Angle.zero());
+    assert.deepEqual(geomElement.placement.angles.roll, Angle.zero());
+    assert.deepEqual(geomElement.placement.angles.yaw, Angle.zero());
+    assert.equal(geomElement.placement.origin.x, 0);
+    assert.equal(geomElement.placement.origin.y, 0);
+    assert.equal(geomElement.placement.origin.z, 0);
+    assert.equal(geomElement.placement.bbox.xHigh, -1.0e200);
+    assert.equal(geomElement.placement.bbox.yHigh, -1.0e200);
+    assert.equal(geomElement.placement.bbox.zHigh, -1.0e200);
+    assert.equal(geomElement.placement.bbox.xLow, 1.0e200);
+    assert.equal(geomElement.placement.bbox.yLow, 1.0e200);
+    assert.equal(geomElement.placement.bbox.zLow, 1.0e200);
+
+    // JSON values
+    const elemJson = geomElement.toJSON() as any;
+    assert.deepEqual(elemJson.placement.angles.pitch, Angle.zero());
+    assert.deepEqual(elemJson.placement.angles.roll, Angle.zero());
+    assert.deepEqual(elemJson.placement.angles.yaw, Angle.zero());
+    assert.deepEqual(elemJson.placement.origin, {x: 0, y: 0, z: 0});
+    assert.equal(elemJson.placement.bbox.xHigh, -1.0e200);
+    assert.equal(elemJson.placement.bbox.yHigh, -1.0e200);
+    assert.equal(elemJson.placement.bbox.zHigh, -1.0e200);
+    assert.equal(elemJson.placement.bbox.xLow, 1.0e200);
+    assert.equal(elemJson.placement.bbox.yLow, 1.0e200);
+    assert.equal(elemJson.placement.bbox.zLow, 1.0e200);
+
+    // insert the element
+    const id = imodel.elements.insertElement(elemJson);
+    assert.isTrue(Id64.isValidId64(id), "insert worked");
+    imodel.saveChanges();
+
+    // verify inserted element properties
+    const actualValue = imodel.elements.getElementProps<TestElement>(id) as any;
+    assert.isUndefined(actualValue.placement?.angles);
+    assert.equal(actualValue.placement?.origin[0], 0);
+    assert.equal(actualValue.placement?.origin[1], 0);
+    assert.equal(actualValue.placement?.origin[2], 0);
+    assert.equal(actualValue.placement?.bbox.high[0], 1.0e200);
+    assert.equal(actualValue.placement?.bbox.high[1], 1.0e200);
+    assert.equal(actualValue.placement?.bbox.high[2], 1.0e200);
+    assert.equal(actualValue.placement?.bbox.low[0], -1.0e200);
+    assert.equal(actualValue.placement?.bbox.low[1], -1.0e200);
+    assert.equal(actualValue.placement?.bbox.low[2], -1.0e200);
+
+    // verify via concurrent query
+    let rowCount = 0;
+    for await (const row of imodel.createQueryReader("SELECT * FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      const elementValue = row.toRow();
+      assert.equal(elementValue.placement?.origin[0], 0);
+      assert.equal(elementValue.placement?.origin[1], 0);
+      assert.equal(elementValue.placement?.origin[2], 0);
+      assert.equal(elementValue.placement?.bbox?.high, 1.0e200);
+      assert.equal(elementValue.placement?.bbox.high[1], 1.0e200);
+      assert.equal(actualValue.placement?.bbox.high[2], 1.0e200);
+      assert.equal(actualValue.placement?.bbox.low[0], -1.0e200);
+      assert.equal(actualValue.placement?.bbox.low[1], -1.0e200);
+      assert.equal(actualValue.placement?.bbox.low[2], -1.0e200);
+      rowCount++;
+    }
+    assert.equal(rowCount, 1);
+
+    // verify via ecsql statement
+    await imodel.withPreparedStatement("SELECT * FROM ts.TestElement", async (stmt: ECSqlStatement) => {
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+      const stmtRow = stmt.getRow() as TestElement;
+      verifyTestElement(stmtRow, expectedValue);
+    });
+
+    imodel.close();
+  });
+
+  it("Roundtrip geometric element with geometry and undefined placement property", async () => {
+    const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_correct_data.bim");
+    const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
+    const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
+    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+
+    // create element with auto handled properties
+    const expectedValue = initElemProps("TestElement", imodel, newModelId, spatialCategoryId!, {
+      ...primInst1,
+    }) as TestElement;
+
+    assert.isUndefined(expectedValue.placement);
+
+    // create an element
+    const geomElement = imodel.elements.createElement<GeometricElement3d>(expectedValue);
+
+    // Initialized placement values
+    assert.deepEqual(geomElement.placement.angles.pitch, Angle.zero());
+    assert.deepEqual(geomElement.placement.angles.roll, Angle.zero());
+    assert.deepEqual(geomElement.placement.angles.yaw, Angle.zero());
+    assert.equal(geomElement.placement.origin.x, 0);
+    assert.equal(geomElement.placement.origin.y, 0);
+    assert.equal(geomElement.placement.origin.z, 0);
+    assert.equal(geomElement.placement.bbox.xHigh, -1.0e200);
+    assert.equal(geomElement.placement.bbox.yHigh, -1.0e200);
+    assert.equal(geomElement.placement.bbox.zHigh, -1.0e200);
+    assert.equal(geomElement.placement.bbox.xLow, 1.0e200);
+    assert.equal(geomElement.placement.bbox.yLow, 1.0e200);
+    assert.equal(geomElement.placement.bbox.zLow, 1.0e200);
+
+    // JSON values
+    const elemJson = geomElement.toJSON() as any;
+    assert.deepEqual(elemJson.placement.angles.pitch, Angle.zero());
+    assert.deepEqual(elemJson.placement.angles.roll, Angle.zero());
+    assert.deepEqual(elemJson.placement.angles.yaw, Angle.zero());
+    assert.deepEqual(elemJson.placement.origin, {x: 0, y: 0, z: 0});
+    assert.equal(elemJson.placement.bbox.xHigh, -1.0e200);
+    assert.equal(elemJson.placement.bbox.yHigh, -1.0e200);
+    assert.equal(elemJson.placement.bbox.zHigh, -1.0e200);
+    assert.equal(elemJson.placement.bbox.xLow, 1.0e200);
+    assert.equal(elemJson.placement.bbox.yLow, 1.0e200);
+    assert.equal(elemJson.placement.bbox.zLow, 1.0e200);
+
+    // insert the element
+    const id = imodel.elements.insertElement(elemJson);
+    assert.isTrue(Id64.isValidId64(id), "insert worked");
+    imodel.saveChanges();
+
+    // verify inserted element properties
+    const actualValue = imodel.elements.getElementProps<TestElement>(id) as any;
+    assert.isUndefined(actualValue.placement?.angles);
+    assert.equal(actualValue.placement?.origin[0], 0);
+    assert.equal(actualValue.placement?.origin[1], 0);
+    assert.equal(actualValue.placement?.origin[2], 0);
+    assert.equal(actualValue.placement?.bbox.high[0], 15);
+    assert.equal(actualValue.placement?.bbox.high[1], 15);
+    assert.equal(actualValue.placement?.bbox.high[2], 0);
+    assert.equal(actualValue.placement?.bbox.low[0], -25);
+    assert.equal(actualValue.placement?.bbox.low[1], -25);
+    assert.equal(actualValue.placement?.bbox.low[2], 0);
+
+    // verify via concurrent query
+    let rowCount = 0;
+    for await (const row of imodel.createQueryReader("SELECT * FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      verifyTestElement(row.toRow() as TestElement, expectedValue);
+      rowCount++;
+    }
+    assert.equal(rowCount, 1);
+
+    // verify via ecsql statement
+    await imodel.withPreparedStatement("SELECT * FROM ts.TestElement", async (stmt: ECSqlStatement) => {
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+      const stmtRow = stmt.getRow() as TestElement;
+      verifyTestElement(stmtRow, expectedValue);
     });
 
     imodel.close();
