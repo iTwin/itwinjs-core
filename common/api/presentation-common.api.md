@@ -24,16 +24,6 @@ import { UnitSystemKey } from '@itwin/core-quantity';
 export function addFieldHierarchy(rootHierarchies: FieldHierarchy[], hierarchy: FieldHierarchy): void;
 
 // @public
-export interface ArrayItemsFieldJSON {
-    // (undocumented)
-    editor?: EditorDescription;
-    // (undocumented)
-    renderer?: RendererDescription;
-    // (undocumented)
-    type: TypeDescription;
-}
-
-// @public
 export class ArrayPropertiesField extends PropertiesField {
     constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, itemsField: PropertiesField, isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription, renderer?: RendererDescription);
     // (undocumented)

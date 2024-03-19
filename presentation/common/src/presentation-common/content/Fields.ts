@@ -52,16 +52,6 @@ export interface PropertiesFieldJSON<TClassInfoJSON = ClassInfoJSON> extends Bas
 }
 
 /**
- * Data structure defining an item in [[ArrayPropertiesField]]
- * @public
- */
-export interface ArrayItemsFieldJSON {
-  type: TypeDescription;
-  renderer?: RendererDescription;
-  editor?: EditorDescription;
-}
-
-/**
  * Data structure for a [[ArrayPropertiesField]] serialized to JSON.
  * @public
  */
