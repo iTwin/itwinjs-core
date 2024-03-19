@@ -1,7 +1,7 @@
-// /*---------------------------------------------------------------------------------------------
-// * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-// * See LICENSE.md in the project root for license terms and full copyright notice.
-// *--------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import type { RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference } from "../Differencing/SchemaDifference";
 import type { MutableRelationshipClass } from "../Editing/Mutable/MutableRelationshipClass";
 import { type SchemaMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";

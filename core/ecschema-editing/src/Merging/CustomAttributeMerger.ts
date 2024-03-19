@@ -2,10 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module Merging
- */
-
 import { CustomAttributeClass, RelationshipClass, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { type SchemaMergeContext } from "./SchemaMerger";
 import { type CustomAttributeDifference, CustomAttributePropertyDifference, CustomAttributeRelationshipDifference, CustomAttributeSchemaDifference, CustomAttributeSchemaItemDifference } from "../Differencing/SchemaDifference";

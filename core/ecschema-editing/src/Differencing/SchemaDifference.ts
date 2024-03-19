@@ -147,6 +147,9 @@ export interface SchemaDifference {
   };
 }
 
+/**
+ * @internal
+ */
 export interface SchemaReferenceDifference {
   readonly changeType: "add" | "modify";
   readonly schemaType: "Schema";

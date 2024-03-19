@@ -1,7 +1,7 @@
-// // /*---------------------------------------------------------------------------------------------
-// // * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-// // * See LICENSE.md in the project root for license terms and full copyright notice.
-// // *--------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { type ConstantsDifference } from "../Differencing/SchemaDifference";
 import { type SchemaMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
 import { type MutableConstant } from "../Editing/Mutable/MutableConstant";

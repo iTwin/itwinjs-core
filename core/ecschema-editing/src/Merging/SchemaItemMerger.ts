@@ -27,6 +27,9 @@ export type SchemaMergerHandler<T extends AnySchemaItemDifference> = {
   [P in T["changeType"]]: ChangeHandlerMapping<T>[P];
 };
 
+/**
+ * @internal
+ */
 export type AnyMergerHandler<T extends AnySchemaItemDifference = AnySchemaItemDifference> = {
   [P in DifferenceType]?: ChangeHandlerMapping<T>[P];
 };
@@ -53,6 +56,9 @@ async function mergeSchemaItem<T extends AnySchemaItemDifference>(context: Schem
   return { errorMessage: `The merger does not support ${change.changeType} of ${change.schemaType}.` };
 }
 
+/**
+ * @internal
+ */
 export async function locateSchemaItem(context: SchemaMergeContext, itemName: string, schemaType: string) {
   const schemaItemKey = new SchemaItemKey(itemName, context.targetSchemaKey);
   const schemaItem = await context.editor.schemaContext.getSchemaItem(schemaItemKey);

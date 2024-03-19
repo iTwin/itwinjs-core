@@ -1,13 +1,14 @@
-// /*---------------------------------------------------------------------------------------------
-// * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-// * See LICENSE.md in the project root for license terms and full copyright notice.
-// *--------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { type EntityClassDifference, EntityClassMixinDifference } from "../Differencing/SchemaDifference";
 import { type SchemaMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
 import { type MutableEntityClass } from "../Editing/Mutable/MutableEntityClass";
 import { modifyClass } from "./ClassMerger";
 
 type EntityChangeType = EntityClassDifference | EntityClassMixinDifference;
+
 /**
  * @internal
  */

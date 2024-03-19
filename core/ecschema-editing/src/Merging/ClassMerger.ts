@@ -1,7 +1,7 @@
-// /*---------------------------------------------------------------------------------------------
-// * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-// * See LICENSE.md in the project root for license terms and full copyright notice.
-// *--------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import type { SchemaMergeContext } from "./SchemaMerger";
 import { AnySchemaItemDifference, ClassItemDifference, SchemaItemTypeName, StructClassDifference } from "../Differencing/SchemaDifference";
 import { AnyMergerHandler, filterByType, locateSchemaItem, SchemaMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
@@ -59,9 +59,6 @@ export async function * mergeClassItems(context: SchemaMergeContext, classChange
   }
 }
 
-/**
- * @internal
- */
 async function iterateClassChanges(classChanges: AnySchemaItemDifference[], handler: ClassItemHandler) {
   for (const difference of filterByType(classChanges, SchemaItemTypeName.CustomAttributeClass)) {
     await handler(difference, customAttributeClassMerger);
