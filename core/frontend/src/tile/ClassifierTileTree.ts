@@ -7,7 +7,7 @@
  */
 import { comparePossiblyUndefined, compareStrings, compareStringsOrUndefined, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BatchType, ClassifierTileTreeId, iModelTileTreeIdToString, RenderMode, RenderSchedule, SpatialClassifier, SpatialClassifiers, ViewFlagsProperties,
+  BatchType, ClassifierTileTreeId, iModelTileTreeIdToString, RenderMode, RenderSchedule, SpatialClassifier, ViewFlagsProperties,
 } from "@itwin/core-common";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
@@ -15,6 +15,7 @@ import { IModelConnection } from "../IModelConnection";
 import { GeometricModelState } from "../ModelState";
 import { SceneContext } from "../ViewContext";
 import { ViewState } from "../ViewState";
+import { SpatialClassifiersState } from "../SpatialClassifiersState";
 import {
   DisclosedTileTreeSet, IModelTileTree, iModelTileTreeParamsFromJSON, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
@@ -93,13 +94,13 @@ export abstract class SpatialClassifierTileTreeReference extends TileTreeReferen
 /** @internal */
 class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   private _id: ClassifierTreeId;
-  private readonly _classifiers: SpatialClassifiers;
+  private readonly _classifiers: SpatialClassifiersState;
   private readonly _source: ViewState | DisplayStyleState;
   private readonly _iModel: IModelConnection;
   private readonly _classifiedTree: TileTreeReference;
   private _owner: TileTreeOwner;
 
-  public constructor(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState) {
+  public constructor(classifiers: SpatialClassifiersState, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState) {
     super();
     this._id = createClassifierId(classifiers.active, source);
     this._source = source;
@@ -109,7 +110,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     this._owner = classifierTreeSupplier.getOwner(this._id, iModel);
   }
 
-  public get classifiers(): SpatialClassifiers { return this._classifiers; }
+  public get classifiers(): SpatialClassifiersState { return this._classifiers; }
   public get activeClassifier(): SpatialClassifier | undefined { return this.classifiers.active; }
 
   public override get castsShadows() {
@@ -176,7 +177,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
 }
 
 /** @internal */
-export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference {
+export function createClassifierTileTreeReference(classifiers: SpatialClassifiersState, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference {
   return new ClassifierTreeReference(classifiers, classifiedTree, iModel, source);
 }
 

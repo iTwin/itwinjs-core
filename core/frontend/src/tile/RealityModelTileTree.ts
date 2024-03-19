@@ -30,6 +30,7 @@ import {
   getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
   TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
+import { SpatialClassifiersState } from "../SpatialClassifiersState";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -555,7 +556,7 @@ export namespace RealityModelTileTree {
     modelId?: Id64String;
     tilesetToDbTransform?: TransformProps;
     name?: string;
-    classifiers?: SpatialClassifiers;
+    classifiers?: SpatialClassifiersState;
     planarClipMask?: PlanarClipMaskSettings;
     getDisplaySettings(): RealityModelDisplaySettings;
   }
