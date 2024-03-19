@@ -16,10 +16,6 @@ import {
   AnySchemaDifference,
   AnySchemaItemDifference,
   ClassItemDifference,
-  CustomAttributePropertyDifference,
-  CustomAttributeRelationshipDifference,
-  CustomAttributeSchemaDifference,
-  CustomAttributeSchemaItemDifference,
   DifferenceType,
   EntityClassMixinDifference,
   RelationshipConstraintClassDifference,
@@ -554,10 +550,10 @@ export class SchemaDiagnosticVisitor {
     const [customAttribute] = diagnostic.messageArgs as [CustomAttribute];
     const ecType = diagnostic.ecDefinition;
     if(Schema.isSchema(ecType)) {
-      return this.addEntry<CustomAttributeSchemaDifference>({
+      return this.addEntry({
         changeType: "add",
         schemaType: "CustomAttribute",
-        path: "$schema",
+        appliesTo: "Schema",
         difference: customAttribute,
       });
     }
@@ -567,9 +563,10 @@ export class SchemaDiagnosticVisitor {
       if(this.lookupEntry("add", { schemaType, itemName: ecType.name })) {
         return;
       }
-      return this.addEntry<CustomAttributeSchemaItemDifference>({
+      return this.addEntry({
         changeType: "add",
         schemaType: "CustomAttribute",
+        appliesTo: "SchemaItem",
         itemName: ecType.name,
         difference: customAttribute,
       });
@@ -581,9 +578,10 @@ export class SchemaDiagnosticVisitor {
       || this.lookupEntry("add", { schemaType, itemName: ecType.class.name, path: ecType.name })  ) {
         return;
       }
-      return this.addEntry<CustomAttributePropertyDifference>({
+      return this.addEntry({
         changeType: "add",
         schemaType: "CustomAttribute",
+        appliesTo: "Property",
         itemName: ecType.class.name,
         path: ecType.name,
         difference: customAttribute,
@@ -595,9 +593,10 @@ export class SchemaDiagnosticVisitor {
       if(this.lookupEntry("add", { schemaType, itemName: ecType.relationshipClass.name })) {
         return;
       }
-      return this.addEntry<CustomAttributeRelationshipDifference>({
+      return this.addEntry({
         changeType: "add",
         schemaType: "CustomAttribute",
+        appliesTo: "RelationshipConstraint",
         itemName: ecType.relationshipClass.name,
         path: ecType.isSource ? "$source" : "$target",
         difference: customAttribute,

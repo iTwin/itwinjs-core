@@ -95,6 +95,7 @@ describe("Custom Attribute merge", () => {
           changeType: "add",
           schemaType: "CustomAttribute",
           itemName: "TestEntity",
+          appliesTo: "SchemaItem",
           difference: {
             IntProp: 5,
             StringPrimitiveArrayProp: [
@@ -106,6 +107,7 @@ describe("Custom Attribute merge", () => {
         {
           changeType: "add",
           schemaType: "CustomAttribute",
+          appliesTo: "SchemaItem",
           itemName: "TestEntity",
           difference: {
             BooleanProp: true,
@@ -186,6 +188,7 @@ describe("Custom Attribute merge", () => {
         {
           changeType: "add",
           schemaType: "CustomAttribute",
+          appliesTo: "Property",
           itemName: "TestEntity",
           path: "DoubleProp",
           difference: {
@@ -196,6 +199,7 @@ describe("Custom Attribute merge", () => {
         {
           changeType: "add",
           schemaType: "CustomAttribute",
+          appliesTo: "Property",
           itemName: "TestEntity",
           path: "DateTimeProp",
           difference: {
@@ -268,7 +272,7 @@ describe("Custom Attribute merge", () => {
         {
           changeType: "add",
           schemaType: "CustomAttribute",
-          path: "$schema",
+          appliesTo: "Schema",
           difference: {
             className: "SourceSchema.TestCA",
           },
@@ -276,7 +280,7 @@ describe("Custom Attribute merge", () => {
         {
           changeType: "add",
           schemaType: "CustomAttribute",
-          path: "$schema",
+          appliesTo: "Schema",
           difference: {
             StringPrimitiveArrayProp: [
               "SchemaCustomAttribute",
@@ -363,6 +367,7 @@ describe("Custom Attribute merge", () => {
         {
           changeType: "add",
           schemaType: "CustomAttribute",
+          appliesTo: "RelationshipConstraint",
           itemName: "TestRelationship",
           path: "$source",
           difference: {
@@ -374,6 +379,7 @@ describe("Custom Attribute merge", () => {
           changeType: "add",
           schemaType: "CustomAttribute",
           itemName: "TestRelationship",
+          appliesTo: "RelationshipConstraint",
           path: "$source",
           difference: {
             className: "SourceSchema.TestCA",
@@ -383,6 +389,7 @@ describe("Custom Attribute merge", () => {
           changeType: "add",
           schemaType: "CustomAttribute",
           itemName: "TestRelationship",
+          appliesTo: "RelationshipConstraint",
           path: "$target",
           difference: {
             className: "TestSchema.TestCA",
@@ -395,6 +402,7 @@ describe("Custom Attribute merge", () => {
           changeType: "add",
           schemaType: "CustomAttribute",
           itemName: "TestRelationship",
+          appliesTo: "RelationshipConstraint",
           path: "$target",
           difference: {
             className: "SourceSchema.TestCA",

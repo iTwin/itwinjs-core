@@ -225,7 +225,7 @@ export type CustomAttributeDifference =
   CustomAttributeSchemaDifference |
   CustomAttributeSchemaItemDifference |
   CustomAttributePropertyDifference |
-  CustomAttributeRelationshipDifference;
+  CustomAttributeRelationshipConstraintDifference;
 
 /**
  * @internal
@@ -233,7 +233,7 @@ export type CustomAttributeDifference =
 export interface CustomAttributeSchemaDifference {
   readonly changeType: "add";
   readonly schemaType: "CustomAttribute";
-  readonly path: "$schema";
+  readonly appliesTo: "Schema";
   readonly difference: Editable<CustomAttribute>;
 }
 
@@ -243,6 +243,7 @@ export interface CustomAttributeSchemaDifference {
 export interface CustomAttributeSchemaItemDifference {
   readonly changeType: "add";
   readonly schemaType: "CustomAttribute";
+  readonly appliesTo: "SchemaItem";
   readonly itemName: string;
   readonly difference: Editable<CustomAttribute>;
 }
@@ -253,6 +254,7 @@ export interface CustomAttributeSchemaItemDifference {
 export interface CustomAttributePropertyDifference {
   readonly changeType: "add";
   readonly schemaType: "CustomAttribute";
+  readonly appliesTo: "Property";
   readonly itemName: string;
   readonly path: string;
   readonly difference: Editable<CustomAttribute>;
@@ -261,9 +263,10 @@ export interface CustomAttributePropertyDifference {
 /**
  * @internal
  */
-export interface CustomAttributeRelationshipDifference {
+export interface CustomAttributeRelationshipConstraintDifference {
   readonly changeType: "add";
   readonly schemaType: "CustomAttribute";
+  readonly appliesTo: "RelationshipConstraint";
   readonly itemName: string;
   readonly path: "$source" | "$target";
   readonly difference: Editable<CustomAttribute>;

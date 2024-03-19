@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { CustomAttributeClass, RelationshipClass, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { type SchemaMergeContext } from "./SchemaMerger";
-import { type CustomAttributeDifference, CustomAttributePropertyDifference, CustomAttributeRelationshipDifference, CustomAttributeSchemaDifference, CustomAttributeSchemaItemDifference } from "../Differencing/SchemaDifference";
+import { type CustomAttributeDifference } from "../Differencing/SchemaDifference";
 import { type SchemaEditResults } from "../Editing/Editor";
 import { updateSchemaItemKey } from "./SchemaItemMerger";
 
@@ -27,10 +27,19 @@ export async function mergeCustomAttribute(context: SchemaMergeContext, change: 
 
     change.difference.className = schemaItemKey.fullName;
 
-    if(isSchemaDifference(change)) {
+    if(change.appliesTo === "Schema") {
       return context.editor.addCustomAttribute(context.targetSchemaKey, change.difference);
     }
-    if(isRelationshipConstraintDifference(change)) {
+    if(change.appliesTo === "SchemaItem") {
+      const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
+      return context.editor.entities.addCustomAttribute(itemKey, change.difference);
+    }
+    if(change.appliesTo === "Property") {
+      const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
+      const [propertyName] = change.path.split(".");
+      return context.editor.entities.addCustomAttributeToProperty(itemKey, propertyName, change.difference);
+    }
+    if(change.appliesTo === "RelationshipConstraint") {
       const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
       const relationshipClass = await context.targetSchema.lookupItem<RelationshipClass>(itemKey);
       if(relationshipClass === undefined) {
@@ -42,33 +51,8 @@ export async function mergeCustomAttribute(context: SchemaMergeContext, change: 
 
       return context.editor.relationships.addCustomAttributeToConstraint(constraint, change.difference);
     }
-    if(isPropertyDifference(change)) {
-      const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
-      const [propertyName] = change.path.split(".");
-      return context.editor.entities.addCustomAttributeToProperty(itemKey, propertyName, change.difference);
-    }
-    if(isSchemaItemDifference(change)) {
-      const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
-      return context.editor.entities.addCustomAttribute(itemKey, change.difference);
-    }
     return {};
   } else {
     return { errorMessage: `Changes of Custom Attribute on merge is not implemented.`};
   }
-}
-
-function isSchemaDifference(change: CustomAttributeDifference): change is CustomAttributeSchemaDifference {
-  return "path" in change && change.path === "$schema";
-}
-
-function isPropertyDifference(change: CustomAttributeDifference): change is CustomAttributePropertyDifference {
-  return "itemName" in change && "path" in change;
-}
-
-function isRelationshipConstraintDifference(change: CustomAttributeDifference): change is CustomAttributeRelationshipDifference {
-  return "path" in change && (change.path === "$source" || change.path === "$target");
-}
-
-function isSchemaItemDifference(change: CustomAttributeDifference): change is CustomAttributeSchemaItemDifference {
-  return "itemName" in change && !("path" in change);
 }
