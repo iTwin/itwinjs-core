@@ -86,7 +86,6 @@ const classifierTreeSupplier = new ClassifierTreeSupplier();
 export abstract class SpatialClassifierTileTreeReference extends TileTreeReference {
   public abstract get isPlanar(): boolean;
   public abstract get activeClassifier(): SpatialClassifier | undefined;
-  public get isOpaque() { return false; }   /** When referenced as a map layer reference, BIM models are never opaque. */
   public abstract get viewFlags(): Partial<ViewFlagsProperties>;
   public get transparency(): number | undefined { return undefined; }
 }
