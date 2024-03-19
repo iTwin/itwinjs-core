@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { LogFunction, Logger, LoggingMetaData, LogLevel } from "@itwin/core-bentley";
-import { IModelHost } from "../IModelHost";
 
 /**
  * SequentialLogMatcher match log messages in order and remove them from the list. Any test using
@@ -62,7 +61,6 @@ export class SequentialLogMatcher extends Logger {
     return newMatch;
   }
   public finish(): boolean {
-    IModelHost.flushLog();
     return this.length === 0;
   }
   public finishAndDispose(): boolean {
