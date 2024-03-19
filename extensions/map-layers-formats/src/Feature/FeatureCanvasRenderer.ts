@@ -12,9 +12,6 @@ export class FeatureCanvasRenderer extends FeatureGeometryBaseRenderer implement
   private _context: CanvasRenderingContext2D;
   private _symbol: ArcGisSymbologyCanvasRenderer;
 
-  public override get attributeSymbology(): FeatureAttributeDrivenSymbology | undefined {
-    return this._symbol.isAttributeDriven() ? this._symbol : undefined;
-  }
 
   public  get symbolRenderer(): FeatureSymbologyRenderer {
     return this._symbol;

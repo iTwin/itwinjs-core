@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { FeatureGeometryRenderer, FeatureGraphicsRenderer, MapLayerFeatureInfo} from "@itwin/core-frontend";
+import { FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, FeatureGraphicsRenderer, MapLayerFeatureInfo} from "@itwin/core-frontend";
 import { Transform } from "@itwin/core-geometry";
 import { ArcGisBaseFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisResponseData } from "./ArcGisFeatureResponse";
@@ -19,36 +19,36 @@ export class OgcFeaturesReader extends ArcGisBaseFeatureReader {
 
   }
 
-  // private applySymbologyAttributes(attrSymbology: FeatureAttributeDrivenSymbology, feature: any) {
-  //   if (attrSymbology && feature) {
-  //     const symbolFields = attrSymbology.rendererFields;
-  //     if (symbolFields && symbolFields.length > 0 && feature.attributes) {
-  //       const featureAttr: {[key: string]: any} = {};
-  //       for (const [attrKey, attrValue] of Object.entries(feature.attributes))
-  //         if (symbolFields.includes(attrKey)) {
-  //           featureAttr[attrKey] = attrValue;
-  //         }
-  //       attrSymbology.setActiveFeatureAttributes(featureAttr);
-  //     }
-  //   }
-  // }
+  private applySymbologyAttributes(attrSymbology: FeatureAttributeDrivenSymbology, feature: any) {
+    if (attrSymbology && feature) {
+      const symbolFields = attrSymbology.rendererFields;
+      if (symbolFields && symbolFields.length > 0 && feature.properties) {
+        const featureAttr: {[key: string]: any} = {};
+        for (const [attrKey, attrValue] of Object.entries(feature.properties))
+          if (symbolFields.includes(attrKey)) {
+            featureAttr[attrKey] = attrValue;
+          }
+        attrSymbology.setActiveFeatureAttributes(featureAttr);
+      }
+    }
+  }
 
   public async readAndRender(data: any, renderer: FeatureGeometryRenderer) {
     const responseObj = data;
     if (responseObj.type === "FeatureCollection") {
-      // const attrSymbology = renderer.attributeSymbology;
 
       const geomReader = new GeoJSONGeometryReader(renderer);
 
       for (const feature of responseObj.features) {
-        // if (attrSymbology) {
-        //   // Read attributes if needed (attribute driven symbology)
-        //   this.applySymbologyAttributes(attrSymbology, feature);
-        // }
-
         // Each feature has potentially a different geometry type, so we need to inform the geometry renderer
-        if (renderer.hasSymbologyRenderer())
+        if (renderer.hasSymbologyRenderer()) {
           renderer.symbolRenderer.activeGeometryType = feature.geometry.type;
+          // Read attributes if needed (attribute driven symbology)
+          if (renderer.symbolRenderer.isAttributeDriven()) {
+            this.applySymbologyAttributes(renderer.symbolRenderer, feature);
+          }
+        }
+
         await geomReader.readGeometry(feature.geometry);
       }
     }

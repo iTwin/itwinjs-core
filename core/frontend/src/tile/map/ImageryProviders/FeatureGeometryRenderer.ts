@@ -11,7 +11,6 @@ import { FeatureAttributeDrivenSymbology, FeatureSymbolizedRenderer } from "../.
  */
 export interface FeatureGeometryRenderer {
   transform: Transform | undefined;
-  attributeSymbology?: FeatureAttributeDrivenSymbology;
   hasSymbologyRenderer(): this is FeatureSymbolizedRenderer;
   renderPath(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number, relativeCoords: boolean): Promise<void>;
   renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean): Promise<void>;
@@ -26,7 +25,6 @@ export abstract class FeatureGeometryBaseRenderer implements FeatureGeometryRend
   constructor(world2PixelTransform?: Transform) {
     this._transform = world2PixelTransform;
   }
-  public abstract get attributeSymbology(): FeatureAttributeDrivenSymbology | undefined;
 
   public abstract hasSymbologyRenderer(): this is FeatureSymbolizedRenderer;
   public get transform() { return this._transform; }

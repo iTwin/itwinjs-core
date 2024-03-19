@@ -145,8 +145,6 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
     if (!collection.has_queryResult || !collection.queryResult.has_featureResult || collection?.queryResult?.featureResult?.features === undefined)
       return;
 
-    const attrSymbology = renderer.attributeSymbology;
-
     // Fields metadata is stored outside feature results, create dedicated array first
     const fields: PbfFieldInfo[] = [];
     for (const field of collection.queryResult.featureResult.fields)
@@ -161,9 +159,9 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
       // Render geometries
       if (renderer && feature?.has_geometry) {
 
-        if (attrSymbology) {
+        if (renderer.hasSymbologyRenderer() && renderer.symbolRenderer.isAttributeDriven()) {
           // Read attributes if needed (attribute driven symbology)
-          this.applySymbologyAttributes(attrSymbology, feature, fields);
+          this.applySymbologyAttributes(renderer.symbolRenderer, feature, fields);
         }
 
         if (geomType === esriGeometryType.esriGeometryTypePoint || geomType === esriGeometryType.esriGeometryTypeMultipoint) {

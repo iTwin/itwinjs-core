@@ -36,14 +36,12 @@ export class ArcGisJsonFeatureReader extends ArcGisBaseFeatureReader {
   public async readAndRender(response: ArcGisResponseData, renderer: FeatureGeometryRenderer) {
     const responseObj = response.data;
     if (responseObj.geometryType) {
-      const attrSymbology = renderer.attributeSymbology;
-
       const geomReader = new ArcGisGeometryReaderJSON(responseObj.geometryType, renderer, renderer.transform === undefined);
 
       for (const feature of responseObj.features) {
-        if (attrSymbology) {
+        if (renderer.hasSymbologyRenderer() && renderer.symbolRenderer.isAttributeDriven()) {
           // Read attributes if needed (attribute driven symbology)
-          this.applySymbologyAttributes(attrSymbology, feature);
+          this.applySymbologyAttributes(renderer.symbolRenderer, feature);
         }
 
         await geomReader.readGeometry(feature.geometry);

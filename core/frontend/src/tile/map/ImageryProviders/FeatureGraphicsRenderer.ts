@@ -33,7 +33,6 @@ export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer {
   private _graphics: GraphicPrimitive[] = [];
   private _viewport: Viewport;
 
-  public override get attributeSymbology(): FeatureAttributeDrivenSymbology | undefined {return undefined;}   // No symbology is applied in this renderer
 
   constructor(props: FeatureGraphicsRendererProps) {
     super();
