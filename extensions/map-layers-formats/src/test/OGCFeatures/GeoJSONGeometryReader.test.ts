@@ -6,12 +6,13 @@
 import * as sinon from "sinon";
 import * as chai from "chai";
 import { GeoJSONGeometryReader } from "../../GeoJSON/GeoJSONGeometryReader";
-import { FeatureAttributeDrivenSymbology, FeatureGeometryRenderer } from "@itwin/core-frontend";
+import { FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, FeatureSymbolizedRenderer } from "@itwin/core-frontend";
 import { Transform } from "@itwin/core-geometry";
 
 class MockGeometryRenderer implements FeatureGeometryRenderer {
   public transform: Transform | undefined;
   public attributeSymbology?: FeatureAttributeDrivenSymbology;
+  public hasSymbologyRenderer(): this is FeatureSymbolizedRenderer {return false;}
   public async renderPath(_geometryLengths: number[], _geometryCoords: number[], _fill: boolean, _stride: number, _relativeCoords: boolean) {
 
   }

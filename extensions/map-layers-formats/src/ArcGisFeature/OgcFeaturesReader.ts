@@ -47,7 +47,7 @@ export class OgcFeaturesReader extends ArcGisBaseFeatureReader {
         // }
 
         // Each feature has potentially a different geometry type, so we need to inform the geometry renderer
-        if (renderer.symbolRenderer)
+        if (renderer.hasSymbologyRenderer())
           renderer.symbolRenderer.activeGeometryType = feature.geometry.type;
         await geomReader.readGeometry(feature.geometry);
       }

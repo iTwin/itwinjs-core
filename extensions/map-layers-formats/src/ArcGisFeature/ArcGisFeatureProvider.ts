@@ -7,7 +7,6 @@ import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat, Se
 import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Matrix4d, Point3d, Range2d, Transform } from "@itwin/core-geometry";
 import { ArcGisErrorCode, ArcGISImageryProvider, ArcGISServiceMetadata, ArcGisUtilities, FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId, setRequestTimeout } from "@itwin/core-frontend";
-import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
 import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureQuery, ArcGisFeatureResultType, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
 import { ArcGisPbfFeatureReader } from "./ArcGisPbfFeatureReader";
 import { ArcGisJsonFeatureReader } from "./ArcGisJsonFeatureReader";
@@ -17,6 +16,7 @@ import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
 import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS, EsriSLSProps, EsriSymbol } from "./EsriSymbology";
 import { FeatureDefaultSymbology } from "../Feature/FeatureSymbology";
 import { FeatureCanvasRenderer } from "../Feature/FeatureCanvasRenderer";
+import { ArcGisSymbologyCanvasRenderer } from "./ArcGisSymbologyRenderer";
 const loggerCategory = "MapLayersFormats.ArcGISFeature";
 
 /**
@@ -92,7 +92,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
   private _defaultSymbol = new DefaultArcGiSymbology();
   private _renderer: EsriRenderer|undefined;
-  private _symbologyRenderer: ArcGisSymbologyRenderer|undefined;
+  private _symbologyRenderer: ArcGisSymbologyCanvasRenderer|undefined;
 
   private static readonly _nbSubTiles = 2;     // Number of subtiles for a single axis
   public serviceJson: any;
@@ -265,7 +265,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     // if not, it will throw
     this._defaultSymbol.getSymbology(this._layerMetadata?.geometryType);
     await this._defaultSymbol.initialize(); // images must be loaded upfront
-    this._symbologyRenderer = ArcGisSymbologyRenderer.create(this._renderer, this._defaultSymbol, this._layerMetadata?.geometryType);
+    this._symbologyRenderer = ArcGisSymbologyCanvasRenderer.create(this._renderer, this._defaultSymbol, this._layerMetadata?.geometryType);
   }
 
   private async fetchLayerExtent() {

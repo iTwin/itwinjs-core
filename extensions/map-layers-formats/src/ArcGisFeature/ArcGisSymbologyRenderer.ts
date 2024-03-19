@@ -17,15 +17,27 @@ const loggerCategory =  "MapLayersFormats.ArcGISFeature";
 /** @internal */
 export type ArcGisSymbologyRendererType = "simple" | "attributeDriven";
 
+export interface FeatureSymbologyCanvasRenderer extends FeatureSymbologyRenderer {
+  applyFillStyle(context: CanvasRenderingContext2D): void;
+  applyStrokeStyle(context: CanvasRenderingContext2D): void;
+  drawPoint(context: CanvasRenderingContext2D, ptX: number, ptY: number): void;
+}
+
 /** @internal */
-export abstract class ArcGisSymbologyRenderer implements FeatureSymbologyRenderer {
+export abstract class ArcGisSymbologyCanvasRenderer implements FeatureSymbologyCanvasRenderer {
+
+  public abstract readonly renderer?: EsriRenderer;
+
+  public abstract get symbol(): EsriSymbol;
+  public abstract set symbol(symbol: EsriSymbol|undefined);
+  public abstract get defaultSymbol(): EsriSymbol;
   public activeGeometryType: string = "";
   public abstract isAttributeDriven(): this is FeatureAttributeDrivenSymbology;
   public abstract applyFillStyle(context: CanvasRenderingContext2D): void;
   public abstract applyStrokeStyle(context: CanvasRenderingContext2D): void;
   public abstract drawPoint(context: CanvasRenderingContext2D, ptX: number, ptY: number): void;
 
-  public static create(renderer: EsriRenderer|undefined, defaultSymbol: FeatureDefaultSymbology, geometryType?: ArcGisFeatureGeometryType) {
+  public static create(renderer: EsriRenderer|undefined, defaultSymbol: FeatureDefaultSymbology, geometryType?: ArcGisFeatureGeometryType): ArcGisSymbologyCanvasRenderer {
     if (renderer?.type === "uniqueValue") {
       return new ArcGisUniqueValueSymbologyRenderer(renderer as EsriUniqueValueRenderer, defaultSymbol, geometryType);
     } else if (renderer?.type === "classBreaks") {
@@ -68,18 +80,19 @@ export class ArcGisDashLineStyle {
 }
 
 /** @internal */
-export class ArcGisSimpleSymbologyRenderer extends ArcGisSymbologyRenderer {
+export class ArcGisSimpleSymbologyRenderer extends ArcGisSymbologyCanvasRenderer {
+
+  protected _symbol: EsriSymbol|undefined;
+  protected _defaultSymbol: FeatureDefaultSymbology;
+
   public override isAttributeDriven(): this is FeatureAttributeDrivenSymbology {return false;}
   public lineWidthScaleFactor = 2;    // This is value is empirical, this might need to be adjusted
 
   public get symbol(): EsriSymbol {return (this._symbol ?? this.defaultSymbol);}
   public set symbol(symbol: EsriSymbol|undefined) {this._symbol = symbol;}
-  private _symbol: EsriSymbol|undefined;
 
   public get defaultSymbol() {return this._defaultSymbol.getSymbology(this.activeGeometryType) as EsriSymbol;}
-  private _defaultSymbol: FeatureDefaultSymbology;
-
-  public readonly renderer?: EsriRenderer;
+  public override readonly renderer?: EsriRenderer;
 
   public constructor(renderer: EsriRenderer|undefined, defaultSymbol: FeatureDefaultSymbology, geometryType?: ArcGisFeatureGeometryType) {
     super();

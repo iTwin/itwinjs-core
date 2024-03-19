@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Transform } from "@itwin/core-geometry";
-import { FeatureAttributeDrivenSymbology, FeatureSymbologyRenderer } from "../../internal";
+import { FeatureAttributeDrivenSymbology, FeatureSymbolizedRenderer } from "../../internal";
 
 /** Interface defining minimal implementation needed to create an ArcGIS geometry renderer,
  * that will ultimately be called by an [[ArcGisFeatureReader]] implementation.
@@ -12,7 +12,7 @@ import { FeatureAttributeDrivenSymbology, FeatureSymbologyRenderer } from "../..
 export interface FeatureGeometryRenderer {
   transform: Transform | undefined;
   attributeSymbology?: FeatureAttributeDrivenSymbology;
-  symbolRenderer?: FeatureSymbologyRenderer;
+  hasSymbologyRenderer(): this is FeatureSymbolizedRenderer;
   renderPath(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number, relativeCoords: boolean): Promise<void>;
   renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean): Promise<void>;
 }
@@ -27,8 +27,8 @@ export abstract class FeatureGeometryBaseRenderer implements FeatureGeometryRend
     this._transform = world2PixelTransform;
   }
   public abstract get attributeSymbology(): FeatureAttributeDrivenSymbology | undefined;
-  public abstract get symbolRenderer(): FeatureSymbologyRenderer | undefined;
 
+  public abstract hasSymbologyRenderer(): this is FeatureSymbolizedRenderer;
   public get transform() { return this._transform; }
 
   protected abstract beginPath(): void;

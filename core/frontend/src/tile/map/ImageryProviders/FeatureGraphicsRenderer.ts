@@ -5,7 +5,7 @@
 import { Logger } from "@itwin/core-bentley";
 import { Cartographic } from "@itwin/core-common";
 import { GrowableXYZArray, LineString3d, Loop, Point3d, Point3dArray, RegionOps } from "@itwin/core-geometry";
-import { FeatureAttributeDrivenSymbology, FeatureGeometryBaseRenderer, FeatureSymbologyRenderer, WebMercator } from "../../internal";
+import { FeatureAttributeDrivenSymbology, FeatureGeometryBaseRenderer, FeatureSymbolizedRenderer, FeatureSymbologyRenderer, WebMercator } from "../../internal";
 import { GraphicPrimitive } from "../../../render/GraphicPrimitive";
 import { Viewport } from "../../../Viewport";
 
@@ -25,6 +25,9 @@ export interface FeatureGraphicsRendererProps {
  * @internal
  */
 export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer {
+
+  public override hasSymbologyRenderer(): this is FeatureSymbolizedRenderer {return false;}
+
   private _scratchPointsArray = new GrowableXYZArray();
   private _scratchPaths: Point3d[][] = [];
   private _graphics: GraphicPrimitive[] = [];
@@ -32,7 +35,6 @@ export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer {
 
   public override get attributeSymbology(): FeatureAttributeDrivenSymbology | undefined {return undefined;}   // No symbology is applied in this renderer
 
-  public override get symbolRenderer(): FeatureSymbologyRenderer | undefined {return undefined;}   // No symbology is applied in this renderer
   constructor(props: FeatureGraphicsRendererProps) {
     super();
     this._viewport = props.viewport;

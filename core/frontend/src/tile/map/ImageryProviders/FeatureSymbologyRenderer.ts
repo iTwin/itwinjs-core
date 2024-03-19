@@ -11,8 +11,9 @@ import { FeatureAttributeDrivenSymbology } from "../../internal";
 export interface FeatureSymbologyRenderer {
   isAttributeDriven(): this is FeatureAttributeDrivenSymbology;
   activeGeometryType: string;
-
-  applyFillStyle(context: CanvasRenderingContext2D): void;
-  applyStrokeStyle(context: CanvasRenderingContext2D): void;
-  drawPoint(context: CanvasRenderingContext2D, ptX: number, ptY: number): void;
 }
+
+export interface FeatureSymbolizedRenderer {
+  symbolRenderer: FeatureSymbologyRenderer;
+}
+

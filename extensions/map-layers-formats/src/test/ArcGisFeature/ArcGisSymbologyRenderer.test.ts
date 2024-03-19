@@ -6,7 +6,7 @@
 
 import * as sinon from "sinon";
 import { NewYorkDataset } from "./NewYorkDataset";
-import { ArcGisClassBreaksSymbologyRenderer, ArcGisDashLineStyle, ArcGisSymbologyRenderer, ArcGisUniqueValueSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
+import { ArcGisClassBreaksSymbologyRenderer, ArcGisDashLineStyle, ArcGisSymbologyCanvasRenderer, ArcGisUniqueValueSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 import { EarthquakeSince1970Dataset } from "./EarthquakeSince1970Dataset";
 import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS , EsriSMS, EsriUniqueValueRenderer } from "../../ArcGisFeature/EsriSymbology";
@@ -62,7 +62,7 @@ describe("ArcGisSymbologyRenderer", () => {
     const dataset = NewYorkDataset.streetsLayerCapabilities.drawingInfo.renderer;
     const simpleRenderer = EsriRenderer.fromJSON(dataset);
     const defaultSymb = new DefaultArcGiSymbology();
-    const symbRender = ArcGisSymbologyRenderer.create(simpleRenderer, defaultSymb);
+    const symbRender = ArcGisSymbologyCanvasRenderer.create(simpleRenderer, defaultSymb);
     const ref = EsriSLS.fromJSON(dataset.symbol);
     expect(symbRender.symbol).to.deep.equals(ref);
   });
@@ -72,7 +72,7 @@ describe("ArcGisSymbologyRenderer", () => {
     const dataset = NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo;
     const renderer =  EsriUniqueValueRenderer.fromJSON(dataset.drawingInfo.renderer as any);
     const defaultSymb = new DefaultArcGiSymbology();
-    const symbRender = ArcGisSymbologyRenderer.create(renderer, defaultSymb);
+    const symbRender = ArcGisSymbologyCanvasRenderer.create(renderer, defaultSymb);
     symbRender.activeGeometryType = "esriGeometryPolygon";
     expect (symbRender.defaultSymbol).to.deep.equals(DefaultArcGiSymbology.defaultSFS);
   });
@@ -81,7 +81,7 @@ describe("ArcGisSymbologyRenderer", () => {
     const dataset = NewYorkDataset.uniqueValueDrawingInfo;
     const renderer =  EsriUniqueValueRenderer.fromJSON(dataset.drawingInfo.renderer as any);
 
-    const symbRender = ArcGisSymbologyRenderer.create(renderer, new DefaultArcGiSymbology(), "esriGeometryPoint");
+    const symbRender = ArcGisSymbologyCanvasRenderer.create(renderer, new DefaultArcGiSymbology(), "esriGeometryPoint");
 
     const activeSymbol = symbRender.symbol as EsriPMS;
     const refSym = EsriPMS.fromJSON(dataset.drawingInfo.renderer.defaultSymbol as any);
@@ -92,13 +92,13 @@ describe("ArcGisSymbologyRenderer", () => {
     const dataset = structuredClone(NewYorkDataset.uniqueValueDrawingInfo);
     const renderer =  EsriUniqueValueRenderer.fromJSON(dataset.drawingInfo.renderer as any);
     (renderer as any).type = "someBadType";
-    const symbRender = ArcGisSymbologyRenderer.create(renderer, new DefaultArcGiSymbology(), "esriGeometryPoint");
+    const symbRender = ArcGisSymbologyCanvasRenderer.create(renderer, new DefaultArcGiSymbology(), "esriGeometryPoint");
     expect (symbRender.defaultSymbol).to.deep.equals(DefaultArcGiSymbology.defaultPMS);
 
   });
 
   it("should construct with default symbol if no renderer object", async () => {
-    const symbRender = ArcGisSymbologyRenderer.create(undefined, new DefaultArcGiSymbology(), "esriGeometryPoint");
+    const symbRender = ArcGisSymbologyCanvasRenderer.create(undefined, new DefaultArcGiSymbology(), "esriGeometryPoint");
     expect (symbRender.defaultSymbol).to.deep.equals(DefaultArcGiSymbology.defaultPMS);
 
   });

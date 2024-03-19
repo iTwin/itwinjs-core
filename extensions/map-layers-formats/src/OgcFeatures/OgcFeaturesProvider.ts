@@ -7,7 +7,7 @@ import { MapLayerImageryProvider } from "@itwin/core-frontend";
 import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS, EsriSLSProps, EsriSMS, EsriSymbol } from "../ArcGisFeature/EsriSymbology";
 import { ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { Matrix4d, Point3d, Range2d } from "@itwin/core-geometry";
-import { ArcGisSymbologyRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer";
+import { ArcGisSymbologyCanvasRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer";
 import { FeatureCanvasRenderer } from "../Feature/FeatureCanvasRenderer";
 import { base64StringToUint8Array, Logger } from "@itwin/core-bentley";
 import { OgcFeaturesReader } from "../ArcGisFeature/OgcFeaturesReader";
@@ -358,7 +358,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       // this._defaultSymbol = OgcFeaturesProvider.getDefaultSymbology("esriGeometryPolygon");
       // const transfoRow = transfo!.toRows();
       // ctx.setTransform(transfoRow[0][0], transfoRow[1][0], transfoRow[0][1], transfoRow[1][1], transfoRow[0][3], transfoRow[1][3]);
-      const symbRenderer = ArcGisSymbologyRenderer.create(this._renderer, this._defaultSymbol);
+      const symbRenderer = ArcGisSymbologyCanvasRenderer.create(this._renderer, this._defaultSymbol);
       const renderer = new FeatureCanvasRenderer(ctx, symbRenderer, transfo);
 
       const featureReader  = new OgcFeaturesReader(this._settings);
