@@ -50,6 +50,16 @@ export const createTestSelectClassInfo = (props?: Partial<SelectClassInfo>) => (
   ...props,
 });
 
+/** @internal Used for testing only. */
+export function createTestLabelDefinition(props?: Partial<LabelDefinition>): LabelDefinition {
+  return {
+    typeName: "string",
+    rawValue: "test raw value",
+    displayValue: "test display value",
+    ...props,
+  };
+}
+
 /**
  * @internal Used for testing only.
  */
