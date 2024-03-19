@@ -7,7 +7,7 @@
  */
 
 import { Id64String, IDisposable } from "@itwin/core-bentley";
-import { Frustum, ImageBuffer, SpatialClassifier } from "@itwin/core-common";
+import { Frustum, ImageBuffer } from "@itwin/core-common";
 import { Point2d, XAndY } from "@itwin/core-geometry";
 import { IModelConnection } from "../IModelConnection";
 import { HiliteSet } from "../SelectionSet";

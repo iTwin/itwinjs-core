@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { Id64String, assert } from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { ContextRealityModel, ContextRealityModelProps, FeatureAppearance, RealityDataFormat, RealityDataSourceKey } from "@itwin/core-common";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { IModelConnection } from "./IModelConnection";
@@ -70,14 +70,12 @@ export class ContextRealityModelState extends ContextRealityModel {
   /** The tile tree reference responsible for drawing the reality model into a [[Viewport]]. */
   public get treeRef(): TileTreeReference { return this._treeRef; }
 
-  /** The set of available [[ActiveSpatialClassifier]]s that can be used to classify the reality model.
-   * @beta
-   */
+  /** The set of available [[ActiveSpatialClassifier]]s that can be used to classify the reality model. */
   public override get classifiers(): SpatialClassifiersState {
     assert(super.classifiers instanceof SpatialClassifiersState);
     return super.classifiers;
   }
-  
+
   /** The transient Id assigned to this reality model at run-time. */
   public get modelId(): Id64String | undefined {
     return (this._treeRef instanceof RealityModelTileTree.Reference) ? this._treeRef.modelId : undefined;

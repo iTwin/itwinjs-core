@@ -11,7 +11,7 @@ import {
   Matrix3d, Point2d,
   Point3d, Range1d, Transform, XAndY,
 } from "@itwin/core-geometry";
-import { Frustum, FrustumPlanes, SpatialClassifier, ViewFlags } from "@itwin/core-common";
+import { Frustum, FrustumPlanes, ViewFlags } from "@itwin/core-common";
 import { CachedDecoration, DecorationsCache } from "./DecorationsCache";
 import { IModelApp } from "./IModelApp";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";

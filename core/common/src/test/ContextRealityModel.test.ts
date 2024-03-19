@@ -78,14 +78,14 @@ describe("ContextRealityModel", () => {
     let model = makeModel(props);
     model.planarClipMaskSettings = undefined;
     model.appearanceOverrides = undefined;
-    model.classifiers!.clear();
+    model.classifiers.clear();
 
     expectProps(props, { tilesetUrl: "a", classifiers: undefined });
 
     props = ContextRealityModelProps.clone(initialProps);
     model = makeModel(props);
     model.appearanceOverrides = FeatureAppearance.fromJSON({ weight: 5 });
-    model.classifiers!.add(new SpatialClassifier("0x123", "new"));
+    model.classifiers.add(new SpatialClassifier("0x123", "new"));
     model.planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 123 });
 
     expectProps(props, {
