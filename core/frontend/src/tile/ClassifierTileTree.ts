@@ -15,7 +15,7 @@ import { IModelConnection } from "../IModelConnection";
 import { GeometricModelState } from "../ModelState";
 import { SceneContext } from "../ViewContext";
 import { ViewState } from "../ViewState";
-import { SpatialClassifiersState } from "../SpatialClassifiersState";
+import { ActiveSpatialClassifier, SpatialClassifiersState } from "../SpatialClassifiersState";
 import {
   DisclosedTileTreeSet, IModelTileTree, iModelTileTreeParamsFromJSON, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
@@ -86,7 +86,7 @@ const classifierTreeSupplier = new ClassifierTreeSupplier();
 /** @internal */
 export abstract class SpatialClassifierTileTreeReference extends TileTreeReference {
   public abstract get isPlanar(): boolean;
-  public abstract get activeClassifier(): SpatialClassifier | undefined;
+  public abstract get activeClassifier(): ActiveSpatialClassifier | undefined;
   public abstract get viewFlags(): Partial<ViewFlagsProperties>;
   public get transparency(): number | undefined { return undefined; }
 }
@@ -111,7 +111,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   }
 
   public get classifiers(): SpatialClassifiersState { return this._classifiers; }
-  public get activeClassifier(): SpatialClassifier | undefined { return this.classifiers.active; }
+  public get activeClassifier(): ActiveSpatialClassifier | undefined { return this.classifiers.activeClassifier; }
 
   public override get castsShadows() {
     return false;
@@ -124,7 +124,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
       this._owner = classifierTreeSupplier.getOwner(this._id, this._iModel);
     }
 
-    return this._owner;
+    return this.activeClassifier?.tileTreeReference?.treeOwner ?? this._owner;
   }
 
   public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
@@ -162,7 +162,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     if (undefined === classifiedTree)
       return;
 
-    const classifier = this._classifiers.active;
+    const classifier = this._classifiers.activeClassifier;
     if (undefined === classifier)
       return;
 

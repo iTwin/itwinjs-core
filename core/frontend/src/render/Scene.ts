@@ -11,12 +11,13 @@ import { SpatialClassifier } from "@itwin/core-common";
 import { RenderGraphic } from "./RenderGraphic";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTextureDrape } from "./RenderSystem";
+import { ActiveSpatialClassifier } from "../SpatialClassifiersState";
 
 /** Describes the spatial classification applied to a [[Scene]].
  * @internal
  */
 export interface SceneVolumeClassifier {
-  classifier: SpatialClassifier;
+  classifier: ActiveSpatialClassifier;
   modelId: Id64String;
 }
 

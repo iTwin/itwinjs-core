@@ -27,6 +27,7 @@ import { Scene } from "./render/Scene";
 import { SpatialClassifierTileTreeReference, Tile, TileGraphicType, TileLoadStatus, TileTreeReference } from "./tile/internal";
 import { ViewingSpace } from "./ViewingSpace";
 import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
+import { ActiveSpatialClassifier } from "./SpatialClassifiersState";
 
 /** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]].
  * @public
@@ -481,7 +482,7 @@ export class SceneContext extends RenderContext {
   public get textureDrapes() { return this.scene.textureDrapes; }
 
   /** @internal */
-  public setVolumeClassifier(classifier: SpatialClassifier, modelId: Id64String): void {
+  public setVolumeClassifier(classifier: ActiveSpatialClassifier, modelId: Id64String): void {
     this.scene.volumeClassifier = { classifier, modelId };
   }
 }
