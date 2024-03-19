@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
 import { EmptyLocalization } from "@itwin/core-common";
 import { RenderGraphic } from "../../../render/RenderGraphic";
-import { Range3d } from "@itwin/core-geometry";
+import { Point3d, Range3d } from "@itwin/core-geometry";
 import { GraphicBuilder, GraphicType } from "../../../render/GraphicBuilder";
 
 describe.only("Graphic", () => {
@@ -46,6 +46,15 @@ describe.only("Graphic", () => {
     const box = createGraphic((builder) => builder.addRangeBox(boxRange));
     expectRange(box, boxRange);
 
+    const line = createGraphic((builder) => builder.addLineString([new Point3d(1, 2, -1), new Point3d(-5, 2, 5)]));
+    expectRange(line, new Range3d(-5, 2, -1, 1, 2, 5));
+
+    const point = createGraphic((builder) => builder.addPointString([new Point3d(6, 1, 0)]));
+    expectRange(point, new Range3d(6, 1, 0, 6, 1, 0));
+
+    const pointString = createGraphic((builder) => builder.addPointString([new Point3d(0, 0, -1), new Point3d(-4, 12, 0)]));
+    expectRange(pointString, new Range3d(-4, 0, -1, 0, 12, 0));
+    
 
 
     
