@@ -618,6 +618,8 @@ class SpatialRefs implements SpatialTileTreeReferences {
   private readonly _excludedModels?: Set<Id64String>;
   private _refs = new Map<Id64String, SpatialModelRefs>();
   private _swapRefs = new Map<Id64String, SpatialModelRefs>();
+  private _sectionCutOnlyRefs = new Map<Id64String, SpatialModelRefs>();
+  private _swapSectionCutOnlyRefs = new Map<Id64String, SpatialModelRefs>();
   private _scheduleScript?: RenderSchedule.ScriptReference;
   private _sectionCut?: StringifiedClipVector;
 
@@ -641,6 +643,11 @@ class SpatialRefs implements SpatialTileTreeReferences {
     for (const modelRef of this._refs.values())
       for (const ref of modelRef)
         yield ref;
+    if (this._sectionCut) {
+      for (const modelRef of this._sectionCutOnlyRefs.values())
+        for (const ref of modelRef)
+          yield ref;
+    }
   }
 
   public setDeactivated(modelIds: Id64String | Id64String[] | undefined, deactivated: boolean, refs: "all" | "animated" | "primary" | "section" | number[]): void {
@@ -678,6 +685,8 @@ class SpatialRefs implements SpatialTileTreeReferences {
       this._sectionCut = sectionCut;
       for (const ref of this._refs.values())
         ref.updateSectionCut(sectionCut);
+      for (const ref of this._sectionCutOnlyRefs.values())
+        ref.updateSectionCut(sectionCut);
     }
   }
 
@@ -689,14 +698,27 @@ class SpatialRefs implements SpatialTileTreeReferences {
 
   /** Ensure this._refs contains a SpatialModelRefs for all loaded models in the model selector. */
   private updateModels(): void {
-    const prev = this._refs;
-    const cur = this._swapRefs;
+    let prev = this._refs;
+    let cur = this._swapRefs;
     this._refs = cur;
     this._swapRefs = prev;
     cur.clear();
+    prev = this._sectionCutOnlyRefs;
+    cur = this._swapSectionCutOnlyRefs;
+    this._sectionCutOnlyRefs = cur;
+    this._swapSectionCutOnlyRefs = prev;
+    cur.clear();
 
     for (const modelId of this._view.modelSelector.models) {
-      const excluded = (undefined !== this._excludedModels) && this._excludedModels.has(modelId);
+      let excluded = false;
+      if (undefined !== this._excludedModels && this._excludedModels.has(modelId)) {
+        excluded = true;
+        cur = this._sectionCutOnlyRefs;
+        prev = this._swapSectionCutOnlyRefs;
+      } else {
+        cur = this._refs;
+        prev = this._swapRefs;
+      }
 
       let modelRefs = prev.get(modelId);
       if (!modelRefs) {
