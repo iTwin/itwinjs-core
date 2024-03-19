@@ -100,6 +100,18 @@ type Editable<T> = {
 type SchemaItemProperties<T extends SchemaItemProps> =
   Editable<Omit<T, keyof Omit<SchemaItemProps, "label" | "description" | "schemaItemType">>>;
 
+interface DifferenceBase {
+  changeType: DifferenceType;
+  difference: unknown;
+}
+
+type GroupByDifferenceType<T extends DifferenceBase> =
+  T extends { changeType: infer R extends DifferenceType }
+    ? R extends "modify"
+      ? Omit<T, "difference"> & { difference: Partial<T["difference"]> }
+      : T
+    : never;
+
 /**
  * @internal
  */
@@ -116,11 +128,12 @@ export interface SchemaDifferences {
  * @internal
  */
 export type AnySchemaDifference =
-  SchemaDifference |
-  SchemaReferenceDifference |
-  AnySchemaItemDifference |
-  ClassPropertyDifference |
-  CustomAttributeDifference;
+GroupByDifferenceType<
+SchemaDifference |
+SchemaReferenceDifference |
+AnySchemaItemDifference |
+ClassPropertyDifference |
+CustomAttributeDifference>;
 
 /**
  * @internal
@@ -137,6 +150,7 @@ export interface SchemaDifference {
 export interface SchemaReferenceDifference {
   readonly changeType: "add" | "modify";
   readonly schemaType: "Schema";
+  readonly path:       "$references";
   readonly difference: SchemaReferenceProps;
 }
 
@@ -286,7 +300,7 @@ export interface EnumeratorDifference {
   readonly changeType: "add" | "modify";
   readonly schemaType: SchemaItemTypeName.Enumeration;
   readonly itemName: string;
-  readonly path: "$enumerators";
+  readonly path: string;
   readonly difference: Editable<AnyEnumerator>;
 }
 

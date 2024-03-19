@@ -9,30 +9,28 @@
 import type { AnyDiagnostic } from "../Validation/Diagnostic";
 import { SchemaCompareCodes } from "../Validation/SchemaCompareDiagnostics";
 import {
-  AnyEnumerator, AnyPropertyProps, AnySchemaItemProps, CustomAttribute, ECClass, ECClassModifier, Enumeration, Mixin, Property, PropertyProps,
+  AnyEnumerator, AnySchemaItemProps, CustomAttribute, ECClass, ECClassModifier, Enumeration, Mixin, Property, PropertyProps,
   RelationshipConstraint, RelationshipConstraintProps, Schema, SchemaItem, SchemaItemType, schemaItemTypeToString,
 } from "@itwin/ecschema-metadata";
 import {
   AnySchemaDifference,
   AnySchemaItemDifference,
   ClassItemDifference,
-  ClassPropertyDifference,
   CustomAttributePropertyDifference,
   CustomAttributeRelationshipDifference,
   CustomAttributeSchemaDifference,
   CustomAttributeSchemaItemDifference,
   DifferenceType,
   EntityClassMixinDifference,
-  EnumerationDifference,
   RelationshipConstraintClassDifference,
-  RelationshipConstraintDifference,
   SchemaDifference,
   SchemaItemTypeName,
+  SchemaReferenceDifference,
 } from "./SchemaDifference";
 import { ConflictCode, SchemaDifferenceConflict } from "./SchemaConflicts";
 
 /**
- * Recursive syncronous function to figure whether a given class derived from
+ * Recursive synchronous function to figure whether a given class derived from
  * a class with the given baseClassName.
  */
 function derivedFrom(ecClass: ECClass|undefined, baseClassName: string): boolean {
@@ -70,8 +68,8 @@ export class SchemaDiagnosticVisitor {
     this._conflicts = conflicts;
   }
 
-  private addEntry<T extends AnySchemaDifference>(entry: T): T {
-    this._changes.push(entry);
+  private addEntry<T extends AnySchemaDifference, R=Extract<AnySchemaDifference, Omit<T, "difference">>>(entry: R): R {
+    this._changes.push(entry as AnySchemaDifference);
     return entry;
   }
 
@@ -186,9 +184,9 @@ export class SchemaDiagnosticVisitor {
 
   private visitMissingSchemaItem(diagnostic: AnyDiagnostic) {
     const schemaItem = diagnostic.ecDefinition as SchemaItem;
-    this.addEntry<AnySchemaItemDifference>({
+    this.addEntry({
       changeType: "add",
-      schemaType: getSchemaItemName(schemaItem.schemaItemType) as any,
+      schemaType: getSchemaItemName(schemaItem.schemaItemType),
       itemName: schemaItem.name,
       difference: schemaItem.toJSON(),
     });
@@ -218,15 +216,15 @@ export class SchemaDiagnosticVisitor {
 
     let modifyEntry = this.lookupEntry("modify", { itemName: schemaItem.name }) as AnySchemaItemDifference;
     if(!modifyEntry) {
-      modifyEntry = this.addEntry<AnySchemaItemDifference>({
+      modifyEntry = this.addEntry({
         changeType: "modify",
-        schemaType: getSchemaItemName(schemaItem.schemaItemType) as any,
+        schemaType: getSchemaItemName<AnySchemaItemDifference>(schemaItem.schemaItemType),
         itemName: schemaItem.name,
-        difference: {} as any,
-      });
+        difference: {},
+      }) as AnySchemaItemDifference;
     }
 
-    (modifyEntry.difference  as any)[propertyName] = sourceValue;
+    setModifyEntryProperty(modifyEntry.difference, propertyName, sourceValue);
   }
 
   private visitChangedEnumeration(diagnostic: AnyDiagnostic) {
@@ -292,19 +290,19 @@ export class SchemaDiagnosticVisitor {
     }
 
     const enumeratorPath = `$enumerators.${enumerator.name}`;
-    let modifyEntry = this.lookupEntry("modify", { itemName: enumeration.name, path: enumeratorPath}) as EnumerationDifference;
+    let modifyEntry = this.lookupEntry("modify", { itemName: enumeration.name, path: enumeratorPath});
     if(!modifyEntry) {
       modifyEntry = this.addEntry({
         changeType: "modify",
         schemaType: SchemaItemTypeName.Enumeration,
         itemName: enumeration.name,
         path: enumeratorPath,
-        difference: {} as any,
+        difference: {},
       });
     }
 
     if(sourceValue !== undefined) {
-      (modifyEntry.difference  as any)[propertyName] = sourceValue;
+      setModifyEntryProperty(modifyEntry.difference, propertyName, sourceValue);
     }
   }
 
@@ -336,7 +334,7 @@ export class SchemaDiagnosticVisitor {
       schemaType: "Property",
       itemName: property.class.name,
       path: property.name,
-      difference:  property.toJSON() as AnyPropertyProps,
+      difference:  property.toJSON(),
     });
   }
 
@@ -351,19 +349,19 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.lookupEntry("modify", { itemName: property.class.name, path: property.name}) as ClassPropertyDifference;
+    let modifyEntry = this.lookupEntry("modify", { itemName: property.class.name, path: property.name});
     if(!modifyEntry) {
       modifyEntry = this.addEntry({
         changeType: "modify",
         schemaType: "Property",
         itemName: property.class.name,
         path: property.name,
-        difference: {} as any,
+        difference: {},
       });
     }
 
     if(propertyName !== "name" && sourceValue !== undefined) {
-      (modifyEntry.difference  as any)[propertyName] = sourceValue;
+      setModifyEntryProperty(modifyEntry.difference, propertyName, sourceValue);
     }
   }
 
@@ -396,12 +394,12 @@ export class SchemaDiagnosticVisitor {
 
     let modifyEntry = this.lookupEntry("modify",{ itemName: ecClass.name }) as ClassItemDifference;
     if(!modifyEntry) {
-      modifyEntry = this.addEntry<ClassItemDifference>({
+      modifyEntry = this.addEntry({
         changeType: "modify",
         schemaType: getSchemaItemName<ClassItemDifference>(ecClass.schemaItemType),
         itemName: ecClass.name,
-        difference: {} as any,
-      });
+        difference: {},
+      }) as any;
     }
 
     modifyEntry.difference.baseClass = sourceBaseClass.fullName;
@@ -499,7 +497,7 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.lookupEntry("modify", { itemName: className, path: constraintPath}) as RelationshipConstraintClassDifference;
+    let modifyEntry = this.lookupEntry("add", { itemName: className, path: constraintPath}) as RelationshipConstraintClassDifference;
     if(!modifyEntry) {
       modifyEntry = this.addEntry({
         changeType: "add",
@@ -522,26 +520,26 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.lookupEntry("modify", { itemName: className, path: constraintPath }) as RelationshipConstraintDifference;
+    let modifyEntry = this.lookupEntry("modify", { itemName: className, path: constraintPath });
     if(!modifyEntry) {
       modifyEntry = this.addEntry({
         changeType: "modify",
         schemaType: SchemaItemTypeName.RelationshipClass,
         itemName: className,
         path: constraintPath,
-        difference: {} as any,
+        difference: {},
       });
     }
 
     const [propertyName, propertyValue] = diagnostic.messageArgs as [keyof RelationshipConstraintProps, any];
-    if(propertyValue !== undefined) {
-      (modifyEntry.difference as any)[propertyName] = propertyValue;
+    if(propertyName !== "constraintClasses" || propertyValue !== undefined) {
+      setModifyEntryProperty(modifyEntry.difference, propertyName, propertyValue);
     }
   }
 
   private visitSchemaReference(diagnostic: AnyDiagnostic, changeType: DifferenceType) {
     const [referencedSchema] = diagnostic.messageArgs as [Schema];
-    this.addEntry({
+    this.addEntry<SchemaReferenceDifference>({
       changeType,
       schemaType: "Schema",
       path: "$references",
@@ -607,6 +605,10 @@ export class SchemaDiagnosticVisitor {
     }
     return;
   }
+}
+
+function setModifyEntryProperty(instance: { [name: string]: any }, propertyName: string, propertyValue: unknown) {
+  instance[propertyName] = propertyValue;
 }
 
 function getSchemaItemName<T extends AnySchemaItemDifference=AnySchemaItemDifference>(schemaItemType: SchemaItemType): Extract<SchemaItemTypeName, T["schemaType"]> {
