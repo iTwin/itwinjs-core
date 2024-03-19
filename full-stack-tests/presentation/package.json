@@ -58,6 +58,7 @@
     "deep-equal": "^1",
     "faker": "^4.1.0",
     "fast-sort": "^3.0.2",
+    "fast-xml-parser": "^4.3.5",
     "mocha": "^10.2.0",
     "rimraf": "^3.0.2",
     "sinon": "^17.0.1",
