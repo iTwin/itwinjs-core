@@ -5,13 +5,13 @@
 
 import * as sinon from "sinon";
 import * as chai from "chai";
-import { GeoJSONGeometryReader } from "../../OgcFeatures/GeoJSONGeometryReader";
-import { ArcGisAttributeDrivenSymbology, ArcGisGeometryRenderer } from "@itwin/core-frontend";
+import { GeoJSONGeometryReader } from "../../GeoJSON/GeoJSONGeometryReader";
+import { FeatureAttributeDrivenSymbology, FeatureGeometryRenderer } from "@itwin/core-frontend";
 import { Transform } from "@itwin/core-geometry";
 
-class MockGeometryRenderer implements ArcGisGeometryRenderer {
+class MockGeometryRenderer implements FeatureGeometryRenderer {
   public transform: Transform | undefined;
-  public attributeSymbology?: ArcGisAttributeDrivenSymbology;
+  public attributeSymbology?: FeatureAttributeDrivenSymbology;
   public async renderPath(_geometryLengths: number[], _geometryCoords: number[], _fill: boolean, _stride: number, _relativeCoords: boolean) {
 
   }

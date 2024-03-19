@@ -12,9 +12,11 @@ export type RingCoords = Coord[];
 /** @internal */
 export type MultiRingCoords = RingCoords[];
 
+export type GeoJSONGeometryType = "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
+
 /** @internal */
 export interface GeoJSONGeometry {
-  type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
+  type: GeoJSONGeometryType;
   coordinates: Coord | RingCoords | MultiRingCoords | MultiRingCoords[];
 }
 

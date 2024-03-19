@@ -5,39 +5,37 @@
 import { Logger } from "@itwin/core-bentley";
 import { Cartographic } from "@itwin/core-common";
 import { GrowableXYZArray, LineString3d, Loop, Point3d, Point3dArray, RegionOps } from "@itwin/core-geometry";
-import { ArcGisAttributeDrivenSymbology, ArcGisGeometryBaseRenderer, WebMercator } from "../../internal";
+import { FeatureAttributeDrivenSymbology, FeatureGeometryBaseRenderer, FeatureSymbologyRenderer, WebMercator } from "../../internal";
 import { GraphicPrimitive } from "../../../render/GraphicPrimitive";
-import { IModelConnection } from "../../../IModelConnection";
 import { Viewport } from "../../../Viewport";
 
-const loggerCategory = "MapLayerImageryProvider.ArcGisGraphicsRenderer";
+const loggerCategory = "MapLayerImageryProvider.FeatureGraphicsRenderer";
 
 /**
- * Properties of [[ArcGisGraphicsRenderer]]
+ * Properties of [[FeatureGraphicsRenderer]]
  * @internal
  */
-export interface ArcGisGraphicsRendererProps {
+export interface FeatureGraphicsRendererProps {
   /** The viewport in which the resultant [GraphicPrimitive]($frontend) is to be drawn. */
   viewport: Viewport;
 }
 
-/** ArcGIS geometry renderer implementation that will "render" a list of [GraphicPrimitive]($frontend)
+/** Feature geometry renderer implementation that will "render" a list of [GraphicPrimitive]($frontend)
  * This renderer initial objective is to read geometries when a call to [[MapLayerImageryProvider.getFeatureInfo]] is performed.
  * @internal
  */
-export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
+export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer {
   private _scratchPointsArray = new GrowableXYZArray();
   private _scratchPaths: Point3d[][] = [];
   private _graphics: GraphicPrimitive[] = [];
-  private _iModel: IModelConnection;
   private _viewport: Viewport;
 
-  public override get attributeSymbology(): ArcGisAttributeDrivenSymbology | undefined {return undefined;}   // No symbology is applied in this renderer
+  public override get attributeSymbology(): FeatureAttributeDrivenSymbology | undefined {return undefined;}   // No symbology is applied in this renderer
 
-  constructor(props: ArcGisGraphicsRendererProps) {
+  public override get symbolRenderer(): FeatureSymbologyRenderer | undefined {return undefined;}   // No symbology is applied in this renderer
+  constructor(props: FeatureGraphicsRendererProps) {
     super();
     this._viewport = props.viewport;
-    this._iModel = props.viewport.iModel;
   }
 
   public moveGraphics() {

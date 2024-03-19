@@ -5,7 +5,7 @@
 
 import { Primitives, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisGeometryRenderer, ArcGisGraphicsRenderer, MapLayerFeatureInfo } from "@itwin/core-frontend";
+import { FeatureGeometryRenderer, FeatureGraphicsRenderer, MapLayerFeatureInfo } from "@itwin/core-frontend";
 import { ArcGisResponseData } from "./ArcGisFeatureResponse";
 
 /** Interface defining minimal implementation needed to create an ArcGIS geometry reader,
@@ -13,8 +13,8 @@ import { ArcGisResponseData } from "./ArcGisFeatureResponse";
  * @internal
  */
 export interface ArcGisFeatureReader {
-  readAndRender: (response: ArcGisResponseData, renderer: ArcGisGeometryRenderer) => Promise<void>;
-  readFeatureInfo: (response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer: ArcGisGraphicsRenderer) => Promise<void>;
+  readAndRender: (response: ArcGisResponseData, renderer: FeatureGeometryRenderer) => Promise<void>;
+  readFeatureInfo: (response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer: FeatureGraphicsRenderer) => Promise<void>;
 }
 
 /** Internal implementation of [[ArcGisFeatureReader]]
@@ -36,8 +36,8 @@ export abstract class ArcGisBaseFeatureReader implements ArcGisFeatureReader {
     this._layerMetadata = layerMetadata;
   }
 
-  public abstract readAndRender(response: ArcGisResponseData, renderer: ArcGisGeometryRenderer): Promise<void>;
-  public abstract readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer: ArcGisGraphicsRenderer): Promise<void>;
+  public abstract readAndRender(response: ArcGisResponseData, renderer: FeatureGeometryRenderer): Promise<void>;
+  public abstract readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer: FeatureGraphicsRenderer): Promise<void>;
 
   protected  toFixedWithoutPadding = (value: number) => {
     return (this.floatPrecision === undefined ? value : parseFloat(value.toFixed(this.floatPrecision)));

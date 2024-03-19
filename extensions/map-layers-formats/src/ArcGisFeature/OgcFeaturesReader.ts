@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisGeometryRenderer, ArcGisGraphicsRenderer, MapLayerFeatureInfo} from "@itwin/core-frontend";
+import { FeatureGeometryRenderer, FeatureGraphicsRenderer, MapLayerFeatureInfo} from "@itwin/core-frontend";
 import { Transform } from "@itwin/core-geometry";
 import { ArcGisBaseFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisResponseData } from "./ArcGisFeatureResponse";
-import { GeoJSONGeometryReader } from "../OgcFeatures/GeoJSONGeometryReader";
+import { GeoJSONGeometryReader } from "../GeoJSON/GeoJSONGeometryReader";
 
 /** @internal */
 export class OgcFeaturesReader extends ArcGisBaseFeatureReader {
@@ -19,7 +19,7 @@ export class OgcFeaturesReader extends ArcGisBaseFeatureReader {
 
   }
 
-  // private applySymbologyAttributes(attrSymbology: ArcGisAttributeDrivenSymbology, feature: any) {
+  // private applySymbologyAttributes(attrSymbology: FeatureAttributeDrivenSymbology, feature: any) {
   //   if (attrSymbology && feature) {
   //     const symbolFields = attrSymbology.rendererFields;
   //     if (symbolFields && symbolFields.length > 0 && feature.attributes) {
@@ -33,7 +33,7 @@ export class OgcFeaturesReader extends ArcGisBaseFeatureReader {
   //   }
   // }
 
-  public async readAndRender(data: any, renderer: ArcGisGeometryRenderer) {
+  public async readAndRender(data: any, renderer: FeatureGeometryRenderer) {
     const responseObj = data;
     if (responseObj.type === "FeatureCollection") {
       // const attrSymbology = renderer.attributeSymbology;
@@ -46,18 +46,21 @@ export class OgcFeaturesReader extends ArcGisBaseFeatureReader {
         //   this.applySymbologyAttributes(attrSymbology, feature);
         // }
 
+        // Each feature has potentially a different geometry type, so we need to inform the geometry renderer
+        if (renderer.symbolRenderer)
+          renderer.symbolRenderer.activeGeometryType = feature.geometry.type;
         await geomReader.readGeometry(feature.geometry);
       }
     }
   }
 
-  public async readFeatureInfo(_response: ArcGisResponseData, _featureInfos: MapLayerFeatureInfo[], _renderer?: ArcGisGraphicsRenderer) {
+  public async readFeatureInfo(_response: ArcGisResponseData, _featureInfos: MapLayerFeatureInfo[], _renderer?: FeatureGraphicsRenderer) {
 
     // TODO
     return;
   }
 
-  // public async readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer?: ArcGisGraphicsRenderer) {
+  // public async readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer?: FeatureGraphicsRenderer) {
   //   const responseObj = response.data;
   //   if (responseObj === undefined || !Array.isArray(responseObj.features))
   //     return;

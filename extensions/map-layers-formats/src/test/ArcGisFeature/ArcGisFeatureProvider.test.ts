@@ -7,9 +7,8 @@ import { Cartographic, ImageMapLayerSettings, ImageSourceFormat, ServerError } f
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat";
-import { ArcGisFeatureProvider } from "../../map-layers-formats";
 import * as sinon from "sinon";
-import { ArcGisGetServiceJsonArgs, ArcGisGraphicsRenderer, ArcGISImageryProvider, ArcGisUtilities, HitDetail, ImageryMapTileTree, IModelConnection, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
+import { ArcGisGetServiceJsonArgs, ArcGISImageryProvider, ArcGisUtilities, FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, IModelConnection, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
 import { NewYorkDataset } from "./NewYorkDataset";
 import { base64StringToUint8Array, Logger } from "@itwin/core-bentley";
 import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureResultType, ArcGisGeometry } from "../../ArcGisFeature/ArcGisFeatureQuery";
@@ -18,8 +17,9 @@ import { ArcGisFeatureResponse } from "../../ArcGisFeature/ArcGisFeatureResponse
 import { Angle, Point3d, Transform, XYZProps } from "@itwin/core-geometry";
 import { ArcGisPbfFeatureReader } from "../../ArcGisFeature/ArcGisPbfFeatureReader";
 import { ArcGisJsonFeatureReader } from "../../ArcGisFeature/ArcGisJsonFeatureReader";
-import { EsriPMS, EsriSFS, EsriSLS } from "../../ArcGisFeature/EsriSymbology";
+import { EsriPMS, EsriSLS } from "../../ArcGisFeature/EsriSymbology";
 import * as moq from "typemoq";
+import { ArcGisFeatureProvider, DefaultArcGiSymbology } from "../../ArcGisFeature/ArcGisFeatureProvider";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -133,7 +133,7 @@ async function testGetFeatureInfoGeom(sandbox: sinon.SinonSandbox, fetchStub: an
   await provider.initialize();
   const featureInfos: MapLayerFeatureInfo[] = [];
   const logErrorSpy = sandbox.spy(Logger, "logError");
-  const toSpatialfSpy = sandbox.stub((ArcGisGraphicsRenderer.prototype as any), "toSpatial").callsFake(function _(geoPoints: unknown) {
+  const toSpatialfSpy = sandbox.stub((FeatureGraphicsRenderer.prototype as any), "toSpatial").callsFake(function _(geoPoints: unknown) {
     return geoPoints;
   });
 
@@ -166,6 +166,11 @@ describe("ArcGisFeatureProvider", () => {
   beforeEach(async () => {
     // Make sure no call to fetch is made, other it creates leaks
     fetchStub = sandbox.stub((ArcGISImageryProvider.prototype as any), "fetch");
+
+    // need to be mocked otherwise tests hangs
+    sandbox.stub(HTMLImageElement.prototype, "addEventListener").callsFake(function _(_type: string, listener: EventListenerOrEventListenerObject, _options?: boolean | AddEventListenerOptions) {
+      (listener as any)();
+    });
   });
 
   afterEach(async () => {
@@ -1109,11 +1114,11 @@ describe("ArcGisFeatureProvider", () => {
 
     const provider = new ArcGisFeatureProvider(settings);
 
-    await expect(provider.initialize()).to.be.rejectedWith( Error, "Could not determine default symbology: geometry type not supported");
+    await expect(provider.initialize()).to.be.rejectedWith( Error, "Could not get default symbology for geometry type: 'esriGeometryAny'");
 
   });
 
-  it("should construct renderer from incomplete drawing info", async () => {
+  it("should construct renderer with proper default symbology", async () => {
 
     const settings = ImageMapLayerSettings.fromJSON({
       ...esriFeatureSampleSource,
@@ -1127,24 +1132,19 @@ describe("ArcGisFeatureProvider", () => {
       geometryType : "esriGeometryPoint",
       drawingInfo: PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo,
     };
-    let getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
-      return {...layerMetadata, geometryType : "esriGeometryPoint" };
-    });
+
     stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { capabilities: "Query" } });
 
     sandbox.stub(ArcGisFeatureProvider.prototype, "constructFeatureUrl").callsFake(function _(_row: number, _column: number, _zoomLevel: number, _format: ArcGisFeatureFormat, _resultType: ArcGisFeatureResultType, _geomOverride?: ArcGisGeometry, _outFields?: string, _tolerance?: number, _returnGeometry?: boolean) {
       return { url: settings.url };
     });
 
-    // Make sure we dont get stuck on the loadImage call
-    sandbox.stub(EsriPMS.prototype, "loadImage").callsFake(async function  _() {
-      return;
+    let getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
+      return {...layerMetadata, geometryType : "esriGeometryPoint" };
     });
-
     let provider = new ArcGisFeatureProvider(settings);
     await provider.initialize();
-    let pms = EsriPMS.fromJSON((ArcGisFeatureProvider as any).defaultPMS);
-    expect((provider as any)._defaultSymbol).to.deep.equals(pms);
+    expect((provider as any)._symbologyRenderer.defaultSymbol).to.deep.equals(DefaultArcGiSymbology.defaultPMS);
 
     getLayerMetadataStub.restore();
     getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
@@ -1152,8 +1152,7 @@ describe("ArcGisFeatureProvider", () => {
     });
     provider = new ArcGisFeatureProvider(settings);
     await provider.initialize();
-    pms = EsriPMS.fromJSON((ArcGisFeatureProvider as any).defaultPMS);
-    expect((provider as any)._defaultSymbol).to.deep.equals(pms);
+    expect((provider as any)._symbologyRenderer.defaultSymbol).to.deep.equals(DefaultArcGiSymbology.defaultPMS);
 
     getLayerMetadataStub.restore();
     getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
@@ -1161,8 +1160,7 @@ describe("ArcGisFeatureProvider", () => {
     });
     provider = new ArcGisFeatureProvider(settings);
     await provider.initialize();
-    let sls = EsriSLS.fromJSON((ArcGisFeatureProvider as any).defaultSLS);
-    expect((provider as any)._defaultSymbol).to.deep.equals(sls);
+    expect((provider as any)._symbologyRenderer.defaultSymbol).to.deep.equals(DefaultArcGiSymbology.defaultSLS);
 
     getLayerMetadataStub.restore();
     getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
@@ -1170,8 +1168,7 @@ describe("ArcGisFeatureProvider", () => {
     });
     provider = new ArcGisFeatureProvider(settings);
     await provider.initialize();
-    sls = EsriSLS.fromJSON((ArcGisFeatureProvider as any).defaultSLS);
-    expect((provider as any)._defaultSymbol).to.deep.equals(sls);
+    expect((provider as any)._symbologyRenderer.defaultSymbol).to.deep.equals(DefaultArcGiSymbology.defaultSLS);
 
     getLayerMetadataStub.restore();
     getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
@@ -1179,8 +1176,7 @@ describe("ArcGisFeatureProvider", () => {
     });
     provider = new ArcGisFeatureProvider(settings);
     await provider.initialize();
-    const sfs = EsriSFS.fromJSON((ArcGisFeatureProvider as any).defaultSFS);
-    expect((provider as any)._defaultSymbol).to.deep.equals(sfs);
+    expect((provider as any)._symbologyRenderer.defaultSymbol).to.deep.equals(DefaultArcGiSymbology.defaultSFS);
 
   });
 
@@ -1209,10 +1205,6 @@ describe("ArcGisFeatureProvider", () => {
 
     sandbox.stub(ArcGisFeatureProvider.prototype, "constructFeatureUrl").callsFake(function _(_row: number, _column: number, _zoomLevel: number, _format: ArcGisFeatureFormat, _resultType: ArcGisFeatureResultType, _geomOverride?: ArcGisGeometry, _outFields?: string, _tolerance?: number, _returnGeometry?: boolean) {
       return { url: settings.url };
-    });
-
-    sandbox.stub(HTMLImageElement.prototype, "addEventListener").callsFake(function _(_type: string, listener: EventListenerOrEventListenerObject, _options?: boolean | AddEventListenerOptions) {
-      (listener as any)();
     });
 
     const loadImageSpy =  sandbox.spy(EsriPMS.prototype, "loadImage");

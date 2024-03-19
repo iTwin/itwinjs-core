@@ -4,16 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as sinon from "sinon";
-import * as chai from "chai";
-import { GeoJSONGeometryReader } from "../../OgcFeatures/GeoJSONGeometryReader";
-import { ArcGisAttributeDrivenSymbology, ArcGisGeometryRenderer } from "@itwin/core-frontend";
-import { Transform } from "@itwin/core-geometry";
 import { OgcFeaturesProvider } from "../../OgcFeatures/OgcFeaturesProvider";
-import { ImageMapLayerSettings, MapLayerSettings } from "@itwin/core-common";
+import { ImageMapLayerSettings } from "@itwin/core-common";
 import { expect } from "chai";
 
-describe.only("OgcFeaturesProvider", () => {
-
+describe("OgcFeaturesProvider", () => {
   const sandbox = sinon.createSandbox();
 
   afterEach(async () => {

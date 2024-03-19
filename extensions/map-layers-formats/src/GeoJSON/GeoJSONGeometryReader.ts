@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Logger } from "@itwin/core-bentley";
-import { ArcGisGeometryRenderer, CoordinatesUtils } from "@itwin/core-frontend";
-import { GeoJSONGeometry, GeoJSONLineString, GeoJSONMultiPolygon, GeoJSONMultiRing, MultiRingCoords, RingCoords } from "./GeoJSONGeometry";
+import { CoordinatesUtils, FeatureGeometryRenderer } from "@itwin/core-frontend";
+import { Coord, GeoJSONGeometry, GeoJSONLineString, GeoJSONMultiPoint, GeoJSONMultiPolygon, GeoJSONPoint, MultiRingCoords, RingCoords } from "./GeoJSONGeometry";
 
 const loggerCategory = "MapLayersFormats.GeoJSONGeometryReader";
 interface MultiPath {
@@ -21,23 +21,23 @@ class GeoJSONGeometryUtils {
 
 /** @internal */
 export class GeoJSONGeometryReader {
-  private _renderer: ArcGisGeometryRenderer;
+  private _renderer: FeatureGeometryRenderer;
 
-  public constructor(renderer: ArcGisGeometryRenderer) {
+  public constructor(renderer: FeatureGeometryRenderer) {
     this._renderer = renderer;
   }
 
   public async readGeometry(geometry: GeoJSONGeometry) {
     if (GeoJSONGeometryUtils.isRingOrPath(geometry)) {
-      await this.readRingsAndPaths(geometry, this._renderer, GeoJSONGeometryUtils.isRingOrPath(geometry), false /* relativeCoords*/);
-    } else if (GeoJSONGeometryUtils.isRingOrPath(geometry)) {
+      await this.readRingsAndPaths(geometry, this._renderer, GeoJSONGeometryUtils.isFilled(geometry), false /* relativeCoords*/);
+    } else if (GeoJSONGeometryUtils.isPoint(geometry)) {
       await this.readPoints(geometry, this._renderer, false/* relativeCoords*/);
     } else {
       Logger.logError(loggerCategory, `GeoJSONGeometryReader:readGeometry - Unknown GeoJSON geometry type '${geometry.type}'`);
     }
   }
 
-  private async readRingsAndPaths(geometry: GeoJSONGeometry, renderer: ArcGisGeometryRenderer, fill: boolean, relativeCoords: boolean) {
+  private async readRingsAndPaths(geometry: GeoJSONGeometry, renderer: FeatureGeometryRenderer, fill: boolean, relativeCoords: boolean) {
     const multiPath: MultiPath = {coords: [], lengths: []};
     let polys: MultiPath[] | undefined;
 
@@ -79,8 +79,24 @@ export class GeoJSONGeometryReader {
 
   }
 
-  private async readPoints(_geometry: any, _renderer: ArcGisGeometryRenderer, _relativeCoords: boolean) {
+  private async readPoints(geom: GeoJSONGeometry, renderer: FeatureGeometryRenderer, relativeCoords: boolean) {
 
-    // TODO
+    const lengths: number[] = [];
+    const coords: number[] = [];
+    const readPoint = (coord: Coord) => {
+      lengths.push(1);
+      coords.push(coord[0]);
+      coords.push(coord[1]);
+    };
+
+    if (geom.type === "MultiPoint") {
+      const multiPoint = geom as GeoJSONMultiPoint;
+      multiPoint.coordinates.forEach(readPoint);
+    } else {
+      const point = geom as GeoJSONPoint;
+      readPoint(point.coordinates);
+    }
+
+    await renderer.renderPoint(lengths, coords, 2, relativeCoords);
   }
 }

@@ -3,22 +3,88 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { MapCartoRectangle, MapLayerImageryProvider } from "@itwin/core-frontend";
-import { EsriPMS, EsriPMSProps, EsriRenderer, EsriSFS, EsriSFSProps, EsriSLS, EsriSLSProps, EsriSymbol } from "../ArcGisFeature/EsriSymbology";
-import { ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
+import { MapLayerImageryProvider } from "@itwin/core-frontend";
+import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS, EsriSLSProps, EsriSMS, EsriSymbol } from "../ArcGisFeature/EsriSymbology";
+import { ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { Matrix4d, Point3d, Range2d } from "@itwin/core-geometry";
 import { ArcGisSymbologyRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer";
-import { ArcGisCanvasRenderer } from "../ArcGisFeature/ArcGisCanvasRenderer";
-import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
+import { FeatureCanvasRenderer } from "../Feature/FeatureCanvasRenderer";
+import { base64StringToUint8Array, Logger } from "@itwin/core-bentley";
 import { OgcFeaturesReader } from "../ArcGisFeature/OgcFeaturesReader";
-import { ArcGisFeatureGeometryType } from "../ArcGisFeature/ArcGisFeatureQuery";
-import Flatbush from "flatbush";
+// import Flatbush from "flatbush";
 import * as Geojson from "geojson";
+import { FeatureDefaultSymbology } from "../Feature/FeatureSymbology";
 const loggerCategory = "MapLayersFormats.OgcFeatures";
 
 /**  Provide tiles from a ESRI ArcGIS Feature service
 * @internal
 */
+export class DefaultOgcSymbology implements FeatureDefaultSymbology {
+  private static readonly defaultPMS = EsriPMS.fromJSON( {
+    type: "esriPMS",
+    url: "",
+    contentType: "image/png",
+    imageData: "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAmBJREFUOE+Nk01IVFEUx//n3jfvOZOaJkMtiiJ7o9RG3LgoqKhFSFJBTS1ahFBBi0ijfJXCIyQr+hBbSIsoW7iQoKKFCw2CkAI3tZAgy8Ei+xhoTCbnje/NPfHGnA816KzuPR+/c8/HJRQJE7o+VUhym0DcCOYGgBQEXjOLlyqo+nHanCkMoaL4rslKjZwOQLT4ek3Mmz3FACFNLB67ut6M1nWphbg8wI6VyJK5KEH0EQFVJRKbwzokAW++p/ErraAYSQK3u47bC3vLnA+ZB9i2gHF0oyQMCfCGNaUa+vauxs71wWz2V18cnBj8gQ8J1/eeBnHUa4sMFQDGdGno+4gwEAoQzjVUon3rqlx1KY9x7+0MWobjAPg3QJ2eZV4tAEyFNCN5FkSXyw2B3j1hRGvLcgBXMV5MptA4MOXr0gT0u5bZnAf0jBsyiSgJPAxqhON1K3FlRxUMvwFAtv7u0Wl0jvwEmJNEuOhakTt5wKEBifr6Oo14BIBRpgt07w6jcVMIngKGY7NofR5HwlF+zDcpsC193vyYB/innvHywCzdZfAR/+onX1segBTAxHzzfPE7/8yzzIPLjJE1LTixHZx5CtCK4gXLzovBiDPUsYxVM7gUkB3nWKlm6DYEnQGzXARxCOK+a1WfKtQXb6LNAvr7iCboCUA1Ocdsdv5KLPe7F6pH/w3wLbc+BwOuc5IZ1wEE/jonQbjptZn24tKKX7BgvR2r0NKZRwDvAqCI+Z30VJPTURv7P4A9psuQcYAUPwAoReBLrmX2Lmls7i8sZ7kWLwuoxA1FVJGxzMPLufi6P2r+2xFbOUjGAAAAAElFTkSuQmCC",
+    // Black square
+    // imageData: "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsEAAA7BAbiRa+0AAAAiSURBVDhPY2RgYPgPxGQDJihNNhg1YNQAEBg1YOANYGAAAE1AAR90Oy6aAAAAAElFTkSuQmCC",
+    width: 16,
+    height: 16,
+    // We want the anchor point to be the bottom of the push pin, so apply offset on the y-axis (anchor point is already in the center of the icon)
+    xoffset: 0,
+    yoffset: -8,
+  });
+
+  private static readonly defaultSMS = EsriSMS.fromJSON( {
+    type : "esriSMS",
+    style : "esriSMSCircle",
+    color : [0, 0, 0, 255],
+    size : 16,
+    outline : { // if outline has been specified
+      type: "esriSLS",
+      color : [0, 0, 0, 255],
+      width : 1,
+      style:"esriSLSSolid",
+    },
+  });
+
+  private static readonly defaultSLSProps: EsriSLSProps = {
+    type: "esriSLS",
+    color: [0, 0, 255, 255],
+    width: 1,
+    style: "esriSLSSolid",
+  };
+  private static readonly defaultSLS = EsriSLS.fromJSON(this.defaultSLSProps);
+
+  private static readonly defaultSFS = EsriSFS.fromJSON({
+    type: "esriSFS",
+    color:  [0, 0, 255, 100],   // blue fill
+    style: "esriSFSSolid",
+    outline: this.defaultSLSProps,
+  });
+
+  public async initialize() {
+    // Marker image need to be loaded upfront;
+    await DefaultOgcSymbology.defaultPMS.loadImage();
+  }
+
+  public getSymbology(geometryType: string): EsriSymbol {
+    if (geometryType === "LineString"|| geometryType === "MultiLineString" )
+      return DefaultOgcSymbology.defaultSLS;
+    else if (geometryType === "Polygon"|| geometryType === "MultiPolygon" )
+      return DefaultOgcSymbology.defaultSFS;
+    else if (geometryType === "Point"|| geometryType === "MultiPoint" )
+      // return DefaultOgcSymbology.defaultSMS;
+      return DefaultOgcSymbology.defaultPMS;
+
+    throw new Error(`Could not get default symbology for geometry type ${geometryType}`);
+  }
+}
+
+// export type FeatureGeometryType = GeoJSONGeometryType | EsriGeometryType;
+// export class SimpleSymbologyProvider {
+//   public getSymbology(geometryType: string);
+// }
+
 export class OgcFeaturesProvider extends MapLayerImageryProvider {
 
   // Debug flags, should always be committed to FALSE !
@@ -29,39 +95,15 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
   private readonly _tiledModeMinLod = 12;
   private readonly _staticModeFetchTimeout = 30000;
   private readonly _tileModeFetchTimeout = 30000;
-  private readonly _forceTileMode = true;
-  private _spatialIdx: Flatbush|undefined;
-  private _defaultSymbol: EsriSymbol|undefined;
+  private readonly _forceTileMode = false;
+  private _spatialIdx: any;
+  private _defaultSymbol = new DefaultOgcSymbology();
   private _renderer: EsriRenderer|undefined;
+  private _baseUrl = "";
+  private _format = "";
 
-  private static readonly _nbSubTiles = 2;     // Number of subtiles for a single axis
   public serviceJson: any;
   private _staticData: Geojson.FeatureCollection|undefined;
-
-  private static readonly defaultPMS: EsriPMSProps = {
-    type: "esriPMS",
-    url: "",
-    contentType: "image/png",
-    imageData: "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAmBJREFUOE+Nk01IVFEUx//n3jfvOZOaJkMtiiJ7o9RG3LgoqKhFSFJBTS1ahFBBi0ijfJXCIyQr+hBbSIsoW7iQoKKFCw2CkAI3tZAgy8Ei+xhoTCbnje/NPfHGnA816KzuPR+/c8/HJRQJE7o+VUhym0DcCOYGgBQEXjOLlyqo+nHanCkMoaL4rslKjZwOQLT4ek3Mmz3FACFNLB67ut6M1nWphbg8wI6VyJK5KEH0EQFVJRKbwzokAW++p/ErraAYSQK3u47bC3vLnA+ZB9i2gHF0oyQMCfCGNaUa+vauxs71wWz2V18cnBj8gQ8J1/eeBnHUa4sMFQDGdGno+4gwEAoQzjVUon3rqlx1KY9x7+0MWobjAPg3QJ2eZV4tAEyFNCN5FkSXyw2B3j1hRGvLcgBXMV5MptA4MOXr0gT0u5bZnAf0jBsyiSgJPAxqhON1K3FlRxUMvwFAtv7u0Wl0jvwEmJNEuOhakTt5wKEBifr6Oo14BIBRpgt07w6jcVMIngKGY7NofR5HwlF+zDcpsC193vyYB/innvHywCzdZfAR/+onX1segBTAxHzzfPE7/8yzzIPLjJE1LTixHZx5CtCK4gXLzovBiDPUsYxVM7gUkB3nWKlm6DYEnQGzXARxCOK+a1WfKtQXb6LNAvr7iCboCUA1Ocdsdv5KLPe7F6pH/w3wLbc+BwOuc5IZ1wEE/jonQbjptZn24tKKX7BgvR2r0NKZRwDvAqCI+Z30VJPTURv7P4A9psuQcYAUPwAoReBLrmX2Lmls7i8sZ7kWLwuoxA1FVJGxzMPLufi6P2r+2xFbOUjGAAAAAElFTkSuQmCC",
-    width: 16,
-    height: 16,
-    xoffset: -8,
-    yoffset: -16,
-  };
-
-  private static readonly defaultSLS: EsriSLSProps = {
-    type: "esriSLS",
-    color: [0, 0, 0, 255],
-    width: 1,
-    style: "esriSLSSolid",
-  };
-
-  private static readonly defaultSFS: EsriSFSProps = {
-    type: "esriSFS",
-    color:  [0, 0, 255, 255],   // blue fill
-    style: "esriSFSSolid",
-    outline: this.defaultSLS,
-  };
 
   constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
@@ -71,6 +113,11 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
   public get staticMode(): boolean { return !!(this._spatialIdx && this._staticData && !this._forceTileMode); }
 
   public override async initialize(): Promise<void> {
+
+    // TODO: Correct format url
+    this._baseUrl = this._settings.url;
+    // Find metadata for proper format, this can also be "json"
+    this._format = "geojson";
 
     // this.cartoRange = MapCartoRectangle.fromDegrees(west, south, east, north);
     // const metadata = await this.getServiceJson();
@@ -100,13 +147,16 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     if (!this._forceTileMode) {
       const status = await this.fetchAllItems();
       if (status) {
-        this.indexStaticData();
+        await this.indexStaticData();
       }
     }
+
+    await this._defaultSymbol.initialize(); // images must be loaded upfront
   }
 
   private async fetchAllItems() {
-    const url = `http://localhost:8081/collections/public.countries/items?f=geojson&limit=${this._limitParamMaxValue}`;
+    // const url = `http://localhost:8081/collections/public.countries/items?f=geojson&limit=${this._limitParamMaxValue}`;
+    const url = `${this._baseUrl}/items?f=geojson&limit=${this._limitParamMaxValue}`;
     this._staticData = await this.fetchItems(url, this._staticModeFetchTimeout);
     return this._staticData ? true : false;
   }
@@ -119,8 +169,9 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       let response = await this.makeTileRequest(url, timeout);
       let json = await response.json();
       data = json;
+      // Follow "next" link if any
       let nextLink = json.links?.find((link: any)=>link.rel === "next");
-      while (nextLink && performance.now() - fetchBegin < timeout && success) {
+      while (nextLink && (performance.now() - fetchBegin) < timeout && success) {
         response = await this.makeTileRequest(nextLink.href, this._staticModeFetchTimeout);
         json = await response.json();
         if (json?.features)
@@ -145,7 +196,11 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
   }
 
   // Read features range and build in-memory spatial index
-  private indexStaticData() {
+  private async indexStaticData() {
+    // UGLY  IMPORT:
+    // flatbush only provides ECM modules, and since mocha is not very good with ECM modules,
+    // we need to have this special import, until we replace mocha with something else.
+    const flatbush = (await import("flatbush")).default;
     let success = true;
     try {
       const datasetRange = new Range2d();
@@ -166,7 +221,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       };
 
       if (this._staticData && Array.isArray(this._staticData.features)) {
-        this._spatialIdx = new Flatbush(this._staticData.features.length);
+        this._spatialIdx = new flatbush(this._staticData.features.length);
         this._staticData.features.forEach((feature: Geojson.Feature) => {
           try {
             if (feature.geometry.type === "LineString"
@@ -202,19 +257,6 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       success = false;
     }
     return success;
-  }
-
-  public static getDefaultSymbology(geomType: ArcGisFeatureGeometryType) {
-    if (geomType) {
-      if (geomType === "esriGeometryPoint" || geomType === "esriGeometryMultipoint") {
-        return EsriPMS.fromJSON(OgcFeaturesProvider.defaultPMS);
-      } else if (geomType === "esriGeometryLine" || geomType === "esriGeometryPolyline") {
-        return EsriSLS.fromJSON(OgcFeaturesProvider.defaultSLS);
-      } else if (geomType === "esriGeometryPolygon") {
-        return EsriSFS.fromJSON(OgcFeaturesProvider.defaultSFS);
-      }
-    }
-    return undefined;
   }
 
   public override get tileSize(): number { return 512; }
@@ -272,7 +314,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       // Static data mode
       const filteredData: Geojson.FeatureCollection = {type: this._staticData!.type, features: []};
 
-      this._spatialIdx!.search(extent4326.longitudeLeft, extent4326.latitudeBottom, extent4326.longitudeRight, extent4326.latitudeTop,
+      this._spatialIdx.search(extent4326.longitudeLeft, extent4326.latitudeBottom, extent4326.longitudeRight, extent4326.latitudeTop,
         (index: number) => {
           filteredData.features.push(this._staticData!.features[index]);
           return true;
@@ -282,7 +324,8 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     } else {
       // Tiled data mode
       const extent4326Str = this.getEPSG4326ExtentString(row, column, zoomLevel, false);
-      const url = `http://localhost:8081/collections/public.countries/items?f=geojson&bbox=${extent4326Str}&bbox-crs=http://www.opengis.net/def/crs/EPSG/0/4326&items=10000`;
+      // const url = `http://localhost:8081/collections/public.countries/items?f=geojson&bbox=${extent4326Str}&bbox-crs=http://www.opengis.net/def/crs/EPSG/0/4326&items=10000`;
+      const url = `${this._baseUrl}/items?f=${this._format}&bbox=${extent4326Str}&bbox-crs=http://www.opengis.net/def/crs/EPSG/0/4326&limite=${this._limitParamMaxValue}`;
 
       try {
         data = await this.fetchItems(url, this._tileModeFetchTimeout);
@@ -312,11 +355,11 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       }
 
       // Create the renderer
-      this._defaultSymbol = OgcFeaturesProvider.getDefaultSymbology("esriGeometryPolygon");
+      // this._defaultSymbol = OgcFeaturesProvider.getDefaultSymbology("esriGeometryPolygon");
       // const transfoRow = transfo!.toRows();
       // ctx.setTransform(transfoRow[0][0], transfoRow[1][0], transfoRow[0][1], transfoRow[1][1], transfoRow[0][3], transfoRow[1][3]);
-      const symbRenderer = ArcGisSymbologyRenderer.create(this._renderer, this._defaultSymbol!);
-      const renderer = new ArcGisCanvasRenderer(ctx, symbRenderer, transfo);
+      const symbRenderer = ArcGisSymbologyRenderer.create(this._renderer, this._defaultSymbol);
+      const renderer = new FeatureCanvasRenderer(ctx, symbRenderer, transfo);
 
       const featureReader  = new OgcFeaturesReader(this._settings);
 
@@ -333,7 +376,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       const header = `data:${tileRasterformat};base64,`;
       const dataUrl2 = dataUrl.substring(header.length);
       const end  = performance.now();
-      console.log(`${data.features.length} feature(s)  Search: ${endSpatialSearch-beginSpatialSearch}ms Overall: ${end-begin}ms`);
+      console.log(`${data.features.length} feature(s)  Search: ${endSpatialSearch-beginSpatialSearch}ms Overall: ${(end-begin).toFixed(0)}ms`);
       return new ImageSource(base64StringToUint8Array(dataUrl2), ImageSourceFormat.Png);
     } catch (e) {
       Logger.logError(loggerCategory, `Exception occurred while rendering tile (${zoomLevel}/${row}/${column}) : ${e}.`);

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ArcGisGeometryRenderer, CoordinatesUtils } from "../../internal";
+import { CoordinatesUtils, FeatureGeometryRenderer } from "../../internal";
 
 /** @internal */
 export class ArcGisGeometryReaderJSON {
@@ -10,9 +10,9 @@ export class ArcGisGeometryReaderJSON {
   private _points: boolean;
   private _fill: boolean;
   private _relativeCoords: boolean;
-  private _renderer: ArcGisGeometryRenderer;
+  private _renderer: FeatureGeometryRenderer;
 
-  public constructor(geometryType: string, renderer: ArcGisGeometryRenderer, relativeCoords = false) {
+  public constructor(geometryType: string, renderer: FeatureGeometryRenderer, relativeCoords = false) {
     this._ringsOrPaths = geometryType === "esriGeometryPolyline" || geometryType === "esriGeometryPolygon";
     this._points = geometryType === "esriGeometryPoint" || geometryType === "esriGeometryMultiPoint";
     this._fill = geometryType === "esriGeometryPolygon";
@@ -29,7 +29,7 @@ export class ArcGisGeometryReaderJSON {
     }
   }
 
-  private async readRingsAndPaths(geometry: any, renderer: ArcGisGeometryRenderer, fill: boolean, relativeCoords: boolean) {
+  private async readRingsAndPaths(geometry: any, renderer: FeatureGeometryRenderer, fill: boolean, relativeCoords: boolean) {
     let offset = 0;
     const lengths: number[] = [];
     const coords: number[] = [];
@@ -48,7 +48,7 @@ export class ArcGisGeometryReaderJSON {
     await renderer.renderPath(lengths, coords, fill, 2, relativeCoords);
   }
 
-  private async readPoints(geometry: any, renderer: ArcGisGeometryRenderer, relativeCoords: boolean) {
+  private async readPoints(geometry: any, renderer: FeatureGeometryRenderer, relativeCoords: boolean) {
     if (geometry) {
       const lengths: number[] = [];
       const coords: number[] = [geometry.x, geometry.y];

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { esriPBuffer } from "../ArcGisFeature/esriPBuffer.gen";
-import { ArcGisAttributeDrivenSymbology, ArcGisGeometryRenderer, ArcGisGraphicsRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
+import { FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, FeatureGraphicsRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { ArcGisBaseFeatureReader } from "./ArcGisFeatureReader";
@@ -134,7 +134,7 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
     return {value: propertyValue, property: { name: fieldInfo.name, displayLabel: fieldInfo.name, typename } };
   }
 
-  public async readAndRender(response: ArcGisResponseData, renderer: ArcGisGeometryRenderer) {
+  public async readAndRender(response: ArcGisResponseData, renderer: FeatureGeometryRenderer) {
     if (!(response.data instanceof esriPBuffer.FeatureCollectionPBuffer)) {
       const msg = "Response was not in PBF format";
       Logger.logError(loggerCategory, msg);
@@ -153,6 +153,7 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
       fields.push({name: field.name, type:field.fieldType});
 
     const geomType = collection.queryResult.featureResult.geometryType;
+
     const stride = (collection.queryResult.featureResult.hasM || collection.queryResult.featureResult.hasZ) ? 3 : 2;
     const relativeCoords = renderer.transform === undefined;
     for (const feature of collection.queryResult.featureResult.features) {
@@ -176,7 +177,7 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
     }
   }
 
-  private applySymbologyAttributes(attrSymbology: ArcGisAttributeDrivenSymbology, feature: esriPBuffer.FeatureCollectionPBuffer.Feature, fields: PbfFieldInfo[]) {
+  private applySymbologyAttributes(attrSymbology: FeatureAttributeDrivenSymbology, feature: esriPBuffer.FeatureCollectionPBuffer.Feature, fields: PbfFieldInfo[]) {
     if (attrSymbology) {
       const symbolFields = attrSymbology.rendererFields;
       if (symbolFields && symbolFields.length > 0 && feature.attributes) {
@@ -202,7 +203,7 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
     }
   }
 
-  public async readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer?: ArcGisGraphicsRenderer) {
+  public async readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer?: FeatureGraphicsRenderer) {
     if (!(response.data instanceof esriPBuffer.FeatureCollectionPBuffer)) {
 
       Logger.logError(loggerCategory, "Response was not in PBF format");
