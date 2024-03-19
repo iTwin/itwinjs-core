@@ -5,7 +5,7 @@
 import { Logger } from "@itwin/core-bentley";
 import { Cartographic } from "@itwin/core-common";
 import { GrowableXYZArray, LineString3d, Loop, Point3d, Point3dArray, RegionOps } from "@itwin/core-geometry";
-import { FeatureAttributeDrivenSymbology, FeatureGeometryBaseRenderer, FeatureSymbolizedRenderer, FeatureSymbologyRenderer, WebMercator } from "../../internal";
+import { FeatureGeometryBaseRenderer, FeatureSymbolizedRenderer, WebMercator } from "../../internal";
 import { GraphicPrimitive } from "../../../render/GraphicPrimitive";
 import { Viewport } from "../../../Viewport";
 
@@ -32,7 +32,6 @@ export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer {
   private _scratchPaths: Point3d[][] = [];
   private _graphics: GraphicPrimitive[] = [];
   private _viewport: Viewport;
-
 
   constructor(props: FeatureGraphicsRendererProps) {
     super();

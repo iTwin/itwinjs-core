@@ -17,6 +17,9 @@ const loggerCategory =  "MapLayersFormats.ArcGISFeature";
 /** @internal */
 export type ArcGisSymbologyRendererType = "simple" | "attributeDriven";
 
+/** Feature Symbology renderer applicable to an HTML 2D Canvas
+ * @internal
+ */
 export interface FeatureSymbologyCanvasRenderer extends FeatureSymbologyRenderer {
   applyFillStyle(context: CanvasRenderingContext2D): void;
   applyStrokeStyle(context: CanvasRenderingContext2D): void;

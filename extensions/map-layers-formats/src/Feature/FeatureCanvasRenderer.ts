@@ -4,14 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Transform } from "@itwin/core-geometry";
-import { FeatureAttributeDrivenSymbology, FeatureGeometryBaseRenderer, FeatureSymbolizedRenderer, FeatureSymbologyRenderer } from "@itwin/core-frontend";
+import { FeatureGeometryBaseRenderer, FeatureSymbolizedRenderer, FeatureSymbologyRenderer } from "@itwin/core-frontend";
 import { ArcGisSymbologyCanvasRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer";
 
 /** @internal */
 export class FeatureCanvasRenderer extends FeatureGeometryBaseRenderer implements FeatureSymbolizedRenderer {
   private _context: CanvasRenderingContext2D;
   private _symbol: ArcGisSymbologyCanvasRenderer;
-
 
   public  get symbolRenderer(): FeatureSymbologyRenderer {
     return this._symbol;

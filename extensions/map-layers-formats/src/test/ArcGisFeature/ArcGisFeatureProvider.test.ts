@@ -17,7 +17,7 @@ import { ArcGisFeatureResponse } from "../../ArcGisFeature/ArcGisFeatureResponse
 import { Angle, Point3d, Transform, XYZProps } from "@itwin/core-geometry";
 import { ArcGisPbfFeatureReader } from "../../ArcGisFeature/ArcGisPbfFeatureReader";
 import { ArcGisJsonFeatureReader } from "../../ArcGisFeature/ArcGisJsonFeatureReader";
-import { EsriPMS, EsriSLS } from "../../ArcGisFeature/EsriSymbology";
+import { EsriPMS } from "../../ArcGisFeature/EsriSymbology";
 import * as moq from "typemoq";
 import { ArcGisFeatureProvider, DefaultArcGiSymbology } from "../../ArcGisFeature/ArcGisFeatureProvider";
 

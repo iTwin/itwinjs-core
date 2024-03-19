@@ -304,12 +304,11 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
   }
 
   public override async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
-    const begin = performance.now();
+    // const begin = performance.now();
 
     const extent4326 = this.getEPSG4326Extent(row, column, zoomLevel);
 
     let data: any;
-    const beginSpatialSearch = performance.now();
     if (this.staticMode) {
       // Static data mode
       const filteredData: Geojson.FeatureCollection = {type: this._staticData!.type, features: []};
@@ -335,7 +334,6 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
         Logger.logError(loggerCategory, "Could not fetch OgcFeatures data.");
       }
     }
-    const endSpatialSearch  = performance.now();
 
     // Rendering starts here
     const canvas = document.createElement("canvas");
@@ -375,8 +373,8 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       const dataUrl = canvas.toDataURL(tileRasterformat);
       const header = `data:${tileRasterformat};base64,`;
       const dataUrl2 = dataUrl.substring(header.length);
-      const end  = performance.now();
-      console.log(`${data.features.length} feature(s)  Search: ${endSpatialSearch-beginSpatialSearch}ms Overall: ${(end-begin).toFixed(0)}ms`);
+      // const end  = performance.now();
+      // console.log(`${data.features.length} feature(s) Overall: ${(end-begin).toFixed(0)}ms`);
       return new ImageSource(base64StringToUint8Array(dataUrl2), ImageSourceFormat.Png);
     } catch (e) {
       Logger.logError(loggerCategory, `Exception occurred while rendering tile (${zoomLevel}/${row}/${column}) : ${e}.`);

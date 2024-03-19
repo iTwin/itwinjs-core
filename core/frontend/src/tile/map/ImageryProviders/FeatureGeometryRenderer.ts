@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Transform } from "@itwin/core-geometry";
-import { FeatureAttributeDrivenSymbology, FeatureSymbolizedRenderer } from "../../internal";
+import { FeatureSymbolizedRenderer } from "../../internal";
 
 /** Interface defining minimal implementation needed to create an ArcGIS geometry renderer,
  * that will ultimately be called by an [[ArcGisFeatureReader]] implementation.
