@@ -303,7 +303,7 @@ function trsMatrix(translation: [number, number, number] | undefined, rotation: 
   const rotTf = Transform.createRefs(undefined, rotation ? Matrix3d.createFromQuaternion(Point4d.create(rotation[0], rotation[1], rotation[2], rotation[3])) : Matrix3d.identity);
   rotTf.matrix.transposeInPlace(); // See comment on Matrix3d.createFromQuaternion
   const transTf = Transform.createTranslation(translation ? new Point3d(translation[0], translation[1], translation[2]) : Point3d.createZero());
-  const tf = scaleTf.multiplyTransformTransform(rotTf, result);
+  const tf = rotTf.multiplyTransformTransform(scaleTf, result);
   transTf.multiplyTransformTransform(tf, tf);
   return tf;
 }
