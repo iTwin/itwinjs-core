@@ -214,7 +214,7 @@ export class SchemaDiagnosticVisitor {
     if(!modifyEntry) {
       modifyEntry = this.addEntry({
         changeType: "modify",
-        schemaType: getSchemaItemName<AnySchemaItemDifference>(schemaItem.schemaItemType),
+        schemaType: getSchemaItemName(schemaItem.schemaItemType),
         itemName: schemaItem.name,
         difference: {},
       }) as AnySchemaItemDifference;
@@ -395,7 +395,7 @@ export class SchemaDiagnosticVisitor {
         schemaType: getSchemaItemName<ClassItemDifference>(ecClass.schemaItemType),
         itemName: ecClass.name,
         difference: {},
-      }) as any;
+      }) as ClassItemDifference;
     }
 
     modifyEntry.difference.baseClass = sourceBaseClass.fullName;

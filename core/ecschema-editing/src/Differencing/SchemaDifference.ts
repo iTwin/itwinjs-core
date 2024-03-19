@@ -35,19 +35,19 @@ export enum SchemaItemTypeName {
   Enumeration = "Enumeration",
   KindOfQuantity = "KindOfQuantity",
   PropertyCategory = "PropertyCategory",
-  Unit = "Unit",
-  InvertedUnit = "InvertedUnit",
+  // Unit = "Unit",
+  // InvertedUnit = "InvertedUnit",
   Constant = "Constant",
   Phenomenon = "Phenomenon",
   UnitSystem = "UnitSystem",
-  Format = "Format",
+  // Format = "Format",
 }
 
 /**
  * Defines the possible values SchemaTypes that can occur in SchemaDifferences or Conflicts.
  * @internal
  */
-export type SchemaType = "Schema" | SchemaItemTypeName | "Property" | "RelationshipConstraint";
+export type SchemaType = AnySchemaDifference extends { schemaType: infer R extends string } ? R : never;
 
 /**
  * @internal

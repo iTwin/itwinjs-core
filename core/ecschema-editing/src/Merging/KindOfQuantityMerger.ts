@@ -5,6 +5,7 @@
 import { type KindOfQuantityDifference } from "../Differencing/SchemaDifference";
 import { type SchemaMergerHandler, updateSchemaItemFullName } from "./SchemaItemMerger";
 import { type MutableKindOfQuantity } from "../Editing/Mutable/MutableKindOfQuantity";
+import { SchemaMergeContext } from "./SchemaMerger";
 
 /**
  * @internal
@@ -15,12 +16,10 @@ export const kindOfQuantityMerger: SchemaMergerHandler<KindOfQuantityDifference>
     if(change.difference.presentationUnits) {
       if(Array.isArray(change.difference.presentationUnits)) {
         for(let index = 0; index < change.difference.presentationUnits.length; index++) {
-          const updatedReference = await updateSchemaItemFullName(context, change.difference.presentationUnits[index]);
-          change.difference.presentationUnits[index] = updatedReference;
+          change.difference.presentationUnits[index] = await updateOverrideFormat(context, change.difference.presentationUnits[index]);
         }
       } else {
-        const updatedReference = await updateSchemaItemFullName(context, change.difference.presentationUnits);
-        change.difference.presentationUnits = updatedReference;
+        change.difference.presentationUnits = await updateOverrideFormat(context, change.difference.presentationUnits);
       }
     }
 
@@ -43,3 +42,23 @@ export const kindOfQuantityMerger: SchemaMergerHandler<KindOfQuantityDifference>
     return {};
   },
 };
+
+async function updateOverrideFormat(context: SchemaMergeContext, formatString: string) {
+  // https://www.itwinjs.org/v1/bis/ec/kindofquantity/#format-string
+  const match = formatString.match(/^([^(]+)\((\d+)\)\[(.*)\]$/);
+  if(match === null) {
+    return formatString;
+  }
+
+  const originalFormat = match[1];
+  const updatedFormat = await updateSchemaItemFullName(context, originalFormat);
+
+  const unitOverrides  = match[3].split("][");
+  for(let index=0; index< unitOverrides.length; index++) {
+    const [unit, label] = unitOverrides[index].split("|");
+    const updatedUnit = await updateSchemaItemFullName(context, unit);
+    unitOverrides[index] = `${updatedUnit}${label ? `|${label}` : ""}`;
+  }
+
+  return `${updatedFormat}(${match[2]})[${unitOverrides.join("][")}]`;
+}
