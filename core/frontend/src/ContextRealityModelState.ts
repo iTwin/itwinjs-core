@@ -7,46 +7,13 @@
  */
 
 import { Id64String, assert } from "@itwin/core-bentley";
-import { ContextRealityModel, ContextRealityModelProps, FeatureAppearance, RealityDataFormat, RealityDataSourceKey, SpatialClassifier, SpatialClassifiers, SpatialClassifiersContainer } from "@itwin/core-common";
+import { ContextRealityModel, ContextRealityModelProps, FeatureAppearance, RealityDataFormat, RealityDataSourceKey } from "@itwin/core-common";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { RealityDataSource } from "./RealityDataSource";
+import { SpatialClassifiersState } from "./SpatialClassifiersState";
 import { createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileTree, TileTreeReference } from "./tile/internal";
-
-export type DynamicSpatialClassifier = Omit<SpatialClassifier, "expand"> & { tileTreeReference: TileTreeReference; expand?: never; };
-export type PersistentSpatialClassifier = SpatialClassifier & { tileTreeReference?: never };
-export type ActiveSpatialClassifier = DynamicSpatialClassifier | PersistentSpatialClassifier;
-
-export class SpatialClassifiersState extends SpatialClassifiers {
-  private _dynamicClassifier?: DynamicSpatialClassifier;
-
-  private constructor(container: SpatialClassifiersContainer) {
-    super(container);
-  }
-  
-  public get activeClassifier(): ActiveSpatialClassifier | undefined {
-    return this._dynamicClassifier ?? this.active;
-  }
-
-  public set activeClassifier(active: ActiveSpatialClassifier | undefined) {
-    if (active === this.activeClassifier) {
-      return;
-    }
-      
-    this._dynamicClassifier = undefined;
-    if (active?.tileTreeReference) {
-      this._dynamicClassifier = active;
-    } else {
-      this.setActive(active);
-    }
-  }
-
-  /** @internal */
-  public static create(container: SpatialClassifiersContainer) {
-    return new SpatialClassifiersState(container);
-  }
-}
 
 /** A [ContextRealityModel]($common) attached to a [[DisplayStyleState]] supplying a [[TileTreeReference]] used to draw the
  * reality model in a [[Viewport]].
