@@ -28,7 +28,7 @@ describe("ContextRealityModel", () => {
     expect(m.realityDataId).to.be.undefined;
     expect(m.description).to.equal("");
     expect(m.orbitGtBlob).to.be.undefined;
-    expect(m.classifiers).to.be.undefined;
+    expect(m.classifiers.size).to.equal(0);
     expect(m.appearanceOverrides).to.be.undefined;
     expect(m.planarClipMaskSettings).to.be.undefined;
 
