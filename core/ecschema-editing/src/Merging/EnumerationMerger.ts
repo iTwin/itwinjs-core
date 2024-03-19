@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SchemaItemKey } from "@itwin/ecschema-metadata";
+import { primitiveTypeToString, SchemaItemKey } from "@itwin/ecschema-metadata";
 import type { EnumerationDifference, EnumeratorDifference } from "../Differencing/SchemaDifference";
 import type { SchemaMergerHandler } from "./SchemaItemMerger";
 import { type MutableEnumeration } from "../Editing/Mutable/MutableEnumeration";
@@ -28,6 +28,10 @@ export const enumerationMerger: SchemaMergerHandler<ChangeTypes> = {
   async modify(context, change, itemKey, item: MutableEnumeration) {
     if(isEnumeratorDifference(change)) {
       const [_path, enumeratorName] = change.path.split(".");
+      if(change.difference.value) {
+        return { errorMessage: `Failed to merge enumerator attribute, Enumerator "${enumeratorName}" has different values.` };
+      }
+
       if(change.difference.description) {
         await context.editor.enumerations.setEnumeratorDescription(itemKey, enumeratorName, change.difference.description);
       }
@@ -37,10 +41,12 @@ export const enumerationMerger: SchemaMergerHandler<ChangeTypes> = {
       return {};
     }
 
+    if(change.difference.type) {
+      return { errorMessage: `The Enumeration ${itemKey.name} has an incompatible type. It must be "${primitiveTypeToString(item.type!)}", not "${change.difference.type}".` };
+    }
     if(change.difference.label) {
       item.setDisplayLabel(change.difference.label);
     }
-
     if(change.difference.isStrict) {
       item.setIsStrict(change.difference.isStrict);
     }

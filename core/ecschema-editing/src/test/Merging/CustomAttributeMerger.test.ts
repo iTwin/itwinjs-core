@@ -3,20 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { EntityClass, RelationshipClass, Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import { SchemaItemTypeName } from "../../Differencing/SchemaDifference";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
+
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("Custom Attribute merge", () => {
-  let sourceContext: SchemaContext;
   let targetContext: SchemaContext;
-
-  const sourceJson = {
-    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-    name: "SourceSchema",
-    version: "1.2.3",
-    alias: "source",
-  };
   const targetJson =  {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "TargetSchema",
@@ -25,10 +19,8 @@ describe("Custom Attribute merge", () => {
   };
 
   beforeEach(async () => {
-    sourceContext = new SchemaContext();
     targetContext = new SchemaContext();
-
-    const caSchemaProps = {
+    await Schema.fromJson({
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
       name: "TestSchema",
       version: "01.00.15",
@@ -51,26 +43,39 @@ describe("Custom Attribute merge", () => {
           ],
         },
       },
-    };
-
-    await Schema.fromJson(caSchemaProps, sourceContext);
-    await Schema.fromJson(caSchemaProps, targetContext);
+    }, targetContext);
   });
 
-  describe("Custom Attributes missing tests", () => {
-    it("should merge missing class custom attributes", async () => {
-      const sourceSchema = await Schema.fromJson({
-        ...sourceJson,
-        references: [
-          {
+  it("should merge missing class custom attributes", async () => {
+    await Schema.fromJson({
+      ...targetJson,
+      items: {
+        TestEntity: {
+          schemaItemType: "EntityClass",
+        },
+      },
+    }, targetContext);
+
+    const merger = new SchemaMerger(targetContext);
+    const mergedSchema = await merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "add",
+          schemaType: "Schema",
+          path: "$references",
+          difference: {
             name: "TestSchema",
             version: "01.00.15",
           },
-        ],
-        items: {
-          SourceCA: {
+        },
+        {
+          changeType: "add",
+          schemaType: SchemaItemTypeName.CustomAttributeClass,
+          itemName: "SourceCA",
+          difference: {
             schemaItemType: "CustomAttributeClass",
-            appliesTo: "AnyClass",
             properties: [
               {
                 name: "BooleanProp",
@@ -83,382 +88,357 @@ describe("Custom Attribute merge", () => {
                 typeName: "double",
               },
             ],
-          },
-          TestEntity: {
-            schemaItemType: "EntityClass",
-            customAttributes: [
-              {
-                IntProp: 5,
-                StringPrimitiveArrayProp: [
-                  "ClassCustomAttribute",
-                ],
-                className: "TestSchema.TestCA",
-              },
-              {
-                BooleanProp: true,
-                DoubleProp: 1.2,
-                className: "SourceSchema.SourceCA",
-              },
-            ],
+            appliesTo: "AnyClass",
           },
         },
-      }, sourceContext);
-
-      const targetSchema = await Schema.fromJson({
-        ...targetJson,
-        items: {
-          TestEntity: {
-            schemaItemType: "EntityClass",
-          },
-        },
-      }, targetContext);
-
-      const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
-      const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
-      expect(mergedEntity!.toJSON().customAttributes).deep.eq(
-        [
-          {
+        {
+          changeType: "add",
+          schemaType: "CustomAttribute",
+          itemName: "TestEntity",
+          difference: {
             IntProp: 5,
             StringPrimitiveArrayProp: [
               "ClassCustomAttribute",
             ],
             className: "TestSchema.TestCA",
           },
-          {
+        },
+        {
+          changeType: "add",
+          schemaType: "CustomAttribute",
+          itemName: "TestEntity",
+          difference: {
             BooleanProp: true,
             DoubleProp: 1.2,
-            className: "TargetSchema.SourceCA",
+            className: "SourceSchema.SourceCA",
           },
-        ],
-      );
+        },
+      ],
+      conflicts: undefined,
     });
 
-    it("should merge missing property custom attributes", async () => {
-      const sourceSchema = await Schema.fromJson({
-        ...sourceJson,
-        references: [
-          {
+    const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
+    expect(mergedEntity!.toJSON().customAttributes).deep.eq(
+      [
+        {
+          IntProp: 5,
+          StringPrimitiveArrayProp: [
+            "ClassCustomAttribute",
+          ],
+          className: "TestSchema.TestCA",
+        },
+        {
+          BooleanProp: true,
+          DoubleProp: 1.2,
+          className: "TargetSchema.SourceCA",
+        },
+      ],
+    );
+  });
+
+  it("should merge missing property custom attributes", async () => {
+    await Schema.fromJson({
+      ...targetJson,
+      items: {
+        TestCA: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "AnyProperty",
+          properties: [
+            {
+              name: "LongProp",
+              type: "PrimitiveProperty",
+              typeName: "long",
+            },
+          ],
+        },
+        TestEntity: {
+          schemaItemType: "EntityClass",
+          properties: [
+            {
+              name: "DoubleProp",
+              type: "PrimitiveProperty",
+              typeName: "double",
+            },
+            {
+              name: "DateTimeProp",
+              type: "PrimitiveProperty",
+              typeName: "dateTime",
+            },
+          ],
+        },
+      },
+    }, targetContext);
+
+    const merger = new SchemaMerger(targetContext);
+    const mergedSchema = await merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "add",
+          schemaType: "Schema",
+          path: "$references",
+          difference: {
             name: "TestSchema",
             version: "01.00.15",
           },
-        ],
-        items: {
-          TestCA: {
-            schemaItemType: "CustomAttributeClass",
-            appliesTo: "AnyProperty",
-            properties: [
-              {
-                name: "LongProp",
-                type: "PrimitiveProperty",
-                typeName: "long",
-              },
-            ],
-          },
-          TestEntity: {
-            schemaItemType: "EntityClass",
-            properties: [
-              {
-                name: "DoubleProp",
-                type: "PrimitiveProperty",
-                typeName: "double",
-                customAttributes: [
-                  {
-                    LongProp: 1.999,
-                    className: "SourceSchema.TestCA",
-                  },
-                ],
-              },
-              {
-                name: "DateTimeProp",
-                type: "PrimitiveProperty",
-                typeName: "dateTime",
-                customAttributes: [
-                  {
-                    IntProp: 25,
-                    StringPrimitiveArrayProp: [
-                      "PropertyCustomAttribute",
-                    ],
-                    className: "TestSchema.TestCA",
-                  },
-                ],
-              },
-            ],
-          },
         },
-      }, sourceContext);
-
-      const targetSchema = await Schema.fromJson({
-        ...targetJson,
-        items: {
-          TestCA: {
-            schemaItemType: "CustomAttributeClass",
-            appliesTo: "AnyProperty",
-            properties: [
-              {
-                name: "LongProp",
-                type: "PrimitiveProperty",
-                typeName: "long",
-              },
-            ],
-          },
-          TestEntity: {
-            schemaItemType: "EntityClass",
-            properties: [
-              {
-                name: "DoubleProp",
-                type: "PrimitiveProperty",
-                typeName: "double",
-              },
-              {
-                name: "DateTimeProp",
-                type: "PrimitiveProperty",
-                typeName: "dateTime",
-              },
-            ],
-          },
-        },
-      }, targetContext);
-
-      const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
-      const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
-      expect(mergedEntity!.toJSON().properties).deep.eq(
-        [
-          {
-            name: "DoubleProp",
-            type: "PrimitiveProperty",
-            typeName: "double",
-            customAttributes: [
-              {
-                LongProp: 1.999,
-                className: "TargetSchema.TestCA",
-              },
-            ],
-          },
-          {
-            name: "DateTimeProp",
-            type: "PrimitiveProperty",
-            typeName: "dateTime",
-            customAttributes: [
-              {
-                IntProp: 25,
-                StringPrimitiveArrayProp: [
-                  "PropertyCustomAttribute",
-                ],
-                className: "TestSchema.TestCA",
-              },
-            ],
-          },
-        ],
-      );
-    });
-
-    it("should merge missing schema custom attributes", async () => {
-      const sourceSchema = await Schema.fromJson({
-        ...sourceJson,
-        references: [
-          {
-            name: "TestSchema",
-            version: "01.00.15",
-          },
-        ],
-        customAttributes: [
-          {
+        {
+          changeType: "add",
+          schemaType: "CustomAttribute",
+          itemName: "TestEntity",
+          path: "DoubleProp",
+          difference: {
+            LongProp: 1.999,
             className: "SourceSchema.TestCA",
           },
-          {
+        },
+        {
+          changeType: "add",
+          schemaType: "CustomAttribute",
+          itemName: "TestEntity",
+          path: "DateTimeProp",
+          difference: {
+            IntProp: 25,
             StringPrimitiveArrayProp: [
-              "SchemaCustomAttribute",
+              "PropertyCustomAttribute",
             ],
             className: "TestSchema.TestCA",
           },
-        ],
-        items: {
-          TestCA: {
-            schemaItemType: "CustomAttributeClass",
-            appliesTo: "Schema",
-          },
         },
-      }, sourceContext);
-
-      const targetSchema = await Schema.fromJson({
-        ...targetJson,
-        items: {
-          TestCA: {
-            schemaItemType: "CustomAttributeClass",
-            appliesTo: "Schema",
-          },
-        },
-      }, targetContext);
-
-      const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
-      expect(mergedSchema.toJSON().customAttributes).deep.eq(
-        [
-          {
-            className: "TargetSchema.TestCA",
-          },
-          {
-            StringPrimitiveArrayProp: [
-              "SchemaCustomAttribute",
-            ],
-            className: "TestSchema.TestCA",
-          },
-        ],
-      );
+      ],
     });
+    const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
+    expect(mergedEntity!.toJSON().properties).deep.eq(
+      [
+        {
+          name: "DoubleProp",
+          type: "PrimitiveProperty",
+          typeName: "double",
+          customAttributes: [
+            {
+              LongProp: 1.999,
+              className: "TargetSchema.TestCA",
+            },
+          ],
+        },
+        {
+          name: "DateTimeProp",
+          type: "PrimitiveProperty",
+          typeName: "dateTime",
+          customAttributes: [
+            {
+              IntProp: 25,
+              StringPrimitiveArrayProp: [
+                "PropertyCustomAttribute",
+              ],
+              className: "TestSchema.TestCA",
+            },
+          ],
+        },
+      ],
+    );
+  });
 
-    it("should merge missing relationship constraint custom attributes", async () => {
-      const sourceSchema = await Schema.fromJson({
-        ...sourceJson,
-        references: [
-          {
+  it("should merge missing schema custom attributes", async () => {
+    await Schema.fromJson({
+      ...targetJson,
+      items: {
+        TestCA: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "Schema",
+        },
+      },
+    }, targetContext);
+
+    const merger = new SchemaMerger(targetContext);
+    const mergedSchema = await merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "add",
+          schemaType: "Schema",
+          path: "$references",
+          difference: {
             name: "TestSchema",
             version: "01.00.15",
           },
-        ],
-        items: {
-          BaseEntity: {
-            schemaItemType: "EntityClass",
-          },
-          TestCA: {
-            schemaItemType: "CustomAttributeClass",
-            appliesTo: "AnyRelationshipConstraint",
-            properties: [
-              {
-                name: "BoolProp",
-                type: "PrimitiveProperty",
-                typeName: "boolean",
-              },
-            ],
-          },
-          TestRelationship: {
-            schemaItemType: "RelationshipClass",
-            description: "Description of TestRelationship",
-            modifier: "None",
-            strength: "Referencing",
-            strengthDirection: "Forward",
-            source: {
-              customAttributes: [
-                {
-                  className: "TestSchema.TestCA",
-                  IntProp: 10,
-                },
-                {
-                  className: "SourceSchema.TestCA",
-                },
-              ],
-              multiplicity: "(0..*)",
-              roleLabel: "refers to",
-              polymorphic: true,
-              constraintClasses: [
-                "SourceSchema.BaseEntity",
-              ],
-            },
-            target: {
-              customAttributes: [
-                {
-                  className: "TestSchema.TestCA",
-                  StringPrimitiveArrayProp: ["RelationshipConstraintCustomAttribute"],
-                },
-                {
-                  className: "SourceSchema.TestCA",
-                  BoolProp: true,
-                },
-              ],
-              multiplicity: "(0..*)",
-              roleLabel: "is referenced by",
-              polymorphic: true,
-              constraintClasses: [
-                "SourceSchema.BaseEntity",
-              ],
-            },
+        },
+        {
+          changeType: "add",
+          schemaType: "CustomAttribute",
+          path: "$schema",
+          difference: {
+            className: "SourceSchema.TestCA",
           },
         },
-      }, sourceContext);
-
-      const targetSchema = await Schema.fromJson({
-        ...targetJson,
-        items: {
-          BaseEntity: {
-            schemaItemType: "EntityClass",
-          },
-          TestCA: {
-            schemaItemType: "CustomAttributeClass",
-            appliesTo: "AnyRelationshipConstraint",
-            properties: [
-              {
-                name: "BoolProp",
-                type: "PrimitiveProperty",
-                typeName: "boolean",
-              },
+        {
+          changeType: "add",
+          schemaType: "CustomAttribute",
+          path: "$schema",
+          difference: {
+            StringPrimitiveArrayProp: [
+              "SchemaCustomAttribute",
             ],
-          },
-          TestRelationship: {
-            schemaItemType: "RelationshipClass",
-            description: "Description of TestRelationship",
-            modifier: "None",
-            strength: "Referencing",
-            strengthDirection: "Forward",
-            source: {
-              multiplicity: "(0..*)",
-              roleLabel: "refers to",
-              polymorphic: true,
-              constraintClasses: [
-                "TargetSchema.BaseEntity",
-              ],
-            },
-            target: {
-              multiplicity: "(0..*)",
-              roleLabel: "is referenced by",
-              polymorphic: true,
-              constraintClasses: [
-                "TargetSchema.BaseEntity",
-              ],
-            },
+            className: "TestSchema.TestCA",
           },
         },
-      }, targetContext);
+      ],
+    });
 
-      const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
-      const mergedRelationship = await mergedSchema.getItem<RelationshipClass>("TestRelationship");
-      expect(mergedRelationship!.toJSON().source).deep.eq({
-        customAttributes: [
-          {
+    expect(mergedSchema.toJSON().customAttributes).deep.eq(
+      [
+        {
+          className: "TargetSchema.TestCA",
+        },
+        {
+          StringPrimitiveArrayProp: [
+            "SchemaCustomAttribute",
+          ],
+          className: "TestSchema.TestCA",
+        },
+      ],
+    );
+  });
+
+  it("should merge missing relationship constraint custom attributes", async () => {
+    await Schema.fromJson({
+      ...targetJson,
+      items: {
+        BaseEntity: {
+          schemaItemType: "EntityClass",
+        },
+        TestCA: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "AnyRelationshipConstraint",
+          properties: [
+            {
+              name: "BoolProp",
+              type: "PrimitiveProperty",
+              typeName: "boolean",
+            },
+          ],
+        },
+        TestRelationship: {
+          schemaItemType: "RelationshipClass",
+          description: "Description of TestRelationship",
+          modifier: "None",
+          strength: "Referencing",
+          strengthDirection: "Forward",
+          source: {
+            multiplicity: "(0..*)",
+            roleLabel: "refers to",
+            polymorphic: true,
+            constraintClasses: [
+              "TargetSchema.BaseEntity",
+            ],
+          },
+          target: {
+            multiplicity: "(0..*)",
+            roleLabel: "is referenced by",
+            polymorphic: true,
+            constraintClasses: [
+              "TargetSchema.BaseEntity",
+            ],
+          },
+        },
+      },
+    }, targetContext);
+
+    const merger = new SchemaMerger(targetContext);
+    const mergedSchema = await merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "add",
+          schemaType: "Schema",
+          path: "$references",
+          difference: {
+            name: "TestSchema",
+            version: "01.00.15",
+          },
+        },
+        {
+          changeType: "add",
+          schemaType: "CustomAttribute",
+          itemName: "TestRelationship",
+          path: "$source",
+          difference: {
             className: "TestSchema.TestCA",
             IntProp: 10,
           },
-          {
-            className: "TargetSchema.TestCA",
+        },
+        {
+          changeType: "add",
+          schemaType: "CustomAttribute",
+          itemName: "TestRelationship",
+          path: "$source",
+          difference: {
+            className: "SourceSchema.TestCA",
           },
-        ],
-        multiplicity: "(0..*)",
-        roleLabel: "refers to",
-        polymorphic: true,
-        constraintClasses: [
-          "TargetSchema.BaseEntity",
-        ],
-      });
-      expect(mergedRelationship!.toJSON().target).deep.eq({
-        customAttributes: [
-          {
+        },
+        {
+          changeType: "add",
+          schemaType: "CustomAttribute",
+          itemName: "TestRelationship",
+          path: "$target",
+          difference: {
             className: "TestSchema.TestCA",
-            StringPrimitiveArrayProp: ["RelationshipConstraintCustomAttribute"],
+            StringPrimitiveArrayProp: [
+              "RelationshipConstraintCustomAttribute",
+            ],
           },
-          {
-            className: "TargetSchema.TestCA",
+        },
+        {
+          changeType: "add",
+          schemaType: "CustomAttribute",
+          itemName: "TestRelationship",
+          path: "$target",
+          difference: {
+            className: "SourceSchema.TestCA",
             BoolProp: true,
           },
-        ],
-        multiplicity: "(0..*)",
-        roleLabel: "is referenced by",
-        polymorphic: true,
-        constraintClasses: [
-          "TargetSchema.BaseEntity",
-        ],
-      });
+        },
+      ],
+    });
+
+    const mergedRelationship = await mergedSchema.getItem<RelationshipClass>("TestRelationship");
+    expect(mergedRelationship!.toJSON().source).deep.eq({
+      customAttributes: [
+        {
+          className: "TestSchema.TestCA",
+          IntProp: 10,
+        },
+        {
+          className: "TargetSchema.TestCA",
+        },
+      ],
+      multiplicity: "(0..*)",
+      roleLabel: "refers to",
+      polymorphic: true,
+      constraintClasses: [
+        "TargetSchema.BaseEntity",
+      ],
+    });
+    expect(mergedRelationship!.toJSON().target).deep.eq({
+      customAttributes: [
+        {
+          className: "TestSchema.TestCA",
+          StringPrimitiveArrayProp: ["RelationshipConstraintCustomAttribute"],
+        },
+        {
+          className: "TargetSchema.TestCA",
+          BoolProp: true,
+        },
+      ],
+      multiplicity: "(0..*)",
+      roleLabel: "is referenced by",
+      polymorphic: true,
+      constraintClasses: [
+        "TargetSchema.BaseEntity",
+      ],
     });
   });
 });

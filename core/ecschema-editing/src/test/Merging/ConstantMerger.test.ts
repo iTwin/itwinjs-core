@@ -3,19 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Constant, Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import { SchemaItemTypeName } from "../../Differencing/SchemaDifference";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 
 describe("Constant merger tests", () => {
-  let targetContext: SchemaContext;
-  let sourceContext: SchemaContext;
-
-  const sourceJson = {
-    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-    name: "SourceSchema",
-    version: "1.2.3",
-    alias: "source",
-  };
   const targetJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "TargetSchema",
@@ -29,34 +21,7 @@ describe("Constant merger tests", () => {
     alias: "reference",
   };
 
-  beforeEach(() => {
-    targetContext = new SchemaContext();
-    sourceContext = new SchemaContext();
-  });
-
   it("should merge missing constant", async () => {
-    const sourceSchema = await Schema.fromJson({
-      ...sourceJson,
-      items: {
-        testPhenomenon: {
-          schemaItemType: "Phenomenon",
-          name: "AREA",
-          label: "Area",
-          description: "Area description",
-          definition: "Units.LENGTH(2)",
-        },
-        testConstant: {
-          schemaItemType: "Constant",
-          label: "Test Constant",
-          description: "testing a constant",
-          phenomenon: "SourceSchema.testPhenomenon",
-          definition: "PI",
-          numerator: 5.5,
-          denominator: 5.1,
-        },
-      },
-    }, sourceContext);
-
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       items: {
@@ -68,7 +33,7 @@ describe("Constant merger tests", () => {
           definition: "Units.LENGTH(2)",
         },
       },
-    }, targetContext);
+    }, new SchemaContext());
 
     const testConstant = {
       schemaItemType: "Constant",
@@ -80,29 +45,36 @@ describe("Constant merger tests", () => {
       denominator: 5.1,
     };
 
-    const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+    const merger = new SchemaMerger(targetSchema.context);
+    const mergedSchema = await merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "add",
+          schemaType: SchemaItemTypeName.Constant,
+          itemName: "testConstant",
+          difference: {
+            schemaItemType: "Constant",
+            label: "Test Constant",
+            description: "testing a constant",
+            phenomenon: "SourceSchema.testPhenomenon",
+            definition: "PI",
+            numerator: 5.5,
+            denominator: 5.1,
+          },
+        },
+      ],
+    });
+
     const mergedConstant = await mergedSchema.getItem<Constant>("testConstant");
     const mergedConstantToJSON = mergedConstant!.toJSON(false, false);
 
     expect(mergedConstantToJSON).deep.eq(testConstant);
-
   });
 
   it("it should merge missing constant with referenced phenomenon", async () => {
-    await Schema.fromJson({
-      ...referenceJson,
-      items: {
-        testPhenomenon: {
-          schemaItemType: "Phenomenon",
-          name: "AREA",
-          label: "Area",
-          description: "Area description",
-          definition: "Units.LENGTH(2)",
-        },
-      },
-    }, sourceContext);
-
+    const targetContext = new SchemaContext();
     await Schema.fromJson({
       ...referenceJson,
       items: {
@@ -116,58 +88,44 @@ describe("Constant merger tests", () => {
       },
     }, targetContext);
 
-    const sourceSchema = await Schema.fromJson({
-      ...sourceJson,
-      references: [
-        {
-          name: "ReferenceSchema",
-          version: "1.2.0",
-        },
-      ],
-      items: {
-        testConstant: {
-          schemaItemType: "Constant",
-          label: "Test Constant",
-          description: "testing a constant",
-          definition: "PI",
-          phenomenon: "ReferenceSchema.testPhenomenon",
-          numerator: 5,
-          denominator: 5.1,
-        },
-      },
-    }, sourceContext);
-
-    const targetSchema = await Schema.fromJson({
-      ...targetJson,
-    }, targetContext);
+    await Schema.fromJson(targetJson, targetContext);
 
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+    const mergedSchema = await merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "add",
+          schemaType: "Schema",
+          path: "$references",
+          difference: {
+            name: "ReferenceSchema",
+            version: "01.02.00",
+          },
+        },
+        {
+          changeType: "add",
+          schemaType: SchemaItemTypeName.Constant,
+          itemName: "testConstant",
+          difference: {
+            schemaItemType: "Constant",
+            label: "Test Constant",
+            description: "testing a constant",
+            phenomenon: "ReferenceSchema.testPhenomenon",
+            definition: "PI",
+            numerator: 5,
+            denominator: 5.1,
+          },
+        },
+      ],
+    });
+
     const mergedConstant = await mergedSchema.getItem<Constant>("testConstant");
     expect((mergedConstant?.phenomenon)?.fullName).to.be.equals("ReferenceSchema.testPhenomenon");
   });
 
   it("it should throw error if definition conflict exist", async () => {
-    const sourceSchema = await Schema.fromJson({
-      ...sourceJson,
-      items: {
-        testPhenomenon: {
-          schemaItemType: "Phenomenon",
-          name: "AREA",
-          label: "Area",
-          description: "Area description",
-          definition: "Units.LENGTH(2)",
-        },
-        testConstant: {
-          schemaItemType: "Constant",
-          label: "Test Constant",
-          description: "testing a constant",
-          definition: "PI",
-          phenomenon: "SourceSchema.testPhenomenon",
-        },
-      },
-    }, sourceContext);
-
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       items: {
@@ -186,36 +144,29 @@ describe("Constant merger tests", () => {
           phenomenon: "TargetSchema.testPhenomenon",
         },
       },
-    }, targetContext);
+    }, new SchemaContext());
 
-    const merger = new SchemaMerger(targetContext);
-    await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("The Constant testConstant has an invalid 'definition' attribute.");
+    const merger = new SchemaMerger(targetSchema.context);
+    const merge = merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "modify",
+          schemaType: SchemaItemTypeName.Constant,
+          itemName: "testConstant",
+          difference: {
+            phenomenon: "SourceSchema.testPhenomenon",
+            definition: "PI",
+          },
+        },
+      ],
+    });
+    await expect(merge).to.be.rejectedWith("The Constant testConstant has an invalid 'definition' attribute.");
 
   });
 
   it("it should throw error if numerator conflict exist", async () => {
-    const sourceSchema = await Schema.fromJson({
-      ...sourceJson,
-      items: {
-        testPhenomenon: {
-          schemaItemType: "Phenomenon",
-          name: "AREA",
-          label: "Area",
-          description: "Area description",
-          definition: "Units.LENGTH(2)",
-        },
-        testConstant: {
-          schemaItemType: "Constant",
-          label: "Test Constant",
-          description: "testing a constant",
-          definition: "PI",
-          phenomenon: "SourceSchema.testPhenomenon",
-          numerator: 5.5,
-          denominator: 5.1,
-        },
-      },
-    }, sourceContext);
-
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       items: {
@@ -236,35 +187,28 @@ describe("Constant merger tests", () => {
           denominator: 5.1,
         },
       },
-    }, targetContext);
+    }, new SchemaContext());
 
-    const merger = new SchemaMerger(targetContext);
-    await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "Failed to merged, constant numerator conflict: 5.5 -> 4.5");
+    const merger = new SchemaMerger(targetSchema.context);
+    const merge = merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "modify",
+          schemaType: SchemaItemTypeName.Constant,
+          itemName: "testConstant",
+          difference: {
+            phenomenon: "SourceSchema.testPhenomenon",
+            numerator: 5.5,
+          },
+        },
+      ],
+    });
+    await expect(merge).to.be.rejectedWith(Error, "Failed to merged, constant numerator conflict: 5.5 -> 4.5");
   });
 
   it("it should throw error if denominator conflict exist", async () => {
-    const sourceSchema = await Schema.fromJson({
-      ...sourceJson,
-      items: {
-        testPhenomenon: {
-          schemaItemType: "Phenomenon",
-          name: "AREA",
-          label: "Area",
-          description: "Area description",
-          definition: "Units.LENGTH(2)",
-        },
-        testConstant: {
-          schemaItemType: "Constant",
-          label: "Test Constant",
-          description: "testing a constant",
-          definition: "PI",
-          phenomenon: "SourceSchema.testPhenomenon",
-          numerator: 5,
-          denominator: 5.1,
-        },
-      },
-    }, sourceContext);
-
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       items: {
@@ -285,9 +229,24 @@ describe("Constant merger tests", () => {
           denominator: 4.2,
         },
       },
-    }, targetContext);
+    }, new SchemaContext());
 
-    const merger = new SchemaMerger(targetContext);
-    await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "Failed to merged, constant denominator conflict: 5.1 -> 4.2");
+    const merger = new SchemaMerger(targetSchema.context);
+    const merge = merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "modify",
+          schemaType: SchemaItemTypeName.Constant,
+          itemName: "testConstant",
+          difference: {
+            phenomenon: "SourceSchema.testPhenomenon",
+            denominator: 5.1,
+          },
+        },
+      ],
+    });
+    await expect(merge).to.be.rejectedWith(Error, "Failed to merged, constant denominator conflict: 5.1 -> 4.2");
   });
 });
