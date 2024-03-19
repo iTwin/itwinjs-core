@@ -27,6 +27,9 @@ interface ArcGisFeatureUrl {
   envelope?: ArcGisExtent;    // envelope representing the current computed URL, required to refine request.
 }
 
+/**
+* @internal
+*/
 export class DefaultArcGiSymbology implements FeatureDefaultSymbology {
   public static readonly defaultPMS = EsriPMS.fromJSON( {
     type: "esriPMS",
