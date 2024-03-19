@@ -8,6 +8,7 @@ import { AnyClass } from '@itwin/ecschema-metadata';
 import { AnyECType } from '@itwin/ecschema-metadata';
 import { AnyEnumerator } from '@itwin/ecschema-metadata';
 import { AnyProperty } from '@itwin/ecschema-metadata';
+import type { AnyPropertyProps } from '@itwin/ecschema-metadata';
 import { Constant } from '@itwin/ecschema-metadata';
 import { ConstantProps } from '@itwin/ecschema-metadata';
 import { CustomAttribute } from '@itwin/ecschema-metadata';
@@ -43,6 +44,7 @@ import { PropertyCategoryProps } from '@itwin/ecschema-metadata';
 import { RelationshipClass } from '@itwin/ecschema-metadata';
 import { RelationshipClassProps } from '@itwin/ecschema-metadata';
 import { RelationshipConstraint } from '@itwin/ecschema-metadata';
+import type { RelationshipConstraintProps } from '@itwin/ecschema-metadata';
 import { RelationshipEnd } from '@itwin/ecschema-metadata';
 import { RelationshipMultiplicity } from '@itwin/ecschema-metadata';
 import { Schema } from '@itwin/ecschema-metadata';
@@ -54,6 +56,7 @@ import { SchemaItemProps } from '@itwin/ecschema-metadata';
 import { SchemaItemType } from '@itwin/ecschema-metadata';
 import { SchemaItemUnitProps } from '@itwin/ecschema-metadata';
 import { SchemaKey } from '@itwin/ecschema-metadata';
+import type { SchemaReferenceProps } from '@itwin/ecschema-metadata';
 import { StrengthDirection } from '@itwin/ecschema-metadata';
 import { StrengthType } from '@itwin/ecschema-metadata';
 import { StructArrayPropertyProps } from '@itwin/ecschema-metadata';
@@ -572,7 +575,7 @@ export enum DiagnosticType {
 }
 
 // @beta (undocumented)
-export function diagnosticTypeToString(type: DiagnosticType): "CustomAttributeContainer" | "None" | "Property" | "RelationshipConstraint" | "Schema" | "SchemaItem";
+export function diagnosticTypeToString(type: DiagnosticType): "Schema" | "Property" | "RelationshipConstraint" | "CustomAttributeContainer" | "None" | "SchemaItem";
 
 // @beta
 export const ECRuleSet: IRuleSet;
@@ -1200,13 +1203,13 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: DiagnosticType;
     };
     PresentationUnitMissing: {
-        new (ecDefinition: SchemaItem, messageArgs: [OverrideFormat | Format], category?: DiagnosticCategory): {
+        new (ecDefinition: SchemaItem, messageArgs: [Format | OverrideFormat], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: KindOfQuantity;
-            messageArgs?: [OverrideFormat | Format] | undefined;
+            messageArgs?: [Format | OverrideFormat] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -1236,25 +1239,25 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: DiagnosticType;
     };
     FormatUnitMissing: {
-        new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit], category?: DiagnosticCategory): {
+        new (ecDefinition: SchemaItem, messageArgs: [InvertedUnit | Unit], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Format;
-            messageArgs?: [Unit | InvertedUnit] | undefined;
+            messageArgs?: [InvertedUnit | Unit] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
     };
     UnitLabelOverrideDelta: {
-        new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit, string | undefined, string | undefined], category?: DiagnosticCategory): {
+        new (ecDefinition: SchemaItem, messageArgs: [InvertedUnit | Unit, string | undefined, string | undefined], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Format;
-            messageArgs?: [Unit | InvertedUnit, string | undefined, string | undefined] | undefined;
+            messageArgs?: [InvertedUnit | Unit, string | undefined, string | undefined] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -1444,7 +1447,10 @@ export class SchemaItemMissing extends SchemaItemChange {
 
 // @beta
 export class SchemaMerger {
+    constructor(editingContext: SchemaContext);
     merge(targetSchema: Schema, sourceSchema: Schema): Promise<Schema>;
+    // @internal
+    merge(differences: SchemaDifferences): Promise<Schema>;
 }
 
 // @alpha

@@ -1661,6 +1661,10 @@ export class Schema implements CustomAttributeContainerProps {
     protected _schemaKey?: SchemaKey;
     // @alpha
     protected setContext(context: SchemaContext): void;
+    // @alpha
+    protected setDescription(description: string): void;
+    // @alpha
+    protected setDisplayLabel(displayLabel: string): void;
     setVersion(readVersion?: number, writeVersion?: number, minorVersion?: number): void;
     static startLoadingFromJson(jsonObj: object | string, context: SchemaContext): Promise<SchemaInfo>;
     toJSON(): SchemaProps;
