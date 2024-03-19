@@ -120,6 +120,7 @@ class GraphicRef extends TileTreeReference {
   public override get treeOwner() { return this._owner; }
 }
 
+/** @internal */
 export function tileTreeReferenceFromRenderGraphic(args: RenderGraphicTileTreeArgs): TileTreeReference {
   return new GraphicRef({ ...args, id: Guid.createValue() });
 }
