@@ -38,7 +38,7 @@ describe("Unit system merger tests", () => {
     expect(mergedUnitSystem.description).equals("Imperial Unit System");
   });
 
-  it("should merge missing unit system", async () => {
+  it("should merge unit system with new label and description", async () => {
     const targetContext = new SchemaContext();
     await Schema.fromJson({
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
