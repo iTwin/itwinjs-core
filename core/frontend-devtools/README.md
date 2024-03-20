@@ -287,7 +287,10 @@ These keysins control the planar masking of reality models.
 * `fdt clear emphasized` - Undo the effects of `fdt emphasize selection` or `fdt emphasize visible`.
 * `fdt isolate selection` - Causes all elements except those currently in the selection set to stop drawing.
 * `fdt clear isolate` - Reverse the effects of `fdt isolate selection`.
-* `fdt test clip style ON|OFF` - Toggles a ClipStyle for the active viewport with hard-coded symbology overrides.
+* `fdt test clip style ON|OFF` - Toggles a ClipStyle for the active viewport with hard-coded symbology overrides
+  * if using ON, can also optionally specify a CutStyleProps to use instead of the hard-coded default
+  * for example, to produce cut plane geometry which is unlit solid orange you can specify the following command:
+    * `fdt test clip style ON {"viewflags":{"renderMode":6,"lighting":false},"appearance":{"rgb":{"r":255,"g":128,"b":0}}}`
 * `fdt tile bounds` - Sets the type of bounding volume decorations that will be displayed for each tile displayed in the view. Accepts at most one argument; if none is specified, it defaults to "volume", unless tile bounds are already displayed, in which it toggles them back off.
   * "none": Don't display bounding volumes.
   * "volume": Bounding box representing the full range of each tile.
