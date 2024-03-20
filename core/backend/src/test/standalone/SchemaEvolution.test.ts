@@ -285,6 +285,7 @@ function cleanupIModel(ctx: IModelContext) {
   ctx.db.saveChanges();
   ctx.db.close();
 }
+
 function getPropertyMap(ctx: IModelContext, classFullName: string, propertyName: string): IPropertyMap[] {
   const sql = `
     SELECT JSON_GROUP_ARRAY (
