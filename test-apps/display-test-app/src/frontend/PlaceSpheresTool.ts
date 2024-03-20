@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ColorDef } from "@itwin/core-common";
-import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, IModelApp, PrimitiveTool } from "@itwin/core-frontend";
+import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, IModelApp, PrimitiveTool, RenderGraphic, TileTreeReference, TiledGraphicsProvider, Viewport } from "@itwin/core-frontend";
 import { Point3d, Sphere } from "@itwin/core-geometry";
 
 function getColor(index: number): ColorDef {
@@ -15,6 +15,8 @@ function getColor(index: number): ColorDef {
 export class PlaceSpheresTool extends PrimitiveTool {
   private readonly _points: Point3d[] = [];
   private _radius = 10;
+  private _chordTolerance = 0.1;
+  private _graphic?: RenderGraphic;
   
   public static override toolId = "DtaPlaceSpheres";
 
@@ -32,25 +34,67 @@ export class PlaceSpheresTool extends PrimitiveTool {
 
   public override async onDataButtonDown(ev: BeButtonEvent) {
     this._points.push(ev.point);
+    this.updateGraphic();
     ev.viewport?.invalidateDecorations();
     return EventHandled.No;
   }
 
   public override async onResetButtonUp(ev: BeButtonEvent) {
-    this._points.pop();
-    ev.viewport?.invalidateDecorations();
+    if (ev.viewport) {
+      this.registerTiledGraphicsProvider(ev.viewport);
+    }
+
+    this.exitTool();
     return EventHandled.No;
   }
 
-  public override decorate(context: DecorateContext) {
-    const builder = context.createGraphicBuilder(GraphicType.Scene);
+  private registerTiledGraphicsProvider(viewport: Viewport) {
+    if (!this._graphic) {
+      return;
+    }
+
+    const treeRef = TileTreeReference.createFromRenderGraphic({
+      iModel: viewport.iModel,
+      graphic: this._graphic,
+      modelId: viewport.iModel.transientIds.getNext(),
+    });
+
+    const provider: TiledGraphicsProvider = {
+      forEachTileTreeRef: (vp, func) => {
+        if (vp === viewport) {
+          func(treeRef);
+        }
+      },
+    }
+
+    viewport.addTiledGraphicsProvider(provider);
+  }
+
+  private updateGraphic() {
+    if (this._points.length === 0) {
+      this._graphic?.dispose();
+      this._graphic = undefined;
+      return;
+    }
+
+    const builder = IModelApp.renderSystem.createGraphic({
+      type: GraphicType.Scene,
+      computeChordTolerance: () => this._chordTolerance,
+    });
+
     for (let i = 0; i < this._points.length; i++) {
       const sphere = Sphere.createCenterRadius(this._points[i], this._radius);
       builder.setSymbology(getColor(i), getColor(i).withTransparency(0x7f), 1);
       builder.addSolidPrimitive(sphere);
     }
 
-    context.addDecorationFromBuilder(builder);
+    this._graphic = builder.finish();
+  }
+
+  public override decorate(context: DecorateContext) {
+    if (this._graphic) {
+      context.addDecoration(GraphicType.Scene, IModelApp.renderSystem.createGraphicOwner(this._graphic));
+    }
   }
 
   public override decorateSuspended(context: DecorateContext) {
@@ -58,9 +102,6 @@ export class PlaceSpheresTool extends PrimitiveTool {
   }
 
   public override async onRestartTool() {
-    const tool = new PlaceSpheresTool();
-    if (!await tool.run()) {
-      await this.exitTool();
-    }
+    return this.exitTool();
   }
 }
