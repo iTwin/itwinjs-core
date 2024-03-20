@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Promote editable workspace classes/methods from @internal to @beta",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

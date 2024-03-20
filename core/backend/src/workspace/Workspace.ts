@@ -257,14 +257,12 @@ export interface WorkspaceContainer {
   readonly id: WorkspaceContainer.Id;
   /** Workspace holding this WorkspaceContainer. */
   readonly workspace: Workspace;
-  /** CloudContainer for this WorkspaceContainer (`undefined` if this is a local WorkspaceContainer.)
-   * @internal
-  */
+  /** CloudContainer for this WorkspaceContainer (`undefined` if this is a local WorkspaceContainer.)  */
   readonly cloudContainer?: CloudSqlite.CloudContainer;
 
-  /** @internal */
+  /** @beta */
   addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
-  /** @internal */
+  /** @beta */
   resolveDbFileName(props: WorkspaceDb.Props): string;
 
   /** find or open a WorkspaceDb from this WorkspaceContainer. */
@@ -275,7 +273,7 @@ export interface WorkspaceContainer {
   close(): void;
 }
 
-/** @internal */
+/** @beta */
 export class ITwinWorkspace implements Workspace {
   private _containers = new Map<WorkspaceContainer.Id, ITwinWorkspaceContainer>();
   public readonly containerDir: LocalDirName;
@@ -375,7 +373,7 @@ export class ITwinWorkspace implements Workspace {
   }
 }
 
-/** @internal */
+/** @beta */
 export class ITwinWorkspaceContainer implements WorkspaceContainer {
   public readonly workspace: ITwinWorkspace;
   public readonly filesDir: LocalDirName;
@@ -546,7 +544,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
 
 /**
  * Implementation of WorkspaceDb
- * @internal
+ * @beta
  */
 export class ITwinWorkspaceDb implements WorkspaceDb {
   /** file extension for local WorkspaceDbs */
@@ -660,7 +658,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
  * An editable [[WorkspaceDb]]. This is used by administrators for creating and modifying `WorkspaceDb`s.
  * For cloud-backed containers, the write token must be obtained before this class may be used. Only one user at at time
  * may be editing.
- * @internal
+ * @beta
  */
 export class EditableWorkspaceDb extends ITwinWorkspaceDb {
   private static validateResourceName(name: WorkspaceResource.Name) {
