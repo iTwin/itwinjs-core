@@ -13,6 +13,7 @@ import { RenderGraphic } from "../render/RenderGraphic";
 import { IModelConnection } from "../IModelConnection";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { IModelApp } from "../IModelApp";
+import { HitDetail } from "../HitDetail";
 
 export interface RenderGraphicTileTreeArgs {
   graphic: RenderGraphic;
@@ -20,6 +21,7 @@ export interface RenderGraphicTileTreeArgs {
   modelId: Id64String;
   viewFlags?: ViewFlagOverrides;
   is2d?: boolean;
+  getToolTip?: (hit: HitDetail) => Promise<HTMLElement | string>;
 }
 
 interface TreeId extends RenderGraphicTileTreeArgs {
@@ -111,13 +113,25 @@ const supplier = new Supplier();
 
 class GraphicRef extends TileTreeReference {
   private readonly _owner: TileTreeOwner;
+  private readonly _modelId: Id64String;
+  private readonly _getToolTip?: (hit: HitDetail) => Promise<string | HTMLElement | undefined>;
 
   public constructor(args: TreeId) {
     super();
     this._owner = args.iModel.tiles.getTileTreeOwner(args, supplier);
+    this._modelId = args.modelId;
+    this._getToolTip = args.getToolTip;
   }
 
   public override get treeOwner() { return this._owner; }
+
+  public override async getToolTip(hit: HitDetail): Promise<string | HTMLElement | undefined> {
+    if (this._getToolTip && this._modelId === hit.modelId) {
+      return this._getToolTip(hit);
+    }
+
+    return undefined;
+  }
 }
 
 /** @internal */

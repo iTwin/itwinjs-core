@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ColorDef, Feature } from "@itwin/core-common";
-import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, IModelApp, IModelConnection, PrimitiveTool, RenderGraphic, TileTreeReference, TiledGraphicsProvider, Viewport } from "@itwin/core-frontend";
+import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, IModelApp, IModelConnection, PrimitiveTool, RenderGraphic, TileTreeReference, TiledGraphicsProvider, Viewport } from "@itwin/core-frontend";
 import { Point3d, Sphere as SpherePrimitive } from "@itwin/core-geometry";
 
 function getColor(index: number): ColorDef {
@@ -110,6 +110,7 @@ export class PlaceSpheresTool extends PrimitiveTool {
       iModel: viewport.iModel,
       graphic: this._graphic,
       modelId: this._spheres.modelId,
+      getToolTip: async (_hit: HitDetail) => Promise.resolve("hi"),
     });
 
     const provider: TiledGraphicsProvider = {
