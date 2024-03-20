@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Introduce 2 new types of `PropertiesField`: `ArrayPropertiesField` and `StructPropertiesField`. Ensure values of these values can be customized, formatted, localized.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix incorrect transforms computed for instanced glTF meshes.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

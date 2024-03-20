@@ -16,8 +16,6 @@ import {
   Descriptor,
   DisplayValue,
   DisplayValueGroup,
-  DisplayValuesArray,
-  DisplayValuesMap,
   Field,
   FieldDescriptor,
   FormatsMap,
@@ -29,26 +27,35 @@ import {
   RelationshipDirection,
   Ruleset,
   RuleTypes,
+  Value,
 } from "@itwin/presentation-common";
 import { Presentation, PresentationManager, PresentationManagerProps } from "@itwin/presentation-frontend";
 import { ECClassHierarchy, ECClassHierarchyInfo } from "../ECClasHierarchy";
 import { initialize, terminate } from "../IntegrationTests";
 import { collect, getFieldByLabel } from "../Utils";
-import { buildTestIModelConnection, insertDocumentPartition, insertPhysicalElement, insertPhysicalModel, insertSpatialCategory } from "../IModelSetupUtils";
+import {
+  buildTestIModelConnection,
+  importSchema,
+  insertDocumentPartition,
+  insertElementAspect,
+  insertPhysicalElement,
+  insertPhysicalModelWithPartition,
+  insertSpatialCategory,
+} from "../IModelSetupUtils";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
 
 describe("Content", () => {
   let imodel: IModelConnection;
-  const openIModel = async () => {
+  const openDefaultIModel = async () => {
     if (!imodel || !imodel.isOpen) {
       imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
     }
     expect(imodel).is.not.null;
   };
 
-  const closeIModel = async () => {
+  const closeDefaultIModel = async () => {
     if (imodel && imodel.isOpen) {
       await imodel.close();
     }
@@ -56,11 +63,11 @@ describe("Content", () => {
 
   before(async () => {
     await initialize();
-    await openIModel();
+    await openDefaultIModel();
   });
 
   after(async () => {
-    await imodel.close();
+    await closeDefaultIModel();
     await terminate();
   });
 
@@ -398,13 +405,13 @@ describe("Content", () => {
     it("gets distinct content values based on hierarchy level descriptor", async function () {
       // create an imodel with Model -> Elements relationship
       const testIModel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
-        const categoryKey = insertSpatialCategory(db, "Category");
-        const modelKeyA = insertPhysicalModel(db, "Model A");
-        insertPhysicalElement(db, "Element A1", modelKeyA.id, categoryKey.id);
-        insertPhysicalElement(db, "Element A2", modelKeyA.id, categoryKey.id);
-        const modelKeyB = insertPhysicalModel(db, "Model B");
-        insertPhysicalElement(db, "Element B", modelKeyB.id, categoryKey.id);
-        insertPhysicalElement(db, "Element B", modelKeyB.id, categoryKey.id);
+        const categoryKey = insertSpatialCategory({ db, codeValue: "Category" });
+        const modelKeyA = insertPhysicalModelWithPartition({ db, codeValue: "Model A" });
+        insertPhysicalElement({ db, userLabel: "Element A1", modelId: modelKeyA.id, categoryId: categoryKey.id });
+        insertPhysicalElement({ db, userLabel: "Element A2", modelId: modelKeyA.id, categoryId: categoryKey.id });
+        const modelKeyB = insertPhysicalModelWithPartition({ db, codeValue: "Model B" });
+        insertPhysicalElement({ db, userLabel: "Element B", modelId: modelKeyB.id, categoryId: categoryKey.id });
+        insertPhysicalElement({ db, userLabel: "Element B", modelId: modelKeyB.id, categoryId: categoryKey.id });
       });
 
       // set up ruleset
@@ -849,6 +856,233 @@ describe("Content", () => {
     });
   });
 
+  describe("Custom renderers & editors", () => {
+    it("assigns custom renderer and editor to struct member property", async function () {
+      let instanceKey: InstanceKey;
+      let testSchema!: ReturnType<typeof importSchema>;
+      const imodelConnection = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
+        testSchema = importSchema(
+          this,
+          db,
+          `
+          <ECSchemaReference name="BisCore" version="01.00.16" alias="bis" />
+          <ECStructClass typeName="MyStruct">
+            <ECProperty propertyName="IntProperty" typeName="int" />
+          </ECStructClass>
+          <ECEntityClass typeName="TestPhysicalObject" displayLabel="Test Physical Object" modifier="Sealed">
+            <BaseClass>bis:PhysicalElement</BaseClass>
+            <ECStructProperty propertyName="StructProperty" typeName="MyStruct" />
+          </ECEntityClass>
+          `,
+        );
+        const modelKey = insertPhysicalModelWithPartition({ db, codeValue: "test model" });
+        const categoryKey = insertSpatialCategory({ db, codeValue: "test category" });
+        instanceKey = insertPhysicalElement({
+          db,
+          classFullName: testSchema.items.TestPhysicalObject.fullName,
+          modelId: modelKey.id,
+          categoryId: categoryKey.id,
+          structProperty: {
+            intProperty: 123,
+          },
+        });
+      });
+
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [
+          {
+            ruleType: "Content",
+            specifications: [
+              {
+                specType: "SelectedNodeInstances",
+              },
+            ],
+          },
+          {
+            ruleType: "ContentModifier",
+            class: { schemaName: testSchema.schemaName, className: testSchema.items.MyStruct.fullName },
+            propertyOverrides: [
+              {
+                name: "IntProperty",
+                renderer: {
+                  rendererName: "test-renderer",
+                },
+                editor: {
+                  editorName: "test-editor",
+                },
+              },
+            ],
+          },
+        ],
+      };
+
+      const descriptor = await Presentation.presentation
+        .getContentIterator({
+          imodel: imodelConnection,
+          rulesetOrId: ruleset,
+          keys: new KeySet([instanceKey!]),
+          descriptor: {},
+        })
+        .then(async (x) => x!.descriptor);
+      const structMemberField = getFieldByLabel(descriptor.fields, "IntProperty");
+      expect(structMemberField.renderer).to.deep.eq({ name: "test-renderer" });
+      expect(structMemberField.editor).to.deep.eq({ name: "test-editor" });
+    });
+
+    it("assigns custom renderer and editor to array item property", async function () {
+      let instanceKey: InstanceKey;
+      let testSchema!: ReturnType<typeof importSchema>;
+      const imodelConnection = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
+        testSchema = importSchema(
+          this,
+          db,
+          `
+          <ECSchemaReference name="BisCore" version="01.00.16" alias="bis" />
+          <ECEntityClass typeName="TestPhysicalObject" displayLabel="Test Physical Object" modifier="Sealed">
+            <BaseClass>bis:PhysicalElement</BaseClass>
+            <ECArrayProperty propertyName="IntProperty" typeName="int" />
+          </ECEntityClass>
+          `,
+        );
+        const modelKey = insertPhysicalModelWithPartition({ db, codeValue: "test model" });
+        const categoryKey = insertSpatialCategory({ db, codeValue: "test category" });
+        instanceKey = insertPhysicalElement({
+          db,
+          classFullName: testSchema.items.TestPhysicalObject.fullName,
+          modelId: modelKey.id,
+          categoryId: categoryKey.id,
+          intProperty: [123, 456],
+        });
+      });
+
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [
+          {
+            ruleType: "Content",
+            specifications: [
+              {
+                specType: "SelectedNodeInstances",
+              },
+            ],
+          },
+          {
+            ruleType: "ContentModifier",
+            class: { schemaName: testSchema.schemaName, className: testSchema.items.TestPhysicalObject.fullName },
+            propertyOverrides: [
+              {
+                name: "IntProperty[*]",
+                renderer: {
+                  rendererName: "test-renderer",
+                },
+                editor: {
+                  editorName: "test-editor",
+                },
+              },
+            ],
+          },
+        ],
+      };
+
+      const descriptor = await Presentation.presentation
+        .getContentIterator({
+          imodel: imodelConnection,
+          rulesetOrId: ruleset,
+          keys: new KeySet([instanceKey!]),
+          descriptor: {},
+        })
+        .then(async (x) => x!.descriptor);
+      const arrayField = getFieldByLabel(descriptor.fields, "IntProperty");
+      assert(arrayField.isPropertiesField() && arrayField.isArrayPropertiesField());
+      const arrayItemField = arrayField.itemsField;
+      expect(arrayItemField.renderer).to.deep.eq({ name: "test-renderer" });
+      expect(arrayItemField.editor).to.deep.eq({ name: "test-editor" });
+    });
+
+    it("assigns custom renderer and editor to struct-array member property", async function () {
+      let instanceKey: InstanceKey;
+      let testSchema!: ReturnType<typeof importSchema>;
+      const imodelConnection = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
+        testSchema = importSchema(
+          this,
+          db,
+          `
+          <ECSchemaReference name="BisCore" version="01.00.16" alias="bis" />
+          <ECStructClass typeName="MyStruct">
+            <ECProperty propertyName="IntProperty" typeName="int" />
+          </ECStructClass>
+          <ECEntityClass typeName="TestPhysicalObject" displayLabel="Test Physical Object" modifier="Sealed">
+            <BaseClass>bis:PhysicalElement</BaseClass>
+            <ECStructArrayProperty propertyName="StructArrayProperty" typeName="MyStruct" />
+          </ECEntityClass>
+          `,
+        );
+        const modelKey = insertPhysicalModelWithPartition({ db, codeValue: "test model" });
+        const categoryKey = insertSpatialCategory({ db, codeValue: "test category" });
+        instanceKey = insertPhysicalElement({
+          db,
+          classFullName: testSchema.items.TestPhysicalObject.fullName,
+          modelId: modelKey.id,
+          categoryId: categoryKey.id,
+          structArrayProperty: [
+            {
+              intProperty: 123,
+            },
+            {
+              intProperty: 456,
+            },
+          ],
+        });
+      });
+
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [
+          {
+            ruleType: "Content",
+            specifications: [
+              {
+                specType: "SelectedNodeInstances",
+              },
+            ],
+          },
+          {
+            ruleType: "ContentModifier",
+            class: { schemaName: testSchema.schemaName, className: testSchema.items.MyStruct.fullName },
+            propertyOverrides: [
+              {
+                name: "IntProperty",
+                renderer: {
+                  rendererName: "test-renderer",
+                },
+                editor: {
+                  editorName: "test-editor",
+                },
+              },
+            ],
+          },
+        ],
+      };
+
+      const descriptor = await Presentation.presentation
+        .getContentIterator({
+          imodel: imodelConnection,
+          rulesetOrId: ruleset,
+          keys: new KeySet([instanceKey!]),
+          descriptor: {},
+        })
+        .then(async (x) => x!.descriptor);
+      const arrayField = getFieldByLabel(descriptor.fields, "StructArrayProperty");
+      assert(arrayField.isPropertiesField() && arrayField.isArrayPropertiesField());
+      const structField = arrayField.itemsField;
+      assert(structField.isPropertiesField() && structField.isStructPropertiesField());
+      const structMemberField = getFieldByLabel(structField.memberFields, "IntProperty");
+      expect(structMemberField.renderer).to.deep.eq({ name: "test-renderer" });
+      expect(structMemberField.editor).to.deep.eq({ name: "test-editor" });
+    });
+  });
+
   describe("Instance filter", () => {
     it("filters content instances using direct property", async () => {
       const ruleset: Ruleset = {
@@ -1085,73 +1319,279 @@ describe("Content", () => {
         },
       ],
     };
-    const keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
-    const baseFormatProps = {
-      formatTraits: "KeepSingleZero|KeepDecimalPoint|ShowUnitLabel",
-      type: "Decimal",
-      precision: 4,
-      uomSeparator: " ",
-    };
 
-    it("formats property with default kind of quantity format when it doesn't have format for requested unit system", async () => {
-      expect(await getAreaDisplayValue("imperial")).to.eq("150.1235 cm²");
-    });
+    describe("with formats from different sources", () => {
+      const key = { className: "Generic:PhysicalObject", id: "0x74" };
+      const baseFormatProps = {
+        formatTraits: "KeepSingleZero|KeepDecimalPoint|ShowUnitLabel",
+        type: "Decimal",
+        precision: 4,
+        uomSeparator: " ",
+      };
 
-    it("formats property value using default format when the property doesn't have format for requested unit system", async () => {
-      const formatProps = {
-        ...baseFormatProps,
-        composite: {
-          units: [{ label: "ft²", name: "Units.SQ_FT" }],
-        },
-      };
-      const defaultFormats = {
-        area: [{ unitSystems: ["imperial" as UnitSystemKey], format: formatProps }],
-      };
-      expect(await getAreaDisplayValue("imperial", defaultFormats)).to.eq("0.1616 ft²");
-    });
+      it("formats property with default kind of quantity format when it doesn't have format for requested unit system", async () => {
+        expect(await getAreaDisplayValue("imperial")).to.eq("150.1235 cm²");
+      });
 
-    it("formats property value using property format when it has one for requested unit system in addition to default format", async () => {
-      const formatProps = {
-        ...baseFormatProps,
-        composite: {
-          units: [{ label: "ft²", name: "Units.SQ_FT" }],
-        },
-      };
-      const defaultFormats = {
-        area: [{ unitSystems: ["metric" as UnitSystemKey], format: formatProps }],
-      };
-      expect(await getAreaDisplayValue("metric", defaultFormats)).to.eq("150.1235 cm²");
-    });
+      it("formats property value using default format when the property doesn't have format for requested unit system", async () => {
+        const formatProps = {
+          ...baseFormatProps,
+          composite: {
+            units: [{ label: "ft²", name: "Units.SQ_FT" }],
+          },
+        };
+        const defaultFormats = {
+          area: [{ unitSystems: ["imperial" as UnitSystemKey], format: formatProps }],
+        };
+        expect(await getAreaDisplayValue("imperial", defaultFormats)).to.eq("0.1616 ft²");
+      });
 
-    it("formats property value using different unit system formats in defaults formats map", async () => {
-      const defaultFormats = {
-        area: [
-          {
-            unitSystems: ["imperial", "usCustomary"] as UnitSystemKey[],
-            format: {
-              ...baseFormatProps,
-              composite: {
-                units: [{ label: "in²", name: "Units.SQ_IN" }],
+      it("formats property value using property format when it has one for requested unit system in addition to default format", async () => {
+        const formatProps = {
+          ...baseFormatProps,
+          composite: {
+            units: [{ label: "ft²", name: "Units.SQ_FT" }],
+          },
+        };
+        const defaultFormats = {
+          area: [{ unitSystems: ["metric" as UnitSystemKey], format: formatProps }],
+        };
+        expect(await getAreaDisplayValue("metric", defaultFormats)).to.eq("150.1235 cm²");
+      });
+
+      it("formats property value using different unit system formats in defaults formats map", async () => {
+        const defaultFormats = {
+          area: [
+            {
+              unitSystems: ["imperial", "usCustomary"] as UnitSystemKey[],
+              format: {
+                ...baseFormatProps,
+                composite: {
+                  units: [{ label: "in²", name: "Units.SQ_IN" }],
+                },
               },
             },
-          },
-          {
-            unitSystems: ["usSurvey"] as UnitSystemKey[],
-            format: {
-              ...baseFormatProps,
-              composite: {
-                units: [{ label: "yrd² (US Survey)", name: "Units.SQ_US_SURVEY_YRD" }],
+            {
+              unitSystems: ["usSurvey"] as UnitSystemKey[],
+              format: {
+                ...baseFormatProps,
+                composite: {
+                  units: [{ label: "yrd² (US Survey)", name: "Units.SQ_US_SURVEY_YRD" }],
+                },
               },
             },
-          },
-        ],
-      };
-      expect(await getAreaDisplayValue("imperial", defaultFormats)).to.eq("23.2692 in²");
-      expect(await getAreaDisplayValue("usCustomary", defaultFormats)).to.eq("23.2692 in²");
-      expect(await getAreaDisplayValue("usSurvey", defaultFormats)).to.eq("0.018 yrd² (US Survey)");
+          ],
+        };
+        expect(await getAreaDisplayValue("imperial", defaultFormats)).to.eq("23.2692 in²");
+        expect(await getAreaDisplayValue("usCustomary", defaultFormats)).to.eq("23.2692 in²");
+        expect(await getAreaDisplayValue("usSurvey", defaultFormats)).to.eq("0.018 yrd² (US Survey)");
+      });
+
+      async function getAreaDisplayValue(unitSystem: UnitSystemKey, defaultFormats?: FormatsMap): Promise<DisplayValue> {
+        const content = await getContent(key, unitSystem, defaultFormats);
+        return getDisplayValue(content, [getFieldByLabel(content.descriptor.fields, "area"), getFieldByLabel(content.descriptor.fields, "cm2")]);
+      }
     });
 
-    async function getAreaDisplayValue(unitSystem: UnitSystemKey, defaultFormats?: FormatsMap): Promise<DisplayValue> {
+    describe("of properties in different places of content", () => {
+      before(async () => {
+        // for these tests we want to create our own iModel, so close the default one
+        await closeDefaultIModel();
+      });
+      after(async () => {
+        // re-open the default iModel after the tests suite is complete
+        await openDefaultIModel();
+      });
+
+      it("formats direct properties", async function () {
+        let elementKey!: InstanceKey;
+        imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
+          const schema = importSchema(
+            this,
+            db,
+            `
+              <ECSchemaReference name="BisCore" version="01.00.16" alias="bis" />
+              <ECSchemaReference name="Units" version="01.00.07" alias="u" />
+              <ECSchemaReference name="Formats" version="01.00.00" alias="f" />
+              <KindOfQuantity typeName="LENGTH" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(1)[u:M]" relativeError="0.0001" />
+              <ECEntityClass typeName="X">
+                <BaseClass>bis:PhysicalElement</BaseClass>
+                <ECProperty propertyName="Prop" typeName="double" kindOfQuantity="LENGTH" />
+              </ECEntityClass>
+            `,
+          );
+          const model = insertPhysicalModelWithPartition({ db, codeValue: "model" });
+          const category = insertSpatialCategory({ db, codeValue: "category" });
+          elementKey = insertPhysicalElement({
+            db,
+            classFullName: schema.items.X.fullName,
+            modelId: model.id,
+            categoryId: category.id,
+            ["Prop"]: 123.456,
+          });
+        });
+        const content = await getContent(elementKey);
+        const displayValue = getDisplayValue(content, [getFieldByLabel(content.descriptor.fields, "Prop")]);
+        expect(displayValue).to.eq("123.5 m");
+      });
+
+      it("formats related properties", async function () {
+        let elementKey!: InstanceKey;
+        imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
+          const schema = importSchema(
+            this,
+            db,
+            `
+              <ECSchemaReference name="BisCore" version="01.00.16" alias="bis" />
+              <ECSchemaReference name="Units" version="01.00.07" alias="u" />
+              <ECSchemaReference name="Formats" version="01.00.00" alias="f" />
+              <KindOfQuantity typeName="LENGTH" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(1)[u:M]" relativeError="0.0001" />
+              <ECEntityClass typeName="A">
+                <BaseClass>bis:ElementUniqueAspect</BaseClass>
+                <ECProperty propertyName="Prop" typeName="double" kindOfQuantity="LENGTH" />
+              </ECEntityClass>
+              <ECEntityClass typeName="X">
+                <BaseClass>bis:PhysicalElement</BaseClass>
+              </ECEntityClass>
+            `,
+          );
+          const model = insertPhysicalModelWithPartition({ db, codeValue: "model" });
+          const category = insertSpatialCategory({ db, codeValue: "category" });
+          elementKey = insertPhysicalElement({
+            db,
+            classFullName: schema.items.X.fullName,
+            modelId: model.id,
+            categoryId: category.id,
+          });
+          insertElementAspect({
+            db,
+            classFullName: schema.items.A.fullName,
+            elementId: elementKey.id,
+            ["Prop"]: 123.456,
+          });
+        });
+        const content = await getContent(elementKey);
+        const displayValue = getDisplayValue(content, [getFieldByLabel(content.descriptor.fields, "A"), getFieldByLabel(content.descriptor.fields, "Prop")]);
+        expect(displayValue).to.eq("123.5 m");
+      });
+
+      it("formats array item properties", async function () {
+        let elementKey!: InstanceKey;
+        imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
+          const schema = importSchema(
+            this,
+            db,
+            `
+              <ECSchemaReference name="BisCore" version="01.00.16" alias="bis" />
+              <ECSchemaReference name="Units" version="01.00.07" alias="u" />
+              <ECSchemaReference name="Formats" version="01.00.00" alias="f" />
+              <KindOfQuantity typeName="LENGTH" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(1)[u:M]" relativeError="0.0001" />
+              <ECEntityClass typeName="X">
+                <BaseClass>bis:PhysicalElement</BaseClass>
+                <ECArrayProperty propertyName="Prop" typeName="double" kindOfQuantity="LENGTH" />
+              </ECEntityClass>
+            `,
+          );
+          const model = insertPhysicalModelWithPartition({ db, codeValue: "model" });
+          const category = insertSpatialCategory({ db, codeValue: "category" });
+          elementKey = insertPhysicalElement({
+            db,
+            classFullName: schema.items.X.fullName,
+            modelId: model.id,
+            categoryId: category.id,
+            ["Prop"]: [123.456, 456.789],
+          });
+        });
+        const content = await getContent(elementKey);
+        const displayValue = getDisplayValue(content, [getFieldByLabel(content.descriptor.fields, "Prop")]);
+        expect(displayValue).to.deep.eq(["123.5 m", "456.8 m"]);
+      });
+
+      it("formats struct member properties", async function () {
+        let elementKey!: InstanceKey;
+        imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
+          const schema = importSchema(
+            this,
+            db,
+            `
+              <ECSchemaReference name="BisCore" version="01.00.16" alias="bis" />
+              <ECSchemaReference name="Units" version="01.00.07" alias="u" />
+              <ECSchemaReference name="Formats" version="01.00.00" alias="f" />
+              <KindOfQuantity typeName="LENGTH" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(1)[u:M]" relativeError="0.0001" />
+              <ECStructClass typeName="MyStruct">
+                <ECProperty propertyName="MemberProp" typeName="double" kindOfQuantity="LENGTH" />
+              </ECStructClass>
+              <ECEntityClass typeName="X">
+                <BaseClass>bis:PhysicalElement</BaseClass>
+                <ECStructProperty propertyName="StructProp" typeName="MyStruct" />
+              </ECEntityClass>
+            `,
+          );
+          const model = insertPhysicalModelWithPartition({ db, codeValue: "model" });
+          const category = insertSpatialCategory({ db, codeValue: "category" });
+          elementKey = insertPhysicalElement({
+            db,
+            classFullName: schema.items.X.fullName,
+            modelId: model.id,
+            categoryId: category.id,
+            ["StructProp"]: {
+              ["MemberProp"]: 123.456,
+            },
+          });
+        });
+        const content = await getContent(elementKey);
+        const displayValue = getDisplayValue(content, [
+          getFieldByLabel(content.descriptor.fields, "StructProp"),
+          getFieldByLabel(content.descriptor.fields, "MemberProp"),
+        ]);
+        expect(displayValue).to.eq("123.5 m");
+      });
+
+      it("formats struct array member properties", async function () {
+        let elementKey!: InstanceKey;
+        imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
+          const schema = importSchema(
+            this,
+            db,
+            `
+              <ECSchemaReference name="BisCore" version="01.00.16" alias="bis" />
+              <ECSchemaReference name="Units" version="01.00.07" alias="u" />
+              <ECSchemaReference name="Formats" version="01.00.00" alias="f" />
+              <KindOfQuantity typeName="LENGTH" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(1)[u:M]" relativeError="0.0001" />
+              <ECStructClass typeName="MyStruct">
+                <ECProperty propertyName="MemberProp" typeName="double" kindOfQuantity="LENGTH" />
+              </ECStructClass>
+              <ECEntityClass typeName="X">
+                <BaseClass>bis:PhysicalElement</BaseClass>
+                <ECStructArrayProperty propertyName="StructArrayProp" typeName="MyStruct" />
+              </ECEntityClass>
+            `,
+          );
+          const model = insertPhysicalModelWithPartition({ db, codeValue: "model" });
+          const category = insertSpatialCategory({ db, codeValue: "category" });
+          elementKey = insertPhysicalElement({
+            db,
+            classFullName: schema.items.X.fullName,
+            modelId: model.id,
+            categoryId: category.id,
+            ["StructArrayProp"]: [
+              {
+                ["MemberProp"]: 123.456,
+              },
+              {
+                ["MemberProp"]: 456.789,
+              },
+            ],
+          });
+        });
+        const content = await getContent(elementKey);
+        const displayValue = getDisplayValue(content, [getFieldByLabel(content.descriptor.fields, "StructArrayProp")]);
+        expect(displayValue).to.deep.eq([{ ["MemberProp"]: "123.5 m" }, { ["MemberProp"]: "456.8 m" }]);
+      });
+    });
+
+    async function getContent(key: InstanceKey, unitSystem?: UnitSystemKey, defaultFormats?: FormatsMap): Promise<Content> {
+      const keys = new KeySet([key]);
       const props: PresentationManagerProps = {
         defaultFormats,
         activeLocale: "en-PSEUDO",
@@ -1170,13 +1610,11 @@ describe("Content", () => {
           unitSystem,
         });
         expect(descriptor).to.not.be.undefined;
-        const field = getFieldByLabel(descriptor!.fields, "cm2");
         const content = await manager
           .getContentIterator({ imodel, rulesetOrId: ruleset, keys, descriptor: descriptor!, unitSystem })
           .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
-        const displayValues = content!.contentSet[0].values.rc_generic_PhysicalObject_ncc_MyProp_areaElementAspect as DisplayValuesArray;
-        expect(displayValues.length).is.eq(1);
-        return ((displayValues[0] as DisplayValuesMap).displayValues as DisplayValuesMap)[field.name]!;
+        expect(content).to.not.be.undefined;
+        return content!;
       });
     }
   });
@@ -1186,14 +1624,14 @@ describe("Content", () => {
     const frontendTimeout = 50;
 
     beforeEach(async () => {
-      await closeIModel();
+      await closeDefaultIModel();
       await terminate();
       await initialize({
         // this defaults to 0, which means "no timeouts" - reinitialize with something else
         backendTimeout: 1,
         frontendTimeout,
       });
-      await openIModel();
+      await openDefaultIModel();
 
       // mock `Promise.race` to always reject
       // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -1206,7 +1644,7 @@ describe("Content", () => {
     });
 
     afterEach(async () => {
-      await closeIModel();
+      await closeDefaultIModel();
       raceStub.restore();
     });
 
@@ -1310,4 +1748,35 @@ function filterFieldsByClass(fields: Field[], classInfo: ECClassHierarchyInfo) {
     }
   });
   return filteredFields;
+}
+
+function getDisplayValue(content: Content, fieldsPath: Field[]) {
+  let { values, displayValues } = content.contentSet[0];
+  for (let i = 0; i < fieldsPath.length - 1; ++i) {
+    const currField = fieldsPath[i];
+    if (currField.isNestedContentField()) {
+      const currentValue = values[currField.name];
+      assert(Value.isNestedContent(currentValue));
+      expect(currentValue.length).to.eq(1);
+      const nestedContentItem = currentValue[0];
+      values = nestedContentItem.values;
+      displayValues = nestedContentItem.displayValues;
+      continue;
+    }
+    if (currField.isPropertiesField() && currField.isStructPropertiesField()) {
+      const currentValue = values[currField.name];
+      const currentDisplayValue = displayValues[currField.name];
+      assert(Value.isMap(currentValue) && DisplayValue.isMap(currentDisplayValue));
+      values = currentValue;
+      displayValues = currentDisplayValue;
+      continue;
+    }
+    throw new Error(
+      `Failed to find a value for field "${currField.name} at path [${fieldsPath
+        .slice(0, i)
+        .map((f) => f.name)
+        .join(", ")}]. Current values: ${JSON.stringify(values)}"`,
+    );
+  }
+  return displayValues[fieldsPath[fieldsPath.length - 1].name];
 }

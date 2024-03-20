@@ -12,7 +12,11 @@ Table of contents:
   - [Editor](#editor)
   - [Lock Control](#lock-control)
   - [Presentation](#presentation)
+    - [RPC interface version bump](#rpc-interface-version-bump)
+    - [Custom renderer and editor support for array items](#custom-renderer-and-editor-support-for-array-items)
+    - [Support for property overrides on ECStruct member properties](#support-for-property-overrides-on-ecstruct-member-properties)
     - [Deprecation of async array results in favor of async iterators](#deprecation-of-async-array-results-in-favor-of-async-iterators)
+  - [Fixed bounding box types](#fixed-bounding-box-types)
 
 ## Display
 
@@ -61,6 +65,57 @@ Changes to @beta [LockControl]($backend) class to make releaseAllLocks @internal
 
 ## Presentation
 
+### RPC interface version bump
+
+The presentation backend now sends more properties-related information to the frontend than it did in previous version, and the frontend relies on that information for formatting and rendering the properties. As a result, the version of [PresentationRpcInterface]($presentation-common) has been bumped from `4.0.0` to `4.1.0`.
+
+### Custom renderer and editor support for array items
+
+Support for custom renderers and editors has been added for array items.
+
+A renderer / editor may be assigned to items of specific array by creating a [ContentModifier]($presentation-common) for
+a class that has the property and adding a property override for the array property with `[*]` suffix. Example:
+
+```json
+{
+  "ruleType": "ContentModifier",
+  "class": { "schemaName": "MySchemaName", "className": "MyClassName" },
+  "propertyOverrides": [
+    {
+      "name": "MyArrayProperty[*]",
+      "renderer": {
+        "rendererName": "test-renderer"
+      },
+      "editor": {
+        "editorName": "test-editor"
+      }
+    }
+  ]
+}
+```
+
+### Support for property overrides on ECStruct member properties
+
+Support for property overrides has been added for struct member properties.
+
+The overrides may be assigned to members of specific ECStruct class by creating a [ContentModifier]($presentation-common) for
+the struct class and adding property overrides for the members. Example:
+
+```json
+{
+  "ruleType": "ContentModifier",
+  "class": { "schemaName": "MySchemaName", "className": "MyStructClassName" },
+  "propertyOverrides": [
+    {
+      "name": "StructMemberProperty",
+      "renderer": {
+        "rendererName": "test-renderer"
+      }
+    }
+  ]
+}
+```
+
 ### Deprecation of async array results in favor of async iterators
 
 `PresentationManager` contains a number of methods to retrieve sets of results like nodes, content, etc. All of these methods have been deprecated in favor of new ones that return an async iterator instead of an array:
@@ -92,3 +147,9 @@ While performance-wise deprecated methods should be in line with the newly added
 >  // update component's model to render the loaded label
 > }
 > ```
+
+## Fixed bounding box types
+
+The `bbox` properties of [Placement2dProps]($common) and [Placement3dProps]($common) were incorrectly typed as [LowAndHighXY]($geometry) and [LowAndHighXYZ]($geometry), respectively. In actuality, they may also be of the type `{ low: number[]; high: number[]; }`, and will always be in this form when returned from the backend by functions like `getElementProps`. The types have been adjusted to [LowAndHighXYProps]($geometry) and [LowAndHighXYZProps]($geometry) to reflect this.
+
+An analogous adjustment was made to the `bbox` property of [GeometryPartProps]($common).
