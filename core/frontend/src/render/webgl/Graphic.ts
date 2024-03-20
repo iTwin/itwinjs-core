@@ -363,10 +363,12 @@ export class Branch extends Graphic {
   }
 
   public override unionRange(range: Range3d) {
+    const thisRange = new Range3d();
     for (const graphic of this.branch.entries)
-      graphic.unionRange(range);
+      graphic.unionRange(thisRange);
 
-    this.localToWorldTransform.multiplyRange(range, range);
+    this.localToWorldTransform.multiplyRange(thisRange, thisRange);
+    range.extendRange(thisRange);
   }
 
   private shouldAddCommands(commands: RenderCommands): boolean {

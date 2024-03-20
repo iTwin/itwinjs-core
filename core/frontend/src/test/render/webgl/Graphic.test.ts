@@ -7,8 +7,9 @@ import { expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
 import { EmptyLocalization } from "@itwin/core-common";
 import { RenderGraphic } from "../../../render/RenderGraphic";
-import { Point3d, Range3d } from "@itwin/core-geometry";
+import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { GraphicBuilder, GraphicType } from "../../../render/GraphicBuilder";
+import { GraphicBranch } from "../../../render/GraphicBranch";
 
 describe.only("Graphic", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -20,15 +21,14 @@ describe.only("Graphic", () => {
     return range;
   }
 
-  function expectRange(graphic: RenderGraphic, expected: Range3d): void {
+  function expectRange(graphic: RenderGraphic, expected: Range3d): Range3d {
     const range = computeRange(graphic);
+    if (!range.isAlmostEqual(expected)) {
+      console.log(`expected: ${JSON.stringify(expected)} actual: ${JSON.stringify(range)}`);
+    }
+
     expect(range.isAlmostEqual(expected)).to.be.true;
-    // expect(range.low.x).to.equal(expected.low.x);
-    // expect(range.low.y).to.equal(expected.low.y);
-    // expect(range.low.z).to.equal(expected.low.z);
-    // expect(range.high.x).to.equal(expected.high.x);
-    // expect(range.high.y).to.equal(expected.high.y);
-    // expect(range.high.z).to.equal(expected.high.z);
+    return range;
   }
 
   function createGraphic(populate: (builder: GraphicBuilder) => void): RenderGraphic {
@@ -47,28 +47,26 @@ describe.only("Graphic", () => {
     expectRange(box, boxRange);
 
     const line = createGraphic((builder) => builder.addLineString([new Point3d(1, 2, -1), new Point3d(-5, 2, 5)]));
-    expectRange(line, new Range3d(-5, 2, -1, 1, 2, 5));
+    const lineRange = expectRange(line, new Range3d(-5, 2, -1, 1, 2, 5));
 
     const point = createGraphic((builder) => builder.addPointString([new Point3d(6, 1, 0)]));
-    expectRange(point, new Range3d(6, 1, 0, 6, 1, 0));
+    const pointRange = expectRange(point, new Range3d(6, 1, 0, 6, 1, 0));
 
     const pointString = createGraphic((builder) => builder.addPointString([new Point3d(0, 0, -1), new Point3d(-4, 12, 0)]));
-    expectRange(pointString, new Range3d(-4, 0, -1, 0, 12, 0));
+    const pointStringRange = expectRange(pointString, new Range3d(-4, 0, -1, 0, 12, 0));
     
+    const owner = IModelApp.renderSystem.createGraphicOwner(box);
+    expectRange(owner, boxRange);
 
+    const primitivesRange = new Range3d();
+    for (const primitiveRange of [boxRange, lineRange, pointRange, pointStringRange]) {
+      primitivesRange.extendRange(primitiveRange);
+    }
+
+    const list = IModelApp.renderSystem.createGraphicList([box, line, point, pointString]);
+    const listRange = expectRange(list, primitivesRange);
 
     
-    // Point string
-    // Single point
-    // Line string
-    // Mesh (range box)
-
-    // Instanced versions
-
-    // GraphicOwner
-    
-    // GraphicList
-
     // Batch just returns its range, doesn't ask children
 
     // GraphicBranch with and without transform
