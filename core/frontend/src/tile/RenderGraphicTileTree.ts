@@ -21,7 +21,7 @@ export interface RenderGraphicTileTreeArgs {
   modelId: Id64String;
   viewFlags?: ViewFlagOverrides;
   is2d?: boolean;
-  getToolTip?: (hit: HitDetail) => Promise<HTMLElement | string>;
+  getToolTip?: (hit: HitDetail) => Promise<HTMLElement | string | undefined>;
 }
 
 interface TreeId extends RenderGraphicTileTreeArgs {

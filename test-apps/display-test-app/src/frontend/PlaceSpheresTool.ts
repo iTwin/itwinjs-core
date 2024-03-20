@@ -102,15 +102,24 @@ export class PlaceSpheresTool extends PrimitiveTool {
   }
 
   private registerTiledGraphicsProvider(viewport: Viewport) {
-    if (!this._graphic || !this._spheres) {
+    const spheres = this._spheres;
+    if (!this._graphic || !spheres) {
       return;
     }
 
+    const sphereIds = spheres.spheres.map((x) => x.id);
     const treeRef = TileTreeReference.createFromRenderGraphic({
       iModel: viewport.iModel,
       graphic: this._graphic,
-      modelId: this._spheres.modelId,
-      getToolTip: async (_hit: HitDetail) => Promise.resolve("hi"),
+      modelId: spheres.modelId,
+      getToolTip: async (hit: HitDetail) => {
+        const index = sphereIds.indexOf(hit.sourceId);
+        if (-1 !== index) {
+          return Promise.resolve(`Sphere #${index + 1}`);
+        } else {
+          return undefined;
+        }
+      },
     });
 
     const provider: TiledGraphicsProvider = {
