@@ -3,6 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import {
+  ArrayPropertiesField,
   CategoryDescription,
   ClassInfo,
   Descriptor,
@@ -20,12 +21,13 @@ import {
   RelationshipPath,
   RendererDescription,
   SelectClassInfo,
+  StructPropertiesField,
   StructTypeDescription,
   TypeDescription,
   ValuesMap,
 } from "../../presentation-common";
 import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
-import { createTestECClassInfo, createTestECInstanceKey, createTestRelationshipPath } from "./EC";
+import { createTestECClassInfo, createTestECInstanceKey, createTestPropertyInfo, createTestRelationshipPath } from "./EC";
 
 /**
  * @internal Used for testing only.
@@ -47,6 +49,16 @@ export const createTestSelectClassInfo = (props?: Partial<SelectClassInfo>) => (
   isSelectPolymorphic: false,
   ...props,
 });
+
+/** @internal Used for testing only. */
+export function createTestLabelDefinition(props?: Partial<LabelDefinition>): LabelDefinition {
+  return {
+    typeName: "string",
+    rawValue: "test raw value",
+    displayValue: "test display value",
+    ...props,
+  };
+}
 
 /**
  * @internal Used for testing only.
@@ -92,6 +104,81 @@ export function createTestPropertiesContentField(props: {
     props.name ?? "PropertiesField",
     props.label ?? "Properties Field",
     props.type ?? { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
+    props.isReadonly ?? false,
+    props.priority ?? 0,
+    props.properties,
+    props.editor,
+    props.renderer,
+  );
+}
+
+/**
+ * @internal Used for testing only.
+ */
+export function createTestArrayPropertiesContentField(props: {
+  properties: Property[];
+  category?: CategoryDescription;
+  type?: TypeDescription;
+  itemsField?: PropertiesField;
+  name?: string;
+  label?: string;
+  isReadonly?: boolean;
+  priority?: number;
+  editor?: EditorDescription;
+  renderer?: RendererDescription;
+}) {
+  return new ArrayPropertiesField(
+    props.category ?? createTestCategoryDescription(),
+    props.name ?? "ArrayPropertiesField",
+    props.label ?? "Array Properties Field",
+    props.type ?? {
+      valueFormat: PropertyValueFormat.Array,
+      typeName: "string[]",
+      memberType: {
+        valueFormat: PropertyValueFormat.Primitive,
+        typeName: "string",
+      },
+    },
+    props.itemsField ?? createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo() }] }),
+    props.isReadonly ?? false,
+    props.priority ?? 0,
+    props.properties,
+    props.editor,
+    props.renderer,
+  );
+}
+
+/**
+ * @internal Used for testing only.
+ */
+export function createTestStructPropertiesContentField(props: {
+  properties: Property[];
+  category?: CategoryDescription;
+  type?: TypeDescription;
+  memberFields?: PropertiesField[];
+  name?: string;
+  label?: string;
+  isReadonly?: boolean;
+  priority?: number;
+  editor?: EditorDescription;
+  renderer?: RendererDescription;
+}) {
+  return new StructPropertiesField(
+    props.category ?? createTestCategoryDescription(),
+    props.name ?? "StructPropertiesField",
+    props.label ?? "Struct Properties Field",
+    props.type ?? {
+      valueFormat: PropertyValueFormat.Struct,
+      typeName: "TestStruct",
+      members: [
+        {
+          name: "member1",
+          label: "Member 1",
+          type: { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
+        },
+      ],
+    },
+    props.memberFields ?? [createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "member1", type: "string" }) }] })],
     props.isReadonly ?? false,
     props.priority ?? 0,
     props.properties,
