@@ -2938,7 +2938,7 @@ describe("ECSqlStatement", () => {
         assert.isDefined(res.id);
       });
 
-      ecdb.withPreparedStatement("SELECT f, g FROM Test.A", (stmt: ECSqlStatement) => {
+      ecdb.withPreparedStatement("SELECT f, f.c.a, f.c.b, f.d, g FROM Test.A", (stmt: ECSqlStatement) => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
         // getRow just returns the enum values
         const row: any = stmt.getRow();
@@ -2960,12 +2960,42 @@ describe("ECSqlStatement", () => {
         const val1: ECSqlValue = stmt.getValue(1);
         const colInfo1: ECSqlColumnInfo = val1.columnInfo;
 
-        assert.equal(colInfo1.getPropertyName(), "g");
+        assert.equal(colInfo1.getPropertyName(), "a");
         const accessString1 = colInfo1.getAccessString();
-        assert.equal(accessString1, "g");
+        assert.equal(accessString1, "f.c.a");
         const originPropertyName1 = colInfo1.getOriginPropertyName();
         assert.isDefined(originPropertyName1);
-        assert.equal(originPropertyName1, "g");
+        assert.equal(originPropertyName1, "a");
+
+        const val2: ECSqlValue = stmt.getValue(2);
+        const colInfo2: ECSqlColumnInfo = val2.columnInfo;
+
+        assert.equal(colInfo2.getPropertyName(), "b");
+        const accessString2 = colInfo2.getAccessString();
+        assert.equal(accessString2, "f.c.b");
+        const originPropertyName2 = colInfo2.getOriginPropertyName();
+        assert.isDefined(originPropertyName2);
+        assert.equal(originPropertyName2, "b");
+
+        const val3: ECSqlValue = stmt.getValue(3);
+        const colInfo3: ECSqlColumnInfo = val3.columnInfo;
+
+        assert.equal(colInfo3.getPropertyName(), "d");
+        const accessString3 = colInfo3.getAccessString();
+        assert.equal(accessString3, "f.d");
+        const originPropertyName3 = colInfo3.getOriginPropertyName();
+        assert.isDefined(originPropertyName3);
+        assert.equal(originPropertyName3, "d");
+
+        const val4: ECSqlValue = stmt.getValue(4);
+        const colInfo4: ECSqlColumnInfo = val4.columnInfo;
+
+        assert.equal(colInfo4.getPropertyName(), "g");
+        const accessString4 = colInfo4.getAccessString();
+        assert.equal(accessString4, "g");
+        const originPropertyName4 = colInfo4.getOriginPropertyName();
+        assert.isDefined(originPropertyName4);
+        assert.equal(originPropertyName4, "g");
       });
 
       ecdb.withPreparedStatement("INSERT INTO Test.B (h.a, h.b, i) VALUES ('h.a' ,'h.b', 'i')", (stmt: ECSqlStatement) => {
