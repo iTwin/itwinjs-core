@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Added check to verify access string in column info.",
+      "comment": "Added tests to verify access string information in QueryReader metadata.",
       "type": "none"
     }
   ],

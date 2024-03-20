@@ -337,6 +337,26 @@ describe("ECSql Query", () => {
     assert.isTrue(reader.stats.backendCpuTime > 0);
     assert.isTrue(reader.stats.backendMemUsed > 1000);
   });
+  it("concurrent query access string meta data", async () => {
+    let reader = imodel1.createQueryReader("SELECT e.ECClassId FROM bis.Element e");
+    let props = await reader.getMetaData();
+    assert.equal(props.length, 1);
+    assert.equal(props[0].accessString, "ECClassId");
+
+    reader = imodel1.createQueryReader("SELECT Model.Id, e.Model.Id, Model.RelECClassId, e.Model.RelECClassId FROM bis.Element e");
+    props = await reader.getMetaData();
+    assert.equal(props.length, 4);
+    assert.equal(props[0].accessString, "Model.Id");
+    assert.equal(props[1].accessString, "Model.Id");
+    assert.equal(props[2].accessString, "Model.RelECClassId");
+    assert.equal(props[3].accessString, "Model.RelECClassId");
+
+    reader = imodel1.createQueryReader("SELECT Origin.X, Origin.Y FROM bis.GeometricElement2d ge");
+    props = await reader.getMetaData();
+    assert.equal(props.length, 2);
+    assert.equal(props[0].accessString, "Origin.X");
+    assert.equal(props[1].accessString, "Origin.Y");
+  });
   it("concurrent query quota", async () => {
     let reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { limit: { count: 4 } });
     let rows = 0;

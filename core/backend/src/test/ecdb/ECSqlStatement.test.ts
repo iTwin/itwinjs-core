@@ -2897,6 +2897,114 @@ describe("ECSqlStatement", () => {
     });
   });
 
+  it("check access string metadata in nested struct", async () => {
+    await using(ECDbTestHelper.createECDb(outDir, "columnInfo.ecdb",
+      `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="ECDbMap" version="02.00.00" alias="ecdbmap"/>
+        <ECStructClass typeName="InnerStruct">
+          <ECProperty propertyName="a" typeName="string"/>
+          <ECProperty propertyName="b" typeName="string"/>
+        </ECStructClass>
+        <ECStructClass typeName="OuterStruct">
+          <ECStructProperty propertyName="c" typeName="InnerStruct"/>
+          <ECProperty propertyName="d" typeName="string"/>
+        </ECStructClass>
+        <ECEntityClass typeName="Z">
+          <ECCustomAttributes>
+            <ClassMap xmlns="ECDbMap.02.00.00">
+              <MapStrategy>TablePerHierarchy</MapStrategy>
+            </ClassMap>
+            <ShareColumns xmlns="ECDbMap.02.00.00">
+                <MaxSharedColumnsBeforeOverflow>32</MaxSharedColumnsBeforeOverflow>
+            </ShareColumns>
+          </ECCustomAttributes>
+        </ECEntityClass>
+        <ECEntityClass typeName="A">
+          <BaseClass>Z</BaseClass>
+          <ECStructProperty propertyName="f" typeName="OuterStruct"/>
+          <ECProperty propertyName="g" typeName="string"/>
+        </ECEntityClass>
+        <ECEntityClass typeName="B">
+          <BaseClass>Z</BaseClass>
+          <ECStructProperty propertyName="h" typeName="InnerStruct" />
+          <ECProperty propertyName="i" typeName="string"/>
+        </ECEntityClass>
+      </ECSchema>`), async (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen);
+
+      ecdb.withPreparedStatement("INSERT INTO Test.A (f.c.a, f.c.b, f.d, g) VALUES ('f.c.a' ,'f.c.b', 'f.d', 'g')", (stmt: ECSqlStatement) => {
+        const res: ECSqlInsertResult = stmt.stepForInsert();
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+        assert.isDefined(res.id);
+      });
+
+      ecdb.withPreparedStatement("SELECT f, g FROM Test.A", (stmt: ECSqlStatement) => {
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+        // getRow just returns the enum values
+        const row: any = stmt.getRow();
+        assert.equal(row.f.c.a, "f.c.a");
+        assert.equal(row.f.c.b, "f.c.b");
+        assert.equal(row.f.d, "f.d");
+        assert.equal(row.g, "g");
+
+        const val0: ECSqlValue = stmt.getValue(0);
+        const colInfo0: ECSqlColumnInfo = val0.columnInfo;
+
+        assert.equal(colInfo0.getPropertyName(), "f");
+        const accessString0 = colInfo0.getAccessString();
+        assert.equal(accessString0, "f");
+        const originPropertyName0 = colInfo0.getOriginPropertyName();
+        assert.isDefined(originPropertyName0);
+        assert.equal(originPropertyName0, "f");
+
+        const val1: ECSqlValue = stmt.getValue(1);
+        const colInfo1: ECSqlColumnInfo = val1.columnInfo;
+
+        assert.equal(colInfo1.getPropertyName(), "g");
+        const accessString1 = colInfo1.getAccessString();
+        assert.equal(accessString1, "g");
+        const originPropertyName1 = colInfo1.getOriginPropertyName();
+        assert.isDefined(originPropertyName1);
+        assert.equal(originPropertyName1, "g");
+      });
+
+      ecdb.withPreparedStatement("INSERT INTO Test.B (h.a, h.b, i) VALUES ('h.a' ,'h.b', 'i')", (stmt: ECSqlStatement) => {
+        const res: ECSqlInsertResult = stmt.stepForInsert();
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+        assert.isDefined(res.id);
+      });
+
+      ecdb.withPreparedStatement("SELECT h, i FROM Test.B", (stmt: ECSqlStatement) => {
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+        // getRow just returns the enum values
+        const row: any = stmt.getRow();
+        assert.equal(row.h.a, "h.a");
+        assert.equal(row.h.b, "h.b");
+        assert.equal(row.i, "i");
+
+        const val0: ECSqlValue = stmt.getValue(0);
+        const colInfo0: ECSqlColumnInfo = val0.columnInfo;
+
+        assert.equal(colInfo0.getPropertyName(), "h");
+        const accessString0 = colInfo0.getAccessString();
+        assert.equal(accessString0, "h");
+        const originPropertyName0 = colInfo0.getOriginPropertyName();
+        assert.isDefined(originPropertyName0);
+        assert.equal(originPropertyName0, "h");
+
+        const val1: ECSqlValue = stmt.getValue(1);
+        const colInfo1: ECSqlColumnInfo = val1.columnInfo;
+
+        assert.equal(colInfo1.getPropertyName(), "i");
+        const accessString1 = colInfo1.getAccessString();
+        assert.equal(accessString1, "i");
+        const originPropertyName1 = colInfo1.getOriginPropertyName();
+        assert.isDefined(originPropertyName1);
+        assert.equal(originPropertyName1, "i");
+      });
+    });
+  });
+
   it("ecsql statements with QueryBinder", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "test.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
