@@ -3,20 +3,63 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ColorDef } from "@itwin/core-common";
-import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, IModelApp, PrimitiveTool, RenderGraphic, TileTreeReference, TiledGraphicsProvider, Viewport } from "@itwin/core-frontend";
-import { Point3d, Sphere } from "@itwin/core-geometry";
+import { ColorDef, Feature } from "@itwin/core-common";
+import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, IModelApp, IModelConnection, PrimitiveTool, RenderGraphic, TileTreeReference, TiledGraphicsProvider, Viewport } from "@itwin/core-frontend";
+import { Point3d, Sphere as SpherePrimitive } from "@itwin/core-geometry";
 
 function getColor(index: number): ColorDef {
   const colors = [ColorDef.red, ColorDef.blue, ColorDef.green, ColorDef.white, ColorDef.black];
   return colors[index % colors.length];
 }
 
+interface Sphere {
+  id: string;
+  center: Point3d;
+}
+
+class Spheres {
+  private readonly _radius = 10;
+  private readonly _chordTolerance = 0.01;
+  public readonly spheres: Sphere[] = [];
+  public readonly modelId: string;
+
+  constructor(private readonly _iModel: IModelConnection) {
+    this.modelId = this._iModel.transientIds.getNext();
+  }
+
+  public add(point: Point3d) {
+    this.spheres.push({
+      id: this._iModel.transientIds.getNext(),
+      center: point,
+    });
+  }
+
+  public toGraphic(): RenderGraphic {
+    const builder = IModelApp.renderSystem.createGraphic({
+      type: GraphicType.Scene,
+      computeChordTolerance: () => this._chordTolerance,
+      pickable: {
+        modelId: this.modelId,
+        id: this.modelId,
+      }
+    });
+
+    for (let i = 0; i < this.spheres.length; i++) {
+      const entry = this.spheres[i];
+      builder.setSymbology(getColor(i), getColor(i).withTransparency(0x7f), 1);
+      builder.activateFeature(new Feature(entry.id));
+
+      const sphere = SpherePrimitive.createCenterRadius(entry.center, this._radius);
+      builder.addSolidPrimitive(sphere);
+    }
+
+    return builder.finish();
+  }
+}
+
 export class PlaceSpheresTool extends PrimitiveTool {
-  private readonly _points: Point3d[] = [];
-  private _radius = 10;
-  private _chordTolerance = 0.1;
   private _graphic?: RenderGraphic;
+  private _spheres?: Spheres;
   
   public static override toolId = "DtaPlaceSpheres";
 
@@ -33,8 +76,18 @@ export class PlaceSpheresTool extends PrimitiveTool {
   }
 
   public override async onDataButtonDown(ev: BeButtonEvent) {
-    this._points.push(ev.point);
-    this.updateGraphic();
+    if (!ev.viewport) {
+      return EventHandled.No;
+    }
+
+    if (!this._spheres) {
+      this._spheres = new Spheres(ev.viewport.iModel);
+    }
+
+    this._spheres.add(ev.point);
+    this._graphic?.dispose();
+    this._graphic = this._spheres.toGraphic();
+
     ev.viewport?.invalidateDecorations();
     return EventHandled.No;
   }
@@ -49,14 +102,14 @@ export class PlaceSpheresTool extends PrimitiveTool {
   }
 
   private registerTiledGraphicsProvider(viewport: Viewport) {
-    if (!this._graphic) {
+    if (!this._graphic || !this._spheres) {
       return;
     }
 
     const treeRef = TileTreeReference.createFromRenderGraphic({
       iModel: viewport.iModel,
       graphic: this._graphic,
-      modelId: viewport.iModel.transientIds.getNext(),
+      modelId: this._spheres.modelId,
     });
 
     const provider: TiledGraphicsProvider = {
@@ -68,27 +121,6 @@ export class PlaceSpheresTool extends PrimitiveTool {
     }
 
     viewport.addTiledGraphicsProvider(provider);
-  }
-
-  private updateGraphic() {
-    if (this._points.length === 0) {
-      this._graphic?.dispose();
-      this._graphic = undefined;
-      return;
-    }
-
-    const builder = IModelApp.renderSystem.createGraphic({
-      type: GraphicType.Scene,
-      computeChordTolerance: () => this._chordTolerance,
-    });
-
-    for (let i = 0; i < this._points.length; i++) {
-      const sphere = Sphere.createCenterRadius(this._points[i], this._radius);
-      builder.setSymbology(getColor(i), getColor(i).withTransparency(0x7f), 1);
-      builder.addSolidPrimitive(sphere);
-    }
-
-    this._graphic = builder.finish();
   }
 
   public override decorate(context: DecorateContext) {
