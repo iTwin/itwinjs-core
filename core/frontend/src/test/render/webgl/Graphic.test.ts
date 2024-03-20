@@ -41,6 +41,24 @@ describe.only("Graphic", () => {
     return builder.finish();
   }
 
+  function unionRange(ranges: Range3d[]): Range3d {
+    const range = new Range3d();
+    for (const r of ranges) {
+      range.extendRange(r);
+    }
+
+    return range;
+  }
+
+  function createBranch(graphics: RenderGraphic[], transform: Transform): RenderGraphic {
+    const branch = new GraphicBranch();
+    for (const graphic of graphics) {
+      branch.add(graphic);
+    }
+
+    return IModelApp.renderSystem.createBranch(branch, transform);
+  }
+
   it("computes range", () => {
     const boxRange = new Range3d(0, -1, -2, 1, 2, 3);
     const box = createGraphic((builder) => builder.addRangeBox(boxRange));
@@ -64,13 +82,20 @@ describe.only("Graphic", () => {
     }
 
     const list = IModelApp.renderSystem.createGraphicList([box, line, point, pointString]);
-    const listRange = expectRange(list, primitivesRange);
+    expectRange(list, primitivesRange);
 
+    const innerTf = Transform.createTranslationXYZ(100, -50, 20);
+    const innerBranch = createBranch([box, point], innerTf);
+    const innerRange = unionRange([boxRange, pointRange]);
+    innerTf.multiplyRange(innerRange, innerRange);
+    expectRange(innerBranch, innerRange);
+
+    const outerTf = Transform.createTranslationXYZ(-900, 4, 123);
+    const outerBranch = createBranch([innerBranch, line, pointString], outerTf);
+    const outerRange = unionRange([innerRange, lineRange, pointStringRange]);
+    outerTf.multiplyRange(outerRange, outerRange);
+    expectRange(outerBranch, outerRange);
     
     // Batch just returns its range, doesn't ask children
-
-    // GraphicBranch with and without transform
-
-    
   });
 });
