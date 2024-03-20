@@ -5,13 +5,13 @@
 
 import { expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
-import { EmptyLocalization } from "@itwin/core-common";
+import { EmptyLocalization, FeatureTable, PackedFeatureTable } from "@itwin/core-common";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { GraphicBuilder, GraphicType } from "../../../render/GraphicBuilder";
 import { GraphicBranch } from "../../../render/GraphicBranch";
 
-describe.only("Graphic", () => {
+describe.onl() => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
@@ -23,10 +23,6 @@ describe.only("Graphic", () => {
 
   function expectRange(graphic: RenderGraphic, expected: Range3d): Range3d {
     const range = computeRange(graphic);
-    if (!range.isAlmostEqual(expected)) {
-      console.log(`expected: ${JSON.stringify(expected)} actual: ${JSON.stringify(range)}`);
-    }
-
     expect(range.isAlmostEqual(expected)).to.be.true;
     return range;
   }
@@ -97,5 +93,12 @@ describe.only("Graphic", () => {
     expectRange(outerBranch, outerRange);
     
     // Batch just returns its range, doesn't ask children
+    const featureTable = PackedFeatureTable.pack(new FeatureTable(10));
+    const batchRange = new Range3d(0, 0, 0, 1, 2, 3);
+    const batch = IModelApp.renderSystem.createBatch(outerBranch, featureTable, batchRange);
+    expectRange(batch, batchRange);
+
+    const batchBranch = createBranch([batch], Transform.createTranslationXYZ(-10, 20, 0));
+    expectRange(batchBranch, new Range3d(-10, 20, 0, -9, 22, 3));
   });
 });
