@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { Phenomenon, Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { SchemaItemTypeName } from "../../Differencing/SchemaDifference";
 import { expect } from "chai";
 
 describe("Phenomenon merger tests", () => {
@@ -25,7 +24,7 @@ describe("Phenomenon merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.Phenomenon,
+          schemaType: "Phenomenon",
           itemName: "testPhenomenon",
           difference: {
             label: "Area",
@@ -66,7 +65,7 @@ describe("Phenomenon merger tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: SchemaItemTypeName.Phenomenon,
+          schemaType: "Phenomenon",
           itemName: "testPhenomenon",
           difference: {
             definition: "Units.LENGTH(2)",

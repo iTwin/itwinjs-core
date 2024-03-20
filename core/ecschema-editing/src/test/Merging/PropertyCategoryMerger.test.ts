@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { PropertyCategory, Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { SchemaItemTypeName } from "../../Differencing/SchemaDifference";
 import { expect } from "chai";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -26,7 +25,7 @@ describe("PropertyCategory merge tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.PropertyCategory,
+          schemaType: "PropertyCategory",
           itemName: "TestPropertyCategory",
           difference: {
             label: "ValueTrack Metadata",
@@ -63,7 +62,7 @@ describe("PropertyCategory merge tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: SchemaItemTypeName.PropertyCategory,
+          schemaType: "PropertyCategory",
           itemName: "TestPropertyCategory",
           difference: {
             priority: 99,

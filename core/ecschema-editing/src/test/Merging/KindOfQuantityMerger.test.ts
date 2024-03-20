@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { KindOfQuantity, Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { SchemaItemTypeName } from "../../Differencing/SchemaDifference";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 
@@ -96,7 +95,7 @@ describe("KindOfQuantity merge tests", () => {
         },
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.KindOfQuantity,
+          schemaType: "KindOfQuantity",
           itemName: "TestKoq",
           difference: {
             label: "Test",
@@ -145,7 +144,7 @@ describe("KindOfQuantity merge tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.KindOfQuantity,
+          schemaType: "KindOfQuantity",
           itemName: "TestKoq",
           difference: {
             label: "Test",
@@ -185,7 +184,7 @@ describe("KindOfQuantity merge tests", () => {
         },
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.KindOfQuantity,
+          schemaType: "KindOfQuantity",
           itemName: "TestKoq",
           difference: {
             label: "Test",
@@ -250,7 +249,7 @@ describe("KindOfQuantity merge tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.KindOfQuantity,
+          schemaType: "KindOfQuantity",
           itemName: "TestKoq",
           difference: {
             label: "Test",
@@ -310,7 +309,7 @@ describe("KindOfQuantity merge tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: SchemaItemTypeName.KindOfQuantity,
+          schemaType: "KindOfQuantity",
           itemName: "TestKoq",
           difference: {
             description: "Description of koq",
@@ -359,7 +358,7 @@ describe("KindOfQuantity merge tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: SchemaItemTypeName.KindOfQuantity,
+          schemaType: "KindOfQuantity",
           itemName: "TestKoq",
           difference: {
             persistenceUnit: "ReferenceSchema.TU",

@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Constant, Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { SchemaItemTypeName } from "../../Differencing/SchemaDifference";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 
@@ -52,7 +51,7 @@ describe("Constant merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.Constant,
+          schemaType: "Constant",
           itemName: "testConstant",
           difference: {
             label: "Test Constant",
@@ -105,7 +104,7 @@ describe("Constant merger tests", () => {
         },
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.Constant,
+          schemaType: "Constant",
           itemName: "testConstant",
           difference: {
             label: "Test Constant",
@@ -151,7 +150,7 @@ describe("Constant merger tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: SchemaItemTypeName.Constant,
+          schemaType: "Constant",
           itemName: "testConstant",
           difference: {
             phenomenon: "SourceSchema.testPhenomenon",
@@ -194,7 +193,7 @@ describe("Constant merger tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: SchemaItemTypeName.Constant,
+          schemaType: "Constant",
           itemName: "testConstant",
           difference: {
             phenomenon: "SourceSchema.testPhenomenon",
@@ -236,7 +235,7 @@ describe("Constant merger tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: SchemaItemTypeName.Constant,
+          schemaType: "Constant",
           itemName: "testConstant",
           difference: {
             phenomenon: "SourceSchema.testPhenomenon",

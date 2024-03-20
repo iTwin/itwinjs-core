@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaContext, UnitSystem } from "@itwin/ecschema-metadata";
-import { SchemaItemTypeName } from "../../Differencing/SchemaDifference";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 
@@ -23,7 +22,7 @@ describe("Unit system merger tests", () => {
       targetSchemaName: "TargetSchema.01.00.00",
       changes: [{
         changeType: "add",
-        schemaType: SchemaItemTypeName.UnitSystem,
+        schemaType: "UnitSystem",
         itemName: "testUnitSystem",
         difference: {
           label: "Imperial",
@@ -58,7 +57,7 @@ describe("Unit system merger tests", () => {
       targetSchemaName: "TargetSchema.01.00.00",
       changes: [{
         changeType: "modify",
-        schemaType: SchemaItemTypeName.UnitSystem,
+        schemaType: "UnitSystem",
         itemName: "testUnitSystem",
         difference: {
           label: "New Imperial",

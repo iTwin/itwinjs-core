@@ -5,7 +5,6 @@
 import { Enumeration, Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
-import { SchemaItemTypeName } from "../../Differencing/SchemaDifference";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -30,7 +29,7 @@ describe("Enumeration merge tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.Enumeration,
+          schemaType: "Enumeration",
           itemName: "TestEnumeration",
           difference: {
             type: "int",
@@ -96,7 +95,7 @@ describe("Enumeration merge tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.Enumeration,
+          schemaType: "Enumeration",
           itemName: "TestEnumeration",
           path: "$enumerators",
           difference: {
@@ -156,7 +155,7 @@ describe("Enumeration merge tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.Enumeration,
+          schemaType: "Enumeration",
           itemName: "TestEnumeration",
           path: "$enumerators",
           difference: {
@@ -218,7 +217,7 @@ describe("Enumeration merge tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: SchemaItemTypeName.Enumeration,
+          schemaType: "Enumeration",
           itemName: "TestEnumeration",
           path: "$enumerators.EnumeratorOne",
           difference: {
@@ -269,7 +268,7 @@ describe("Enumeration merge tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: SchemaItemTypeName.Enumeration,
+          schemaType: "Enumeration",
           itemName: "TestEnumeration",
           difference: {
             type: "int",
@@ -307,7 +306,7 @@ describe("Enumeration merge tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: SchemaItemTypeName.Enumeration,
+          schemaType: "Enumeration",
           itemName: "TestEnumeration",
           path: "$enumerators.EnumeratorOne",
           difference: {

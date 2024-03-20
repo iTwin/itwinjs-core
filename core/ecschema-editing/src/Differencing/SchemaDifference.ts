@@ -13,7 +13,7 @@ import { SchemaDiagnosticVisitor } from "./SchemaDiagnosticVisitor";
 import type {
   AnyEnumerator, AnyPropertyProps, Constant, CustomAttribute, CustomAttributeClass, EntityClass, Enumeration, KindOfQuantity,
   Mixin, Phenomenon, PropertyCategory, RelationshipClass, RelationshipConstraintProps, Schema,
-  SchemaItem, SchemaItemProps, SchemaReferenceProps, StructClass, UnitSystem,
+  SchemaItem, SchemaItemProps, SchemaItemType, SchemaReferenceProps, StructClass, UnitSystem,
 } from "@itwin/ecschema-metadata";
 
 /**
@@ -97,16 +97,14 @@ type Editable<T> = {
   -readonly [P in keyof T]: T[P];
 };
 
+type ExtractTypeName<T extends SchemaItemType> =
+  { [K in keyof typeof SchemaItemType as typeof SchemaItemType[K]]: K }[T];
+
 type SchemaItemProperties<T extends SchemaItemProps> = {
   [P in keyof Editable<Omit<T, keyof Omit<SchemaItemProps, "label" | "description">>>]: T[P]
 };
 
-interface DifferenceBase {
-  changeType: DifferenceType;
-  difference: unknown;
-}
-
-type GroupByDifferenceType<T extends DifferenceBase> =
+type GroupByDifferenceType<T extends  { changeType: DifferenceType, difference: unknown }> =
   T extends { changeType: infer R extends DifferenceType }
     ? R extends "modify"
       ? Omit<T, "difference"> & { difference: Partial<T["difference"]> }
@@ -190,6 +188,7 @@ export type ClassItemDifference =
 interface SchemaItemDifference<T extends SchemaItem> {
   readonly itemName: string;
   readonly difference: SchemaItemProperties<ReturnType<T["toJSON"]>>;
+  readonly schemaType: ExtractTypeName<T["schemaItemType"]>;
 }
 
 /**
@@ -208,7 +207,6 @@ export interface ClassPropertyDifference {
  */
 export interface ConstantsDifference extends SchemaItemDifference<Constant> {
   readonly changeType: "add" | "modify";
-  readonly schemaType: SchemaItemTypeName.Constant;
 }
 
 /**
@@ -216,7 +214,6 @@ export interface ConstantsDifference extends SchemaItemDifference<Constant> {
  */
 export interface CustomAttributeClassDifference extends SchemaItemDifference<CustomAttributeClass> {
   readonly changeType: "add" | "modify";
-  readonly schemaType: SchemaItemTypeName.CustomAttributeClass;
 }
 
 /**
@@ -278,7 +275,7 @@ export interface CustomAttributeRelationshipConstraintDifference {
  */
 export interface EntityClassDifference extends SchemaItemDifference<EntityClass> {
   readonly changeType: "add" | "modify";
-  readonly schemaType: SchemaItemTypeName.EntityClass;
+  readonly schemaType: "EntityClass";
 }
 
 /**
@@ -297,7 +294,6 @@ export interface EntityClassMixinDifference {
  */
 export interface EnumerationDifference extends SchemaItemDifference<Enumeration> {
   readonly changeType: "add" | "modify";
-  readonly schemaType: SchemaItemTypeName.Enumeration;
 }
 
 /**
@@ -305,7 +301,7 @@ export interface EnumerationDifference extends SchemaItemDifference<Enumeration>
  */
 export interface EnumeratorDifference {
   readonly changeType: "add" | "modify";
-  readonly schemaType: SchemaItemTypeName.Enumeration;
+  readonly schemaType: "Enumeration";
   readonly itemName: string;
   readonly path: string;
   readonly difference: Editable<AnyEnumerator>;
@@ -316,7 +312,6 @@ export interface EnumeratorDifference {
  */
 export interface KindOfQuantityDifference extends SchemaItemDifference<KindOfQuantity> {
   readonly changeType: "add" | "modify";
-  readonly schemaType: SchemaItemTypeName.KindOfQuantity;
 }
 
 /**
@@ -324,7 +319,6 @@ export interface KindOfQuantityDifference extends SchemaItemDifference<KindOfQua
  */
 export interface MixinClassDifference extends SchemaItemDifference<Mixin> {
   readonly changeType: "add" | "modify";
-  readonly schemaType: SchemaItemTypeName.Mixin;
 }
 
 /**
@@ -332,7 +326,6 @@ export interface MixinClassDifference extends SchemaItemDifference<Mixin> {
  */
 export interface PhenomenonDifference extends SchemaItemDifference<Phenomenon> {
   readonly changeType: "add" | "modify";
-  readonly schemaType: SchemaItemTypeName.Phenomenon;
 }
 
 /**
@@ -340,7 +333,6 @@ export interface PhenomenonDifference extends SchemaItemDifference<Phenomenon> {
  */
 export interface PropertyCategoryDifference extends SchemaItemDifference<PropertyCategory> {
   readonly changeType: "add" | "modify";
-  readonly schemaType: SchemaItemTypeName.PropertyCategory;
 }
 
 /**
@@ -348,7 +340,6 @@ export interface PropertyCategoryDifference extends SchemaItemDifference<Propert
  */
 export interface RelationshipClassDifference extends SchemaItemDifference<RelationshipClass> {
   readonly changeType: "add" | "modify";
-  readonly schemaType: SchemaItemTypeName.RelationshipClass;
 }
 
 /**
@@ -356,7 +347,7 @@ export interface RelationshipClassDifference extends SchemaItemDifference<Relati
  */
 export interface RelationshipConstraintDifference {
   readonly changeType: "modify";
-  readonly schemaType: SchemaItemTypeName.RelationshipClass;
+  readonly schemaType: "RelationshipClass";
   readonly itemName: string;
   readonly path: "$source" | "$target";
   readonly difference: Editable<Omit<RelationshipConstraintProps, "constraintClasses">>;
@@ -367,7 +358,7 @@ export interface RelationshipConstraintDifference {
  */
 export interface RelationshipConstraintClassDifference {
   readonly changeType: "add";
-  readonly schemaType: SchemaItemTypeName.RelationshipClass;
+  readonly schemaType: "RelationshipClass";
   readonly itemName: string;
   readonly path: "$source.constraintClasses" | "$target.constraintClasses";
   readonly difference: string[];
@@ -378,7 +369,6 @@ export interface RelationshipConstraintClassDifference {
  */
 export interface StructClassDifference extends SchemaItemDifference<StructClass> {
   readonly changeType: "add" | "modify";
-  readonly schemaType: SchemaItemTypeName.StructClass;
 }
 
 /**
@@ -386,5 +376,4 @@ export interface StructClassDifference extends SchemaItemDifference<StructClass>
  */
 export interface UnitSystemDifference extends SchemaItemDifference<UnitSystem> {
   readonly changeType: "add" | "modify";
-  readonly schemaType: SchemaItemTypeName.UnitSystem;
 }

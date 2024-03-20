@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { EntityClass, RelationshipClass, Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { SchemaItemTypeName } from "../../Differencing/SchemaDifference";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 
@@ -72,7 +71,7 @@ describe("Custom Attribute merge", () => {
         },
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.CustomAttributeClass,
+          schemaType: "CustomAttributeClass",
           itemName: "SourceCA",
           difference: {
             properties: [
