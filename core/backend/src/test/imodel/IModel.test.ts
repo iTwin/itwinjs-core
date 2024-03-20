@@ -52,7 +52,7 @@ function expectIModelError(expectedErrorNumber: IModelStatus | DbResult, error: 
   expect(error!.errorNumber).to.equal(expectedErrorNumber);
 }
 
-describe("iModel", () => {
+describe.only("iModel", () => {
   let imodel1: SnapshotDb;
   let imodel2: SnapshotDb;
   let imodel3: SnapshotDb;
@@ -2851,5 +2851,18 @@ describe("iModel", () => {
     expect(categ3.code.value).to.equal(code3.trimmedCodeVal);
 
     imodel.close();
+  });
+
+  it.only("throws NotFound when attempting to access element props after closing the iModel", () => {
+    const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "accessAfterClose.bim");
+    const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "accessAfterClose" } });
+
+    let props = imodel.elements.getElementProps(IModel.rootSubjectId) as SubjectProps;
+    expect(props.id).to.equal(IModel.rootSubjectId);
+    
+    imodel.close();
+    
+    props = imodel.elements.getElementProps(IModel.rootSubjectId) as SubjectProps;
+    expect(props.id).to.equal(IModel.rootSubjectId);
   });
 });
