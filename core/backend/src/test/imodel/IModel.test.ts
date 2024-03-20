@@ -2859,9 +2859,9 @@ describe("iModel", () => {
 
     const elem = imodel.elements.getElement<Subject>(IModel.rootSubjectId);
     expect(elem.id).to.equal(IModel.rootSubjectId);
-    
+
     imodel.close();
-    
+
     expect(() => imodel.elements.getElement<Subject>(IModel.rootSubjectId)).to.throw(IModelError, "Element=0x1", "Not Found");
   });
 });
