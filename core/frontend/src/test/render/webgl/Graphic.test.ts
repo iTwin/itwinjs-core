@@ -11,7 +11,7 @@ import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { GraphicBuilder, GraphicType } from "../../../render/GraphicBuilder";
 import { GraphicBranch } from "../../../render/GraphicBranch";
 
-describe.onl() => {
+describe("Graphic", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
