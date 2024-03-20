@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import type { SchemaMergeContext } from "./SchemaMerger";
 import { AnySchemaItemDifference, ClassItemDifference, SchemaItemTypeName, StructClassDifference } from "../Differencing/SchemaDifference";
-import { AnyMergerHandler, filterByType, locateSchemaItem, SchemaMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
+import { AnyMergerHandler, filterByType, locateSchemaItem, SchemaItemMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
 import { type MutableClass } from "../Editing/Mutable/MutableClass";
 import { ECClass, ECClassModifier, parseClassModifier, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaEditResults } from "../Editing/Editor";
@@ -153,7 +153,7 @@ function getBaseClassSetter(context: SchemaMergeContext, item: ECClass) {
   };
 }
 
-const structClassMerger: SchemaMergerHandler<StructClassDifference> = {
+const structClassMerger: SchemaItemMergerHandler<StructClassDifference> = {
   async add(context, change) {
     return context.editor.structs.createFromProps(context.targetSchemaKey, {
       name: change.itemName,

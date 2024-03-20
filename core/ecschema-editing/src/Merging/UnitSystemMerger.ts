@@ -2,17 +2,30 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { type MutableUnitSystem } from "../Editing/Mutable/MutableUnitSystem";
+import { type SchemaItemMergerHandler } from "./SchemaItemMerger";
 import { type UnitSystemDifference } from "../Differencing/SchemaDifference";
-import { type SchemaMergerHandler } from "./SchemaItemMerger";
 
 /**
+ * Defines a merge handler to merge UnitSystem schema items.
  * @internal
  */
-export const unitSystemMerger: SchemaMergerHandler<UnitSystemDifference> = {
+export const unitSystemMerger: SchemaItemMergerHandler<UnitSystemDifference> = {
   async add(context, change) {
     return context.editor.unitSystems.createFromProps(context.targetSchemaKey, {
       name: change.itemName,
+      schemaItemType: change.schemaType,
+
       ...change.difference,
     });
+  },
+  async modify(_context, change, _itemKey, item: MutableUnitSystem) {
+    if(change.difference.label) {
+      item.setDisplayLabel(change.difference.label);
+    }
+    if(change.difference.description) {
+      item.setDescription(change.difference.description);
+    }
+    return {};
   },
 };

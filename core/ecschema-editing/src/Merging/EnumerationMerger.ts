@@ -4,15 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { primitiveTypeToString, SchemaItemKey } from "@itwin/ecschema-metadata";
 import type { EnumerationDifference, EnumeratorDifference } from "../Differencing/SchemaDifference";
-import type { SchemaMergerHandler } from "./SchemaItemMerger";
+import type { SchemaItemMergerHandler } from "./SchemaItemMerger";
 import { type MutableEnumeration } from "../Editing/Mutable/MutableEnumeration";
 
 type ChangeTypes = EnumerationDifference | EnumeratorDifference;
 
 /**
+ * Defines a merge handler to merge Enumeration schema items.
  * @internal
  */
-export const enumerationMerger: SchemaMergerHandler<ChangeTypes> = {
+export const enumerationMerger: SchemaItemMergerHandler<ChangeTypes> = {
   async add(context, change) {
     if(isEnumeratorDifference(change)) {
       const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
@@ -22,6 +23,8 @@ export const enumerationMerger: SchemaMergerHandler<ChangeTypes> = {
 
     return context.editor.enumerations.createFromProps(context.targetSchemaKey, {
       name: change.itemName,
+      schemaItemType: change.schemaType,
+
       ...change.difference,
     });
   },
@@ -46,6 +49,9 @@ export const enumerationMerger: SchemaMergerHandler<ChangeTypes> = {
     }
     if(change.difference.label) {
       item.setDisplayLabel(change.difference.label);
+    }
+    if(change.difference.description) {
+      item.setDescription(change.difference.description);
     }
     if(change.difference.isStrict) {
       item.setIsStrict(change.difference.isStrict);

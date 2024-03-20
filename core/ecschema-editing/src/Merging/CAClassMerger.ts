@@ -3,18 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { type CustomAttributeClassDifference } from "../Differencing/SchemaDifference";
-import { type SchemaMergerHandler } from "./SchemaItemMerger";
+import { type SchemaItemMergerHandler } from "./SchemaItemMerger";
 import { type MutableCAClass } from "../Editing/Mutable/MutableCAClass";
 import { containerTypeToString, parseCustomAttributeContainerType } from "@itwin/ecschema-metadata";
 import { modifyClass } from "./ClassMerger";
 
 /**
+ * Defines a merge handler to merge Custom Attribute Class schema items.
  * @internal
  */
-export const customAttributeClassMerger: SchemaMergerHandler<CustomAttributeClassDifference> = {
+export const customAttributeClassMerger: SchemaItemMergerHandler<CustomAttributeClassDifference> = {
   async add(context, change) {
     return context.editor.customAttributes.createFromProps(context.targetSchemaKey, {
       name: change.itemName,
+      schemaItemType: change.schemaType,
+
       ...change.difference,
     });
   },

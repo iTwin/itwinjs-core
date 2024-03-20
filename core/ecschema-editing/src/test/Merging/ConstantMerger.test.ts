@@ -55,7 +55,6 @@ describe("Constant merger tests", () => {
           schemaType: SchemaItemTypeName.Constant,
           itemName: "testConstant",
           difference: {
-            schemaItemType: "Constant",
             label: "Test Constant",
             description: "testing a constant",
             phenomenon: "SourceSchema.testPhenomenon",
@@ -109,7 +108,6 @@ describe("Constant merger tests", () => {
           schemaType: SchemaItemTypeName.Constant,
           itemName: "testConstant",
           difference: {
-            schemaItemType: "Constant",
             label: "Test Constant",
             description: "testing a constant",
             phenomenon: "ReferenceSchema.testPhenomenon",

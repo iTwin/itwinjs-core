@@ -3,23 +3,29 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { type PhenomenonDifference } from "../Differencing/SchemaDifference";
-import { type SchemaMergerHandler } from "./SchemaItemMerger";
+import { type MutablePhenomenon } from "../Editing/Mutable/MutablePhenomenon";
+import { type SchemaItemMergerHandler} from "./SchemaItemMerger";
 import { ECObjectsError, ECObjectsStatus } from "@itwin/ecschema-metadata";
-import { MutablePhenomenon } from "../Editing/Mutable/MutablePhenomenon";
 
 /**
+ * Defines a merge handler to merge Phenomenon schema items.
  * @internal
  */
-export const phenomenonMerger: SchemaMergerHandler<PhenomenonDifference> = {
+export const phenomenonMerger: SchemaItemMergerHandler<PhenomenonDifference> = {
   add: async (context, change) => {
     return context.editor.phenomenons.createFromProps(context.targetSchemaKey, {
       name: change.itemName,
+      schemaItemType: change.schemaType,
+
       ...change.difference,
     });
   },
   modify: async (_context, change, itemKey, phenomenon: MutablePhenomenon) => {
     if(change.difference.label) {
       phenomenon.setDisplayLabel(change.difference.label);
+    }
+    if(change.difference.description) {
+      phenomenon.setDescription(change.difference.description);
     }
     if(change.difference.definition) {
       // It would be better if the validation would be part of phenomenon.setDefinition.

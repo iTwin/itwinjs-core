@@ -15,6 +15,7 @@ import { constantMerger } from "./ConstantMerger";
 import { mergeClassItems } from "./ClassMerger";
 
 type FilteredType<T extends SchemaType> = Extract<AnySchemaItemDifference, { schemaType: T }>;
+
 interface ChangeHandlerMapping<T> {
   add:    (context: SchemaMergeContext, change: T) => Promise<SchemaEditResults>;
   modify: (context: SchemaMergeContext, change: T, itemKey: SchemaItemKey, item: any) => Promise<SchemaEditResults>;
@@ -23,7 +24,7 @@ interface ChangeHandlerMapping<T> {
 /**
  * @internal
  */
-export type SchemaMergerHandler<T extends AnySchemaItemDifference> = {
+export type SchemaItemMergerHandler<T extends AnySchemaItemDifference> = {
   [P in T["changeType"]]: ChangeHandlerMapping<T>[P];
 };
 

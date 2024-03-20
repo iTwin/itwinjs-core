@@ -3,14 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { type KindOfQuantityDifference } from "../Differencing/SchemaDifference";
-import { type SchemaMergerHandler, updateSchemaItemFullName } from "./SchemaItemMerger";
+import { type SchemaItemMergerHandler, updateSchemaItemFullName } from "./SchemaItemMerger";
 import { type MutableKindOfQuantity } from "../Editing/Mutable/MutableKindOfQuantity";
 import { SchemaMergeContext } from "./SchemaMerger";
 
 /**
+ * Defines a merge handler to merge KindOfQuantity schema items.
  * @internal
  */
-export const kindOfQuantityMerger: SchemaMergerHandler<KindOfQuantityDifference> = {
+export const kindOfQuantityMerger: SchemaItemMergerHandler<KindOfQuantityDifference> = {
   async add(context, change) {
     change.difference.persistenceUnit = await updateSchemaItemFullName(context, change.difference.persistenceUnit);
     if(change.difference.presentationUnits) {
@@ -25,6 +26,8 @@ export const kindOfQuantityMerger: SchemaMergerHandler<KindOfQuantityDifference>
 
     return context.editor.kindOfQuantities.createFromProps(context.targetSchemaKey, {
       name: change.itemName,
+      schemaItemType: change.schemaType,
+
       ...change.difference,
     });
   },
@@ -32,8 +35,11 @@ export const kindOfQuantityMerger: SchemaMergerHandler<KindOfQuantityDifference>
     if(change.difference.label) {
       item.setDisplayLabel(change.difference.label);
     }
+    if(change.difference.description) {
+      item.setDescription(change.difference.description);
+    }
     if(change.difference.relativeError) {
-      // TODO: Not settable through the interface
+      item.setRelativeError(change.difference.relativeError);
     }
     if(change.difference.persistenceUnit) {
       // TODO: It should be checked if the unit is the same, but referring to the source schema.

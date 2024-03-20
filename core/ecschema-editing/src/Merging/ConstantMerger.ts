@@ -3,14 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { type ConstantsDifference } from "../Differencing/SchemaDifference";
-import { type SchemaMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
+import { type SchemaItemMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
 import { type MutableConstant } from "../Editing/Mutable/MutableConstant";
 import { DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, Phenomenon } from "@itwin/ecschema-metadata";
 
 /**
+ * Defines a merge handler to merge Constant schema items.
  * @internal
  */
-export const constantMerger: SchemaMergerHandler<ConstantsDifference> = {
+export const constantMerger: SchemaItemMergerHandler<ConstantsDifference> = {
   async add(context, change) {
     // Needs to update the reference from source to target schema.
     const phenomenonKey = await updateSchemaItemKey(context, change.difference.phenomenon);
@@ -18,12 +19,17 @@ export const constantMerger: SchemaMergerHandler<ConstantsDifference> = {
 
     return context.editor.constants.createFromProps(context.targetSchemaKey, {
       name: change.itemName,
+      schemaItemType: change.schemaType,
+
       ...change.difference,
     });
   },
   async modify(context, change, itemKey, item: MutableConstant) {
     if(change.difference.label) {
       item.setDisplayLabel(change.difference.label);
+    }
+    if(change.difference.description) {
+      item.setDescription(change.difference.description);
     }
 
     // Note: There are no editor methods to modify a constant.

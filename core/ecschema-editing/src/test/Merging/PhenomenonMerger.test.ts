@@ -28,7 +28,6 @@ describe("Phenomenon merger tests", () => {
           schemaType: SchemaItemTypeName.Phenomenon,
           itemName: "testPhenomenon",
           difference: {
-            schemaItemType: "Phenomenon",
             label: "Area",
             description: "Area description",
             definition: "Units.LENGTH(2)",

@@ -3,17 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { type MixinClassDifference } from "../Differencing/SchemaDifference";
-import { type SchemaMergerHandler, updateSchemaItemFullName, updateSchemaItemKey } from "./SchemaItemMerger";
+import { type SchemaItemMergerHandler, updateSchemaItemFullName, updateSchemaItemKey } from "./SchemaItemMerger";
 import { type MutableMixin } from "../Editing/Mutable/MutableMixin";
 import { modifyClass } from "./ClassMerger";
 
 /**
+ * Defines a merge handler to merge Mixin schema items.
  * @internal
  */
-export const mixinClassMerger: SchemaMergerHandler<MixinClassDifference> = {
+export const mixinClassMerger: SchemaItemMergerHandler<MixinClassDifference> = {
   async add(context, change) {
     return context.editor.mixins.createFromProps(context.targetSchemaKey, {
       name: change.itemName,
+      schemaItemType: change.schemaType,
+
       ...change.difference,
       appliesTo: await updateSchemaItemFullName(context, change.difference.appliesTo),
     });

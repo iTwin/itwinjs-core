@@ -33,7 +33,6 @@ describe("Class items merging order tests", () => {
           schemaType: SchemaItemTypeName.EntityClass,
           itemName: "bracket",
           difference: {
-            schemaItemType: "EntityClass",
             description: "Bracket test class",
             baseClass: "SourceSchema.sps",
           },
@@ -43,7 +42,6 @@ describe("Class items merging order tests", () => {
           schemaType: SchemaItemTypeName.EntityClass,
           itemName: "sps",
           difference: {
-            schemaItemType: "EntityClass",
             description: "Sps test Class",
             properties: [
               {
@@ -75,7 +73,6 @@ describe("Class items merging order tests", () => {
           schemaType: SchemaItemTypeName.EntityClass,
           itemName: "testClass",
           difference: {
-            schemaItemType: "EntityClass",
             description: "Test class",
             mixins: [
               "SourceSchema.mixinA",
@@ -88,7 +85,6 @@ describe("Class items merging order tests", () => {
           schemaType: SchemaItemTypeName.Mixin,
           itemName: "mixinA",
           difference: {
-            schemaItemType: "Mixin",
             description: "Mixin A",
             appliesTo: "SourceSchema.testClass",
           },
@@ -98,7 +94,6 @@ describe("Class items merging order tests", () => {
           schemaType: SchemaItemTypeName.Mixin,
           itemName: "mixinB",
           difference: {
-            schemaItemType: "Mixin",
             description: "Mixin B",
             appliesTo: "SourceSchema.testClass",
           },
@@ -127,7 +122,6 @@ describe("Class items merging order tests", () => {
           schemaType: SchemaItemTypeName.Mixin,
           itemName: "mixinA",
           difference: {
-            schemaItemType: "Mixin",
             description: "Mixin A",
             baseClass: "SourceSchema.testBaseMixinClass",
             appliesTo: "SourceSchema.testClass",
@@ -138,7 +132,6 @@ describe("Class items merging order tests", () => {
           schemaType: SchemaItemTypeName.EntityClass,
           itemName: "testClass",
           difference: {
-            schemaItemType: "EntityClass",
             description: "Test class",
           },
         },
@@ -147,7 +140,6 @@ describe("Class items merging order tests", () => {
           schemaType: SchemaItemTypeName.Mixin,
           itemName: "testBaseMixinClass",
           difference: {
-            schemaItemType: "Mixin",
             description: "Test mixin class",
             appliesTo: "SourceSchema.testClass",
           },
@@ -173,7 +165,6 @@ describe("Class items merging order tests", () => {
           schemaType: SchemaItemTypeName.EntityClass,
           itemName: "sps",
           difference: {
-            schemaItemType: "EntityClass",
             description: "Sps test Class",
             properties: [
               {
@@ -200,7 +191,6 @@ describe("Class items merging order tests", () => {
           schemaType: SchemaItemTypeName.StructClass,
           itemName: "middle",
           difference: {
-            schemaItemType: "StructClass",
             description: "Middle test class",
             properties: [
               {
@@ -227,7 +217,6 @@ describe("Class items merging order tests", () => {
           schemaType: SchemaItemTypeName.StructClass,
           itemName: "allocation",
           difference: {
-            schemaItemType: "StructClass",
             description: "Allocation test Class",
             properties: [
               {
@@ -359,7 +348,6 @@ describe("Class items merging order tests", () => {
           schemaType: SchemaItemTypeName.StructClass,
           itemName: "allocation",
           difference: {
-            schemaItemType: "StructClass",
             description: "Allocation test Class",
             properties: [
               {

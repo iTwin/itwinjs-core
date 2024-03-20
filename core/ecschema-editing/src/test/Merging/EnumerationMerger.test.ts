@@ -33,7 +33,6 @@ describe("Enumeration merge tests", () => {
           schemaType: SchemaItemTypeName.Enumeration,
           itemName: "TestEnumeration",
           difference: {
-            schemaItemType: "Enumeration",
             type: "int",
             isStrict: false,
             enumerators: [

@@ -3,19 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { type EntityClassDifference, EntityClassMixinDifference } from "../Differencing/SchemaDifference";
-import { type SchemaMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
+import { type SchemaItemMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
 import { type MutableEntityClass } from "../Editing/Mutable/MutableEntityClass";
 import { modifyClass } from "./ClassMerger";
 
 type EntityChangeType = EntityClassDifference | EntityClassMixinDifference;
 
 /**
+ * Defines a merge handler to merge Entity Class schema items.
  * @internal
  */
-export const entityClassMerger: SchemaMergerHandler<EntityChangeType> = {
+export const entityClassMerger: SchemaItemMergerHandler<EntityChangeType> = {
   async add(context, change) {
     return context.editor.entities.createFromProps(context.targetSchemaKey, {
       name: change.itemName,
+      schemaItemType: change.schemaType,
+
       ...change.difference,
     });
   },

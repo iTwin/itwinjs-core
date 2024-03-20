@@ -75,7 +75,6 @@ describe("Custom Attribute merge", () => {
           schemaType: SchemaItemTypeName.CustomAttributeClass,
           itemName: "SourceCA",
           difference: {
-            schemaItemType: "CustomAttributeClass",
             properties: [
               {
                 name: "BooleanProp",

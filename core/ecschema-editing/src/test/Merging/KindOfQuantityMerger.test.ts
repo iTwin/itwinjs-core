@@ -99,7 +99,6 @@ describe("KindOfQuantity merge tests", () => {
           schemaType: SchemaItemTypeName.KindOfQuantity,
           itemName: "TestKoq",
           difference: {
-            schemaItemType: "KindOfQuantity",
             label: "Test",
             description: "Description of koq",
             relativeError: 1.23,
@@ -149,7 +148,6 @@ describe("KindOfQuantity merge tests", () => {
           schemaType: SchemaItemTypeName.KindOfQuantity,
           itemName: "TestKoq",
           difference: {
-            schemaItemType: "KindOfQuantity",
             label: "Test",
             description: "Description of koq",
             relativeError: 1.0002,
@@ -190,7 +188,6 @@ describe("KindOfQuantity merge tests", () => {
           schemaType: SchemaItemTypeName.KindOfQuantity,
           itemName: "TestKoq",
           difference: {
-            schemaItemType: "KindOfQuantity",
             label: "Test",
             description: "Description of koq",
             relativeError: 0.0030480000000000004,
@@ -256,7 +253,6 @@ describe("KindOfQuantity merge tests", () => {
           schemaType: SchemaItemTypeName.KindOfQuantity,
           itemName: "TestKoq",
           difference: {
-            schemaItemType: "KindOfQuantity",
             label: "Test",
             description: "Description of koq",
             relativeError: 0.0030480000000000004,
@@ -286,8 +282,7 @@ describe("KindOfQuantity merge tests", () => {
     });
   });
 
-  // Skipped cause description and relative error are not settable (yet)
-  it.skip("should merge kind of quantity changes for presentation override formats", async () => {
+  it("should merge kind of quantity changes for presentation override formats", async () => {
     await Schema.fromJson(referenceJson, targetContext);
     await Schema.fromJson({
       ...targetJson,

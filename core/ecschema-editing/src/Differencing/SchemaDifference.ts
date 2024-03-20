@@ -97,8 +97,9 @@ type Editable<T> = {
   -readonly [P in keyof T]: T[P];
 };
 
-type SchemaItemProperties<T extends SchemaItemProps> =
-  Editable<Omit<T, keyof Omit<SchemaItemProps, "label" | "description" | "schemaItemType">>>;
+type SchemaItemProperties<T extends SchemaItemProps> = {
+  [P in keyof Editable<Omit<T, keyof Omit<SchemaItemProps, "label" | "description">>>]: T[P]
+};
 
 interface DifferenceBase {
   changeType: DifferenceType;
@@ -384,6 +385,6 @@ export interface StructClassDifference extends SchemaItemDifference<StructClass>
  * @internal
  */
 export interface UnitSystemDifference extends SchemaItemDifference<UnitSystem> {
-  readonly changeType: "add";
+  readonly changeType: "add" | "modify";
   readonly schemaType: SchemaItemTypeName.UnitSystem;
 }

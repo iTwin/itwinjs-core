@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import type { RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference } from "../Differencing/SchemaDifference";
 import type { MutableRelationshipClass } from "../Editing/Mutable/MutableRelationshipClass";
-import { type SchemaMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
+import { type SchemaItemMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
 import { modifyClass } from "./ClassMerger";
 import { SchemaMergeContext } from "./SchemaMerger";
 import { EntityClass, Mixin, parseStrength, parseStrengthDirection, RelationshipClass, RelationshipMultiplicity, SchemaItemKey } from "@itwin/ecschema-metadata";
@@ -17,15 +17,18 @@ type RelationshipDifferences =
 type ConstraintClassTypes = EntityClass | Mixin | RelationshipClass;
 
 /**
+ * Defines a merge handler to merge RelationshipClass schema items.
  * @internal
  */
-export const relationshipClassMerger: SchemaMergerHandler<RelationshipDifferences> = {
+export const relationshipClassMerger: SchemaItemMergerHandler<RelationshipDifferences> = {
   async add(context, change) {
     if(isConstraintDifference(change) || isConstraintClassDifference(change)) {
       return { errorMessage: "RelationshipConstraints cannot be added." };
     }
     return context.editor.relationships.createFromProps(context.targetSchemaKey, {
       name: change.itemName,
+      schemaItemType: change.schemaType,
+
       ...change.difference,
     });
   },
