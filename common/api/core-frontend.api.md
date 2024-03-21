@@ -9492,6 +9492,8 @@ export namespace MockRender {
         collectStatistics(_stats: RenderMemory.Statistics): void;
         // (undocumented)
         dispose(): void;
+        // (undocumented)
+        unionRange(): void;
     }
     // (undocumented)
     export class List extends Graphic {
@@ -11591,6 +11593,8 @@ export abstract class RenderGraphic implements IDisposable {
     abstract collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
     abstract dispose(): void;
+    // @internal
+    abstract unionRange(range: Range3d): void;
 }
 
 // @public
@@ -11600,6 +11604,17 @@ export abstract class RenderGraphicOwner extends RenderGraphic {
     dispose(): void;
     disposeGraphic(): void;
     abstract get graphic(): RenderGraphic;
+    // @internal (undocumented)
+    unionRange(range: Range3d): void;
+}
+
+// @beta
+export interface RenderGraphicTileTreeArgs {
+    getToolTip?: (hit: HitDetail) => Promise<HTMLElement | string | undefined>;
+    graphic: RenderGraphic;
+    iModel: IModelConnection;
+    modelId: Id64String;
+    viewFlags?: ViewFlagOverrides;
 }
 
 // @internal
@@ -14711,6 +14726,8 @@ export abstract class TileTreeReference {
     computeWorldContentRange(): ElementAlignedBox3d;
     createDrawArgs(context: SceneContext): TileDrawArgs | undefined;
     // @beta
+    static createFromRenderGraphic(args: RenderGraphicTileTreeArgs): TileTreeReference;
+    // @beta
     createGeometryTreeReference(): GeometryTileTreeReference | undefined;
     // @beta
     protected _createGeometryTreeReference(): GeometryTileTreeReference | undefined;
@@ -14742,6 +14759,9 @@ export abstract class TileTreeReference {
     abstract get treeOwner(): TileTreeOwner;
     unionFitRange(union: Range3d): void;
 }
+
+// @internal (undocumented)
+export function tileTreeReferenceFromRenderGraphic(args: RenderGraphicTileTreeArgs): TileTreeReference;
 
 // @public
 export interface TileTreeSupplier {

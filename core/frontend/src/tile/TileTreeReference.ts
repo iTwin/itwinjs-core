@@ -16,7 +16,7 @@ import { RenderMemory } from "../render/RenderMemory";
 import { DecorateContext, SceneContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
 import {
-  DisclosedTileTreeSet, GeometryTileTreeReference, MapFeatureInfoOptions, MapLayerFeatureInfo, TileDrawArgs, TileGeometryCollector, TileTree, TileTreeLoadStatus, TileTreeOwner,
+  DisclosedTileTreeSet, GeometryTileTreeReference, MapFeatureInfoOptions, MapLayerFeatureInfo, RenderGraphicTileTreeArgs, TileDrawArgs, TileGeometryCollector, TileTree, TileTreeLoadStatus, TileTreeOwner, tileTreeReferenceFromRenderGraphic,
 } from "./internal";
 
 /** Describes the type of graphics produced by a [[TileTreeReference]].
@@ -286,5 +286,16 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
     }
 
     return this._createGeometryTreeReference();
+  }
+
+  /** Create a [[TileTreeReference]] that displays a pre-defined [[RenderGraphic]].
+   * The reference can be used by a [[TiledGraphicsProvider]] or as a dynamic [SpatialClassifier]($common). For example:
+   * ```ts
+   * [[include:TileTreeReference_createFromRenderGraphic]]
+   *```
+   * @beta
+   */
+  public static createFromRenderGraphic(args: RenderGraphicTileTreeArgs): TileTreeReference {
+    return tileTreeReferenceFromRenderGraphic(args);
   }
 }
