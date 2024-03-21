@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { SpatialClassifier, SpatialClassifiers, SpatialClassifiersContainer } from "@itwin/core-common";
+import { SpatialClassifier, SpatialClassifierFlags, SpatialClassifiers, SpatialClassifiersContainer } from "@itwin/core-common";
 import { TileTreeReference } from "./tile/internal";
 
 /** A [SpatialClassifier]($common) that uses geoemtry produced at run-time to classify a reality model.
@@ -14,7 +14,11 @@ import { TileTreeReference } from "./tile/internal";
  * @see [[SpatialClassifiersState]] to configure a dynamic classifier.
  * @public
  */
-export type DynamicSpatialClassifier = Omit<SpatialClassifier, "expand"> & { tileTreeReference: TileTreeReference, expand?: never };
+export type DynamicSpatialClassifier = {
+  tileTreeReference: TileTreeReference;
+  flags: SpatialClassifierFlags;
+  name: string;
+}
 
 /** A [SpatialClassifier]($common) that uses geometry from a persistent [[GeometricModelState]] to classify a reality model.
  * @see [[SpatialClassifiersState]] to configure a reality model's classifiers.

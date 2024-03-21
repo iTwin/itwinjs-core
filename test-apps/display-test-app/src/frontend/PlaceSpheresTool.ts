@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ColorDef, Feature } from "@itwin/core-common";
-import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, IModelApp, IModelConnection, PrimitiveTool, RenderGraphic, TiledGraphicsProvider, TileTreeReference, Viewport } from "@itwin/core-frontend";
+import { Id64 } from "@itwin/core-bentley";
+import { ColorDef, Feature, SpatialClassifierFlags } from "@itwin/core-common";
+import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, IModelApp, IModelConnection, LocateFilterStatus, LocateResponse, PrimitiveTool, RenderGraphic, SpatialClassifiersState, SpatialModelState, TileTreeReference, Viewport } from "@itwin/core-frontend";
 import { Point3d, Sphere as SpherePrimitive } from "@itwin/core-geometry";
 
 function getColor(index: number): ColorDef {
@@ -60,6 +61,7 @@ class Spheres {
 export class PlaceSpheresTool extends PrimitiveTool {
   private _graphic?: RenderGraphic;
   private _spheres?: Spheres;
+  private _classifiers?: SpatialClassifiersState;
 
   public static override toolId = "DtaPlaceSpheres";
 
@@ -68,7 +70,48 @@ export class PlaceSpheresTool extends PrimitiveTool {
   }
 
   public override async onPostInstall() {
-    IModelApp.accuSnap.enableSnap(true);
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
+
+  public override async onUnsuspend(): Promise<void> {
+    this.showPrompt();
+  }
+
+  private setupAndPromptForNextAction(): void {
+    this.initLocateElements(undefined === this._classifiers, undefined !== this._classifiers);
+    IModelApp.locateManager.options.allowDecorations = true;
+    this.showPrompt();
+  }
+
+  private showPrompt() {
+    IModelApp.notifications.outputPrompt(undefined === this._classifiers ? "Select reality model" : "Enter sphere center");
+  }
+
+  private findClassifiers(hit: HitDetail): SpatialClassifiersState | undefined {
+    if (!hit.viewport || undefined === hit.modelId) {
+      return undefined;
+    }
+
+    if (Id64.isTransient(hit.modelId)) {
+      const model = hit.viewport.displayStyle.contextRealityModelStates.find((x) => x.modelId === hit.modelId);
+      return model?.classifiers;
+    } else {
+      const model = hit.iModel.models.getLoaded(hit.modelId);
+      if (model && model instanceof SpatialModelState) {
+        return model?.classifiers;
+      }
+    }
+
+    return undefined;
+  }
+    
+  public override async filterHit(hit: HitDetail): Promise<LocateFilterStatus> {
+    if (this._classifiers) {
+      return LocateFilterStatus.Accept;
+    }
+
+    return this.findClassifiers(hit) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
   }
 
   public override async onDataButtonDown(ev: BeButtonEvent) {
@@ -76,35 +119,46 @@ export class PlaceSpheresTool extends PrimitiveTool {
       return EventHandled.No;
     }
 
-    if (!this._spheres) {
-      this._spheres = new Spheres(ev.viewport.iModel);
+    // First data button identifies the reality model to classify.
+    if (!this._classifiers) {
+      const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
+      if (hit) {
+        this._classifiers = this.findClassifiers(hit);
+      }
+    } else {
+      // Subsequent data buttons place spheres with which to classify the reality model.
+      if (!this._spheres) {
+        this._spheres = new Spheres(ev.viewport.iModel);
+      }
+
+      this._spheres.add(ev.point);
+      this._graphic?.dispose();
+      this._graphic = this._spheres.toGraphic();
+      ev.viewport?.invalidateDecorations();
     }
 
-    this._spheres.add(ev.point);
-    this._graphic?.dispose();
-    this._graphic = this._spheres.toGraphic();
-
-    ev.viewport?.invalidateDecorations();
+    this.setupAndPromptForNextAction();
     return EventHandled.No;
   }
 
   public override async onResetButtonUp(ev: BeButtonEvent) {
+    // Reset button applies the classifiers and terminates the tool.
     if (ev.viewport) {
-      this.registerTiledGraphicsProvider(ev.viewport);
+      this.applyClassifier(ev.viewport);
     }
 
     await this.exitTool();
     return EventHandled.No;
   }
 
-  private registerTiledGraphicsProvider(viewport: Viewport) {
+  private applyClassifier(viewport: Viewport) {
     const spheres = this._spheres;
-    if (!this._graphic || !spheres) {
+    if (!this._classifiers || !this._graphic || !spheres) {
       return;
     }
 
     const sphereIds = spheres.spheres.map((x) => x.id);
-    const treeRef = TileTreeReference.createFromRenderGraphic({
+    const tileTreeReference = TileTreeReference.createFromRenderGraphic({
       iModel: viewport.iModel,
       graphic: this._graphic,
       modelId: spheres.modelId,
@@ -117,16 +171,12 @@ export class PlaceSpheresTool extends PrimitiveTool {
         }
       },
     });
-
-    const provider: TiledGraphicsProvider = {
-      forEachTileTreeRef: (vp, func) => {
-        if (vp === viewport) {
-          func(treeRef);
-        }
-      },
+    
+    this._classifiers.activeClassifier = {
+      tileTreeReference,
+      name: "Spheres",
+      flags: new SpatialClassifierFlags(undefined, undefined, true),
     };
-
-    viewport.addTiledGraphicsProvider(provider);
   }
 
   public override decorate(context: DecorateContext) {
