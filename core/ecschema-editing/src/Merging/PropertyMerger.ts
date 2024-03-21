@@ -95,23 +95,23 @@ async function modifyClassProperty(context: SchemaMergeContext, itemKey: SchemaI
     return { errorMessage: `Couldn't find property ${propertyProps.name} on class ${itemKey.name}` };
   }
 
-  if(propertyProps.type) {
+  if(propertyProps.type !== undefined) {
     return { errorMessage: `Changing the property '${property.fullName}' type is not supported.` };
   }
-  if(propertyProps.kindOfQuantity) {
+  if(propertyProps.kindOfQuantity !== undefined) {
     return { errorMessage: `Changing the property '${property.fullName}' kind of quantity is not supported.` };
   }
 
-  if(propertyProps.description) {
+  if(propertyProps.description !== undefined) {
     property.setDescription(propertyProps.description);
   }
-  if(propertyProps.label) {
+  if(propertyProps.label !== undefined) {
     property.setLabel(propertyProps.label);
   }
-  if(propertyProps.isReadOnly) {
+  if(propertyProps.isReadOnly !== undefined) {
     property.setIsReadOnly(propertyProps.isReadOnly);
   }
-  if(propertyProps.priority) {
+  if(propertyProps.priority !== undefined) {
     property.setPriority(propertyProps.priority);
   }
 
@@ -119,7 +119,7 @@ async function modifyClassProperty(context: SchemaMergeContext, itemKey: SchemaI
     await arrayProperty.merge(property as any, propertyProps);
   }
 
-  if(propertyProps.category) {
+  if(propertyProps.category !== undefined) {
     const categoryKey = await updateSchemaItemKey(context, propertyProps.category);
     await context.editor.entities.setPropertyCategory(itemKey, property.name, categoryKey);
   }
@@ -145,10 +145,10 @@ const arrayProperty = {
     return "minOccurs" in property;
   },
   async merge(property: MutableArrayProperty, props: ArrayPropertyProps) {
-    if(props.minOccurs) {
+    if(props.minOccurs !== undefined) {
       property.setMinOccurs(props.minOccurs);
     }
-    if(props.maxOccurs) {
+    if(props.maxOccurs !== undefined) {
       property.setMaxOccurs(props.maxOccurs);
     }
   },
@@ -202,7 +202,7 @@ const navigationProperty: PropertyMerger<NavigationPropertyProps> = {
     return { errorMessage: `Navigation property can't be added to ${schemaItemTypeToString(ecClass.schemaItemType)}.` };
   },
   async merge(_context, _itemKey, property, props) {
-    if(props.direction) {
+    if(props.direction !== undefined) {
       return { errorMessage: `Changing the property '${property.fullName}' direction is not supported.` };
     }
     if("relationshipClass" in props) {
@@ -222,7 +222,7 @@ const primitiveProperty: PropertyMerger<PrimitivePropertyProps> = {
       return { errorMessage: `Invalid property type ${property.typeName} on property ${property.name}` };
     }
 
-    if(property.kindOfQuantity) {
+    if(property.kindOfQuantity !== undefined) {
       property.kindOfQuantity = await updateSchemaItemFullName(context, property.kindOfQuantity);
     }
 
@@ -232,23 +232,23 @@ const primitiveProperty: PropertyMerger<PrimitivePropertyProps> = {
   },
   async merge(_context, _itemKey, property, props) {
     const mutable = property as unknown as MutablePrimitiveOrEnumPropertyBase;
-    if("primitiveType" in props) {
+    if(props.typeName) {
       return { errorMessage: `Changing the property '${property.fullName}' primitiveType is not supported.` };
     }
 
-    if(props.extendedTypeName) {
+    if(props.extendedTypeName !== undefined) {
       mutable.setExtendedTypeName(props.extendedTypeName);
     }
-    if(props.minLength) {
+    if(props.minLength !== undefined) {
       mutable.setMinLength(props.minLength);
     }
-    if(props.maxLength) {
+    if(props.maxLength !== undefined) {
       mutable.setMaxLength(props.maxLength);
     }
-    if(props.minValue) {
+    if(props.minValue !== undefined) {
       mutable.setMinValue(props.minValue);
     }
-    if(props.maxValue) {
+    if(props.maxValue !== undefined) {
       mutable.setMaxValue(props.maxValue);
     }
     return {};
