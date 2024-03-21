@@ -234,7 +234,7 @@ describe("Functional Domain", () => {
     sinonRestore();
   });
 
-  it.only("should populate FunctionalModel and test Element, Model, and ElementAspect callbacks", async () => {
+  it("should populate FunctionalModel and test Element, Model, and ElementAspect callbacks", async () => {
     iModelDb = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("FunctionalDomain", "FunctionalTest.bim"), {
       rootSubject: { name: "FunctionalTest", description: "Test of the Functional domain schema." },
       client: "Functional",
