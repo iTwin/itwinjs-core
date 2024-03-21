@@ -1,4 +1,4 @@
-# Working With Channels in iModels
+# Editing Channels in iModels
 
 A "Channel" is a tree of models and elements below one *Channel Root* `Subject` element. Channels segregate the contents of an iModel into *sections* to provide access control over which applications may change which data. The concept is *cooperative* in that applications indicate the channels to which they pertain, and any attempt to modify data outside one of those channels is denied with a *channel constraint* exception at runtime.
 
