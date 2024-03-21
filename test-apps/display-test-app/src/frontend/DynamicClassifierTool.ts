@@ -19,8 +19,8 @@ interface Sphere {
 }
 
 class Spheres {
-  private readonly _radius = 10;
-  private readonly _chordTolerance = 0.01;
+  private readonly _radius = 250;
+  private readonly _chordTolerance = 0.1;
   public readonly spheres: Sphere[] = [];
   public readonly modelId: string;
 
@@ -63,6 +63,7 @@ export class DynamicClassifierTool extends PrimitiveTool {
   private _graphic?: RenderGraphic;
   private _spheres?: Spheres;
   private _classifiers?: SpatialClassifiersState;
+  private _isVolume = false;
 
   public static override toolId = "DtaClassify";
 
@@ -80,7 +81,7 @@ export class DynamicClassifierTool extends PrimitiveTool {
   }
 
   private setupAndPromptForNextAction(): void {
-    this.initLocateElements(undefined === this._classifiers, undefined !== this._classifiers);
+    this.initLocateElements(undefined === this._classifiers, false);
     IModelApp.locateManager.options.allowDecorations = true;
     this.showPrompt();
   }
@@ -176,8 +177,10 @@ export class DynamicClassifierTool extends PrimitiveTool {
     this._classifiers.activeClassifier = {
       tileTreeReference,
       name: "Spheres",
-      flags: new SpatialClassifierFlags(undefined, undefined, true),
+      flags: new SpatialClassifierFlags(undefined, undefined, this._isVolume),
     };
+
+    viewport.invalidateScene();
   }
 
   public override decorate(context: DecorateContext) {

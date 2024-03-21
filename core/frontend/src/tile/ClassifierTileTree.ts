@@ -136,7 +136,10 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     if (undefined !== classifierTree)
       trees.add(classifierTree);
   }
-  public get isPlanar() { return BatchType.PlanarClassifier === this._id.type; }
+  public get isPlanar() {
+    const active = this.activeClassifier;
+    return !active || !active.flags.isVolumeClassifier;
+  }
 
   public get viewFlags(): Partial<ViewFlagsProperties> {
     return {
