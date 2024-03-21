@@ -47,7 +47,8 @@ class Spheres {
 
     for (let i = 0; i < this.spheres.length; i++) {
       const entry = this.spheres[i];
-      builder.setSymbology(getColor(i), getColor(i).withTransparency(0x7f), 1);
+      const color = getColor(i);
+      builder.setSymbology(color, color, 1);
       builder.activateFeature(new Feature(entry.id));
 
       const sphere = SpherePrimitive.createCenterRadius(entry.center, this._radius);
@@ -58,12 +59,12 @@ class Spheres {
   }
 }
 
-export class PlaceSpheresTool extends PrimitiveTool {
+export class DynamicClassifierTool extends PrimitiveTool {
   private _graphic?: RenderGraphic;
   private _spheres?: Spheres;
   private _classifiers?: SpatialClassifiersState;
 
-  public static override toolId = "DtaPlaceSpheres";
+  public static override toolId = "DtaClassify";
 
   public override requireWriteableTarget(): boolean {
     return false;
