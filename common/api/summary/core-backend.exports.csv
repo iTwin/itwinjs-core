@@ -115,7 +115,7 @@ public;ECSqlInsertResult
 public;ECSqlStatement 
 public;ECSqlValue
 public;ECSqlValueIterator 
-internal;EditableWorkspaceDb 
+beta;EditableWorkspaceDb 
 public;ElementAspect 
 beta;ElementDrivesElement 
 beta;ElementDrivesElementProps 
@@ -242,9 +242,9 @@ public;class IpcHandler
 public;IpcHost
 public;IpcHostOpts
 public;ITwinIdArg
-internal;ITwinWorkspace 
-internal;ITwinWorkspaceContainer 
-internal;ITwinWorkspaceDb 
+beta;ITwinWorkspace 
+beta;ITwinWorkspaceContainer 
+beta;ITwinWorkspaceDb 
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 

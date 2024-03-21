@@ -1948,7 +1948,7 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
     next(): IteratorResult<ECSqlValue>;
 }
 
-// @internal
+// @beta
 export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     addBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
     addFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName, fileExt?: string): void;
@@ -3608,7 +3608,7 @@ export interface ITwinIdArg {
     readonly iTwinId: GuidString;
 }
 
-// @internal (undocumented)
+// @beta (undocumented)
 export class ITwinWorkspace implements Workspace {
     constructor(settings: Settings, opts?: WorkspaceOpts);
     // (undocumented)
@@ -3637,7 +3637,7 @@ export class ITwinWorkspace implements Workspace {
     readonly settings: Settings;
 }
 
-// @internal (undocumented)
+// @beta (undocumented)
 export class ITwinWorkspaceContainer implements WorkspaceContainer {
     constructor(workspace: ITwinWorkspace, props: WorkspaceContainer.Props);
     // (undocumented)
@@ -3681,7 +3681,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     readonly workspace: ITwinWorkspace;
 }
 
-// @internal
+// @beta
 export class ITwinWorkspaceDb implements WorkspaceDb {
     constructor(props: WorkspaceDb.Props, container: WorkspaceContainer);
     // (undocumented)
@@ -6344,16 +6344,15 @@ export namespace WorkspaceContainer {
 
 // @beta
 export interface WorkspaceContainer {
-    // @internal (undocumented)
+    // (undocumented)
     addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
     close(): void;
-    // @internal
     readonly cloudContainer?: CloudSqlite.CloudContainer;
     dropWorkspaceDb(container: WorkspaceDb): void;
     readonly filesDir: LocalDirName;
     getWorkspaceDb(props: WorkspaceDb.Props): WorkspaceDb;
     readonly id: WorkspaceContainer.Id;
-    // @internal (undocumented)
+    // (undocumented)
     resolveDbFileName(props: WorkspaceDb.Props): string;
     readonly workspace: Workspace;
 }
