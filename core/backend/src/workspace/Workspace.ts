@@ -658,7 +658,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
 
 /**
  * An editable [[WorkspaceDb]]. This is used by administrators for creating and modifying `WorkspaceDb`s and should
- * only be used in a dedicated "administrative settings manager" application - never in a user facing application.
+ * only be used in a dedicated "administrative workspace editor" application - never in a user facing application.
  * For cloud-backed containers, the write token must be obtained before this class may be used. Only one user at at time
  * may be editing.
  * @beta
