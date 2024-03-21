@@ -8,6 +8,7 @@
 
 import { DbResult, Id64String, IModelStatus, RepositoryStatus } from "@itwin/core-bentley";
 import { ChannelRootAspectProps, IModel, IModelError } from "@itwin/core-common";
+import { Subject } from "./Element";
 import { IModelDb } from "./IModelDb";
 
 /** The key for a channel. Used for "allowed channels" in [[ChannelControl]]
@@ -35,9 +36,31 @@ export interface ChannelControl {
    */
   getChannelKey(elementId: Id64String): ChannelKey;
   /** Make an existing element a new Channel root.
-   * @note if the element is already in a channel, this will throw an error.
+   * @throws if the element is already in a channel different than the shared channel, or if
+   * there is already another channelRoot element for the specified channelKey
    */
   makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey }): void;
+  /** Insert a new Subject element that is a Channel Root in this iModel.
+   * @returns the ElementId of the new Subject element.
+   * @note if the parentSubject element is already in a channel, this will add the Subject element and then throw an error without making it a Channel root.
+   */
+  insertChannelSubject(args: {
+    /** The name of the new Subject element */
+    subjectName: string;
+    /** The channel key for the new [[Subject]]. This is the string to pass to [[addAllowedChannel]]*/
+    channelKey: ChannelKey;
+    /** the Id of the parent of the new Subject. Default is [[IModel.rootSubjectId]]. */
+    parentSubjectId?: Id64String;
+    /** Optional description for new Subject. */
+    description?: string;
+  }): Id64String;
+  /**
+   * Queries for the element Id acting as the ChannelRoot for a given channelKey, if any
+   * @param channelKey The key for the channel to query for
+   * @returns The element Id of the ChannelRoot element of the specified Channel key, or undefined if
+   * there is no ChannelRoot for it
+   */
+  queryChannelRoot(channelKey: ChannelKey): Id64String | undefined
 
   /** @internal */
   verifyChannel(modelId: Id64String): void;
@@ -111,7 +134,39 @@ export class ChannelAdmin implements ChannelControl {
     if (ChannelControl.sharedChannelName !== this.getChannelKey(args.elementId))
       throw new Error("channels may not nest");
 
+    if (this.queryChannelRoot(args.channelKey) !== undefined)
+      throw new Error("a channel root for the specified key already exists");
+
     const props: ChannelRootAspectProps = { classFullName: ChannelAdmin.channelClassName, element: { id: args.elementId }, owner: args.channelKey };
     this._iModel.elements.insertAspect(props);
+  }
+  public insertChannelSubject(args: { subjectName: string, channelKey: ChannelKey, parentSubjectId?: Id64String, description?: string }): Id64String {
+    // Check if channelKey already exists before inserting Subject.
+    // makeChannelRoot will check that again, but at that point the new Subject is already inserted.
+    // Prefer to check twice instead of deleting the Subject in the latter option.
+    if (this.queryChannelRoot(args.channelKey) !== undefined)
+      throw new Error("a channel root for the specified key already exists");
+
+    const elementId = Subject.insert(this._iModel, args.parentSubjectId ?? IModel.rootSubjectId, args.subjectName, args.description);
+    this.makeChannelRoot({ elementId, channelKey: args.channelKey });
+    return elementId;
+  }
+  public queryChannelRoot(channelKey: ChannelKey): Id64String | undefined {
+    if (channelKey === ChannelControl.sharedChannelName)
+      // RootSubject acts as the ChannelRoot element of the shared channel
+      return IModel.rootSubjectId;
+
+    try {
+      const channelRoot = this._iModel.withPreparedStatement(`SELECT Element.Id FROM ${ChannelAdmin.channelClassName} WHERE Owner=?`, (stmt) => {
+        stmt.bindString(1, channelKey);
+        return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValue(0).getId() : undefined;
+      });
+      return channelRoot;
+    } catch {
+      // Exception happens if the iModel is too old: ChannelRootAspect class not present in the BisCore schema (older than v1.0.10).
+      // In that case all data in such iModel is assumed to be in the shared channel.
+      return undefined;
+    }
+
   }
 }

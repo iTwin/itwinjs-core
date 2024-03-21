@@ -1,51 +1,44 @@
 # Working With Channels in iModels
 
-A "channel" is a tree of models and elements starting at one or more *Channel* root elements. Channels segregate the contents of an iModel into *sections* to provide access control over which applications may change which data. The concept is *cooperative* in that applications indicate the channels to which they pertain, and any attempt to modify data outside one of those channels is denied with a *channel constraint* exception at runtime. Instances of `InformationPartitionElement` subclasses are used as *Channel* root elements in the large majority of cases. `DefinitionContainer`s can be used as *Channel* root elements when needed at the repository-global scope.
+A "Channel" is a tree of models and elements below one *Channel Root* `Subject` element. Channels segregate the contents of an iModel into *sections* to provide access control over which applications may change which data. The concept is *cooperative* in that applications indicate the channels to which they pertain, and any attempt to modify data outside one of those channels is denied with a *channel constraint* exception at runtime.
 
 To help visualize how channels are used, imagine an iModel with the following breakdown:
 
 RootSubject
-- DefinitionPartition
-  - DictionaryModel
-    - DefinitionContainer11
-      - DefinitionModel
-        - Elements ...
-    - <span style="color:green;font-weight:bold">DefinitionContainer21</span>
-      - <span style="color:green">DefinitionModel</span>
-        - <span style="color:green">Elements ...</span>
 - Subject0
   - PhysicalPartition01
     - Model01
       - Elements ...
-- Subject1
-  - <span style="color:red;font-weight:bold">PhysicalParition11</span>
-    - <span style="color:red">Model11</span>
-      - <span style="color:red">Elements ...</span>
+- <span style="color:green;font-weight:bold">Subject1</span>
+  - <span style="color:green">PhysicalPartition11</span>
+    - <span style="color:green">Model11</span>
+      - <span style="color:green">Elements ...</span>
 
-- Subject2
-  - <span style="color:blue;font-weight:bold">PhysicalParition21</span>
+- <span style="color:blue;font-weight:bold">Subject2</span>
+  - <span style="color:blue">PhysicalPartition21</span>
     - <span style="color:blue">Model21</span>
       - <span style="color:blue">Elements ...</span>
-  - Subject21
-    - <span style="color:blue;font-weight:bold">PhysicalParition211</span>
+  - <span style="color:blue;font-weight:bold">Subject21</span>
+    - <span style="color:blue">PhysicalPartition211</span>
       - <span style="color:blue">Model211</span>
         - <span style="color:blue">Elements ...</span>
 
-In this example, <span style="color:green;font-weight:bold">DefinitionContainer21</span>, <span style="color:red;font-weight:bold">PhysicalParition11</span>, <span style="color:blue;font-weight:bold">PhysicalParition21</span> and <span style="color:blue;font-weight:bold">PhysicalParition211</span> are the channel roots. All of the elements and models under them are in their respective channels. Color-coding is used to identify the three channels in this example. Everything in <span style="color:red">green</span> is in the first channel, <span style="color:red">red</span> is in the second channel. Everything in <span style="color:blue">blue</span> is in the third channel.
+In this example, <span style="color:green;font-weight:bold">Subject1</span> and <span style="color:blue;font-weight:bold">Subject2</span> are channel root elements. All of the elements and models under them are in their respective channels. Color-coding is used to identify the two channels in this example. Everything in <span style="color:green">green</span> is in the first channel, <span style="color:blue">blue</span> is in the second channel.
 
-Not everything in an iModel is in a channel. Everything that is not below a Channel root element is considered part of the *Shared Channel*. The Shared Channel may be modified by all applications. In the diagram above, everything in black is in the Shared Channel.
+Not everything in an iModel is in a channel. Everything that is not below a *Channel Root* `Subject` element is considered part of the *Shared Channel*. The Shared Channel may be modified by all applications. In the diagram above, everything in black is in the Shared Channel.
 
 ## ChannelKeys
 
 Every channel has a `channelKey` that is used for controlling write access to it.
 
->Note: `channelKey` is distinct from the Code of the Channel root element. It is a key chosen by the application that creates a channel and is not visible to the user. More than one Channel root Elements may use the same `channelKey`. The third Channel in the the example above assumes there are two Channel root elements using the same `channelKey`.
+>Note: `channelKey` is distinct from the Code of the Channel root element. It is a key chosen by the application that creates a channel and is not visible to the user. A particular `channelKey` can only be used by one Channel root Element in an iModel.
 
 ## ChannelControl
 
 Every `IModelDb` has a member [IModelDb.channels]($backend) of type [ChannelControl]($backend) that supplies methods for controlling which channels are editable during a session.
 
 The method [ChannelControl.getChannelKey]($backend) will return the `channelKey` for an element given an `ElementId`.
+The method [ChannelControl.queryChannelRoot]($backend) will return the `ElementId` of the ChannelRoot element for a given `channelKey`, if one exists.
 
 ### Allowed Channels
 
@@ -69,15 +62,15 @@ Later, to disallow editing of that channel call:
 
 ### Creating New Channels
 
-A Channel is created by defining one or more elements as a Channel root element with the `channelKey` identifying the new channel. To do this, use [ChannelControl.makeChannelRoot]($backend).
+To create a new *Channel Root* `Subject` element (and thereby a new channel), use [ChannelControl.insertChannelSubject]($backend) with the `channelKey` identifying the new channel.
 
 E.g.:
 
 ```ts
-  imodel.channels.makeChannelRoot({ elementId: partitionId, channelKey: "surface-stubs" });
+  imodel.channels.insertChannelSubject({ subjectName: "Chester", channelKey: "surface-stubs" });
 ```
 
-Note that channels may not nest. Attempts to create a Channel root element within an exiting channel will throw an exception.
+Generally, *Channel Root* `Subject` elements are created as an child of the *Root Subject*. However, `insertChannelSubject` accepts an optional `parentSubjectId` argument so that *Channel Root* Subjects can appear elsewhere in the Subject hierarchy. However, channels may not nest. Attempts to create a *Channel Root* element within an existing channel other than the "shared" Channel will throw an exception.
 
 ## Channels vs. Locks
 
