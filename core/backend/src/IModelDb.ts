@@ -2223,7 +2223,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
         props = JSON.parse(propsString) as CloudSqlite.ContainerProps;
       }
-      const accessToken = await CloudSqlite.requestToken(props);
+      const accessToken = await CloudSqlite.requestToken({
+        ...props,
+        userToken: args.userToken,
+        accessLevel: args.accessLevel,
+      });
       if (!this._viewStore)
         this._viewStore = new ViewStore.CloudAccess({ ...props, accessToken, iModel: this._iModel });
 
