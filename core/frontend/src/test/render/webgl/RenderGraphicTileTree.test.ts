@@ -5,12 +5,12 @@
 
 import { expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
-import { GraphicType, TileTreeReference } from "../../../core-frontend";
-import { Color, readUniqueColors, readUniquePixelData, testBlankViewportAsync } from "../../openBlankViewport";
+import { GraphicType, HitDetail, HitDetailProps, HitPriority, HitSource, TileTreeReference } from "../../../core-frontend";
+import { Color, readUniqueColors, readUniquePixelData, testBlankViewport, testBlankViewportAsync } from "../../openBlankViewport";
 import { ColorDef, Feature } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
 
-describe.only("TileTreeReference.createFromRenderGraphic", () => {
+describe("TileTreeReference.createFromRenderGraphic", () => {
   
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
@@ -88,7 +88,50 @@ describe.only("TileTreeReference.createFromRenderGraphic", () => {
     });
   });
 
-  it("can supply a tooltip", () => {
-    
+  it("can supply a tooltip", async () => {
+    testBlankViewportAsync(async (vp) => {
+      const builder = IModelApp.renderSystem.createGraphic({
+        computeChordTolerance: () => 0,
+        type: GraphicType.ViewOverlay,
+      });
+
+      const elemId = vp.iModel.transientIds.getNext();
+      builder.activateFeature(new Feature(elemId));
+      builder.addPointString([new Point3d(1, 1, 1)]);
+
+      const modelId = vp.iModel.transientIds.getNext();
+      const ref = TileTreeReference.createFromRenderGraphic({
+        iModel: vp.iModel,
+        graphic: builder.finish(),
+        modelId,
+        getToolTip: (hit: HitDetail) => Promise.resolve(`hi, ${hit.sourceId}!`),
+      });
+
+      vp.addTiledGraphicsProvider({
+        forEachTileTreeRef: (_, func) => func(ref),
+      });
+      
+      const hitProps: HitDetailProps = {
+        testPoint: new Point3d(),
+        viewport: vp,
+        hitSource: HitSource.DataPoint,
+        hitPoint: new Point3d(),
+        sourceId: elemId,
+        priority: HitPriority.Unknown,
+        distXY: 0,
+        distFraction: 0,
+        modelId,
+      };
+
+      let tooltip = await vp.getToolTip(new HitDetail(hitProps));
+      expect(tooltip).to.equal(`hi, ${elemId}!`);
+
+      // getToolTip is not invoked if the hit's modelId is not equal to the tile tree's model Id.
+      tooltip = await vp.getToolTip(new HitDetail({ ...hitProps, modelId: vp.iModel.transientIds.getNext() }));
+      expect(tooltip).to.equal("");
+
+      tooltip = await vp.getToolTip(new HitDetail({ ...hitProps, modelId: undefined }));
+      expect(tooltip).to.equal("");
+    });
   });
 });
