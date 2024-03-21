@@ -11,7 +11,6 @@ import { ColorDef, Feature } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
 
 describe("TileTreeReference.createFromRenderGraphic", () => {
-  
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
@@ -45,11 +44,11 @@ describe("TileTreeReference.createFromRenderGraphic", () => {
   it("renders to screen", async () => {
     testBlankViewportAsync(async (vp) => {
       vp.displayStyle.backgroundColor = ColorDef.black;
-  
+
       const modelId = vp.iModel.transientIds.getNext();
       const point1Id = vp.iModel.transientIds.getNext();
       const point2Id = vp.iModel.transientIds.getNext();
-  
+
       const builder = IModelApp.renderSystem.createGraphic({
         computeChordTolerance: () => 0,
         type: GraphicType.ViewOverlay,
@@ -110,7 +109,7 @@ describe("TileTreeReference.createFromRenderGraphic", () => {
       vp.addTiledGraphicsProvider({
         forEachTileTreeRef: (_, func) => func(ref),
       });
-      
+
       const hitProps: HitDetailProps = {
         testPoint: new Point3d(),
         viewport: vp,

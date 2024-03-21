@@ -24,7 +24,9 @@ export abstract class RenderGraphic implements IDisposable /* , RenderMemory.Con
   /** @internal */
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 
- /** @internal */
+ /** Extend `range` to include the bounding box of this graphic, including any child graphics.
+  * @internal
+  */
  public abstract unionRange(range: Range3d): void;
 }
 
