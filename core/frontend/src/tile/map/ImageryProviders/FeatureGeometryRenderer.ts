@@ -3,30 +3,30 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Transform } from "@itwin/core-geometry";
-import { ArcGisAttributeDrivenSymbology } from "../../internal";
+import { FeatureSymbolizedRenderer } from "../../internal";
 
 /** Interface defining minimal implementation needed to create an ArcGIS geometry renderer,
  * that will ultimately be called by an [[ArcGisFeatureReader]] implementation.
  * @internal
  */
-export interface ArcGisGeometryRenderer {
+export interface FeatureGeometryRenderer {
   transform: Transform | undefined;
-  attributeSymbology?: ArcGisAttributeDrivenSymbology;
+  hasSymbologyRenderer(): this is FeatureSymbolizedRenderer;
   renderPath(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number, relativeCoords: boolean): Promise<void>;
   renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean): Promise<void>;
 }
 
-/** Internal implementation of [[ArcGisGeometryRenderer]]
+/** Internal implementation of [[FeatureGeometryRenderer]]
  * @internal
  */
-export abstract class ArcGisGeometryBaseRenderer implements ArcGisGeometryRenderer {
+export abstract class FeatureGeometryBaseRenderer implements FeatureGeometryRenderer {
   private _transform: Transform | undefined;
 
   constructor(world2PixelTransform?: Transform) {
     this._transform = world2PixelTransform;
   }
-  public abstract get attributeSymbology(): ArcGisAttributeDrivenSymbology | undefined;
 
+  public abstract hasSymbologyRenderer(): this is FeatureSymbolizedRenderer;
   public get transform() { return this._transform; }
 
   protected abstract beginPath(): void;

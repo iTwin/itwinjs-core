@@ -214,6 +214,9 @@
     "AttachArcGISFeatureMapLayerTool": {
       "keyin": "fdt attach arcgisfeature maplayer"
     },
+    "AttachOgcFeaturesMapLayerTool": {
+      "keyin": "fdt attach ogcFeatures maplayer"
+    },
     "AttachTileURLMapLayerTool": {
       "keyin": "fdt attach tileurl maplayer"
     },

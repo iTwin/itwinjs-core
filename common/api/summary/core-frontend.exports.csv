@@ -41,14 +41,9 @@ internal;AnimationBranchStates
 internal;AnimationNodeId
 public;Animator
 internal;AnyImdlPrimitive = ImdlMeshPrimitive | ImdlPolylinePrimitive | ImdlPointStringPrimitive
-internal;ArcGisAttributeDrivenSymbology
 internal;ArcGisErrorCode
-internal;class ArcGisGeometryBaseRenderer 
 internal;ArcGisGeometryReaderJSON
-internal;ArcGisGeometryRenderer
 internal;ArcGisGetServiceJsonArgs
-internal;ArcGisGraphicsRenderer 
-internal;ArcGisGraphicsRendererProps
 internal;ArcGISIdentifyImageDisplayProps
 internal;ArcGISIdentifyLayersProps
 internal;ArcGISIdentifyRequestUrl
@@ -134,6 +129,7 @@ internal;convertFeatureTable(imdlFeatureTable: ImdlModel.FeatureTable, batchMode
 internal;CoordinateConverter
 internal;CoordinateConverterOptions
 public;CoordinateLockOverrides
+internal;CoordinatesUtils
 public;CoordSource
 public;CoordSystem
 internal;CoreTools
@@ -218,9 +214,16 @@ internal;ExternalTileStatistics
 public;extractImageSourceDimensions(source: ImageSource): Promise
 internal;eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeight?: boolean): Cartographic | undefined
 internal;eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeight?: boolean): Promise
+internal;FeatureAttributeDrivenSymbology
+internal;class FeatureGeometryBaseRenderer 
+internal;FeatureGeometryRenderer
+internal;FeatureGraphicsRenderer 
+internal;FeatureGraphicsRendererProps
 public;FeatureOverrideProvider
+internal;FeatureSymbolizedRenderer
 public;FeatureSymbology
 alpha;Source
+internal;FeatureSymbologyRenderer
 internal;FetchCloudStorage 
 internal;FetchFunction = (url: URL, options?: RequestInit) => Promise
 public;FitViewTool 

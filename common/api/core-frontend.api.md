@@ -1173,16 +1173,6 @@ export interface Animator {
 // @internal (undocumented)
 export type AnyImdlPrimitive = ImdlMeshPrimitive | ImdlPolylinePrimitive | ImdlPointStringPrimitive;
 
-// @internal (undocumented)
-export interface ArcGisAttributeDrivenSymbology {
-    // (undocumented)
-    rendererFields?: string[];
-    // (undocumented)
-    setActiveFeatureAttributes: (attributes: {
-        [key: string]: any;
-    }) => void;
-}
-
 // @internal
 export enum ArcGisErrorCode {
     // (undocumented)
@@ -1197,52 +1187,11 @@ export enum ArcGisErrorCode {
     UnknownError = 1000
 }
 
-// @internal
-export abstract class ArcGisGeometryBaseRenderer implements ArcGisGeometryRenderer {
-    constructor(world2PixelTransform?: Transform);
-    // (undocumented)
-    abstract get attributeSymbology(): ArcGisAttributeDrivenSymbology | undefined;
-    // (undocumented)
-    protected abstract beginPath(): void;
-    // (undocumented)
-    protected abstract closePath(): void;
-    // (undocumented)
-    protected abstract drawPoint(x: number, y: number): void;
-    // (undocumented)
-    protected abstract fill(): Promise<void>;
-    // (undocumented)
-    protected abstract finishPoints(): Promise<void>;
-    // (undocumented)
-    protected abstract lineTo(x: number, y: number): void;
-    // (undocumented)
-    protected abstract moveTo(x: number, y: number): void;
-    renderPath(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number, relativeCoords: boolean): Promise<void>;
-    renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean): Promise<void>;
-    // (undocumented)
-    protected abstract stroke(): Promise<void>;
-    // (undocumented)
-    get transform(): Transform | undefined;
-}
-
 // @internal (undocumented)
 export class ArcGisGeometryReaderJSON {
-    constructor(geometryType: string, renderer: ArcGisGeometryRenderer, relativeCoords?: boolean);
-    // (undocumented)
-    protected static deflateCoordinates(coordinates: number[][], flatCoordinates: number[], stride: number, offset: number): number;
+    constructor(geometryType: string, renderer: FeatureGeometryRenderer, relativeCoords?: boolean);
     // (undocumented)
     readGeometry(geometry: any): Promise<void>;
-}
-
-// @internal
-export interface ArcGisGeometryRenderer {
-    // (undocumented)
-    attributeSymbology?: ArcGisAttributeDrivenSymbology;
-    // (undocumented)
-    renderPath(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number, relativeCoords: boolean): Promise<void>;
-    // (undocumented)
-    renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean): Promise<void>;
-    // (undocumented)
-    transform: Transform | undefined;
 }
 
 // @internal
@@ -1263,36 +1212,6 @@ export interface ArcGisGetServiceJsonArgs {
     url: string;
     // (undocumented)
     userName?: string;
-}
-
-// @internal
-export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
-    constructor(props: ArcGisGraphicsRendererProps);
-    // (undocumented)
-    get attributeSymbology(): ArcGisAttributeDrivenSymbology | undefined;
-    // (undocumented)
-    protected beginPath(): void;
-    // (undocumented)
-    protected closePath(): void;
-    // (undocumented)
-    protected drawPoint(x: number, y: number): void;
-    // (undocumented)
-    protected fill(): Promise<void>;
-    // (undocumented)
-    protected finishPoints(): Promise<void>;
-    // (undocumented)
-    protected lineTo(x: number, y: number): Promise<void>;
-    // (undocumented)
-    moveGraphics(): GraphicPrimitive[];
-    // (undocumented)
-    protected moveTo(x: number, y: number): Promise<void>;
-    // (undocumented)
-    protected stroke(): Promise<void>;
-}
-
-// @internal
-export interface ArcGisGraphicsRendererProps {
-    viewport: Viewport;
 }
 
 // @internal (undocumented)
@@ -2426,6 +2345,12 @@ export enum CoordinateLockOverrides {
     Grid = 4,
     // (undocumented)
     None = 0
+}
+
+// @internal (undocumented)
+export class CoordinatesUtils {
+    // (undocumented)
+    static deflateCoordinates(coordinates: number[][], flatCoordinates: number[], stride: number, offset: number): number;
 }
 
 // @public
@@ -3630,9 +3555,94 @@ export function eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeigh
 // @internal
 export function eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeight?: boolean): Promise<Cartographic | undefined>;
 
+// @internal (undocumented)
+export interface FeatureAttributeDrivenSymbology {
+    // (undocumented)
+    rendererFields?: string[];
+    // (undocumented)
+    setActiveFeatureAttributes: (attributes: {
+        [key: string]: any;
+    }) => void;
+}
+
+// @internal
+export abstract class FeatureGeometryBaseRenderer implements FeatureGeometryRenderer {
+    constructor(world2PixelTransform?: Transform);
+    // (undocumented)
+    protected abstract beginPath(): void;
+    // (undocumented)
+    protected abstract closePath(): void;
+    // (undocumented)
+    protected abstract drawPoint(x: number, y: number): void;
+    // (undocumented)
+    protected abstract fill(): Promise<void>;
+    // (undocumented)
+    protected abstract finishPoints(): Promise<void>;
+    // (undocumented)
+    abstract hasSymbologyRenderer(): this is FeatureSymbolizedRenderer;
+    // (undocumented)
+    protected abstract lineTo(x: number, y: number): void;
+    // (undocumented)
+    protected abstract moveTo(x: number, y: number): void;
+    renderPath(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number, relativeCoords: boolean): Promise<void>;
+    renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean): Promise<void>;
+    // (undocumented)
+    protected abstract stroke(): Promise<void>;
+    // (undocumented)
+    get transform(): Transform | undefined;
+}
+
+// @internal
+export interface FeatureGeometryRenderer {
+    // (undocumented)
+    hasSymbologyRenderer(): this is FeatureSymbolizedRenderer;
+    // (undocumented)
+    renderPath(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number, relativeCoords: boolean): Promise<void>;
+    // (undocumented)
+    renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean): Promise<void>;
+    // (undocumented)
+    transform: Transform | undefined;
+}
+
+// @internal
+export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer {
+    constructor(props: FeatureGraphicsRendererProps);
+    // (undocumented)
+    protected beginPath(): void;
+    // (undocumented)
+    protected closePath(): void;
+    // (undocumented)
+    protected drawPoint(x: number, y: number): void;
+    // (undocumented)
+    protected fill(): Promise<void>;
+    // (undocumented)
+    protected finishPoints(): Promise<void>;
+    // (undocumented)
+    hasSymbologyRenderer(): this is FeatureSymbolizedRenderer;
+    // (undocumented)
+    protected lineTo(x: number, y: number): Promise<void>;
+    // (undocumented)
+    moveGraphics(): GraphicPrimitive[];
+    // (undocumented)
+    protected moveTo(x: number, y: number): Promise<void>;
+    // (undocumented)
+    protected stroke(): Promise<void>;
+}
+
+// @internal
+export interface FeatureGraphicsRendererProps {
+    viewport: Viewport;
+}
+
 // @public
 export interface FeatureOverrideProvider {
     addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
+}
+
+// @internal
+export interface FeatureSymbolizedRenderer {
+    // (undocumented)
+    symbolRenderer: FeatureSymbologyRenderer;
 }
 
 // @public
@@ -3652,6 +3662,14 @@ export namespace FeatureSymbology {
     export interface Source {
         readonly onSourceDisposed: BeEvent<() => void>;
     }
+}
+
+// @internal
+export interface FeatureSymbologyRenderer {
+    // (undocumented)
+    activeGeometryType: string;
+    // (undocumented)
+    isAttributeDriven(): this is FeatureAttributeDrivenSymbology;
 }
 
 // @internal (undocumented)
@@ -7951,7 +7969,7 @@ export abstract class MapLayerImageryProvider {
     initialize(): Promise<void>;
     loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;
     // @internal (undocumented)
-    makeTileRequest(url: string): Promise<Response>;
+    makeTileRequest(url: string, timeoutMs?: number): Promise<Response>;
     // @internal (undocumented)
     matchesMissingTile(tileData: Uint8Array): boolean;
     // @internal (undocumented)
