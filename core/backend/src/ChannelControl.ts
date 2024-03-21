@@ -60,7 +60,7 @@ export interface ChannelControl {
    * @returns The element Id of the ChannelRoot element of the specified Channel key, or undefined if
    * there is no ChannelRoot for it
    */
-  queryChannelRoot(channelKey: ChannelKey): Id64String | undefined
+  queryChannelRoot(channelKey: ChannelKey): Id64String | undefined;
 
   /** @internal */
   verifyChannel(modelId: Id64String): void;

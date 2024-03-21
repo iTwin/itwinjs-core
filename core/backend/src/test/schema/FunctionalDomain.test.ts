@@ -7,16 +7,15 @@ import { assert, expect } from "chai";
 import { join } from "path";
 import { restore as sinonRestore, spy as sinonSpy } from "sinon";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { Code, CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core-common";
+import { CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core-common";
 import { ClassRegistry } from "../../ClassRegistry";
 import { ElementUniqueAspect, OnAspectIdArg, OnAspectPropsArg } from "../../ElementAspect";
 import {
-  ChannelControl, ChannelKey,
-  DefinitionContainer, DefinitionModel, FunctionalBreakdownElement, FunctionalComponentElement, FunctionalModel, FunctionalPartition, FunctionalSchema,
+  ChannelControl, ChannelKey, FunctionalBreakdownElement, FunctionalComponentElement, FunctionalModel, FunctionalPartition, FunctionalSchema,
   InformationPartitionElement, OnChildElementIdArg, OnChildElementPropsArg, OnElementIdArg, OnElementInModelIdArg, OnElementInModelPropsArg,
-  OnElementPropsArg, OnModelIdArg, OnModelPropsArg, OnSubModelIdArg, OnSubModelPropsArg, Schemas, StandaloneDb, Subject,
+  OnElementPropsArg, OnModelIdArg, OnModelPropsArg, OnSubModelIdArg, OnSubModelPropsArg, Schemas, StandaloneDb,
 } from "../../core-backend";
-import { ElementOwnsChildElements, ElementOwnsUniqueAspect, SubjectOwnsPartitionElements, SubjectOwnsSubjects } from "../../NavigationRelationship";
+import { ElementOwnsChildElements, ElementOwnsUniqueAspect, SubjectOwnsPartitionElements } from "../../NavigationRelationship";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import Sinon = require("sinon");
@@ -342,7 +341,7 @@ describe("Functional Domain", () => {
 
     // create a channel for all elements in this test
     assert.isUndefined(iModelDb.channels.queryChannelRoot(testChannelKey1));
-    const subject1Id = iModelDb.channels.insertChannelSubject({ subjectName: "Test Functional Subject", channelKey: testChannelKey1 })
+    const subject1Id = iModelDb.channels.insertChannelSubject({ subjectName: "Test Functional Subject", channelKey: testChannelKey1 });
     assert.equal(iModelDb.channels.queryChannelRoot(testChannelKey1), subject1Id);
 
     const partitionCode = FunctionalPartition.createCode(iModelDb, subject1Id, "Test Functional Model");
