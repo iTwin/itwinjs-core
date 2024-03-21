@@ -549,6 +549,7 @@ class ScopedSelectionChanger {
   }
 }
 
+/** Stores current selection in `KeySet` format per iModel.  */
 class CurrentSelectionStorage {
   private _currentSelection = new Map<string, IModelSelectionStorage>();
   public getSelection(imodelKey: string, level: number) {
@@ -580,6 +581,10 @@ interface StorageEntry {
   ongoingComputationDisposers: Set<Subject<void>>;
 }
 
+/**
+ * Computes and stores current selection in `KeySet` format.
+ * It always stores result of latest resolved call to `computeSelection`.
+ */
 class IModelSelectionStorage {
   private _currentSelection = new Map<number, StorageEntry>();
 
@@ -666,9 +671,7 @@ function keysToSelectable(imodel: IModelConnection, keys: Readonly<KeySet>) {
     const customSelectable: CustomSelectable = {
       identifier: key.pathFromRoot.join("/"),
       data: key,
-      loadInstanceKeys: () => {
-        return createInstanceKeysIterator(imodel, key);
-      },
+      loadInstanceKeys: () => createInstanceKeysIterator(imodel, key),
     };
     selectables.push(customSelectable);
   });
