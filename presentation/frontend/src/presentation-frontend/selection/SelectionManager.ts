@@ -639,8 +639,8 @@ class IModelSelectionStorage {
     this.clearSelections(level);
 
     const prevComputationsDisposers = [...(this._currentSelection.get(level)?.ongoingComputationDisposers ?? [])];
-    const thisDisposer = new Subject<void>();
-    this.addDisposer(level, thisDisposer);
+    const currDisposer = new Subject<void>();
+    this.addDisposer(level, currDisposer);
 
     return defer(async () => {
       const keys = await selectablesToKeys(selectables);
@@ -649,11 +649,11 @@ class IModelSelectionStorage {
         keys: new KeySet(keys),
       };
     }).pipe(
-      takeUntil(thisDisposer),
+      takeUntil(currDisposer),
       tap({
         next: (val) => {
           prevComputationsDisposers.forEach((disposer) => disposer.next());
-          this.setSelection(val.level, val.keys, thisDisposer);
+          this.setSelection(val.level, val.keys, currDisposer);
         },
       }),
     );
