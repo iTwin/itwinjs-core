@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Throws an error if BlobContainer.service is undefined in CloudSqlite.requestToken",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
