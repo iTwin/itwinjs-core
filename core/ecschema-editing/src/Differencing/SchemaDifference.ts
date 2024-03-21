@@ -275,7 +275,6 @@ export interface CustomAttributeRelationshipConstraintDifference {
  */
 export interface EntityClassDifference extends SchemaItemDifference<EntityClass> {
   readonly changeType: "add" | "modify";
-  readonly schemaType: "EntityClass";
 }
 
 /**
@@ -283,7 +282,7 @@ export interface EntityClassDifference extends SchemaItemDifference<EntityClass>
  */
 export interface EntityClassMixinDifference {
   readonly changeType: "modify";
-  readonly schemaType: SchemaItemTypeName.EntityClass;
+  readonly schemaType: "EntityClass";
   readonly itemName: string;
   readonly path: "$mixins";
   readonly difference: string[];

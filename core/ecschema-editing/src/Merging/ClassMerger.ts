@@ -135,7 +135,7 @@ async function setBaseClass(context: SchemaMergeContext, item: ECClass, baseClas
     if (newBaseClass === undefined) {
       return { errorMessage: `'${baseClassKey.name}' class could not be located in the merged schema.`};
     }
-    if(await currentBaseClass.is(newBaseClass)) {
+    if(await newBaseClass.is(currentBaseClass)) {
       return baseClassSetter(item.key, baseClassKey);
     }
   }
