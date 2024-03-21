@@ -289,7 +289,10 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   }
 
   /** Create a [[TileTreeReference]] that displays a pre-defined [[RenderGraphic]].
-   * The reference can be used by a [[TiledGraphicsProvider]] or as a dynamic [SpatialClassifier]($common).
+   * The reference can be used by a [[TiledGraphicsProvider]] or as a dynamic [SpatialClassifier]($common). For example:
+   * ```ts
+   * [[include:TileTreeReference_createFromRenderGraphic]]
+   *```
    * @beta
    */
   public static createFromRenderGraphic(args: RenderGraphicTileTreeArgs): TileTreeReference {
