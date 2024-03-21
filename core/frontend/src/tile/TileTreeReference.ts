@@ -81,6 +81,10 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
     return true;
   }
 
+  public getToolTipPromise(hit: HitDetail): Promise<HTMLElement | string | undefined> | undefined {
+    return this.canSupplyToolTip(hit) ? this.getToolTip(hit).catch(() => undefined) : undefined;
+  }
+
   /** Optionally return a MapLayerFeatureInfo object describing the hit.].
    * @alpha
    */
