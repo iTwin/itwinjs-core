@@ -3637,7 +3637,7 @@ export class ITwinWorkspace implements Workspace {
     readonly settings: Settings;
 }
 
-// @beta (undocumented)
+// @beta
 export class ITwinWorkspaceContainer implements WorkspaceContainer {
     constructor(workspace: ITwinWorkspace, props: WorkspaceContainer.Props);
     // (undocumented)
