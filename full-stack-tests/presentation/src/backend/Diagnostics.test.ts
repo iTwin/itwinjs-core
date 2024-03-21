@@ -45,7 +45,7 @@ describe("Diagnostics", async () => {
         imodel,
         rulesetOrId: ruleset,
         diagnostics: {
-          perf: { minimumDuration: 2 },
+          perf: { minimumDuration: 1 },
           handler: requestDiagnosticsSpy,
         },
       });

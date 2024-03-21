@@ -1054,6 +1054,10 @@ export abstract class Viewport implements IDisposable, TileUser {
     }
     this.forEachMapTreeRef(async (tree) => promises.push(tree.getToolTip(hit)));
 
+    for (const provider of this.tiledGraphicsProviders) {
+      provider.forEachTileTreeRef(this, (ref) => promises.push(ref.getToolTip(hit)));
+    }
+
     const results = await Promise.all(promises);
     for (const result of results)
       if (result !== undefined)

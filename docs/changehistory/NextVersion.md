@@ -8,10 +8,14 @@ Table of contents:
 - [NextVersion](#nextversion)
   - [Display](#display)
     - [Seafloor terrain](#seafloor-terrain)
+    - [Simplified TileTreeReference](#simplified-tiletreereference)
   - [Electron 29 support](#electron-29-support)
   - [Editor](#editor)
   - [Lock Control](#lock-control)
   - [Presentation](#presentation)
+    - [RPC interface version bump](#rpc-interface-version-bump)
+    - [Custom renderer and editor support for array items](#custom-renderer-and-editor-support-for-array-items)
+    - [Support for property overrides on ECStruct member properties](#support-for-property-overrides-on-ecstruct-member-properties)
     - [Deprecation of async array results in favor of async iterators](#deprecation-of-async-array-results-in-favor-of-async-iterators)
   - [Fixed bounding box types](#fixed-bounding-box-types)
 
@@ -37,6 +41,17 @@ You can alternatively specify the Id of any global Cesium ION asset to which you
 
 The new [TerrainSettings.dataSource]($common) property can be used by custom [TerrainProvider]($frontend)s as well, to select from different sources of terrain supplied by the same provider.
 
+### Simplified TileTreeReference
+
+iTwin.js provides two ways to add graphical content to a [Viewport]($frontend)'s scene:
+- [Decorator]($frontend)s provide temporary, "decoration" graphics. Their graphics are simple to create using the [GraphicBuilder]($frontend) API, but must be recreated frequently as the user navigates the view. A given Decorator is applied to all viewports registered with the [ViewManager]($frontend).
+- [TiledGraphicsProvider]($frontend)s inject more permanent graphics of arbitrary complexity that do not change frequently. Their graphics are supplied by a [TileTreeReference]($frontend), which requires implementing a lot of boilerplate code like [TileTreeSupplier]($frontend) and [TileTree]($frontend). A given TiledGraphicsProvider is registered only with specific viewport(s) using [Viewport.addTiledGraphicsProvider]($frontend).
+
+In some cases, you'd just like to add some relatively simple graphics to the viewport's scene using a TiledGraphicsProvider. To simplify that process, [TileTreeReference.createFromRenderGraphic]($frontend) accepts a graphic created using a GraphicBuilder and produces a tile tree from it, which you can then associate with a TiledGraphicsProvider. Here's an example:
+```ts
+[[include:TileTreeReference_createFromRenderGraphic]]
+``
+
 ## Electron 29 support
 
 In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 29](https://www.electronjs.org/blog/electron-29-0).
@@ -61,6 +76,57 @@ Removal of several @alpha test tools for creating Generic:PhysicalObject class e
 Changes to @beta [LockControl]($backend) class to make releaseAllLocks @internal. Should only be called internally after pushing or abandoning all changes.
 
 ## Presentation
+
+### RPC interface version bump
+
+The presentation backend now sends more properties-related information to the frontend than it did in previous version, and the frontend relies on that information for formatting and rendering the properties. As a result, the version of [PresentationRpcInterface]($presentation-common) has been bumped from `4.0.0` to `4.1.0`.
+
+### Custom renderer and editor support for array items
+
+Support for custom renderers and editors has been added for array items.
+
+A renderer / editor may be assigned to items of specific array by creating a [ContentModifier]($presentation-common) for
+a class that has the property and adding a property override for the array property with `[*]` suffix. Example:
+
+```json
+{
+  "ruleType": "ContentModifier",
+  "class": { "schemaName": "MySchemaName", "className": "MyClassName" },
+  "propertyOverrides": [
+    {
+      "name": "MyArrayProperty[*]",
+      "renderer": {
+        "rendererName": "test-renderer"
+      },
+      "editor": {
+        "editorName": "test-editor"
+      }
+    }
+  ]
+}
+```
+
+### Support for property overrides on ECStruct member properties
+
+Support for property overrides has been added for struct member properties.
+
+The overrides may be assigned to members of specific ECStruct class by creating a [ContentModifier]($presentation-common) for
+the struct class and adding property overrides for the members. Example:
+
+```json
+{
+  "ruleType": "ContentModifier",
+  "class": { "schemaName": "MySchemaName", "className": "MyStructClassName" },
+  "propertyOverrides": [
+    {
+      "name": "StructMemberProperty",
+      "renderer": {
+        "rendererName": "test-renderer"
+      }
+    }
+  ]
+}
+```
 
 ### Deprecation of async array results in favor of async iterators
 

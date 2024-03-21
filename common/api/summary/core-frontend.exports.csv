@@ -728,6 +728,7 @@ internal;RenderDiagnostics
 internal;RenderGeometry = IDisposable & RenderMemory.Consumer
 public;class RenderGraphic 
 public;class RenderGraphicOwner 
+beta;RenderGraphicTileTreeArgs
 internal;RenderMaterialSource
 public;RenderMemory
 internal;Buffers 
@@ -892,6 +893,7 @@ public;TileTreeLoadStatus
 public;TileTreeOwner
 public;TileTreeParams
 public;class TileTreeReference
+internal;tileTreeReferenceFromRenderGraphic(args: RenderGraphicTileTreeArgs): TileTreeReference
 public;TileTreeSupplier
 internal;TileUrlImageryProvider 
 public;TileUsageMarker
