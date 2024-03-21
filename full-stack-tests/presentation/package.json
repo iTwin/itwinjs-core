@@ -10,7 +10,7 @@
   "private": true,
   "scripts": {
     "build": "npm run -s copy:locale && tsc 1>&2",
-    "build:watch": "tsc -w",
+    "build:watch": "npm run build -- -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:locale": "cpx \"./public/**/*\" ./lib/public",
     "docs": "npm run -s extract",
