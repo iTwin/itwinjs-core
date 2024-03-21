@@ -19,7 +19,7 @@ export function addTiledGraphics(viewport: Viewport): void {
   // Produce the sphere graphic.
   builder.addSolidPrimitive(Sphere.createCenterRadius(new Point3d(0, 0, 0), 20));
   const graphic = builder.finish();
-  
+
   // Create a TileTreeReference to draw the sphere.
   const treeRef = TileTreeReference.createFromRenderGraphic({
     graphic,

@@ -52,7 +52,7 @@ describe("TileTreeReference.createFromRenderGraphic", () => {
       const builder = IModelApp.renderSystem.createGraphic({
         computeChordTolerance: () => 0,
         type: GraphicType.ViewOverlay,
-        pickable: { id: modelId, modelId: modelId },
+        pickable: { id: modelId, modelId },
       });
 
       builder.setSymbology(ColorDef.red, ColorDef.red, 1);
@@ -93,7 +93,7 @@ describe("TileTreeReference.createFromRenderGraphic", () => {
       const builder = IModelApp.renderSystem.createGraphic({
         computeChordTolerance: () => 0,
         type: GraphicType.ViewOverlay,
-        pickable: { id: modelId, modelId: modelId },
+        pickable: { id: modelId, modelId },
       });
 
       const elemId = vp.iModel.transientIds.getNext();
