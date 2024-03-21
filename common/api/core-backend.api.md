@@ -791,10 +791,19 @@ export class ChannelAdmin implements ChannelControl {
     // (undocumented)
     getChannelKey(elementId: Id64String): ChannelKey;
     // (undocumented)
+    insertChannelSubject(args: {
+        subjectName: string;
+        channelKey: ChannelKey;
+        parentSubjectId?: Id64String;
+        description?: string;
+    }): Id64String;
+    // (undocumented)
     makeChannelRoot(args: {
         elementId: Id64String;
         channelKey: ChannelKey;
     }): void;
+    // (undocumented)
+    queryChannelRoot(channelKey: ChannelKey): Id64String | undefined;
     // (undocumented)
     removeAllowedChannel(channelKey: ChannelKey): void;
     // (undocumented)
@@ -805,10 +814,17 @@ export class ChannelAdmin implements ChannelControl {
 export interface ChannelControl {
     addAllowedChannel(channelKey: ChannelKey): void;
     getChannelKey(elementId: Id64String): ChannelKey;
+    insertChannelSubject(args: {
+        subjectName: string;
+        channelKey: ChannelKey;
+        parentSubjectId?: Id64String;
+        description?: string;
+    }): Id64String;
     makeChannelRoot(args: {
         elementId: Id64String;
         channelKey: ChannelKey;
     }): void;
+    queryChannelRoot(channelKey: ChannelKey): Id64String | undefined;
     removeAllowedChannel(channelKey: ChannelKey): void;
     // @internal (undocumented)
     verifyChannel(modelId: Id64String): void;
