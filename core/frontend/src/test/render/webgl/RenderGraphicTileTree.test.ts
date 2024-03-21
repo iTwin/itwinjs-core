@@ -52,6 +52,7 @@ describe("TileTreeReference.createFromRenderGraphic", () => {
       const builder = IModelApp.renderSystem.createGraphic({
         computeChordTolerance: () => 0,
         type: GraphicType.ViewOverlay,
+        pickable: { id: modelId, modelId: modelId },
       });
 
       builder.setSymbology(ColorDef.red, ColorDef.red, 1);
@@ -88,16 +89,17 @@ describe("TileTreeReference.createFromRenderGraphic", () => {
 
   it("can supply a tooltip", async () => {
     await testBlankViewportAsync(async (vp) => {
+      const modelId = vp.iModel.transientIds.getNext();
       const builder = IModelApp.renderSystem.createGraphic({
         computeChordTolerance: () => 0,
         type: GraphicType.ViewOverlay,
+        pickable: { id: modelId, modelId: modelId },
       });
 
       const elemId = vp.iModel.transientIds.getNext();
       builder.activateFeature(new Feature(elemId));
       builder.addPointString([new Point3d(1, 1, 1)]);
 
-      const modelId = vp.iModel.transientIds.getNext();
       const ref = TileTreeReference.createFromRenderGraphic({
         iModel: vp.iModel,
         graphic: builder.finish(),
