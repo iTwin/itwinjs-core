@@ -71,10 +71,6 @@ export class PlaceSpheresTool extends PrimitiveTool {
     IModelApp.accuSnap.enableSnap(true);
   }
 
-  public override async onCleanup() {
-    // ###TODO
-  }
-
   public override async onDataButtonDown(ev: BeButtonEvent) {
     if (!ev.viewport) {
       return EventHandled.No;
