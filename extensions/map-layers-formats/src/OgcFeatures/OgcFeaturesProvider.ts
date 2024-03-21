@@ -3,17 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { MapLayerImageryProvider } from "@itwin/core-frontend";
+import { FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, QuadId, WGS84Extent } from "@itwin/core-frontend";
 import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS, EsriSLSProps, EsriSMS, EsriSymbol } from "../ArcGisFeature/EsriSymbology";
-import { ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
+import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { Matrix4d, Point3d, Range2d } from "@itwin/core-geometry";
 import { ArcGisSymbologyCanvasRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer";
 import { FeatureCanvasRenderer } from "../Feature/FeatureCanvasRenderer";
 import { base64StringToUint8Array, Logger } from "@itwin/core-bentley";
-import { OgcFeaturesReader } from "../ArcGisFeature/OgcFeaturesReader";
-// import Flatbush from "flatbush";
 import * as Geojson from "geojson";
 import { FeatureDefaultSymbology } from "../Feature/FeatureSymbology";
+import { OgcFeaturesReader } from "./OgcFeaturesReader";
 const loggerCategory = "MapLayersFormats.OgcFeatures";
 
 /**  Provide tiles from a ESRI ArcGIS Feature service
@@ -80,11 +79,6 @@ export class DefaultOgcSymbology implements FeatureDefaultSymbology {
   }
 }
 
-// export type FeatureGeometryType = GeoJSONGeometryType | EsriGeometryType;
-// export class SimpleSymbologyProvider {
-//   public getSymbology(geometryType: string);
-// }
-
 export class OgcFeaturesProvider extends MapLayerImageryProvider {
 
   // Debug flags, should always be committed to FALSE !
@@ -93,14 +87,16 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
 
   private readonly _limitParamMaxValue = 10000; // This is docmented in OGC Features specification; a single items request never returns more than 10 000 items
   private readonly _tiledModeMinLod = 12;
-  private readonly _staticModeFetchTimeout = 30000;
-  private readonly _tileModeFetchTimeout = 30000;
+  private readonly _staticModeFetchTimeout = 10000;
+  private readonly _tileModeFetchTimeout = 10000;
   private readonly _forceTileMode = false;
   private _spatialIdx: any;
   private _defaultSymbol = new DefaultOgcSymbology();
   private _renderer: EsriRenderer|undefined;
   private _baseUrl = "";
-  private _format = "";
+  private _itemsUrl = "";
+  private readonly _itemsCrs = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";   // Fixed fow now
+  private _queryables: any;
 
   public serviceJson: any;
   private _staticData: Geojson.FeatureCollection|undefined;
@@ -109,40 +105,49 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     super(settings, true);
   }
 
+  public override get supportsMapFeatureInfo() { return true;}
   public override get minimumZoomLevel(): number { return this.staticMode ? super.minimumZoomLevel : this._tiledModeMinLod; }
   public get staticMode(): boolean { return !!(this._spatialIdx && this._staticData && !this._forceTileMode); }
 
   public override async initialize(): Promise<void> {
 
-    // TODO: Correct format url
     this._baseUrl = this._settings.url;
-    // Find metadata for proper format, this can also be "json"
-    this._format = "geojson";
 
-    // this.cartoRange = MapCartoRectangle.fromDegrees(west, south, east, north);
-    // const metadata = await this.getServiceJson();
+    // Read collection metadata
+    const metadata = await this.fetchCollectionMetadata();
 
-    // if (this._layerMetadata.supportedQueryFormats) {
-    //   const formats: string[] = this._layerMetadata.supportedQueryFormats.split(", ");
-    //   if (formats.includes("PBF") && this._supportsCoordinatesQuantization) {
-    //     this._format = "PBF";
-    //   } else if (formats.includes("JSON")) {
-    //     this._format = "JSON";
-    //   }
-    // }
+    // Read cartographic range
+    if (Array.isArray(metadata?.extent?.spatial?.bbox)
+    && metadata.extent.spatial.bbox.length > 0
+    && metadata.extent.spatial.crs === this._itemsCrs
+    ) {
+      const firstbbox = metadata.extent.spatial?.bbox[0];
+      this.cartoRange = MapCartoRectangle.fromDegrees(firstbbox[0], firstbbox[1], firstbbox[2], firstbbox[3]);
+    }
 
-    // if (!this._format) {
-    //   Logger.logError(loggerCategory, "Could not get request format from service JSON");
-    //   throw new ServerError(IModelStatus.ValidationFailed, "");
-    // }
+    // Read important links
+    let queryablesHref: string|undefined;
+    let itemsHref: string|undefined;
+    if (Array.isArray(metadata?.links)) {
+      // Items links (Mandatory)
+      const itemsLink = metadata.links.find((link: any)=> link.rel.includes("items") && link.type === "application/geo+json");
+      itemsHref = itemsLink.href;
 
-    // Read range using full extent from service metadata
-    // if (this._layerMetadata?.extent) {
-    //   const layerExtent = this._layerMetadata.extent;
-    //   if (layerExtent.spatialReference.latestWkid === 3857 || layerExtent.spatialReference.wkid === 102100) {
-    //     this.setCartoRangeFromExtentJson(layerExtent);
-    //   }
-    // }
+      // Queryables link (Optional)
+      const queryablesLink = metadata.links.find((link: any)=> link.rel.includes("queryables") && link.type === "application/schema+json");
+      queryablesHref = queryablesLink.href;
+
+    }
+
+    if (itemsHref)
+      this._itemsUrl = itemsHref;
+    else {
+      const msg = "Unable to find items link on collection";
+      Logger.logError(loggerCategory, msg);
+      throw new Error(msg);
+    }
+    if (queryablesHref)
+      this._queryables = await this.fetchQueryables(queryablesHref);
 
     if (!this._forceTileMode) {
       const status = await this.fetchAllItems();
@@ -154,11 +159,45 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     await this._defaultSymbol.initialize(); // images must be loaded upfront
   }
 
+  private async fetchCollectionMetadata() {
+    const url = this.appendCustomParams(`${this._baseUrl}?f=json`);
+    try {
+      const response = await this.makeTileRequest(url, this._staticModeFetchTimeout);
+      return await response.json();
+
+    } catch (e)  {
+      if (e instanceof DOMException && e.name === "AbortError") {
+        Logger.logInfo(loggerCategory, "Request to fetch all features time out, switching to tile mode.");
+      } else {
+        Logger.logError(loggerCategory, "Unkown error occured when fetching OgcFeatures data.");
+      }
+    }
+    return undefined;
+  }
+
   private async fetchAllItems() {
-    // const url = `http://localhost:8081/collections/public.countries/items?f=geojson&limit=${this._limitParamMaxValue}`;
-    const url = `${this._baseUrl}/items?f=geojson&limit=${this._limitParamMaxValue}`;
+    const urlObj = new URL(this._itemsUrl);
+    urlObj.searchParams.append("limit", `${this._limitParamMaxValue}`);
+    const url = this.appendCustomParams(urlObj.toString());
     this._staticData = await this.fetchItems(url, this._staticModeFetchTimeout);
     return this._staticData ? true : false;
+  }
+
+  private async fetchQueryables(queryableUrl: string) {
+    const url = this.appendCustomParams(queryableUrl);
+    try {
+      const response = await this.makeTileRequest(url, this._staticModeFetchTimeout);
+      return  await response.json();
+
+    } catch (e)  {
+      if (e instanceof DOMException && e.name === "AbortError") {
+        Logger.logInfo(loggerCategory, "Request to fetch all features time out, switching to tile mode.");
+      } else {
+        Logger.logError(loggerCategory, "Unkown error occured when fetching OgcFeatures data.");
+      }
+    }
+    return undefined;
+
   }
 
   private async fetchItems(url: string, timeout: number) {
@@ -166,7 +205,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     let success = true;
     try {
       const fetchBegin = performance.now();
-      let response = await this.makeTileRequest(url, timeout);
+      let response = await this.makeTileRequest(this.appendCustomParams(url), timeout);
       let json = await response.json();
       data = json;
       // Follow "next" link if any
@@ -322,9 +361,12 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       data = filteredData;
     } else {
       // Tiled data mode
-      const extent4326Str = this.getEPSG4326ExtentString(row, column, zoomLevel, false);
-      // const url = `http://localhost:8081/collections/public.countries/items?f=geojson&bbox=${extent4326Str}&bbox-crs=http://www.opengis.net/def/crs/EPSG/0/4326&items=10000`;
-      const url = `${this._baseUrl}/items?f=${this._format}&bbox=${extent4326Str}&bbox-crs=http://www.opengis.net/def/crs/EPSG/0/4326&limite=${this._limitParamMaxValue}`;
+      const extent4326Str = this.getEPSG4326TileExtentString(row, column, zoomLevel, false);
+      const urlObj = new URL(this._itemsUrl);
+      urlObj.searchParams.append("bbox", `${extent4326Str}`);
+      urlObj.searchParams.append("bbox-crs", this._itemsCrs);
+      urlObj.searchParams.append("limit", `${this._limitParamMaxValue}`);
+      const url = this.appendCustomParams(urlObj.toString());
 
       try {
         data = await this.fetchItems(url, this._tileModeFetchTimeout);
@@ -353,13 +395,15 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       }
 
       // Create the renderer
-      // this._defaultSymbol = OgcFeaturesProvider.getDefaultSymbology("esriGeometryPolygon");
+
+      // Instead of passing a Transform oject to the render, it should be possible
+      // instead to set the Transform directly on the Canvas, when I tried the display was incorrect, floating point issue?
       // const transfoRow = transfo!.toRows();
       // ctx.setTransform(transfoRow[0][0], transfoRow[1][0], transfoRow[0][1], transfoRow[1][1], transfoRow[0][3], transfoRow[1][3]);
       const symbRenderer = ArcGisSymbologyCanvasRenderer.create(this._renderer, this._defaultSymbol);
       const renderer = new FeatureCanvasRenderer(ctx, symbRenderer, transfo);
 
-      const featureReader  = new OgcFeaturesReader(this._settings);
+      const featureReader  = new OgcFeaturesReader();
 
       await featureReader.readAndRender(data, renderer);
       if (this._drawDebugInfo)
@@ -383,5 +427,44 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     return undefined;
   }
 
+  public override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail, options?: MapFeatureInfoOptions): Promise<void> {
+    const tileExtent = this.getEPSG4326Extent(quadId.row, quadId.column, quadId.level);
+    const tilePixelSizeX = (tileExtent.longitudeRight - tileExtent.longitudeLeft) / this.tileSize;
+    const tilePixelSizeY = (tileExtent.latitudeTop - tileExtent.latitudeBottom) / this.tileSize;
+    const tolerancePixel = options?.tolerance ?? 7;
+    const toleranceWorldX = tilePixelSizeX * tolerancePixel;
+    const toleranceWorldY = tilePixelSizeY * tolerancePixel;
+
+    // Note: We used to pass a single point as the query 'geometry' and leverage the 'distance' parameter, turns
+    // out that approach was a lot slower on some server compared to using a single envelope.
+    const bbox: WGS84Extent = {
+      longitudeLeft: carto.longitudeDegrees - toleranceWorldX, latitudeBottom: carto.latitudeDegrees - toleranceWorldY,
+      longitudeRight: carto.longitudeDegrees + toleranceWorldX, latitudeTop: carto.latitudeDegrees + toleranceWorldY,
+    };
+
+    const bboxStr = this.getEPSG4326ExtentString(bbox, false);
+    const urlObj = new URL(this._itemsUrl);
+    urlObj.searchParams.append("bbox", `${bboxStr}`);
+    urlObj.searchParams.append("bbox-crs", this._itemsCrs);
+    urlObj.searchParams.append("limit", `${this._limitParamMaxValue}`);
+    const url = this.appendCustomParams(urlObj.toString());
+
+    let data: any;
+    try {
+      data = await this.fetchItems(url, this._tileModeFetchTimeout);
+    } catch (_e) {
+    }
+    if (!data) {
+      Logger.logError(loggerCategory, "Could not fetch OgcFeatures data.");
+    }
+
+    const featureReader = new OgcFeaturesReader();
+    await featureReader.readFeatureInfo({
+      collection:data,
+      layerSettings: this._settings,
+      queryables: this._queryables,
+      geomRenderer: new FeatureGraphicsRenderer({viewport: hit.viewport, crs: "wgs84"})},
+    featureInfos );
+  }
 }
 

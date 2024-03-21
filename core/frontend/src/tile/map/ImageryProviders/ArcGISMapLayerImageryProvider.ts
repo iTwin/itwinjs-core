@@ -382,7 +382,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     const tolerancePixel = options?.tolerance ?? 7;
     const json = await this.getIdentifyData(quadId, carto, tolerancePixel, true, maxAllowableOffset);
     if (json && Array.isArray(json.results)) {
-      const renderer = new FeatureGraphicsRenderer({viewport: hit.viewport});
+      const renderer = new FeatureGraphicsRenderer({viewport: hit.viewport, crs: "webMercator"});
 
       const layerInfo: MapLayerFeatureInfo = { layerName: this._settings.name, subLayerInfos: [] };
 

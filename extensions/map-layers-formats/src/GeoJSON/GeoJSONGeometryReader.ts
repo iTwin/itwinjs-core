@@ -70,9 +70,12 @@ export class GeoJSONGeometryReader {
     }
 
     if (polys) {
-      polys.forEach(async (poly) => {
+      for (const poly of polys) {
         await renderer.renderPath(poly.lengths, poly.coords, fill, 2, relativeCoords);
-      });
+      }
+      // polys.forEach(async (poly) => {
+      //   await renderer.renderPath(poly.lengths, poly.coords, fill, 2, relativeCoords);
+      // });
     } else {
       await renderer.renderPath(multiPath.lengths, multiPath.coords, fill, 2, relativeCoords);
     }

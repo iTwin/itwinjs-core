@@ -459,7 +459,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
       const featureReader = new ArcGisJsonFeatureReader(this._settings, this._layerMetadata);
 
-      const renderer = new FeatureGraphicsRenderer({viewport: hit.viewport});
+      const renderer = new FeatureGraphicsRenderer({viewport: hit.viewport, crs: "webMercator"});
       await featureReader.readFeatureInfo(responseData, featureInfos, renderer);
 
     } catch (e) {

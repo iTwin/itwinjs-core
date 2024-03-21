@@ -29,6 +29,15 @@ export enum MapLayerImageryProviderStatus {
   RequireAuth,
 }
 
+/** @internal */
+export interface WGS84Extent
+{
+  longitudeLeft: number;
+  longitudeRight: number;
+  latitudeTop: number;
+  latitudeBottom: number;
+}
+
 /** Abstract class for map layer imagery providers.
  * Map layer imagery providers request and provide tile images and other data. Each map layer from a separate source needs its own imagery provider object.
  * @beta
@@ -400,7 +409,7 @@ export abstract class MapLayerImageryProvider {
    * @param zoomLevel Desired zoom level of the tile
    * @internal
    */
-  public getEPSG4326Extent(row: number, column: number, zoomLevel: number): { longitudeLeft: number, longitudeRight: number, latitudeTop: number, latitudeBottom: number } {
+  public getEPSG4326Extent(row: number, column: number, zoomLevel: number): WGS84Extent {
     // Shift left (this.tileSize << zoomLevel) overflow when using 512 pixels tile at higher resolution,
     // so use Math.pow instead (I assume the performance lost to be minimal)
     const mapSize = this.tileSize * Math.pow(2, zoomLevel);
@@ -443,14 +452,19 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** @internal */
-  public getEPSG4326ExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean) {
+  public getEPSG4326TileExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean) {
     const tileExtent = this.getEPSG4326Extent(row, column, zoomLevel);
+    return this.getEPSG4326ExtentString(tileExtent, latLongAxisOrdering);
+
+  }
+
+  /** @internal */
+  public getEPSG4326ExtentString(tileExtent: WGS84Extent, latLongAxisOrdering: boolean) {
+
     if (latLongAxisOrdering) {
-      return `${tileExtent.latitudeBottom.toFixed(8)},${tileExtent.longitudeLeft.toFixed(8)},
-              ${tileExtent.latitudeTop.toFixed(8)},${tileExtent.longitudeRight.toFixed(8)}`;
+      return `${tileExtent.latitudeBottom.toFixed(8)},${tileExtent.longitudeLeft.toFixed(8)},${tileExtent.latitudeTop.toFixed(8)},${tileExtent.longitudeRight.toFixed(8)}`;
     } else {
-      return `${tileExtent.longitudeLeft.toFixed(8)},${tileExtent.latitudeBottom.toFixed(8)},
-              ${tileExtent.longitudeRight.toFixed(8)},${tileExtent.latitudeTop.toFixed(8)}`;
+      return `${tileExtent.longitudeLeft.toFixed(8)},${tileExtent.latitudeBottom.toFixed(8)},${tileExtent.longitudeRight.toFixed(8)},${tileExtent.latitudeTop.toFixed(8)}`;
     }
   }
 

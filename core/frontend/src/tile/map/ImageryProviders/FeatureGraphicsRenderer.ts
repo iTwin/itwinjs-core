@@ -18,6 +18,8 @@ const loggerCategory = "MapLayerImageryProvider.FeatureGraphicsRenderer";
 export interface FeatureGraphicsRendererProps {
   /** The viewport in which the resultant [GraphicPrimitive]($frontend) is to be drawn. */
   viewport: Viewport;
+  /** Coordinate reference system of input data */
+  crs: "webMercator" | "wgs84";
 }
 
 /** Feature geometry renderer implementation that will "render" a list of [GraphicPrimitive]($frontend)
@@ -32,10 +34,12 @@ export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer {
   private _scratchPaths: Point3d[][] = [];
   private _graphics: GraphicPrimitive[] = [];
   private _viewport: Viewport;
+  private _crs: "webMercator" | "wgs84";
 
   constructor(props: FeatureGraphicsRendererProps) {
     super();
     this._viewport = props.viewport;
+    this._crs = props.crs;
   }
 
   public moveGraphics() {
@@ -137,7 +141,11 @@ export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer {
   private async toSpatial(geoPoints: Point3d[]) {
     const bgMapGeom = this._viewport.displayStyle.getBackgroundMapGeometry();
     if (bgMapGeom) {
-      const cartoPts = geoPoints.map((pt) => Cartographic.fromDegrees({longitude: WebMercator.getEPSG4326Lon(pt.x), latitude: WebMercator.getEPSG4326Lat(pt.y), height: pt.z }));
+      const cartoPts = geoPoints.map((pt) => Cartographic.fromDegrees({
+        longitude: this._crs === "webMercator" ?  WebMercator.getEPSG4326Lon(pt.x) : pt.x,
+        latitude: this._crs === "webMercator" ?  WebMercator.getEPSG4326Lat(pt.y) : pt.y,
+        height: pt.z,
+      }));
       return bgMapGeom.cartographicToDbFromWgs84Gcs(cartoPts);
     }
 

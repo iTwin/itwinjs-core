@@ -147,7 +147,7 @@ describe("FeatureGraphicsRenderer", () => {
   });
 
   it("render non-filled paths correctly", async () => {
-    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object});
+    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object, crs: "webMercator"});
     const testLengths = [2,2];
     const testCoords = [
       -8368830.26, 4866490.12,
@@ -185,7 +185,7 @@ describe("FeatureGraphicsRenderer", () => {
   });
 
   it("render filled paths correctly", async () => {
-    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object});
+    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object, crs: "webMercator"});
 
     // We stub 'FeatureGraphicsRenderer.toSpatialFromEcf' to have the same input/output points, and simplify testing.  We make sure
     // 'toSpatialFromEcf' is being called.
@@ -225,7 +225,7 @@ describe("FeatureGraphicsRenderer", () => {
   });
 
   it("render point correctly", async () => {
-    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object});
+    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object, crs: "webMercator"});
 
     // We stub 'FeatureGraphicsRenderer.toSpatialFromEcf' to have the same input/output points, and simplify testing.  We make sure
     // 'toSpatialFromEcf' is being called.
@@ -259,7 +259,7 @@ describe("FeatureGraphicsRenderer", () => {
     viewportMock!.imodel = connection;
     viewportMock!.displayStyle = new DisplayStyle3dState(styleProps, connection);
     viewportMock!.setup();
-    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object});
+    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object, crs: "webMercator"});
 
     const testLengths = [4,4];
     const testCoords = [
@@ -300,7 +300,7 @@ describe("FeatureGraphicsRenderer", () => {
     viewportMock!.imodel = connection;
     viewportMock!.displayStyle = new DisplayStyle3dState(styleProps, connection);
     viewportMock!.setup();
-    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object});
+    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object, crs: "webMercator"});
 
     const testLengths = [4,4];
     const testCoords = [
