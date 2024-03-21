@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ColorDef, Feature } from "@itwin/core-common";
-import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, IModelApp, IModelConnection, PrimitiveTool, RenderGraphic, TileTreeReference, TiledGraphicsProvider, Viewport } from "@itwin/core-frontend";
+import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, IModelApp, IModelConnection, PrimitiveTool, RenderGraphic, TiledGraphicsProvider, TileTreeReference, Viewport } from "@itwin/core-frontend";
 import { Point3d, Sphere as SpherePrimitive } from "@itwin/core-geometry";
 
 function getColor(index: number): ColorDef {
@@ -41,7 +41,7 @@ class Spheres {
       pickable: {
         modelId: this.modelId,
         id: this.modelId,
-      }
+      },
     });
 
     for (let i = 0; i < this.spheres.length; i++) {
@@ -60,7 +60,7 @@ class Spheres {
 export class PlaceSpheresTool extends PrimitiveTool {
   private _graphic?: RenderGraphic;
   private _spheres?: Spheres;
-  
+
   public static override toolId = "DtaPlaceSpheres";
 
   public override requireWriteableTarget(): boolean {
@@ -97,7 +97,7 @@ export class PlaceSpheresTool extends PrimitiveTool {
       this.registerTiledGraphicsProvider(ev.viewport);
     }
 
-    this.exitTool();
+    await this.exitTool();
     return EventHandled.No;
   }
 
@@ -128,7 +128,7 @@ export class PlaceSpheresTool extends PrimitiveTool {
           func(treeRef);
         }
       },
-    }
+    };
 
     viewport.addTiledGraphicsProvider(provider);
   }
