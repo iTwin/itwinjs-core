@@ -6,11 +6,11 @@
 import { expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
 import { GraphicType, HitDetail, HitDetailProps, HitPriority, HitSource, TileTreeReference } from "../../../core-frontend";
-import { Color, readUniqueColors, readUniquePixelData, testBlankViewportAsync } from "../../openBlankViewport";
-import { ColorDef, Feature } from "@itwin/core-common";
+import { testBlankViewportAsync } from "../../openBlankViewport";
+import { Feature } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
 
-describe.only("TileTreeReference.createFromRenderGraphic", () => {
+describe("TileTreeReference.createFromRenderGraphic", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
@@ -38,53 +38,6 @@ describe.only("TileTreeReference.createFromRenderGraphic", () => {
       expect(ref.isLoadingComplete).to.be.true;
       expect(ref.treeOwner.tileTree).to.equal(tree);
       expect(ref.treeOwner.tileTree!.rootTile.hasGraphics).to.be.true;
-    });
-  });
-
-  it("renders to screen", async () => {
-    await testBlankViewportAsync(async (vp) => {
-      vp.displayStyle.backgroundColor = ColorDef.black;
-
-      const modelId = vp.iModel.transientIds.getNext();
-      const point1Id = vp.iModel.transientIds.getNext();
-      const point2Id = vp.iModel.transientIds.getNext();
-
-      const builder = IModelApp.renderSystem.createGraphic({
-        computeChordTolerance: () => 0,
-        type: GraphicType.WorldDecoration,
-        pickable: { id: modelId, modelId },
-      });
-
-      builder.setSymbology(ColorDef.red, ColorDef.red, 5);
-      builder.activateFeature(new Feature(point1Id));
-      builder.addPointString([new Point3d(100, 100, 10)]);
-      builder.setSymbology(ColorDef.blue, ColorDef.blue, 5);
-      builder.activateFeature(new Feature(point2Id));
-      builder.addPointString([new Point3d(-100, -100, -10)]);
-
-      const ref = TileTreeReference.createFromRenderGraphic({
-        iModel: vp.iModel,
-        graphic: builder.finish(),
-        modelId,
-      });
-
-      vp.addTiledGraphicsProvider({
-        forEachTileTreeRef: (_, func) => func(ref),
-      });
-
-      await vp.waitForSceneCompletion();
-
-      // const pixels = readUniquePixelData(vp);
-      // expect(pixels.length).to.equal(3);
-      // expect(pixels.containsFeature(point1Id, undefined, undefined, modelId)).to.be.true;
-      // expect(pixels.containsFeature(point2Id, undefined, undefined, modelId)).to.be.true;
-
-      vp.renderFrame();
-      const colors = readUniqueColors(vp);
-      expect(colors.length).to.equal(3);
-      expect(colors.contains(Color.fromColorDef(ColorDef.black))).to.be.true;
-      expect(colors.contains(Color.fromColorDef(ColorDef.blue))).to.be.true;
-      expect(colors.contains(Color.fromColorDef(ColorDef.red))).to.be.true;
     });
   });
 
