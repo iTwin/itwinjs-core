@@ -5,8 +5,8 @@
 
 import { expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
-import { GraphicType, TileTreeReference, TiledGraphicsProvider } from "../../../core-frontend";
-import { readUniquePixelData, testBlankViewportAsync } from "../../openBlankViewport";
+import { GraphicType, TileTreeReference } from "../../../core-frontend";
+import { Color, readUniqueColors, readUniquePixelData, testBlankViewportAsync } from "../../openBlankViewport";
 import { ColorDef, Feature } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
 
@@ -77,8 +77,14 @@ describe.only("TileTreeReference.createFromRenderGraphic", () => {
 
       const pixels = readUniquePixelData(vp);
       expect(pixels.length).to.equal(3);
-      expect(pixels.containsElement(point1Id)).to.be.true;
-      expect(pixels.containsElement(point2Id)).to.be.true;
+      expect(pixels.containsFeature(point1Id, undefined, undefined, modelId)).to.be.true;
+      expect(pixels.containsFeature(point2Id, undefined, undefined, modelId)).to.be.true;
+
+      const colors = readUniqueColors(vp);
+      expect(colors.length).to.equal(3);
+      expect(colors.contains(Color.fromColorDef(ColorDef.black))).to.be.true;
+      expect(colors.contains(Color.fromColorDef(ColorDef.blue))).to.be.true;
+      expect(colors.contains(Color.fromColorDef(ColorDef.red))).to.be.true;
     });
   });
 
