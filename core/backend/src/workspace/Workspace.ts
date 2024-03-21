@@ -375,7 +375,7 @@ export class ITwinWorkspace implements Workspace {
 
 /**
  * Implementation of WorkspaceContainer.
- * @beta */
+ * @internal */
 export class ITwinWorkspaceContainer implements WorkspaceContainer {
   public readonly workspace: ITwinWorkspace;
   public readonly filesDir: LocalDirName;
@@ -546,7 +546,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
 
 /**
  * Implementation of WorkspaceDb
- * @beta
+ * @internal
  */
 export class ITwinWorkspaceDb implements WorkspaceDb {
   /** file extension for local WorkspaceDbs */
