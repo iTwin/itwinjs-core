@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
 import { GraphicType, HitDetail, HitDetailProps, HitPriority, HitSource, TileTreeReference } from "../../../core-frontend";
-import { Color, readUniqueColors, readUniquePixelData, testBlankViewport, testBlankViewportAsync } from "../../openBlankViewport";
+import { Color, readUniqueColors, readUniquePixelData, testBlankViewportAsync } from "../../openBlankViewport";
 import { ColorDef, Feature } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
 
@@ -15,7 +15,7 @@ describe("TileTreeReference.createFromRenderGraphic", () => {
   after(async () => IModelApp.shutdown());
 
   it("loads asynchronously", async () => {
-    testBlankViewportAsync(async (vp) => {
+    await testBlankViewportAsync(async (vp) => {
       const builder = IModelApp.renderSystem.createGraphic({
         computeChordTolerance: () => 0,
         type: GraphicType.ViewOverlay,
@@ -42,7 +42,7 @@ describe("TileTreeReference.createFromRenderGraphic", () => {
   });
 
   it("renders to screen", async () => {
-    testBlankViewportAsync(async (vp) => {
+    await testBlankViewportAsync(async (vp) => {
       vp.displayStyle.backgroundColor = ColorDef.black;
 
       const modelId = vp.iModel.transientIds.getNext();
@@ -60,7 +60,6 @@ describe("TileTreeReference.createFromRenderGraphic", () => {
       builder.setSymbology(ColorDef.blue, ColorDef.blue, 1);
       builder.activateFeature(new Feature(point2Id));
       builder.addPointString([new Point3d(2, 2, 2)]);
-
 
       const ref = TileTreeReference.createFromRenderGraphic({
         iModel: vp.iModel,
@@ -88,7 +87,7 @@ describe("TileTreeReference.createFromRenderGraphic", () => {
   });
 
   it("can supply a tooltip", async () => {
-    testBlankViewportAsync(async (vp) => {
+    await testBlankViewportAsync(async (vp) => {
       const builder = IModelApp.renderSystem.createGraphic({
         computeChordTolerance: () => 0,
         type: GraphicType.ViewOverlay,
@@ -103,7 +102,7 @@ describe("TileTreeReference.createFromRenderGraphic", () => {
         iModel: vp.iModel,
         graphic: builder.finish(),
         modelId,
-        getToolTip: (hit: HitDetail) => Promise.resolve(`hi, ${hit.sourceId}!`),
+        getToolTip: async (hit: HitDetail) => Promise.resolve(`hi, ${hit.sourceId}!`),
       });
 
       vp.addTiledGraphicsProvider({

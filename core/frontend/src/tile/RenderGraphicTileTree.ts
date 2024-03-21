@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { Guid, GuidString, Id64String, compareStrings } from "@itwin/core-bentley";
+import { compareStrings, Guid, GuidString, Id64String } from "@itwin/core-bentley";
 import { ViewFlagOverrides } from "@itwin/core-common";
 import { Tile, TileDrawArgs, TileLoadPriority, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier } from "./internal";
 import { RenderGraphic } from "../render/RenderGraphic";

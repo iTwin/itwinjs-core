@@ -68,7 +68,7 @@ describe("Graphic", () => {
 
     const pointString = createGraphic((builder) => builder.addPointString([new Point3d(0, 0, -1), new Point3d(-4, 12, 0)]));
     const pointStringRange = expectRange(pointString, new Range3d(-4, 0, -1, 0, 12, 0));
-    
+
     const owner = IModelApp.renderSystem.createGraphicOwner(box);
     expectRange(owner, boxRange);
 
@@ -91,7 +91,7 @@ describe("Graphic", () => {
     const outerRange = unionRange([innerRange, lineRange, pointStringRange]);
     outerTf.multiplyRange(outerRange, outerRange);
     expectRange(outerBranch, outerRange);
-    
+
     // Batch just returns its range, doesn't ask children
     const featureTable = PackedFeatureTable.pack(new FeatureTable(10));
     const batchRange = new Range3d(0, 0, 0, 1, 2, 3);

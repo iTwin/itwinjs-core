@@ -106,7 +106,7 @@ describe("TileAdmin", () => {
           stats.addTexture(this._size);
       }
 
-      unionRange() { }
+      public unionRange() { }
     }
 
     class TestTile extends Tile {
