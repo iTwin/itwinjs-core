@@ -136,6 +136,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     if (undefined !== classifierTree)
       trees.add(classifierTree);
   }
+
   public get isPlanar() {
     const active = this.activeClassifier;
     return !active || !active.flags.isVolumeClassifier;

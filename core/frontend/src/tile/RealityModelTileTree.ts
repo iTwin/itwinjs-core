@@ -876,6 +876,20 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
   }
 
   public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
+    let tooltip = this._getToolTip(hit);
+    if (tooltip) {
+      return tooltip;
+    }
+
+    const classifierTree = this._classifier?.activeClassifier?.tileTreeReference;
+    if (classifierTree) {
+      return classifierTree.getToolTip(hit);
+    }
+
+    return undefined;
+  }
+  
+  private _getToolTip(hit: HitDetail): HTMLElement | string | undefined {
     const tree = this.treeOwner.tileTree;
     if (!(tree instanceof RealityTileTree) || hit.iModel !== tree.iModel)
       return undefined;
