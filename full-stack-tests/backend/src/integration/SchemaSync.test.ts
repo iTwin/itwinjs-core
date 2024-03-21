@@ -40,6 +40,8 @@ describe("Schema synchronization", function (this: Suite) {
     });
   };
 
+  const imodelJsCoreDirname = path.join(__dirname, `../../../../..`);
+
   it("multi user workflow", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
 
@@ -238,7 +240,7 @@ describe("Schema synchronization", function (this: Suite) {
     HubMock.startup("test", KnownTestLocations.outputDir);
 
     // Setup seed file from exising 4.0.0.3 imodel
-    const testFile = SnapshotDb.openDgnDb({ path: path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/test_ec_4003.bim")}, OpenMode.ReadWrite);
+    const testFile = SnapshotDb.openDgnDb({ path: path.join(imodelJsCoreDirname, "core/backend/lib/cjs/test/assets/test_ec_4003.bim")}, OpenMode.ReadWrite);
     const version0 = testFile.getFilePath();
     testFile.closeFile();
 
