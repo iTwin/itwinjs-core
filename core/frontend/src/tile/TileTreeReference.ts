@@ -77,6 +77,10 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   /** Optionally return a tooltip describing the hit. */
   public async getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined> { return undefined; }
 
+  public canSupplyToolTip(_hit: HitDetail): boolean {
+    return true;
+  }
+
   /** Optionally return a MapLayerFeatureInfo object describing the hit.].
    * @alpha
    */
