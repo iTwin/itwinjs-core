@@ -2,11 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CustomAttributeClass, RelationshipClass, SchemaItemKey } from "@itwin/ecschema-metadata";
+import { CustomAttribute, CustomAttributeClass, RelationshipClass, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { type SchemaMergeContext } from "./SchemaMerger";
 import { type CustomAttributeDifference } from "../Differencing/SchemaDifference";
 import { type SchemaEditResults } from "../Editing/Editor";
-import { updateSchemaItemKey } from "./SchemaItemMerger";
+import { updateSchemaItemFullName, updateSchemaItemKey } from "./SchemaItemMerger";
+
+type CustomAttributeSetter = (customAttribute: CustomAttribute) => Promise<SchemaEditResults>;
 
 /**
  * Merges the custom attributes of the given changes iterable. The third parameter is a callback to pass
@@ -55,4 +57,19 @@ export async function mergeCustomAttribute(context: SchemaMergeContext, change: 
   } else {
     return { errorMessage: `Changes of Custom Attribute on merge is not implemented.`};
   }
+}
+
+export async function applyCustomAttributes(context: SchemaMergeContext, customAttributes: CustomAttribute[], handler: CustomAttributeSetter): Promise<SchemaEditResults> {
+  for(const customAttribute of customAttributes) {
+    const result = await applyCustomAttribute(context, customAttribute, handler);
+    if(result.errorMessage) {
+      return result;
+    }
+  }
+  return {};
+}
+
+export async function applyCustomAttribute(context: SchemaMergeContext, customAttribute: CustomAttribute, handler: CustomAttributeSetter): Promise<SchemaEditResults> {
+  customAttribute.className = await updateSchemaItemFullName(context, customAttribute.className);
+  return handler(customAttribute);
 }

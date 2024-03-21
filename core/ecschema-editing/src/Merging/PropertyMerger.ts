@@ -5,11 +5,12 @@
 import type { SchemaEditResults } from "../ecschema-editing";
 import type { SchemaMergeContext } from "./SchemaMerger";
 import type { ClassItemDifference, ClassPropertyDifference, DifferenceType } from "../Differencing/SchemaDifference";
-import { AnyProperty, AnyPropertyProps, ArrayPropertyProps, ECClass, Enumeration, EnumerationPropertyProps, NavigationPropertyProps, parsePrimitiveType, PrimitivePropertyProps, RelationshipClass, SchemaItemKey, SchemaItemType, schemaItemTypeToString, StructClass, StructPropertyProps } from "@itwin/ecschema-metadata";
+import { AnyProperty, AnyPropertyProps, ArrayPropertyProps, CustomAttribute, ECClass, Enumeration, EnumerationPropertyProps, NavigationPropertyProps, parsePrimitiveType, PrimitivePropertyProps, RelationshipClass, SchemaItemKey, SchemaItemType, schemaItemTypeToString, StructClass, StructPropertyProps } from "@itwin/ecschema-metadata";
 import { updateSchemaItemFullName, updateSchemaItemKey } from "./SchemaItemMerger";
 import { MutableProperty } from "../Editing/Mutable/MutableProperty";
 import { MutableArrayProperty } from "../Editing/Mutable/MutableArrayProperty";
 import { MutablePrimitiveOrEnumPropertyBase } from "../Editing/Mutable/MutablePrimitiveOrEnumProperty";
+import { applyCustomAttributes } from "./CustomAttributeMerger";
 
 type Editable<T> = {
   -readonly [P in keyof T]: T[P];
@@ -54,6 +55,24 @@ async function addClassProperty(context: SchemaMergeContext, itemKey: SchemaItem
     property.category = await updateSchemaItemFullName(context, property.category);
   }
 
+  const createResult = await createProperty(context, itemKey, property);
+  if(createResult.errorMessage) {
+    return createResult;
+  }
+
+  if(property.customAttributes) {
+    const result = await applyCustomAttributes(context, property.customAttributes as CustomAttribute[], async (ca) => {
+      return context.editor.entities.addCustomAttributeToProperty(itemKey, property.name, ca);
+    });
+    if(result.errorMessage) {
+      return result;
+    }
+  }
+
+  return {};
+}
+
+async function createProperty(context: SchemaMergeContext, itemKey: SchemaItemKey, property: Editable<AnyPropertyProps>) {
   if(enumerationProperty.is(property)) {
     return enumerationProperty.add(context, itemKey, property);
   }

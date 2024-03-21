@@ -447,4 +447,117 @@ describe("Custom Attribute merge", () => {
       ],
     });
   });
+
+  it("should merge custom attribute on entity class", async () => {
+    await Schema.fromJson({
+      ...targetJson,
+      items: {
+        TestCAClass: {
+          schemaItemType: "CustomAttributeClass",
+          label: "Test Custom Attribute Class",
+          appliesTo: "AnyClass",
+        },
+        TestClass: {
+          schemaItemType: "EntityClass",
+          label: "TestClass",
+          customAttributes: [{ className: "TargetSchema.TestCAClass" }],
+        },
+      },
+    }, targetContext);
+
+    const merger = new SchemaMerger(targetContext);
+    const mergedSchema = await merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "add",
+          schemaType: "Property",
+          itemName: "TestCAClass",
+          path: "BooleanProperty",
+          difference: {
+            name: "BooleanProperty",
+            type: "PrimitiveProperty",
+            typeName: "boolean",
+          },
+        },
+        {
+          changeType: "add",
+          schemaType: "CustomAttributeClass",
+          itemName: "AnotherCAClass",
+          difference: {
+            label: "Test Custom Attribute Class",
+            appliesTo: "AnyClass",
+          },
+        },
+        {
+          changeType: "add",
+          schemaType: "CustomAttribute",
+          appliesTo: "SchemaItem",
+          itemName: "TestClass",
+          difference: {
+            className: "SourceSchema.AnotherCAClass",
+          },
+        },
+        {
+          changeType: "add",
+          schemaType: "EntityClass",
+          itemName: "AnotherTestClass",
+          difference: {
+            label: "TestClass",
+            properties: [
+              {
+                name: "StringProperty",
+                type: "PrimitiveProperty",
+                customAttributes: [
+                  {
+                    className: "SourceSchema.TestCAClass",
+                    BooleanProperty: true,
+                  },
+                ],
+                typeName: "string",
+              },
+            ],
+            customAttributes: [
+              {
+                className: "SourceSchema.TestCAClass",
+                BooleanProperty: false,
+              },
+            ],
+          },
+        },
+        {
+          changeType: "add",
+          schemaType: "CustomAttribute",
+          appliesTo: "Property",
+          itemName: "AnotherTestClass",
+          path: "StringProperty",
+          difference: {
+            className: "SourceSchema.TestCAClass",
+            BooleanProperty: true,
+          },
+        },
+      ],
+      conflicts: undefined,
+    });
+
+    const testClassItem = await mergedSchema.getItem<EntityClass>("TestClass");
+    expect(testClassItem!.toJSON()).deep.eq({
+      schemaItemType: "EntityClass",
+      label: "TestClass",
+      customAttributes: [{ className: "TargetSchema.TestCAClass" }, { className: "TargetSchema.AnotherCAClass" }],
+    });
+    const anotherClassItem = await mergedSchema.getItem<EntityClass>("AnotherTestClass");
+    expect(anotherClassItem!.toJSON()).deep.eq({
+      schemaItemType: "EntityClass",
+      label: "TestClass",
+      customAttributes: [{ className: "TargetSchema.TestCAClass", BooleanProperty: false }],
+      properties: [{
+        name: "StringProperty",
+        type: "PrimitiveProperty",
+        typeName: "string",
+        customAttributes: [{ className: "TargetSchema.TestCAClass", BooleanProperty: true }],
+      }],
+    });
+  });
 });

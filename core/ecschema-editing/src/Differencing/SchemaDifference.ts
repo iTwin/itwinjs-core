@@ -101,7 +101,7 @@ type ExtractTypeName<T extends SchemaItemType> =
   { [K in keyof typeof SchemaItemType as typeof SchemaItemType[K]]: K }[T];
 
 type SchemaItemProperties<T extends SchemaItemProps> = {
-  [P in keyof Editable<Omit<T, keyof Omit<SchemaItemProps, "label" | "description">>>]: T[P]
+  [P in keyof Editable<Omit<T, keyof Omit<SchemaItemProps, "label" | "description" | "customAttributes">>>]: T[P]
 };
 
 type GroupByDifferenceType<T extends  { changeType: DifferenceType, difference: unknown }> =

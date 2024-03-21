@@ -6,13 +6,14 @@ import type { SchemaMergeContext } from "./SchemaMerger";
 import { AnySchemaItemDifference, ClassItemDifference, SchemaItemTypeName, StructClassDifference } from "../Differencing/SchemaDifference";
 import { AnyMergerHandler, filterByType, locateSchemaItem, SchemaItemMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
 import { type MutableClass } from "../Editing/Mutable/MutableClass";
-import { ECClass, ECClassModifier, parseClassModifier, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
+import { CustomAttribute, ECClass, ECClassModifier, parseClassModifier, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaEditResults } from "../Editing/Editor";
 import { entityClassMerger } from "./EntityClassMerger";
 import { customAttributeClassMerger } from "./CAClassMerger";
 import { mixinClassMerger } from "./MixinMerger";
 import { relationshipClassMerger } from "./RelationshipClassMerger";
 import { mergeClassProperties, mergePropertyDifference } from "./PropertyMerger";
+import { applyCustomAttributes } from "./CustomAttributeMerger";
 
 type ClassItemHandler = <T extends AnySchemaItemDifference>(change: T, merger: AnyMergerHandler<T>) => Promise<void>;
 
@@ -32,6 +33,7 @@ export async function * mergeClassItems(context: SchemaMergeContext, classChange
           baseClass: undefined,
           mixins: undefined,
           properties: undefined,
+          customAttributes: undefined,
         },
       };
       await merger.add(context, changeCopy);
@@ -103,6 +105,15 @@ export async function modifyClass(context: SchemaMergeContext, change: ClassItem
 
   if(change.difference.modifier) {
     const result = await setClassModifier(mutableClass, change.difference.modifier);
+    if(result.errorMessage) {
+      return result;
+    }
+  }
+
+  if(change.difference.customAttributes) {
+    const result = await applyCustomAttributes(context, change.difference.customAttributes as CustomAttribute[], async (ca) => {
+      return context.editor.entities.addCustomAttribute(itemKey, ca);
+    });
     if(result.errorMessage) {
       return result;
     }
