@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64 } from "@itwin/core-bentley";
-import { ColorDef, Feature, SpatialClassifierFlags } from "@itwin/core-common";
+import { ColorDef, Feature, SpatialClassifierFlags, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "@itwin/core-common";
 import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, IModelApp, IModelConnection, LocateFilterStatus, LocateResponse, PrimitiveTool, RenderGraphic, SpatialClassifiersState, SpatialModelState, TileTreeReference, Viewport } from "@itwin/core-frontend";
 import { Point3d, Sphere as SpherePrimitive } from "@itwin/core-geometry";
+import { parseArgs } from "@itwin/frontend-devtools";
 
 function getColor(index: number): ColorDef {
   const colors = [ColorDef.red, ColorDef.blue, ColorDef.green, ColorDef.white, ColorDef.black];
@@ -19,12 +20,11 @@ interface Sphere {
 }
 
 class Spheres {
-  private readonly _radius = 250;
   private readonly _chordTolerance = 0.1;
   public readonly spheres: Sphere[] = [];
   public readonly modelId: string;
 
-  constructor(private readonly _iModel: IModelConnection) {
+  constructor(private readonly _iModel: IModelConnection, private readonly _radius: number) {
     this.modelId = this._iModel.transientIds.getNext();
   }
 
@@ -63,9 +63,14 @@ export class DynamicClassifierTool extends PrimitiveTool {
   private _graphic?: RenderGraphic;
   private _spheres?: Spheres;
   private _classifiers?: SpatialClassifiersState;
+  private _radius = 250;
+  private _inside = SpatialClassifierInsideDisplay.ElementColor;
+  private _outside = SpatialClassifierOutsideDisplay.Dimmed;
   private _isVolume = false;
 
   public static override toolId = "DtaClassify";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 4; }
 
   public override requireWriteableTarget(): boolean {
     return false;
@@ -130,7 +135,7 @@ export class DynamicClassifierTool extends PrimitiveTool {
     } else {
       // Subsequent data buttons place spheres with which to classify the reality model.
       if (!this._spheres) {
-        this._spheres = new Spheres(ev.viewport.iModel);
+        this._spheres = new Spheres(ev.viewport.iModel, this._radius);
       }
 
       this._spheres.add(ev.point);
@@ -154,8 +159,15 @@ export class DynamicClassifierTool extends PrimitiveTool {
   }
 
   private applyClassifier(viewport: Viewport) {
+    if (!this._classifiers) {
+      return;
+    }
+
     const spheres = this._spheres;
-    if (!this._classifiers || !this._graphic || !spheres) {
+    if (!this._graphic || !spheres) {
+      // Select reality model then exit tool => clear any previously-applied classifier.
+      this._classifiers.activeClassifier = undefined;
+      viewport.invalidateScene();
       return;
     }
 
@@ -177,7 +189,7 @@ export class DynamicClassifierTool extends PrimitiveTool {
     this._classifiers.activeClassifier = {
       tileTreeReference,
       name: "Spheres",
-      flags: new SpatialClassifierFlags(undefined, undefined, this._isVolume),
+      flags: new SpatialClassifierFlags(this._inside, this._outside, this._isVolume),
     };
 
     viewport.invalidateScene();
@@ -195,5 +207,22 @@ export class DynamicClassifierTool extends PrimitiveTool {
 
   public override async onRestartTool() {
     return this.exitTool();
+  }
+
+  public override async parseAndRun(...input: string[]): Promise<boolean> {
+    const args = parseArgs(input);
+    this._isVolume = args.getBoolean("v") ?? this._isVolume;
+    this._radius = args.getFloat("r") ?? this._radius;
+    const inside = args.getInteger("i");
+    if (undefined !== inside && inside >= SpatialClassifierInsideDisplay.Off && inside <= SpatialClassifierInsideDisplay.ElementColor) {
+      this._inside = inside;
+    }
+
+    const outside = args.getInteger("o");
+    if (undefined !== outside && outside >= SpatialClassifierOutsideDisplay.Off && outside <= SpatialClassifierOutsideDisplay.Dimmed) {
+      this._outside = outside;
+    }
+
+    return this.run();
   }
 }
