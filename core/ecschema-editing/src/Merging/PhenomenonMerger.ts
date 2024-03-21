@@ -21,13 +21,13 @@ export const phenomenonMerger: SchemaItemMergerHandler<PhenomenonDifference> = {
     });
   },
   modify: async (_context, change, itemKey, phenomenon: MutablePhenomenon) => {
-    if(change.difference.label) {
+    if(change.difference.label !== undefined) {
       phenomenon.setDisplayLabel(change.difference.label);
     }
-    if(change.difference.description) {
+    if(change.difference.description !== undefined) {
       phenomenon.setDescription(change.difference.description);
     }
-    if(change.difference.definition) {
+    if(change.difference.definition !== undefined) {
       // It would be better if the validation would be part of phenomenon.setDefinition.
       if (phenomenon.definition !== "" && change.difference.definition.toLowerCase() !== phenomenon.definition.toLowerCase())
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${itemKey.name} has an invalid 'definition' attribute.`);

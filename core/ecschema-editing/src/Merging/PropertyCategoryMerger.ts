@@ -20,10 +20,10 @@ export const propertyCategoryMerger: SchemaItemMergerHandler<PropertyCategoryDif
     });
   },
   async modify(context, change, itemKey, item: MutablePropertyCategory) {
-    if(change.difference.label) {
+    if(change.difference.label !== undefined) {
       item.setDisplayLabel(change.difference.label);
     }
-    if(change.difference.description) {
+    if(change.difference.description !== undefined) {
       item.setDescription(change.difference.description);
     }
     if(change.difference.priority !== undefined) {

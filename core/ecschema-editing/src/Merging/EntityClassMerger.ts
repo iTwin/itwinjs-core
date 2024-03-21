@@ -26,7 +26,7 @@ export const entityClassMerger: SchemaItemMergerHandler<EntityChangeType> = {
     if(isMixinDifference(change)) {
       return { errorMessage: `Changing the entity class '${itemKey.name}' mixins is not supported.`};
     }
-    if(change.difference.mixins) {
+    if(change.difference.mixins !== undefined) {
       for(const mixin of change.difference.mixins) {
         const mixinKey = await updateSchemaItemKey(context, mixin);
         const result = await context.editor.entities.addMixin(itemKey, mixinKey);

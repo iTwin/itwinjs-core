@@ -47,7 +47,7 @@ async function modifyRelationshipClass(context: SchemaMergeContext, change: Rela
   // The following modifications will only be applied if the items gets modified
   // and not the 2nd pass when adding a RelationshipClass.
   if(change.changeType === "modify") {
-    if(change.difference.strength) {
+    if(change.difference.strength !== undefined) {
       if (item.strength === undefined) {
         const strength = parseStrength(change.difference.strength);
         if (strength === undefined) {
@@ -58,7 +58,7 @@ async function modifyRelationshipClass(context: SchemaMergeContext, change: Rela
       }
       return { itemKey, errorMessage: `Changing the relationship '${itemKey.name}' strength is not supported.` };
     }
-    if(change.difference.strengthDirection) {
+    if(change.difference.strengthDirection !== undefined) {
       if (item.strengthDirection === undefined) {
         const strengthDirection = parseStrengthDirection(change.difference.strengthDirection);
         if (strengthDirection === undefined) {
@@ -75,16 +75,16 @@ async function modifyRelationshipClass(context: SchemaMergeContext, change: Rela
 
 async function modifyRelationshipConstraint(context: SchemaMergeContext, change: RelationshipConstraintDifference, item: MutableRelationshipClass) {
   const constraint = item[parseConstraint(change.path)];
-  if(change.difference.roleLabel) {
+  if(change.difference.roleLabel !== undefined) {
     constraint.roleLabel = change.difference.roleLabel;
   }
-  if(change.difference.polymorphic) {
+  if(change.difference.polymorphic !== undefined) {
     const result = await context.editor.relationships.setConstraintPolymorphic(constraint, change.difference.polymorphic);
     if(result.errorMessage) {
       return result;
     }
   }
-  if(change.difference.multiplicity) {
+  if(change.difference.multiplicity !== undefined) {
     if (constraint.multiplicity === undefined) {
       const multiplicity = RelationshipMultiplicity.fromString(change.difference.multiplicity);
       if (multiplicity === undefined) {
@@ -97,7 +97,7 @@ async function modifyRelationshipConstraint(context: SchemaMergeContext, change:
     }
     return { errorMessage: `Changing the relationship constraint '${constraint.fullName}' multiplicity is not supported.` };
   }
-  if(change.difference.abstractConstraint) {
+  if(change.difference.abstractConstraint !== undefined) {
     const itemKey = await updateSchemaItemKey(context, change.difference.abstractConstraint);
     const abstractConstraint = await context.editor.schemaContext.getSchemaItem<ConstraintClassTypes>(itemKey);
     if (abstractConstraint === undefined) {

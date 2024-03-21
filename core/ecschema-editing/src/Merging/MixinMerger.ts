@@ -22,7 +22,7 @@ export const mixinClassMerger: SchemaItemMergerHandler<MixinClassDifference> = {
     });
   },
   async modify(context, change, itemKey, item: MutableMixin) {
-    if(change.difference.appliesTo) {
+    if(change.difference.appliesTo !== undefined) {
       const appliesTo = await updateSchemaItemKey(context, change.difference.appliesTo);
       const currentValue = await item.appliesTo;
       if (currentValue !== undefined && !appliesTo.matches(currentValue.key)) {

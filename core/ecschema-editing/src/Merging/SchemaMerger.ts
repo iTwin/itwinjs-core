@@ -81,6 +81,12 @@ export class SchemaMerger {
     return this.mergeSchemas(input);
   }
 
+  /**
+   * Merges the schema differences in the target schema. The target schema is defined
+   * in the given differences object.
+   * @param differences   The differences between a source schema and the target schema.
+   * @returns             The modified Schema.
+   */
   private async mergeSchemas(differences: SchemaDifferences): Promise<Schema> {
     const targetSchemaKey = SchemaKey.parseString(differences.targetSchemaName);
     const sourceSchemaKey = SchemaKey.parseString(differences.sourceSchemaName);
@@ -128,15 +134,15 @@ export class SchemaMerger {
   }
 }
 
+/**
+ * Sets the editable properties of a Schema.
+ * @internal
+ */
 async function mergeSchemaProperties(schema: MutableSchema, changes: SchemaDifference) {
-  for (const [name, value] of Object.entries(changes.difference)) {
-    switch(name) {
-      case "label":
-        schema.setDisplayLabel(value);
-        break;
-      case "description":
-        schema.setDescription(value);
-        break;
-    }
+  if(changes.difference.label !== undefined) {
+    schema.setDisplayLabel(changes.difference.label);
+  }
+  if(changes.difference.description !== undefined) {
+    schema.setDescription(changes.difference.description);
   }
 }

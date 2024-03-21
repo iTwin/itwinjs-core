@@ -32,16 +32,16 @@ export const kindOfQuantityMerger: SchemaItemMergerHandler<KindOfQuantityDiffere
     });
   },
   async modify(_context, change, itemKey, item: MutableKindOfQuantity) {
-    if(change.difference.label) {
+    if(change.difference.label !== undefined) {
       item.setDisplayLabel(change.difference.label);
     }
-    if(change.difference.description) {
+    if(change.difference.description !== undefined) {
       item.setDescription(change.difference.description);
     }
-    if(change.difference.relativeError) {
+    if(change.difference.relativeError !== undefined) {
       item.setRelativeError(change.difference.relativeError);
     }
-    if(change.difference.persistenceUnit) {
+    if(change.difference.persistenceUnit !== undefined) {
       // TODO: It should be checked if the unit is the same, but referring to the source schema.
       throw new Error(`Changing the kind of quantity '${itemKey.name}' persistenceUnit is not supported.`);
     }

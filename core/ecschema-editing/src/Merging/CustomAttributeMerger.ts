@@ -59,6 +59,9 @@ export async function mergeCustomAttribute(context: SchemaMergeContext, change: 
   }
 }
 
+/**
+ * @internal
+ */
 export async function applyCustomAttributes(context: SchemaMergeContext, customAttributes: CustomAttribute[], handler: CustomAttributeSetter): Promise<SchemaEditResults> {
   for(const customAttribute of customAttributes) {
     const result = await applyCustomAttribute(context, customAttribute, handler);
@@ -69,6 +72,9 @@ export async function applyCustomAttributes(context: SchemaMergeContext, customA
   return {};
 }
 
+/**
+ * @internal
+ */
 export async function applyCustomAttribute(context: SchemaMergeContext, customAttribute: CustomAttribute, handler: CustomAttributeSetter): Promise<SchemaEditResults> {
   customAttribute.className = await updateSchemaItemFullName(context, customAttribute.className);
   return handler(customAttribute);

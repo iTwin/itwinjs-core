@@ -14,8 +14,14 @@ import { kindOfQuantityMerger } from "./KindOfQuantityMerger";
 import { constantMerger } from "./ConstantMerger";
 import { mergeClassItems } from "./ClassMerger";
 
+/**
+ * @internal
+ */
 type FilteredType<T extends SchemaType> = Extract<AnySchemaItemDifference, { schemaType: T }>;
 
+/**
+ * @internal
+ */
 interface ChangeHandlerMapping<T> {
   add:    (context: SchemaMergeContext, change: T) => Promise<SchemaEditResults>;
   modify: (context: SchemaMergeContext, change: T, itemKey: SchemaItemKey, item: any) => Promise<SchemaEditResults>;
@@ -43,7 +49,10 @@ export function filterByType<T extends SchemaType, R=FilteredType<T>>(difference
   return differences.filter((entry) => entry.schemaType === type) as R[];
 }
 
-/** Handles the merging logic for everything that is same for all schema items such as labels or descriptions */
+/**
+ * Handles the merging logic for everything that is same for all schema items such as labels or descriptions
+ * @internal
+ */
 async function mergeSchemaItem<T extends AnySchemaItemDifference>(context: SchemaMergeContext, change: T, merger: AnyMergerHandler<T>): Promise<SchemaEditResults> {
   if(change.changeType === "add" && merger.add) {
     return merger.add(context, change);

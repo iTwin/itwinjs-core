@@ -89,28 +89,29 @@ async function iterateClassChanges(classChanges: AnySchemaItemDifference[], hand
  */
 export async function modifyClass(context: SchemaMergeContext, change: ClassItemDifference, itemKey: SchemaItemKey, item: ECClass): Promise<SchemaEditResults> {
   const mutableClass = item as MutableClass;
-  if(change.difference.label) {
+  if(change.difference.label !== undefined) {
     mutableClass.setDisplayLabel(change.difference.label);
   }
-  if(change.difference.description) {
+
+  if(change.difference.description !== undefined) {
     mutableClass.setDescription(change.difference.description);
   }
 
-  if(change.difference.baseClass) {
+  if(change.difference.baseClass !== undefined) {
     const result = await setBaseClass(context, item, change.difference.baseClass, change.changeType === "add");
     if(result.errorMessage) {
       return result;
     }
   }
 
-  if(change.difference.modifier) {
+  if(change.difference.modifier !== undefined) {
     const result = await setClassModifier(mutableClass, change.difference.modifier);
     if(result.errorMessage) {
       return result;
     }
   }
 
-  if(change.difference.customAttributes) {
+  if(change.difference.customAttributes !== undefined) {
     const result = await applyCustomAttributes(context, change.difference.customAttributes as CustomAttribute[], async (ca) => {
       return context.editor.entities.addCustomAttribute(itemKey, ca);
     });

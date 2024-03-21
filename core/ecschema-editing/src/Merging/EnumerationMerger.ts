@@ -31,29 +31,29 @@ export const enumerationMerger: SchemaItemMergerHandler<ChangeTypes> = {
   async modify(context, change, itemKey, item: MutableEnumeration) {
     if(isEnumeratorDifference(change)) {
       const [_path, enumeratorName] = change.path.split(".");
-      if(change.difference.value) {
+      if(change.difference.value !== undefined) {
         return { errorMessage: `Failed to merge enumerator attribute, Enumerator "${enumeratorName}" has different values.` };
       }
 
-      if(change.difference.description) {
+      if(change.difference.description !== undefined) {
         await context.editor.enumerations.setEnumeratorDescription(itemKey, enumeratorName, change.difference.description);
       }
-      if(change.difference.label) {
+      if(change.difference.label !== undefined) {
         await context.editor.enumerations.setEnumeratorLabel(itemKey, enumeratorName, change.difference.label);
       }
       return {};
     }
 
-    if(change.difference.type) {
+    if(change.difference.type !== undefined) {
       return { errorMessage: `The Enumeration ${itemKey.name} has an incompatible type. It must be "${primitiveTypeToString(item.type!)}", not "${change.difference.type}".` };
     }
-    if(change.difference.label) {
+    if(change.difference.label !== undefined) {
       item.setDisplayLabel(change.difference.label);
     }
-    if(change.difference.description) {
+    if(change.difference.description !== undefined) {
       item.setDescription(change.difference.description);
     }
-    if(change.difference.isStrict) {
+    if(change.difference.isStrict !== undefined) {
       item.setIsStrict(change.difference.isStrict);
     }
 

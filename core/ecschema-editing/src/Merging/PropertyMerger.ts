@@ -51,7 +51,7 @@ async function mergeClassProperty(context: SchemaMergeContext, change: { changeT
 
 async function addClassProperty(context: SchemaMergeContext, itemKey: SchemaItemKey, property: Editable<AnyPropertyProps>): Promise<SchemaEditResults> {
 
-  if(property.category) {
+  if(property.category !== undefined) {
     property.category = await updateSchemaItemFullName(context, property.category);
   }
 
@@ -60,7 +60,7 @@ async function addClassProperty(context: SchemaMergeContext, itemKey: SchemaItem
     return createResult;
   }
 
-  if(property.customAttributes) {
+  if(property.customAttributes !== undefined) {
     const result = await applyCustomAttributes(context, property.customAttributes as CustomAttribute[], async (ca) => {
       return context.editor.entities.addCustomAttributeToProperty(itemKey, property.name, ca);
     });

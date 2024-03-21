@@ -45,6 +45,13 @@ export default async function mergeSchemaReferences(context: SchemaMergeContext,
   }
 }
 
+/**
+ * Tries to locate the Schema in the current Context
+ * @param editor      Current editor context.
+ * @param schemaName  The schema name to be looked up.
+ * @param version     The schemas version to beo looked up.
+ * @returns           The schema found in the context.
+ */
 async function locateSchema(editor: SchemaContextEditor, schemaName?: string, version?: string): Promise<Schema> {
   if(schemaName === undefined || version === undefined) {
     throw new Error("Schema name and version must not be undefined.");

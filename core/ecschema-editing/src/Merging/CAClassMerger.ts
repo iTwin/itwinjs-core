@@ -22,7 +22,7 @@ export const customAttributeClassMerger: SchemaItemMergerHandler<CustomAttribute
     });
   },
   async modify(context, change, itemKey, item: MutableCAClass) {
-    if(change.difference.appliesTo) {
+    if(change.difference.appliesTo !== undefined) {
       const currentValue = containerTypeToString(item.containerType);
       if (currentValue !== "" && change.difference.appliesTo !== currentValue) {
         const containerType = parseCustomAttributeContainerType(`${currentValue}, ${change.difference.appliesTo}`);

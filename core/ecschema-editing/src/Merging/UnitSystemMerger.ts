@@ -20,10 +20,10 @@ export const unitSystemMerger: SchemaItemMergerHandler<UnitSystemDifference> = {
     });
   },
   async modify(_context, change, _itemKey, item: MutableUnitSystem) {
-    if(change.difference.label) {
+    if(change.difference.label !== undefined) {
       item.setDisplayLabel(change.difference.label);
     }
-    if(change.difference.description) {
+    if(change.difference.description !== undefined) {
       item.setDescription(change.difference.description);
     }
     return {};
