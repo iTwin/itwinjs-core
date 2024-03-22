@@ -2852,4 +2852,16 @@ describe("iModel", () => {
 
     imodel.close();
   });
+
+  it("throws NotFound when attempting to access element props after closing the iModel", () => {
+    const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "accessAfterClose.bim");
+    const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "accessAfterClose" } });
+
+    const elem = imodel.elements.getElement<Subject>(IModel.rootSubjectId);
+    expect(elem.id).to.equal(IModel.rootSubjectId);
+
+    imodel.close();
+
+    expect(() => imodel.elements.getElement<Subject>(IModel.rootSubjectId)).to.throw(IModelError, "Element=0x1", "Not Found");
+  });
 });
