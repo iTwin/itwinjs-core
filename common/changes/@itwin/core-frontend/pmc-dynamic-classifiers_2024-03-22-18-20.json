@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add support for dynamic spatial classifiers.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
