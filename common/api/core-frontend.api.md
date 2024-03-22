@@ -292,6 +292,7 @@ import { SolarShadowSettings } from '@itwin/core-common';
 import { SolidPrimitive } from '@itwin/core-geometry';
 import { SortedArray } from '@itwin/core-bentley';
 import { SpatialClassifier } from '@itwin/core-common';
+import { SpatialClassifierFlags } from '@itwin/core-common';
 import { SpatialClassifierInsideDisplay } from '@itwin/core-common';
 import { SpatialClassifierOutsideDisplay } from '@itwin/core-common';
 import { SpatialClassifiers } from '@itwin/core-common';
@@ -3182,9 +3183,10 @@ export class DynamicsContext extends RenderContext {
 }
 
 // @public
-export type DynamicSpatialClassifier = Omit<SpatialClassifier, "expand"> & {
+export type DynamicSpatialClassifier = {
     tileTreeReference: TileTreeReference;
-    expand?: never;
+    flags: SpatialClassifierFlags;
+    name: string;
 };
 
 // @internal
@@ -4157,6 +4159,7 @@ export class GeometryAccumulator {
     // (undocumented)
     get isEmpty(): boolean;
     saveToGraphicList(graphics: RenderGraphic[], options: GeometryOptions, tolerance: number, pickable: {
+        isVolumeClassifier?: boolean;
         modelId?: string;
     } | undefined): MeshList | undefined;
     // (undocumented)
@@ -4166,10 +4169,12 @@ export class GeometryAccumulator {
     // (undocumented)
     readonly tileRange: Range3d;
     toMeshBuilderMap(options: GeometryOptions, tolerance: number, pickable: {
+        isVolumeClassifier?: boolean;
         modelId?: string;
     } | undefined): MeshBuilderMap;
     // (undocumented)
     toMeshes(options: GeometryOptions, tolerance: number, pickable: {
+        isVolumeClassifier?: boolean;
         modelId?: string;
     } | undefined): MeshList;
     // (undocumented)
@@ -8148,6 +8153,8 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
     // @internal
     constructor(_layerSettings: MapLayerSettings, _layerIndex: number, iModel: IModelConnection);
     // (undocumented)
+    canSupplyToolTip(hit: HitDetail): boolean;
+    // (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
     get imageryProvider(): MapLayerImageryProvider | undefined;
     // (undocumented)
@@ -8478,6 +8485,8 @@ export class MapTileTreeReference extends TileTreeReference {
     addToScene(context: SceneContext): void;
     // (undocumented)
     get baseColor(): ColorDef | undefined;
+    // (undocumented)
+    canSupplyToolTip(hit: HitDetail): boolean;
     // (undocumented)
     get castsShadows(): boolean;
     // (undocumented)
@@ -9215,10 +9224,12 @@ export namespace MeshBuilder {
 // @internal (undocumented)
 export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> {
     constructor(tolerance: number, range: Range3d, is2d: boolean, options: GeometryOptions, pickable: {
+        isVolumeClassifier?: boolean;
         modelId?: Id64String;
     } | undefined);
     // (undocumented)
     static createFromGeometries(geometries: GeometryList, tolerance: number, range: Range3d, is2d: boolean, options: GeometryOptions, pickable: {
+        isVolumeClassifier?: boolean;
         modelId?: Id64String;
     } | undefined): MeshBuilderMap;
     // (undocumented)
@@ -10083,6 +10094,8 @@ export namespace OrbitGtTileTree {
 export class OrbitGtTreeReference extends RealityModelTileTree.Reference {
     constructor(props: OrbitGtTileTree.ReferenceProps);
     // (undocumented)
+    canSupplyToolTip(hit: HitDetail): boolean;
+    // (undocumented)
     get castsShadows(): boolean;
     // (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
@@ -10369,6 +10382,7 @@ export class PhysicalModelState extends SpatialModelState {
 export interface PickableGraphicOptions extends BatchOptions {
     geometryClass?: GeometryClass;
     id: Id64String;
+    isVolumeClassifier?: boolean;
     modelId?: Id64String;
     subCategoryId?: Id64String;
 }
@@ -11531,6 +11545,8 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     addLogoCards(cards: HTMLTableElement): void;
     // (undocumented)
     addToScene(context: SceneContext): void;
+    // (undocumented)
+    canSupplyToolTip(hit: HitDetail): boolean;
     // (undocumented)
     get castsShadows(): boolean;
     // (undocumented)
@@ -14738,6 +14754,7 @@ export abstract class TileTreeReference {
     accumulateTransformedRange(range: Range3d, matrix: Matrix4d, frustumPlanes?: FrustumPlanes): void;
     addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void;
     addToScene(context: SceneContext): void;
+    canSupplyToolTip(_hit: HitDetail): boolean;
     get castsShadows(): boolean;
     collectStatistics(stats: RenderMemory.Statistics): void;
     // @beta
@@ -14770,6 +14787,7 @@ export abstract class TileTreeReference {
     // @internal (undocumented)
     getTerrainHeight(_terrainHeights: Range1d): void;
     getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined>;
+    getToolTipPromise(hit: HitDetail): Promise<HTMLElement | string | undefined> | undefined;
     protected getViewFlagOverrides(tree: TileTree): ViewFlagOverrides;
     get isGlobal(): boolean;
     get isLoadingComplete(): boolean;

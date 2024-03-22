@@ -194,7 +194,7 @@ public;DrawingModelState
 public;DrawingViewState 
 internal;class DynamicIModelTile 
 public;DynamicsContext 
-public;DynamicSpatialClassifier = Omit
+public;DynamicSpatialClassifier =
 internal;EdgeParams
 internal;edgeParamsFromImdl(imdl: ImdlModel.EdgeParams): EdgeParams
 internal;EdgeTable
