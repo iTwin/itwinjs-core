@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Wed, 03 Jan 2024 19:28:38 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Mar 2024 13:30:30 GMT and should not be manually modified.
+
+## 4.3.4
+Fri, 22 Mar 2024 13:30:30 GMT
+
+### Updates
+
+- Bump @itwin/object-storage-azure and @itwin/object-storage-core
 
 ## 4.3.3
 Wed, 03 Jan 2024 19:28:38 GMT

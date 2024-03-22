@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Wed, 03 Jan 2024 19:28:38 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Mar 2024 13:30:31 GMT and should not be manually modified.
+
+## 4.3.4
+Fri, 22 Mar 2024 13:30:31 GMT
+
+### Updates
+
+- Bump @itwin/object-storage-core
 
 ## 4.3.3
 Wed, 03 Jan 2024 19:28:38 GMT
