@@ -8,6 +8,7 @@ Table of contents:
 - [NextVersion](#nextversion)
   - [Display](#display)
     - [Seafloor terrain](#seafloor-terrain)
+    - [Simplified TileTreeReference](#simplified-tiletreereference)
   - [Electron 29 support](#electron-29-support)
   - [Editor](#editor)
   - [Lock Control](#lock-control)
@@ -39,6 +40,17 @@ To enable seafloor terrain, create a [TerrainSettings]($common) specifying [Cesi
 You can alternatively specify the Id of any global Cesium ION asset to which you have access. Either way, make sure you add the asset to your ION account first.
 
 The new [TerrainSettings.dataSource]($common) property can be used by custom [TerrainProvider]($frontend)s as well, to select from different sources of terrain supplied by the same provider.
+
+### Simplified TileTreeReference
+
+iTwin.js provides two ways to add graphical content to a [Viewport]($frontend)'s scene:
+- [Decorator]($frontend)s provide temporary, "decoration" graphics. Their graphics are simple to create using the [GraphicBuilder]($frontend) API, but must be recreated frequently as the user navigates the view. A given Decorator is applied to all viewports registered with the [ViewManager]($frontend).
+- [TiledGraphicsProvider]($frontend)s inject more permanent graphics of arbitrary complexity that do not change frequently. Their graphics are supplied by a [TileTreeReference]($frontend), which requires implementing a lot of boilerplate code like [TileTreeSupplier]($frontend) and [TileTree]($frontend). A given TiledGraphicsProvider is registered only with specific viewport(s) using [Viewport.addTiledGraphicsProvider]($frontend).
+
+In some cases, you'd just like to add some relatively simple graphics to the viewport's scene using a TiledGraphicsProvider. To simplify that process, [TileTreeReference.createFromRenderGraphic]($frontend) accepts a graphic created using a GraphicBuilder and produces a tile tree from it, which you can then associate with a TiledGraphicsProvider. Here's an example:
+```ts
+[[include:TileTreeReference_createFromRenderGraphic]]
+``
 
 ## Electron 29 support
 

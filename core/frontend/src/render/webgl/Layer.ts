@@ -12,6 +12,7 @@ import { Graphic } from "./Graphic";
 import { RenderCommands } from "./RenderCommands";
 import { RenderPass } from "./RenderFlags";
 import { Target } from "./Target";
+import { Range3d } from "@itwin/core-geometry";
 
 abstract class GraphicWrapper extends Graphic {
   public readonly graphic: Graphic;
@@ -35,6 +36,10 @@ abstract class GraphicWrapper extends Graphic {
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.graphic.collectStatistics(stats);
+  }
+
+  public override unionRange(range: Range3d) {
+    this.graphic.unionRange(range);
   }
 }
 
