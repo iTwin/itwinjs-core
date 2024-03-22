@@ -35,13 +35,14 @@ class Spheres {
     });
   }
 
-  public toGraphic(): RenderGraphic {
+  public toGraphic(isVolumeClassifier: boolean): RenderGraphic {
     const builder = IModelApp.renderSystem.createGraphic({
       type: GraphicType.Scene,
       computeChordTolerance: () => this._chordTolerance,
       pickable: {
         modelId: this.modelId,
         id: this.modelId,
+        isVolumeClassifier,
       },
     });
 
@@ -131,6 +132,9 @@ export class DynamicClassifierTool extends PrimitiveTool {
       const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
       if (hit) {
         this._classifiers = this.findClassifiers(hit);
+        if (this._classifiers) {
+          this._classifiers.activeClassifier = undefined;
+        }
       }
     } else {
       // Subsequent data buttons place spheres with which to classify the reality model.
@@ -140,7 +144,7 @@ export class DynamicClassifierTool extends PrimitiveTool {
 
       this._spheres.add(ev.point);
       this._graphic?.dispose();
-      this._graphic = this._spheres.toGraphic();
+      this._graphic = this._spheres.toGraphic(false);
       ev.viewport?.invalidateDecorations();
     }
 
@@ -174,7 +178,7 @@ export class DynamicClassifierTool extends PrimitiveTool {
     const sphereIds = spheres.spheres.map((x) => x.id);
     const tileTreeReference = TileTreeReference.createFromRenderGraphic({
       iModel: viewport.iModel,
-      graphic: this._graphic,
+      graphic: spheres.toGraphic(true),
       modelId: spheres.modelId,
       getToolTip: async (hit: HitDetail) => {
         const index = sphereIds.indexOf(hit.sourceId);
