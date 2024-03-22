@@ -30,6 +30,8 @@ export class BatchedTile extends Tile {
   /** Transform from the tile's local coordinate system to that of the tileset. */
   public readonly transformToRoot?: Transform;
 
+  private _db: any;
+
   public get batchedTree(): BatchedTileTree {
     return this.tree as BatchedTileTree;
   }
@@ -129,15 +131,139 @@ export class BatchedTile extends Tile {
     if (!channel) {
       channel = new TileRequestChannel("itwinjs-batched-models", 20);
       IModelApp.tileAdmin.channels.add(channel);
+
+      // Create indexedDB cache
+      const requestDB = window.indexedDB.open("MX-IDB", 1);
+
+      requestDB.onerror = () => {
+        console.log("Error opening up IDBL");
+      };
+
+      requestDB.onsuccess = (event) => {
+        console.log("Success opening up IDB");
+
+        const target: any = event.target;
+        if (target) {
+          this._db = target.result;
+          console.log(this._db);
+        }
+      };
+
+      // This will get called when a new version of the db is needed - including going from no database to first version
+      // So this is how we set up the specifics of the db structure
+      requestDB.onupgradeneeded = (event) => {
+        console.log("ON UPGRADE NEEDED");
+        const target: any = event.target;
+
+        if (target)
+          this._db = target.result;
+
+        const initialObjectStore = this._db.createObjectStore("tile-cache", { keyPath: "uniqueId" });
+        console.log("CREATE INITIAL DATA STORE MX-IDB");
+
+        initialObjectStore.createIndex("content", "content", {unique: false});
+
+      };
     }
 
     return channel;
   }
 
+  private async requestContentFromIDB(uniqueId: string): Promise<ArrayBuffer | undefined> {
+    console.log("REQUESTING TILE FROM CACHE MX-IDB");
+    const getTransaction = await this._db.transaction("tile-cache", "readonly");
+    const storedResponse = await getTransaction.objectStore("tile-cache").get(this.contentId + this.tree.id);
+
+    // If we found a result
+    storedResponse.onsuccess = async () => {
+      console.log("STORED RESPONSE SUCCESS");
+      if (storedResponse.result !== undefined) {
+        console.log("THERES A RESULT");
+        // We want to know when the result was stored, and how long it's been since that point
+        const timeSince = Date.now() - storedResponse.result.timeOfStorage;
+        console.log("TIME SINCE STORAGE: ", timeSince / 1000, " secs" );
+
+        // If this time since is within our time limit (for now, two minutes), pass the stored response along
+        if ( timeSince <= 120000) {
+          console.log("STORED RESPONSE STILL VALID");
+
+          const content = storedResponse.result.content;
+
+          console.log("RETURNING THE FOLLOWING TILE");
+          console.log(content);
+          return content;
+
+        } else { // otherwise delete the tile and go on with the normal request route
+          await this.deleteTileFromIDB(this.contentId + this.tree.id);
+        }
+
+      } else {
+        console.log("NO MATCHING RESULT FOUND");
+      }
+      return undefined;
+    };
+    return undefined;
+  }
+
+  private async deleteTileFromIDB(uniqueId: string) {
+    const deleteTransaction = await this._db.transaction("tile-cache", "readwrite");
+    const requestDelete = await deleteTransaction.objectStore("tile-cache").delete(uniqueId);
+
+    requestDelete.onsuccess = () => {
+      console.log("EXPIRED RESPONSE DELETED.");
+    };
+
+    deleteTransaction.onsuccess = () => {
+      console.log("DELETE TRANSACTION SUCCESS");
+    };
+
+    deleteTransaction.oncomplete = async () => {
+      console.log("DELETE TRANSACTION COMPLETED");
+    };
+  }
+
+  private async addTileToIDB(response: ArrayBuffer) {
+
+    const addTransaction = await this._db.transaction("tile-cache", "readwrite");
+    const objectStore = await addTransaction.objectStore("tile-cache");
+
+    const tileData = {
+      // create a unique id by concatenating tile content id and tree id
+      uniqueId: this.contentId + this.tree.id,
+      content: response,
+    };
+
+    console.log("ADDING THIS TILE TO MX-IDB");
+    console.log(tileData);
+
+    const requestAdd = await objectStore.add(tileData);
+    requestAdd.onsuccess = () => {
+      console.log("ADD REQUEST SUCCESS");
+    };
+
+    addTransaction.onsuccess = () => {
+      console.log("WRITE TRANSACTION SUCCESS");
+    };
+
+    addTransaction.oncomplete = () => {
+      console.log("WRITE TRANSACTION COMPLETE");
+    };
+  }
+
   public override async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
+
+    // First check IDB to see if we can find the til without fetching it
+    const cachedContent = await this.requestContentFromIDB(this.contentId + this.tree.id);
+
+    if (cachedContent) {
+      console.log("Cached Content being returned");
+      return cachedContent;
+    }
+
     const url = new URL(this.contentId, this.batchedTree.reader.baseUrl);
     url.search = this.batchedTree.reader.baseUrl.search;
     const response = await fetch(url.toString());
+    await this.addTileToIDB(await response.arrayBuffer());
     return response.arrayBuffer();
   }
 
