@@ -7,8 +7,9 @@
  */
 import { comparePossiblyUndefined, compareStrings, compareStringsOrUndefined, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BatchType, ClassifierTileTreeId, iModelTileTreeIdToString, RenderMode, RenderSchedule, SpatialClassifier, SpatialClassifiers, ViewFlagsProperties,
+  BatchType, ClassifierTileTreeId, iModelTileTreeIdToString, RenderMode, RenderSchedule, SpatialClassifier, SpatialClassifiers, ViewFlagsProperties, VolumeClassifierModelProps,
 } from "@itwin/core-common";
+import { Box, Point3d, Range3d } from "@itwin/core-geometry";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -18,6 +19,8 @@ import { ViewState } from "../ViewState";
 import {
   DisclosedTileTreeSet, IModelTileTree, iModelTileTreeParamsFromJSON, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
+import { GraphicType } from "../render/GraphicBuilder";
+import { GraphicList } from "../render/RenderGraphic";
 
 interface ClassifierTreeId extends ClassifierTileTreeId {
   modelId: Id64String;
@@ -99,6 +102,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   private readonly _iModel: IModelConnection;
   private readonly _classifiedTree: TileTreeReference;
   private _owner: TileTreeOwner;
+  private _graphicList: GraphicList | undefined = undefined;
 
   public constructor(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState) {
     super();
@@ -122,6 +126,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     if (0 !== compareIds(this._id, newId)) {
       this._id = newId;
       this._owner = classifierTreeSupplier.getOwner(this._id, this._iModel);
+      this._graphicList = undefined;
     }
 
     return this._owner;
@@ -141,7 +146,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   public get viewFlags(): Partial<ViewFlagsProperties> {
     return {
       renderMode: RenderMode.SmoothShade,
-      transparency: true,      // Igored for point clouds as they don't support transparency.
+      transparency: true,      // Ignored for point clouds as they don't support transparency.
       textures: false,
       lighting: false,
       shadows: false,
@@ -151,6 +156,28 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
       visibleEdges: false,
       hiddenEdges: false,
     };
+  }
+
+  // Create a box geometries that can be used for volume classification.
+  private createVolumeClassifierGeometry(context: SceneContext, modelId: VolumeClassifierModelProps[]) {
+
+    this._graphicList = modelId.map((m) => {
+
+      const builder = context.renderSystem.createGraphic({ type: GraphicType.Scene, viewport: context.viewport, pickable: { id: m.id } });
+      builder.setSymbology(m.color, m.color, 1);
+
+      const points = m.points.map(p => m.transform?.multiplyPoint3d(Point3d.fromJSON(p)) ?? Point3d.fromJSON(p));
+      const range = Range3d.createArray(points);
+
+      const box = Box.createRange(range, true);
+      if (box) {
+        const inverseTranform = m.transform?.inverse();
+        inverseTranform && box.tryTransformInPlace(inverseTranform);
+        builder.addSolidPrimitive(box);
+      }
+      return builder.finish();
+    });
+
   }
 
   // Add volume classifiers to scene (planar classifiers are added seperately.)
@@ -166,11 +193,17 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     if (undefined === classifier)
       return;
 
-    const classifierTree = this.treeOwner.load();
-    if (undefined === classifierTree)
-      return;
+    if (typeof classifier.modelId === "string") {
+      const classifierTree = this.treeOwner.load();
+      if (undefined === classifierTree)
+        return;
 
-    context.setVolumeClassifier(classifier, classifiedTree.modelId);
+    } else if (!this._graphicList) {
+      this.createVolumeClassifierGeometry(context, classifier.modelId);
+    }
+
+    context.setVolumeClassifier(classifier, classifiedTree.modelId, this._graphicList);
+
     super.addToScene(context);
   }
 
@@ -186,9 +219,14 @@ function createClassifierId(classifier: SpatialClassifier | undefined, source: V
     return { modelId: Id64.invalid, type: BatchType.PlanarClassifier, expansion: 0, animationId: undefined };
 
   const type = classifier.flags.isVolumeClassifier ? BatchType.VolumeClassifier : BatchType.PlanarClassifier;
-  const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(classifier.modelId, source?.scheduleScriptReference); // eslint-disable-line deprecation/deprecation
+
+  let scriptInfo;
+  if (typeof classifier.modelId === "string") {
+    scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(classifier.modelId, source?.scheduleScriptReference); // eslint-disable-line deprecation/deprecation
+  }
+
   return {
-    modelId: classifier.modelId,
+    modelId: typeof classifier.modelId === "string" ? classifier.modelId : classifier.modelId[0].id,
     type,
     expansion: classifier.expand,
     animationId: scriptInfo?.animationId,

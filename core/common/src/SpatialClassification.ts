@@ -7,7 +7,9 @@
  */
 
 import { assert, Id64String } from "@itwin/core-bentley";
+import { Transform, XYZProps } from "@itwin/core-geometry";
 import { ModelMapLayerSettings } from "./MapLayerSettings";
+import { ColorDef } from "./ColorDef";
 
 /** Describes how a [[SpatialClassifier]] affects the display of classified geometry - that is, geometry intersecting
  * the classifier.
@@ -112,13 +114,29 @@ export class SpatialClassifierFlags {
   }
 }
 
+/**
+ * Contains the data required to create a volume classifier.
+ * @public
+ * @extensions
+ * @param id transient id that is used to identify the volume classifier(for eg: to show the tooltip).
+ * @param color color of the volume classifier geometry.
+ * @param points array of points that will be used to create box geometry for volume classification.
+ * @param transform transform of the geometry.
+ */
+export interface VolumeClassifierModelProps {
+  id: Id64String;
+  color: ColorDef;
+  points: XYZProps[];
+  transform?: Transform;
+}
+
 /** JSON representation of a [[SpatialClassifier]].
  * @public
  * @extensions
  */
 export interface SpatialClassifierProps {
   /** See [[SpatialClassifier.modelId]]. */
-  modelId: Id64String;
+  modelId: Id64String | VolumeClassifierModelProps[];
   /** See [[SpatialClassifier.expand]]. */
   expand: number;
   /** See [[SpatialClassifier.flags]]. */
@@ -150,8 +168,10 @@ export interface SpatialClassifierProps {
  * @public
  */
 export class SpatialClassifier {
-  /** The Id of the [GeometricModel]($backend) whose geometry is used to produce the classifier. */
-  public readonly modelId: Id64String;
+  /** The Id of the [GeometricModel]($backend) whose geometry is used to produce the classifier
+   * or a VolumeClassifierModelProps array can be passed containing details of geometry to be created.
+  */
+  public readonly modelId: Id64String | VolumeClassifierModelProps[];
   /** A distance in meters by which to expand the classifier geometry. For example, if line strings are used to represent streets,
    * you might expand them to the average width of a street.
    */
@@ -162,7 +182,7 @@ export class SpatialClassifier {
   public readonly name: string;
 
   /** Construct a new classifier. */
-  public constructor(modelId: Id64String, name: string, flags = new SpatialClassifierFlags(), expand = 0) {
+  public constructor(modelId: Id64String | VolumeClassifierModelProps[], name: string, flags = new SpatialClassifierFlags(), expand = 0) {
     this.modelId = modelId;
     this.expand = expand;
     this.flags = flags;
@@ -191,7 +211,7 @@ export class SpatialClassifier {
    * @beta
    */
   public static fromModelMapLayer(mapLayer: ModelMapLayerSettings): SpatialClassifier {
-    const flags =  SpatialClassifierFlags.fromJSON({ inside: SpatialClassifierInsideDisplay.Off, outside: SpatialClassifierOutsideDisplay.Off });
+    const flags = SpatialClassifierFlags.fromJSON({ inside: SpatialClassifierInsideDisplay.Off, outside: SpatialClassifierOutsideDisplay.Off });
 
     return new SpatialClassifier(mapLayer.modelId, mapLayer.name, flags);
   }

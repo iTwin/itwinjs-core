@@ -24,7 +24,7 @@ function clearElement(element: HTMLElement): void {
 const NO_MODEL_ID = "-1";
 
 enum RealityDataType {
-  REALITYMESH3DTILES  = "REALITYMESH3DTILES",
+  REALITYMESH3DTILES = "REALITYMESH3DTILES",
   OSMBUILDINGS = "OSMBUILDINGS",
   OPC = "OPC",
   TERRAIN3DTILES = "TERRAIN3DTILES", // Terrain3DTiles
@@ -103,8 +103,8 @@ export class ClassificationsPanel extends ToolBarDropDown {
     };
   }
 
-  private hasAttachedRealityModelFromKey(style: DisplayStyle3dState, rdSourceKey: RealityDataSourceKey ): boolean {
-    return undefined !== style.settings.contextRealityModels.models.find((x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey,x.rdSourceKey));
+  private hasAttachedRealityModelFromKey(style: DisplayStyle3dState, rdSourceKey: RealityDataSourceKey): boolean {
+    return undefined !== style.settings.contextRealityModels.models.find((x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey, x.rdSourceKey));
   }
 
   private isSupportedType(type: string | undefined): boolean {
@@ -153,7 +153,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
     }
 
     const range = new CartographicRange(this._vp.iModel.projectExtents, ecef.getTransform());
-    let available: RealityDataResponse = {realityDatas: []};
+    let available: RealityDataResponse = { realityDatas: [] };
     try {
       if (this._iTwinId !== undefined && IModelApp.authorizationClient) {
         const accessToken = await IModelApp.authorizationClient.getAccessToken();
@@ -178,7 +178,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
     for (const rdEntry of available.realityDatas) {
       const name = undefined !== rdEntry.displayName ? rdEntry.displayName : rdEntry.id;
       const rdSourceKey = this.createRealityDataSourceKeyFromITwinRealityData(rdEntry);
-      const tilesetUrl = await IModelApp.realityDataAccess?.getRealityDataUrl(this._iTwinId,rdSourceKey.id);
+      const tilesetUrl = await IModelApp.realityDataAccess?.getRealityDataUrl(this._iTwinId, rdSourceKey.id);
       const isDisplaySupported = this.isSupportedDisplayType(rdEntry.type);
       if (tilesetUrl && isDisplaySupported) {
         const entry: ContextRealityModelProps = {
@@ -187,6 +187,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
           name,
           description: rdEntry?.description,
           realityDataId: rdSourceKey.id,
+          classifiers: [],
         };
 
         createCheckBox({
@@ -263,12 +264,15 @@ export class ClassificationsPanel extends ToolBarDropDown {
 
     clearElement(this._modelListDiv);
 
+    this._selectedClassifier ? this._selectedClassifier.modelId : undefined;
+    const value = typeof this._selectedClassifier?.modelId === "string" ? this._selectedClassifier.modelId : "";
+
     this._modelComboBox = createComboBox({
       entries,
       parent: this._modelListDiv,
       id: "classifiers_modelBox",
       name: "Active Classifier: ",
-      value: undefined !== this._selectedClassifier ? this._selectedClassifier.modelId : undefined,
+      value,
       handler: (select) => {
         this.setAsActiveClassifier(this._models[select.value]);
         this.populateRealityModelList();
@@ -302,7 +306,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
   }
 
   private detachRealityModelByKey(style: DisplayStyle3dState, rdSourceKey: RealityDataSourceKey): boolean {
-    const model = style.settings.contextRealityModels.models.find((x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey,x.rdSourceKey));
+    const model = style.settings.contextRealityModels.models.find((x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey, x.rdSourceKey));
     return undefined !== model && style.settings.contextRealityModels.delete(model);
   }
 
@@ -334,7 +338,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
       return;
     }
 
-    this.updateModelComboBox(classifier.modelId);
+    this.updateModelComboBox(typeof classifier.modelId === "string" ? classifier.modelId : "");
 
     this.populateClassifierProperties();
   }
