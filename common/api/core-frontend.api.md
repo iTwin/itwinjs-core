@@ -3183,11 +3183,11 @@ export class DynamicsContext extends RenderContext {
 }
 
 // @public
-export type DynamicSpatialClassifier = {
-    tileTreeReference: TileTreeReference;
+export interface DynamicSpatialClassifier {
     flags: SpatialClassifierFlags;
     name: string;
-};
+    tileTreeReference: TileTreeReference;
+}
 
 // @internal
 export interface EdgeParams {

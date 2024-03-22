@@ -15,8 +15,13 @@ import { TileTreeReference } from "./tile/internal";
  * @public
  */
 export interface DynamicSpatialClassifier {
+  /** A reference to the [[TileTree]] that supplies the graphics used to classify the reality model.
+   * @see [[TileTreeReference.createFromRenderGraphic]] for one way to produce a tile tree reference.
+   */
   tileTreeReference: TileTreeReference;
+  /** Flags controlling how to apply the classifier. */
   flags: SpatialClassifierFlags;
+  /** A user-friendly name appropriate for use in a user interface. */
   name: string;
 }
 
