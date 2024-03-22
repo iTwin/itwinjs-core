@@ -134,6 +134,7 @@ export class DynamicClassifierTool extends PrimitiveTool {
         this._classifiers = this.findClassifiers(hit);
         if (this._classifiers) {
           this._classifiers.activeClassifier = undefined;
+          ev.viewport.invalidateScene();
         }
       }
     } else {
@@ -178,7 +179,7 @@ export class DynamicClassifierTool extends PrimitiveTool {
     const sphereIds = spheres.spheres.map((x) => x.id);
     const tileTreeReference = TileTreeReference.createFromRenderGraphic({
       iModel: viewport.iModel,
-      graphic: spheres.toGraphic(true),
+      graphic: spheres.toGraphic(this._isVolume),
       modelId: spheres.modelId,
       getToolTip: async (hit: HitDetail) => {
         const index = sphereIds.indexOf(hit.sourceId);
