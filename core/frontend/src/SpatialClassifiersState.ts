@@ -11,6 +11,10 @@ import { TileTreeReference } from "./tile/internal";
 
 /** A [SpatialClassifier]($common) that uses geoemtry produced at run-time to classify a reality model.
  * The geometry is supplied by a [[TileTreeReference]].
+ * A simple example of creating and applying a dynamic classifier:
+ * ```ts
+ * [[include:TileTreeReference_DynamicClassifier]]
+ * ```
  * @see [[SpatialClassifiersState]] to configure a reality model's classifiers.
  * @public
  */
