@@ -115,6 +115,7 @@ export interface PickableGraphicOptions extends BatchOptions {
   geometryClass?: GeometryClass;
   /** The optional Id of the model with which the graphic should be associated. */
   modelId?: Id64String;
+  /** True if the graphic is to be used as a [[DynamicSpatialClassifier]] to classify volumes of a reality model. */
   isVolumeClassifier?: boolean;
 }
 

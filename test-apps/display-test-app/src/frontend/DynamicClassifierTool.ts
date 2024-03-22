@@ -60,6 +60,7 @@ class Spheres {
   }
 }
 
+/** Allows the user to select a reality model to classify, place some spheres to serve as classifiers, and finally right-click to accept the result and apply the classification. */
 export class DynamicClassifierTool extends PrimitiveTool {
   private _graphic?: RenderGraphic;
   private _spheres?: Spheres;
