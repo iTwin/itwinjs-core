@@ -45,13 +45,19 @@ export interface QueryLimit {
 
 /** @public */
 export interface QueryPropertyMetaData {
+  /** Class name is set empty if the property is a generated one, otherwise it is the name of the ECClass that the property is contained within. */
   className: string;
-  accessString: string;
+  /** Access string is property's display lable if the property is a generated one, otherwise it is the ECSQL property path. */
+  accessString?: string;
+  /** Indicates whether the property is a generated one or whether it directly refers to an existing ECProperty of one of the classes in the FROM or JOIN clauses. */
   generated: boolean;
   index: number;
   jsonName: string;
+  /** Name is property's display lable if the property is a generated one, otherwise it is the name of the ECProperty. */
   name: string;
+  /** Extend type is the extended type name of the ECProperty if the property is a PrimitiveECProperty, otherwise it is set to empty string. */
   extendType: string;
+  /** Type name is set to 'navigation' if the ECProperty is a Navigation property, otherwise it is the ECJSON typename for the property in the form {schemaName}.{typeName}. */
   typeName: string;
 }
 
