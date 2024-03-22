@@ -1949,22 +1949,26 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
 }
 
 // @beta
-export class EditableWorkspaceDb extends ITwinWorkspaceDb {
+export interface EditableWorkspaceDb extends WorkspaceDb {
     addBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
     addFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName, fileExt?: string): void;
     addString(rscName: WorkspaceResource.Name, val: string): void;
     // (undocumented)
     createDb(version?: string): Promise<void>;
-    static createEmpty(fileName: LocalFileName): void;
     getBlobWriter(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO;
-    // (undocumented)
-    open(): void;
     removeBlob(rscName: WorkspaceResource.Name): void;
     removeFile(rscName: WorkspaceResource.Name): void;
     removeString(rscName: WorkspaceResource.Name): void;
     updateBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
     updateFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName): void;
     updateString(rscName: WorkspaceResource.Name, val: string): void;
+}
+
+// @beta (undocumented)
+export namespace EditableWorkspaceDb {
+    export function createEmpty(fileName: LocalFileName): void;
+    // (undocumented)
+    export function makeNew(props: WorkspaceDb.Props, container: WorkspaceContainer): EditableWorkspaceDb;
 }
 
 // @public
@@ -3608,7 +3612,7 @@ export interface ITwinIdArg {
     readonly iTwinId: GuidString;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export class ITwinWorkspace implements Workspace {
     constructor(settings: Settings, opts?: WorkspaceOpts);
     // (undocumented)
@@ -3635,80 +3639,6 @@ export class ITwinWorkspace implements Workspace {
     resolveDatabase(databaseName: string): WorkspaceDb.Props & WorkspaceContainer.Alias;
     // (undocumented)
     readonly settings: Settings;
-}
-
-// @beta
-export class ITwinWorkspaceContainer implements WorkspaceContainer {
-    constructor(workspace: ITwinWorkspace, props: WorkspaceContainer.Props);
-    // (undocumented)
-    addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
-    // (undocumented)
-    close(): void;
-    // (undocumented)
-    readonly cloudContainer?: CloudSqlite.CloudContainer | undefined;
-    // (undocumented)
-    get dirName(): string;
-    // (undocumented)
-    dropWorkspaceDb(toDrop: WorkspaceDb): void;
-    // (undocumented)
-    readonly filesDir: LocalDirName;
-    // (undocumented)
-    getWorkspaceDb(props: WorkspaceDb.Props): WorkspaceDb;
-    // (undocumented)
-    readonly id: WorkspaceContainer.Id;
-    // (undocumented)
-    static makeDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName;
-    static makeNewVersion(cloudContainer: CloudSqlite.CloudContainer, fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement): Promise<{
-        oldName: string;
-        newName: string;
-    }>;
-    // (undocumented)
-    static noLeadingOrTrailingSpaces(name: string, msg: string): void;
-    // (undocumented)
-    static parseDbFileName(dbFileName: WorkspaceDb.DbFullName): {
-        dbName: WorkspaceDb.DbName;
-        version: WorkspaceDb.Version;
-    };
-    purgeContainerFiles(): void;
-    // (undocumented)
-    static resolveCloudFileName(cloudContainer: CloudSqlite.CloudContainer, props: WorkspaceDb.Props): WorkspaceDb.DbFullName;
-    resolveDbFileName(props: WorkspaceDb.Props): WorkspaceDb.DbFullName;
-    // (undocumented)
-    static validateDbName(dbName: WorkspaceDb.DbName): void;
-    // (undocumented)
-    static validateVersion(version?: WorkspaceDb.Version): string;
-    // (undocumented)
-    readonly workspace: ITwinWorkspace;
-}
-
-// @beta
-export class ITwinWorkspaceDb implements WorkspaceDb {
-    constructor(props: WorkspaceDb.Props, container: WorkspaceContainer);
-    // (undocumented)
-    close(): void;
-    readonly container: WorkspaceContainer;
-    dbFileName: string;
-    readonly dbName: WorkspaceDb.DbName;
-    static readonly fileExt = "itwin-workspace";
-    // (undocumented)
-    getBlob(rscName: WorkspaceResource.Name): Uint8Array | undefined;
-    getBlobReader(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO;
-    // (undocumented)
-    getFile(rscName: WorkspaceResource.Name, targetFileName?: LocalFileName): LocalFileName | undefined;
-    // (undocumented)
-    getString(rscName: WorkspaceResource.Name): string | undefined;
-    get isOpen(): boolean;
-    readonly onClose: BeEvent<() => void>;
-    // (undocumented)
-    open(): void;
-    // (undocumented)
-    prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch;
-    // (undocumented)
-    queryFileResource(rscName: WorkspaceResource.Name): {
-        localFileName: string;
-        info: IModelJsNative;
-    } | undefined;
-    readonly sqliteDb: SQLiteDb;
 }
 
 // @public
@@ -6344,23 +6274,48 @@ export namespace WorkspaceContainer {
 
 // @beta
 export interface WorkspaceContainer {
-    // (undocumented)
+    // @internal (undocumented)
     addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
     close(): void;
+    // @internal
     readonly cloudContainer?: CloudSqlite.CloudContainer;
     dropWorkspaceDb(container: WorkspaceDb): void;
     readonly filesDir: LocalDirName;
     getWorkspaceDb(props: WorkspaceDb.Props): WorkspaceDb;
     readonly id: WorkspaceContainer.Id;
-    // (undocumented)
+    // @internal
     resolveDbFileName(props: WorkspaceDb.Props): string;
     readonly workspace: Workspace;
+}
+
+// @beta (undocumented)
+export namespace WorkspaceContainer {
+    // (undocumented)
+    export function makeDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName;
+    export function makeNewVersion(cloudContainer: CloudSqlite.CloudContainer, fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement): Promise<{
+        oldName: string;
+        newName: string;
+    }>;
+    // (undocumented)
+    export function parseDbFileName(dbFileName: WorkspaceDb.DbFullName): {
+        dbName: WorkspaceDb.DbName;
+        version: WorkspaceDb.Version;
+    };
+    // (undocumented)
+    export function resolveCloudFileName(cloudContainer: CloudSqlite.CloudContainer, props: WorkspaceDb.Props): WorkspaceDb.DbFullName;
+    export function validateContainerId(id: WorkspaceContainer.Id): void;
+    // (undocumented)
+    export function validateDbName(dbName: WorkspaceDb.DbName): void;
+    // @internal (undocumented)
+    export function validateVersion(version?: WorkspaceDb.Version): string;
 }
 
 // @beta (undocumented)
 export namespace WorkspaceDb {
     export type DbFullName = string;
     export type DbName = string;
+    // (undocumented)
+    export function makeNew(props: WorkspaceDb.Props, container: WorkspaceContainer): ITwinWorkspaceDb;
     export type Name = string;
     export interface Props extends CloudSqlite.DbNameProp {
         includePrerelease?: boolean;
@@ -6368,21 +6323,32 @@ export namespace WorkspaceDb {
     }
     export type Version = string;
     export type VersionIncrement = "major" | "minor" | "patch";
+    const fileExt = "itwin-workspace";
     export type VersionRange = string;
 }
 
 // @beta
 export interface WorkspaceDb {
+    // (undocumented)
+    close(): void;
     readonly container: WorkspaceContainer;
     readonly dbFileName: string;
     readonly dbName: WorkspaceDb.DbName;
     getBlob(rscName: WorkspaceResource.Name): Uint8Array | undefined;
-    // @internal (undocumented)
+    // @internal
     getBlobReader(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO;
     getFile(rscName: WorkspaceResource.Name, targetFileName?: LocalFileName): LocalFileName | undefined;
     getString(rscName: WorkspaceResource.Name): string | undefined;
     readonly onClose: BeEvent<() => void>;
-    prefetch(): CloudSqlite.CloudPrefetch;
+    // (undocumented)
+    open(): void;
+    prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch;
+    // @internal (undocumented)
+    queryFileResource(rscName: WorkspaceResource.Name): {
+        localFileName: LocalFileName;
+        info: IModelJsNative.EmbedFileQuery;
+    } | undefined;
+    readonly sqliteDb: SQLiteDb;
 }
 
 // @beta

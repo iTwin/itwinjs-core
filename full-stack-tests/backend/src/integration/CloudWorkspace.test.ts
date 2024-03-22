@@ -59,7 +59,7 @@ describe("Cloud workspace containers", () => {
     const makeVersion = async (version?: string) => {
       expect(wsCont1.cloudContainer).not.undefined;
       await CloudSqlite.withWriteLock({ user: "Cloud workspace test", container: wsCont1.cloudContainer! }, async () => {
-        const wsDbEdit = new EditableWorkspaceDb({ dbName: testDbName }, wsCont1);
+        const wsDbEdit = EditableWorkspaceDb.makeNew({ dbName: testDbName }, wsCont1);
         try {
           await wsDbEdit.createDb(version);
           const contain1 = settings.getString("cloudSqlite/containerId")!;
@@ -102,7 +102,7 @@ describe("Cloud workspace containers", () => {
     const newVal = "new value for string 1";
     assert(undefined !== wsCont1.cloudContainer);
     await CloudSqlite.withWriteLock({ user: "Cloud workspace test", container: wsCont1.cloudContainer }, async () => {
-      const ws3 = new EditableWorkspaceDb({ dbName: testDbName, version: "1.1.4-beta" }, wsCont1);
+      const ws3 = EditableWorkspaceDb.makeNew({ dbName: testDbName, version: "1.1.4-beta" }, wsCont1);
       ws3.open();
       ws3.updateString("string 1", newVal);
       ws3.close();

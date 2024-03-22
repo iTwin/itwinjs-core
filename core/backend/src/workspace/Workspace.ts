@@ -19,9 +19,15 @@ import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
 import { Settings, SettingsPriority } from "./Settings";
 import { SettingsSchemas } from "./SettingsSchemas";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 // cspell:ignore rowid primarykey julianday
+
+function noLeadingOrTrailingSpaces(name: string, msg: string) {
+  if (name.trim() !== name)
+    throw new Error(`${msg} [${name}] may not have leading or tailing spaces`);
+}
 
 /** The Settings used by Workspace api
  * @beta
@@ -91,6 +97,13 @@ export namespace WorkspaceDb {
    * @see semver.ReleaseType
    */
   export type VersionIncrement = "major" | "minor" | "patch";
+
+  /** file extension for local WorkspaceDbs */
+  export const fileExt = "itwin-workspace";
+
+  export function makeNew(props: WorkspaceDb.Props, container: WorkspaceContainer) {
+    return new ITwinWorkspaceDb(props, container);
+  }
 }
 
 /** Types used to identify Workspace resources
@@ -129,11 +142,20 @@ export interface WorkspaceDb {
   readonly onClose: BeEvent<() => void>;
   /** Name by which a WorkspaceDb may be opened. This will be either a local file name or the name of a database in a cloud container */
   readonly dbFileName: string;
+  /** the SQLiteDb for this WorkspaceDb*/
+  readonly sqliteDb: SQLiteDb;
+
+  open(): void;
+  close(): void;
+
   /** Get a string resource from this WorkspaceDb, if present. */
   getString(rscName: WorkspaceResource.Name): string | undefined;
   /** Get a blob resource from this WorkspaceDb, if present. */
   getBlob(rscName: WorkspaceResource.Name): Uint8Array | undefined;
-  /** @internal */
+  /** Get a BlobIO reader for a blob WorkspaceResource.
+   * @note when finished, caller *must* call `close` on the BlobIO.
+   * @internal
+   */
   getBlobReader(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO;
 
   /**
@@ -160,7 +182,10 @@ export interface WorkspaceDb {
    * @returns a `CloudSqlite.CloudPrefetch` object that can be used to await and/or cancel the prefetch.
    * @throws if this WorkspaceDb is not from a `CloudContainer`.
    */
-  prefetch(): CloudSqlite.CloudPrefetch;
+  prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch;
+
+  /** @internal */
+  queryFileResource(rscName: WorkspaceResource.Name): { localFileName: LocalFileName, info: IModelJsNative.EmbedFileQuery } | undefined;
 }
 
 /** The properties of the CloudCache used for Workspaces.
@@ -257,10 +282,19 @@ export interface WorkspaceContainer {
   readonly id: WorkspaceContainer.Id;
   /** Workspace holding this WorkspaceContainer. */
   readonly workspace: Workspace;
-  /** CloudContainer for this WorkspaceContainer (`undefined` if this is a local WorkspaceContainer.)  */
+  /** CloudContainer for this WorkspaceContainer (`undefined` if this is a local WorkspaceContainer.)
+   * @internal
+  */
   readonly cloudContainer?: CloudSqlite.CloudContainer;
 
+  /** @internal */
   addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
+
+  /**
+   * Convert a WorkspaceDb.Props specification into a DbFileName. For cloud-based containers, this resolves to the dbName, incorporating the appropriate
+   * version. For file-based containers, this returns a local filename of a WorkspaceDb file with the extension ".itwin-workspace"
+   @internal
+  */
   resolveDbFileName(props: WorkspaceDb.Props): string;
 
   /** find or open a WorkspaceDb from this WorkspaceContainer. */
@@ -271,7 +305,171 @@ export interface WorkspaceContainer {
   close(): void;
 }
 
+/**
+ * @beta
+ */
+export namespace WorkspaceContainer {
+
+  export function validateDbName(dbName: WorkspaceDb.DbName) {
+    if (dbName === "" || dbName.length > 255 || /[#\.<>:"/\\"`'|?*\u0000-\u001F]/g.test(dbName) || /^(con|prn|aux|nul|com\d|lpt\d)$/i.test(dbName))
+      throw new Error(`invalid dbName: [${dbName}]`);
+    noLeadingOrTrailingSpaces(dbName, "dbName");
+  }
+
+  /** rules for ContainerIds (from Azure, see https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata)
+   *  - may only contain lower case letters, numbers or dashes
+   *  - may not start or end with with a dash nor have more than one dash in a row
+   *  - may not be shorter than 3 or longer than 63 characters
+   */
+  export function validateContainerId(id: WorkspaceContainer.Id) {
+    if (!/^(?=.{3,63}$)[a-z0-9]+(-[a-z0-9]+)*$/g.test(id))
+      throw new Error(`invalid containerId: [${id}]`);
+  }
+
+  /** @internal */
+  export function validateVersion(version?: WorkspaceDb.Version) {
+    version = version ?? "1.0.0";
+    if (version) {
+      const opts = { loose: true, includePrerelease: true };
+      // clean allows prerelease, so try it first. If that fails attempt to coerce it (coerce strips prerelease even if you say not to.)
+      const semVersion = semver.clean(version, opts) ?? semver.coerce(version, opts)?.version;
+      if (!semVersion)
+        throw new Error("invalid version specification");
+      version = semVersion;
+    }
+    return version;
+  }
+
+  /**
+   * Create a copy of an existing [[WorkspaceDb]] in a cloud container with a new version number.
+   * @param cloudContainer The attached cloud container holding the existing WorkspaceDb
+   * @param fromProps Properties that describe the source WorkspaceDb for the new version
+   * @param versionType The type of version increment to apply to the existing version.
+   * @note This requires that the cloudContainer is attached and the write lock on the container be held. The copy should be modified with
+   * new content before the write lock is released, and thereafter should never be modified again.
+   */
+  export async function makeNewVersion(cloudContainer: CloudSqlite.CloudContainer, fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement) {
+    const oldName = WorkspaceContainer.resolveCloudFileName(cloudContainer, fromProps);
+    const oldDb = WorkspaceContainer.parseDbFileName(oldName);
+    const newVersion = semver.inc(oldDb.version, versionType);
+    if (!newVersion)
+      throw new Error("invalid version");
+
+    const newName = WorkspaceContainer.makeDbFileName(oldDb.dbName, newVersion);
+    await cloudContainer.copyDatabase(oldName, newName);
+    return { oldName, newName };
+  }
+  export function parseDbFileName(dbFileName: WorkspaceDb.DbFullName): { dbName: WorkspaceDb.DbName, version: WorkspaceDb.Version } {
+    const parts = dbFileName.split(":");
+    return { dbName: parts[0], version: parts[1] };
+  }
+
+  export function makeDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName {
+    return `${dbName}:${WorkspaceContainer.validateVersion(version)}`;
+  }
+
+  export function resolveCloudFileName(cloudContainer: CloudSqlite.CloudContainer, props: WorkspaceDb.Props): WorkspaceDb.DbFullName {
+    const dbName = props.dbName;
+    const dbs = cloudContainer.queryDatabases(`${dbName}*`); // get all databases that start with dbName
+
+    const versions = [];
+    for (const db of dbs) {
+      const thisDb = WorkspaceContainer.parseDbFileName(db);
+      if (thisDb.dbName === dbName && "string" === typeof thisDb.version && thisDb.version.length > 0)
+        versions.push(thisDb.version);
+    }
+
+    if (versions.length === 0)
+      versions[0] = "1.0.0";
+
+    const range = props.version ?? "*";
+    try {
+      const version = semver.maxSatisfying(versions, range, { loose: true, includePrerelease: props.includePrerelease });
+      if (version)
+        return `${dbName}:${version}`;
+    } catch (e: unknown) {
+    }
+    throw new Error(`No version of [${dbName}] available for "${range}"`);
+  }
+}
+
+/**
+ * An editable [[WorkspaceDb]]. This is used by administrators for creating and modifying `WorkspaceDb`s.
+ * For cloud-backed containers, the write token must be obtained before this class may be used. Only one user at at time
+ * may be editing.
+ * @beta
+ */
+export interface EditableWorkspaceDb extends WorkspaceDb {
+  createDb(version?: string): Promise<void>;
+
+  /** Add a new string resource to this WorkspaceDb.
+   * @param rscName The name of the string resource.
+   * @param val The string to save.
+   */
+  addString(rscName: WorkspaceResource.Name, val: string): void;
+
+  /** Update an existing string resource with a new value, or add it if it does not exist.
+   * @param rscName The name of the string resource.
+   * @param val The new value.
+   */
+  updateString(rscName: WorkspaceResource.Name, val: string): void;
+
+  /** Remove a string resource. */
+  removeString(rscName: WorkspaceResource.Name): void;
+
+  /** Add a new blob resource to this WorkspaceDb.
+   * @param rscName The name of the blob resource.
+   * @param val The blob to save.
+   */
+  addBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
+
+  /** Update an existing blob resource with a new value, or add it if it does not exist.
+   * @param rscName The name of the blob resource.
+   * @param val The new value.
+   */
+  updateBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
+
+  /** Get a BlobIO writer for a previously-added blob WorkspaceResource.
+   * @note after writing is complete, caller must call `close` on the BlobIO and must call `saveChanges` on the `db`.
+   */
+  getBlobWriter(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO;
+
+  /** Remove a blob resource. */
+  removeBlob(rscName: WorkspaceResource.Name): void;
+
+  /** Copy the contents of an existing local file into this WorkspaceDb as a file resource.
+   * @param rscName The name of the file resource.
+   * @param localFileName The name of a local file to be read.
+   * @param fileExt The extension (do not include the leading ".") to be appended to the generated fileName
+   * when this WorkspaceDb is extracted from the WorkspaceDb. By default the characters after the last "." in `localFileName`
+   * are used. Pass this argument to override that.
+   */
+  addFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName, fileExt?: string): void;
+
+  /** Replace an existing file resource with the contents of another local file.
+   * @param rscName The name of the file resource.
+   * @param localFileName The name of a local file to be read.
+   * @throws if rscName does not exist
+   */
+  updateFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName): void;
+
+  /** Remove a file resource. */
+  removeFile(rscName: WorkspaceResource.Name): void;
+}
+
 /** @beta */
+export namespace EditableWorkspaceDb {
+  export function makeNew(props: WorkspaceDb.Props, container: WorkspaceContainer): EditableWorkspaceDb {
+    return new ITwinEditableWorkspaceDb(props, container);
+  }
+  /** Create a new, empty, EditableWorkspaceDb for importing Workspace resources. */
+  export function createEmpty(fileName: LocalFileName) {
+    return ITwinEditableWorkspaceDb.createEmpty(fileName);
+
+  }
+}
+
+/** @internal */
 export class ITwinWorkspace implements Workspace {
   private _containers = new Map<WorkspaceContainer.Id, ITwinWorkspaceContainer>();
   public readonly containerDir: LocalDirName;
@@ -371,10 +569,7 @@ export class ITwinWorkspace implements Workspace {
   }
 }
 
-/**
- * Implementation of WorkspaceContainer.
- * @beta */
-export class ITwinWorkspaceContainer implements WorkspaceContainer {
+class ITwinWorkspaceContainer implements WorkspaceContainer {
   public readonly workspace: ITwinWorkspace;
   public readonly filesDir: LocalDirName;
   public readonly id: WorkspaceContainer.Id;
@@ -383,29 +578,8 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
   private _wsDbs = new Map<WorkspaceDb.DbName, ITwinWorkspaceDb>();
   public get dirName() { return join(this.workspace.containerDir, this.id); }
 
-  public static noLeadingOrTrailingSpaces(name: string, msg: string) {
-    if (name.trim() !== name)
-      throw new Error(`${msg} [${name}] may not have leading or tailing spaces`);
-  }
-
-  /** rules for ContainerIds (from Azure, see https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata)
-   *  - may only contain lower case letters, numbers or dashes
-   *  - may not start or end with with a dash nor have more than one dash in a row
-   *  - may not be shorter than 3 or longer than 63 characters
-   */
-  private static validateContainerId(id: WorkspaceContainer.Id) {
-    if (!/^(?=.{3,63}$)[a-z0-9]+(-[a-z0-9]+)*$/g.test(id))
-      throw new Error(`invalid containerId: [${id}]`);
-  }
-
-  public static validateDbName(dbName: WorkspaceDb.DbName) {
-    if (dbName === "" || dbName.length > 255 || /[#\.<>:"/\\"`'|?*\u0000-\u001F]/g.test(dbName) || /^(con|prn|aux|nul|com\d|lpt\d)$/i.test(dbName))
-      throw new Error(`invalid dbName: [${dbName}]`);
-    this.noLeadingOrTrailingSpaces(dbName, "dbName");
-  }
-
   public constructor(workspace: ITwinWorkspace, props: WorkspaceContainer.Props) {
-    ITwinWorkspaceContainer.validateContainerId(props.containerId);
+    WorkspaceContainer.validateContainerId(props.containerId);
     this.workspace = workspace;
     this.id = props.containerId;
 
@@ -429,82 +603,12 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     }
   }
 
-  public static validateVersion(version?: WorkspaceDb.Version) {
-    version = version ?? "1.0.0";
-    if (version) {
-      const opts = { loose: true, includePrerelease: true };
-      // clean allows prerelease, so try it first. If that fails attempt to coerce it (coerce strips prerelease even if you say not to.)
-      const semVersion = semver.clean(version, opts) ?? semver.coerce(version, opts)?.version;
-      if (!semVersion)
-        throw new Error("invalid version specification");
-      version = semVersion;
-    }
-    return version;
-  }
-
-  public static parseDbFileName(dbFileName: WorkspaceDb.DbFullName): { dbName: WorkspaceDb.DbName, version: WorkspaceDb.Version } {
-    const parts = dbFileName.split(":");
-    return { dbName: parts[0], version: parts[1] };
-  }
-
-  public static makeDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName {
-    return `${dbName}:${this.validateVersion(version)}`;
-  }
-
-  public static resolveCloudFileName(cloudContainer: CloudSqlite.CloudContainer, props: WorkspaceDb.Props): WorkspaceDb.DbFullName {
-    const dbName = props.dbName;
-    const dbs = cloudContainer.queryDatabases(`${dbName}*`); // get all databases that start with dbName
-
-    const versions = [];
-    for (const db of dbs) {
-      const thisDb = ITwinWorkspaceContainer.parseDbFileName(db);
-      if (thisDb.dbName === dbName && "string" === typeof thisDb.version && thisDb.version.length > 0)
-        versions.push(thisDb.version);
-    }
-
-    if (versions.length === 0)
-      versions[0] = "1.0.0";
-
-    const range = props.version ?? "*";
-    try {
-      const version = semver.maxSatisfying(versions, range, { loose: true, includePrerelease: props.includePrerelease });
-      if (version)
-        return `${dbName}:${version}`;
-    } catch (e: unknown) {
-    }
-    throw new Error(`No version of [${dbName}] available for "${range}"`);
-  }
-
-  /**
-   * Create a copy of an existing [[WorkspaceDb]] in a cloud container with a new version number.
-   * @param cloudContainer The attached cloud container holding the existing WorkspaceDb
-   * @param fromProps Properties that describe the source WorkspaceDb for the new version
-   * @param versionType The type of version increment to apply to the existing version.
-   * @note This requires that the cloudContainer is attached and the write lock on the container be held. The copy should be modified with
-   * new content before the write lock is released, and thereafter should never be modified again.
-   */
-  public static async makeNewVersion(cloudContainer: CloudSqlite.CloudContainer, fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement) {
-    const oldName = this.resolveCloudFileName(cloudContainer, fromProps);
-    const oldDb = this.parseDbFileName(oldName);
-    const newVersion = semver.inc(oldDb.version, versionType);
-    if (!newVersion)
-      throw new Error("invalid version");
-
-    const newName = this.makeDbFileName(oldDb.dbName, newVersion);
-    await cloudContainer.copyDatabase(oldName, newName);
-    return { oldName, newName };
-  }
-
-  /**
-   * Convert a WorkspaceDb.Props specification into a DbFileName. For cloud-based containers, this resolves to the dbName, incorporating the appropriate
-   * version. For file-based containers, this returns a local filename of a WorkspaceDb file with the extension ".itwin-workspace"
-   */
   public resolveDbFileName(props: WorkspaceDb.Props): WorkspaceDb.DbFullName {
     const cloudContainer = this.cloudContainer;
     if (undefined === cloudContainer)
-      return join(this.dirName, `${props.dbName}.${ITwinWorkspaceDb.fileExt}`); // local file, versions not allowed
+      return join(this.dirName, `${props.dbName}.${WorkspaceDb.fileExt}`); // local file, versions not allowed
 
-    return ITwinWorkspaceContainer.resolveCloudFileName(cloudContainer, props);
+    return WorkspaceContainer.resolveCloudFileName(cloudContainer, props);
   }
 
   public addWorkspaceDb(toAdd: ITwinWorkspaceDb) {
@@ -535,34 +639,21 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     this._wsDbs.clear();
     this.cloudContainer?.disconnect();
   }
-
-  /** Delete all local files extracted by [[WorkspaceDb.getFile]] for this container. */
-  public purgeContainerFiles() {
-    IModelJsFs.purgeDirSync(this.filesDir);
-  }
 }
 
 /**
  * Implementation of WorkspaceDb
- * @beta
  */
-export class ITwinWorkspaceDb implements WorkspaceDb {
-  /** file extension for local WorkspaceDbs */
-  public static readonly fileExt = "itwin-workspace";
-  /** the SQLiteDb for this WorkspaceDb*/
+class ITwinWorkspaceDb implements WorkspaceDb {
   public readonly sqliteDb = new SQLiteDb();
-  /** the base WorkspaceDb name, without directory, extension, or version information. */
   public readonly dbName: WorkspaceDb.DbName;
-  /** The WorkspaceContainer holding this WorkspaceDb */
   public readonly container: WorkspaceContainer;
-  /** called before db is closed */
   public readonly onClose = new BeEvent<() => void>();
-  /** either a local file name or the name of the file in a cloud container, including version identifier */
   public dbFileName: string;
 
   /** true if this WorkspaceDb is currently open */
   public get isOpen() { return this.sqliteDb.isOpen; }
-  public queryFileResource(rscName: WorkspaceResource.Name) {
+  public queryFileResource(rscName: WorkspaceResource.Name): { localFileName: LocalFileName, info: IModelJsNative.EmbedFileQuery } | undefined {
     const info = this.sqliteDb.nativeDb.queryEmbeddedFile(rscName);
     if (undefined === info)
       return undefined;
@@ -575,7 +666,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
   }
 
   public constructor(props: WorkspaceDb.Props, container: WorkspaceContainer) {
-    ITwinWorkspaceContainer.validateDbName(props.dbName);
+    WorkspaceContainer.validateDbName(props.dbName);
     this.dbName = props.dbName;
     this.container = container;
     this.dbFileName = container.resolveDbFileName(props);
@@ -601,9 +692,6 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
     });
   }
 
-  /** Get a BlobIO reader for a blob WorkspaceResource.
-   * @note when finished, caller *must* call `close` on the BlobIO.
-   */
   public getBlobReader(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO {
     return this.sqliteDb.withSqliteStatement("SELECT rowid from blobs WHERE id=?", (stmt) => {
       stmt.bindString(1, rscName);
@@ -654,16 +742,9 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
   }
 }
 
-/**
- * An editable [[WorkspaceDb]]. This is used by administrators for creating and modifying `WorkspaceDb`s and should
- * only be used in a dedicated "administrative workspace editor" application - never in a user facing application.
- * For cloud-backed containers, the write token must be obtained before this class may be used. Only one user at at time
- * may be editing.
- * @beta
- */
-export class EditableWorkspaceDb extends ITwinWorkspaceDb {
+class ITwinEditableWorkspaceDb extends ITwinWorkspaceDb implements EditableWorkspaceDb {
   private static validateResourceName(name: WorkspaceResource.Name) {
-    ITwinWorkspaceContainer.noLeadingOrTrailingSpaces(name, "resource name");
+    noLeadingOrTrailingSpaces(name, "resource name");
     if (name.length > 1024)
       throw new Error("resource name too long");
   }
@@ -702,18 +783,17 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
       EditableWorkspaceDb.createEmpty(this.dbFileName);
     } else {
       // currently the only way to create a workspaceDb in a cloud container is to create a temporary workspaceDb and upload it.
-      const tempDbFile = join(KnownLocations.tmpdir, `empty.${ITwinWorkspaceDb.fileExt}`);
+      const tempDbFile = join(KnownLocations.tmpdir, `empty.${WorkspaceDb.fileExt}`);
       if (fs.existsSync(tempDbFile))
         IModelJsFs.removeSync(tempDbFile);
       EditableWorkspaceDb.createEmpty(tempDbFile);
-      this.dbFileName = ITwinWorkspaceContainer.makeDbFileName(this.dbName, version);
+      this.dbFileName = WorkspaceContainer.makeDbFileName(this.dbName, version);
       await CloudSqlite.uploadDb(this.container.cloudContainer, { localFileName: tempDbFile, dbName: this.dbFileName });
       IModelJsFs.removeSync(tempDbFile);
     }
     this.open();
   }
 
-  /** Create a new, empty, EditableWorkspaceDb for importing Workspace resources. */
   public static createEmpty(fileName: LocalFileName) {
     const db = new SQLiteDb();
     IModelJsFs.recursiveMkDirSync(dirname(fileName));
@@ -728,53 +808,27 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     createTrigger("blobs");
     db.closeDb(true);
   }
-
-  /** Add a new string resource to this WorkspaceDb.
-   * @param rscName The name of the string resource.
-   * @param val The string to save.
-   */
   public addString(rscName: WorkspaceResource.Name, val: string): void {
-    EditableWorkspaceDb.validateResourceName(rscName);
+    ITwinEditableWorkspaceDb.validateResourceName(rscName);
     this.validateResourceSize(val);
     this.performWriteSql(rscName, "INSERT INTO strings(id,value) VALUES(?,?)", (stmt) => stmt.bindString(2, val));
   }
-
-  /** Update an existing string resource with a new value, or add it if it does not exist.
-   * @param rscName The name of the string resource.
-   * @param val The new value.
-   */
   public updateString(rscName: WorkspaceResource.Name, val: string): void {
     this.validateResourceSize(val);
     this.performWriteSql(rscName, "INSERT INTO strings(id,value) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value WHERE value!=excluded.value", (stmt) => stmt.bindString(2, val));
   }
-
-  /** Remove a string resource. */
   public removeString(rscName: WorkspaceResource.Name): void {
     this.performWriteSql(rscName, "DELETE FROM strings WHERE id=?");
   }
-
-  /** Add a new blob resource to this WorkspaceDb.
-   * @param rscName The name of the blob resource.
-   * @param val The blob to save.
-   */
   public addBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void {
-    EditableWorkspaceDb.validateResourceName(rscName);
+    ITwinEditableWorkspaceDb.validateResourceName(rscName);
     this.validateResourceSize(val);
     this.performWriteSql(rscName, "INSERT INTO blobs(id,value) VALUES(?,?)", (stmt) => stmt.bindBlob(2, val));
   }
-
-  /** Update an existing blob resource with a new value, or add it if it does not exist.
-   * @param rscName The name of the blob resource.
-   * @param val The new value.
-   */
   public updateBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void {
     this.validateResourceSize(val);
     this.performWriteSql(rscName, "INSERT INTO blobs(id,value) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value WHERE value!=excluded.value", (stmt) => stmt.bindBlob(2, val));
   }
-
-  /** Get a BlobIO writer for a previously-added blob WorkspaceResource.
-   * @note after writing is complete, caller must call `close` on the BlobIO and must call `saveChanges` on the `db`.
-   */
   public getBlobWriter(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO {
     return this.sqliteDb.withSqliteStatement("SELECT rowid from blobs WHERE id=?", (stmt) => {
       stmt.bindString(1, rscName);
@@ -783,38 +837,20 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
       return blobWriter;
     });
   }
-
-  /** Remove a blob resource. */
   public removeBlob(rscName: WorkspaceResource.Name): void {
     this.performWriteSql(rscName, "DELETE FROM blobs WHERE id=?");
   }
-
-  /** Copy the contents of an existing local file into this WorkspaceDb as a file resource.
-   * @param rscName The name of the file resource.
-   * @param localFileName The name of a local file to be read.
-   * @param fileExt The extension (do not include the leading ".") to be appended to the generated fileName
-   * when this WorkspaceDb is extracted from the WorkspaceDb. By default the characters after the last "." in `localFileName`
-   * are used. Pass this argument to override that.
-   */
   public addFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName, fileExt?: string): void {
-    EditableWorkspaceDb.validateResourceName(rscName);
+    ITwinEditableWorkspaceDb.validateResourceName(rscName);
     fileExt = fileExt ?? extname(localFileName);
     if (fileExt?.[0] === ".")
       fileExt = fileExt.slice(1);
     this.sqliteDb.nativeDb.embedFile({ name: rscName, localFileName, date: this.getFileModifiedTime(localFileName), fileExt });
   }
-
-  /** Replace an existing file resource with the contents of another local file.
-   * @param rscName The name of the file resource.
-   * @param localFileName The name of a local file to be read.
-   * @throws if rscName does not exist
-   */
   public updateFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName): void {
     this.queryFileResource(rscName); // throws if not present
     this.sqliteDb.nativeDb.replaceEmbeddedFile({ name: rscName, localFileName, date: this.getFileModifiedTime(localFileName) });
   }
-
-  /** Remove a file resource. */
   public removeFile(rscName: WorkspaceResource.Name): void {
     const file = this.queryFileResource(rscName);
     if (undefined === file)
