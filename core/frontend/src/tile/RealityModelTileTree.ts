@@ -880,13 +880,13 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     if (classifier && classifier.canSupplyToolTip(hit)) {
       return true;
     }
-    
+
     const tree = this.treeOwner.tileTree;
     return tree instanceof RealityTileTree && hit.iModel === tree.iModel && undefined !== tree.batchTableProperties?.getFeatureProperties(hit.sourceId);
   }
-  
+
   public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
-    let tooltip = this._getToolTip(hit);
+    const tooltip = this._getToolTip(hit);
     if (tooltip) {
       return tooltip;
     }
@@ -898,7 +898,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
 
     return undefined;
   }
-  
+
   private _getToolTip(hit: HitDetail): HTMLElement | string | undefined {
     const tree = this.treeOwner.tileTree;
     if (!(tree instanceof RealityTileTree) || hit.iModel !== tree.iModel)

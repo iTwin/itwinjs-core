@@ -14,7 +14,7 @@ import { TileTreeReference } from "./tile/internal";
  * @see [[SpatialClassifiersState]] to configure a reality model's classifiers.
  * @public
  */
-export type DynamicSpatialClassifier = {
+export interface DynamicSpatialClassifier {
   tileTreeReference: TileTreeReference;
   flags: SpatialClassifierFlags;
   name: string;

@@ -204,7 +204,7 @@ class PrimaryTreeReference extends TileTreeReference {
   public override canSupplyToolTip() {
     return false;
   }
-  
+
   public override createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
     const args = super.createDrawArgs(context);
     if (args)

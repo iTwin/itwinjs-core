@@ -527,7 +527,7 @@ export class OrbitGtTreeReference extends RealityModelTileTree.Reference {
     const tree = this.treeOwner.tileTree;
     return undefined !== tree && hit.iModel === tree.iModel;
   }
-  
+
   public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
     const tree = this.treeOwner.tileTree;
     if (undefined === tree || hit.iModel !== tree.iModel)

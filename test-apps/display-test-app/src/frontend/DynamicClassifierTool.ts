@@ -114,7 +114,7 @@ export class DynamicClassifierTool extends PrimitiveTool {
 
     return undefined;
   }
-    
+
   public override async filterHit(hit: HitDetail): Promise<LocateFilterStatus> {
     if (this._classifiers) {
       return LocateFilterStatus.Accept;
@@ -191,7 +191,7 @@ export class DynamicClassifierTool extends PrimitiveTool {
         }
       },
     });
-    
+
     this._classifiers.activeClassifier = {
       tileTreeReference,
       name: "Spheres",

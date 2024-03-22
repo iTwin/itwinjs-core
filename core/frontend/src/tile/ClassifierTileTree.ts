@@ -146,7 +146,6 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     return true;
   }
 
-
   public get viewFlags(): Partial<ViewFlagsProperties> {
     return {
       renderMode: RenderMode.SmoothShade,
