@@ -4,15 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { CompressedId64Set } from "@itwin/core-bentley";
-import { Vector3d } from "@itwin/core-geometry";
 import {
-  Atmosphere,
-  BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, GroundPlane, PlanarClipMaskMode, PlanarClipMaskSettings,
-  SkyGradient, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ThematicDisplayMode,
+  Atmosphere, AuthorizationClient, BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, GroundPlane, PlanarClipMaskMode,
+  PlanarClipMaskSettings, SkyGradient, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ThematicDisplayMode,
 } from "@itwin/core-common";
 import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { Vector3d } from "@itwin/core-geometry";
+import { AzuriteUsers, TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "../TestUtility";
-import { TestRpcInterface } from "../../common/RpcInterfaces";
 
 describe("DisplayStyle", () => {
   let imodel: IModelConnection;
@@ -26,9 +25,15 @@ describe("DisplayStyle", () => {
     },
   };
 
+  let userToken = ""; // changes to simulate different levels of ViewStore authorization
+  let azuriteUsers: AzuriteUsers; // valid users (sent from backend)
+  const authorizationClient: AuthorizationClient = {
+    getAccessToken: async () => { return userToken; },
+  };
+
   before(async () => {
-    await TestUtility.startFrontend(undefined, true);
-    await TestRpcInterface.getClient().startViewStore();
+    await TestUtility.startFrontend({ authorizationClient }, true);
+    azuriteUsers = await TestRpcInterface.getClient().startViewStore();
     imodel = await SnapshotConnection.openFile("test.bim");
   });
 
@@ -59,8 +64,17 @@ describe("DisplayStyle", () => {
     expect(style2.sunDirection).not.to.be.undefined;
     expect(style2.sunDirection.isAlmostEqual(style1.sunDirection)).to.be.true;
 
+    userToken = "bad guy";
+    await expect(imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() })).rejectedWith("unauthorized");
+
+    userToken = azuriteUsers.readOnly;
+    await expect(imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() })).rejectedWith("unauthorized");
+
+    userToken = azuriteUsers.readWrite;
     const id = await imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() });
     expect(id).equal("@1");
+
+    userToken = azuriteUsers.readOnly;
     const style3 = await imodel.views.viewsStoreReader.getDisplayStyle({ id });
     expect(style3.jsonProperties?.styles).deep.equal(style1.settings.toJSON());
   });
@@ -292,6 +306,7 @@ describe("DisplayStyle", () => {
 
     // Also, while we have one constructed, test creation with reality model and script.
     const newStyle = new DisplayStyle3dState(style.toJSON(), imodel);
+    userToken = azuriteUsers.readWrite;
     const s2 = await imodel.views.viewStoreWriter.addDisplayStyle({ name: "newStyle", className: newStyle.classFullName, settings: newStyle.settings.toJSON() });
     expect(s2).not.to.be.undefined;
 
