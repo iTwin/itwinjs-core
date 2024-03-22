@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { comparePossiblyUndefined, compareStrings, compareStringsOrUndefined, Id64, Id64String } from "@itwin/core-bentley";
+import { compareNumbers, comparePossiblyUndefined, compareStrings, compareStringsOrUndefined, Id64, Id64String } from "@itwin/core-bentley";
 import {
   BatchType, ClassifierTileTreeId, iModelTileTreeIdToString, RenderMode, RenderSchedule, SpatialClassifier, ViewFlagsProperties,
 } from "@itwin/core-common";
@@ -26,7 +26,8 @@ interface ClassifierTreeId extends ClassifierTileTreeId {
 }
 
 function compareIds(lhs: ClassifierTreeId, rhs: ClassifierTreeId): number {
-  return compareStrings(lhs.modelId, rhs.modelId) || compareStringsOrUndefined(lhs.animationId, rhs.animationId)
+  return compareNumbers(lhs.type, rhs.type) || compareNumbers(lhs.expansion, rhs.expansion)
+    || compareStrings(lhs.modelId, rhs.modelId) || compareStringsOrUndefined(lhs.animationId, rhs.animationId)
     || comparePossiblyUndefined((x, y) => x.compareTo(y), lhs.timeline, rhs.timeline);
 }
 
@@ -138,9 +139,13 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   }
 
   public get isPlanar() {
-    const active = this.activeClassifier;
-    return !active || !active.flags.isVolumeClassifier;
+    if (this.activeClassifier?.flags.isVolumeClassifier) {
+      return false;
+    }
+
+    return true;
   }
+
 
   public get viewFlags(): Partial<ViewFlagsProperties> {
     return {
