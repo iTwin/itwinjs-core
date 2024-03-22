@@ -53,7 +53,7 @@ export class SchemaMerger {
   /**
    * Merges the schema differences into the target schema context.
    * @param differences   The changes that shall be applied to the target schema.
-   * @internal
+   * @alpha
    */
   public merge(differences: SchemaDifferences): Promise<Schema>;
 
@@ -64,7 +64,7 @@ export class SchemaMerger {
    * @param input   The methods input either a schema or a SchemaDifferences
    * @param source  A source schema.
    * @returns       The merged schema.
-   * @internal
+   * @alpha
    */
   public async merge(input: SchemaDifferences | Schema, source?: Schema): Promise<Schema> {
     if(Schema.isSchema(input)) {
