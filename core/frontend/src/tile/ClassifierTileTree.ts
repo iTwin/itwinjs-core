@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { comparePossiblyUndefined, compareStrings, compareStringsOrUndefined, Id64, Id64String } from "@itwin/core-bentley";
+import { compareNumbers, comparePossiblyUndefined, compareStrings, compareStringsOrUndefined, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BatchType, ClassifierTileTreeId, iModelTileTreeIdToString, RenderMode, RenderSchedule, SpatialClassifier, SpatialClassifiers, ViewFlagsProperties,
+  BatchType, ClassifierTileTreeId, iModelTileTreeIdToString, RenderMode, RenderSchedule, SpatialClassifier, ViewFlagsProperties,
 } from "@itwin/core-common";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
@@ -15,6 +15,7 @@ import { IModelConnection } from "../IModelConnection";
 import { GeometricModelState } from "../ModelState";
 import { SceneContext } from "../ViewContext";
 import { ViewState } from "../ViewState";
+import { ActiveSpatialClassifier, SpatialClassifiersState } from "../SpatialClassifiersState";
 import {
   DisclosedTileTreeSet, IModelTileTree, iModelTileTreeParamsFromJSON, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
@@ -25,7 +26,8 @@ interface ClassifierTreeId extends ClassifierTileTreeId {
 }
 
 function compareIds(lhs: ClassifierTreeId, rhs: ClassifierTreeId): number {
-  return compareStrings(lhs.modelId, rhs.modelId) || compareStringsOrUndefined(lhs.animationId, rhs.animationId)
+  return compareNumbers(lhs.type, rhs.type) || compareNumbers(lhs.expansion, rhs.expansion)
+    || compareStrings(lhs.modelId, rhs.modelId) || compareStringsOrUndefined(lhs.animationId, rhs.animationId)
     || comparePossiblyUndefined((x, y) => x.compareTo(y), lhs.timeline, rhs.timeline);
 }
 
@@ -85,8 +87,7 @@ const classifierTreeSupplier = new ClassifierTreeSupplier();
 /** @internal */
 export abstract class SpatialClassifierTileTreeReference extends TileTreeReference {
   public abstract get isPlanar(): boolean;
-  public abstract get activeClassifier(): SpatialClassifier | undefined;
-  public get isOpaque() { return false; }   /** When referenced as a map layer reference, BIM models are never opaque. */
+  public abstract get activeClassifier(): ActiveSpatialClassifier | undefined;
   public abstract get viewFlags(): Partial<ViewFlagsProperties>;
   public get transparency(): number | undefined { return undefined; }
 }
@@ -94,13 +95,13 @@ export abstract class SpatialClassifierTileTreeReference extends TileTreeReferen
 /** @internal */
 class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   private _id: ClassifierTreeId;
-  private readonly _classifiers: SpatialClassifiers;
+  private readonly _classifiers: SpatialClassifiersState;
   private readonly _source: ViewState | DisplayStyleState;
   private readonly _iModel: IModelConnection;
   private readonly _classifiedTree: TileTreeReference;
   private _owner: TileTreeOwner;
 
-  public constructor(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState) {
+  public constructor(classifiers: SpatialClassifiersState, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState) {
     super();
     this._id = createClassifierId(classifiers.active, source);
     this._source = source;
@@ -110,8 +111,8 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     this._owner = classifierTreeSupplier.getOwner(this._id, iModel);
   }
 
-  public get classifiers(): SpatialClassifiers { return this._classifiers; }
-  public get activeClassifier(): SpatialClassifier | undefined { return this.classifiers.active; }
+  public get classifiers(): SpatialClassifiersState { return this._classifiers; }
+  public get activeClassifier(): ActiveSpatialClassifier | undefined { return this.classifiers.activeClassifier; }
 
   public override get castsShadows() {
     return false;
@@ -124,7 +125,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
       this._owner = classifierTreeSupplier.getOwner(this._id, this._iModel);
     }
 
-    return this._owner;
+    return this.activeClassifier?.tileTreeReference?.treeOwner ?? this._owner;
   }
 
   public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
@@ -136,7 +137,14 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     if (undefined !== classifierTree)
       trees.add(classifierTree);
   }
-  public get isPlanar() { return BatchType.PlanarClassifier === this._id.type; }
+
+  public get isPlanar() {
+    if (this.activeClassifier?.flags.isVolumeClassifier) {
+      return false;
+    }
+
+    return true;
+  }
 
   public get viewFlags(): Partial<ViewFlagsProperties> {
     return {
@@ -162,7 +170,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     if (undefined === classifiedTree)
       return;
 
-    const classifier = this._classifiers.active;
+    const classifier = this._classifiers.activeClassifier;
     if (undefined === classifier)
       return;
 
@@ -177,7 +185,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
 }
 
 /** @internal */
-export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference {
+export function createClassifierTileTreeReference(classifiers: SpatialClassifiersState, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference {
   return new ClassifierTreeReference(classifiers, classifiedTree, iModel, source);
 }
 
