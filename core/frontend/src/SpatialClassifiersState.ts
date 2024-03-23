@@ -56,7 +56,7 @@ export class SpatialClassifiersState extends SpatialClassifiers {
 
   /** The classifier currently being used to classify the reality model.
    * This may be either a [SpatialClassifier]($common) already defined in the set of available [SpatialClassifiers]($common), or a [[DynamicSpatialClassifier]].
-   * @note Unlike [[PersistentSpatialClassifier]]s, [[DynamicSpatialClassifiers]] are not preserved when saving and recalling a view.
+   * @note Unlike [[PersistentSpatialClassifier]]s, [[DynamicSpatialClassifier]]s are not preserved when saving and recalling a view.
    */
   public get activeClassifier(): ActiveSpatialClassifier | undefined {
     return this._dynamicClassifier ?? this.active;
