@@ -65,7 +65,7 @@ Classification involves using geometry from a design model to "classify" the geo
 
 The usefulness of this technique is limited by the constraint that the classifier geometry must originate from a persistent [GeometricModel]($backend) stored in an iModel. Imagine a scenario in which you have a reality model representing a building, and access to live data streamed from heat sensors placed in rooms within the building. You might wish to classify the rooms based on their current temperatures - but because the data is constantly changing, it wouldn't make sense to store it in a persistent model.
 
-Now, that constraint has been lifted. You can define your geometry at run-time and apply it to a reality model as a [DynamicSpatialClassifier]($frontend) via [ContextRealityModelState.activeClassifier]($frontend). The geometry is supplied by a [TileTreeReference]($frontend), which can easily be created using the new [TileTreeReference.createFromRenderGraphic](#simplified-tiletreereference) API.
+Now, that constraint has been lifted. You can define your geometry at run-time and apply it to a reality model as a [DynamicSpatialClassifier]($frontend) by setting the `activeClassifier` property of [ContextRealityModelState.classifiers]($frontend). The geometry is supplied by a [TileTreeReference]($frontend), which can easily be created using the new [TileTreeReference.createFromRenderGraphic](#simplified-tiletreereference) API.
 
 Here's a simple example that classifies spherical regions of a reality model:
 ```ts
