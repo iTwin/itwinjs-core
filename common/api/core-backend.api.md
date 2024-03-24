@@ -6335,7 +6335,6 @@ export namespace WorkspaceResource {
 
 // @beta
 export const WorkspaceSetting: {
-    Accounts: string;
     Containers: string;
     Databases: string;
 };
