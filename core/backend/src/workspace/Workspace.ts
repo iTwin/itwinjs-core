@@ -33,7 +33,6 @@ function noLeadingOrTrailingSpaces(name: string, msg: string) {
  * @beta
  */
 export const WorkspaceSetting = {
-  Accounts: "cloud/accounts",
   Containers: "cloud/containers",
   Databases: "workspace/databases",
 };
@@ -463,7 +462,6 @@ export namespace EditableWorkspaceDb {
   }
 }
 
-/** @internal */
 class WorkspaceImpl implements Workspace {
   private _containers = new Map<WorkspaceContainer.Id, WorkspaceContainerImpl>();
   public readonly containerDir: LocalDirName;
@@ -671,7 +669,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
   }
 }
 
-/**  Implementation of WorkspaceDb */
+/** Implementation of WorkspaceDb */
 class WorkspaceDbImpl implements WorkspaceDb {
   public readonly sqliteDb = new SQLiteDb();
   public readonly dbName: WorkspaceDb.DbName;
