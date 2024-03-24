@@ -6241,7 +6241,6 @@ export namespace WorkspaceContainer {
         containerName: string;
     }
     export type Id = string;
-    // (undocumented)
     export function makeDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName;
     export type Name = string;
     export function parseDbFileName(dbFileName: WorkspaceDb.DbFullName): {
@@ -6289,7 +6288,8 @@ export namespace WorkspaceDb {
     }
     export type Version = string;
     export type VersionIncrement = "major" | "minor" | "patch";
-    const fileExt = "itwin-workspace";
+    const // @internal
+    fileExt = "itwin-workspace";
     export type VersionRange = string;
 }
 

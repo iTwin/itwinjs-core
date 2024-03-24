@@ -19,7 +19,7 @@ import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
 import { Settings, SettingsPriority } from "./Settings";
 import { SettingsSchemas } from "./SettingsSchemas";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import type { IModelJsNative } from "@bentley/imodeljs-native";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 // cspell:ignore rowid primarykey julianday
@@ -73,7 +73,8 @@ export namespace WorkspaceContainer {
     noLeadingOrTrailingSpaces(dbName, "dbName");
   }
 
-  /** Validate that a WorkspaceContainer.Id is valid.
+  /**
+   * Validate that a WorkspaceContainer.Id is valid.
    * The rules for ContainerIds (from Azure, see https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata):
    *  - may only contain lower case letters, numbers or dashes
    *  - may not start or end with with a dash nor have more than one dash in a row
@@ -98,8 +99,9 @@ export namespace WorkspaceContainer {
     return version;
   }
 
-  /** Parse the name stored in a WorkspaceContainer into the dbName and version number. A single WorkspaceContainer may hold
-   * many versions of the same WorkspaceDb. The "name" of the Db in the WorkspaceContainer is in the format "name:version". This
+  /**
+   * Parse the name stored in a WorkspaceContainer into the dbName and version number. A single WorkspaceContainer may hold
+   * many versions of the same WorkspaceDb. The name of the Db in the WorkspaceContainer is in the format "name:version". This
    * function splits them into separate strings.
    */
   export function parseDbFileName(dbFileName: WorkspaceDb.DbFullName): { dbName: WorkspaceDb.DbName, version: WorkspaceDb.Version } {
@@ -107,6 +109,7 @@ export namespace WorkspaceContainer {
     return { dbName: parts[0], version: parts[1] };
   }
 
+  /** Create a dbName for a WorkspaceDb from its base name and version. This will be in the format "name:version" */
   export function makeDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName {
     return `${dbName}:${WorkspaceContainer.validateVersion(version)}`;
   }
@@ -142,7 +145,9 @@ export namespace WorkspaceDb {
    */
   export type VersionIncrement = "major" | "minor" | "patch";
 
-  /** file extension for local WorkspaceDbs */
+  /** file extension for local WorkspaceDbs
+   * @internal
+   */
   export const fileExt = "itwin-workspace";
 
   /** construct a new instance of a WorkspaceDb */
@@ -345,9 +350,9 @@ export interface WorkspaceContainer {
   addWorkspaceDb(toAdd: WorkspaceDbImpl): void;
 
   /**
-   * Find the most appropriate version of a WorkspaceDb in this WorkspaceContainer based on the SemVer rule
+   * Find the appropriate version of a WorkspaceDb in this WorkspaceContainer based on the SemVer rule
    * in the `WorkspaceDb.Props`.
-   * If no versions satisfying the WorkspaceDb.Props rules exists, throws an exception.
+   * If no version satisfying the WorkspaceDb.Props rules exists, throws an exception.
    */
   resolveDbFileName(props: WorkspaceDb.Props): WorkspaceDb.DbFullName;
 
@@ -372,7 +377,7 @@ export interface WorkspaceContainer {
 }
 
 /**
- * An editable [[WorkspaceDb]]. This is used only by tools that allow administrators to create and modify `WorkspaceDb`s.
+ * An editable [[WorkspaceDb]]. This is used only by tools to allow administrators to create and modify `WorkspaceDb`s.
  * For CloudSqlite Workspaces, the write token must be obtained before the methods in this interface may be used. Normally
  * only admins will have write access to Workspaces. Only one admin at at time may be editing a Workspace.
  * @beta
