@@ -66,6 +66,50 @@ export namespace WorkspaceContainer {
    * @returns a Promise that resolves to the AccessToken for the container.
    */
   export type TokenFunc = (props: Props) => Promise<AccessToken>;
+
+  export function validateDbName(dbName: WorkspaceDb.DbName) {
+    if (dbName === "" || dbName.length > 255 || /[#\.<>:"/\\"`'|?*\u0000-\u001F]/g.test(dbName) || /^(con|prn|aux|nul|com\d|lpt\d)$/i.test(dbName))
+      throw new Error(`invalid dbName: [${dbName}]`);
+    noLeadingOrTrailingSpaces(dbName, "dbName");
+  }
+
+  /** Validate that a WorkspaceContainer.Id is valid.
+   * The rules for ContainerIds (from Azure, see https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata):
+   *  - may only contain lower case letters, numbers or dashes
+   *  - may not start or end with with a dash nor have more than one dash in a row
+   *  - may not be shorter than 3 or longer than 63 characters
+   */
+  export function validateContainerId(id: WorkspaceContainer.Id) {
+    if (!/^(?=.{3,63}$)[a-z0-9]+(-[a-z0-9]+)*$/g.test(id))
+      throw new Error(`invalid containerId: [${id}]`);
+  }
+
+  /** @internal */
+  export function validateVersion(version?: WorkspaceDb.Version) {
+    version = version ?? "1.0.0";
+    if (version) {
+      const opts = { loose: true, includePrerelease: true };
+      // clean allows prerelease, so try it first. If that fails attempt to coerce it (coerce strips prerelease even if you say not to.)
+      const semVersion = semver.clean(version, opts) ?? semver.coerce(version, opts)?.version;
+      if (!semVersion)
+        throw new Error("invalid version specification");
+      version = semVersion;
+    }
+    return version;
+  }
+
+  /** Parse the name stored in a WorkspaceContainer into the dbName and version number. A single WorkspaceContainer may hold
+   * many versions of the same WorkspaceDb. The "name" of the Db in the WorkspaceContainer is in the format "name:version". This
+   * function splits them into separate strings.
+   */
+  export function parseDbFileName(dbFileName: WorkspaceDb.DbFullName): { dbName: WorkspaceDb.DbName, version: WorkspaceDb.Version } {
+    const parts = dbFileName.split(":");
+    return { dbName: parts[0], version: parts[1] };
+  }
+
+  export function makeDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName {
+    return `${dbName}:${WorkspaceContainer.validateVersion(version)}`;
+  }
 }
 
 /** @beta */
@@ -101,7 +145,8 @@ export namespace WorkspaceDb {
   /** file extension for local WorkspaceDbs */
   export const fileExt = "itwin-workspace";
 
-  export function makeNew(props: WorkspaceDb.Props, container: WorkspaceContainer) {
+  /** construct a new instance of a WorkspaceDb */
+  export function construct(props: WorkspaceDb.Props, container: WorkspaceContainer): WorkspaceDb {
     return new WorkspaceDbImpl(props, container);
   }
 }
@@ -269,6 +314,14 @@ export interface Workspace {
   close(): void;
 }
 
+/** @beta */
+export namespace Workspace {
+  /** @internal */
+  export function construct(settings: Settings, opts?: WorkspaceOpts): Workspace {
+    return new WorkspaceImpl(settings, opts);
+  }
+}
+
 /**
  * A WorkspaceContainer is a type of `CloudSqlite.CloudContainer` that holds WorkspaceDbs. Normally a WorkspaceContainer will hold (many versions of) a single WorkspaceDb.
  * Each version of a WorkspaceDb is treated as immutable after it is created and is stored in the WorkspaceContainer indefinitely. That means that
@@ -316,56 +369,6 @@ export interface WorkspaceContainer {
 
   /** Close this WorkspaceContainer. All currently opened WorkspaceDbs are dropped. */
   close(): void;
-}
-
-/**
- * @beta
- */
-export namespace WorkspaceContainer {
-
-  export function validateDbName(dbName: WorkspaceDb.DbName) {
-    if (dbName === "" || dbName.length > 255 || /[#\.<>:"/\\"`'|?*\u0000-\u001F]/g.test(dbName) || /^(con|prn|aux|nul|com\d|lpt\d)$/i.test(dbName))
-      throw new Error(`invalid dbName: [${dbName}]`);
-    noLeadingOrTrailingSpaces(dbName, "dbName");
-  }
-
-  /** Validate that a WorkspaceContainer.Id is valid.
-   * The rules for ContainerIds (from Azure, see https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata):
-   *  - may only contain lower case letters, numbers or dashes
-   *  - may not start or end with with a dash nor have more than one dash in a row
-   *  - may not be shorter than 3 or longer than 63 characters
-   */
-  export function validateContainerId(id: WorkspaceContainer.Id) {
-    if (!/^(?=.{3,63}$)[a-z0-9]+(-[a-z0-9]+)*$/g.test(id))
-      throw new Error(`invalid containerId: [${id}]`);
-  }
-
-  /** @internal */
-  export function validateVersion(version?: WorkspaceDb.Version) {
-    version = version ?? "1.0.0";
-    if (version) {
-      const opts = { loose: true, includePrerelease: true };
-      // clean allows prerelease, so try it first. If that fails attempt to coerce it (coerce strips prerelease even if you say not to.)
-      const semVersion = semver.clean(version, opts) ?? semver.coerce(version, opts)?.version;
-      if (!semVersion)
-        throw new Error("invalid version specification");
-      version = semVersion;
-    }
-    return version;
-  }
-
-  /** Parse the name stored in a WorkspaceContainer into the dbName and version number. A single WorkspaceContainer may hold
-   * many versions of the same WorkspaceDb. The "name" of the Db in the WorkspaceContainer is in the format "name:version". This
-   * function splits them into separate strings.
-   */
-  export function parseDbFileName(dbFileName: WorkspaceDb.DbFullName): { dbName: WorkspaceDb.DbName, version: WorkspaceDb.Version } {
-    const parts = dbFileName.split(":");
-    return { dbName: parts[0], version: parts[1] };
-  }
-
-  export function makeDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName {
-    return `${dbName}:${WorkspaceContainer.validateVersion(version)}`;
-  }
 }
 
 /**
@@ -434,7 +437,8 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
 
 /** @beta */
 export namespace EditableWorkspaceDb {
-  export function makeNew(props: WorkspaceDb.Props, container: WorkspaceContainer): EditableWorkspaceDb {
+  /** construct a new instance of an EditableWorkspaceDb */
+  export function construct(props: WorkspaceDb.Props, container: WorkspaceContainer): EditableWorkspaceDb {
     return new EditableWorkspaceDbImpl(props, container);
   }
   /** Create a new, empty, EditableWorkspaceDb file on the local filesystem for importing Workspace resources. */
@@ -455,7 +459,7 @@ export namespace EditableWorkspaceDb {
 }
 
 /** @internal */
-export class ITwinWorkspace implements Workspace {
+class WorkspaceImpl implements Workspace {
   private _containers = new Map<WorkspaceContainer.Id, WorkspaceContainerImpl>();
   public readonly containerDir: LocalDirName;
   public readonly settings: Settings;
@@ -555,7 +559,7 @@ export class ITwinWorkspace implements Workspace {
 }
 
 class WorkspaceContainerImpl implements WorkspaceContainer {
-  public readonly workspace: ITwinWorkspace;
+  public readonly workspace: WorkspaceImpl;
   public readonly filesDir: LocalDirName;
   public readonly id: WorkspaceContainer.Id;
 
@@ -563,7 +567,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
   private _wsDbs = new Map<WorkspaceDb.DbName, WorkspaceDbImpl>();
   public get dirName() { return join(this.workspace.containerDir, this.id); }
 
-  public constructor(workspace: ITwinWorkspace, props: WorkspaceContainer.Props) {
+  public constructor(workspace: WorkspaceImpl, props: WorkspaceContainer.Props) {
     WorkspaceContainer.validateContainerId(props.containerId);
     this.workspace = workspace;
     this.id = props.containerId;

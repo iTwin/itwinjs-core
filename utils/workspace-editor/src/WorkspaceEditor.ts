@@ -141,7 +141,7 @@ function friendlyFileSize(size: number) {
 /** Create a new empty WorkspaceDb  */
 async function createWorkspaceDb(args: WorkspaceDbOpt) {
   args.writeable = true;
-  const wsFile = EditableWorkspaceDb.makeNew(args, IModelHost.appWorkspace.getContainer(args));
+  const wsFile = EditableWorkspaceDb.construct(args, IModelHost.appWorkspace.getContainer(args));
   await wsFile.createDb();
   showMessage(`created WorkspaceDb ${wsFile.sqliteDb.nativeDb.getFilePath()}`);
   wsFile.close();
@@ -184,7 +184,7 @@ function fixVersionArg(args: WorkspaceDbOpt) {
 async function editWorkspace<T extends WorkspaceDbOpt>(args: T, fn: (ws: EditableWorkspaceDb, args: T) => Promise<void>) {
   fixVersionArg(args);
 
-  const ws = EditableWorkspaceDb.makeNew(args, getContainer(args));
+  const ws = EditableWorkspaceDb.construct(args, getContainer(args));
   const cloudContainer = ws.container.cloudContainer;
   if (cloudContainer && cloudContainer.queryDatabase(ws.dbFileName)?.state !== "copied")
     throw new Error(`${args.dbFileName} is not editable. Create a new version first`);
@@ -195,7 +195,7 @@ async function editWorkspace<T extends WorkspaceDbOpt>(args: T, fn: (ws: Editabl
 /** Open for read, call a function to process, then close a WorkspaceDb */
 async function readWorkspace<T extends WorkspaceDbOpt>(args: T, fn: (ws: WorkspaceDb, args: T) => Promise<void>) {
   fixVersionArg(args);
-  return processWorkspace(args, WorkspaceDb.makeNew(args, getContainer(args)), fn);
+  return processWorkspace(args, WorkspaceDb.construct(args, getContainer(args)), fn);
 }
 
 /** List the contents of a WorkspaceDb */
@@ -353,7 +353,7 @@ async function removeResource(args: RemoveResourceOpts) {
 async function vacuumWorkspaceDb(args: WorkspaceDbOpt) {
   const container = getContainer(args);
   fixVersionArg(args);
-  const localFile = WorkspaceDb.makeNew(args, container).dbFileName;
+  const localFile = WorkspaceDb.construct(args, container).dbFileName;
   doVacuum(localFile, container.cloudContainer);
 }
 

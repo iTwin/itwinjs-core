@@ -1966,9 +1966,8 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
 
 // @beta (undocumented)
 export namespace EditableWorkspaceDb {
+    export function construct(props: WorkspaceDb.Props, container: WorkspaceContainer): EditableWorkspaceDb;
     export function createEmpty(fileName: LocalFileName): void;
-    // (undocumented)
-    export function makeNew(props: WorkspaceDb.Props, container: WorkspaceContainer): EditableWorkspaceDb;
 }
 
 // @public
@@ -3610,35 +3609,6 @@ export interface IpcHostOpts {
 export interface ITwinIdArg {
     // (undocumented)
     readonly iTwinId: GuidString;
-}
-
-// @internal (undocumented)
-export class ITwinWorkspace implements Workspace {
-    constructor(settings: Settings, opts?: WorkspaceOpts);
-    // (undocumented)
-    addContainer(toAdd: WorkspaceContainerImpl): void;
-    // (undocumented)
-    close(): void;
-    // (undocumented)
-    readonly containerDir: LocalDirName;
-    // (undocumented)
-    findContainer(containerId: WorkspaceContainer.Id): WorkspaceContainerImpl | undefined;
-    // (undocumented)
-    getCloudCache(): CloudSqlite.CloudCache;
-    // (undocumented)
-    getContainer(props: WorkspaceContainer.Props): WorkspaceContainer;
-    // (undocumented)
-    getWorkspaceDb(dbAlias: string): Promise<WorkspaceDb>;
-    // (undocumented)
-    getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props): WorkspaceDb;
-    // (undocumented)
-    loadSettingsDictionary(settingRsc: WorkspaceResource.Name, db: WorkspaceDb, priority: SettingsPriority): void;
-    // (undocumented)
-    resolveContainer(containerName: string): WorkspaceContainer.Props;
-    // (undocumented)
-    resolveDatabase(databaseName: string): WorkspaceDb.Props & WorkspaceContainer.Alias;
-    // (undocumented)
-    readonly settings: Settings;
 }
 
 // @public
@@ -6253,6 +6223,12 @@ export interface Workspace {
     readonly settings: Settings;
 }
 
+// @beta (undocumented)
+export namespace Workspace {
+    // @internal (undocumented)
+    export function construct(settings: Settings, opts?: WorkspaceOpts): Workspace;
+}
+
 // @beta
 export interface WorkspaceCloudCacheProps extends Optional<CloudSqlite.CacheProps, "name" | "rootDir"> {
     clearContents?: boolean;
@@ -6265,11 +6241,22 @@ export namespace WorkspaceContainer {
         containerName: string;
     }
     export type Id = string;
+    // (undocumented)
+    export function makeDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName;
     export type Name = string;
+    export function parseDbFileName(dbFileName: WorkspaceDb.DbFullName): {
+        dbName: WorkspaceDb.DbName;
+        version: WorkspaceDb.Version;
+    };
     export interface Props extends Optional<CloudSqlite.ContainerAccessProps, "accessToken"> {
         syncOnConnect?: boolean;
     }
     export type TokenFunc = (props: Props) => Promise<AccessToken>;
+    export function validateContainerId(id: WorkspaceContainer.Id): void;
+    // (undocumented)
+    export function validateDbName(dbName: WorkspaceDb.DbName): void;
+    // @internal (undocumented)
+    export function validateVersion(version?: WorkspaceDb.Version): string;
 }
 
 // @beta
@@ -6283,34 +6270,18 @@ export interface WorkspaceContainer {
     getWorkspaceDb(props: WorkspaceDb.Props): WorkspaceDb;
     readonly id: WorkspaceContainer.Id;
     makeNewVersion(fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement): Promise<{
-        oldName: string;
-        newName: string;
+        oldName: WorkspaceDb.DbName;
+        newName: WorkspaceDb.DbName;
     }>;
     resolveDbFileName(props: WorkspaceDb.Props): WorkspaceDb.DbFullName;
     readonly workspace: Workspace;
 }
 
 // @beta (undocumented)
-export namespace WorkspaceContainer {
-    // (undocumented)
-    export function makeDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName;
-    export function parseDbFileName(dbFileName: WorkspaceDb.DbFullName): {
-        dbName: WorkspaceDb.DbName;
-        version: WorkspaceDb.Version;
-    };
-    export function validateContainerId(id: WorkspaceContainer.Id): void;
-    // (undocumented)
-    export function validateDbName(dbName: WorkspaceDb.DbName): void;
-    // @internal (undocumented)
-    export function validateVersion(version?: WorkspaceDb.Version): string;
-}
-
-// @beta (undocumented)
 export namespace WorkspaceDb {
+    export function construct(props: WorkspaceDb.Props, container: WorkspaceContainer): WorkspaceDb;
     export type DbFullName = string;
     export type DbName = string;
-    // (undocumented)
-    export function makeNew(props: WorkspaceDb.Props, container: WorkspaceContainer): WorkspaceDbImpl;
     export type Name = string;
     export interface Props extends CloudSqlite.DbNameProp {
         includePrerelease?: boolean;

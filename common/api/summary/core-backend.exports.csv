@@ -243,7 +243,6 @@ public;class IpcHandler
 public;IpcHost
 public;IpcHostOpts
 public;ITwinIdArg
-internal;ITwinWorkspace 
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -417,11 +416,12 @@ beta;ViewStore
 public;VolumeElement 
 public;WebMercatorModel 
 beta;Workspace
+beta;Workspace
+internal;construct(settings: Settings, opts?: WorkspaceOpts): Workspace
 beta;WorkspaceCloudCacheProps 
 beta;WorkspaceContainer
-beta;WorkspaceContainer
-beta;WorkspaceContainer
 internal;validateVersion(version?: WorkspaceDb.Version): string
+beta;WorkspaceContainer
 beta;WorkspaceDb
 beta;WorkspaceDb
 beta;WorkspaceOpts
