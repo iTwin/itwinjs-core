@@ -168,7 +168,7 @@ describe("WorkspaceFile", () => {
     const fontFile = fonts.getFile("Helvetica.ttf")!;
     expect(fontFile).contains(".ttf");
     compareFiles(fontFile, schemaFile);
-    fonts.container.dropWorkspaceDb(fonts);
+    fonts.container.closeWorkspaceDb(fonts);
 
     const setting2: SettingDictionary = {
       "cloud/containers": [

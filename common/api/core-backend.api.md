@@ -3616,13 +3616,13 @@ export interface ITwinIdArg {
 export class ITwinWorkspace implements Workspace {
     constructor(settings: Settings, opts?: WorkspaceOpts);
     // (undocumented)
-    addContainer(toAdd: ITwinWorkspaceContainer): void;
+    addContainer(toAdd: WorkspaceContainerImpl): void;
     // (undocumented)
     close(): void;
     // (undocumented)
     readonly containerDir: LocalDirName;
     // (undocumented)
-    findContainer(containerId: WorkspaceContainer.Id): ITwinWorkspaceContainer | undefined;
+    findContainer(containerId: WorkspaceContainer.Id): WorkspaceContainerImpl | undefined;
     // (undocumented)
     getCloudCache(): CloudSqlite.CloudCache;
     // (undocumented)
@@ -6275,16 +6275,18 @@ export namespace WorkspaceContainer {
 // @beta
 export interface WorkspaceContainer {
     // @internal (undocumented)
-    addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
+    addWorkspaceDb(toAdd: WorkspaceDbImpl): void;
     close(): void;
-    // @internal
+    closeWorkspaceDb(container: WorkspaceDb): void;
     readonly cloudContainer?: CloudSqlite.CloudContainer;
-    dropWorkspaceDb(container: WorkspaceDb): void;
     readonly filesDir: LocalDirName;
     getWorkspaceDb(props: WorkspaceDb.Props): WorkspaceDb;
     readonly id: WorkspaceContainer.Id;
-    // @internal
-    resolveDbFileName(props: WorkspaceDb.Props): string;
+    makeNewVersion(fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement): Promise<{
+        oldName: string;
+        newName: string;
+    }>;
+    resolveDbFileName(props: WorkspaceDb.Props): WorkspaceDb.DbFullName;
     readonly workspace: Workspace;
 }
 
@@ -6292,17 +6294,10 @@ export interface WorkspaceContainer {
 export namespace WorkspaceContainer {
     // (undocumented)
     export function makeDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName;
-    export function makeNewVersion(cloudContainer: CloudSqlite.CloudContainer, fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement): Promise<{
-        oldName: string;
-        newName: string;
-    }>;
-    // (undocumented)
     export function parseDbFileName(dbFileName: WorkspaceDb.DbFullName): {
         dbName: WorkspaceDb.DbName;
         version: WorkspaceDb.Version;
     };
-    // (undocumented)
-    export function resolveCloudFileName(cloudContainer: CloudSqlite.CloudContainer, props: WorkspaceDb.Props): WorkspaceDb.DbFullName;
     export function validateContainerId(id: WorkspaceContainer.Id): void;
     // (undocumented)
     export function validateDbName(dbName: WorkspaceDb.DbName): void;
@@ -6315,7 +6310,7 @@ export namespace WorkspaceDb {
     export type DbFullName = string;
     export type DbName = string;
     // (undocumented)
-    export function makeNew(props: WorkspaceDb.Props, container: WorkspaceContainer): ITwinWorkspaceDb;
+    export function makeNew(props: WorkspaceDb.Props, container: WorkspaceContainer): WorkspaceDbImpl;
     export type Name = string;
     export interface Props extends CloudSqlite.DbNameProp {
         includePrerelease?: boolean;

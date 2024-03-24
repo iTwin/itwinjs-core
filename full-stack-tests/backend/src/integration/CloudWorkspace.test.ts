@@ -69,7 +69,7 @@ describe("Cloud workspace containers", () => {
           wsDbEdit.addString("string 1", "value of string 1");
           wsDbEdit.close();
         } finally {
-          wsCont1.dropWorkspaceDb(wsDbEdit);
+          wsCont1.closeWorkspaceDb(wsDbEdit);
         }
       });
     };
@@ -94,7 +94,7 @@ describe("Cloud workspace containers", () => {
 
     let ws2 = wsCont2.getWorkspaceDb({ dbName: testDbName });
     expect(ws2.getString("string 1")).equals("value of string 1");
-    ws2.container.dropWorkspaceDb(ws2);
+    ws2.container.closeWorkspaceDb(ws2);
 
     expect(() => wsCont2.getWorkspaceDb({ dbName: testDbName, version: "^2.0.0" })).throws("No version of");
 
@@ -118,13 +118,13 @@ describe("Cloud workspace containers", () => {
     expect(ws2.dbFileName).contains("1.1.4-beta");
     expect(ws2.getString("string 1")).equals(newVal);
     expect(ws2.getString("myVersion")).equals("1.1.4-beta");
-    ws2.container.dropWorkspaceDb(ws2);
+    ws2.container.closeWorkspaceDb(ws2);
 
     ws2 = wsCont2.getWorkspaceDb({ dbName: testDbName });
     expect(ws2.dbFileName).contains("3.0.0");
     expect(ws2.getString("string 1")).equals("value of string 1");
     expect(ws2.getString("myVersion")).equals("3.0.0");
-    ws2.container.dropWorkspaceDb(ws2);
+    ws2.container.closeWorkspaceDb(ws2);
 
     workspace1.close();
     workspace2.close();

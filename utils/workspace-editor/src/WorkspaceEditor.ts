@@ -458,21 +458,22 @@ async function detachWorkspace(args: EditorOpts) {
 
 /** Make a copy of a WorkspaceDb with a new name. */
 async function copyWorkspaceDb(args: CopyWorkspaceDbOpt) {
-  const container = getCloudContainer(args);
-  const oldName = WorkspaceContainer.resolveCloudFileName(container, args);
+  const container = getContainer(args);
+  const oldName = container.resolveDbFileName(args);
   const newVersion = WorkspaceContainer.parseDbFileName(args.newDbName);
   WorkspaceContainer.validateDbName(newVersion.dbName);
   const newName = WorkspaceContainer.makeDbFileName(newVersion.dbName, WorkspaceContainer.validateVersion(newVersion.version));
 
-  await CloudSqlite.withWriteLock({ ...args, container }, async () => container.copyDatabase(oldName, newName));
+  const cloudContainer = getCloudContainer(args);
+  await CloudSqlite.withWriteLock({ ...args, container: cloudContainer }, async () => cloudContainer.copyDatabase(oldName, newName));
   showMessage(`copied WorkspaceDb [${oldName}] to [${newName}] in ${sayContainer(args)}`);
 }
 
 /** Make a copy of a WorkspaceDb with a new name. */
 async function versionWorkspaceDb(args: MakeVersionOpt) {
   fixVersionArg(args);
-  const container = getCloudContainer(args);
-  const result = await WorkspaceContainer.makeNewVersion(container, args, args.versionType);
+  const container = getContainer(args);
+  const result = await container.makeNewVersion(args, args.versionType);
   showMessage(`created new version: [${result.newName}] from [${result.oldName}] in ${sayContainer(args)}`);
 }
 
