@@ -87,7 +87,3 @@ packageClassification:
     },
   ]
 ---
-
-<div>
-    {{{referenceLeftNav this}}}
-</div>
