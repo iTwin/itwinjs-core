@@ -647,11 +647,14 @@ class IModelSelectionStorage {
     this.addDisposer(level, currDisposer);
 
     return defer(async () => {
-      const currentSelectionResult = await selectablesToKeys(currSelectables);
-      const changedSelectionResult = await selectablesToKeys(changedSelectables, currentSelectionResult.selectableKeys);
+      const convertedSelectables: SelectableKeys[] = [];
+      const [current, changed] = await Promise.all([
+        selectablesToKeys(currSelectables, convertedSelectables),
+        selectablesToKeys(changedSelectables, convertedSelectables),
+      ]);
 
-      const currentSelection = new KeySet([...currentSelectionResult.keys, ...currentSelectionResult.selectableKeys.flatMap((selectable) => selectable.keys)]);
-      const changedSelection = new KeySet([...changedSelectionResult.keys, ...changedSelectionResult.selectableKeys.flatMap((selectable) => selectable.keys)]);
+      const currentSelection = new KeySet([...current.keys, ...current.selectableKeys.flatMap((selectable) => selectable.keys)]);
+      const changedSelection = new KeySet([...changed.keys, ...changed.selectableKeys.flatMap((selectable) => selectable.keys)]);
 
       return {
         level,
@@ -690,7 +693,7 @@ function keysToSelectable(imodel: IModelConnection, keys: Readonly<KeySet>) {
 
 type SelectableKeys = { identifier: string; keys: Key[] };
 
-async function selectablesToKeys(selectables: Selectables, convertedList?: SelectableKeys[]) {
+async function selectablesToKeys(selectables: Selectables, convertedList: SelectableKeys[]) {
   const keys: Key[] = [];
   const selectableKeys: SelectableKeys[] = [];
 
@@ -705,17 +708,18 @@ async function selectablesToKeys(selectables: Selectables, convertedList?: Selec
       selectableKeys.push({ identifier: selectable.identifier, keys: [selectable.data] });
       continue;
     }
-    const converted = convertedList?.find((con) => con.identifier === selectable.identifier);
+    const converted = convertedList.find((con) => con.identifier === selectable.identifier);
     if (converted) {
       selectableKeys.push(converted);
       continue;
     }
 
-    const currKeys: Key[] = [];
+    const newConverted: SelectableKeys = { identifier: selectable.identifier, keys: [] };
+    convertedList.push(newConverted);
     for await (const instanceKey of selectable.loadInstanceKeys()) {
-      currKeys.push(instanceKey);
+      newConverted.keys.push(instanceKey);
     }
-    selectableKeys.push({ identifier: selectable.identifier, keys: currKeys });
+    selectableKeys.push(newConverted);
   }
 
   return { keys, selectableKeys };

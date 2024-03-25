@@ -857,6 +857,8 @@ describe("SelectionManager", () => {
       >(),
     };
 
+    const changeListener = sinon.stub<Parameters<SelectionChangesListener>, ReturnType<SelectionChangesListener>>();
+
     beforeEach(() => {
       storage = createStorage();
       presentationManager.getContentInstanceKeys.reset();
@@ -864,6 +866,9 @@ describe("SelectionManager", () => {
 
       selectionManager = new SelectionManager({ selectionStorage: storage, scopes: scopesManager as unknown as SelectionScopesManager });
       IModelConnection.onOpen.raiseEvent(imodel);
+
+      changeListener.reset();
+      selectionManager.selectionChange.addListener(changeListener);
     });
 
     afterEach(() => {
@@ -945,6 +950,30 @@ describe("SelectionManager", () => {
         const selectionSet = await waitForSelection(2, imodel);
         expect(selectionSet.has(instanceKeys[0])).to.be.true;
         expect(selectionSet.has(instanceKeys[1])).to.be.true;
+      });
+
+      it("custom selectable once", async () => {
+        const instanceKeys = [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" })];
+        const loadInstanceKeys = sinon.fake<Parameters<CustomSelectable["loadInstanceKeys"]>, ReturnType<CustomSelectable["loadInstanceKeys"]>>(() =>
+          createAsyncGenerator(instanceKeys),
+        );
+        storage.addToSelection({
+          iModelKey: imodel.key,
+          source,
+          selectables: [{ identifier: "custom", loadInstanceKeys, data: {} }],
+          level: 0,
+        });
+
+        const selectionSet = await waitForSelection(2, imodel);
+        expect(selectionSet.has(instanceKeys[0])).to.be.true;
+        expect(selectionSet.has(instanceKeys[1])).to.be.true;
+
+        expect(changeListener).to.be.calledWith(
+          sinon.match((args: SelectionChangeEventArgs) => {
+            return args.keys.size === 2 && args.keys.hasAll([instanceKeys[0], instanceKeys[1]]);
+          }),
+        );
+        expect(loadInstanceKeys).to.be.calledOnce;
       });
     });
 
@@ -1082,15 +1111,9 @@ describe("SelectionManager", () => {
     });
 
     describe("selection change event", () => {
-      const changeListener = sinon.stub<Parameters<SelectionChangesListener>, ReturnType<SelectionChangesListener>>();
       const instanceKeys = [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" })];
       const selectable1instanceKeys = [createTestECInstanceKey({ id: "0x3" }), createTestECInstanceKey({ id: "0x4" })];
       const selectable2instanceKeys = [createTestECInstanceKey({ id: "0x5" }), createTestECInstanceKey({ id: "0x6" })];
-
-      beforeEach(() => {
-        changeListener.reset();
-        selectionManager.selectionChange.addListener(changeListener);
-      });
 
       it("converts add event selectables", async () => {
         const selectable1: CustomSelectable = { identifier: "custom-1", loadInstanceKeys: () => createAsyncGenerator(selectable1instanceKeys), data: {} };
