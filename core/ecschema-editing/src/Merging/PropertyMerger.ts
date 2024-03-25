@@ -55,6 +55,10 @@ async function addClassProperty(context: SchemaMergeContext, itemKey: SchemaItem
     property.category = await updateSchemaItemFullName(context, property.category);
   }
 
+  if(property.kindOfQuantity !== undefined) {
+    property.kindOfQuantity = await updateSchemaItemFullName(context, property.kindOfQuantity);
+  }
+
   const createResult = await createProperty(context, itemKey, property);
   if(createResult.errorMessage) {
     return createResult;
@@ -142,7 +146,7 @@ async function modifyClassProperty(context: SchemaMergeContext, itemKey: SchemaI
 
 const arrayProperty = {
   is(property: AnyPropertyProps): boolean {
-    return "minOccurs" in property;
+    return "minOccurs" in property && "maxOccurs" in property;
   },
   async merge(property: MutableArrayProperty, props: ArrayPropertyProps) {
     if(props.minOccurs !== undefined) {
@@ -172,7 +176,7 @@ const enumerationProperty: PropertyMerger<EnumerationPropertyProps> = {
       : context.editor.entities.createEnumerationPropertyFromProps(itemKey, property.name, enumerationType, property);
   },
   async merge(context, itemKey, property, props) {
-    if("enumeration" in props) {
+    if("enumeration" in props && props.enumeration !== undefined) {
       return { errorMessage: `Changing the property '${property.fullName}' enumeration is not supported.` };
     }
     return primitiveProperty.merge(context, itemKey, property, props);
@@ -205,7 +209,7 @@ const navigationProperty: PropertyMerger<NavigationPropertyProps> = {
     if(props.direction !== undefined) {
       return { errorMessage: `Changing the property '${property.fullName}' direction is not supported.` };
     }
-    if("relationshipClass" in props) {
+    if("relationshipClass" in props && props.relationshipClass !== undefined) {
       return { errorMessage: `Changing the property '${property.fullName}' relationship class is not supported.` };
     }
     return {};
@@ -220,10 +224,6 @@ const primitiveProperty: PropertyMerger<PrimitivePropertyProps> = {
     const propertyType = parsePrimitiveType(property.typeName);
     if(propertyType === undefined) {
       return { errorMessage: `Invalid property type ${property.typeName} on property ${property.name}` };
-    }
-
-    if(property.kindOfQuantity !== undefined) {
-      property.kindOfQuantity = await updateSchemaItemFullName(context, property.kindOfQuantity);
     }
 
     return arrayProperty.is(property)
@@ -273,7 +273,7 @@ const structProperty: PropertyMerger<StructPropertyProps> = {
       : context.editor.entities.createStructPropertyFromProps(itemKey, property.name, structType, property);
   },
   async merge(_context, _itemKey, property, props) {
-    if("structClass" in props) {
+    if("structClass" in props && props.structClass !== undefined) {
       return { errorMessage: `Changing the property '${property.fullName}' structClass is not supported.` };
     }
     return {};
