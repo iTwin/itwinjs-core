@@ -556,13 +556,18 @@ class ScopedSelectionChanger {
 /** Stores current selection in `KeySet` format per iModel.  */
 class CurrentSelectionStorage {
   private _currentSelection = new Map<string, IModelSelectionStorage>();
-  public getSelection(imodelKey: string, level: number) {
-    const imodelSelection = this._currentSelection.get(imodelKey);
-    if (!imodelSelection) {
-      return new KeySet();
-    }
 
-    return imodelSelection.getSelection(level);
+  private getCurrentSelectionStorage(imodelKey: string) {
+    let storage = this._currentSelection.get(imodelKey);
+    if (!storage) {
+      storage = new IModelSelectionStorage();
+      this._currentSelection.set(imodelKey, storage);
+    }
+    return storage;
+  }
+
+  public getSelection(imodelKey: string, level: number) {
+    return this.getCurrentSelectionStorage(imodelKey).getSelection(level);
   }
 
   public clear(imodelKey: string) {
@@ -570,13 +575,7 @@ class CurrentSelectionStorage {
   }
 
   public computeSelection(imodelKey: string, level: number, currSelectables: Selectables, changedSelectables: Selectables) {
-    let iModelSelection = this._currentSelection.get(imodelKey);
-    if (!iModelSelection) {
-      iModelSelection = new IModelSelectionStorage();
-      this._currentSelection.set(imodelKey, iModelSelection);
-    }
-
-    return iModelSelection.computeSelection(level, currSelectables, changedSelectables);
+    return this.getCurrentSelectionStorage(imodelKey).computeSelection(level, currSelectables, changedSelectables);
   }
 }
 
@@ -593,8 +592,12 @@ class IModelSelectionStorage {
   private _currentSelection = new Map<number, StorageEntry>();
 
   public getSelection(level: number): KeySet {
-    const entry = this._currentSelection.get(level);
-    return entry?.value ?? new KeySet();
+    let entry = this._currentSelection.get(level);
+    if (!entry) {
+      entry = { value: new KeySet(), ongoingComputationDisposers: new Set() };
+      this._currentSelection.set(level, entry);
+    }
+    return entry.value;
   }
 
   private clearSelections(level: number) {
