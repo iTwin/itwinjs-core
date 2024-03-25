@@ -9,6 +9,7 @@ Table of contents:
   - [Display](#display)
     - [Seafloor terrain](#seafloor-terrain)
     - [Simplified TileTreeReference](#simplified-tiletreereference)
+    - [Dynamic classifiers](#dynamic-classifiers)
   - [Electron 29 support](#electron-29-support)
   - [Editor](#editor)
   - [Lock Control](#lock-control)
@@ -41,6 +42,10 @@ You can alternatively specify the Id of any global Cesium ION asset to which you
 
 The new [TerrainSettings.dataSource]($common) property can be used by custom [TerrainProvider]($frontend)s as well, to select from different sources of terrain supplied by the same provider.
 
+Below, the islands of Cape Verde are visualized with bathymetric terrain, slightly exaggerated in height for emphasis:
+
+![Cape Verde terrain](./assets/bathymetric_terrain.jpg)
+
 ### Simplified TileTreeReference
 
 iTwin.js provides two ways to add graphical content to a [Viewport]($frontend)'s scene:
@@ -50,7 +55,22 @@ iTwin.js provides two ways to add graphical content to a [Viewport]($frontend)'s
 In some cases, you'd just like to add some relatively simple graphics to the viewport's scene using a TiledGraphicsProvider. To simplify that process, [TileTreeReference.createFromRenderGraphic]($frontend) accepts a graphic created using a GraphicBuilder and produces a tile tree from it, which you can then associate with a TiledGraphicsProvider. Here's an example:
 ```ts
 [[include:TileTreeReference_createFromRenderGraphic]]
-``
+```
+
+You can use this new API to easily create a tile tree for [dynamically classifying](#dynamic-classifiers) a reality model.
+
+### Dynamic classifiers
+
+Classification involves using geometry from a design model to "classify" the geometry of a reality model. Wherever a region of the reality model intersects with geometry belonging to an element in the design model, that region is treated as if it belongs to the element. For example, mousing over a classified region displays a tooltip describing the classifying element, and selecting the region selects the element. The color of the classified region can also be altered to match the classifying element's color. A classic use case is a photogrammetry model of a city, classified using polygons representing the footprints of buildings within the city, such that the user can interact with individual buildings within the reality model.
+
+The usefulness of this technique is limited by the constraint that the classifier geometry must originate from a persistent [GeometricModel]($backend) stored in an iModel. Imagine a scenario in which you have a reality model representing a building, and access to live data streamed from heat sensors placed in rooms within the building. You might wish to classify the rooms based on their current temperatures - but because the data is constantly changing, it wouldn't make sense to store it in a persistent model.
+
+Now, that constraint has been lifted. You can define your geometry at run-time and apply it to a reality model as a [DynamicSpatialClassifier]($frontend) by setting the `activeClassifier` property of [ContextRealityModelState.classifiers]($frontend). The geometry is supplied by a [TileTreeReference]($frontend), which can easily be created using the new [TileTreeReference.createFromRenderGraphic](#simplified-tiletreereference) API.
+
+Here's a simple example that classifies spherical regions of a reality model:
+```ts
+[[include:TileTreeReference_DynamicClassifier]]
+```
 
 ## Electron 29 support
 

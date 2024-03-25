@@ -1157,9 +1157,14 @@ export class MapTileTreeReference extends TileTreeReference {
     }
   }
 
+  public override canSupplyToolTip(hit: HitDetail): boolean {
+    const tree = this.treeOwner.tileTree;
+    return undefined !== tree && tree.modelId === hit.modelId;
+  }
+
   public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
-    const tree = this.treeOwner.tileTree as MapTileTree;
-    if (tree.modelId !== hit.modelId)
+    const tree = this.treeOwner.tileTree as MapTileTree | undefined;
+    if (undefined === tree || tree.modelId !== hit.modelId)
       return undefined;
 
     let carto: Cartographic | undefined;
