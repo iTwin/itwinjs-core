@@ -18,6 +18,7 @@ Table of contents:
     - [Custom renderer and editor support for array items](#custom-renderer-and-editor-support-for-array-items)
     - [Support for property overrides on ECStruct member properties](#support-for-property-overrides-on-ecstruct-member-properties)
     - [Deprecation of async array results in favor of async iterators](#deprecation-of-async-array-results-in-favor-of-async-iterators)
+    - [Unified selection decoupling from `@itwin/presentation-frontend`](#unified-selection-decoupling-from-`@itwin/presentation-frontend`)
   - [Fixed bounding box types](#fixed-bounding-box-types)
 
 ## Display
@@ -179,6 +180,40 @@ While performance-wise deprecated methods should be in line with the newly added
 >  // update component's model to render the loaded label
 > }
 > ```
+
+### Unified selection decoupling from `@itwin/presentation-frontend`
+
+Ability to provide custom selection storage was added to `@itwin/presentation-frontend`. Prior to this change unified selection was tightly coupled with `@itwin/presentation-frontend` and tree component. Only instance keys and tree node keys could be added to unified selection.
+
+With a new version `@itwin/presentation-frontend` can be initialize with custom selection storage from `@itwin/unified-selection` package. This provides an API for storing different custom selectable object that later can be used in other components or contribute to hilited items in viewport.
+
+```ts
+import { createStorage } from "@itwin/unified-selection";
+import { Presentation } from "@itwin/presentation-frontend";
+
+const unifiedSelectionStorage = createStorage();
+
+await Presentation.initialize({
+  selection: {
+    storage: unifiedSelectionStorage,
+  },
+});
+
+// existing unified selection API can be used to add keys
+Presentation.selection.addToSelection("SelectionSource", imodel, [{ id: "0x1", className: "Schema:Class" }]);
+
+// unified selection storage can be used directly to add custom selectable objects
+unifiedSelectionStorage.addToSelection({
+  iModelKey: imodel.key,
+  source: "SelectionSource",
+  selectables: [{
+    identifier: "customSelectable",
+    loadInstanceKeys: () => loadKeysFromCustomSource(),
+    // additional data can be stored to share between components using unified selection
+    data: additionalData
+  }],
+});
+```
 
 ## Fixed bounding box types
 
