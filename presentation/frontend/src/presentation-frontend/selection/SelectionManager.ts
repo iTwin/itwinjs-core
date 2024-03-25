@@ -22,7 +22,7 @@ import {
   StorageSelectionChangeEventArgs,
   StorageSelectionChangeType,
 } from "@itwin/unified-selection";
-import { defer, EMPTY, map, mergeMap, Observable, of, Subject, Subscription, takeUntil, tap } from "rxjs";
+import { defer, EMPTY, mergeMap, Observable, of, Subject, Subscription, takeUntil, tap } from "rxjs";
 import { Presentation } from "../Presentation";
 
 /**
@@ -694,7 +694,10 @@ function keysToSelectable(imodel: IModelConnection, keys: Readonly<KeySet>) {
   return selectables;
 }
 
-type SelectableKeys = { identifier: string; keys: Key[] };
+interface SelectableKeys {
+  identifier: string;
+  keys: Key[];
+}
 
 async function selectablesToKeys(selectables: Selectables, convertedList: SelectableKeys[]) {
   const keys: Key[] = [];
