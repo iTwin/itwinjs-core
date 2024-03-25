@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "4.5.0-dev.35",
+  "version": "4.5.0-dev.39",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "typings": "lib/cjs/core-backend",
@@ -19,6 +19,7 @@
     "cover": "nyc npm -s test",
     "extract-api": "betools extract-api --entry=core-backend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
     "ios:webpack:tests": "TESTS_GLOB=./lib/**/*.test.js webpack --config ../../tools/internal/ios/ios.webpack.config.js",
     "ios:copy:assets": "cpx \"./src/test/assets/**/*\" ../../tools/internal/lib/ios/assets/assets && cpx \"./src/assets/**/*\" ../../tools/internal/lib/ios/assets/assets",
@@ -44,9 +45,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.5.0-dev.35",
-    "@itwin/core-common": "workspace:^4.5.0-dev.35",
-    "@itwin/core-geometry": "workspace:^4.5.0-dev.35",
+    "@itwin/core-bentley": "workspace:^4.5.0-dev.39",
+    "@itwin/core-common": "workspace:^4.5.0-dev.39",
+    "@itwin/core-geometry": "workspace:^4.5.0-dev.39",
     "@opentelemetry/api": "^1.0.4"
   },
   "peerDependenciesMeta": {
@@ -97,7 +98,7 @@
     "webpack": "^5.76.0"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "4.5.19",
+    "@bentley/imodeljs-native": "4.5.24",
     "@itwin/cloud-agnostic-core": "^2.1.0",
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/object-storage-azure": "^2.2.2",
