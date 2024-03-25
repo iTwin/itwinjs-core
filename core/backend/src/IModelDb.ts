@@ -56,7 +56,7 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
-import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
+import { Workspace } from "./workspace/Workspace";
 
 import type { BlobContainer } from "./BlobContainerService";
 /** @internal */
@@ -275,7 +275,7 @@ export abstract class IModelDb extends IModel {
    */
   public get workspace(): Workspace {
     if (undefined === this._workspace)
-      this._workspace = new ITwinWorkspace(new IModelSettings());
+      this._workspace = Workspace.construct(new IModelSettings());
     return this._workspace;
   }
 

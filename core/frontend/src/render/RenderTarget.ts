@@ -7,7 +7,7 @@
  */
 
 import { Id64String, IDisposable } from "@itwin/core-bentley";
-import { Frustum, ImageBuffer, SpatialClassifier } from "@itwin/core-common";
+import { Frustum, ImageBuffer } from "@itwin/core-common";
 import { Point2d, XAndY } from "@itwin/core-geometry";
 import { IModelConnection } from "../IModelConnection";
 import { HiliteSet } from "../SelectionSet";
@@ -28,6 +28,7 @@ import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderSystem, RenderTextureDrape } from "./RenderSystem";
 import { Scene } from "./Scene";
 import { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback } from "./VisibleFeature";
+import { ActiveSpatialClassifier } from "../SpatialClassifiersState";
 
 /** Used for debugging purposes, to toggle display of instanced or batched primitives.
  * @see [[RenderTargetDebugControl]].
@@ -109,7 +110,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   /** Update the solar shadow map. If a SceneContext is supplied, shadows are enabled; otherwise, shadows are disabled. */
   public updateSolarShadows(_context: SceneContext | undefined): void { }
   public getPlanarClassifier(_id: string): RenderPlanarClassifier | undefined { return undefined; }
-  public createPlanarClassifier(_properties?: SpatialClassifier): RenderPlanarClassifier | undefined { return undefined; }
+  public createPlanarClassifier(_properties?: ActiveSpatialClassifier): RenderPlanarClassifier | undefined { return undefined; }
   public getTextureDrape(_id: Id64String): RenderTextureDrape | undefined { return undefined; }
 
   public createGraphicBuilder(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions) {

@@ -182,8 +182,8 @@
     "DtaClipByElementGeometry": {
       "keyin": "dta clip element geometry"
     },
-    "DtaPlaceSpheres": {
-      "keyin": "dta place spheres"
+    "DtaClassify": {
+      "keyin": "dta classify"
     }
   }
 }
