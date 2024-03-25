@@ -5,7 +5,7 @@
 import type { SchemaMergeContext } from "./SchemaMerger";
 import type { SchemaEditResults } from "../Editing/Editor";
 import { AnySchemaItemDifference, DifferenceType, SchemaItemTypeName, SchemaType } from "../Differencing/SchemaDifference";
-import { ECObjectsError, ECObjectsStatus, SchemaItem, SchemaItemKey } from "@itwin/ecschema-metadata";
+import { ECObjectsError, ECObjectsStatus, SchemaContext, SchemaItem, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { enumerationMerger } from "./EnumerationMerger";
 import { phenomenonMerger } from "./PhenomenonMerger";
 import { propertyCategoryMerger } from "./PropertyCategoryMerger";
@@ -71,7 +71,7 @@ async function mergeSchemaItem<T extends AnySchemaItemDifference>(context: Schem
  */
 export async function locateSchemaItem(context: SchemaMergeContext, itemName: string, schemaType: string) {
   const schemaItemKey = new SchemaItemKey(itemName, context.targetSchemaKey);
-  const schemaItem = await context.editor.schemaContext.getSchemaItem(schemaItemKey);
+  const schemaItem    = await context.editor.schemaContext.getSchemaItem(schemaItemKey);
   if(schemaItem === undefined) {
     throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `${schemaType} ${schemaItemKey.fullName} not found in schema context.`);
   }
@@ -148,14 +148,28 @@ export async function updateSchemaItemKey(context: SchemaMergeContext, reference
   // In the latter case, the changes would report a different property value that
   // refers to the source schema. So that needs to be changed here.
   const [schemaName, itemName] = SchemaItem.parseFullName(reference);
-  if(schemaName === context.sourceSchemaKey.name) {
-    return new SchemaItemKey(itemName, context.targetSchemaKey);
+  if(context.sourceSchemaKey.compareByName(schemaName)) {
+    return resolveSchemaItemKey(context.editor.schemaContext, new SchemaItemKey(itemName, context.targetSchemaKey));
   }
 
   const referencedSchema = await context.targetSchema.getReference(schemaName);
   if(referencedSchema !== undefined) {
-    return new SchemaItemKey(itemName, referencedSchema.schemaKey);
+    return resolveSchemaItemKey(context.editor.schemaContext, new SchemaItemKey(itemName, referencedSchema.schemaKey));
   }
 
   throw new Error(`Cannot locate referenced schema item ${reference}`);
+}
+
+/**
+ * To support case insensitivity for schema items, the given key is checked if there
+ * exists an item for it.
+ * @internal
+ */
+async function resolveSchemaItemKey(schemaContext: SchemaContext, itemKey: SchemaItemKey): Promise<SchemaItemKey> {
+  const item = await schemaContext.getSchemaItem(itemKey);
+  if(item === undefined) {
+    // If the schema item hasn't been created yet, we have to trust the given key is correctly spelled.
+    return itemKey;
+  }
+  return item.key;
 }

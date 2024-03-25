@@ -7,6 +7,8 @@ import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 import "chai-as-promised";
 
+/* eslint-disable @typescript-eslint/naming-convention */
+
 describe("Schema merge tests", () => {
   it("should merge label and description from schema", async () => {
     const targetContext = new SchemaContext();
@@ -35,5 +37,41 @@ describe("Schema merge tests", () => {
     });
     expect(mergedSchema.label).equals(newLabel, "unexpected source label");
     expect(mergedSchema.description).equals(newDescription, "unexpected source description");
+  });
+
+  it("should merge Schema Items case insensitive", async () => {
+    const targetContext = new SchemaContext();
+    await Schema.fromJson({
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "TargetSchema",
+      version: "1.0.0",
+      alias: "target",
+      items: {
+        TestCustomAttribute: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "Schema",
+        },
+      },
+    }, targetContext);
+
+    const merger = new SchemaMerger(targetContext);
+    const mergedSchema = await merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes:[{
+        changeType: "add",
+        schemaType: "CustomAttribute",
+        appliesTo: "Schema",
+        difference: {
+          className: "sOuRcEscHeMA.TESTCustomaTTriBute",
+        },
+      }],
+    });
+
+    expect(mergedSchema.toJSON().customAttributes).deep.equals(
+      [{
+        className: "TargetSchema.TestCustomAttribute",
+      }],
+    );
   });
 });
