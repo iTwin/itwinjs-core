@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "4.5.0-dev.39",
+  "version": "4.5.0-dev.40",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "typings": "lib/cjs/core-backend",
@@ -45,9 +45,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.5.0-dev.39",
-    "@itwin/core-common": "workspace:^4.5.0-dev.39",
-    "@itwin/core-geometry": "workspace:^4.5.0-dev.39",
+    "@itwin/core-bentley": "workspace:^4.5.0-dev.40",
+    "@itwin/core-common": "workspace:^4.5.0-dev.40",
+    "@itwin/core-geometry": "workspace:^4.5.0-dev.40",
     "@opentelemetry/api": "^1.0.4"
   },
   "peerDependenciesMeta": {
