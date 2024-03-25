@@ -275,6 +275,35 @@ describe("Checkpoints", () => {
       IModelHost.appWorkspace.settings.dropDictionary("prefetch");
     });
 
+    it.only("should always start prefetch in IPC", async () => {
+      // simulate user being logged in
+      sinon.stub(IModelHost, "getAccessToken").callsFake(async () => accessToken);
+
+      const prefetchSpy = sinon.spy(CloudSqlite, "startCloudPrefetch").withArgs(sinon.match.any, `${testChangeSet.id}.bim`, sinon.match.any); // Need matchers because GCS is also prefetched.
+      const settingsSpy = sinon.spy(IModelHost.appWorkspace.settings, "getBoolean").withArgs("Checkpoints/prefetch");
+
+      expect(prefetchSpy.callCount).equal(0);
+      expect(settingsSpy.callCount).equal(0);
+
+      const iModel = await SnapshotDb.openCheckpoint({
+        iTwinId: testITwinId,
+        iModelId: testIModelId,
+        changeset: testChangeSet,
+        prefetch: true,
+      });
+      assert.equal(iModel.iModelId, testIModelId);
+      assert.equal(iModel.changeset.id, testChangeSet.id);
+      assert.equal(iModel.iTwinId, testITwinId);
+      assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
+
+      expect(prefetchSpy.callCount).equal(1);
+      expect(settingsSpy.callCount).equal(1);
+
+      iModel.close();
+      sinon.restore();
+      IModelHost.appWorkspace.settings.dropDictionary("prefetch");
+    });
+
     it("should query bcv stat table", async () => {
       const containerSpy = sinon.spy(V2CheckpointManager, "attach");
 
