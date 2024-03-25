@@ -6,13 +6,10 @@
  * @module UnifiedSelection
  */
 
+import { defer, EMPTY, mergeMap, Observable, of, Subject, Subscription, takeUntil, tap } from "rxjs";
 import { Id64, Id64Arg, Id64Array, IDisposable, using } from "@itwin/core-bentley";
 import { IModelConnection, SelectionSetEvent, SelectionSetEventType } from "@itwin/core-frontend";
 import { AsyncTasksTracker, BaseNodeKey, InstanceKey, Key, Keys, KeySet, NodeKey, SelectionScope, SelectionScopeProps } from "@itwin/presentation-common";
-import { HiliteSet, HiliteSetProvider } from "./HiliteSetProvider";
-import { ISelectionProvider } from "./ISelectionProvider";
-import { SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType } from "./SelectionChangeEvent";
-import { createSelectionScopeProps, SelectionScopesManager } from "./SelectionScopesManager";
 import {
   createStorage,
   CustomSelectable,
@@ -22,8 +19,11 @@ import {
   StorageSelectionChangeEventArgs,
   StorageSelectionChangeType,
 } from "@itwin/unified-selection";
-import { defer, EMPTY, mergeMap, Observable, of, Subject, Subscription, takeUntil, tap } from "rxjs";
 import { Presentation } from "../Presentation";
+import { HiliteSet, HiliteSetProvider } from "./HiliteSetProvider";
+import { ISelectionProvider } from "./ISelectionProvider";
+import { SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType } from "./SelectionChangeEvent";
+import { createSelectionScopeProps, SelectionScopesManager } from "./SelectionScopesManager";
 
 /**
  * Properties for creating [[SelectionManager]].

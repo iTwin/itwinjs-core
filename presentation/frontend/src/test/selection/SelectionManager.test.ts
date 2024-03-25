@@ -17,13 +17,13 @@ import {
   ResolvablePromise,
   waitForPendingAsyncs,
 } from "@itwin/presentation-common/lib/cjs/test";
-import { SelectionManager, ToolSelectionSyncHandler, TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
 import { createStorage, CustomSelectable, SelectionStorage } from "@itwin/unified-selection";
-import { SelectionScopesManager } from "../../presentation-frontend/selection/SelectionScopesManager";
-import { HiliteSetProvider } from "../../presentation-frontend/selection/HiliteSetProvider";
 import { Presentation } from "../../presentation-frontend/Presentation";
-import { SelectionChangeEventArgs, SelectionChangesListener } from "../../presentation-frontend/selection/SelectionChangeEvent";
 import { PresentationManager } from "../../presentation-frontend/PresentationManager";
+import { HiliteSetProvider } from "../../presentation-frontend/selection/HiliteSetProvider";
+import { SelectionChangeEventArgs, SelectionChangesListener } from "../../presentation-frontend/selection/SelectionChangeEvent";
+import { SelectionManager, ToolSelectionSyncHandler, TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
+import { SelectionScopesManager } from "../../presentation-frontend/selection/SelectionScopesManager";
 
 const generateSelection = (): InstanceKey[] => {
   return [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" }), createTestECInstanceKey({ id: "0x3" })];
