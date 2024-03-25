@@ -26,6 +26,7 @@ parameters:
     - minor
     - patch
     - releaseCandidate
+    - releaseCandidatePrevMaj
 
 trigger: none
 pr: none
@@ -157,11 +158,11 @@ jobs:
     - bash: 'git push --follow-tags https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:$(Build.SourceBranch)'
       displayName: Push version bump
 
-  - ${{ if eq(parameters.BumpType, 'releaseCandidate') }}:
+  - ${{ if or(eq(parameters.BumpType, 'releaseCandidate') eq(parameters.BumpType, 'releaseCandidatePrevMaj')) }}:
     - job: CreateBranch
       displayName: Create branch for next release
       dependsOn: Bump
-      condition: and(in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'), eq(dependencies.Bump.result, 'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+      condition: and(in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'), eq(dependencies.Bump.result, 'Succeeded'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq('${{ parameters.BumpType }}', 'releaseCandidatePrevMaj')))
       variables:
         version: $[ dependencies.Bump.outputs['getVersion.version'] ]
 
