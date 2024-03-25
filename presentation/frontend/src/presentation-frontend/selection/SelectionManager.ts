@@ -32,6 +32,10 @@ import { Presentation } from "../Presentation";
 export interface SelectionManagerProps {
   /** A manager for [selection scopes]($docs/presentation/unified-selection/index#selection-scopes) */
   scopes: SelectionScopesManager;
+  /**
+   * Custom unified selection storage to be used by [[SelectionManager]]. If not provided [[SelectionManager]] creates
+   * and maintains storage.
+   */
   selectionStorage?: SelectionStorage;
 }
 
@@ -356,16 +360,16 @@ export class SelectionManager implements ISelectionProvider {
     return this._selectionChanges
       .pipe(
         mergeMap((args) => {
-          const selectables = this._selectionStorage.getSelection({ iModelKey: args.iModelKey, level: args.level });
-          return this._currentSelection.computeSelection(args.iModelKey, args.level, selectables).pipe(
-            mergeMap(({ imodelKey, level, keys }): Observable<SelectionChangeEventArgs> => {
-              const imodel = this._knownIModels.get(imodelKey);
+          const currentSelectables = this._selectionStorage.getSelection({ iModelKey: args.iModelKey, level: args.level });
+          return this._currentSelection.computeSelection(args.iModelKey, args.level, currentSelectables, args.selectables).pipe(
+            mergeMap(({ level, changedSelection }): Observable<SelectionChangeEventArgs> => {
+              const imodel = this._knownIModels.get(args.iModelKey);
               if (!imodel) {
                 return EMPTY;
               }
               return of({
                 imodel,
-                keys,
+                keys: changedSelection,
                 level,
                 source: args.source,
                 timestamp: args.timestamp,
@@ -565,14 +569,14 @@ class CurrentSelectionStorage {
     this._currentSelection.delete(imodelKey);
   }
 
-  public computeSelection(imodelKey: string, level: number, selectables: Selectables) {
+  public computeSelection(imodelKey: string, level: number, currSelectables: Selectables, changedSelectables: Selectables) {
     let iModelSelection = this._currentSelection.get(imodelKey);
     if (!iModelSelection) {
       iModelSelection = new IModelSelectionStorage();
       this._currentSelection.set(imodelKey, iModelSelection);
     }
 
-    return iModelSelection.computeSelection(level, selectables).pipe(map((val) => ({ ...val, imodelKey })));
+    return iModelSelection.computeSelection(level, currSelectables, changedSelectables);
   }
 }
 
@@ -635,7 +639,7 @@ class IModelSelectionStorage {
     });
   }
 
-  public computeSelection(level: number, selectables: Selectables) {
+  public computeSelection(level: number, currSelectables: Selectables, changedSelectables: Selectables) {
     this.clearSelections(level);
 
     const prevComputationsDisposers = [...(this._currentSelection.get(level)?.ongoingComputationDisposers ?? [])];
@@ -643,17 +647,23 @@ class IModelSelectionStorage {
     this.addDisposer(level, currDisposer);
 
     return defer(async () => {
-      const keys = await selectablesToKeys(selectables);
+      const currentSelectionResult = await selectablesToKeys(currSelectables);
+      const changedSelectionResult = await selectablesToKeys(changedSelectables, currentSelectionResult.selectableKeys);
+
+      const currentSelection = new KeySet([...currentSelectionResult.keys, ...currentSelectionResult.selectableKeys.flatMap((selectable) => selectable.keys)]);
+      const changedSelection = new KeySet([...changedSelectionResult.keys, ...changedSelectionResult.selectableKeys.flatMap((selectable) => selectable.keys)]);
+
       return {
         level,
-        keys: new KeySet(keys),
+        currentSelection,
+        changedSelection,
       };
     }).pipe(
       takeUntil(currDisposer),
       tap({
         next: (val) => {
           prevComputationsDisposers.forEach((disposer) => disposer.next());
-          this.setSelection(val.level, val.keys, currDisposer);
+          this.setSelection(val.level, val.currentSelection, currDisposer);
         },
       }),
     );
@@ -678,8 +688,11 @@ function keysToSelectable(imodel: IModelConnection, keys: Readonly<KeySet>) {
   return selectables;
 }
 
-async function selectablesToKeys(selectables: Selectables): Promise<Key[]> {
+type SelectableKeys = { identifier: string; keys: Key[] };
+
+async function selectablesToKeys(selectables: Selectables, convertedList?: SelectableKeys[]) {
   const keys: Key[] = [];
+  const selectableKeys: SelectableKeys[] = [];
 
   for (const [className, ids] of selectables.instanceKeys) {
     for (const id of ids) {
@@ -689,16 +702,23 @@ async function selectablesToKeys(selectables: Selectables): Promise<Key[]> {
 
   for (const [_, selectable] of selectables.custom) {
     if (isNodeKey(selectable.data)) {
-      keys.push(selectable.data);
+      selectableKeys.push({ identifier: selectable.identifier, keys: [selectable.data] });
+      continue;
+    }
+    const converted = convertedList?.find((con) => con.identifier === selectable.identifier);
+    if (converted) {
+      selectableKeys.push(converted);
       continue;
     }
 
+    const currKeys: Key[] = [];
     for await (const instanceKey of selectable.loadInstanceKeys()) {
-      keys.push(instanceKey);
+      currKeys.push(instanceKey);
     }
+    selectableKeys.push({ identifier: selectable.identifier, keys: currKeys });
   }
 
-  return keys;
+  return { keys, selectableKeys };
 }
 
 async function* createInstanceKeysIterator(imodel: IModelConnection, nodeKey: NodeKey): AsyncIterableIterator<InstanceKey> {

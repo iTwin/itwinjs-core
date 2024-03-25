@@ -17,9 +17,13 @@ import {
   ResolvablePromise,
   waitForPendingAsyncs,
 } from "@itwin/presentation-common/lib/cjs/test";
-import { HiliteSetProvider, Presentation, PresentationManager, SelectionManager, SelectionScopesManager } from "../../presentation-frontend";
-import { ToolSelectionSyncHandler, TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
-import { createStorage, SelectionStorage } from "@itwin/unified-selection";
+import { SelectionManager, ToolSelectionSyncHandler, TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
+import { createStorage, CustomSelectable, SelectionStorage } from "@itwin/unified-selection";
+import { SelectionScopesManager } from "../../presentation-frontend/selection/SelectionScopesManager";
+import { HiliteSetProvider } from "../../presentation-frontend/selection/HiliteSetProvider";
+import { Presentation } from "../../presentation-frontend/Presentation";
+import { SelectionChangeEventArgs, SelectionChangesListener } from "../../presentation-frontend/selection/SelectionChangeEvent";
+import { PresentationManager } from "../../presentation-frontend/PresentationManager";
 
 const generateSelection = (): InstanceKey[] => {
   return [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" }), createTestECInstanceKey({ id: "0x3" })];
@@ -129,8 +133,8 @@ describe("SelectionManager", () => {
         selectionManager.addToSelection(source, imodel, baseSelection);
         selectionManager.addToSelection(source, imodel2, baseSelection);
 
-        for (const imodelToken of [imodel, imodel2]) {
-          const selectedItemsSet = await waitForSelection(baseSelection.length, imodelToken);
+        for (const currIModel of [imodel, imodel2]) {
+          const selectedItemsSet = await waitForSelection(baseSelection.length, currIModel);
 
           for (const key of baseSelection) {
             expect(selectedItemsSet.has(key)).true;
@@ -192,8 +196,8 @@ describe("SelectionManager", () => {
         selectionManager.replaceSelection(source, imodel, baseSelection);
         selectionManager.replaceSelection(source, imodel2, baseSelection);
 
-        for (const imodelToken of [imodel, imodel2]) {
-          const selectedItemsSet = await waitForSelection(baseSelection.length, imodelToken);
+        for (const currIModel of [imodel, imodel2]) {
+          const selectedItemsSet = await waitForSelection(baseSelection.length, currIModel);
 
           for (const key of baseSelection) {
             expect(selectedItemsSet.has(key)).true;
@@ -276,7 +280,7 @@ describe("SelectionManager", () => {
         await waitForSelection(0, imodel, 1);
       });
 
-      it("doesn't clears higher level selection when clearing empty lower level selection", async () => {
+      it("doesn't clear higher level selection when clearing empty lower level selection", async () => {
         selectionManager.addToSelection(source, imodel, [createTestECInstanceKey()], 1);
         selectionManager.clearSelection(source, imodel);
         await waitForSelection(1, imodel, 1);
@@ -1074,6 +1078,148 @@ describe("SelectionManager", () => {
 
         await firstDelay.resolve();
         await waitForSelection(0, imodel, 1);
+      });
+    });
+
+    describe("selection change event", () => {
+      const changeListener = sinon.stub<Parameters<SelectionChangesListener>, ReturnType<SelectionChangesListener>>();
+      const instanceKeys = [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" })];
+      const selectable1instanceKeys = [createTestECInstanceKey({ id: "0x3" }), createTestECInstanceKey({ id: "0x4" })];
+      const selectable2instanceKeys = [createTestECInstanceKey({ id: "0x5" }), createTestECInstanceKey({ id: "0x6" })];
+
+      beforeEach(() => {
+        changeListener.reset();
+        selectionManager.selectionChange.addListener(changeListener);
+      });
+
+      it("converts add event selectables", async () => {
+        const selectable1: CustomSelectable = { identifier: "custom-1", loadInstanceKeys: () => createAsyncGenerator(selectable1instanceKeys), data: {} };
+        const selectable2: CustomSelectable = { identifier: "custom-2", loadInstanceKeys: () => createAsyncGenerator(selectable2instanceKeys), data: {} };
+
+        storage.addToSelection({
+          iModelKey: imodel.key,
+          source,
+          selectables: [instanceKeys[0], selectable1],
+        });
+
+        await waitFor(() => {
+          expect(changeListener).to.be.calledWith(
+            sinon.match((args: SelectionChangeEventArgs) => {
+              return args.keys.size === 3 && args.keys.hasAll([instanceKeys[0], ...selectable1instanceKeys]);
+            }),
+          );
+        });
+
+        // verify current selection size
+        await waitForSelection(3, imodel);
+        changeListener.resetHistory();
+
+        storage.addToSelection({
+          iModelKey: imodel.key,
+          source,
+          selectables: [instanceKeys[1], selectable2],
+        });
+
+        await waitFor(() => {
+          expect(changeListener).to.be.calledWith(
+            sinon.match((args: SelectionChangeEventArgs) => {
+              return args.keys.size === 3 && args.keys.hasAll([instanceKeys[1], ...selectable2instanceKeys]);
+            }),
+          );
+        });
+
+        // verify current selection size
+        await waitForSelection(6, imodel);
+      });
+
+      it("converts replace event selectables", async () => {
+        const selectable1: CustomSelectable = { identifier: "custom-1", loadInstanceKeys: () => createAsyncGenerator(selectable1instanceKeys), data: {} };
+        const selectable2: CustomSelectable = { identifier: "custom-2", loadInstanceKeys: () => createAsyncGenerator(selectable2instanceKeys), data: {} };
+
+        storage.replaceSelection({
+          iModelKey: imodel.key,
+          source,
+          selectables: [instanceKeys[0], selectable1],
+        });
+
+        await waitFor(() => {
+          expect(changeListener).to.be.calledWith(
+            sinon.match((args: SelectionChangeEventArgs) => {
+              return args.keys.size === 3 && args.keys.hasAll([instanceKeys[0], ...selectable1instanceKeys]);
+            }),
+          );
+        });
+
+        // verify current selection size
+        await waitForSelection(3, imodel);
+        changeListener.resetHistory();
+
+        storage.replaceSelection({
+          iModelKey: imodel.key,
+          source,
+          selectables: [instanceKeys[1], selectable2],
+        });
+
+        await waitFor(() => {
+          expect(changeListener).to.be.calledWith(
+            sinon.match((args: SelectionChangeEventArgs) => {
+              return args.keys.size === 3 && args.keys.hasAll([instanceKeys[1], ...selectable2instanceKeys]);
+            }),
+          );
+        });
+
+        // verify current selection size
+        await waitForSelection(3, imodel);
+      });
+
+      it("converts remove event selectables", async () => {
+        const selectable1: CustomSelectable = { identifier: "custom-1", loadInstanceKeys: () => createAsyncGenerator(selectable1instanceKeys), data: {} };
+        const selectable2: CustomSelectable = { identifier: "custom-2", loadInstanceKeys: () => createAsyncGenerator(selectable2instanceKeys), data: {} };
+
+        storage.addToSelection({
+          iModelKey: imodel.key,
+          source,
+          selectables: [instanceKeys[0], instanceKeys[1], selectable1, selectable2],
+        });
+
+        // verify current selection size
+        await waitForSelection(6, imodel);
+        changeListener.resetHistory();
+
+        storage.removeFromSelection({
+          iModelKey: imodel.key,
+          source,
+          selectables: [instanceKeys[0], selectable1],
+        });
+
+        await waitFor(() => {
+          expect(changeListener).to.be.calledWith(
+            sinon.match((args: SelectionChangeEventArgs) => {
+              return args.keys.size === 3 && args.keys.hasAll([instanceKeys[0], ...selectable1instanceKeys]);
+            }),
+          );
+        });
+
+        // verify current selection size
+        await waitForSelection(3, imodel);
+        changeListener.resetHistory();
+
+        storage.removeFromSelection({
+          iModelKey: imodel.key,
+          source,
+          selectables: [instanceKeys[1], selectable2],
+        });
+
+        await waitFor(() => {
+          expect(changeListener).to.be.calledWith(
+            sinon.match((args: SelectionChangeEventArgs) => {
+              return args.keys.size === 3 && args.keys.hasAll([instanceKeys[1], ...selectable2instanceKeys]);
+            }),
+          );
+        });
+
+        // verify current selection size
+        await waitForSelection(0, imodel);
       });
     });
   });
