@@ -1,6 +1,11 @@
 # Change Log - @itwin/workspace-editor
 
-This log was last generated on Mon, 25 Mar 2024 16:58:09 GMT and should not be manually modified.
+This log was last generated on Mon, 25 Mar 2024 22:23:34 GMT and should not be manually modified.
+
+## 4.4.8
+Mon, 25 Mar 2024 22:22:26 GMT
+
+_Version update only_
 
 ## 4.4.7
 Fri, 15 Mar 2024 19:15:14 GMT
