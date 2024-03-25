@@ -62,7 +62,7 @@ steps:
       stagingDir: ${{ parameters.stagingDir }}
       pipelineId: 8602 # iTwin Presentation/iTwin Presentation Docs
       artifactName: Presentation Docs
-      buildTag: hasDocs
+      specificBuild: 2442454
       useCurrentDocsArtifact: ${{ parameters.useCurrentPresentationDocsArtifact }}
 
   # Download Transformer Docs artifact
