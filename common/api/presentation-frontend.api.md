@@ -53,6 +53,7 @@ import { SchemaContext } from '@itwin/ecschema-metadata';
 import { SelectClassInfo } from '@itwin/presentation-common';
 import { SelectionScope } from '@itwin/presentation-common';
 import { SelectionScopeProps } from '@itwin/presentation-common';
+import { SelectionStorage } from '@itwin/unified-selection';
 import { SetRulesetVariableParams } from '@itwin/presentation-common';
 import { SingleElementPropertiesRequestOptions } from '@itwin/presentation-common';
 import { UnitSystemKey } from '@itwin/core-quantity';
@@ -409,7 +410,7 @@ export interface PresentationManagerProps {
 export interface PresentationProps {
     favorites?: FavoritePropertiesManagerProps;
     presentation?: PresentationManagerProps;
-    selection?: SelectionManagerProps;
+    selection?: Partial<SelectionManagerProps>;
 }
 
 // @public
@@ -548,6 +549,8 @@ export class SelectionManager implements ISelectionProvider {
     addToSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;
     addToSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
     clearSelection(source: string, imodel: IModelConnection, level?: number, rulesetId?: string): void;
+    // (undocumented)
+    dispose(): void;
     getHiliteSet(imodel: IModelConnection): Promise<HiliteSet>;
     getHiliteSetIterator(imodel: IModelConnection): AsyncIterableIterator<HiliteSet>;
     getSelection(imodel: IModelConnection, level?: number): Readonly<KeySet>;
@@ -567,6 +570,7 @@ export class SelectionManager implements ISelectionProvider {
 // @public
 export interface SelectionManagerProps {
     scopes: SelectionScopesManager;
+    selectionStorage?: SelectionStorage;
 }
 
 // @public
