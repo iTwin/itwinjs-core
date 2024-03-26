@@ -201,6 +201,10 @@ class PrimaryTreeReference extends TileTreeReference {
     return this.view.is3d() && !this._sectionClip ? this.view.getModelClip(this.model.id) : undefined;
   }
 
+  public override canSupplyToolTip() {
+    return false;
+  }
+
   public override createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
     const args = super.createDrawArgs(context);
     if (args)
