@@ -6214,6 +6214,7 @@ export interface OpenCheckpointArgs {
     readonly iModelId: GuidString;
     // (undocumented)
     readonly iTwinId: GuidString;
+    readonly prefetch?: boolean;
 }
 
 // @public
