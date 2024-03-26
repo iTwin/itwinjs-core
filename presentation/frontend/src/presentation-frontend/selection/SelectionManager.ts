@@ -148,7 +148,13 @@ export class SelectionManager implements ISelectionProvider {
     return this._selectionStorage.getSelectionLevels({ iModelKey: imodel.key });
   }
 
-  /** Get the selection currently stored in this manager */
+  /**
+   * Get the selection currently stored in this manager
+   *
+   * @note Calling immediately after `add*`|`replace*`|`remove*`|`clear*` method call does not guarantee
+   * that returned `KeySet` will include latest changes. Listen for `selectionChange` event to get the
+   * latest selection after changes.
+   */
   public getSelection(imodel: IModelConnection, level: number = 0): Readonly<KeySet> {
     return this._currentSelection.getSelection(imodel.key, level);
   }

@@ -187,6 +187,8 @@ Ability to provide custom selection storage was added to `@itwin/presentation-fr
 
 With a new version `@itwin/presentation-frontend` can be initialize with custom selection storage from `@itwin/unified-selection` package. This provides an API for storing different custom selectable object that later can be used in other components or contribute to hilited items in viewport.
 
+One side effect of these changes is that calling `Presentation.selection.getSelection` immediately after `Presentation.selection.(add*|replace*|remove*|clear*)` will not return the latest selection. This was never guaranteed and to get latest selection after any change `Presentation.selection.selectionChange` event should be used.
+
 ```ts
 import { createStorage } from "@itwin/unified-selection";
 import { Presentation } from "@itwin/presentation-frontend";
