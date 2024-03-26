@@ -8,7 +8,7 @@
 
 import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
-  GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataFormat, RealityDataSourceKey, RealityModelDisplaySettings, RelatedElement, SpatialClassifiers,
+  GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataFormat, RealityDataSourceKey, RealityModelDisplaySettings, RelatedElement,
 } from "@itwin/core-common";
 import { Point2d, Range3d } from "@itwin/core-geometry";
 import { EntityState } from "./EntityState";
@@ -17,6 +17,7 @@ import { IModelConnection } from "./IModelConnection";
 import { RealityDataSource } from "./RealityDataSource";
 import { createOrbitGtTileTreeReference, createPrimaryTileTreeReference, createRealityTileTreeReference, TileTreeReference } from "./tile/internal";
 import { ViewState } from "./ViewState";
+import { SpatialClassifiersState } from "./SpatialClassifiersState";
 
 /** Represents the front-end state of a [Model]($backend).
  * @public
@@ -275,7 +276,7 @@ export class SheetModelState extends GeometricModel2dState {
  */
 export class SpatialModelState extends GeometricModel3dState {
   /** If this is a reality model, provides access to a list of available spatial classifiers that can be applied to it. */
-  public readonly classifiers?: SpatialClassifiers;
+  public readonly classifiers?: SpatialClassifiersState;
 
   public static override get className() { return "SpatialModel"; }
 
@@ -285,7 +286,7 @@ export class SpatialModelState extends GeometricModel3dState {
   public constructor(props: ModelProps, iModel: IModelConnection, state?: SpatialModelState) {
     super(props, iModel, state);
     if (this.isRealityModel)
-      this.classifiers = new SpatialClassifiers(this.jsonProperties);
+      this.classifiers = SpatialClassifiersState.create(this.jsonProperties);
   }
 
   /** Return true if this is a reality model (represented by a 3d tile set). */
