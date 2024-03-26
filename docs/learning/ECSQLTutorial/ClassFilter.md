@@ -17,7 +17,7 @@ See [Reference Docs](../ECSqlReference/ECClassFilter.md) for more information on
 > _ECSQL_
 >
 > ```sql
-> SELECT * FROM bis.Element WHERE ECClassId IS (bis.GeometricElement3d, bis.GeometricElement2d
+> SELECT * FROM bis.Element WHERE ECClassId IS (bis.GeometricElement3d, bis.GeometricElement2d)
 > ```
 
 ---
