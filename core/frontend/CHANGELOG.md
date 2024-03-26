@@ -1,6 +1,97 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Wed, 03 Jan 2024 19:29:41 GMT and should not be manually modified.
+This log was last generated on Mon, 25 Mar 2024 22:24:35 GMT and should not be manually modified.
+
+## 4.4.8
+Mon, 25 Mar 2024 22:22:26 GMT
+
+_Version update only_
+
+## 4.4.7
+Fri, 15 Mar 2024 19:15:14 GMT
+
+### Updates
+
+- Disable tile preloading when under memory pressure
+
+## 4.4.6
+Fri, 08 Mar 2024 15:57:11 GMT
+
+_Version update only_
+
+## 4.4.5
+Tue, 05 Mar 2024 20:37:18 GMT
+
+### Updates
+
+- Added an iterator over the entries in a BatchTableProperties.
+
+## 4.4.4
+Fri, 01 Mar 2024 18:21:01 GMT
+
+### Updates
+
+- Change gpuMemoryLimit setting used when undefined
+- Dispose of all viewports when IModelApp.shutdown() is called to clear up WebGL resources, and avoid memory leak
+
+## 4.4.3
+Fri, 23 Feb 2024 21:26:07 GMT
+
+_Version update only_
+
+## 4.4.2
+Fri, 16 Feb 2024 14:22:01 GMT
+
+_Version update only_
+
+## 4.4.1
+Fri, 16 Feb 2024 14:17:48 GMT
+
+_Version update only_
+
+## 4.4.0
+Mon, 12 Feb 2024 18:15:58 GMT
+
+### Updates
+
+- Add SQ_KM to UNIT_DATA
+- Add support to create an EcefLocation class directly from a transformation matrix
+- Added support for recoloring geometry intersecting a clip volume
+- Bump @itwin/object-storage-core
+- Add textures to reality mesh stats
+- Promote APIs required to implement a MapLayerFormat to beta
+- Fix status code when invalid credentials are provided for an ArcGIS service.
+- Fixed an issue preventing tiles published by some specific ArcGIS MapServer to be correctly displayed in the view.
+- Fix Map Feature Info for ArcGIS map services when reprojection is needed.
+- Enable Kerberos authentication for map-layers
+- Custom query parameters can now be configured on map layers objects.
+- Expose `ParticleCollectionBuilder` for extensions
+- Improved ArcGIS feature info coordinates reprojection outside project extent.
+- Improved content type detection for 3D Tiles tilesets.
+- Updated realitydata url to new reality-management API url. Added tests for new url.
+- Add support for glTF 2.0 EXT_mesh_gpu_instancing and fix incorrectly computed glTF bounding boxes.
+- Add support for transparent gradients in thematic display and analysis styles.
+- Added Viewport.onSceneInvalidated event raised when Viewport.invalidateScene is called.
+- Fix SpatialModelState.isRealityModel returning false for reality models that don't store a tileset URL.
+- When assigning to SpatialViewState.modelSelector, notify tile tree references of the change.
+- Enable display of all subcategories for non-scene decorations.
+- Add RealityTileTree.batchTableProperties for accessing per-feature properties from 3D Tiles 1.0 tilesets.
+- Add DisplayStyleState iterator over context reality models.
+- Fix incorrect transparency for text rendered as raster glyphs.
+- Remove maximum depth constraint for reality tile trees.
+- Clone view attachments when cloning a sheet or drawing view.
+
+## 4.3.5
+Mon, 25 Mar 2024 16:54:36 GMT
+
+_Version update only_
+
+## 4.3.4
+Fri, 22 Mar 2024 13:30:31 GMT
+
+### Updates
+
+- Bump @itwin/object-storage-core
 
 ## 4.3.3
 Wed, 03 Jan 2024 19:28:38 GMT

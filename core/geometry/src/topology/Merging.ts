@@ -19,7 +19,8 @@ import { SmallSystem } from "../numerics/Polynomials";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { HalfEdgePriorityQueueWithPartnerArray } from "./HalfEdgePriorityQueue";
 import { RegularizationContext } from "./RegularizeFace";
-import { MultiLineStringDataVariant, Triangulator } from "./Triangulation";
+import { Triangulator } from "./Triangulation";
+import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
 
 export class GraphSplitData {
   public numUpEdge = 0;

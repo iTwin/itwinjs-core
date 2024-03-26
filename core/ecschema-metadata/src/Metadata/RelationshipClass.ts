@@ -81,6 +81,19 @@ export class RelationshipClass extends ECClass {
   }
 
   /**
+   * @alpha Used for schema editing.
+   */
+  protected setSourceConstraint(source: RelationshipConstraint) {
+    this._source = source;
+  }
+
+  /**
+   * @alpha Used for schema editing.
+   */
+  protected setTargetConstraint(target: RelationshipConstraint) {
+    this._target = target;
+  }
+  /**
    * Save this RelationshipClass's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
@@ -150,12 +163,30 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     this._roleLabel = roleLabel;
   }
 
-  public get multiplicity() { return this._multiplicity; }
-  public get polymorphic() { return this._polymorphic; }
+  public get multiplicity() { return this._multiplicity ?? RelationshipMultiplicity.zeroOne; }
+  protected set multiplicity(multiplicity: RelationshipMultiplicity) {
+    this._multiplicity = multiplicity;
+  }
+
+  public get polymorphic() { return this._polymorphic ?? false; }
+  protected set polymorphic(polymorphic: boolean) {
+    this._polymorphic = polymorphic;
+  }
+
   public get roleLabel() { return this._roleLabel; }
+  protected set roleLabel(roleLabel: string | undefined) {
+    this._roleLabel = roleLabel;
+  }
+
   public get constraintClasses(): LazyLoadedRelationshipConstraintClass[] | undefined { return this._constraintClasses; }
+
   public get relationshipClass() { return this._relationshipClass; }
+
   public get relationshipEnd() { return this._relationshipEnd; }
+  protected set relationshipEnd(relationshipEnd: RelationshipEnd) {
+    this._relationshipEnd = relationshipEnd;
+  }
+
   public get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
   /** Returns the constraint name, ie. 'RelationshipName.Source/Target' */
@@ -199,11 +230,26 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
   }
 
   /**
+   * Removes the provided class as a constraint class from this constraint.
+   * @param constraint The class to add as a constraint class.
+   */
+  protected removeClass(constraint: EntityClass | Mixin | RelationshipClass): void {
+    if (undefined === this._constraintClasses)
+      return;
+
+    this._constraintClasses.forEach( (item, index) => {
+      const constraintName = item.fullName;
+      if(constraintName === constraint.fullName)
+        this._constraintClasses?.splice(index,1);
+    });
+  }
+
+  /**
    * Save this RelationshipConstraint's properties to an object for serializing to JSON.
    */
   public toJSON(): RelationshipConstraintProps {
     const schemaJson: { [value: string]: any } = {};
-    schemaJson.multiplicity = this.multiplicity!.toString();
+    schemaJson.multiplicity = this.multiplicity.toString();
     schemaJson.roleLabel = this.roleLabel;
     schemaJson.polymorphic = this.polymorphic;
     if (undefined !== this._abstractConstraint)

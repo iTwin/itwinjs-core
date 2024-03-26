@@ -19,7 +19,7 @@ import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
-import { DefinitionModel, DrawingModel, PhysicalModel } from "./Model";
+import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
 
 /** Argument for the `Element.onXxx` static methods
@@ -800,6 +800,11 @@ export class Drawing extends Document {
   public static override get className(): string { return "Drawing"; }
   protected constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 
+  /** The name of the DrawingModel class modeled by this element type.
+   * @internal
+   */
+  protected static get drawingModelFullClassName(): string { return DrawingModel.classFullName; }
+
   /** Create a Code for a Drawing given a name that is meant to be unique within the scope of the specified DocumentListModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DocumentListModel that contains the Drawing and provides the scope for its name.
@@ -825,7 +830,7 @@ export class Drawing extends Document {
     };
     const drawingId: Id64String = iModelDb.elements.insertElement(drawingProps);
     const model: DrawingModel = iModelDb.models.createModel({
-      classFullName: DrawingModel.classFullName,
+      classFullName: this.drawingModelFullClassName,
       modeledElement: { id: drawingId },
     });
     return iModelDb.models.insertModel(model.toJSON());
@@ -856,6 +861,9 @@ export class SectionDrawing extends Drawing {
 
   /** @internal */
   public static override get className(): string { return "SectionDrawing"; }
+
+  /** @internal */
+  protected static override get drawingModelFullClassName(): string { return SectionDrawingModel.classFullName; }
 
   protected constructor(props: SectionDrawingProps, iModel: IModelDb) {
     super(props, iModel);

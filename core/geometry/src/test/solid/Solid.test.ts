@@ -35,7 +35,6 @@ import { TorusPipe } from "../../solid/TorusPipe";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
-import { ImportedSample } from "../testInputs/ImportedSamples";
 
 function verifyUnitPerpendicularFrame(ck: Checker, frame: Transform, source: any) {
   ck.testTrue(frame.matrix.isRigid(), "perpendicular frame", source);
@@ -246,38 +245,6 @@ describe("Solids", () => {
     const radii = Point3d.create(1, 3, 4);
     const ellipsoid = Sphere.createEllipsoid(Transform.createFixedPointAndMatrix(origin, Matrix3d.createScale(radii.x, radii.y, radii.z)), AngleSweep.create(), false);
     testGeometryQueryRoundTrip(ck, ellipsoid);
-    expect(ck.getNumErrors()).equals(0);
-  });
-
-  // add uv and average normals to convex mesh centered at origin
-  it("CartesianToSpherical", () => {
-    const ck = new Checker();
-    const allGeometry: GeometryQuery[] = [];
-    const mesh = ImportedSample.createPolyhedron62();
-    if (ck.testPointer(mesh, "created mesh")) {
-      const vertex = Point3d.createZero();
-      let radius = 0.0;
-      for (let i = 0; i < mesh.data.pointCount; ++i) {
-        const mag = mesh.data.point.getPoint3dAtUncheckedPointIndex(i, vertex).magnitude();
-        if (radius < mag)
-          radius = mag;
-      }
-      mesh.data.param?.clear();
-      for (let i = 0; i < mesh.data.pointCount; ++i) {
-        mesh.data.point.getPoint3dAtUncheckedPointIndex(i, vertex);
-        if (vertex.isZero) continue;
-        vertex.scaleInPlace(radius / vertex.magnitude()); // push vertex out radially onto sphere
-        let theta = Math.atan2(vertex.y, vertex.x);
-        if (theta < 0.0)
-          theta += 2 * Math.PI; // theta in [0,2pi]
-        const phi = Math.asin(vertex.z / radius); // phi in [-pi/2,pi/2]
-        mesh.addParamUV(theta, phi);
-      }
-      mesh.data.paramIndex = mesh.data.pointIndex.slice(); // param indices are same as vertex indices
-      PolyfaceQuery.buildAverageNormals(mesh, Angle.createDegrees(35));
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
-    }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "CartesianToSpherical");
     expect(ck.getNumErrors()).equals(0);
   });
 

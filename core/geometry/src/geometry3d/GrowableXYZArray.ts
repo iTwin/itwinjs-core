@@ -9,8 +9,7 @@
 
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Matrix4d } from "../geometry4d/Matrix4d";
-import { MultiLineStringDataVariant } from "../topology/Triangulation";
-import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
+import { IndexedReadWriteXYZCollection, IndexedXYZCollection, MultiLineStringDataVariant } from "./IndexedXYZCollection";
 import { Matrix3d } from "./Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Point2d } from "./Point2dVector2d";
@@ -182,7 +181,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     this.ensureCapacity(this._xyzInUse + points.length, false);
     for (const p of points) this.push(p);
   }
-  /** Push points from variant sources.
+  /** Push copies of points from variant sources.
    * Valid inputs are:
    * * Point2d
    * * Point3d
@@ -312,7 +311,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     this._xyzInUse = 0;
   }
   /**
-   * Get a point by index, strongly typed as a Point3d.  This is unchecked.  Use getPoint3dAtCheckedPointIndex to have validity test.
+   * Get a point by index, strongly typed as a Point3d.  This is unchecked.  Use [[getPoint3dAtCheckedPointIndex]] to have validity test.
    * @param pointIndex index to access
    * @param result optional result
    */
@@ -322,13 +321,23 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   }
 
   /**
-   * Get a point by index, strongly typed as a Point2d.  This is unchecked.  Use getPoint2dAtCheckedPointIndex to have validity test.
+   * Get a point by index, strongly typed as a Point2d.  This is unchecked.  Use [[getPoint2dAtCheckedPointIndex]] to have validity test.
    * @param pointIndex index to access
    * @param result optional result
    */
   public getPoint2dAtUncheckedPointIndex(pointIndex: number, result?: Point2d): Point2d {
     const index = 3 * pointIndex;
     return Point2d.create(this._data[index], this._data[index + 1], result);
+  }
+
+  /**
+   * Get a vector by index, strongly typed as a Vector3d.  This is unchecked.  Use [[getVector3dAtCheckedVectorIndex]] to have validity test.
+   * @param vectorIndex index to access
+   * @param result optional result
+   */
+  public getVector3dAtUncheckedVectorIndex(vectorIndex: number, result?: Vector3d): Vector3d {
+    const index = 3 * vectorIndex;
+    return Vector3d.create(this._data[index], this._data[index + 1], this._data[index + 2], result);
   }
 
   /** copy xyz into strongly typed Point3d */

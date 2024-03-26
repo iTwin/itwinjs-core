@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import {
   ECClassModifier, ECObjectsError, EntityClass, Enumeration, EnumerationArrayProperty, EnumerationProperty, NavigationProperty,
-  PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, RelationshipClass, RelationshipClassProps,
+  PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, PropertyCategory, RelationshipClass, RelationshipClassProps,
   RelationshipConstraintProps, Schema, SchemaContext, SchemaItemKey, SchemaKey, StrengthDirection,
   StructArrayProperty, StructClass, StructProperty, UnitSystem,
 } from "@itwin/ecschema-metadata";
@@ -116,7 +116,7 @@ describe("ECClass tests", () => {
 
     it("should successfully delete an EnumerationProperty from class", async () => {
       const schema = await testEditor.getSchema(testKey);
-      const testEnum = new Enumeration(schema, "TestEnumeration");
+      const testEnum = new Enumeration(schema!, "TestEnumeration");
       const createResult = await testEditor.entities.createEnumerationProperty(entityKey, "TestProperty", testEnum);
       let property = await entity?.getProperty(createResult.propertyName!) as EnumerationProperty;
       expect(await property.enumeration).to.eql(testEnum);
@@ -157,7 +157,7 @@ describe("ECClass tests", () => {
 
     it("should successfully delete EnumerationArrayProperty from class", async () => {
       const schema = await testEditor.getSchema(testKey);
-      const enumeration = new Enumeration(schema, "TestEnumeration");
+      const enumeration = new Enumeration(schema!, "TestEnumeration");
       const createResults = await testEditor.entities.createEnumerationArrayProperty(entityKey, "TestProperty", enumeration);
       let property = await entity?.getProperty(createResults.propertyName!) as EnumerationArrayProperty;
       expect(await property.enumeration).to.eql(enumeration);
@@ -235,7 +235,7 @@ describe("ECClass tests", () => {
 
     it("should successfully delete a NavigationProperty from class", async () => {
       const schema = await testEditor.getSchema(testKey);
-      const relationship = new RelationshipClass(schema, "TestRelationship");
+      const relationship = new RelationshipClass(schema!, "TestRelationship");
       const createResult = await testEditor.entities.createNavigationProperty(entityKey, "TestProperty", relationship, StrengthDirection.Forward);
       let property = await entity?.getProperty(createResult.propertyName!) as NavigationProperty;
       expect(await property.relationshipClass).to.eql(relationship);
@@ -460,8 +460,8 @@ describe("ECClass tests", () => {
       await testEditor.entities.createPrimitiveProperty(childResult.itemKey!, "TestPropertyName", PrimitiveType.Double);
       await testEditor.entities.createPrimitiveProperty(grandChildResult.itemKey!, "TestPropertyName", PrimitiveType.Double);
 
-      const childEntity = await (await testEditor.getSchema(testKey)).getItem<EntityClass>("testEntityChild");
-      const grandChildEntity = await (await testEditor.getSchema(testKey)).getItem<EntityClass>("testEntityGrandChild");
+      const childEntity = await (await testEditor.getSchema(testKey))!.getItem<EntityClass>("testEntityChild");
+      const grandChildEntity = await (await testEditor.getSchema(testKey))!.getItem<EntityClass>("testEntityGrandChild");
 
       const childProperty = await childEntity?.getProperty("TestPropertyName") as PrimitiveProperty;
       const grandChildProperty = await grandChildEntity?.getProperty("TestPropertyName") as PrimitiveProperty;
@@ -471,6 +471,17 @@ describe("ECClass tests", () => {
       expect(result).to.eql({ itemKey: baseClassKey, propertyName: "NewPropertyName" });
       expect(childProperty.fullName).to.eql("testEntityChild.NewPropertyName");
       expect(grandChildProperty.fullName).to.eql("testEntityGrandChild.NewPropertyName");
+    });
+
+    it("should successfully add category to property", async () => {
+      const catResult = await testEditor.propertyCategories.create(testKey, "testCategory", 2);
+      const propResult = await testEditor.entities.createPrimitiveProperty(entityKey, "testProperty", PrimitiveType.String);
+      const result = await testEditor.entities.setPropertyCategory(entityKey, propResult.propertyName!, catResult.itemKey!);
+      expect(result.errorMessage).is.undefined;
+
+      const property = await entity?.getProperty(propResult.propertyName!) as PrimitiveProperty;
+      const category = await testEditor.schemaContext.getSchemaItem(catResult.itemKey!) as PropertyCategory;
+      expect(await property.category).to.eql(category);
     });
 
     it("try renaming a non-existent property in the class, returns error.", async () => {

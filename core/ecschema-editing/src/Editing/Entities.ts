@@ -8,7 +8,7 @@
 
 import {
   DelayedPromiseWithProps, ECClassModifier, ECObjectsError, ECObjectsStatus, EntityClass, EntityClassProps,
-  Mixin, RelationshipClass, SchemaItemKey, SchemaItemType, SchemaKey, StrengthDirection,
+  Mixin, NavigationPropertyProps, RelationshipClass, SchemaItemKey, SchemaItemType, SchemaKey, StrengthDirection,
 } from "@itwin/ecschema-metadata";
 import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
@@ -79,9 +79,10 @@ export class Entities extends ECClasses {
 
     // Add a deserializing method.
     if (baseClassKey !== undefined) {
-      let baseClassSchema = schema;
-      if (!baseClassKey.schemaKey.matches(schema.schemaKey))
-        baseClassSchema = await this._schemaEditor.getSchema(baseClassKey.schemaKey);
+      const baseClassSchema = !baseClassKey.schemaKey.matches(schema.schemaKey) ? await this._schemaEditor.getSchema(baseClassKey.schemaKey) : schema;
+      if (baseClassSchema === undefined) {
+        return { errorMessage: `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context` };
+      }
 
       const baseClassItem = await baseClassSchema.lookupItem<EntityClass>(baseClassKey);
       if (baseClassItem === undefined)
@@ -124,22 +125,29 @@ export class Entities extends ECClasses {
     return { itemKey: newClass.key };
   }
 
-  public async addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<void> {
+  public async addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<SchemaItemEditResults> {
     const entity = (await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(entityKey));
+    if (entity === undefined) {
+      return { errorMessage: `Entity Class ${entityKey.fullName} not found in schema context.` };
+    }
+    if (entity.schemaItemType !== SchemaItemType.EntityClass) {
+      return { errorMessage: `Expected ${entityKey.fullName} to be of type Entity Class.` };
+    }
+
     const mixin = (await this._schemaEditor.schemaContext.getSchemaItem<Mixin>(mixinKey));
-
-    // TODO: have a helpful returns
-    if (!entity || entity.schemaItemType !== SchemaItemType.EntityClass)
-      return;
-
-    if (!mixin || mixin.schemaItemType !== SchemaItemType.Mixin)
-      return;
+    if (mixin === undefined) {
+      return { errorMessage: `Mixin Class ${mixinKey.fullName} not found in schema context.` };
+    }
+    if (mixin.schemaItemType !== SchemaItemType.Mixin) {
+      return { errorMessage: `Expected ${mixinKey.fullName} to be of type Mixin.`};
+    }
 
     entity.addMixin(mixin);
+    return { itemKey: entityKey };
   }
 
   public async createNavigationProperty(entityKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<PropertyEditResults> {
-    const entity = (await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(entityKey));
+    const entity = await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(entityKey);
 
     if (entity === undefined)
       throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${entityKey.fullName} not found in schema context.`);
@@ -149,6 +157,25 @@ export class Entities extends ECClasses {
 
     await entity.createNavigationProperty(name, relationship, direction);
     return { itemKey: entityKey, propertyName: name };
+  }
+
+  /**
+   * Creates a Navigation Property through a NavigationPropertyProps.
+   * @param classKey a SchemaItemKey of the Entity Class that will house the new property.
+   * @param navigationProps a json object that will be used to populate the new Navigation Property.
+   */
+  public async createNavigationPropertyFromProps(classKey: SchemaItemKey, navigationProps: NavigationPropertyProps): Promise<PropertyEditResults> {
+    const entity = await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(classKey);
+    if (entity === undefined)
+      return { itemKey: classKey, propertyName: navigationProps.name, errorMessage: `Entity Class ${classKey.fullName} not found in schema context.`};
+
+    if (entity.schemaItemType !== SchemaItemType.EntityClass)
+      return { itemKey: classKey, propertyName: navigationProps.name, errorMessage: `Expected ${classKey.fullName} to be of type EntityClass.` };
+
+    const navigationProperty  = await entity.createNavigationProperty(navigationProps.name, navigationProps.relationshipName, navigationProps.direction);
+    await navigationProperty.fromJSON(navigationProps);
+
+    return { itemKey: classKey, propertyName: navigationProps.name };
   }
 
   /**
@@ -167,9 +194,10 @@ export class Entities extends ECClasses {
       return { itemKey: entityKey };
     }
 
-    let baseClassSchema = entity.schema;
-    if (!baseClassKey.schemaKey.matches(entityKey.schemaKey))
-      baseClassSchema = await this._schemaEditor.getSchema(baseClassKey.schemaKey);
+    const baseClassSchema = !baseClassKey.schemaKey.matches(entityKey.schemaKey) ? await this._schemaEditor.getSchema(baseClassKey.schemaKey) : entity.schema;
+    if (baseClassSchema === undefined) {
+      return { errorMessage: `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context` };
+    }
 
     const baseClassItem = await baseClassSchema.lookupItem<EntityClass>(baseClassKey);
     if (baseClassItem === undefined)

@@ -35,7 +35,7 @@ import { initializeRpcBackend } from "./RpcBackend";
 import { TileStorage } from "./TileStorage";
 import { BaseSettings, SettingDictionary, SettingsPriority } from "./workspace/Settings";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
-import { ITwinWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
+import { Workspace, WorkspaceOpts } from "./workspace/Workspace";
 import { Container } from "inversify";
 import { join, normalize as normalizeDir } from "path";
 
@@ -358,11 +358,6 @@ export class IModelHost {
     }
   }
 
-  /** @internal */
-  public static flushLog() {
-    return IModelHost.platform.flushLog();
-  }
-
   private static syncNativeLogLevels() {
     this.platform.clearLogLevelCache();
   }
@@ -423,7 +418,7 @@ export class IModelHost {
   private static initializeWorkspace(configuration: IModelHostOptions) {
     const settingAssets = join(KnownLocations.packageAssetsDir, "Settings");
     SettingsSchemas.addDirectory(join(settingAssets, "Schemas"));
-    this._appWorkspace = new ITwinWorkspace(new ApplicationSettings(), configuration.workspace);
+    this._appWorkspace = Workspace.construct(new ApplicationSettings(), configuration.workspace);
 
     // Create the CloudCache for Workspaces. This will fail if another process is already using the same profile.
     try {

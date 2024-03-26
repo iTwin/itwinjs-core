@@ -29,6 +29,7 @@ beta;ChangeFormatArgs
 beta;ChangeInstanceKey
 beta;ChangeMetaData
 public;ChangesetArg 
+internal;ChangesetConflictArgs
 beta;ChangesetECAdaptor 
 internal;ChangesetIndexArg 
 public;ChangesetRangeArg 
@@ -114,7 +115,8 @@ public;ECSqlInsertResult
 public;ECSqlStatement 
 public;ECSqlValue
 public;ECSqlValueIterator 
-internal;EditableWorkspaceDb 
+beta;EditableWorkspaceDb 
+beta;EditableWorkspaceDb
 public;ElementAspect 
 beta;ElementDrivesElement 
 beta;ElementDrivesElementProps 
@@ -241,9 +243,6 @@ public;class IpcHandler
 public;IpcHost
 public;IpcHostOpts
 public;ITwinIdArg
-internal;ITwinWorkspace 
-internal;ITwinWorkspaceContainer 
-internal;ITwinWorkspaceDb 
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -284,7 +283,7 @@ beta;OnModelIdArg
 beta;OnModelPropsArg 
 beta;OnSubModelIdArg 
 beta;OnSubModelPropsArg 
-public;OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs
+public;OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs & OpenSqliteArgs
 public;OrthographicViewDefinition 
 beta;PartialECChangeUnifier
 public;class PhysicalElement 
@@ -349,7 +348,7 @@ public;SheetModel
 public;SheetTemplate 
 public;SheetViewDefinition 
 public;SnapshotDb 
-public;SnapshotDbOpenArgs = SnapshotOpenOptions & CloudContainerArgs
+public;SnapshotDbOpenArgs = SnapshotOpenOptions & CloudContainerArgs & OpenSqliteArgs
 public;SpatialCategory 
 public;class SpatialElement 
 public;SpatialLocation 
@@ -417,8 +416,11 @@ beta;ViewStore
 public;VolumeElement 
 public;WebMercatorModel 
 beta;Workspace
+beta;Workspace
+internal;construct(settings: Settings, opts?: WorkspaceOpts): Workspace
 beta;WorkspaceCloudCacheProps 
 beta;WorkspaceContainer
+internal;validateVersion(version?: WorkspaceDb.Version): string
 beta;WorkspaceContainer
 beta;WorkspaceDb
 beta;WorkspaceDb

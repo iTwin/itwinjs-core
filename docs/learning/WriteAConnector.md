@@ -358,7 +358,7 @@ The framework will automatically detect and delete elements and models if the co
 
 ### Getting started
 
-You'll need Node.js version "^18.12.0”. Please refer to [development prerequisites](../tutorials/development-prerequisites) for more details.
+You'll need to install a supported version of Node.js, Node 20 LTS is suggested. Please refer to [development prerequisites](./tutorials/development-prerequisites.md) for more details.
 
 The node packages you'll need can be installed using
 
@@ -376,7 +376,7 @@ $npm install  --save-dev @itwin/build-tools
 $npm install  --save-dev @itwin/oidc-signin-tool
 ```
 
-Also refer to [Supported Platforms](SupportedPlatforms.md#supported-platforms)
+Also refer to [Supported Platforms](SupportedPlatforms.md#supported-platforms).
 
 The ConnectorFramework SDK exposes its functionality through three main classes: ConnectorRunner, Synchronizer, and BaseConnector Interface.
 

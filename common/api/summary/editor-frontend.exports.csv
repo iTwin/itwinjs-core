@@ -1,63 +1,16 @@
 sep=;
 Release Tag;API Item
-alpha;ArcMethod
 internal;basicManipulationIpc: PickAsyncMethods
-alpha;BCurveMethod
-alpha;class BlendEdgesTool 
-alpha;class BooleanOperationTool 
-alpha;BreakCurveTool 
-alpha;ChamferEdgesTool 
-alpha;CircleMethod
 beta;computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number
 beta;computeChordToleranceFromRange(vp: Viewport, range: Range3d): number
-alpha;CopyElementsTool 
-alpha;CreateArcTool 
-alpha;CreateBCurveTool 
-alpha;CreateBoxTool 
-alpha;CreateCircleTool 
-alpha;CreateConePhase
-alpha;CreateConeTool 
-alpha;CreateCurvePhase
-alpha;CreateCylinderPhase
-alpha;CreateCylinderTool 
 beta;class CreateElementTool 
 beta;class CreateElementWithDynamicsTool 
-alpha;CreateEllipseTool 
-alpha;CreateLineStringTool 
-alpha;class CreateOrContinuePathTool 
-alpha;CreateRectangleTool 
-alpha;CreateSphereTool 
-alpha;CreateTorusPhase
-alpha;CreateTorusTool 
-alpha;CurveData
-alpha;CutSolidElementsTool 
-alpha;DeleteElementsTool 
-alpha;DeleteSubEntitiesTool 
 beta;DynamicGraphicsProvider
 beta;EditTools
 beta;EditTools
-alpha;class ElementGeometryCacheTool 
-alpha;ElementGeometryGraphicsProvider
-alpha;EmbossSolidElementsTool 
-alpha;ExtendCurveTool 
-alpha;ExtrudeCurveTool 
-alpha;FaceLocationData
-alpha;HollowFacesTool 
-alpha;ImprintSolidElementsTool 
-alpha;ImprintSolidMethod
-alpha;IntersectSolidElementsTool 
-alpha;isSameSubEntity(a: SubEntityProps, b: SubEntityProps): boolean
-alpha;class LocateFaceOrProfileTool 
-alpha;class LocateSubEntityTool 
-alpha;LoftProfilesTool 
 beta;makeEditToolIpc
-alpha;class ModifyCurveTool 
 beta;class ModifyElementTool 
 beta;class ModifyElementWithDynamicsTool 
-alpha;MoveElementsTool 
-alpha;OffsetCurveTool 
-alpha;OffsetFacesTool 
-alpha;ProfileLocationData
 beta;ProjectExtentsClipDecoration 
 beta;ProjectGeolocationMoveTool 
 beta;ProjectGeolocationNorthTool 
@@ -68,25 +21,8 @@ beta;ProjectLocationHideTool
 beta;ProjectLocationSaveTool 
 beta;ProjectLocationShowTool 
 beta;RedoTool 
-alpha;RegionBooleanMode
-alpha;RegionBooleanTool 
-alpha;RevolveCurveTool 
-alpha;RotateAbout
-alpha;RotateElementsTool 
-alpha;RotateMethod
-alpha;RoundEdgesTool 
-alpha;SewSheetElementsTool 
-internal;solidModelingIpc: PickAsyncMethods
-alpha;class SolidPrimitiveTool 
-alpha;SpinFacesTool 
-alpha;SubEntityData
-alpha;SubtractSolidElementsTool 
-alpha;SweepAlongPathTool 
-alpha;SweepFacesTool 
-alpha;ThickenSheetElementsTool 
 beta;class TransformElementsTool 
 beta;TransformGraphicsData
 beta;TransformGraphicsProvider
 beta;UndoAllTool 
 beta;UndoTool 
-alpha;UniteSolidElementsTool 

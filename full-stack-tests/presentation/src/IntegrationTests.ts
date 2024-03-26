@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 import * as cpx from "cpx2";
 import * as fs from "fs";
@@ -12,27 +12,37 @@ import sinon from "sinon";
 import { IModelHost, IModelHostOptions, IModelJsFs } from "@itwin/core-backend";
 import { Guid, Logger, LogLevel } from "@itwin/core-bentley";
 import {
-  AuthorizationClient, EmptyLocalization, IModelReadRpcInterface, Localization, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition,
+  AuthorizationClient,
+  EmptyLocalization,
+  IModelReadRpcInterface,
+  Localization,
+  RpcConfiguration,
+  RpcDefaultConfiguration,
+  RpcInterfaceDefinition,
   SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
+import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
+import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import {
-  HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory, PresentationProps as PresentationBackendProps,
+  HierarchyCacheMode,
+  Presentation as PresentationBackend,
+  PresentationBackendNativeLoggerCategory,
+  PresentationProps as PresentationBackendProps,
 } from "@itwin/presentation-backend";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { Presentation as PresentationFrontend, PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
 import { getOutputRoot } from "./Utils";
-import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
-import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 
 const DEFAULT_BACKEND_TIMEOUT: number = 0;
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
-  if (!fs.existsSync(envFile))
+  if (!fs.existsSync(envFile)) {
     return;
+  }
 
   const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
   const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
@@ -48,26 +58,32 @@ loadEnv(path.join(__dirname, "..", ".env"));
 
 const copyITwinBackendAssets = (outputDir: string) => {
   const iTwinPackagesPath = "node_modules/@itwin";
-  fs.readdirSync(iTwinPackagesPath).map((packageName) => {
-    const packagePath = path.resolve(iTwinPackagesPath, packageName);
-    return path.join(packagePath, "lib", "cjs", "assets");
-  }).filter((assetsPath) => {
-    return fs.existsSync(assetsPath);
-  }).forEach((src) => {
-    cpx.copySync(`${src}/**/*`, outputDir);
-  });
+  fs.readdirSync(iTwinPackagesPath)
+    .map((packageName) => {
+      const packagePath = path.resolve(iTwinPackagesPath, packageName);
+      return path.join(packagePath, "lib", "cjs", "assets");
+    })
+    .filter((assetsPath) => {
+      return fs.existsSync(assetsPath);
+    })
+    .forEach((src) => {
+      cpx.copySync(`${src}/**/*`, outputDir);
+    });
 };
 
 const copyITwinFrontendAssets = (outputDir: string) => {
   const iTwinPackagesPath = "node_modules/@itwin";
-  fs.readdirSync(iTwinPackagesPath).map((packageName) => {
-    const packagePath = path.resolve(iTwinPackagesPath, packageName);
-    return path.join(packagePath, "lib", "public");
-  }).filter((assetsPath) => {
-    return fs.existsSync(assetsPath);
-  }).forEach((src) => {
-    cpx.copySync(`${src}/**/*`, outputDir);
-  });
+  fs.readdirSync(iTwinPackagesPath)
+    .map((packageName) => {
+      const packagePath = path.resolve(iTwinPackagesPath, packageName);
+      return path.join(packagePath, "lib", "public");
+    })
+    .filter((assetsPath) => {
+      return fs.existsSync(assetsPath);
+    })
+    .forEach((src) => {
+      cpx.copySync(`${src}/**/*`, outputDir);
+    });
 };
 
 class IntegrationTestsApp extends NoRenderApp {
@@ -78,6 +94,14 @@ class IntegrationTestsApp extends NoRenderApp {
     copyITwinBackendAssets("lib/assets");
     copyITwinFrontendAssets("lib/public");
   }
+}
+
+/** Prepares an empty, process-unique output directory */
+export function setupTestsOutputDirectory() {
+  const outputRoot = getOutputRoot();
+  fs.existsSync(outputRoot) && IModelJsFs.removeSync(outputRoot);
+  fs.mkdirSync(outputRoot, { recursive: true });
+  return outputRoot;
 }
 
 const initializeCommon = async (props: {
@@ -94,14 +118,11 @@ const initializeCommon = async (props: {
   Logger.setLevel("SQLite", LogLevel.Error);
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
 
-  // prepare an empty, process-unique output directory
-  const outputRoot = getOutputRoot();
-  fs.existsSync(outputRoot) && IModelJsFs.removeSync(outputRoot);
-  fs.mkdirSync(outputRoot, { recursive: true });
-
+  const outputRoot = setupTestsOutputDirectory();
   const tempCachesDir = path.join(outputRoot, "caches");
-  if (!fs.existsSync(tempCachesDir))
+  if (!fs.existsSync(tempCachesDir)) {
     fs.mkdirSync(tempCachesDir);
+  }
 
   const backendInitProps: PresentationBackendProps = {
     id: `test-${Guid.createValue()}`,
@@ -145,11 +166,7 @@ const initializeCommon = async (props: {
   console.log(`[${new Date().toISOString()}] Tests initialized`);
 };
 
-export const initialize = async (props?: {
-  backendTimeout?: number;
-  frontendTimeout?: number;
-  localization?: Localization;
-}) => {
+export const initialize = async (props?: { backendTimeout?: number; frontendTimeout?: number; localization?: Localization }) => {
   await initializeCommon({
     backendTimeout: DEFAULT_BACKEND_TIMEOUT,
     ...props,
@@ -215,8 +232,9 @@ interface PresentationInitProps {
 
 let isInitialized = false;
 async function initializePresentation(props: PresentationInitProps) {
-  if (isInitialized)
+  if (isInitialized) {
     return;
+  }
 
   // set up rpc interfaces
   initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface, ECSchemaRpcInterface]);
@@ -235,22 +253,25 @@ async function initializePresentation(props: PresentationInitProps) {
 }
 
 async function terminatePresentation(frontendApp = IModelApp) {
-  if (!isInitialized)
+  if (!isInitialized) {
     return;
+  }
 
   // store directory that needs to be cleaned-up
   let hierarchiesCacheDirectory: string | undefined;
   const hierarchiesCacheConfig = PresentationBackend.initProps?.caching?.hierarchies;
-  if (hierarchiesCacheConfig?.mode === HierarchyCacheMode.Disk)
+  if (hierarchiesCacheConfig?.mode === HierarchyCacheMode.Disk) {
     hierarchiesCacheDirectory = hierarchiesCacheConfig?.directory;
-  else if (hierarchiesCacheConfig?.mode === HierarchyCacheMode.Hybrid)
+  } else if (hierarchiesCacheConfig?.mode === HierarchyCacheMode.Hybrid) {
     hierarchiesCacheDirectory = hierarchiesCacheConfig?.disk?.directory;
+  }
 
   // terminate backend
   PresentationBackend.terminate();
   await IModelHost.shutdown();
-  if (hierarchiesCacheDirectory)
+  if (hierarchiesCacheDirectory) {
     rimraf.sync(hierarchiesCacheDirectory);
+  }
 
   // terminate frontend
   PresentationFrontend.terminate();
@@ -264,8 +285,9 @@ function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
     public override interfaces: any = () => interfaces;
   };
 
-  for (const definition of interfaces)
+  for (const definition of interfaces) {
     RpcConfiguration.assign(definition, () => config);
+  }
 
   const instance = RpcConfiguration.obtain(config);
 

@@ -23,6 +23,9 @@ parameters:
   - name: useCurrentAuthClientsDocsArtifact
     type: boolean
     default: false
+  - name: useCurrentConnectorFrameworkDocsArtifact
+    type: boolean
+    default: false
 
 steps:
   # Call the copying script
@@ -30,7 +33,7 @@ steps:
     displayName: Copy Reference files to Staging
     workingDirectory: ${{ parameters.workingDir }}
 
-  # Download AppUI Docs artifact
+  # AppUI
   - template: ./copy-docs-artifact.yaml
     parameters:
       workingDir: ${{ parameters.workingDir }}
@@ -40,7 +43,7 @@ steps:
       buildTag: hasDocs
       useCurrentDocsArtifact: ${{ parameters.useCurrentAppUIDocsArtifact }}
 
-  # Download BIS Docs artifact
+  # BIS
   - template: ./copy-docs-artifact.yaml
     parameters:
       workingDir: ${{ parameters.workingDir }}
@@ -55,7 +58,7 @@ steps:
             SourceFolder: $(Pipeline.Workspace)/Bis Docs
             TargetFolder: ${{ parameters.stagingDir }}/bis/domains/
 
-  # Download Presentation Docs artifact
+  # Presentation
   - template: ./copy-docs-artifact.yaml
     parameters:
       workingDir: ${{ parameters.workingDir }}
@@ -65,7 +68,7 @@ steps:
       buildTag: hasDocs
       useCurrentDocsArtifact: ${{ parameters.useCurrentPresentationDocsArtifact }}
 
-  # Download Transformer Docs artifact
+  # Transformer
   - template: ./copy-docs-artifact.yaml
     parameters:
       workingDir: ${{ parameters.workingDir }}
@@ -75,7 +78,7 @@ steps:
       buildTag: hasDocs
       useCurrentDocsArtifact: ${{ parameters.useCurrentTransformerDocsArtifact }}
 
-  # Download Auth Clients artifact
+  # Auth Clients
   - template: ./copy-docs-artifact.yaml
     parameters:
       workingDir: ${{ parameters.workingDir }}
@@ -90,6 +93,22 @@ steps:
           inputs:
             SourceFolder: $(Pipeline.Workspace)/iTwin-Auth-Clients Docs
             TargetFolder: ${{ parameters.stagingDir }}/reference/
+
+  # Connector Frameworks
+  - template: ./copy-docs-artifact.yaml
+    parameters:
+      workingDir: ${{ parameters.workingDir }}
+      stagingDir: ${{ parameters.stagingDir }}
+      pipelineId: 5669 # iTwin.js/iTwin Connector Frameworks/iTwin.connector-framework
+      artifactName: Connector-Framework Docs
+      buildTag: hasDocs
+      useCurrentDocsArtifact: ${{ parameters.useCurrentConnectorFrameworkDocsArtifact }}
+      stagingSteps:
+        - task: CopyFiles@2
+          displayName: Copy Connector Framework Docs to staging
+          inputs:
+            SourceFolder: $(Pipeline.Workspace)/Connector-Framework Docs
+            TargetFolder: ${{ parameters.stagingDir }}/reference/connector-framework/
 
   # The .updated.json is cached to track when the docs were last updated
   - task: DownloadPipelineArtifact@2

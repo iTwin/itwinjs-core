@@ -43,6 +43,7 @@ enum NativeExpIds {
   UnaryValue = "UnaryValueExp",
   UpdateStatement = "UpdateStatementExp",
   UsingRelationshipJoinExp = "UsingRelationshipJoinExp",
+  NavValueCreationFunc = "NavValueCreationFuncExp",
 }
 /**
  * Type of literal value.
@@ -221,7 +222,9 @@ export enum ExprType {
   OrderByClause = "OrderByClause",
   OrderBySpec = "OrderBySpec",
   LimitClause = "LimitClause",
-  Assignment = "Assignment"
+  Assignment = "Assignment",
+
+  NavValueCreationFunc = "NavValueCreationFunc"
 }
 
 /**
@@ -404,6 +407,7 @@ export abstract class BooleanExpr extends ComputedExpr {
  * @see [[IIFExpr]]
  * @see [[LiteralExpr]]
  * @see [[PropertyNameExpr]]
+ * @see [[NavValueCreationFunc]]
  * @alpha
  */
 export abstract class ValueExpr extends ComputedExpr {
@@ -418,9 +422,10 @@ export abstract class ValueExpr extends ComputedExpr {
     NativeExpIds.UnaryValue,
     NativeExpIds.PropertyName,
     NativeExpIds.Subquery,
+    NativeExpIds.NavValueCreationFunc,
   ];
 
-  public static override deserialize(node: NativeECSqlParseNode): SubqueryExpr | ValueExpr | UnaryValueExpr | FuncCallExpr | CastExpr | BinaryValueExpr | SearchCaseExpr | IIFExpr | LiteralExpr | PropertyNameExpr {
+  public static override deserialize(node: NativeECSqlParseNode): SubqueryExpr | ValueExpr | UnaryValueExpr | FuncCallExpr | CastExpr | BinaryValueExpr | SearchCaseExpr | IIFExpr | LiteralExpr | PropertyNameExpr | NavValueCreationFuncExpr {
     if (node.id === NativeExpIds.UnaryValue) {
       return UnaryValueExpr.deserialize(node);
     }
@@ -451,6 +456,8 @@ export abstract class ValueExpr extends ComputedExpr {
     if (node.id === NativeExpIds.LiteralValue) {
       return LiteralExpr.deserialize(node);
     }
+    if (node.id === NativeExpIds.NavValueCreationFunc)
+      return NavValueCreationFuncExpr.deserialize(node);
     throw new Error(`Unknown type of native value exp ${node.id}`);
   }
 }
@@ -618,6 +625,12 @@ export class ECSqlWriter {
   public appendExp(exp: Expr) {
     exp.writeTo(this);
     return this;
+  }
+  public appendParenLeft(){
+    return this.append("(");
+  }
+  public appendParenRight(){
+    return this.append(")");
   }
 }
 
@@ -1855,12 +1868,12 @@ export class ClassNameExpr extends ClassRefExpr {
     if (!match) {
       throw new Error("ECSQL className must follow syntax: [+][ALL|ONLY] [tablespace.][.|:][schemaOrAlias]][.|:][className] [AS] [alias");
     }
-    const plus = match.at(2);
-    const allOrOnlyStr = match.at(3);
-    const tablespace = match.at(5);
-    const schemaOrAlias = match.at(6);
-    const className = match.at(7);
-    const alias = match.at(11);
+    const plus = match[2];
+    const allOrOnlyStr = match[3];
+    const tablespace = match[5];
+    const schemaOrAlias = match[6];
+    const className = match[7];
+    const alias = match[11];
     if (!schemaOrAlias || !className)
       throw new Error("ECSQL className must follow syntax: [+][ALL|ONLY] [tablespace.][.|:][schemaOrAlias]][.|:][className] [AS] [alias");
     let polyInfo: PolymorphicInfo | undefined;
@@ -2465,5 +2478,55 @@ export class PropertyNameExpr extends ValueExpr {
       writer.append("->");
     }
     writer.append(str[str.length - 1].split(".").map((v) => v.startsWith("[") || v === "$" ? v : `[${v}]`).join("."));
+  }
+}
+
+/**
+ * Represent navigation value creation function
+ * @alpha
+ */
+export class NavValueCreationFuncExpr extends ValueExpr {
+  public static readonly type = ExprType.NavValueCreationFunc;
+  public static readonly navValueCreationFuncExprName = "NAVIGATION_VALUE";
+  public constructor(
+    public readonly columnRefExp: DerivedPropertyExpr,
+    public readonly idArgExp: ValueExpr,
+    public readonly classNameExp: ClassNameExpr,
+    public readonly relECClassIdExp?: ValueExpr,
+  ) {
+    super(NavValueCreationFuncExpr.type);
+  }
+  public override writeTo(writer: ECSqlWriter): void {
+    writer.append(NavValueCreationFuncExpr.navValueCreationFuncExprName)
+      .appendParenLeft()
+      .appendExp(this.classNameExp)
+      .append(".")
+      .appendExp(this.columnRefExp)
+      .appendComma();
+
+    writer.appendExp(this.idArgExp);
+    if (this.relECClassIdExp) {
+      writer.appendComma();
+      writer.appendExp(this.relECClassIdExp);
+    }
+    writer.appendParenRight();
+  }
+  public override get children(): Expr[] {
+    const arr = [this.columnRefExp, this.idArgExp, this.classNameExp];
+    if (this.relECClassIdExp)
+      arr.push(this.relECClassIdExp);
+
+    return arr;
+  }
+  public static override deserialize(node: NativeECSqlParseNode) {
+    if (node.id !== NativeExpIds.NavValueCreationFunc) {
+      throw new Error(`Parse node is 'node.id !== NativeExpIds.NavValueCreationFuncExp'. ${JSON.stringify(node)}`);
+    }
+    return new NavValueCreationFuncExpr(
+      DerivedPropertyExpr.deserialize(node.ColumnRefExp as DerivedPropertyExpr),
+      ValueExpr.deserialize(node.IdArgExp as ValueExpr),
+      ClassNameExpr.deserialize(node.ClassNameExp as ClassNameExpr),
+      node.RelECClassIdExp ? ValueExpr.deserialize(node.RelECClassIdExp) : undefined,
+    );
   }
 }

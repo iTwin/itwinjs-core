@@ -116,6 +116,10 @@ export class SteppedIndexFunctionFactory {
  * @internal
  */
 class FrankeSurface implements UVSurface {
+  public scales: number[] | undefined;
+  public constructor(scales: number[] | undefined) {
+    this.scales = scales;
+  }
   private exp0(u: number, v: number): number {
     return Math.exp(-0.25 * (u * u + v * v) + u + v - 2);
   }
@@ -133,11 +137,24 @@ class FrankeSurface implements UVSurface {
     const f1 = 0.75 * this.exp1(u, v);
     const f2 = 0.5 * this.exp2(u, v);
     const f3 = -0.2 * this.exp3(u, v);
-    return f0 + f1 + f2 + f3;
+    if (this.scales !== undefined) {
+      const numScale = this.scales.length;
+      let f = 0;
+      if (numScale >= 1)
+        f += this.scales[0] * f0;
+      if (numScale >= 2)
+        f += this.scales[1] * f1;
+      if (numScale >= 3)
+        f += this.scales[2] * f2;
+      if (numScale >= 4)
+        f += this.scales[3] * f3;
+      return f;
+    } else
+      return f0 + f1 + f2 + f3;
   }
   private du(u: number, v: number): number {
     const du0 = -3.375 * (u - 2) * this.exp0(u, v);
-    const du1 = -(27/98) * (u + 1) * this.exp1(u, v);
+    const du1 = -(27 / 98) * (u + 1) * this.exp1(u, v);
     const du2 = -2.25 * (u - 7) * this.exp2(u, v);
     const du3 = 3.6 * (u - 4) * this.exp3(u, v);
     return du0 + du1 + du2 + du3;
@@ -1532,11 +1549,11 @@ export class Sample {
     const base = Loop.create(LineString3d.createRectangleXY(Point3d.create(), 2, 3));
     const vectorZ = Vector3d.create(0, 0, 1.234);
     const vectorQ = Vector3d.create(0.1, 0.21, 1.234);
-    result.push(LinearSweep.create(base, vectorZ, false) as LinearSweep);
-    result.push(LinearSweep.create(base, vectorZ, true) as LinearSweep);
-    result.push(LinearSweep.create(base, vectorQ, false) as LinearSweep);
-    result.push(LinearSweep.create(base, vectorQ, true) as LinearSweep);
-    result.push(LinearSweep.create(Sample.createCappedArcLoop(5, -45, 90), vectorQ, true) as LinearSweep);
+    result.push(LinearSweep.create(base, vectorZ, false)!);
+    result.push(LinearSweep.create(base, vectorZ, true)!);
+    result.push(LinearSweep.create(base, vectorQ, false)!);
+    result.push(LinearSweep.create(base, vectorQ, true)!);
+    result.push(LinearSweep.create(Sample.createCappedArcLoop(5, -45, 90), vectorQ, true)!);
     for (const curve of Sample.createSmoothCurvePrimitives()) {
       const path = Path.create(curve);
       result.push(LinearSweep.create(path, vectorZ, false)!);
@@ -1596,8 +1613,8 @@ export class Sample {
       Ray3d.createXYZUVW(5, 0, 0, 0, 1, 0),
       Ray3d.createXYZUVW(-1, 0, 0, -1, 1, 0),
     ]) {
-      result.push(RotationalSweep.create(base, axis, Angle.createDegrees(45.0), false) as RotationalSweep);
-      result.push(RotationalSweep.create(base, axis, Angle.createDegrees(150.0), true) as RotationalSweep);
+      result.push(RotationalSweep.create(base, axis, Angle.createDegrees(45.0), false)!);
+      result.push(RotationalSweep.create(base, axis, Angle.createDegrees(150.0), true)!);
     }
     return result;
   }
@@ -1772,10 +1789,10 @@ export class Sample {
     const contour2 = Loop.create(LineString3d.create(this.createRectangleXY(0, 0, 4, 3.5, 4)));
     const contour3 = Loop.create(LineString3d.create(this.createRectangleXY(0, 0, 2, 1, 7)));
     const allContours = [contour0, contour1, contour2];
-    allSweeps.push(RuledSweep.create([contour0, contour1], true) as RuledSweep);
-    allSweeps.push(RuledSweep.create([contour0, contour1, contour2], true) as RuledSweep);
-    allSweeps.push(RuledSweep.create([contour0, contour1, contour2, contour3], true) as RuledSweep);
-    allSweeps.push(RuledSweep.create(allContours, false) as RuledSweep);
+    allSweeps.push(RuledSweep.create([contour0, contour1], true)!);
+    allSweeps.push(RuledSweep.create([contour0, contour1, contour2], true)!);
+    allSweeps.push(RuledSweep.create([contour0, contour1, contour2, contour3], true)!);
+    allSweeps.push(RuledSweep.create(allContours, false)!);
     const curves = Sample.createSmoothCurvePrimitives();
     for (const c of curves) {
       const frame = c.fractionToFrenetFrame(0.0);
@@ -2831,6 +2848,46 @@ export class Sample {
     return point0;
   }
   /**
+  * Create a grid of lat-long points on a sphere.
+  * * If pole latitudes appear in the evaluation, a single point (not a circle) is evaluated.
+  * * Circles at various latitudes proceed south to north.
+  * * If first and last angles of longitudeSweep match, that meridian is not duplicated.
+  * * Longitudes can wrap freely.
+   * @param transform local to world
+   * @param numLatitudeStep number of latitude steps (poles count if they are in the sweeps)
+   * @param numLongitudeStep number of longitude steps
+   * @param latitudeSweep angle range for latitudes
+   * @param longitudeSweep angle range for longitudes
+   */
+  public static createGridPointsOnEllipsoid(
+    transform: Transform,
+    numLatitudeStep: number,
+    numLongitudeStep: number,
+    latitudeSweep: AngleSweep = AngleSweep.createStartEndDegrees(-90, 90),
+    longitudeSweep: AngleSweep = AngleSweep.createStartEndDegrees(0, 360),
+  ): Point3d[] {
+    const points: Point3d[] = [];
+    const numJ = numLatitudeStep + 1;
+    const jFractionStep = 1.0 / numJ;
+    let numI = numLongitudeStep;
+    const iFractionStep = 1.0 / numI;
+    if (longitudeSweep.isFullCircle)
+      numI--;
+    for (let j = 0; j < numJ; j++) {
+      const phi = latitudeSweep.fractionToRadians(jFractionStep * j);
+      const sinPhi = Math.sin(phi);
+      const cosPhi = Math.cos(phi);
+      const numIThisCircle = Angle.isAlmostEqualRadiansAllowPeriodShift(phi, -90) ? 1 : numI;
+      for (let i = 0; i < numIThisCircle; i++) {
+        const theta = longitudeSweep.fractionToRadians(iFractionStep * i);
+        const cosTheta = Math.cos(theta);
+        const sinTheta = Math.sin(theta);
+        points.push(transform.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi));
+      }
+    }
+    return points;
+  }
+  /**
    * Return an array of points on a circular arc.
    * @param edgesPerQuadrant number of edges per 90 degrees
    * @param center arc center
@@ -2940,12 +2997,42 @@ export class Sample {
     return Point2d.createFrom(Sample.createRosePoint3d(theta, a));
   }
   /**
-   * Create a mesh surface from samples of a smooth function over [0,1]x[0,1].
+   * Create a mesh surface from samples of a smooth real-valued function over [0,1]x[0,1] with multiple humps and dips.
+   * * The facets are bilinear quads, so if planar facets are required, set `options.shouldTriangulate = true`.
    * @param size grid size; the number of intervals on each side of the unit square domain.
+   * @param scales = array of 4 (four) numbers to scale the corresponding Franke exponential.  If undefined, all scales are 1.
    */
-  public static createMeshFromSmoothSurface(size: number, options?: StrokeOptions): IndexedPolyface | undefined {
+  public static createMeshFromFrankeSurface(
+    size: number,
+    options?: StrokeOptions,
+    scales?: number[]): IndexedPolyface | undefined {
     const builder = PolyfaceBuilder.create(options);
-    builder.addUVGridBody(new FrankeSurface(), size, size);
+    builder.addUVGridBody(new FrankeSurface(scales), size, size);
     return builder.claimPolyface(true);
   }
+  /** Stroke a helix over the unit circle.  Place in space via a transform.
+   * The various columns of the transform become the critical measures for the (elliptic) helix:
+   * The unit cylinder maps to an elliptic cylinder with x and y columns as 0 and 90 degree vectors.
+   * the Helix pitch is equal to the length of the z axis in the transform.
+   * The completeTurns parameter (which does NOT need to be an integer) is the local z of the last point
+   */
+  public static createHelixPoints(
+    completeTurns: number,
+    numPoints: number,
+    placement?: Transform,
+  ): Point3d[] {
+    const points: Point3d[] = [];
+    if (numPoints < 2)
+      numPoints = 2;
+    const dThetaRadians = completeTurns * Math.PI * 2 / (numPoints - 1);
+    const dz = completeTurns / (numPoints - 1);
+    for (let i = 0; i < numPoints; i++) {
+      const thetaRadians = dThetaRadians * i;
+      points.push(Point3d.create(Math.cos(thetaRadians), Math.sin(thetaRadians), i * dz));
+    }
+    if (placement)
+      placement.multiplyPoint3dArrayInPlace(points);
+    return points;
+  }
+
 }

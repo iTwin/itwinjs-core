@@ -2,6 +2,102 @@
   "name": "@itwin/presentation-backend",
   "entries": [
     {
+      "version": "4.4.8",
+      "tag": "@itwin/presentation-backend_v4.4.8",
+      "date": "Mon, 25 Mar 2024 22:22:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.7",
+      "tag": "@itwin/presentation-backend_v4.4.7",
+      "date": "Fri, 15 Mar 2024 19:15:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.6",
+      "tag": "@itwin/presentation-backend_v4.4.6",
+      "date": "Fri, 08 Mar 2024 15:57:12 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.5",
+      "tag": "@itwin/presentation-backend_v4.4.5",
+      "date": "Tue, 05 Mar 2024 20:37:18 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.4",
+      "tag": "@itwin/presentation-backend_v4.4.4",
+      "date": "Fri, 01 Mar 2024 18:21:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.3",
+      "tag": "@itwin/presentation-backend_v4.4.3",
+      "date": "Fri, 23 Feb 2024 21:26:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.2",
+      "tag": "@itwin/presentation-backend_v4.4.2",
+      "date": "Fri, 16 Feb 2024 14:22:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.1",
+      "tag": "@itwin/presentation-backend_v4.4.1",
+      "date": "Fri, 16 Feb 2024 14:17:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.0",
+      "tag": "@itwin/presentation-backend_v4.4.0",
+      "date": "Mon, 12 Feb 2024 18:15:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for Node 20."
+          },
+          {
+            "comment": "Fix descriptor, node path and distinct value responses not being localized"
+          },
+          {
+            "comment": "Fixed `getElementProperties` function to pass correct content options when loading properties."
+          },
+          {
+            "comment": "Load built-in rulesets as code rather than separately delivered assets"
+          },
+          {
+            "comment": "Only add \"descriptor only\" flag when requests come through RPC or if input content flags are `undefined`. This effectively removes the flag for `getElementProperties` request (multi-elements case), which improves performance when requesting content set."
+          },
+          {
+            "comment": "Allow specifying formatting props for multiple unit systems per phenomenon."
+          },
+          {
+            "comment": "Improve performance of `PresentationManager.getElementProperties` \"multi\" case by ~100%. Add a way to provide custom content parser."
+          },
+          {
+            "comment": "Add support for default formats when formatting values in TS (when `Presentation` is initialized with `schemaContextProvider`)."
+          },
+          {
+            "comment": "Refactor iModel updates' tracking to work without polling. Also, the updates are now always tracked - no additional configuration is needed."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.3.5",
+      "tag": "@itwin/presentation-backend_v4.3.5",
+      "date": "Mon, 25 Mar 2024 16:54:37 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.3.4",
+      "tag": "@itwin/presentation-backend_v4.3.4",
+      "date": "Fri, 22 Mar 2024 13:30:31 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.3.3",
       "tag": "@itwin/presentation-backend_v4.3.3",
       "date": "Wed, 03 Jan 2024 19:28:38 GMT",
