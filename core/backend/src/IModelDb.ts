@@ -1847,8 +1847,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       try {
         return elProps.id = this._iModel.nativeDb.insertElement(elProps);
       } catch (err: any) {
-        const message = `Error inserting element [${err.message}], modelId: ${elProps.model}, classFullName: ${elProps.classFullName}, code: ${JSON.stringify(elProps.code)}`;
-        throw new IModelError(err.errorNumber, message, { elProps });
+        err.message = `Error inserting element [${err.message}]`;
+        err.metadata = { elProps };
+        throw err;
       }
     }
 
@@ -1863,7 +1864,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       try {
         this._iModel.nativeDb.updateElement(elProps);
       } catch (err: any) {
-        throw new IModelError(err.errorNumber, `Error updating element [${err.message}], id: ${elProps.id}`, { elProps });
+        err.message = `Error updating element [${err.message}], id: ${elProps.id}`;
+        err.metadata = { elProps };
+        throw err;
       }
     }
 
@@ -1878,7 +1881,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         try {
           iModel.nativeDb.deleteElement(id);
         } catch (err: any) {
-          throw new IModelError(err.errorNumber, `Error deleting element [${err.message}], id: ${id}`, { elementId: id });
+          err.message = `Error deleting element [${err.message}], id: ${id}`;
+          err.metadata = { elementId: id };
+          throw err;
         }
       });
     }
