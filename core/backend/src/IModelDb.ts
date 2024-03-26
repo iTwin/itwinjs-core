@@ -2632,12 +2632,30 @@ export class BriefcaseDb extends IModelDb {
     // - push changes
     // - release schema lock
     // good thing computers are fast. Fortunately upgrading should be rare (and the push time will dominate anyway.) Don't try to optimize any of this away.
-    await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
     try {
-      await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade, schemaLockHeld: true }, "Upgraded profile");
-      await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
-    } finally {
-      await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
+      await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade }, "Upgraded profile");
+    } catch (error: any) {
+      Logger.logWarning(loggerCategory, `Profile upgrade contains data transform. Retrying upgrade with a schema lock.`);
+      try {
+        await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
+        await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade, schemaLockHeld: true }, "Upgraded profile");
+        await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
+      } finally {
+        await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
+        return;
+      }
+    }
+
+    try {
+      await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade }, "Upgraded domain schemas");
+    } catch (error: any) {
+      Logger.logWarning(loggerCategory, `Domain schema upgrade contains data transform. Retrying upgrade with a schema lock.`);
+      try {
+        await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
+        await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
+      } finally {
+        await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
+      }
     }
   }
 

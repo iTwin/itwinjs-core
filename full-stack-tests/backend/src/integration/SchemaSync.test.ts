@@ -328,6 +328,10 @@ describe("Schema synchronization", function (this: Suite) {
     expect(b3ProfileVersion.sub1).to.be.equal(updatedProfileVersion.sub1, "Profile version sub1 should be 0");
     expect(b3ProfileVersion.sub2).to.be.greaterThanOrEqual(updatedProfileVersion.sub2, "Profile version sub2 should be at least 4");
 
+    b1.abandonChanges();
+    b2.abandonChanges();
+    b3.abandonChanges();
+
     b1.close();
     b2.close();
     b3.close();
