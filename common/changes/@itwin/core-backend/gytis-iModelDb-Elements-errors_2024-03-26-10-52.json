@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "`insertElement`, `updateElement` and `deleteElement` in `IModelDb` not throws `IModelError` instead of generic `Error`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
