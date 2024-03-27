@@ -32,7 +32,7 @@ export interface PresentationProps {
   presentation?: PresentationManagerProps;
 
   /** Props for [[SelectionManager]]. */
-  selection?: SelectionManagerProps;
+  selection?: Partial<SelectionManagerProps>;
 
   /** Props for [[FavoritePropertiesManager]]. */
   favorites?: FavoritePropertiesManagerProps;
@@ -77,14 +77,15 @@ export class Presentation {
       presentationManager = PresentationManager.create(managerProps);
     }
     if (!selectionManager) {
-      selectionManager = new SelectionManager(
-        props?.selection ?? {
-          scopes: new SelectionScopesManager({
+      selectionManager = new SelectionManager({
+        ...props?.selection,
+        scopes:
+          props?.selection?.scopes ??
+          new SelectionScopesManager({
             rpcRequestsHandler: presentationManager.rpcRequestsHandler,
             localeProvider: () => this.presentation.activeLocale,
           }),
-        },
-      );
+      });
     }
     if (!favoritePropertiesManager) {
       favoritePropertiesManager = new FavoritePropertiesManager({
@@ -126,6 +127,9 @@ export class Presentation {
     }
     favoritePropertiesManager = undefined;
 
+    if (selectionManager) {
+      selectionManager.dispose();
+    }
     selectionManager = undefined;
     localization = undefined;
   }

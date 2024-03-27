@@ -139,6 +139,10 @@ class GraphicRef extends TileTreeReference {
 
   public override get treeOwner() { return this._owner; }
 
+  public override canSupplyToolTip(hit: HitDetail): boolean {
+    return undefined !== this._getToolTip && this._modelId === hit.modelId;
+  }
+
   public override async getToolTip(hit: HitDetail): Promise<string | HTMLElement | undefined> {
     if (this._getToolTip && this._modelId === hit.modelId) {
       return this._getToolTip(hit);

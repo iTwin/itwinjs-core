@@ -1,13 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 const faker = require("faker");
 const chai = require("chai");
 const chaiAsPromised = require("chai-as-promised");
 const chaiJestSnapshot = require("chai-jest-snapshot");
 const sinonChai = require("sinon-chai");
 const sinon = require("sinon");
+const sourceMapSupport = require("source-map-support");
 
 // Fix node's module loader to strip ?sprite from SVG imports
 const m = require("module");
@@ -15,6 +16,11 @@ const origLoader = m._load;
 m._load = (request, parent, isMain) => {
   return origLoader(request.replace("?sprite", ""), parent, isMain);
 };
+
+// see https://github.com/babel/babel/issues/4605
+sourceMapSupport.install({
+  environment: "node",
+});
 
 faker.seed(1);
 
@@ -39,7 +45,9 @@ beforeEach(function () {
   faker.seed(seed);
 
   // set up snapshot name
-  const sourceFilePath = currentTest.file.replace("lib\\cjs\\test", "src\\test").replace(/\.(jsx?|tsx?)$/, "");
+  const sourceFilePath = currentTest.file
+    .replace("lib\\cjs\\test", "src\\test")
+    .replace(/\.(jsx?|tsx?)$/, "");
   const snapPath = sourceFilePath + ".snap";
   chaiJestSnapshot.setFilename(snapPath);
   chaiJestSnapshot.setTestName(currentTest.fullTitle());
