@@ -3080,20 +3080,14 @@ export class SnapshotDb extends IModelDb {
   }
 
   /**
-   * Open a Checkpoint directly from its cloud container in a "lazy" manner, allowing data to be fetched as needed.
-   * This method can optionally be combined with a prefetch to download all blocks of an iModel if desired.
-   * Prefetching can improve performance when a large portion of the database will be needed, performance would be better the more you needed to read if you happened to prefetch.
-   * But use it smartly to avoid unnecessary data transfer and storage.
-   * If only a small portion of data is needed, it's more efficient to rely solely on lazy opening.
-   * @param args The arguments required to open the checkpoint.
-   * @param returns A promise that resolves with an instance of SnapshotDb.
+   * Open a Checkpoint directly from its cloud container. Data for the checkpoint is loaded from the container on demand as it is accessed.
+   * This method may optionally start a "prefetch" (see [[CloudSqlite.startCloudPrefetch]]) operation to asynchronously download all blocks in the checkpoint.
+   * Prefetching can improve performance when a large portion of the database will be needed, or to allow offline usage.
    * @beta
    */
   public static async openCheckpoint(args: OpenCheckpointArgs): Promise<SnapshotDb> {
-    if (args.prefetch) {
-      IModelHost.appWorkspace.settings.addDictionary("prefetch", SettingsPriority.application, {"Checkpoints/prefetch": true});
-    }
-    return this.attachAndOpenCheckpoint(await CheckpointManager.toCheckpointProps(args));
+    // set doPrefetch = true by default
+    return this.attachAndOpenCheckpoint(await CheckpointManager.toCheckpointProps({ doPrefetch: true, ...args }));
   }
 
   /** Used to refresh the container sasToken using the current user's accessToken.
