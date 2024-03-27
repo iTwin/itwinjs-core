@@ -32,13 +32,13 @@ jobs:
           nodeVersion: 18.x
         Linux_node_20_x:
           imageName: ubuntu-latest
-          nodeVersion: 20.x
+          nodeVersion: 20.11.1
         Windows_node_20_x:
           imageName: windows-latest
-          nodeVersion: 20.x
+          nodeVersion: 20.11.1
         MacOS_node_20_x:
           imageName: macos-latest
-          nodeVersion: 20.x
+          nodeVersion: 20.11.1
     pool:
       vmImage: $(imageName)
     steps:
