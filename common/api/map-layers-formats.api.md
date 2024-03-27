@@ -82,6 +82,10 @@ export class MapFeatureInfoTool extends PrimitiveTool {
     onRestartTool(): Promise<void>;
     // (undocumented)
     requireWriteableTarget(): boolean;
+    // @internal (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    protected showPrompt(): void;
     // (undocumented)
     static toolId: string;
 }
