@@ -37,4 +37,4 @@ jobs:
     steps:
       - template: templates/integration-test-steps.yaml
         parameters:
-          nodeVersion: 20.x
+          nodeVersion: 20.11.1
