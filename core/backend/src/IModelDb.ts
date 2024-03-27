@@ -3081,8 +3081,9 @@ export class SnapshotDb extends IModelDb {
 
   /**
    * Open a Checkpoint directly from its cloud container. Data for the checkpoint is loaded from the container on demand as it is accessed.
-   * This method may optionally start a "prefetch" (see [[CloudSqlite.startCloudPrefetch]]) operation to asynchronously download all blocks in the checkpoint.
-   * Prefetching can improve performance when a large portion of the database will be needed, or to allow offline usage.
+   * This method starts a "prefetch" (see [[CloudSqlite.startCloudPrefetch]]) operation to asynchronously download all blocks in the checkpoint by
+   * default. Prefetching can improve performance when a large portion of the database will be needed, or to allow offline usage.
+   * To disable prefetching, set `args.doPrefetch = false`;
    * @beta
    */
   public static async openCheckpoint(args: OpenCheckpointArgs): Promise<SnapshotDb> {
