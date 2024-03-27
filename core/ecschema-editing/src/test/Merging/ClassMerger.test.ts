@@ -652,7 +652,7 @@ describe("Class merger tests", () => {
       targetSchemaName: "TargetSchema.01.00.00",
       changes: [
         {
-          changeType: "modify",
+          changeType: "add",
           schemaType: "EntityClass",
           itemName: "TestEntity",
           path: "$mixins",

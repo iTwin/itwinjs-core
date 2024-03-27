@@ -454,10 +454,10 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.lookupEntry("modify", { itemName: ecClass.name, path: "$mixins" }) as EntityClassMixinDifference;
+    let modifyEntry = this.lookupEntry("add", { itemName: ecClass.name, path: "$mixins" }) as EntityClassMixinDifference;
     if(!modifyEntry) {
       modifyEntry = this.addEntry({
-        changeType: "modify",
+        changeType: "add",
         schemaType: SchemaItemTypeName.EntityClass,
         itemName: ecClass.name,
         path: "$mixins",

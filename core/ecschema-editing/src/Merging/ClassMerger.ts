@@ -2,28 +2,28 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { SchemaMergeContext } from "./SchemaMerger";
-import { AnySchemaItemDifference, ClassItemDifference, SchemaItemTypeName, StructClassDifference } from "../Differencing/SchemaDifference";
-import { AnyMergerHandler, filterByType, locateSchemaItem, SchemaItemMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
+import { type SchemaMergeContext } from "./SchemaMerger";
+import { AnySchemaDifference, AnySchemaItemDifference, ClassItemDifference, SchemaDifference, StructClassDifference } from "../Differencing/SchemaDifference";
+import { locateSchemaItem, SchemaItemMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
 import { type MutableClass } from "../Editing/Mutable/MutableClass";
 import { CustomAttribute, ECClass, ECClassModifier, parseClassModifier, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaEditResults } from "../Editing/Editor";
-import { entityClassMerger } from "./EntityClassMerger";
+import { entityClassMerger, entityClassMixinMerger } from "./EntityClassMerger";
 import { customAttributeClassMerger } from "./CAClassMerger";
 import { mixinClassMerger } from "./MixinMerger";
 import { relationshipClassMerger } from "./RelationshipClassMerger";
 import { mergeClassProperties, mergePropertyDifference } from "./PropertyMerger";
 import { applyCustomAttributes } from "./CustomAttributeMerger";
 
-type ClassItemHandler = <T extends AnySchemaItemDifference>(change: T, merger: AnyMergerHandler<T>) => Promise<void>;
+type ClassItemHandler = <T extends AnySchemaItemDifference>(change: T, merger: SchemaItemMergerHandler<T>) => Promise<void>;
 
 /**
  * @internal
  */
-export async function * mergeClassItems(context: SchemaMergeContext, classChanges: AnySchemaItemDifference[]) {
+export async function * mergeClassItems(context: SchemaMergeContext, classChanges: AnySchemaDifference[]) {
   // In the first pass all class items will be created as stubs. That only applies to added entities.
   await iterateClassChanges(classChanges, async (change, merger) => {
-    if(change.changeType === "add" && merger.add) {
+    if(change.changeType === "add" && !SchemaDifference.isPathDifference(change) && merger.add) {
       // Make a copy of the change instance, we don't want to alter the actual instance.
       const changeCopy = {
         ...change,
@@ -53,7 +53,7 @@ export async function * mergeClassItems(context: SchemaMergeContext, classChange
   });
 
   // At last step the properties that are added to existing classes or modified.
-  for (const difference of filterByType(classChanges, "Property")) {
+  for (const difference of classChanges.filter(SchemaDifference.isClassPropertyDifference)) {
     const result = await mergePropertyDifference(context, difference);
     if(result.errorMessage) {
       throw new Error(result.errorMessage);
@@ -61,24 +61,36 @@ export async function * mergeClassItems(context: SchemaMergeContext, classChange
   }
 }
 
-async function iterateClassChanges(classChanges: AnySchemaItemDifference[], handler: ClassItemHandler) {
-  for (const difference of filterByType(classChanges, SchemaItemTypeName.CustomAttributeClass)) {
+async function iterateClassChanges(classChanges: AnySchemaDifference[], handler: ClassItemHandler) {
+  for (const difference of classChanges.filter(SchemaDifference.isCustomAttributeClassDifference)) {
     await handler(difference, customAttributeClassMerger);
   }
 
-  for (const difference of filterByType(classChanges, SchemaItemTypeName.Mixin)) {
+  for (const difference of classChanges.filter(SchemaDifference.isMixinClassDifference)) {
     await handler(difference, mixinClassMerger);
   }
 
-  for (const difference of filterByType(classChanges, SchemaItemTypeName.StructClass)) {
+  for (const difference of classChanges.filter(SchemaDifference.isStructClassDifference)) {
     await handler(difference, structClassMerger);
   }
 
-  for (const difference of filterByType(classChanges, SchemaItemTypeName.EntityClass)) {
+  for (const difference of classChanges.filter(SchemaDifference.isEntityClassDifference)) {
     await handler(difference, entityClassMerger);
   }
 
-  for (const difference of filterByType(classChanges, SchemaItemTypeName.RelationshipClass)) {
+  for (const difference of classChanges.filter(SchemaDifference.isEntityClassMixinDifference)) {
+    await handler(difference, entityClassMixinMerger);
+  }
+
+  for (const difference of classChanges.filter(SchemaDifference.isRelationshipClassDifference)) {
+    await handler(difference, relationshipClassMerger);
+  }
+
+  for (const difference of classChanges.filter(SchemaDifference.isRelationshipConstraintDifference)) {
+    await handler(difference, relationshipClassMerger);
+  }
+
+  for (const difference of classChanges.filter(SchemaDifference.isRelationshipConstraintClassDifference)) {
     await handler(difference, relationshipClassMerger);
   }
 }

@@ -13,7 +13,7 @@ import { type SchemaContextEditor } from "../Editing/Editor";
  * @param change       schema changes.
  * @internal
  */
-export default async function mergeSchemaReferences(context: SchemaMergeContext, change: SchemaReferenceDifference) {
+export async function mergeSchemaReferences(context: SchemaMergeContext, change: SchemaReferenceDifference) {
   // If the target schema does not have a reference to a schema yet, it can be added
   // but should be checked if it's schema references have collisions with existing references.
   if(change.changeType === "add") {

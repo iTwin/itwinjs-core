@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { primitiveTypeToString, SchemaItemKey } from "@itwin/ecschema-metadata";
-import type { EnumerationDifference, EnumeratorDifference } from "../Differencing/SchemaDifference";
+import { type EnumerationDifference, type EnumeratorDifference, SchemaDifference } from "../Differencing/SchemaDifference";
 import type { SchemaItemMergerHandler } from "./SchemaItemMerger";
 import { type MutableEnumeration } from "../Editing/Mutable/MutableEnumeration";
 
@@ -15,7 +15,7 @@ type ChangeTypes = EnumerationDifference | EnumeratorDifference;
  */
 export const enumerationMerger: SchemaItemMergerHandler<ChangeTypes> = {
   async add(context, change) {
-    if(isEnumeratorDifference(change)) {
+    if(SchemaDifference.isEnumeratorDifference(change)) {
       const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
       await context.editor.enumerations.addEnumerator(itemKey, change.difference);
       return {};
@@ -29,7 +29,7 @@ export const enumerationMerger: SchemaItemMergerHandler<ChangeTypes> = {
     });
   },
   async modify(context, change, itemKey, item: MutableEnumeration) {
-    if(isEnumeratorDifference(change)) {
+    if(SchemaDifference.isEnumeratorDifference(change)) {
       const [_path, enumeratorName] = change.path.split(".");
       if(change.difference.value !== undefined) {
         return { errorMessage: `Failed to merge enumerator attribute, Enumerator "${enumeratorName}" has different values.` };
@@ -60,7 +60,3 @@ export const enumerationMerger: SchemaItemMergerHandler<ChangeTypes> = {
     return {};
   },
 };
-
-function isEnumeratorDifference(change: ChangeTypes): change is EnumeratorDifference {
-  return "path" in change && change.path.startsWith("$enumerators");
-}

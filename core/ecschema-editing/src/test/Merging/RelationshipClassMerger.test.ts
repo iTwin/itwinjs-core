@@ -391,7 +391,6 @@ describe("Relationship Class merger tests", () => {
           itemName: "BaseRelationship",
           path: "$source",
           difference: {
-            abstractConstraint: "TestSchema.SourceBaseEntity",
           },
         },
       ],

@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference } from "../Differencing/SchemaDifference";
-import type { MutableRelationshipClass } from "../Editing/Mutable/MutableRelationshipClass";
+import { type RelationshipClassDifference, type RelationshipConstraintClassDifference, type RelationshipConstraintDifference, SchemaDifference } from "../Differencing/SchemaDifference";
+import { type MutableRelationshipClass } from "../Editing/Mutable/MutableRelationshipClass";
 import { type SchemaItemMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
 import { modifyClass } from "./ClassMerger";
 import { SchemaMergeContext } from "./SchemaMerger";
@@ -22,7 +22,7 @@ type ConstraintClassTypes = EntityClass | Mixin | RelationshipClass;
  */
 export const relationshipClassMerger: SchemaItemMergerHandler<RelationshipDifferences> = {
   async add(context, change) {
-    if(isConstraintDifference(change) || isConstraintClassDifference(change)) {
+    if(SchemaDifference.isRelationshipConstraintDifference(change) || SchemaDifference.isRelationshipConstraintClassDifference(change)) {
       return { errorMessage: "RelationshipConstraints cannot be added." };
     }
     return context.editor.relationships.createFromProps(context.targetSchemaKey, {
@@ -33,10 +33,10 @@ export const relationshipClassMerger: SchemaItemMergerHandler<RelationshipDiffer
     });
   },
   async modify(context, change, itemKey, item: MutableRelationshipClass) {
-    if(isConstraintDifference(change)) {
+    if(SchemaDifference.isRelationshipConstraintDifference(change)) {
       return modifyRelationshipConstraint(context, change, item);
     }
-    if(isConstraintClassDifference(change)) {
+    if(SchemaDifference.isRelationshipConstraintClassDifference(change)) {
       return modifyRelationshipClassConstraint(context, change, item);
     }
     return modifyRelationshipClass(context, change, itemKey, item);
@@ -122,13 +122,6 @@ async function modifyRelationshipClassConstraint(context: SchemaMergeContext, ch
     }
   }
   return {};
-}
-
-function isConstraintDifference(change: RelationshipDifferences): change is RelationshipConstraintDifference {
-  return "path" in change && (change.path === "$source" || change.path === "$target");
-}
-function isConstraintClassDifference(change: RelationshipDifferences): change is RelationshipConstraintClassDifference {
-  return "path" in change && change.path.match(/\$(source|target)\.constraintClasses/) !== null;
 }
 
 function parseConstraint(path: string): "source" | "target" {

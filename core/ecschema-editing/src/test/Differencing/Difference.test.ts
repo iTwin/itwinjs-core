@@ -320,8 +320,8 @@ describe("Schema Difference Reporting", () => {
   it("should return changed entity with mixin added", () => {
     expect(findEntry({ changeType: "add", itemName: "EmptyAbstractEntity"}), "Expected EmptyAbstractEntity to be added").to.not.be.undefined;
     expect(findEntry({ changeType: "add", itemName: "MissingMixin" }), "Expected MissingMixin to be added").to.not.be.undefined;
-    expectPartiallyEquals(findEntry({ changeType: "modify", itemName: "ChangedEntity", path: "$mixins" }), {
-      changeType: "modify",
+    expectPartiallyEquals(findEntry({ changeType: "add", itemName: "ChangedEntity", path: "$mixins" }), {
+      changeType: "add",
       schemaType: "EntityClass",
       itemName:   "ChangedEntity",
       path:       "$mixins",

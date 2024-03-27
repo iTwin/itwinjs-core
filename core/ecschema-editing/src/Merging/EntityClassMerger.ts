@@ -6,14 +6,13 @@ import { type EntityClassDifference, EntityClassMixinDifference } from "../Diffe
 import { type SchemaItemMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
 import { type MutableEntityClass } from "../Editing/Mutable/MutableEntityClass";
 import { modifyClass } from "./ClassMerger";
-
-type EntityChangeType = EntityClassDifference | EntityClassMixinDifference;
+import { SchemaItemKey } from "@itwin/ecschema-metadata";
 
 /**
  * Defines a merge handler to merge Entity Class schema items.
  * @internal
  */
-export const entityClassMerger: SchemaItemMergerHandler<EntityChangeType> = {
+export const entityClassMerger: SchemaItemMergerHandler<EntityClassDifference> = {
   async add(context, change) {
     return context.editor.entities.createFromProps(context.targetSchemaKey, {
       name: change.itemName,
@@ -23,9 +22,6 @@ export const entityClassMerger: SchemaItemMergerHandler<EntityChangeType> = {
     });
   },
   async modify(context, change, itemKey, item: MutableEntityClass) {
-    if(isMixinDifference(change)) {
-      return { errorMessage: `Changing the entity class '${itemKey.name}' mixins is not supported.`};
-    }
     if(change.difference.mixins !== undefined) {
       for(const mixin of change.difference.mixins) {
         const mixinKey = await updateSchemaItemKey(context, mixin);
@@ -40,6 +36,23 @@ export const entityClassMerger: SchemaItemMergerHandler<EntityChangeType> = {
   },
 };
 
-function isMixinDifference(change: EntityChangeType): change is EntityClassMixinDifference {
-  return "path" in change && change.path === "$mixins";
-}
+/**
+ * Defines a merge handler to merge Mixins to Entity Class schema items.
+ * @internal
+ */
+export const entityClassMixinMerger: SchemaItemMergerHandler<EntityClassMixinDifference> = {
+  async add(context, change) {
+    for(const mixinFullName of change.difference) {
+      const mixinKey = await updateSchemaItemKey(context, mixinFullName);
+      const entityKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
+      const result = await context.editor.entities.addMixin(entityKey, mixinKey);
+      if(result.errorMessage === undefined) {
+        throw new Error(result.errorMessage);
+      }
+    }
+    return {};
+  },
+  async modify(_context, change) {
+    return { errorMessage: `Changing the entity class '${change.itemName}' mixins is not supported.`};
+  },
+};

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import type { SchemaMergeContext } from "./SchemaMerger";
-import type { SchemaEditResults } from "../Editing/Editor";
-import { AnySchemaItemDifference, DifferenceType, SchemaItemTypeName, SchemaType } from "../Differencing/SchemaDifference";
+import type { SchemaEditResults, SchemaItemEditResults } from "../Editing/Editor";
+import { AnySchemaDifference, AnySchemaItemDifference, SchemaDifference } from "../Differencing/SchemaDifference";
 import { ECObjectsError, ECObjectsStatus, SchemaContext, SchemaItem, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { enumerationMerger } from "./EnumerationMerger";
 import { phenomenonMerger } from "./PhenomenonMerger";
@@ -17,43 +17,16 @@ import { mergeClassItems } from "./ClassMerger";
 /**
  * @internal
  */
-type FilteredType<T extends SchemaType> = Extract<AnySchemaItemDifference, { schemaType: T }>;
-
-/**
- * @internal
- */
-interface ChangeHandlerMapping<T> {
-  add:    (context: SchemaMergeContext, change: T) => Promise<SchemaEditResults>;
-  modify: (context: SchemaMergeContext, change: T, itemKey: SchemaItemKey, item: any) => Promise<SchemaEditResults>;
-}
-
-/**
- * @internal
- */
-export type SchemaItemMergerHandler<T extends AnySchemaItemDifference> = {
-  [P in T["changeType"]]: ChangeHandlerMapping<T>[P];
-};
-
-/**
- * @internal
- */
-export type AnyMergerHandler<T extends AnySchemaItemDifference = AnySchemaItemDifference> = {
-  [P in DifferenceType]?: ChangeHandlerMapping<T>[P];
-};
-
-/**
- * Small typescript wrapper around the Array.filter to avoid extra casting.
- * @internal
- */
-export function filterByType<T extends SchemaType, R=FilteredType<T>>(differences: AnySchemaItemDifference[], type: T): R[] {
-  return differences.filter((entry) => entry.schemaType === type) as R[];
+export interface SchemaItemMergerHandler<T extends AnySchemaItemDifference> {
+  add?:    (context: SchemaMergeContext, change: T) => Promise<SchemaItemEditResults>;
+  modify?: (context: SchemaMergeContext, change: T, itemKey: SchemaItemKey, item: any) => Promise<SchemaItemEditResults>;
 }
 
 /**
  * Handles the merging logic for everything that is same for all schema items such as labels or descriptions
  * @internal
  */
-async function mergeSchemaItem<T extends AnySchemaItemDifference>(context: SchemaMergeContext, change: T, merger: AnyMergerHandler<T>): Promise<SchemaEditResults> {
+async function mergeSchemaItem<T extends AnySchemaItemDifference>(context: SchemaMergeContext, change: T, merger: SchemaItemMergerHandler<T>): Promise<SchemaEditResults> {
   if(change.changeType === "add" && merger.add) {
     return merger.add(context, change);
   }
@@ -87,40 +60,38 @@ export async function locateSchemaItem(context: SchemaMergeContext, itemName: st
  * @returns             An async iterable with the merge result for each schema item.
  * @internal
  */
-export async function * mergeSchemaItems(context: SchemaMergeContext, itemChanges: AnySchemaItemDifference[]) {
-  for (const difference of filterByType(itemChanges, SchemaItemTypeName.UnitSystem)) {
+export async function * mergeSchemaItems(context: SchemaMergeContext, itemChanges: AnySchemaDifference[]) {
+  for (const difference of itemChanges.filter(SchemaDifference.isUnitSystemDifference)) {
     yield await mergeSchemaItem(context, difference, unitSystemMerger);
   }
 
-  for (const difference of filterByType(itemChanges, SchemaItemTypeName.PropertyCategory)) {
+  for (const difference of itemChanges.filter(SchemaDifference.isPropertyCategoryDifference)) {
     yield await mergeSchemaItem(context, difference, propertyCategoryMerger);
   }
 
-  for (const difference of filterByType(itemChanges, SchemaItemTypeName.Enumeration)) {
+  for (const difference of itemChanges.filter(SchemaDifference.isEnumerationDifference)) {
     yield await mergeSchemaItem(context, difference, enumerationMerger);
   }
 
-  for (const difference of filterByType(itemChanges, SchemaItemTypeName.Phenomenon)) {
+  for (const difference of itemChanges.filter(SchemaDifference.isEnumeratorDifference)) {
+    yield await mergeSchemaItem(context, difference, enumerationMerger);
+  }
+
+  for (const difference of itemChanges.filter(SchemaDifference.isPhenomenonDifference)) {
     yield await mergeSchemaItem(context, difference, phenomenonMerger);
   }
 
-  // for (const _difference of itemChanges.filter((entry) => entry.schemaType === "Unit")) {
+  // TODO:
+  // The following schema items are not supported yet. Mentioned in the processing order:
+  // - Unit
+  // - Inverted Unit
+  // - Format
 
-  // }
-
-  // for (const _difference of itemChanges.filter((entry) => entry.schemaType === "InvertedUnit")) {
-
-  // }
-
-  // for (const _difference of itemChanges.filter((entry) => entry.schemaType === "Format")) {
-
-  // }
-
-  for (const difference of filterByType(itemChanges, SchemaItemTypeName.KindOfQuantity)) {
+  for (const difference of itemChanges.filter(SchemaDifference.isKindOfQuantityDifference)) {
     yield await mergeSchemaItem(context, difference, kindOfQuantityMerger);
   }
 
-  for (const difference of filterByType(itemChanges, SchemaItemTypeName.Constant)) {
+  for (const difference of itemChanges.filter(SchemaDifference.isConstantDifference)) {
     yield await mergeSchemaItem(context, difference, constantMerger);
   }
 
@@ -132,6 +103,7 @@ export async function * mergeSchemaItems(context: SchemaMergeContext, itemChange
 }
 
 /**
+ * Convenience-method around updateSchemaItemKey that returns the full name instead of a SchemaItemKey.
  * @internal
  */
 export async function updateSchemaItemFullName(context: SchemaMergeContext, reference: string) {
@@ -140,13 +112,11 @@ export async function updateSchemaItemFullName(context: SchemaMergeContext, refe
 }
 
 /**
+ * Updates the given reference if it refers to a SchemaItem in the source Schema and
+ * returns a SchemaItemKey. If any other schema is referred the reference is not change.
  * @internal
  */
 export async function updateSchemaItemKey(context: SchemaMergeContext, reference: string) {
-  // There are two options, either the phenomenon was referenced from another
-  // schema or it is defined in the same schema as the constant to be merged.
-  // In the latter case, the changes would report a different property value that
-  // refers to the source schema. So that needs to be changed here.
   const [schemaName, itemName] = SchemaItem.parseFullName(reference);
   if(context.sourceSchemaKey.compareByName(schemaName)) {
     return resolveSchemaItemKey(context.editor.schemaContext, new SchemaItemKey(itemName, context.targetSchemaKey));
