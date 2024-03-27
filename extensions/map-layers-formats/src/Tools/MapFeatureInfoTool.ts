@@ -300,6 +300,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
       return this.exitTool();
   }
 
+  /** @internal */
   protected showPrompt(): void {
 
     const promptEnterPoint = IModelApp.localization.getLocalizedString("mapLayersFormats:tools.MapFeatureInfoTool.Prompts.EnterPoint");
