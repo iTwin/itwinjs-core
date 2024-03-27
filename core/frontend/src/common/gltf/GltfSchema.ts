@@ -510,6 +510,19 @@ export interface GltfBuffer extends GltfChildOfRootProperty {
   };
 }
 
+/** https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md
+ * @internal
+*/
+export interface GltfBufferViewMeshoptCompressionExtension {
+  buffer: number;
+  byteOffset?: number;
+  byteLength: number;
+  byteStride: number;
+  count: number;
+  mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES";
+  filter?: "NONE" | "OCTAHEDRAL" | "QUATERNION";
+}
+
 /** @internal */
 export interface GltfBufferViewProps extends GltfChildOfRootProperty {
   buffer: GltfId;
@@ -518,16 +531,7 @@ export interface GltfBufferViewProps extends GltfChildOfRootProperty {
   byteStride?: number;
   target?: GltfBufferTarget;
   extensions?: GltfExtensions & {
-    // https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md
-    EXT_meshopt_compression?: {
-      buffer: number;
-      byteOffset?: number;
-      byteLength: number;
-      byteStride: number;
-      count: number;
-      mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES";
-      filter?: "NONE" | "OCTAHEDRAL" | "QUATERNION";
-    };
+    EXT_meshopt_compression?: GltfBufferViewMeshoptCompressionExtension;
   };
 }
 
