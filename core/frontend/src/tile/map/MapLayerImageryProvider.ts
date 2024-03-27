@@ -7,13 +7,14 @@
  */
 
 import { assert, BeEvent } from "@itwin/core-bentley";
-import { Base64EncodedString, Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
+import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { Angle } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { ScreenViewport } from "../../Viewport";
 import { GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 import { HitDetail } from "../../HitDetail";
+import { headersIncludeAuthMethod, setBasicAuthorization } from "../../request/utils";
 
 /** @internal */
 const tileImageSize = 256, untiledImageSize = 256;
@@ -44,6 +45,15 @@ export abstract class MapLayerImageryProvider {
 
   /** @internal */
   private _status = MapLayerImageryProviderStatus.Valid;
+
+  /** @internal */
+  protected _includeUserCredentials = false;
+
+  /** @internal */
+  protected readonly onFirstRequestCompleted = new BeEvent<() => void>();
+
+  /** @internal */
+  protected _firstRequestPromise: Promise<void>|undefined;
 
   /** @internal */
   public get status() { return this._status; }
@@ -220,18 +230,54 @@ export abstract class MapLayerImageryProvider {
   /** @internal */
   protected setRequestAuthorization(headers: Headers) {
     if (this._settings.userName && this._settings.password) {
-      headers.set("Authorization", `Basic ${Base64EncodedString.encode(`${this._settings.userName}:${this._settings.password}`)}`);
+      setBasicAuthorization(headers, this._settings.userName, this._settings.password);
     }
   }
 
   /** @internal */
-  public async makeTileRequest(url: string) {
-    let headers: Headers | undefined;
-    if (this._settings.userName && this._settings.password) {
-      headers = new Headers();
-      this.setRequestAuthorization(headers);
+  public async makeTileRequest(url: string): Promise<Response> {
+
+    // We want to complete the first request before letting other requests go;
+    // this done to avoid flooding server with requests missing credentials
+    if (!this._firstRequestPromise)
+      this._firstRequestPromise  = new Promise<void>((resolve: any) => this.onFirstRequestCompleted.addOnce(()=>resolve()));
+    else
+      await this._firstRequestPromise;
+
+    let response: Response|undefined;
+    try {
+      let headers: Headers | undefined;
+      let hasCreds = false;
+      if (this._settings.userName && this._settings.password) {
+        hasCreds = true;
+        headers = new Headers();
+        this.setRequestAuthorization(headers);
+      }
+      response = await fetch(url, {
+        method: "GET",
+        headers,
+        credentials: this._includeUserCredentials ? "include" : undefined,
+      });
+
+      if (response.status === 401
+        && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])
+        && !this._includeUserCredentials
+        && !hasCreds ) {
+        // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
+        response = await fetch(url, { method: "GET", credentials: "include" });
+        if (response.status === 200) {
+          this._includeUserCredentials = true;    // avoid going through 401 challenges over and over
+        }
+      }
+
+    } finally {
+      this.onFirstRequestCompleted.raiseEvent();
     }
-    return fetch(url, { method: "GET", headers });
+
+    if (response === undefined)
+      throw new Error("fetch call failed");
+
+    return response;
   }
 
   /** Returns a map layer tile at the specified settings. */
@@ -272,7 +318,11 @@ export abstract class MapLayerImageryProvider {
     this.setRequestAuthorization(headers);
 
     try {
-      const response = await fetch(url, { method: "GET", headers });
+      const response = await fetch(url, {
+        method: "GET",
+        headers,
+        credentials: this._includeUserCredentials ? "include" : undefined,
+      });
       const text = await response.text();
       if (undefined !== text) {
         strings.push(text);

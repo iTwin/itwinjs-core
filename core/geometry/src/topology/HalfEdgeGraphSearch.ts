@@ -7,17 +7,23 @@
  * @module Topology
  */
 import { Range1d } from "../geometry3d/Range";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction, NodeToNumberFunction } from "./Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction, NodeFunction, NodeToNumberFunction } from "./Graph";
 import { SignedDataSummary } from "./SignedDataSummary";
 import { XYParitySearchContext } from "./XYParitySearchContext";
 
 // cspell:word internaldocs
 
-/** Interface for an object that executes boolean tests on edges. */
+/**
+ * Interface for an object that executes boolean tests on edges.
+ * @internal
+ */
 export interface HalfEdgeTestObject {
   testEdge(h: HalfEdge): boolean;
 }
-/** Class to test match of half edge mask. */
+/**
+ * Class to test match of half edge mask.
+ * @internal
+ */
 export class HalfEdgeMaskTester {
   private _targetMask: HalfEdgeMask;
   private _targetValue: boolean;
@@ -35,7 +41,10 @@ export class HalfEdgeMaskTester {
     return edge.isMaskSet(this._targetMask) === this._targetValue;
   }
 }
-/** Class for different types of searches for HalfEdgeGraph. */
+/**
+ * Class for different types of searches for HalfEdgeGraph.
+ *  @internal
+ */
 export class HalfEdgeGraphSearch {
   /**
    * Static method for face area computation -- useful as function parameter in `collectFaceAreaSummary`.
@@ -242,6 +251,109 @@ export class HalfEdgeGraphSearch {
       }
     }
     HalfEdgeGraphSearch.correctParityInComponentArrays(parityMask, components);
+    return components;
+  }
+  /**
+   * Breadth First Search through connected component of a graph.
+   * @param component vector of nodes, one per face.
+   * @param seed seed node in component.
+   * @param visitMask mask to apply to visited nodes. Assumed cleared throughout component.
+   * @param ignoreMask (optional) mask preset on faces to ignore. Default value is `HalfEdgeMask.EXTERIOR` to
+   * ignore exterior faces. Pass `HalfEdgeMask.NULL_MASK` to process all faces.
+   * @param maxFaceCount (optional) maximum number of faces in the component. Should be positive; otherwise
+   * `Infinity` is used.
+   * @returns node at which to start next component if maximum face count exceeded, or undefined.
+   */
+  private static exploreComponent(
+    component: HalfEdge[],
+    seed: HalfEdge,
+    visitMask: HalfEdgeMask,
+    ignoreMask: HalfEdgeMask = HalfEdgeMask.EXTERIOR,
+    maxFaceCount: number = Infinity,
+  ): HalfEdge | undefined {
+    if (maxFaceCount <= 0)
+      maxFaceCount = Infinity;
+    const boundaryMask: HalfEdgeMask = visitMask | ignoreMask;
+    let numFaces = 0;
+    const candidates: HalfEdge[] = []; // the queue
+    candidates.push(seed);
+    while (candidates.length !== 0 && numFaces < maxFaceCount) {
+      // shift is O(n) and may be inefficient for large queues; if needed, we can replace
+      // queue by circular array or implement the queue using 2 stacks; both are O(1)
+      const node = candidates.shift()!;
+      if (node.isMaskSet(boundaryMask))
+        continue;
+      component.push(node);
+      ++numFaces;
+      const enqueueNeighboringFaces: NodeFunction = (heNode: HalfEdge) => {
+        heNode.setMask(visitMask);
+        const neighbor = heNode.vertexSuccessor;
+        if (!neighbor.isMaskSet(boundaryMask))
+          candidates.push(neighbor);
+      };
+      node.collectAroundFace(enqueueNeighboringFaces);
+    }
+    if (candidates.length === 0)
+      return undefined;
+    else {
+      const front = candidates[0];
+      while (candidates.length !== 0) {
+        // try to find a node at the boundary of both the geometry and previous component
+        const node = candidates.shift()!; // shift may be inefficient for large queues
+        if (node.vertexSuccessor.isMaskSet(ignoreMask))
+          return node;
+        if (node.edgeMate.isMaskSet(ignoreMask))
+          return node;
+      }
+      return front;
+    }
+  }
+  /**
+   * Collect connected components of the graph (via Breadth First Search).
+   * @param graph graph to inspect.
+   * @param maxFaceCount (optional) maximum number of faces in each component. Should be positive; otherwise
+   * `Infinity` is used.
+   * @param ignoreMask (optional) mask preset on faces to ignore. Default value is `HalfEdgeMask.EXTERIOR` to ignore
+   * exterior faces. Pass `HalfEdgeMask.NULL_MASK` to process all faces.
+   * @returns the components of the graph, each component represented by an array of nodes, one node per face
+   * of the component. In other words, entry [i][j] is a HalfEdge in the j_th face loop of the i_th component.
+   */
+  public static collectConnectedComponents(
+    graph: HalfEdgeGraph,
+    maxFaceCount: number = Infinity,
+    ignoreMask: HalfEdgeMask = HalfEdgeMask.EXTERIOR,
+  ): HalfEdge[][] {
+    const components: HalfEdge[][] = [];
+    if (graph.countMask(ignoreMask) === 0)
+      ignoreMask = HalfEdgeMask.NULL_MASK;
+    const visitMask = HalfEdgeMask.VISITED;
+    const boundaryMask: HalfEdgeMask = visitMask | ignoreMask;
+    // Starting with the input node, look ahead for a boundary face. Failing that, return the input node.
+    // Starting all floods at the boundary reduces the chance of ending up with a ring-shaped component at the boundary.
+    const findNextFloodSeed = (index: number) => {
+      for (let i = index; i < graph.countNodes(); ++i) {
+        if (!graph.allHalfEdges[i].isMaskSet(boundaryMask)
+          && graph.allHalfEdges[i].edgeMate.isMaskSet(boundaryMask)) {
+          index = i;
+          break;
+        }
+      }
+      return index;
+    };
+    for (let i = 0; i < graph.countNodes(); ++i) {
+      if (graph.allHalfEdges[i].isMaskSet(boundaryMask))
+        continue;
+      const i0 = findNextFloodSeed(i);
+      let seed: HalfEdge | undefined = graph.allHalfEdges[i0];
+      do { // flood this component
+        const component: HalfEdge[] = [];
+        seed = HalfEdgeGraphSearch.exploreComponent(component, seed, visitMask, ignoreMask, maxFaceCount);
+        if (component.length !== 0)
+          components.push(component);
+      } while (seed !== undefined);
+      if (!graph.allHalfEdges[i].isMaskSet(visitMask))
+        --i; // reprocess this node
+    }
     return components;
   }
   /**

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Field, KeySet, NestedContentField, Ruleset } from "@itwin/presentation-common";
@@ -10,9 +10,7 @@ import { initialize, terminate } from "../IntegrationTests";
 import { getFieldByLabel } from "../Utils";
 
 describe("Learning Snippets", () => {
-
   describe("Content", () => {
-
     let imodel: IModelConnection;
 
     before(async () => {
@@ -26,9 +24,7 @@ describe("Learning Snippets", () => {
     });
 
     describe("Customization", () => {
-
       describe("DefaultPropertyCategoryOverride", () => {
-
         it("uses `requiredSchemas` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Content.Customization.DefaultPropertyCategoryOverride.RequiredSchemas.Ruleset
           // There's a content rule for returning content of given `bis.Subject` instance. In addition, there are two default
@@ -37,38 +33,44 @@ describe("Learning Snippets", () => {
           // - For iModels containing BisCore version 1.0.2 and newer, the default property category should be "Custom Category NEW".
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-              }],
-            }, {
-              ruleType: "DefaultPropertyCategoryOverride",
-              requiredSchemas: [{ name: "BisCore", maxVersion: "1.0.2" }],
-              specification: {
-                id: "default",
-                label: "Custom Category OLD",
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                  },
+                ],
               },
-            }, {
-              ruleType: "DefaultPropertyCategoryOverride",
-              requiredSchemas: [{ name: "BisCore", minVersion: "1.0.2" }],
-              specification: {
-                id: "default",
-                label: "Custom Category NEW",
+              {
+                ruleType: "DefaultPropertyCategoryOverride",
+                requiredSchemas: [{ name: "BisCore", maxVersion: "1.0.2" }],
+                specification: {
+                  id: "default",
+                  label: "Custom Category OLD",
+                },
               },
-            }],
+              {
+                ruleType: "DefaultPropertyCategoryOverride",
+                requiredSchemas: [{ name: "BisCore", minVersion: "1.0.2" }],
+                specification: {
+                  id: "default",
+                  label: "Custom Category NEW",
+                },
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // The iModel uses BisCore older than 1.0.2 - we should use the "OLD" default category
-          const content = (await Presentation.presentation.getContent({
+          const content = await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
             descriptor: {},
-          }))!;
-          const defaultCategory = content.descriptor.categories.find((category) => category.name === "default");
+          });
+          const defaultCategory = content!.descriptor.categories.find((category) => category.name === "default");
           expect(defaultCategory).to.containSubset({
             label: "Custom Category OLD",
           });
@@ -80,32 +82,38 @@ describe("Learning Snippets", () => {
           // property category overrides of different priorities. The high priority rule should take precedence.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-              }],
-            }, {
-              ruleType: "DefaultPropertyCategoryOverride",
-              priority: 0,
-              specification: {
-                id: "default",
-                label: "Low Priority",
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                  },
+                ],
               },
-            }, {
-              ruleType: "DefaultPropertyCategoryOverride",
-              priority: 9999,
-              specification: {
-                id: "default",
-                label: "High Priority",
+              {
+                ruleType: "DefaultPropertyCategoryOverride",
+                priority: 0,
+                specification: {
+                  id: "default",
+                  label: "Low Priority",
+                },
               },
-            }],
+              {
+                ruleType: "DefaultPropertyCategoryOverride",
+                priority: 9999,
+                specification: {
+                  id: "default",
+                  label: "High Priority",
+                },
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // The iModel uses BisCore older than 1.0.2 - we should use the "OLD" default category
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
@@ -123,24 +131,29 @@ describe("Learning Snippets", () => {
           // category override to place properties into.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-              }],
-            }, {
-              ruleType: "DefaultPropertyCategoryOverride",
-              specification: {
-                id: "default",
-                label: "Test Category",
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                  },
+                ],
               },
-            }],
+              {
+                ruleType: "DefaultPropertyCategoryOverride",
+                specification: {
+                  id: "default",
+                  label: "Test Category",
+                },
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // Ensure the default property category is correctly set up
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
@@ -154,11 +167,9 @@ describe("Learning Snippets", () => {
             expect(field.category).to.eq(defaultCategory);
           });
         });
-
       });
 
       describe("PropertyCategorySpecification", () => {
-
         it("allows referencing by `id`", async () => {
           // __PUBLISH_EXTRACT_START__ Content.Customization.PropertyCategorySpecification.Id.Ruleset
           // There's a content rule for returning content of given `bis.Subject` instance. The rule contains a custom
@@ -166,26 +177,34 @@ describe("Learning Snippets", () => {
           // "Custom" category.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                propertyCategories: [{
-                  id: "custom-category",
-                  label: "Custom",
-                }],
-                propertyOverrides: [{
-                  name: "*",
-                  categoryId: "custom-category",
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    propertyCategories: [
+                      {
+                        id: "custom-category",
+                        label: "Custom",
+                      },
+                    ],
+                    propertyOverrides: [
+                      {
+                        name: "*",
+                        categoryId: "custom-category",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // Ensure the field is assigned a category with correct label
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
@@ -205,26 +224,34 @@ describe("Learning Snippets", () => {
           // it puts all properties into a custom category with "Custom Category" label.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                propertyCategories: [{
-                  id: "custom-category",
-                  label: "Custom Category",
-                }],
-                propertyOverrides: [{
-                  name: "*",
-                  categoryId: "custom-category",
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    propertyCategories: [
+                      {
+                        id: "custom-category",
+                        label: "Custom Category",
+                      },
+                    ],
+                    propertyOverrides: [
+                      {
+                        name: "*",
+                        categoryId: "custom-category",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // Ensure the field is assigned a category with correct label
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
@@ -244,37 +271,47 @@ describe("Learning Snippets", () => {
           // all properties into a custom category with a description.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                propertyCategories: [{
-                  id: "custom-category",
-                  label: "Custom Category",
-                  description: "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
-                }],
-                propertyOverrides: [{
-                  name: "*",
-                  categoryId: "custom-category",
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    propertyCategories: [
+                      {
+                        id: "custom-category",
+                        label: "Custom Category",
+                        description: "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+                      },
+                    ],
+                    propertyOverrides: [
+                      {
+                        name: "*",
+                        categoryId: "custom-category",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // __PUBLISH_EXTRACT_START__ Content.Customization.PropertyCategorySpecification.Description.Result
           // Ensure category description is assigned
-          const content = (await Presentation.presentation.getContent({
+          const descriptor = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
             descriptor: {},
-          }))!;
-          expect(content.descriptor.categories).to.containSubset([{
-            label: "Custom Category",
-            description: "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
-          }]);
+          }))!.descriptor;
+          expect(descriptor.categories).to.containSubset([
+            {
+              label: "Custom Category",
+              description: "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+            },
+          ]);
           // __PUBLISH_EXTRACT_END__
         });
 
@@ -284,30 +321,39 @@ describe("Learning Snippets", () => {
           // puts all properties into a custom category with "Nested Category" label which in turn is put into "Root Category".
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                propertyCategories: [{
-                  id: "root-category",
-                  label: "Root Category",
-                }, {
-                  id: "nested-category",
-                  parentId: "root-category",
-                  label: "Nested Category",
-                }],
-                propertyOverrides: [{
-                  name: "*",
-                  categoryId: "nested-category",
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    propertyCategories: [
+                      {
+                        id: "root-category",
+                        label: "Root Category",
+                      },
+                      {
+                        id: "nested-category",
+                        parentId: "root-category",
+                        label: "Nested Category",
+                      },
+                    ],
+                    propertyOverrides: [
+                      {
+                        name: "*",
+                        categoryId: "nested-category",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // Ensure categories' hierarchy was set up correctly
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
@@ -331,54 +377,68 @@ describe("Learning Snippets", () => {
           // "Category B" category. Both categories are assigned custom priorities.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                propertyOverrides: [{
-                  name: "CodeValue",
-                  categoryId: "category-a",
-                }, {
-                  name: "UserLabel",
-                  categoryId: "category-b",
-                }],
-                propertyCategories: [{
-                  id: "category-a",
-                  label: "Category A",
-                  priority: 1,
-                }, {
-                  id: "category-b",
-                  label: "Category B",
-                  priority: 2,
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    propertyOverrides: [
+                      {
+                        name: "CodeValue",
+                        categoryId: "category-a",
+                      },
+                      {
+                        name: "UserLabel",
+                        categoryId: "category-b",
+                      },
+                    ],
+                    propertyCategories: [
+                      {
+                        id: "category-a",
+                        label: "Category A",
+                        priority: 1,
+                      },
+                      {
+                        id: "category-b",
+                        label: "Category B",
+                        priority: 2,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // __PUBLISH_EXTRACT_START__ Content.Customization.PropertyCategorySpecification.Priority.Result
           // Ensure that correct category priorities are assigned
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
             descriptor: {},
           }))!;
-          expect(content.descriptor.fields).to.containSubset([{
-            label: "Code",
-            category: {
-              label: "Category A",
-              priority: 1,
+          expect(content.descriptor.fields).to.containSubset([
+            {
+              label: "Code",
+              category: {
+                label: "Category A",
+                priority: 1,
+              },
             },
-          }]);
-          expect(content.descriptor.fields).to.containSubset([{
-            label: "User Label",
-            category: {
-              label: "Category B",
-              priority: 2,
+          ]);
+          expect(content.descriptor.fields).to.containSubset([
+            {
+              label: "User Label",
+              category: {
+                label: "Category B",
+                priority: 2,
+              },
             },
-          }]);
+          ]);
           // __PUBLISH_EXTRACT_END__
         });
 
@@ -388,37 +448,47 @@ describe("Learning Snippets", () => {
           // is customized to put all properties into a custom category which has the `autoExpand` flag.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                propertyOverrides: [{
-                  name: "*",
-                  categoryId: "custom-category",
-                }],
-                propertyCategories: [{
-                  id: "custom-category",
-                  label: "Custom Category",
-                  autoExpand: true,
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    propertyOverrides: [
+                      {
+                        name: "*",
+                        categoryId: "custom-category",
+                      },
+                    ],
+                    propertyCategories: [
+                      {
+                        id: "custom-category",
+                        label: "Custom Category",
+                        autoExpand: true,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // __PUBLISH_EXTRACT_START__ Content.Customization.PropertyCategorySpecification.AutoExpand.Result
           // Ensure that categories have the `expand` flag
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
             descriptor: {},
           }))!;
-          expect(content.descriptor.categories).to.containSubset([{
-            label: "Custom Category",
-            expand: true,
-          }]);
+          expect(content.descriptor.categories).to.containSubset([
+            {
+              label: "Custom Category",
+              expand: true,
+            },
+          ]);
           // __PUBLISH_EXTRACT_END__
         });
 
@@ -429,48 +499,56 @@ describe("Learning Snippets", () => {
           // renderer.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                propertyOverrides: [{
-                  name: "*",
-                  categoryId: "custom-category",
-                }],
-                propertyCategories: [{
-                  id: "custom-category",
-                  label: "Custom Category",
-                  renderer: {
-                    rendererName: "my-category-renderer",
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    propertyOverrides: [
+                      {
+                        name: "*",
+                        categoryId: "custom-category",
+                      },
+                    ],
+                    propertyCategories: [
+                      {
+                        id: "custom-category",
+                        label: "Custom Category",
+                        renderer: {
+                          rendererName: "my-category-renderer",
+                        },
+                      },
+                    ],
                   },
-                }],
-              }],
-            }],
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // __PUBLISH_EXTRACT_START__ Content.Customization.PropertyCategorySpecification.Renderer.Result
           // Ensure that categories have the `expand` flag
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
             descriptor: {},
           }))!;
-          expect(content.descriptor.categories).to.containSubset([{
-            label: "Custom Category",
-            renderer: {
-              name: "my-category-renderer",
+          expect(content.descriptor.categories).to.containSubset([
+            {
+              label: "Custom Category",
+              renderer: {
+                name: "my-category-renderer",
+              },
             },
-          }]);
+          ]);
           // __PUBLISH_EXTRACT_END__
         });
-
       });
 
       describe("PropertySpecification", () => {
-
         it("uses `overridesPriority` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Content.Customization.PropertySpecification.OverridesPriority.Ruleset
           // There's a content rule for returning content of given `bis.Subject` instance. In addition, the `UserLabel`
@@ -478,47 +556,56 @@ describe("Learning Snippets", () => {
           // overriden by both specifications and the one with higher `overridesPriority` takes precedence.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                propertyOverrides: [{
-                  name: "UserLabel",
-                  overridesPriority: 1,
-                  labelOverride: "A",
-                  renderer: {
-                    rendererName: "my-renderer",
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    propertyOverrides: [
+                      {
+                        name: "UserLabel",
+                        overridesPriority: 1,
+                        labelOverride: "A",
+                        renderer: {
+                          rendererName: "my-renderer",
+                        },
+                      },
+                      {
+                        name: "UserLabel",
+                        overridesPriority: 2,
+                        labelOverride: "B",
+                        editor: {
+                          editorName: "my-editor",
+                        },
+                      },
+                    ],
                   },
-                }, {
-                  name: "UserLabel",
-                  overridesPriority: 2,
-                  labelOverride: "B",
-                  editor: {
-                    editorName: "my-editor",
-                  },
-                }],
-              }],
-            }],
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // Ensure the `UserLabel` field is assigned attributes from both specifications
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
             descriptor: {},
           }))!;
-          expect(content.descriptor.fields).to.containSubset([{
-            label: "B",
-            renderer: {
-              name: "my-renderer",
+          expect(content.descriptor.fields).to.containSubset([
+            {
+              label: "B",
+              renderer: {
+                name: "my-renderer",
+              },
+              editor: {
+                name: "my-editor",
+              },
             },
-            editor: {
-              name: "my-editor",
-            },
-          }]);
+          ]);
         });
 
         it("uses `labelOverride` attribute", async () => {
@@ -527,30 +614,38 @@ describe("Learning Snippets", () => {
           // property has a label override that relabels it to "Custom Label".
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                propertyOverrides: [{
-                  name: "UserLabel",
-                  labelOverride: "Custom Label",
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    propertyOverrides: [
+                      {
+                        name: "UserLabel",
+                        labelOverride: "Custom Label",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // Ensure the `UserLabel` field is assigned attributes from both specifications
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
             descriptor: {},
           }))!;
-          expect(content.descriptor.fields).to.containSubset([{
-            label: "Custom Label",
-          }]);
+          expect(content.descriptor.fields).to.containSubset([
+            {
+              label: "Custom Label",
+            },
+          ]);
         });
 
         it("uses `categoryId` attribute", async () => {
@@ -559,37 +654,47 @@ describe("Learning Snippets", () => {
           // property is placed into a custom category by assigning it a `categoryId`.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                propertyCategories: [{
-                  id: "custom-category",
-                  label: "Custom Category",
-                }],
-                propertyOverrides: [{
-                  name: "UserLabel",
-                  categoryId: "custom-category",
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    propertyCategories: [
+                      {
+                        id: "custom-category",
+                        label: "Custom Category",
+                      },
+                    ],
+                    propertyOverrides: [
+                      {
+                        name: "UserLabel",
+                        categoryId: "custom-category",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // Ensure the `UserLabel` field has the correct category
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
             descriptor: {},
           }))!;
-          expect(content.descriptor.fields).to.containSubset([{
-            label: "User Label",
-            category: {
-              label: "Custom Category",
+          expect(content.descriptor.fields).to.containSubset([
+            {
+              label: "User Label",
+              category: {
+                label: "Custom Category",
+              },
             },
-          }]);
+          ]);
         });
 
         it("uses `isDisplayed` attribute", async () => {
@@ -599,30 +704,38 @@ describe("Learning Snippets", () => {
           // using a property override.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                propertyOverrides: [{
-                  name: "LastMod",
-                  isDisplayed: true,
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    propertyOverrides: [
+                      {
+                        name: "LastMod",
+                        isDisplayed: true,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // Ensure the `LastMod` is there
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
             descriptor: {},
           }))!;
-          expect(content.descriptor.fields).to.containSubset([{
-            label: "Last Modified",
-          }]);
+          expect(content.descriptor.fields).to.containSubset([
+            {
+              label: "Last Modified",
+            },
+          ]);
         });
 
         it("uses `doNotHideOtherPropertiesOnDisplayOverride` attribute", async () => {
@@ -632,31 +745,41 @@ describe("Learning Snippets", () => {
           // which ensures other properties are also kept displayed.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                propertyOverrides: [{
-                  name: "UserLabel",
-                  isDisplayed: true,
-                  doNotHideOtherPropertiesOnDisplayOverride: true,
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    propertyOverrides: [
+                      {
+                        name: "UserLabel",
+                        isDisplayed: true,
+                        doNotHideOtherPropertiesOnDisplayOverride: true,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // Ensure the `UserLabel` property is not the only property in content
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
             descriptor: {},
           }))!;
-          expect(content.descriptor.fields).to.containSubset([{
-            label: "User Label",
-          }]).and.to.have.lengthOf(4);
+          expect(content.descriptor.fields)
+            .to.containSubset([
+              {
+                label: "User Label",
+              },
+            ])
+            .and.to.have.lengthOf(4);
         });
 
         it("uses `renderer` attribute", async () => {
@@ -665,36 +788,44 @@ describe("Learning Snippets", () => {
           // it assigns the `UserLabel` property a custom "my-renderer" renderer.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                propertyOverrides: [{
-                  name: "UserLabel",
-                  renderer: {
-                    rendererName: "my-renderer",
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    propertyOverrides: [
+                      {
+                        name: "UserLabel",
+                        renderer: {
+                          rendererName: "my-renderer",
+                        },
+                      },
+                    ],
                   },
-                }],
-              }],
-            }],
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // __PUBLISH_EXTRACT_START__ Content.Customization.PropertySpecification.Renderer.Result
           // Ensure the `UserLabel` field is assigned the "my-renderer" renderer
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
             descriptor: {},
           }))!;
-          expect(content.descriptor.fields).to.containSubset([{
-            label: "User Label",
-            renderer: {
-              name: "my-renderer",
+          expect(content.descriptor.fields).to.containSubset([
+            {
+              label: "User Label",
+              renderer: {
+                name: "my-renderer",
+              },
             },
-          }]);
+          ]);
           // __PUBLISH_EXTRACT_END__
         });
 
@@ -704,36 +835,44 @@ describe("Learning Snippets", () => {
           // it assigns the `UserLabel` property a custom "my-editor" editor.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                propertyOverrides: [{
-                  name: "UserLabel",
-                  editor: {
-                    editorName: "my-editor",
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    propertyOverrides: [
+                      {
+                        name: "UserLabel",
+                        editor: {
+                          editorName: "my-editor",
+                        },
+                      },
+                    ],
                   },
-                }],
-              }],
-            }],
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // __PUBLISH_EXTRACT_START__ Content.Customization.PropertySpecification.Editor.Result
           // Ensure the `UserLabel` field is assigned the "my-editor" editor
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
             descriptor: {},
           }))!;
-          expect(content.descriptor.fields).to.containSubset([{
-            label: "User Label",
-            editor: {
-              name: "my-editor",
+          expect(content.descriptor.fields).to.containSubset([
+            {
+              label: "User Label",
+              editor: {
+                name: "my-editor",
+              },
             },
-          }]);
+          ]);
           // __PUBLISH_EXTRACT_END__
         });
 
@@ -743,32 +882,40 @@ describe("Learning Snippets", () => {
           // property is made read-only.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                propertyOverrides: [{
-                  name: "UserLabel",
-                  isReadOnly: true,
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    propertyOverrides: [
+                      {
+                        name: "UserLabel",
+                        isReadOnly: true,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // __PUBLISH_EXTRACT_START__ Content.Customization.PropertySpecification.IsReadOnly.Result
           // Ensure the `UserLabel` field is read-only.
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
             descriptor: {},
           }))!;
-          expect(content.descriptor.fields).to.containSubset([{
-            label: "User Label",
-            isReadonly: true,
-          }]);
+          expect(content.descriptor.fields).to.containSubset([
+            {
+              label: "User Label",
+              isReadonly: true,
+            },
+          ]);
           // __PUBLISH_EXTRACT_END__
         });
 
@@ -778,66 +925,81 @@ describe("Learning Snippets", () => {
           // property's priority is set to 9999.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                propertyOverrides: [{
-                  name: "UserLabel",
-                  priority: 9999,
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    propertyOverrides: [
+                      {
+                        name: "UserLabel",
+                        priority: 9999,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // Ensure the `UserLabel` field's priority is 9999, which makes it appear higher in the property grid.
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
             descriptor: {},
           }))!;
-          expect(content.descriptor.fields).to.containSubset([{
-            label: "User Label",
-            priority: 9999,
-          }]);
+          expect(content.descriptor.fields).to.containSubset([
+            {
+              label: "User Label",
+              priority: 9999,
+            },
+          ]);
         });
       });
 
       describe("CalculatedPropertiesSpecification", () => {
-
         it("uses `label` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Content.Customization.CalculatedPropertiesSpecification.Label.Ruleset
           // There's a content rule for returning content of given `bis.Subject` instance. The produced content is customized to
           // additionally have a calculated "My Calculated Property" property.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                calculatedProperties: [{
-                  label: "My Calculated Property",
-                  value: `123`,
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    calculatedProperties: [
+                      {
+                        label: "My Calculated Property",
+                        value: `123`,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // Ensure that the custom property was created
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
             descriptor: {},
           }))!;
-          expect(content.descriptor.fields).to.containSubset([{
-            label: "My Calculated Property",
-          }]);
+          expect(content.descriptor.fields).to.containSubset([
+            {
+              label: "My Calculated Property",
+            },
+          ]);
         });
 
         it("uses `value` attribute", async () => {
@@ -847,33 +1009,40 @@ describe("Learning Snippets", () => {
           // element's `BBoxHigh` and `BBoxLow` property values.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                calculatedProperties: [{
-                  label: "Element Volume",
-                  value: "(this.BBoxHigh.x - this.BBoxLow.x) * (this.BBoxHigh.y - this.BBoxLow.y) * (this.BBoxHigh.z - this.BBoxLow.z)",
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    calculatedProperties: [
+                      {
+                        label: "Element Volume",
+                        value: "(this.BBoxHigh.x - this.BBoxLow.x) * (this.BBoxHigh.y - this.BBoxLow.y) * (this.BBoxHigh.z - this.BBoxLow.z)",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // Ensure that the custom property was created and has a value
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "generic.PhysicalObject", id: "0x74" }]),
             descriptor: {},
           }))!;
           const field = getFieldByLabel(content.descriptor.fields, "Element Volume");
-          expect(content.contentSet).to.have.lengthOf(1).and.to.containSubset([{
+          expect(content.total).to.eq(1);
+          expect((await content.items.next()).value).to.containSubset({
             values: {
               [field.name]: "3.449493952966681",
             },
-          }]);
+          });
         });
 
         it("uses `priority` attribute", async () => {
@@ -883,38 +1052,44 @@ describe("Learning Snippets", () => {
           // appear at the top in the UI, since generally properties have a priority of `1000`.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                calculatedProperties: [{
-                  label: "My Calculated Property",
-                  value: `123`,
-                  priority: 9999,
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    calculatedProperties: [
+                      {
+                        label: "My Calculated Property",
+                        value: `123`,
+                        priority: 9999,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // Ensure that the custom property has correct priority
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
             descriptor: {},
           }))!;
-          expect(content.descriptor.fields).to.containSubset([{
-            label: "My Calculated Property",
-            priority: 9999,
-          }]);
+          expect(content.descriptor.fields).to.containSubset([
+            {
+              label: "My Calculated Property",
+              priority: 9999,
+            },
+          ]);
         });
-
       });
 
       describe("RelatedPropertiesSpecification", () => {
-
         it("uses `propertiesSource` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Content.Customization.RelatedPropertiesSpecification.PropertiesSource.Ruleset
           // There's a content rule for returning content of given `bis.Subject` instance. The produced content is customized to
@@ -922,39 +1097,53 @@ describe("Learning Snippets", () => {
           // in backwards direction.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                relatedProperties: [{
-                  propertiesSource: [{
-                    relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
-                    direction: "Backward",
-                  }],
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    relatedProperties: [
+                      {
+                        propertiesSource: [
+                          {
+                            relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
+                            direction: "Backward",
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // Ensure that the custom property was created
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x12" }]),
             descriptor: {},
           }))!;
-          expect(content.descriptor.fields).to.containSubset([{
-            label: "Element",
-            nestedFields: [{
-              label: "Model",
-            }, {
-              label: "Code",
-            }, {
-              label: "User Label",
-            }],
-          }]);
+          expect(content.descriptor.fields).to.containSubset([
+            {
+              label: "Element",
+              nestedFields: [
+                {
+                  label: "Model",
+                },
+                {
+                  label: "Code",
+                },
+                {
+                  label: "User Label",
+                },
+              ],
+            },
+          ]);
         });
 
         it("uses `instanceFilter` attribute", async () => {
@@ -964,25 +1153,33 @@ describe("Learning Snippets", () => {
           // in forward direction, but only of children whose `CodeValue` starts with a "Bis" substring.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                relatedProperties: [{
-                  propertiesSource: [{
-                    relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
-                    direction: "Forward",
-                  }],
-                  instanceFilter: `this.CodeValue ~ "Bis%"`,
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    relatedProperties: [
+                      {
+                        propertiesSource: [
+                          {
+                            relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
+                            direction: "Forward",
+                          },
+                        ],
+                        instanceFilter: `this.CodeValue ~ "Bis%"`,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // Ensure that the custom property was created
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
@@ -990,17 +1187,24 @@ describe("Learning Snippets", () => {
           }))!;
           const childElementField = getFieldByLabel(content.descriptor.fields, "Element") as NestedContentField;
           const childElementCodeField = getFieldByLabel(childElementField.nestedFields, "Code");
-          expect(content.contentSet[0].values[childElementField.name]).to.have.lengthOf(2).and.to.containSubset([{
-            primaryKeys: [{ id: "0xe" }],
-            values: {
-              [childElementCodeField.name]: "BisCore.RealityDataSources",
-            },
-          }, {
-            primaryKeys: [{ id: "0x10" }],
-            values: {
-              [childElementCodeField.name]: "BisCore.DictionaryModel",
-            },
-          }]);
+
+          expect(content.total).to.be.greaterThan(0);
+          expect((await content.items.next()).value.values[childElementField.name])
+            .to.have.lengthOf(2)
+            .and.to.containSubset([
+              {
+                primaryKeys: [{ id: "0xe" }],
+                values: {
+                  [childElementCodeField.name]: "BisCore.RealityDataSources",
+                },
+              },
+              {
+                primaryKeys: [{ id: "0x10" }],
+                values: {
+                  [childElementCodeField.name]: "BisCore.DictionaryModel",
+                },
+              },
+            ]);
         });
 
         it("uses `handleTargetClassPolymorphically` attribute", async () => {
@@ -1011,42 +1215,57 @@ describe("Learning Snippets", () => {
           // determined and all its properties are loaded.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                relatedProperties: [{
-                  propertiesSource: [{
-                    relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
-                    direction: "Backward",
-                  }],
-                  handleTargetClassPolymorphically: true,
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    relatedProperties: [
+                      {
+                        propertiesSource: [
+                          {
+                            relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
+                            direction: "Backward",
+                          },
+                        ],
+                        handleTargetClassPolymorphically: true,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // Ensure that the custom property was created
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x12" }]),
             descriptor: {},
           }))!;
-          expect(content.descriptor.fields).to.containSubset([{
-            label: "Subject",
-            nestedFields: [{
-              label: "Model",
-            }, {
-              label: "Code",
-            }, {
-              label: "User Label",
-            }, {
-              label: "Description",
-            }],
-          }]);
+          expect(content.descriptor.fields).to.containSubset([
+            {
+              label: "Subject",
+              nestedFields: [
+                {
+                  label: "Model",
+                },
+                {
+                  label: "Code",
+                },
+                {
+                  label: "User Label",
+                },
+                {
+                  label: "Description",
+                },
+              ],
+            },
+          ]);
         });
 
         it("uses `relationshipMeaning` attribute", async () => {
@@ -1057,26 +1276,34 @@ describe("Learning Snippets", () => {
           // nested under the default category.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                relatedProperties: [{
-                  propertiesSource: [{
-                    relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                    direction: "Forward",
-                    targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
-                  }],
-                  relationshipMeaning: "SameInstance",
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    relatedProperties: [
+                      {
+                        propertiesSource: [
+                          {
+                            relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
+                            direction: "Forward",
+                            targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
+                          },
+                        ],
+                        relationshipMeaning: "SameInstance",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // Ensure that all related properties are placed into a category nested under the default category
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
@@ -1084,31 +1311,38 @@ describe("Learning Snippets", () => {
           }))!;
 
           const defaultCategory = content.descriptor.categories[0];
-          expect(content.descriptor.fields).to.containSubset([{
-            label: "Physical Partition",
-            category: defaultCategory,
-            nestedFields: [{
-              label: "Model",
-              category: {
-                parent: defaultCategory,
-              },
-            }, {
-              label: "Code",
-              category: {
-                parent: defaultCategory,
-              },
-            }, {
-              label: "User Label",
-              category: {
-                parent: defaultCategory,
-              },
-            }, {
-              label: "Description",
-              category: {
-                parent: defaultCategory,
-              },
-            }],
-          }]);
+          expect(content.descriptor.fields).to.containSubset([
+            {
+              label: "Physical Partition",
+              category: defaultCategory,
+              nestedFields: [
+                {
+                  label: "Model",
+                  category: {
+                    parent: defaultCategory,
+                  },
+                },
+                {
+                  label: "Code",
+                  category: {
+                    parent: defaultCategory,
+                  },
+                },
+                {
+                  label: "User Label",
+                  category: {
+                    parent: defaultCategory,
+                  },
+                },
+                {
+                  label: "Description",
+                  category: {
+                    parent: defaultCategory,
+                  },
+                },
+              ],
+            },
+          ]);
         });
 
         it("uses `properties` attribute", async () => {
@@ -1117,39 +1351,52 @@ describe("Learning Snippets", () => {
           // additionally include specific properties of modeled Element by following the `bis.ModelModelsElement` relationship.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                relatedProperties: [{
-                  propertiesSource: [{
-                    relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                    direction: "Forward",
-                    targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
-                  }],
-                  properties: ["UserLabel", "Description"],
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    relatedProperties: [
+                      {
+                        propertiesSource: [
+                          {
+                            relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
+                            direction: "Forward",
+                            targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
+                          },
+                        ],
+                        properties: ["UserLabel", "Description"],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // Ensure that the two related properties are picked up
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
             descriptor: {},
           }))!;
-          expect(content.descriptor.fields).to.containSubset([{
-            label: "Physical Partition",
-            nestedFields: [{
-              label: "User Label",
-            }, {
-              label: "Description",
-            }],
-          }]);
+          expect(content.descriptor.fields).to.containSubset([
+            {
+              label: "Physical Partition",
+              nestedFields: [
+                {
+                  label: "User Label",
+                },
+                {
+                  label: "Description",
+                },
+              ],
+            },
+          ]);
         });
 
         it("uses `autoExpand` attribute", async () => {
@@ -1159,43 +1406,58 @@ describe("Learning Snippets", () => {
           // the properties should be automatically expanded.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                relatedProperties: [{
-                  propertiesSource: [{
-                    relationship: { schemaName: "BisCore", className: "SubjectOwnsSubjects" },
-                    direction: "Forward",
-                  }],
-                  autoExpand: true,
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    relatedProperties: [
+                      {
+                        propertiesSource: [
+                          {
+                            relationship: { schemaName: "BisCore", className: "SubjectOwnsSubjects" },
+                            direction: "Forward",
+                          },
+                        ],
+                        autoExpand: true,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // Ensure the field has `autoExpand` attribute set to `true`
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
             descriptor: {},
           }))!;
-          expect(content.descriptor.fields).to.containSubset([{
-            label: "Subject",
-            autoExpand: true,
-            nestedFields: [{
-              label: "Model",
-            }, {
-              label: "Code",
-            }, {
-              label: "User Label",
-            }, {
-              label: "Description",
-            }],
-          }]);
+          expect(content.descriptor.fields).to.containSubset([
+            {
+              label: "Subject",
+              autoExpand: true,
+              nestedFields: [
+                {
+                  label: "Model",
+                },
+                {
+                  label: "Code",
+                },
+                {
+                  label: "User Label",
+                },
+                {
+                  label: "Description",
+                },
+              ],
+            },
+          ]);
         });
 
         it("uses `skipIfDuplicate` attribute", async () => {
@@ -1208,49 +1470,63 @@ describe("Learning Snippets", () => {
           // ignored due to `skipIfDuplicate` attribute being set to `true`.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                relatedProperties: [{
-                  propertiesSource: [{
-                    relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                    direction: "Forward",
-                    targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
-                  }],
-                  properties: ["UserLabel"],
-                }],
-              }],
-            }, {
-              ruleType: "ContentModifier",
-              class: { schemaName: "BisCore", className: "Model" },
-              relatedProperties: [{
-                propertiesSource: [{
-                  relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                  direction: "Forward",
-                  targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
-                }],
-                skipIfDuplicate: true,
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    relatedProperties: [
+                      {
+                        propertiesSource: [
+                          {
+                            relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
+                            direction: "Forward",
+                            targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
+                          },
+                        ],
+                        properties: ["UserLabel"],
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                ruleType: "ContentModifier",
+                class: { schemaName: "BisCore", className: "Model" },
+                relatedProperties: [
+                  {
+                    propertiesSource: [
+                      {
+                        relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
+                        direction: "Forward",
+                        targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
+                      },
+                    ],
+                    skipIfDuplicate: true,
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // Ensure only one related property is loaded
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
             descriptor: {},
           }))!;
-          expect(content.descriptor.fields).to.containSubset([{
-            label: "Physical Partition",
-            nestedFields: (nestedFields: Field[]) => {
-              return nestedFields.length === 1
-                && nestedFields[0].label === "User Label";
+          expect(content.descriptor.fields).to.containSubset([
+            {
+              label: "Physical Partition",
+              nestedFields: (nestedFields: Field[]) => {
+                return nestedFields.length === 1 && nestedFields[0].label === "User Label";
+              },
             },
-          }]);
+          ]);
         });
 
         it("uses `nestedRelatedProperties` attribute", async () => {
@@ -1259,54 +1535,68 @@ describe("Learning Snippets", () => {
           // specification that loads modeled element properties and properties of `bis.LinkElement` related to the modeled element.
           const ruleset: Ruleset = {
             id: "example",
-            rules: [{
-              ruleType: "Content",
-              specifications: [{
-                specType: "SelectedNodeInstances",
-                relatedProperties: [{
-                  propertiesSource: [{
-                    relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                    direction: "Forward",
-                    targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
-                  }],
-                  nestedRelatedProperties: [{
-                    propertiesSource: [{
-                      relationship: { schemaName: "BisCore", className: "ElementHasLinks" },
-                      direction: "Forward",
-                      targetClass: { schemaName: "BisCore", className: "RepositoryLink" },
-                    }],
-                  }],
-                }],
-              }],
-            }],
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                    relatedProperties: [
+                      {
+                        propertiesSource: [
+                          {
+                            relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
+                            direction: "Forward",
+                            targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
+                          },
+                        ],
+                        nestedRelatedProperties: [
+                          {
+                            propertiesSource: [
+                              {
+                                relationship: { schemaName: "BisCore", className: "ElementHasLinks" },
+                                direction: "Forward",
+                                targetClass: { schemaName: "BisCore", className: "RepositoryLink" },
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
           // Ensure properties of physical partition and repository link are loaded
-          const content = (await Presentation.presentation.getContent({
+          const content = (await Presentation.presentation.getContentIterator({
             imodel,
             rulesetOrId: ruleset,
             keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
             descriptor: {},
           }))!;
-          expect(content.descriptor.fields).to.containSubset([{
-            label: "Physical Partition",
-            nestedFields: [{
-              label: "Repository Link",
-              nestedFields: [{
-                label: "URL",
-              }],
-            }],
-          }]);
+          expect(content.descriptor.fields).to.containSubset([
+            {
+              label: "Physical Partition",
+              nestedFields: [
+                {
+                  label: "Repository Link",
+                  nestedFields: [
+                    {
+                      label: "URL",
+                    },
+                  ],
+                },
+              ],
+            },
+          ]);
         });
-
       });
-
     });
-
   });
-
 });
 
 function printRuleset(ruleset: Ruleset) {

@@ -13,7 +13,7 @@ import { Angle } from "../geometry3d/Angle";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Transform } from "../geometry3d/Transform";
-import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
+import { WritableXYAndZ, XAndY, XYAndZ } from "../geometry3d/XYZProps";
 import { SmallSystem } from "../numerics/Polynomials";
 import { MaskManager } from "./MaskManager";
 // import { GraphChecker } from "../test/topology/Graph.test"; // used for debugging
@@ -113,13 +113,7 @@ export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolea
  * Member fields for a half edge (which is also commonly called a node).
  * @internal
  */
-export interface HalfEdgeUserData {
-  /** Vertex x coordinate. */
-  x: number;
-  /** Vertex y coordinate. */
-  y: number;
-  /** Vertex z coordinate. */
-  z: number;
+export interface HalfEdgeUserData extends WritableXYAndZ {
   /** Angle used for sort-around-vertex. */
   sortAngle?: number;
   /** Numeric value for application-specific tagging (e.g. sorting). */
@@ -259,7 +253,7 @@ export class HalfEdge implements HalfEdgeUserData {
    * * The two edges are joined as edgeMate pair.
    * * The two edges are a 2-half-edge face loop in both the faceSuccessor and facePredecessor directions.
    * * Properties x,y,z,i are inserted in each half edge.
-   * @returns the reference to the first half edge created.
+   * @returns the reference to the first half edge created, set with "A" properties.
    */
   public static createHalfEdgePairWithCoordinates(
     xA: number = 0, yA: number = 0, zA: number = 0, iA: number = 0,
@@ -1361,8 +1355,9 @@ export class HalfEdgeGraph {
    * * The two half edges are a 2-half-edge face loop in both the faceSuccessor and facePredecessor directions.
    * * The two half edges are added to the graph's HalfEdge set.
    * * Coordinates are set to zero.
-   * * IDs are installed in the two half edges.
-   * @returns pointer to the first half edge created, with ID set to iA.
+   * @param iA `i` property of the first created HalfEdge
+   * @param iB `i` property of the second created HalfEdge
+   * @returns pointer to the first half edge created, with `i` property set to iA.
    */
   public createEdgeIdId(iA: number = 0, iB: number = 0): HalfEdge {
     return HalfEdge.createHalfEdgePairWithCoordinates(0.0, 0.0, 0.0, iA, 0.0, 0.0, 0.0, iB, this.allHalfEdges);
@@ -1521,7 +1516,6 @@ export class HalfEdgeGraph {
   }
   /** Returns the number of vertex loops in a graph structure. */
   public countVertexLoops(): number {
-    this.clearMask(HalfEdgeMask.VISITED);
     let count = 0;
     this.announceVertexLoops(
       (_graph: HalfEdgeGraph, _seed: HalfEdge) => {
@@ -1533,7 +1527,6 @@ export class HalfEdgeGraph {
   }
   /** Returns the number of face loops in a graph structure. */
   public countFaceLoops(): number {
-    this.clearMask(HalfEdgeMask.VISITED);
     let count = 0;
     this.announceFaceLoops(
       (_graph: HalfEdgeGraph, _seed: HalfEdge) => {
@@ -1545,7 +1538,6 @@ export class HalfEdgeGraph {
   }
   /** Returns the number of face loops satisfying a filter function with mask argument. */
   public countFaceLoopsWithMaskFilter(filter: HalfEdgeAndMaskToBooleanFunction, mask: HalfEdgeMask): number {
-    this.clearMask(HalfEdgeMask.VISITED);
     let count = 0;
     this.announceFaceLoops(
       (_graph: HalfEdgeGraph, seed: HalfEdge) => {

@@ -11,10 +11,10 @@ import { assert, BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "
 import {
   ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
-  OpenBriefcaseProps, PullChangesOptions, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
+  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
 import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
-import { BriefcaseDb, IModelDb, StandaloneDb } from "./IModelDb";
+import { BriefcaseDb, IModelDb, SnapshotDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostOptions } from "./IModelHost";
 import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 
@@ -215,6 +215,9 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async openBriefcase(args: OpenBriefcaseProps): Promise<IModelConnectionProps> {
     const db = await BriefcaseDb.open(args);
     return db.toJSON();
+  }
+  public async openCheckpoint(checkpoint: OpenCheckpointArgs): Promise<IModelConnectionProps> {
+    return (await SnapshotDb.openCheckpoint(checkpoint)).getConnectionProps();
   }
   public async openStandalone(filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions): Promise<IModelConnectionProps> {
     return StandaloneDb.openFile(filePath, openMode, opts).getConnectionProps();

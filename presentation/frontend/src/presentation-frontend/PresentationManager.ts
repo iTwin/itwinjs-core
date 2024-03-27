@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Core
  */
@@ -11,19 +11,56 @@ import { IModelApp, IModelConnection, IpcApp } from "@itwin/core-frontend";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
-  ClientDiagnosticsAttribute, Content, ContentDescriptorRequestOptions, ContentFormatter, ContentInstanceKeysRequestOptions,
-  ContentPropertyValueFormatter, ContentRequestOptions, ContentSourcesRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides,
-  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
-  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, FormatsMap, HierarchyLevelDescriptorRequestOptions,
-  HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, Item, Key, KeySet, KoqPropertyValueFormatter, LabelDefinition, Node, NodeKey,
-  NodePathElement, Paged, PagedResponse, PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo,
-  SingleElementPropertiesRequestOptions, UpdateInfo, VariableValueTypes,
+  ClientDiagnosticsAttribute,
+  Content,
+  ContentDescriptorRequestOptions,
+  ContentFormatter,
+  ContentInstanceKeysRequestOptions,
+  ContentPropertyValueFormatter,
+  ContentRequestOptions,
+  ContentSourcesRequestOptions,
+  ContentUpdateInfo,
+  Descriptor,
+  DescriptorOverrides,
+  DisplayLabelRequestOptions,
+  DisplayLabelsRequestOptions,
+  DisplayValueGroup,
+  DistinctValuesRequestOptions,
+  ElementProperties,
+  FilterByInstancePathsHierarchyRequestOptions,
+  FilterByTextHierarchyRequestOptions,
+  FormatsMap,
+  HierarchyLevelDescriptorRequestOptions,
+  HierarchyRequestOptions,
+  HierarchyUpdateInfo,
+  InstanceKey,
+  Item,
+  ItemJSON,
+  Key,
+  KeySet,
+  KoqPropertyValueFormatter,
+  LabelDefinition,
+  Node,
+  NodeKey,
+  NodePathElement,
+  Paged,
+  PagedResponse,
+  PageOptions,
+  PresentationIpcEvents,
+  RpcRequestsHandler,
+  Ruleset,
+  RulesetVariable,
+  SelectClassInfo,
+  SingleElementPropertiesRequestOptions,
+  UpdateInfo,
+  VariableValueTypes,
 } from "@itwin/presentation-common";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
 import { FrontendLocalizationHelper } from "./LocalizationHelper";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
+import { StreamedResponseGenerator } from "./StreamedResponseGenerator";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
@@ -50,6 +87,34 @@ export interface IModelContentChangeEventArgs {
   /** Key of iModel that was used to create content. It matches [[IModelConnection.key]] property. */
   imodelKey: string;
 }
+
+/**
+ * Options for requests that can return multiple pages of items concurrently.
+ * @public
+ */
+export type MultipleValuesRequestOptions = Paged<{
+  maxParallelRequests?: number;
+}>;
+
+/**
+ * Options for requests that retrieve nodes.
+ * @public
+ */
+export type GetNodesRequestOptions = HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute;
+
+/**
+ * Options for requests that retrieve content.
+ * @public
+ */
+export type GetContentRequestOptions = ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> &
+  ClientDiagnosticsAttribute;
+
+/**
+ * Options for requests that retrieve distinct values.
+ * @public
+ */
+export type GetDistinctValuesRequestOptions = DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> &
+  ClientDiagnosticsAttribute;
 
 /**
  * Properties used to configure [[PresentationManager]]
@@ -125,7 +190,6 @@ export class PresentationManager implements IDisposable {
   private _explicitActiveUnitSystem: UnitSystemKey | undefined;
   private _rulesetVars: Map<string, RulesetVariablesManager>;
   private _clearEventListener?: () => void;
-  private _connections: Map<IModelConnection, Promise<void>>;
   private _schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
   private _defaultFormats?: FormatsMap;
   private _ipcRequestsHandler?: IpcRequestsHandler;
@@ -152,7 +216,9 @@ export class PresentationManager implements IDisposable {
   public get activeUnitSystem(): UnitSystemKey {
     return this._explicitActiveUnitSystem ?? IModelApp.quantityFormatter.activeUnitSystem;
   }
-  public set activeUnitSystem(value: UnitSystemKey | undefined) { this._explicitActiveUnitSystem = value; }
+  public set activeUnitSystem(value: UnitSystemKey | undefined) {
+    this._explicitActiveUnitSystem = value;
+  }
 
   private constructor(props?: PresentationManagerProps) {
     if (props) {
@@ -160,11 +226,11 @@ export class PresentationManager implements IDisposable {
       this._explicitActiveUnitSystem = props.activeUnitSystem;
     }
 
-    this._requestsHandler = props?.rpcRequestsHandler ?? new RpcRequestsHandler(props ? { clientId: props.clientId, timeout: props.requestTimeout } : undefined);
+    this._requestsHandler =
+      props?.rpcRequestsHandler ?? new RpcRequestsHandler(props ? { clientId: props.clientId, timeout: props.requestTimeout } : undefined);
     this._rulesetVars = new Map<string, RulesetVariablesManager>();
     this._rulesets = RulesetManagerImpl.create();
     this._localizationHelper = new FrontendLocalizationHelper(props?.activeLocale);
-    this._connections = new Map<IModelConnection, Promise<void>>();
     this._schemaContextProvider = props?.schemaContextProvider;
     this._defaultFormats = props?.defaultFormats;
 
@@ -176,27 +242,18 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Get / set active locale used for localizing presentation data */
-  public get activeLocale(): string | undefined { return this._localizationHelper.locale; }
-  public set activeLocale(locale: string | undefined) { this._localizationHelper.locale = locale; }
+  public get activeLocale(): string | undefined {
+    return this._localizationHelper.locale;
+  }
+  public set activeLocale(locale: string | undefined) {
+    this._localizationHelper.locale = locale;
+  }
 
   public dispose() {
     if (this._clearEventListener) {
       this._clearEventListener();
       this._clearEventListener = undefined;
     }
-  }
-
-  private async onConnection(imodel: IModelConnection) {
-    if (!this._connections.has(imodel))
-      this._connections.set(imodel, this.initializeIModel(imodel));
-    await this._connections.get(imodel);
-  }
-
-  private async initializeIModel(imodel: IModelConnection) {
-    imodel.onClose.addOnce(() => {
-      this._connections.delete(imodel);
-    });
-    await this.onNewiModelConnection(imodel);
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -209,20 +266,24 @@ export class PresentationManager implements IDisposable {
   private async handleUpdateAsync(report: UpdateInfo) {
     for (const imodelKey in report) {
       // istanbul ignore if
-      if (!report.hasOwnProperty(imodelKey))
+      if (!report.hasOwnProperty(imodelKey)) {
         continue;
+      }
 
       const imodelReport = report[imodelKey];
       for (const rulesetId in imodelReport) {
         // istanbul ignore if
-        if (!imodelReport.hasOwnProperty(rulesetId))
+        if (!imodelReport.hasOwnProperty(rulesetId)) {
           continue;
+        }
 
         const updateInfo = imodelReport[rulesetId];
-        if (updateInfo.content)
+        if (updateInfo.content) {
           this.onIModelContentChanged.raiseEvent({ rulesetId, updateInfo: updateInfo.content, imodelKey });
-        if (updateInfo.hierarchy)
+        }
+        if (updateInfo.hierarchy) {
           this.onIModelHierarchyChanged.raiseEvent({ rulesetId, updateInfo: updateInfo.hierarchy, imodelKey });
+        }
       }
     }
   }
@@ -231,7 +292,14 @@ export class PresentationManager implements IDisposable {
    * Function that is called when a new IModelConnection is used to retrieve data.
    * @internal
    */
-  public async onNewiModelConnection(_: IModelConnection) { }
+  public startIModelInitialization(_: IModelConnection) {}
+
+  /**
+   * Function that should be called to finish initialization that was started at [[PresentationManager.startIModelInitialization]].
+   * Can be removed when [[FavoritePropertiesManager.has]] and [[FavoritePropertiesManager.sortFields]] are removed.
+   * @internal
+   */
+  public async ensureIModelInitialized(_: IModelConnection) {}
 
   /**
    * Create a new PresentationManager instance
@@ -242,15 +310,21 @@ export class PresentationManager implements IDisposable {
   }
 
   /** @internal */
-  public get rpcRequestsHandler() { return this._requestsHandler; }
+  public get rpcRequestsHandler() {
+    return this._requestsHandler;
+  }
 
   /** @internal */
-  public get ipcRequestsHandler() { return this._ipcRequestsHandler; }
+  public get ipcRequestsHandler() {
+    return this._ipcRequestsHandler;
+  }
 
   /**
    * Get rulesets manager
    */
-  public rulesets() { return this._rulesets; }
+  public rulesets() {
+    return this._rulesets;
+  }
 
   /**
    * Get ruleset variables manager for specific ruleset
@@ -264,13 +338,16 @@ export class PresentationManager implements IDisposable {
     return this._rulesetVars.get(rulesetId)!;
   }
 
-  private toRpcTokenOptions<TOptions extends { imodel: IModelConnection, locale?: string, unitSystem?: UnitSystemKey, rulesetVariables?: RulesetVariable[] }>(requestOptions: TOptions) {
+  private toRpcTokenOptions<TOptions extends { imodel: IModelConnection; locale?: string; unitSystem?: UnitSystemKey; rulesetVariables?: RulesetVariable[] }>(
+    requestOptions: TOptions,
+  ) {
     // 1. put default `locale` and `unitSystem`
     // 2. put all `requestOptions` members (if `locale` or `unitSystem` are set, they'll override the defaults put at #1)
     // 3. put `imodel` of type `IModelRpcProps` which overwrites the `imodel` from `requestOptions` put at #2
     const defaultOptions: Pick<TOptions, "locale" | "unitSystem"> = {};
-    if (this.activeLocale)
+    if (this.activeLocale) {
       defaultOptions.locale = this.activeLocale;
+    }
     defaultOptions.unitSystem = this.activeUnitSystem; // eslint-disable-line deprecation/deprecation
 
     const { imodel, rulesetVariables, ...rpcRequestOptions } = requestOptions;
@@ -282,7 +359,7 @@ export class PresentationManager implements IDisposable {
     };
   }
 
-  private async addRulesetAndVariablesToOptions<TOptions extends { rulesetOrId: Ruleset | string, rulesetVariables?: RulesetVariable[] }>(options: TOptions) {
+  private async addRulesetAndVariablesToOptions<TOptions extends { rulesetOrId: Ruleset | string; rulesetVariables?: RulesetVariable[] }>(options: TOptions) {
     const { rulesetOrId, rulesetVariables } = options;
     let foundRulesetOrId: Ruleset | string;
     if (typeof rulesetOrId === "object") {
@@ -291,14 +368,15 @@ export class PresentationManager implements IDisposable {
       const foundRuleset = await this._rulesets.get(rulesetOrId);
       foundRulesetOrId = foundRuleset ? foundRuleset.toJSON() : rulesetOrId;
     }
-    const rulesetId = (typeof foundRulesetOrId === "object") ? foundRulesetOrId.id : foundRulesetOrId;
+    const rulesetId = typeof foundRulesetOrId === "object" ? foundRulesetOrId.id : foundRulesetOrId;
 
     // All Id64Array variable values must be sorted for serialization to JSON to work. RulesetVariablesManager
     // sorts them before storing, so that part is taken care of, but we need to ensure that variables coming from
     // request options are also sorted.
     const variables = (rulesetVariables ?? []).map((variable) => {
-      if (variable.type === VariableValueTypes.Id64Array)
+      if (variable.type === VariableValueTypes.Id64Array) {
         return { ...variable, value: OrderedId64Iterable.sortArray(variable.value) };
+      }
       return variable;
     });
     if (!this._ipcRequestsHandler) {
@@ -310,34 +388,55 @@ export class PresentationManager implements IDisposable {
     return { ...options, rulesetOrId: foundRulesetOrId, rulesetVariables: variables };
   }
 
-  /** Retrieves nodes */
-  public async getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute): Promise<Node[]> {
-    await this.onConnection(requestOptions.imodel);
+  /** Returns an iterator that polls nodes asynchronously. */
+  public async getNodesIterator(
+    requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions,
+  ): Promise<{ total: number; items: AsyncIterableIterator<Node> }> {
+    this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
-    const result = await buildPagedArrayResponse(options.paging, async (partialPageOptions) => this._requestsHandler.getPagedNodes({ ...rpcOptions, paging: partialPageOptions }));
-    // eslint-disable-next-line deprecation/deprecation
-    return this._localizationHelper.getLocalizedNodes(result.items.map(Node.fromJSON));
+
+    const generator = new StreamedResponseGenerator({
+      ...requestOptions,
+      getBatch: async (paging) => {
+        const result = await this._requestsHandler.getPagedNodes({ ...rpcOptions, paging });
+        return {
+          total: result.total,
+          // eslint-disable-next-line deprecation/deprecation
+          items: this._localizationHelper.getLocalizedNodes(result.items.map(Node.fromJSON)),
+        };
+      },
+    });
+
+    return generator.createAsyncIteratorResponse();
+  }
+
+  /**
+   * Retrieves nodes
+   * @deprecated in 4.5. Use [[getNodesIterator]] instead.
+   */
+  public async getNodes(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<Node[]> {
+    const result = await this.getNodesIterator(requestOptions);
+    return collect(result.items);
   }
 
   /** Retrieves nodes count. */
-  public async getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute): Promise<number> {
-    await this.onConnection(requestOptions.imodel);
+  public async getNodesCount(requestOptions: GetNodesRequestOptions): Promise<number> {
+    this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
     return this._requestsHandler.getNodesCount(rpcOptions);
   }
 
-  /** Retrieves total nodes count and a single page of nodes. */
-  public async getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute): Promise<{ count: number, nodes: Node[] }> {
-    await this.onConnection(requestOptions.imodel);
-    const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const rpcOptions = this.toRpcTokenOptions({ ...options });
-    const result = await buildPagedArrayResponse(options.paging, async (partialPageOptions) => this._requestsHandler.getPagedNodes({ ...rpcOptions, paging: partialPageOptions }));
+  /**
+   * Retrieves total nodes count and a single page of nodes.
+   * @deprecated in 4.5. Use [[getNodesIterator]] instead.
+   */
+  public async getNodesAndCount(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<{ count: number; nodes: Node[] }> {
+    const result = await this.getNodesIterator(requestOptions);
     return {
       count: result.total,
-      // eslint-disable-next-line deprecation/deprecation
-      nodes: this._localizationHelper.getLocalizedNodes(result.items.map(Node.fromJSON)),
+      nodes: await collect(result.items),
     };
   }
 
@@ -345,31 +444,42 @@ export class PresentationManager implements IDisposable {
    * Retrieves hierarchy level descriptor.
    * @beta
    */
-  public async getNodesDescriptor(requestOptions: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute): Promise<Descriptor | undefined> {
-    await this.onConnection(requestOptions.imodel);
-    const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const rpcOptions = this.toRpcTokenOptions({ ...options });
-    const result = await this._requestsHandler.getNodesDescriptor(rpcOptions);
-    return Descriptor.fromJSON(result);
+  public async getNodesDescriptor(
+    requestOptions: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute,
+  ): Promise<Descriptor | undefined> {
+    this.startIModelInitialization(requestOptions.imodel);
+    try {
+      const options = await this.addRulesetAndVariablesToOptions(requestOptions);
+      const rpcOptions = this.toRpcTokenOptions({ ...options });
+      const result = await this._requestsHandler.getNodesDescriptor(rpcOptions);
+      const descriptor = Descriptor.fromJSON(result);
+      return descriptor ? this._localizationHelper.getLocalizedContentDescriptor(descriptor) : undefined;
+    } finally {
+      await this.ensureIModelInitialized(requestOptions.imodel);
+    }
   }
 
   /** Retrieves paths from root nodes to children nodes according to specified keys. Intersecting paths will be merged. */
-  public async getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]> {
-    await this.onConnection(requestOptions.imodel);
+  public async getNodePaths(
+    requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute,
+  ): Promise<NodePathElement[]> {
+    this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
     const result = await this._requestsHandler.getNodePaths(rpcOptions);
     // eslint-disable-next-line deprecation/deprecation
-    return result.map(NodePathElement.fromJSON);
+    return result.map(NodePathElement.fromJSON).map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
 
   /** Retrieves paths from root nodes to nodes containing filter text in their label. */
-  public async getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]> {
-    await this.onConnection(requestOptions.imodel);
+  public async getFilteredNodePaths(
+    requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute,
+  ): Promise<NodePathElement[]> {
+    this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const result = await this._requestsHandler.getFilteredNodePaths(this.toRpcTokenOptions(options));
     // eslint-disable-next-line deprecation/deprecation
-    return result.map(NodePathElement.fromJSON);
+    return result.map(NodePathElement.fromJSON).map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
 
   /**
@@ -378,27 +488,34 @@ export class PresentationManager implements IDisposable {
    * @public
    */
   public async getContentSources(requestOptions: ContentSourcesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<SelectClassInfo[]> {
-    await this.onConnection(requestOptions.imodel);
+    this.startIModelInitialization(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions(requestOptions);
     const result = await this._requestsHandler.getContentSources(rpcOptions);
     return SelectClassInfo.listFromCompressedJSON(result.sources, result.classesMap);
   }
 
   /** Retrieves the content descriptor which describes the content and can be used to customize it. */
-  public async getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<Descriptor | undefined> {
-    await this.onConnection(requestOptions.imodel);
-    const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const rpcOptions = this.toRpcTokenOptions({
-      ...options,
-      keys: stripTransientElementKeys(options.keys).toJSON(),
-    });
-    const result = await this._requestsHandler.getContentDescriptor(rpcOptions);
-    return Descriptor.fromJSON(result);
+  public async getContentDescriptor(
+    requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute,
+  ): Promise<Descriptor | undefined> {
+    this.startIModelInitialization(requestOptions.imodel);
+    try {
+      const options = await this.addRulesetAndVariablesToOptions(requestOptions);
+      const rpcOptions = this.toRpcTokenOptions({
+        ...options,
+        keys: stripTransientElementKeys(options.keys).toJSON(),
+      });
+      const result = await this._requestsHandler.getContentDescriptor(rpcOptions);
+      const descriptor = Descriptor.fromJSON(result);
+      return descriptor ? this._localizationHelper.getLocalizedContentDescriptor(descriptor) : undefined;
+    } finally {
+      await this.ensureIModelInitialized(requestOptions.imodel);
+    }
   }
 
   /** Retrieves overall content set size. */
-  public async getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<number> {
-    await this.onConnection(requestOptions.imodel);
+  public async getContentSetSize(requestOptions: GetContentRequestOptions): Promise<number> {
+    this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
       ...options,
@@ -408,14 +525,9 @@ export class PresentationManager implements IDisposable {
     return this._requestsHandler.getContentSetSize(rpcOptions);
   }
 
-  /** Retrieves content which consists of a content descriptor and a page of records. */
-  public async getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & ClientDiagnosticsAttribute): Promise<Content | undefined> {
-    return (await this.getContentAndSize(requestOptions))?.content;
-  }
-
-  /** Retrieves content set size and content which consists of a content descriptor and a page of records. */
-  public async getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & ClientDiagnosticsAttribute): Promise<{ content: Content, size: number } | undefined> {
-    await this.onConnection(requestOptions.imodel);
+  private async getContentIteratorInternal(
+    requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
+  ): Promise<{ descriptor: Descriptor; total: number; items: AsyncIterableIterator<Item> } | undefined> {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
       ...options,
@@ -423,52 +535,142 @@ export class PresentationManager implements IDisposable {
       keys: stripTransientElementKeys(requestOptions.keys).toJSON(),
       ...(!requestOptions.omitFormattedValues && this._schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined),
     });
-    let descriptor = (requestOptions.descriptor instanceof Descriptor) ? requestOptions.descriptor : undefined;
-    const result = await buildPagedArrayResponse(options.paging, async (partialPageOptions, requestIndex) => {
-      if (0 === requestIndex && !descriptor) {
-        const content = await this._requestsHandler.getPagedContent({ ...rpcOptions, paging: partialPageOptions });
-        if (content) {
-          descriptor = Descriptor.fromJSON(content.descriptor);
-          return content.contentSet;
-        }
-        return { total: 0, items: [] };
-      }
-      return this._requestsHandler.getPagedContentSet({ ...rpcOptions, paging: partialPageOptions });
-    });
-    if (!descriptor)
-      return undefined;
 
-    const items = result.items.map((itemJson) => Item.fromJSON(itemJson)).filter<Item>((item): item is Item => (item !== undefined));
-    const resultContent = new Content(descriptor, items);
+    let contentFormatter: ContentFormatter | undefined;
     if (!requestOptions.omitFormattedValues && this._schemaContextProvider) {
       const koqPropertyFormatter = new KoqPropertyValueFormatter(this._schemaContextProvider(requestOptions.imodel), this._defaultFormats);
-      const contentFormatter = new ContentFormatter(
+      contentFormatter = new ContentFormatter(
         new ContentPropertyValueFormatter(koqPropertyFormatter),
         requestOptions.unitSystem ?? this._explicitActiveUnitSystem ?? IModelApp.quantityFormatter.activeUnitSystem,
       );
-      await contentFormatter.formatContent(resultContent);
     }
 
+    let descriptor = requestOptions.descriptor instanceof Descriptor ? requestOptions.descriptor : undefined;
+    let firstPage: PagedResponse<ItemJSON> | undefined;
+    if (!descriptor) {
+      const firstPageResponse = await this._requestsHandler.getPagedContent(rpcOptions);
+      if (!firstPageResponse?.descriptor || !firstPageResponse.contentSet) {
+        return undefined;
+      }
+      descriptor = Descriptor.fromJSON(firstPageResponse?.descriptor);
+      firstPage = firstPageResponse?.contentSet;
+    }
+
+    // istanbul ignore if
+    if (!descriptor) {
+      return undefined;
+    }
+
+    descriptor = this._localizationHelper.getLocalizedContentDescriptor(descriptor);
+
+    const getPage = async (paging: Required<PageOptions>, requestIndex: number) => {
+      let contentSet = requestIndex === 0 ? firstPage : undefined;
+      contentSet ??= await this._requestsHandler.getPagedContentSet({ ...rpcOptions, paging });
+
+      let items = contentSet.items.map((x) => Item.fromJSON(x)).filter((x): x is Item => x !== undefined);
+      if (contentFormatter) {
+        items = await contentFormatter.formatContentItems(items, descriptor!);
+      }
+
+      items = this._localizationHelper.getLocalizedContentItems(items);
+      return {
+        total: contentSet.total,
+        items,
+      };
+    };
+
+    const generator = new StreamedResponseGenerator({
+      ...requestOptions,
+      getBatch: getPage,
+    });
+
     return {
-      size: result.total,
-      content: this._localizationHelper.getLocalizedContent(resultContent),
+      ...(await generator.createAsyncIteratorResponse()),
+      descriptor,
     };
   }
 
-  /** Retrieves distinct values of specific field from the content. */
-  public async getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>> {
-    await this.onConnection(requestOptions.imodel);
+  /** Retrieves a content descriptor, item count and async generator for the items themselves. */
+  public async getContentIterator(
+    requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
+  ): Promise<{ descriptor: Descriptor; total: number; items: AsyncIterableIterator<Item> } | undefined> {
+    this.startIModelInitialization(requestOptions.imodel);
+    const response = await this.getContentIteratorInternal(requestOptions);
+    if (!response) {
+      return undefined;
+    }
+
+    await this.ensureIModelInitialized(requestOptions.imodel);
+    return response;
+  }
+
+  /**
+   * Retrieves content which consists of a content descriptor and a page of records.
+   * @deprecated in 4.5. Use [[getContentIterator]] instead.
+   */
+  public async getContent(requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions): Promise<Content | undefined> {
+    // eslint-disable-next-line deprecation/deprecation
+    return (await this.getContentAndSize(requestOptions))?.content;
+  }
+
+  /**
+   * Retrieves content set size and content which consists of a content descriptor and a page of records.
+   * @deprecated in 4.5. Use [[getContentIterator]] instead.
+   */
+  public async getContentAndSize(
+    requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
+  ): Promise<{ content: Content; size: number } | undefined> {
+    const response = await this.getContentIterator(requestOptions);
+    if (!response) {
+      return undefined;
+    }
+
+    const { descriptor, total } = response;
+    const items = await collect(response.items);
+    return {
+      content: new Content(descriptor, items),
+      size: total,
+    };
+  }
+
+  /** Returns an iterator that asynchronously polls distinct values of specific field from the content. */
+  public async getDistinctValuesIterator(
+    requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions,
+  ): Promise<{ total: number; items: AsyncIterableIterator<DisplayValueGroup> }> {
+    this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = {
       ...this.toRpcTokenOptions(options),
       descriptor: getDescriptorOverrides(options.descriptor),
       keys: stripTransientElementKeys(options.keys).toJSON(),
     };
-    const result = await buildPagedArrayResponse(requestOptions.paging, async (partialPageOptions) => this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging: partialPageOptions }));
+
+    const generator = new StreamedResponseGenerator({
+      ...requestOptions,
+      getBatch: async (paging) => {
+        const response = await this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging });
+        return {
+          total: response.total,
+          // eslint-disable-next-line deprecation/deprecation
+          items: response.items.map((x) => this._localizationHelper.getLocalizedDisplayValueGroup(DisplayValueGroup.fromJSON(x))),
+        };
+      },
+    });
+
+    return generator.createAsyncIteratorResponse();
+  }
+
+  /**
+   * Retrieves distinct values of specific field from the content.
+   * @deprecated in 4.5. Use [[getDistinctValuesIterator]] instead.
+   */
+  public async getPagedDistinctValues(
+    requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions,
+  ): Promise<PagedResponse<DisplayValueGroup>> {
+    const result = await this.getDistinctValuesIterator(requestOptions);
     return {
-      ...result,
-      // eslint-disable-next-line deprecation/deprecation
-      items: result.items.map(DisplayValueGroup.fromJSON),
+      total: result.total,
+      items: await collect(result.items),
     };
   }
 
@@ -476,12 +678,15 @@ export class PresentationManager implements IDisposable {
    * Retrieves property data in a simplified format for a single element specified by ID.
    * @public
    */
-  public async getElementProperties(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<ElementProperties | undefined> {
-    await this.onConnection(requestOptions.imodel);
+  public async getElementProperties(
+    requestOptions: SingleElementPropertiesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute,
+  ): Promise<ElementProperties | undefined> {
+    this.startIModelInitialization(requestOptions.imodel);
     const results = await this._requestsHandler.getElementProperties(this.toRpcTokenOptions(requestOptions));
     // istanbul ignore if
-    if (!results)
+    if (!results) {
       return undefined;
+    }
     return this._localizationHelper.getLocalizedElementProperties(results);
   }
 
@@ -489,17 +694,19 @@ export class PresentationManager implements IDisposable {
    * Retrieves content item instance keys.
    * @public
    */
-  public async getContentInstanceKeys(requestOptions: ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<{ total: number, items: () => AsyncGenerator<InstanceKey> }> {
-    await this.onConnection(requestOptions.imodel);
+  public async getContentInstanceKeys(
+    requestOptions: ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions,
+  ): Promise<{ total: number; items: () => AsyncGenerator<InstanceKey> }> {
+    this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = {
       ...this.toRpcTokenOptions(options),
       keys: stripTransientElementKeys(options.keys).toJSON(),
     };
 
-    const props = {
-      page: requestOptions.paging,
-      get: async (page: Required<PageOptions>) => {
+    const generator = new StreamedResponseGenerator({
+      ...requestOptions,
+      getBatch: async (page) => {
         const keys = await this._requestsHandler.getContentInstanceKeys({ ...rpcOptions, paging: page });
         return {
           total: keys.total,
@@ -511,98 +718,87 @@ export class PresentationManager implements IDisposable {
           }, new Array<InstanceKey>()),
         };
       },
+    });
+
+    const { total, items } = await generator.createAsyncIteratorResponse();
+    return {
+      total,
+      async *items() {
+        yield* items;
+      },
     };
-    return createPagedGeneratorResponse(props);
   }
 
   /** Retrieves display label definition of specific item. */
-  public async getDisplayLabelDefinition(requestOptions: DisplayLabelRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute): Promise<LabelDefinition> {
-    await this.onConnection(requestOptions.imodel);
+  public async getDisplayLabelDefinition(
+    requestOptions: DisplayLabelRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute,
+  ): Promise<LabelDefinition> {
+    this.startIModelInitialization(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions({ ...requestOptions });
     const result = await this._requestsHandler.getDisplayLabelDefinition(rpcOptions);
     return this._localizationHelper.getLocalizedLabelDefinition(result);
   }
 
   /** Retrieves display label definition of specific items. */
-  public async getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute): Promise<LabelDefinition[]> {
-    await this.onConnection(requestOptions.imodel);
+  public async getDisplayLabelDefinitionsIterator(
+    requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions,
+  ): Promise<{ total: number; items: AsyncIterableIterator<LabelDefinition> }> {
+    this.startIModelInitialization(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions({ ...requestOptions });
-    const result = await buildPagedArrayResponse(undefined, async (partialPageOptions) => {
-      const partialKeys = (!partialPageOptions.start) ? rpcOptions.keys : rpcOptions.keys.slice(partialPageOptions.start);
-      return this._requestsHandler.getPagedDisplayLabelDefinitions({ ...rpcOptions, keys: partialKeys });
+    const generator = new StreamedResponseGenerator({
+      ...requestOptions,
+      getBatch: async (page) => {
+        const partialKeys = !page.start ? rpcOptions.keys : rpcOptions.keys.slice(page.start);
+        const result = await this._requestsHandler.getPagedDisplayLabelDefinitions({ ...rpcOptions, keys: partialKeys });
+        result.items = this._localizationHelper.getLocalizedLabelDefinitions(result.items);
+        return result;
+      },
     });
-    return this._localizationHelper.getLocalizedLabelDefinitions(result.items);
+
+    return generator.createAsyncIteratorResponse();
   }
 
+  /**
+   * Retrieves display label definition of specific items.
+   * @deprecated in 4.5. Use [[getDisplayLabelDefinitionsIterator]] instead.
+   */
+  public async getDisplayLabelDefinitions(
+    requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions,
+  ): Promise<LabelDefinition[]> {
+    const { items } = await this.getDisplayLabelDefinitionsIterator(requestOptions);
+    return collect(items);
+  }
 }
 
 const getDescriptorOverrides = (descriptorOrOverrides: Descriptor | DescriptorOverrides): DescriptorOverrides => {
-  if (descriptorOrOverrides instanceof Descriptor)
+  if (descriptorOrOverrides instanceof Descriptor) {
     return descriptorOrOverrides.createDescriptorOverrides();
+  }
   return descriptorOrOverrides;
 };
 
-interface PagedGeneratorCreateProps<TPagedResponseItem> {
-  page: PageOptions | undefined;
-  get: (pageStart: Required<PageOptions>, requestIndex: number) => Promise<{ total: number, items: TPagedResponseItem[] }>;
-}
-async function createPagedGeneratorResponse<TPagedResponseItem>(props: PagedGeneratorCreateProps<TPagedResponseItem>) {
-  let pageStart = props.page?.start ?? 0;
-  let pageSize = props.page?.size ?? 0;
-  let requestIndex = 0;
-
-  const firstPage = await props.get({ start: pageStart, size: pageSize }, requestIndex++);
-  return {
-    total: firstPage.total,
-    async *items() {
-      let partialResult = firstPage;
-      while (true) {
-        for (const item of partialResult.items) {
-          yield item;
-        }
-
-        const receivedItemsCount = partialResult.items.length;
-        if (partialResult.total !== 0 && receivedItemsCount === 0) {
-          if (pageStart >= partialResult.total)
-            throw new Error(`Requested page with start index ${pageStart} is out of bounds. Total number of items: ${partialResult.total}`);
-          throw new Error("Paged request returned non zero total count but no items");
-        }
-
-        if (pageSize !== 0 && receivedItemsCount >= pageSize || receivedItemsCount >= (partialResult.total - pageStart))
-          break;
-
-        if (pageSize !== 0)
-          pageSize -= receivedItemsCount;
-        pageStart += receivedItemsCount;
-
-        partialResult = await props.get({ start: pageStart, size: pageSize }, requestIndex++);
-      }
-    },
-  };
-}
-
-/** @internal */
-export const buildPagedArrayResponse = async <TItem>(requestedPage: PageOptions | undefined, getter: (page: Required<PageOptions>, requestIndex: number) => Promise<PagedResponse<TItem>>): Promise<PagedResponse<TItem>> => {
-  const items = new Array<TItem>();
-  const gen = await createPagedGeneratorResponse({ page: requestedPage, get: getter });
-  for await (const item of gen.items()) {
-    items.push(item);
-  }
-  return { total: gen.total, items };
-};
-
 const stripTransientElementKeys = (keys: KeySet) => {
-  if (!keys.some((key) => Key.isInstanceKey(key) && key.className === TRANSIENT_ELEMENT_CLASSNAME))
+  if (!keys.some((key) => Key.isInstanceKey(key) && key.className === TRANSIENT_ELEMENT_CLASSNAME)) {
     return keys;
+  }
 
   const copy = new KeySet();
   copy.add(keys, (key) => {
     // the callback is not going to be called with EntityProps as KeySet converts them
     // to InstanceKeys, but we want to keep the EntityProps case for correctness
     // istanbul ignore next
-    const isTransient = Key.isInstanceKey(key) && key.className === TRANSIENT_ELEMENT_CLASSNAME
-      || Key.isEntityProps(key) && key.classFullName === TRANSIENT_ELEMENT_CLASSNAME;
+    const isTransient =
+      (Key.isInstanceKey(key) && key.className === TRANSIENT_ELEMENT_CLASSNAME) ||
+      (Key.isEntityProps(key) && key.classFullName === TRANSIENT_ELEMENT_CLASSNAME);
     return !isTransient;
   });
   return copy;
 };
+
+async function collect<T>(iter: AsyncIterable<T>): Promise<T[]> {
+  const result = new Array<T>();
+  for await (const value of iter) {
+    result.push(value);
+  }
+  return result;
+}

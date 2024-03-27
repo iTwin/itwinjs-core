@@ -267,42 +267,14 @@ However, when deciding how to organize workspace data, keep in mind:
 
 #### Workspace related Settings
 
-The Workspace subsystem used 3 Setting values:
+The Workspace subsystem uses 2 Setting values:
 
-1. `cloud/accounts`
-2. `cloud/containers`
-3. `workspace/databases`
+1. `cloud/containers`
+2. `workspace/databases`
 
 defined by the following `SettingSchema`s:
 
 ```ts
-    "cloud/accounts": {
-      "type": "array",
-      "description": "array of cloud accounts",
-      "cumulative": true,
-      "items": {
-        "type": "object",
-        "required": [
-          "name",
-          "accessName",
-          "storageType"
-        ],
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "the alias name of the cloud account, referenced from setting values"
-          },
-          "accessName": {
-            "type": "string",
-            "description": "the accessName for the cloud account"
-          },
-          "storageType": {
-            "type": "string",
-            "description": "the storageType of the cloud account"
-          }
-        }
-      }
-    },
     "cloud/containers": {
       "type": "array",
       "description": "array of cloud containers",
@@ -318,13 +290,17 @@ defined by the following `SettingSchema`s:
             "type": "string",
             "description": "the alias name of this cloud container"
           },
+          "baseUri": {
+            "type": "string",
+            "description": "the baseUri for the container, without trailing slash (e.g., https://myAcct.blob.core.windows.net)"
+          },
           "containerId": {
             "type": "string",
             "description": "the containerId of this cloud container"
           },
-          "accountName": {
+          "storageType": {
             "type": "string",
-            "description": "the account name for this cloud container. Must be an entry in \"cloud/accounts\" or empty string for local (non-cloud) containers."
+            "description": "one of: 'azure', 'aws', 'google'"
           },
           "isPublic": {
             "type": "boolean",
@@ -385,23 +361,16 @@ For example:
 [[include:Settings.containerAlias]]
 ```
 
-To load a [workspace resource](#workspace-resources), you must first obtain a `WorkspaceDb` by calling [Workspace.getWorkspaceDb]($backend) and supplying a [WorkspaceDb.Name]($backend). That value must be an entry in a `workspace/databases` Setting. The `workspace/databases` Setting will supply the `containerName` and `dbName`. The value of `containerName` must be an entry in a `cloud/containers` Setting. The `cloud/containers` Setting will supply the `containerId` and `accountName`. The value of `accountName` must be an entry in a `cloud/accounts` Setting that will supply the cloud `accessName` and `storageType`.
+To load a [workspace resource](#workspace-resources), you must first obtain a `WorkspaceDb` by calling [Workspace.getWorkspaceDb]($backend) and supplying a [WorkspaceDb.Name]($backend). That value must be an entry in a `workspace/databases` Setting. The `workspace/databases` Setting will supply the `containerName` and `dbName`. The value of `containerName` must be an entry in a `cloud/containers` Setting. The `cloud/containers` Setting will supply the `containerId` and `baseUri`.
 
 For example, consider the following `ace-inc.settings.json` setting file:
 
 ```json
 {
-  "cloud/accounts": [
-    {
-      "name": "ace-inc/account1",
-      "accessName": "aceprod1",
-      "storageType": "azure?sas=1"
-    }
-  ],
   "cloud/containers": [
     {
       "name": "ace-inc/all-company",
-      "accountName": "ace-inc/account1",
+      "baseUri": "https://containers.itwinjs.org",
       "containerId": "16e7f4ca-f08b-4778-9882-5bfb2ac7b160"
     }
   ],
@@ -431,8 +400,7 @@ then, calling
 
 Will attempt to load a `WorkspaceDb` with:
 - the most recent version greater than or equal to 1.0.0 but less than 2.0.0 of the database `struct` (e.g. `struct:1.5.2`)
-- in a cloud container with id `16e7f4ca-f08b-4778-9882-5bfb2ac7b160`
-- from an Azure storage account named `aceprod1`
+- in a cloud container with id `16e7f4ca-f08b-4778-9882-5bfb2ac7b160` and baseUri `https://containers.itwinjs.org`
 
 Workspace settings may also be stored [in an iModel](#imodel-based-settings) so `WorkspaceDb`s may be iModel specific. So if this:
 
@@ -454,8 +422,7 @@ were stored in a `SettingDictionary` in an iModel, then
 
 Will attempt to load a `WorkspaceDb` with:
 - the most recent version greater than or equal to 1.4.3 but less than 1.5.0 of the database `struct` (e.g. `struct:1.4.10`)
-- in a cloud container with id `16e7f4ca-f08b-4778-9882-5bfb2ac7b160`
-- from an Azure storage account named `aceprod1`
+- in a cloud container with id `16e7f4ca-f08b-4778-9882-5bfb2ac7b160` and baseUri `https://containers.itwinjs.org`
 
 ### CloudContainer Shared Access Signature (SAS) Tokens
 

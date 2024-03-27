@@ -9,28 +9,18 @@
 
 import { ClipUtilities } from "../clipping/ClipUtils";
 import { Geometry } from "../Geometry";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
+import { FrameBuilder } from "../geometry3d/FrameBuilder";
+import { IndexedXYZCollection, LineStringDataVariant, MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { PointStreamXYZXYZHandlerBase, VariantPointDataStream } from "../geometry3d/PointStreaming";
 import { Range1d, Range2d } from "../geometry3d/Range";
-import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
+import { Transform } from "../geometry3d/Transform";
+import { XAndY } from "../geometry3d/XYZProps";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { MarkedEdgeSet } from "./HalfEdgeMarkSet";
 import { InsertAndRetriangulateContext } from "./InsertAndRetriangulateContext";
-
-/**
- * type for use as signature for xyz data of a single linestring appearing in a parameter list.
- * @public
- */
-export type LineStringDataVariant = IndexedXYZCollection | XYAndZ[] | XAndY[] | number[][];
-
-/**
- * type for use as signature for multiple xyz data of multiple linestrings appearing in a parameter list.
- * @public
- */
-export type MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[];
 
 /**
  * (static) methods for triangulating polygons
@@ -255,7 +245,10 @@ export class Triangulator {
     return undefined;
   }
   /**
-   * Triangulate all positive area faces of a graph.
+   * Triangulate all positive area faces of a (planar) graph.
+   * * Area is computed using `HalfEdge.signedFaceArea`, which ignores z-coordinates.
+   * @returns whether all indicated faces were triangulated successfully
+   * @see [[triangulateAllInteriorFaces]]
    */
   public static triangulateAllPositiveAreaFaces(graph: HalfEdgeGraph): boolean {
     const seeds = graph.collectFaceLoops();
@@ -268,6 +261,47 @@ export class Triangulator {
             numFail++;
       }
     }
+    return numFail === 0;
+  }
+
+  private static _workTransform?: Transform;
+
+  /**
+   * Triangulate all interior faces of a graph.
+   * * A random node is checked for each face; if it has the `HalfEdgeMask.EXTERIOR` mask, the face is ignored.
+   * @param useLocalCoords whether to transform each face into local coords before triangulating.
+   * This is useful if the graph has z-coordinates.
+   * @returns whether all indicated faces were triangulated successfully
+   * @see [[triangulateAllPositiveAreaFaces]]
+   */
+  public static triangulateAllInteriorFaces(graph: HalfEdgeGraph, useLocalCoords?: boolean): boolean {
+    const seeds = graph.collectFaceLoops();
+    const visited = useLocalCoords ? graph.grabMask() : HalfEdgeMask.NULL_MASK;
+    let localToWorld: Transform | undefined;
+    let nodes: Point3d[] | undefined;
+    let nodeCount = 0;
+    let numFail = 0;
+    for (const face of seeds) {
+      if (face.countEdgesAroundFace() > 3) {
+        if (face.getMask(HalfEdgeMask.EXTERIOR))
+          continue;
+        if (useLocalCoords) {
+          nodeCount = graph.countNodes();
+          nodes = face.collectAroundFace();
+          localToWorld = this._workTransform = FrameBuilder.createRightHandedLocalToWorld(nodes, this._workTransform);
+          localToWorld?.multiplyInversePoint3dArrayInPlace(nodes);
+        }
+        // don't flip triangles if using local coords; an edge of this face can be flipped out of plane if the neighboring triangle is non-coplanar.
+        if (!Triangulator.triangulateSingleFace(graph, face, useLocalCoords))
+          numFail++;
+        if (localToWorld && nodes) {
+          for (let iNewNode = nodeCount; iNewNode < graph.countNodes(); ++iNewNode)
+            nodes.push(graph.allHalfEdges[iNewNode] as any);
+          localToWorld.multiplyPoint3dArrayInPlace(nodes);
+        }
+      }
+    }
+    graph.dropMask(visited);
     return numFail === 0;
   }
 
@@ -513,19 +547,16 @@ export class Triangulator {
   }
 
   /**
-   * main ear slicing loop which triangulates a polygon (given as a linked list)
-   * While there still exists ear nodes that have not yet been triangulated...
-   *
-   * *  Check if the ear is hashed, and can easily be split off. If so, "join" that ear.
-   * *  If not hashed, move on to a separate ear.
-   * *  If no ears are currently hashed, attempt to cure self intersections or split the polygon into two before continuing
+   * Main ear slicing loop which triangulates the face starting at `ear`.
+   * @param graph containing graph to receive new edges
+   * @param ear sector at which to start triangulation of the containing face.
+   * @param noFlips if false (default) perform edge-flipping after each ear cut for better aspect ratio. Pass true if your graph isn't planar.
    */
-  private static triangulateSingleFace(graph: HalfEdgeGraph, ear?: HalfEdge): boolean {
+  private static triangulateSingleFace(graph: HalfEdgeGraph, ear?: HalfEdge, noFlips: boolean = false): boolean {
     if (!ear) {
       Triangulator.setDebugGraph(graph);
       return false;
     }
-
     let next;
     let next2;
     let pred;
@@ -547,7 +578,7 @@ export class Triangulator {
       // The earcut algorithm does not support self intersections, however we do handle the re-entrant triangle
       // case by pinching a bridge/hole into existence when vertices i and i+3 live in the same face loop, but not
       // the same vertex loop. Earcut whittles larger faces down into triangles, so this is the only case needed.
-      if (Geometry.isAlmostEqualXAndY(next2, pred) && !next2.findAroundVertex (pred)) {
+      if (Geometry.isAlmostEqualXAndY(next2, pred) && !next2.findAroundVertex(pred)) {
         const next3 = next2.faceSuccessor;
         const hasBridgeEdgeOrHoleInside = this.nodeInTriangle(pred, ear, next, next3);
         if (hasBridgeEdgeOrHoleInside) {
@@ -573,7 +604,8 @@ export class Triangulator {
         // If we already have a separated triangle, do not join
         if (ear.faceSuccessor.faceSuccessor !== ear.facePredecessor) {
           Triangulator.joinNeighborsOfEar(graph, ear);
-          ear = Triangulator.doPostCutFlips(ear);
+          if (!noFlips)
+            ear = Triangulator.doPostCutFlips(ear);
           ear = ear.faceSuccessor.edgeMate.faceSuccessor;
           // another step?   Nate's 2017 code went one more.
         } else {

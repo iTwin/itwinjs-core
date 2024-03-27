@@ -1,15 +1,22 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Content
  */
 
 import { assert, Id64String } from "@itwin/core-bentley";
 import {
-  ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON, RelatedClassInfoWithOptionalRelationship,
-  RelatedClassInfoWithOptionalRelationshipJSON, RelationshipPath, RelationshipPathJSON,
+  ClassInfo,
+  ClassInfoJSON,
+  CompressedClassInfoJSON,
+  RelatedClassInfo,
+  RelatedClassInfoJSON,
+  RelatedClassInfoWithOptionalRelationship,
+  RelatedClassInfoWithOptionalRelationshipJSON,
+  RelationshipPath,
+  RelationshipPathJSON,
 } from "../EC";
 import { InstanceFilterDefinition } from "../InstanceFilterDefinition";
 import { Ruleset } from "../rules/Ruleset";
@@ -62,10 +69,22 @@ export namespace SelectClassInfo {
     return {
       selectClassInfo: { id: json.selectClassInfo, ...classesMap[json.selectClassInfo] },
       isSelectPolymorphic: json.isSelectPolymorphic,
-      ...(json.navigationPropertyClasses ? { navigationPropertyClasses: json.navigationPropertyClasses.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap)) } : undefined),
-      ...(json.relatedInstancePaths ? { relatedInstancePaths: json.relatedInstancePaths.map((rip) => rip.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap))) } : undefined),
-      ...(json.pathFromInputToSelectClass ? { pathFromInputToSelectClass: json.pathFromInputToSelectClass.map((item) => RelatedClassInfoWithOptionalRelationship.fromCompressedJSON(item, classesMap)) } : undefined),
-      ...(json.relatedPropertyPaths ? { relatedPropertyPaths: json.relatedPropertyPaths.map((path) => path.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap))) } : undefined),
+      ...(json.navigationPropertyClasses
+        ? { navigationPropertyClasses: json.navigationPropertyClasses.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap)) }
+        : undefined),
+      ...(json.relatedInstancePaths
+        ? { relatedInstancePaths: json.relatedInstancePaths.map((rip) => rip.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap))) }
+        : undefined),
+      ...(json.pathFromInputToSelectClass
+        ? {
+            pathFromInputToSelectClass: json.pathFromInputToSelectClass.map((item) =>
+              RelatedClassInfoWithOptionalRelationship.fromCompressedJSON(item, classesMap),
+            ),
+          }
+        : undefined),
+      ...(json.relatedPropertyPaths
+        ? { relatedPropertyPaths: json.relatedPropertyPaths.map((path) => path.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap))) }
+        : undefined),
     };
   }
 
@@ -76,10 +95,30 @@ export namespace SelectClassInfo {
     return {
       selectClassInfo: id,
       isSelectPolymorphic: selectClass.isSelectPolymorphic,
-      ...(selectClass.relatedInstancePaths ? { relatedInstancePaths: selectClass.relatedInstancePaths.map((rip) => rip.map((item) => RelatedClassInfo.toCompressedJSON(item, classesMap))) } : undefined),
-      ...(selectClass.navigationPropertyClasses ? { navigationPropertyClasses: selectClass.navigationPropertyClasses.map((propertyClass) => RelatedClassInfo.toCompressedJSON(propertyClass, classesMap)) } : undefined),
-      ...(selectClass.pathFromInputToSelectClass ? { pathFromInputToSelectClass: selectClass.pathFromInputToSelectClass.map((item) => RelatedClassInfoWithOptionalRelationship.toCompressedJSON(item, classesMap)) } : undefined),
-      ...(selectClass.relatedPropertyPaths ? { relatedPropertyPaths: selectClass.relatedPropertyPaths.map((path) => path.map((relatedClass) => RelatedClassInfo.toCompressedJSON(relatedClass, classesMap))) } : undefined),
+      ...(selectClass.relatedInstancePaths
+        ? { relatedInstancePaths: selectClass.relatedInstancePaths.map((rip) => rip.map((item) => RelatedClassInfo.toCompressedJSON(item, classesMap))) }
+        : undefined),
+      ...(selectClass.navigationPropertyClasses
+        ? {
+            navigationPropertyClasses: selectClass.navigationPropertyClasses.map((propertyClass) =>
+              RelatedClassInfo.toCompressedJSON(propertyClass, classesMap),
+            ),
+          }
+        : undefined),
+      ...(selectClass.pathFromInputToSelectClass
+        ? {
+            pathFromInputToSelectClass: selectClass.pathFromInputToSelectClass.map((item) =>
+              RelatedClassInfoWithOptionalRelationship.toCompressedJSON(item, classesMap),
+            ),
+          }
+        : undefined),
+      ...(selectClass.relatedPropertyPaths
+        ? {
+            relatedPropertyPaths: selectClass.relatedPropertyPaths.map((path) =>
+              path.map((relatedClass) => RelatedClassInfo.toCompressedJSON(relatedClass, classesMap)),
+            ),
+          }
+        : undefined),
     };
   }
 
@@ -423,8 +462,9 @@ export class Descriptor implements DescriptorSource {
 
   /** Deserialize [[Descriptor]] from JSON */
   public static fromJSON(json: DescriptorJSON | undefined): Descriptor | undefined {
-    if (!json)
+    if (!json) {
       return undefined;
+    }
 
     const { classesMap, ...leftOverJson } = json;
     const categories = CategoryDescription.listFromJSON(json.categories);
@@ -440,12 +480,15 @@ export class Descriptor implements DescriptorSource {
   }
 
   private static getFieldsFromJSON(json: FieldJSON[], factory: (json: FieldJSON) => Field | undefined): Field[] {
-    return json.map((fieldJson: FieldJSON) => {
-      const field = factory(fieldJson);
-      if (field)
-        field.rebuildParentship();
-      return field;
-    }).filter((field): field is Field => !!field);
+    return json
+      .map((fieldJson: FieldJSON) => {
+        const field = factory(fieldJson);
+        if (field) {
+          field.rebuildParentship();
+        }
+        return field;
+      })
+      .filter((field): field is Field => !!field);
   }
 
   /**
@@ -471,16 +514,23 @@ export class Descriptor implements DescriptorSource {
    */
   public createDescriptorOverrides(): DescriptorOverrides {
     const overrides: DescriptorOverrides = {};
-    if (this.displayType)
+    if (this.displayType) {
       overrides.displayType = this.displayType;
-    if (this.contentFlags !== 0)
+    }
+    if (this.contentFlags !== 0) {
       overrides.contentFlags = this.contentFlags;
-    if (this.filterExpression || this.fieldsFilterExpression) // eslint-disable-line deprecation/deprecation
-      overrides.fieldsFilterExpression = this.fieldsFilterExpression ?? this.filterExpression; // eslint-disable-line deprecation/deprecation
-    if (this.instanceFilter)
+    }
+    // eslint-disable-next-line deprecation/deprecation
+    if (this.filterExpression || this.fieldsFilterExpression) {
+      // eslint-disable-next-line deprecation/deprecation
+      overrides.fieldsFilterExpression = this.fieldsFilterExpression ?? this.filterExpression;
+    }
+    if (this.instanceFilter) {
       overrides.instanceFilter = this.instanceFilter;
-    if (this.sortingField)
+    }
+    if (this.sortingField) {
       overrides.sorting = { field: this.sortingField.getFieldDescriptor(), direction: this.sortDirection ?? SortDirection.Ascending };
+    }
     return overrides;
   }
 }

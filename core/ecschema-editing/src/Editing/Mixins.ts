@@ -7,7 +7,7 @@
  */
 
 import {
-  DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, EntityClass, Mixin, MixinProps, RelationshipClass,
+  DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, EntityClass, Mixin, MixinProps, NavigationPropertyProps, RelationshipClass,
   SchemaItemKey, SchemaItemType, SchemaKey, StrengthDirection,
 } from "@itwin/ecschema-metadata";
 import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
@@ -107,5 +107,51 @@ export class Mixins extends ECClasses {
 
     await mixin.createNavigationProperty(name, relationship, direction);
     return { itemKey: mixinKey, propertyName: name };
+  }
+
+  /**
+   * Creates a Navigation Property through a NavigationPropertyProps.
+   * @param classKey a SchemaItemKey of the Mixin that will house the new property.
+   * @param navigationProps a json object that will be used to populate the new Navigation Property.
+   */
+  public async createNavigationPropertyFromProps(classKey: SchemaItemKey, navigationProps: NavigationPropertyProps): Promise<PropertyEditResults> {
+    const mixin = await this._schemaEditor.schemaContext.getSchemaItem<MutableMixin>(classKey);
+    if (mixin === undefined)
+      return { itemKey: classKey, propertyName: navigationProps.name, errorMessage: `Mixin ${classKey.fullName} not found in schema context.`};
+
+    if (mixin.schemaItemType !== SchemaItemType.Mixin)
+      return { itemKey: classKey, propertyName: navigationProps.name, errorMessage: `Expected ${classKey.fullName} to be of type Mixin.`};
+
+    const navigationProperty  = await mixin.createNavigationProperty(navigationProps.name, navigationProps.relationshipName, navigationProps.direction);
+    await navigationProperty.fromJSON(navigationProps);
+
+    return { itemKey: classKey, propertyName: navigationProps.name };
+  }
+
+  public async setMixinBaseClass(mixinKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<SchemaItemEditResults>{
+    const mixin = (await this._schemaEditor.schemaContext.getSchemaItem<MutableMixin>(mixinKey));
+
+    if (mixin === undefined)
+      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Mixin Class ${mixinKey.fullName} not found in schema context.`);
+
+    if (baseClassKey === undefined) {
+      mixin.baseClass = undefined;
+      return { itemKey: mixinKey };
+    }
+
+    const baseClassSchema = !baseClassKey.schemaKey.matches(mixinKey.schemaKey) ? await this._schemaEditor.getSchema(baseClassKey.schemaKey) : mixin.schema;
+    if (baseClassSchema === undefined) {
+      return { errorMessage: `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context` };
+    }
+
+    const baseClassItem = await baseClassSchema.lookupItem<Mixin>(baseClassKey);
+    if (baseClassItem === undefined)
+      return { errorMessage: `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.` };
+
+    if (baseClassItem.schemaItemType !== SchemaItemType.Mixin)
+      return { errorMessage: `${baseClassItem.fullName} is not of type Mixin Class.` };
+
+    mixin.baseClass = new DelayedPromiseWithProps<SchemaItemKey, Mixin>(baseClassKey, async () => baseClassItem);
+    return { itemKey: mixinKey };
   }
 }

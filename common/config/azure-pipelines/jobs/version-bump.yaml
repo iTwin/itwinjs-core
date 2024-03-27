@@ -20,21 +20,21 @@ parameters:
   - name: BumpType
     displayName: Version Bump Type
     type: string
-    default: 'nightly'
+    default: "nightly"
     values:
-    - nightly
-    - minor
-    - patch
-    - releaseCandidate
+      - nightly
+      - minor
+      - patch
+      - releaseCandidate
 
 trigger: none
 pr: none
 schedules:
-- cron: "0 5 * * *"
-  displayName: Daily midnight build
-  branches:
-    include:
-    - master
+  - cron: "0 5 * * *"
+    displayName: Daily midnight build
+    branches:
+      include:
+        - master
 
 pool:
   vmImage: ubuntu-latest
@@ -62,205 +62,241 @@ jobs:
     dependsOn: CheckPrevCommit
     condition: in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped')
     steps:
-    - checkout: self
-
-    - task: NodeTool@0
-      displayName: Use Node 20.x
-      inputs:
-        versionSpec: 20.x
-        checkLatest: true
-
-    - bash: |
-        git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
-        git config --local user.name imodeljs-admin
-      displayName: Setup Git
-
-    - script: node common/scripts/install-run-rush.js install
-      displayName: rush install
-
-    - bash: node common/scripts/install-run-rush.js audit
-      displayName: rush audit
-
-    # Can be run on any branch to do a standard version bump. Which is currently -dev bumps.
-    - ${{ if or(eq(parameters.BumpType, 'nightly'), eq(parameters.BumpType, 'releaseCandidate')) }}:
-      - bash: 'node common/scripts/install-run-rush version --bump'
-        displayName: Rush version --bump
-
-    # Support two separate bump types on release branches
-    - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
-      - bash: 'node common/scripts/install-run-rush version --override-bump ${{ parameters.BumpType }} --version-policy prerelease-monorepo-lockStep --bump'
-        displayName: Release version bump
-        condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
-
-    - bash: |
-        version=$(jq '.[] | .version' common/config/rush/version-policies.json)
-
-        # Remove quotes or else vso task complains
-        quotelessVersion=$(sed -e 's/^"//' -e 's/"$//' <<<"$version")
-        echo "##vso[build.updatebuildnumber]iModel.js_$quotelessVersion"
-        echo "##vso[task.setvariable variable=version;isOutput=true]$quotelessVersion"
-      displayName: Get new version number
-      name: getVersion
-
-    # When creating a minor release, the NextVersion.md need to be cleared and the contents placed into a {Version Number}.md file
-    - ${{ if eq(parameters.BumpType, 'minor') }}:
-      - powershell: |
-          $sourceFile = 'docs/changehistory/NextVersion.md'
-
-          # If NextVersion has content do work
-          IF ((Get-Content -Path $sourceFile -ReadCount 1 | Measure-Object -line).Lines -gt 5) {
-              # Replace placeholder header
-              (Get-Content $sourceFile ) -replace 'NextVersion', "$(getVersion.version) Change Notes" | Set-Content $sourceFile
-
-              # Remove old frontmatter
-              (Get-Content $sourceFile | Select-Object -Skip 3) | Set-Content $sourceFile
-
-              # Copy NextVersion to index.md
-              Copy-Item $sourceFile docs/changehistory/index.md -Force
-
-              # Add relevant frontmatter
-              "---`ndeltaDoc: true`nversion: '$(getVersion.version)'`n---`n" + (Get-Content $sourceFile | Out-String) | Set-Content $sourceFile
-
-              # Rename NextVersion
-              Rename-Item -Path $sourceFile -NewName "$(getVersion.version).md"
-
-              # Add link to leftNav.md
-              (Get-Content -Path docs/changehistory/leftNav.md) -replace '### Versions', "### Versions`n- [$(getVersion.version)](./$(getVersion.version).md)`n" | Set-Content -Path docs/changehistory/leftNav.md
-
-              # Create new NextVersion.md
-              New-Item $sourceFile
-
-              # Update NextVersion.md with template
-              "---`npublish: false`n---`n# NextVersion`n" + (Get-Content $sourceFile | Out-String) | Set-Content $sourceFile
-          }
-
-          # Change header tab in docSite.json
-          (Get-Content 'docs/config/docSites.json') -replace '\".*?\":\s.?\"changehistory\"', "`"v$(getVersion.version)`": `"changehistory`"" | Set-Content 'docs/config/docSites.json'
-
-        failOnStderr: true
-        displayName: NextVersion.md rename and replace
-        condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
-
-    - bash: 'git add .'
-      displayName: Git add
-
-    - bash: |
-        echo Committing version bump $(getVersion.version)...
-
-        git commit -m "$(getVersion.version)" --author="imodeljs-admin <38288322+imodeljs-admin@users.noreply.github.com>"
-      displayName: Commit version bump
-
-    - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
-      - bash: 'git tag -a release/$(getVersion.version) -m "v$(getVersion.version)"'
-        displayName: Create git tag
-
-    - bash: 'git push --follow-tags https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:$(Build.SourceBranch)'
-      displayName: Push version bump
-
-  - ${{ if eq(parameters.BumpType, 'releaseCandidate') }}:
-    - job: CreateBranch
-      displayName: Create branch for next release
-      dependsOn: Bump
-      condition: and(in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'), eq(dependencies.Bump.result, 'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-      variables:
-        version: $[ dependencies.Bump.outputs['getVersion.version'] ]
-
-      steps:
       - checkout: self
-      - bash: |
-          git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
-          git config --local user.name imodeljs-admin
-        displayName: Setup Git
 
-      - bash: git checkout --track origin/$(Build.SourceBranchName)
-        displayName: Switching to source branch
-
-      - bash: |
-          echo  The current version is $(version)
-          officialVersion=$(sed -e 's/.[0-9]*-dev.*$/.x/' <<<"$(version)")
-
-          branchName="release/"$officialVersion
-
-          echo Release branch name is $branchName
-
-          echo "##vso[task.setvariable variable=releaseBranchName]$branchName"
-        displayName: Get Branch Name
-
-      - bash: git checkout -b $(releaseBranchName)
-        displayName: Create and publish branch
-
-      - bash: git push --set-upstream https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(releaseBranchName) -q
-        displayName: Publish the release branch
-
-  - ${{ if eq(parameters.BumpType, 'releaseCandidate') }}:
-    - job: UpdateMaster
-      displayName: Update master to next minor version
-      dependsOn: CreateBranch
-      condition: and(eq(dependencies.CreateBranch.result, 'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-
-      steps:
-      - checkout: self
       - task: NodeTool@0
-        displayName: 'Use Node 20.x'
+        displayName: Use Node 20.11.1
         inputs:
-          versionSpec: 20.x
+          versionSpec: 20.11.1
           checkLatest: true
 
       - bash: |
           git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
           git config --local user.name imodeljs-admin
-        displayName: 'Setup Git'
+        displayName: Setup Git
 
-      - bash: git checkout --track origin/$(Build.SourceBranchName)
-        displayName: Switching to source branch
+      - script: node common/scripts/install-run-rush.js install
+        displayName: rush install
 
-      # Running this rush command will bump the version number to the next minor version, which in turn deletes everything within common/change.
-      - bash: node common/scripts/install-run-rush version --override-bump minor --version-policy prerelease-monorepo-lockStep --bump
-        displayName: Update to new dev version on master
+      - bash: node common/scripts/install-run-rush.js audit
+        displayName: rush audit
 
-      # Only add the changes which delete the changelogs, we do not want them on master anymore.
-      - bash: git add common
-        displayName: 'Add changelog deletion'
+      # Can be run on any branch to do a standard version bump. Which is currently -dev bumps.
+      - ? ${{ if or(eq(parameters.BumpType, 'nightly'), eq(parameters.BumpType, 'releaseCandidate')) }}
+        : - bash: "node common/scripts/install-run-rush version --bump"
+            displayName: Rush version --bump
+
+      # Support two separate bump types on release branches
+      - ? ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}
+        : - bash: "node common/scripts/install-run-rush version --override-bump ${{ parameters.BumpType }} --version-policy prerelease-monorepo-lockStep --bump"
+            displayName: Release version bump
+            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
 
       - bash: |
-          # Resets all changes, other than the deletion of the changelogs.
-          git checkout -- .
+          version=$(jq '.[] | .version' common/config/rush/version-policies.json)
 
-          # Cleans up all untracked files. This could happen if there are new packages that do not have change logs yet.
-          git clean -f -d
+          # Remove quotes or else vso task complains
+          quotelessVersion=$(sed -e 's/^"//' -e 's/"$//' <<<"$version")
+          echo "##vso[build.updatebuildnumber]iModel.js_$quotelessVersion"
+          echo "##vso[task.setvariable variable=version;isOutput=true]$quotelessVersion"
+        displayName: Get new version number
+        name: getVersion
 
-          git status
-        displayName: Reset all changes besides changelog
+      # When creating a minor release, the NextVersion.md need to be cleared and the contents placed into a {Version Number}.md file
+      - ${{ if eq(parameters.BumpType, 'minor') }}:
+          - powershell: |
+              $sourceFile = 'docs/changehistory/NextVersion.md'
 
-      # The real rush command that we would like to run.
-      # Sets the version number to the next version's first pre-release version.
-      - bash: node common/scripts/install-run-rush version --override-bump preminor --version-policy prerelease-monorepo-lockStep --bump --override-prerelease-id dev
-        displayName: Rush version to new pre-release version
+              # If NextVersion has content do work
+              IF ((Get-Content -Path $sourceFile -ReadCount 1 | Measure-Object -line).Lines -gt 5) {
+                  # Replace placeholder header
+                  (Get-Content $sourceFile ) -replace 'NextVersion', "$(getVersion.version) Change Notes" | Set-Content $sourceFile
 
-      - powershell: |
-          # Clear the current NextVersion.md to prepare for the next version on master.
-          $sourceFile = 'docs/changehistory/NextVersion.md'
+                  # Remove old frontmatter
+                  (Get-Content $sourceFile | Select-Object -Skip 3) | Set-Content $sourceFile
 
-          # Overwrite everything with just the header
-          "---`npublish: false`n---`n# NextVersion`n" | Set-Content $sourceFile
-        displayName: 'Clear current NextVersion.md'
+                  # Copy NextVersion to index.md
+                  Copy-Item $sourceFile docs/changehistory/index.md -Force
 
-      - bash: git add .
-        displayName: Git add all changes
+                  # Add relevant frontmatter
+                  "---`ndeltaDoc: true`nversion: '$(getVersion.version)'`n---`n" + (Get-Content $sourceFile | Out-String) | Set-Content $sourceFile
 
-      - powershell: |
-          # Get the new dev version number. (Hint this is different than the overall version number used elsewhere)
-          $json = Get-Content -Raw -Path common/config/rush/version-policies.json | ConvertFrom-Json
+                  # Rename NextVersion
+                  Rename-Item -Path $sourceFile -NewName "$(getVersion.version).md"
 
-          $newVersion = $json[0].version
+                  # Add link to leftNav.md
+                  (Get-Content -Raw -Path docs/changehistory/leftNav.md) -replace "### Versions`n", "### Versions`n`n- [$(getVersion.version)](./$(getVersion.version).md)" | Set-Content -Path docs/changehistory/leftNav.md
 
-          Write-Host The new version is $newVersion
-          Write-Host Committing version bump...
+                  # Create new NextVersion.md
+                  New-Item $sourceFile
 
-          git commit -m "$newVersion" --author="imodeljs-admin <38288322+imodeljs-admin@users.noreply.github.com>"
+                  # Update NextVersion.md with template
+                  "---`npublish: false`n---`n# NextVersion`n" + (Get-Content $sourceFile | Out-String) | Set-Content $sourceFile
+              }
 
-          git status
-        displayName: Get version and committing
+              # Change header tab in docSite.json
+              (Get-Content 'docs/config/docSites.json') -replace '\".*?\":\s.?\"changehistory\"', "`"v$(getVersion.version)`": `"changehistory`"" | Set-Content 'docs/config/docSites.json'
 
-      - bash: git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(Build.SourceBranchName) -q
-        displayName: 'Push version bump'
+            failOnStderr: true
+            displayName: NextVersion.md rename and replace
+            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
+
+      - bash: "git add ."
+        displayName: Git add
+
+      - bash: |
+          echo Committing version bump $(getVersion.version)...
+
+          git commit -m "$(getVersion.version)" --author="imodeljs-admin <38288322+imodeljs-admin@users.noreply.github.com>"
+        displayName: Commit version bump
+
+      - ? ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}
+        : - bash: 'git tag -a release/$(getVersion.version) -m "v$(getVersion.version)"'
+            displayName: Create git tag
+
+      - bash: "git push --follow-tags https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:$(Build.SourceBranch)"
+        displayName: Push version bump
+
+  - ${{ if eq(parameters.BumpType, 'releaseCandidate') }}:
+      - job: CreateBranch
+        displayName: Create branch for next release
+        dependsOn: Bump
+        condition: and(in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'), eq(dependencies.Bump.result, 'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+        variables:
+          version: $[ dependencies.Bump.outputs['getVersion.version'] ]
+
+        steps:
+          - checkout: self
+          - bash: |
+              git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
+              git config --local user.name imodeljs-admin
+            displayName: Setup Git
+
+          - bash: git checkout --track origin/$(Build.SourceBranchName)
+            displayName: Switching to source branch
+
+          - bash: |
+              echo  The current version is $(version)
+              officialVersion=$(sed -e 's/.[0-9]*-dev.*$/.x/' <<<"$(version)")
+
+              branchName="release/"$officialVersion
+
+              echo Release branch name is $branchName
+
+              echo "##vso[task.setvariable variable=releaseBranchName]$branchName"
+            displayName: Get Branch Name
+
+          - bash: git checkout -b $(releaseBranchName)
+            displayName: Create release branch and checkout
+
+          - bash: |
+              docsYamlPath="common/config/azure-pipelines/templates/gather-docs.yaml"
+              releaseBranch=$(releaseBranchName)
+
+              # delimiter
+              IFS="."
+              read -ra splitArray <<< "$releaseBranch"
+
+              currentMinorVersion=${splitArray[1]}
+              previousMinorVersion=$((currentMinorVersion - 1))
+
+              # check if this release is major or minor version release
+              # if minor version bump, use last recent minor version
+              # if major version bump, `gather-docs.yaml` needs to be edited
+              # manually to be the most recent previous major release
+              # e.g. if this release is `release/5.0.x`, value in `gather-docs.yaml`
+              # should be `release/4.<whatever_last_minor_release_version_was>.x`
+              if [ $((previousMinorVersion)) -lt 0 ]
+              then
+                echo "This is is a major release. Edit \"gather-docs.yaml\" manually."
+              else
+                previousReleaseBranch="${releaseBranch/"$currentMinorVersion.x"/"$previousMinorVersion.x"}"
+                escapedReleaseBranchName="${previousReleaseBranch//\//\\\/}"
+                search="branchName: refs\/heads\/master"
+                replace="branchName: refs\/heads\/"$escapedReleaseBranchName""
+                echo "$search"
+                echo "$replace"
+                # The replacement here is global instead of first match since the logic is that
+                # if something is being pulled from master but needs to be changed to being pulled from release branch instead,
+                # it is likely that any other thing that was being pulled from master probably also needs to be pulled from release branch instead
+                sed -i "s/$search/$replace/g" "$docsYamlPath"
+                git add "$docsYamlPath"
+                git commit -m "Update 'gather-docs.yaml' to previous release branch name"
+              fi
+            displayName: Update 'gather-docs.yaml' and commit to release branch
+
+          - bash: git push --set-upstream https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(releaseBranchName) -q
+            displayName: Publish the release branch
+
+  - ${{ if eq(parameters.BumpType, 'releaseCandidate') }}:
+      - job: UpdateMaster
+        displayName: Update master to next minor version
+        dependsOn: CreateBranch
+        condition: and(eq(dependencies.CreateBranch.result, 'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+
+        steps:
+          - checkout: self
+          - task: NodeTool@0
+            displayName: "Use Node 20.11.1"
+            inputs:
+              versionSpec: 20.11.1
+              checkLatest: true
+
+          - bash: |
+              git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
+              git config --local user.name imodeljs-admin
+            displayName: "Setup Git"
+
+          - bash: git checkout --track origin/$(Build.SourceBranchName)
+            displayName: Switching to source branch
+
+          # Running this rush command will bump the version number to the next minor version, which in turn deletes everything within common/change.
+          - bash: node common/scripts/install-run-rush version --override-bump minor --version-policy prerelease-monorepo-lockStep --bump
+            displayName: Update to new dev version on master
+
+          # Only add the changes which delete the changelogs, we do not want them on master anymore.
+          - bash: git add common
+            displayName: "Add changelog deletion"
+
+          - bash: |
+              # Resets all changes, other than the deletion of the changelogs.
+              git checkout -- .
+
+              # Cleans up all untracked files. This could happen if there are new packages that do not have change logs yet.
+              git clean -f -d
+
+              git status
+            displayName: Reset all changes besides changelog
+
+          # The real rush command that we would like to run.
+          # Sets the version number to the next version's first pre-release version.
+          - bash: node common/scripts/install-run-rush version --override-bump preminor --version-policy prerelease-monorepo-lockStep --bump --override-prerelease-id dev
+            displayName: Rush version to new pre-release version
+
+          - powershell: |
+              # Clear the current NextVersion.md to prepare for the next version on master.
+              $sourceFile = 'docs/changehistory/NextVersion.md'
+
+              # Overwrite everything with just the header
+              "---`npublish: false`n---`n# NextVersion`n" | Set-Content $sourceFile
+            displayName: "Clear current NextVersion.md"
+
+          - bash: git add .
+            displayName: Git add all changes
+
+          - powershell: |
+              # Get the new dev version number. (Hint this is different than the overall version number used elsewhere)
+              $json = Get-Content -Raw -Path common/config/rush/version-policies.json | ConvertFrom-Json
+
+              $newVersion = $json[0].version
+
+              Write-Host The new version is $newVersion
+              Write-Host Committing version bump...
+
+              git commit -m "$newVersion" --author="imodeljs-admin <38288322+imodeljs-admin@users.noreply.github.com>"
+
+              git status
+            displayName: Get version and committing
+
+          - bash: git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(Build.SourceBranchName) -q
+            displayName: "Push version bump"

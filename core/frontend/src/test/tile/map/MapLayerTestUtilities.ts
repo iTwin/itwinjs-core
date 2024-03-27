@@ -20,6 +20,7 @@ export const fakeTextFetch = (sandbox: sinon.SinonSandbox, text: string) => {
     return Promise.resolve((({
       text: async () => text,
       ok: true,
+      status: 200,
     } as unknown) as Response));
   });
 };

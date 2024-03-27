@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
@@ -10,21 +10,72 @@ import { IModelDb, RpcTrace } from "@itwin/core-backend";
 import { BeEvent, Guid, using } from "@itwin/core-bentley";
 import { IModelNotFoundResponse, IModelRpcProps } from "@itwin/core-common";
 import {
-  ComputeSelectionRequestOptions, ComputeSelectionRpcRequestOptions, Content, ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions,
-  ContentFlags, ContentInstanceKeysRpcRequestOptions, ContentRequestOptions, ContentRpcRequestOptions, ContentSourcesRequestOptions,
-  ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, Descriptor, DescriptorOverrides, Diagnostics, DiagnosticsOptions,
-  DisplayLabelRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions, DisplayLabelsRpcRequestOptions,
-  DistinctValuesRequestOptions, DistinctValuesRpcRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
-  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyLevelDescriptorRequestOptions,
-  HierarchyLevelDescriptorRpcRequestOptions, HierarchyLevelJSON, HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, Node,
-  NodeKey, NodePathElement, Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus, RequestOptions, RulesetVariable,
-  RulesetVariableJSON, SelectClassInfo, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions, SingleElementPropertiesRpcRequestOptions,
-  VariableValueTypes, WithCancelEvent,
+  ComputeSelectionRequestOptions,
+  ComputeSelectionRpcRequestOptions,
+  Content,
+  ContentDescriptorRequestOptions,
+  ContentDescriptorRpcRequestOptions,
+  ContentFlags,
+  ContentInstanceKeysRpcRequestOptions,
+  ContentRequestOptions,
+  ContentRpcRequestOptions,
+  ContentSourcesRequestOptions,
+  ContentSourcesRpcRequestOptions,
+  ContentSourcesRpcResult,
+  Descriptor,
+  DescriptorOverrides,
+  Diagnostics,
+  DiagnosticsOptions,
+  DisplayLabelRequestOptions,
+  DisplayLabelRpcRequestOptions,
+  DisplayLabelsRequestOptions,
+  DisplayLabelsRpcRequestOptions,
+  DistinctValuesRequestOptions,
+  DistinctValuesRpcRequestOptions,
+  ElementProperties,
+  FieldDescriptor,
+  FieldDescriptorType,
+  FilterByInstancePathsHierarchyRequestOptions,
+  FilterByTextHierarchyRequestOptions,
+  HierarchyLevelDescriptorRequestOptions,
+  HierarchyLevelDescriptorRpcRequestOptions,
+  HierarchyLevelJSON,
+  HierarchyRequestOptions,
+  HierarchyRpcRequestOptions,
+  InstanceKey,
+  Item,
+  KeySet,
+  Node,
+  NodeKey,
+  NodePathElement,
+  Paged,
+  PageOptions,
+  PresentationError,
+  PresentationRpcRequestOptions,
+  PresentationStatus,
+  RequestOptions,
+  RulesetVariable,
+  RulesetVariableJSON,
+  SelectClassInfo,
+  SelectionScopeRequestOptions,
+  SingleElementPropertiesRequestOptions,
+  SingleElementPropertiesRpcRequestOptions,
+  VariableValueTypes,
+  WithCancelEvent,
 } from "@itwin/presentation-common";
 import {
-  configureForPromiseResult, createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinition,
-  createRandomNodePathElement, createRandomSelectionScope, createTestContentDescriptor, createTestECInstanceKey, createTestNode,
-  createTestSelectClassInfo, ResolvablePromise,
+  configureForPromiseResult,
+  createRandomECInstanceKey,
+  createRandomECInstancesNodeKey,
+  createRandomId,
+  createRandomLabelDefinition,
+  createRandomNodePathElement,
+  createRandomSelectionScope,
+  createTestContentDescriptor,
+  createTestECInstanceKey,
+  createTestNode,
+  createTestSelectClassInfo,
+  ResolvablePromise,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { BackendDiagnosticsAttribute } from "../presentation-backend";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
@@ -36,7 +87,6 @@ import { RulesetManager } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager";
 
 describe("PresentationRpcImpl", () => {
-
   beforeEach(() => {
     sinon.stub(RpcTrace, "expectCurrentActivity").get(() => {
       return { accessToken: "" };
@@ -98,11 +148,14 @@ describe("PresentationRpcImpl", () => {
         .returns(async () => 0);
       const response = await impl.getNodesCount(imodelTokenMock.object, { rulesetOrId: "", diagnostics: { dev: true } });
       expect(response.diagnostics).to.deep.eq({
-        logs: [{
-          scope: "1",
-        }, {
-          scope: "2",
-        }],
+        logs: [
+          {
+            scope: "1",
+          },
+          {
+            scope: "2",
+          },
+        ],
       });
     });
   });
@@ -166,7 +219,6 @@ describe("PresentationRpcImpl", () => {
   });
 
   describe("calls forwarding", () => {
-
     let testData: any;
     let defaultRpcParams: { clientId: string };
     let impl: PresentationRpcImpl;
@@ -214,7 +266,6 @@ describe("PresentationRpcImpl", () => {
     });
 
     describe("makeRequest", () => {
-
       // note: all RPC methods go through `makeRequest` that takes care of timeouts and throws - test that here
       // using `getNodesCount` request
 
@@ -230,7 +281,8 @@ describe("PresentationRpcImpl", () => {
           cancelEvent: new BeEvent<() => void>(),
         };
         const result = new ResolvablePromise<number>();
-        presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.getNodesCount(testData.imodelToken, rpcOptions);
@@ -254,7 +306,8 @@ describe("PresentationRpcImpl", () => {
           cancelEvent: new BeEvent<() => void>(),
         };
         const result = new ResolvablePromise<number>();
-        presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => result)
           .verifiable();
         const actualResultPromise = impl.getNodesCount(testData.imodelToken, rpcOptions);
@@ -281,7 +334,8 @@ describe("PresentationRpcImpl", () => {
           cancelEvent: new BeEvent<() => void>(),
         };
         const result1 = new ResolvablePromise<number>();
-        presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions1))
+        presentationManagerMock
+          .setup(async (x) => x.getNodesCount(managerOptions1))
           .returns(async () => result1)
           .verifiable();
 
@@ -296,7 +350,8 @@ describe("PresentationRpcImpl", () => {
           cancelEvent: new BeEvent<() => void>(),
         };
         const result2 = new ResolvablePromise<number>();
-        presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions2))
+        presentationManagerMock
+          .setup(async (x) => x.getNodesCount(managerOptions2))
           .returns(async () => result2)
           .verifiable();
 
@@ -313,7 +368,7 @@ describe("PresentationRpcImpl", () => {
 
       it("should reuse request promise when request is repeated multiple times and iModel takes long to find", async () => {
         const refreshIModelContainerPromise = new ResolvablePromise<void>();
-        (testData.imodelMock as moq.IMock<IModelDb>).setup(async (x) => x.refreshContainer(moq.It.isAny())).returns(async () => refreshIModelContainerPromise);
+        (testData.imodelMock as moq.IMock<IModelDb>).setup(async (x) => x.refreshContainerForRpc(moq.It.isAny())).returns(async () => refreshIModelContainerPromise);
 
         const rpcOptions: HierarchyRpcRequestOptions = {
           ...defaultRpcParams,
@@ -325,7 +380,10 @@ describe("PresentationRpcImpl", () => {
           parentKey: undefined,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions)).returns(async () => 0).verifiable(moq.Times.once());
+        presentationManagerMock
+          .setup(async (x) => x.getNodesCount(managerOptions))
+          .returns(async () => 0)
+          .verifiable(moq.Times.once());
         const pResult1 = impl.getNodesCount(testData.imodelToken, rpcOptions);
         const pResult2 = impl.getNodesCount(testData.imodelToken, rpcOptions);
 
@@ -349,7 +407,8 @@ describe("PresentationRpcImpl", () => {
           rulesetVariables: rpcOptions.rulesetVariables as RulesetVariable[],
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => 999)
           .verifiable();
         await impl.getNodesCount(testData.imodelToken, rpcOptions);
@@ -377,8 +436,11 @@ describe("PresentationRpcImpl", () => {
         const diagnosticsResult: Diagnostics = {
           logs: [{ scope: "test" }],
         };
-        presentationManagerMock.setup(async (x) => x.getNodesCount(moq.It.is((actualManagerOptions) => sinon.match(managerOptions).test(actualManagerOptions))))
-          .callback((options: RequestOptions<IModelDb> & BackendDiagnosticsAttribute) => { options.diagnostics!.handler(diagnosticsResult); })
+        presentationManagerMock
+          .setup(async (x) => x.getNodesCount(moq.It.is((actualManagerOptions) => sinon.match(managerOptions).test(actualManagerOptions))))
+          .callback((options: RequestOptions<IModelDb> & BackendDiagnosticsAttribute) => {
+            options.diagnostics!.handler(diagnosticsResult);
+          })
           .returns(async () => 999)
           .verifiable();
         const actualResult = await impl.getNodesCount(testData.imodelToken, rpcOptions);
@@ -401,7 +463,8 @@ describe("PresentationRpcImpl", () => {
           parentKey: undefined,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => {
             throw new PresentationError(PresentationStatus.Error, "test error");
           })
@@ -425,7 +488,8 @@ describe("PresentationRpcImpl", () => {
           parentKey: undefined,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => {
             throw new PresentationError(PresentationStatus.Error, "test error");
           })
@@ -435,11 +499,9 @@ describe("PresentationRpcImpl", () => {
         expect(actualResult.statusCode).to.eq(PresentationStatus.Error);
         expect(actualResult.errorMessage).to.eq("test error");
       });
-
     });
 
     describe("getNodesCount", () => {
-
       it("calls manager for root nodes count", async () => {
         const result = 999;
         const rpcOptions: HierarchyRpcRequestOptions = {
@@ -452,7 +514,8 @@ describe("PresentationRpcImpl", () => {
           parentKey: undefined,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.getNodesCount(testData.imodelToken, rpcOptions);
@@ -474,7 +537,8 @@ describe("PresentationRpcImpl", () => {
           parentKey: parentNodeKey,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.getNodesCount(testData.imodelToken, rpcOptions);
@@ -484,7 +548,6 @@ describe("PresentationRpcImpl", () => {
     });
 
     describe("getPagedNodes", () => {
-
       it("calls manager for root nodes", async () => {
         // eslint-disable-next-line deprecation/deprecation
         const getRootNodesResult: HierarchyLevelJSON = {
@@ -509,13 +572,13 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getNodes: sinon.spy(async () => JSON.stringify(getRootNodesResult)),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getNodes(managerOptions))
+          .setup(async (x) => x.getDetail().getNodes(managerOptions))
           .returns(async () => JSON.stringify(getRootNodesResult))
           .verifiable();
-        presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => getRootNodesCountResult)
           .verifiable();
         const actualResult = await impl.getPagedNodes(testData.imodelToken, rpcOptions);
@@ -551,13 +614,13 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getNodes: sinon.spy(async () => JSON.stringify(getChildNodesResult)),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getNodes(managerOptions))
+          .setup(async (x) => x.getDetail().getNodes(managerOptions))
           .returns(async () => JSON.stringify(getChildNodesResult))
           .verifiable();
-        presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => getChildNodesCountResult)
           .verifiable();
         const actualResult = await impl.getPagedNodes(testData.imodelToken, rpcOptions);
@@ -586,13 +649,13 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getNodes: sinon.spy(async () => getRootNodesResult),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getNodes(managerOptions))
+          .setup(async (x) => x.getDetail().getNodes(managerOptions))
           .returns(async () => JSON.stringify(getRootNodesResult))
           .verifiable();
-        presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => getRootNodesCountResult)
           .verifiable();
         await impl.getPagedNodes(testData.imodelToken, rpcOptions);
@@ -613,18 +676,17 @@ describe("PresentationRpcImpl", () => {
           paging: { start: 0, size: MAX_ALLOWED_PAGE_SIZE },
           parentKey: undefined,
           cancelEvent: new BeEvent<() => void>(),
-
         };
         const presentationManagerDetailStub = {
           getNodes: sinon.spy(async () => getRootNodesResult),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getNodes(managerOptions))
+          .setup(async (x) => x.getDetail().getNodes(managerOptions))
           .returns(async () => JSON.stringify(getRootNodesResult))
           .verifiable();
-        presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => getRootNodesCountResult)
           .verifiable();
         await impl.getPagedNodes(testData.imodelToken, rpcOptions);
@@ -649,19 +711,18 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getNodes: sinon.spy(async () => getRootNodesResult),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getNodes(managerOptions))
+          .setup(async (x) => x.getDetail().getNodes(managerOptions))
           .returns(async () => JSON.stringify(getRootNodesResult))
           .verifiable();
-        presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => getRootNodesCountResult)
           .verifiable();
         await impl.getPagedNodes(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
       });
-
     });
 
     describe("getNodesDescriptor", () => {
@@ -682,9 +743,7 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getNodesDescriptor: sinon.spy(async () => JSON.stringify(result.toJSON())),
         };
-        presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         const actualResult = await impl.getNodesDescriptor(testData.imodelToken, rpcOptions);
         expect(presentationManagerDetailStub.getNodesDescriptor).to.be.calledOnceWith(managerOptions);
         expect(actualResult.result).to.eq(JSON.stringify(result.toJSON()));
@@ -692,42 +751,34 @@ describe("PresentationRpcImpl", () => {
     });
 
     describe("getFilteredNodePaths", () => {
-
       it("calls manager", async () => {
         const result = [createRandomNodePathElement(0), createRandomNodePathElement(0)];
-        const rpcOptions: PresentationRpcRequestOptions<FilterByTextHierarchyRequestOptions<never, RulesetVariableJSON>> = {
-          ...defaultRpcParams,
-          rulesetOrId: testData.rulesetOrId,
-          filterText: "filter",
-        };
         const managerOptions: WithCancelEvent<FilterByTextHierarchyRequestOptions<IModelDb>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           filterText: "filter",
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getFilteredNodePaths(managerOptions))
-          .returns(async () => result)
-          .verifiable();
+        const rpcOptions: PresentationRpcRequestOptions<FilterByTextHierarchyRequestOptions<never, RulesetVariableJSON>> = {
+          ...defaultRpcParams,
+          rulesetOrId: managerOptions.rulesetOrId,
+          filterText: managerOptions.filterText,
+        };
+        const presentationManagerDetailStub = {
+          getFilteredNodePaths: sinon.spy(async () => result),
+        };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         const actualResult = await impl.getFilteredNodePaths(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         // eslint-disable-next-line deprecation/deprecation
         expect(actualResult.result).to.deep.equal(result.map(NodePathElement.toJSON));
       });
-
     });
 
     describe("getNodePaths", () => {
-
       it("calls manager", async () => {
         const result = [createRandomNodePathElement(0), createRandomNodePathElement(0)];
         const keyArray: InstanceKey[][] = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
-        const rpcOptions: PresentationRpcRequestOptions<FilterByInstancePathsHierarchyRequestOptions<never, RulesetVariableJSON>> = {
-          ...defaultRpcParams,
-          rulesetOrId: testData.rulesetOrId,
-          instancePaths: keyArray,
-          markedIndex: 1,
-        };
         const managerOptions: WithCancelEvent<FilterByInstancePathsHierarchyRequestOptions<IModelDb>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
@@ -735,19 +786,24 @@ describe("PresentationRpcImpl", () => {
           markedIndex: 1,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getNodePaths(managerOptions))
-          .returns(async () => result)
-          .verifiable();
+        const rpcOptions: PresentationRpcRequestOptions<FilterByInstancePathsHierarchyRequestOptions<never, RulesetVariableJSON>> = {
+          ...defaultRpcParams,
+          rulesetOrId: managerOptions.rulesetOrId,
+          instancePaths: managerOptions.instancePaths,
+          markedIndex: managerOptions.markedIndex,
+        };
+        const presentationManagerDetailStub = {
+          getNodePaths: sinon.spy(async () => result),
+        };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         const actualResult = await impl.getNodePaths(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         // eslint-disable-next-line deprecation/deprecation
         expect(actualResult.result).to.deep.equal(result.map(NodePathElement.toJSON));
       });
-
     });
 
     describe("getContentSources", () => {
-
       it("calls manager", async () => {
         const classes = ["test.class1"];
         const rpcOptions: ContentSourcesRpcRequestOptions = {
@@ -765,14 +821,14 @@ describe("PresentationRpcImpl", () => {
           sources: managerResponse.map((sci) => SelectClassInfo.toCompressedJSON(sci, classesMap)),
           classesMap,
         };
-        presentationManagerMock.setup(async (x) => x.getContentSources(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getContentSources(managerOptions))
           .returns(async () => managerResponse)
           .verifiable();
         const actualResult = await impl.getContentSources(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(expectedResult);
       });
-
     });
 
     describe("getContentDescriptor", () => {
@@ -791,6 +847,7 @@ describe("PresentationRpcImpl", () => {
             imodel: testData.imodelMock.object,
             rulesetOrId: testData.rulesetOrId,
             displayType: testData.displayType,
+            contentFlags: ContentFlags.DescriptorOnly,
             keys,
             transport: "unparsed-json",
             cancelEvent: new BeEvent<() => void>(),
@@ -798,9 +855,7 @@ describe("PresentationRpcImpl", () => {
           const presentationManagerDetailStub = {
             getContentDescriptor: sinon.spy(async () => JSON.stringify(descriptor.toJSON())),
           };
-          presentationManagerMock
-            .setup((x) => x.getDetail())
-            .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+          presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
           const actualResult = await impl.getContentDescriptor(testData.imodelToken, rpcOptions);
           expect(presentationManagerDetailStub.getContentDescriptor).to.have.been.calledOnceWithExactly(managerOptions);
           expect(actualResult.result).to.be.equal(JSON.stringify(descriptor.toJSON()));
@@ -819,6 +874,7 @@ describe("PresentationRpcImpl", () => {
             imodel: testData.imodelMock.object,
             rulesetOrId: testData.rulesetOrId,
             displayType: testData.displayType,
+            contentFlags: ContentFlags.DescriptorOnly,
             keys,
             transport: "unparsed-json",
             cancelEvent: new BeEvent<() => void>(),
@@ -826,9 +882,7 @@ describe("PresentationRpcImpl", () => {
           const presentationManagerDetailStub = {
             getContentDescriptor: sinon.spy(async () => undefined),
           };
-          presentationManagerMock
-            .setup((x) => x.getDetail())
-            .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+          presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
           const actualResult = await impl.getContentDescriptor(testData.imodelToken, rpcOptions);
           expect(presentationManagerDetailStub.getContentDescriptor).to.have.been.calledOnceWithExactly(managerOptions);
           presentationManagerMock.verifyAll();
@@ -850,10 +904,12 @@ describe("PresentationRpcImpl", () => {
             imodel: testData.imodelMock.object,
             rulesetOrId: testData.rulesetOrId,
             displayType: testData.displayType,
+            contentFlags: ContentFlags.DescriptorOnly,
             keys,
             cancelEvent: new BeEvent<() => void>(),
           };
-          presentationManagerMock.setup(async (x) => x.getContentDescriptor(managerOptions))
+          presentationManagerMock
+            .setup(async (x) => x.getContentDescriptor(managerOptions))
             .returns(async () => descriptor)
             .verifiable();
           const actualResult = await impl.getContentDescriptor(testData.imodelToken, rpcOptions);
@@ -867,16 +923,19 @@ describe("PresentationRpcImpl", () => {
             ...defaultRpcParams,
             rulesetOrId: testData.rulesetOrId,
             displayType: testData.displayType,
+            contentFlags: ContentFlags.ShowLabels,
             keys: keys.toJSON(),
           };
           const managerOptions: WithCancelEvent<ContentDescriptorRequestOptions<IModelDb, KeySet>> = {
             imodel: testData.imodelMock.object,
             rulesetOrId: testData.rulesetOrId,
             displayType: testData.displayType,
+            contentFlags: ContentFlags.ShowLabels | ContentFlags.DescriptorOnly,
             keys,
             cancelEvent: new BeEvent<() => void>(),
           };
-          presentationManagerMock.setup(async (x) => x.getContentDescriptor(managerOptions))
+          presentationManagerMock
+            .setup(async (x) => x.getContentDescriptor(managerOptions))
             .returns(async () => undefined)
             .verifiable();
           const actualResult = await impl.getContentDescriptor(testData.imodelToken, rpcOptions);
@@ -887,7 +946,6 @@ describe("PresentationRpcImpl", () => {
     });
 
     describe("getContentSetSize", () => {
-
       it("calls manager", async () => {
         const keys = new KeySet();
         const result = 789;
@@ -913,11 +971,9 @@ describe("PresentationRpcImpl", () => {
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(result);
       });
-
     });
 
     describe("getPagedContent", () => {
-
       it("calls manager", async () => {
         const keys = new KeySet();
         const contentItem = new Item([], "", "", undefined, {}, {}, [], undefined);
@@ -941,13 +997,13 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getContent: sinon.spy(async () => content),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
+          .setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
-        presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getContentSetSize(managerOptions))
           .returns(async () => 999)
           .verifiable();
         const actualResult = await impl.getPagedContent(testData.imodelToken, rpcOptions);
@@ -986,13 +1042,13 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getContent: sinon.spy(async () => undefined),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
+          .setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => undefined)
           .verifiable();
-        presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getContentSetSize(managerOptions))
           .returns(async () => 0)
           .verifiable();
         const actualResult = await impl.getPagedContent(testData.imodelToken, rpcOptions);
@@ -1023,13 +1079,13 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getContent: sinon.spy(async () => content),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
+          .setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
-        presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getContentSetSize(managerOptions))
           .returns(async () => 9999)
           .verifiable();
         const actualResult = await impl.getPagedContent(testData.imodelToken, rpcOptions);
@@ -1066,13 +1122,13 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getContent: sinon.spy(async () => content),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
+          .setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
-        presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getContentSetSize(managerOptions))
           .returns(async () => 9999)
           .verifiable();
         const actualResult = await impl.getPagedContent(testData.imodelToken, rpcOptions);
@@ -1109,13 +1165,13 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getContent: sinon.spy(async () => content),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
+          .setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
-        presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getContentSetSize(managerOptions))
           .returns(async () => 9999)
           .verifiable();
         const actualResult = await impl.getPagedContent(testData.imodelToken, rpcOptions);
@@ -1128,11 +1184,9 @@ describe("PresentationRpcImpl", () => {
           },
         });
       });
-
     });
 
     describe("getPagedContentSet", () => {
-
       it("calls manager", async () => {
         const keys = new KeySet();
         const contentItem = new Item([], "", "", undefined, {}, {}, [], undefined);
@@ -1156,13 +1210,13 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getContent: sinon.spy(async () => content),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
+          .setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
-        presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getContentSetSize(managerOptions))
           .returns(async () => 999)
           .verifiable();
         const actualResult = await impl.getPagedContentSet(testData.imodelToken, rpcOptions);
@@ -1198,13 +1252,13 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getContent: sinon.spy(async () => undefined),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
+          .setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => undefined)
           .verifiable();
-        presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getContentSetSize(managerOptions))
           .returns(async () => 0)
           .verifiable();
         const actualResult = await impl.getPagedContentSet(testData.imodelToken, rpcOptions);
@@ -1235,13 +1289,13 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getContent: sinon.spy(async () => content),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
+          .setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
-        presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getContentSetSize(managerOptions))
           .returns(async () => 9999)
           .verifiable();
         const actualResult = await impl.getPagedContentSet(testData.imodelToken, rpcOptions);
@@ -1275,13 +1329,13 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getContent: sinon.spy(async () => content),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
+          .setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
-        presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getContentSetSize(managerOptions))
           .returns(async () => 9999)
           .verifiable();
         const actualResult = await impl.getPagedContentSet(testData.imodelToken, rpcOptions);
@@ -1315,13 +1369,13 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getContent: sinon.spy(async () => content),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
+          .setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
-        presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getContentSetSize(managerOptions))
           .returns(async () => 9999)
           .verifiable();
         const actualResult = await impl.getPagedContentSet(testData.imodelToken, rpcOptions);
@@ -1331,18 +1385,18 @@ describe("PresentationRpcImpl", () => {
           items: content.contentSet.map((i) => i.toJSON()),
         });
       });
-
     });
 
     describe("getPagedDistinctValues", () => {
-
       it("calls manager", async () => {
         const distinctValues = {
           total: 1,
-          items: [{
-            displayValue: "test",
-            groupedRawValues: ["test"],
-          }],
+          items: [
+            {
+              displayValue: "test",
+              groupedRawValues: ["test"],
+            },
+          ],
         };
         const keys = new KeySet();
         const descriptor = createTestContentDescriptor({ fields: [] });
@@ -1367,9 +1421,10 @@ describe("PresentationRpcImpl", () => {
           fieldDescriptor: managerOptions.fieldDescriptor,
           paging: testData.pageOptions,
         };
-        presentationManagerMock.setup(async (x) => x.getPagedDistinctValues(managerOptions))
-          .returns(async () => distinctValues)
-          .verifiable();
+        const presentationManagerDetailStub = {
+          getPagedDistinctValues: sinon.spy(async () => distinctValues),
+        };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         const actualResult = await impl.getPagedDistinctValues(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(distinctValues);
@@ -1378,10 +1433,12 @@ describe("PresentationRpcImpl", () => {
       it("enforces maximum page size when requesting with larger size than allowed", async () => {
         const distinctValues = {
           total: 1,
-          items: [{
-            displayValue: "test",
-            groupedRawValues: ["test"],
-          }],
+          items: [
+            {
+              displayValue: "test",
+              groupedRawValues: ["test"],
+            },
+          ],
         };
         const keys = new KeySet();
         const descriptor = createTestContentDescriptor({ fields: [] });
@@ -1406,9 +1463,10 @@ describe("PresentationRpcImpl", () => {
           fieldDescriptor: managerOptions.fieldDescriptor,
           paging: { start: 0, size: MAX_ALLOWED_PAGE_SIZE + 1 },
         };
-        presentationManagerMock.setup(async (x) => x.getPagedDistinctValues(managerOptions))
-          .returns(async () => distinctValues)
-          .verifiable();
+        const presentationManagerDetailStub = {
+          getPagedDistinctValues: sinon.spy(async () => distinctValues),
+        };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         const actualResult = await impl.getPagedDistinctValues(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(distinctValues);
@@ -1417,10 +1475,12 @@ describe("PresentationRpcImpl", () => {
       it("enforces maximum page size when requesting with undefined size", async () => {
         const distinctValues = {
           total: 1,
-          items: [{
-            displayValue: "test",
-            groupedRawValues: ["test"],
-          }],
+          items: [
+            {
+              displayValue: "test",
+              groupedRawValues: ["test"],
+            },
+          ],
         };
         const keys = new KeySet();
         const descriptor = createTestContentDescriptor({ fields: [] });
@@ -1446,9 +1506,10 @@ describe("PresentationRpcImpl", () => {
           paging: { start: 5 },
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getPagedDistinctValues(managerOptions))
-          .returns(async () => distinctValues)
-          .verifiable();
+        const presentationManagerDetailStub = {
+          getPagedDistinctValues: sinon.spy(async () => distinctValues),
+        };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         const actualResult = await impl.getPagedDistinctValues(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(distinctValues);
@@ -1457,10 +1518,12 @@ describe("PresentationRpcImpl", () => {
       it("enforces maximum page size when requesting with undefined page options", async () => {
         const distinctValues = {
           total: 1,
-          items: [{
-            displayValue: "test",
-            groupedRawValues: ["test"],
-          }],
+          items: [
+            {
+              displayValue: "test",
+              groupedRawValues: ["test"],
+            },
+          ],
         };
         const keys = new KeySet();
         const descriptor = createTestContentDescriptor({ fields: [] });
@@ -1485,18 +1548,17 @@ describe("PresentationRpcImpl", () => {
           fieldDescriptor: managerOptions.fieldDescriptor,
           paging: undefined,
         };
-        presentationManagerMock.setup(async (x) => x.getPagedDistinctValues(managerOptions))
-          .returns(async () => distinctValues)
-          .verifiable();
+        const presentationManagerDetailStub = {
+          getPagedDistinctValues: sinon.spy(async () => distinctValues),
+        };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         const actualResult = await impl.getPagedDistinctValues(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(distinctValues);
       });
-
     });
 
     describe("getElementProperties", () => {
-
       it("calls manager", async () => {
         const testElementProperties: ElementProperties = {
           class: "Test Class",
@@ -1529,9 +1591,7 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getElementProperties: sinon.spy(async () => managerResponse),
         };
-        presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
           .setup(async (x) => x.getDetail().getElementProperties(managerOptions))
           .returns(async () => managerResponse)
@@ -1540,11 +1600,9 @@ describe("PresentationRpcImpl", () => {
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(expectedRpcResponse);
       });
-
     });
 
     describe("getContentInstanceKeys", () => {
-
       it("calls manager", async () => {
         const keys = new KeySet();
         const contentItemKeys = [createTestECInstanceKey({ id: "0x123" }), createTestECInstanceKey({ id: "0x456" })];
@@ -1571,13 +1629,13 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getContent: sinon.spy(async () => content),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
+          .setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
-        presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getContentSetSize(managerOptions))
           .returns(async () => 999)
           .verifiable();
         const actualResult = await impl.getContentInstanceKeys(testData.imodelToken, rpcOptions);
@@ -1611,13 +1669,13 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getContent: sinon.spy(async () => undefined),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
+          .setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => undefined)
           .verifiable();
-        presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getContentSetSize(managerOptions))
           .returns(async () => 0)
           .verifiable();
         const actualResult = await impl.getContentInstanceKeys(testData.imodelToken, rpcOptions);
@@ -1655,13 +1713,13 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getContent: sinon.spy(async () => content),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
+          .setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
-        presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getContentSetSize(managerOptions))
           .returns(async () => 999)
           .verifiable();
         const actualResult = await impl.getContentInstanceKeys(testData.imodelToken, rpcOptions);
@@ -1699,13 +1757,13 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getContent: sinon.spy(async () => content),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
+          .setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
-        presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getContentSetSize(managerOptions))
           .returns(async () => 999)
           .verifiable();
         const actualResult = await impl.getContentInstanceKeys(testData.imodelToken, rpcOptions);
@@ -1742,13 +1800,13 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getContent: sinon.spy(async () => content),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
+          .setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
-        presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getContentSetSize(managerOptions))
           .returns(async () => 999)
           .verifiable();
         const actualResult = await impl.getContentInstanceKeys(testData.imodelToken, rpcOptions);
@@ -1758,11 +1816,9 @@ describe("PresentationRpcImpl", () => {
           items: new KeySet(contentItemKeys).toJSON(),
         });
       });
-
     });
 
     describe("getDisplayLabelDefinition", () => {
-
       it("calls manager", async () => {
         const result = createRandomLabelDefinition();
         const key = createRandomECInstanceKey();
@@ -1781,21 +1837,18 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getDisplayLabelDefinition: sinon.spy(async () => result),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getDisplayLabelDefinition(managerOptions))
+          .setup(async (x) => x.getDetail().getDisplayLabelDefinition(managerOptions))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.getDisplayLabelDefinition(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(result);
       });
-
     });
 
     describe("getPagedDisplayLabelDefinitions", () => {
-
       it("calls manager", async () => {
         const result = [createRandomLabelDefinition(), createRandomLabelDefinition()];
         const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
@@ -1812,10 +1865,9 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getDisplayLabelDefinitions: sinon.spy(async () => result),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getDisplayLabelDefinitions(managerOptions))
+          .setup(async (x) => x.getDetail().getDisplayLabelDefinitions(managerOptions))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.getPagedDisplayLabelDefinitions(testData.imodelToken, rpcOptions);
@@ -1824,8 +1876,8 @@ describe("PresentationRpcImpl", () => {
       });
 
       it("enforces maximum page size when requesting more labels than allowed", async () => {
-        const result = (new Array(MAX_ALLOWED_PAGE_SIZE)).fill(createRandomLabelDefinition());
-        const keys = (new Array(MAX_ALLOWED_PAGE_SIZE + 1)).fill(createRandomECInstanceKey());
+        const result = new Array(MAX_ALLOWED_PAGE_SIZE).fill(createRandomLabelDefinition());
+        const keys = new Array(MAX_ALLOWED_PAGE_SIZE + 1).fill(createRandomECInstanceKey());
         const rpcOptions: DisplayLabelsRpcRequestOptions = {
           ...defaultRpcParams,
           keys,
@@ -1839,21 +1891,18 @@ describe("PresentationRpcImpl", () => {
         const presentationManagerDetailStub = {
           getDisplayLabelDefinitions: sinon.spy(async () => result),
         };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock.setup(async (x) => x.getDetail().getDisplayLabelDefinitions(managerOptions))
+          .setup(async (x) => x.getDetail().getDisplayLabelDefinitions(managerOptions))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.getPagedDisplayLabelDefinitions(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq({ total: MAX_ALLOWED_PAGE_SIZE, items: result });
       });
-
     });
 
     describe("getSelectionScopes", () => {
-
       it("calls manager", async () => {
         const rpcOptions: PresentationRpcRequestOptions<SelectionScopeRequestOptions<never>> = {
           ...defaultRpcParams,
@@ -1863,18 +1912,17 @@ describe("PresentationRpcImpl", () => {
           cancelEvent: new BeEvent<() => void>(),
         };
         const result = [createRandomSelectionScope()];
-        presentationManagerMock.setup(async (x) => x.getSelectionScopes(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.getSelectionScopes(managerOptions))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.getSelectionScopes(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(result);
       });
-
     });
 
     describe("computeSelection", () => {
-
       it("[deprecated] calls manager", async () => {
         const scope = createRandomSelectionScope();
         const ids = [createRandomId()];
@@ -1888,7 +1936,8 @@ describe("PresentationRpcImpl", () => {
           cancelEvent: new BeEvent<() => void>(),
         };
         const result = new KeySet();
-        presentationManagerMock.setup(async (x) => x.computeSelection(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.computeSelection(managerOptions))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.computeSelection(testData.imodelToken, rpcOptions, ids, scope.id);
@@ -1918,18 +1967,16 @@ describe("PresentationRpcImpl", () => {
           cancelEvent: new BeEvent<() => void>(),
         };
         const result = new KeySet();
-        presentationManagerMock.setup(async (x) => x.computeSelection(managerOptions))
+        presentationManagerMock
+          .setup(async (x) => x.computeSelection(managerOptions))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.computeSelection(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(result.toJSON());
       });
-
     });
-
   });
-
 });
 
 function createIModelRpcProps(): IModelRpcProps {

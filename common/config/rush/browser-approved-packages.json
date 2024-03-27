@@ -347,6 +347,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/unified-selection",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@itwin/webgl-compatibility",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -377,6 +381,10 @@
     {
       "name": "@svgdotjs/svg.js",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "@typescript-eslint/parser",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@xmldom/xmldom",
@@ -531,6 +539,10 @@
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "eslint-config-prettier",
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
       "name": "express",
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
@@ -544,6 +556,10 @@
     },
     {
       "name": "fast-sort",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "fast-xml-parser",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -701,6 +717,10 @@
     {
       "name": "playwright",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "prettier",
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "raf",

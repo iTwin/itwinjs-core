@@ -112,7 +112,7 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
     // The following is only if the reality data is not stored on PW Context Share.
     const cesiumAsset = CesiumIonAssetProvider.parseCesiumUrl(url);
     if (cesiumAsset) {
-      const tokenAndUrl = await getCesiumAccessTokenAndEndpointUrl(cesiumAsset.id, cesiumAsset.key);
+      const tokenAndUrl = await getCesiumAccessTokenAndEndpointUrl(`${cesiumAsset.id}`, cesiumAsset.key);
       if (tokenAndUrl.url && tokenAndUrl.token) {
         url = tokenAndUrl.url;
         this._requestAuthorization = `Bearer ${tokenAndUrl.token}`;

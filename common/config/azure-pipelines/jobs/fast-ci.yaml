@@ -7,15 +7,17 @@ trigger:
 variables:
   - group: Rush Build Cache SAS Token
   - group: Travis Cobbs - GitHub PAT
+  - group: imodel-native secret variables
   - name: shouldWriteToCache
     value: ${{ and(eq(variables['Agent.OS'], 'Linux'), in(variables['Build.Reason'], 'IndividualCI', 'Manual')) }}
   - name: win_pool
-    value: 'iModelTechCI'
+    value: "iModelTechCI"
   - name: linux_pool
-    value: 'iModeljs Linux'
+    value: "iModeljs Linux"
   - name: mac_pool
-    value: 'iModelTechMacArm'
-
+    value: "iModelTechMacArm"
+  - name: BUILD_URL
+    value: "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"
 
 pr:
   autoCancel: true
@@ -34,8 +36,49 @@ pr:
       - "**/CHANGELOG.md"
 
 jobs:
-  - job:
+  - job: CheckLinkedPR
+    displayName: Get PRs
+    pool:
+      vmImage: ubuntu-latest
 
+    steps:
+      - checkout: self
+        persistCredentials: true
+      - task: NodeTool@0
+        inputs:
+          versionSpec: "18.x"
+
+      - bash: |
+          if [[ "$(Build.Reason)" == "PullRequest" ]]; then
+            branch=$(System.PullRequest.SourceBranch)
+
+            # Use GH CLI to get the PR description, SHA and title in json format so it can be parsed
+            gh pr view $branch --json title,body,headRefOid >> pr_view.json
+
+            #save SHA and PR description
+            currentSHA=$(node -e "const data = require('./pr_view.json'); console.log(data.headRefOid)")
+            node -e "const data = require('./pr_view.json'); console.log(data.body)" >> body.txt
+
+            NativeUrl=$(grep -E '^imodel-native(-internal)?: https://github\.com/iTwin/imodel-native(-internal)?/pull/*' body.txt)
+          else
+            echo 'This run was not triggered by a Pull request.'
+            echo 'If you have a PR for this branch and wish to use a linked PR please comment in your PR "/azp run iTwin.js" to trigger the pipeline'
+          fi
+
+          # No native PRs are linked
+          if [[ -z "$NativeUrl" ]]; then
+            echo '##vso[task.setvariable variable=POST_STATUS;isoutput=true]true'
+          else
+            echo '##vso[task.setvariable variable=POST_STATUS;isoutput=true]false'
+          fi
+
+        env:
+          GITHUB_TOKEN: $(GH_TOKEN)
+        name: checkForPr
+
+  - job: Build
+    dependsOn: CheckLinkedPR
+    condition: succeeded()
     strategy:
       matrix:
         "Windows_Node_20":
@@ -63,11 +106,36 @@ jobs:
         clean: true
       - template: ../templates/core-build.yaml
         parameters:
-          nodeVersion: 20.x
+          nodeVersion: 20.11.1
           buildMobile: true
       # Will run if even there is a failure somewhere else in the pipeline.
       - template: ../templates/publish-test-results.yaml
         parameters:
-          nodeVersion: 20.x
+          nodeVersion: 20.11.1
       # The publish script identifies any new packages not previously published and tags the build
       - template: ../templates/publish.yaml
+
+  - job: PostResult
+    dependsOn:
+      - CheckLinkedPR
+      - Build
+    condition: and(succeeded(), eq(dependencies.CheckLinkedPR.outputs['checkForPr.POST_STATUS'], 'true'), eq(variables['Build.Reason'], 'PullRequest'))
+    displayName: Post Success
+    pool:
+      vmImage: ubuntu-latest
+
+    steps:
+      - bash: |
+          branch=$(System.PullRequest.SourceBranch)
+          sha=$(gh pr view $branch --json "headRefOid" -q ".headRefOid")
+          echo "Posting 'success' status to current PR"
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            /repos/$(Build.Repository.Name)/statuses/$sha \
+            -f state='success' \
+            -f target_url='$(BUILD_URL)' \
+            -f context='itwinjs-core PR validation' \
+            -f description='No native PR was linked'
+        env:
+          GITHUB_TOKEN: $(GH_TOKEN)

@@ -127,7 +127,7 @@ export class SweepLineStringToFacetsOptions {
 }
 
 /**
- * Options carrier for cloneWithHolesFilled
+ * Options carrier for [[fillSimpleHoles]]
  * @public
  */
 export interface HoleFillOptions {
@@ -413,7 +413,22 @@ export class PolyfaceQuery {
     const inertiaProducts = PolyfaceQuery.sumFacetSecondVolumeMomentProducts(source, origin);
     return MomentData.inertiaProductsToPrincipalAxes(origin, inertiaProducts);
   }
-
+  /** Determine whether all facets are convex.
+   * @param source mesh to examine
+   */
+  public static areFacetsConvex(source: Polyface | PolyfaceVisitor): boolean {
+    if (source instanceof Polyface)
+      return this.areFacetsConvex(source.createVisitor(0));
+    source.setNumWrap(0);
+    source.reset();
+    while (source.moveToNextFacet()) {
+      if (source.pointCount > 3) {
+        if (!PolygonOps.isConvex(source.point))
+          return false;
+      }
+    }
+    return true;
+  }
   /**
    * Test for convex volume by dihedral angle tests on all edges.
    * * This tests if all dihedral angles are positive.
@@ -430,7 +445,6 @@ export class PolyfaceQuery {
   public static isConvexByDihedralAngleCount(source: Polyface, ignoreBoundaries: boolean = false): boolean {
     return this.dihedralAngleSummary(source, ignoreBoundaries) > 0;
   }
-
   /**
   * Compute a number summarizing the dihedral angles in the mesh.
   * @see [[isConvexByDihedralAngleCount]] for comments about ignoreBoundaries===true when there are multiple connected components.
@@ -548,11 +562,11 @@ export class PolyfaceQuery {
    * @param includeMismatch true to include edges with more than 2 incident facets
    * @param includeNull true to include edges with identical start and end vertex indices.
    */
-    public static collectBoundaryEdges(source: Polyface | PolyfaceVisitor, includeTypical: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): AnyChain | undefined {
-      const collector = new MultiChainCollector(Geometry.smallMetricDistance, Geometry.smallMetricDistance);
-      PolyfaceQuery.announceBoundaryEdges(source, (ptA: Point3d, ptB: Point3d) => collector.captureCurve(LineSegment3d.create(ptA, ptB)), includeTypical, includeMismatch, includeNull);
-      return collector.grabResult(true);
-    }
+  public static collectBoundaryEdges(source: Polyface | PolyfaceVisitor, includeTypical: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): AnyChain | undefined {
+    const collector = new MultiChainCollector(Geometry.smallMetricDistance, Geometry.smallMetricDistance);
+    PolyfaceQuery.announceBoundaryEdges(source, (ptA: Point3d, ptB: Point3d) => collector.captureCurve(LineSegment3d.create(ptA, ptB)), includeTypical, includeMismatch, includeNull);
+    return collector.grabResult(true);
+  }
   /**
    * Test if the facets in `source` occur in perfectly mated pairs, as is required for a closed manifold volume.
    * If not, extract the boundary edges as lines.
@@ -633,7 +647,7 @@ export class PolyfaceQuery {
     const normal = Vector3d.create();
     const analyzeFace = (iFacet: number): { isSideFace: boolean, perpAngle: number } => {
       if (!PolyfaceQuery.computeFacetUnitNormal(source, iFacet, normal))
-        return {isSideFace: false, perpAngle: 0.0 };
+        return { isSideFace: false, perpAngle: 0.0 };
       const perpAngle = normal.radiansFromPerpendicular(vectorToEye);
       const isSideFace = Math.abs(perpAngle) <= sideAngleTol;
       return { isSideFace, perpAngle };
@@ -1049,7 +1063,7 @@ export class PolyfaceQuery {
     source.reset();
     while (source.moveToNextFacet()) {
       const localIndices = [...Array(source.pointIndex.length).keys()]; // 0, 1, ... n-1;
-      while (removeFirstOddPalindrome(localIndices, source.pointIndex)) {}
+      while (removeFirstOddPalindrome(localIndices, source.pointIndex)) { }
       builder.addFacetFromIndexedVisitor(source, localIndices);
     }
     return builder.claimPolyface(true);
@@ -1057,7 +1071,9 @@ export class PolyfaceQuery {
   /** If the visitor's client is a polyface, simply return its point array length.
    * If not a polyface, visit all facets to find the largest index.
    */
-  public static visitorClientPointCount(visitor: PolyfaceVisitor): number {
+  public static visitorClientPointCount(visitor: Polyface | PolyfaceVisitor): number {
+    if (visitor instanceof Polyface)
+      return visitor.data.point.length;
     const polyface = visitor.clientPolyface();
     if (polyface !== undefined)
       return polyface.data.point.length;
@@ -1073,7 +1089,12 @@ export class PolyfaceQuery {
   /** If the visitor's client is a polyface, simply return its facet count.
    * If not a polyface, visit all facets to accumulate a count.
    */
-  public static visitorClientFacetCount(visitor: PolyfaceVisitor): number {
+  public static visitorClientFacetCount(visitor: Polyface | PolyfaceVisitor): number {
+    if (visitor instanceof Polyface) {
+      if (visitor.facetCount !== undefined)
+        return visitor.facetCount;
+      visitor = visitor.createVisitor(0);
+    }
     const polyface = visitor.clientPolyface();
     if (polyface !== undefined && polyface.facetCount !== undefined)
       return polyface.facetCount;

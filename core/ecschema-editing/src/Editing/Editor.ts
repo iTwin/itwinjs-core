@@ -7,7 +7,7 @@
  */
 
 import * as Rules from "../Validation/ECRules";
-import { CustomAttribute, ECObjectsError, ECObjectsStatus, Schema, SchemaContext, SchemaItemKey, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import { CustomAttribute, Schema, SchemaContext, SchemaItemKey, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { MutableSchema } from "./Mutable/MutableSchema";
 import { assert } from "@itwin/core-bentley";
 import { Constants } from "./Constants";
@@ -97,10 +97,10 @@ export class SchemaContextEditor {
    * Helper method for retrieving a schema, previously added, from the SchemaContext.
    * @param schemaKey The SchemaKey identifying the schema.
   */
-  public async getSchema(schemaKey: SchemaKey): Promise<MutableSchema> {
+  public async getSchema(schemaKey: SchemaKey): Promise<MutableSchema | undefined> {
     const schema = (await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Latest));
     if (schema === undefined)
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema,`Schema Key ${schemaKey.toString(true)} not found in context`);
+      return undefined;
 
     return schema;
   }

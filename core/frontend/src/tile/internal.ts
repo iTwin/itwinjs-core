@@ -90,6 +90,7 @@ export * from "./map/MapTilingScheme";
 export * from "./map/MapTileAvailability";
 export * from "./PntsReader";
 export * from "./RealityModelTileTree";
+export * from "./RenderGraphicTileTree";
 export * from "./IModelTile";
 export * from "./DynamicIModelTile";
 export * from "./IModelTileTree";

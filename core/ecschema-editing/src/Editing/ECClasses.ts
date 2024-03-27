@@ -9,8 +9,9 @@
 import {
   CustomAttribute,
   CustomAttributeContainerProps,
+  DelayedPromiseWithProps,
   ECClass, ECName, ECObjectsError, ECObjectsStatus, Enumeration, EnumerationPropertyProps, PrimitiveArrayPropertyProps,
-  PrimitivePropertyProps, PrimitiveType, SchemaItemKey, SchemaItemType, StructArrayPropertyProps,
+  PrimitivePropertyProps, PrimitiveType, PropertyCategory, SchemaItemKey, SchemaItemType, StructArrayPropertyProps,
   StructClass, StructPropertyProps,
 } from "@itwin/ecschema-metadata";
 import { assert } from "@itwin/core-bentley";
@@ -368,6 +369,10 @@ export class ECClasses {
     let mutableClass: MutableClass;
 
     const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
+    if (schema === undefined) {
+      return { errorMessage: `Schema Key ${classKey.schemaKey.toString(true)} not found in context` };
+    }
+
     const ecClass = await schema.getItem<MutableClass>(name);
     if (ecClass !== undefined)
       return { errorMessage: `An EC Class with the name ${name} already exists within the schema ${schema.name}` };
@@ -382,8 +387,39 @@ export class ECClasses {
     return {};
   }
 
+  /**
+   * Sets the Category to the Property.
+   * @param classKey The SchemaItemKey of the class.
+   * @param propertyName The name of the property.
+   * @param categoryKey The SchemaItemKey of the PropertyCategory assigned to the property.
+   */
+  public async setPropertyCategory(classKey: SchemaItemKey, propertyName: string, categoryKey: SchemaItemKey): Promise<PropertyEditResults> {
+    let mutableClass: MutableClass;
+    try {
+      mutableClass = await this.getClass(classKey);
+    } catch (e: any) {
+      return { errorMessage: e.message };
+    }
+
+    const property = await mutableClass.getProperty(propertyName) as MutableProperty;
+    if (property === undefined) {
+      return { errorMessage: `An ECProperty with the name ${propertyName} could not be found in the class ${classKey.fullName}.` };
+    }
+
+    const category = await mutableClass.schema.lookupItem<PropertyCategory>(categoryKey);
+    if (category === undefined) {
+      return { errorMessage: `Can't locate the Property Category ${categoryKey.fullName} in the schema ${mutableClass.schema.fullName}.` };
+    }
+
+    property.setCategory(new DelayedPromiseWithProps<SchemaItemKey, PropertyCategory>(categoryKey, async () => category));
+    return { itemKey: classKey, propertyName };
+  }
+
   private async getClass(classKey: SchemaItemKey): Promise<MutableClass> {
     const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
+    if (schema === undefined)
+      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema,`Schema Key ${classKey.schemaKey.toString(true)} not found in context`);
+
     const ecClass = await schema.getItem<MutableClass>(classKey.name);
     if (ecClass === undefined)
       throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Class ${classKey.name} was not found in schema ${classKey.schemaKey.toString(true)}`);
@@ -402,7 +438,7 @@ export class ECClasses {
     return ecClass;
   }
 
-  private removeCustomAttribute(container: CustomAttributeContainerProps, customAttribute: CustomAttribute) {
+  protected removeCustomAttribute(container: CustomAttributeContainerProps, customAttribute: CustomAttribute) {
     assert(container.customAttributes !== undefined);
     const map = container.customAttributes as Map<string, CustomAttribute>;
     map.delete(customAttribute.className);

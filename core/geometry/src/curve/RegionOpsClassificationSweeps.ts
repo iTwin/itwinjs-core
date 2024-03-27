@@ -6,29 +6,30 @@
 /** @packageDocumentation
  * @module Curve
  */
+
+import { Geometry } from "../Geometry";
+import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Range2d, Range3d } from "../geometry3d/Range";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { XAndY } from "../geometry3d/XYZProps";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, NodeToNumberFunction } from "../topology/Graph";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge } from "../topology/Merging";
 import { RegularizationContext } from "../topology/RegularizeFace";
-import { MultiLineStringDataVariant } from "../topology/Triangulation";
-import { GraphCheckPointFunction, RegionBinaryOpType, RegionOps } from "./RegionOps";
-import { ParityRegion } from "./ParityRegion";
-import { Loop } from "./Loop";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { CurveCurve } from "./CurveCurve";
-import { PlanarSubdivision } from "./Query/PlanarSubdivision";
-import { Geometry } from "../Geometry";
-import { AnyRegion } from "./CurveTypes";
-import { UnionRegion } from "./UnionRegion";
-import { CurveLocationDetail } from "./CurveLocationDetail";
-import { XAndY } from "../geometry3d/XYZProps";
-import { LineSegment3d } from "./LineSegment3d";
 import { Arc3d } from "./Arc3d";
-import { Range2d, Range3d } from "../geometry3d/Range";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
+import { CurveCurve } from "./CurveCurve";
+import { CurveLocationDetail } from "./CurveLocationDetail";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { AnyRegion } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
-import { Ray3d } from "../geometry3d/Ray3d";
+import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
+import { LineSegment3d } from "./LineSegment3d";
+import { Loop } from "./Loop";
+import { ParityRegion } from "./ParityRegion";
+import { PlanarSubdivision } from "./Query/PlanarSubdivision";
+import { GraphCheckPointFunction, RegionBinaryOpType, RegionOps } from "./RegionOps";
+import { UnionRegion } from "./UnionRegion";
 
 /**
  * base class for callbacks during region sweeps.

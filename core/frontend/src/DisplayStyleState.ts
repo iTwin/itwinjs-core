@@ -242,6 +242,18 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
   }
 
+  private * getRealityModels(): Iterable<ContextRealityModelState> {
+    for (const model of this.settings.contextRealityModels.models) {
+      assert(model instanceof ContextRealityModelState);
+      yield model;
+    }
+  }
+
+  /** Iterate over the reality models attached to this display style. */
+  public get realityModels(): Iterable<ContextRealityModelState> {
+    return this.getRealityModels();
+  }
+
   /** @internal */
   public forEachRealityTileTreeRef(func: (ref: TileTreeReference) => void): void {
     this.forEachRealityModel((model) => func(model.treeRef));
