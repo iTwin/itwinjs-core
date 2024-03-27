@@ -510,6 +510,12 @@ export interface GltfBuffer extends GltfChildOfRootProperty {
   };
 }
 
+/** @internal */
+export type ExtMeshoptCompressionMode = "ATTRIBUTES" | "TRIANGLES" | "INDICES";
+
+/** @internal */
+export type ExtMeshoptCompressionFilter = "NONE" | "OCTAHEDRAL" | "QUATERNION";
+
 /** https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md
  * @internal
 */
@@ -519,8 +525,8 @@ export interface GltfBufferViewMeshoptCompressionExtension {
   byteLength: number;
   byteStride: number;
   count: number;
-  mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES";
-  filter?: "NONE" | "OCTAHEDRAL" | "QUATERNION";
+  mode: ExtMeshoptCompressionMode;
+  filter?: ExtMeshoptCompressionFilter;
 }
 
 /** @internal */

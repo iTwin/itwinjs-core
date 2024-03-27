@@ -28,6 +28,7 @@ import { Triangle } from "../render/primitives/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { RealityTileGeometry, TileContent } from "./internal";
+import { decodeMeshoptBuffer } from "./MeshoptCompression";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
 import { CreateRenderMaterialArgs } from "../render/CreateRenderMaterialArgs";
 import { DisplayParams } from "../common/render/primitives/DisplayParams";
