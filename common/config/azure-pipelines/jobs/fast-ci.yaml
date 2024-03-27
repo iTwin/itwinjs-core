@@ -11,14 +11,13 @@ variables:
   - name: shouldWriteToCache
     value: ${{ and(eq(variables['Agent.OS'], 'Linux'), in(variables['Build.Reason'], 'IndividualCI', 'Manual')) }}
   - name: win_pool
-    value: 'iModelTechCI'
+    value: "iModelTechCI"
   - name: linux_pool
-    value: 'iModeljs Linux'
+    value: "iModeljs Linux"
   - name: mac_pool
-    value: 'iModelTechMacArm'
+    value: "iModelTechMacArm"
   - name: BUILD_URL
-    value: '$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)'
-
+    value: "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"
 
 pr:
   autoCancel: true
@@ -47,7 +46,7 @@ jobs:
         persistCredentials: true
       - task: NodeTool@0
         inputs:
-          versionSpec: '18.x'
+          versionSpec: "18.x"
 
       - bash: |
           if [[ "$(Build.Reason)" == "PullRequest" ]]; then
@@ -107,36 +106,36 @@ jobs:
         clean: true
       - template: ../templates/core-build.yaml
         parameters:
-          nodeVersion: 20.x
+          nodeVersion: 20.11.1
           buildMobile: true
       # Will run if even there is a failure somewhere else in the pipeline.
       - template: ../templates/publish-test-results.yaml
         parameters:
-          nodeVersion: 20.x
+          nodeVersion: 20.11.1
       # The publish script identifies any new packages not previously published and tags the build
       - template: ../templates/publish.yaml
 
   - job: PostResult
     dependsOn:
-    - CheckLinkedPR
-    - Build
+      - CheckLinkedPR
+      - Build
     condition: and(succeeded(), eq(dependencies.CheckLinkedPR.outputs['checkForPr.POST_STATUS'], 'true'), eq(variables['Build.Reason'], 'PullRequest'))
     displayName: Post Success
     pool:
       vmImage: ubuntu-latest
 
     steps:
-    - bash: |
-        branch=$(System.PullRequest.SourceBranch)
-        sha=$(gh pr view $branch --json "headRefOid" -q ".headRefOid")
-        echo "Posting 'success' status to current PR"
-        gh api \
-          --method POST \
-          -H "Accept: application/vnd.github+json" \
-          /repos/$(Build.Repository.Name)/statuses/$sha \
-          -f state='success' \
-          -f target_url='$(BUILD_URL)' \
-          -f context='itwinjs-core PR validation' \
-          -f description='No native PR was linked'
-      env:
-        GITHUB_TOKEN: $(GH_TOKEN)
+      - bash: |
+          branch=$(System.PullRequest.SourceBranch)
+          sha=$(gh pr view $branch --json "headRefOid" -q ".headRefOid")
+          echo "Posting 'success' status to current PR"
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            /repos/$(Build.Repository.Name)/statuses/$sha \
+            -f state='success' \
+            -f target_url='$(BUILD_URL)' \
+            -f context='itwinjs-core PR validation' \
+            -f description='No native PR was linked'
+        env:
+          GITHUB_TOKEN: $(GH_TOKEN)
