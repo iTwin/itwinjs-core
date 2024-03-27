@@ -71,6 +71,7 @@ class Loader {
     } catch (err) {
       Logger.logException(FrontendLoggerCategory.Render, err);
       this._status = "failed";
+    } finally {
       this._promise = undefined;
     }
   }

@@ -1630,7 +1630,7 @@ export abstract class GltfReader {
     for (const bv of gltfDictionaryIterator(this._bufferViews)) {
       const ext = bv.extensions?.EXT_meshopt_compression;
       if (ext) {
-        const bufferData = this._buffers[bv.buffer]?.resolvedBuffer;
+        const bufferData = this._buffers[ext.buffer]?.resolvedBuffer;
         if (bufferData) {
           const source = new Uint8Array(bufferData.buffer, bufferData.byteOffset + (ext.byteOffset ?? 0), ext.byteLength ?? 0);
           const decode = async () => {
