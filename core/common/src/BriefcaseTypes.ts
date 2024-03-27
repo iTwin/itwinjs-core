@@ -176,8 +176,8 @@ export interface OpenCheckpointArgs {
   /** changeset for the checkpoint. If undefined, attempt to open the checkpoint for the latest changeset. */
   readonly changeset?: ChangesetIndexOrId;
 
-  /** if prefetching will be applied when opening a checkpoint */
-  readonly prefetch?: boolean;
+  /** if present, determines whether to initiate a prefetch when opening a checkpoint */
+  readonly doPrefetch?: boolean;
 }
 
 /**

@@ -275,7 +275,7 @@ describe("Checkpoints", () => {
       IModelHost.appWorkspace.settings.dropDictionary("prefetch");
     });
 
-    it.only("should always start prefetch in IPC", async () => {
+    it.only("should start prefetch in IPC", async () => {
       // simulate user being logged in
       sinon.stub(IModelHost, "getAccessToken").callsFake(async () => accessToken);
 
@@ -289,7 +289,7 @@ describe("Checkpoints", () => {
         iTwinId: testITwinId,
         iModelId: testIModelId,
         changeset: testChangeSet,
-        prefetch: true,
+        doPrefetch: true,
       });
       assert.equal(iModel.iModelId, testIModelId);
       assert.equal(iModel.changeset.id, testChangeSet.id);
