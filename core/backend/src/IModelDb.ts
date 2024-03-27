@@ -2636,7 +2636,7 @@ export class BriefcaseDb extends IModelDb {
       await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade }, "Upgraded profile");
     } catch (error: any) {
       if (error.errorNumber === DbResult.BE_SQLITE_ERROR_DataTransformRequired) {
-        Logger.logWarning(loggerCategory, `Profile upgrade contains data transform. Retrying upgrade with a schema lock.`);
+        Logger.logInfo(loggerCategory, `Profile upgrade contains data transform. Retrying upgrade with a schema lock.`);
         try {
           await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
           await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade, schemaLockHeld: true }, "Upgraded profile");
@@ -2651,7 +2651,7 @@ export class BriefcaseDb extends IModelDb {
       await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade }, "Upgraded domain schemas");
     } catch (error: any) {
       if (error.errorNumber === DbResult.BE_SQLITE_ERROR_DataTransformRequired) {
-        Logger.logWarning(loggerCategory, `Domain schema upgrade contains data transform. Retrying upgrade with a schema lock.`);
+        Logger.logInfo(loggerCategory, `Domain schema upgrade contains data transform. Retrying upgrade with a schema lock.`);
         try {
           await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
           await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
