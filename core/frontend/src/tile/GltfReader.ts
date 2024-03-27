@@ -1388,9 +1388,17 @@ export abstract class GltfReader {
       if (GltfDataType.UnsignedShort !== view.type)
         return false;
 
+      let rangeMin, rangeMax;
       const quantized = view.accessor.extensions?.WEB3D_quantized_attributes;
-      const rangeMin = quantized?.decodedMin;
-      const rangeMax = quantized?.decodedMax;
+      if (quantized) {
+        rangeMin = quantized.decodedMin;
+        rangeMax = quantized.decodedMax;
+      } else {
+        // Assume KHR_mesh_quantization...
+        rangeMin = view.accessor.min;
+        rangeMax = view.accessor.max;
+      }
+      
       if (!rangeMin || !rangeMax) // required by spec...
         return false;
 
