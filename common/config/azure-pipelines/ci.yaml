@@ -46,4 +46,4 @@ jobs:
       - checkout: self
       - template: ./templates/core-build.yaml
         parameters:
-          nodeVersion: 20.x
+          nodeVersion: 20.11.1
