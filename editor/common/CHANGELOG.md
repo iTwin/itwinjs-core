@@ -1,6 +1,11 @@
 # Change Log - @itwin/editor-common
 
-This log was last generated on Fri, 22 Mar 2024 13:31:54 GMT and should not be manually modified.
+This log was last generated on Mon, 25 Mar 2024 22:22:26 GMT and should not be manually modified.
+
+## 4.4.8
+Mon, 25 Mar 2024 22:22:26 GMT
+
+_Version update only_
 
 ## 4.4.7
 Fri, 15 Mar 2024 19:15:14 GMT
@@ -39,6 +44,11 @@ _Version update only_
 
 ## 4.4.0
 Mon, 12 Feb 2024 18:15:58 GMT
+
+_Version update only_
+
+## 4.3.5
+Mon, 25 Mar 2024 16:54:37 GMT
 
 _Version update only_
 
