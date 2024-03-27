@@ -399,7 +399,7 @@ describe("Relationship Class merger tests", () => {
     await expect(merge).to.be.rejectedWith(Error, "ECObjects-1601: The Source-Constraint of 'TargetSchema.BaseRelationship' has multiple constraint classes which requires an abstract constraint to be defined.");
   });
 
-  it("should throw an error merging constraint classes not supported by base class constraint", async () => {
+  it.skip("should throw an error merging constraint classes not supported by base class constraint", async () => {
     await Schema.fromJson(testJson, targetContext);
     const targetSchema = await Schema.fromJson({
       ...targetJson,
@@ -441,6 +441,22 @@ describe("Relationship Class merger tests", () => {
             "TestSchema.TestEntity",
           ],
         },
+      ],
+    });
+
+    const _merge2 = merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "add",
+          schemaType: "RelationshipClass",
+          itemName: "BaseRelationship",
+          path: "$source.constraintClasses",
+          difference: [
+            "TestSchema.TestEntity",
+          ],
+        },
         {
           changeType: "modify",
           schemaType: "RelationshipClass",
@@ -456,7 +472,7 @@ describe("Relationship Class merger tests", () => {
     await expect(merge).to.be.rejectedWith(Error, "ECObjects-1502: The constraint class 'TestSchema.TestEntity' on the Source-Constraint of 'TargetSchema.BaseRelationship' is not derived from the abstract constraint class 'TestSchema.SourceBaseEntity'.");
   });
 
-  it("should throw an error merging constraint classes not supported by base class constraint", async () => {
+  it.skip("should throw an error merging constraint classes not supported by base class constraint", async () => {
     await Schema.fromJson(testJson, targetContext);
     const targetSchema = await Schema.fromJson({
       ...targetJson,

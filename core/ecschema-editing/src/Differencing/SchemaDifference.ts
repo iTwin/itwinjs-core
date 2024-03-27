@@ -113,19 +113,24 @@ export namespace SchemaDifference {
    * @internal
    */
   export async function fromSchemaChanges(targetSchema: Schema, schemaChanges: SchemaChanges): Promise<SchemaDifferences> {
-    const changes: AnySchemaDifference[] = [];
-    const conflicts: SchemaDifferenceConflict[] = [];
-
-    const visitor = new SchemaDiagnosticVisitor(changes, conflicts);
+    const visitor = new SchemaDiagnosticVisitor();
     for(const diagnostic of schemaChanges.allDiagnostics) {
       visitor.visit(diagnostic);
     }
 
+    const changes: AnySchemaDifference[] = [
+      ... visitor.schemaChanges,
+      ... visitor.schemaPathChanges,
+      ... visitor.schemaItemChanges,
+      ... visitor.schemaItemPathChanges,
+      ... visitor.customAttributeChanges,
+    ];
+
     return {
       sourceSchemaName: schemaChanges.schema.schemaKey.toString(),
       targetSchemaName: targetSchema.schemaKey.toString(),
-      changes: changes.length > 0 ? changes : undefined,
-      conflicts: conflicts.length > 0 ? conflicts : undefined,
+      changes:   changes.length > 0 ? changes : undefined,
+      conflicts: visitor.conflicts.length > 0 ? visitor.conflicts : undefined,
     };
   }
 

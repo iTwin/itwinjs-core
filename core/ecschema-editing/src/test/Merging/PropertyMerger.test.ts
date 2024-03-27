@@ -1408,7 +1408,7 @@ describe("Property merger tests", () => {
             path: "NavProp",
             difference: {
               relationshipClass: "SourceSchema.SourceRelationship",
-            } as any,
+            } as any, // Any-Cast to send invalid structure to the merger.
           },
         ],
       });
