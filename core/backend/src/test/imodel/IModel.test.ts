@@ -230,9 +230,9 @@ describe("iModel", () => {
     const newEl = el3.toJSON();
     newEl.federationGuid = undefined;
     newEl.code = { scope: "bad scope", spec: "0x10", value: "new code" };
-    expect(() => imodel2.elements.insertElement(newEl)).throws("invalid code scope");
+    expect(() => imodel2.elements.insertElement(newEl)).throws("invalid code scope").to.have.property("metadata");
     newEl.code.scope = "0x34322"; // valid id, but element doesn't exist
-    expect(() => imodel2.elements.insertElement(newEl)).throws("invalid code scope");
+    expect(() => imodel2.elements.insertElement(newEl)).throws("invalid code scope").to.have.property("metadata");
 
     newEl.code.scope = el3.federationGuid!;
     const newId = imodel2.elements.insertElement(newEl); // code scope from FederationGuid should get converted to ElementId
@@ -240,7 +240,7 @@ describe("iModel", () => {
     expect(a4.code.scope).equal(el3.id);
 
     a4.code.scope = "0x13343";
-    expect(() => imodel2.elements.updateElement(a4)).throws("invalid code scope");
+    expect(() => imodel2.elements.updateElement(a4)).throws("invalid code scope").to.have.property("metadata");
 
     a4.code.scope = "0x1";
     imodel2.elements.updateElement(a4); // should change the code scope to new element
@@ -982,7 +982,7 @@ describe("iModel", () => {
     const categoryId = SpatialCategory.insert(imodel4, IModel.dictionaryId, "MyTestCategory", new SubCategoryAppearance());
     const category = imodel4.elements.getElement<SpatialCategory>(categoryId);
     const subCategory = imodel4.elements.getElement<SubCategory>(category.myDefaultSubCategoryId());
-    assert.throws(() => imodel4.elements.deleteElement(categoryId), "error deleting element");
+    expect(() => imodel4.elements.deleteElement(categoryId)).throws("error deleting element").to.have.property("metadata");
     assert.exists(imodel4.elements.getElement(categoryId), "Category deletes should be blocked in native code");
     assert.exists(imodel4.elements.getElement(subCategory.id), "Children should not be deleted if parent delete is blocked");
 
