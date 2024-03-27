@@ -502,6 +502,12 @@ export function isGltf1Material(material: GltfMaterial): material is Gltf1Materi
 export interface GltfBuffer extends GltfChildOfRootProperty {
   uri?: string;
   byteLength?: number;
+  extensions?: GltfExtensions & {
+    // https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md
+    EXT_meshopt_compression?: {
+      fallback?: boolean;
+    };
+  };
 }
 
 /** @internal */
@@ -511,6 +517,18 @@ export interface GltfBufferViewProps extends GltfChildOfRootProperty {
   byteOffset?: number;
   byteStride?: number;
   target?: GltfBufferTarget;
+  extensions?: GltfExtensions & {
+    // https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md
+    EXT_meshopt_compression?: {
+      buffer: number;
+      byteOffset?: number;
+      byteLength: number;
+      byteStride: number;
+      count: number;
+      mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES";
+      filter?: "NONE" | "OCTAHEDRAL" | "QUATERNION";
+    };
+  };
 }
 
 /** @internal */
