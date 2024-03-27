@@ -172,8 +172,7 @@ export class SchemaDiagnosticVisitor {
         changeType: "add",
         schemaType: "Constant",
         itemName:   schemaItem.name,
-        // TODO: Inconsistency of toJSON method, all other implementation have default parameters.
-        difference: schemaItem.toJSON(false, false),
+        difference: schemaItem.toJSON(),
       });
     }
     if(schemaItem.schemaItemType === SchemaItemType.CustomAttributeClass) {
