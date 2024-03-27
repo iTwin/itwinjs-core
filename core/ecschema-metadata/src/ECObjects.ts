@@ -23,22 +23,24 @@ export enum ECClassModifier {
   Sealed,
 }
 
-/** @beta */
+/**
+ * An enumeration that has all the schema item type names as values
+ * @beta */
 export enum SchemaItemType {
-  EntityClass,
-  Mixin,
-  StructClass,
-  CustomAttributeClass,
-  RelationshipClass,
-  Enumeration,
-  KindOfQuantity,
-  PropertyCategory,
-  Unit,
-  InvertedUnit,
-  Constant,
-  Phenomenon,
-  UnitSystem,
-  Format,
+  EntityClass = "EntityClass",
+  Mixin = "Mixin",
+  StructClass = "StructClass",
+  CustomAttributeClass = "CustomAttributeClass",
+  RelationshipClass = "RelationshipClass",
+  Enumeration = "Enumeration",
+  KindOfQuantity = "KindOfQuantity",
+  PropertyCategory = "PropertyCategory",
+  Unit = "Unit",
+  InvertedUnit = "InvertedUnit",
+  Constant = "Constant",
+  Phenomenon = "Phenomenon",
+  UnitSystem = "UnitSystem",
+  Format = "Format",
 }
 
 /**
@@ -177,30 +179,16 @@ export function parseSchemaItemType(type: string): SchemaItemType | undefined {
   return undefined;
 }
 
+
 /**
  * Converts a valid SchemaItemType to a display string.
  * @param value The SchemaItemType to stringify.
  * @return A string representing the provided SchemaItemType. If the type is not valid, an empty string is returned.
  * @beta
+ * @deprecated SchemaItemType is a string enum so just use it directly
  */
 export function schemaItemTypeToString(value: SchemaItemType): string {
-  switch (value) {
-    case SchemaItemType.EntityClass: return "EntityClass";
-    case SchemaItemType.Mixin: return "Mixin";
-    case SchemaItemType.StructClass: return "StructClass";
-    case SchemaItemType.CustomAttributeClass: return "CustomAttributeClass";
-    case SchemaItemType.RelationshipClass: return "RelationshipClass";
-    case SchemaItemType.Enumeration: return "Enumeration";
-    case SchemaItemType.KindOfQuantity: return "KindOfQuantity";
-    case SchemaItemType.PropertyCategory: return "PropertyCategory";
-    case SchemaItemType.Unit: return "Unit";
-    case SchemaItemType.InvertedUnit: return "InvertedUnit";
-    case SchemaItemType.Constant: return "Constant";
-    case SchemaItemType.Phenomenon: return "Phenomenon";
-    case SchemaItemType.UnitSystem: return "UnitSystem";
-    case SchemaItemType.Format: return "Format";
-    default: throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, "An invalid SchemaItemType has been provided.");
-  }
+  return value; // TODO: Remove
 }
 
 /** @internal */

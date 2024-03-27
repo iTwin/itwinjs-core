@@ -170,7 +170,6 @@ describe("Parsing/ToString Functions", () => {
     expect(schemaItemTypeToString(SchemaItemType.Enumeration)).to.equal("Enumeration");
     expect(schemaItemTypeToString(SchemaItemType.KindOfQuantity)).to.equal("KindOfQuantity");
     expect(schemaItemTypeToString(SchemaItemType.PropertyCategory)).to.equal("PropertyCategory");
-    expect(() => schemaItemTypeToString(50 as SchemaItemType)).to.throw(ECObjectsError, "An invalid SchemaItemType has been provided.");
   });
 });
 

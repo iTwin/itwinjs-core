@@ -20,42 +20,48 @@ type CustomAttributeSetter = (customAttribute: CustomAttribute) => Promise<Schem
  */
 export async function mergeCustomAttribute(context: SchemaMergeContext, change: CustomAttributeDifference): Promise<SchemaEditResults> {
   if (change.changeType === "add") {
+    if (change.difference.className === undefined) {
+      return { errorMessage: "CustomAttribute instance must specify className" };
+    }
     const schemaItemKey = await updateSchemaItemKey(context, change.difference.className);
 
     const targetCustomAttributeClass = await context.targetSchema.lookupItem<CustomAttributeClass>(schemaItemKey);
     if (targetCustomAttributeClass === undefined) {
-      return { errorMessage: `Unable to locate the custom attribute class ${schemaItemKey.name} in the merged schema.`};
+      return { errorMessage: `Unable to locate the custom attribute class ${schemaItemKey.name} in the merged schema.` };
     }
 
-    change.difference.className = schemaItemKey.fullName;
-
-    if(change.appliesTo === "Schema") {
-      return context.editor.addCustomAttribute(context.targetSchemaKey, change.difference);
+    const caInstance: CustomAttribute = {
+      ...change.difference,
+      className: schemaItemKey.fullName
     }
-    if(change.appliesTo === "SchemaItem") {
+
+    if (change.appliedTo === "Schema") {
+      return context.editor.addCustomAttribute(context.targetSchemaKey, caInstance);
+    }
+    if (change.appliedTo === "SchemaItem") {
       const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
-      return context.editor.entities.addCustomAttribute(itemKey, change.difference);
+      return context.editor.entities.addCustomAttribute(itemKey, caInstance);
     }
-    if(change.appliesTo === "Property") {
+    if (change.appliedTo === "Property") {
       const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
       const [propertyName] = change.path.split(".");
-      return context.editor.entities.addCustomAttributeToProperty(itemKey, propertyName, change.difference);
+      return context.editor.entities.addCustomAttributeToProperty(itemKey, propertyName, caInstance);
     }
-    if(change.appliesTo === "RelationshipConstraint") {
+    if (change.appliedTo === "RelationshipConstraint") {
       const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
       const relationshipClass = await context.targetSchema.lookupItem<RelationshipClass>(itemKey);
-      if(relationshipClass === undefined) {
-        return { errorMessage: `Unable to locate the relationship class ${itemKey.name} in the merged schema.`};
+      if (relationshipClass === undefined) {
+        return { errorMessage: `Unable to locate the relationship class ${itemKey.name} in the merged schema.` };
       }
       const constraint = change.path === "$source"
         ? relationshipClass.source
         : relationshipClass.target;
 
-      return context.editor.relationships.addCustomAttributeToConstraint(constraint, change.difference);
+      return context.editor.relationships.addCustomAttributeToConstraint(constraint, caInstance);
     }
     return {};
   } else {
-    return { errorMessage: `Changes of Custom Attribute on merge is not implemented.`};
+    return { errorMessage: `Changes of Custom Attribute on merge is not implemented.` };
   }
 }
 
@@ -63,9 +69,9 @@ export async function mergeCustomAttribute(context: SchemaMergeContext, change: 
  * @internal
  */
 export async function applyCustomAttributes(context: SchemaMergeContext, customAttributes: CustomAttribute[], handler: CustomAttributeSetter): Promise<SchemaEditResults> {
-  for(const customAttribute of customAttributes) {
+  for (const customAttribute of customAttributes) {
     const result = await applyCustomAttribute(context, customAttribute, handler);
-    if(result.errorMessage) {
+    if (result.errorMessage) {
       return result;
     }
   }
