@@ -11,6 +11,9 @@ import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import type { MeshoptDecoder } from "meshoptimizer";
 import type { ExtMeshoptCompressionFilter, ExtMeshoptCompressionMode } from "../common/gltf/GltfSchema";
 
+/** Arguments supplied to decodeMeshoptBuffer.
+ * @internal
+ */
 export interface DecodeMeshoptBufferArgs {
   byteStride: number;
   count: number;
@@ -18,6 +21,7 @@ export interface DecodeMeshoptBufferArgs {
   filter?: ExtMeshoptCompressionFilter;
 }
 
+/** Loads and configures the MeshoptDecoder module on demand. */
 class Loader {
   private _status: "uninitialized" | "loading" | "ready" | "failed";
   private _promise?: Promise<void>;

@@ -426,7 +426,7 @@ export abstract class GltfReader {
   protected get _nodes(): GltfDictionary<GltfNode> { return this._glTF.nodes ?? emptyDict; }
   protected get _meshes(): GltfDictionary<GltfMesh> { return this._glTF.meshes ?? emptyDict; }
   protected get _accessors(): GltfDictionary<GltfAccessor> { return this._glTF.accessors ?? emptyDict; }
-  protected get _bufferViews(): GltfDictionary<GltfBufferViewProps> { return this._glTF.bufferViews ?? emptyDict; }
+  protected get _bufferViews(): GltfDictionary<GltfBufferViewProps & { resolvedBuffer?: Uint8Array }> { return this._glTF.bufferViews ?? emptyDict; }
   protected get _materials(): GltfDictionary<GltfMaterial> { return this._glTF.materials ?? emptyDict; }
   protected get _samplers(): GltfDictionary<GltfSampler> { return this._glTF.samplers ?? emptyDict; }
   protected get _textures(): GltfDictionary<GltfTexture> { return this._glTF.textures ?? emptyDict; }
@@ -808,11 +808,18 @@ export abstract class GltfReader {
 
       const bufferViewAccessorValue = accessor.bufferView;
       const bufferView = undefined !== bufferViewAccessorValue ? this._bufferViews[bufferViewAccessorValue] : undefined;
-      if (!bufferView || undefined === bufferView.buffer)
+      if (!bufferView)
         return undefined;
 
-      const buffer = this._buffers[bufferView.buffer];
-      const bufferData = buffer?.resolvedBuffer;
+      let bufferData = bufferView.resolvedBuffer;
+      if (!bufferData) {
+        if (undefined === bufferView.buffer)
+          return undefined;
+
+        const buffer = this._buffers[bufferView.buffer];
+        bufferData = buffer?.resolvedBuffer;
+      }
+      
       if (!bufferData)
         return undefined;
 
@@ -1618,6 +1625,25 @@ export abstract class GltfReader {
     // Load any external images and buffers.
     await this._resolveResources();
 
+    // Decompress any meshopt-compressed buffer views
+    const decodeMeshoptBuffers: Array<Promise<void>> = [];
+    for (const bv of gltfDictionaryIterator(this._bufferViews)) {
+      const ext = bv.extensions?.EXT_meshopt_compression;
+      if (ext) {
+        const bufferData = this._buffers[bv.buffer]?.resolvedBuffer;
+        if (bufferData) {
+          const source = new Uint8Array(bufferData.buffer, bufferData.byteOffset + (ext.byteOffset ?? 0), ext.byteLength ?? 0);
+          const decode = async () => {
+            bv.resolvedBuffer = await decodeMeshoptBuffer(source, ext);
+          };
+
+          decodeMeshoptBuffers.push(decode());
+        }
+      }
+    }
+
+    await Promise.all(decodeMeshoptBuffers);
+      
     // If any meshes are draco-compressed, dynamically load the decoder module and then decode the meshes.
     const dracoMeshes: DracoMeshCompression[] = [];
 
