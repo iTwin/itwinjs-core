@@ -56,7 +56,7 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
-import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
+import { Workspace } from "./workspace/Workspace";
 
 import type { BlobContainer } from "./BlobContainerService";
 /** @internal */
@@ -275,7 +275,7 @@ export abstract class IModelDb extends IModel {
    */
   public get workspace(): Workspace {
     if (undefined === this._workspace)
-      this._workspace = new ITwinWorkspace(new IModelSettings());
+      this._workspace = Workspace.construct(new IModelSettings());
     return this._workspace;
   }
 
@@ -1847,7 +1847,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       try {
         return elProps.id = this._iModel.nativeDb.insertElement(elProps);
       } catch (err: any) {
-        err.message = `error inserting element: ${err.message}`;
+        err.message = `Error inserting element [${err.message}]`;
+        err.metadata = { elProps };
         throw err;
       }
     }
@@ -1863,7 +1864,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       try {
         this._iModel.nativeDb.updateElement(elProps);
       } catch (err: any) {
-        err.message = `error updating element: ${err.message}`;
+        err.message = `Error updating element [${err.message}], id: ${elProps.id}`;
+        err.metadata = { elProps };
         throw err;
       }
     }
@@ -1879,7 +1881,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         try {
           iModel.nativeDb.deleteElement(id);
         } catch (err: any) {
-          err.message = `error deleting element: ${err.message}`;
+          err.message = `Error deleting element [${err.message}], id: ${id}`;
+          err.metadata = { elementId: id };
           throw err;
         }
       });
