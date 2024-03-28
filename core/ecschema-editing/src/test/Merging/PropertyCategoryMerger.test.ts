@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { PropertyCategory, Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import { PropertyCategory, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 
@@ -25,7 +25,7 @@ describe("PropertyCategory merge tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "PropertyCategory",
+          schemaType: SchemaItemType.PropertyCategory,
           itemName: "TestPropertyCategory",
           difference: {
             label: "ValueTrack Metadata",
@@ -62,7 +62,7 @@ describe("PropertyCategory merge tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: "PropertyCategory",
+          schemaType: SchemaItemType.PropertyCategory,
           itemName: "TestPropertyCategory",
           difference: {
             priority: 99,

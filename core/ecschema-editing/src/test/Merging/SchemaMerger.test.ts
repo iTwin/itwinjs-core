@@ -6,6 +6,7 @@ import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 import "chai-as-promised";
+import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -28,7 +29,7 @@ describe("Schema merge tests", () => {
       targetSchemaName: "TargetSchema.01.00.00",
       changes:[{
         changeType: "modify",
-        schemaType: "Schema",
+        schemaType: SchemaOtherTypes.Schema,
         difference: {
           description: newDescription,
           label: newLabel,
@@ -60,8 +61,8 @@ describe("Schema merge tests", () => {
       targetSchemaName: "TargetSchema.01.00.00",
       changes:[{
         changeType: "add",
-        schemaType: "CustomAttribute",
-        appliesTo: "Schema",
+        schemaType: SchemaOtherTypes.CustomAttributeInstance,
+        appliedTo: "Schema",
         difference: {
           className: "sOuRcEscHeMA.TESTCustomaTTriBute",
         },

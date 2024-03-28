@@ -17,7 +17,7 @@ export const enumerationMerger: SchemaItemMergerHandler<EnumerationDifference> =
       return { errorMessage: "Enumerations must define a type property" };
     }
     if (change.difference.isStrict === undefined) {
-      return { errorMessage: "Enumerations must define wether enumeration is strict." };
+      return { errorMessage: "Enumerations must define whether enumeration is strict." };
     }
     if (change.difference.enumerators === undefined) {
       return { errorMessage: "Enumerations must define at least ine enumerator." };
@@ -73,16 +73,15 @@ export const enumeratorMerger: SchemaItemMergerHandler<EnumeratorDifference> = {
     return { itemKey };
   },
   async modify(context, change, itemKey) {
-    const [_path, enumeratorName] = change.path.split(".");
     if(change.difference.value !== undefined) {
-      return { errorMessage: `Failed to merge enumerator attribute, Enumerator "${enumeratorName}" has different values.` };
+      return { errorMessage: `Failed to merge enumerator attribute, Enumerator "${change.path}" has different values.` };
     }
 
     if(change.difference.description !== undefined) {
-      await context.editor.enumerations.setEnumeratorDescription(itemKey, enumeratorName, change.difference.description);
+      await context.editor.enumerations.setEnumeratorDescription(itemKey, change.path, change.difference.description);
     }
     if(change.difference.label !== undefined) {
-      await context.editor.enumerations.setEnumeratorLabel(itemKey, enumeratorName, change.difference.label);
+      await context.editor.enumerations.setEnumeratorLabel(itemKey, change.path, change.difference.label);
     }
     return { itemKey };
   },

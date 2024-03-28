@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Constant, Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import { Constant, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
+import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { expect } from "chai";
 
 describe("Constant merger tests", () => {
@@ -51,7 +52,7 @@ describe("Constant merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "Constant",
+          schemaType: SchemaItemType.Constant,
           itemName: "testConstant",
           difference: {
             label: "Test Constant",
@@ -95,7 +96,7 @@ describe("Constant merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "Schema",
+          schemaType: SchemaOtherTypes.Schema,
           path: "$references",
           difference: {
             name: "ReferenceSchema",
@@ -104,7 +105,7 @@ describe("Constant merger tests", () => {
         },
         {
           changeType: "add",
-          schemaType: "Constant",
+          schemaType: SchemaItemType.Constant,
           itemName: "testConstant",
           difference: {
             label: "Test Constant",
@@ -150,7 +151,7 @@ describe("Constant merger tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: "Constant",
+          schemaType: SchemaItemType.Constant,
           itemName: "testConstant",
           difference: {
             phenomenon: "SourceSchema.testPhenomenon",
@@ -193,7 +194,7 @@ describe("Constant merger tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: "Constant",
+          schemaType: SchemaItemType.Constant,
           itemName: "testConstant",
           difference: {
             phenomenon: "SourceSchema.testPhenomenon",
@@ -235,7 +236,7 @@ describe("Constant merger tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: "Constant",
+          schemaType: SchemaItemType.Constant,
           itemName: "testConstant",
           difference: {
             phenomenon: "SourceSchema.testPhenomenon",

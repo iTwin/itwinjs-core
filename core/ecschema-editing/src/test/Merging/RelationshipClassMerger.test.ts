@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RelationshipClass, Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import { RelationshipClass, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
+import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -118,7 +119,7 @@ describe("Relationship Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "Schema",
+          schemaType: SchemaOtherTypes.Schema,
           path: "$references",
           difference: {
             name: "TestSchema",
@@ -127,7 +128,7 @@ describe("Relationship Class merger tests", () => {
         },
         {
           changeType: "add",
-          schemaType: "RelationshipClass",
+          schemaType: SchemaItemType.RelationshipClass,
           itemName: "BaseRelationship",
           difference: {
             description: "Description of TestRelationship",
@@ -231,7 +232,7 @@ describe("Relationship Class merger tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: "RelationshipClass",
+          schemaType: SchemaItemType.RelationshipClass,
           itemName: "TestRelationship",
           difference: {
             description: "Changes of TestRelationship",
@@ -240,7 +241,7 @@ describe("Relationship Class merger tests", () => {
         },
         {
           changeType: "modify",
-          schemaType: "RelationshipClass",
+          schemaType: SchemaOtherTypes.RelationshipConstraint,
           itemName: "TestRelationship",
           path: "$source",
           difference: {
@@ -249,7 +250,7 @@ describe("Relationship Class merger tests", () => {
         },
         {
           changeType: "modify",
-          schemaType: "RelationshipClass",
+          schemaType: SchemaOtherTypes.RelationshipConstraint,
           itemName: "TestRelationship",
           path: "$target",
           difference: {
@@ -323,18 +324,18 @@ describe("Relationship Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "RelationshipClass",
+          schemaType: SchemaOtherTypes.RelationshipConstraintClass,
           itemName: "BaseRelationship",
-          path: "$source.constraintClasses",
+          path: "$source",
           difference: [
             "TestSchema.SourceChildEntity",
           ],
         },
         {
           changeType: "add",
-          schemaType: "RelationshipClass",
+          schemaType: SchemaOtherTypes.RelationshipConstraintClass,
           itemName: "BaseRelationship",
-          path: "$target.constraintClasses",
+          path: "$target",
           difference: [
             "TestSchema.TargetEntity",
           ],
@@ -378,16 +379,16 @@ describe("Relationship Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "RelationshipClass",
+          schemaType: SchemaOtherTypes.RelationshipConstraintClass,
           itemName: "BaseRelationship",
-          path: "$source.constraintClasses",
+          path: "$source",
           difference: [
             "TestSchema.SourceBaseEntity",
           ],
         },
         {
           changeType: "modify",
-          schemaType: "RelationshipClass",
+          schemaType: SchemaOtherTypes.RelationshipConstraint,
           itemName: "BaseRelationship",
           path: "$source",
           difference: {
@@ -434,9 +435,9 @@ describe("Relationship Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "RelationshipClass",
+          schemaType: SchemaOtherTypes.RelationshipConstraintClass,
           itemName: "BaseRelationship",
-          path: "$source.constraintClasses",
+          path: "$source",
           difference: [
             "TestSchema.TestEntity",
           ],
@@ -450,16 +451,16 @@ describe("Relationship Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "RelationshipClass",
+          schemaType: SchemaOtherTypes.RelationshipConstraintClass,
           itemName: "BaseRelationship",
-          path: "$source.constraintClasses",
+          path: "$source",
           difference: [
             "TestSchema.TestEntity",
           ],
         },
         {
           changeType: "modify",
-          schemaType: "RelationshipClass",
+          schemaType: SchemaOtherTypes.RelationshipConstraint,
           itemName: "BaseRelationship",
           path: "$source",
           difference: {
@@ -497,16 +498,16 @@ describe("Relationship Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "RelationshipClass",
+          schemaType: SchemaOtherTypes.RelationshipConstraintClass,
           itemName: "ChildRelationship",
-          path: "$source.constraintClasses",
+          path: "$source",
           difference: [
             "TestSchema.SourceEntity",
           ],
         },
         {
           changeType: "modify",
-          schemaType: "RelationshipClass",
+          schemaType: SchemaOtherTypes.RelationshipConstraint,
           itemName: "ChildRelationship",
           path: "$source",
           difference: {
@@ -515,16 +516,16 @@ describe("Relationship Class merger tests", () => {
         },
         {
           changeType: "add",
-          schemaType: "RelationshipClass",
+          schemaType: SchemaOtherTypes.RelationshipConstraintClass,
           itemName: "ChildRelationship",
-          path: "$target.constraintClasses",
+          path: "$target",
           difference: [
             "TestSchema.TargetBaseEntity",
           ],
         },
         {
           changeType: "modify",
-          schemaType: "RelationshipClass",
+          schemaType: SchemaOtherTypes.RelationshipConstraint,
           itemName: "ChildRelationship",
           path: "$target",
           difference: {
@@ -581,7 +582,7 @@ describe("Relationship Class merger tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: "RelationshipClass",
+          schemaType: SchemaItemType.RelationshipClass,
           itemName: "BaseRelationship",
           difference: {
             strengthDirection: "Backward",
@@ -637,7 +638,7 @@ describe("Relationship Class merger tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: "RelationshipClass",
+          schemaType: SchemaItemType.RelationshipClass,
           itemName: "BaseRelationship",
           difference: {
             strength: "Embedding",
@@ -693,7 +694,7 @@ describe("Relationship Class merger tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: "RelationshipClass",
+          schemaType: SchemaOtherTypes.RelationshipConstraint,
           itemName: "BaseRelationship",
           path: "$source",
           difference: {

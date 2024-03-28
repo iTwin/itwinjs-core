@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Schema, SchemaContext, UnitSystem } from "@itwin/ecschema-metadata";
+import { Schema, SchemaContext, SchemaItemType, UnitSystem } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 
@@ -22,7 +22,7 @@ describe("Unit system merger tests", () => {
       targetSchemaName: "TargetSchema.01.00.00",
       changes: [{
         changeType: "add",
-        schemaType: "UnitSystem",
+        schemaType: SchemaItemType.UnitSystem,
         itemName: "testUnitSystem",
         difference: {
           label: "Imperial",
@@ -57,7 +57,7 @@ describe("Unit system merger tests", () => {
       targetSchemaName: "TargetSchema.01.00.00",
       changes: [{
         changeType: "modify",
-        schemaType: "UnitSystem",
+        schemaType: SchemaItemType.UnitSystem,
         itemName: "testUnitSystem",
         difference: {
           label: "New Imperial",

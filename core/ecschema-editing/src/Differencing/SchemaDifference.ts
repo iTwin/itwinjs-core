@@ -10,10 +10,10 @@ import { SchemaChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
 import { SchemaDifferenceConflict } from "./SchemaConflicts";
 import { SchemaDiagnosticVisitor } from "./SchemaDiagnosticVisitor";
-import type {
+import {
   AnyEnumerator, AnyPropertyProps, Constant, CustomAttribute, CustomAttributeClass, EntityClass, Enumeration, KindOfQuantity,
-  Mixin, Phenomenon, PropertyCategory, RelationshipClass, RelationshipConstraintProps, Schema,
-  SchemaItem, SchemaItemProps, SchemaItemType, SchemaReferenceProps, StructClass, UnitSystem,
+  Mixin, Phenomenon, PropertyCategory, RelationshipClass, RelationshipConstraintProps,
+  type Schema, SchemaItem, SchemaItemProps, SchemaItemType, SchemaReferenceProps, StructClass, UnitSystem,
 } from "@itwin/ecschema-metadata";
 
 /** Utility-Type to remove possible readonly flags on the given type. */
@@ -115,7 +115,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isConstantDifference(difference: SchemaDifferenceLike): difference is ConstantsDifference {
-    return difference.schemaType === "Constant";
+    return difference.schemaType === SchemaItemType.Constant;
   }
 
   /**
@@ -123,7 +123,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isClassPropertyDifference(difference: SchemaDifferenceLike): difference is ClassPropertyDifference {
-    return difference.schemaType === "Property";
+    return difference.schemaType === SchemaOtherTypes.Property;
   }
 
   /**
@@ -131,7 +131,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isCustomAttributeClassDifference(difference: SchemaDifferenceLike): difference is CustomAttributeClassDifference {
-    return difference.schemaType === "CustomAttributeClass";
+    return difference.schemaType === SchemaItemType.CustomAttributeClass;
   }
 
   /**
@@ -147,7 +147,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isEntityClassDifference(difference: SchemaDifferenceLike): difference is EntityClassDifference {
-    return difference.schemaType === "EntityClass" && difference.path === undefined;
+    return difference.schemaType === SchemaItemType.EntityClass && difference.path === undefined;
   }
 
   /**
@@ -155,7 +155,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isEntityClassMixinDifference(difference: SchemaDifferenceLike): difference is EntityClassMixinDifference {
-    return difference.schemaType === "EntityClass" && difference.path === "$mixins";
+    return difference.schemaType === SchemaItemType.EntityClass && difference.path === "$mixins";
   }
 
   /**
@@ -163,7 +163,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isEnumerationDifference(difference: SchemaDifferenceLike): difference is EnumerationDifference {
-    return difference.schemaType === "Enumeration" && !isEnumeratorDifference(difference);
+    return difference.schemaType === SchemaItemType.Enumeration;
   }
 
   /**
@@ -171,7 +171,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isEnumeratorDifference(difference: SchemaDifferenceLike): difference is EnumeratorDifference {
-    return difference.schemaType === "Enumeration" && difference.path?.startsWith("$enumerators") || false;
+    return difference.schemaType === SchemaOtherTypes.Enumerator;
   }
 
   /**
@@ -179,7 +179,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isKindOfQuantityDifference(difference: SchemaDifferenceLike): difference is KindOfQuantityDifference {
-    return difference.schemaType === "KindOfQuantity";
+    return difference.schemaType === SchemaItemType.KindOfQuantity;
   }
 
   /**
@@ -187,7 +187,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isMixinClassDifference(difference: SchemaDifferenceLike): difference is MixinClassDifference {
-    return difference.schemaType === "Mixin";
+    return difference.schemaType === SchemaItemType.Mixin;
   }
 
   /**
@@ -195,7 +195,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isPhenomenonDifference(difference: SchemaDifferenceLike): difference is PhenomenonDifference {
-    return difference.schemaType === "Phenomenon";
+    return difference.schemaType === SchemaItemType.Phenomenon;
   }
 
   /**
@@ -203,7 +203,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isPropertyCategoryDifference(difference: SchemaDifferenceLike): difference is PropertyCategoryDifference {
-    return difference.schemaType === "PropertyCategory";
+    return difference.schemaType === SchemaItemType.PropertyCategory;
   }
 
   /**
@@ -211,7 +211,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isSchemaDifference(difference: SchemaDifferenceLike): difference is SchemaDifference {
-    return difference.schemaType === "Schema" && difference.path === undefined;
+    return difference.schemaType === SchemaOtherTypes.Schema && difference.path === undefined;
   }
 
   /**
@@ -219,7 +219,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isSchemaReferenceDifference(difference: SchemaDifferenceLike): difference is SchemaReferenceDifference {
-    return difference.schemaType === "Schema" && "path" in difference && difference.path === "$references";
+    return difference.schemaType === SchemaOtherTypes.Schema && difference.path === "$references";
   }
 
   /**
@@ -227,7 +227,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isStructClassDifference(difference: SchemaDifferenceLike): difference is StructClassDifference {
-    return difference.schemaType === "StructClass";
+    return difference.schemaType === SchemaItemType.StructClass;
   }
 
   /**
@@ -235,7 +235,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isUnitSystemDifference(difference: SchemaDifferenceLike): difference is UnitSystemDifference {
-    return difference.schemaType === "UnitSystem";
+    return difference.schemaType === SchemaItemType.UnitSystem;
   }
 
   /**
@@ -243,7 +243,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isRelationshipClassDifference(difference: SchemaDifferenceLike): difference is RelationshipClassDifference {
-    return difference.schemaType === "RelationshipClass" && difference.path === undefined;
+    return difference.schemaType === SchemaItemType.RelationshipClass && difference.path === undefined;
   }
 
   /**
@@ -251,7 +251,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isRelationshipConstraintDifference(difference: SchemaDifferenceLike): difference is RelationshipConstraintDifference {
-    return difference.schemaType === "RelationshipClass" && (difference.path === "$source" || difference.path === "$target");
+    return difference.schemaType === SchemaOtherTypes.RelationshipConstraint;
   }
 
   /**
@@ -259,7 +259,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isRelationshipConstraintClassDifference(difference: SchemaDifferenceLike): difference is RelationshipConstraintClassDifference {
-    return difference.schemaType === "RelationshipClass" && (difference.path === "$source.constraintClasses" || difference.path === "$target.constraintClasses");
+    return difference.schemaType === SchemaOtherTypes.RelationshipConstraintClass;
   }
 
   /**

@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CustomAttributeClass, EntityClass, Mixin, Schema, SchemaContext, StructClass } from "@itwin/ecschema-metadata";
+import { CustomAttributeClass, EntityClass, Mixin, Schema, SchemaContext, SchemaItemType, StructClass } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
+import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -30,7 +31,7 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "StructClass",
+          schemaType: SchemaItemType.StructClass,
           itemName: "TestStruct",
           difference: {
             label: "Test Structure",
@@ -56,7 +57,7 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "CustomAttributeClass",
+          schemaType: SchemaItemType.CustomAttributeClass,
           itemName: "TestCAClass",
           difference: {
             label: "Test Custom Attribute Class",
@@ -83,7 +84,7 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "EntityClass",
+          schemaType: SchemaItemType.EntityClass,
           itemName: "TestBase",
           difference: {
             modifier: "Abstract",
@@ -91,7 +92,7 @@ describe("Class merger tests", () => {
         },
         {
           changeType: "add",
-          schemaType: "EntityClass",
+          schemaType: SchemaItemType.EntityClass,
           itemName: "TestEntity",
           difference: {
             label: "Test Entity",
@@ -133,7 +134,7 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "Schema",
+          schemaType: SchemaOtherTypes.Schema,
           path: "$references",
           difference: {
             name: "TestSchema",
@@ -142,7 +143,7 @@ describe("Class merger tests", () => {
         },
         {
           changeType: "add",
-          schemaType: "EntityClass",
+          schemaType: SchemaItemType.EntityClass,
           itemName: "TestEntity",
           difference: {
             label: "Test Entity",
@@ -187,7 +188,7 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "Schema",
+          schemaType: SchemaOtherTypes.Schema,
           path: "$references",
           difference: {
             name: "TestSchema",
@@ -196,7 +197,7 @@ describe("Class merger tests", () => {
         },
         {
           changeType: "add",
-          schemaType: "EntityClass",
+          schemaType: SchemaItemType.EntityClass,
           itemName: "TestEntity",
           difference: {
             label: "Test Entity",
@@ -231,7 +232,7 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "EntityClass",
+          schemaType: SchemaItemType.EntityClass,
           itemName: "TestEntity",
           difference: {
             modifier: "Abstract",
@@ -239,7 +240,7 @@ describe("Class merger tests", () => {
         },
         {
           changeType: "add",
-          schemaType: "Mixin",
+          schemaType: SchemaItemType.Mixin,
           itemName: "TestMixin",
           difference: {
             label: "Test Mixin",
@@ -276,7 +277,7 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: "StructClass",
+          schemaType: SchemaItemType.StructClass,
           itemName: "TestStruct",
           difference: {
             description: "Description for Test Structure",
@@ -313,7 +314,7 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: "CustomAttributeClass",
+          schemaType: SchemaItemType.CustomAttributeClass,
           itemName: "TestCAClass",
           difference: {
             label: "Test Custom Attribute Class",
@@ -349,7 +350,7 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: "EntityClass",
+          schemaType: SchemaItemType.EntityClass,
           itemName: "TestEntity",
           difference: {
             modifier: "None",
@@ -386,7 +387,7 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "EntityClass",
+          schemaType: SchemaItemType.EntityClass,
           itemName: "TestBase",
           difference: {
             baseClass: "SourceSchema.BaseEntity",
@@ -394,7 +395,7 @@ describe("Class merger tests", () => {
         },
         {
           changeType: "modify",
-          schemaType: "EntityClass",
+          schemaType: SchemaItemType.EntityClass,
           itemName: "TestEntity",
           difference: {
             baseClass: "SourceSchema.TestBase",
@@ -423,7 +424,7 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: "StructClass",
+          schemaType: SchemaItemType.StructClass,
           itemName: "TestClass",
           difference: {
             schemaItemType: "EntityClass",
@@ -452,7 +453,7 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: "EntityClass",
+          schemaType: SchemaItemType.EntityClass,
           itemName: "TestEntity",
           difference: {
             modifier: "Sealed",
@@ -516,7 +517,7 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: "EntityClass",
+          schemaType: SchemaItemType.EntityClass,
           itemName: "TestEntity",
           difference: {
             baseClass: undefined,
@@ -545,14 +546,14 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "EntityClass",
+          schemaType: SchemaItemType.EntityClass,
           itemName: "BaseEntity",
           difference: {
           },
         },
         {
           changeType: "modify",
-          schemaType: "EntityClass",
+          schemaType: SchemaItemType.EntityClass,
           itemName: "TestEntity",
           difference: {
             baseClass: "SourceSchema.BaseEntity",
@@ -585,14 +586,14 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "EntityClass",
+          schemaType: SchemaItemType.EntityClass,
           itemName: "SourceEntity",
           difference: {
           },
         },
         {
           changeType: "modify",
-          schemaType: "Mixin",
+          schemaType: SchemaItemType.Mixin,
           itemName: "TestMixin",
           difference: {
             appliesTo: "SourceSchema.SourceEntity",
@@ -653,7 +654,7 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "EntityClass",
+          schemaType: SchemaItemType.EntityClass,
           itemName: "TestEntity",
           path: "$mixins",
           difference: [

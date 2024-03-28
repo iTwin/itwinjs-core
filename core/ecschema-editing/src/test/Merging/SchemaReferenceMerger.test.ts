@@ -5,6 +5,7 @@
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
+import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 
 describe("Schema reference merging tests", () => {
 
@@ -46,7 +47,7 @@ describe("Schema reference merging tests", () => {
       targetSchemaName: "TargetSchema.01.00.00",
       changes: [{
         changeType: "add",
-        schemaType: "Schema",
+        schemaType: SchemaOtherTypes.Schema,
         path: "$references",
         difference: {
           name: "BisCore",
@@ -54,7 +55,7 @@ describe("Schema reference merging tests", () => {
         },
       }, {
         changeType: "add",
-        schemaType: "Schema",
+        schemaType: SchemaOtherTypes.Schema,
         path: "$references",
         difference:{
           name: "CoreCustomAttributes",
