@@ -1399,7 +1399,7 @@ export abstract class GltfReader {
         rangeMax = view.accessor.max;
       }
       
-      if (!rangeMin || !rangeMax) // required by spec...
+      if (undefined === rangeMin || undefined === rangeMax) // required by spec...
         return false;
 
       // ###TODO apply WEB3D_quantized_attributes.decodeMatrix? Have not encountered in the wild; glTF 1.0 only.
