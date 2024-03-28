@@ -7,7 +7,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.5.26
+      '@bentley/imodeljs-native': 4.5.30
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.1.0
       '@itwin/core-bentley': workspace:*
@@ -57,7 +57,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
-      '@bentley/imodeljs-native': 4.5.26
+      '@bentley/imodeljs-native': 4.5.30
       '@itwin/cloud-agnostic-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.2.2_scz6qrwecfbbxg4vskopkl3a7u
@@ -2372,6 +2372,7 @@ importers:
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@itwin/presentation-common': workspace:*
+      '@itwin/unified-selection': ^0.1.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.8
@@ -2403,6 +2404,7 @@ importers:
       typemoq: ^2.1.0
       typescript: ~5.0.2
     dependencies:
+      '@itwin/unified-selection': 0.1.0
       rxjs: 7.8.1
       rxjs-for-await: 1.0.0_rxjs@7.8.1
     devDependencies:
@@ -3771,8 +3773,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.5.26:
-    resolution: {integrity: sha512-prd+PP1ut3csEi+8dUiqboWQPxGYLHMzPksz9p1ReMhK6SOWu+vnuYLAAxQUzs5lpGtx+DscCRG6j0MxJSorFw==}
+  /@bentley/imodeljs-native/4.5.30:
+    resolution: {integrity: sha512-g/ZXZ84bvWM/I+JAp1Wpq1nkumHKg/H8Zx2DojkcPocRn4YvVJ2oW9FwtGRzX9sA96fUOgM7od4n4dmwrq89OQ==}
     requiresBuild: true
     dev: false
 
@@ -4490,6 +4492,10 @@ packages:
       openid-client: 4.7.4
     transitivePeerDependencies:
       - supports-color
+    dev: false
+
+  /@itwin/unified-selection/0.1.0:
+    resolution: {integrity: sha512-1Pe2i3sw5dK4h394uC5wTRWvnXxeBZGv+t9LcG7tQr2L+l0Hv+Ryo5+yTN34kABEhMe2UwSHnBRU8jOGsiorIQ==}
     dev: false
 
   /@jridgewell/gen-mapping/0.3.5:

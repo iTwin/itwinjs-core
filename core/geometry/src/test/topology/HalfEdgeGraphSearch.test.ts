@@ -122,7 +122,7 @@ describe("HalfEdgeGraphSearch", () => {
     return sampleMesh;
   }
   it("collectConnectedComponentsComplexMesh", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const meshes: IndexedPolyface[] = [];
     meshes.push(getSampleMesh());
@@ -244,7 +244,7 @@ describe("HalfEdgeGraphSearch", () => {
     expect(ck.getNumErrors()).equals(0);
   });
   it("HalfEdgeGraphSearch.graphToPolyface", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const graph = new HalfEdgeGraph();
     const node0 = graph.addEdgeXY(1, 1, 0, 0);
