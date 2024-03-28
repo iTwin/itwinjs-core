@@ -32,8 +32,8 @@ export async function mergeCustomAttribute(context: SchemaMergeContext, change: 
 
     const caInstance: CustomAttribute = {
       ...change.difference,
-      className: schemaItemKey.fullName
-    }
+      className: schemaItemKey.fullName,
+    };
 
     if (change.appliedTo === "Schema") {
       return context.editor.addCustomAttribute(context.targetSchemaKey, caInstance);

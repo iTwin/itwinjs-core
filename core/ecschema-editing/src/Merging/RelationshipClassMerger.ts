@@ -25,11 +25,28 @@ export const relationshipClassMerger: SchemaItemMergerHandler<RelationshipDiffer
     if(SchemaDifference.isRelationshipConstraintDifference(change) || SchemaDifference.isRelationshipConstraintClassDifference(change)) {
       return { errorMessage: "RelationshipConstraints cannot be added." };
     }
+
+    if (change.difference.strength === undefined) {
+      return { errorMessage: "RelationshipClass must define strength" };
+    }
+    if (change.difference.strengthDirection === undefined) {
+      return { errorMessage: "RelationshipClass must define strengthDirection" };
+    }
+    if (change.difference.source === undefined) {
+      return { errorMessage: "RelationshipClass must define a source constraint" };
+    }
+    if (change.difference.target === undefined) {
+      return { errorMessage: "RelationshipClass must define a target constraint" };
+    }
+
     return context.editor.relationships.createFromProps(context.targetSchemaKey, {
+      ...change.difference,
       name: change.itemName,
       schemaItemType: change.schemaType,
-
-      ...change.difference,
+      strength: change.difference.strength,
+      strengthDirection: change.difference.strengthDirection,
+      source: change.difference.source,
+      target: change.difference.target,
     });
   },
   async modify(context, change, itemKey, item: MutableRelationshipClass) {
@@ -54,7 +71,7 @@ async function modifyRelationshipClass(context: SchemaMergeContext, change: Rela
           return { itemKey, errorMessage: `An invalid relationship class strength value '${change.difference.strength}' has been provided.` };
         }
         item.setStrength(strength);
-        return {};
+        return { itemKey };
       }
       return { itemKey, errorMessage: `Changing the relationship '${itemKey.name}' strength is not supported.` };
     }
@@ -65,7 +82,7 @@ async function modifyRelationshipClass(context: SchemaMergeContext, change: Rela
           return { itemKey, errorMessage: `An invalid relationship class strengthDirection value '${change.difference.strengthDirection}' has been provided.` };
         }
         item.setStrengthDirection(strengthDirection);
-        return {};
+        return { itemKey };
       }
       return { itemKey, errorMessage: `Changing the relationship '${itemKey.name}' strengthDirection is not supported.` };
     }
@@ -105,7 +122,7 @@ async function modifyRelationshipConstraint(context: SchemaMergeContext, change:
     }
     return context.editor.relationships.setAbstractConstraint(constraint, abstractConstraint);
   }
-  return {};
+  return { itemKey: constraint.relationshipClass.key };
 }
 
 async function modifyRelationshipClassConstraint(context: SchemaMergeContext, change: RelationshipConstraintClassDifference, item: MutableRelationshipClass) {
@@ -121,7 +138,7 @@ async function modifyRelationshipClassConstraint(context: SchemaMergeContext, ch
       return result;
     }
   }
-  return {};
+  return { itemKey: constraint.relationshipClass.key };
 }
 
 function parseConstraint(path: string): "source" | "target" {

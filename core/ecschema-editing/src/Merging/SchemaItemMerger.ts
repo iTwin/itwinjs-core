@@ -6,7 +6,7 @@ import type { SchemaMergeContext } from "./SchemaMerger";
 import type { SchemaEditResults, SchemaItemEditResults } from "../Editing/Editor";
 import { AnySchemaDifference, AnySchemaItemDifference, SchemaDifference } from "../Differencing/SchemaDifference";
 import { ECObjectsError, ECObjectsStatus, SchemaContext, SchemaItem, SchemaItemKey } from "@itwin/ecschema-metadata";
-import { enumerationMerger } from "./EnumerationMerger";
+import { enumerationMerger, enumeratorMerger } from "./EnumerationMerger";
 import { phenomenonMerger } from "./PhenomenonMerger";
 import { propertyCategoryMerger } from "./PropertyCategoryMerger";
 import { unitSystemMerger } from "./UnitSystemMerger";
@@ -74,7 +74,7 @@ export async function * mergeSchemaItems(context: SchemaMergeContext, itemChange
   }
 
   for (const difference of itemChanges.filter(SchemaDifference.isEnumeratorDifference)) {
-    yield await mergeSchemaItem(context, difference, enumerationMerger);
+    yield await mergeSchemaItem(context, difference, enumeratorMerger);
   }
 
   for (const difference of itemChanges.filter(SchemaDifference.isPhenomenonDifference)) {

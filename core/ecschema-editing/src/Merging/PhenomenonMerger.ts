@@ -13,11 +13,15 @@ import { ECObjectsError, ECObjectsStatus } from "@itwin/ecschema-metadata";
  */
 export const phenomenonMerger: SchemaItemMergerHandler<PhenomenonDifference> = {
   add: async (context, change) => {
+    if (change.difference.definition === undefined) {
+      return { errorMessage: "Phenomenon must define definition" };
+    }
+
     return context.editor.phenomenons.createFromProps(context.targetSchemaKey, {
+      ...change.difference,
       name: change.itemName,
       schemaItemType: change.schemaType,
-
-      ...change.difference,
+      definition: change.difference.definition,
     });
   },
   modify: async (_context, change, itemKey, phenomenon: MutablePhenomenon) => {
@@ -34,6 +38,6 @@ export const phenomenonMerger: SchemaItemMergerHandler<PhenomenonDifference> = {
 
       await phenomenon.setDefinition(change.difference.definition);
     }
-    return {};
+    return { itemKey };
   },
 };

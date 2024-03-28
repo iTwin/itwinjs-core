@@ -27,7 +27,10 @@ interface PropertyMerger<T extends AnyPropertyProps> {
  */
 export async function mergePropertyDifference(context: SchemaMergeContext, change: ClassPropertyDifference): Promise<SchemaEditResults> {
   const classKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
-  return mergeClassProperty(context, change, classKey, Object.assign(change.difference, { name: change.path }));
+  return mergeClassProperty(context, change, classKey, {
+    ...change.difference,
+    name: change.path,
+  } as AnyPropertyProps);
 }
 
 /**

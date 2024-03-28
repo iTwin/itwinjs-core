@@ -12,11 +12,15 @@ import { type SchemaItemMergerHandler } from "./SchemaItemMerger";
  */
 export const propertyCategoryMerger: SchemaItemMergerHandler<PropertyCategoryDifference> = {
   async add(context, change) {
+    if (change.difference.priority === undefined) {
+      return { errorMessage: "PropertyCategory must define priority" };
+    }
+
     return context.editor.propertyCategories.createFromProps(context.targetSchemaKey, {
+      ...change.difference,
       name: change.itemName,
       schemaItemType: change.schemaType,
-
-      ...change.difference,
+      priority: change.difference.priority,
     });
   },
   async modify(context, change, itemKey, item: MutablePropertyCategory) {
@@ -30,6 +34,6 @@ export const propertyCategoryMerger: SchemaItemMergerHandler<PropertyCategoryDif
       // TODO: inconsistency: setPriority does not return a result whether the priority was set successfully.
       await context.editor.propertyCategories.setPriority(itemKey, change.difference.priority);
     }
-    return {};
+    return { itemKey };
   },
 };

@@ -19,10 +19,10 @@ export const customAttributeClassMerger: SchemaItemMergerHandler<CustomAttribute
     }
 
     return context.editor.customAttributes.createFromProps(context.targetSchemaKey, {
+      ...change.difference,
       name: change.itemName,
       schemaItemType: change.schemaType,
       appliesTo: change.difference.appliesTo,
-      ...change.difference,
     });
   },
   async modify(context, change, itemKey, item: MutableCAClass) {

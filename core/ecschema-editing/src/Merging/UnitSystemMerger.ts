@@ -13,19 +13,18 @@ import { type UnitSystemDifference } from "../Differencing/SchemaDifference";
 export const unitSystemMerger: SchemaItemMergerHandler<UnitSystemDifference> = {
   async add(context, change) {
     return context.editor.unitSystems.createFromProps(context.targetSchemaKey, {
+      ...change.difference,
       name: change.itemName,
       schemaItemType: change.schemaType,
-
-      ...change.difference,
     });
   },
-  async modify(_context, change, _itemKey, item: MutableUnitSystem) {
+  async modify(_context, change, itemKey, item: MutableUnitSystem) {
     if(change.difference.label !== undefined) {
       item.setDisplayLabel(change.difference.label);
     }
     if(change.difference.description !== undefined) {
       item.setDescription(change.difference.description);
     }
-    return {};
+    return { itemKey };
   },
 };

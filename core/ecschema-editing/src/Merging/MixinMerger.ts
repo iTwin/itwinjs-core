@@ -13,11 +13,13 @@ import { modifyClass } from "./ClassMerger";
  */
 export const mixinClassMerger: SchemaItemMergerHandler<MixinClassDifference> = {
   async add(context, change) {
+    if (change.difference.appliesTo === undefined) {
+      return { errorMessage: "Mixin must define appliesTo" };
+    }
     return context.editor.mixins.createFromProps(context.targetSchemaKey, {
+      ...change.difference,
       name: change.itemName,
       schemaItemType: change.schemaType,
-
-      ...change.difference,
       appliesTo: await updateSchemaItemFullName(context, change.difference.appliesTo),
     });
   },

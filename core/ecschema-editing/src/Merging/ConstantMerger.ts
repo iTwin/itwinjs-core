@@ -25,11 +25,11 @@ export const constantMerger: SchemaItemMergerHandler<ConstantsDifference> = {
     change.difference.phenomenon = phenomenonKey.fullName;
 
     return context.editor.constants.createFromProps(context.targetSchemaKey, {
+      ...change.difference,
       name: change.itemName,
       schemaItemType: change.schemaType,
       phenomenon: change.difference.phenomenon,
       definition: change.difference.definition,
-      ...change.difference,
     });
   },
   async modify(context, change, itemKey, item: MutableConstant) {
@@ -68,6 +68,6 @@ export const constantMerger: SchemaItemMergerHandler<ConstantsDifference> = {
 
       item.setPhenomenon(new DelayedPromiseWithProps(phenomenon.key, async () => phenomenon));
     }
-    return {};
+    return { itemKey };
   },
 };
