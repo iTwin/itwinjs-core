@@ -5616,7 +5616,6 @@ export interface V2CheckpointAccessProps {
 
 // @internal
 export class V2CheckpointManager {
-    // (undocumented)
     static attach(checkpoint: CheckpointProps): Promise<{
         dbName: string;
         container: CloudSqlite.CloudContainer;
