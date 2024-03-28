@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult, Id64 } from "@itwin/core-bentley";
-import { DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
+import { DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
 import { ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -339,7 +339,7 @@ describe("ECSql Query", () => {
   });
   it("concurrent query access string meta data", async () => {
     let reader = imodel1.createQueryReader("SELECT e.ECClassId FROM bis.Element e");
-    let props = await reader.getMetaData();
+    let props: QueryPropertyMetaData[] = await reader.getMetaData();
     assert.equal(props.length, 1);
     assert.equal(props[0].accessString, "ECClassId");
 
@@ -351,11 +351,24 @@ describe("ECSql Query", () => {
     assert.equal(props[2].accessString, "Model.RelECClassId");
     assert.equal(props[3].accessString, "Model.RelECClassId");
 
-    reader = imodel1.createQueryReader("SELECT Origin.X, Origin.Y FROM bis.GeometricElement2d ge");
+    reader = imodel1.createQueryReader("SELECT Origin.X, Origin.Y, TypeDefinition FROM bis.GeometricElement2d ge");
     props = await reader.getMetaData();
-    assert.equal(props.length, 2);
+    assert.equal(props.length, 3);
     assert.equal(props[0].accessString, "Origin.X");
     assert.equal(props[1].accessString, "Origin.Y");
+    assert.equal(props[2].accessString, "TypeDefinition");
+    assert.equal(props[2].typeName, "navigation");
+
+    reader = imodel1.createQueryReader("SELECT 1, 1 + 6, * FROM (VALUES(1,2), (2,3))");
+    props = await reader.getMetaData();
+    assert.equal(props.length, 4);
+    assert.equal(props[0].accessString, "1");
+    assert.equal(props[0].jsonName, "1");
+    assert.equal(props[1].accessString, "1 + 6");
+    assert.equal(props[1].typeName, "double");
+    assert.equal(props[2].accessString, "1_1");
+    assert.equal(props[2].jsonName, "1_1");
+    assert.equal(props[3].accessString, "2");
   });
   it("concurrent query quota", async () => {
     let reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { limit: { count: 4 } });

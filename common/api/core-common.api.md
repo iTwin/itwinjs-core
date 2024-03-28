@@ -7198,9 +7198,7 @@ export interface QueryPropertyMetaData {
     className: string;
     extendType: string;
     generated: boolean;
-    // (undocumented)
     index: number;
-    // (undocumented)
     jsonName: string;
     name: string;
     typeName: string;

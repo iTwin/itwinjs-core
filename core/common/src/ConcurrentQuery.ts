@@ -47,17 +47,23 @@ export interface QueryLimit {
 export interface QueryPropertyMetaData {
   /** The class name is set to empty if the property is a generated one, otherwise, it is the name of the ECClass that the property is contained within. */
   className: string;
-  /** Access string is the property's display label if the property is a generated one, otherwise it is the ECSQL property path. */
+  /** Access string is the property's alias if the property is a generated one, otherwise it is the ECSQL property path. */
   accessString?: string;
-  /** Indicates whether the property is a generated one or whether it directly refers to an existing ECProperty of one of the classes in the FROM or JOIN clauses. */
+  /** True if the property is a generated one. False, if the property directly refers to one of the classes in the FROM or JOIN clauses.
+   * Note: Using a column alias always generates a property. So in the ECSQL <c>SELECT AssetID, Length * Breadth AS Area FROM myschema.Cubicle</c> the first column (AssetID) would not be a generated property, but the second (Area) would be.
+   */
   generated: boolean;
+  /** The index of the property value if the result is formatted as an array */
   index: number;
+  /** The JSON name is the property's alias if the property is a generated one, otherwise, it is the ECSQL property path for the system property.
+   * The JSON names are unique and _%d is added for duplicate property JSON names to make them unique.
+   */
   jsonName: string;
-  /** The name is the property's display label if the property is a generated one, otherwise, it is the name of the ECProperty. */
+  /** The name is the property's alias if the property is a generated one, otherwise, it is the name of the property. */
   name: string;
-  /** Extend type is the extended type name of the ECProperty if the property is a PrimitiveECProperty, otherwise, it is set to an empty string. */
+  /** If this property is a PrimitiveECProperty, extend type is the extended type name of this property, if it is not defined locally will be inherited from base property if one exists, otherwise extended type is set to an empty string. */
   extendType: string;
-  /** The type name is set to 'navigation' if the ECProperty is a Navigation property, otherwise, it is the ECJSON type name for the property in the form {schemaName}.{typeName}. */
+  /** The type name is set to 'navigation' if the property is a navigation property, otherwise, it is the type name for the property. */
   typeName: string;
 }
 
