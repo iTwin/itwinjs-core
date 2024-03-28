@@ -53,6 +53,27 @@ describe("DisplayStyle", () => {
     // ###TODO More substantial tests (change style properties)
   });
 
+  it("should save to ViewStore over RPC", async () => {
+    const style1 = new DisplayStyle3dState(styleProps, imodel);
+
+    // bad token should be unauthorized
+    userToken = "bad guy";
+    await expect(imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() })).rejectedWith("unauthorized");
+
+    // valid readonly token should fail too
+    userToken = azuriteUsers.readOnly;
+    await expect(imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() })).rejectedWith("unauthorized");
+
+    // should save correctly with valid readwrite token
+    userToken = azuriteUsers.readWrite;
+    const id = await imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() });
+    expect(id).equal("@1");
+
+    userToken = azuriteUsers.readOnly;
+    const style2 = await imodel.views.viewsStoreReader.getDisplayStyle({ id });
+    expect(style2.jsonProperties?.styles).deep.equal(style1.settings.toJSON());
+  });
+
   it("should preserve sun direction", async () => {
     const style1 = new DisplayStyle3dState(styleProps, imodel);
     expect(style1.sunDirection).not.to.be.undefined;
@@ -63,20 +84,6 @@ describe("DisplayStyle", () => {
     const style2 = style1.clone(imodel);
     expect(style2.sunDirection).not.to.be.undefined;
     expect(style2.sunDirection.isAlmostEqual(style1.sunDirection)).to.be.true;
-
-    userToken = "bad guy";
-    await expect(imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() })).rejectedWith("unauthorized");
-
-    userToken = azuriteUsers.readOnly;
-    await expect(imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() })).rejectedWith("unauthorized");
-
-    userToken = azuriteUsers.readWrite;
-    const id = await imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() });
-    expect(id).equal("@1");
-
-    userToken = azuriteUsers.readOnly;
-    const style3 = await imodel.views.viewsStoreReader.getDisplayStyle({ id });
-    expect(style3.jsonProperties?.styles).deep.equal(style1.settings.toJSON());
   });
 
   it("should read sun direction from json", () => {
