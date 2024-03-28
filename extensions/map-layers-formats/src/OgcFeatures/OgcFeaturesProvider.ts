@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, QuadId, WGS84Extent } from "@itwin/core-frontend";
-import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS, EsriSLSProps, EsriSMS, EsriSymbol } from "../ArcGisFeature/EsriSymbology";
-import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
+import { EsriPMS, EsriPMSProps, EsriRenderer, EsriSFS, EsriSFSProps, EsriSLS, EsriSLSProps, EsriSymbol } from "../ArcGisFeature/EsriSymbology";
+import { Cartographic, ColorDef, ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { Matrix4d, Point3d, Range2d } from "@itwin/core-geometry";
 import { ArcGisSymbologyCanvasRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer";
 import { FeatureCanvasRenderer } from "../Feature/FeatureCanvasRenderer";
@@ -13,67 +13,79 @@ import { base64StringToUint8Array, Logger } from "@itwin/core-bentley";
 import * as Geojson from "geojson";
 import { FeatureDefaultSymbology } from "../Feature/FeatureSymbology";
 import { OgcFeaturesReader } from "./OgcFeaturesReader";
+import { RandomMapColor } from "../Feature/RandomMapColor";
+import { DefaultMarkerIcon } from "../Feature/DefaultMarkerIcon";
+
 const loggerCategory = "MapLayersFormats.OgcFeatures";
 
 /**  Provide tiles from a ESRI ArcGIS Feature service
 * @internal
 */
 export class DefaultOgcSymbology implements FeatureDefaultSymbology {
-  private static readonly defaultPMS = EsriPMS.fromJSON( {
+
+  private static readonly _defaultPMSProps: Omit<EsriPMSProps, "imageData" | "contentType"> = {
     type: "esriPMS",
     url: "",
-    contentType: "image/png",
-    imageData: "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAmBJREFUOE+Nk01IVFEUx//n3jfvOZOaJkMtiiJ7o9RG3LgoqKhFSFJBTS1ahFBBi0ijfJXCIyQr+hBbSIsoW7iQoKKFCw2CkAI3tZAgy8Ei+xhoTCbnje/NPfHGnA816KzuPR+/c8/HJRQJE7o+VUhym0DcCOYGgBQEXjOLlyqo+nHanCkMoaL4rslKjZwOQLT4ek3Mmz3FACFNLB67ut6M1nWphbg8wI6VyJK5KEH0EQFVJRKbwzokAW++p/ErraAYSQK3u47bC3vLnA+ZB9i2gHF0oyQMCfCGNaUa+vauxs71wWz2V18cnBj8gQ8J1/eeBnHUa4sMFQDGdGno+4gwEAoQzjVUon3rqlx1KY9x7+0MWobjAPg3QJ2eZV4tAEyFNCN5FkSXyw2B3j1hRGvLcgBXMV5MptA4MOXr0gT0u5bZnAf0jBsyiSgJPAxqhON1K3FlRxUMvwFAtv7u0Wl0jvwEmJNEuOhakTt5wKEBifr6Oo14BIBRpgt07w6jcVMIngKGY7NofR5HwlF+zDcpsC193vyYB/innvHywCzdZfAR/+onX1segBTAxHzzfPE7/8yzzIPLjJE1LTixHZx5CtCK4gXLzovBiDPUsYxVM7gUkB3nWKlm6DYEnQGzXARxCOK+a1WfKtQXb6LNAvr7iCboCUA1Ocdsdv5KLPe7F6pH/w3wLbc+BwOuc5IZ1wEE/jonQbjptZn24tKKX7BgvR2r0NKZRwDvAqCI+Z30VJPTURv7P4A9psuQcYAUPwAoReBLrmX2Lmls7i8sZ7kWLwuoxA1FVJGxzMPLufi6P2r+2xFbOUjGAAAAAElFTkSuQmCC",
-    // Black square
-    // imageData: "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsEAAA7BAbiRa+0AAAAiSURBVDhPY2RgYPgPxGQDJihNNhg1YNQAEBg1YOANYGAAAE1AAR90Oy6aAAAAAElFTkSuQmCC",
     width: 16,
-    height: 16,
+    height: 24,
     // We want the anchor point to be the bottom of the push pin, so apply offset on the y-axis (anchor point is already in the center of the icon)
     xoffset: 0,
-    yoffset: -8,
-  });
+    yoffset: -12,
+  };
+  private _defaultPMS: EsriPMS;
 
-  private static readonly defaultSMS = EsriSMS.fromJSON( {
-    type : "esriSMS",
-    style : "esriSMSCircle",
-    color : [0, 0, 0, 255],
-    size : 16,
-    outline : { // if outline has been specified
-      type: "esriSLS",
-      color : [0, 0, 0, 255],
-      width : 1,
-      style:"esriSLSSolid",
-    },
-  });
-
-  private static readonly defaultSLSProps: EsriSLSProps = {
+  private static readonly _defaultSLSProps: EsriSLSProps = {
     type: "esriSLS",
     color: [0, 0, 255, 255],
     width: 1,
     style: "esriSLSSolid",
   };
-  private static readonly defaultSLS = EsriSLS.fromJSON(this.defaultSLSProps);
+  private _defaultSLS: EsriSLS;
 
-  private static readonly defaultSFS = EsriSFS.fromJSON({
+  private static readonly _defaultSFSProps: EsriSFSProps = {
     type: "esriSFS",
     color:  [0, 0, 255, 100],   // blue fill
     style: "esriSFSSolid",
-    outline: this.defaultSLSProps,
-  });
+    outline: DefaultOgcSymbology._defaultSLSProps,
+  };
+  private _defaultSFS = EsriSFS.fromJSON(DefaultOgcSymbology._defaultSFSProps);
+
+  public constructor(randomColor?: RandomMapColor) {
+    const color = randomColor ? randomColor.getColorDef() : ColorDef.blue;
+    this._defaultPMS = EsriPMS.fromJSON( {
+      ...DefaultMarkerIcon.getContent(color),
+      type: "esriPMS",
+      url: "",
+      width: 16,
+      height: 24,
+      xoffset: 0,
+      yoffset: -12,
+    });
+
+    const randomColors = color.colors;
+    const newSLSProps = {
+      ...DefaultOgcSymbology._defaultSLSProps,
+      color: [randomColors.r, randomColors.g, randomColors.b, 255]};
+    this._defaultSLS = EsriSLS.fromJSON(newSLSProps);
+    this._defaultSFS = EsriSFS.fromJSON({
+      ...DefaultOgcSymbology._defaultSFSProps,
+      color: [randomColors.r, randomColors.g, randomColors.b, 100],
+      outline: newSLSProps,
+    });
+  }
 
   public async initialize() {
     // Marker image need to be loaded upfront;
-    await DefaultOgcSymbology.defaultPMS.loadImage();
+    await this._defaultPMS.loadImage();
   }
 
   public getSymbology(geometryType: string): EsriSymbol {
     if (geometryType === "LineString"|| geometryType === "MultiLineString" )
-      return DefaultOgcSymbology.defaultSLS;
+      return this._defaultSLS;
     else if (geometryType === "Polygon"|| geometryType === "MultiPolygon" )
-      return DefaultOgcSymbology.defaultSFS;
+      return this._defaultSFS;
     else if (geometryType === "Point"|| geometryType === "MultiPoint" )
-      // return DefaultOgcSymbology.defaultSMS;
-      return DefaultOgcSymbology.defaultPMS;
+      return this._defaultPMS;
 
     throw new Error(`Could not get default symbology for geometry type ${geometryType}`);
   }
@@ -85,13 +97,13 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
   private readonly _drawDebugInfo = false;
   /// ////////////////////////////
 
-  private readonly _limitParamMaxValue = 10000; // This is docmented in OGC Features specification; a single items request never returns more than 10 000 items
-  private readonly _tiledModeMinLod = 12;
+  private readonly _limitParamMaxValue = 10000; // This is documented in OGC Features specification; a single items request never returns more than 10 000 items
+  private readonly _tiledModeMinLod = 14;
   private readonly _staticModeFetchTimeout = 10000;
   private readonly _tileModeFetchTimeout = 10000;
   private readonly _forceTileMode = false;
   private _spatialIdx: any;
-  private _defaultSymbol = new DefaultOgcSymbology();
+  private _defaultSymbol = new DefaultOgcSymbology(new RandomMapColor());
   private _renderer: EsriRenderer|undefined;
   private _baseUrl = "";
   private _itemsUrl = "";
@@ -214,7 +226,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
         response = await this.makeTileRequest(nextLink.href, this._staticModeFetchTimeout);
         json = await response.json();
         if (json?.features)
-          data!.features = [...this._staticData!.features, ...json.features];
+          data!.features = this._staticData?.features ? [...this._staticData.features, ...json.features] : json.features;
         else
           success = false;
         nextLink = json.links?.find((link: any)=>link.rel === "next");
@@ -365,6 +377,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       const urlObj = new URL(this._itemsUrl);
       urlObj.searchParams.append("bbox", `${extent4326Str}`);
       urlObj.searchParams.append("bbox-crs", this._itemsCrs);
+      // urlObj.searchParams.append("bbox-crs", "http://www.opengis.net/def/crs/EPSG/0/4326");
       urlObj.searchParams.append("limit", `${this._limitParamMaxValue}`);
       const url = this.appendCustomParams(urlObj.toString());
 
