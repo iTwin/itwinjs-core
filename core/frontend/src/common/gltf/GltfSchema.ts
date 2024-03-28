@@ -504,7 +504,7 @@ export interface GltfBuffer extends GltfChildOfRootProperty {
   byteLength?: number;
   extensions?: GltfExtensions & {
     // https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md
-    EXT_meshopt_compression?: {
+    EXT_meshopt_compression?: { // eslint-disable-line @typescript-eslint/naming-convention
       fallback?: boolean;
     };
   };
@@ -537,7 +537,7 @@ export interface GltfBufferViewProps extends GltfChildOfRootProperty {
   byteStride?: number;
   target?: GltfBufferTarget;
   extensions?: GltfExtensions & {
-    EXT_meshopt_compression?: GltfBufferViewMeshoptCompressionExtension;
+    EXT_meshopt_compression?: GltfBufferViewMeshoptCompressionExtension; // eslint-disable-line @typescript-eslint/naming-convention
   };
 }
 

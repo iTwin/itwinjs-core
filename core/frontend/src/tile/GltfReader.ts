@@ -27,8 +27,7 @@ import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Triangle } from "../render/primitives/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
-import { RealityTileGeometry, TileContent } from "./internal";
-import { decodeMeshoptBuffer } from "./MeshoptCompression";
+import { decodeMeshoptBuffer, RealityTileGeometry, TileContent } from "./internal";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
 import { CreateRenderMaterialArgs } from "../render/CreateRenderMaterialArgs";
 import { DisplayParams } from "../common/render/primitives/DisplayParams";
@@ -819,7 +818,7 @@ export abstract class GltfReader {
         const buffer = this._buffers[bufferView.buffer];
         bufferData = buffer?.resolvedBuffer;
       }
-      
+
       if (!bufferData)
         return undefined;
 
@@ -1253,7 +1252,7 @@ export abstract class GltfReader {
     const colorData = colorView.toBufferData(GltfDataType.UnsignedByte);
     if (!(colorData?.buffer instanceof Uint8Array))
       return undefined;
-    
+
     let colors = colorData.buffer;
     if ("VEC4" === colorView.accessor.type) {
       // ###TODO support transparent point clouds
@@ -1439,7 +1438,7 @@ export abstract class GltfReader {
         rangeMin = view.accessor.min;
         rangeMax = view.accessor.max;
       }
-      
+
       if (undefined === rangeMin || undefined === rangeMax) // required by spec...
         return false;
 
@@ -1696,7 +1695,7 @@ export abstract class GltfReader {
     }
 
     await Promise.all(decodeMeshoptBuffers);
-      
+
     // If any meshes are draco-compressed, dynamically load the decoder module and then decode the meshes.
     const dracoMeshes: DracoMeshCompression[] = [];
 

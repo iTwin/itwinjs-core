@@ -71,7 +71,7 @@ export class GltfDecorationTool extends Tool {
     const vp = IModelApp.viewManager.selectedView;
     if (!vp)
       return false;
-    
+
     const iModel = vp.iModel;
     try {
       const buffer = await this.queryAsset(url);
