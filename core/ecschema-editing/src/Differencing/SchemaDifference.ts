@@ -31,14 +31,6 @@ type SchemaItemProperties<T extends SchemaItemProps> = {
 };
 
 /**
- * Make the difference of a SchemaDifference partial. Because of circular references, the
- * SchemaDifferences can't be used directly as constraint type.
- */
-type PartialDifference<T extends { difference: unknown }> = Omit<T, "difference"> & {
-  difference: Partial<T["difference"]>;
-};
-
-/**
  * Defines the type of the difference operation.
  * @alpha
  */
@@ -373,67 +365,67 @@ interface SchemaItemDifference<T extends SchemaItem> {
  * Differencing entry for Constant Schema Items.
  * @alpha
  */
-export interface ConstantsDifference extends SchemaItemDifference<Constant> { }
+export type ConstantsDifference = SchemaItemDifference<Constant>;
 
 /**
  * Differencing entry for Custom Attribute Class Schema Items.
  * @alpha
  */
-export interface CustomAttributeClassDifference extends SchemaItemDifference<CustomAttributeClass> { }
+export type CustomAttributeClassDifference = SchemaItemDifference<CustomAttributeClass>;
 
 /**
  * Differencing entry for Entity Class Schema Items.
  * @alpha
  */
-export interface EntityClassDifference extends SchemaItemDifference<EntityClass> { }
+export type EntityClassDifference = SchemaItemDifference<EntityClass>;
 
 /**
  * Differencing entry for Enumerator Schema Items.
  * @alpha
  */
-export interface EnumerationDifference extends SchemaItemDifference<Enumeration> { }
+export type EnumerationDifference = SchemaItemDifference<Enumeration>;
 
 /**
  * Differencing entry for Kind-Of-Quantities Schema Items.
  * @alpha
  */
-export interface KindOfQuantityDifference extends SchemaItemDifference<KindOfQuantity> { }
+export type KindOfQuantityDifference = SchemaItemDifference<KindOfQuantity>;
 
 /**
  * Differencing entry for Mixin Class Schema Items.
  * @alpha
  */
-export interface MixinClassDifference extends SchemaItemDifference<Mixin> { }
+export type MixinClassDifference = SchemaItemDifference<Mixin>;
 
 /**
  * Differencing entry for Phenomenon Schema Items.
  * @alpha
  */
-export interface PhenomenonDifference extends SchemaItemDifference<Phenomenon> { }
+export type PhenomenonDifference = SchemaItemDifference<Phenomenon>;
 
 /**
  * Differencing entry for Property Category Schema Items.
  * @alpha
  */
-export interface PropertyCategoryDifference extends SchemaItemDifference<PropertyCategory> { }
+export type PropertyCategoryDifference = SchemaItemDifference<PropertyCategory>;
 
 /**
  * Differencing entry for Relationship Class Schema Items.
  * @alpha
  */
-export interface RelationshipClassDifference extends SchemaItemDifference<RelationshipClass> { }
+export type RelationshipClassDifference = SchemaItemDifference<RelationshipClass>;
 
 /**
  * Differencing entry for Struct Class Schema Items.
  * @alpha
  */
-export interface StructClassDifference extends SchemaItemDifference<StructClass> { }
+export type StructClassDifference = SchemaItemDifference<StructClass>;
 
 /**
  * Differencing entry for Unit System Schema Items.
  * @alpha
  */
-export interface UnitSystemDifference extends SchemaItemDifference<UnitSystem> { }
+export type UnitSystemDifference = SchemaItemDifference<UnitSystem>;
 
 /**
  * Differencing entry for added or changed Properties.
@@ -550,6 +542,6 @@ export interface RelationshipConstraintClassDifference {
   readonly changeType: "add";
   readonly schemaType: SchemaOtherTypes.RelationshipConstraintClass;
   readonly itemName: string;
-  readonly path: "$source.constraintClasses" | "$target.constraintClasses";
+  readonly path: "$source" | "$target";
   readonly difference: string[];
 }
