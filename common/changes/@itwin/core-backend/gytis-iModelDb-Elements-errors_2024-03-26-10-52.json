@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add metadata to errors thrown by `insertElement`, `updateElement` and `deleteElement` in `IModelDb`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
