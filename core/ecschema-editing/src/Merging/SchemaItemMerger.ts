@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import type { SchemaMergeContext } from "./SchemaMerger";
 import type { SchemaEditResults, SchemaItemEditResults } from "../Editing/Editor";
-import { AnySchemaDifference, AnySchemaItemDifference, SchemaDifference } from "../Differencing/SchemaDifference";
+import { AnySchemaDifference, AnySchemaItemDifference, AnySchemaItemPathDifference, SchemaDifference } from "../Differencing/SchemaDifference";
 import { ECObjectsError, ECObjectsStatus, SchemaContext, SchemaItem, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { enumerationMerger, enumeratorMerger } from "./EnumerationMerger";
 import { phenomenonMerger } from "./PhenomenonMerger";
@@ -17,8 +17,8 @@ import { mergeClassItems } from "./ClassMerger";
 /**
  * @internal
  */
-export interface SchemaItemMergerHandler<T extends AnySchemaItemDifference> {
-  add?:    (context: SchemaMergeContext, change: T) => Promise<SchemaItemEditResults>;
+export interface SchemaItemMergerHandler<T extends AnySchemaItemDifference | AnySchemaItemPathDifference> {
+  add?: (context: SchemaMergeContext, change: T) => Promise<SchemaItemEditResults>;
   modify?: (context: SchemaMergeContext, change: T, itemKey: SchemaItemKey, item: any) => Promise<SchemaItemEditResults>;
 }
 
@@ -26,12 +26,12 @@ export interface SchemaItemMergerHandler<T extends AnySchemaItemDifference> {
  * Handles the merging logic for everything that is same for all schema items such as labels or descriptions
  * @internal
  */
-async function mergeSchemaItem<T extends AnySchemaItemDifference>(context: SchemaMergeContext, change: T, merger: SchemaItemMergerHandler<T>): Promise<SchemaEditResults> {
-  if(change.changeType === "add" && merger.add) {
+async function mergeSchemaItem<T extends AnySchemaItemDifference | AnySchemaItemPathDifference>(context: SchemaMergeContext, change: T, merger: SchemaItemMergerHandler<T>): Promise<SchemaEditResults> {
+  if (change.changeType === "add" && merger.add) {
     return merger.add(context, change);
   }
 
-  if(change.changeType === "modify" && merger.modify) {
+  if (change.changeType === "modify" && merger.modify) {
     const schemaItem = await locateSchemaItem(context, change.itemName, change.schemaType);
     return merger.modify(context, change, schemaItem.key, schemaItem);
   }
@@ -44,8 +44,8 @@ async function mergeSchemaItem<T extends AnySchemaItemDifference>(context: Schem
  */
 export async function locateSchemaItem(context: SchemaMergeContext, itemName: string, schemaType: string) {
   const schemaItemKey = new SchemaItemKey(itemName, context.targetSchemaKey);
-  const schemaItem    = await context.editor.schemaContext.getSchemaItem(schemaItemKey);
-  if(schemaItem === undefined) {
+  const schemaItem = await context.editor.schemaContext.getSchemaItem(schemaItemKey);
+  if (schemaItem === undefined) {
     throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `${schemaType} ${schemaItemKey.fullName} not found in schema context.`);
   }
 
@@ -60,7 +60,7 @@ export async function locateSchemaItem(context: SchemaMergeContext, itemName: st
  * @returns             An async iterable with the merge result for each schema item.
  * @internal
  */
-export async function * mergeSchemaItems(context: SchemaMergeContext, itemChanges: AnySchemaDifference[]) {
+export async function* mergeSchemaItems(context: SchemaMergeContext, itemChanges: AnySchemaDifference[]) {
   for (const difference of itemChanges.filter(SchemaDifference.isUnitSystemDifference)) {
     yield await mergeSchemaItem(context, difference, unitSystemMerger);
   }
@@ -97,7 +97,7 @@ export async function * mergeSchemaItems(context: SchemaMergeContext, itemChange
 
   // Classes are slightly differently merged, since they can refer each other the process
   // uses several stages to merge.
-  for await(const classMergeResult of mergeClassItems(context, itemChanges)) {
+  for await (const classMergeResult of mergeClassItems(context, itemChanges)) {
     yield classMergeResult;
   }
 }
@@ -118,12 +118,12 @@ export async function updateSchemaItemFullName(context: SchemaMergeContext, refe
  */
 export async function updateSchemaItemKey(context: SchemaMergeContext, reference: string) {
   const [schemaName, itemName] = SchemaItem.parseFullName(reference);
-  if(context.sourceSchemaKey.compareByName(schemaName)) {
+  if (context.sourceSchemaKey.compareByName(schemaName)) {
     return resolveSchemaItemKey(context.editor.schemaContext, new SchemaItemKey(itemName, context.targetSchemaKey));
   }
 
   const referencedSchema = await context.targetSchema.getReference(schemaName);
-  if(referencedSchema !== undefined) {
+  if (referencedSchema !== undefined) {
     return resolveSchemaItemKey(context.editor.schemaContext, new SchemaItemKey(itemName, referencedSchema.schemaKey));
   }
 
@@ -137,7 +137,7 @@ export async function updateSchemaItemKey(context: SchemaMergeContext, reference
  */
 async function resolveSchemaItemKey(schemaContext: SchemaContext, itemKey: SchemaItemKey): Promise<SchemaItemKey> {
   const item = await schemaContext.getSchemaItem(itemKey);
-  if(item === undefined) {
+  if (item === undefined) {
     // If the schema item hasn't been created yet, we have to trust the given key is correctly spelled.
     return itemKey;
   }

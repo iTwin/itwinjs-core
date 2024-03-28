@@ -13,7 +13,7 @@ import { SchemaDiagnosticVisitor } from "./SchemaDiagnosticVisitor";
 import {
   AnyEnumerator, AnyPropertyProps, Constant, CustomAttribute, CustomAttributeClass, EntityClass, Enumeration, KindOfQuantity,
   Mixin, Phenomenon, PropertyCategory, RelationshipClass, RelationshipConstraintProps,
-  type Schema, SchemaItem, SchemaItemProps, SchemaItemType, SchemaReferenceProps, StructClass, UnitSystem,
+  type Schema, SchemaItem, SchemaItemProps, SchemaItemType, SchemaReferenceProps, StructClass, UnitSystem, Format, Unit, InvertedUnit,
 } from "@itwin/ecschema-metadata";
 
 /** Utility-Type to remove possible readonly flags on the given type. */
@@ -47,6 +47,7 @@ export enum SchemaOtherTypes {
   CustomAttributeInstance = "CustomAttributeInstance",
   RelationshipConstraint = "RelationshipConstraint",
   RelationshipConstraintClass = "RelationshipConstraintClass",
+  EntityClassMixin = "EntityClassMixin",
 }
 
 /**
@@ -111,10 +112,10 @@ export namespace SchemaDifference {
   }
 
   /**
-   * Indicates whether the given difference is type of ConstantsDifference.
+   * Indicates whether the given difference is type of ConstantDifference.
    * @alpha
    */
-  export function isConstantDifference(difference: SchemaDifferenceLike): difference is ConstantsDifference {
+  export function isConstantDifference(difference: SchemaDifferenceLike): difference is ConstantDifference {
     return difference.schemaType === SchemaItemType.Constant;
   }
 
@@ -295,7 +296,7 @@ export type AnySchemaDifference =
   SchemaDifference |
   SchemaReferenceDifference |
   AnySchemaItemDifference |
-  ClassPropertyDifference |
+  AnySchemaItemPathDifference |
   CustomAttributeDifference;
 
 /**
@@ -328,27 +329,38 @@ export interface SchemaReferenceDifference {
  */
 export type AnySchemaItemDifference =
   ClassItemDifference |
-  ConstantsDifference |
+  ConstantDifference |
   EnumerationDifference |
-  EnumeratorDifference |
-  EntityClassMixinDifference |
   KindOfQuantityDifference |
   PhenomenonDifference |
   PropertyCategoryDifference |
-  RelationshipConstraintDifference |
-  RelationshipConstraintClassDifference |
-  UnitSystemDifference;
+  UnitSystemDifference |
+  UnitDifference |
+  InvertedUnitDifference |
+  FormatDifference;
 
 /**
  * Union for supported class Schema Items.
  * @internal
  */
 export type ClassItemDifference =
-  CustomAttributeClassDifference |
   EntityClassDifference |
   MixinClassDifference |
-  RelationshipClassDifference |
-  StructClassDifference;
+  StructClassDifference |
+  CustomAttributeClassDifference |
+  RelationshipClassDifference;
+
+/**
+ * Union of all differences that have a path pointing inside a schema item.
+ * @alpha
+ */
+export type AnySchemaItemPathDifference =
+  EntityClassMixinDifference |
+  RelationshipConstraintDifference |
+  RelationshipConstraintClassDifference |
+  CustomAttributePropertyDifference |
+  EnumeratorDifference |
+  ClassPropertyDifference;
 
 /**
  * Internal base class for all Schema Item differencing entries.
@@ -358,74 +370,119 @@ interface SchemaItemDifference<T extends SchemaItem> {
   readonly changeType: "add" | "modify";
   readonly itemName: string;
   readonly difference: SchemaItemProperties<ReturnType<T["toJSON"]>>;
-  readonly schemaType: SchemaItemType;
 }
 
 /**
  * Differencing entry for Constant Schema Items.
  * @alpha
  */
-export type ConstantsDifference = SchemaItemDifference<Constant>;
+export interface ConstantDifference extends SchemaItemDifference<Constant> {
+  readonly schemaType: SchemaItemType.Constant;
+}
 
 /**
  * Differencing entry for Custom Attribute Class Schema Items.
  * @alpha
  */
-export type CustomAttributeClassDifference = SchemaItemDifference<CustomAttributeClass>;
+export interface CustomAttributeClassDifference extends SchemaItemDifference<CustomAttributeClass> {
+  readonly schemaType: SchemaItemType.CustomAttributeClass;
+}
 
 /**
  * Differencing entry for Entity Class Schema Items.
  * @alpha
  */
-export type EntityClassDifference = SchemaItemDifference<EntityClass>;
+export interface EntityClassDifference extends SchemaItemDifference<EntityClass> {
+  readonly schemaType: SchemaItemType.EntityClass;
+}
 
 /**
  * Differencing entry for Enumerator Schema Items.
  * @alpha
  */
-export type EnumerationDifference = SchemaItemDifference<Enumeration>;
+export interface EnumerationDifference extends SchemaItemDifference<Enumeration> {
+  readonly schemaType: SchemaItemType.Enumeration;
+}
 
 /**
  * Differencing entry for Kind-Of-Quantities Schema Items.
  * @alpha
  */
-export type KindOfQuantityDifference = SchemaItemDifference<KindOfQuantity>;
+export interface KindOfQuantityDifference extends SchemaItemDifference<KindOfQuantity> {
+  readonly schemaType: SchemaItemType.KindOfQuantity;
+}
 
 /**
  * Differencing entry for Mixin Class Schema Items.
  * @alpha
  */
-export type MixinClassDifference = SchemaItemDifference<Mixin>;
+export interface MixinClassDifference extends SchemaItemDifference<Mixin> {
+  readonly schemaType: SchemaItemType.Mixin;
+}
 
 /**
  * Differencing entry for Phenomenon Schema Items.
  * @alpha
  */
-export type PhenomenonDifference = SchemaItemDifference<Phenomenon>;
+export interface PhenomenonDifference extends SchemaItemDifference<Phenomenon> {
+  readonly schemaType: SchemaItemType.Phenomenon;
+}
 
 /**
  * Differencing entry for Property Category Schema Items.
  * @alpha
  */
-export type PropertyCategoryDifference = SchemaItemDifference<PropertyCategory>;
+export interface PropertyCategoryDifference extends SchemaItemDifference<PropertyCategory> {
+  readonly schemaType: SchemaItemType.PropertyCategory;
+}
 
 /**
  * Differencing entry for Relationship Class Schema Items.
  * @alpha
  */
-export type RelationshipClassDifference = SchemaItemDifference<RelationshipClass>;
+export interface RelationshipClassDifference extends SchemaItemDifference<RelationshipClass> {
+  readonly schemaType: SchemaItemType.RelationshipClass;
+}
 
 /**
  * Differencing entry for Struct Class Schema Items.
  * @alpha
  */
-export type StructClassDifference = SchemaItemDifference<StructClass>;
+export interface StructClassDifference extends SchemaItemDifference<StructClass> {
+  readonly schemaType: SchemaItemType.StructClass;
+}
 
 /**
  * Differencing entry for Unit System Schema Items.
  * @alpha
  */
-export type UnitSystemDifference = SchemaItemDifference<UnitSystem>;
+export interface UnitSystemDifference extends SchemaItemDifference<UnitSystem> {
+  readonly schemaType: SchemaItemType.UnitSystem;
+}
+
+/**
+ * Differencing entry for Unit Schema Items.
+ * @alpha
+ */
+export interface UnitDifference extends SchemaItemDifference<Unit> {
+  readonly schemaType: SchemaItemType.Unit;
+}
+
+/**
+ * Differencing entry for Inverted Unit Schema Items.
+ * @alpha
+ */
+export interface InvertedUnitDifference extends SchemaItemDifference<InvertedUnit> {
+  readonly schemaType: SchemaItemType.InvertedUnit;
+}
+/**
+ * Differencing entry for Format Schema Items.
+ * @alpha
+ */
+export interface FormatDifference extends SchemaItemDifference<Format> {
+  readonly schemaType: SchemaItemType.Format;
+}
+
 
 /**
  * Differencing entry for added or changed Properties.
@@ -504,7 +561,7 @@ export interface CustomAttributeRelationshipConstraintDifference {
  */
 export interface EntityClassMixinDifference {
   readonly changeType: "add";
-  readonly schemaType: SchemaItemType.EntityClass;
+  readonly schemaType: SchemaOtherTypes.EntityClassMixin;
   readonly itemName: string;
   readonly path: "$mixins";
   readonly difference: string[];
