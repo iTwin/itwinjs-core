@@ -258,6 +258,7 @@ public;RuledSweep
 alpha;Sample
 public;SectionSequenceWithPlanes
 public;Segment1d
+public;SerializationHelpers
 public;SignedLoops
 internal;SineCosinePolynomial
 public;SmallSystem
