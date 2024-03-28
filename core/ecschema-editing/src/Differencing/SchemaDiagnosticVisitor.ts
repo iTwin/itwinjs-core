@@ -420,6 +420,7 @@ export class SchemaDiagnosticVisitor {
         itemName: ecClass.name,
         difference: {},
       };
+      this.schemaItemChanges.push(modifyEntry);
     }
 
     modifyEntry.difference.baseClass = sourceBaseClass.fullName;
@@ -551,7 +552,7 @@ export class SchemaDiagnosticVisitor {
     }
 
     let modifyEntry = this.schemaItemPathChanges.find((entry) => {
-      return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.RelationshipConstraint, entry.itemName === className && entry.path === constraintPath;
+      return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.RelationshipConstraint && entry.itemName === className && entry.path === constraintPath;
     }) as RelationshipConstraintDifference;
 
     if (modifyEntry === undefined) {
