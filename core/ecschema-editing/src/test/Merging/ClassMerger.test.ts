@@ -134,7 +134,7 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaOtherTypes.Schema,
+          schemaType: SchemaOtherTypes.SchemaReference,
           path: "$references",
           difference: {
             name: "TestSchema",
@@ -188,7 +188,7 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaOtherTypes.Schema,
+          schemaType: SchemaOtherTypes.SchemaReference,
           path: "$references",
           difference: {
             name: "TestSchema",

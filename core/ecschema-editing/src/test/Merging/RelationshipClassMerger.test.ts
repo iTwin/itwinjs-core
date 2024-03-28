@@ -11,13 +11,13 @@ import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 
 describe("Relationship Class merger tests", () => {
   let targetContext: SchemaContext;
-  const targetJson =  {
+  const targetJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "TargetSchema",
     version: "1.0.0",
     alias: "target",
   };
-  const testJson =  {
+  const testJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "TestSchema",
     version: "01.00.15",
@@ -48,7 +48,7 @@ describe("Relationship Class merger tests", () => {
         schemaItemType: "EntityClass",
         baseClass: "TestSchema.TargetEntity",
       },
-      ... createBaseRelationship(
+      ...createBaseRelationship(
         { constraintClasses: ["TestSchema.SourceBaseEntity"] },
         { constraintClasses: ["TestSchema.TargetEntity"] },
       ),
@@ -119,7 +119,7 @@ describe("Relationship Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaOtherTypes.Schema,
+          schemaType: SchemaOtherTypes.SchemaReference,
           path: "$references",
           difference: {
             name: "TestSchema",
@@ -300,7 +300,7 @@ describe("Relationship Class merger tests", () => {
         },
       ],
       items: {
-        ... createBaseRelationship(
+        ...createBaseRelationship(
           {
             abstractConstraint: "TestSchema.SourceBaseEntity",
             constraintClasses: [
@@ -365,7 +365,7 @@ describe("Relationship Class merger tests", () => {
         },
       ],
       items: {
-        ... createBaseRelationship(
+        ...createBaseRelationship(
           { constraintClasses: ["TestSchema.SourceEntity"] },
           { constraintClasses: ["TestSchema.TargetBaseEntity"] },
         ),
@@ -411,7 +411,7 @@ describe("Relationship Class merger tests", () => {
         },
       ],
       items: {
-        ... createBaseRelationship(
+        ...createBaseRelationship(
           {
             abstractConstraint: "TestSchema.SourceBaseEntity",
             constraintClasses: [
@@ -484,7 +484,7 @@ describe("Relationship Class merger tests", () => {
         },
       ],
       items: {
-        ... createChildRelationship(
+        ...createChildRelationship(
           { constraintClasses: ["TestSchema.TargetBaseEntity"] },
           { constraintClasses: ["TestSchema.TargetChildEntity"] },
         ),

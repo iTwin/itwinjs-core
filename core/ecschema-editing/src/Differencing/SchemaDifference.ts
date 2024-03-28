@@ -42,6 +42,7 @@ export type DifferenceType = "add" | "modify";
  */
 export enum SchemaOtherTypes {
   Schema = "Schema",
+  SchemaReference = "SchemaReference",
   Property = "Property",
   Enumerator = "Enumerator",
   CustomAttributeInstance = "CustomAttributeInstance",
@@ -148,7 +149,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isEntityClassDifference(difference: SchemaDifferenceLike): difference is EntityClassDifference {
-    return difference.schemaType === SchemaItemType.EntityClass && difference.path === undefined;
+    return difference.schemaType === SchemaItemType.EntityClass;
   }
 
   /**
@@ -156,7 +157,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isEntityClassMixinDifference(difference: SchemaDifferenceLike): difference is EntityClassMixinDifference {
-    return difference.schemaType === SchemaItemType.EntityClass && difference.path === "$mixins";
+    return difference.schemaType === SchemaOtherTypes.EntityClassMixin;
   }
 
   /**
@@ -212,7 +213,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isSchemaDifference(difference: SchemaDifferenceLike): difference is SchemaDifference {
-    return difference.schemaType === SchemaOtherTypes.Schema && difference.path === undefined;
+    return difference.schemaType === SchemaOtherTypes.Schema;
   }
 
   /**
@@ -220,7 +221,7 @@ export namespace SchemaDifference {
    * @alpha
    */
   export function isSchemaReferenceDifference(difference: SchemaDifferenceLike): difference is SchemaReferenceDifference {
-    return difference.schemaType === SchemaOtherTypes.Schema && difference.path === "$references";
+    return difference.schemaType === SchemaOtherTypes.SchemaReference;
   }
 
   /**
@@ -318,7 +319,7 @@ export interface SchemaDifference {
  */
 export interface SchemaReferenceDifference {
   readonly changeType: "add" | "modify";
-  readonly schemaType: SchemaOtherTypes.Schema;
+  readonly schemaType: SchemaOtherTypes.SchemaReference;
   readonly path: "$references";
   readonly difference: SchemaReferenceProps;
 }
