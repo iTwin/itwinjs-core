@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { comparePossiblyUndefined, compareStrings, CompressedId64Set, Logger } from "@itwin/core-bentley";
+import { comparePossiblyUndefined, compareStrings, Logger } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 import {
   IModelConnection, TileTree, TileTreeOwner, TileTreeSupplier,
@@ -11,6 +11,7 @@ import {
 import { loggerCategory } from "./LoggerCategory";
 import { BatchedTilesetReader, BatchedTilesetSpec } from "./BatchedTilesetReader";
 import { BatchedTileTree } from "./BatchedTileTree";
+import { decodeImdlModelGroups } from "./BatchedModelGroups";
 
 /** @internal */
 export interface BatchedTileTreeId {
@@ -33,7 +34,7 @@ class BatchedTileTreeSupplier implements TileTreeSupplier {
   public async createTileTree(treeId: BatchedTileTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
     const spec = treeId.spec;
     try {
-      const modelGroups = treeId.modelGroups ? treeId.modelGroups.split("_").map((x) => CompressedId64Set.decompressSet(x)) : undefined;
+      const modelGroups = treeId.modelGroups ? decodeImdlModelGroups(treeId.modelGroups) : undefined;
       const reader = new BatchedTilesetReader(spec, iModel, modelGroups);
       const params = await reader.readTileTreeParams();
 
