@@ -1049,7 +1049,7 @@ export abstract class GltfReader {
   protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfPrimitiveData | undefined {
     const meshMode = JsonUtils.asInt(primitive.mode, GltfMeshMode.Triangles);
     if (meshMode === GltfMeshMode.Points /* && !this._vertexTableRequired */) {
-      const pointCloud = this.readPointCloud(primitive, undefined !== featureTable);
+      const pointCloud = this.readPointCloud2(primitive, undefined !== featureTable);
       if (pointCloud)
         return pointCloud;
     }
@@ -1192,14 +1192,59 @@ export abstract class GltfReader {
     return mesh;
   }
 
-  private readPointCloud(primitive: GltfMeshPrimitive, hasFeatures: boolean): GltfPointCloud | undefined {
-    const posView = this.getBufferView(primitive.attributes, "POSITION");
-    if (!posView || GltfDataType.Float !== posView.type)
-      return undefined;
+  private readPointCloud2(primitive: GltfMeshPrimitive, hasFeatures: boolean): GltfPointCloud | undefined {
+    let pointRange: Range3d | undefined;
+    let positions: Uint8Array | Uint16Array | Float32Array;
+    let qparams: QParams3d | undefined;
 
-    const posData = posView.toBufferData(GltfDataType.Float);
-    if (!(posData?.buffer instanceof Float32Array))
-      return undefined;
+    const posView = this.getBufferView(primitive.attributes, "POSITION");
+    switch (posView?.type) {
+      case GltfDataType.Float: {
+        const posData = posView.toBufferData(GltfDataType.Float);
+        if (!(posData?.buffer instanceof Float32Array)) {
+          return undefined;
+        }
+
+        positions = posData.buffer;
+        const strideSkip = posView.stride - 3;
+        pointRange = new Range3d();
+        for (let i = 0; i < positions.length; i += strideSkip) {
+          pointRange.extendXYZ(positions[i++], positions[i++], positions[i++]);
+        }
+
+        qparams = QParams3d.fromOriginAndScale(new Point3d(0, 0, 0), new Point3d(1, 1, 1));
+        break;
+      }
+      case GltfDataType.UnsignedByte:
+      case GltfDataType.UnsignedShort: {
+        const posData = posView.toBufferData(posView.type);
+        if (!(posData?.buffer instanceof Uint8Array || posData?.buffer instanceof Uint16Array)) {
+          return undefined;
+        }
+
+        positions = posData.buffer;
+        let min, max;
+        const ext = posView.accessor.extensions?.WEB3D_quantized_attributes;
+        if (ext) {
+          min = ext.decodedMin;
+          max = ext.decodedMax;
+        } else {
+          // Assume KHR_mesh_quantization...
+          min = posView.accessor.min;
+          max = posView.accessor.max;
+        }
+
+        if (undefined === min || undefined === max) {
+          return undefined;
+        }
+
+        pointRange = Range3d.createXYZXYZ(min[0], min[1], min[2], max[0], max[1], max[2]);
+        qparams = QParams3d.fromRange(pointRange);
+        break;
+      }
+      default:
+        return undefined;
+    }
 
     const colorView = this.getBufferView(primitive.attributes, "COLOR_0");
     if (!colorView || GltfDataType.UnsignedByte !== colorView.type)
@@ -1208,12 +1253,7 @@ export abstract class GltfReader {
     const colorData = colorView.toBufferData(GltfDataType.UnsignedByte);
     if (!(colorData?.buffer instanceof Uint8Array))
       return undefined;
-
-    const strideSkip = posView.stride - 3;
-    const pointRange = new Range3d();
-    for (let i = 0; i < posData.buffer.length; i+= strideSkip)
-      pointRange.extendXYZ(posData.buffer[i++], posData.buffer[i++], posData.buffer[i++]);
-
+    
     let colors = colorData.buffer;
     if ("VEC4" === colorView.accessor.type) {
       // ###TODO support transparent point clouds
@@ -1227,14 +1267,15 @@ export abstract class GltfReader {
     }
 
     const features = new FeatureIndex();
-    if (hasFeatures)
+    if (hasFeatures) {
       features.type = FeatureIndexType.Uniform;
+    }
 
     this._containsPointCloud = true;
     return {
       type: "pointcloud",
-      positions: posData.buffer,
-      qparams: QParams3d.fromOriginAndScale(new Point3d(0, 0, 0), new Point3d(1, 1, 1)),
+      positions,
+      qparams,
       pointRange,
       colors,
       colorFormat: "rgb",
@@ -1643,6 +1684,10 @@ export abstract class GltfReader {
           const source = new Uint8Array(bufferData.buffer, bufferData.byteOffset + (ext.byteOffset ?? 0), ext.byteLength ?? 0);
           const decode = async () => {
             bv.resolvedBuffer = await decodeMeshoptBuffer(source, ext);
+            if (bv.resolvedBuffer) {
+              bv.byteLength = bv.resolvedBuffer.byteLength;
+              bv.byteOffset = 0;
+            }
           };
 
           decodeMeshoptBuffers.push(decode());
