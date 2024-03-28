@@ -14,8 +14,6 @@ We will start off the tutorial by a simple ECSQL example using the "House Sample
 > SELECT ECInstanceId, ECClassId, UserLabel FROM bis.SpatialLocationElement
 > ```
 
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECInstanceId, ECClassId, UserLabel FROM bis.SpatialLocationElement"></iframe>
-
 ## Fully qualified class names
 
 The example illustrates an important rule. As an iModel contains more than one ECSchema, class names might be ambiguous. Therefore **the classes used in an ECSQL have to be fully qualified by their schemas**. The schema can either be specified by its name or by its alias.
@@ -36,8 +34,6 @@ The example from above uses the schema alias. If you replace it by the schema na
 > SELECT ECInstanceId, ECClassId, UserLabel FROM BisCore.SpatialLocationElement
 > ```
 
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECInstanceId, ECClassId, UserLabel FROM BisCore.SpatialLocationElement"></iframe>
-
 If you omit the schema, you will get an error:
 
 > **Try it yourself**
@@ -49,8 +45,6 @@ If you omit the schema, you will get an error:
 > ```sql
 > SELECT ECInstanceId, ECClassId, UserLabel FROM SpatialLocationElement
 > ```
-
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECInstanceId, ECClassId, UserLabel FROM SpatialLocationElement"></iframe>
 
 ## Element Count
 
@@ -66,8 +60,6 @@ The above example is not very meaningful. In large iModels the query might retur
 > SELECT count(*) FROM bis.Element
 > ```
 
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT count(*) FROM bis.Element"></iframe>
-
 This query considers all kinds of [Element](../../bis/domains/BisCore.ecschema.md#element)s. If we want to focus only on Elements which represent real-world assets, we can use the BIS class [SpatialElement](../../bis/domains/BisCore.ecschema.md#spatialelement)s instead.
 
 > **Try it yourself**
@@ -80,8 +72,6 @@ This query considers all kinds of [Element](../../bis/domains/BisCore.ecschema.m
 > SELECT count(*) FROM bis.SpatialElement
 > ```
 
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT count(*) FROM bis.SpatialElement"></iframe>
-
 Let's compute some more Element statistic with ECSQL. We want to find out how many [SpatialElement](../../bis/domains/BisCore.ecschema.md#spatialelement)s there are in the iModel per actual element type (where element type here refers to the subclasses of the [Element](../../bis/domains/BisCore.ecschema.md#element) ECClass).
 
 > **Try it yourself**
@@ -93,8 +83,6 @@ Let's compute some more Element statistic with ECSQL. We want to find out how ma
 > ```sql
 > SELECT ECClassId, count(*) ElementCount FROM bis.SpatialElement GROUP BY ECClassId ORDER BY ECClassId
 > ```
-
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECClassId, count(*) ElementCount FROM bis.SpatialElement GROUP BY ECClassId ORDER BY ECClassId"></iframe>
 
 ## Limiting the result set
 
@@ -112,8 +100,6 @@ Let's apply `LIMIT` and `OFFSET` to he first ECSQL example from above ([first EC
 > SELECT ECInstanceId, ECClassId, CodeValue FROM bis.SpatialLocationElement LIMIT 5
 > ```
 
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECInstanceId, ECClassId, CodeValue FROM bis.SpatialLocationElement LIMIT 5"></iframe>
-
 ---
 
 > **Try it yourself**
@@ -125,8 +111,6 @@ Let's apply `LIMIT` and `OFFSET` to he first ECSQL example from above ([first EC
 > ```sql
 > SELECT ECInstanceId, ECClassId, CodeValue FROM bis.SpatialLocationElement LIMIT 5 OFFSET 10
 > ```
-
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECInstanceId, ECClassId, CodeValue FROM bis.SpatialLocationElement LIMIT 5 OFFSET 10"></iframe>
 
 ## Formatting the Output
 
@@ -142,8 +126,6 @@ Let's apply `LIMIT` and `OFFSET` to he first ECSQL example from above ([first EC
 > SELECT count(*) ElementCount FROM bis.SpatialElement
 > ```
 
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT count(*) ElementCount FROM bis.SpatialElement"></iframe>
-
 > **Try it yourself**
 >
 > _Goal:_ Return id and code of all [Element](../../bis/domains/BisCore.ecschema.md#element)s in the iModel and give the id column the name _ElementId_ and the code value column the name _Code_.
@@ -153,8 +135,6 @@ Let's apply `LIMIT` and `OFFSET` to he first ECSQL example from above ([first EC
 > ```sql
 > SELECT ECInstanceId ElementId, ECClassId, CodeValue Code FROM bis.Element LIMIT 3
 > ```
-
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECInstanceId ElementId, ECClassId, CodeValue Code FROM bis.Element LIMIT 3"></iframe>
 
 One aspect of the power of ECSQL (and SQL) is the richness of expressiveness. Instead of just returning the property values from
 some class, you can let ECSQL do calculations. The following example uses ECSQL as a simple calculator.
@@ -168,8 +148,6 @@ some class, you can let ECSQL do calculations. The following example uses ECSQL 
 > ```sql
 > SELECT 10 Radius, (2 * 3.1415 * 10) Perimeter, (3.1415 * 10 * 10) Area FROM bis.Element LIMIT 1
 > ```
-
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT 10 Radius, (2 *3.1415* 10) Perimeter, (3.1415 *10* 10) Area FROM bis.Element LIMIT 1"></iframe>
 
 Using **aliases** is also helpful when working with the iTwin.js API. The API returns query results as JavaScript object literals where
 each expression of the SELECT clause becomes the member of the object.
@@ -224,8 +202,6 @@ To reuse the same ECSQL statement with different values, parameters can be used.
 > SELECT ECInstanceId,ECClassId FROM bis.SpatialElement WHERE UserLabel = ? LIMIT 5
 > ```
 
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECInstanceId,ECClassId FROM bis.SpatialElement WHERE UserLabel = ? LIMIT 5"></iframe>
-
 As you cannot bind values to parameters in the iModelConsole, the above query returns the same as if you did the following.
 
 > **Try it yourself**
@@ -238,9 +214,6 @@ As you cannot bind values to parameters in the iModelConsole, the above query re
 > SELECT ECInstanceId,ECClassId FROM bis.SpatialElement WHERE UserLabel = NULL LIMIT 5
 > ```
 >
-> _Result_
-
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECInstanceId,ECClassId FROM bis.SpatialElement WHERE UserLabel = NULL LIMIT 5"></iframe>
 
 ## Comparing to NULL
 
@@ -260,8 +233,6 @@ If you want to check whether a property is NULL, i.e. unset, use the `IS NULL` o
 > SELECT ECInstanceId,ECClassId FROM bis.SpatialElement WHERE UserLabel IS NULL LIMIT 5
 > ```
 
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECInstanceId,ECClassId FROM bis.SpatialElement WHERE UserLabel IS NULL LIMIT 5"></iframe>
-
 And to illustrate the difference, the same query using = NULL does not return any rows.
 
 > **Try it yourself**
@@ -273,8 +244,6 @@ And to illustrate the difference, the same query using = NULL does not return an
 > ```sql
 > SELECT ECInstanceId,ECClassId FROM bis.SpatialElement WHERE UserLabel = NULL LIMIT 5
 > ```
-
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECInstanceId,ECClassId FROM bis.SpatialElement WHERE UserLabel = NULL LIMIT 5"></iframe>
 
 ## SQL Functions
 
@@ -290,8 +259,6 @@ Any SQL function can be used in ECSQL. This includes functions built into SQLite
 > SELECT ECInstanceId, UserLabel, replace(UserLabel,'Fabric','ExpensiveFabric') ModifiedLabel FROM bis.Element WHERE instr(UserLabel,'Fabric')
 > ```
 
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECInstanceId, UserLabel, replace(UserLabel,'Fabric','ExpensiveFabric') ModifiedLabel FROM bis.Element WHERE instr(UserLabel,'Fabric')"></iframe>
-
 The example uses the SQLite functions [replace](https://www.sqlite.org/lang_corefunc.html#replace) to replace the substring 'Fabric' in the code and
 [instr](https://www.sqlite.org/lang_corefunc.html#instr) to only do this on rows where the code contains the substring 'Fabric' at all.
 
@@ -306,8 +273,6 @@ Note, that the `instr` function can be replaced by using the standard SQL `LIKE`
 > ```sql
 > SELECT ECInstanceId, UserLabel, replace(UserLabel,'Fabric','ExpensiveFabric') ModifiedLabel FROM bis.Element WHERE UserLabel LIKE '%Fabric%'
 > ```
-
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECInstanceId, UserLabel, replace(UserLabel,'Fabric','ExpensiveFabric') ModifiedLabel FROM bis.Element WHERE UserLabel LIKE '%Fabric%'"></iframe>
 
 ---
 
