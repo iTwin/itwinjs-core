@@ -6,7 +6,7 @@
  * @module Authorization
  */
 
-import { AccessToken } from "@itwin/core-bentley";
+import { type AccessToken, BeEvent } from "@itwin/core-bentley";
 
 /** Provides authorization to access APIs.
  * Bentley's iTwin platform APIs [use OAuth 2.0](https://developer.bentley.com/apis/overview/authorization/) for authorization.
@@ -20,4 +20,7 @@ import { AccessToken } from "@itwin/core-bentley";
 export interface AuthorizationClient {
   /** Obtain an [[AccessToken]] for the currently authorized user, or blank string if no token is available. */
   getAccessToken(): Promise<AccessToken>;
+
+  /** [[BeEvent]] which fires when the client's [[AccessToken]] changes. */
+  readonly onAccessTokenChanged?: BeEvent<(token: AccessToken) => void>;
 }
