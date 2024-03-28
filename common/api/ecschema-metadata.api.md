@@ -815,6 +815,8 @@ export class KindOfQuantity extends SchemaItem {
     protected _relativeError: number;
     // (undocumented)
     readonly schemaItemType: SchemaItemType.KindOfQuantity;
+    // @alpha
+    protected setRelativeError(relativeError: number): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): KindOfQuantityProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
@@ -1661,6 +1663,10 @@ export class Schema implements CustomAttributeContainerProps {
     protected _schemaKey?: SchemaKey;
     // @alpha
     protected setContext(context: SchemaContext): void;
+    // @alpha
+    protected setDescription(description: string): void;
+    // @alpha
+    protected setDisplayLabel(displayLabel: string): void;
     setVersion(readVersion?: number, writeVersion?: number, minorVersion?: number): void;
     static startLoadingFromJson(jsonObj: object | string, context: SchemaContext): Promise<SchemaInfo>;
     toJSON(): SchemaProps;

@@ -46,7 +46,7 @@ export class Constant extends SchemaItem {
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
    */
-  public override toJSON(standalone: boolean, includeSchemaVersion: boolean): ConstantProps {
+  public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): ConstantProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     if (this.phenomenon !== undefined)
       schemaJson.phenomenon = this.phenomenon.fullName;

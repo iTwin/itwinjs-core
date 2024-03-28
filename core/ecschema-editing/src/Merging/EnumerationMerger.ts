@@ -2,65 +2,61 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AnyEnumerator, Enumeration, SchemaItemKey} from "@itwin/ecschema-metadata";
-import { ChangeType, EnumerationChanges } from "../Validation/SchemaChanges";
-import { SchemaItemMerger } from "./SchemaItemMerger";
+import { primitiveTypeToString, SchemaItemKey } from "@itwin/ecschema-metadata";
+import { type EnumerationDifference, type EnumeratorDifference, SchemaDifference } from "../Differencing/SchemaDifference";
+import type { SchemaItemMergerHandler } from "./SchemaItemMerger";
+import { type MutableEnumeration } from "../Editing/Mutable/MutableEnumeration";
 
-type EnumeratorDeltaArgs = [AnyEnumerator, keyof AnyEnumerator, string | undefined];
+type ChangeTypes = EnumerationDifference | EnumeratorDifference;
 
 /**
+ * Defines a merge handler to merge Enumeration schema items.
  * @internal
  */
-export default class EnumerationMerger extends SchemaItemMerger<Enumeration> {
+export const enumerationMerger: SchemaItemMergerHandler<ChangeTypes> = {
+  async add(context, change) {
+    if(SchemaDifference.isEnumeratorDifference(change)) {
+      const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
+      await context.editor.enumerations.addEnumerator(itemKey, change.difference);
+      return {};
+    }
 
-  /** Shorthand property to the enumerations editor. */
-  private get _editor() {
-    return this.context.editor.enumerations;
-  }
+    return context.editor.enumerations.createFromProps(context.targetSchemaKey, {
+      name: change.itemName,
+      schemaItemType: change.schemaType,
 
-  protected override async merge(itemKey: SchemaItemKey, source: Enumeration, changes: EnumerationChanges) {
-    for (const enumeratorChange of changes.enumeratorChanges.values()) {
-      // In case the enumerator entry does not exist in the target enumeration the
-      // enumeratorMissing property is set and
-      if (enumeratorChange.enumeratorMissing?.changeType === ChangeType.Missing) {
-
-        const enumerator = source.getEnumeratorByName(enumeratorChange.ecTypeName);
-        if (enumerator === undefined) {
-          throw Error(`Enumerator '${enumeratorChange.ecTypeName}' not found in class ${source.fullName}`);
-        }
-
-        // Enumerators are plain javascript objects with out any references to other
-        // instances or a schema. That allows to simply copy them over.
-        await this._editor.addEnumerator(itemKey, enumerator);
-
-        // Since every missing enumerator has delta changes for ech property, the loop
-        // must call continue here to avoid having all properties checked and set again.
-        continue;
+      ...change.difference,
+    });
+  },
+  async modify(context, change, itemKey, item: MutableEnumeration) {
+    if(SchemaDifference.isEnumeratorDifference(change)) {
+      const [_path, enumeratorName] = change.path.split(".");
+      if(change.difference.value !== undefined) {
+        return { errorMessage: `Failed to merge enumerator attribute, Enumerator "${enumeratorName}" has different values.` };
       }
 
-      // For changes where the enumerators differ, the enumeratorDeltas property is
-      // filled. This allows to change individual enumerator entries. This is only
-      // allowed for labels and descriptions, all other deltas would throw an error.
-      for(const enumeratorDelta of enumeratorChange.enumeratorDeltas) {
-        await this.mergeEnumeratorChanges(itemKey, enumeratorDelta.diagnostic.messageArgs! as EnumeratorDeltaArgs);
+      if(change.difference.description !== undefined) {
+        await context.editor.enumerations.setEnumeratorDescription(itemKey, enumeratorName, change.difference.description);
       }
-    }
-  }
-
-  private async mergeEnumeratorChanges(itemKey: SchemaItemKey, [enumerator, propertyName, value]: EnumeratorDeltaArgs) {
-    // In case an enumerator has the same name but different value, the enumerator
-    // cannot be merged to keep integrity for the existing schema users.
-    if(propertyName === "value") {
-      throw new Error(`Failed to merge enumerator attribute, Enumerator "${enumerator.name}" has different values.`);
+      if(change.difference.label !== undefined) {
+        await context.editor.enumerations.setEnumeratorLabel(itemKey, enumeratorName, change.difference.label);
+      }
+      return {};
     }
 
-    // For the other two properties they shall only be merged if the source value is
-    // set. In case they'd be undefined, the current enumerators value shall be kept.
-    if(propertyName === "label" && value !== undefined) {
-      await this._editor.setEnumeratorLabel(itemKey, enumerator.name, value);
+    if(change.difference.type !== undefined) {
+      return { errorMessage: `The Enumeration ${itemKey.name} has an incompatible type. It must be "${primitiveTypeToString(item.type!)}", not "${change.difference.type}".` };
     }
-    if(propertyName === "description" && value !== undefined) {
-      await this._editor.setEnumeratorDescription(itemKey, enumerator.name, value);
+    if(change.difference.label !== undefined) {
+      item.setDisplayLabel(change.difference.label);
     }
-  }
-}
+    if(change.difference.description !== undefined) {
+      item.setDescription(change.difference.description);
+    }
+    if(change.difference.isStrict !== undefined) {
+      item.setIsStrict(change.difference.isStrict);
+    }
+
+    return {};
+  },
+};
