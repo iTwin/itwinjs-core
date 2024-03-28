@@ -20,6 +20,7 @@ import { ArcGisPbfFeatureReader } from "../../ArcGisFeature/ArcGisPbfFeatureRead
 import { ArcGisJsonFeatureReader } from "../../ArcGisFeature/ArcGisJsonFeatureReader";
 import { EsriPMS, EsriSFS, EsriSLS } from "../../ArcGisFeature/EsriSymbology";
 import * as moq from "typemoq";
+import * as fetchMock from "fetch-mock";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -70,17 +71,11 @@ function makeHitDetail(iModel: IModelConnection, viewport: ScreenViewport) {
   return hit as HitDetail;
 }
 
-function stubJsonFetch(sandbox: sinon.SinonSandbox, json: string) {
-
-  sandbox.stub((ArcGISImageryProvider.prototype as any), "fetch").callsFake(async function _(_url: unknown, _options?: unknown) {
-    const test = {
-      headers: { "content-type": "application/json" },
-      json: async () => {
-        return JSON.parse(json);
-      },
-      status: 200,
-    } as unknown;   // By using unknown type, I can define parts of Response I really need
-    return (test as Response);
+function stubJsonFetch(json: string) {
+  fetchMock.mock("*",  {
+    status: 200,
+    headers: {"Content-Type": "application/json"},
+    body: JSON.parse(json),
   });
 }
 
@@ -128,7 +123,7 @@ async function testGetFeatureInfoGeom(sandbox: sinon.SinonSandbox, fetchStub: an
 
   stubGetLayerMetadata(sandbox);
   stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { currentVersion: 11, capabilities: "Query" } });
-  stubJsonFetch(sandbox, JSON.stringify(dataset));
+  stubJsonFetch(JSON.stringify(dataset));
   const provider = new ArcGisFeatureProvider(settings);
   await provider.initialize();
   const featureInfos: MapLayerFeatureInfo[] = [];
@@ -708,18 +703,22 @@ describe("ArcGisFeatureProvider", () => {
 
   it("should process polygon data in getFeatureInfo (GCS)", async () => {
     await testGetFeatureInfoGeom(sandbox, fetchStub, "loop", makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.object), PhillyLandmarksDataset.phillyDoubleRingPolyQueryJson);
+    fetchMock.restore();
   });
 
   it("should process multi path data in getFeatureInfo (GCS)", async () => {
     await testGetFeatureInfoGeom(sandbox, fetchStub, "linestring", makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.object), PhillyLandmarksDataset.phillyMultiPathQueryJson, 2);
+    fetchMock.restore();
   });
 
   it("should process linestring data in getFeatureInfo (GCS)", async () => {
     await testGetFeatureInfoGeom(sandbox, fetchStub, "linestring", makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.object), PhillyLandmarksDataset.phillySimplePathQueryJson);
+    fetchMock.restore();
   });
 
   it("should process pointstring data in getFeatureInfo (GCS)", async () => {
     await testGetFeatureInfoGeom(sandbox, fetchStub, "pointstring", makeHitDetail(viewportMock.imodel as IModelConnection, viewportMock.object), PhillyLandmarksDataset.phillySimplePointQueryJson);
+    fetchMock.restore();
   });
 
   it("should log error when exceed transfer limit", async () => {

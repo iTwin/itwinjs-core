@@ -563,6 +563,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "fetch-mock",
+      "allowedCategories": [ "extensions" ]
+    },
+    {
       "name": "file-loader",
       "allowedCategories": [ "tools" ]
     },
