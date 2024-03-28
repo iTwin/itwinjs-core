@@ -5,7 +5,7 @@
 
 // Barrel file for backend of a mobile application
 
-export * from "./backend/MobileAuthorizationBackend";
+export * from "./common/MobileAuthorizationClient";
 export * from "./backend/MobileFileHandler";
 export * from "./backend/MobileHost";
 export * from "./common/MobileAppProps";

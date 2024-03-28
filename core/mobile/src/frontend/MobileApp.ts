@@ -9,7 +9,7 @@ import { IModelAppOptions, IpcApp, NativeApp, NativeAppOpts, NotificationHandler
 import { mobileAppStrings } from "../common/MobileAppChannel";
 import { MobileAppFunctions, MobileNotifications } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
-import { MobileAuthorizationFrontend } from "./MobileAuthorizationFrontend";
+import { MobileAuthorizationClient } from "../common/MobileAuthorizationClient";
 
 /** @beta */
 export type MobileAppOpts = NativeAppOpts & { iModelApp: { authorizationClient?: never } };
@@ -53,7 +53,7 @@ export class MobileApp {
     const iModelAppOpts: IModelAppOptions = {
       ...opts?.iModelApp,
     };
-    const authorizationClient = new MobileAuthorizationFrontend();
+    const authorizationClient = new MobileAuthorizationClient(async () => MobileApp.callBackend("getAccessToken"));
     iModelAppOpts.authorizationClient = authorizationClient;
 
     if (!this._isValid) {
