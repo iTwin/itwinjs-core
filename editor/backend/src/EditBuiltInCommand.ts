@@ -23,6 +23,14 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
 
   public override async onStart() { return BasicManipulationCommand.commandId; }
 
+  public async addAllowedChannel(channelKey: string): Promise<void> {
+    this.iModel.channels.addAllowedChannel(channelKey);
+  }
+
+  public async removeAllowedChannel(channelKey: string): Promise<void> {
+    this.iModel.channels.removeAllowedChannel(channelKey);
+  }
+
   public async deleteElements(ids: CompressedId64Set): Promise<IModelStatus> {
     const idSet = CompressedId64Set.decompressSet(ids);
     await this.iModel.locks.acquireLocks({ exclusive: idSet });

@@ -7,7 +7,7 @@ import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { BriefcaseConnection, GeometricModelState } from "@itwin/core-frontend";
-import { coreFullStackTestIpc, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
+import { addAllowedChannel, coreFullStackTestIpc, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
 if (!ProcessDetector.isMobileAppFrontend) {
@@ -26,6 +26,7 @@ if (!ProcessDetector.isMobileAppFrontend) {
     beforeEach(async () => {
       const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
       imodel = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
+      await addAllowedChannel(imodel, "shared");
     });
 
     afterEach(async () => {

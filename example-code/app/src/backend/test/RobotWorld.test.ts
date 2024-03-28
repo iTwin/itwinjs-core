@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import { Id64String, OpenMode } from "@itwin/core-bentley";
 import { Angle, Point3d } from "@itwin/core-geometry";
-import { IModelJsFs, PhysicalModel, StandaloneDb } from "@itwin/core-backend";
+import { ChannelControl, IModelJsFs, PhysicalModel, StandaloneDb } from "@itwin/core-backend";
 import { IModel } from "@itwin/core-common";
 import { Barrier } from "../BarrierElement";
 import { Robot } from "../RobotElement";
@@ -23,6 +23,7 @@ describe("RobotWorld", () => {
     IModelJsFs.copySync(seedFile, iModelFile);
     const iModel = StandaloneDb.openFile(iModelFile, OpenMode.ReadWrite);
     assert.isTrue(iModel !== undefined);
+    iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     try {
       RobotWorldEngine.countRobots(iModel);

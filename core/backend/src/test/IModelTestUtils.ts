@@ -21,7 +21,7 @@ import { RequestNewBriefcaseArg } from "../BriefcaseManager";
 import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
 import { ClassRegistry } from "../ClassRegistry";
 import {
-  AuxCoordSystem2d, BriefcaseDb, BriefcaseLocalValue, BriefcaseManager, CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition,
+  AuxCoordSystem2d, BriefcaseDb, BriefcaseLocalValue, BriefcaseManager, CategorySelector, ChannelControl, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition,
   ECSqlStatement, Element, ElementAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementUniqueAspect,
   ExternalSource, ExternalSourceIsInRepository, FunctionalModel, FunctionalSchema, GroupModel, IModelDb, IModelHost, IModelJsFs,
   InformationPartitionElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition,
@@ -303,6 +303,7 @@ export class IModelTestUtils {
     const seedDb: SnapshotDb = SnapshotDb.openFile(seedFileName);
     const testDb: SnapshotDb = SnapshotDb.createFrom(seedDb, testFileName);
     seedDb.close();
+    testDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     return testDb;
   }
 

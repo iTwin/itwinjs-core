@@ -286,7 +286,7 @@ describe("exportGraphics", () => {
       return uvArray;
     };
 
-    const materials: Id64String[][] = [["",""],["",""]];
+    const materials: Id64String[][] = [["",""], ["",""]];
     const getMaterial = (vNegate: boolean, meters: boolean): Id64String => {
       const i = vNegate ? 1 : 0;
       const j = meters ? 1 : 0;

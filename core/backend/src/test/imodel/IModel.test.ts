@@ -2730,6 +2730,7 @@ describe("iModel", () => {
     // test partial update of Description (auto-handled)
     imodel1.elements.updateElement({
       id: subject1.id,
+      model: subject1.model, // NOTE: workaround while expectation from elements.updateElement about "model" being passed-in is addressed
       classFullName: subject1.classFullName,
       description: "Description1-Updated",
     } as SubjectProps);
@@ -2744,6 +2745,7 @@ describe("iModel", () => {
     // test partial update of UserLabel (custom-handled)
     imodel1.elements.updateElement({
       id: subject2.id,
+      model: subject2.model, // NOTE: workaround while expectation from elements.updateElement about "model" being passed-in is addressed
       classFullName: subject2.classFullName,
       userLabel: "UserLabel2-Updated",
     } as SubjectProps);
@@ -2787,6 +2789,7 @@ describe("iModel", () => {
     const s3Fed = subject3.federationGuid;
     imodel1.elements.updateElement({
       id: subject3.id,
+      model: subject3.model, // NOTE: workaround while expectation from elements.updateElement about "model" being passed-in is addressed
       classFullName: subject3.classFullName,
       description: undefined,
     } as SubjectProps);
@@ -2801,6 +2804,7 @@ describe("iModel", () => {
     // test partial update of UserLabel to undefined
     imodel1.elements.updateElement({
       id: subject4.id,
+      model: subject4.model, // NOTE: workaround while expectation from elements.updateElement about "model" being passed-in is addressed
       classFullName: subject4.classFullName,
       userLabel: undefined,
     } as SubjectProps);

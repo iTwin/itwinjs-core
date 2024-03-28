@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/analytical-backend",
+      "comment": "Drop hasChannels API. Drop awareness of legacy Channels. Address merge failures.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/analytical-backend"
+}
