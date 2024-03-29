@@ -659,6 +659,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "meshoptimizer",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "mkdirp",
       "allowedCategories": [ "internal" ]
     },
