@@ -29,12 +29,12 @@ export interface TextBlockStringifyOptions {
 
 export abstract class TextBlockComponent {
   private _styleName: string;
-  public styleOverrides: TextStyleSettingsProps;
+  private _styleOverrides: TextStyleSettingsProps;
 
   /** @internal */
   protected constructor(props: TextBlockComponentProps) {
     this._styleName = props.styleName;
-    this.styleOverrides = { ...props.styleOverrides };
+    this._styleOverrides = { ...props.styleOverrides };
   }
 
   public get styleName(): string {
@@ -45,16 +45,24 @@ export abstract class TextBlockComponent {
     this.applyStyle(styleName);
   }
 
+  public get styleOverrides(): TextStyleSettingsProps {
+    return this._styleOverrides;
+  }
+
+  public set styleOverrides(overrides: TextStyleSettingsProps) {
+    this._styleOverrides = { ...overrides };
+  }
+
+  public clearStyleOverrides(): void {
+    this.styleOverrides = { };
+  }
+
   public applyStyle(styleName: string, options?: ApplyTextStyleOptions): void {
     this._styleName = styleName;
 
     if (!(options?.preserveOverrides)) {
-      this.clearOverrides();
+      this.clearStyleOverrides();
     }
-  }
-
-  public clearOverrides(): void {
-    this.styleOverrides = { };
   }
 
   public get overridesStyle(): boolean {
@@ -297,5 +305,21 @@ export class TextBlock extends TextBlockComponent {
   
   public stringify(options?: TextBlockStringifyOptions): string {
     return this.paragraphs.map((x) => x.stringify(options)).join(options?.paragraphBreak ?? " ");
+  }
+
+  public appendParagraph(): Paragraph {
+    const seed = this.paragraphs[0];
+    const paragraph = Paragraph.create({
+      styleName: seed?.styleName ?? this.styleName,
+      styleOverrides: seed?.styleOverrides ?? undefined,
+    });
+
+    this.paragraphs.push(paragraph);
+    return paragraph;
+  }
+
+  public appendRun(run: Run): void {
+    const paragraph = this.paragraphs[this.paragraphs.length - 1] ?? this.appendParagraph();
+    paragraph.runs.push(run);
   }
 }
