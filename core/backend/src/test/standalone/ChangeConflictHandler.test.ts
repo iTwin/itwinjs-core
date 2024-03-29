@@ -20,10 +20,12 @@ import {
   ChangesetConflictArgs,
   DictionaryModel,
   SpatialCategory,
+  SqliteChangesetReader,
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 chai.use(chaiAsPromised);
 import sinon = require("sinon");
+import { Range3d } from "@itwin/core-geometry";
 
 async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
   try {
@@ -383,7 +385,7 @@ describe("Changeset conflict handler", () => {
       },
     );
   });
-  it.only("DbConflictCause.Data - be_Prop", async () => {
+  it("DbConflictCause.Data - ChangesetConflictArgs vs SqliteChangeSetReader API", async () => {
     insertPhysicalObject(b1);
     const prop: FilePropertyProps = { namespace: "test", name: "test", id: 0xfffffff, subId: 0x1234 };
     b1.saveFileProperty(prop, "test");
@@ -424,6 +426,62 @@ describe("Changeset conflict handler", () => {
       b2,
       async () => b2.pushChanges({ accessToken: accessToken1, description: "" }),
       (arg: ChangesetConflictArgs) => {
+
+        // *** SqliteChangeReader API test ***
+        const reader = SqliteChangesetReader.openFile({ fileName: arg.changesetFile!, db: b2 });
+        expect(reader.step()).is.true;
+        expect(reader.tableName).equals("be_Prop");
+        expect(reader.getPrimaryKeyColumnNames()).deep.equals(["Namespace", "Name", "Id", "SubId"]);
+        expect(reader.primaryKeyValues).deep.equals(["test", "test", "0xfffffff", "0x1234"]);
+        expect(reader.getChangeValue(0, "Old")).equals("test");
+        expect(reader.getChangeValue(1, "Old")).equals("test");
+        expect(reader.getChangeValue(2, "Old")).equals("0xfffffff");
+        expect(reader.getChangeValue(3, "Old")).equals("0x1234");
+        expect(reader.getChangeValue(4, "Old")).is.undefined;
+        expect(reader.getChangeValue(5, "Old")).equals("test");
+        expect(reader.getChangeValue(6, "Old")).is.undefined;
+        expect(reader.getChangeValue(7, "Old")).is.undefined;
+
+        expect(reader.getChangeValue(0, "New")).is.undefined;
+        expect(reader.getChangeValue(1, "New")).is.undefined;
+        expect(reader.getChangeValue(2, "New")).is.undefined;
+        expect(reader.getChangeValue(3, "New")).is.undefined;
+        expect(reader.getChangeValue(4, "New")).is.undefined;
+        expect(reader.getChangeValue(5, "New")).equals("test1");
+        expect(reader.getChangeValue(6, "New")).is.undefined;
+        expect(reader.getChangeValue(7, "New")).is.undefined;
+
+        expect(reader.getChangeValueType(0, "Old")).equals(DbValueType.TextVal);
+        expect(reader.getChangeValueType(1, "Old")).equals(DbValueType.TextVal);
+        expect(reader.getChangeValueType(2, "Old")).equals(DbValueType.IntegerVal);
+        expect(reader.getChangeValueType(3, "Old")).equals(DbValueType.IntegerVal);
+        expect(reader.getChangeValueType(4, "Old")).is.undefined;
+        expect(reader.getChangeValueType(5, "Old")).equals(DbValueType.TextVal);
+        expect(reader.getChangeValueType(6, "Old")).is.undefined;
+        expect(reader.getChangeValueType(7, "Old")).is.undefined;
+
+        expect(reader.getChangeValueType(0, "New")).is.undefined;
+        expect(reader.getChangeValueType(1, "New")).is.undefined;
+        expect(reader.getChangeValueType(2, "New")).is.undefined;
+        expect(reader.getChangeValueType(3, "New")).is.undefined;
+        expect(reader.getChangeValueType(4, "New")).is.undefined;
+        expect(reader.getChangeValueType(5, "New")).equals(DbValueType.TextVal);
+        expect(reader.getChangeValueType(6, "New")).is.undefined;
+        expect(reader.getChangeValueType(7, "New")).is.undefined;
+
+        expect(reader.getChangeValueBinary(0, "Old")).deep.equals(new Uint8Array([116, 101, 115, 116]));
+        expect(reader.getChangeValueDouble(0, "Old")).equals(0);
+        expect(reader.getChangeValueId(0, "Old")).equals("0");
+        expect(reader.getChangeValueInteger(0, "Old")).equals(0);
+        expect(reader.getChangeValueText(0, "Old")).equals("test");
+
+        expect(reader.getChangeValueBinary(0, "New")).is.undefined;
+        expect(reader.getChangeValueDouble(0, "New")).is.undefined;
+        expect(reader.getChangeValueId(0, "New")).is.undefined;
+        expect(reader.getChangeValueInteger(0, "New")).is.undefined;
+        expect(reader.getChangeValueText(0, "New")).is.undefined;
+
+        // *** ChangesetConflictArgs API test ***
         expect(arg.tableName).eq("be_Prop");
         expect(arg.cause).eq(DbConflictCause.Data);
         expect(arg.opcode).eq(DbOpcode.Update);
@@ -431,7 +489,7 @@ describe("Changeset conflict handler", () => {
         expect(arg.getPrimaryKeyColumns()).deep.equals([0, 1, 2, 3]);
         expect(arg.columnCount).equals(8);
 
-        // 0 - Namespace
+        // 0 - Namespace (primary key)
         expect(arg.getValueText(0, DbChangeStage.New)).is.undefined;
         expect(arg.getValueText(0, DbChangeStage.Old)).equal("test");
         expect(arg.getValueType(0, DbChangeStage.New)).is.undefined;
@@ -439,7 +497,7 @@ describe("Changeset conflict handler", () => {
         expect(arg.isValueNull(0, DbChangeStage.New)).is.undefined;
         expect(arg.isValueNull(0, DbChangeStage.Old)).is.false;
 
-        // 1 - Name
+        // 1 - Name (primary key)
         expect(arg.getValueText(1, DbChangeStage.New)).is.undefined;
         expect(arg.getValueText(1, DbChangeStage.Old)).equal("test");
         expect(arg.getValueType(1, DbChangeStage.New)).is.undefined;
@@ -447,7 +505,7 @@ describe("Changeset conflict handler", () => {
         expect(arg.isValueNull(1, DbChangeStage.New)).is.undefined;
         expect(arg.isValueNull(1, DbChangeStage.Old)).is.false;
 
-        // 2 - Id
+        // 2 - Id (primary key)
         expect(arg.getValueBinary(2, DbChangeStage.Old)).deep.equal(new Uint8Array([50, 54, 56, 52, 51, 53, 52, 53, 53]));
         expect(arg.getValueId(2, DbChangeStage.New)).is.undefined;
         expect(arg.getValueId(2, DbChangeStage.Old)).equal("0xfffffff");
@@ -460,7 +518,7 @@ describe("Changeset conflict handler", () => {
         expect(arg.isValueNull(2, DbChangeStage.New)).is.undefined;
         expect(arg.isValueNull(2, DbChangeStage.Old)).is.false;
 
-        // 3 - SubId
+        // 3 - SubId (primary key)
         expect(arg.getValueBinary(3, DbChangeStage.Old)).deep.equal(new Uint8Array([52, 54, 54, 48]));
         expect(arg.getValueId(3, DbChangeStage.New)).is.undefined;
         expect(arg.getValueId(3, DbChangeStage.Old)).equal("0x1234");
