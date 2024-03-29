@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./AmbientOcclusion";
 export * from "./AnalysisStyle";
+export * from "./annotation/TextBlock";
 export * from "./annotation/TextStyle";
 export * from "./Atmosphere";
 export * from "./AuthorizationClient";
