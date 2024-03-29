@@ -51,9 +51,11 @@ import { Constructor } from '@itwin/core-bentley';
 import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
+import { DbChangeStage } from '@itwin/core-bentley';
 import { DbConflictCause } from '@itwin/core-bentley';
 import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
+import { DbValueType } from '@itwin/core-bentley';
 import { DefinitionElementProps } from '@itwin/core-common';
 import { DisplayStyle3dProps } from '@itwin/core-common';
 import { DisplayStyle3dSettings } from '@itwin/core-common';
@@ -696,11 +698,29 @@ export interface ChangesetConflictArgs {
     // (undocumented)
     changesetFile?: string;
     // (undocumented)
+    columnCount: number;
+    // (undocumented)
     dump: () => void;
     // (undocumented)
     getForeignKeyConflicts: () => number;
     // (undocumented)
+    getPrimaryKeyColumns: () => number[];
+    // (undocumented)
+    getValueBinary: (columnIndex: number, stage: DbChangeStage) => Uint8Array | null | undefined;
+    // (undocumented)
+    getValueDouble: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
+    // (undocumented)
+    getValueId: (columnIndex: number, stage: DbChangeStage) => Id64String | null | undefined;
+    // (undocumented)
+    getValueInteger: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
+    // (undocumented)
+    getValueText: (columnIndex: number, stage: DbChangeStage) => string | null | undefined;
+    // (undocumented)
+    getValueType: (columnIndex: number, stage: DbChangeStage) => DbValueType | null | undefined;
+    // (undocumented)
     indirect: boolean;
+    // (undocumented)
+    isValueNull: (columnIndex: number, stage: DbChangeStage) => boolean | undefined;
     // (undocumented)
     opcode: DbOpcode;
     // (undocumented)
@@ -5013,11 +5033,19 @@ export class SqliteChangesetReader implements IDisposable {
     get disableSchemaCheck(): boolean;
     dispose(): void;
     getChangeValue(columnIndex: number, stage: SqliteValueStage): SqliteValue_2;
+    getChangeValueBinary(columnIndex: number, stage: SqliteValueStage): Uint8Array | null | undefined;
+    getChangeValueDouble(columnIndex: number, stage: SqliteValueStage): number | null | undefined;
+    getChangeValueId(columnIndex: number, stage: SqliteValueStage): Id64String | null | undefined;
+    getChangeValueInteger(columnIndex: number, stage: SqliteValueStage): number | null | undefined;
     getChangeValuesArray(stage: SqliteValueStage): SqliteValueArray | undefined;
     getChangeValuesObject(stage: SqliteValueStage, args?: ChangeFormatArgs): SqliteChange | undefined;
+    getChangeValueText(columnIndex: number, stage: SqliteValueStage): string | null | undefined;
+    getChangeValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined;
     getColumnNames(tableName: string): string[];
+    getColumnValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined;
     getPrimaryKeyColumnNames(): string[];
     get hasRow(): boolean;
+    isColumnValueNull(columnIndex: number, stage: SqliteValueStage): boolean | undefined;
     get isIndirect(): boolean;
     get op(): SqliteChangeOp;
     static openFile(args: {

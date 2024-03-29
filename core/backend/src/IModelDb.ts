@@ -71,12 +71,12 @@ export interface ChangesetConflictArgs {
   dump: () => void;
   setLastError: (message: string) => void;
   getPrimaryKeyColumns: () => number[];
-  getValueType: (columnIndex: number, stage: DbChangeStage) => DbValueType | undefined;
-  getValueBinary: (columnIndex: number, stage: DbChangeStage) => Uint8Array | undefined;
-  getValueId: (columnIndex: number, stage: DbChangeStage) => Id64String | undefined;
-  getValueText: (columnIndex: number, stage: DbChangeStage) => string | undefined;
-  getValueInteger: (columnIndex: number, stage: DbChangeStage) => number | undefined;
-  getValueDouble: (columnIndex: number, stage: DbChangeStage) => number | undefined;
+  getValueType: (columnIndex: number, stage: DbChangeStage) => DbValueType | null | undefined;
+  getValueBinary: (columnIndex: number, stage: DbChangeStage) => Uint8Array | null | undefined;
+  getValueId: (columnIndex: number, stage: DbChangeStage) => Id64String | null | undefined;
+  getValueText: (columnIndex: number, stage: DbChangeStage) => string | null | undefined;
+  getValueInteger: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
+  getValueDouble: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
   isValueNull: (columnIndex: number, stage: DbChangeStage) => boolean | undefined;
 }
 
