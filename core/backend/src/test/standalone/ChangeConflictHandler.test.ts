@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbConflictCause, DbConflictResolution, DbOpcode, DbResult, Guid, GuidString, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
+import { DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType, Guid, GuidString, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import {
   ElementAspectProps,
+  FilePropertyProps,
   IModel,
   SubCategoryAppearance,
 } from "@itwin/core-common";
@@ -126,20 +127,28 @@ describe("Changeset conflict handler", () => {
       new SubCategoryAppearance({ color: 0xff0000 }),
     );
     b1.saveChanges();
+    b2.saveChanges();
+    b3.saveChanges();
     await b1.pushChanges({ accessToken: accessToken1, description: "" });
   });
 
   afterEach(async () => {
     sinon.restore();
 
-    if (b1.isOpen)
+    if (b1.isOpen) {
+      b1.abandonChanges();
       b1.close();
+    }
 
-    if (b2.isOpen)
+    if (b2.isOpen) {
+      b2.abandonChanges();
       b2.close();
+    }
 
-    if (b3.isOpen)
+    if (b3.isOpen) {
+      b3.abandonChanges();
       b3.close();
+    }
   });
 
   async function spyChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, test: (s: sinon.SinonSpy<ChangesetConflictArgs[], DbConflictResolution>) => void) {
@@ -153,9 +162,18 @@ describe("Changeset conflict handler", () => {
   }
 
   async function stubChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, test: (s: sinon.SinonStub<ChangesetConflictArgs[], DbConflictResolution>) => void) {
-    const s1 = sinon.stub(b, "onChangesetConflict" as any);
+    const s1 = sinon.stub(b as any, "onChangesetConflict" as any);
     try {
       test(s1 as sinon.SinonStub<ChangesetConflictArgs[], DbConflictResolution>);
+      await cb();
+    } finally {
+      s1.restore();
+    }
+  }
+  async function fakeChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, interceptMethod: (arg: ChangesetConflictArgs) => DbConflictResolution | undefined) {
+    const s1 = sinon.stub<ChangesetConflictArgs[], DbConflictResolution>(b as any, "onChangesetConflict" as any);
+    s1.callsFake(interceptMethod);
+    try {
       await cb();
     } finally {
       s1.restore();
@@ -362,6 +380,98 @@ describe("Changeset conflict handler", () => {
         expect(arg1.opcode).eq(DbOpcode.Update);
         expect(arg1.indirect).true;
         expect(arg1.tableName).eq("bis_Model");
+      },
+    );
+  });
+  it.only("DbConflictCause.Data - be_Prop", async () => {
+    insertPhysicalObject(b1);
+    const prop: FilePropertyProps = { namespace: "test", name: "test", id: 0xfffffff, subId: 0x1234 };
+    b1.saveFileProperty(prop, "test");
+    b1.saveChanges();
+    await b1.pushChanges({ accessToken: accessToken1, description: "" });
+
+    await b1.pullChanges();
+    await b2.pullChanges();
+
+    b1.saveFileProperty(prop, "test1");
+    b2.saveFileProperty(prop, "test2");
+
+    b1.saveChanges();
+    b2.saveChanges();
+
+    await spyChangesetConflictHandler(
+      b1,
+      async () => b1.pushChanges({ accessToken: accessToken1, description: "" }),
+      (spy) => expect(spy.callCount).eq(0, "changeset conflict handler should not be called"),
+    );
+
+    // third briefcase while pull will see a fk violation.
+    // await spyChangesetConflictHandler(
+    //   b2,
+    //   async () => assertThrowsAsync(
+    //     async () => b2.pullChanges({ accessToken: accessToken1 }),
+    //     "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered."),
+    //   (spy) => {
+    //     expect(spy.callCount).eq(1);
+    //     expect(spy.alwaysReturned(DbConflictResolution.Abort)).true;
+    //     const arg = spy.args[0][0];
+    //     expect(arg.cause).eq(DbConflictCause.Data);
+    //     expect(arg.opcode).eq(DbOpcode.Update);
+    //     expect(arg.indirect).false;
+    //     expect(arg.tableName).eq("be_Prop");
+    //   },
+    // );
+    await fakeChangesetConflictHandler(
+      b2,
+      async () => b2.pushChanges({ accessToken: accessToken1, description: "" }),
+      (arg: ChangesetConflictArgs) => {
+        expect(arg.tableName).eq("be_Prop");
+        expect(arg.cause).eq(DbConflictCause.Data);
+        expect(arg.opcode).eq(DbOpcode.Update);
+        expect(arg.indirect).false;
+        expect(arg.getPrimaryKeyColumns()).deep.equals([0, 1, 2, 3]);
+        expect(arg.columnCount).equals(8);
+
+        expect(arg.getValueText(0, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueText(0, DbChangeStage.Old)).equal("test");
+        expect(arg.getValueType(0, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueType(0, DbChangeStage.Old)).is.equals(DbValueType.TextVal);
+        expect(arg.isValueNull(0, DbChangeStage.New)).is.undefined;
+        expect(arg.isValueNull(0, DbChangeStage.Old)).is.false;
+
+        expect(arg.getValueText(1, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueText(1, DbChangeStage.Old)).equal("test");
+        expect(arg.getValueType(1, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueType(1, DbChangeStage.Old)).is.equals(DbValueType.TextVal);
+        expect(arg.isValueNull(1, DbChangeStage.New)).is.undefined;
+        expect(arg.isValueNull(1, DbChangeStage.Old)).is.false;
+
+
+        expect(arg.getValueBinary(2, DbChangeStage.Old)).deep.equal([50, 54, 56, 52, 51, 53, 52, 53, 53]);
+        expect(arg.getValueId(2, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueId(2, DbChangeStage.Old)).equal("0xfffffff");
+        expect(arg.getValueInteger(2, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueInteger(2, DbChangeStage.Old)).equal(268435455);
+        expect(arg.getValueText(2, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueText(2, DbChangeStage.Old)).equal("268435455");
+        expect(arg.getValueType(2, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueType(2, DbChangeStage.Old)).is.equals(DbValueType.IntegerVal);
+        expect(arg.isValueNull(2, DbChangeStage.New)).is.undefined;
+        expect(arg.isValueNull(2, DbChangeStage.Old)).is.false;
+
+        expect(arg.getValueBinary(3, DbChangeStage.Old)).deep.equal([52, 54, 54, 48]);
+        expect(arg.getValueId(3, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueId(3, DbChangeStage.Old)).equal("0x1234");
+        expect(arg.getValueInteger(3, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueInteger(3, DbChangeStage.Old)).equal(4660);
+        expect(arg.getValueText(3, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueText(3, DbChangeStage.Old)).equal("4660");
+        expect(arg.getValueType(3, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueType(3, DbChangeStage.Old)).is.equals(DbValueType.IntegerVal);
+        expect(arg.isValueNull(3, DbChangeStage.New)).is.undefined;
+        expect(arg.isValueNull(3, DbChangeStage.Old)).is.false;
+
+        return DbConflictResolution.Skip;
       },
     );
   });

@@ -6,7 +6,7 @@
  * @module SQLiteDb
  */
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { DbOpcode, DbResult, IDisposable } from "@itwin/core-bentley";
+import { DbOpcode, DbResult, DbValueType, Id64String, IDisposable } from "@itwin/core-bentley";
 import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
@@ -189,6 +189,84 @@ export class SqliteChangesetReader implements IDisposable {
   public get tableName(): string {
     return this._nativeReader.getTableName();
   }
+
+  /**
+   * Get changed binary value for a column
+   * @param columnIndex index of column in current change
+   * @param stage old or new value for change.
+   * @returns value for changed column
+   * @beta
+   */
+  public getChangeValueBinary(columnIndex: number, stage: SqliteValueStage): Uint8Array | null | undefined {
+    return this._nativeReader.getColumnValueBinary(columnIndex, stage === "New" ? IModelJsNative.DbChangeStage.New : IModelJsNative.DbChangeStage.Old);
+  }
+
+  /**
+   * Get changed double value for a column
+   * @param columnIndex index of column in current change
+   * @param stage old or new value for change.
+   * @returns value for changed column
+   * @beta
+   */
+  public getChangeValueDouble(columnIndex: number, stage: SqliteValueStage): number | null | undefined {
+    return this._nativeReader.getColumnValueDouble(columnIndex, stage === "New" ? IModelJsNative.DbChangeStage.New : IModelJsNative.DbChangeStage.Old);
+  }
+
+  /**
+   * Get changed Id value for a column
+   * @param columnIndex index of column in current change
+   * @param stage old or new value for change.
+   * @returns value for changed column
+   * @beta
+   */
+  public getChangeValueId(columnIndex: number, stage: SqliteValueStage): Id64String | null | undefined {
+    return this._nativeReader.getColumnValueId(columnIndex, stage === "New" ? IModelJsNative.DbChangeStage.New : IModelJsNative.DbChangeStage.Old);
+  }
+
+  /**
+   * Get changed integer value for a column
+   * @param columnIndex index of column in current change
+   * @param stage old or new value for change.
+   * @returns value for changed column
+   * @beta
+   */
+  public getChangeValueInteger(columnIndex: number, stage: SqliteValueStage): number | null | undefined {
+    return this._nativeReader.getColumnValueInteger(columnIndex, stage === "New" ? IModelJsNative.DbChangeStage.New : IModelJsNative.DbChangeStage.Old);
+  }
+
+  /**
+   * Get changed text value for a column
+   * @param columnIndex index of column in current change
+   * @param stage old or new value for change.
+   * @returns value for changed column
+   * @beta
+   */
+  public getChangeValueText(columnIndex: number, stage: SqliteValueStage): string | null | undefined {
+    return this._nativeReader.getColumnValueText(columnIndex, stage === "New" ? IModelJsNative.DbChangeStage.New : IModelJsNative.DbChangeStage.Old);
+  }
+
+  /**
+   * Check if change value is null
+   * @param columnIndex index of column in current change
+   * @param stage old or new value for change.
+   * @returns true if value is null
+   * @beta
+   */
+  public isColumnValueNull(columnIndex: number, stage: SqliteValueStage): boolean | undefined {
+    return this._nativeReader.isColumnValueNull(columnIndex, stage === "New" ? IModelJsNative.DbChangeStage.New : IModelJsNative.DbChangeStage.Old);
+  }
+
+  /**
+   * Get change value type
+   * @param columnIndex index of column in current change
+   * @param stage old or new value for change.
+   * @returns change value type
+   * @beta
+   */
+  public getColumnValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined {
+    return this._nativeReader.getColumnValueType(columnIndex, stage === "New" ? IModelJsNative.DbChangeStage.New : IModelJsNative.DbChangeStage.Old) as DbValueType | undefined;
+  }
+
   /**
    * Get changed value for a column
    * @param columnIndex index of column in current change

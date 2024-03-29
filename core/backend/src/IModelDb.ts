@@ -11,7 +11,7 @@ import { join } from "path";
 import * as touch from "touch";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
+  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
   IModelStatus, JsonUtils, Logger, LogLevel, OpenMode, UnexpectedErrors,
 } from "@itwin/core-bentley";
 import {
@@ -66,9 +66,18 @@ export interface ChangesetConflictArgs {
   indirect: boolean;
   tableName: string;
   changesetFile?: string;
+  columnCount: number;
   getForeignKeyConflicts: () => number;
   dump: () => void;
   setLastError: (message: string) => void;
+  getPrimaryKeyColumns: () => number[];
+  getValueType: (columnIndex: number, stage: DbChangeStage) => DbValueType | undefined;
+  getValueBinary: (columnIndex: number, stage: DbChangeStage) => Uint8Array | undefined;
+  getValueId: (columnIndex: number, stage: DbChangeStage) => Id64String | undefined;
+  getValueText: (columnIndex: number, stage: DbChangeStage) => string | undefined;
+  getValueInteger: (columnIndex: number, stage: DbChangeStage) => number | undefined;
+  getValueDouble: (columnIndex: number, stage: DbChangeStage) => number | undefined;
+  isValueNull: (columnIndex: number, stage: DbChangeStage) => boolean | undefined;
 }
 
 // spell:ignore fontid fontmap
