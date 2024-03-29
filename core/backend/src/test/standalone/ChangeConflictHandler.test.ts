@@ -405,22 +405,21 @@ describe("Changeset conflict handler", () => {
       (spy) => expect(spy.callCount).eq(0, "changeset conflict handler should not be called"),
     );
 
-    // third briefcase while pull will see a fk violation.
-    // await spyChangesetConflictHandler(
-    //   b2,
-    //   async () => assertThrowsAsync(
-    //     async () => b2.pullChanges({ accessToken: accessToken1 }),
-    //     "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered."),
-    //   (spy) => {
-    //     expect(spy.callCount).eq(1);
-    //     expect(spy.alwaysReturned(DbConflictResolution.Abort)).true;
-    //     const arg = spy.args[0][0];
-    //     expect(arg.cause).eq(DbConflictCause.Data);
-    //     expect(arg.opcode).eq(DbOpcode.Update);
-    //     expect(arg.indirect).false;
-    //     expect(arg.tableName).eq("be_Prop");
-    //   },
-    // );
+    await spyChangesetConflictHandler(
+      b2,
+      async () => assertThrowsAsync(
+        async () => b2.pullChanges({ accessToken: accessToken1 }),
+        "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered."),
+      (spy) => {
+        expect(spy.callCount).eq(1);
+        expect(spy.alwaysReturned(DbConflictResolution.Abort)).true;
+        const arg = spy.args[0][0];
+        expect(arg.cause).eq(DbConflictCause.Data);
+        expect(arg.opcode).eq(DbOpcode.Update);
+        expect(arg.indirect).false;
+        expect(arg.tableName).eq("be_Prop");
+      },
+    );
     await fakeChangesetConflictHandler(
       b2,
       async () => b2.pushChanges({ accessToken: accessToken1, description: "" }),
@@ -432,6 +431,7 @@ describe("Changeset conflict handler", () => {
         expect(arg.getPrimaryKeyColumns()).deep.equals([0, 1, 2, 3]);
         expect(arg.columnCount).equals(8);
 
+        // 0 - Namespace
         expect(arg.getValueText(0, DbChangeStage.New)).is.undefined;
         expect(arg.getValueText(0, DbChangeStage.Old)).equal("test");
         expect(arg.getValueType(0, DbChangeStage.New)).is.undefined;
@@ -439,6 +439,7 @@ describe("Changeset conflict handler", () => {
         expect(arg.isValueNull(0, DbChangeStage.New)).is.undefined;
         expect(arg.isValueNull(0, DbChangeStage.Old)).is.false;
 
+        // 1 - Name
         expect(arg.getValueText(1, DbChangeStage.New)).is.undefined;
         expect(arg.getValueText(1, DbChangeStage.Old)).equal("test");
         expect(arg.getValueType(1, DbChangeStage.New)).is.undefined;
@@ -446,8 +447,8 @@ describe("Changeset conflict handler", () => {
         expect(arg.isValueNull(1, DbChangeStage.New)).is.undefined;
         expect(arg.isValueNull(1, DbChangeStage.Old)).is.false;
 
-
-        expect(arg.getValueBinary(2, DbChangeStage.Old)).deep.equal([50, 54, 56, 52, 51, 53, 52, 53, 53]);
+        // 2 - Id
+        expect(arg.getValueBinary(2, DbChangeStage.Old)).deep.equal(new Uint8Array([50, 54, 56, 52, 51, 53, 52, 53, 53]));
         expect(arg.getValueId(2, DbChangeStage.New)).is.undefined;
         expect(arg.getValueId(2, DbChangeStage.Old)).equal("0xfffffff");
         expect(arg.getValueInteger(2, DbChangeStage.New)).is.undefined;
@@ -459,7 +460,8 @@ describe("Changeset conflict handler", () => {
         expect(arg.isValueNull(2, DbChangeStage.New)).is.undefined;
         expect(arg.isValueNull(2, DbChangeStage.Old)).is.false;
 
-        expect(arg.getValueBinary(3, DbChangeStage.Old)).deep.equal([52, 54, 54, 48]);
+        // 3 - SubId
+        expect(arg.getValueBinary(3, DbChangeStage.Old)).deep.equal(new Uint8Array([52, 54, 54, 48]));
         expect(arg.getValueId(3, DbChangeStage.New)).is.undefined;
         expect(arg.getValueId(3, DbChangeStage.Old)).equal("0x1234");
         expect(arg.getValueInteger(3, DbChangeStage.New)).is.undefined;
@@ -471,7 +473,58 @@ describe("Changeset conflict handler", () => {
         expect(arg.isValueNull(3, DbChangeStage.New)).is.undefined;
         expect(arg.isValueNull(3, DbChangeStage.Old)).is.false;
 
-        return DbConflictResolution.Skip;
+        // 4 - TxnMode
+        expect(arg.getValueBinary(4, DbChangeStage.Old)).undefined;
+        expect(arg.getValueId(4, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueId(4, DbChangeStage.Old)).is.undefined;
+        expect(arg.getValueInteger(4, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueInteger(4, DbChangeStage.Old)).is.undefined;
+        expect(arg.getValueText(4, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueText(4, DbChangeStage.Old)).is.undefined;
+        expect(arg.getValueType(4, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueType(4, DbChangeStage.Old)).is.undefined;
+        expect(arg.isValueNull(4, DbChangeStage.New)).is.undefined;
+        expect(arg.isValueNull(4, DbChangeStage.Old)).is.undefined;
+
+        // 5 - StrData
+        expect(arg.getValueBinary(5, DbChangeStage.Old)).deep.equals(new Uint8Array([116, 101, 115, 116]));
+        expect(arg.getValueBinary(5, DbChangeStage.New)).deep.equals(new Uint8Array([116, 101, 115, 116, 49]));
+        expect(arg.getValueId(5, DbChangeStage.New)).is.equals("0");
+        expect(arg.getValueId(5, DbChangeStage.Old)).is.equals("0");
+        expect(arg.getValueText(5, DbChangeStage.New)).is.equals("test1");
+        expect(arg.getValueText(5, DbChangeStage.Old)).is.equals("test");
+        expect(arg.getValueType(5, DbChangeStage.New)).is.equals(DbValueType.TextVal);
+        expect(arg.getValueType(5, DbChangeStage.Old)).is.equals(DbValueType.TextVal);
+        expect(arg.isValueNull(5, DbChangeStage.New)).is.false;
+        expect(arg.isValueNull(5, DbChangeStage.Old)).is.false;
+
+        //  6 - RawSize
+        expect(arg.getValueBinary(6, DbChangeStage.Old)).undefined;
+        expect(arg.getValueId(6, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueId(6, DbChangeStage.Old)).is.undefined;
+        expect(arg.getValueInteger(6, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueInteger(6, DbChangeStage.Old)).is.undefined;
+        expect(arg.getValueText(6, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueText(6, DbChangeStage.Old)).is.undefined;
+        expect(arg.getValueType(6, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueType(6, DbChangeStage.Old)).is.undefined;
+        expect(arg.isValueNull(6, DbChangeStage.New)).is.undefined;
+        expect(arg.isValueNull(6, DbChangeStage.Old)).is.undefined;
+
+        // 7 - Data
+        expect(arg.getValueBinary(7, DbChangeStage.Old)).undefined;
+        expect(arg.getValueId(7, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueId(7, DbChangeStage.Old)).is.undefined;
+        expect(arg.getValueInteger(7, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueInteger(7, DbChangeStage.Old)).is.undefined;
+        expect(arg.getValueText(7, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueText(7, DbChangeStage.Old)).is.undefined;
+        expect(arg.getValueType(7, DbChangeStage.New)).is.undefined;
+        expect(arg.getValueType(7, DbChangeStage.Old)).is.undefined;
+        expect(arg.isValueNull(7, DbChangeStage.New)).is.undefined;
+        expect(arg.isValueNull(7, DbChangeStage.Old)).is.undefined;
+
+        return DbConflictResolution.Replace;
       },
     );
   });
