@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { type SchemaMergeContext } from "./SchemaMerger";
-import { AnySchemaDifference, AnySchemaItemDifference, AnySchemaItemPathDifference, ClassItemDifference, SchemaDifference, StructClassDifference } from "../Differencing/SchemaDifference";
+import { AnySchemaDifference, AnySchemaItemDifference, AnySchemaItemPathDifference, ClassItemDifference, SchemaDifference, SchemaOtherTypes, StructClassDifference } from "../Differencing/SchemaDifference";
 import { locateSchemaItem, SchemaItemMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
 import { type MutableClass } from "../Editing/Mutable/MutableClass";
 import { CustomAttribute, ECClass, ECClassModifier, parseClassModifier, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
@@ -17,13 +17,25 @@ import { applyCustomAttributes } from "./CustomAttributeMerger";
 
 type ClassItemHandler = <T extends AnySchemaItemDifference | AnySchemaItemPathDifference>(change: T, merger: SchemaItemMergerHandler<T>) => Promise<void>;
 
+
+function isMixinOrConstraint(difference: AnySchemaDifference): boolean {
+  switch (difference.schemaType) {
+    case SchemaOtherTypes.EntityClassMixin:
+    case SchemaOtherTypes.RelationshipConstraint:
+    case SchemaOtherTypes.RelationshipConstraintClass:
+      return true;
+    default:
+      return false;
+  }
+}
+
 /**
  * @internal
  */
 export async function* mergeClassItems(context: SchemaMergeContext, classChanges: AnySchemaDifference[]) {
   // In the first pass all class items will be created as stubs. That only applies to added entities.
   await iterateClassChanges(classChanges, async (change, merger) => {
-    if (change.changeType === "add" && !SchemaDifference.isPathDifference(change) && merger.add) {
+    if (change.changeType === "add" && !isMixinOrConstraint(change) && merger.add) {
       // Make a copy of the change instance, we don't want to alter the actual instance.
       const changeCopy = {
         ...change,
