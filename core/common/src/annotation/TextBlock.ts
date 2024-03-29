@@ -98,23 +98,23 @@ export namespace Run {
   }
 }
 
-export type TextRunShiftMode = "subscript" | "superscript" | "baseline";
+export type BaselineShift = "subscript" | "superscript" | "none";
 
 export interface TextRunProps extends TextBlockComponentProps {
   readonly type: "text";
   content?: string;
-  shiftMode?: TextRunShiftMode;
+  shiftMode?: BaselineShift;
 }
 
 export class TextRun extends TextBlockComponent {
   public readonly type = "text";
   public content: string;
-  public shiftMode: TextRunShiftMode;
+  public shiftMode: BaselineShift;
 
   private constructor(props: Omit<TextRunProps, "type">) {
     super(props);
     this.content = props.content ?? "";
-    this.shiftMode = props.shiftMode ?? "baseline";
+    this.shiftMode = props.shiftMode ?? "none";
   }
 
   public override clone(): TextRun {
