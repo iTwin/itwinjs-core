@@ -20,7 +20,7 @@ export interface ApplyTextStyleOptions {
   /** Controls whether the style should be recursively applied to the [[Paragraph]]s belonging to a [[TextBlock]] and the [[Run]]s belonging to a [[Paragraph]].
    * By default, the style change propagates to child components.
    */
-  dontPropagate?: boolean;
+  preventPropagation?: boolean;
 }
 
 /** The JSON representation of a [[TextBlockComponent]].
@@ -55,6 +55,11 @@ export interface TextBlockStringifyOptions {
   fractionSeparator?: string;
 }
 
+/** Abstract representation of any of the building blocks that make up a [[TextBlock]] document - namely [[Run]]s, [[Paragraph]]s, and [[TextBlock]] itself.
+ * Each component can specify a [[TextStyle]] that formats its contents and optional [[styleOverrides]] to customize that formatting.
+ * @beta
+ * @extensions
+ */
 export abstract class TextBlockComponent {
   private _styleName: string;
   private _styleOverrides: TextStyleSettingsProps;
@@ -65,6 +70,10 @@ export abstract class TextBlockComponent {
     this._styleOverrides = { ...props.styleOverrides };
   }
 
+  /** The name of the [[TextStyle]] that provides the base formatting for the contents of this component.
+   * @note Assigning to this property is equivalent to calling [[applyStyle]] with default [[TextStyleApplyOptions]], which propagates the style change to all of
+   * the components sub-components and clears any [[styleOverrides]].
+   */
   public get styleName(): string {
     return this._styleName;
   }
@@ -73,6 +82,11 @@ export abstract class TextBlockComponent {
     this.applyStyle(styleName);
   }
 
+  /** Deviations in individual properties of the [[TextStyle]] specified by [[styleName]].
+   * For example, if the style uses the "Arial" font, you can override that by settings `styleOverrides.fontName` to "Comic Sans".
+   * @see [[createEffectiveSettings]] to compute a [[TextStyleSettings]] that combines the style's settings with these overrides.
+   * @see [[clearStyleOverrides]] to reset this to an empty object.
+   */
   public get styleOverrides(): TextStyleSettingsProps {
     return this._styleOverrides;
   }
@@ -81,10 +95,12 @@ export abstract class TextBlockComponent {
     this._styleOverrides = { ...overrides };
   }
 
+  /** Reset any [[styleOverrides]] applied to this component's [[TextStyle]]. */
   public clearStyleOverrides(): void {
     this.styleOverrides = { };
   }
 
+  /** Apply the [[TextStyle]] specified by `styleName` to this component, optionally preserving [[styleOverrides]] and/or preventing propagation to sub-components. */
   public applyStyle(styleName: string, options?: ApplyTextStyleOptions): void {
     this._styleName = styleName;
 
@@ -93,18 +109,25 @@ export abstract class TextBlockComponent {
     }
   }
 
+  /** Returns true if [[styleOverrides]] specifies any deviations from this component's base [[TextStyle]]. */
   public get overridesStyle(): boolean {
     return Object.keys(this.styleOverrides).length > 0;
   }
 
+  /** Compute a [[TextStyleSettings]] that combines the settings of the [[TextStyle]] specified by [[styleName]] with any [[styleOverrides]]. */
   public createEffectiveSettings(baseSettings: TextStyleSettings): TextStyleSettings {
     return this.overridesStyle ? baseSettings.clone(this.styleOverrides) : baseSettings;
   }
 
+  /** Create a deep copy of this component. */
   public abstract clone(): TextBlockComponent;
 
+  /** Compute a string representation of the contents of this component and all of its sub-components.
+   * ###TODO link to TextBlockLayout for doing actual layout, once that's available.
+   */
   public abstract stringify(options?: TextBlockStringifyOptions): string;
   
+  /** Convert this component to its JSON representation. */
   public toJSON(): TextBlockComponentProps {
     return {
       styleName: this.styleName,
@@ -113,10 +136,28 @@ export abstract class TextBlockComponent {
   }
 }
   
+/** @beta
+ * @extensions
+ */
 export type Run = TextRun | FractionRun | LineBreakRun;
+
+/** The JSON representation of a [[Run]].
+ * Use the `type` field to discriminate between the different kinds of runs.
+ * @beta
+ * @extensions
+ */
 export type RunProps = TextRunProps | FractionRunProps | LineBreakRunProps;
 
+/** A sequence of characters within a [[Paragraph]] that share a single style. Runs are the leaf nodes of a [[TextBlock]] document. When laid out for display, a single run may span
+ * multiple lines, but it will never contain different styling.
+ * Use the `type` field to discriminate between the different kinds of runs.
+ * @beta
+ * @extensions
+ */
 export namespace Run {
+  /** Create a run from its JSON representation.
+   * @see [[TextRun.create]], [[FractionRun.create]], and [[LineBreakRun.create]] to create a run directly.
+   */
   export function fromJSON(props: RunProps): Run {
     switch (props.type) {
       case "text": return TextRun.create(props);
@@ -126,17 +167,41 @@ export namespace Run {
   }
 }
 
+/** Describes whether the characters of a [[TextRun]] should be displayed normally, in subscript, or in superscript.
+ * [[TextStyleSettings.superScriptScale]], [[TextStyleSettings.subScriptScale]], [[TextStyleSettings.superScriptOffsetFactor]], and [[TextStyleSettings.subScriptOffsetFactor]]
+ * affect how the content is rendered.
+ * @beta
+ * @extensions
+ */
 export type BaselineShift = "subscript" | "superscript" | "none";
 
+/** JSON representation of a [[TextRun]].
+ * @beta
+ * @extensions
+ */
 export interface TextRunProps extends TextBlockComponentProps {
+  /** Discriminator field for the [[RunProps]] union. */
   readonly type: "text";
+  /** The characters displayed by the run.
+   * Default: an empty string.
+   */
   content?: string;
+  /** Whether to display [[content]] as a subscript, superscript, or normally.
+   * Default: "none"
+   */
   shiftMode?: BaselineShift;
 }
 
+/** The most common type of [[Run]], containing a sequence of characters to be displayed using a single style.
+ * @beta
+ * @extensions
+ */
 export class TextRun extends TextBlockComponent {
+  /** Discriminator field for the [[Run]] union. */
   public readonly type = "text";
+  /** The sequence of characters to be displayed by the run. */
   public content: string;
+  /** Whether to display [[content]] as a subscript, superscript, or normally. */
   public shiftMode: BaselineShift;
 
   private constructor(props: Omit<TextRunProps, "type">) {
@@ -162,20 +227,36 @@ export class TextRun extends TextBlockComponent {
     return new TextRun(props);
   }
 
+  /** Simply returns [[content]]. */
   public override stringify(): string {
     return this.content;
   }
 }
 
+/** JSON representation of a [[FractionRun]].
+ * @beta
+ * @extensions
+ */
 export interface FractionRunProps extends TextBlockComponentProps {
+  /** Discriminator field for the [[RunProps]] union. */
   readonly type: "fraction";
+  /** The fraction's numerator. Default: an empty string. */
   numerator?: string;
+  /** The fraction's denominator. Default: an empty string. */
   denominator?: string;
 }
 
+/** A [[Run]] containing a numeric ratio to be displayed as a numerator and denominator separated by a horizontal or diagonal bar.
+ * @note The [[numerator]] and [[denominator]] are stored as strings. They are not technically required to contain a numeric representation.
+ * @beta
+ * @extensions
+ */
 export class FractionRun extends TextBlockComponent {
+  /** Discriminator field for the [[Run]] union. */
   public readonly type = "fraction";
+  /** The fraction's numerator. */
   public numerator: string;
+  /** The fraction's denominator. */
   public denominator: string;
   
   private constructor(props: Omit<FractionRunProps, "type">) {
@@ -201,17 +282,28 @@ export class FractionRun extends TextBlockComponent {
     return new FractionRun(props);
   }
 
+  /** Formats the fraction as a string with the [[numerator]] and [[denominator]] separated by [[TextBlockStringifyOptions.fractionSeparator]]. */
   public override stringify(options?: TextBlockStringifyOptions): string {
     const sep = options?.fractionSeparator ?? "/";
     return `${this.numerator}${sep}${this.denominator}`;
   }
 }
 
+/** JSON representation of a [[LineBreakRun]].
+ * @beta
+ * @extensions
+ */
 export interface LineBreakRunProps extends TextBlockComponentProps {
+  /** Discriminator field for the [[RunProps]] union. */
   readonly type: "linebreak";
 }
 
+/** A [[Run]] that represents the end of a line of text within a [[Paragraph]]. It contains no content of its own - it simply causes subsequent content to display on a new line.
+ * @beta
+ * @extensions
+ */
 export class LineBreakRun extends TextBlockComponent {
+  /** Discriminator field for the [[Run]] union. */
   public readonly type = "linebreak";
 
   private constructor(props: TextBlockComponentProps) {
@@ -233,20 +325,24 @@ export class LineBreakRun extends TextBlockComponent {
     return new LineBreakRun(this.toJSON());
   }
 
+  /** Simply returns [[TextBlockStringifyOptions.lineBreak]]. */
   public override stringify(options?: TextBlockStringifyOptions): string {
     return options?.lineBreak ?? " ";
   }
 }
 
+/** JSON representation of a [[Paragraph]].
+ * @beta
+ * @extensions
+ */
 export interface ParagraphProps extends TextBlockComponentProps {
-  readonly type: "paragraph";
   runs?: RunProps[];
 }
 
 export class Paragraph extends TextBlockComponent {
   public readonly runs: Run[];
 
-  private constructor(props: Omit<ParagraphProps, "type">) {
+  private constructor(props: ParagraphProps) {
     super(props);
     this.runs = props.runs?.map((run) => Run.fromJSON(run)) ?? [];
   }
@@ -254,12 +350,11 @@ export class Paragraph extends TextBlockComponent {
   public override toJSON(): ParagraphProps {
     return {
       ...super.toJSON(),
-      type: "paragraph",
       runs: this.runs.map((run) => run.toJSON()),
     };
   }
 
-  public static create(props: Omit<ParagraphProps, "type">): Paragraph {
+  public static create(props: ParagraphProps): Paragraph {
     return new Paragraph(props);
   }
 
@@ -269,7 +364,7 @@ export class Paragraph extends TextBlockComponent {
 
   public override applyStyle(styleName: string, options?: ApplyTextStyleOptions): void {
     super.applyStyle(styleName, options);
-    if (!(options?.dontPropagate)) {
+    if (!(options?.preventPropagation)) {
       for (const run of this.runs) {
         run.applyStyle(styleName, options);
       }
@@ -284,7 +379,6 @@ export class Paragraph extends TextBlockComponent {
 export type TextBlockJustification = "left" | "center" | "right";
 
 export interface TextBlockProps extends TextBlockComponentProps {
-  readonly type: "block";
   /** Default: 0 */
   width?: number;
   /** Default: "left" */
@@ -297,7 +391,7 @@ export class TextBlock extends TextBlockComponent {
   public justification: TextBlockJustification;
   public readonly paragraphs: Paragraph[];
 
-  private constructor(props: Omit<TextBlockProps, "type">) {
+  private constructor(props: TextBlockProps) {
     super(props);
     this.width = props.width ?? 0;
     this.justification = props.justification ?? "left";
@@ -307,14 +401,13 @@ export class TextBlock extends TextBlockComponent {
   public override toJSON(): TextBlockProps {
     return {
       ...super.toJSON(),
-      type: "block",
       width: this.width,
       justification: this.justification,
       paragraphs: this.paragraphs.map((x) => x.toJSON()),
     };
   }
 
-  public static create(props: Omit<TextBlockProps, "type">): TextBlock {
+  public static create(props: TextBlockProps): TextBlock {
     return new TextBlock(props);
   }
 
@@ -324,7 +417,7 @@ export class TextBlock extends TextBlockComponent {
 
   public override applyStyle(styleName: string, options?: ApplyTextStyleOptions): void {
     super.applyStyle(styleName, options);
-    if (!(options?.dontPropagate)) {
+    if (!(options?.preventPropagation)) {
       for (const paragraph of this.paragraphs) {
         paragraph.applyStyle(styleName, options);
       }
