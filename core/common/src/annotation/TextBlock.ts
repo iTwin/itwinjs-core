@@ -8,22 +8,50 @@
 
 import { TextStyle, TextStyleSettingsProps } from "./TextStyle";
 
+/** Options supplied to [[TextBlockComponent.applyStyle]] to control how the style is applied to the component and its child components.
+ * @beta
+ * @extensions
+ */
 export interface ApplyTextStyleOptions {
+  /** Controls whether any deviations from the style's settings stored in [[TextBlockComponent.styleOverrides]] are retained.
+   * By default, all overrides are cleared.
+   */
   preserveOverrides?: boolean;
+  /** Controls whether the style should be recursively applied to the [[Paragraph]]s belonging to a [[TextBlock]] and the [[Run]]s belonging to a [[Paragraph]].
+   * By default, the style change propagates to child components.
+   */
   dontPropagate?: boolean;
 }
 
+/** The JSON representation of a [[TextBlockComponent]].
+ * @beta
+ * @extensions
+ */
 export interface TextBlockComponentProps {
+  /** The name of a [[TextStyle]] stored in a [Worksapce]($backend) from which the base [[TextStyleSettings]] applied to the component originates. */
   styleName: string;
+  /** Deviations from the base [[TextStyleSettings]] defined by the [[TextStyle]] applied to this component.
+   * This permits you to, e.g., create a [[TextRun]] using "Arial" font and override it to use "Comic Sans" instead.
+   */
   styleOverrides?: TextStyleSettingsProps;
 }
 
+/** Options supplied to [[TextBlockComponent.stringify]] to control how the content is formatted.
+ * @beta
+ * @extensions
+ */
 export interface TextBlockStringifyOptions {
-  /** Default: " " */
+  /** A string to insert in between each [[Paragraph]].
+   * Default: " " - a single space.
+   */
   paragraphBreak?: string;
-  /** Default: " " */
+  /** A string to insert for each [[LineBreakRun]].
+   * Default: " " - a single space.
+   */
   lineBreak?: string;
-  /** Default: "/" */
+  /** A string to insert between the numerator and denominator of each [[FractionRun]].
+   * Default: "/"
+   */
   fractionSeparator?: string;
 }
 
