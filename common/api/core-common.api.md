@@ -247,6 +247,12 @@ export interface AppearanceOverrideProps {
     overrideType?: FeatureOverrideType;
 }
 
+// @beta
+export interface ApplyTextStyleOptions {
+    preserveOverrides?: boolean;
+    preventPropagation?: boolean;
+}
+
 // @public
 export interface AreaFillProps {
     backgroundFill?: BackgroundFill;
@@ -576,6 +582,9 @@ export type BaseLayerSettings = BaseMapLayerSettings | ColorDef;
 export namespace BaseLayerSettings {
     export function fromJSON(props: BaseLayerProps): BaseLayerSettings;
 }
+
+// @beta
+export type BaselineShift = "subscript" | "superscript" | "none";
 
 // @public
 export interface BaseMapLayerProps extends ImageMapLayerProps {
@@ -3358,6 +3367,27 @@ export interface FormDataCommon {
     append(name: string, value: string | Blob | BackendBuffer, fileName?: string): void;
 }
 
+// @beta
+export class FractionRun extends TextBlockComponent {
+    // (undocumented)
+    clone(): FractionRun;
+    // (undocumented)
+    static create(props: Omit<FractionRunProps, "type">): FractionRun;
+    denominator: string;
+    numerator: string;
+    stringify(options?: TextBlockStringifyOptions): string;
+    // (undocumented)
+    toJSON(): FractionRunProps;
+    readonly type = "fraction";
+}
+
+// @beta
+export interface FractionRunProps extends TextBlockComponentProps {
+    denominator?: string;
+    numerator?: string;
+    readonly type: "fraction";
+}
+
 // @public
 export class FresnelSettings {
     clone(changedProps?: FresnelSettingsProps): FresnelSettings;
@@ -5344,6 +5374,23 @@ export interface LightSettingsProps {
     specularIntensity?: number;
 }
 
+// @beta
+export class LineBreakRun extends TextBlockComponent {
+    // (undocumented)
+    clone(): LineBreakRun;
+    // (undocumented)
+    static create(props: TextBlockComponentProps): LineBreakRun;
+    stringify(options?: TextBlockStringifyOptions): string;
+    // (undocumented)
+    toJSON(): LineBreakRunProps;
+    readonly type = "linebreak";
+}
+
+// @beta
+export interface LineBreakRunProps extends TextBlockComponentProps {
+    readonly type: "linebreak";
+}
+
 // @public
 export enum LinePixels {
     Code0 = 0,
@@ -6372,6 +6419,24 @@ export class PackedFeatureTable implements RenderFeatureTable {
 export interface PackedFeatureWithIndex extends PackedFeature {
     // (undocumented)
     index: number;
+}
+
+// @beta
+export class Paragraph extends TextBlockComponent {
+    applyStyle(styleName: string, options?: ApplyTextStyleOptions): void;
+    // (undocumented)
+    clone(): Paragraph;
+    // (undocumented)
+    static create(props: ParagraphProps): Paragraph;
+    readonly runs: Run[];
+    stringify(options?: TextBlockStringifyOptions): string;
+    // (undocumented)
+    toJSON(): ParagraphProps;
+}
+
+// @beta
+export interface ParagraphProps extends TextBlockComponentProps {
+    runs?: RunProps[];
 }
 
 // @internal
@@ -8678,6 +8743,17 @@ export class RpcSessionInvocation extends RpcInvocation {
     get rejected(): boolean;
 }
 
+// @beta (undocumented)
+export type Run = TextRun | FractionRun | LineBreakRun;
+
+// @beta
+export namespace Run {
+    export function fromJSON(props: RunProps): Run;
+}
+
+// @beta
+export type RunProps = TextRunProps | FractionRunProps | LineBreakRunProps;
+
 // @beta
 export enum SchemaState {
     TooNew = 4,
@@ -9173,6 +9249,9 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
     modelSelectorId: ViewIdString;
 }
 
+// @beta
+export type StackedFractionType = "horizontal" | "diagonal";
+
 // @public
 export type StandaloneOpenOptions = OpenDbKey;
 
@@ -9355,6 +9434,84 @@ export class TestRpcManager {
     static initialize(interfaces: RpcInterfaceDefinition[]): void;
 }
 
+// @beta
+export class TextBlock extends TextBlockComponent {
+    appendParagraph(): Paragraph;
+    appendRun(run: Run): void;
+    applyStyle(styleName: string, options?: ApplyTextStyleOptions): void;
+    // (undocumented)
+    clone(): TextBlock;
+    // (undocumented)
+    static create(props: TextBlockProps): TextBlock;
+    justification: TextBlockJustification;
+    readonly paragraphs: Paragraph[];
+    stringify(options?: TextBlockStringifyOptions): string;
+    // (undocumented)
+    toJSON(): TextBlockProps;
+    width: number;
+}
+
+// @beta
+export abstract class TextBlockComponent {
+    // @internal
+    protected constructor(props: TextBlockComponentProps);
+    applyStyle(styleName: string, options?: ApplyTextStyleOptions): void;
+    clearStyleOverrides(): void;
+    abstract clone(): TextBlockComponent;
+    createEffectiveSettings(baseSettings: TextStyleSettings): TextStyleSettings;
+    get overridesStyle(): boolean;
+    abstract stringify(options?: TextBlockStringifyOptions): string;
+    get styleName(): string;
+    set styleName(styleName: string);
+    get styleOverrides(): TextStyleSettingsProps;
+    set styleOverrides(overrides: TextStyleSettingsProps);
+    toJSON(): TextBlockComponentProps;
+}
+
+// @beta
+export interface TextBlockComponentProps {
+    styleName: string;
+    styleOverrides?: TextStyleSettingsProps;
+}
+
+// @beta
+export type TextBlockJustification = "left" | "center" | "right";
+
+// @beta
+export interface TextBlockProps extends TextBlockComponentProps {
+    justification?: TextBlockJustification;
+    paragraphs?: ParagraphProps[];
+    width?: number;
+}
+
+// @beta
+export interface TextBlockStringifyOptions {
+    fractionSeparator?: string;
+    lineBreak?: string;
+    paragraphBreak?: string;
+}
+
+// @beta
+export class TextRun extends TextBlockComponent {
+    // (undocumented)
+    clone(): TextRun;
+    content: string;
+    // (undocumented)
+    static create(props: Omit<TextRunProps, "type">): TextRun;
+    shiftMode: BaselineShift;
+    stringify(): string;
+    // (undocumented)
+    toJSON(): TextRunProps;
+    readonly type = "text";
+}
+
+// @beta
+export interface TextRunProps extends TextBlockComponentProps {
+    content?: string;
+    shiftMode?: BaselineShift;
+    readonly type: "text";
+}
+
 // @public
 export class TextString {
     constructor(props: TextStringProps);
@@ -9407,6 +9564,80 @@ export interface TextStringProps {
     text: string;
     underline?: boolean;
     // (undocumented)
+    widthFactor?: number;
+}
+
+// @beta
+export class TextStyle {
+    clone(alteredSettings: TextStyleSettingsProps): TextStyle;
+    static create(name: string, settings: TextStyleSettings): TextStyle;
+    static fromJSON(json: TextStyleProps): TextStyle;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly settings: TextStyleSettings;
+}
+
+// @beta
+export type TextStyleColor = ColorDefProps | "subcategory";
+
+// @beta
+export interface TextStyleProps {
+    name: string;
+    settings?: TextStyleSettingsProps;
+}
+
+// @beta
+export class TextStyleSettings {
+    clone(alteredProps?: TextStyleSettingsProps): TextStyleSettings;
+    // (undocumented)
+    readonly color: TextStyleColor;
+    static defaultProps: Readonly<Required<TextStyleSettingsProps>>;
+    static defaults: TextStyleSettings;
+    // (undocumented)
+    readonly fontName: string;
+    static fromJSON(props?: TextStyleSettingsProps): TextStyleSettings;
+    // (undocumented)
+    readonly height: number;
+    // (undocumented)
+    readonly isBold: boolean;
+    // (undocumented)
+    readonly isItalic: boolean;
+    // (undocumented)
+    readonly isUnderlined: boolean;
+    // (undocumented)
+    readonly lineSpacingFactor: number;
+    // (undocumented)
+    readonly stackedFractionScale: number;
+    // (undocumented)
+    readonly stackedFractionType: StackedFractionType;
+    // (undocumented)
+    readonly subScriptOffsetFactor: number;
+    // (undocumented)
+    readonly subScriptScale: number;
+    // (undocumented)
+    readonly superScriptOffsetFactor: number;
+    // (undocumented)
+    readonly superScriptScale: number;
+    // (undocumented)
+    readonly widthFactor: number;
+}
+
+// @beta
+export interface TextStyleSettingsProps {
+    color?: TextStyleColor;
+    fontName?: string;
+    height?: number;
+    isBold?: boolean;
+    isItalic?: boolean;
+    isUnderlined?: boolean;
+    lineSpacingFactor?: number;
+    stackedFractionScale?: number;
+    stackedFractionType?: StackedFractionType;
+    subScriptOffsetFactor?: number;
+    subScriptScale?: number;
+    superScriptOffsetFactor?: number;
+    superScriptScale?: number;
     widthFactor?: number;
 }
 

@@ -11,6 +11,7 @@ import { ColorDefProps } from "../ColorDef";
 /** Specifies how to separate the numerator and denominator of a [[FractionRun]], by either a horizontal or diagonal bar.
  * @see [[TextStyleSettingsProps.stackedFractionType]] and [[TextStyleSettings.stackedFractionType]].
  * @beta
+ * @preview
  * @extensions
  */
 export type StackedFractionType = "horizontal" | "diagonal";
@@ -19,12 +20,14 @@ export type StackedFractionType = "horizontal" | "diagonal";
  * "subcategory" indicates that the text should be drawn using the color of the [SubCategory]($backend) specified by the [GeometryStream]($docs/learning/common/GeometryStream.md) hosting the
  * text.
  * @beta
+ * @preview
  * @extensions
  */
 export type TextStyleColor = ColorDefProps | "subcategory";
 
 /** Serves both as the JSON representation of a [[TextStyleSettings]], and a way for a [[TextBlockComponent]] to selectively override aspects of a [[TextStyle]]'s properties.
  * @beta
+ * @preview
  * @extensions
  */
 export interface TextStyleSettingsProps {
@@ -77,6 +80,7 @@ export interface TextStyleSettingsProps {
  * @note This is an immutable type. Use [[clone]] to create a modified copy.
  * @see [[TextStyleSettingsProps]] for documentation of each of the settings.
  * @beta
+ * @preview
  * @extensions
  */
 export class TextStyleSettings {
@@ -153,6 +157,7 @@ Object.freeze(TextStyleSettings.defaults);
 
 /** The JSON representation of a [[TextStyle]].
  * @beta
+ * @preview
  * @extensions
  */
 export interface TextStyleProps {
@@ -165,6 +170,7 @@ export interface TextStyleProps {
 /** ###TODO
  * @note This is an immutable type. Use [[clone]] to create a modified copy.
  * @beta
+ * @preview
  * @extensions
  */
 export class TextStyle {
