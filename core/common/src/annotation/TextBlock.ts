@@ -6,7 +6,7 @@
  * @module Annotation
  */
 
-import { TextStyle, TextStyleSettingsProps } from "./TextStyle";
+import { TextStyle, TextStyleSettings, TextStyleSettingsProps } from "./TextStyle";
 
 /** Options supplied to [[TextBlockComponent.applyStyle]] to control how the style is applied to the component and its child components.
  * @beta
@@ -97,8 +97,8 @@ export abstract class TextBlockComponent {
     return Object.keys(this.styleOverrides).length > 0;
   }
 
-  public createEffectiveStyle(baseStyle: TextStyle): TextStyle {
-    return this.overridesStyle ? baseStyle.clone(this.styleOverrides) : baseStyle;
+  public createEffectiveSettings(baseSettings: TextStyleSettings): TextStyleSettings {
+    return this.overridesStyle ? baseSettings.clone(this.styleOverrides) : baseSettings;
   }
 
   public abstract clone(): TextBlockComponent;
