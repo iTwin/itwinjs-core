@@ -8,7 +8,7 @@ import * as path from "path";
 import { CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeHost, SnapshotDb, StandaloneDb, ViewStore } from "@itwin/core-backend";
 import { V1CheckpointManager } from "@itwin/core-backend/lib/cjs/CheckpointManager";
 import { IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
-import { TestRpcInterface } from "../common/RpcInterfaces";
+import { AzuriteUsers, TestRpcInterface } from "../common/RpcInterfaces";
 import { AzuriteTest } from "./AzuriteTest";
 import { OpenMode } from "@itwin/core-bentley";
 
@@ -57,7 +57,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface { // e
     nock.cleanAll();
   }
 
-  public async startViewStore(): Promise<void> {
+  public async startViewStore(): Promise<AzuriteUsers> {
     saveAuthClient = IModelHost.authorizationClient as AzuriteTest.AuthorizationClient;
     IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
     AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
@@ -68,6 +68,8 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface { // e
       db.views.saveDefaultViewStore({ baseUri: AzuriteTest.baseUri, containerId: viewContainer, storageType });
       db.close();
     });
+    AzuriteTest.userToken = "";
+    return AzuriteTest.service.userToken;
   }
   public async stopViewStore(): Promise<void> {
     removeViewStore?.();

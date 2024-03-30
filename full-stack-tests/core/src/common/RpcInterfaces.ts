@@ -2,12 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { GuidString } from "@itwin/core-bentley";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
 import {
   DevToolsRpcInterface, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterface, RpcManager, SnapshotIModelRpcInterface,
   WipRpcInterface,
 } from "@itwin/core-common";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
+
+export interface AzuriteUsers {
+  admin: AccessToken;
+  readOnly: AccessToken;
+  readWrite: AccessToken;
+}
 
 export abstract class TestRpcInterface extends RpcInterface {
   public static readonly interfaceName = "TestRpcInterface";
@@ -34,7 +40,7 @@ export abstract class TestRpcInterface extends RpcInterface {
   public async endOfflineScope(): Promise<void> {
     return this.forward(arguments);
   }
-  public async startViewStore(): Promise<void> {
+  public async startViewStore(): Promise<AzuriteUsers> {
     return this.forward(arguments);
   }
   public async stopViewStore(): Promise<void> {
