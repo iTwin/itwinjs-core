@@ -336,10 +336,18 @@ export class LineBreakRun extends TextBlockComponent {
  * @extensions
  */
 export interface ParagraphProps extends TextBlockComponentProps {
+  /** The collection of [[Run]]s within the paragraph.
+   * Default: an empty array.
+   */
   runs?: RunProps[];
 }
 
+/** A collection of [[Run]]s within a [[TextBlock]]. Each paragraph within a text block is laid out on a separate line.
+ * @beta
+ * @extensions
+ */
 export class Paragraph extends TextBlockComponent {
+  /** The runs within the paragraph. You can modify the contents of this array to change the content of the paragraph. */
   public readonly runs: Run[];
 
   private constructor(props: ParagraphProps) {
@@ -362,6 +370,7 @@ export class Paragraph extends TextBlockComponent {
     return new Paragraph(this.toJSON());
   }
 
+  /** Apply the specified style to this [[Paragraph]], and - unless [[ApplyTextStyleOptions.preventPropagation]] is `true` - to all of its [[runs]]. */
   public override applyStyle(styleName: string, options?: ApplyTextStyleOptions): void {
     super.applyStyle(styleName, options);
     if (!(options?.preventPropagation)) {
@@ -371,24 +380,46 @@ export class Paragraph extends TextBlockComponent {
     }
   }
 
+  /** Compute a string representation of this paragraph by concatenating the string representations of all of its [[runs]]. */
   public override stringify(options?: TextBlockStringifyOptions): string {
     return this.runs.map((x) => x.stringify(options)).join("");
   }
 }
 
+/** Describes the relative alignment of the content of a [[TextBlock]].
+ * @beta
+ * @extensions
+ */
 export type TextBlockJustification = "left" | "center" | "right";
 
+/** JSON representation of a [[TextBlock]].
+ * @beta
+ * @extensions
+ */
 export interface TextBlockProps extends TextBlockComponentProps {
-  /** Default: 0 */
+  /** Default: 0
+   * ###TODO Units???
+   */
   width?: number;
-  /** Default: "left" */
+  /** The alignment of the document content. Default: "left". */
   justification?: TextBlockJustification;
+  /** The paragraphs within the text block. Default: an empty array. */
   paragraphs?: ParagraphProps[];
 }
 
+/** Represents a formatted text document consisting of a series of [[Paragraph]]s, each laid out on a separate line and containing their own content in the form of [[Run]]s.
+ * You can change the content of the document by directly modifying the contents of its [[paragraphs]], or via [[appendParagraph]] and [[appendRun]].
+ * No word-wrapping is applied to the document unless a [[width]] greater than zero is specified.
+ * ###TODO link to layout and persistence APIs once they become available.
+ * @beta
+ * @extensions
+ */
 export class TextBlock extends TextBlockComponent {
+  /** ###TODO units? */
   public width: number;
+  /** The alignment of the document's content. */
   public justification: TextBlockJustification;
+  /** The ordered list of paragraphs within the document. */
   public readonly paragraphs: Paragraph[];
 
   private constructor(props: TextBlockProps) {
@@ -415,6 +446,7 @@ export class TextBlock extends TextBlockComponent {
     return new TextBlock(this.toJSON());
   }
 
+  /** Apply the specified style to this block and - unless [[ApplyTextStyleOptions.preventPropagation]] is `true` - to all of its [[paragraphs]]. */
   public override applyStyle(styleName: string, options?: ApplyTextStyleOptions): void {
     super.applyStyle(styleName, options);
     if (!(options?.preventPropagation)) {
@@ -424,10 +456,15 @@ export class TextBlock extends TextBlockComponent {
     }
   }
   
+  /** Compute a string representation of the document's contents by concatenating the string representations of each of its [[paragraphs]], separated by [[TextBlockStringifyOptions.paragraphBreak]]. */
   public stringify(options?: TextBlockStringifyOptions): string {
     return this.paragraphs.map((x) => x.stringify(options)).join(options?.paragraphBreak ?? " ");
   }
 
+  /** Add and return a new paragraph.
+   * If [[paragraphs]] is not empty, the style and overrides of the last [[Paragraph]] in the block will be applied to the new paragraph; otherwise,
+   * the paragraph will inherit this block's style with no overrides.
+   */
   public appendParagraph(): Paragraph {
     const seed = this.paragraphs[0];
     const paragraph = Paragraph.create({
@@ -439,6 +476,9 @@ export class TextBlock extends TextBlockComponent {
     return paragraph;
   }
 
+  /** Append a run to the last [[Paragraph]] in this block.
+   * If the block contains no [[paragraphs]], a new one will first be created using [[appendParagraph]].
+   */
   public appendRun(run: Run): void {
     const paragraph = this.paragraphs[this.paragraphs.length - 1] ?? this.appendParagraph();
     paragraph.runs.push(run);
