@@ -39,6 +39,7 @@ export interface TextStyleSettingsProps {
    * Default: "" (an invalid font name).
    * @note Font names must be unique within a workspace. Uniqueness is semi-case-insensitive per [SQLite's NOCASE collating function](https://www.sqlite.org/datatype3.html#collating_sequences): namely,
    * the letters A through Z are compared without regard to case, so that "Arial", "arial", and "ARiaL" all refer to the same font.
+   * ###TODO obtain clarity on collation rules.
    */
   fontName?: string;
   /** Default: 1.0 */
