@@ -42,9 +42,15 @@ export interface TextStyleSettingsProps {
    * ###TODO obtain clarity on collation rules.
    */
   fontName?: string;
-  /** Default: 1.0 */
-  height?: number;
-  /** Default: 0.5 */
+  /** The height each line of text, in meters. Many other settings use the line height as the basis for computing their own values.
+   * For example, the height and offset from baseline of a subscript [[TextRun]]  are compuated as lineHeight * [[subScriptScale]] and
+   * lineHeight * [[subScriptOffsetFactor]], respectively.
+   * Default: 1.0. */
+  lineHeight?: number;
+  /** Multiplier used to compute the vertical distance between two lines of text.
+   * The distance is computed in meters as lineSpacingFactor * [[lineHeight]].
+   * Default: 0.5.
+   */
   lineSpacingFactor?: number;
   /** Specifies whether the content of a [[TextRun]] should be rendered **bold**.
    * Default: false.
@@ -58,21 +64,40 @@ export interface TextStyleSettingsProps {
    * Default: false.
    */
   isUnderlined?: boolean;
-  /** Default: 0.7 */
+  /** Multiplier used to compute the height of both the numerator and denominator of a [[FractionRun]].
+   * The height is computed in meters as stackedFractionScale * [[lineHeight]].
+   * Default: 0.7.
+   */
   stackedFractionScale?: number;
   /** Specifies how to separate the numerator and denominator of a [[FractionRun]].
    * Default: "horizontal".
    */
   stackedFractionType?: StackedFractionType;
-  /** Default: -0.15 */
+  /** Multiplier used to compute the vertical offset from the baseline for a subscript [[TextRun]].
+   * The offset is computed in meters as subScriptOffsetFactor * [[lineHeight]].
+   * Default: -0.15.
+   */
   subScriptOffsetFactor?: number;
-  /** Default: 2/3 */
+  /** Multiplier used to compute the height of a subscript [[TextRun]].
+   * The height is computed as subScriptScale * [[lineHeight]].
+   * Default: 2/3
+   */
   subScriptScale?: number;
-  /** Default: 0.5 */
+  /** Multiplier used to compute the vertical offset from the baseline for a super [[TextRun]].
+   * The offset is computed in meters as superScriptOffsetFactor * [[lineHeight]].
+   * Default: -0.5.
+   */
   superScriptOffsetFactor?: number;
-  /** Default: 2/3 */
+  /** Multiplier used to compute the height of a superscript [[TextRun]].
+   * The height is computed as superScriptScale * [[lineHeight]].
+   * Default: 2/3
+   */
   superScriptScale?: number;
-  /** Default: 1.0 */
+  /** Multiplier used to compute the width of each glyph.
+   * The width in meters is computed as widthFactor * [[lineHeight]].
+   * ###TODO Obtain clarity.
+   * Default: 1.0
+   */
   widthFactor?: number;
 }
 
@@ -85,26 +110,62 @@ export interface TextStyleSettingsProps {
  * @extensions
  */
 export class TextStyleSettings {
-  public readonly color: TextStyleColor;
-  public readonly fontName: string;
-  public readonly height: number;
-  public readonly lineSpacingFactor: number;
-  public readonly isBold: boolean;
-  public readonly isItalic: boolean;
-  public readonly isUnderlined: boolean;
-  public readonly stackedFractionScale: number;
-  public readonly stackedFractionType: StackedFractionType;
-  public readonly subScriptOffsetFactor: number;
-  public readonly subScriptScale: number;
-  public readonly superScriptOffsetFactor: number;
-  public readonly superScriptScale: number;
-  public readonly widthFactor: number;
+  /** The color of the text. */
+  color: TextStyleColor;
+  /** The name of a font stored in a [Workspace]($backend), used to draw the contents of a [[TextRun]].
+   * @note Font names must be unique within a workspace. Uniqueness is semi-case-insensitive per [SQLite's NOCASE collating function](https://www.sqlite.org/datatype3.html#collating_sequences): namely,
+   * the letters A through Z are compared without regard to case, so that "Arial", "arial", and "ARiaL" all refer to the same font.
+   * ###TODO obtain clarity on collation rules.
+   */
+  fontName: string;
+  /** The height each line of text, in meters. Many other settings use the line height as the basis for computing their own values.
+   * For example, the height and offset from baseline of a subscript [[TextRun]]  are compuated as lineHeight * [[subScriptScale]] and
+   * lineHeight * [[subScriptOffsetFactor]], respectively.
+   */
+  lineHeight: number;
+  /** Multiplier used to compute the vertical distance between two lines of text.
+   * The distance is computed in meters as lineSpacingFactor * [[lineHeight]].
+   */
+  lineSpacingFactor: number;
+  /** Specifies whether the content of a [[TextRun]] should be rendered **bold**. */
+  isBold: boolean;
+  /** Specifies whether the content of a [[TextRun]] should be rendered in *italics*. */
+  isItalic: boolean;
+  /** Specifies whether the content of a [[TextRun]] should be underlined. */
+  isUnderlined: boolean;
+  /** Multiplier used to compute the height of both the numerator and denominator of a [[FractionRun]].
+   * The height is computed in meters as stackedFractionScale * [[lineHeight]].
+   */
+  stackedFractionScale: number;
+  /** Specifies how to separate the numerator and denominator of a [[FractionRun]]. */
+  stackedFractionType: StackedFractionType;
+  /** Multiplier used to compute the vertical offset from the baseline for a subscript [[TextRun]].
+   * The offset is computed in meters as subScriptOffsetFactor * [[lineHeight]].
+   */
+  subScriptOffsetFactor: number;
+  /** Multiplier used to compute the height of a subscript [[TextRun]].
+   * The height is computed as subScriptScale * [[lineHeight]].
+   */
+  subScriptScale: number;
+  /** Multiplier used to compute the vertical offset from the baseline for a super [[TextRun]].
+   * The offset is computed in meters as superScriptOffsetFactor * [[lineHeight]].
+   */
+  superScriptOffsetFactor: number;
+  /** Multiplier used to compute the height of a superscript [[TextRun]].
+   * The height is computed as superScriptScale * [[lineHeight]].
+   */
+  superScriptScale: number;
+  /** Multiplier used to compute the width of each glyph.
+   * The width in meters is computed as widthFactor * [[lineHeight]].
+   * ###TODO Obtain clarity.
+   */
+  widthFactor: number;
 
   /** A fully-populated JSON representation of the default settings. */
   public static defaultProps: Readonly<Required<TextStyleSettingsProps>> = {
     color: "subcategory",
     fontName: "",
-    height: 1,
+    lineHeight: 1,
     lineSpacingFactor: 0.5,
     isBold: false,
     isItalic: false,
@@ -128,7 +189,7 @@ export class TextStyleSettings {
 
     this.color = props.color ?? defaults.color;
     this.fontName = props.fontName ?? defaults.fontName;
-    this.height = props.height ?? defaults.height;
+    this.lineHeight = props.lineHeight ?? defaults.lineHeight;
     this.lineSpacingFactor = props.lineSpacingFactor ?? defaults.lineSpacingFactor;
     this.isBold = props.isBold ?? defaults.isBold;
     this.isItalic = props.isItalic ?? defaults.isItalic;
