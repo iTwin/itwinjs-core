@@ -3407,6 +3407,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
 
 // @public
 export interface IModelHostOptions {
+    allowSharedChannel?: boolean;
     appAssetsDir?: LocalDirName;
     authorizationClient?: AuthorizationClient;
     cacheDir?: LocalDirName;
