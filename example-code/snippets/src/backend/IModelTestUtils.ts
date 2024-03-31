@@ -6,7 +6,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { OpenMode } from "@itwin/core-bentley";
 import { ITwinsAccessClient } from "@itwin/itwins-client";
-import { ChannelControl, IModelHost, IModelJsFs, IModelJsFsStats, KnownLocations, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
+import { IModelHost, IModelJsFs, IModelJsFsStats, KnownLocations, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
 import { IModelReadRpcInterface, RpcManager } from "@itwin/core-common";
 
 RpcManager.initializeInterface(IModelReadRpcInterface);
@@ -76,7 +76,6 @@ export class IModelTestUtils {
     const dbName = IModelTestUtils.copyIModelForOpen(filename, opts);
     const iModel = StandaloneDb.openFile(dbName, OpenMode.ReadWrite);
     assert.exists(iModel);
-    iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     return iModel;
   }
 
