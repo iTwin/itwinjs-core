@@ -415,8 +415,9 @@ export type TextBlockJustification = "left" | "center" | "right";
  * @extensions
  */
 export interface TextBlockProps extends TextBlockComponentProps {
-  /** Default: 0
-   * ###TODO Units???
+  /** The width of the document in meters. Lines that would exceed this width are instead wrapped around to the next line.
+   * A value less than or equal to zero indicates no wrapping is to be applied.
+   * Default: 0
    */
   width?: number;
   /** The alignment of the document content. Default: "left". */
@@ -434,7 +435,10 @@ export interface TextBlockProps extends TextBlockComponentProps {
  * @extensions
  */
 export class TextBlock extends TextBlockComponent {
-  /** ###TODO units? */
+  /** The width of the document in meters. Lines that would exceed this width are instead wrapped around to the next line.
+   * A value less than or equal to zero indicates no wrapping is to be applied.
+   * Default: 0
+   */
   public width: number;
   /** The alignment of the document's content. */
   public justification: TextBlockJustification;
