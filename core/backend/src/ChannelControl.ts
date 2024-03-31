@@ -10,6 +10,7 @@ import { DbResult, Id64String, IModelStatus, RepositoryStatus } from "@itwin/cor
 import { ChannelRootAspectProps, IModel, IModelError } from "@itwin/core-common";
 import { Subject } from "./Element";
 import { IModelDb } from "./IModelDb";
+import { IModelHost } from "./IModelHost";
 
 /** The key for a channel. Used for "allowed channels" in [[ChannelControl]]
  * @beta
@@ -80,6 +81,10 @@ export class ChannelAdmin implements ChannelControl {
   private _deniedModels = new Map<Id64String, ChannelKey>();
 
   public constructor(private _iModel: IModelDb) {
+    // for backwards compatibility, allow the shared channel unless explicitly turned off in IModelHostOptions.
+    if (IModelHost.configuration?.allowSharedChannel !== false)
+      this._allowedChannels.add(ChannelControl.sharedChannelName);
+
   }
   public addAllowedChannel(channelKey: ChannelKey) {
     this._allowedChannels.add(channelKey);
