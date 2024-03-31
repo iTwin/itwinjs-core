@@ -9590,47 +9590,33 @@ export interface TextStyleProps {
 // @beta
 export class TextStyleSettings {
     clone(alteredProps?: TextStyleSettingsProps): TextStyleSettings;
-    // (undocumented)
-    readonly color: TextStyleColor;
+    color: TextStyleColor;
     static defaultProps: Readonly<Required<TextStyleSettingsProps>>;
     static defaults: TextStyleSettings;
-    // (undocumented)
-    readonly fontName: string;
+    fontName: string;
     static fromJSON(props?: TextStyleSettingsProps): TextStyleSettings;
-    // (undocumented)
-    readonly height: number;
-    // (undocumented)
-    readonly isBold: boolean;
-    // (undocumented)
-    readonly isItalic: boolean;
-    // (undocumented)
-    readonly isUnderlined: boolean;
-    // (undocumented)
-    readonly lineSpacingFactor: number;
-    // (undocumented)
-    readonly stackedFractionScale: number;
-    // (undocumented)
-    readonly stackedFractionType: StackedFractionType;
-    // (undocumented)
-    readonly subScriptOffsetFactor: number;
-    // (undocumented)
-    readonly subScriptScale: number;
-    // (undocumented)
-    readonly superScriptOffsetFactor: number;
-    // (undocumented)
-    readonly superScriptScale: number;
-    // (undocumented)
-    readonly widthFactor: number;
+    isBold: boolean;
+    isItalic: boolean;
+    isUnderlined: boolean;
+    lineHeight: number;
+    lineSpacingFactor: number;
+    stackedFractionScale: number;
+    stackedFractionType: StackedFractionType;
+    subScriptOffsetFactor: number;
+    subScriptScale: number;
+    superScriptOffsetFactor: number;
+    superScriptScale: number;
+    widthFactor: number;
 }
 
 // @beta
 export interface TextStyleSettingsProps {
     color?: TextStyleColor;
     fontName?: string;
-    height?: number;
     isBold?: boolean;
     isItalic?: boolean;
     isUnderlined?: boolean;
+    lineHeight?: number;
     lineSpacingFactor?: number;
     stackedFractionScale?: number;
     stackedFractionType?: StackedFractionType;
