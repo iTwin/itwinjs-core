@@ -247,8 +247,13 @@ describe("iModel", () => {
     let a5 = imodel2.elements.getElementProps(newId);
     expect(a5.code.scope).equal("0x1");
 
-    a4.code.scope = el3.federationGuid!; // should convert FederationGuid to ElementId
-    imodel2.elements.updateElement(a4);
+    // only pass minimum, but expect model and classFullName to be added.
+    const newProps = { id: a4.id, code: a4.code, classFullName: undefined, model: undefined };
+    newProps.code.scope = el3.federationGuid!;
+    imodel2.elements.updateElement(newProps);
+    expect(newProps.classFullName).eq(a4.classFullName);
+    expect(newProps.model).eq(a4.model);
+
     a5 = imodel2.elements.getElementProps(newId);
     expect(a5.code.scope).equal(el3.id);
   });
