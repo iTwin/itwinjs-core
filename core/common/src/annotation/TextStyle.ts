@@ -212,6 +212,15 @@ export class TextStyleSettings {
   public static fromJSON(props?: TextStyleSettingsProps): TextStyleSettings {
     return props ? new TextStyleSettings(props) : TextStyleSettings.defaults;
   }
+
+  public equals(other: TextStyleSettings): boolean {
+    return this.color === other.color && this.fontName === other.fontName
+      && this.lineHeight === other.lineHeight && this.lineSpacingFactor === other.lineSpacingFactor && this.widthFactor === other.widthFactor
+      && this.isBold === other.isBold && this.isItalic === other.isItalic && this.isUnderlined === other.isUnderlined
+      && this.stackedFractionType === other.stackedFractionType && this.stackedFractionScale === other.stackedFractionScale
+      && this.subScriptOffsetFactor === other.subScriptOffsetFactor && this.subScriptScale === other.subScriptScale
+      && this.superScriptOffsetFactor === other.superScriptOffsetFactor && this.superScriptScale === other.superScriptScale;
+  }
 }
 
 Object.freeze(TextStyleSettings.defaultProps);
@@ -257,6 +266,10 @@ export class TextStyle {
   /** Create a copy of this style with the same name, and settings modified according to the properties defined by `alteredSettings`. */
   public clone(alteredSettings: TextStyleSettingsProps): TextStyle {
     return TextStyle.create(this.name, this.settings.clone(alteredSettings));
+  }
+
+  public equals(other: TextStyle): boolean {
+    return this.name === other.name && this.settings.equals(other.settings);
   }
 }
 
