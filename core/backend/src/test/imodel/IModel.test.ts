@@ -249,7 +249,7 @@ describe("iModel", () => {
 
     // only pass minimum, but expect model and classFullName to be added.
     const newProps = { id: a4.id, code: a4.code, classFullName: undefined, model: undefined };
-    newProps.code.scope = el3.federationGuid!;
+    newProps.code.scope = el3.federationGuid!; // should convert FederationGuid to ElementId
     imodel2.elements.updateElement(newProps);
     expect(newProps.classFullName).eq(a4.classFullName);
     expect(newProps.model).eq(a4.model);
