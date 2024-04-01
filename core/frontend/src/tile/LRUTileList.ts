@@ -238,7 +238,7 @@ export class LRUTileList {
     this._userIdSets.clear();
   }
 
-  /** Compute the amount of GPU memory allocated to the tile's content and, if greater than zero, add the tile to the end of the "not selected" partition.
+  /** Compute the amount of GPU memory allocated to the tile's content and, if greater than zero, add the tile to the beginning of the "selected" partition.
    * Invoked by TileAdmin whenever a tile's content is set to a valid RenderGraphic.
    */
   public add(tile: Tile): void {
@@ -258,11 +258,10 @@ export class LRUTileList {
     if (tile.bytesUsed <= 0)
       return;
 
-    // Insert just before the sentinel, indicating this is the most-recently-used non-selected tile.
+    // Insert just after the sentinel, indicating this is the least-recently-used selected tile.
     this._totalBytesUsed += tile.bytesUsed;
     this.append(tile);
-    // this.moveBeforeSentinel(tile);
-    this.moveAfterSentinel(tile);  // try moving just after sentinel instead - experiment 2
+    this.moveAfterSentinel(tile);
   }
 
   /** Remove the tile from the list and deduct its previously-used GPU memory from the list's running total.
@@ -324,7 +323,8 @@ export class LRUTileList {
     while (prev && prev !== this._sentinel && this.totalBytesUsed > maxBytes) {
       const tile = prev as Tile;
       prev = tile.next;
-      tile.freeMemory();
+      if (!tile.usageMarker.getIsTileInUse())
+        tile.freeMemory();
 
       // Some tiles (ImageryMapTile) use reference-counting, in which case freeMemory() may not actually free the contents.
       // If the contents *were* disposed, then `this.drop` will have been called, and `tile` is no longer in the list.
