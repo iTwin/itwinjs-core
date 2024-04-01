@@ -55,6 +55,10 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
     return this._groupInfo.clip;
   }
 
+  public override canSupplyToolTip() {
+    return false;
+  }
+
   public getFeatureAppearance(
     source: FeatureAppearanceSource,
     elemLo: number, elemHi: number,

@@ -73,6 +73,7 @@ export * from "./PerModelCategoryVisibility";
 export * from "./PlanarClipMaskState";
 export * from "./SelectionSet";
 export * from "./SheetViewState";
+export * from "./SpatialClassifiersState";
 export * from "./SpatialViewState";
 export * from "./Sprites";
 export * from "./StandardView";

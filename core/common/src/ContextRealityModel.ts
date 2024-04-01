@@ -9,7 +9,7 @@
 import { assert, BeEvent } from "@itwin/core-bentley";
 import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
 import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
-import { SpatialClassifierProps, SpatialClassifiers } from "./SpatialClassification";
+import { SpatialClassifierProps, SpatialClassifiers, SpatialClassifiersContainer } from "./SpatialClassification";
 import { RealityModelDisplayProps, RealityModelDisplaySettings } from "./RealityModelDisplaySettings";
 
 /** JSON representation of the blob properties for an OrbitGt property cloud.
@@ -169,7 +169,7 @@ export interface ContextRealityModelProps {
 /** @public */
 export namespace ContextRealityModelProps {
   /** Produce a deep copy of `input`. */
-  export function clone(input: ContextRealityModelProps) {
+  export function clone(input: ContextRealityModelProps): ContextRealityModelProps {
     // Spread operator is shallow, and includes `undefined` properties and empty strings.
     // We want to make deep copies, omit undefined properties and empty strings, and require tilesetUrl to be defined.
     const output: ContextRealityModelProps = { tilesetUrl: input.tilesetUrl ?? "" };
@@ -234,8 +234,7 @@ export class ContextRealityModel {
   public readonly description: string;
   /** An optional identifier that, if present, can be used to elide a request to the reality data service. */
   public readonly realityDataId?: string;
-  /** A set of [[SpatialClassifier]]s, of which one at any given time can be used to classify the reality model. */
-  public readonly classifiers?: SpatialClassifiers;
+  private readonly _classifiers: SpatialClassifiers;
   /** @alpha */
   public readonly orbitGtBlob?: Readonly<OrbitGtBlobProps>;
   protected _appearanceOverrides?: FeatureAppearance;
@@ -253,8 +252,9 @@ export class ContextRealityModel {
 
   /** Construct a new context reality model.
    * @param props JSON representation of the reality model, which will be kept in sync with changes made via the ContextRealityModel's methods.
+   * @param options Options to customize how the reality model is created.
    */
-  public constructor(props: ContextRealityModelProps) {
+  public constructor(props: ContextRealityModelProps, options?: { createClassifiers: (container: SpatialClassifiersContainer) => SpatialClassifiers }) {
     this._props = props;
     this.rdSourceKey = props.rdSourceKey;
     this.name = props.name ?? "";
@@ -268,8 +268,16 @@ export class ContextRealityModel {
     if (props.planarClipMask && props.planarClipMask.mode !== PlanarClipMaskMode.None)
       this._planarClipMask = PlanarClipMaskSettings.fromJSON(props.planarClipMask);
 
-    if (props.classifiers)
-      this.classifiers = new SpatialClassifiers(props);
+    if (options?.createClassifiers) {
+      this._classifiers = options.createClassifiers(props);
+    } else {
+      this._classifiers = new SpatialClassifiers(props);
+    }
+  }
+
+  /** A set of [[SpatialClassifier]]s, of which one at any given time can be used to classify the reality model. */
+  public get classifiers(): SpatialClassifiers {
+    return this._classifiers;
   }
 
   /** Optionally describes how the geometry of the reality model can be masked by other models. */

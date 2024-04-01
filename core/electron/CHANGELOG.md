@@ -1,6 +1,21 @@
 # Change Log - @itwin/core-electron
 
-This log was last generated on Tue, 05 Mar 2024 20:38:30 GMT and should not be manually modified.
+This log was last generated on Mon, 25 Mar 2024 22:24:35 GMT and should not be manually modified.
+
+## 4.4.8
+Mon, 25 Mar 2024 22:22:26 GMT
+
+_Version update only_
+
+## 4.4.7
+Fri, 15 Mar 2024 19:15:14 GMT
+
+_Version update only_
+
+## 4.4.6
+Fri, 08 Mar 2024 15:57:11 GMT
+
+_Version update only_
 
 ## 4.4.5
 Tue, 05 Mar 2024 20:37:18 GMT
@@ -35,6 +50,16 @@ Mon, 12 Feb 2024 18:15:58 GMT
 -  Add support for Electron 27.
 - Add support for Node 20.
 - Add support for Electron 28
+
+## 4.3.5
+Mon, 25 Mar 2024 16:54:36 GMT
+
+_Version update only_
+
+## 4.3.4
+Fri, 22 Mar 2024 13:30:31 GMT
+
+_Version update only_
 
 ## 4.3.3
 Wed, 03 Jan 2024 19:28:38 GMT

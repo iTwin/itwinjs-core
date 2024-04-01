@@ -12,11 +12,11 @@ schedules:
 
 jobs:
   - job:
-    timeoutInMinutes: 180
+    timeoutInMinutes: 360
     pool:
-      name: iModelTechCI
+      name: iModelTechLnxDeb11
       demands:
-      - Agent.OS -equals Linux
+        - Agent.OS -equals Linux
     variables:
       VALGRIND_RESULTS: $(Build.StagingDirectory)/valgrind-results/
     workspace:
@@ -27,10 +27,16 @@ jobs:
         clean: true
 
       - task: NodeTool@0
-        displayName: "Use Node 16"
+        displayName: "Use Node 20.11.1"
         inputs:
-          versionSpec: 16.15.0
+          versionSpec: 20.11.1
           checkLatest: true
+
+      - task: npmAuthenticate@0
+        displayName: "Authenticate npm"
+        condition: and(succeeded(), ne('Windows_NT', variables['Agent.OS']))
+        inputs:
+          workingFile: $(Build.SourcesDirectory)/common/config/rush/.npmrc
 
       - script: |
           git config --local user.email imodeljs-admin@users.noreply.github.com
@@ -52,19 +58,19 @@ jobs:
 
       - script: mkdir $(VALGRIND_RESULTS)
 
-      - script: 'valgrind --suppressions=$(Agent.BuildDirectory)/s/common/config/azure-pipelines/valgrind.supp --leak-check=full --track-origins=yes --gen-suppressions=all --trace-children=yes node common/scripts/install-run-rush.js cover |& tee $(VALGRIND_RESULTS)memcheck$(Build.BuildId).txt'
-        displayName: 'Run Valgrind on rush cover'
+      - script: "valgrind --suppressions=$(Agent.BuildDirectory)/s/common/config/azure-pipelines/valgrind.supp --leak-check=full --track-origins=yes --gen-suppressions=all --trace-children=yes node common/scripts/install-run-rush.js cover |& tee $(VALGRIND_RESULTS)memcheck$(Build.BuildId).txt"
+        displayName: "Run Valgrind on rush cover"
         failOnStderr: false
 
       - task: archiveandpublishartifact@0
         inputs:
-          rootFolderOrFile: '$(VALGRIND_RESULTS)'
-          archiveFolder: '$(Build.ArtifactStagingDirectory)'
-          artifactName: 'ValgrindReport-$(Build.BuildId)'
+          rootFolderOrFile: "$(VALGRIND_RESULTS)"
+          archiveFolder: "$(Build.ArtifactStagingDirectory)"
+          artifactName: "ValgrindReport-$(Build.BuildId)"
 
       - task: PythonScript@0
         inputs:
-          scriptSource: 'inline'
+          scriptSource: "inline"
           script: |
             import sys, re
 
@@ -93,4 +99,4 @@ jobs:
                 sys.exit(1)
             else:
                 print(msg)
-          arguments: '$(VALGRIND_RESULTS)memcheck$(Build.BuildId).txt'
+          arguments: "$(VALGRIND_RESULTS)memcheck$(Build.BuildId).txt"
