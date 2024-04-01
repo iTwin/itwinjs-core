@@ -6,11 +6,9 @@ import { assert, expect } from "chai";
 
 describe("TextBlockComponent", () => {
   describe("applyStyle", () => {
-    
-  });
-
-  describe("styleOverrides", () => {
-    
+    it("clears overrides and propagates to subcomponents by default", () => {
+      
+    });
   });
 
   describe("stringify", () => {
@@ -18,7 +16,9 @@ describe("TextBlockComponent", () => {
   });
 
   describe("clone", () => {
-    
+    it("creates an identical deep copy", () => {
+      
+    });
   });
 
   describe("create", () => {

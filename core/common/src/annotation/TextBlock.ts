@@ -138,6 +138,23 @@ export abstract class TextBlockComponent {
       styleOverrides: { ...this.styleOverrides },
     }
   }
+
+  public equals(other: TextBlockComponent): boolean {
+    const myKeys = Object.keys(this.styleOverrides);
+    const yrKeys = Object.keys(other._styleOverrides);
+    if (this.styleName !== other.styleName || myKeys.length !== yrKeys.length) {
+      return false;
+    }
+
+    for (const name of myKeys) {
+      const key = name as keyof TextStyleSettingsProps;
+      if (this.styleOverrides[key] !== other.styleOverrides[key]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 }
   
 /** @beta
@@ -198,7 +215,7 @@ export interface TextRunProps extends TextBlockComponentProps {
   /** Whether to display [[content]] as a subscript, superscript, or normally.
    * Default: "none"
    */
-  shiftMode?: BaselineShift;
+  baselineShift?: BaselineShift;
 }
 
 /** The most common type of [[Run]], containing a sequence of characters to be displayed using a single style.
@@ -212,12 +229,12 @@ export class TextRun extends TextBlockComponent {
   /** The sequence of characters to be displayed by the run. */
   public content: string;
   /** Whether to display [[content]] as a subscript, superscript, or normally. */
-  public shiftMode: BaselineShift;
+  public baselineShift: BaselineShift;
 
   private constructor(props: Omit<TextRunProps, "type">) {
     super(props);
     this.content = props.content ?? "";
-    this.shiftMode = props.shiftMode ?? "none";
+    this.baselineShift = props.baselineShift ?? "none";
   }
 
   public override clone(): TextRun {
@@ -229,7 +246,7 @@ export class TextRun extends TextBlockComponent {
       ...super.toJSON(),
       type: "text",
       content: this.content,
-      shiftMode: this.shiftMode,
+      baselineShift: this.baselineShift,
     }
   }
 
@@ -240,6 +257,10 @@ export class TextRun extends TextBlockComponent {
   /** Simply returns [[content]]. */
   public override stringify(): string {
     return this.content;
+  }
+
+  public override equals(other: TextBlockComponent): boolean {
+    return other instanceof TextRun && this.content === other.content && this.baselineShift === other.baselineShift && super.equals(other);
   }
 }
 
@@ -299,6 +320,10 @@ export class FractionRun extends TextBlockComponent {
     const sep = options?.fractionSeparator ?? "/";
     return `${this.numerator}${sep}${this.denominator}`;
   }
+
+  public override equals(other: TextBlockComponent): boolean {
+    return other instanceof FractionRun && this.numerator === other.numerator && this.denominator === other.denominator && super.equals(other);
+  }
 }
 
 /** JSON representation of a [[LineBreakRun]].
@@ -342,6 +367,10 @@ export class LineBreakRun extends TextBlockComponent {
   /** Simply returns [[TextBlockStringifyOptions.lineBreak]]. */
   public override stringify(options?: TextBlockStringifyOptions): string {
     return options?.lineBreak ?? " ";
+  }
+
+  public override equals(other: TextBlockComponent): boolean {
+    return other instanceof LineBreakRun && super.equals(other);
   }
 }
 
@@ -399,6 +428,18 @@ export class Paragraph extends TextBlockComponent {
   /** Compute a string representation of this paragraph by concatenating the string representations of all of its [[runs]]. */
   public override stringify(options?: TextBlockStringifyOptions): string {
     return this.runs.map((x) => x.stringify(options)).join("");
+  }
+
+  public override equals(other: TextBlockComponent): boolean {
+    if (!(other instanceof Paragraph)) {
+      return false;
+    }
+
+    if (this.runs.length !== other.runs.length || !super.equals(other)) {
+      return false;
+    }
+
+    return this.runs.every((run, index) => run.equals(other.runs[index]));
   }
 }
 
@@ -505,5 +546,17 @@ export class TextBlock extends TextBlockComponent {
   public appendRun(run: Run): void {
     const paragraph = this.paragraphs[this.paragraphs.length - 1] ?? this.appendParagraph();
     paragraph.runs.push(run);
+  }
+
+  public override equals(other: TextBlockComponent): boolean {
+    if (!(other instanceof TextBlock)) {
+      return false;
+    }
+
+    if (this.width !== other.width || this.justification !== other.justification || this.paragraphs.length !== other.paragraphs.length) {
+      return false;
+    }
+
+    return this.paragraphs.every((paragraph, index) => paragraph.equals(other.paragraphs[index]));
   }
 }
