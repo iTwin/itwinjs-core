@@ -6,7 +6,7 @@
  * @module Annotation
  */
 
-import { Range2dProps, XAndY } from "@itwin/core-geometry";
+import { LowAndHighXY, XAndY } from "@itwin/core-geometry";
 import { FontId } from "../Fonts";
 
 export interface RunLayoutResult {
@@ -14,22 +14,22 @@ export interface RunLayoutResult {
   fontId: FontId;
   characterOffset: number;
   characterCount: number;
-  range: Range2dProps;
-  justificationRange?: Range2dProps;
-  numeratorRange?: Range2dProps;
-  denominatorRange?: Range2dProps;
+  range: LowAndHighXY;
+  justificationRange?: LowAndHighXY;
+  numeratorRange?: LowAndHighXY;
+  denominatorRange?: LowAndHighXY;
   offsetFromLine: XAndY;
 }
 
 export interface LineLayoutResult {
   sourceParagraphIndex: number;
   runs: RunLayoutResult[];
-  range: Range2dProps;
-  justificationRange: Range2dProps;
+  range: LowAndHighXY;
+  justificationRange: LowAndHighXY;
   offsetFromDocument: XAndY;
 }
 
 export interface TextBlockLayoutResult {
   lines: LineLayoutResult[]
-  range: Range2dProps;
+  range: LowAndHighXY;
 }

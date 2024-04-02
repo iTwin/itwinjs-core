@@ -1493,6 +1493,18 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     result.setDirect(this.low.x, this.low.y, this.high.x, this.high.y, false);
     return result;
   }
+
+  public cloneTranslated(shift: XAndY, result?: this): this {
+    result = result ? result : new (this.constructor as any)() as this;
+    if (!this.isNull)
+      result.setDirect(
+        this.low.x + shift.x, this.low.y + shift.y,
+        this.high.x + shift.x, this.high.y + shift.y,
+        false,
+      );
+    return result;
+  }
+
   /** Create a range with no content. */
   public static createNull<T extends Range2d>(result?: T): T {
     result = result ? result : new this() as T;
