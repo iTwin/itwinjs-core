@@ -2664,6 +2664,21 @@ export class DebugShaderFile {
 // @internal (undocumented)
 export function decodeImdlGraphics(options: ImdlDecodeOptions): Promise<RenderGraphic | undefined>;
 
+// @internal (undocumented)
+export function decodeMeshoptBuffer(source: Uint8Array, args: DecodeMeshoptBufferArgs): Promise<Uint8Array | undefined>;
+
+// @internal
+export interface DecodeMeshoptBufferArgs {
+    // (undocumented)
+    byteStride: number;
+    // (undocumented)
+    count: number;
+    // (undocumented)
+    filter?: ExtMeshoptCompressionFilter;
+    // (undocumented)
+    mode: ExtMeshoptCompressionMode;
+}
+
 // @public
 export class DecorateContext extends RenderContext {
     // @internal
@@ -3633,6 +3648,12 @@ export interface ExternalTileStatistics {
     // (undocumented)
     selected: number;
 }
+
+// @internal (undocumented)
+export type ExtMeshoptCompressionFilter = "NONE" | "OCTAHEDRAL" | "QUATERNION";
+
+// @internal (undocumented)
+export type ExtMeshoptCompressionMode = "ATTRIBUTES" | "TRIANGLES" | "INDICES";
 
 // @public
 export function extractImageSourceDimensions(source: ImageSource): Promise<Point2d>;
@@ -4683,6 +4704,12 @@ export interface GltfBuffer extends GltfChildOfRootProperty {
     // (undocumented)
     byteLength?: number;
     // (undocumented)
+    extensions?: GltfExtensions & {
+        EXT_meshopt_compression?: {
+            fallback?: boolean;
+        };
+    };
+    // (undocumented)
     uri?: string;
 }
 
@@ -4704,6 +4731,24 @@ export enum GltfBufferTarget {
     ElementArrayBuffer = 24963
 }
 
+// @internal
+export interface GltfBufferViewMeshoptCompressionExtension {
+    // (undocumented)
+    buffer: number;
+    // (undocumented)
+    byteLength: number;
+    // (undocumented)
+    byteOffset?: number;
+    // (undocumented)
+    byteStride: number;
+    // (undocumented)
+    count: number;
+    // (undocumented)
+    filter?: ExtMeshoptCompressionFilter;
+    // (undocumented)
+    mode: ExtMeshoptCompressionMode;
+}
+
 // @internal (undocumented)
 export interface GltfBufferViewProps extends GltfChildOfRootProperty {
     // (undocumented)
@@ -4714,6 +4759,10 @@ export interface GltfBufferViewProps extends GltfChildOfRootProperty {
     byteOffset?: number;
     // (undocumented)
     byteStride?: number;
+    // (undocumented)
+    extensions?: GltfExtensions & {
+        EXT_meshopt_compression?: GltfBufferViewMeshoptCompressionExtension;
+    };
     // (undocumented)
     target?: GltfBufferTarget;
 }
@@ -5003,7 +5052,9 @@ export abstract class GltfReader {
         resolvedBuffer?: Uint8Array;
     }>;
     // (undocumented)
-    protected get _bufferViews(): GltfDictionary<GltfBufferViewProps>;
+    protected get _bufferViews(): GltfDictionary<GltfBufferViewProps & {
+        resolvedBuffer?: Uint8Array;
+    }>;
     // (undocumented)
     protected _computedContentRange?: ElementAlignedBox3d;
     // (undocumented)
