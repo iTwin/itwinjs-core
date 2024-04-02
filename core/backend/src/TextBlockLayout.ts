@@ -279,7 +279,7 @@ class TextBlockLayout {
         // Line break? It always "fits" and causes us to flush the line.
         if ("linebreak" === run.type) {
           line.runs.push(layoutRun);
-          line = this.flushLine(line, line.source);
+          line = this.flushLine(line);
           continue;
         }
 
@@ -288,17 +288,66 @@ class TextBlockLayout {
 
         // Do we fit (no wrapping or narrow enough)? Append and go around to the next run.
         if (effectiveRunWidth < effectiveRemainingWidth) {
-          // ###CONTINUE...
+          line.runs.push(layoutRun);
+          continue;
         }
+
+        // Can't fit, but can't wrap? Force on the line if it's the first thing; otherwise flush and add to the next line.
+        if ("text" !== run.type) { // only TextRun can wrap.
+          if (line.runs.length === 0) {
+            line.runs.push(layoutRun);
+            line = this.flushLine(line);
+          } else {
+            line = this.flushLine(line);
+            line.runs.push(layoutRun);
+          }
+
+          continue;
+        }
+
+        // Otherwise, keep splitting the run into lines until the whole thing is appended.
+        line.runs.push(layoutRun); // ###TODO Word-wrapping
       }
+    }
+
+    if (line.runs.length > 0) {
+      this.flushLine(line);
     }
   }
 
   private justifyLines(): void {
-    
+    if (this.lines.length <= 1 || "left" === this.source.justification) {
+      return;
+    }
+
+    let docWidth = this.source.width;
+    if (docWidth <= 0) {
+      for (const line of this.lines) {
+        const lineWidth = line.justificationRange.xLength();
+        docWidth = Math.max(docWidth, lineWidth);
+      }
+    }
+
+    let minOffset = Number.MAX_VALUE;
+    for (const line of this.lines) {
+      const lineWidth = line.justificationRange.xLength();
+
+      let offset = docWidth - lineWidth;
+      if ("center" === this.source.justification) {
+        offset = offset / 2;
+      }
+
+      line.offsetFromDocument.x += offset;
+      minOffset = Math.min(offset, minOffset);
+    }
+
+    this.range.low.x += minOffset;
+    this.range.high.x += minOffset;
   }
 
-  private flushLine(line: LineLayout, nextParagraph: Paragraph): LineLayout {
+  private flushLine(line: LineLayout, nextParagraph?: Paragraph): LineLayout {
+    nextParagraph = nextParagraph ?? line.source;
+    
     // We want to guarantee that each layout line has at least one run.
     if (line.runs.length === 0) {
       // If we're empty, there should always be a preceding run, and it should be a line break.
