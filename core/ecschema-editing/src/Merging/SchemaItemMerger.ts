@@ -18,8 +18,8 @@ import { mergeClassItems } from "./ClassMerger";
  * @internal
  */
 export interface SchemaItemMergerHandler<T extends AnySchemaItemDifference> {
-  add?:    (context: SchemaMergeContext, change: T) => Promise<SchemaItemEditResults>;
-  modify?: (context: SchemaMergeContext, change: T, itemKey: SchemaItemKey, item: any) => Promise<SchemaItemEditResults>;
+  add:    (context: SchemaMergeContext, change: T) => Promise<SchemaItemEditResults>;
+  modify: (context: SchemaMergeContext, change: T, itemKey: SchemaItemKey, item: any) => Promise<SchemaItemEditResults>;
 }
 
 /**
@@ -27,11 +27,11 @@ export interface SchemaItemMergerHandler<T extends AnySchemaItemDifference> {
  * @internal
  */
 async function mergeSchemaItem<T extends AnySchemaItemDifference>(context: SchemaMergeContext, change: T, merger: SchemaItemMergerHandler<T>): Promise<SchemaEditResults> {
-  if(change.changeType === "add" && merger.add) {
+  if(change.changeType === "add") {
     return merger.add(context, change);
   }
 
-  if(change.changeType === "modify" && merger.modify) {
+  if(change.changeType === "modify") {
     const schemaItem = await locateSchemaItem(context, change.itemName, change.schemaType);
     return merger.modify(context, change, schemaItem.key, schemaItem);
   }

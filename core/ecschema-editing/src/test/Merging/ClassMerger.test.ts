@@ -637,12 +637,35 @@ describe("Class merger tests", () => {
           schemaItemType: "Mixin",
           appliesTo: "TestSchema.TestBase",
         },
+      },
+    }, targetContext);
+
+    const merger = new SchemaMerger(targetContext);
+    const merge = merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "modify" as any,
+          schemaType: SchemaItemType.EntityClass,
+          itemName: "TestEntity",
+          path: "$mixins",
+          difference: [
+            "TestSchema.TestMixin",
+          ],
+        },
+      ],
+    });
+
+    await expect(merge).to.be.rejectedWith("Changing the entity class 'TestEntity' mixins is not supported.");
+  });
+
+  it("should throw an error when merging entity class with a unknown mixins", async () => {
+    await Schema.fromJson({
+      ...targetJson,
+      items: {
         TestEntity: {
           schemaItemType: "EntityClass",
-          baseClass: "TestSchema.TestBase",
-          mixins: [
-            "TargetSchema.TargetMixin",
-          ],
         },
       },
     }, targetContext);
@@ -658,12 +681,12 @@ describe("Class merger tests", () => {
           itemName: "TestEntity",
           path: "$mixins",
           difference: [
-            "TestSchema.TestMixin",
+            "SourceSchema.NotExistingMixin",
           ],
         },
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Changing the entity class 'TestEntity' mixins is not supported.");
+    await expect(merge).to.be.rejectedWith("Mixin Class TargetSchema.NotExistingMixin not found in schema context.");
   });
 });

@@ -2,17 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { type RelationshipClassDifference, type RelationshipConstraintClassDifference, type RelationshipConstraintDifference, SchemaDifference } from "../Differencing/SchemaDifference";
+import { type RelationshipClassDifference, type RelationshipConstraintClassDifference, type RelationshipConstraintDifference } from "../Differencing/SchemaDifference";
 import { type MutableRelationshipClass } from "../Editing/Mutable/MutableRelationshipClass";
-import { type SchemaItemMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
+import { locateSchemaItem, type SchemaItemMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
 import { modifyClass } from "./ClassMerger";
 import { SchemaMergeContext } from "./SchemaMerger";
-import { EntityClass, Mixin, parseStrength, parseStrengthDirection, RelationshipClass, RelationshipMultiplicity, SchemaItemKey } from "@itwin/ecschema-metadata";
-
-type RelationshipDifferences =
-  RelationshipClassDifference |
-  RelationshipConstraintDifference |
-  RelationshipConstraintClassDifference;
+import { EntityClass, Mixin, parseStrength, parseStrengthDirection, RelationshipClass, RelationshipMultiplicity, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
+import { SchemaItemEditResults } from "../Editing/Editor";
 
 type ConstraintClassTypes = EntityClass | Mixin | RelationshipClass;
 
@@ -20,12 +16,8 @@ type ConstraintClassTypes = EntityClass | Mixin | RelationshipClass;
  * Defines a merge handler to merge RelationshipClass schema items.
  * @internal
  */
-export const relationshipClassMerger: SchemaItemMergerHandler<RelationshipDifferences> = {
+export const relationshipClassMerger: SchemaItemMergerHandler<RelationshipClassDifference> = {
   async add(context, change) {
-    if(SchemaDifference.isRelationshipConstraintDifference(change) || SchemaDifference.isRelationshipConstraintClassDifference(change)) {
-      return { errorMessage: "RelationshipConstraints cannot be added." };
-    }
-
     if (change.difference.strength === undefined) {
       return { errorMessage: "RelationshipClass must define strength" };
     }
@@ -50,12 +42,6 @@ export const relationshipClassMerger: SchemaItemMergerHandler<RelationshipDiffer
     });
   },
   async modify(context, change, itemKey, item: MutableRelationshipClass) {
-    if(SchemaDifference.isRelationshipConstraintDifference(change)) {
-      return modifyRelationshipConstraint(context, change, item);
-    }
-    if(SchemaDifference.isRelationshipConstraintClassDifference(change)) {
-      return modifyRelationshipClassConstraint(context, change, item);
-    }
     return modifyRelationshipClass(context, change, itemKey, item);
   },
 };
@@ -90,7 +76,17 @@ async function modifyRelationshipClass(context: SchemaMergeContext, change: Rela
   return modifyClass(context, change, itemKey, item);
 }
 
-async function modifyRelationshipConstraint(context: SchemaMergeContext, change: RelationshipConstraintDifference, item: MutableRelationshipClass) {
+/**
+ * Merges differences of a Relationship constraint.
+ * This only supports modify as the RelationshipConstraints are always set on the Relationship classes.
+ * @internal
+ */
+export async function mergeRelationshipConstraint(context: SchemaMergeContext, change: RelationshipConstraintDifference) {
+  if(change.changeType !== "modify") {
+    return { errorMessage: "RelationshipConstraints can only be modified." };
+  }
+
+  const item = await locateSchemaItem(context, change.itemName, SchemaItemType.RelationshipClass) as MutableRelationshipClass;
   const constraint = item[parseConstraint(change.path)];
   if(change.difference.roleLabel !== undefined) {
     constraint.roleLabel = change.difference.roleLabel;
@@ -125,7 +121,16 @@ async function modifyRelationshipConstraint(context: SchemaMergeContext, change:
   return { itemKey: constraint.relationshipClass.key };
 }
 
-async function modifyRelationshipClassConstraint(context: SchemaMergeContext, change: RelationshipConstraintClassDifference, item: MutableRelationshipClass) {
+/**
+ * Merges differences of a Relationship constraint classes.
+ * @internal
+ */
+export async function mergeRelationshipClassConstraint(context: SchemaMergeContext, change: RelationshipConstraintClassDifference): Promise<SchemaItemEditResults> {
+  if(change.changeType !== "add") {
+    return { errorMessage: `Change type ${change.changeType} is not supported for Relationship constraint classes.` };
+  }
+
+  const item = await locateSchemaItem(context, change.itemName, SchemaItemType.RelationshipClass) as MutableRelationshipClass;
   const constraint = item[parseConstraint(change.path)];
   for(const constraintName of change.difference) {
     const constraintClassKey = await updateSchemaItemKey(context, constraintName);
