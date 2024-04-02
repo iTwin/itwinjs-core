@@ -12,16 +12,16 @@ import { SchemaComparer } from "../Validation/SchemaComparer";
 import { SchemaDifferenceConflict } from "./SchemaConflicts";
 import { SchemaDiagnosticVisitor } from "./SchemaDiagnosticVisitor";
 import {
-  AnyEnumerator, AnyPropertyProps, CustomAttribute, RelationshipConstraintProps,
-  type Schema, SchemaItemProps, SchemaItemType, SchemaReferenceProps, ConstantProps,
-  CustomAttributeClassProps, EntityClassProps, EnumerationProps, KindOfQuantityProps, MixinProps,
-  PhenomenonProps, PropertyCategoryProps, RelationshipClassProps, StructClassProps, UnitSystemProps, InvertedUnitProps, SchemaItemFormatProps, SchemaItemUnitProps
+  AnyEnumerator, AnyPropertyProps, ConstantProps, CustomAttribute,
+  CustomAttributeClassProps, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps,
+  MixinProps, PhenomenonProps, PropertyCategoryProps, RelationshipClassProps, RelationshipConstraintProps,
+  type Schema, SchemaItemFormatProps, SchemaItemProps, SchemaItemType, SchemaItemUnitProps, SchemaReferenceProps, StructClassProps, UnitSystemProps,
 } from "@itwin/ecschema-metadata";
 
 /** Utility-Type to remove possible readonly flags on the given type. */
 type PartialEditable<T> = {
   -readonly [P in keyof T]?: T[P];
-}
+};
 
 /**
  * Utility-Type to simplify the expected SchemaItem props by omitting the base properties
@@ -471,7 +471,6 @@ export interface InvertedUnitDifference extends SchemaItemDifference<InvertedUni
 export interface FormatDifference extends SchemaItemDifference<SchemaItemFormatProps> {
   readonly schemaType: SchemaItemType.Format;
 }
-
 
 /**
  * Differencing entry for added or changed Properties.

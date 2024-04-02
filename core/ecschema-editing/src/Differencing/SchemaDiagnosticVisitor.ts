@@ -27,10 +27,8 @@ import {
   type SchemaDifference,
   SchemaOtherTypes,
   type SchemaReferenceDifference,
-  AnySchemaDifference,
 } from "./SchemaDifference";
 import { ConflictCode, SchemaDifferenceConflict } from "./SchemaConflicts";
-
 
 /**
  * Recursive synchronous function to figure whether a given class derived from
@@ -535,7 +533,7 @@ export class SchemaDiagnosticVisitor {
         itemName: className,
         path: constraintPath,
         difference: [],
-      }
+      };
       this.schemaItemPathChanges.push(modifyEntry);
     }
 
@@ -619,7 +617,6 @@ export class SchemaDiagnosticVisitor {
         difference: customAttribute,
       });
     }
-
 
     if (Property.isProperty(ecType)) {
       // TODO: Remove after fix #6560 has been merged into master.

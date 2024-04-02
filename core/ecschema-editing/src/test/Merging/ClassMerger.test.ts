@@ -647,7 +647,7 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "modify" as any,
-          schemaType: SchemaItemType.EntityClass,
+          schemaType: SchemaOtherTypes.EntityClassMixin,
           itemName: "TestEntity",
           path: "$mixins",
           difference: [

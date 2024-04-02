@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import type { SchemaMergeContext } from "./SchemaMerger";
 import type { SchemaEditResults, SchemaItemEditResults } from "../Editing/Editor";
-import { AnySchemaDifference, AnySchemaItemDifference, SchemaDifference } from "../Differencing/SchemaDifference";
+import { AnySchemaDifference, AnySchemaItemDifference, AnySchemaItemPathDifference, SchemaDifference } from "../Differencing/SchemaDifference";
 import { ECObjectsError, ECObjectsStatus, SchemaContext, SchemaItem, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { enumerationMerger, enumeratorMerger } from "./EnumerationMerger";
 import { phenomenonMerger } from "./PhenomenonMerger";
@@ -17,7 +17,7 @@ import { mergeClassItems } from "./ClassMerger";
 /**
  * @internal
  */
-export interface SchemaItemMergerHandler<T extends AnySchemaItemDifference> {
+export interface SchemaItemMergerHandler<T extends AnySchemaItemDifference | AnySchemaItemPathDifference> {
   add:    (context: SchemaMergeContext, change: T) => Promise<SchemaItemEditResults>;
   modify: (context: SchemaMergeContext, change: T, itemKey: SchemaItemKey, item: any) => Promise<SchemaItemEditResults>;
 }
@@ -26,7 +26,7 @@ export interface SchemaItemMergerHandler<T extends AnySchemaItemDifference> {
  * Handles the merging logic for everything that is same for all schema items such as labels or descriptions
  * @internal
  */
-async function mergeSchemaItem<T extends AnySchemaItemDifference>(context: SchemaMergeContext, change: T, merger: SchemaItemMergerHandler<T>): Promise<SchemaEditResults> {
+async function mergeSchemaItem<T extends AnySchemaItemDifference|AnySchemaItemPathDifference>(context: SchemaMergeContext, change: T, merger: SchemaItemMergerHandler<T>): Promise<SchemaEditResults> {
   if(change.changeType === "add") {
     return merger.add(context, change);
   }
