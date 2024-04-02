@@ -1864,7 +1864,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * overwriting their values to the correct values.
      * @throws [[IModelError]] if unable to update the element.
      */
-    public updateElement(elProps: Partial<ElementProps>): void {
+    public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
       try {
         this._iModel.nativeDb.updateElement(elProps);
       } catch (err: any) {

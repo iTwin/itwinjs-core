@@ -2733,11 +2733,7 @@ describe("iModel", () => {
     assert.isUndefined(subject4.federationGuid);
 
     // test partial update of Description (auto-handled)
-    imodel1.elements.updateElement({
-      id: subject1.id,
-      classFullName: subject1.classFullName,
-      description: "Description1-Updated",
-    } as SubjectProps);
+    imodel1.elements.updateElement<SubjectProps>({ id: subject1.id, description: "Description1-Updated" });
     subject1 = imodel1.elements.getElement<Subject>(subjectId1, Subject);
     assert.equal(subject1.description, "Description1-Updated"); // should have been updated
     assert.isDefined(subject1.model);
@@ -2747,11 +2743,7 @@ describe("iModel", () => {
     assert.equal(subject1.federationGuid, federationGuid1); // should not have changed
 
     // test partial update of UserLabel (custom-handled)
-    imodel1.elements.updateElement({
-      id: subject2.id,
-      classFullName: subject2.classFullName,
-      userLabel: "UserLabel2-Updated",
-    } as SubjectProps);
+    imodel1.elements.updateElement<SubjectProps>({ id: subject2.id, userLabel: "UserLabel2-Updated" });
     subject2 = imodel1.elements.getElement<Subject>(subjectId2, Subject);
     assert.isDefined(subject2.model);
     assert.isDefined(subject2.parent);
@@ -2790,11 +2782,7 @@ describe("iModel", () => {
 
     // test partial update of Description to undefined
     const s3Fed = subject3.federationGuid;
-    imodel1.elements.updateElement({
-      id: subject3.id,
-      classFullName: subject3.classFullName,
-      description: undefined,
-    } as SubjectProps);
+    imodel1.elements.updateElement<SubjectProps>({ id: subject3.id, description: undefined });
     subject3 = imodel1.elements.getElement<Subject>(subjectId3, Subject);
     assert.isUndefined(subject3.description); // should have been updated
     assert.isDefined(subject3.model);
@@ -2804,11 +2792,7 @@ describe("iModel", () => {
     assert.equal(subject3.federationGuid, s3Fed); // should not have changed
 
     // test partial update of UserLabel to undefined
-    imodel1.elements.updateElement({
-      id: subject4.id,
-      classFullName: subject4.classFullName,
-      userLabel: undefined,
-    } as SubjectProps);
+    imodel1.elements.updateElement<SubjectProps>({ id: subject4.id, userLabel: undefined });
     subject4 = imodel1.elements.getElement<Subject>(subjectId4, Subject);
     assert.isDefined(subject4.model);
     assert.isDefined(subject4.parent);
