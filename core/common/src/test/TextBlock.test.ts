@@ -3,16 +3,69 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
+import { FractionRunProps, ParagraphProps, RunProps, TextBlock, TextBlockProps, TextRunProps, TextStyleSettingsProps } from "../core-common";
 
-describe("TextBlockComponent", () => {
+function makeTextRun(content?: string, styleName = "", styleOverrides?: TextStyleSettingsProps): TextRunProps {
+  return {
+    type: "text",
+    content,
+    styleName,
+    styleOverrides,
+  };
+}
+
+function makeFractionRun(numerator?: string, denominator?: string, styleName = "", styleOverrides?: TextStyleSettingsProps): FractionRunProps {
+  return {
+    type: "fraction",
+    numerator,
+    denominator,
+    styleName,
+    styleOverrides,
+  }
+};
+
+function makeParagraph(runs?: RunProps[], styleName = "", styleOverrides?: TextStyleSettingsProps): ParagraphProps {
+  return {
+    styleName,
+    styleOverrides,
+    runs,
+  };
+}
+
+describe.only("TextBlockComponent", () => {
   describe("applyStyle", () => {
     it("clears overrides and propagates to subcomponents by default", () => {
       
     });
   });
 
-  describe("stringify", () => {
-    
+  it("stringifies", () => {
+    const props: TextBlockProps = {
+      styleName: "",
+      paragraphs: [
+        makeParagraph([
+          makeTextRun("abc"),
+        ]),
+        makeParagraph([
+          makeFractionRun("1", "π"),
+          makeTextRun(" def   ghi"),
+          { type: "linebreak", styleName: "" },
+          makeTextRun("j k l"),
+        ]),
+        makeParagraph(),
+        makeParagraph([makeTextRun()]),
+        makeParagraph([{ type: "linebreak", styleName: "" }]),
+        makeParagraph([makeFractionRun()]),
+        makeParagraph([makeTextRun("mno")]),
+        makeParagraph([{ type: "linebreak", styleName: "" }, { type: "linebreak", styleName: "" }])
+      ],
+    };
+
+    const tb = TextBlock.create(props);
+    const paragraphBreak = "P";
+    const lineBreak = "L";
+    const fractionSeparator = "F";
+    expect(tb.stringify({ paragraphBreak, lineBreak, fractionSeparator })).to.equal("abcP1Fπ def   ghiLj k lPPPLPFPmnoPLL");
   });
 
   describe("clone", () => {
