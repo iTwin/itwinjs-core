@@ -1,6 +1,21 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Mon, 25 Mar 2024 22:23:34 GMT and should not be manually modified.
+This log was last generated on Tue, 02 Apr 2024 19:06:00 GMT and should not be manually modified.
+
+## 4.5.0
+Tue, 02 Apr 2024 19:06:00 GMT
+
+### Updates
+
+- Fix SectionDrawing.insert to insert a SectionDrawingModel, not a DrawingModel.
+- Added busyTimeout parameter to allow read/write connection to set it.
+- Added new tests for selecting duplicate property names using UseECSqlPropertyNames QueryRowFormat.
+- Add metadata to errors thrown by `insertElement`, `updateElement` and `deleteElement` in `IModelDb`
+- make case of pattern_useconstantlod match backend code
+- `IModelDb`: Fix `IModelDb.views.accessViewStore` ignoring supplied `userToken` and `accessLevel` values
+- Throws an error if BlobContainer.service is undefined in CloudSqlite.requestToken
+- add SnapshotDb.openCheckpoint to open a checkpoint directly from its cloud container
+- Introduce EditableWorkspaceDb.
 
 ## 4.4.8
 Mon, 25 Mar 2024 22:22:26 GMT
