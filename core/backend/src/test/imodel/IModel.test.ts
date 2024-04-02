@@ -247,8 +247,13 @@ describe("iModel", () => {
     let a5 = imodel2.elements.getElementProps(newId);
     expect(a5.code.scope).equal("0x1");
 
-    a4.code.scope = el3.federationGuid!; // should convert FederationGuid to ElementId
-    imodel2.elements.updateElement(a4);
+    // only pass minimum, but expect model and classFullName to be added.
+    const newProps = { id: a4.id, code: a4.code, classFullName: undefined, model: undefined };
+    newProps.code.scope = el3.federationGuid!; // should convert FederationGuid to ElementId
+    imodel2.elements.updateElement(newProps);
+    expect(newProps.classFullName).eq(a4.classFullName);
+    expect(newProps.model).eq(a4.model);
+
     a5 = imodel2.elements.getElementProps(newId);
     expect(a5.code.scope).equal(el3.id);
   });
@@ -2728,12 +2733,7 @@ describe("iModel", () => {
     assert.isUndefined(subject4.federationGuid);
 
     // test partial update of Description (auto-handled)
-    imodel1.elements.updateElement({
-      id: subject1.id,
-      model: subject1.model, // NOTE: workaround while expectation from elements.updateElement about "model" being passed-in is addressed
-      classFullName: subject1.classFullName,
-      description: "Description1-Updated",
-    } as SubjectProps);
+    imodel1.elements.updateElement<SubjectProps>({ id: subject1.id, description: "Description1-Updated" });
     subject1 = imodel1.elements.getElement<Subject>(subjectId1, Subject);
     assert.equal(subject1.description, "Description1-Updated"); // should have been updated
     assert.isDefined(subject1.model);
@@ -2743,12 +2743,7 @@ describe("iModel", () => {
     assert.equal(subject1.federationGuid, federationGuid1); // should not have changed
 
     // test partial update of UserLabel (custom-handled)
-    imodel1.elements.updateElement({
-      id: subject2.id,
-      model: subject2.model, // NOTE: workaround while expectation from elements.updateElement about "model" being passed-in is addressed
-      classFullName: subject2.classFullName,
-      userLabel: "UserLabel2-Updated",
-    } as SubjectProps);
+    imodel1.elements.updateElement<SubjectProps>({ id: subject2.id, userLabel: "UserLabel2-Updated" });
     subject2 = imodel1.elements.getElement<Subject>(subjectId2, Subject);
     assert.isDefined(subject2.model);
     assert.isDefined(subject2.parent);
@@ -2787,12 +2782,7 @@ describe("iModel", () => {
 
     // test partial update of Description to undefined
     const s3Fed = subject3.federationGuid;
-    imodel1.elements.updateElement({
-      id: subject3.id,
-      model: subject3.model, // NOTE: workaround while expectation from elements.updateElement about "model" being passed-in is addressed
-      classFullName: subject3.classFullName,
-      description: undefined,
-    } as SubjectProps);
+    imodel1.elements.updateElement<SubjectProps>({ id: subject3.id, description: undefined });
     subject3 = imodel1.elements.getElement<Subject>(subjectId3, Subject);
     assert.isUndefined(subject3.description); // should have been updated
     assert.isDefined(subject3.model);
@@ -2802,12 +2792,7 @@ describe("iModel", () => {
     assert.equal(subject3.federationGuid, s3Fed); // should not have changed
 
     // test partial update of UserLabel to undefined
-    imodel1.elements.updateElement({
-      id: subject4.id,
-      model: subject4.model, // NOTE: workaround while expectation from elements.updateElement about "model" being passed-in is addressed
-      classFullName: subject4.classFullName,
-      userLabel: undefined,
-    } as SubjectProps);
+    imodel1.elements.updateElement<SubjectProps>({ id: subject4.id, userLabel: undefined });
     subject4 = imodel1.elements.getElement<Subject>(subjectId4, Subject);
     assert.isDefined(subject4.model);
     assert.isDefined(subject4.parent);
