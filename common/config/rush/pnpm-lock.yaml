@@ -7,7 +7,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.5.30
+      '@bentley/imodeljs-native': 4.5.34
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.1.0
       '@itwin/core-bentley': workspace:*
@@ -57,7 +57,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
-      '@bentley/imodeljs-native': 4.5.30
+      '@bentley/imodeljs-native': 4.5.34
       '@itwin/cloud-agnostic-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.2.2_scz6qrwecfbbxg4vskopkl3a7u
@@ -591,6 +591,7 @@ importers:
       eslint: ^8.44.0
       fuse.js: ^3.3.0
       glob: ^7.1.2
+      meshoptimizer: ~0.20.0
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
@@ -609,6 +610,7 @@ importers:
       '@loaders.gl/core': 3.1.6
       '@loaders.gl/draco': 3.1.6
       fuse.js: 3.3.0
+      meshoptimizer: 0.20.0
       wms-capabilities: 0.4.0
     devDependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
@@ -3773,8 +3775,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.5.30:
-    resolution: {integrity: sha512-g/ZXZ84bvWM/I+JAp1Wpq1nkumHKg/H8Zx2DojkcPocRn4YvVJ2oW9FwtGRzX9sA96fUOgM7od4n4dmwrq89OQ==}
+  /@bentley/imodeljs-native/4.5.34:
+    resolution: {integrity: sha512-JFeRbwtu1/vG7i+maqkEJBBKYmnbmhwnkb+XgrCiRndKoKOQkVP/SZ9xfh1r7lc82HsHYdWZsGcfevg9lrRh6g==}
     requiresBuild: true
     dev: false
 
@@ -10004,6 +10006,10 @@ packages:
   /merge2/1.4.1:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
     engines: {node: '>= 8'}
+
+  /meshoptimizer/0.20.0:
+    resolution: {integrity: sha512-olcJ1q+YVnjroRJpCL1Dj5aZxr2JMr2hRutMUwhuHZvpAL7SIZgOT6eMlFF4TbBGSR89tawE/gqB79J/LrW/Nw==}
+    dev: false
 
   /methods/1.1.2:
     resolution: {integrity: sha512-iclAHeNqNm68zFtnZ0e+1L2yUIdvzNoauKU4WBA3VvH/vPFieF7qfRlwUZU+DA9P9bPXIS90ulxoUoCH23sV2w==}
