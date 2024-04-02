@@ -44,8 +44,8 @@ async function mergeSchemaItem<T extends AnySchemaItemDifference>(context: Schem
  */
 export async function locateSchemaItem(context: SchemaMergeContext, itemName: string, schemaType: string) {
   const schemaItemKey = new SchemaItemKey(itemName, context.targetSchemaKey);
-  const schemaItem    = await context.editor.schemaContext.getSchemaItem(schemaItemKey);
-  if(schemaItem === undefined) {
+  const schemaItem = await context.editor.schemaContext.getSchemaItem(schemaItemKey);
+  if (schemaItem === undefined) {
     throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `${schemaType} ${schemaItemKey.fullName} not found in schema context.`);
   }
 
@@ -60,7 +60,7 @@ export async function locateSchemaItem(context: SchemaMergeContext, itemName: st
  * @returns             An async iterable with the merge result for each schema item.
  * @internal
  */
-export async function * mergeSchemaItems(context: SchemaMergeContext, itemChanges: AnySchemaDifference[]) {
+export async function* mergeSchemaItems(context: SchemaMergeContext, itemChanges: AnySchemaDifference[]) {
   for (const difference of itemChanges.filter(SchemaDifference.isUnitSystemDifference)) {
     yield await mergeSchemaItem(context, difference, unitSystemMerger);
   }
@@ -97,7 +97,7 @@ export async function * mergeSchemaItems(context: SchemaMergeContext, itemChange
 
   // Classes are slightly differently merged, since they can refer each other the process
   // uses several stages to merge.
-  for await(const classMergeResult of mergeClassItems(context, itemChanges)) {
+  for await (const classMergeResult of mergeClassItems(context, itemChanges)) {
     yield classMergeResult;
   }
 }
@@ -118,12 +118,12 @@ export async function updateSchemaItemFullName(context: SchemaMergeContext, refe
  */
 export async function updateSchemaItemKey(context: SchemaMergeContext, reference: string) {
   const [schemaName, itemName] = SchemaItem.parseFullName(reference);
-  if(context.sourceSchemaKey.compareByName(schemaName)) {
+  if (context.sourceSchemaKey.compareByName(schemaName)) {
     return resolveSchemaItemKey(context.editor.schemaContext, new SchemaItemKey(itemName, context.targetSchemaKey));
   }
 
   const referencedSchema = await context.targetSchema.getReference(schemaName);
-  if(referencedSchema !== undefined) {
+  if (referencedSchema !== undefined) {
     return resolveSchemaItemKey(context.editor.schemaContext, new SchemaItemKey(itemName, referencedSchema.schemaKey));
   }
 
@@ -137,7 +137,7 @@ export async function updateSchemaItemKey(context: SchemaMergeContext, reference
  */
 async function resolveSchemaItemKey(schemaContext: SchemaContext, itemKey: SchemaItemKey): Promise<SchemaItemKey> {
   const item = await schemaContext.getSchemaItem(itemKey);
-  if(item === undefined) {
+  if (item === undefined) {
     // If the schema item hasn't been created yet, we have to trust the given key is correctly spelled.
     return itemKey;
   }

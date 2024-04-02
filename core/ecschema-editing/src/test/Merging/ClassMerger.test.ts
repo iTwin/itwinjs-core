@@ -11,7 +11,7 @@ import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 
 describe("Class merger tests", () => {
   let targetContext: SchemaContext;
-  const targetJson =  {
+  const targetJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "TargetSchema",
     version: "1.0.0",
@@ -134,7 +134,7 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaOtherTypes.Schema,
+          schemaType: SchemaOtherTypes.SchemaReference,
           path: "$references",
           difference: {
             name: "TestSchema",
@@ -188,7 +188,7 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaOtherTypes.Schema,
+          schemaType: SchemaOtherTypes.SchemaReference,
           path: "$references",
           difference: {
             name: "TestSchema",
@@ -677,7 +677,7 @@ describe("Class merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaItemType.EntityClass,
+          schemaType: SchemaOtherTypes.EntityClassMixin,
           itemName: "TestEntity",
           path: "$mixins",
           difference: [

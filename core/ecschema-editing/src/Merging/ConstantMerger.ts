@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { type ConstantsDifference } from "../Differencing/SchemaDifference";
+import { type ConstantDifference } from "../Differencing/SchemaDifference";
 import { type SchemaItemMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
 import { type MutableConstant } from "../Editing/Mutable/MutableConstant";
 import { DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, Phenomenon } from "@itwin/ecschema-metadata";
@@ -11,7 +11,7 @@ import { DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, Phenomenon } 
  * Defines a merge handler to merge Constant schema items.
  * @internal
  */
-export const constantMerger: SchemaItemMergerHandler<ConstantsDifference> = {
+export const constantMerger: SchemaItemMergerHandler<ConstantDifference> = {
   async add(context, change) {
     if (change.difference.phenomenon === undefined) {
       return { errorMessage: "Constant must define phenomenon" };

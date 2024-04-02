@@ -10,7 +10,7 @@ import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 
 describe("Property merger tests", () => {
   let targetContext: SchemaContext;
-  const targetJson =  {
+  const targetJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "TargetSchema",
     version: "1.0.0",
@@ -109,7 +109,7 @@ describe("Property merger tests", () => {
         changes: [
           {
             changeType: "add",
-            schemaType: SchemaOtherTypes.Schema,
+            schemaType: SchemaOtherTypes.SchemaReference,
             path: "$references",
             difference: {
               name: "TestSchema",
@@ -213,7 +213,7 @@ describe("Property merger tests", () => {
             type: "int",
             enumerators: [
               {
-                name:  "None",
+                name: "None",
                 label: "None",
                 value: 0,
               },
@@ -276,7 +276,7 @@ describe("Property merger tests", () => {
         changes: [
           {
             changeType: "add",
-            schemaType: SchemaOtherTypes.Schema,
+            schemaType: SchemaOtherTypes.SchemaReference,
             path: "$references",
             difference: {
               name: "TestSchema",
@@ -337,7 +337,7 @@ describe("Property merger tests", () => {
         changes: [
           {
             changeType: "add",
-            schemaType: SchemaOtherTypes.Schema,
+            schemaType: SchemaOtherTypes.SchemaReference,
             path: "$references",
             difference: {
               name: "TestSchema",
@@ -393,7 +393,7 @@ describe("Property merger tests", () => {
         changes: [
           {
             changeType: "add",
-            schemaType: SchemaOtherTypes.Schema,
+            schemaType: SchemaOtherTypes.SchemaReference,
             path: "$references",
             difference: {
               name: "TestSchema",
@@ -404,7 +404,7 @@ describe("Property merger tests", () => {
             changeType: "add",
             schemaType: SchemaItemType.StructClass,
             itemName: "TestStruct",
-            difference: { },
+            difference: {},
           },
           {
             changeType: "add",
@@ -458,7 +458,7 @@ describe("Property merger tests", () => {
         changes: [
           {
             changeType: "add",
-            schemaType: SchemaOtherTypes.Schema,
+            schemaType: SchemaOtherTypes.SchemaReference,
             path: "$references",
             difference: {
               name: "TestSchema",
@@ -512,7 +512,7 @@ describe("Property merger tests", () => {
         changes: [
           {
             changeType: "add",
-            schemaType: SchemaOtherTypes.Schema,
+            schemaType: SchemaOtherTypes.SchemaReference,
             path: "$references",
             difference: {
               name: "TestSchema",
@@ -1081,7 +1081,7 @@ describe("Property merger tests", () => {
         changes: [
           {
             changeType: "add",
-            schemaType: SchemaOtherTypes.Schema,
+            schemaType: SchemaOtherTypes.SchemaReference,
             path: "$references",
             difference: {
               name: "TestSchema",
@@ -1127,7 +1127,7 @@ describe("Property merger tests", () => {
         changes: [
           {
             changeType: "add",
-            schemaType: SchemaOtherTypes.Schema,
+            schemaType: SchemaOtherTypes.SchemaReference,
             path: "$references",
             difference: {
               name: "TestSchema",
@@ -1175,7 +1175,7 @@ describe("Property merger tests", () => {
             changeType: "add",
             schemaType: SchemaItemType.StructClass,
             itemName: "SourceStruct",
-            difference: { },
+            difference: {},
           },
           {
             changeType: "modify",
@@ -1224,7 +1224,7 @@ describe("Property merger tests", () => {
         changes: [
           {
             changeType: "add",
-            schemaType: SchemaOtherTypes.Schema,
+            schemaType: SchemaOtherTypes.SchemaReference,
             path: "$references",
             difference: {
               name: "TestSchema",

@@ -87,7 +87,7 @@ describe("KindOfQuantity merge tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaOtherTypes.Schema,
+          schemaType: SchemaOtherTypes.SchemaReference,
           path: "$references",
           difference: {
             name: "ReferenceSchema",
@@ -176,7 +176,7 @@ describe("KindOfQuantity merge tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaOtherTypes.Schema,
+          schemaType: SchemaOtherTypes.SchemaReference,
           path: "$references",
           difference: {
             name: "ReferenceSchema",

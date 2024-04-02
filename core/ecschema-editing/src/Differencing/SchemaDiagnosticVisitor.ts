@@ -15,10 +15,10 @@ import {
 } from "@itwin/ecschema-metadata";
 import {
   type AnySchemaItemDifference,
+  type AnySchemaItemPathDifference,
   ClassItemDifference,
   ClassPropertyDifference,
   type CustomAttributeDifference,
-  CustomAttributePropertyDifference,
   type DifferenceType,
   EntityClassMixinDifference,
   EnumeratorDifference,
@@ -27,11 +27,10 @@ import {
   type SchemaDifference,
   SchemaOtherTypes,
   type SchemaReferenceDifference,
+  AnySchemaDifference,
 } from "./SchemaDifference";
 import { ConflictCode, SchemaDifferenceConflict } from "./SchemaConflicts";
 
-type AnySchemaItemPathDifference = EntityClassMixinDifference | RelationshipConstraintDifference |
-RelationshipConstraintClassDifference | CustomAttributePropertyDifference | EnumeratorDifference | ClassPropertyDifference;
 
 /**
  * Recursive synchronous function to figure whether a given class derived from
@@ -205,7 +204,7 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.schemaItemChanges.find((entry) => {
+    let modifyEntry = this.schemaItemChanges.find((entry): entry is AnySchemaItemDifference => {
       return entry.changeType === "modify" && entry.itemName === schemaItem.name;
     });
 
@@ -213,9 +212,9 @@ export class SchemaDiagnosticVisitor {
       modifyEntry = {
         changeType: "modify",
         schemaType: schemaItem.schemaItemType,
-        itemName:   schemaItem.name,
+        itemName: schemaItem.name,
         difference: {},
-      };
+      } as AnySchemaItemDifference;
       this.schemaItemChanges.push(modifyEntry);
     }
 
@@ -291,9 +290,9 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.schemaItemPathChanges.find((entry) => {
+    let modifyEntry = this.schemaItemPathChanges.find((entry): entry is EnumeratorDifference => {
       return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.Enumerator && entry.itemName === enumeration.name && entry.path === enumerator.name;
-    }) as EnumeratorDifference | undefined;
+    });
 
     if (modifyEntry === undefined) {
       modifyEntry = {
@@ -360,9 +359,9 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.schemaItemPathChanges.find((entry) => {
-      return entry.changeType === "modify" && entry.schemaType === "Property" && entry.itemName === property.class.name && entry.path === property.name;
-    }) as ClassPropertyDifference | undefined;
+    let modifyEntry = this.schemaItemPathChanges.find((entry): entry is ClassPropertyDifference => {
+      return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.Property && entry.itemName === property.class.name && entry.path === property.name;
+    });
 
     if (modifyEntry === undefined) {
       modifyEntry = {
@@ -409,9 +408,9 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.schemaItemChanges.find((entry) => {
+    let modifyEntry = this.schemaItemChanges.find((entry): entry is ClassItemDifference => {
       return entry.changeType === "modify" && entry.schemaType === ecClass.schemaItemType && entry.itemName === ecClass.name;
-    }) as ClassItemDifference | undefined;
+    });
 
     if (modifyEntry === undefined) {
       modifyEntry = {
@@ -419,7 +418,7 @@ export class SchemaDiagnosticVisitor {
         schemaType: ecClass.schemaItemType,
         itemName: ecClass.name,
         difference: {},
-      };
+      } as ClassItemDifference;
       this.schemaItemChanges.push(modifyEntry);
     }
 
@@ -481,14 +480,14 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.schemaItemPathChanges.find((entry) => {
-      return entry.changeType === "add" && entry.schemaType === "EntityClass" && entry.itemName === ecClass.name && entry.path === "$mixins";
-    }) as EntityClassMixinDifference | undefined;
+    let modifyEntry = this.schemaItemPathChanges.find((entry): entry is EntityClassMixinDifference => {
+      return entry.changeType === "add" && entry.schemaType === SchemaOtherTypes.EntityClassMixin && entry.itemName === ecClass.name && entry.path === "$mixins";
+    });
 
     if (modifyEntry === undefined) {
       modifyEntry = {
         changeType: "add",
-        schemaType: SchemaItemType.EntityClass,
+        schemaType: SchemaOtherTypes.EntityClassMixin,
         itemName: ecClass.name,
         path: "$mixins",
         difference: [],
@@ -525,18 +524,19 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.schemaItemPathChanges.find((entry) => {
+    let modifyEntry = this.schemaItemPathChanges.find((entry): entry is RelationshipConstraintClassDifference => {
       return entry.changeType === "add" && entry.schemaType === SchemaOtherTypes.RelationshipConstraintClass, entry.itemName === className && entry.path === constraintPath;
-    }) as RelationshipConstraintClassDifference | undefined;
+    });
 
     if (!modifyEntry) {
-      this.schemaItemPathChanges.push(modifyEntry = {
+      modifyEntry = {
         changeType: "add",
         schemaType: SchemaOtherTypes.RelationshipConstraintClass,
         itemName: className,
         path: constraintPath,
         difference: [],
-      });
+      }
+      this.schemaItemPathChanges.push(modifyEntry);
     }
 
     const [constraintClass] = diagnostic.messageArgs as [ECClass];
@@ -551,9 +551,9 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.schemaItemPathChanges.find((entry) => {
+    let modifyEntry = this.schemaItemPathChanges.find((entry): entry is RelationshipConstraintDifference => {
       return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.RelationshipConstraint && entry.itemName === className && entry.path === constraintPath;
-    }) as RelationshipConstraintDifference;
+    });
 
     if (modifyEntry === undefined) {
       modifyEntry = {
@@ -585,7 +585,7 @@ export class SchemaDiagnosticVisitor {
     const [referencedSchema] = diagnostic.messageArgs as [Schema];
     this.schemaPathChanges.push({
       changeType,
-      schemaType: SchemaOtherTypes.Schema,
+      schemaType: SchemaOtherTypes.SchemaReference,
       path: "$references",
       difference: {
         name: referencedSchema.name,
@@ -620,7 +620,8 @@ export class SchemaDiagnosticVisitor {
       });
     }
 
-    if (ecType instanceof Property) {
+
+    if (Property.isProperty(ecType)) {
       // TODO: Remove after fix #6560 has been merged into master.
       if (this.schemaItemChanges.find((entry) => entry.changeType === "add" && entry.itemName === ecType.name)) {
         return;
@@ -640,7 +641,7 @@ export class SchemaDiagnosticVisitor {
       });
     }
 
-    if (ecType instanceof RelationshipConstraint) {
+    if (RelationshipConstraint.isRelationshipConstraint(ecType)) {
       // TODO: Remove after fix #6560 has been merged into master.
       if (this.schemaItemChanges.find((entry) => entry.changeType === "add" && entry.itemName === ecType.relationshipClass.name)) {
         return;

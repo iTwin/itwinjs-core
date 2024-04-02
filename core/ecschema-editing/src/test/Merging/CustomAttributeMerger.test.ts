@@ -11,7 +11,7 @@ import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 
 describe("Custom Attribute merge", () => {
   let targetContext: SchemaContext;
-  const targetJson =  {
+  const targetJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "TargetSchema",
     version: "1.0.0",
@@ -63,7 +63,7 @@ describe("Custom Attribute merge", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaOtherTypes.Schema,
+          schemaType: SchemaOtherTypes.SchemaReference,
           path: "$references",
           difference: {
             name: "TestSchema",
@@ -177,7 +177,7 @@ describe("Custom Attribute merge", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaOtherTypes.Schema,
+          schemaType: SchemaOtherTypes.SchemaReference,
           path: "$references",
           difference: {
             name: "TestSchema",
@@ -261,7 +261,7 @@ describe("Custom Attribute merge", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaOtherTypes.Schema,
+          schemaType: SchemaOtherTypes.SchemaReference,
           path: "$references",
           difference: {
             name: "TestSchema",
@@ -356,7 +356,7 @@ describe("Custom Attribute merge", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaOtherTypes.Schema,
+          schemaType: SchemaOtherTypes.SchemaReference,
           path: "$references",
           difference: {
             name: "TestSchema",
