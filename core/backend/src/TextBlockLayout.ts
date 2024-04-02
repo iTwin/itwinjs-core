@@ -6,8 +6,8 @@
  * @module ###TODO
  */
 
-import { BaselineShift, FontId, FractionRun, Paragraph, Run, TextBlock, TextBlockComponent, TextBlockLayoutResult, TextRun, TextStyleSettings } from "@itwin/core-common";
-import { Range2d } from "@itwin/core-geometry";
+import { BaselineShift, FontId, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockComponent, TextBlockLayoutResult, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { LowAndHighXY, Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 import { assert } from "@itwin/core-bentley";
 
@@ -58,6 +58,12 @@ function scaleRange(range: Range2d, scale: number): void {
   range.high.scaleInPlace(scale);
 }
 
+function rangeResult(range: Range2d): LowAndHighXY {
+  return {
+    low: { x: range.low.x, y: range.low.y },
+    high: { x: range.high.x, y: range.high.y },
+  }
+}
 class LayoutContext {
   private readonly _textStyles = new Map<string, TextStyleSettings>();
   private readonly _fontIds = new Map<string, FontId>();
@@ -197,6 +203,31 @@ class RunLayout {
       }
     }
   }
+
+  public toResult(paragraph: Paragraph): RunLayoutResult {
+    const result: RunLayoutResult = {
+      sourceRunIndex: paragraph.runs.indexOf(this.source),
+      fontId: this.fontId,
+      characterOffset: this.charOffset,
+      characterCount: this.numChars,
+      range: rangeResult(this.range),
+      offsetFromLine: this.offsetFromLine,
+    };
+
+    if (this.justificationRange) {
+      result.justificationRange = rangeResult(this.justificationRange);
+    }
+
+    if (this.numeratorRange) {
+      result.numeratorRange = rangeResult(this.numeratorRange);
+    }
+
+    if (this.denominatorRange) {
+      result.denominatorRange = rangeResult(this.denominatorRange);
+    }
+
+    return result;
+  }
 }
 
 class LineLayout {
@@ -233,6 +264,16 @@ class LineLayout {
       }
     }
   }
+
+  public toResult(textBlock: TextBlock): LineLayoutResult {
+    return {
+      sourceParagraphIndex: textBlock.paragraphs.indexOf(this.source),
+      runs: this.runs.map((x) => x.toResult(this.source)),
+      range: rangeResult(this.range),
+      justificationRange: rangeResult(this.justificationRange),
+      offsetFromDocument: this.offsetFromDocument,
+    };
+  }
 }
 
 class TextBlockLayout {
@@ -250,7 +291,10 @@ class TextBlockLayout {
   }
 
   public toResult(): TextBlockLayoutResult {
-    throw new Error("###TODO");
+    return {
+      lines: this.lines.map((x) => x.toResult(this.source)),
+      range: rangeResult(this.range),
+    };
   }
 
   private get back(): LineLayout {
