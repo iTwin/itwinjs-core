@@ -3193,7 +3193,7 @@ export namespace IModelDb {
         tryGetElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T | undefined;
         tryGetElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined;
         updateAspect(aspectProps: ElementAspectProps): void;
-        updateElement(elProps: ElementProps): void;
+        updateElement<T extends ElementProps>(elProps: Partial<T>): void;
     }
     // (undocumented)
     export interface GuidMapper {
