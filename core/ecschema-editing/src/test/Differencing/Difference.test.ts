@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { DifferenceType, SchemaDifference, SchemaDifferences } from "../../Differencing/SchemaDifference";
+import { DifferenceType, SchemaDifference, SchemaDifferences, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { expect } from "chai";
 
 import sourceJson from "./sourceSchema.json";
@@ -17,12 +17,12 @@ interface LookupArgs {
 }
 
 function expectPartiallyEquals(actual: any, expected: any, message?: string) {
-  if(actual === undefined && expected !== undefined) {
+  if (actual === undefined && expected !== undefined) {
     expect(actual, message || "Actual does not have a value.").is.not.undefined;
   }
 
-  if(typeof actual === "object") {
-    for(const key of Object.keys(expected)) {
+  if (typeof actual === "object") {
+    for (const key of Object.keys(expected)) {
       expect(actual).to.haveOwnProperty(key);
       expectPartiallyEquals(actual[key], expected[key], `expected '${expected[key]}' to equal '${actual[key]}' on property ${key}`);
     }
@@ -70,9 +70,9 @@ describe("Schema Difference Reporting", () => {
   function findEntries(args: LookupArgs) {
     return schemaDifferences.changes && schemaDifferences.changes.filter((change: any) => {
       return (!args.changeType || change.changeType === args.changeType)
-      && (!args.schemaType || change.schemaType === args.schemaType)
-      && (!args.itemName || change.itemName === args.itemName)
-      && change.path === args.path;
+        && (!args.schemaType || change.schemaType === args.schemaType)
+        && (!args.itemName || change.itemName === args.itemName)
+        && change.path === args.path;
     });
   }
 
@@ -143,32 +143,30 @@ describe("Schema Difference Reporting", () => {
     // There are three references in this workflow. Both target and source reference to the same
     // CustomAttributesSchema so this should not appear in the list, EmptySchema has a more recent
     // version in source and MissingSchema is not referenced by the target schema.
-    expectPartiallyEquals(findEntries({ schemaType: "Schema", path: "$references" }), [
+    expectPartiallyEquals(findEntries({ schemaType: SchemaOtherTypes.SchemaReference }), [
       {
         changeType: "modify",
-        schemaType: "Schema",
-        path:       "$references",
+        schemaType: SchemaOtherTypes.SchemaReference,
         difference: {
-          name:      "EmptySchema",
-          version:   "01.00.01",
+          name: "EmptySchema",
+          version: "01.00.01",
         },
       }, {
         changeType: "add",
-        schemaType: "Schema",
-        path:       "$references",
+        schemaType: SchemaOtherTypes.SchemaReference,
         difference: {
-          name:      "MissingSchema",
-          version:   "04.00.00",
+          name: "MissingSchema",
+          version: "04.00.00",
         },
       },
     ]);
   });
 
   it("should return a missing custom attribute on the schema", () => {
-    expectPartiallyEquals(findEntry({ changeType: "add", schemaType: "CustomAttribute" }), {
+    expectPartiallyEquals(findEntry({ changeType: "add", schemaType: "CustomAttributeInstance" }), {
       changeType: "add",
-      schemaType: "CustomAttribute",
-      appliesTo:  "Schema",
+      schemaType: "CustomAttributeInstance",
+      appliedTo: "Schema",
       difference: {
         className: "CustomAttributeSchema.MissingCA",
       },
@@ -176,11 +174,11 @@ describe("Schema Difference Reporting", () => {
   });
 
   it("should return a missing custom attribute on entity", () => {
-    expectPartiallyEquals(findEntry({ schemaType: "CustomAttribute", itemName: "ChangedEntity"}), {
+    expectPartiallyEquals(findEntry({ schemaType: "CustomAttributeInstance", itemName: "ChangedEntity" }), {
       changeType: "add",
-      schemaType: "CustomAttribute",
-      appliesTo:  "SchemaItem",
-      itemName:   "ChangedEntity",
+      schemaType: "CustomAttributeInstance",
+      appliedTo: "SchemaItem",
+      itemName: "ChangedEntity",
       difference: {
         className: "CustomAttributeSchema.MissingCA",
       },
@@ -188,12 +186,12 @@ describe("Schema Difference Reporting", () => {
   });
 
   it("should return a missing custom attribute on property", () => {
-    expectPartiallyEquals(findEntry({ schemaType: "CustomAttribute", itemName: "ChangedEntity", path: "BooleanProperty"}), {
+    expectPartiallyEquals(findEntry({ schemaType: "CustomAttributeInstance", itemName: "ChangedEntity", path: "BooleanProperty" }), {
       changeType: "add",
-      schemaType: "CustomAttribute",
-      appliesTo:  "Property",
-      itemName:   "ChangedEntity",
-      path:       "BooleanProperty",
+      schemaType: "CustomAttributeInstance",
+      appliedTo: "Property",
+      itemName: "ChangedEntity",
+      path: "BooleanProperty",
       difference: {
         className: "CustomAttributeSchema.InternalId",
       },
@@ -201,12 +199,12 @@ describe("Schema Difference Reporting", () => {
   });
 
   it("should return a missing custom attribute on RelationshipConstraint", () => {
-    expectPartiallyEquals(findEntry({ schemaType: "CustomAttribute", itemName: "RelationshipEntity", path: "$target"}), {
+    expectPartiallyEquals(findEntry({ schemaType: "CustomAttributeInstance", itemName: "RelationshipEntity", path: "$target" }), {
       changeType: "add",
-      schemaType: "CustomAttribute",
-      appliesTo: "RelationshipConstraint",
-      itemName:   "RelationshipEntity",
-      path:       "$target",
+      schemaType: "CustomAttributeInstance",
+      appliedTo: "RelationshipConstraint",
+      itemName: "RelationshipEntity",
+      path: "$target",
       difference: {
         className: "CustomAttributeSchema.MissingCA",
       },
@@ -214,22 +212,22 @@ describe("Schema Difference Reporting", () => {
   });
 
   it("should return missing schema items", () => {
-    expectPartiallyEquals(findEntry({ changeType: "add", itemName: "TestUnitSystem"}), {
-      changeType:   "add",
-      schemaType:   "UnitSystem",
-      itemName:     "TestUnitSystem",
+    expectPartiallyEquals(findEntry({ changeType: "add", itemName: "TestUnitSystem" }), {
+      changeType: "add",
+      schemaType: "UnitSystem",
+      itemName: "TestUnitSystem",
       difference: {
-        label:       "Imperial",
+        label: "Imperial",
         // [...]
       },
     });
   });
 
   it("should return missing enumeration", () => {
-    expectPartiallyEquals(findEntry({ changeType: "add", itemName: "MissingEnumeration"}), {
-      changeType:   "add",
-      schemaType:   "Enumeration",
-      itemName:     "MissingEnumeration",
+    expectPartiallyEquals(findEntry({ changeType: "add", itemName: "MissingEnumeration" }), {
+      changeType: "add",
+      schemaType: "Enumeration",
+      itemName: "MissingEnumeration",
       difference: {
         type: "int",
         isStrict: true,
@@ -243,11 +241,11 @@ describe("Schema Difference Reporting", () => {
   });
 
   it("should return changed enumeration enumerators", () => {
-    expectPartiallyEquals(findEntry({changeType: "modify", itemName: "ChangedEnumeration", path: "$enumerators.EnumeratorTwo"}), {
+    expectPartiallyEquals(findEntry({ changeType: "modify", itemName: "ChangedEnumeration", path: "EnumeratorTwo" }), {
       changeType: "modify",
-      schemaType: "Enumeration",
-      itemName:   "ChangedEnumeration",
-      path:       "$enumerators.EnumeratorTwo",
+      schemaType: "Enumerator",
+      itemName: "ChangedEnumeration",
+      path: "EnumeratorTwo",
       difference: {
         label: "Enumerator Two",
       },
@@ -255,13 +253,13 @@ describe("Schema Difference Reporting", () => {
   });
 
   it("should return added enumeration enumerators", () => {
-    expectPartiallyEquals(findEntries({changeType: "add", itemName: "ChangedEnumeration", path: "$enumerators" }), [{
+    expectPartiallyEquals(findEntries({ changeType: "add", itemName: "ChangedEnumeration", path: "$enumerators" }), [{
       changeType: "add",
-      schemaType: "Enumeration",
-      itemName:   "ChangedEnumeration",
-      path:       "$enumerators",
+      schemaType: "Enumerator",
+      itemName: "ChangedEnumeration",
+      path: "$enumerators",
       difference: {
-        name:  "EnumeratorThree",
+        name: "EnumeratorThree",
         label: "Enumerator Three",
         value: "3",
       },
@@ -272,7 +270,7 @@ describe("Schema Difference Reporting", () => {
     expectPartiallyEquals(findEntry({ changeType: "add", itemName: "MissingStruct" }), {
       changeType: "add",
       schemaType: "StructClass",
-      itemName:   "MissingStruct",
+      itemName: "MissingStruct",
       difference: {
         properties: [{
           name: "BooleanProperty",
@@ -295,8 +293,8 @@ describe("Schema Difference Reporting", () => {
     expectPartiallyEquals(findEntry({ changeType: "add", itemName: "ChangedEntity", path: "StructProperty" }), {
       changeType: "add",
       schemaType: "Property",
-      itemName:   "ChangedEntity",
-      path:       "StructProperty",
+      itemName: "ChangedEntity",
+      path: "StructProperty",
       difference: {
         name: "StructProperty",
         type: "StructArrayProperty",
@@ -309,7 +307,7 @@ describe("Schema Difference Reporting", () => {
     expectPartiallyEquals(findEntry({ changeType: "modify", itemName: "ChangedBaseClassEntity" }), {
       changeType: "modify",
       schemaType: "EntityClass",
-      itemName:   "ChangedBaseClassEntity",
+      itemName: "ChangedBaseClassEntity",
       difference: {
         baseClass: "SourceSchema.ChangedEntityBaseClass",
         // [...]
@@ -318,13 +316,12 @@ describe("Schema Difference Reporting", () => {
   });
 
   it("should return changed entity with mixin added", () => {
-    expect(findEntry({ changeType: "add", itemName: "EmptyAbstractEntity"}), "Expected EmptyAbstractEntity to be added").to.not.be.undefined;
+    expect(findEntry({ changeType: "add", itemName: "EmptyAbstractEntity" }), "Expected EmptyAbstractEntity to be added").to.not.be.undefined;
     expect(findEntry({ changeType: "add", itemName: "MissingMixin" }), "Expected MissingMixin to be added").to.not.be.undefined;
-    expectPartiallyEquals(findEntry({ changeType: "add", itemName: "ChangedEntity", path: "$mixins" }), {
+    expectPartiallyEquals(findEntry({ changeType: "add", itemName: "ChangedEntity" }), {
       changeType: "add",
-      schemaType: "EntityClass",
-      itemName:   "ChangedEntity",
-      path:       "$mixins",
+      schemaType: "EntityClassMixin",
+      itemName: "ChangedEntity",
       difference: [
         "SourceSchema.MissingMixin",
       ],
@@ -332,11 +329,11 @@ describe("Schema Difference Reporting", () => {
   });
 
   it("should return changed source relationship constraint properties", () => {
-    expectPartiallyEquals(findEntry({ changeType: "modify", itemName: "RelationshipEntity", path: "$source"}), {
+    expectPartiallyEquals(findEntry({ changeType: "modify", schemaType: "RelationshipConstraint", itemName: "RelationshipEntity", path: "$source" }), {
       changeType: "modify",
-      schemaType: "RelationshipClass",
-      itemName:   "RelationshipEntity",
-      path:       "$source",
+      schemaType: "RelationshipConstraint",
+      itemName: "RelationshipEntity",
+      path: "$source",
       difference: {
         roleLabel: "New Source RoleLabel",
         abstractConstraint: "SourceSchema.RelationshipSourceEntity",
@@ -345,10 +342,10 @@ describe("Schema Difference Reporting", () => {
   });
 
   it("should return changed source relationship constraint with added constraint classes", () => {
-    expectPartiallyEquals(findEntry({ changeType: "add", itemName: "RelationshipEntity", path: "$source.constraintClasses"}), {
+    expectPartiallyEquals(findEntry({ changeType: "add", schemaType: "RelationshipConstraintClass", itemName: "RelationshipEntity", path: "$source" }), {
       changeType: "add",
-      schemaType: "RelationshipClass",
-      itemName:   "RelationshipEntity",
+      schemaType: "RelationshipConstraintClass",
+      itemName: "RelationshipEntity",
       difference: [
         "SourceSchema.RelationshipSourceEntity",
       ],

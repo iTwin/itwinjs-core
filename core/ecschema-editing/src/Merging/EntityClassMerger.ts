@@ -7,6 +7,8 @@ import { type SchemaItemMergerHandler, updateSchemaItemKey } from "./SchemaItemM
 import { type MutableEntityClass } from "../Editing/Mutable/MutableEntityClass";
 import { modifyClass } from "./ClassMerger";
 import { SchemaItemKey } from "@itwin/ecschema-metadata";
+import { SchemaMergeContext } from "./SchemaMerger";
+import { SchemaItemEditResults } from "../Editing/Editor";
 
 /**
  * Defines a merge handler to merge Entity Class schema items.
@@ -37,22 +39,21 @@ export const entityClassMerger: SchemaItemMergerHandler<EntityClassDifference> =
 };
 
 /**
- * Defines a merge handler to merge Mixins to Entity Class schema items.
+ * Merges Mixins to Entity Class schema items.
  * @internal
  */
-export const entityClassMixinMerger: SchemaItemMergerHandler<EntityClassMixinDifference> = {
-  async add(context, change) {
+export async function mergeClassMixins(context: SchemaMergeContext, change: EntityClassMixinDifference): Promise<SchemaItemEditResults> {
+  if(change.changeType === "add") {
     for(const mixinFullName of change.difference) {
       const mixinKey = await updateSchemaItemKey(context, mixinFullName);
       const entityKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
       const result = await context.editor.entities.addMixin(entityKey, mixinKey);
-      if(result.errorMessage === undefined) {
+      if(result.errorMessage) {
         throw new Error(result.errorMessage);
       }
     }
     return {};
-  },
-  async modify(_context, change) {
+  } else {
     return { errorMessage: `Changing the entity class '${change.itemName}' mixins is not supported.`};
-  },
-};
+  }
+}

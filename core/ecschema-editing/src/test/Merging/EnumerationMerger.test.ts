@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Enumeration, Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import { Enumeration, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
+import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -29,7 +30,7 @@ describe("Enumeration merge tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "Enumeration",
+          schemaType: SchemaItemType.Enumeration,
           itemName: "TestEnumeration",
           difference: {
             type: "int",
@@ -95,7 +96,7 @@ describe("Enumeration merge tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "Enumeration",
+          schemaType: SchemaOtherTypes.Enumerator,
           itemName: "TestEnumeration",
           path: "$enumerators",
           difference: {
@@ -155,7 +156,7 @@ describe("Enumeration merge tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "Enumeration",
+          schemaType: SchemaOtherTypes.Enumerator,
           itemName: "TestEnumeration",
           path: "$enumerators",
           difference: {
@@ -217,9 +218,9 @@ describe("Enumeration merge tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: "Enumeration",
+          schemaType: SchemaOtherTypes.Enumerator,
           itemName: "TestEnumeration",
-          path: "$enumerators.EnumeratorOne",
+          path: "EnumeratorOne",
           difference: {
             description: "This is for enumerator one",
             label: "Enumerator One",
@@ -268,7 +269,7 @@ describe("Enumeration merge tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: "Enumeration",
+          schemaType: SchemaItemType.Enumeration,
           itemName: "TestEnumeration",
           difference: {
             type: "int",
@@ -306,9 +307,9 @@ describe("Enumeration merge tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: "Enumeration",
+          schemaType: SchemaOtherTypes.Enumerator,
           itemName: "TestEnumeration",
-          path: "$enumerators.EnumeratorOne",
+          path: "EnumeratorOne",
           difference: {
             value: 100,
           },

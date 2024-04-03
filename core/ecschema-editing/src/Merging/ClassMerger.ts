@@ -3,27 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { type SchemaMergeContext } from "./SchemaMerger";
-import { AnySchemaDifference, AnySchemaItemDifference, ClassItemDifference, SchemaDifference, StructClassDifference } from "../Differencing/SchemaDifference";
+import { AnySchemaDifference, AnySchemaItemDifference, AnySchemaItemPathDifference, ClassItemDifference, SchemaDifference, StructClassDifference } from "../Differencing/SchemaDifference";
 import { locateSchemaItem, SchemaItemMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
 import { type MutableClass } from "../Editing/Mutable/MutableClass";
 import { CustomAttribute, ECClass, ECClassModifier, parseClassModifier, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaEditResults } from "../Editing/Editor";
-import { entityClassMerger, entityClassMixinMerger } from "./EntityClassMerger";
+import { entityClassMerger, mergeClassMixins } from "./EntityClassMerger";
 import { customAttributeClassMerger } from "./CAClassMerger";
 import { mixinClassMerger } from "./MixinMerger";
-import { relationshipClassMerger } from "./RelationshipClassMerger";
+import { mergeRelationshipClassConstraint, mergeRelationshipConstraint, relationshipClassMerger } from "./RelationshipClassMerger";
 import { mergeClassProperties, mergePropertyDifference } from "./PropertyMerger";
 import { applyCustomAttributes } from "./CustomAttributeMerger";
 
-type ClassItemHandler = <T extends AnySchemaItemDifference>(change: T, merger: SchemaItemMergerHandler<T>) => Promise<void>;
+type ClassItemHandler = <T extends AnySchemaItemDifference | AnySchemaItemPathDifference>(change: T, merger: SchemaItemMergerHandler<T>) => Promise<void>;
 
 /**
  * @internal
  */
-export async function * mergeClassItems(context: SchemaMergeContext, classChanges: AnySchemaDifference[]) {
+export async function* mergeClassItems(context: SchemaMergeContext, classChanges: AnySchemaDifference[]) {
   // In the first pass all class items will be created as stubs. That only applies to added entities.
   await iterateClassChanges(classChanges, async (change, merger) => {
-    if(change.changeType === "add" && !SchemaDifference.isPathDifference(change) && merger.add) {
+    if (change.changeType === "add" && merger.add) {
       // Make a copy of the change instance, we don't want to alter the actual instance.
       const changeCopy = {
         ...change,
@@ -43,19 +43,40 @@ export async function * mergeClassItems(context: SchemaMergeContext, classChange
   // In the second pass the base classes and mixins get merged. At that add-changes are
   // effectively modify changes now, as the items has been created in the first pass.
   await iterateClassChanges(classChanges, async (change, merger) => {
-    if(merger.modify) {
+    if (merger.modify) {
       const schemaItem = await locateSchemaItem(context, change.itemName, change.schemaType);
       const result = await merger.modify(context, change, schemaItem.key, schemaItem);
-      if(result.errorMessage) {
+      if (result.errorMessage) {
         throw new Error(result.errorMessage);
       }
     }
   });
 
+  for (const difference of classChanges.filter(SchemaDifference.isEntityClassMixinDifference)) {
+    const result = await mergeClassMixins(context, difference);
+    if(result.errorMessage) {
+      throw new Error(result.errorMessage);
+    }
+  }
+
+  for (const difference of classChanges.filter(SchemaDifference.isRelationshipConstraintDifference)) {
+    const result = await mergeRelationshipConstraint(context, difference);
+    if(result.errorMessage) {
+      throw new Error(result.errorMessage);
+    }
+  }
+
+  for (const difference of classChanges.filter(SchemaDifference.isRelationshipConstraintClassDifference)) {
+    const result = await mergeRelationshipClassConstraint(context, difference);
+    if(result.errorMessage) {
+      throw new Error(result.errorMessage);
+    }
+  }
+
   // At last step the properties that are added to existing classes or modified.
   for (const difference of classChanges.filter(SchemaDifference.isClassPropertyDifference)) {
     const result = await mergePropertyDifference(context, difference);
-    if(result.errorMessage) {
+    if (result.errorMessage) {
       throw new Error(result.errorMessage);
     }
   }
@@ -78,19 +99,7 @@ async function iterateClassChanges(classChanges: AnySchemaDifference[], handler:
     await handler(difference, entityClassMerger);
   }
 
-  for (const difference of classChanges.filter(SchemaDifference.isEntityClassMixinDifference)) {
-    await handler(difference, entityClassMixinMerger);
-  }
-
   for (const difference of classChanges.filter(SchemaDifference.isRelationshipClassDifference)) {
-    await handler(difference, relationshipClassMerger);
-  }
-
-  for (const difference of classChanges.filter(SchemaDifference.isRelationshipConstraintDifference)) {
-    await handler(difference, relationshipClassMerger);
-  }
-
-  for (const difference of classChanges.filter(SchemaDifference.isRelationshipConstraintClassDifference)) {
     await handler(difference, relationshipClassMerger);
   }
 }
@@ -101,33 +110,33 @@ async function iterateClassChanges(classChanges: AnySchemaDifference[], handler:
  */
 export async function modifyClass(context: SchemaMergeContext, change: ClassItemDifference, itemKey: SchemaItemKey, item: ECClass): Promise<SchemaEditResults> {
   const mutableClass = item as MutableClass;
-  if(change.difference.label !== undefined) {
+  if (change.difference.label !== undefined) {
     mutableClass.setDisplayLabel(change.difference.label);
   }
 
-  if(change.difference.description !== undefined) {
+  if (change.difference.description !== undefined) {
     mutableClass.setDescription(change.difference.description);
   }
 
-  if(change.difference.baseClass !== undefined) {
+  if (change.difference.baseClass !== undefined) {
     const result = await setBaseClass(context, item, change.difference.baseClass, change.changeType === "add");
-    if(result.errorMessage) {
+    if (result.errorMessage) {
       return result;
     }
   }
 
-  if(change.difference.modifier !== undefined) {
+  if (change.difference.modifier !== undefined) {
     const result = await setClassModifier(mutableClass, change.difference.modifier);
-    if(result.errorMessage) {
+    if (result.errorMessage) {
       return result;
     }
   }
 
-  if(change.difference.customAttributes !== undefined) {
+  if (change.difference.customAttributes !== undefined) {
     const result = await applyCustomAttributes(context, change.difference.customAttributes as CustomAttribute[], async (ca) => {
       return context.editor.entities.addCustomAttribute(itemKey, ca);
     });
-    if(result.errorMessage) {
+    if (result.errorMessage) {
       return result;
     }
   }
@@ -138,28 +147,28 @@ export async function modifyClass(context: SchemaMergeContext, change: ClassItem
 async function setBaseClass(context: SchemaMergeContext, item: ECClass, baseClass: string, isInitial: boolean): Promise<SchemaEditResults> {
   const baseClassKey = await updateSchemaItemKey(context, baseClass);
   const baseClassSetter = getBaseClassSetter(context, item);
-  if(isInitial && item.baseClass === undefined) {
+  if (isInitial && item.baseClass === undefined) {
     return baseClassSetter(item.key, baseClassKey);
   }
-  if(item.baseClass !== undefined) {
+  if (item.baseClass !== undefined) {
     const currentBaseClass = await item.baseClass;
     const newBaseClass = await context.editor.schemaContext.getSchemaItem<ECClass>(baseClassKey);
     if (newBaseClass === undefined) {
-      return { errorMessage: `'${baseClassKey.name}' class could not be located in the merged schema.`};
+      return { errorMessage: `'${baseClassKey.name}' class could not be located in the merged schema.` };
     }
-    if(await newBaseClass.is(currentBaseClass)) {
+    if (await newBaseClass.is(currentBaseClass)) {
       return baseClassSetter(item.key, baseClassKey);
     }
   }
-  return { errorMessage: `Changing the class '${item.key.name}' baseClass is not supported.`};
+  return { errorMessage: `Changing the class '${item.key.name}' baseClass is not supported.` };
 }
 
 async function setClassModifier(item: MutableClass, modifierValue: string): Promise<SchemaEditResults> {
   const modifier = parseClassModifier(modifierValue);
-  if(modifier === undefined) {
+  if (modifier === undefined) {
     return { errorMessage: "An invalid class modifier has been provided." };
   }
-  if(item.modifier === undefined || item.modifier === modifier || modifier === ECClassModifier.None) {
+  if (item.modifier === undefined || item.modifier === modifier || modifier === ECClassModifier.None) {
     item.setModifier(modifier);
     return {};
   }
@@ -168,12 +177,12 @@ async function setClassModifier(item: MutableClass, modifierValue: string): Prom
 
 function getBaseClassSetter(context: SchemaMergeContext, item: ECClass) {
   return async (itemKey: SchemaItemKey, baseClassKey: SchemaItemKey) => {
-    switch(item.schemaItemType) {
+    switch (item.schemaItemType) {
       case SchemaItemType.EntityClass: return context.editor.entities.setBaseClass(itemKey, baseClassKey);
       case SchemaItemType.Mixin: return context.editor.mixins.setMixinBaseClass(itemKey, baseClassKey);
       // TODO: verify; structs and relationship classes can't have base classes?
     }
-    return { errorMessage: `Changing the base class '${item.name}' is not supported.` };
+    return { itemKey, errorMessage: `Changing the base class '${item.name}' is not supported.` };
   };
 }
 

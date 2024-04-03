@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { EntityClass, Mixin, Schema, SchemaContext, StructClass } from "@itwin/ecschema-metadata";
-import { SchemaItemTypeName } from "../../Differencing/SchemaDifference";
+import { EntityClass, Mixin, Schema, SchemaContext, SchemaItemType, StructClass } from "@itwin/ecschema-metadata";
+import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { SchemaMerger } from "../../ecschema-editing";
 import { expect } from "chai";
 
@@ -30,7 +30,7 @@ describe("Class items merging order tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.EntityClass,
+          schemaType: SchemaItemType.EntityClass,
           itemName: "bracket",
           difference: {
             description: "Bracket test class",
@@ -39,7 +39,7 @@ describe("Class items merging order tests", () => {
         },
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.EntityClass,
+          schemaType: SchemaItemType.EntityClass,
           itemName: "sps",
           difference: {
             description: "Sps test Class",
@@ -70,7 +70,7 @@ describe("Class items merging order tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.EntityClass,
+          schemaType: SchemaItemType.EntityClass,
           itemName: "testClass",
           difference: {
             description: "Test class",
@@ -82,7 +82,7 @@ describe("Class items merging order tests", () => {
         },
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.Mixin,
+          schemaType: SchemaItemType.Mixin,
           itemName: "mixinA",
           difference: {
             description: "Mixin A",
@@ -91,7 +91,7 @@ describe("Class items merging order tests", () => {
         },
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.Mixin,
+          schemaType: SchemaItemType.Mixin,
           itemName: "mixinB",
           difference: {
             description: "Mixin B",
@@ -119,7 +119,7 @@ describe("Class items merging order tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.Mixin,
+          schemaType: SchemaItemType.Mixin,
           itemName: "mixinA",
           difference: {
             description: "Mixin A",
@@ -129,7 +129,7 @@ describe("Class items merging order tests", () => {
         },
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.EntityClass,
+          schemaType: SchemaItemType.EntityClass,
           itemName: "testClass",
           difference: {
             description: "Test class",
@@ -137,7 +137,7 @@ describe("Class items merging order tests", () => {
         },
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.Mixin,
+          schemaType: SchemaItemType.Mixin,
           itemName: "testBaseMixinClass",
           difference: {
             description: "Test mixin class",
@@ -162,7 +162,7 @@ describe("Class items merging order tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.EntityClass,
+          schemaType: SchemaItemType.EntityClass,
           itemName: "sps",
           difference: {
             description: "Sps test Class",
@@ -188,7 +188,7 @@ describe("Class items merging order tests", () => {
         },
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.StructClass,
+          schemaType: SchemaItemType.StructClass,
           itemName: "middle",
           difference: {
             description: "Middle test class",
@@ -214,7 +214,7 @@ describe("Class items merging order tests", () => {
         },
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.StructClass,
+          schemaType: SchemaItemType.StructClass,
           itemName: "allocation",
           difference: {
             description: "Allocation test Class",
@@ -302,7 +302,7 @@ describe("Class items merging order tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "Property",
+          schemaType: SchemaOtherTypes.Property,
           itemName: "sps",
           path: "Status",
           difference: {
@@ -315,7 +315,7 @@ describe("Class items merging order tests", () => {
         },
         {
           changeType: "add",
-          schemaType: "Property",
+          schemaType: SchemaOtherTypes.Property,
           itemName: "sps",
           path: "Allocation",
           difference: {
@@ -330,7 +330,7 @@ describe("Class items merging order tests", () => {
         },
         {
           changeType: "add",
-          schemaType: "Property",
+          schemaType: SchemaOtherTypes.Property,
           itemName: "middle",
           path: "Allocation",
           difference: {
@@ -345,7 +345,7 @@ describe("Class items merging order tests", () => {
         },
         {
           changeType: "add",
-          schemaType: SchemaItemTypeName.StructClass,
+          schemaType: SchemaItemType.StructClass,
           itemName: "allocation",
           difference: {
             description: "Allocation test Class",

@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { KindOfQuantity, Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import { KindOfQuantity, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
+import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -86,8 +87,7 @@ describe("KindOfQuantity merge tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "Schema",
-          path: "$references",
+          schemaType: SchemaOtherTypes.SchemaReference,
           difference: {
             name: "ReferenceSchema",
             version: "01.02.00",
@@ -95,7 +95,7 @@ describe("KindOfQuantity merge tests", () => {
         },
         {
           changeType: "add",
-          schemaType: "KindOfQuantity",
+          schemaType: SchemaItemType.KindOfQuantity,
           itemName: "TestKoq",
           difference: {
             label: "Test",
@@ -144,7 +144,7 @@ describe("KindOfQuantity merge tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "KindOfQuantity",
+          schemaType: SchemaItemType.KindOfQuantity,
           itemName: "TestKoq",
           difference: {
             label: "Test",
@@ -175,8 +175,7 @@ describe("KindOfQuantity merge tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "Schema",
-          path: "$references",
+          schemaType: SchemaOtherTypes.SchemaReference,
           difference: {
             name: "ReferenceSchema",
             version: "01.02.00",
@@ -184,7 +183,7 @@ describe("KindOfQuantity merge tests", () => {
         },
         {
           changeType: "add",
-          schemaType: "KindOfQuantity",
+          schemaType: SchemaItemType.KindOfQuantity,
           itemName: "TestKoq",
           difference: {
             label: "Test",
@@ -249,7 +248,7 @@ describe("KindOfQuantity merge tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "KindOfQuantity",
+          schemaType: SchemaItemType.KindOfQuantity,
           itemName: "TestKoq",
           difference: {
             label: "Test",
@@ -309,7 +308,7 @@ describe("KindOfQuantity merge tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: "KindOfQuantity",
+          schemaType: SchemaItemType.KindOfQuantity,
           itemName: "TestKoq",
           difference: {
             description: "Description of koq",
@@ -358,7 +357,7 @@ describe("KindOfQuantity merge tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: "KindOfQuantity",
+          schemaType: SchemaItemType.KindOfQuantity,
           itemName: "TestKoq",
           difference: {
             persistenceUnit: "ReferenceSchema.TU",

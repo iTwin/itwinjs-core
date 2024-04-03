@@ -2,15 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { EntityClass, RelationshipClass, Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import { EntityClass, RelationshipClass, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
+import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("Custom Attribute merge", () => {
   let targetContext: SchemaContext;
-  const targetJson =  {
+  const targetJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "TargetSchema",
     version: "1.0.0",
@@ -62,8 +63,7 @@ describe("Custom Attribute merge", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "Schema",
-          path: "$references",
+          schemaType: SchemaOtherTypes.SchemaReference,
           difference: {
             name: "TestSchema",
             version: "01.00.15",
@@ -71,7 +71,7 @@ describe("Custom Attribute merge", () => {
         },
         {
           changeType: "add",
-          schemaType: "CustomAttributeClass",
+          schemaType: SchemaItemType.CustomAttributeClass,
           itemName: "SourceCA",
           difference: {
             properties: [
@@ -91,9 +91,9 @@ describe("Custom Attribute merge", () => {
         },
         {
           changeType: "add",
-          schemaType: "CustomAttribute",
+          schemaType: SchemaOtherTypes.CustomAttributeInstance,
           itemName: "TestEntity",
-          appliesTo: "SchemaItem",
+          appliedTo: "SchemaItem",
           difference: {
             IntProp: 5,
             StringPrimitiveArrayProp: [
@@ -104,8 +104,8 @@ describe("Custom Attribute merge", () => {
         },
         {
           changeType: "add",
-          schemaType: "CustomAttribute",
-          appliesTo: "SchemaItem",
+          schemaType: SchemaOtherTypes.CustomAttributeInstance,
+          appliedTo: "SchemaItem",
           itemName: "TestEntity",
           difference: {
             BooleanProp: true,
@@ -176,8 +176,7 @@ describe("Custom Attribute merge", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "Schema",
-          path: "$references",
+          schemaType: SchemaOtherTypes.SchemaReference,
           difference: {
             name: "TestSchema",
             version: "01.00.15",
@@ -185,8 +184,8 @@ describe("Custom Attribute merge", () => {
         },
         {
           changeType: "add",
-          schemaType: "CustomAttribute",
-          appliesTo: "Property",
+          schemaType: SchemaOtherTypes.CustomAttributeInstance,
+          appliedTo: "Property",
           itemName: "TestEntity",
           path: "DoubleProp",
           difference: {
@@ -196,8 +195,8 @@ describe("Custom Attribute merge", () => {
         },
         {
           changeType: "add",
-          schemaType: "CustomAttribute",
-          appliesTo: "Property",
+          schemaType: SchemaOtherTypes.CustomAttributeInstance,
+          appliedTo: "Property",
           itemName: "TestEntity",
           path: "DateTimeProp",
           difference: {
@@ -260,8 +259,7 @@ describe("Custom Attribute merge", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "Schema",
-          path: "$references",
+          schemaType: SchemaOtherTypes.SchemaReference,
           difference: {
             name: "TestSchema",
             version: "01.00.15",
@@ -269,16 +267,16 @@ describe("Custom Attribute merge", () => {
         },
         {
           changeType: "add",
-          schemaType: "CustomAttribute",
-          appliesTo: "Schema",
+          schemaType: SchemaOtherTypes.CustomAttributeInstance,
+          appliedTo: "Schema",
           difference: {
             className: "SourceSchema.TestCA",
           },
         },
         {
           changeType: "add",
-          schemaType: "CustomAttribute",
-          appliesTo: "Schema",
+          schemaType: SchemaOtherTypes.CustomAttributeInstance,
+          appliedTo: "Schema",
           difference: {
             StringPrimitiveArrayProp: [
               "SchemaCustomAttribute",
@@ -355,8 +353,7 @@ describe("Custom Attribute merge", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "Schema",
-          path: "$references",
+          schemaType: SchemaOtherTypes.SchemaReference,
           difference: {
             name: "TestSchema",
             version: "01.00.15",
@@ -364,8 +361,8 @@ describe("Custom Attribute merge", () => {
         },
         {
           changeType: "add",
-          schemaType: "CustomAttribute",
-          appliesTo: "RelationshipConstraint",
+          schemaType: SchemaOtherTypes.CustomAttributeInstance,
+          appliedTo: "RelationshipConstraint",
           itemName: "TestRelationship",
           path: "$source",
           difference: {
@@ -375,9 +372,9 @@ describe("Custom Attribute merge", () => {
         },
         {
           changeType: "add",
-          schemaType: "CustomAttribute",
+          schemaType: SchemaOtherTypes.CustomAttributeInstance,
           itemName: "TestRelationship",
-          appliesTo: "RelationshipConstraint",
+          appliedTo: "RelationshipConstraint",
           path: "$source",
           difference: {
             className: "SourceSchema.TestCA",
@@ -385,9 +382,9 @@ describe("Custom Attribute merge", () => {
         },
         {
           changeType: "add",
-          schemaType: "CustomAttribute",
+          schemaType: SchemaOtherTypes.CustomAttributeInstance,
           itemName: "TestRelationship",
-          appliesTo: "RelationshipConstraint",
+          appliedTo: "RelationshipConstraint",
           path: "$target",
           difference: {
             className: "TestSchema.TestCA",
@@ -398,9 +395,9 @@ describe("Custom Attribute merge", () => {
         },
         {
           changeType: "add",
-          schemaType: "CustomAttribute",
+          schemaType: SchemaOtherTypes.CustomAttributeInstance,
           itemName: "TestRelationship",
-          appliesTo: "RelationshipConstraint",
+          appliedTo: "RelationshipConstraint",
           path: "$target",
           difference: {
             className: "SourceSchema.TestCA",
@@ -472,7 +469,7 @@ describe("Custom Attribute merge", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "Property",
+          schemaType: SchemaOtherTypes.Property,
           itemName: "TestCAClass",
           path: "BooleanProperty",
           difference: {
@@ -483,7 +480,7 @@ describe("Custom Attribute merge", () => {
         },
         {
           changeType: "add",
-          schemaType: "CustomAttributeClass",
+          schemaType: SchemaItemType.CustomAttributeClass,
           itemName: "AnotherCAClass",
           difference: {
             label: "Test Custom Attribute Class",
@@ -492,8 +489,8 @@ describe("Custom Attribute merge", () => {
         },
         {
           changeType: "add",
-          schemaType: "CustomAttribute",
-          appliesTo: "SchemaItem",
+          schemaType: SchemaOtherTypes.CustomAttributeInstance,
+          appliedTo: "SchemaItem",
           itemName: "TestClass",
           difference: {
             className: "SourceSchema.AnotherCAClass",
@@ -501,7 +498,7 @@ describe("Custom Attribute merge", () => {
         },
         {
           changeType: "add",
-          schemaType: "EntityClass",
+          schemaType: SchemaItemType.EntityClass,
           itemName: "AnotherTestClass",
           difference: {
             label: "TestClass",
@@ -528,8 +525,8 @@ describe("Custom Attribute merge", () => {
         },
         {
           changeType: "add",
-          schemaType: "CustomAttribute",
-          appliesTo: "Property",
+          schemaType: SchemaOtherTypes.CustomAttributeInstance,
+          appliedTo: "Property",
           itemName: "AnotherTestClass",
           path: "StringProperty",
           difference: {

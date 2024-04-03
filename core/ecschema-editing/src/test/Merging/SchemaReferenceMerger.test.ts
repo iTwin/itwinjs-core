@@ -5,6 +5,7 @@
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
+import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 
 describe("Schema reference merging tests", () => {
 
@@ -14,7 +15,7 @@ describe("Schema reference merging tests", () => {
     version: "1.2.3",
     alias: "source",
   };
-  const targetJson =  {
+  const targetJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "TargetSchema",
     version: "1.0.0",
@@ -46,19 +47,17 @@ describe("Schema reference merging tests", () => {
       targetSchemaName: "TargetSchema.01.00.00",
       changes: [{
         changeType: "add",
-        schemaType: "Schema",
-        path: "$references",
+        schemaType: SchemaOtherTypes.SchemaReference,
         difference: {
           name: "BisCore",
-          version:"01.00.15",
+          version: "01.00.15",
         },
       }, {
         changeType: "add",
-        schemaType: "Schema",
-        path: "$references",
-        difference:{
+        schemaType: SchemaOtherTypes.SchemaReference,
+        difference: {
           name: "CoreCustomAttributes",
-          version:"01.00.03",
+          version: "01.00.03",
         },
       }],
     });

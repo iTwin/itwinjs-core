@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Phenomenon, Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import { Phenomenon, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 
@@ -24,7 +24,7 @@ describe("Phenomenon merger tests", () => {
       changes: [
         {
           changeType: "add",
-          schemaType: "Phenomenon",
+          schemaType: SchemaItemType.Phenomenon,
           itemName: "testPhenomenon",
           difference: {
             label: "Area",
@@ -65,7 +65,7 @@ describe("Phenomenon merger tests", () => {
       changes: [
         {
           changeType: "modify",
-          schemaType: "Phenomenon",
+          schemaType: SchemaItemType.Phenomenon,
           itemName: "testPhenomenon",
           difference: {
             definition: "Units.LENGTH(2)",
