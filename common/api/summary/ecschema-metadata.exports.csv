@@ -120,6 +120,7 @@ beta;SchemaItemOverrideFormatProps
 beta;SchemaItemProps
 beta;SchemaItemType
 beta;schemaItemTypeToString(value: SchemaItemType): string
+deprecated;schemaItemTypeToString(value: SchemaItemType): string
 internal;schemaItemTypeToXmlString(value: SchemaItemType): string
 beta;SchemaItemUnitProps 
 beta;SchemaJsonLocater 

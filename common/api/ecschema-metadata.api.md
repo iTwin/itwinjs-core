@@ -128,7 +128,7 @@ export class Constant extends SchemaItem {
     protected setNumerator(numerator: number): void;
     // @alpha
     protected setPhenomenon(phenomenon: LazyLoadedPhenomenon): void;
-    toJSON(standalone: boolean, includeSchemaVersion: boolean): ConstantProps;
+    toJSON(standalone?: boolean, includeSchemaVersion?: boolean): ConstantProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
 }
@@ -1824,39 +1824,39 @@ export interface SchemaItemProps {
     readonly schemaVersion?: string;
 }
 
-// @beta (undocumented)
+// @beta
 export enum SchemaItemType {
     // (undocumented)
-    Constant = 10,
+    Constant = "Constant",
     // (undocumented)
-    CustomAttributeClass = 3,
+    CustomAttributeClass = "CustomAttributeClass",
     // (undocumented)
-    EntityClass = 0,
+    EntityClass = "EntityClass",
     // (undocumented)
-    Enumeration = 5,
+    Enumeration = "Enumeration",
     // (undocumented)
-    Format = 13,
+    Format = "Format",
     // (undocumented)
-    InvertedUnit = 9,
+    InvertedUnit = "InvertedUnit",
     // (undocumented)
-    KindOfQuantity = 6,
+    KindOfQuantity = "KindOfQuantity",
     // (undocumented)
-    Mixin = 1,
+    Mixin = "Mixin",
     // (undocumented)
-    Phenomenon = 11,
+    Phenomenon = "Phenomenon",
     // (undocumented)
-    PropertyCategory = 7,
+    PropertyCategory = "PropertyCategory",
     // (undocumented)
-    RelationshipClass = 4,
+    RelationshipClass = "RelationshipClass",
     // (undocumented)
-    StructClass = 2,
+    StructClass = "StructClass",
     // (undocumented)
-    Unit = 8,
+    Unit = "Unit",
     // (undocumented)
-    UnitSystem = 12
+    UnitSystem = "UnitSystem"
 }
 
-// @beta
+// @beta @deprecated
 export function schemaItemTypeToString(value: SchemaItemType): string;
 
 // @internal (undocumented)
