@@ -1,6 +1,16 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Mon, 25 Mar 2024 22:23:34 GMT and should not be manually modified.
+This log was last generated on Tue, 02 Apr 2024 19:06:00 GMT and should not be manually modified.
+
+## 4.5.0
+Tue, 02 Apr 2024 19:06:00 GMT
+
+### Updates
+
+- Updated `KeySet` to work correctly when class names uses both separators: `.` and `:`.
+- Support creating hierarchy level descriptor for hierarchies that use `parent` symbol in their instance filters.
+- Provide an option to control batch size for `PresentationManager.getElementProperties` multi-elements case.
+- Introduce 2 new types of `PropertiesField`: `ArrayPropertiesField` and `StructPropertiesField`. Ensure values of these values can be customized, formatted, localized.
 
 ## 4.4.8
 Mon, 25 Mar 2024 22:22:26 GMT

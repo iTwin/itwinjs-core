@@ -1,6 +1,18 @@
 # Change Log - @itwin/presentation-frontend
 
-This log was last generated on Mon, 25 Mar 2024 22:23:34 GMT and should not be manually modified.
+This log was last generated on Tue, 02 Apr 2024 19:06:00 GMT and should not be manually modified.
+
+## 4.5.0
+Tue, 02 Apr 2024 19:06:00 GMT
+
+### Updates
+
+- Added ability to provide custom selection storage. This allows to use `@itwin/presentation-frontned` with `@itwin/unified-selection`.
+- Add `getNodesIterator`, `getDistinctValuesIterator`, `getContentIterator` and `getDisplayLabelDefinitionIterator` methods to `PresentationManager` which return async iterators and load data using multiple parallel requests.
+- Deprecate `getNodes`, `getNodesAndCount`, `getContent`, `getContentAndSize`, `getPagedDistinctValues` and `getDisplayLabelDefinitions` in favor of the alternatives which return iterators.
+- Made initialization of a new iModel connection non-blocking in most cases and moved the responsibility of doing that to the `FavoritePropertiesManager` class.
+- Deprecated synchronous `FavoritePropertiesManager` functions `has` and `sortFields` in favor of `hasAsync` and `sortFieldsAsync`.
+- Deprecated `FavoritePropertiesManager.initializeConnection` because it's not necessary to call anymore.
 
 ## 4.4.8
 Mon, 25 Mar 2024 22:22:26 GMT
