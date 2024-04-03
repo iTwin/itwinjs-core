@@ -143,11 +143,10 @@ describe("Schema Difference Reporting", () => {
     // There are three references in this workflow. Both target and source reference to the same
     // CustomAttributesSchema so this should not appear in the list, EmptySchema has a more recent
     // version in source and MissingSchema is not referenced by the target schema.
-    expectPartiallyEquals(findEntries({ schemaType: SchemaOtherTypes.SchemaReference, path: "$references" }), [
+    expectPartiallyEquals(findEntries({ schemaType: SchemaOtherTypes.SchemaReference }), [
       {
         changeType: "modify",
         schemaType: SchemaOtherTypes.SchemaReference,
-        path: "$references",
         difference: {
           name: "EmptySchema",
           version: "01.00.01",
@@ -155,7 +154,6 @@ describe("Schema Difference Reporting", () => {
       }, {
         changeType: "add",
         schemaType: SchemaOtherTypes.SchemaReference,
-        path: "$references",
         difference: {
           name: "MissingSchema",
           version: "04.00.00",
@@ -320,11 +318,10 @@ describe("Schema Difference Reporting", () => {
   it("should return changed entity with mixin added", () => {
     expect(findEntry({ changeType: "add", itemName: "EmptyAbstractEntity" }), "Expected EmptyAbstractEntity to be added").to.not.be.undefined;
     expect(findEntry({ changeType: "add", itemName: "MissingMixin" }), "Expected MissingMixin to be added").to.not.be.undefined;
-    expectPartiallyEquals(findEntry({ changeType: "add", itemName: "ChangedEntity", path: "$mixins" }), {
+    expectPartiallyEquals(findEntry({ changeType: "add", itemName: "ChangedEntity" }), {
       changeType: "add",
       schemaType: "EntityClassMixin",
       itemName: "ChangedEntity",
-      path: "$mixins",
       difference: [
         "SourceSchema.MissingMixin",
       ],

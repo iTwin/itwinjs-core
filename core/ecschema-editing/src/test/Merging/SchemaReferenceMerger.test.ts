@@ -48,7 +48,6 @@ describe("Schema reference merging tests", () => {
       changes: [{
         changeType: "add",
         schemaType: SchemaOtherTypes.SchemaReference,
-        path: "$references",
         difference: {
           name: "BisCore",
           version: "01.00.15",
@@ -56,7 +55,6 @@ describe("Schema reference merging tests", () => {
       }, {
         changeType: "add",
         schemaType: SchemaOtherTypes.SchemaReference,
-        path: "$references",
         difference: {
           name: "CoreCustomAttributes",
           version: "01.00.03",

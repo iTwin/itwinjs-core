@@ -6,7 +6,6 @@
  * @module Differencing
  */
 
-import { } from "@itwin/core-quantity";
 import { SchemaChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
 import { SchemaDifferenceConflict } from "./SchemaConflicts";
@@ -93,7 +92,6 @@ export namespace SchemaDifference {
 
     const changes: AnySchemaDifference[] = [
       ...visitor.schemaChanges,
-      ...visitor.schemaPathChanges,
       ...visitor.schemaItemChanges,
       ...visitor.schemaItemPathChanges,
       ...visitor.customAttributeChanges,
@@ -308,7 +306,6 @@ export interface SchemaDifference {
 export interface SchemaReferenceDifference {
   readonly changeType: "add" | "modify";
   readonly schemaType: SchemaOtherTypes.SchemaReference;
-  readonly path: "$references";
   readonly difference: SchemaReferenceProps;
 }
 
@@ -320,13 +317,14 @@ export type AnySchemaItemDifference =
   ClassItemDifference |
   ConstantDifference |
   EnumerationDifference |
+  EntityClassMixinDifference |
+  FormatDifference |
   KindOfQuantityDifference |
+  InvertedUnitDifference |
   PhenomenonDifference |
   PropertyCategoryDifference |
-  UnitSystemDifference |
   UnitDifference |
-  InvertedUnitDifference |
-  FormatDifference;
+  UnitSystemDifference;
 
 /**
  * Union for supported class Schema Items.
@@ -344,7 +342,6 @@ export type ClassItemDifference =
  * @alpha
  */
 export type AnySchemaItemPathDifference =
-  EntityClassMixinDifference |
   RelationshipConstraintDifference |
   RelationshipConstraintClassDifference |
   CustomAttributePropertyDifference |
@@ -551,7 +548,6 @@ export interface EntityClassMixinDifference {
   readonly changeType: "add";
   readonly schemaType: SchemaOtherTypes.EntityClassMixin;
   readonly itemName: string;
-  readonly path: "$mixins";
   readonly difference: string[];
 }
 

@@ -64,7 +64,6 @@ describe("Custom Attribute merge", () => {
         {
           changeType: "add",
           schemaType: SchemaOtherTypes.SchemaReference,
-          path: "$references",
           difference: {
             name: "TestSchema",
             version: "01.00.15",
@@ -178,7 +177,6 @@ describe("Custom Attribute merge", () => {
         {
           changeType: "add",
           schemaType: SchemaOtherTypes.SchemaReference,
-          path: "$references",
           difference: {
             name: "TestSchema",
             version: "01.00.15",
@@ -262,7 +260,6 @@ describe("Custom Attribute merge", () => {
         {
           changeType: "add",
           schemaType: SchemaOtherTypes.SchemaReference,
-          path: "$references",
           difference: {
             name: "TestSchema",
             version: "01.00.15",
@@ -357,7 +354,6 @@ describe("Custom Attribute merge", () => {
         {
           changeType: "add",
           schemaType: SchemaOtherTypes.SchemaReference,
-          path: "$references",
           difference: {
             name: "TestSchema",
             version: "01.00.15",

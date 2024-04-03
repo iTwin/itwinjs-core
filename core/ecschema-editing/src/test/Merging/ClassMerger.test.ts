@@ -135,7 +135,6 @@ describe("Class merger tests", () => {
         {
           changeType: "add",
           schemaType: SchemaOtherTypes.SchemaReference,
-          path: "$references",
           difference: {
             name: "TestSchema",
             version: "01.00.15",
@@ -189,7 +188,6 @@ describe("Class merger tests", () => {
         {
           changeType: "add",
           schemaType: SchemaOtherTypes.SchemaReference,
-          path: "$references",
           difference: {
             name: "TestSchema",
             version: "01.00.15",
@@ -649,7 +647,6 @@ describe("Class merger tests", () => {
           changeType: "modify" as any,
           schemaType: SchemaOtherTypes.EntityClassMixin,
           itemName: "TestEntity",
-          path: "$mixins",
           difference: [
             "TestSchema.TestMixin",
           ],
@@ -679,7 +676,6 @@ describe("Class merger tests", () => {
           changeType: "add",
           schemaType: SchemaOtherTypes.EntityClassMixin,
           itemName: "TestEntity",
-          path: "$mixins",
           difference: [
             "SourceSchema.NotExistingMixin",
           ],

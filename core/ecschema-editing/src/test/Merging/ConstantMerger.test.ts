@@ -97,7 +97,6 @@ describe("Constant merger tests", () => {
         {
           changeType: "add",
           schemaType: SchemaOtherTypes.SchemaReference,
-          path: "$references",
           difference: {
             name: "ReferenceSchema",
             version: "01.02.00",

@@ -52,8 +52,7 @@ function derivedFrom(ecClass: ECClass | undefined, baseClassName: string): boole
  */
 export class SchemaDiagnosticVisitor {
 
-  public readonly schemaChanges: Array<SchemaDifference>;
-  public readonly schemaPathChanges: Array<SchemaReferenceDifference>;
+  public readonly schemaChanges: Array<SchemaDifference|SchemaReferenceDifference>;
   public readonly schemaItemChanges: Array<AnySchemaItemDifference>;
   public readonly schemaItemPathChanges: Array<AnySchemaItemPathDifference>;
   public readonly customAttributeChanges: Array<CustomAttributeDifference>;
@@ -61,7 +60,6 @@ export class SchemaDiagnosticVisitor {
 
   constructor() {
     this.schemaChanges = [];
-    this.schemaPathChanges = [];
     this.schemaItemChanges = [];
     this.schemaItemPathChanges = [];
     this.customAttributeChanges = [];
@@ -138,7 +136,10 @@ export class SchemaDiagnosticVisitor {
   }
 
   private visitChangedSchemaProperties(diagnostic: AnyDiagnostic) {
-    let modifyEntry = this.schemaChanges.find((entry) => entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.Schema);
+    let modifyEntry = this.schemaChanges.find((entry): entry is SchemaDifference => {
+      return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.Schema;
+    });
+
     let hasChanges = false;
     let addEntry = false;
     if (modifyEntry === undefined) {
@@ -327,7 +328,9 @@ export class SchemaDiagnosticVisitor {
 
   private visitMissingProperty(diagnostic: AnyDiagnostic) {
     const property = diagnostic.ecDefinition as Property;
-    if (this.schemaItemChanges.find((entry) => entry.changeType === "add" && entry.itemName === property.class.name)) {
+
+    // TODO: Remove after fix #6560 has been merged into master.
+    if (this.schemaItemChanges.find((entry) => entry.changeType === "add" && entry.schemaType in SchemaItemType && entry.itemName === property.class.name)) {
       return;
     }
 
@@ -478,8 +481,8 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.schemaItemPathChanges.find((entry): entry is EntityClassMixinDifference => {
-      return entry.changeType === "add" && entry.schemaType === SchemaOtherTypes.EntityClassMixin && entry.itemName === ecClass.name && entry.path === "$mixins";
+    let modifyEntry = this.schemaItemChanges.find((entry): entry is EntityClassMixinDifference => {
+      return entry.changeType === "add" && entry.schemaType === SchemaOtherTypes.EntityClassMixin && entry.itemName === ecClass.name;
     });
 
     if (modifyEntry === undefined) {
@@ -487,10 +490,9 @@ export class SchemaDiagnosticVisitor {
         changeType: "add",
         schemaType: SchemaOtherTypes.EntityClassMixin,
         itemName: ecClass.name,
-        path: "$mixins",
         difference: [],
       };
-      this.schemaItemPathChanges.push(modifyEntry);
+      this.schemaItemChanges.push(modifyEntry);
     }
     modifyEntry.difference.push(mixin.fullName);
   }
@@ -581,10 +583,9 @@ export class SchemaDiagnosticVisitor {
 
   private visitSchemaReference(diagnostic: AnyDiagnostic, changeType: DifferenceType) {
     const [referencedSchema] = diagnostic.messageArgs as [Schema];
-    this.schemaPathChanges.push({
+    this.schemaChanges.push({
       changeType,
       schemaType: SchemaOtherTypes.SchemaReference,
-      path: "$references",
       difference: {
         name: referencedSchema.name,
         version: referencedSchema.schemaKey.version.toString(),
