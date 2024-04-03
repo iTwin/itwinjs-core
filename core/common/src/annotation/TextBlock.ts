@@ -506,6 +506,14 @@ export class TextBlock extends TextBlockComponent {
     return new TextBlock(props);
   }
 
+  public static createEmpty(): TextBlock {
+    return TextBlock.create({ styleName: "" });
+  }
+
+  public get isEmpty(): boolean {
+    return this.paragraphs.every((p) => p.runs.length === 0);
+  }
+
   public override clone(): TextBlock {
     return new TextBlock(this.toJSON());
   }
