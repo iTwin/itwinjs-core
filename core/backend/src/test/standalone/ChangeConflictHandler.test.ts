@@ -17,6 +17,7 @@ import { HubMock } from "../../HubMock";
 import {
   BriefcaseDb,
   ChangesetConflictArgs,
+  ChannelControl,
   DictionaryModel,
   SpatialCategory,
 } from "../../core-backend";
@@ -110,7 +111,11 @@ describe("Changeset conflict handler", () => {
     const rwIModelId = await HubMock.createNewIModel({ accessToken: accessToken1, iTwinId, iModelName, description: "TestSubject", noLocks: undefined });
     assert.isNotEmpty(rwIModelId);
     b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken1, iTwinId, iModelId: rwIModelId, noLock: true });
+    b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
     b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId, iModelId: rwIModelId, noLock: true });
+    b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
     b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken3, iTwinId, iModelId: rwIModelId, noLock: true });
 
     [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(

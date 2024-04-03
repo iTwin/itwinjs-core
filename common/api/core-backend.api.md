@@ -791,8 +791,6 @@ export class ChannelAdmin implements ChannelControl {
     // (undocumented)
     getChannelKey(elementId: Id64String): ChannelKey;
     // (undocumented)
-    get hasChannels(): boolean;
-    // (undocumented)
     insertChannelSubject(args: {
         subjectName: string;
         channelKey: ChannelKey;
@@ -805,9 +803,9 @@ export class ChannelAdmin implements ChannelControl {
         channelKey: ChannelKey;
     }): void;
     // (undocumented)
-    removeAllowedChannel(channelKey: ChannelKey): void;
+    queryChannelRoot(channelKey: ChannelKey): Id64String | undefined;
     // (undocumented)
-    static readonly sharedChannel = "shared";
+    removeAllowedChannel(channelKey: ChannelKey): void;
     // (undocumented)
     verifyChannel(modelId: Id64String): void;
 }
@@ -816,7 +814,6 @@ export class ChannelAdmin implements ChannelControl {
 export interface ChannelControl {
     addAllowedChannel(channelKey: ChannelKey): void;
     getChannelKey(elementId: Id64String): ChannelKey;
-    get hasChannels(): boolean;
     insertChannelSubject(args: {
         subjectName: string;
         channelKey: ChannelKey;
@@ -827,6 +824,7 @@ export interface ChannelControl {
         elementId: Id64String;
         channelKey: ChannelKey;
     }): void;
+    queryChannelRoot(channelKey: ChannelKey): Id64String | undefined;
     removeAllowedChannel(channelKey: ChannelKey): void;
     // @internal (undocumented)
     verifyChannel(modelId: Id64String): void;
@@ -3409,6 +3407,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
 
 // @public
 export interface IModelHostOptions {
+    allowSharedChannel?: boolean;
     appAssetsDir?: LocalDirName;
     authorizationClient?: AuthorizationClient;
     cacheDir?: LocalDirName;
