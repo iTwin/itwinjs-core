@@ -179,13 +179,12 @@ export function parseSchemaItemType(type: string): SchemaItemType | undefined {
   return undefined;
 }
 
-
 /**
  * Converts a valid SchemaItemType to a display string.
  * @param value The SchemaItemType to stringify.
  * @return A string representing the provided SchemaItemType. If the type is not valid, an empty string is returned.
  * @beta
- * @deprecated SchemaItemType is a string enum so just use it directly
+ * @deprecated in 4.6.0 SchemaItemType is a string enum so just use it directly
  */
 export function schemaItemTypeToString(value: SchemaItemType): string {
   return value; // TODO: Remove

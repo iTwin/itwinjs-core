@@ -5,7 +5,7 @@
 import type { SchemaEditResults } from "../ecschema-editing";
 import type { SchemaMergeContext } from "./SchemaMerger";
 import type { ClassItemDifference, ClassPropertyDifference, DifferenceType } from "../Differencing/SchemaDifference";
-import { AnyProperty, AnyPropertyProps, ArrayPropertyProps, CustomAttribute, ECClass, Enumeration, EnumerationPropertyProps, NavigationPropertyProps, parsePrimitiveType, PrimitivePropertyProps, RelationshipClass, SchemaItemKey, SchemaItemType, schemaItemTypeToString, StructClass, StructPropertyProps } from "@itwin/ecschema-metadata";
+import { AnyProperty, AnyPropertyProps, ArrayPropertyProps, CustomAttribute, ECClass, Enumeration, EnumerationPropertyProps, NavigationPropertyProps, parsePrimitiveType, PrimitivePropertyProps, RelationshipClass, SchemaItemKey, SchemaItemType, StructClass, StructPropertyProps } from "@itwin/ecschema-metadata";
 import { updateSchemaItemFullName, updateSchemaItemKey } from "./SchemaItemMerger";
 import { MutableProperty } from "../Editing/Mutable/MutableProperty";
 import { MutableArrayProperty } from "../Editing/Mutable/MutableArrayProperty";
@@ -206,7 +206,7 @@ const navigationProperty: PropertyMerger<NavigationPropertyProps> = {
       return context.editor.mixins.createNavigationPropertyFromProps(itemKey, property);
     if (ecClass.schemaItemType === SchemaItemType.RelationshipClass)
       return context.editor.relationships.createNavigationPropertyFromProps(itemKey, property);
-    return { errorMessage: `Navigation property can't be added to ${schemaItemTypeToString(ecClass.schemaItemType)}.` };
+    return { errorMessage: `Navigation property can't be added to ${ecClass.schemaItemType}.` };
   },
   async merge(_context, _itemKey, property, props) {
     if (props.direction !== undefined) {

@@ -7,7 +7,7 @@ import { expect } from "chai";
 import {
   classModifierToString, containerTypeToString, CustomAttributeContainerType, ECClassModifier, parseClassModifier, parseCustomAttributeContainerType,
   parsePrimitiveType, parseRelationshipEnd, parseSchemaItemType, parseStrength, parseStrengthDirection, PrimitiveType, primitiveTypeToString,
-  RelationshipEnd, relationshipEndToString, SchemaItemType, schemaItemTypeToString, StrengthDirection, strengthDirectionToString, strengthToString,
+  RelationshipEnd, relationshipEndToString, SchemaItemType, StrengthDirection, strengthDirectionToString, strengthToString,
   StrengthType,
 } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
@@ -162,14 +162,14 @@ describe("Parsing/ToString Functions", () => {
   });
 
   it("schemaItemTypeToString", () => {
-    expect(schemaItemTypeToString(SchemaItemType.EntityClass)).to.equal("EntityClass");
-    expect(schemaItemTypeToString(SchemaItemType.Mixin)).to.equal("Mixin");
-    expect(schemaItemTypeToString(SchemaItemType.StructClass)).to.equal("StructClass");
-    expect(schemaItemTypeToString(SchemaItemType.CustomAttributeClass)).to.equal("CustomAttributeClass");
-    expect(schemaItemTypeToString(SchemaItemType.RelationshipClass)).to.equal("RelationshipClass");
-    expect(schemaItemTypeToString(SchemaItemType.Enumeration)).to.equal("Enumeration");
-    expect(schemaItemTypeToString(SchemaItemType.KindOfQuantity)).to.equal("KindOfQuantity");
-    expect(schemaItemTypeToString(SchemaItemType.PropertyCategory)).to.equal("PropertyCategory");
+    expect(SchemaItemType.EntityClass).to.equal("EntityClass");
+    expect(SchemaItemType.Mixin).to.equal("Mixin");
+    expect(SchemaItemType.StructClass).to.equal("StructClass");
+    expect(SchemaItemType.CustomAttributeClass).to.equal("CustomAttributeClass");
+    expect(SchemaItemType.RelationshipClass).to.equal("RelationshipClass");
+    expect(SchemaItemType.Enumeration).to.equal("Enumeration");
+    expect(SchemaItemType.KindOfQuantity).to.equal("KindOfQuantity");
+    expect(SchemaItemType.PropertyCategory).to.equal("PropertyCategory");
   });
 });
 
