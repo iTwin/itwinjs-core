@@ -2,6 +2,27 @@
   "name": "@itwin/presentation-backend",
   "entries": [
     {
+      "version": "4.5.1",
+      "tag": "@itwin/presentation-backend_v4.5.1",
+      "date": "Wed, 03 Apr 2024 18:26:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.5.0",
+      "tag": "@itwin/presentation-backend_v4.5.0",
+      "date": "Tue, 02 Apr 2024 19:06:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Only add \"descriptor only\" flag when requests come through RPC or if input content flags are `undefined`. This effectively removes the flag for `getElementProperties` request (multi-elements case), which improves performance when requesting content set."
+          },
+          {
+            "comment": "Refactor iModel updates' tracking to work without polling. Also, the updates are now always tracked - no additional configuration is needed."
+          }
+        ]
+      }
+    },
+    {
       "version": "4.4.8",
       "tag": "@itwin/presentation-backend_v4.4.8",
       "date": "Mon, 25 Mar 2024 22:22:26 GMT",
