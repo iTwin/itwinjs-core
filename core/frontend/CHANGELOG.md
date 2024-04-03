@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Wed, 03 Apr 2024 16:14:18 GMT and should not be manually modified.
+This log was last generated on Wed, 03 Apr 2024 18:28:10 GMT and should not be manually modified.
+
+## 4.5.1
+Wed, 03 Apr 2024 18:26:58 GMT
+
+### Updates
+
+- Fix map layer WMTS validation process to correctly return authentication error
 
 ## 4.5.0
 Tue, 02 Apr 2024 19:06:00 GMT
