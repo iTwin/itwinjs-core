@@ -1,6 +1,14 @@
 # Change Log - @itwin/presentation-backend
 
-This log was last generated on Mon, 25 Mar 2024 22:24:35 GMT and should not be manually modified.
+This log was last generated on Wed, 03 Apr 2024 16:14:18 GMT and should not be manually modified.
+
+## 4.5.0
+Tue, 02 Apr 2024 19:06:00 GMT
+
+### Updates
+
+- Only add "descriptor only" flag when requests come through RPC or if input content flags are `undefined`. This effectively removes the flag for `getElementProperties` request (multi-elements case), which improves performance when requesting content set.
+- Refactor iModel updates' tracking to work without polling. Also, the updates are now always tracked - no additional configuration is needed.
 
 ## 4.4.8
 Mon, 25 Mar 2024 22:22:26 GMT
