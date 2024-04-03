@@ -16,6 +16,7 @@ import { ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart } fro
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { IModelError, IModelStatus } from "./IModelError";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
+import { TextAnnotationProps } from "./core-common";
 
 /** Properties of a NavigationProperty.
  * @public
@@ -163,6 +164,13 @@ export interface GeometricElement3dProps extends GeometricElementProps {
   typeDefinition?: RelatedElementProps;
 }
 
+export interface TextAnnotation3dProps extends GeometricElement3dProps {
+  jsonProperties?: {
+    [key: string]: any;
+    annotation?: TextAnnotationProps;
+  };
+}
+
 /** Properties that define a [PhysicalElement]($backend)
  * @public
  * @extensions
@@ -222,6 +230,13 @@ export interface SectionDrawingLocationProps extends GeometricElement3dProps {
 export interface GeometricElement2dProps extends GeometricElementProps {
   placement?: Placement2dProps;
   typeDefinition?: RelatedElementProps;
+}
+
+export interface TextAnnotation2dProps extends GeometricElement2dProps {
+  jsonProperties?: {
+    [key: string]: any;
+    annotation?: TextAnnotationProps;
+  };
 }
 
 /** Properties of a [GeometryPart]($backend)

@@ -34,11 +34,11 @@ export class TextAnnotation {
     this.anchor = anchor;
   }
 
-  public static fromJSON(props: TextAnnotationProps): TextAnnotation {
-    const origin = Point3d.fromJSON(props.origin);
-    const angles = YawPitchRollAngles.fromJSON(props.orientation);
-    const textBlock = TextBlock.create(props.textBlock ?? { styleName: "" });
-    const anchor: TextAnnotationAnchor = props.anchor ? { ...props.anchor } : { vertical: "top", horizontal: "left" };
+  public static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation {
+    const origin = Point3d.fromJSON(props?.origin);
+    const angles = YawPitchRollAngles.fromJSON(props?.orientation);
+    const textBlock = TextBlock.create(props?.textBlock ?? { styleName: "" });
+    const anchor: TextAnnotationAnchor = props?.anchor ? { ...props.anchor } : { vertical: "top", horizontal: "left" };
 
     return new TextAnnotation(origin, angles, textBlock, anchor);
   }
