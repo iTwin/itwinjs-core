@@ -2,6 +2,42 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "4.5.0",
+      "tag": "@itwin/core-backend_v4.5.0",
+      "date": "Tue, 02 Apr 2024 19:06:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix SectionDrawing.insert to insert a SectionDrawingModel, not a DrawingModel."
+          },
+          {
+            "comment": "Added busyTimeout parameter to allow read/write connection to set it."
+          },
+          {
+            "comment": "Added new tests for selecting duplicate property names using UseECSqlPropertyNames QueryRowFormat."
+          },
+          {
+            "comment": "Add metadata to errors thrown by `insertElement`, `updateElement` and `deleteElement` in `IModelDb`"
+          },
+          {
+            "comment": "make case of pattern_useconstantlod match backend code"
+          },
+          {
+            "comment": "`IModelDb`: Fix `IModelDb.views.accessViewStore` ignoring supplied `userToken` and `accessLevel` values"
+          },
+          {
+            "comment": "Throws an error if BlobContainer.service is undefined in CloudSqlite.requestToken"
+          },
+          {
+            "comment": "add SnapshotDb.openCheckpoint to open a checkpoint directly from its cloud container"
+          },
+          {
+            "comment": "Introduce EditableWorkspaceDb."
+          }
+        ]
+      }
+    },
+    {
       "version": "4.4.8",
       "tag": "@itwin/core-backend_v4.4.8",
       "date": "Mon, 25 Mar 2024 22:22:26 GMT",

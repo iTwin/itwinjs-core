@@ -1,6 +1,13 @@
 # Change Log - @itwin/ecschema-locaters
 
-This log was last generated on Mon, 25 Mar 2024 22:24:35 GMT and should not be manually modified.
+This log was last generated on Wed, 03 Apr 2024 16:14:18 GMT and should not be manually modified.
+
+## 4.5.0
+Tue, 02 Apr 2024 19:06:00 GMT
+
+### Updates
+
+- Units v1.0.8 schema is released which introduces a new unit - Decanewton (daN)
 
 ## 4.4.8
 Mon, 25 Mar 2024 22:22:26 GMT
