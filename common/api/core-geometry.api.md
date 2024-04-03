@@ -5503,6 +5503,47 @@ export class Segment1d {
 }
 
 // @public
+export namespace SerializationHelpers {
+    export interface BSplineCurveData {
+        dim: number;
+        params: BSplineParams;
+        poles: number[][] | Float64Array;
+        weights?: number[] | Float64Array;
+    }
+    export interface BSplineDataOptions {
+        jsonKnots?: boolean;
+        jsonPoles?: boolean;
+        removeExtraKnots?: boolean;
+    }
+    export interface BSplineParams {
+        closed?: boolean;
+        knots: number[] | Float64Array;
+        numPoles: number;
+        order: number;
+        wrapMode?: BSplineWrapMode;
+    }
+    export interface BSplineSurfaceData {
+        dim: number;
+        poles: number[][][] | Float64Array;
+        uParams: BSplineParams;
+        vParams: BSplineParams;
+        weights?: number[][] | Float64Array;
+    }
+    export function cloneBSplineCurveData(source: BSplineCurveData): BSplineCurveData;
+    export function cloneBSplineSurfaceData(source: BSplineSurfaceData): BSplineSurfaceData;
+    export function createBSplineCurveData(poles: number[][] | Float64Array, dim: number, knots: number[] | Float64Array, numPoles: number, order: number): BSplineCurveData;
+    export function createBSplineSurfaceData(poles: number[][][] | Float64Array, dim: number, uKnots: number[] | Float64Array, uNumPoles: number, uOrder: number, vKnots: number[] | Float64Array, vNumPoles: number, vOrder: number): BSplineSurfaceData;
+    export class Export {
+        static prepareBSplineCurveData(data: BSplineCurveData, options?: BSplineDataOptions): boolean;
+        static prepareBSplineSurfaceData(data: BSplineSurfaceData, options?: BSplineDataOptions): boolean;
+    }
+    export class Import {
+        static prepareBSplineCurveData(data: BSplineCurveData, options?: BSplineDataOptions): boolean;
+        static prepareBSplineSurfaceData(data: BSplineSurfaceData, options?: BSplineDataOptions): boolean;
+    }
+}
+
+// @public
 export interface SignedLoops {
     edges?: LoopCurveLoopCurve[];
     negativeAreaLoops: Loop[];

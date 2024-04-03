@@ -33,6 +33,7 @@ export interface GenericInstanceFilter {
 
 /**
  * Type definition that describes operators supported by [[GenericInstanceFilterRule]].
+ * @note `like` operator should be handled as a contains operator - it matches all strings that contain a given string.
  * @beta
  */
 export type GenericInstanceFilterRuleOperator =

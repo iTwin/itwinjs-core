@@ -347,6 +347,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/unified-selection",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@itwin/webgl-compatibility",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -653,6 +657,10 @@
     {
       "name": "memfs",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "meshoptimizer",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "mkdirp",

@@ -56,7 +56,7 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
-import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
+import { Workspace } from "./workspace/Workspace";
 
 import type { BlobContainer } from "./BlobContainerService";
 /** @internal */
@@ -275,7 +275,7 @@ export abstract class IModelDb extends IModel {
    */
   public get workspace(): Workspace {
     if (undefined === this._workspace)
-      this._workspace = new ITwinWorkspace(new IModelSettings());
+      this._workspace = Workspace.construct(new IModelSettings());
     return this._workspace;
   }
 
@@ -1847,23 +1847,29 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       try {
         return elProps.id = this._iModel.nativeDb.insertElement(elProps);
       } catch (err: any) {
-        err.message = `error inserting element: ${err.message}`;
+        err.message = `Error inserting element [${err.message}]`;
+        err.metadata = { elProps };
         throw err;
       }
     }
 
-    /** Update some properties of an existing element.
+    /**
+     * Update some properties of an existing element.
+     * All parts of `elProps` are optional *other than* `id`. If id is missing, an exception is thrown.
+     *
      * To support clearing a property value, every property name that is present in the `elProps` object will be updated even if the value is `undefined`.
      * To keep an individual element property unchanged, it should either be excluded from the `elProps` parameter or set to its current value.
      * @param elProps the properties of the element to update.
-     * @note As described above, this is a special case where there is a difference between a property being excluded and a property being present in `elProps` but set to `undefined`.
+     * @note The values of `classFullName` and `model` *may not be changed* by this method. Further, it will permute the `elProps` object by adding or
+     * overwriting their values to the correct values.
      * @throws [[IModelError]] if unable to update the element.
      */
-    public updateElement(elProps: ElementProps): void {
+    public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
       try {
         this._iModel.nativeDb.updateElement(elProps);
       } catch (err: any) {
-        err.message = `error updating element: ${err.message}`;
+        err.message = `Error updating element [${err.message}], id: ${elProps.id}`;
+        err.metadata = { elProps };
         throw err;
       }
     }
@@ -1879,7 +1885,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         try {
           iModel.nativeDb.deleteElement(id);
         } catch (err: any) {
-          err.message = `error deleting element: ${err.message}`;
+          err.message = `Error deleting element [${err.message}], id: ${id}`;
+          err.metadata = { elementId: id };
           throw err;
         }
       });
@@ -2632,12 +2639,33 @@ export class BriefcaseDb extends IModelDb {
     // - push changes
     // - release schema lock
     // good thing computers are fast. Fortunately upgrading should be rare (and the push time will dominate anyway.) Don't try to optimize any of this away.
-    await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
     try {
-      await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade, schemaLockHeld: true }, "Upgraded profile");
-      await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
-    } finally {
-      await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
+      await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade }, "Upgraded profile");
+    } catch (error: any) {
+      if (error.errorNumber === DbResult.BE_SQLITE_ERROR_DataTransformRequired) {
+        Logger.logInfo(loggerCategory, `Profile upgrade contains data transform. Retrying upgrade with a schema lock.`);
+        try {
+          await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
+          await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade, schemaLockHeld: true }, "Upgraded profile");
+          await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
+        } finally {
+          await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
+        }
+        return;
+      }
+    }
+    try {
+      await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade }, "Upgraded domain schemas");
+    } catch (error: any) {
+      if (error.errorNumber === DbResult.BE_SQLITE_ERROR_DataTransformRequired) {
+        Logger.logInfo(loggerCategory, `Domain schema upgrade contains data transform. Retrying upgrade with a schema lock.`);
+        try {
+          await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
+          await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
+        } finally {
+          await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
+        }
+      }
     }
   }
 
