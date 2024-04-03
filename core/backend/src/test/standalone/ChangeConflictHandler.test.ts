@@ -25,7 +25,6 @@ import {
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 chai.use(chaiAsPromised);
 import sinon = require("sinon");
-import { Range3d } from "@itwin/core-geometry";
 
 async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
   try {
