@@ -11,7 +11,7 @@ import { join } from "path";
 import * as touch from "touch";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
+  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
   IModelStatus, JsonUtils, Logger, LogLevel, OpenMode, UnexpectedErrors,
 } from "@itwin/core-bentley";
 import {
@@ -66,9 +66,18 @@ export interface ChangesetConflictArgs {
   indirect: boolean;
   tableName: string;
   changesetFile?: string;
+  columnCount: number;
   getForeignKeyConflicts: () => number;
   dump: () => void;
   setLastError: (message: string) => void;
+  getPrimaryKeyColumns: () => number[];
+  getValueType: (columnIndex: number, stage: DbChangeStage) => DbValueType | null | undefined;
+  getValueBinary: (columnIndex: number, stage: DbChangeStage) => Uint8Array | null | undefined;
+  getValueId: (columnIndex: number, stage: DbChangeStage) => Id64String | null | undefined;
+  getValueText: (columnIndex: number, stage: DbChangeStage) => string | null | undefined;
+  getValueInteger: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
+  getValueDouble: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
+  isValueNull: (columnIndex: number, stage: DbChangeStage) => boolean | undefined;
 }
 
 // spell:ignore fontid fontmap
@@ -3016,6 +3025,7 @@ export class SnapshotDb extends IModelDb {
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
 
     const snapshotDb = new SnapshotDb(nativeDb, Guid.createValue());
+    snapshotDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     if (options.createClassViews)
       snapshotDb._createClassViewsOnClose = true; // save flag that will be checked when close() is called
     return snapshotDb;
@@ -3180,7 +3190,9 @@ export class StandaloneDb extends BriefcaseDb {
     nativeDb.setITwinId(Guid.empty);
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();
-    return new StandaloneDb({ nativeDb, key: Guid.createValue(), briefcaseId: BriefcaseIdValue.Unassigned, openMode: OpenMode.ReadWrite });
+    const db = new StandaloneDb({ nativeDb, key: Guid.createValue(), briefcaseId: BriefcaseIdValue.Unassigned, openMode: OpenMode.ReadWrite });
+    db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    return db;
   }
 
   /**
@@ -3228,7 +3240,8 @@ export class StandaloneDb extends BriefcaseDb {
       if (iTwinId !== Guid.empty) // a "standalone" iModel means it is not associated with an iTwin
         throw new IModelError(IModelStatus.WrongIModel, `${filePath} is not a Standalone iModel. iTwinId=${iTwinId}`);
       assert(undefined !== file.key);
-      return new StandaloneDb({ nativeDb, key: file.key, openMode, briefcaseId: BriefcaseIdValue.Unassigned });
+      const db = new StandaloneDb({ nativeDb, key: file.key, openMode, briefcaseId: BriefcaseIdValue.Unassigned });
+      return db;
     } catch (error) {
       nativeDb.closeFile();
       throw error;
