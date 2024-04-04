@@ -1437,7 +1437,7 @@ describe("GeometryStream", () => {
     timer.end();
   });
 
-  it.only("create polyface with aux channels", () => {
+  it("create polyface with aux channels", () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
