@@ -1,6 +1,6 @@
 # NULL, NUMBER, STRING & BOOLEAN Literals
 
-ECSQL support following primitive types but not all can be declared as literal in ECSQL though can be inserted/updated and queried in ECSQL.
+ECSQL supports the following primitive types. Not all can be declared as literals in ECSQL, though they can be inserted/updated and queried in ECSQL.
 
 | Type      | Declared in ECSQL | Descriptions                                |
 | --------- | ----------------- | ------------------------------------------- |

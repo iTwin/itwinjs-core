@@ -5,9 +5,9 @@ Match value to a pattern.
 Syntax: `<expr> [NOT] LIKE <pattern> [ESCAPE '<char>']`
 
 - The percent sign `%` represents zero, one, or multiple characters
-- The underscore sign `_` represents one, single character
+- The underscore sign `_` represents one single character
 
-Find classes with name start with `IL`.
+Find classes with names starting with `IL`.
 
 ```sql
     -- find classes

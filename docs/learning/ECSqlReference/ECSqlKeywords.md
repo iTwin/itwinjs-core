@@ -24,7 +24,7 @@
 
 ## Escaping keywords
 
-ECSQL has large set of [keywords](#ecsql-keywords). Keywords sometime appear in query as class name, property name or parameter name, cte block name or aliases and will result in query to fail. To fix it the keyword need to be quoted or escaped. Following is different ways keywords can be escaped. In ECSQL is preferred to escape using square brackets e.g. `[keyword]`.
+ECSQL has a large set of [keywords](#ecsql-keywords). Keywords sometime appear in queries as class names, property names or parameter names, cte block names or aliases and will cause the query to fail. To fix it, the keyword needs to be quoted or escaped. The following are different ways keywords can be escaped. In ECSQL it is preferred to escape using square brackets e.g. `[keyword]`.
 
 | Escape            | description                                                                                                                                                                               |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -32,4 +32,4 @@ ECSQL has large set of [keywords](#ecsql-keywords). Keywords sometime appear in 
 | **[_keyword_]**   | A keyword enclosed in square brackets is an identifier. This is not standard SQL. This quoting mechanism is used by MS Access and SQL Server and is included in SQLite for compatibility. |
 | **\`_keyword_\`** | A keyword enclosed in grave accents (ASCII code 96) is an identifier. This is not standard SQL. This quoting mechanism is used by MySQL and is included in SQLite for compatibility.      |
 
-> As best practice it good idea to escape at least escape all user defined identifiers like alias and properties name even when they are not currently keywords. They may become keyword in future as ECSQL evolve and may break your query.
+> As best practice it's a good idea to escape at least all user defined identifiers like alias and properties name even when they are not currently keywords. They may become keywords in the future as ECSQL evolves and may break your query.

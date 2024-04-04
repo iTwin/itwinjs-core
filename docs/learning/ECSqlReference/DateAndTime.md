@@ -9,13 +9,13 @@ Describe a literal timestamp value. Timestamp is provided according to
 TIMESTAMP <iso-8601-timestamp>
 ```
 
-Following example use [strftime()](https://www.sqlite.org/lang_datefunc.html) to extract date/time component from a timestamp value.
+The following example uses [strftime()](https://www.sqlite.org/lang_datefunc.html) to extract date/time component from a timestamp value.
 
 ```sql
 SELECT strftime('%m/%d/%Y %H:%M:%S', TIMESTAMP '2013-02-09T12:01:22') AS [output]
 ```
 
-Output look like following
+Output:
 
 ```text
 output

@@ -1,6 +1,6 @@
 # JSON1 virtual classes
 
-This EC wrapper for [JSON1 SQLite extension](https://sqlite.org/json1.html#jeach). It allow you to enumerate json document as table.
+This EC wrapper for [JSON1 SQLite extension](https://sqlite.org/json1.html#jeach). It allows you to enumerate json documents as tables.
 
 ## json_tree()
 
@@ -33,7 +33,7 @@ select s.* from json1.json_tree('{
 
 ## json_each()
 
-Iterate top level json and return each entry as row.
+Iterate top level json and return each entry as a row.
 
 ```sql
 select s.* from json1.json_each('{

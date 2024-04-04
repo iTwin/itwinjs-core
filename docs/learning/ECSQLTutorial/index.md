@@ -25,7 +25,7 @@ The ECSQL examples in the tutorial work with the "House Sample" iModel. You can 
 
 The schemas for iModels are based on [BIS](../../bis/index.md). Therefore, the examples throughout the tutorial use the BIS schemas. While not required to learn ECSQL, familiarity with BIS is a good idea to get more from this tutorial.
 
-For a video overview of BIS checkout this Youtube videos:
+For a video overview of BIS:
 > [Understanding iModel Data: An Introduction to BIS (Base Infrastructure Schemas)](https://www.youtube.com/watch?v=PqMkgBysQgg&list=PL6YCKeNfXXd9GjLi9ICRb0pACkR0OHTEH&index=6)
 
 ## Scope
@@ -68,7 +68,7 @@ Or simply use the provided sample below:
 
 - [ECSql Overview](../ECSQL.md)
 - [ECSql Reference Documentation](../ECSqlReference/index.md)
-- Youtube videos about ECSql
+- YouTube videos about ECSql
   - [How to Query Digital Twin Data [Part 1]](https://www.youtube.com/watch?v=vmQIi6RRyv8&list=PL6YCKeNfXXd9VFzTF-NSeN_l5vB7OTWR6&index=2)
   - [How to Query Digital Twin Data [Part 2]](https://www.youtube.com/watch?v=aftgWdPlx1s&list=PL6YCKeNfXXd9VFzTF-NSeN_l5vB7OTWR6&index=2)
 - [iModel Console](https://imodelconsole.bentley.com)

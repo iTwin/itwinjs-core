@@ -1,6 +1,6 @@
 # LIMIT clause
 
-Limit the number of rows returned by query. The clause also set offset from which the limit on rows is applied. [Read sqlite docs](https://www.sqlite.org/lang_select.html#limitoffset)
+Limit the number of rows returned by query. The clause also sets offset from which the limit on rows is applied. [Read sqlite docs](https://www.sqlite.org/lang_select.html#limitoffset)
 
 Syntax: `LIMIT <limit> [OFFSET <offset>]`
 

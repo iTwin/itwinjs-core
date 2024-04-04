@@ -2,13 +2,13 @@
 
 Instance queries allow you to select properties defined in derived classes when selecting a base class or multiple properties with the same name defined in different derived classes.
 
-## What is instance property?
+## What is an instance property?
 
-Instance property is any property in a class selected in ECSql or its derived classes accessed via the instance query syntax.
+An instance property is any property in a class selected in ECSql or its derived classes accessed via the instance query syntax.
 
-## How to access instance property?
+## How to access instance properties?
 
-In ECSQL instance property can be accessed by using the `$->` operator.
+In ECSQL instance properties can be accessed by using the `$->` operator.
 
 ```sql
 SELECT $->[CodeValue] FROM [BisCore].[Element] WHERE $->[CodeValue] IS NOT NULL LIMIT 1;
@@ -18,9 +18,9 @@ SELECT e.$->[CodeValue] FROM [BisCore].[Element] e LIMIT 1;
 
 ## How it works?
 
-Instance property allows relaxed access to any property within a hierarchy or selected class. It allows full access to the underlying instance of a class using its base class. We can think of it as if `$` represent the full instance not just properties of the selected class.
+An instance property allows relaxed access to any property within a hierarchy or selected class. It allows full access to the underlying instance of a class using its base class. We can think of it as if `$` represents the full instance not just properties of the selected class.
 
-Following ECSQL will return only properties declared in `BisCore.Element`
+The following ECSQL will return only properties declared in `BisCore.Element`
 
 ```sql
     SELECT * FROM [BisCore].[Element] WHERE ECInstanceId = 0xc000000014c
@@ -30,13 +30,13 @@ Following ECSQL will return only properties declared in `BisCore.Element`
 | --------------- | --------- | -------------------------------------- | -------------------------- | ---------------------------- | ---------------------------- | ------ | ---------- | ------ | --------------- | --------------- |
 | `0x8000000014c` | `0x710`   | `{Id:0x80000000003,RelECClassId:0x51}` | `2020-09-13T21:03:39.281Z` | `{Id:0x1,RelECClassId:0x59}` | `{Id:0x1,RelECClassId:0x5b}` | `NULL` | `Computer` | `NULL` | `NULL`          | `NULL`          |
 
-While following return all properties of respective derived class of `BisCore.Element`
+While the following will return all properties of respective derived class of `BisCore.Element`
 
 ```sql
     SELECT $ FROM [BisCore].[Element] WHERE ECInstanceId = 0xc000000014c
 ```
 
-above return one column and it contain serialized json instance with all properties
+the above returns one column containing a serialized json instance with all properties
 
 ```json
 {
@@ -115,19 +115,19 @@ Similarly we can read any set of properties and also filter by them
 | ------------ | ----------------- |
 | 381840       | kiran.patkar      |
 
-ECSql will apply a property filter on selected rows such that those instances which has at least one property out of set of instance property must exists. This improve performance.
+ECSql will apply a property filter on selected rows such that those instances which have at least one property out of set of instance properties must exist. This improves performance.
 
 ```sql
     SELECT $->[ThisPropertyDoesNotExists] from [BisCore].[Element];
 ```
 
-If `ThisPropertyDoesNotExists` does not exists in `Bis.Element` derived hierarchy then no row will be returned. ECSql filter only include rows that must have at least one instance property. If any instance does not have any instance property requested then it will will be skipped.
+If `ThisPropertyDoesNotExists` does not exists in the `Bis.Element` derived hierarchy then no row will be returned. ECSql filter only includes rows that must have at least one instance property. If any instance does not have any instance properties requested, then it will will be skipped.
 
-## Accessing composite properties like `NavigationProperty`, `Point2d`, `Point3d` or `Struct`s
+## Accessing composite properties like `NavigationProperty`, `Point2d`, `Point3d` or `Struct`
 
-Only top level instance property can be accessed via `$-><prop>` syntax. Doing something like `$->Model.Id` will not not work as of now. It might be supported in future but as of now any access-string within a composite property is not supported, if its the only property selected then zero row will be returned.
+Only top level instance properties can be accessed via `$-><prop>` syntax. Doing something like `$->Model.Id` will not work. It might be supported in the future, but currently any access-string within a composite property will return a zero row if it is the only property selected.
 
-Following type of properties can directly be use in filters and return strong type value.
+The following type of properties can be used directly in filters to return strong type values.
 
 - DateTime
 - Integer
@@ -136,7 +136,7 @@ Following type of properties can directly be use in filters and return strong ty
 - String
 - Double
 
-Here is example of `RevitId` use with `IN()` clause.
+Here is example of `RevitId` used with `IN()` clause.
 
 ```sql
     SELECT $ from [BisCore].[Element] WHERE $->RevitId In ( 1000, 2000, 3000 );
@@ -176,9 +176,9 @@ above will return following
 
 By default, all properties accessed via instance accessor i.e. `$->prop` must exist in the class identifying the row for that row to qualify for output.
 
-If the user uses `?` after a property accessor e.g. `$->prop?` then it will be considered optional, and the row class will not be checked to see if the `prop` exists or not.
+If the user uses `?` after a property accessor e.g. `$->prop?` then it will be considered optional, and the row class will not be checked to see if the `prop` exists.
 
-The following query will return no row if there is no subclass of `Bis.Element` that has both properties `CodeValue` and `Foo` in it.
+The following query will return no row if there is no subclass of `Bis.Element` which contains both properties `CodeValue` and `Foo`.
 
 ```sql
   SELECT ECClassId, ECInstanceId
@@ -196,7 +196,7 @@ On the other hand, the following query makes `Foo` optional by adding `?` at the
   LIMIT 1
 ```
 
-> Note: Optional property may slow down performance while non-optional properties will improve the performance of instance query.
+> Note: Optional properties may slow down performance while non-optional properties will improve the performance of an instance query.
 
 ## Accessing composite properties
 
@@ -276,10 +276,10 @@ SELECT *
 
 ## Performance
 
-Generally speaking the performance of instance prop is pretty good though it involve overhead of extracting either property value or complete instance.
+Generally speaking the performance of instance prop is pretty good, though it involves overhead of extracting either property value or complete instance.
 
-- Try use regular properties accessor where possible.
-- Do not use instance property access for local properties of class been selected.
+- Use regular properties accessors where possible.
+- Do not use instance property access for local properties of class selected.
 - Try avoiding filtering queries by instance properties. Though it fast be without a index it could be slow depending on number of rows to which filter will be applied.
 
 [ECSql Syntax](./index.md)

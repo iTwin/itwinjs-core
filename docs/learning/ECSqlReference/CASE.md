@@ -12,7 +12,7 @@ END
 
 ## Limitations
 
-Only primitive type can be used with WHEN, THEN and ELSE. Primitive does not include p2d, p3d, IGeometery and NavigationProperties. You can still use sub-queries that return single column and pretty much any SQL expressions.
+Only primitive types can be used with WHEN, THEN and ELSE. This does not include p2d, p3d, IGeometery and NavigationProperties. You can still use sub-queries that return single column and pretty much any SQL expressions.
 
 ## Example
 

@@ -71,7 +71,7 @@ Can take either one or two parameters:
 
 ### Returns
 
-The function return a integer `ECClassId` or `NULL` if the name could not be resolved.
+An integer `ECClassId` or `NULL` if the name could not be resolved.
 
 Note that this can also cause `ECSqlStatement::Step()` to return `BE_SQLITE_ERROR` if the incorrect number of arguments was passed in.
 
@@ -141,7 +141,7 @@ Void,Terrain
 
 ## StrToGuid( _guid-string_ )
 
-When `GUID` is stored a binary, it need to be converted for comparison purpose.
+When `GUID` is stored as a binary, it needs to be converted for comparison purposes.
 
 ```sql
 SELECT * FROM [BisCore].[Element] WHERE FederationGuid = StrToGuid('407bfa18-944d-11ee-b9d1-0242ac120002')
@@ -149,7 +149,7 @@ SELECT * FROM [BisCore].[Element] WHERE FederationGuid = StrToGuid('407bfa18-944
 
 ## GuidToString( _binary-guid_ )
 
-When `GUID` is stored a binary, it need to be converted for comparison purpose.
+When `GUID` is stored as a binary, it needs to be converted for comparison purpose.
 
 ```sql
 SELECT * FROM [BisCore].[Element] WHERE GuidToString(FederationGuid) = '407bfa18-944d-11ee-b9d1-0242ac120002'

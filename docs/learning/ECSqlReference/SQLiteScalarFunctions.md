@@ -1,6 +1,6 @@
 # Scalar SQLite built-in functions
 
-Following is list of SQLite built-in scalar functions exposed in ECSql, see [SQLite documentation](https://www.sqlite.org/lang_corefunc.html) for more details
+The following is a list of SQLite built-in scalar functions exposed in ECSql, see [SQLite documentation](https://www.sqlite.org/lang_corefunc.html) for more details
 
 | Function             | Description                                                                                                                                                                                                                                        |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

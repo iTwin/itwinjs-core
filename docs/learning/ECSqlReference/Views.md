@@ -13,7 +13,7 @@ The following rules apply to views:
 - The query has to return an ECInstanceId and an ECClassId column
 - All types of properties and computed expressions can be returned by view query if the class definition defines those properties and their types correctly.
 - Views can be applied only an ECEntityClass.
-- For relationship classes, a different custom attribute `ECDbMap.ForeignKeyBasedView` can be used instead, which will make the runtime go and check both sides for a navigation property which matches the relationship. If one is found, a view for the relationship is automatically generated.
+- For relationship classes, a different custom attribute `ECDbMap.ForeignKeyBasedView` can be used instead, which will make the runtime check both sides for a navigation property matching the relationship. If one is found, a view for the relationship is automatically generated.
 - Any metadata like property category or kind of quantity is taken from the property definitions. Metadata that may come from the view query is overridden by these.
 
 Example of a schema using a view:
@@ -73,7 +73,7 @@ Length   |Diameter |Material
 150      |20       |plastic
 ```
 
-A view may contain navigation properties, for these, the query can use the `navigation_value`function provided by ECSQL [ECSqlFunctions](./ECSqlFunctions.md)
+A view may contain navigation properties. For these, the query can use the `navigation_value`function provided by ECSQL [ECSqlFunctions](./ECSqlFunctions.md)
 
 One example utilizing the View concepts including navigation properties is `ClassCustomAttribute` in `ECDbMeta`:
 

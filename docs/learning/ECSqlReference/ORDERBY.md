@@ -1,6 +1,6 @@
 # ORDER BY clause
 
-Sort result by set of expressions in ascending or descending order. It is also use to order nulls in result set by putting them in front or last of results.
+Sort result by set of expressions in ascending or descending order. It is also used to order nulls in result set by putting them at the start or end of results.
 
 Syntax:
 

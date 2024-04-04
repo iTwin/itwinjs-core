@@ -1,10 +1,10 @@
 # IIF (_condition-expr_, _true-expr_, _false-expr_)
 
-ECSQL supports IIF(), which is really shorthand for `CASE WHEN <condition-expr> THEN <true-expr> ELSE <false-expr> END`
+ECSQL supports IIF(), which is shorthand for `CASE WHEN <condition-expr> THEN <true-expr> ELSE <false-expr> END`
 
 ## Parameters
 
-`condition-expr`: A condition expression that resolve into a boolean value. e.g. Length > 1.0.
+`condition-expr`: A condition expression that resolves into a boolean value. e.g. Length > 1.0.
 
 `true-expr`: Value returned when the `condition-expr` is evaluated to a _true_ value.
 

@@ -1,10 +1,10 @@
 # ECSQL Parameters
 
-ECSQL support named and positional parameters.
+ECSQL supports named and positional parameters.
 
 ## Named parameters
 
-Name parameter can be use to bind parameter by name.
+Named parameters can be used to bind a parameter by name.
 
 Syntax: `:<parameter-name>`
 
@@ -14,7 +14,7 @@ SELECT * FROM [meta].[ECClassDef] WHERE [Name] = :className
 
 ## Positional parameters
 
-Positional parameter are bind by position from left to right.
+Positional parameters are bound by position from left to right.
 
 Syntax: `?`
 

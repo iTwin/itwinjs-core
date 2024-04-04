@@ -57,14 +57,14 @@ PRAGMA experimental_features_enabled
 
 ## `PRAGMA integrity_check` (experimental)
 
-1. `check_ec_profile` - checks if the profile table, indexes, and triggers are present. Does not check of be\_\* tables. Issues are returned as a list of tables/indexes/triggers which was not found or have different DDL.
-2. `check_data_schema` - checks if all the required data tables and indexes exist for mapped classes. Issues are returned as a list of tables/columns which was not found or have different DDL.
+1. `check_ec_profile` - checks if the profile table, indexes, and triggers are present. Does not check be\_\* tables. Issues are returned as a list of tables/indexes/triggers which were not found or have different DDL.
+2. `check_data_schema` - checks if all the required data tables and indexes exist for mapped classes. Issues are returned as a list of tables/columns which were not found or have different DDL.
 3. `check_data_columns` - checks if all the required columns exist in data tables. Issues are returned as a list of those tables/columns.
 4. `check_nav_class_ids` - checks if `RelClassId` of a Navigation property is a valid ECClassId. It does not check the value to match the relationship class.
 5. `check_nav_ids` - checks if `Id` of a Navigation property matches a valid row primary class.
 6. `check_linktable_fk_class_ids` - checks if `SourceECClassId` or `TargetECClassId` of a link table matches a valid ECClassId.
 7. `check_linktable_fk_ids`- checks if `SourceECInstanceId` or `TargetECInstanceId` of a link table matches a valid row in primary class.
-8. `check_class_ids`- checks persisted `ECClassId` in all data tables and make sure they are valid.
+8. `check_class_ids`- checks persisted `ECClassId` in all data tables and makes sure they are valid.
 9. `check_schema_load` - checks if all schemas can be loaded into memory.
 
 ```sql

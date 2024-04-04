@@ -14,7 +14,7 @@ SELECT row_number() OVER (ORDER BY a) AS row_number FROM test.Foo;
 
 ## Window name
 
-Named window definition clauses may also bee added to a `SELECT` statement using a `WINDOW` clause and then referred to by name within window function invocations.
+Named window definition clauses may also be added to a `SELECT` statement using a `WINDOW` clause and then referred to by name within window function invocations.
 For example:
 
 ```sql
@@ -35,7 +35,7 @@ FROM t1
 WINDOW win AS (PARTITION BY a ORDER BY c);
 ```
 
-[Read more.](https://www.sqlite.org/windowfunctions.html#window_chaining)
+[Read more](https://www.sqlite.org/windowfunctions.html#window_chaining)
 
 ## The `PARTITION BY` clause
 
@@ -65,10 +65,10 @@ Ending frame boundary and `EXCLUDE` clause are `optional`.
 There are three frame types: `ROWS`, `GROUPS`, and `RANGE`. The frame type determines how the starting and ending boundaries of the frame are measured.
 
 - `ROWS`: The `ROWS` frame type means that the starting and ending boundaries for the frame are determined by counting individual rows relative to the current row.
-- `GROUPS`: The `GROUPS` frame type means that the starting and ending boundaries are determine by counting "groups" relative to the current group. A "group" is a set of rows that all have equivalent values for all all terms of the window ORDER BY clause. ("Equivalent" means that the IS operator is true when comparing the two values.) In other words, a group consists of all peers of a row.
-- `RANGE`: The `RANGE` frame type requires that the `ORDER BY` clause of the window have exactly one term. Call that term `X`. With the `RANGE` frame type, the elements of the frame are determined by computing the value of expression `X` for all rows in the partition and framing those rows for which the value of `X` is within a certain range of the value of `X` for the current row.
+- `GROUPS`: The `GROUPS` frame type means that the starting and ending boundaries are determined by counting "groups" relative to the current group. A "group" is a set of rows all having equivalent values for all terms of the window ORDER BY clause. ("Equivalent" means the IS operator is true when comparing the two values.) In other words, a group consists of all peers of a row.
+- `RANGE`: The `RANGE` frame type requires that the `ORDER BY` clause of the window has exactly one term. Call that term `X`. With the `RANGE` frame type, the elements of the frame are determined by computing the value of expression `X` for all rows in the partition and framing those rows for which the value of `X` is within a certain range of the value of `X` for the current row.
 
-[Read more.](https://www.sqlite.org/windowfunctions.html#frame_type)
+[Read more](https://www.sqlite.org/windowfunctions.html#frame_type)
 
 ### Frame boundaries
 
@@ -83,7 +83,7 @@ There are five ways to describe starting and ending frame boundaries:
 - `<expr> FOLLOWING`: This is the same as `<expr> PRECEDING` except that the boundary is `<expr>` units after the current rather than before the current row.
 - `UNBOUNDED FOLLOWING`: The frame boundary is the last row in the partition.
 
-[Read more.](https://www.sqlite.org/windowfunctions.html#frame_boundaries)
+[Read more](https://www.sqlite.org/windowfunctions.html#frame_boundaries)
 
 ### The `EXCLUDE` clause
 
@@ -94,7 +94,7 @@ The optional `EXCLUDE` clause may take any of the following four forms:
 - `EXCLUDE GROUP`: In this case the current row and all other rows that are peers of the current row are excluded from the frame. When processing an `EXCLUDE` clause, all rows with the same `ORDER BY` values, or all rows in the partition if there is no `ORDER BY` clause, are considered peers, even if the frame type is `ROWS`.
 - `EXCLUDE TIES`: In this case the current row is part of the frame, but peers of the current row are excluded.
 
-[Read more.](https://www.sqlite.org/windowfunctions.html#the_exclude_clause)
+[Read more](https://www.sqlite.org/windowfunctions.html#the_exclude_clause)
 
 Here are some examples with window frames:
 

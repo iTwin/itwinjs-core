@@ -1,6 +1,6 @@
 # ECSQLOPTIONS or OPTIONS clause
 
-`ECSQLOPTIONS` which can also be written as just `OPTIONS` use to specify flags thats will effect processing of ECSQL statement.
+`ECSQLOPTIONS` (or `OPTIONS` for short) are used to specify flags thats will effect processing of the ECSQL statement.
 
 Syntax: `<select-stmt> OPTIONS option[=val] [,...]`
 
