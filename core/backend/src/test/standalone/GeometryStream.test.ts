@@ -1443,12 +1443,11 @@ describe("GeometryStream", () => {
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
-    const xOffset = Transform.createTranslation(Point3d.create(2.5));
     const builder = new GeometryStreamBuilder();
 
     // NOTE: It's a good idea to request sub-graphic ranges when adding multiple "large" polyfaces to a geometry stream...
     builder.appendGeometryRanges();
-    
+
     const polyface = createPolyfaceWithAuxChannels();
     builder.appendGeometry(polyface);
     const testOrigin = Point3d.create(5, 10, 0);
