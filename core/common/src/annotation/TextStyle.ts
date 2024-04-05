@@ -93,9 +93,7 @@ export interface TextStyleSettingsProps {
    * Default: 2/3
    */
   superScriptScale?: number;
-  /** Multiplier used to compute the width of each glyph.
-   * The width in meters is computed as widthFactor * [[lineHeight]].
-   * ###TODO Obtain clarity.
+  /** A scale applied to the width of each glyph.
    * Default: 1.0
    */
   widthFactor?: number;
