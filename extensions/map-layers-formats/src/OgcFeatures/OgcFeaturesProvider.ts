@@ -5,7 +5,7 @@
 
 import { FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, QuadId, WGS84Extent } from "@itwin/core-frontend";
 import { EsriPMS, EsriPMSProps, EsriRenderer, EsriSFS, EsriSFSProps, EsriSLS, EsriSLSProps, EsriSymbol } from "../ArcGisFeature/EsriSymbology";
-import { Cartographic, ColorDef, ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
+import { Cartographic, ColorDef, ImageMapLayerSettings, ImageSource, ImageSourceFormat, SubLayerId } from "@itwin/core-common";
 import { Matrix4d, Point3d, Range2d } from "@itwin/core-geometry";
 import { ArcGisSymbologyCanvasRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer";
 import { FeatureCanvasRenderer } from "../Feature/FeatureCanvasRenderer";
@@ -105,7 +105,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
   private _spatialIdx: any;
   private _defaultSymbol = new DefaultOgcSymbology(new RandomMapColor());
   private _renderer: EsriRenderer|undefined;
-  private _baseUrl = "";
+  private _collectionUrl = "";
   private _itemsUrl = "";
   private readonly _itemsCrs = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";   // Fixed fow now
   private _queryables: any;
@@ -123,30 +123,83 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
 
   public override async initialize(): Promise<void> {
 
-    this._baseUrl = this._settings.url;
+    this._collectionUrl = this._settings.url;
+    let layerId: SubLayerId|undefined;
+
+    // OGC Feature service request can only serve data for a single feature
+    if (this._settings.subLayers && this._settings.subLayers.length > 0) {
+      layerId = this._settings.subLayers[0].id;
+    }
+
+    const readCollectionsPage = (data: any) => {
+      const collection = data.collections.find((col: any)=> col.id === layerId);
+      const collectionLinks = collection?.links;
+      if (!collectionLinks) {
+        const msg = `Missing layer id or matching collection could not be found`;
+        Logger.logError(loggerCategory, msg);
+        throw new Error(msg);
+      }
+      const collectionLink = collectionLinks.find((link: any)=> link.rel.includes("collection") && link.type === "application/json",
+      );
+      this._collectionUrl  = collectionLink.href;
+    };
+
+    let collectionMetadata: any;
+    let response = await this.makeTileRequest(this._settings.url);
+    let json =  await response.json();
+    if (json?.type === "FeatureCollection") {
+      // We landed on the items page, we need to look for the collection metadata url
+      if (Array.isArray(json.links)) {
+        const collectionLink = json.links.find((link: any)=> link.rel.includes("collection") && link.type === "application/json");
+        this._collectionUrl  = collectionLink.href;
+      }
+    } else if (json.itemType === "feature" && (layerId === undefined || layerId === json.id)) {
+      // We landed on the right collection page.
+      collectionMetadata = json;
+    } else if (Array.isArray(json.collections)) {
+      // We landed in the "Collections" page
+      // Find to find the specified layer id among the available collections
+      readCollectionsPage(json);
+    }  else if (Array.isArray(json.links)) {
+      // This might be the main landing page
+      // We need to find the the "Collections" page
+      const collectionsLink = json.links.find((link: any)=> link.rel.includes("data") && link.type === "application/json");
+      response = await this.makeTileRequest(collectionsLink.href);
+      json =  await response.json();
+      if (Array.isArray(json.collections)) {
+        readCollectionsPage(json);
+      }
+    }
 
     // Read collection metadata
-    const metadata = await this.fetchCollectionMetadata();
+    if (!collectionMetadata)
+      collectionMetadata = await this.fetchCollectionMetadata();
+
+    if (layerId !== undefined && collectionMetadata.id !== collectionMetadata.id) {
+      const msg = `Collection metadata and layer id (${layerId}) mismatch`;
+      Logger.logError(loggerCategory, msg);
+      throw new Error(msg);
+    }
 
     // Read cartographic range
-    if (Array.isArray(metadata?.extent?.spatial?.bbox)
-    && metadata.extent.spatial.bbox.length > 0
-    && metadata.extent.spatial.crs === this._itemsCrs
+    if (Array.isArray(collectionMetadata?.extent?.spatial?.bbox)
+    && collectionMetadata.extent.spatial.bbox.length > 0
+    && collectionMetadata.extent.spatial.crs === this._itemsCrs
     ) {
-      const firstbbox = metadata.extent.spatial?.bbox[0];
-      this.cartoRange = MapCartoRectangle.fromDegrees(firstbbox[0], firstbbox[1], firstbbox[2], firstbbox[3]);
+      const firstBbox = collectionMetadata.extent.spatial?.bbox[0];
+      this.cartoRange = MapCartoRectangle.fromDegrees(firstBbox[0], firstBbox[1], firstBbox[2], firstBbox[3]);
     }
 
     // Read important links
     let queryablesHref: string|undefined;
     let itemsHref: string|undefined;
-    if (Array.isArray(metadata?.links)) {
+    if (Array.isArray(collectionMetadata?.links)) {
       // Items links (Mandatory)
-      const itemsLink = metadata.links.find((link: any)=> link.rel.includes("items") && link.type === "application/geo+json");
+      const itemsLink = collectionMetadata.links.find((link: any)=> link.rel.includes("items") && link.type === "application/geo+json");
       itemsHref = itemsLink.href;
 
       // Queryables link (Optional)
-      const queryablesLink = metadata.links.find((link: any)=> link.rel.includes("queryables") && link.type === "application/schema+json");
+      const queryablesLink = collectionMetadata.links.find((link: any)=> link.rel.includes("queryables") && link.type === "application/schema+json");
       queryablesHref = queryablesLink.href;
 
     }
@@ -172,7 +225,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
   }
 
   private async fetchCollectionMetadata() {
-    const url = this.appendCustomParams(`${this._baseUrl}?f=json`);
+    const url = this.appendCustomParams(`${this._collectionUrl}`);
     try {
       const response = await this.makeTileRequest(url, this._staticModeFetchTimeout);
       return await response.json();
@@ -205,7 +258,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       if (e instanceof DOMException && e.name === "AbortError") {
         Logger.logInfo(loggerCategory, "Request to fetch all features time out, switching to tile mode.");
       } else {
-        Logger.logError(loggerCategory, "Unkown error occured when fetching OgcFeatures data.");
+        Logger.logError(loggerCategory, "Unknown error occurred when fetching OgcFeatures data.");
       }
     }
     return undefined;
@@ -217,7 +270,8 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     let success = true;
     try {
       const fetchBegin = performance.now();
-      let response = await this.makeTileRequest(this.appendCustomParams(url), timeout);
+      const tmpUrl = this.appendCustomParams(url);
+      let response = await this.makeTileRequest(tmpUrl, timeout);
       let json = await response.json();
       data = json;
       // Follow "next" link if any
