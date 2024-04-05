@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-locaters",
+      "comment": "Remove the prefix from Glob pattern as `glob.GlobSync` function requires Glob patterns without prefixes",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-locaters"
+}

@@ -162,7 +162,11 @@ export abstract class SchemaFileLocater {
    * @param format The type of file that the schema key refers to. json or xml
    */
   private addCandidateSchemaKeys(foundFiles: FileSchemaKey[], schemaPath: string, fileFilter: string, desiredKey: Readonly<SchemaKey>, matchType: SchemaMatchType, format: string) {
-    const fullPath = path.join(schemaPath, fileFilter);
+    let fullPath = path.join(schemaPath, fileFilter);
+    // `glob.GlobSync` doesn't work correctly if the Glob pattern has the long path prefix for Windows systems
+    if (fullPath.startsWith("\\\\?\\")) {
+      fullPath = fullPath.substring(4);
+    }
 
     const result = new glob.GlobSync(fullPath, { sync: true });
     for (const match of result.found) {
