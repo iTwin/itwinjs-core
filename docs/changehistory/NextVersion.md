@@ -22,5 +22,5 @@ Now, meshopt compression is supported. You can use a library like [meshoptimizer
 
 ### @itwin/ecschema-metadata
 
-Since the enumeration `SchemaItemType` changed it's underlaying type from int to string, the method `schemaItemToString` is now deprecated as the enum value can be used directly in the code
-to get the schema items type name.
+The enumeration `SchemaItemType` has changed it's underlying type from numbers to strings which match the names of the schema item classes.
+The method `schemaItemToString` has been marked deprecated as a translation between the enumeration value and the type names isn't longer necessary.
