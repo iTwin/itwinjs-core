@@ -255,44 +255,55 @@ export abstract class MapLayerImageryProvider {
 
     let response: Response|undefined;
     try {
-      let headers: Headers | undefined;
-      let hasCreds = false;
-      if (this._settings.userName && this._settings.password) {
-        hasCreds = true;
-        headers = new Headers();
-        this.setRequestAuthorization(headers);
-      }
-      const opts: RequestInit = {
-        method: "GET",
-        headers,
-        credentials: this._includeUserCredentials ? "include" : undefined,
-      };
-      if (timeoutMs !== undefined)
-        setRequestTimeout(opts, timeoutMs);
-      response = await fetch(url, opts);
-
-      if (response.status === 401
-        && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])
-        && !this._includeUserCredentials
-        && !hasCreds ) {
-
-        // Removed the previous headers and make sure "include" credentials is set
-        opts.headers = undefined;
-        opts.credentials = "include";
-
-        // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
-        response = await fetch(url,  opts);
-        if (response.status === 200) {
-          this._includeUserCredentials = true;    // avoid going through 401 challenges over and over
-        }
-      }
-
+      response = await this.makeRequest(url, timeoutMs);
     } finally {
       this.onFirstRequestCompleted.raiseEvent();
     }
 
     if (response === undefined)
       throw new Error("fetch call failed");
+
+    return response;
+  }
+
+  /** @internal */
+  public async makeRequest(url: string, timeoutMs?: number): Promise<Response> {
+
+    let response: Response|undefined;
+
+    let headers: Headers | undefined;
+    let hasCreds = false;
+    if (this._settings.userName && this._settings.password) {
+      hasCreds = true;
+      headers = new Headers();
+      this.setRequestAuthorization(headers);
+    }
+    const opts: RequestInit = {
+      method: "GET",
+      headers,
+      credentials: this._includeUserCredentials ? "include" : undefined,
+    };
+
+    if (timeoutMs !== undefined)
+      setRequestTimeout(opts, timeoutMs);
+
+    response = await fetch(url, opts);
+
+    if (response.status === 401
+          && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])
+          && !this._includeUserCredentials
+          && !hasCreds
+    ) {
+      // Removed the previous headers and make sure "include" credentials is set
+      opts.headers = undefined;
+      opts.credentials = "include";
+
+      // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
+      response = await fetch(url,  opts);
+      if (response.status === 200) {
+        this._includeUserCredentials = true;    // avoid going through 401 challenges over and over
+      }
+    }
 
     return response;
   }

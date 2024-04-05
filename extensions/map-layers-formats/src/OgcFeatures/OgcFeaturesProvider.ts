@@ -5,11 +5,11 @@
 
 import { FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, QuadId, WGS84Extent } from "@itwin/core-frontend";
 import { EsriPMS, EsriPMSProps, EsriRenderer, EsriSFS, EsriSFSProps, EsriSLS, EsriSLSProps, EsriSymbol } from "../ArcGisFeature/EsriSymbology";
-import { Cartographic, ColorDef, ImageMapLayerSettings, ImageSource, ImageSourceFormat, SubLayerId } from "@itwin/core-common";
+import { Cartographic, ColorDef, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError, SubLayerId } from "@itwin/core-common";
 import { Matrix4d, Point3d, Range2d } from "@itwin/core-geometry";
 import { ArcGisSymbologyCanvasRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer";
 import { FeatureCanvasRenderer } from "../Feature/FeatureCanvasRenderer";
-import { base64StringToUint8Array, Logger } from "@itwin/core-bentley";
+import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
 import * as Geojson from "geojson";
 import { FeatureDefaultSymbology } from "../Feature/FeatureSymbology";
 import { OgcFeaturesReader } from "./OgcFeaturesReader";
@@ -144,8 +144,13 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       this._collectionUrl  = collectionLink.href;
     };
 
+    const layerIdMismatch = () => {
+      const msg = `Collection metadata and layer id ("${layerId}") mismatch`;
+      Logger.logError(loggerCategory, msg);
+      throw new Error(msg);
+    };
     let collectionMetadata: any;
-    let response = await this.makeTileRequest(this._settings.url);
+    let response = await this.fetchMetadata(this._settings.url);
     let json =  await response.json();
     if (json?.type === "FeatureCollection") {
       // We landed on the items page, we need to look for the collection metadata url
@@ -153,7 +158,13 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
         const collectionLink = json.links.find((link: any)=> link.rel.includes("collection") && link.type === "application/json");
         this._collectionUrl  = collectionLink.href;
       }
-    } else if (json.itemType === "feature" && (layerId === undefined || layerId === json.id)) {
+    } else if (json.itemType === "feature") {
+
+      // Make sure the collection Id matches one of the specified sublayer id.
+      if (this._settings.subLayers && !this._settings.subLayers.find((s)=>s.id === json.id)) {
+        layerIdMismatch();
+      }
+
       // We landed on the right collection page.
       collectionMetadata = json;
     } else if (Array.isArray(json.collections)) {
@@ -164,7 +175,12 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       // This might be the main landing page
       // We need to find the the "Collections" page
       const collectionsLink = json.links.find((link: any)=> link.rel.includes("data") && link.type === "application/json");
-      response = await this.makeTileRequest(collectionsLink.href);
+      if (!collectionsLink) {
+        Logger.logError(loggerCategory, "Could not find collections link");
+        throw new ServerError(IModelStatus.ValidationFailed, "");
+      }
+
+      response = await this.makeRequest(collectionsLink.href);
       json =  await response.json();
       if (Array.isArray(json.collections)) {
         readCollectionsPage(json);
@@ -173,12 +189,10 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
 
     // Read collection metadata
     if (!collectionMetadata)
-      collectionMetadata = await this.fetchCollectionMetadata();
+      collectionMetadata = await this.fetchMetadata(this._collectionUrl);
 
     if (layerId !== undefined && collectionMetadata.id !== collectionMetadata.id) {
-      const msg = `Collection metadata and layer id (${layerId}) mismatch`;
-      Logger.logError(loggerCategory, msg);
-      throw new Error(msg);
+      layerIdMismatch();
     }
 
     // Read cartographic range
@@ -212,7 +226,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       throw new Error(msg);
     }
     if (queryablesHref)
-      this._queryables = await this.fetchQueryables(queryablesHref);
+      this._queryables = await this.fetchMetadata(queryablesHref);
 
     if (!this._forceTileMode) {
       const status = await this.fetchAllItems();
@@ -224,20 +238,11 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     await this._defaultSymbol.initialize(); // images must be loaded upfront
   }
 
-  private async fetchCollectionMetadata() {
-    const url = this.appendCustomParams(`${this._collectionUrl}`);
-    try {
-      const response = await this.makeTileRequest(url, this._staticModeFetchTimeout);
-      return await response.json();
-
-    } catch (e)  {
-      if (e instanceof DOMException && e.name === "AbortError") {
-        Logger.logInfo(loggerCategory, "Request to fetch all features time out, switching to tile mode.");
-      } else {
-        Logger.logError(loggerCategory, "Unkown error occured when fetching OgcFeatures data.");
-      }
-    }
-    return undefined;
+  private async fetchMetadata(url: string) {
+    const tmpUrl = this.appendCustomParams(url);
+    const response = await this.makeRequest(tmpUrl);
+    const json = await response.json();
+    return json;
   }
 
   private async fetchAllItems() {
@@ -248,36 +253,20 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     return this._staticData ? true : false;
   }
 
-  private async fetchQueryables(queryableUrl: string) {
-    const url = this.appendCustomParams(queryableUrl);
-    try {
-      const response = await this.makeTileRequest(url, this._staticModeFetchTimeout);
-      return  await response.json();
-
-    } catch (e)  {
-      if (e instanceof DOMException && e.name === "AbortError") {
-        Logger.logInfo(loggerCategory, "Request to fetch all features time out, switching to tile mode.");
-      } else {
-        Logger.logError(loggerCategory, "Unknown error occurred when fetching OgcFeatures data.");
-      }
-    }
-    return undefined;
-
-  }
-
   private async fetchItems(url: string, timeout: number) {
     let data: any;
     let success = true;
     try {
       const fetchBegin = performance.now();
-      const tmpUrl = this.appendCustomParams(url);
+      let tmpUrl = this.appendCustomParams(url);
       let response = await this.makeTileRequest(tmpUrl, timeout);
       let json = await response.json();
       data = json;
       // Follow "next" link if any
       let nextLink = json.links?.find((link: any)=>link.rel === "next");
       while (nextLink && (performance.now() - fetchBegin) < timeout && success) {
-        response = await this.makeTileRequest(nextLink.href, this._staticModeFetchTimeout);
+        tmpUrl = this.appendCustomParams(nextLink.href);
+        response = await this.makeTileRequest(tmpUrl, this._staticModeFetchTimeout);
         json = await response.json();
         if (json?.features)
           data!.features = this._staticData?.features ? [...this._staticData.features, ...json.features] : json.features;
@@ -347,7 +336,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
               datasetRange.setNull();
             }
           } catch (e: any)  {
-            Logger.logInfo(loggerCategory, `Unkown error occured indexing feature: ${e.message}`);
+            Logger.logInfo(loggerCategory, `Unknown error occurred indexing feature: ${e.message}`);
             success = false;
           }
         });
@@ -358,7 +347,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       }
 
     } catch (_e)  {
-      Logger.logError(loggerCategory, "Unkown error occured when index static data");
+      Logger.logError(loggerCategory, "Unknown error occurred when index static data");
       success = false;
     }
     return success;

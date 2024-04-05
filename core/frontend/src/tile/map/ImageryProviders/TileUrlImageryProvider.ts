@@ -7,6 +7,7 @@
  */
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation } from "../../internal";
+import { UrlUtils } from "../../internal";
 
 const levelToken = "{level}";
 const rowToken = "{row}";
