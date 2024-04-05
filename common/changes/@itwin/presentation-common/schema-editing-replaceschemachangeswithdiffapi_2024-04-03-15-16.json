@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-common",
-      "comment": "Removed deprecated calls of schemaItemTypeToString",
+      "comment": "",
       "type": "none"
     }
   ],
