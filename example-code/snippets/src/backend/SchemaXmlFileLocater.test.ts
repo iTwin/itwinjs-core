@@ -5,14 +5,13 @@
 
 import { SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
-import { IModelHost, KnownLocations } from "@itwin/core-backend";
+import { KnownLocations } from "@itwin/core-backend";
 import path from "path";
 import { assert } from "chai";
 import * as fs from "fs-extra";
 
 describe("SchemaXmlFileLocater - locate standard schema", () => {
   it("Schema path is less than 260 character long", async () => {
-    await IModelHost.startup();
     const cont = new SchemaContext();
     const loc = new SchemaXmlFileLocater();
     cont.addLocater(loc);
@@ -24,11 +23,9 @@ describe("SchemaXmlFileLocater - locate standard schema", () => {
 
     assert.isDefined(schema);
     assert.strictEqual(schema?.name, "Units");
-    await IModelHost.shutdown();
   });
 
   it("Schema path is more than 1k character long", async () => {
-    await IModelHost.startup();
     const cont = new SchemaContext();
     const loc = new SchemaXmlFileLocater();
     cont.addLocater(loc);
@@ -49,14 +46,12 @@ describe("SchemaXmlFileLocater - locate standard schema", () => {
 
     assert.isDefined(schema);
     assert.strictEqual(schema?.name, "Units");
-    await IModelHost.shutdown();
     if (fs.existsSync(path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "StandardCopy"))) {
       fs.rmSync(path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "StandardCopy"), {recursive: true});
     }
   });
 
   it("Schema path is more than 10k character long", async () => {
-    await IModelHost.startup();
     const cont = new SchemaContext();
     const loc = new SchemaXmlFileLocater();
     cont.addLocater(loc);
@@ -77,7 +72,6 @@ describe("SchemaXmlFileLocater - locate standard schema", () => {
 
     assert.isDefined(schema);
     assert.strictEqual(schema?.name, "Units");
-    await IModelHost.shutdown();
     if (fs.existsSync(path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "StandardCopy"))) {
       fs.rmSync(path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "StandardCopy"), {recursive: true});
     }
