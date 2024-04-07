@@ -188,14 +188,7 @@ function deepClone<T extends SettingType>(obj: any): T {
     return obj;
 
   const result = Array.isArray(obj) ? [] : {} as any;
-  Object.keys(obj).forEach((key: string) => {
-    const val = obj[key];
-    if (val && typeof val === "object") {
-      result[key] = deepClone(val);
-    } else {
-      result[key] = val;
-    }
-  });
+  Object.keys(obj).forEach((key: string) => result[key] = deepClone(obj[key]));
   return result;
 }
 

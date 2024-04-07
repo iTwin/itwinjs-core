@@ -17,7 +17,7 @@ import { IModelHost, KnownLocations } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
-import { Settings, SettingsPriority } from "./Settings";
+import { SettingName, Settings, SettingsPriority } from "./Settings";
 import { SettingsSchemas } from "./SettingsSchemas";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 
@@ -134,9 +134,13 @@ export namespace WorkspaceDb {
   /** Properties that specify how to load a WorkspaceDb within a [[WorkspaceContainer]]. */
   export interface Props extends CloudSqlite.DbNameProp {
     /** a semver version range specifier that determines the acceptable range of versions to load. If not present, use the newest version. */
-    version?: VersionRange;
+    readonly version?: VersionRange;
     /** if true, allow semver *prerelease* versions. By default only released version are allowed. */
-    includePrerelease?: boolean;
+    readonly includePrerelease?: boolean;
+    /** start a prefetch operation whenever this WorkspaceDb is opened. */
+    readonly prefetch?: boolean;
+    /** for sorted WorkspaceDbs, provides priority sort value */
+    readonly priority?: number;
   }
 
   /** Scope to increment for a version number.
@@ -173,6 +177,17 @@ export namespace WorkspaceResource {
     /** the name of the resource within the WorkspaceDb */
     rscName: Name;
   }
+
+  export interface SearchResult extends Props {
+    db: WorkspaceDb;
+  }
+
+  export interface Search {
+    readonly resourceType: "string" | "blob";
+    readonly nameSearch: string;
+    /** The comparison operator for `nameSearch`. Default is `=` */
+    readonly nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+  }
 }
 
 /**
@@ -191,8 +206,10 @@ export interface WorkspaceDb {
   readonly onClose: BeEvent<() => void>;
   /** Name by which a WorkspaceDb may be opened. This will be either a local file name or the name of a database in a cloud container */
   readonly dbFileName: string;
-  /** the SQLiteDb for this WorkspaceDb*/
+  /** the SQLiteDb for this WorkspaceDb */
   readonly sqliteDb: SQLiteDb;
+  /** determine whether this WorkspaceDb is currently open */
+  readonly isOpen: boolean;
 
   open(): void;
   close(): void;
@@ -232,6 +249,8 @@ export interface WorkspaceDb {
    * @throws if this WorkspaceDb is not from a `CloudContainer`.
    */
   prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch;
+
+  queryResource(search: WorkspaceResource.Search, callback: (result: WorkspaceResource.SearchResult) => void | "stop"): void | "stop";
 
   /** @internal */
   queryFileResource(rscName: WorkspaceResource.Name): { localFileName: LocalFileName, info: IModelJsNative.EmbedFileQuery } | undefined;
@@ -316,10 +335,17 @@ export interface Workspace {
 
   /** Close this Workspace. All WorkspaceContainers are dropped. */
   close(): void;
+
+  queryResource(dbListSetting: SettingName, search: WorkspaceResource.Search, callback: (result: WorkspaceResource.SearchResult) => void | "stop"): Promise<void>;
+
+  // getStringResource(dbListSetting: SettingName, resourceName: WorkspaceResource.Name): string | undefined;
+  // getBlobResource(dbListSetting: SettingName, resourceName: WorkspaceResource.Name): string | undefined;
 }
 
 /** @beta */
 export namespace Workspace {
+  export type resourceResolver<T> = (val: T,) => T | undefined;
+
   /** @internal */
   export function construct(settings: Settings, opts?: WorkspaceOpts): Workspace {
     return new WorkspaceImpl(settings, opts);
@@ -346,7 +372,7 @@ export interface WorkspaceContainer {
   readonly cloudContainer?: CloudSqlite.CloudContainer;
 
   /** @internal */
-  addWorkspaceDb(toAdd: WorkspaceDbImpl): void;
+  addWorkspaceDb(toAdd: WorkspaceDb): void;
 
   /**
    * Find the appropriate version of a WorkspaceDb in this WorkspaceContainer based on the SemVer rule
@@ -559,6 +585,20 @@ class WorkspaceImpl implements Workspace {
 
     return resolved;
   }
+
+  public async queryResource(dbListSetting: SettingName, search: WorkspaceResource.Search, callback: (result: WorkspaceResource.SearchResult) => void | "stop"): Promise<void | "stop"> {
+    const dbNames: WorkspaceDb.Name[] = [];
+    this.settings.resolveSetting(dbListSetting, (val: WorkspaceDb.Name[], _dict, _priority) => {
+      dbNames.push(...val);
+      return dbNames;
+    }, dbNames);
+
+    for (const dbName of dbNames) {
+      const db = await this.getWorkspaceDb(dbName);
+      db.queryResource(search, callback);
+    }
+  }
+
 }
 
 class WorkspaceContainerImpl implements WorkspaceContainer {
@@ -567,7 +607,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
   public readonly id: WorkspaceContainer.Id;
 
   public readonly cloudContainer?: CloudSqlite.CloudContainer | undefined;
-  private _wsDbs = new Map<WorkspaceDb.DbName, WorkspaceDbImpl>();
+  private _wsDbs = new Map<WorkspaceDb.DbName, WorkspaceDb>();
   public get dirName() { return join(this.workspace.containerDir, this.id); }
 
   public constructor(workspace: WorkspaceImpl, props: WorkspaceContainer.Props) {
@@ -639,7 +679,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     return { oldName, newName };
   }
 
-  public addWorkspaceDb(toAdd: WorkspaceDbImpl) {
+  public addWorkspaceDb(toAdd: WorkspaceDb) {
     if (undefined !== this._wsDbs.get(toAdd.dbName))
       throw new Error(`workspaceDb ${toAdd.dbName} already exists in workspace`);
     this._wsDbs.set(toAdd.dbName, toAdd);
@@ -697,6 +737,8 @@ class WorkspaceDbImpl implements WorkspaceDb {
     this.container = container;
     this.dbFileName = container.resolveDbFileName(props);
     container.addWorkspaceDb(this);
+    if (true === props.prefetch)
+      this.prefetch();
   }
 
   public open() {
@@ -765,6 +807,16 @@ class WorkspaceDbImpl implements WorkspaceDb {
     if (cloudContainer === undefined)
       throw new Error("no cloud container to prefetch");
     return CloudSqlite.startCloudPrefetch(cloudContainer, this.dbFileName, opts);
+  }
+
+  public queryResource(search: WorkspaceResource.Search, callback: (result: WorkspaceResource.SearchResult) => void | "stop"): void {
+    this.sqliteDb.withSqliteStatement(`SELECT value from ${search.resourceType}s WHERE id ${search.nameCompare ?? "="} ?`, (stmt) => {
+      stmt.bindString(1, search.nameSearch);
+      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        if (callback({ db: this, rscName: stmt.getValueString(0) }) === "stop")
+          return;
+      }
+    });
   }
 }
 

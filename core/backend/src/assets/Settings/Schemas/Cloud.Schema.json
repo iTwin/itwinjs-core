@@ -23,7 +23,7 @@
           },
           "baseUri": {
             "type": "string",
-            "description": "the baseUri for the container, without trailing slash (e.g., https://myAcct.blob.core.windows.net)"
+            "description": "the baseUri for the container, without trailing slash (e.g., https://myAcct.provider.com)"
           },
           "containerId": {
             "type": "string",
@@ -31,7 +31,8 @@
           },
           "storageType": {
             "type": "string",
-            "description": "one of: 'azure', 'aws', 'google'"
+            "description": "one of: 'azure', 'aws', 'google'",
+            "default": "azure"
           },
           "isPublic": {
             "type": "boolean",

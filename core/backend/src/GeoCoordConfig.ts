@@ -10,14 +10,9 @@ import { BentleyError, Logger } from "@itwin/core-bentley";
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelHost } from "./IModelHost";
 import { Settings } from "./workspace/Settings";
-import { WorkspaceContainer, WorkspaceDb } from "./workspace/Workspace";
+import { WorkspaceContainer } from "./workspace/Workspace";
 
 const loggerCat = "GeoCoord";
-
-interface GcsDbProps extends WorkspaceDb.Props, WorkspaceContainer.Alias {
-  prefetch?: boolean;
-  priority?: number;
-}
 
 /**
  * Internal class to configure and load the gcs workspaces for an iModel.
@@ -29,13 +24,13 @@ export class GeoCoordConfig {
 
   private static addGcsWorkspace(gcsDbAlias: string) {
     // override to disable loading GCS data from workspaces
-    if (IModelHost.appWorkspace.settings.getBoolean("gcs/disableWorkspaces", false))
+    if (IModelHost.appWorkspace.settings.getBoolean("itwin/core/gcs/disableWorkspaces", false))
       return;
 
     let containerProps: WorkspaceContainer.Props | undefined;
     try {
       const ws = IModelHost.appWorkspace;
-      const dbProps = ws.resolveDatabase(gcsDbAlias) as GcsDbProps;
+      const dbProps = ws.resolveDatabase(gcsDbAlias);
       containerProps = ws.resolveContainer(dbProps.containerName);
       const container = ws.getContainer(containerProps);
       const cloudContainer = container.cloudContainer;
@@ -51,9 +46,6 @@ export class GeoCoordConfig {
 
       if (!IModelHost.platform.addGcsWorkspaceDb(gcsDbName, cloudContainer, dbProps.priority))
         return; // already had this db
-
-      if (IModelHost.appWorkspace.settings.getBoolean("gcs/noLocalData", false))
-        IModelHost.platform.enableLocalGcsFiles(false);
 
       Logger.logInfo(loggerCat, `loaded gcsDb "${gcsDbName}", from "${containerProps.baseUri}/${containerProps.containerId}" size=${gcsDbProps.totalBlocks}, local=${gcsDbProps.localBlocks}`);
 
@@ -89,12 +81,12 @@ export class GeoCoordConfig {
   public static loadDefaultDatabases(): void {
     if (!this._defaultDbsLoaded) {
       this._defaultDbsLoaded = true;
-      this.loadAll(IModelHost.appWorkspace.settings, "gcs/default/databases");
+      this.loadAll(IModelHost.appWorkspace.settings, "itwin/core/gcs/default/databases");
     }
   }
 
   public static loadForImodel(settings: Settings) {
     this.loadDefaultDatabases();
-    this.loadAll(settings, "gcs/databases");
+    this.loadAll(settings, "itwin/core/gcs/databases");
   }
 }
