@@ -9,6 +9,7 @@ import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Backend";
 import { IpcHandler } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration";
+import { SectionDrawingImpl } from "./SectionDrawingImpl";
 
 const mainWindowName = "mainWindow";
 const getWindowSize = (winSize?: string) => {
@@ -50,7 +51,7 @@ const dtaElectronMain = async () => {
     webResourcesPath: path.join(__dirname, "..", "..", "lib"),
     iconName: "display-test-app.ico",
     rpcInterfaces: getRpcInterfaces(),
-    ipcHandlers: [DtaHandler],
+    ipcHandlers: [DtaHandler, SectionDrawingImpl],
     developmentServer: process.env.NODE_ENV === "development",
   };
 
