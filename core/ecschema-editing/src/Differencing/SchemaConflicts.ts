@@ -36,7 +36,7 @@ import type { SchemaType } from "./SchemaDifference";
  * - Unit:                      1800-1899
  * - UnitSystem:                1900-1999
  *
- * @internal
+ * @alpha
  */
 export enum ConflictCode {
 
@@ -64,7 +64,7 @@ export enum ConflictCode {
  * while comparing the changed elements. Conflicts in the whole schema context are not found
  * on that level.
  *
- * @internal
+ * @alpha
  */
 export interface SchemaDifferenceConflict {
   /**

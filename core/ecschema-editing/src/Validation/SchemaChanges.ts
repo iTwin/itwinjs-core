@@ -8,7 +8,7 @@
 
 import { AnyClass, AnyEnumerator, CustomAttribute, ECClass, ECObjectsError, ECObjectsStatus,
   EntityClass, Enumeration, Format, KindOfQuantity, OverrideFormat, Property, RelationshipConstraint,
-  Schema, SchemaItem, SchemaItemType, schemaItemTypeToString,
+  Schema, SchemaItem, SchemaItemType,
 } from "@itwin/ecschema-metadata";
 import { AnyDiagnostic } from "./Diagnostic";
 import { SchemaCompareCodes } from "./SchemaCompareDiagnostics";
@@ -1007,7 +1007,7 @@ export class SchemaItemMissing extends SchemaItemChange {
   /** Gets a string representation of the change. */
   public toString(): string {
     const item = this.diagnostic.ecDefinition as SchemaItem;
-    const typeName = ECClass.isECClass(item) ? "Class" : schemaItemTypeToString(item.schemaItemType);
+    const typeName = ECClass.isECClass(item) ? "Class" : item.schemaItemType;
     return `${typeName}(${item.name})`;
   }
 }

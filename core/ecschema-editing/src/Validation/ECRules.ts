@@ -10,7 +10,7 @@ import {
   AnyClass, AnyProperty, CustomAttribute, CustomAttributeContainerProps, ECClass, ECClassModifier,
   ECStringConstants, EntityClass, Enumeration, PrimitiveProperty, PrimitiveType, primitiveTypeToString,
   Property, RelationshipClass, RelationshipConstraint, RelationshipMultiplicity, Schema, SchemaGraph, SchemaItemType,
-  schemaItemTypeToString, StrengthDirection, strengthDirectionToString,
+  StrengthDirection, strengthDirectionToString,
 } from "@itwin/ecschema-metadata";
 import {
   ClassDiagnostic, createClassDiagnosticClass, createCustomAttributeContainerDiagnosticClass, createPropertyDiagnosticClass,
@@ -295,7 +295,7 @@ export async function* baseClassIsOfDifferentType(ecClass: AnyClass): AsyncItera
   if (baseClass.schemaItemType === ecClass.schemaItemType)
     return;
 
-  const itemType = schemaItemTypeToString(baseClass.schemaItemType);
+  const itemType = baseClass.schemaItemType;
   yield new Diagnostics.BaseClassIsOfDifferentType(ecClass, [ecClass.fullName, baseClass.fullName, itemType]);
 }
 
