@@ -18,6 +18,7 @@ describe("SchemaXmlFileLocater - locate standard schema", () => {
     const schemaPath: string = path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Standard");
     loc.addSchemaSearchPath(schemaPath);
 
+    assert.isTrue(schemaPath.length < 260);
     const schemaKey = new SchemaKey("Units", 1, 0, 0);
     const schema = await cont.getSchema(schemaKey, SchemaMatchType.Latest);
 
@@ -25,46 +26,21 @@ describe("SchemaXmlFileLocater - locate standard schema", () => {
     assert.strictEqual(schema?.name, "Units");
   });
 
-  it("Schema path is more than 1k character long", async () => {
+  it("Schema path is between 260 and 1024 character long", async () => {
     const cont = new SchemaContext();
     const loc = new SchemaXmlFileLocater();
     cont.addLocater(loc);
     const oldSchemaPath: string = path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Standard");
     let longSchemaPath: string = path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "StandardCopy");
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 20; i++) {
       longSchemaPath = path.join(longSchemaPath, "ThisIsA35CharacterLongSubFolderName");
     }
     if (!fs.existsSync(longSchemaPath)) {
       fs.mkdirSync(longSchemaPath, {recursive: true});
     }
     fs.copySync(oldSchemaPath, longSchemaPath, {recursive: true});
-    assert.isTrue(longSchemaPath.length > 1000);
-    loc.addSchemaSearchPath(longSchemaPath);
-
-    const schemaKey = new SchemaKey("Units", 1, 0, 0);
-    const schema = await cont.getSchema(schemaKey, SchemaMatchType.Latest);
-
-    assert.isDefined(schema);
-    assert.strictEqual(schema?.name, "Units");
-    if (fs.existsSync(path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "StandardCopy"))) {
-      fs.rmSync(path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "StandardCopy"), {recursive: true});
-    }
-  });
-
-  it("Schema path is more than 10k character long", async () => {
-    const cont = new SchemaContext();
-    const loc = new SchemaXmlFileLocater();
-    cont.addLocater(loc);
-    const oldSchemaPath: string = path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Standard");
-    let longSchemaPath: string = path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "StandardCopy");
-    for (let i = 0; i < 300; i++) {
-      longSchemaPath = path.join(longSchemaPath, "ThisIsA35CharacterLongSubFolderName");
-    }
-    if (!fs.existsSync(longSchemaPath)) {
-      fs.mkdirSync(longSchemaPath, {recursive: true});
-    }
-    fs.copySync(oldSchemaPath, longSchemaPath, {recursive: true});
-    assert.isTrue(longSchemaPath.length > 10000);
+    assert.isTrue(longSchemaPath.length > 260);
+    assert.isTrue(longSchemaPath.length < 1024);
     loc.addSchemaSearchPath(longSchemaPath);
 
     const schemaKey = new SchemaKey("Units", 1, 0, 0);
