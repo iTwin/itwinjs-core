@@ -25,7 +25,8 @@ export class ClassRegistry {
   public static isNotFoundError(err: any) { return (err instanceof IModelError) && (err.errorNumber === IModelStatus.NotFound); }
   /** @internal */
   public static makeMetaDataNotFoundError(className: string): IModelError { return new IModelError(IModelStatus.NotFound, `metadata not found for ${className}`); }
-  /** @internal */
+  /** Registers entity class
+   * @public */
   public static register(entityClass: typeof Entity, schema: typeof Schema) {
     entityClass.schema = schema;
     const key = (`${schema.schemaName}:${entityClass.className}`).toLowerCase();
