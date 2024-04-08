@@ -2,40 +2,58 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { EntityClass, Mixin, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
-import { ClassMerger } from "./ClassMerger";
+import { type EntityClassDifference, EntityClassMixinDifference } from "../Differencing/SchemaDifference";
+import { type SchemaItemMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
+import { type MutableEntityClass } from "../Editing/Mutable/MutableEntityClass";
+import { modifyClass } from "./ClassMerger";
+import { SchemaItemKey } from "@itwin/ecschema-metadata";
+import { SchemaMergeContext } from "./SchemaMerger";
 import { SchemaItemEditResults } from "../Editing/Editor";
-import { ChangeType, ClassChanges } from "../Validation/SchemaChanges";
 
 /**
+ * Defines a merge handler to merge Entity Class schema items.
  * @internal
  */
-export default class EntityClassMerger extends ClassMerger<EntityClass> {
-  protected override async create(schemaKey: SchemaKey, ecClass: EntityClass): Promise<SchemaItemEditResults> {
-    return this.context.editor.entities.create(schemaKey, ecClass.name, ecClass.modifier);
-  }
+export const entityClassMerger: SchemaItemMergerHandler<EntityClassDifference> = {
+  async add(context, change) {
+    return context.editor.entities.createFromProps(context.targetSchemaKey, {
+      name: change.itemName,
+      schemaItemType: change.schemaType,
 
-  protected override async merge(itemKey: SchemaItemKey, changes: ClassChanges): Promise<SchemaItemEditResults> {
-    if (changes.entityMixinChanges.size > 0) {
-      if (changes.schemaItemMissing?.changeType !== ChangeType.Missing) {
-        return { errorMessage: `Changing the entity class '${itemKey.name}' mixins is not supported.`};
-      }
-
-      for (const change of changes.entityMixinChanges.values()) {
-        for (const entityMixinChange of change.entityMixinChange) {
-          const mixins = entityMixinChange.diagnostic.messageArgs! as unknown as [Mixin];
-          for (const mixin of mixins) {
-            const mixinKey = new SchemaItemKey(mixin.name, mixin.schema.schemaKey.matches(this.context.sourceSchema.schemaKey)
-              ? this.context.targetSchema.schemaKey
-              : mixin.schema.schemaKey);
-            const result = await this.context.editor.entities.addMixin(itemKey, mixinKey);
-            if (result.errorMessage !== undefined) {
-              return result;
-            }
-          }
+      ...change.difference,
+    });
+  },
+  async modify(context, change, itemKey, item: MutableEntityClass) {
+    if(change.difference.mixins !== undefined) {
+      for(const mixin of change.difference.mixins) {
+        const mixinKey = await updateSchemaItemKey(context, mixin);
+        const result = await context.editor.entities.addMixin(itemKey, mixinKey);
+        if(result.errorMessage) {
+          return result;
         }
       }
     }
-    return { itemKey };
+
+    return modifyClass(context, change, itemKey, item);
+  },
+};
+
+/**
+ * Merges Mixins to Entity Class schema items.
+ * @internal
+ */
+export async function mergeClassMixins(context: SchemaMergeContext, change: EntityClassMixinDifference): Promise<SchemaItemEditResults> {
+  if(change.changeType === "add") {
+    for(const mixinFullName of change.difference) {
+      const mixinKey = await updateSchemaItemKey(context, mixinFullName);
+      const entityKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
+      const result = await context.editor.entities.addMixin(entityKey, mixinKey);
+      if(result.errorMessage) {
+        throw new Error(result.errorMessage);
+      }
+    }
+    return {};
+  } else {
+    return { errorMessage: `Changing the entity class '${change.itemName}' mixins is not supported.`};
   }
 }

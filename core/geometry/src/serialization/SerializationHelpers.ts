@@ -10,47 +10,68 @@ import { BSplineWrapMode, KnotVector } from "../bspline/KnotVector";
 import { NumberArray } from "../geometry3d/PointHelpers";
 
 /**
- * `SerializationHelpers` namespace has helper classes for serializing and deserializing geometry.
- * @internal
+ * The `SerializationHelpers` namespace has helper classes for serializing and deserializing geometry, such as B-spline curves and surfaces.
+ * @public
  */
 export namespace SerializationHelpers {
+  /** Interface for data common to B-spline curves and surfaces. */
   export interface BSplineParams {
+    /** The number of control points, aka poles. */
     numPoles: number;
+    /** B-spline order, one more than the degree. */
     order: number;
+    /** Whether the B-spline is to be considered closed. */
     closed?: boolean;
+    /** Full knot vector. */
     knots: number[] | Float64Array;
+    /** Wrap mode, for data roundtrip. */
     wrapMode?: BSplineWrapMode;
   }
+  /** Interface for B-spline curve data. */
   export interface BSplineCurveData {
+    /** Control points, aka poles. */
     poles: number[][] | Float64Array;
-    dim: number;                          // # coordinates per pole = inner dimension of poles array (3,4)
-    weights?: number[] | Float64Array;    // if defined, poles are assumed to be weighted and dim 3
+    /** The number of coordinates per pole. This is the inner dimension of the poles number array. Possible values: 3, 4. Dimension 4 means the curve is rational, with poles of homogeneous form [wx,wy,wz,w]. */
+    dim: number;
+    /** Weights for a rational curve that is specified by parallel arrays of poles and weights. If defined, dim is expected to be 3, and poles are of homogeneous form [wx,wy,wz]. */
+    weights?: number[] | Float64Array;
+    /** Knots and other B-spline data. */
     params: BSplineParams;
   }
+  /** Interface for B-spline surface data. */
   export interface BSplineSurfaceData {
+    /** Control points, aka poles in row-major order. */
     poles: number[][][] | Float64Array;
-    dim: number;                          // # coordinates per pole = inner dimension of poles array (3,4)
-    weights?: number[][] | Float64Array;  // if defined, poles are assumed to be weighted and dim 3
-    uParams: BSplineParams;               // uParams.numPoles = # cols (middle dimension) of poles
-    vParams: BSplineParams;               // vParams.numPoles = # rows (outer dimension) of poles
+    /** The number of coordinates per pole. This is the inner dimension of the poles number array. Possible values: 3, 4. Dimension 4 means the surface is rational, with poles of homogeneous form [wx,wy,wz,w]. */
+    dim: number;
+    /** Weights for a rational surface that is specified by parallel arrays of poles and weights. If defined, dim is expected to be 3, and poles are of homogeneous form [wx,wy,wz]. */
+    weights?: number[][] | Float64Array;
+    /** Knots and other B-spline data with respect to the surface u parameter. uParams.numPoles = # columns (middle dimension) of the poles array. */
+    uParams: BSplineParams;
+    /** Knots and other B-spline data with respect to the surface v parameter. vParams.numPoles = # rows (outer dimension) of the poles array. */
+    vParams: BSplineParams;
   }
+  /** Interface of options for import/export. */
   export interface BSplineDataOptions {
-    jsonPoles?: boolean;        // type of output pole/weight arrays. true: structured number array; false: Float64Array; undefined: either
-    jsonKnots?: boolean;        // type of output knot arrays. true: number array; false: Float64Array; undefined: either
-    removeExtraKnots?: boolean; // extraneous knot handling during Import: true: remove them; false | undefined: leave them. Has no effect during Export, which always outputs the extraneous knots.
+    /** Type of output pole/weight arrays. true: structured number array; false: Float64Array; undefined: either. */
+    jsonPoles?: boolean;
+    /** Type of output knot arrays. true: number array; false: Float64Array; undefined: either. */
+    jsonKnots?: boolean;
+    /** Extraneous knot handling during Import: true: remove them; false | undefined: leave them. Has no effect during Export, which always outputs the extraneous knots. */
+    removeExtraKnots?: boolean;
   }
 
-  /** Constructor with required data. Inputs are captured, not copied. */
+  /** Constructor for BSplineCurveData that populates the required data. Inputs are captured, not copied. */
   export function createBSplineCurveData(poles: number[][] | Float64Array, dim: number, knots: number[] | Float64Array, numPoles: number, order: number): BSplineCurveData {
     return { poles, dim, params: { numPoles, order, knots } };
   }
 
-  /** Constructor with required data. Inputs are captured, not copied. */
+  /** Constructor for BSplineSurfaceData that populates the required data. Inputs are captured, not copied. */
   export function createBSplineSurfaceData(poles: number[][][] | Float64Array, dim: number, uKnots: number[] | Float64Array, uNumPoles: number, uOrder: number, vKnots: number[] | Float64Array, vNumPoles: number, vOrder: number): BSplineSurfaceData {
     return { poles, dim, uParams: { numPoles: uNumPoles, order: uOrder, knots: uKnots }, vParams: { numPoles: vNumPoles, order: vOrder, knots: vKnots } };
   }
 
-  /** Clone curve data */
+  /** Clone B-spline curve data */
   export function cloneBSplineCurveData(source: BSplineCurveData): BSplineCurveData {
     return {
       poles: (source.poles instanceof Float64Array) ? new Float64Array(source.poles) : NumberArray.copy2d(source.poles),
@@ -66,7 +87,7 @@ export namespace SerializationHelpers {
     };
   }
 
-  /** Clone surface data */
+  /** Clone B-spline surface data */
   export function cloneBSplineSurfaceData(source: BSplineSurfaceData): BSplineSurfaceData {
     return {
       poles: (source.poles instanceof Float64Array) ? new Float64Array(source.poles) : NumberArray.copy3d(source.poles),
@@ -89,7 +110,7 @@ export namespace SerializationHelpers {
     };
   }
 
-  /** Copy from source to dest */
+  /** Copy B-spline curve data from source to dest */
   function copyBSplineCurveDataPoles(source: BSplineCurveData): {poles?: number[][], weights?: number[]} {
     let nPole = 0;
     let nCoordPerPole = 0;
@@ -137,7 +158,7 @@ export namespace SerializationHelpers {
     return {poles, weights};
   }
 
-  /** Copy from source to dest */
+  /** Copy B-spline surface data from source to dest */
   function copyBSplineSurfaceDataPoles(source: BSplineSurfaceData): {poles?: number[][][], weights?: number[][]} {
     let nPoleRow = 0;
     let nPolePerRow = 0;
@@ -197,7 +218,7 @@ export namespace SerializationHelpers {
     return {poles, weights};
   }
 
-  /** Convert data arrays to the types specified by options. */
+  /** Convert B-spline curve data arrays to the types specified by options. */
   function convertBSplineCurveDataArrays(data: BSplineCurveData, options?: BSplineDataOptions) {
     if (undefined !== options?.jsonPoles) {
       const packedPoles = data.poles instanceof Float64Array;
@@ -223,7 +244,7 @@ export namespace SerializationHelpers {
     }
   }
 
-  /** Convert data arrays to the types specified by options. */
+  /** Convert B-spline surface data arrays to the types specified by options. */
   function convertBSplineSurfaceDataArrays(data: BSplineSurfaceData, options?: BSplineDataOptions) {
     if (undefined !== options?.jsonPoles) {
       const packedPoles = data.poles instanceof Float64Array;
@@ -255,6 +276,7 @@ export namespace SerializationHelpers {
     }
   }
 
+  /** Helper class for preparing geometry data for import. */
   export class Import {
     /** copy knots, with options to control destination type and extraneous knot removal */
     private static copyKnots(knots: Float64Array | number[], options?: BSplineDataOptions, iStart?: number, iEnd?: number): Float64Array| number[] {
@@ -461,6 +483,7 @@ export namespace SerializationHelpers {
     }
   }
 
+  /** Helper class for preparing geometry data for export. */
   export class Export {
     /**
      * Restore special legacy periodic B-spline knots opened via BSplineWrapMode.OpenByRemovingKnots logic.

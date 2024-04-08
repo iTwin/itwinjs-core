@@ -7,7 +7,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.5.11
+      '@bentley/imodeljs-native': 4.6.3
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.1.0
       '@itwin/core-bentley': workspace:*
@@ -57,7 +57,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
-      '@bentley/imodeljs-native': 4.5.11
+      '@bentley/imodeljs-native': 4.6.3
       '@itwin/cloud-agnostic-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.2.2_scz6qrwecfbbxg4vskopkl3a7u
@@ -591,6 +591,7 @@ importers:
       eslint: ^8.44.0
       fuse.js: ^3.3.0
       glob: ^7.1.2
+      meshoptimizer: ~0.20.0
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
@@ -609,6 +610,7 @@ importers:
       '@loaders.gl/core': 3.1.6
       '@loaders.gl/draco': 3.1.6
       fuse.js: 3.3.0
+      meshoptimizer: 0.20.0
       wms-capabilities: 0.4.0
     devDependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
@@ -1947,6 +1949,7 @@ importers:
       eslint-config-prettier: ^9.1.0
       faker: ^4.1.0
       fast-sort: ^3.0.2
+      fast-xml-parser: ^4.3.5
       i18next-http-backend: ^1.4.4
       internal-tools: workspace:*
       jsdom: ^19.0.0
@@ -1995,6 +1998,7 @@ importers:
       deep-equal: 1.0.0
       faker: 4.1.0
       fast-sort: 3.0.2
+      fast-xml-parser: 4.3.5
       mocha: 10.2.0
       rimraf: 3.0.2
       sinon: 17.0.1
@@ -2370,6 +2374,7 @@ importers:
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@itwin/presentation-common': workspace:*
+      '@itwin/unified-selection': ^0.1.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.8
@@ -2401,6 +2406,7 @@ importers:
       typemoq: ^2.1.0
       typescript: ~5.0.2
     dependencies:
+      '@itwin/unified-selection': 0.1.0
       rxjs: 7.8.1
       rxjs-for-await: 1.0.0_rxjs@7.8.1
     devDependencies:
@@ -3769,8 +3775,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.5.11:
-    resolution: {integrity: sha512-pUFuDUuWUS3B42K22TTJXYtVEbEfYCDnk5SBPD1nSRkYcGz8WhFTP2AQgctNS7o/jd1fNF/TsCKR9BNuIShHEg==}
+  /@bentley/imodeljs-native/4.6.3:
+    resolution: {integrity: sha512-tEA+gjqFDIIVgOfHcFZ+jrI8FY87Ngk/PLinE1L8HbJKd55ji7tVIAjvQtPFCdIZX2qprmRq/K5+zOMx11Urgw==}
     requiresBuild: true
     dev: false
 
@@ -4488,6 +4494,10 @@ packages:
       openid-client: 4.7.4
     transitivePeerDependencies:
       - supports-color
+    dev: false
+
+  /@itwin/unified-selection/0.1.0:
+    resolution: {integrity: sha512-1Pe2i3sw5dK4h394uC5wTRWvnXxeBZGv+t9LcG7tQr2L+l0Hv+Ryo5+yTN34kABEhMe2UwSHnBRU8jOGsiorIQ==}
     dev: false
 
   /@jridgewell/gen-mapping/0.3.5:
@@ -8120,6 +8130,13 @@ packages:
     resolution: {integrity: sha512-DIKDkHBt+IubEEU44/kEulX3SbIuufEHIhRfw0MCh7f/HLGWmR/Dk7xg2tapT28pVFqnEV1ZDtl6SeViAyVe4Q==}
     dev: false
 
+  /fast-xml-parser/4.3.5:
+    resolution: {integrity: sha512-sWvP1Pl8H03B8oFJpFR3HE31HUfwtX7Rlf9BNsvdpujD4n7WMhfmu8h9wOV2u+c1k0ZilTADhPqypzx2J690ZQ==}
+    hasBin: true
+    dependencies:
+      strnum: 1.0.5
+    dev: false
+
   /fastest-levenshtein/1.0.16:
     resolution: {integrity: sha512-eRnCtTTtGZFpQCwhJiUOuxPQWRXVKYDn0b2PeHfXL6/Zi53SLAzAHfVhVWK2AryC/WH05kGfxhFIPvTF0SXQzg==}
     engines: {node: '>= 4.9.1'}
@@ -9989,6 +10006,10 @@ packages:
   /merge2/1.4.1:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
     engines: {node: '>= 8'}
+
+  /meshoptimizer/0.20.0:
+    resolution: {integrity: sha512-olcJ1q+YVnjroRJpCL1Dj5aZxr2JMr2hRutMUwhuHZvpAL7SIZgOT6eMlFF4TbBGSR89tawE/gqB79J/LrW/Nw==}
+    dev: false
 
   /methods/1.1.2:
     resolution: {integrity: sha512-iclAHeNqNm68zFtnZ0e+1L2yUIdvzNoauKU4WBA3VvH/vPFieF7qfRlwUZU+DA9P9bPXIS90ulxoUoCH23sV2w==}
@@ -12172,6 +12193,10 @@ packages:
   /strip-json-comments/3.1.1:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
+
+  /strnum/1.0.5:
+    resolution: {integrity: sha512-J8bbNyKKXl5qYcR36TIO8W3mVGVHrmmxsd5PAItGkmyzwJvybiw2IVq5nqd0i4LSNSkB/sx9VHllbfFdr9k1JA==}
+    dev: false
 
   /subarg/1.0.0:
     resolution: {integrity: sha512-RIrIdRY0X1xojthNcVtgT9sjpOGagEUKpZdgBUi054OEPFo282yg+zE+t1Rj3+RqKq2xStL7uUHhY+AjbC4BXg==}

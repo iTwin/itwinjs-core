@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-common",
+      "comment": "React to API changes.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-common"
+}

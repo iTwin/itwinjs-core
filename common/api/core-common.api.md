@@ -44,7 +44,9 @@ import { LogFunction } from '@itwin/core-bentley';
 import { LoggingMetaData } from '@itwin/core-bentley';
 import { LogLevel } from '@itwin/core-bentley';
 import { LowAndHighXY } from '@itwin/core-geometry';
+import { LowAndHighXYProps } from '@itwin/core-geometry';
 import { LowAndHighXYZ } from '@itwin/core-geometry';
+import { LowAndHighXYZProps } from '@itwin/core-geometry';
 import { Map4d } from '@itwin/core-geometry';
 import { Matrix3d } from '@itwin/core-geometry';
 import { Matrix4dProps } from '@itwin/core-geometry';
@@ -1665,12 +1667,14 @@ export abstract class ContentIdProvider {
 
 // @public
 export class ContextRealityModel {
-    constructor(props: ContextRealityModelProps);
+    constructor(props: ContextRealityModelProps, options?: {
+        createClassifiers: (container: SpatialClassifiersContainer) => SpatialClassifiers;
+    });
     get appearanceOverrides(): FeatureAppearance | undefined;
     set appearanceOverrides(overrides: FeatureAppearance | undefined);
     // (undocumented)
     protected _appearanceOverrides?: FeatureAppearance;
-    readonly classifiers?: SpatialClassifiers;
+    get classifiers(): SpatialClassifiers;
     readonly description: string;
     // @beta
     get displaySettings(): RealityModelDisplaySettings;
@@ -3826,7 +3830,7 @@ export interface GeometryPartInstanceProps {
 // @public
 export interface GeometryPartProps extends ElementProps {
     // (undocumented)
-    bbox?: LowAndHighXYZ;
+    bbox?: LowAndHighXYZProps;
     // @beta
     elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
     // (undocumented)
@@ -6443,7 +6447,7 @@ export interface Placement2dProps {
     // (undocumented)
     angle: AngleProps;
     // (undocumented)
-    bbox?: LowAndHighXY;
+    bbox?: LowAndHighXYProps;
     // (undocumented)
     origin: XYProps;
 }
@@ -6473,7 +6477,7 @@ export interface Placement3dProps {
     // (undocumented)
     angles: YawPitchRollProps;
     // (undocumented)
-    bbox?: LowAndHighXYZ;
+    bbox?: LowAndHighXYZProps;
     // (undocumented)
     origin: XYZProps;
 }
@@ -7190,19 +7194,13 @@ export enum QueryParamType {
 
 // @public (undocumented)
 export interface QueryPropertyMetaData {
-    // (undocumented)
+    accessString?: string;
     className: string;
-    // (undocumented)
     extendType: string;
-    // (undocumented)
     generated: boolean;
-    // (undocumented)
     index: number;
-    // (undocumented)
     jsonName: string;
-    // (undocumented)
     name: string;
-    // (undocumented)
     typeName: string;
 }
 

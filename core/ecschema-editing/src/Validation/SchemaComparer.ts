@@ -10,7 +10,7 @@ import {
   AnyClass, AnyEnumerator, AnyProperty, classModifierToString, Constant, containerTypeToString, CustomAttribute, CustomAttributeClass,
   CustomAttributeContainerProps, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon,
   primitiveTypeToString, PropertyCategory, propertyTypeToString, RelationshipClass, RelationshipConstraint, Schema,
-  SchemaItem, SchemaItemKey, schemaItemTypeToString, strengthDirectionToString, strengthToString, Unit,
+  SchemaItem, SchemaItemKey, strengthDirectionToString, strengthToString, StructProperty, Unit,
 } from "@itwin/ecschema-metadata";
 import { formatTraitsToArray, formatTypeToString, scientificTypeToString, showSignOptionToString } from "@itwin/core-quantity";
 import { ISchemaCompareReporter } from "./SchemaCompareReporter";
@@ -155,8 +155,8 @@ export class SchemaComparer {
       promises.push(this._reporter.reportSchemaItemDelta(schemaItemA, "label", schemaItemA.label, schemaItemB.label, this._compareDirection));
 
     if (schemaItemA.schemaItemType !== schemaItemB.schemaItemType) {
-      const aType = schemaItemTypeToString(schemaItemA.schemaItemType);
-      const bType = schemaItemTypeToString(schemaItemB.schemaItemType);
+      const aType = schemaItemA.schemaItemType;
+      const bType = schemaItemB.schemaItemType;
       promises.push(this._reporter.reportSchemaItemDelta(schemaItemA, "schemaItemType", aType, bType, this._compareDirection));
     }
 

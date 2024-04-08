@@ -2,6 +2,84 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "4.5.1",
+      "tag": "@itwin/core-frontend_v4.5.1",
+      "date": "Wed, 03 Apr 2024 18:26:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix map layer WMTS validation process to correctly return authentication error"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.5.0",
+      "tag": "@itwin/core-frontend_v4.5.0",
+      "date": "Tue, 02 Apr 2024 19:06:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Change gpuMemoryLimit setting used when undefined"
+          },
+          {
+            "comment": "Disable tile preloading when under memory pressure"
+          },
+          {
+            "comment": "Add textures to reality mesh stats"
+          },
+          {
+            "comment": "Fix an issue where the background map would become blank after adding a new map-layer"
+          },
+          {
+            "comment": "added ability of batched tiles to generate cut plane graphics"
+          },
+          {
+            "comment": "Fix regression in GPU timings due a  change in chromium's behavior."
+          },
+          {
+            "comment": "Dispose of all viewports when IModelApp.shutdown() is called to clear up WebGL resources, and avoid memory leak"
+          },
+          {
+            "comment": "make CheckpointConnection.openRemote work for IPC"
+          },
+          {
+            "comment": "Add TileTreeReference.createFromRenderGraphic. Permit TiledGraphicsProvider to supply a tooltip."
+          },
+          {
+            "comment": "Added an iterator over the entries in a BatchTableProperties."
+          },
+          {
+            "comment": "Add support for custom data sources in TerrainSettings, including Cesium ION assets."
+          },
+          {
+            "comment": "Add support for dynamic spatial classifiers."
+          },
+          {
+            "comment": "Fix incorrect transforms computed for instanced glTF meshes."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.4.8",
+      "tag": "@itwin/core-frontend_v4.4.8",
+      "date": "Mon, 25 Mar 2024 22:22:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.7",
+      "tag": "@itwin/core-frontend_v4.4.7",
+      "date": "Fri, 15 Mar 2024 19:15:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Disable tile preloading when under memory pressure"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.4.6",
       "tag": "@itwin/core-frontend_v4.4.6",
       "date": "Fri, 08 Mar 2024 15:57:11 GMT",
@@ -135,6 +213,24 @@
           },
           {
             "comment": "Clone view attachments when cloning a sheet or drawing view."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.3.5",
+      "tag": "@itwin/core-frontend_v4.3.5",
+      "date": "Mon, 25 Mar 2024 16:54:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.3.4",
+      "tag": "@itwin/core-frontend_v4.3.4",
+      "date": "Fri, 22 Mar 2024 13:30:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Bump @itwin/object-storage-core"
           }
         ]
       }

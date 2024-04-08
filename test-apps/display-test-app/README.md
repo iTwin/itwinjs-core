@@ -278,6 +278,11 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
   * `background=`: Preserve background color when drawing as a raster image.
 * `dta aspect skew decorator` *apply=0|1* - Toggle a decorator that draws a simple bspline curve based on the project extents, for testing the effect of aspect ratio skew on the curve stroke tolerance. Use in conjunction with `fdt aspect skew` to adjust the skew. If `apply` is 0, then the skew will have no effect on the curve's level of detail; otherwise a higher aspect ratio skew should produce higher-resolution curve graphics.
 * `dta drape terrain` - Start a tool that demonstrates draping a linestring to either a reality mesh model or background map with terrain applied. The model is first selected and subsequent points define the linestring.
+* `dta classify` - Start a tool that demonstrates how to use dynamically-created geometry to classify a reality model. First select the reality model to classify, then enter data points to place spheres as classifiers, and finally right-click to apply the classification. Options:
+  * `radius=number` - sphere radius.
+  * `volume=0|1` - 1 to produce a volume classifier, 0 for a planar classifier.
+  * `inside=0|1|2|3|4` - SpatialClassifierInsideDisplay.
+  * `outside=0|1|2` - SpatialClassifierOutsideDisplay.
 * `dta classifyclip selected` *inside* - Color code elements from the current selection set based on their containment with the current view clip. Inside - Green, Outside - Red, Overlap - Blue. Specify optional inside arg to only determine inside or outside, not overlap. Disable clip in the view settings to select elements outside clip, use clip tool panel EDIT button to redisplay clip decoration after processing selection. Use key-in again without a clip or selection set to clear the color override.
 * `dta grid settings` - Change the grid settings for the selected viewport.
   * `spacing=number` Specify x and y grid reference line spacing in meters.
