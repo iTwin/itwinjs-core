@@ -26,6 +26,7 @@ import {
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 chai.use(chaiAsPromised);
 import sinon = require("sinon");
+import { Range3d, Range3dProps } from "@itwin/core-geometry";
 
 async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
   try {
@@ -589,6 +590,63 @@ describe("Changeset conflict handler", () => {
         return DbConflictResolution.Replace;
       },
     );
+  });
+
+  it.only("DbConflictCause.Data - Project Extent Conflict", async () => {
+    const setProjectExtentsSource = (db: BriefcaseDb, source: "user" | "computed") => {
+      const unitsJson = db.queryFilePropertyString({ namespace: "dgn_Db", name: "Units" });
+      let units: any;
+      if (unitsJson) {
+        units = JSON.parse(unitsJson);
+        units.extentsSource = source === "user" ? 1 : 0;
+      } else
+        units = source === "user" ? { extentsSource: 1 } : undefined;
+
+      if (units) {
+        db.saveFileProperty({ namespace: "dgn_Db", name: "Units" }, JSON.stringify(units));
+      }
+    };
+    insertPhysicalObject(b1);
+    b1.saveChanges();
+    await b1.pushChanges({ accessToken: accessToken1, description: "" });
+    await b1.pullChanges();
+    await b2.pullChanges();
+
+    // {"low":[-50,-50,-10],"high":[50,50,30]}
+    const originalExtents = b1.projectExtents;
+
+    const newExtentsByB1 = Range3d.create(originalExtents.low, originalExtents.high);
+    newExtentsByB1.low.x -= 50;
+    newExtentsByB1.low.y -= 50;
+    newExtentsByB1.low.z -= 10;
+    newExtentsByB1.high.x += 50;
+    newExtentsByB1.high.y += 50;
+    newExtentsByB1.high.z += 30;
+    b1.updateProjectExtents(newExtentsByB1);
+    setProjectExtentsSource(b1, "user");
+    b1.saveChanges();
+
+    const newExtentsByB2 = Range3d.create(originalExtents.low, originalExtents.high);
+    newExtentsByB2.low.x -= 10;
+    newExtentsByB2.low.y -= 10;
+    newExtentsByB2.low.z -= 10;
+    newExtentsByB2.high.x += 10;
+    newExtentsByB2.high.y += 10;
+    newExtentsByB2.high.z += 10;
+    b2.updateProjectExtents(newExtentsByB2);
+    setProjectExtentsSource(b2, "user");
+    b2.saveChanges();
+
+    await spyChangesetConflictHandler(
+      b1,
+      async () => b1.pushChanges({ accessToken: accessToken1, description: "" }),
+      (spy) => expect(spy.callCount).eq(0, "changeset conflict handler should not be called"),
+    );
+
+    await b2.pullChanges({ accessToken: accessToken1 });
+    const expectedProjectExtents = newExtentsByB1.union(newExtentsByB2);
+    assert.isTrue(b2.projectExtents.isAlmostEqual(expectedProjectExtents));
+    b2.saveChanges();
   });
 });
 

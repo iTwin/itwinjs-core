@@ -15,7 +15,7 @@ import {
   IModelStatus, JsonUtils, Logger, LogLevel, OpenMode, UnexpectedErrors,
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
+  AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetFileProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
   DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps,
   ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
@@ -59,6 +59,15 @@ import { BaseSettings, SettingDictionary, SettingName, SettingResolver, Settings
 import { Workspace } from "./workspace/Workspace";
 
 import type { BlobContainer } from "./BlobContainerService";
+import { FilePropertyConflictHandler } from "./FilePropertyConflictHandler";
+/** @internal */
+export interface ISingleTableDataConflictHandler {
+  get tableName(): string;
+  onConflict(args: ChangesetConflictArgs): DbConflictResolution | undefined;
+  onBeforeSingleChangesetApply(changeset: ChangesetFileProps): void;
+  onAfterSingleChangesetApply(changeset: ChangesetFileProps): void;
+}
+
 /** @internal */
 export interface ChangesetConflictArgs {
   cause: DbConflictCause;
@@ -2558,6 +2567,9 @@ export class BriefcaseDb extends IModelDb {
   /* the BriefcaseId of the briefcase opened with this BriefcaseDb */
   public readonly briefcaseId: BriefcaseId;
 
+  /** @internal */
+  public tableConflictHandlers = new Map<string, ISingleTableDataConflictHandler>();
+
   /**
    * Event raised just before a BriefcaseDb is opened. Supplies the arguments that will be used to open the BriefcaseDb.
    * Throw an exception to stop the open.
@@ -2615,7 +2627,7 @@ export class BriefcaseDb extends IModelDb {
     super({ ...args, changeset: args.nativeDb.getCurrentChangeset() });
     this._openMode = args.openMode;
     this.briefcaseId = args.briefcaseId;
-
+    FilePropertyConflictHandler.register(this);
     if (this.useLockServer) // if the iModel uses a lock server, create a ServerBasedLocks LockControl for this BriefcaseDb.
       this._locks = new ServerBasedLocks(this);
   }
@@ -2741,6 +2753,13 @@ export class BriefcaseDb extends IModelDb {
       }
     };
 
+    const invokeTableConflictHandler = () => {
+      const handler = this.tableConflictHandlers.get(args.tableName);
+      if (handler)
+        return handler.onConflict(args);
+      return undefined;
+    };
+
     if (args.cause === DbConflictCause.Data && !args.indirect) {
       /*
       * From SQLite Docs CHANGESET_DATA as the second argument
@@ -2762,6 +2781,10 @@ export class BriefcaseDb extends IModelDb {
         Logger.logWarning(category, "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.");
         args.dump();
       } else {
+        const resolution = invokeTableConflictHandler();
+        if (resolution !== undefined)
+          return resolution;
+
         const msg = "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.";
         args.setLastError(msg);
         Logger.logError(category, msg);
