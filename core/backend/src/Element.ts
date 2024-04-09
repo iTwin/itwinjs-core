@@ -13,7 +13,7 @@ import {
   GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps,
   ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps,
   RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps,
-  SubjectProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
+  SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@itwin/core-common";
 import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
 import { Entity } from "./Entity";
@@ -601,52 +601,6 @@ export class DrawingGraphic extends GraphicalElement2d {
   /** @internal */
   public static override get className(): string { return "DrawingGraphic"; }
   protected constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
-}
-
-/** 2D Text Annotation
- * @public
- */
-export class TextAnnotation2d extends AnnotationElement2d {
-  /** @internal */
-  public static override get className(): string { return "TextAnnotation2d"; }
-  protected constructor(props: TextAnnotation2dProps, iModel: IModelDb) { super(props, iModel); }
-
-  public override toJSON(): TextAnnotation2dProps {
-    return super.toJSON();
-  }
-
-  public getAnnotation(): TextAnnotation | undefined {
-    const json = this.jsonProperties.annotation;
-    return json ? TextAnnotation.fromJSON(json) : undefined;
-  }
-
-  public setAnnotation(annotation: TextAnnotation): void {
-    // ###TODO recompute placement, geometry stream, etc.
-    this.jsonProperties.annotation = annotation.toJSON();
-  }
-}
-
-/** 3D Text Annotation
- * @public
- */
-export class TextAnnotation3d extends GraphicalElement3d {
-  /** @internal */
-  public static override get className(): string { return "TextAnnotation3d"; }
-  protected constructor(props: TextAnnotation3dProps, iModel: IModelDb) { super(props, iModel); }
-
-  public override toJSON(): TextAnnotation3dProps {
-    return super.toJSON();
-  }
-
-  public getAnnotation(): TextAnnotation | undefined {
-    const json = this.jsonProperties.annotation;
-    return json ? TextAnnotation.fromJSON(json) : undefined;
-  }
-
-  public setAnnotation(annotation: TextAnnotation): void {
-    // ###TODO recompute placement, geometry stream, etc.
-    this.jsonProperties.annotation = annotation.toJSON();
-  }
 }
 
 /** An Element that occupies real world space. Its coordinates are in the project space of its iModel.

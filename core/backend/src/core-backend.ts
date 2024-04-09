@@ -60,6 +60,7 @@ export * from "./Schema";
 export * from "./SchemaUtils";
 export * from "./SQLiteDb";
 export * from "./SqliteStatement";
+export * from "./TextAnnotationElement";
 export * from "./TextBlockLayout";
 export * from "./Texture";
 export * from "./TileStorage";
