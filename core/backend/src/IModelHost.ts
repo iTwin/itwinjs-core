@@ -242,7 +242,7 @@ class ApplicationSettings extends BaseSettings {
   }
   private updateDefaults() {
     const defaults: SettingDictionary = {};
-    for (const [schemaName, val] of SettingsSchemas.allSchemas) {
+    for (const [schemaName, val] of SettingsSchemas.settingDefs) {
       if (val.default)
         defaults[schemaName] = val.default;
     }

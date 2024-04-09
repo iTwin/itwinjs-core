@@ -336,7 +336,7 @@ export interface Workspace {
   /** Close this Workspace. All WorkspaceContainers are dropped. */
   close(): void;
 
-  queryResource(dbListSetting: SettingName, search: WorkspaceResource.Search, callback: (result: WorkspaceResource.SearchResult) => void | "stop"): Promise<void>;
+  // queryResource(dbListSetting: SettingName, search: WorkspaceResource.Search, callback: (result: WorkspaceResource.SearchResult) => void | "stop"): Promise<void>;
 
   // getStringResource(dbListSetting: SettingName, resourceName: WorkspaceResource.Name): string | undefined;
   // getBlobResource(dbListSetting: SettingName, resourceName: WorkspaceResource.Name): string | undefined;
@@ -558,7 +558,7 @@ class WorkspaceImpl implements Workspace {
       if (Array.isArray(val)) {
         for (const entry of val) {
           if (typeof entry === "object" && entry.name === containerName)
-            return SettingsSchemas.validateArrayObject(entry, WorkspaceSetting.Containers, containerName);
+            return SettingsSchemas.validateSetting(entry, WorkspaceSetting.Containers);
         }
       }
       return undefined; // keep going through all settings dictionaries
@@ -574,7 +574,7 @@ class WorkspaceImpl implements Workspace {
       if (Array.isArray(val)) {
         for (const entry of val) {
           if (typeof entry === "object" && entry.name === databaseName)
-            return SettingsSchemas.validateArrayObject(entry, WorkspaceSetting.Databases, databaseName);
+            return SettingsSchemas.validateSetting(entry, WorkspaceSetting.Databases);
         }
       }
       return undefined; // keep going through all settings dictionaries

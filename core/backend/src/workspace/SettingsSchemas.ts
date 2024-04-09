@@ -23,6 +23,7 @@ import { IModelJsFs } from "../IModelJsFs";
 export interface SettingSchema extends Readonly<JSONSchema> {
   readonly items?: SettingSchema; // must be single object, not array
   readonly type: JSONSchemaTypeName; // type is required for settings
+  readonly extends?: string; // name of typeDef for objects to inherit properties
   readonly properties?: { [name: string]: SettingSchema };
 
   /** whether the setting replaces lower priority entries with the same name or combines with them. */
@@ -36,13 +37,13 @@ export interface SettingSchema extends Readonly<JSONSchema> {
  */
 export interface SettingSchemaGroup {
   readonly groupName: string;
-  readonly properties: { [name: string]: SettingSchema };
+  readonly settingDefs: { [name: string]: SettingSchema };
+  readonly typeDefs?: { [name: string]: SettingSchema };
   readonly order?: number;
-  readonly title?: string;
   readonly description?: string;
-  readonly extensionId?: string;
 }
 
+const makeSettingKey = (group: string, key: string) => `${group}/${key}`;
 /**
  * The registry of available [[SettingSchemaGroup]]s.
  * The registry is used for editing Settings files and for finding default values for settings.
@@ -51,8 +52,10 @@ export interface SettingSchemaGroup {
 export class SettingsSchemas {
   private constructor() { } // singleton
   private static readonly _allGroups = new Map<string, SettingSchemaGroup>();
-  /** a map of all registered [[SettingSchema]]s */
-  public static readonly allSchemas = new Map<string, SettingSchema>();
+  /** a map of all registered Setting Definitions  */
+  public static readonly settingDefs = new Map<string, SettingSchema>();
+  /** a map of all registered TypeDefs  */
+  public static readonly typeDefs = new Map<string, SettingSchema>();
   /** event that signals that the values in [[allSchemas]] have changed in some way. */
   public static readonly onSchemaChanged = new BeEvent<() => void>();
 
@@ -62,30 +65,90 @@ export class SettingsSchemas {
    */
   public static reset() {
     this._allGroups.clear();
-    this.allSchemas.clear();
+    this.settingDefs.clear();
+    this.typeDefs.clear();
     this.onSchemaChanged.clear();
   }
 
-  /** @internal */
-  public static validateArrayObject<T>(val: T, schemaName: string, msg: string): T {
-    const schema = this.allSchemas.get(schemaName);
-    const items = schema?.items;
-    if (undefined === items)
-      return val;
-    const required = items.required;
-    const properties = items.properties;
-    if (undefined === required || undefined === properties)
-      return val;
+  private static verifyType<T>(val: T, expectedType: JSONSchemaTypeName, path: string) {
+    if (expectedType === "integer") {
+      if (Number.isInteger(val))
+        return;
+    } else if (expectedType === "null") {
+      if (val === null || val === undefined)
+        return;
+    } else if (typeof val === expectedType)
+      return;
 
-    for (const entry of required) {
-      const entryType = properties[entry].type;
-      const value = (val as any)[entry];
-      if (entryType === "array" && Array.isArray(value))
-        continue;
-      if (typeof value !== entryType)
-        throw new Error(`invalid "${schemaName}" setting entry for "${msg}": ${entry} is ${value}`);
-    }
+    throw new Error(`value for ${path} [${val}] is wrong type, expected ${expectedType}`);
+  }
+
+  /** @internal */
+  public static validateSetting<T>(val: T, settingName: string): T {
+    const settingDef = this.settingDefs.get(settingName);
+    if (undefined === settingDef)
+      throw new Error(`setting ${settingName} does not exist`);
+    this.validateProperty(val, settingDef, settingName);
     return val;
+  }
+
+  /** @internal */
+  public static getObjectProperties(propDef: Readonly<SettingSchema>): { required?: string[], properties: { [name: string]: SettingSchema } } {
+    let required = propDef.required;
+    let properties = propDef.properties;
+
+    // if this oject extends a typeDef, add typeDef's properties and required values, recursively
+    if (propDef.extends !== undefined) {
+      const typeDef = this.typeDefs.get(propDef.extends);
+      if (undefined === typeDef)
+        throw new Error(`typedef ${typeDef} does not exist`);
+      const expanded = this.getObjectProperties(typeDef);
+      if (expanded.required)
+        required = required ? [...required, ...expanded.required] : expanded.required;
+      if (expanded.properties) {
+        properties = properties ? { ...expanded.properties, ...properties } : expanded.properties;
+      }
+    }
+    properties = properties ?? {};
+    return { required, properties };
+  }
+
+  private static validateProperty<T>(val: T, propDef: Readonly<SettingSchema>, path: string) {
+    switch (propDef.type) {
+      case "boolean":
+      case "number":
+      case "string":
+      case "integer":
+      case "null":
+        return this.verifyType(val, propDef.type, path);
+
+      case "array":
+        if (!Array.isArray(val))
+          throw new Error(`Property ${path} must be an array`);
+        for (let i = 0; i < val.length; ++i)
+          this.validateProperty(val[i], propDef.items as SettingSchema, `${path}[${i}]`);
+        return;
+    }
+    if (!val || typeof val !== "object")
+      throw new Error(`${path} must be an object`);
+
+    const { required, properties } = this.getObjectProperties(propDef);
+
+    // first ensure all required properties are present
+    if (undefined !== required) {
+      for (const entry of required) {
+        const value = (val as any)[entry];
+        if (undefined === value)
+          throw new Error(`missing value for "${path}"`);
+      }
+    }
+    // then validate all values in the supplied object are valid
+    for (const key of Object.keys(val)) {
+      const prop = properties[key];
+      if (prop !== undefined) { // note: extra values are ignored.
+        this.validateProperty((val as any)[key], prop, `${path}.${key}`);
+      }
+    }
   }
 
   /**
@@ -110,7 +173,7 @@ export class SettingsSchemas {
     try {
       this.addJson(fs.readFileSync(fileName, "utf-8"));
     } catch (e: any) {
-      throw new Error(`parsing SettingSchema file "${fileName}": ${e.message}"`);
+      throw new Error(`parsing SettingSchema file "${fileName}": ${e.message} "`);
     }
   }
 
@@ -142,9 +205,13 @@ export class SettingsSchemas {
 
   private static doRemove(groupName: string) {
     const group = this._allGroups.get(groupName);
-    if (undefined !== group?.properties) {
-      for (const key of Object.keys(group.properties))
-        this.allSchemas.delete(key);
+    if (undefined !== group?.settingDefs) {
+      for (const key of Object.keys(group.settingDefs))
+        this.settingDefs.delete(makeSettingKey(groupName, key));
+    }
+    if (undefined !== group?.typeDefs) {
+      for (const key of Object.keys(group.typeDefs))
+        this.settingDefs.delete(makeSettingKey(groupName, key));
     }
     this._allGroups.delete(groupName);
   }
@@ -152,11 +219,9 @@ export class SettingsSchemas {
   private static validateName(name: string) {
     if (!name.trim())
       throw new Error(`empty property name`);
-    if (this.allSchemas.has(name))
-      throw new Error(`property "${name}" is already defined`);
   }
 
-  private static validateProperty(name: string, property: SettingSchema | undefined) {
+  private static verifyPropertyDef(name: string, property: SettingSchema | undefined) {
     if (!property)
       throw new Error(`missing required property ${name}`);
 
@@ -175,13 +240,15 @@ export class SettingsSchemas {
         const required = property.required;
         const props = property.properties;
         if (required && props) {
-          for (const entry of required)
-            this.validateProperty(entry, props[entry]);
+          for (const entry of required) {
+            if (undefined === props[entry])
+              throw new Error(`missing required property of ${name}: "${entry}"`);
+          }
         }
         if (props) {
           for (const key of Object.keys(props))
             try {
-              this.validateProperty(key, props[key]);
+              this.verifyPropertyDef(key, props[key]);
             } catch (e: any) {
               throw new Error(`property ${key} of ${name}: ${e.message}`);
             }
@@ -192,7 +259,7 @@ export class SettingsSchemas {
         if (typeof property.items !== "object")
           throw new Error(`array property ${name} has no items member`);
         try {
-          this.validateProperty("items", property.items);
+          this.verifyPropertyDef("items", property.items);
         } catch (e: any) {
           throw new Error(`array property ${name}: ${e.message}`);
         }
@@ -204,16 +271,21 @@ export class SettingsSchemas {
   }
 
   private static validateAndAdd(group: SettingSchemaGroup) {
-    const properties = group.properties;
-    if (undefined === properties)
-      throw new Error(`group ${group.groupName} has no properties`);
-
+    let properties = group.settingDefs;
+    if (undefined !== properties) {
+      for (const key of Object.keys(properties)) {
+        this.validateName(key);
+        this.verifyPropertyDef(key, properties[key]);
+        const property: Mutable<SettingSchema> = properties[key];
+        property.default = property.default ?? this.getDefaultValue(property.type);
+        this.settingDefs.set(makeSettingKey(group.groupName, key), property);
+      }
+    }
+    properties = group.typeDefs ?? {};
     for (const key of Object.keys(properties)) {
       this.validateName(key);
-      this.validateProperty(key, properties[key]);
-      const property: Mutable<SettingSchema> = properties[key];
-      property.default = property.default ?? this.getDefaultValue(property.type);
-      this.allSchemas.set(key, property);
+      this.verifyPropertyDef(key, properties[key]);
+      this.typeDefs.set(makeSettingKey(group.groupName, key), properties[key]);
     }
   }
 

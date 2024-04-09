@@ -13,10 +13,11 @@ import { IModelTestUtils } from "../IModelTestUtils";
 
 /// cspell:ignore devstoreaccount1
 
-describe("Settings", () => {
+describe.only("Settings", () => {
   let iModel: SnapshotDb;
 
   before(() => {
+    SettingsSchemas.addFile(IModelTestUtils.resolveAssetFile("TestSettings.schema.json"));
     const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("SettingsTest", "SettingsTest.bim");
     iModel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
@@ -28,9 +29,8 @@ describe("Settings", () => {
 
   const app1: SettingSchemaGroup = {
     groupName: "app1",
-    title: "group 1 settings",
-    properties: {
-      "app1/sub1": {
+    settingDefs: {
+      sub1: {
         type: "string",
         enum: ["va1", "alt1"],
         enumDescriptions: [
@@ -40,27 +40,27 @@ describe("Settings", () => {
         default: "val1",
         description: "the first value",
       },
-      "app1/sub2": {
+      sub2: {
         type: "array",
         description: "an array",
         items: {
           type: "string",
         },
       },
-      "app1/boolVal": {
+      boolVal: {
         type: "boolean",
         default: true,
         description: "boolean defaults to true",
       },
-      "app1/strVal": {
+      strVal: {
         type: "string",
         default: "default string val",
       },
-      "app1/intVal": {
+      intVal: {
         type: "integer",
         default: 22,
       },
-      "app1/obj": {
+      obj: {
         type: "object",
         properties: {
           out: {
@@ -83,7 +83,7 @@ describe("Settings", () => {
         },
 
       },
-      "app1/databases": {
+      databases: {
         type: "array",
         items: {
           type: "object",
@@ -198,7 +198,7 @@ describe("Settings", () => {
     expect(settings.getBoolean("app1/boolVal")).equals(true);
     expect(settings.getBoolean("app1/not there", true)).equals(true);
     expect(settings.getBoolean("app1/not there", false)).equals(false);
-    expect(settings.getString("app1/strVal")).equals(app1.properties["app1/strVal"].default);
+    expect(settings.getString("app1/strVal")).equals(app1.settingDefs["app1/strVal"].default);
     expect(settings.getNumber("app1/intVal")).equals(22);
     expect(settings.getObject("app1/intVal")).equals(undefined); // wrong type
     expect(settings.getArray("app1/intVal")).equals(undefined); // wrong type
@@ -213,11 +213,11 @@ describe("Settings", () => {
     expect(settings.getString("app2/setting6")).equals(iTwinSettings["app2/setting6"]);
     expect(settingsChanged).eq(4);
 
-    (app1.properties["app1/strVal"] as Mutable<SettingSchema>).default = "new default";
+    (app1.settingDefs["app1/strVal"] as Mutable<SettingSchema>).default = "new default";
     SettingsSchemas.addGroup(app1);
 
     // after re-registering, the new default should be updated
-    expect(settings.getString("app1/strVal")).equals(app1.properties["app1/strVal"].default);
+    expect(settings.getString("app1/strVal")).equals(app1.settingDefs["app1/strVal"].default);
 
     const inspect = settings.inspectSetting("app1/sub1");
     expect(inspect.length).equals(5);

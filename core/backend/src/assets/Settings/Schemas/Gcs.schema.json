@@ -1,17 +1,25 @@
 {
-  "$id": "http://itwinjs.org/json-schema/gcs",
-  "$schema": "http://json-schema.org/draft-07/schema",
-  "title": "GeoCoordinate settings",
+  "$schema": "itwin-settings/schema/1.1",
   "description": "settings for geocoordinate services",
-  "type": "object",
   "groupName": "itwin/core/gcs",
-  "properties": {
-    "itwin/core/gcs/default/databases": {
-      "$ref": "http://itwinjs.org/json-schema/workspace#/workspace/databases",
-      "description": "List of GCS workspace databases to load by default.",
+  "settingDefs": {
+    "default/databases": {
+      "type": "array",
+      "description": "array of GCS WorkspaceDbs",
+      "items": {
+        "type": "object",
+        "extends": "itwin/core/gcs/GcsWorkspaceDb",
+        "description": "Properties of a WorkspaceDb holding GCS data.",
+        "properties": {
+          "priority": {
+            "type": "number",
+            "description": "Priority value for GCS database, higher values are searched first",
+            "default": 500
+          }
+        }
+      },
       "default": [
         {
-          "name": "itwin/gcs/base",
           "dbName": "base",
           "version": "^1",
           "baseUri": "https://geocoord-workspace.itwinjs.org",
@@ -21,19 +29,19 @@
           "prefetch": true
         },
         {
-          "name": "itwin/gcs/entire-earth",
           "dbName": "allEarth",
           "version": "^1",
           "baseUri": "https://geocoord-workspace.itwinjs.org",
           "containerId": "gcs",
+          "isPublic": true,
           "priority": 100
         }
       ]
+    },
+    "disableWorkspaces": {
+      "type": "boolean",
+      "description": "If true, do not load any GCS workspaces",
+      "default": false
     }
-  },
-  "itwin/core/gcs/disableWorkspaces": {
-    "type": "boolean",
-    "description": "If true, do not load any GCS workspaces",
-    "default": false
   }
 }

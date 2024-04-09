@@ -1,67 +1,51 @@
 {
-  "$id": "http://itwinjs.org/json-schema/workspace",
-  "$schema": "http://json-schema.org/draft-07/schema",
-  "title": "Workspace settings",
-  "description": "settings for accessing data from workspaces",
-  "type": "object",
-  "groupName": "workspace",
-  "properties": {
-    "workspace/databases": {
-      "type": "array",
-      "cumulative": true,
+  "$schema": "itwin-settings/schema/1.1",
+  "description": "settings for workspaces",
+  "groupName": "itwin/workspace",
+  "typeDefs": {
+    "workspaceDb": {
+      "type": "object",
       "description": "array of WorkspaceDb properties",
-      "items": {
-        "type": "object",
-        "required": [
-          "name",
-          "dbName",
-          "containerId",
-          "baseUri"
-        ],
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "the alias name of the WorkspaceDb to be used by workspace lists"
-          },
-          "dbName": {
-            "type": "string",
-            "description": "the name of the database within its cloud container"
-          },
-          "baseUri": {
-            "type": "string",
-            "description": "the baseUri for the container, without trailing slash (e.g., https://containers.itwinjs.org)"
-          },
-          "containerId": {
-            "type": "string",
-            "description": "the containerId of this cloud container"
-          },
-          "storageType": {
-            "type": "string",
-            "description": "one of: 'azure', 'aws', 'google'",
-            "default": "azure"
-          },
-          "isPublic": {
-            "type": "boolean",
-            "description": "whether the cloud container is public (doesn't require authentication)",
-            "default": false
-          },
-          "version": {
-            "type": "string",
-            "description": "the (semver) range of acceptable versions",
-            "default": "^1"
-          },
-          "includePrerelease": {
-            "type": "boolean",
-            "description": "include prerelease version as acceptable versions"
-          },
-          "priority": {
-            "type": "number",
-            "description": "for sorted databases, higher values are searched first"
-          },
-          "prefetch": {
-            "type": "boolean",
-            "description": "if true, pre-fetch all of the data from the cloud in the background"
-          }
+      "required": [
+        "dbName",
+        "containerId",
+        "baseUri"
+      ],
+      "properties": {
+        "dbName": {
+          "type": "string",
+          "description": "the name of the database within its cloud container"
+        },
+        "baseUri": {
+          "type": "string",
+          "description": "the baseUri for the container, without trailing slash (e.g., https://containers.itwinjs.org)"
+        },
+        "containerId": {
+          "type": "string",
+          "description": "the containerId of this cloud container. Usually a GUID"
+        },
+        "storageType": {
+          "type": "string",
+          "description": "one of: 'azure', 'aws', 'google'",
+          "default": "azure"
+        },
+        "isPublic": {
+          "type": "boolean",
+          "description": "whether the cloud container is public (doesn't require authentication)",
+          "default": false
+        },
+        "version": {
+          "type": "string",
+          "description": "the (semver) range of acceptable versions",
+          "default": "^1"
+        },
+        "includePrerelease": {
+          "type": "boolean",
+          "description": "include prerelease version as acceptable versions"
+        },
+        "prefetch": {
+          "type": "boolean",
+          "description": "if true, pre-fetch all of the data from the cloud in the background"
         }
       }
     }
