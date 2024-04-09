@@ -6,7 +6,7 @@
  * @module ###TODO
  */
 
-import { BaselineShift, FontId, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockComponent, TextBlockLayoutResult, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { BaselineShift, FontId, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockComponent, TextBlockLayoutResult, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { LowAndHighXY, Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 import { assert } from "@itwin/core-bentley";
@@ -49,7 +49,7 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayoutResul
     throw new Error("###TODO use default implementations");
   }
 
-  const layout = new TextBlockLayout(args.textBlock, new LayoutContext(computeTextRange, findTextStyle, findFontId));
+  const layout = new TextBlockLayout(args.textBlock, new LayoutContext(args.textBlock, computeTextRange, findTextStyle, findFontId));
   return layout.toResult();
 }
 
@@ -64,11 +64,32 @@ function rangeResult(range: Range2d): LowAndHighXY {
     high: { x: range.high.x, y: range.high.y },
   }
 }
+
+function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings | TextStyleSettingsProps): TextStyleSettings {
+  if (source === target) {
+    return target;
+  }
+
+  const lineSpacingFactor = source.lineSpacingFactor ?? target.lineSpacingFactor;
+  const lineHeight = source.lineHeight ?? target.lineHeight;
+  const widthFactor = source.widthFactor ?? target.widthFactor;
+
+  if (lineSpacingFactor !== target.lineSpacingFactor && lineHeight !== target.lineHeight && widthFactor !== target.widthFactor) {
+    target = target.clone({ lineSpacingFactor, lineHeight, widthFactor });
+  }
+
+  return target;
+}
+
 class LayoutContext {
   private readonly _textStyles = new Map<string, TextStyleSettings>();
   private readonly _fontIds = new Map<string, FontId>();
+  public readonly blockSettings: TextStyleSettings;
   
-  public constructor(private readonly _computeTextRange: ComputeRangesForTextLayout, private readonly _findTextStyle: FindTextStyle, private readonly _findFontId: FindFontId) { }
+  public constructor(block: TextBlock, private readonly _computeTextRange: ComputeRangesForTextLayout, private readonly _findTextStyle: FindTextStyle, private readonly _findFontId: FindFontId) {
+    const settings = this.findTextStyle(block.styleName);
+    this.blockSettings = applyBlockSettings(settings, block.styleOverrides);
+  }
 
   public findFontId(name: string): FontId {
     let fontId = this._fontIds.get(name);
@@ -88,9 +109,13 @@ class LayoutContext {
     return style;
   }
 
-  public createEffectiveStyle(component: TextBlockComponent): TextStyleSettings {
-    const settings = this.findTextStyle(component.styleName);
-    return component.createEffectiveSettings(settings);
+  public createRunSettings(run: Run): TextStyleSettings {
+    let settings = this.findTextStyle(run.styleName);
+    if (run.overridesStyle) {
+      settings = settings.clone(run.styleOverrides);
+    }
+
+    return applyBlockSettings(settings, this.blockSettings);
   }
 
   public computeRangeForText(chars: string, style: TextStyleSettings, baselineShift: BaselineShift): TextLayoutRanges {
@@ -176,7 +201,7 @@ class RunLayout {
 
   public constructor(source: Run, context: LayoutContext) {
     this.source = source;
-    this.style = context.createEffectiveStyle(source);
+    this.style = context.createRunSettings(source);
     this.fontId = context.findFontId(this.style.fontName);
     this.charOffset = 0;
 
@@ -414,8 +439,7 @@ class TextBlockLayout {
     // Place it below any existing lines
     if (this.lines.length > 0) {
       lineOffset.y += this.back.offsetFromDocument.y;
-      const style = this.context.createEffectiveStyle(this.source);
-      lineOffset.y -= style.lineSpacingFactor * style.lineHeight;
+      lineOffset.y -= this.context.blockSettings.lineSpacingFactor * this.context.blockSettings.lineHeight;
     }
 
     line.offsetFromDocument = lineOffset;

@@ -13,6 +13,7 @@ import { LineLayoutResult, RunLayoutResult, TextBlockLayoutResult } from "./Text
 import { FractionRun, Paragraph, Run, TextBlock, TextRun } from "./TextBlock";
 import { assert } from "@itwin/core-bentley";
  
+/* ###TODO
 export interface TextBlockGeometryProcessor {
   textBlock: TextBlock;
   layout: TextBlockLayoutResult;
@@ -181,3 +182,4 @@ class GeometryContext {
     return run.createEffectiveSettings(settings);
   }
 }
+*/

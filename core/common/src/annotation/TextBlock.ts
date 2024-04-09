@@ -88,7 +88,6 @@ export abstract class TextBlockComponent {
 
   /** Deviations in individual properties of the [[TextStyle]] specified by [[styleName]].
    * For example, if the style uses the "Arial" font, you can override that by settings `styleOverrides.fontName` to "Comic Sans".
-   * @see [[createEffectiveSettings]] to compute a [[TextStyleSettings]] that combines the style's settings with these overrides.
    * @see [[clearStyleOverrides]] to reset this to an empty object.
    */
   public get styleOverrides(): TextStyleSettingsProps {
@@ -116,11 +115,6 @@ export abstract class TextBlockComponent {
   /** Returns true if [[styleOverrides]] specifies any deviations from this component's base [[TextStyle]]. */
   public get overridesStyle(): boolean {
     return Object.keys(this.styleOverrides).length > 0;
-  }
-
-  /** Compute a [[TextStyleSettings]] that combines the settings of the [[TextStyle]] specified by [[styleName]] with any [[styleOverrides]]. */
-  public createEffectiveSettings(baseSettings: TextStyleSettings): TextStyleSettings {
-    return this.overridesStyle ? baseSettings.clone(this.styleOverrides) : baseSettings;
   }
 
   /** Create a deep copy of this component. */
