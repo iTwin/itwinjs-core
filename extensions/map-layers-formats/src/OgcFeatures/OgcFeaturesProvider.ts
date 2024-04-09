@@ -17,6 +17,7 @@ import { RandomMapColor } from "../Feature/RandomMapColor";
 import { DefaultMarkerIcon } from "../Feature/DefaultMarkerIcon";
 
 const loggerCategory = "MapLayersFormats.OgcFeatures";
+const dataUrlHeaderToken = "base64,";
 
 /**  Provide tiles from a ESRI ArcGIS Feature service
 * @internal
@@ -127,6 +128,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     let layerId: SubLayerId|undefined;
 
     // OGC Feature service request can only serve data for a single feature
+    // so if multiple sub-layer ids are specified, we pick the first one.
     if (this._settings.subLayers && this._settings.subLayers.length > 0) {
       layerId = this._settings.subLayers[0].id;
     }
@@ -145,13 +147,12 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     };
 
     const layerIdMismatch = () => {
-      const msg = `Collection metadata and layer id ("${layerId}") mismatch`;
+      const msg = `Collection metadata and sub-layers id mismatch`;
       Logger.logError(loggerCategory, msg);
       throw new Error(msg);
     };
     let collectionMetadata: any;
-    let response = await this.fetchMetadata(this._settings.url);
-    let json =  await response.json();
+    let json = await this.fetchMetadata(this._settings.url);
     if (json?.type === "FeatureCollection") {
       // We landed on the items page, we need to look for the collection metadata url
       if (Array.isArray(json.links)) {
@@ -159,14 +160,19 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
         this._collectionUrl  = collectionLink.href;
       }
     } else if (json.itemType === "feature") {
+      // We landed on a specific collection page.
+      collectionMetadata = json;
 
-      // Make sure the collection Id matches one of the specified sublayer id.
-      if (this._settings.subLayers && !this._settings.subLayers.find((s)=>s.id === json.id)) {
-        layerIdMismatch();
+      // Check if the collection id matches at least one sub-layer
+      if (this._settings.subLayers && this._settings.subLayers.length > 0) {
+        const subLayer = this._settings.subLayers.find((s)=>s.id === collectionMetadata.id);
+        if (subLayer)
+          layerId = subLayer.id;
+      } else {
+        // No sub-layers were specified, defaults to collection id.
+        layerId = collectionMetadata.id;
       }
 
-      // We landed on the right collection page.
-      collectionMetadata = json;
     } else if (Array.isArray(json.collections)) {
       // We landed in the "Collections" page
       // Find to find the specified layer id among the available collections
@@ -180,8 +186,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
         throw new ServerError(IModelStatus.ValidationFailed, "");
       }
 
-      response = await this.makeRequest(collectionsLink.href);
-      json =  await response.json();
+      json =  await this.fetchMetadata(collectionsLink.href);
       if (Array.isArray(json.collections)) {
         readCollectionsPage(json);
       }
@@ -191,7 +196,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     if (!collectionMetadata)
       collectionMetadata = await this.fetchMetadata(this._collectionUrl);
 
-    if (layerId !== undefined && collectionMetadata.id !== collectionMetadata.id) {
+    if (layerId !== undefined && layerId !== collectionMetadata.id) {
       layerIdMismatch();
     }
 
@@ -238,11 +243,10 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     await this._defaultSymbol.initialize(); // images must be loaded upfront
   }
 
-  private async fetchMetadata(url: string) {
+  private async fetchMetadata(url: string): Promise<any> {
     const tmpUrl = this.appendCustomParams(url);
     const response = await this.makeRequest(tmpUrl);
-    const json = await response.json();
-    return json;
+    return response.json();
   }
 
   private async fetchAllItems() {
@@ -283,7 +287,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       if (e instanceof DOMException && e.name === "AbortError") {
         Logger.logInfo(loggerCategory, "Request to fetch all features time out, switching to tile mode.");
       } else {
-        Logger.logError(loggerCategory, "Unkown error occured when fetching OgcFeatures data.");
+        Logger.logError(loggerCategory, "Unknown error occurred when fetching OgcFeatures data.");
       }
     }
     return success ? data : undefined;
@@ -389,7 +393,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     canvasTileExtentOffset.y *= world2CanvasRatioY;
     const xTranslate = -1 * canvasTileOriginOffset.x;
 
-    // Canvas origin is uppler left corner, so we need to flip the y axsis
+    // Canvas origin is upper left corner, so we need to flip the y axis
     const yTranslate = canvasTileExtentOffset.y;     // y-axis flip
     const yWorld2CanvasRatio = -1 * world2CanvasRatioY; // y-axis flip
 
@@ -398,16 +402,15 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
   }
 
   public override async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
-    // const begin = performance.now();
 
     const extent4326 = this.getEPSG4326Extent(row, column, zoomLevel);
 
     let data: any;
     if (this.staticMode) {
       // Static data mode
-      const filteredData: Geojson.FeatureCollection = {type: this._staticData!.type, features: []};
+      const filteredData: Geojson.FeatureCollection = {type: "FeatureCollection", features: []};
 
-      this._spatialIdx.search(extent4326.longitudeLeft, extent4326.latitudeBottom, extent4326.longitudeRight, extent4326.latitudeTop,
+      this._spatialIdx?.search(extent4326.longitudeLeft, extent4326.latitudeBottom, extent4326.longitudeRight, extent4326.latitudeTop,
         (index: number) => {
           filteredData.features.push(this._staticData!.features[index]);
           return true;
@@ -420,7 +423,6 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       const urlObj = new URL(this._itemsUrl);
       urlObj.searchParams.append("bbox", `${extent4326Str}`);
       urlObj.searchParams.append("bbox-crs", this._itemsCrs);
-      // urlObj.searchParams.append("bbox-crs", "http://www.opengis.net/def/crs/EPSG/0/4326");
       urlObj.searchParams.append("limit", `${this._limitParamMaxValue}`);
       const url = this.appendCustomParams(urlObj.toString());
 
@@ -431,6 +433,11 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       if (!data) {
         Logger.logError(loggerCategory, "Could not fetch OgcFeatures data.");
       }
+    }
+
+    if (!data || !Array.isArray(data.features) || data.features.length === 0) {
+      Logger.logError(loggerCategory, `No data to render for tile (${zoomLevel}/${row}/${column}).`);
+      return undefined;
     }
 
     // Rendering starts here
@@ -469,18 +476,25 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     }
 
     try {
-      const tileRasterformat = "image/png";
-      const dataUrl = canvas.toDataURL(tileRasterformat);
-      const header = `data:${tileRasterformat};base64,`;
-      const dataUrl2 = dataUrl.substring(header.length);
-      // const end  = performance.now();
-      // console.log(`${data.features.length} feature(s) Overall: ${(end-begin).toFixed(0)}ms`);
-      return new ImageSource(base64StringToUint8Array(dataUrl2), ImageSourceFormat.Png);
+      return this.createImageSourceFromDataURL(canvas.toDataURL("image/png"), ImageSourceFormat.Png);
     } catch (e) {
       Logger.logError(loggerCategory, `Exception occurred while rendering tile (${zoomLevel}/${row}/${column}) : ${e}.`);
     }
 
     return undefined;
+  }
+
+  private createImageSourceFromDataURL(dataUrl: string, format: ImageSourceFormat) {
+    if (!dataUrl)
+      return undefined;
+
+    const dataStartPos = dataUrl.indexOf(dataUrlHeaderToken) + dataUrlHeaderToken.length;
+
+    if (dataStartPos < 0)
+      return undefined;
+
+    const base64Png = dataUrl.substring(dataStartPos);
+    return new ImageSource(base64StringToUint8Array(base64Png), format);
   }
 
   public override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail, options?: MapFeatureInfoOptions): Promise<void> {

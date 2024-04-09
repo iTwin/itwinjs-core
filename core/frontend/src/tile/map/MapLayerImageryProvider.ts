@@ -267,7 +267,7 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** @internal */
-  public async makeRequest(url: string, timeoutMs?: number): Promise<Response> {
+  public async makeRequest(url: string, timeoutMs?: number) {
 
     let response: Response|undefined;
 
