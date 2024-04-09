@@ -8,7 +8,7 @@
 
 import { XYZProps } from "@itwin/core-geometry";
 import { TextStringProps } from "../geometry/TextString";
-import { ColorDefProps } from "../ColorDef";
+import { TextStyleColor } from "./TextStyle";
 
 export type TextBlockGeometryPropsEntry = {
   text: TextStringProps;
@@ -24,7 +24,7 @@ export type TextBlockGeometryPropsEntry = {
 } | {
   text?: never;
   separator?: never;
-  color:ColorDefProps;
+  color:TextStyleColor;
 };
 
 export type TextBlockGeometryProps = {
