@@ -261,14 +261,14 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     let data: any;
     let success = true;
     try {
-      const fetchBegin = performance.now();
+      const fetchBegin = Date.now();
       let tmpUrl = this.appendCustomParams(url);
       let response = await this.makeTileRequest(tmpUrl, timeout);
       let json = await response.json();
       data = json;
       // Follow "next" link if any
       let nextLink = json.links?.find((link: any)=>link.rel === "next");
-      while (nextLink && (performance.now() - fetchBegin) < timeout && success) {
+      while (nextLink && (Date.now() - fetchBegin) < timeout && success) {
         tmpUrl = this.appendCustomParams(nextLink.href);
         response = await this.makeTileRequest(tmpUrl, this._staticModeFetchTimeout);
         json = await response.json();
@@ -278,7 +278,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
           success = false;
         nextLink = json.links?.find((link: any)=>link.rel === "next");
       }
-      if (performance.now() - fetchBegin >= this._staticModeFetchTimeout) {
+      if (Date.now() - fetchBegin >= this._staticModeFetchTimeout) {
         // We ran out of time, let switch to tile mode
         success = false;
       }
