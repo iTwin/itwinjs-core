@@ -138,4 +138,4 @@ steps:
   - script: node common/scripts/install-run-rush.js extract-api
     displayName: rush extract-api
     workingDirectory: ${{ parameters.workingDir }}
-    condition: ${{ parameters.nativePrVal }}
+    condition: and(${{ parameters.nativePrVal }}, ne(variables['Agent.OS'], 'Windows_NT'))
