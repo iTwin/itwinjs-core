@@ -6,9 +6,32 @@
  * @module Elements
  */
 
-import { TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps } from "@itwin/core-common";
+import { GeometryParams, GeometryStreamBuilder, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { AnnotationElement2d, GraphicalElement3d } from "./Element";
+import { produceTextAnnotationGeometry } from "./TextAnnotationGeometry";
+
+function updateAnnotation(element: TextAnnotation2d | TextAnnotation3d, annotation: TextAnnotation): boolean {
+  const builder = new GeometryStreamBuilder();
+
+  // ###TODO no way to place on non-default subcategory?
+  const params = new GeometryParams(element.category);
+  if (!builder.appendGeometryParamsChange(params)) {
+    return false;
+  }
+
+  const props = produceTextAnnotationGeometry({ iModel: element.iModel, annotation });
+  if (!builder.appendTextBlock(props)) {
+    return false;
+  }
+
+  // ###TODO will placement bounding box be computed for me on insert/update?
+  element.geom = builder.geometryStream;
+
+  element.jsonProperties.annotation = annotation.toJSON();
+
+  return true;
+}
 
 /** 2D Text Annotation ###TODO better documentation...
  * @public
@@ -27,9 +50,8 @@ export class TextAnnotation2d extends AnnotationElement2d {
     return json ? TextAnnotation.fromJSON(json) : undefined;
   }
 
-  public setAnnotation(annotation: TextAnnotation): void {
-    // ###TODO recompute placement, geometry stream, etc.
-    this.jsonProperties.annotation = annotation.toJSON();
+  public setAnnotation(annotation: TextAnnotation): boolean {
+    return updateAnnotation(this, annotation);
   }
 }
 
@@ -50,8 +72,7 @@ export class TextAnnotation3d extends GraphicalElement3d {
     return json ? TextAnnotation.fromJSON(json) : undefined;
   }
 
-  public setAnnotation(annotation: TextAnnotation): void {
-    // ###TODO recompute placement, geometry stream, etc.
-    this.jsonProperties.annotation = annotation.toJSON();
+  public setAnnotation(annotation: TextAnnotation): boolean {
+    return updateAnnotation(this, annotation);
   }
 }
