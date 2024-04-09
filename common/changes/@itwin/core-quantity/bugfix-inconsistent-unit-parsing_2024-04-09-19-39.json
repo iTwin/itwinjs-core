@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Fix an flaw in the parser logic where purposefully ignoring a token would end up parsing the value as meters even if the formatter spec had unit information.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}
