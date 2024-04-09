@@ -8,7 +8,7 @@
 
 import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
-  Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LowAndHighXYZ, Matrix3d, Point2d, Point3d, Range3d, Transform, TransformProps,
+  Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LineSegment3d, LowAndHighXYZ, Matrix3d, Point2d, Point3d, Range3d, Transform, TransformProps,
   Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps,
 } from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "../ColorDef";
@@ -22,6 +22,7 @@ import { LineStyle } from "./LineStyle";
 import { TextString, TextStringProps } from "./TextString";
 import { Base64EncodedString } from "../Base64EncodedString";
 import { Placement2d, Placement3d } from "./Placement";
+import { TextBlockGeometryProps } from "../core-common";
 
 /** Establish a non-default [[SubCategory]] or to override [[SubCategoryAppearance]] for the geometry that follows.
  * A GeometryAppearanceProps always signifies a reset to the [[SubCategoryAppearance]] for subsequent [[GeometryStreamProps]] entries for undefined values.
@@ -330,6 +331,29 @@ export class GeometryStreamBuilder {
     if (!localTextString.transformInPlace(this._worldToLocal))
       return false;
     this.geometryStream.push({ textString: localTextString });
+    return true;
+  }
+
+  public appendTextBlock(block: TextBlockGeometryProps): boolean {
+    for (const entry of block.entries) {
+      let result: boolean;
+      if (entry.text) {
+        result = this.appendTextString(new TextString(entry.text));
+      } else if (entry.color) {
+        if (entry.color === "subcategory") {
+          result = this.appendSubCategoryChange(Id64.invalid);
+        } else {
+          result = false; // ###TODO this.appendGeometryParamsChange({ lineColor: ColorDef.fromJSON(entry.color) });
+        }
+      } else {
+        result = this.appendGeometry(LineSegment3d.fromJSON(entry.separator));
+      }
+
+      if (!result) {
+        return false;
+      }
+    }
+
     return true;
   }
 
