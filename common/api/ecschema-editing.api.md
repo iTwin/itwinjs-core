@@ -289,7 +289,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Schema;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
         code: string;
@@ -302,7 +302,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Schema;
-            messageArgs?: [string, string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         code: string;
@@ -315,7 +315,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Schema;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
         code: string;
@@ -328,7 +328,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyClass;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -340,7 +340,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyClass;
-            messageArgs?: [string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -352,7 +352,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyClass;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -364,7 +364,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: CustomAttributeContainerProps;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
     };
@@ -375,7 +375,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: CustomAttributeContainerProps;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
     };
@@ -386,7 +386,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: CustomAttributeContainerProps;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
     };
@@ -397,7 +397,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Enumeration;
-            messageArgs?: [string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -409,7 +409,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: EntityClass;
-            messageArgs?: [string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -421,7 +421,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
-            messageArgs?: [string, string, string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         code: string;
@@ -433,7 +433,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
-            messageArgs?: [string, string, string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         code: string;
@@ -445,7 +445,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
-            messageArgs?: [string, string, string, string, string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string, string, string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         code: string;
@@ -457,7 +457,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
         code: string;
@@ -469,7 +469,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
-            messageArgs?: [string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         code: string;
@@ -481,7 +481,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
         code: string;
@@ -493,7 +493,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
-            messageArgs?: [string, string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         code: string;
@@ -505,7 +505,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipClass;
-            messageArgs?: [string, string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -517,7 +517,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipClass;
-            messageArgs?: [string, string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -529,7 +529,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipClass;
-            messageArgs?: [string, string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -541,7 +541,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipConstraint;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
     };
@@ -552,7 +552,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipConstraint;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
     };
