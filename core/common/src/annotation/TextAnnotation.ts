@@ -6,7 +6,7 @@
  * @module Annotation
  */
 
-import { Point3d, YawPitchRollAngles, XYZProps, YawPitchRollProps } from "@itwin/core-geometry";
+import { Point3d, YawPitchRollAngles, XYZProps, YawPitchRollProps, Range2d, Transform } from "@itwin/core-geometry";
 import { TextBlock, TextBlockProps } from "./TextBlock";
  
 export interface TextAnnotationAnchor {
@@ -62,5 +62,30 @@ export class TextAnnotation {
     }
 
     return props;
+  }
+
+  public computeDocumentTransform(layoutRange: Range2d): Transform {
+    const origin = this.origin.clone();
+    const matrix = this.orientation.toMatrix3d();
+
+    switch (this.anchor.horizontal) {
+      case "center":
+        origin.x -= layoutRange.xLength() / 2;
+        break;
+      case "right":
+        origin.x -= layoutRange.xLength();
+        break;
+    }
+
+    switch (this.anchor.vertical) {
+      case "middle":
+        origin.y += layoutRange.yLength() / 2;
+        break;
+      case "bottom":
+        origin.y += layoutRange.yLength();
+        break;
+    }
+
+    return Transform.createRefs(origin, matrix);
   }
 }

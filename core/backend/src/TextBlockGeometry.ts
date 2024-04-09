@@ -6,7 +6,7 @@
  * @module ###TODO
  */
 
-import { ColorDefProps, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
+import { TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
 import { RunLayout, TextBlockLayout } from "./TextBlockLayout";
 import { LineSegment3d, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
@@ -126,7 +126,7 @@ function processFractionRun(run: RunLayout, transform: Transform, context: Geome
   }
 }
 
-export function produceTextBlockGeometry(layout: TextBlockLayout): TextBlockGeometryProps {
+export function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform): TextBlockGeometryProps {
   const context: GeometryContext = { entries: [] };
   for (const line of layout.lines) {
     const lineTrans = Transform.createTranslationXYZ(line.offsetFromDocument.x, line.offsetFromDocument.y, 0);
@@ -136,6 +136,7 @@ export function produceTextBlockGeometry(layout: TextBlockLayout): TextBlockGeom
       }
 
       const runTrans = Transform.createTranslationXYZ(run.offsetFromLine.x, run.offsetFromLine.y, 0);
+      documentTransform.multiplyTransformTransform(runTrans, runTrans);
       lineTrans.multiplyTransformTransform(runTrans, runTrans);
       if ("text" === run.source.type) {
         processTextRun(run, runTrans, context);
