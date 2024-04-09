@@ -7,7 +7,7 @@
  */
 
 import { TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
-import { RunLayout, TextBlockLayout } from "./TextBlockLayout";
+import { RunLayout, TextBlockLayout } from "./TextAnnotationLayout";
 import { LineSegment3d, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
 
