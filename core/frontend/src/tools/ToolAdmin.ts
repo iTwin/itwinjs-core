@@ -480,6 +480,7 @@ export class ToolAdmin {
   /** @internal */
   public onShutDown() {
     this.clearMotionPromises();
+    void this.callOnCleanup();
     this._idleTool = undefined;
     IconSprites.emptyAll(); // clear cache of icon sprites
     ToolAdmin._removals.forEach((remove) => remove());
@@ -1880,8 +1881,10 @@ export class ToolAdmin {
   public async callOnCleanup() {
     await this.exitViewTool();
     await this.exitInputCollector();
-    if (undefined !== this._primitiveTool)
+    if (undefined !== this._primitiveTool) {
       await this._primitiveTool.onCleanup();
+      this._primitiveTool = undefined;
+    }
   }
 }
 

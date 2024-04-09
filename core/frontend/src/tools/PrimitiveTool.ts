@@ -44,6 +44,11 @@ export abstract class PrimitiveTool extends InteractiveTool {
     return iModel?.isBriefcaseConnection() ? iModel : undefined;
   }
 
+  public override async onCleanup(): Promise<void> {
+    this.targetView = undefined;
+    return super.onCleanup();
+  }
+
   /**
    * Establish this tool as the active PrimitiveTool.
    * @return true if this tool was installed (though it may have exited too)
