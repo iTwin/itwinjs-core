@@ -6,6 +6,7 @@
  * @module Annotation
  */
 
+/*
 import { TextString } from "../geometry/TextString";
 import { TextStyleColor, TextStyleSettings } from "./TextStyle";
 import { LineSegment3d, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
@@ -182,3 +183,4 @@ class GeometryContext {
     return settings;
   }
 }
+*/

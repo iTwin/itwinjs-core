@@ -6,7 +6,7 @@
  * @module ###TODO
  */
 
-import { BaselineShift, FontId, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockComponent, TextBlockLayoutResult, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, FontId, FractionRun, Paragraph, Run, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { LowAndHighXY, Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 import { assert } from "@itwin/core-bentley";
@@ -43,14 +43,13 @@ export interface LayoutTextBlockArgs {
   findFontId?: FindFontId;
 }
 
-export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayoutResult {
+export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
   const { computeTextRange, findTextStyle, findFontId } = args;
   if (!computeTextRange || !findTextStyle || !findFontId) {
     throw new Error("###TODO use default implementations");
   }
 
-  const layout = new TextBlockLayout(args.textBlock, new LayoutContext(args.textBlock, computeTextRange, findTextStyle, findFontId));
-  return layout.toResult();
+  return new TextBlockLayout(args.textBlock, new LayoutContext(args.textBlock, computeTextRange, findTextStyle, findFontId));
 }
 
 function scaleRange(range: Range2d, scale: number): void {
@@ -228,31 +227,6 @@ class RunLayout {
       }
     }
   }
-
-  public toResult(paragraph: Paragraph): RunLayoutResult {
-    const result: RunLayoutResult = {
-      sourceRunIndex: paragraph.runs.indexOf(this.source),
-      fontId: this.fontId,
-      characterOffset: this.charOffset,
-      characterCount: this.numChars,
-      range: rangeResult(this.range),
-      offsetFromLine: this.offsetFromLine,
-    };
-
-    if (this.justificationRange) {
-      result.justificationRange = rangeResult(this.justificationRange);
-    }
-
-    if (this.numeratorRange) {
-      result.numeratorRange = rangeResult(this.numeratorRange);
-    }
-
-    if (this.denominatorRange) {
-      result.denominatorRange = rangeResult(this.denominatorRange);
-    }
-
-    return result;
-  }
 }
 
 class LineLayout {
@@ -289,16 +263,6 @@ class LineLayout {
       }
     }
   }
-
-  public toResult(textBlock: TextBlock): LineLayoutResult {
-    return {
-      sourceParagraphIndex: textBlock.paragraphs.indexOf(this.source),
-      runs: this.runs.map((x) => x.toResult(this.source)),
-      range: rangeResult(this.range),
-      justificationRange: rangeResult(this.justificationRange),
-      offsetFromDocument: this.offsetFromDocument,
-    };
-  }
 }
 
 class TextBlockLayout {
@@ -313,13 +277,6 @@ class TextBlockLayout {
 
     this.populateLines();
     this.justifyLines();
-  }
-
-  public toResult(): TextBlockLayoutResult {
-    return {
-      lines: this.lines.map((x) => x.toResult(this.source)),
-      range: rangeResult(this.range),
-    };
   }
 
   private get back(): LineLayout {
