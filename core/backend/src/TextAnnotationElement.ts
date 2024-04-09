@@ -26,6 +26,7 @@ function updateAnnotation(element: TextAnnotation2d | TextAnnotation3d, annotati
   }
 
   // ###TODO will placement bounding box be computed for me on insert/update?
+  // ###TODO are we supposed to adjust placement.origin based on annotation.origin?
   element.geom = builder.geometryStream;
 
   element.jsonProperties.annotation = annotation.toJSON();

@@ -22,7 +22,7 @@ import { LineStyle } from "./LineStyle";
 import { TextString, TextStringProps } from "./TextString";
 import { Base64EncodedString } from "../Base64EncodedString";
 import { Placement2d, Placement3d } from "./Placement";
-import { TextBlockGeometryProps } from "../core-common";
+import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps";
 
 /** Establish a non-default [[SubCategory]] or to override [[SubCategoryAppearance]] for the geometry that follows.
  * A GeometryAppearanceProps always signifies a reset to the [[SubCategoryAppearance]] for subsequent [[GeometryStreamProps]] entries for undefined values.
@@ -334,6 +334,7 @@ export class GeometryStreamBuilder {
     return true;
   }
 
+  /** Append a series of entries representing a [[TextBlock]] to the [[GeometryStreamProps]] array. */
   public appendTextBlock(block: TextBlockGeometryProps): boolean {
     for (const entry of block.entries) {
       let result: boolean;

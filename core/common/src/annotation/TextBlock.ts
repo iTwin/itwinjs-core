@@ -6,7 +6,7 @@
  * @module Annotation
  */
 
-import { TextStyle, TextStyleSettings, TextStyleSettingsProps } from "./TextStyle";
+import { TextStyleSettingsProps } from "./TextStyle";
 
 /** Options supplied to [[TextBlockComponent.applyStyle]] to control how the style is applied to the component and its child components.
  * @beta
@@ -124,15 +124,16 @@ export abstract class TextBlockComponent {
    * ###TODO link to TextBlockLayout for doing actual layout, once that's available.
    */
   public abstract stringify(options?: TextBlockStringifyOptions): string;
-  
+
   /** Convert this component to its JSON representation. */
   public toJSON(): TextBlockComponentProps {
     return {
       styleName: this.styleName,
       styleOverrides: { ...this.styleOverrides },
-    }
+    };
   }
 
+  /** Returns true if `this` is equivalent to `other`. */
   public equals(other: TextBlockComponent): boolean {
     const myKeys = Object.keys(this.styleOverrides);
     const yrKeys = Object.keys(other._styleOverrides);
@@ -150,8 +151,9 @@ export abstract class TextBlockComponent {
     return true;
   }
 }
-  
-/** @beta
+
+/**
+ * @beta
  * @preview
  * @extensions
  */
@@ -241,7 +243,7 @@ export class TextRun extends TextBlockComponent {
       type: "text",
       content: this.content,
       baselineShift: this.baselineShift,
-    }
+    };
   }
 
   public static create(props: Omit<TextRunProps, "type">): TextRun {
@@ -266,9 +268,9 @@ export class TextRun extends TextBlockComponent {
 export interface FractionRunProps extends TextBlockComponentProps {
   /** Discriminator field for the [[RunProps]] union. */
   readonly type: "fraction";
-  /** The fraction's numerator. Default: an empty string. */
+  /** The text displayed before or above the fraction separator, depending on [[TextStyle.stackedFractionType]]. Default: an empty string. */
   numerator?: string;
-  /** The fraction's denominator. Default: an empty string. */
+  /** The text displayed after or below the fraction separator, depending on [[TextStyle.stackedFractionType]]. Default: an empty string. */
   denominator?: string;
 }
 
@@ -285,7 +287,7 @@ export class FractionRun extends TextBlockComponent {
   public numerator: string;
   /** The fraction's denominator. */
   public denominator: string;
-  
+
   private constructor(props: Omit<FractionRunProps, "type">) {
     super(props);
     this.numerator = props.numerator ?? "";
@@ -298,7 +300,7 @@ export class FractionRun extends TextBlockComponent {
       type: "fraction",
       numerator: this.numerator,
       denominator: this.denominator,
-    }
+    };
   }
 
   public override clone(): FractionRun {
@@ -347,7 +349,7 @@ export class LineBreakRun extends TextBlockComponent {
     return {
       ...super.toJSON(),
       type: "linebreak",
-    }
+    };
   }
 
   public static create(props: TextBlockComponentProps) {
@@ -521,7 +523,7 @@ export class TextBlock extends TextBlockComponent {
       }
     }
   }
-  
+
   /** Compute a string representation of the document's contents by concatenating the string representations of each of its [[paragraphs]], separated by [[TextBlockStringifyOptions.paragraphBreak]]. */
   public stringify(options?: TextBlockStringifyOptions): string {
     return this.paragraphs.map((x) => x.stringify(options)).join(options?.paragraphBreak ?? " ");

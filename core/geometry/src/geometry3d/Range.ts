@@ -1494,6 +1494,10 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     return result;
   }
 
+  /**
+   * Return a copy, translated by adding `shift` components in all directions.
+   * @note The translation of a null range is also a null range.
+   */
   public cloneTranslated(shift: XAndY, result?: this): this {
     result = result ? result : new (this.constructor as any)() as this;
     if (!this.isNull)
