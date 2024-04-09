@@ -6,10 +6,11 @@
  * @module ###TODO
  */
 
-import { TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
-import { RunLayout, TextBlockLayout } from "./TextAnnotationLayout";
+import { TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
+import { ComputeRangesForTextLayout, FindFontId, FindTextStyle, RunLayout, TextBlockLayout, layoutTextBlock } from "./TextAnnotationLayout";
 import { LineSegment3d, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
+import { IModelDb } from "./IModelDb";
 
 interface GeometryContext {
   curColor?: TextStyleColor;
@@ -149,3 +150,23 @@ export function produceTextBlockGeometry(layout: TextBlockLayout, documentTransf
   return { entries: context.entries };
 }
 
+export interface ProduceTextAnnotationGeometryArgs {
+  annotation: TextAnnotation;
+  iModel:IModelDb;
+  /** @internal chiefly for tests */
+  computeTextRange?: ComputeRangesForTextLayout;
+  /** @internal chiefly for tests */
+  findTextStyle?: FindTextStyle;
+  /** @internal chiefly for tests */
+  findFontId?: FindFontId;
+}
+
+export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometryArgs): TextBlockGeometryProps {
+  const layout = layoutTextBlock({
+    ...args,
+    textBlock: args.annotation.textBlock,
+  });
+
+  const transform = args.annotation.computeDocumentTransform(layout.range);
+  return produceTextBlockGeometry(layout, transform);
+}
