@@ -506,7 +506,11 @@ export class Parser {
         tokens = [tokens[1], tokens[0]];
       }
       if (tokens[0].isNumber && tokens[1].isString) {
-        const conversion = Parser.tryFindUnitConversion(tokens[1].value as string, unitsConversions, defaultUnit);
+        let conversion = Parser.tryFindUnitConversion(tokens[1].value as string, unitsConversions, defaultUnit);
+        // if no conversion, ignore value in second token. If we have defaultUnit, use it.
+        if (!conversion && defaultUnit) {
+          conversion = Parser.tryFindUnitConversion(defaultUnit.label, unitsConversions, defaultUnit);
+        }
         if (conversion) {
           const value = (tokens[0].value as number) * conversion.factor + conversion.offset;
           return { ok: true, value };

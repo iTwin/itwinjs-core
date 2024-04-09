@@ -217,6 +217,9 @@ describe("Parsing tests:", () => {
       { value: "2FT 6IN", quantity: { magnitude: 2.5, unitName: "Units.FT" } },
       { value: `2'-6"`, quantity: { magnitude: 2.5, unitName: "Units.FT" } },
       { value: "-3IN", quantity: { magnitude: -0.25, unitName: "Units.FT" } },
+      // Test with invalid unit specifier -- should default to -3 ft
+      { value: "-3 ABCDEF", quantity: { magnitude: -3, unitName: "Units.FT" } },
+
     ];
 
     const unitsProvider = new TestUnitsProvider();
@@ -430,6 +433,7 @@ describe("Parsing tests:", () => {
       { value: "1000 ft", magnitude: 304.8006096012192 },  // label should match a valid SURVEY_FT label or alternate label
       { value: "1000 USF", magnitude: 304.8006096012192 }, // label should match a valid SURVEY_FT label or alternate label
       { value: "1000", magnitude: 304.8006096012192 },  // no label should default to SURVEY_FT from Format
+      { value: "1000 ABCDEF", magnitude: 304.8006096012192 },  // invalid label, should default to SURVEY_FT from Format since the unit is provided
       { value: "1000 f", magnitude: 304.8 },  // "f" is only valid for Units.FT so convert based on feet
       { value: "1000'", magnitude: 304.8 },  // "'" is only valid for Units.FT so convert based on feet
     ];
