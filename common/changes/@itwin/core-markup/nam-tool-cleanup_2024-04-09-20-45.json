@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-markup",
+      "comment": "clean up tools on shutdown",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-markup"
+}

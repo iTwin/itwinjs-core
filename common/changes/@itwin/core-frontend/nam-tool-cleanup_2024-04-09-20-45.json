@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "clean up tools on shutdown",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
