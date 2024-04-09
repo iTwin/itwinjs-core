@@ -7,7 +7,7 @@
  */
 
 import { BaselineShift, FontId, FractionRun, Paragraph, Run, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
-import { LowAndHighXY, Range2d } from "@itwin/core-geometry";
+import { Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 import { assert } from "@itwin/core-bentley";
 
@@ -55,13 +55,6 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
 function scaleRange(range: Range2d, scale: number): void {
   range.low.scaleInPlace(scale);
   range.high.scaleInPlace(scale);
-}
-
-function rangeResult(range: Range2d): LowAndHighXY {
-  return {
-    low: { x: range.low.x, y: range.low.y },
-    high: { x: range.high.x, y: range.high.y },
-  }
 }
 
 function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings | TextStyleSettingsProps): TextStyleSettings {
@@ -186,7 +179,7 @@ class LayoutContext {
   }
 }
 
-class RunLayout {
+export class RunLayout {
   public source: Run;
   public charOffset = 0;
   public numChars = 0;
@@ -229,7 +222,7 @@ class RunLayout {
   }
 }
 
-class LineLayout {
+export class LineLayout {
   public source: Paragraph;
   public range = new Range2d(0, 0, 0, 0);
   public justificationRange = new Range2d(0, 0, 0, 0);
@@ -265,17 +258,15 @@ class LineLayout {
   }
 }
 
-class TextBlockLayout {
+export class TextBlockLayout {
   public source: TextBlock;
-  public context: LayoutContext;
   public range = new Range2d();
   public lines: LineLayout[] = [];
 
   public constructor(source: TextBlock, context: LayoutContext) {
     this.source = source;
-    this.context = context;
 
-    this.populateLines();
+    this.populateLines(context);
     this.justifyLines();
   }
 
@@ -284,7 +275,7 @@ class TextBlockLayout {
     return this.lines[this.lines.length - 1];
   }
 
-  private populateLines(): void {
+  private populateLines(context: LayoutContext): void {
     const doc = this.source;
     if (doc.paragraphs.length === 0) {
       return;
@@ -296,16 +287,16 @@ class TextBlockLayout {
     for (let i = 0; i < doc.paragraphs.length; i++) {
       const paragraph = doc.paragraphs[i];
       if (i > 0) {
-        line = this.flushLine(line, paragraph);
+        line = this.flushLine(context, line, paragraph);
       }
 
       for (const run of paragraph.runs) {
-        const layoutRun = new RunLayout(run, this.context);
+        const layoutRun = new RunLayout(run, context);
 
         // Line break? It always "fits" and causes us to flush the line.
         if ("linebreak" === run.type) {
           line.runs.push(layoutRun);
-          line = this.flushLine(line);
+          line = this.flushLine(context, line);
           continue;
         }
 
@@ -322,9 +313,9 @@ class TextBlockLayout {
         if ("text" !== run.type) { // only TextRun can wrap.
           if (line.runs.length === 0) {
             line.runs.push(layoutRun);
-            line = this.flushLine(line);
+            line = this.flushLine(context, line);
           } else {
-            line = this.flushLine(line);
+            line = this.flushLine(context, line);
             line.runs.push(layoutRun);
           }
 
@@ -337,7 +328,7 @@ class TextBlockLayout {
     }
 
     if (line.runs.length > 0) {
-      this.flushLine(line);
+      this.flushLine(context, line);
     }
   }
 
@@ -371,7 +362,7 @@ class TextBlockLayout {
     this.range.high.x += minOffset;
   }
 
-  private flushLine(line: LineLayout, nextParagraph?: Paragraph): LineLayout {
+  private flushLine(context: LayoutContext, line: LineLayout, nextParagraph?: Paragraph): LineLayout {
     nextParagraph = nextParagraph ?? line.source;
     
     // We want to guarantee that each layout line has at least one run.
@@ -387,7 +378,7 @@ class TextBlockLayout {
         return new LineLayout(nextParagraph);
       }
 
-      line.runs.push(new RunLayout(prevRun.clone(), this.context));
+      line.runs.push(new RunLayout(prevRun.clone(), context));
     }
 
     // Line origin is its baseline.
@@ -396,7 +387,7 @@ class TextBlockLayout {
     // Place it below any existing lines
     if (this.lines.length > 0) {
       lineOffset.y += this.back.offsetFromDocument.y;
-      lineOffset.y -= this.context.blockSettings.lineSpacingFactor * this.context.blockSettings.lineHeight;
+      lineOffset.y -= context.blockSettings.lineSpacingFactor * context.blockSettings.lineHeight;
     }
 
     line.offsetFromDocument = lineOffset;
