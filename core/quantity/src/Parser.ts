@@ -368,6 +368,10 @@ export class Parser {
 
     // common case where single value and single label are supplied
     if (tokens.length === 2) {
+      // unit specification comes before value (like currency)
+      if (tokens[1].isNumber && tokens[0].isString) {
+        tokens = [tokens[1], tokens[0]];
+      }
       if (tokens[0].isNumber && tokens[1].isString) {
         const unit = await this.lookupUnitByLabel(tokens[1].value as string, format, unitsProvider, altUnitLabelsProvider);
         if (undefined === defaultUnit)
@@ -378,19 +382,6 @@ export class Parser {
           const conversion = await unitsProvider.getConversion(unit, defaultUnit);
           const mag = ((tokens[0].value as number * conversion.factor)) + conversion.offset;
           return new Quantity(defaultUnit, mag);
-        }
-      } else {  // unit specification comes before value (like currency)
-        if (tokens[1].isNumber && tokens[0].isString) {
-          const unit = await this.lookupUnitByLabel(tokens[0].value as string, format, unitsProvider, altUnitLabelsProvider);
-          if (undefined === defaultUnit)
-            defaultUnit = unit;
-          if (defaultUnit && defaultUnit.name === unit.name) {
-            return new Quantity(defaultUnit, tokens[1].value as number);
-          } else if (defaultUnit) {
-            const conversion = await unitsProvider.getConversion(unit, defaultUnit);
-            const mag = ((tokens[1].value as number * conversion.factor)) + conversion.offset;
-            return new Quantity(defaultUnit, mag);
-          }
         }
       }
     }
@@ -510,6 +501,10 @@ export class Parser {
 
     // common case where single value and single label are supplied
     if (tokens.length === 2) {
+      // unit specification comes before value (like currency)
+      if (tokens[1].isNumber && tokens[0].isString) {
+        tokens = [tokens[1], tokens[0]];
+      }
       if (tokens[0].isNumber && tokens[1].isString) {
         const conversion = Parser.tryFindUnitConversion(tokens[1].value as string, unitsConversions, defaultUnit);
         if (conversion) {
@@ -518,16 +513,6 @@ export class Parser {
         }
         // if no conversion, just return parsed number and ignore value in second token
         return { ok: true, value: tokens[0].value as number };
-      } else {  // unit specification comes before value (like currency)
-        if (tokens[1].isNumber && tokens[0].isString) {
-          const conversion = Parser.tryFindUnitConversion(tokens[0].value as string, unitsConversions, defaultUnit);
-          if (conversion) {
-            const value = (tokens[1].value as number) * conversion.factor + conversion.offset;
-            return { ok: true, value };
-          }
-          // if no conversion, just return parsed number and ignore value in second token
-          return { ok: true, value: tokens[1].value as number };
-        }
       }
     }
 
