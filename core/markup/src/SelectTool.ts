@@ -543,7 +543,10 @@ export class SelectTool extends MarkupTool {
     this.cancelDrag();
     this.markup.selected.emptyAll();
   }
-  public override async onCleanup() { this.clearSelect(); }
+  public override async onCleanup() {
+    this.clearSelect();
+    return super.onCleanup();
+  }
   public override async onPostInstall() {
     this.initSelect();
     return super.onPostInstall();

@@ -121,6 +121,7 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
     if (0 !== this._acceptedElementIds.size)
       this.iModel.hilited.setHilite(this._acceptedElementIds, false);
     this.clearIds();
+    return super.onCleanup();
   }
 
   public override async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {

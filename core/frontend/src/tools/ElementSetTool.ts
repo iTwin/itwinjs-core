@@ -982,9 +982,9 @@ export abstract class ElementSetTool extends PrimitiveTool {
 
   /** Make sure elements from [[ElementSetTool.agenda]] that aren't also from [[SelectionSet]] aren't left hilited. */
   public override async onCleanup() {
-    await super.onCleanup();
     if (undefined !== this._agenda)
       this._agenda.clear();
+    return super.onCleanup();
   }
 
   /** Exit and start default tool when [[ElementSetTool.isSelectionSetModify]] is true to allow [[SelectionSet]] to be modified,

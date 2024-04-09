@@ -193,6 +193,7 @@ export class EditTextTool extends MarkupTool {
     this.editDiv.remove();
     this.editDiv = undefined;
     this.editor = undefined;
+    return super.onCleanup();
   }
 
   public override async onInstall() {

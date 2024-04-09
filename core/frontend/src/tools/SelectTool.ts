@@ -650,6 +650,7 @@ export class SelectionTool extends PrimitiveTool {
   public override async onCleanup() {
     if (this.wantEditManipulators())
       IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Stop);
+    return super.onCleanup();
   }
 
   public override async onPostInstall() {
