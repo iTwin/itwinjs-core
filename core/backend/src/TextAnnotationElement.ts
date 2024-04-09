@@ -10,12 +10,12 @@ import { GeometryParams, GeometryStreamBuilder, TextAnnotation, TextAnnotation2d
 import { IModelDb } from "./IModelDb";
 import { AnnotationElement2d, GraphicalElement3d } from "./Element";
 import { produceTextAnnotationGeometry } from "./TextAnnotationGeometry";
+import { Id64String } from "@itwin/core-bentley";
 
-function updateAnnotation(element: TextAnnotation2d | TextAnnotation3d, annotation: TextAnnotation): boolean {
+function updateAnnotation(element: TextAnnotation2d | TextAnnotation3d, annotation: TextAnnotation, subCategory: Id64String | undefined): boolean {
   const builder = new GeometryStreamBuilder();
 
-  // ###TODO no way to place on non-default subcategory?
-  const params = new GeometryParams(element.category);
+  const params = new GeometryParams(element.category, subCategory);
   if (!builder.appendGeometryParamsChange(params)) {
     return false;
   }
@@ -50,8 +50,8 @@ export class TextAnnotation2d extends AnnotationElement2d {
     return json ? TextAnnotation.fromJSON(json) : undefined;
   }
 
-  public setAnnotation(annotation: TextAnnotation): boolean {
-    return updateAnnotation(this, annotation);
+  public setAnnotation(annotation: TextAnnotation, subCategory?: Id64String): boolean {
+    return updateAnnotation(this, annotation, subCategory);
   }
 }
 
@@ -72,7 +72,7 @@ export class TextAnnotation3d extends GraphicalElement3d {
     return json ? TextAnnotation.fromJSON(json) : undefined;
   }
 
-  public setAnnotation(annotation: TextAnnotation): boolean {
-    return updateAnnotation(this, annotation);
+  public setAnnotation(annotation: TextAnnotation, subCategory?: Id64String): boolean {
+    return updateAnnotation(this, annotation, subCategory);
   }
 }
