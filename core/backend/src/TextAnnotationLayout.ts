@@ -239,6 +239,10 @@ export class RunLayout {
       }
     }
   }
+
+  get canWrap(): boolean {
+    return false; // ###TODO return this.source.type === "text";
+  }
 }
 
 /** @internal */
@@ -247,23 +251,30 @@ export class LineLayout {
   public range = new Range2d(0, 0, 0, 0);
   public justificationRange = new Range2d(0, 0, 0, 0);
   public offsetFromDocument = { x: 0, y: 0 };
-  public runs: RunLayout[] = [];
+  private _runs: RunLayout[] = [];
 
   public constructor(source: Paragraph) {
     this.source = source;
   }
 
-  public get isEmpty() { return this.runs.length === 0; }
+  public get runs(): ReadonlyArray<RunLayout> { return this._runs; }
+  public get isEmpty() { return this._runs.length === 0; }
   public get back(): RunLayout {
     assert(!this.isEmpty);
-    return this.runs[this.runs.length - 1];
+    return this._runs[this._runs.length - 1];
   }
 
-  /** Invoked after runs have been populated, just before this line is added to a TextBlockLayout. */
-  public computeRanges(): void {
-    assert(this.range.low.isAlmostZero && this.range.high.isAlmostZero, "LineLayout.computeRanges should only be called once");
+  public append(run: RunLayout): void {
+    this._runs.push(run);
+    this.computeRanges();
+  }
 
-    for (const run of this.runs) {
+  /** Invoked every time a run is appended,. */
+  private computeRanges(): void {
+    this.range.low.setZero();
+    this.range.high.setZero();
+
+    for (const run of this._runs) {
       const runOffset = { x: this.range.high.x, y: 0 };
       run.offsetFromLine = runOffset;
 
@@ -319,7 +330,7 @@ export class TextBlockLayout {
 
         // Line break? It always "fits" and causes us to flush the line.
         if ("linebreak" === run.type) {
-          line.runs.push(layoutRun);
+          line.append(layoutRun);
           line = this.flushLine(context, line);
           continue;
         }
@@ -329,25 +340,25 @@ export class TextBlockLayout {
 
         // Do we fit (no wrapping or narrow enough)? Append and go around to the next run.
         if (effectiveRunWidth < effectiveRemainingWidth) {
-          line.runs.push(layoutRun);
+          line.append(layoutRun);
           continue;
         }
 
         // Can't fit, but can't wrap? Force on the line if it's the first thing; otherwise flush and add to the next line.
-        if ("text" !== run.type) { // only TextRun can wrap.
+        if (!layoutRun.canWrap) {
           if (line.runs.length === 0) {
-            line.runs.push(layoutRun);
+            line.append(layoutRun);
             line = this.flushLine(context, line);
           } else {
             line = this.flushLine(context, line);
-            line.runs.push(layoutRun);
+            line.append(layoutRun);
           }
 
           continue;
         }
 
         // Otherwise, keep splitting the run into lines until the whole thing is appended.
-        line.runs.push(layoutRun); // ###TODO Word-wrapping
+        line.append(layoutRun); // ###TODO Word-wrapping
       }
     }
 
@@ -402,10 +413,8 @@ export class TextBlockLayout {
         return new LineLayout(nextParagraph);
       }
 
-      line.runs.push(new RunLayout(prevRun.clone(), context));
+      line.append(new RunLayout(prevRun.clone(), context));
     }
-
-    line.computeRanges();
 
     // Line origin is its baseline.
     const lineOffset = { x: 0, y: -line.range.yLength() };
