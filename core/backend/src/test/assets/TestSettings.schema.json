@@ -56,7 +56,7 @@
       "description": "array of fonts to load",
       "items": {
         "type": "object",
-        "extends": "app1/font"
+        "extends": "testApp/font"
       }
     }
   },
@@ -71,8 +71,16 @@
       "properties": {
         "workspace": {
           "type": "object",
-          "extends": "workspace/workspaceDb",
-          "description": "workspaceDb for font"
+          "extends": "itwin/workspace/workspaceDb",
+          "description": "workspaceDb for font",
+          "required": [
+            "workspaceLimit"
+          ],
+          "properties": {
+            "workspaceLimit": {
+              "type": "integer"
+            }
+          }
         },
         "fontName": {
           "type": "string",

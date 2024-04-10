@@ -12,6 +12,7 @@ import { extname, join } from "path";
 import { BeEvent, JSONSchemaType } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../IModelJsFs";
+import { SettingsSchemas } from "./SettingsSchemas";
 
 /** The type of a Setting, according to its schema
  * @beta
@@ -303,13 +304,13 @@ export class BaseSettings implements Settings {
   public getObject<T extends object>(name: SettingName, defaultValue: T): T;
   public getObject<T extends object>(name: SettingName): T | undefined;
   public getObject<T extends object>(name: SettingName, defaultValue?: T): T | undefined {
-    const out = this.getSetting<SettingObject>(name);
-    return typeof out === "object" ? out as T : defaultValue;
+    const out = this.getSetting<T>(name);
+    return typeof out === "object" ? SettingsSchemas.validateSetting(out, name) : defaultValue;
   }
   public getArray<T extends SettingType>(name: SettingName, defaultValue: Array<T>): Array<T>;
   public getArray<T extends SettingType>(name: SettingName): Array<T> | undefined;
   public getArray<T extends SettingType>(name: SettingName, defaultValue?: Array<T>): Array<T> | undefined {
     const out = this.getSetting<Array<T>>(name);
-    return Array.isArray(out) ? out : defaultValue;
+    return Array.isArray(out) ? SettingsSchemas.validateSetting(out, name) : defaultValue;
   }
 }

@@ -145,6 +145,7 @@ describe.only("Settings", () => {
     "app1/sub2": {
       arr: ["a21", "a22"],
     },
+    "testApp/fontList": { list: 1 },
   };
 
   const iTwinSettings = {
@@ -198,7 +199,7 @@ describe.only("Settings", () => {
     expect(settings.getBoolean("app1/boolVal")).equals(true);
     expect(settings.getBoolean("app1/not there", true)).equals(true);
     expect(settings.getBoolean("app1/not there", false)).equals(false);
-    expect(settings.getString("app1/strVal")).equals(app1.settingDefs["app1/strVal"].default);
+    expect(settings.getString("app1/strVal")).equals(app1.settingDefs.strVal.default);
     expect(settings.getNumber("app1/intVal")).equals(22);
     expect(settings.getObject("app1/intVal")).equals(undefined); // wrong type
     expect(settings.getArray("app1/intVal")).equals(undefined); // wrong type
@@ -213,11 +214,11 @@ describe.only("Settings", () => {
     expect(settings.getString("app2/setting6")).equals(iTwinSettings["app2/setting6"]);
     expect(settingsChanged).eq(4);
 
-    (app1.settingDefs["app1/strVal"] as Mutable<SettingSchema>).default = "new default";
+    (app1.settingDefs.strVal as Mutable<SettingSchema>).default = "new default";
     SettingsSchemas.addGroup(app1);
 
     // after re-registering, the new default should be updated
-    expect(settings.getString("app1/strVal")).equals(app1.settingDefs["app1/strVal"].default);
+    expect(settings.getString("app1/strVal")).equals(app1.settingDefs.strVal.default);
 
     const inspect = settings.inspectSetting("app1/sub1");
     expect(inspect.length).equals(5);
@@ -230,6 +231,19 @@ describe.only("Settings", () => {
     settings.dropDictionary("iTwin.setting.json");
     expect(settingsChanged).eq(5);
     expect(settings.getString("app2/setting6")).is.undefined;
+
+    // test validation of values vs. setting schemas
+    const workspace: any = {
+      dbName: "abc",
+      containerId: "123",
+      baseUri: "aab.com",
+    };
+    const fontListVal: any = [{ workspace, fontName: "arial" }, { workspace, fontName: "helvetica", fontType: 3 }];
+    expect(() => SettingsSchemas.validateSetting(fontListVal, "testApp/fontList")).throws("required value for \"workspaceLimit\" is missing");
+    workspace.workspaceLimit = 4;
+    expect(() => SettingsSchemas.validateSetting(fontListVal, "testApp/fontList")).throws("value for testApp/fontList[1].fontType");
+    fontListVal[1].fontType = "ttf";
+    expect(SettingsSchemas.validateSetting(fontListVal, "testApp/fontList")).equal(fontListVal);
   });
 
   it("read settings file", () => {
