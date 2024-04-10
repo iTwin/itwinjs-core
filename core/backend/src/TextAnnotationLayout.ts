@@ -82,7 +82,7 @@ function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings
   const lineHeight = source.lineHeight ?? target.lineHeight;
   const widthFactor = source.widthFactor ?? target.widthFactor;
 
-  if (lineSpacingFactor !== target.lineSpacingFactor && lineHeight !== target.lineHeight && widthFactor !== target.widthFactor) {
+  if (lineSpacingFactor !== target.lineSpacingFactor || lineHeight !== target.lineHeight || widthFactor !== target.widthFactor) {
     target = target.clone({ lineSpacingFactor, lineHeight, widthFactor });
   }
 
