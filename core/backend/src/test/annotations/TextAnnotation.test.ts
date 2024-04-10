@@ -3,13 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ComputeRangesForTextLayoutArgs, TextLayoutRanges, layoutTextBlock } from "../../TextAnnotationLayout";
+import { ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, TextBlockLayout, TextLayoutRanges, layoutTextBlock } from "../../TextAnnotationLayout";
 import { Range2d } from "@itwin/core-geometry";
-import { TextBlock, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { Paragraph, TextBlock, TextRun, TextStyleSettings } from "@itwin/core-common";
 
 function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
   const range = new Range2d(0, 0, args.chars.length, args.lineHeight);
   return { layout: range, justification: range };
+}
+
+function doLayout(textBlock: TextBlock, args?: {
+  findTextStyle?: FindTextStyle,
+  findFontId?: FindFontId,
+  computeTextRange?: ComputeRangesForTextLayout,
+}): TextBlockLayout {
+  return layoutTextBlock({
+    textBlock,
+    iModel: {} as any,
+    findTextStyle: args?.findTextStyle ?? (() => TextStyleSettings.defaults),
+    findFontId: args?.findFontId ?? (() => 0),
+    computeTextRange: args?.computeTextRange ?? computeTextRangeAsStringLength,
+  });
 }
 
 describe.only("layoutTextBlock", () => {
@@ -20,12 +34,8 @@ describe.only("layoutTextBlock", () => {
     textBlock.appendRun(run0);
     textBlock.appendRun(run1);
 
-    const tb = layoutTextBlock({
-      textBlock,
-      iModel: { } as any,
-      computeTextRange: computeTextRangeAsStringLength,
+    const tb = doLayout(textBlock,{
       findTextStyle: (name: string) => TextStyleSettings.fromJSON(name === "block" ? { lineSpacingFactor: 12, fontName: "block" } : { lineSpacingFactor: 99, fontName: "run" }),
-      findFontId: () => 0,
     });
 
     expect(tb.lines.length).to.equal(1);
@@ -51,7 +61,18 @@ describe.only("layoutTextBlock", () => {
   });
 
   it("produces one line per paragraph if document width <= 0", () => {
-    
+    const textBlock = TextBlock.create({ styleName: "" });
+    for (let i = 0; i < 4; i++) {
+      let layout = doLayout(textBlock);
+      expect(layout.lines.length).to.equal(i);
+      for (const line of layout.lines) {
+        expect(line.runs.length).to.equal(1);
+        expect(line.runs[0].charOffset).to.equal(0);
+        expect(line.runs[0].numChars).to.equal(3);
+      }
+
+      textBlock.appendParagraph().runs.push(TextRun.create({ styleName: "", content: "run" }));
+    }
   });
 
   it("splits paragraphs into multiple lines if runs exceed the document width", () => {
