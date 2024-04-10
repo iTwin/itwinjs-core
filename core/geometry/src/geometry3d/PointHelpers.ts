@@ -565,6 +565,26 @@ export class Point3dArray {
     return result;
   }
   /**
+   * Copy 3d points into a packed number array.
+   * @param data array of xyz
+   * @param result optional destination array.
+   * @return packed number array
+   */
+  public static packToNumberArray(data: Point3d[], result?: number[]): number[] {
+    const numValues = 3 * data.length;
+    if (!result)
+      result = Array<number>(numValues);
+    if (result.length < numValues)
+      result.length = numValues;
+    let i = 0;
+    for (const p of data) {
+      result[i++] = p.x;
+      result[i++] = p.y;
+      result[i++] = p.z;
+    }
+    return result;
+  }
+  /**
    * Compute the 8 weights of trilinear mapping
    * By appropriate choice of weights, this can be used for both point and derivative mappings.
    * @param weights preallocated array to receive weights.
