@@ -42,7 +42,10 @@ export abstract class RedlineTool extends MarkupTool {
   protected clearDynamicsMarkup(_isDynamics: boolean): void { this.markup.svgDynamics!.clear(); }
 
   public override async onRestartTool() { return this.exitTool(); } // Default to single shot and return control to select tool...
-  public override async onCleanup() { this.clearDynamicsMarkup(false); }
+  public override async onCleanup() {
+    this.clearDynamicsMarkup(false);
+    return super.onCleanup();
+  }
 
   public override async onReinitialize() {
     this.clearDynamicsMarkup(false);
