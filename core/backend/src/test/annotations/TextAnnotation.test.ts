@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, TextBlockLayout, TextLayoutRanges, layoutTextBlock } from "../../TextAnnotationLayout";
 import { Range2d } from "@itwin/core-geometry";
-import { Paragraph, TextBlock, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { LineBreakRun, Paragraph, TextBlock, TextRun, TextStyleSettings } from "@itwin/core-common";
 
 function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
   const range = new Range2d(0, 0, args.chars.length, args.lineHeight);
@@ -98,8 +98,30 @@ describe.only("layoutTextBlock", () => {
     }
   });
 
+  it("produces a new line for each LineBreakRun", () => {
+    const lineSpacingFactor = 0.5;
+    const lineHeight = 1;
+    const textBlock = TextBlock.create({ styleName: "", styleOverrides: { lineSpacingFactor, lineHeight } });
+    textBlock.appendRun(TextRun.create({ styleName: "", content: "abc" }));
+    textBlock.appendRun(LineBreakRun.create({ styleName: "" }));
+    textBlock.appendRun(TextRun.create({ styleName: "", content: "def" }));
+    textBlock.appendRun(TextRun.create({ styleName: "", content: "ghi" }));
+    textBlock.appendRun(LineBreakRun.create({ styleName: "" }));
+    textBlock.appendRun(TextRun.create({ styleName: "", content: "jkl"}));
+
+    const tb = doLayout(textBlock);
+    expect(tb.lines.length).to.equal(3);
+    expect(tb.lines[0].runs.length).to.equal(2);
+    expect(tb.lines[1].runs.length).to.equal(3);
+    expect(tb.lines[2].runs.length).to.equal(1);
+
+    expect(tb.range.low.x).to.equal(0);
+    expect(tb.range.high.x).to.equal(6);
+    expect(tb.range.high.y).to.equal(0);
+    expect(tb.range.low.y).to.equal(-(lineSpacingFactor * 2 + lineHeight * 3));
+  });
+
   it("splits paragraphs into multiple lines if runs exceed the document width", () => {
-    
   })
 
   it.skip("splits a single TextRun at word boundaries if it exceeds the document width", () => {
