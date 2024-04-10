@@ -3665,6 +3665,7 @@ export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer {
 
 // @internal
 export interface FeatureGraphicsRendererProps {
+    crs: "webMercator" | "wgs84";
     viewport: Viewport;
 }
 
@@ -8009,18 +8010,15 @@ export abstract class MapLayerImageryProvider {
     // @internal
     getEPSG3857Y(latitude: number): number;
     // @internal
-    getEPSG4326Extent(row: number, column: number, zoomLevel: number): {
-        longitudeLeft: number;
-        longitudeRight: number;
-        latitudeTop: number;
-        latitudeBottom: number;
-    };
+    getEPSG4326Extent(row: number, column: number, zoomLevel: number): WGS84Extent;
     // @internal (undocumented)
-    getEPSG4326ExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean): string;
+    getEPSG4326ExtentString(tileExtent: WGS84Extent, latLongAxisOrdering: boolean): string;
     // @internal
     getEPSG4326Lat(y3857: number): number;
     // @internal
     getEPSG4326Lon(x3857: number): number;
+    // @internal (undocumented)
+    getEPSG4326TileExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean): string;
     // @internal (undocumented)
     getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree, _hit: HitDetail, _options?: MapFeatureInfoOptions): Promise<void>;
     // @internal (undocumented)
@@ -8035,6 +8033,8 @@ export abstract class MapLayerImageryProvider {
     protected _includeUserCredentials: boolean;
     initialize(): Promise<void>;
     loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;
+    // @internal (undocumented)
+    makeRequest(url: string, timeoutMs?: number): Promise<Response>;
     // @internal (undocumented)
     makeTileRequest(url: string, timeoutMs?: number): Promise<Response>;
     // @internal (undocumented)
@@ -15585,6 +15585,13 @@ export class UpsampledMapTile extends MapTile {
     get renderGeometry(): RenderTerrainGeometry | undefined;
 }
 
+// @internal (undocumented)
+export class UrlUtils {
+    static appendQueryParams(url: string, queryParams?: {
+        [key: string]: string;
+    }): string;
+}
+
 // @beta
 export interface UserPreferencesAccess {
     delete: (arg: PreferenceKeyArg & ITwinIdArg & TokenArg) => Promise<void>;
@@ -17577,6 +17584,18 @@ export class WebMercatorTilingScheme extends MapTilingScheme {
     constructor(numberOfLevelZeroTilesX?: number, numberOfLevelZeroTilesY?: number, rowZeroAtNorthPole?: boolean);
     latitudeToYFraction(latitude: number): number;
     yFractionToLatitude(yFraction: number): number;
+}
+
+// @internal (undocumented)
+export interface WGS84Extent {
+    // (undocumented)
+    latitudeBottom: number;
+    // (undocumented)
+    latitudeTop: number;
+    // (undocumented)
+    longitudeLeft: number;
+    // (undocumented)
+    longitudeRight: number;
 }
 
 // @internal

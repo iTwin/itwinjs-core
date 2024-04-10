@@ -954,6 +954,7 @@ internal;UniqueTileUserSets
 public;UnitFormattingSettingsProvider
 public;UnitNameKey = string
 internal;UpsampledMapTile 
+internal;UrlUtils
 beta;UserPreferencesAccess
 beta;ValidateSourceArgs
 public;VaryingType
@@ -1018,6 +1019,7 @@ internal;wantJointTriangles(weight: number, is2d: boolean): boolean
 internal;WebMercator
 alpha;WebMercatorProjection
 beta;WebMercatorTilingScheme 
+internal;WGS84Extent
 internal;WheelEventProcessor
 public;WindowAreaTool 
 internal;WmsCapabilities
