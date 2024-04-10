@@ -63,15 +63,22 @@ describe.only("layoutTextBlock", () => {
   it("produces one line per paragraph if document width <= 0", () => {
     const textBlock = TextBlock.create({ styleName: "" });
     for (let i = 0; i < 4; i++) {
+      console.log(`tb=${textBlock.stringify()}`);
       let layout = doLayout(textBlock);
       expect(layout.lines.length).to.equal(i);
-      for (const line of layout.lines) {
-        expect(line.runs.length).to.equal(1);
-        expect(line.runs[0].charOffset).to.equal(0);
-        expect(line.runs[0].numChars).to.equal(3);
+      for (let l = 0; l < layout.lines.length; l++) {
+        const line = layout.lines[l];
+        expect(line.runs.length).to.equal(l + 1);
+        for (let r = 0; r < line.runs.length; r++) {
+          expect(line.runs[r].charOffset).to.equal(0);
+          expect(line.runs[r].numChars).to.equal(3);
+        }
       }
 
-      textBlock.appendParagraph().runs.push(TextRun.create({ styleName: "", content: "run" }));
+      const p = textBlock.appendParagraph();
+      for (let j = 0; j <= i; j++) {
+        p.runs.push(TextRun.create({ styleName: "", content: "Run" }));
+      }
     }
   });
 
