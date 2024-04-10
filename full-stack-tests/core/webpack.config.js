@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 const path = require("path");
-const glob = require("glob");
+const { globSync } = require("glob");
 const webpack = require("webpack");
 const fs = require("fs");
 
@@ -28,7 +28,9 @@ loadEnv(path.join(__dirname, ".env"));
 function createConfig(shouldInstrument) {
   const config = {
     mode: "development",
-    entry: glob.sync(path.resolve(__dirname, "lib/**/*.test.js")),
+    entry: globSync(
+      path.resolve(__dirname, "lib/**/*.test.js").replace(/\\/g, "/")
+    ),
     output: {
       path: path.resolve(__dirname, "lib/dist"),
       filename: "bundled-tests.js",

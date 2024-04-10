@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/certa",
+      "comment": "Update glob package to latest version",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/certa"
+}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Update glob package to latest version",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

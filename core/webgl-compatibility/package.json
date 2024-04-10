@@ -48,7 +48,7 @@
     "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.3.10",
     "eslint": "^8.44.0",
-    "glob": "^7.1.2",
+    "glob": "^10.3.12",
     "mocha": "^10.2.0",
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",

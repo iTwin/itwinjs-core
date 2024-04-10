@@ -5,14 +5,18 @@
 
 const path = require("path");
 const webpack = require("webpack");
-const glob = require("glob");
+const { globSync } = require("glob");
 
 const frontendLib = path.resolve(__dirname, "../../../../lib/cjs");
 
 function createConfig() {
   const config = {
     mode: "development",
-    entry: glob.sync(path.resolve(frontendLib, "test/frontend/**/*.test.js")),
+    entry: globSync(
+      path
+        .resolve(frontendLib, "test/frontend/**/*.test.js")
+        .replace(/\\/g, "/")
+    ),
     output: {
       path: path.resolve(frontendLib, "test/frontend/webpack/"),
       filename: "bundled-tests.js",

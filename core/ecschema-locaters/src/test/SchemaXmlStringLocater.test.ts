@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import * as path from "path";
 import * as fs from "fs";
-import * as glob from "glob";
+import { globSync } from "glob";
 import { ECObjectsError, ECObjectsStatus, ECVersion, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { SchemaXmlStringLocater } from "../SchemaXmlStringLocater";
 import { StringSchemaKey } from "../SchemaStringLocater";
@@ -24,9 +24,9 @@ describe("SchemaXmlStringLocater tests:", () => {
 
   const loadSchemaStrings = () => {
     const schemas: string [] = [];
-    const searchPath = path.join(__dirname, "assets", "Schema*.ecschema.xml");
-    const result = new glob.GlobSync(searchPath, { sync: true });
-    for (const match of result.found) {
+    const searchPath = path.join(__dirname, "assets", "Schema*.ecschema.xml").replace(/\\/g, "/");
+    const result = globSync(searchPath);
+    for (const match of result) {
       const file = fs.readFileSync(match);
       if (!file)
         continue;

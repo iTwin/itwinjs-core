@@ -1,4 +1,3 @@
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -6,14 +5,18 @@
 
 const path = require("path");
 // const webpack = require("webpack");
-const glob = require("glob");
+const { globSync } = require("glob");
 
 const frontendLib = path.resolve(__dirname, "../../../lib");
 
 module.exports = [{
   // stats: "verbose",
   mode: "production",
-  entry: glob.sync(path.resolve(frontendLib, "esm/test/worker/test-worker.js")),
+  entry: globSync(
+    path
+      .resolve(frontendLib, "esm/test/worker/test-worker.js")
+      .replace(/\\/g, "/")
+  ),
   output: {
     path: path.resolve(frontendLib, "test"),
     filename: "test-worker.js",

@@ -4,13 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 const path = require("path");
-const glob = require("glob");
+const { globSync } = require("glob");
 
 module.exports = {
   mode: "development",
   entry: [
     path.resolve(__dirname, "scripts/configureMocha.js"),
-    ...glob.sync(path.resolve(__dirname, path.relative(__dirname, process.env.TESTS_GLOB))),
+    ...globSync(
+      path
+        .resolve(__dirname, path.relative(__dirname, process.env.TESTS_GLOB))
+        .replace(/\\/g, "/")
+    ),
     path.resolve(__dirname, "scripts/runMocha.js")
   ],
   output: {
