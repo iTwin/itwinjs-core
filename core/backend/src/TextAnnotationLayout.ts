@@ -2,9 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module ###TODO
- */
 
 import { BaselineShift, FontId, FractionRun, Paragraph, Run, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Range2d } from "@itwin/core-geometry";
@@ -17,7 +14,9 @@ export interface TextLayoutRanges {
   justification: Range2d;
 }
 
-/** @internal */
+/** A function that uses a font to compute the layout and justification ranges of a string of text.
+ * @internal
+ */
 export type ComputeRangesForTextLayout = (args: {
   chars: string,
   bold: boolean,
@@ -32,19 +31,28 @@ export type FindFontId = (name: string) => FontId;
 /** @internal */
 export type FindTextStyle = (name: string) => TextStyleSettings;
 
+/** @internal */
 export interface LayoutTextBlockArgs {
   textBlock:TextBlock;
   iModel:IModelDb;
-  /** @internal chiefly for tests */
+  /** @internal chiefly for tests, by default uses IModelJsNative.DgnDb.computeRangesForText. */
   computeTextRange?: ComputeRangesForTextLayout;
-  /** @internal chiefly for tests */
+  /** @internal chiefly for tests, by default looks up styles from a workspace. */
   findTextStyle?: FindTextStyle;
-  /** @internal chiefly for tests */
+  /** @internal chiefly for tests, by default uses IModelDb.fontMap. */
   findFontId?: FindFontId;
 }
 
+/**
+ * Lays out the contents of a TextBlock into a series of lines containing runs.
+ * Each paragraph is decomposed into a series of lines.
+ * Each series of consecutive non-linebreak runs within a paragraph is concatenated into one line.
+ * If the document specifies a width > 0, individual lines are split to try to avoid exceeding that width.
+ * Individual TextRuns can be split onto multiple lines at word boundaries if necessary. Individual FractionRuns are never split.
+ * @internal
+ */
 export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
-  const { computeTextRange, findTextStyle, findFontId } = args;
+  let { computeTextRange, findTextStyle, findFontId } = args;
   if (!computeTextRange || !findTextStyle || !findFontId) {
     throw new Error("###TODO use default implementations");
   }
@@ -179,6 +187,7 @@ class LayoutContext {
   }
 }
 
+/** @internal */
 export class RunLayout {
   public source: Run;
   public charOffset = 0;
@@ -222,6 +231,7 @@ export class RunLayout {
   }
 }
 
+/** @internal */
 export class LineLayout {
   public source: Paragraph;
   public range = new Range2d(0, 0, 0, 0);
@@ -258,6 +268,10 @@ export class LineLayout {
   }
 }
 
+/**
+ * Describes the layout of a text block as a collection of lines containing runs.
+ * @internal
+ */
 export class TextBlockLayout {
   public source: TextBlock;
   public range = new Range2d();

@@ -127,7 +127,7 @@ function processFractionRun(run: RunLayout, transform: Transform, context: Geome
   }
 }
 
-export function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform): TextBlockGeometryProps {
+function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform): TextBlockGeometryProps {
   const context: GeometryContext = { entries: [] };
   for (const line of layout.lines) {
     const lineTrans = Transform.createTranslationXYZ(line.offsetFromDocument.x, line.offsetFromDocument.y, 0);
@@ -150,8 +150,13 @@ export function produceTextBlockGeometry(layout: TextBlockLayout, documentTransf
   return { entries: context.entries };
 }
 
+/** Arguments supplied to [[produceTextAnnotationGeometry]].
+ * @beta
+ */
 export interface ProduceTextAnnotationGeometryArgs {
+  /** The annotation from which to produce the geometry. */
   annotation: TextAnnotation;
+  /** The iModel from which to obtain fonts and text styles. */
   iModel:IModelDb;
   /** @internal chiefly for tests */
   computeTextRange?: ComputeRangesForTextLayout;
@@ -161,6 +166,11 @@ export interface ProduceTextAnnotationGeometryArgs {
   findFontId?: FindFontId;
 }
 
+/** Produce a geometric representation of a text annotation.
+ * The result can be supplied to [GeometryStreamBuilder.appendTextAnnotation]($common).
+ * @see [[TextAnnotation2d.setAnnotation]] and [[TextAnnotation3d.setAnnotation]] to update the annotation, geometry, and placement of an annotation element.
+ * @beta
+ */
 export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometryArgs): TextBlockGeometryProps {
   const layout = layoutTextBlock({
     ...args,

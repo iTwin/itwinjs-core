@@ -34,7 +34,9 @@ function updateAnnotation(element: TextAnnotation2d | TextAnnotation3d, annotati
   return true;
 }
 
-/** 2D Text Annotation ###TODO better documentation...
+/** An element that displays textual content within a 2d model.
+ * The text is stored as a [TextAnnotation]($common) from which the element's [geometry]($docs/learning/common/GeometryStream.md) and [Placement]($geometry) are computed.
+ * @see [[setAnnotation]] to change the textual content.
  * @public
  */
 export class TextAnnotation2d extends AnnotationElement2d {
@@ -46,17 +48,28 @@ export class TextAnnotation2d extends AnnotationElement2d {
     return super.toJSON();
   }
 
+  /** Extract the textual content, if present.
+   * @see [[setAnnotation]] to change it.
+   */
   public getAnnotation(): TextAnnotation | undefined {
     const json = this.jsonProperties.annotation;
     return json ? TextAnnotation.fromJSON(json) : undefined;
   }
 
+  /** Change the textual content, updating the element's geometry and placement accordingly.
+   * @see [[getAnnotation]] to extract the current annotation.
+   * @param annotation The new annotation
+   * @param subCategory If specified, the subcategory on which to define the geometry; otherwise, the default subcategory of the element's category is used.
+   * @returns true if the annotation was successfully updated.
+   */
   public setAnnotation(annotation: TextAnnotation, subCategory?: Id64String): boolean {
     return updateAnnotation(this, annotation, subCategory);
   }
 }
 
-/** 3D Text Annotation ###TODO better documentation...
+/** An element that displays textual content within a 3d model.
+ * The text is stored as a [TextAnnotation]($common) from which the element's [geometry]($docs/learning/common/GeometryStream.md) and [Placement]($geometry) are computed.
+ * @see [[setAnnotation]] to change the textual content.
  * @public
  */
 export class TextAnnotation3d extends GraphicalElement3d {
@@ -68,11 +81,20 @@ export class TextAnnotation3d extends GraphicalElement3d {
     return super.toJSON();
   }
 
+  /** Extract the textual content, if present.
+   * @see [[setAnnotation]] to change it.
+   */
   public getAnnotation(): TextAnnotation | undefined {
     const json = this.jsonProperties.annotation;
     return json ? TextAnnotation.fromJSON(json) : undefined;
   }
 
+  /** Change the textual content, updating the element's geometry and placement accordingly.
+   * @see [[getAnnotation]] to extract the current annotation.
+   * @param annotation The new annotation
+   * @param subCategory If specified, the subcategory on which to define the geometry; otherwise, the default subcategory of the element's category is used.
+   * @returns true if the annotation was successfully updated.
+   */
   public setAnnotation(annotation: TextAnnotation, subCategory?: Id64String): boolean {
     return updateAnnotation(this, annotation, subCategory);
   }
