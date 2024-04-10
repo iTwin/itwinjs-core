@@ -184,6 +184,13 @@ export class AttachModelMapLayerTool extends Tool {
 }
 
 // @beta
+export class AttachOgcFeaturesMapLayerTool extends AttachMapLayerByURLBaseTool {
+    constructor();
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class AttachRealityModelTool extends Tool {
     // (undocumented)
     static get maxArgs(): number;
