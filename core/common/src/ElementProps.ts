@@ -164,9 +164,14 @@ export interface GeometricElement3dProps extends GeometricElementProps {
   typeDefinition?: RelatedElementProps;
 }
 
+/** JSON representation of a [TextAnnotation3d]($common).
+ * @public
+ * @extensions
+ */
 export interface TextAnnotation3dProps extends GeometricElement3dProps {
   jsonProperties?: {
     [key: string]: any;
+    /** @beta */
     annotation?: TextAnnotationProps;
   };
 }
@@ -232,9 +237,14 @@ export interface GeometricElement2dProps extends GeometricElementProps {
   typeDefinition?: RelatedElementProps;
 }
 
+/** JSON representation of a [TextAnnotation2d]($common).
+ * @public
+ * @extensions
+ */
 export interface TextAnnotation2dProps extends GeometricElement2dProps {
   jsonProperties?: {
     [key: string]: any;
+    /** @beta */
     annotation?: TextAnnotationProps;
   };
 }

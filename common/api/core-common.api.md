@@ -3374,6 +3374,8 @@ export class FractionRun extends TextBlockComponent {
     // (undocumented)
     static create(props: Omit<FractionRunProps, "type">): FractionRun;
     denominator: string;
+    // (undocumented)
+    equals(other: TextBlockComponent): boolean;
     numerator: string;
     stringify(options?: TextBlockStringifyOptions): string;
     // (undocumented)
@@ -3886,6 +3888,8 @@ export class GeometryStreamBuilder {
     appendGeometryRanges(): void;
     appendImage(image: ImageGraphic): boolean;
     appendSubCategoryChange(subCategoryId: Id64String): boolean;
+    // @beta
+    appendTextBlock(block: TextBlockGeometryProps): boolean;
     appendTextString(textString: TextString): boolean;
     readonly geometryStream: GeometryStreamProps;
     // @internal (undocumented)
@@ -5380,6 +5384,8 @@ export class LineBreakRun extends TextBlockComponent {
     clone(): LineBreakRun;
     // (undocumented)
     static create(props: TextBlockComponentProps): LineBreakRun;
+    // (undocumented)
+    equals(other: TextBlockComponent): boolean;
     stringify(options?: TextBlockStringifyOptions): string;
     // (undocumented)
     toJSON(): LineBreakRunProps;
@@ -6428,6 +6434,8 @@ export class Paragraph extends TextBlockComponent {
     clone(): Paragraph;
     // (undocumented)
     static create(props: ParagraphProps): Paragraph;
+    // (undocumented)
+    equals(other: TextBlockComponent): boolean;
     readonly runs: Run[];
     stringify(options?: TextBlockStringifyOptions): string;
     // (undocumented)
@@ -9435,6 +9443,50 @@ export class TestRpcManager {
 }
 
 // @beta
+export class TextAnnotation {
+    anchor: TextAnnotationAnchor;
+    // @internal
+    computeDocumentTransform(layoutRange: Range2d): Transform;
+    static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation;
+    orientation: YawPitchRollAngles;
+    origin: Point3d;
+    textBlock: TextBlock;
+    toJSON(): TextAnnotationProps;
+}
+
+// @public
+export interface TextAnnotation2dProps extends GeometricElement2dProps {
+    // (undocumented)
+    jsonProperties?: {
+        [key: string]: any;
+        annotation?: TextAnnotationProps;
+    };
+}
+
+// @public
+export interface TextAnnotation3dProps extends GeometricElement3dProps {
+    // (undocumented)
+    jsonProperties?: {
+        [key: string]: any;
+        annotation?: TextAnnotationProps;
+    };
+}
+
+// @beta
+export interface TextAnnotationAnchor {
+    horizontal: "left" | "center" | "right";
+    vertical: "top" | "middle" | "bottom";
+}
+
+// @beta
+export interface TextAnnotationProps {
+    anchor?: TextAnnotationAnchor;
+    orientation?: YawPitchRollProps;
+    origin?: XYZProps;
+    textBlock?: TextBlockProps;
+}
+
+// @beta
 export class TextBlock extends TextBlockComponent {
     appendParagraph(): Paragraph;
     appendRun(run: Run): void;
@@ -9443,6 +9495,12 @@ export class TextBlock extends TextBlockComponent {
     clone(): TextBlock;
     // (undocumented)
     static create(props: TextBlockProps): TextBlock;
+    // (undocumented)
+    static createEmpty(): TextBlock;
+    // (undocumented)
+    equals(other: TextBlockComponent): boolean;
+    // (undocumented)
+    get isEmpty(): boolean;
     justification: TextBlockJustification;
     readonly paragraphs: Paragraph[];
     stringify(options?: TextBlockStringifyOptions): string;
@@ -9458,7 +9516,7 @@ export abstract class TextBlockComponent {
     applyStyle(styleName: string, options?: ApplyTextStyleOptions): void;
     clearStyleOverrides(): void;
     abstract clone(): TextBlockComponent;
-    createEffectiveSettings(baseSettings: TextStyleSettings): TextStyleSettings;
+    equals(other: TextBlockComponent): boolean;
     get overridesStyle(): boolean;
     abstract stringify(options?: TextBlockStringifyOptions): string;
     get styleName(): string;
@@ -9473,6 +9531,29 @@ export interface TextBlockComponentProps {
     styleName: string;
     styleOverrides?: TextStyleSettingsProps;
 }
+
+// @beta
+export interface TextBlockGeometryProps {
+    entries: TextBlockGeometryPropsEntry[];
+}
+
+// @beta
+export type TextBlockGeometryPropsEntry = {
+    text: TextStringProps;
+    separator?: never;
+    color?: never;
+} | {
+    text?: never;
+    separator: {
+        startPoint: XYZProps;
+        endPoint: XYZProps;
+    };
+    color?: never;
+} | {
+    text?: never;
+    separator?: never;
+    color: TextStyleColor;
+};
 
 // @beta
 export type TextBlockJustification = "left" | "center" | "right";
@@ -9493,12 +9574,14 @@ export interface TextBlockStringifyOptions {
 
 // @beta
 export class TextRun extends TextBlockComponent {
+    baselineShift: BaselineShift;
     // (undocumented)
     clone(): TextRun;
     content: string;
     // (undocumented)
     static create(props: Omit<TextRunProps, "type">): TextRun;
-    shiftMode: BaselineShift;
+    // (undocumented)
+    equals(other: TextBlockComponent): boolean;
     stringify(): string;
     // (undocumented)
     toJSON(): TextRunProps;
@@ -9507,8 +9590,8 @@ export class TextRun extends TextBlockComponent {
 
 // @beta
 export interface TextRunProps extends TextBlockComponentProps {
+    baselineShift?: BaselineShift;
     content?: string;
-    shiftMode?: BaselineShift;
     readonly type: "text";
 }
 
@@ -9571,6 +9654,8 @@ export interface TextStringProps {
 export class TextStyle {
     clone(alteredSettings: TextStyleSettingsProps): TextStyle;
     static create(name: string, settings: TextStyleSettings): TextStyle;
+    // (undocumented)
+    equals(other: TextStyle): boolean;
     static fromJSON(json: TextStyleProps): TextStyle;
     // (undocumented)
     readonly name: string;
@@ -9593,6 +9678,8 @@ export class TextStyleSettings {
     color: TextStyleColor;
     static defaultProps: Readonly<Required<TextStyleSettingsProps>>;
     static defaults: TextStyleSettings;
+    // (undocumented)
+    equals(other: TextStyleSettings): boolean;
     fontName: string;
     static fromJSON(props?: TextStyleSettingsProps): TextStyleSettings;
     isBold: boolean;

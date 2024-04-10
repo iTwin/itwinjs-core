@@ -334,7 +334,11 @@ export class GeometryStreamBuilder {
     return true;
   }
 
-  /** Append a series of entries representing a [[TextBlock]] to the [[GeometryStreamProps]] array. */
+  /** Append a series of entries representing a [[TextBlock]] to the [[GeometryStreamProps]] array.
+   * @beta
+   * @extensions
+   * @preview
+   */
   public appendTextBlock(block: TextBlockGeometryProps): boolean {
     for (const entry of block.entries) {
       let result: boolean;

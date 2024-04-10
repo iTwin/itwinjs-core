@@ -799,9 +799,16 @@ public;TerrainProviderName = string
 deprecated;TerrainProviderName = string
 public;TerrainSettings
 internal;TestRpcManager
+beta;TextAnnotation
+public;TextAnnotation2dProps 
+public;TextAnnotation3dProps 
+beta;TextAnnotationAnchor
+beta;TextAnnotationProps
 beta;TextBlock 
 beta;class TextBlockComponent
 beta;TextBlockComponentProps
+beta;TextBlockGeometryProps
+beta;TextBlockGeometryPropsEntry =
 beta;TextBlockJustification = "left" | "center" | "right"
 beta;TextBlockProps 
 beta;TextBlockStringifyOptions
