@@ -210,6 +210,9 @@ import { SubCategoryProps } from '@itwin/core-common';
 import { SubCategoryResultRow } from '@itwin/core-common';
 import { SubjectProps } from '@itwin/core-common';
 import { SynchronizationConfigLinkProps } from '@itwin/core-common';
+import { TextAnnotation } from '@itwin/core-common';
+import { TextAnnotation2dProps } from '@itwin/core-common';
+import { TextAnnotation3dProps } from '@itwin/core-common';
 import { TextureData } from '@itwin/core-common';
 import { TextureLoadProps } from '@itwin/core-common';
 import { TextureMapProps } from '@itwin/core-common';
@@ -5388,16 +5391,24 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
 
 // @public
 export class TextAnnotation2d extends AnnotationElement2d {
-    protected constructor(props: GeometricElement2dProps, iModel: IModelDb);
+    protected constructor(props: TextAnnotation2dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    getAnnotation(): TextAnnotation | undefined;
+    setAnnotation(annotation: TextAnnotation, subCategory?: Id64String): boolean;
+    // (undocumented)
+    toJSON(): TextAnnotation2dProps;
 }
 
 // @public
 export class TextAnnotation3d extends GraphicalElement3d {
-    protected constructor(props: GeometricElement3dProps, iModel: IModelDb);
+    protected constructor(props: TextAnnotation3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    getAnnotation(): TextAnnotation | undefined;
+    setAnnotation(annotation: TextAnnotation, subCategory?: Id64String): boolean;
+    // (undocumented)
+    toJSON(): TextAnnotation3dProps;
 }
 
 // @public
