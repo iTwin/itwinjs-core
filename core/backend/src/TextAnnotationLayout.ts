@@ -60,16 +60,10 @@ export interface LayoutTextBlockArgs {
  */
 export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
   const findFontId = args.findFontId ?? ((name) => args.iModel.fontMap.getFont(name)?.id ?? 0);
+  const computeTextRange = args.computeTextRange ?? ((x) => args.iModel.computeRangesForText(x));
 
   // ###TODO finding text styles in workspaces.
   const findTextStyle = args.findTextStyle ?? (() => TextStyleSettings.fromJSON());
-
-  // ###TODO hook up NativeDgnDb.computeRangesForText
-  const { computeTextRange } = args;
-
-  if (!computeTextRange) {
-    throw new Error("###TODO use default implementations");
-  }
 
   return new TextBlockLayout(args.textBlock, new LayoutContext(args.textBlock, computeTextRange, findTextStyle, findFontId));
 }
