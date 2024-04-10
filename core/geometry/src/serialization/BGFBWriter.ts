@@ -500,18 +500,18 @@ export class BGFBWriter {
     return undefined;
   }
 
-  public writePolyfaceAuxDataAsFBVariantGeometry(data: PolyfaceAuxData): number | undefined {
+  public writePolyfaceAuxDataAsFBVariantGeometry(mesh: IndexedPolyface, data: PolyfaceAuxData): number | undefined {
     if (data instanceof PolyfaceAuxData) {
       const channelOffsets: number[] = [];
-      for (const channel of data.channels) {
+      for (const channel of data.channels)
         channelOffsets.push(this.writePolyfaceAuxChannelAsFBVariantGeometry(channel)!);
-      }
       const channelOffsetsOffset = BGFBAccessors.PolyfaceAuxChannel.createDataVector(this.builder, channelOffsets);
-      const indicesOffset = BGFBAccessors.PolyfaceAuxData.createIndicesVector(this.builder, data.indices);
-      return BGFBAccessors.PolyfaceAuxData.createPolyfaceAuxData(this.builder,
-        indicesOffset,
-        channelOffsetsOffset,
-      );
+
+      const indexArray: number[] = [];
+      this.fillOneBasedIndexArray(mesh, data.indices, undefined, 0, indexArray);
+      const indicesOffset = BGFBAccessors.PolyfaceAuxData.createIndicesVector(this.builder, indexArray);
+
+      return BGFBAccessors.PolyfaceAuxData.createPolyfaceAuxData(this.builder, indicesOffset, channelOffsetsOffset);
     }
     return undefined;
   }
@@ -566,12 +566,6 @@ export class BGFBWriter {
         intColorOffset = BGFBAccessors.Polyface.createIntColorVector(this.builder, mesh.data.color);
       }
 
-      /*
-            if (mesh.data.face !== undefined && mesh.data.face.length > 0) {
-              this.writeOneBasedIndexArray(mesh, mesh.data.face, undefined, 0, indexArray);
-              BGFBAccessors.Polyface.createFaceDataVector(this.builder, indexArray);
-            }
-        */
       if (mesh.data.normal) {
         copyToPackedNumberArray(numberArray, mesh.data.normal.float64Data(), mesh.data.normal.float64Length);
         normalOffset = BGFBAccessors.Polyface.createNormalVector(this.builder, numberArray);
@@ -582,17 +576,21 @@ export class BGFBWriter {
         paramOffset = BGFBAccessors.Polyface.createPointVector(this.builder, numberArray);
       }
 
-      if (mesh.data.auxData) {
-        auxDataOffset = this.writePolyfaceAuxDataAsFBVariantGeometry(mesh.data.auxData)!;
-      }
+      if (mesh.data.auxData)
+        auxDataOffset = this.writePolyfaceAuxDataAsFBVariantGeometry(mesh, mesh.data.auxData)!;
 
       if (mesh.data.taggedNumericData)
         taggedNumericDataOffset = this.writeTaggedNumericDataArray(mesh.data.taggedNumericData);
+
       const expectedClosure = mesh.expectedClosure;
-      const polyfaceOffset = BGFBAccessors.Polyface.createPolyface(this.builder, pointOffset, paramOffset, normalOffset, 0, intColorOffset,
-        pointIndexOffset, paramIndexOffset, normalIndexOffset, colorIndexOffset, 0,
-        0, 0, meshStyle, twoSided,
-        numPerFace, 0, auxDataOffset, expectedClosure, taggedNumericDataOffset);
+
+      // NOTE: mesh.data.face is not persistent
+
+      const polyfaceOffset = BGFBAccessors.Polyface.createPolyface(
+        this.builder, pointOffset, paramOffset, normalOffset, 0, intColorOffset, pointIndexOffset, paramIndexOffset,
+        normalIndexOffset, colorIndexOffset, 0, 0, 0, meshStyle, twoSided, numPerFace, 0, auxDataOffset,
+        expectedClosure, taggedNumericDataOffset);
+
       return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagPolyface, polyfaceOffset, 0);
 
     }

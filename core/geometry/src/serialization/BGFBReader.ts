@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { flatbuffers } from "flatbuffers";
+import { assert } from "@itwin/core-bentley";
 import { AkimaCurve3d, AkimaCurve3dOptions } from "../bspline/AkimaCurve3d";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
@@ -322,27 +323,66 @@ return undefined;
  * Extract auxData for a mesh
  * @param variant read position in the flat buffer.
  */
-  public readPolyfaceAuxData(auxDataHeader: BGFBAccessors.PolyfaceAuxData | null): PolyfaceAuxData | undefined {
-    if (auxDataHeader) {
-      const channelsLength = auxDataHeader.channelsLength();
-      const indicesArray = auxDataHeader.indicesArray();
-      const indices: number[] = [];
-      const channels: AuxChannel[] = [];
-      if (null !== indicesArray) {
-        for (const i of indicesArray)
-          indices.push(i);
+  public readPolyfaceAuxData(polyfaceHeader: BGFBAccessors.Polyface | null, auxDataHeader: BGFBAccessors.PolyfaceAuxData | null): PolyfaceAuxData | undefined {
+    if (!polyfaceHeader || !auxDataHeader)
+      return undefined;
+
+    const pointIndices = nullToUndefined<Int32Array>(polyfaceHeader.pointIndexArray());
+    const auxIndices = nullToUndefined<Int32Array>(auxDataHeader.indicesArray());
+    const channelsLength = auxDataHeader.channelsLength();
+    if (!pointIndices || !pointIndices.length || !auxIndices || !auxIndices.length || channelsLength <= 0)
+      return undefined;
+
+    const numPerFace = polyfaceHeader.numPerFace();
+    const numIndex = pointIndices.length;
+
+    // HEURISTICS to identify legacy AuxData indices, mistakenly serialized as 0-based and unterminated
+    let isLegacy = false;
+    if (numPerFace > 1) {
+      isLegacy = pointIndices.length === auxIndices.length;
+      assert(false, "Fixed size Polyface AuxData indices unexpected. Assume legacy format.");
+    } else {
+      const numZeroesInPointIndices = pointIndices.filter((index) => index === 0).length;
+      isLegacy = (auxIndices.length < numIndex) && (numZeroesInPointIndices === numIndex - auxIndices.length);
+    }
+    if (auxIndices.length !== numIndex && !isLegacy)
+      return undefined;
+
+    const indices: number[] = [];
+    const addAuxDataIndicesInBlock = (k0: number, k1: number) => {
+      for (let k = k0; k < k1; k++) {
+        const index = isLegacy ? auxIndices[k] : Math.abs(auxIndices[k]) - 1;
+        indices.push(index);
       }
-      if (0 !== channelsLength) {
-        for (let i = 0; i < channelsLength; i++) {
-          const channelHeader = auxDataHeader.channels(i);
-          const channelContent = this.readPolyfaceAuxChannel(channelHeader);
-          if (channelContent)
-            channels.push(channelContent);
+    };
+    if (numPerFace > 1) {
+      for (let i0 = 0; i0 + numPerFace <= numIndex; i0 += numPerFace) {
+        addAuxDataIndicesInBlock(i0, i0 + numPerFace);
+      }
+    } else {
+      for (let i0 = 0, i1 = i0; i1 < numIndex; i1++) {
+        if (pointIndices[i1] === 0) {
+          addAuxDataIndicesInBlock(i0, i1);
+          i0 = i1 + 1;  // skip over terminator
         }
       }
-      return new PolyfaceAuxData(channels, indices);
     }
-    return undefined;
+    const maxIndex = Math.max(...indices);
+
+    const channels: AuxChannel[] = [];
+    for (let i = 0; i < channelsLength; i++) {
+      const channelHeader = auxDataHeader.channels(i);
+      const channelContent = this.readPolyfaceAuxChannel(channelHeader);
+      if (channelContent) {
+        if (maxIndex >= channelContent.valueCount)
+          return undefined;
+        channels.push(channelContent);
+      }
+    }
+    if (!channels.length)
+      return undefined;
+
+    return new PolyfaceAuxData(channels, indices);
   }
 
   /**
@@ -446,7 +486,8 @@ return undefined;
               }
             }
 
-          polyface.data.auxData = this.readPolyfaceAuxData(polyfaceHeader.auxData());
+          polyface.data.auxData = this.readPolyfaceAuxData(polyfaceHeader, polyfaceHeader.auxData());
+
           if (taggedNumericDataOffset) {
               const taggedNumericDataAccessor = nullToUndefined<BGFBAccessors.TaggedNumericData>(taggedNumericDataOffset);
               if (taggedNumericDataAccessor !== undefined) {
