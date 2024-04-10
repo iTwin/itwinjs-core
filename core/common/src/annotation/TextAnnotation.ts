@@ -6,7 +6,7 @@
  * @module Annotation
  */
 
-import { Point3d, YawPitchRollAngles, XYZProps, YawPitchRollProps, Range2d, Transform } from "@itwin/core-geometry";
+import { Point3d, Range2d, Transform, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
 import { TextBlock, TextBlockProps } from "./TextBlock";
 
 /**

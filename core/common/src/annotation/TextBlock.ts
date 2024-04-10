@@ -174,7 +174,7 @@ export type RunProps = TextRunProps | FractionRunProps | LineBreakRunProps;
  * @preview
  * @extensions
  */
-export namespace Run {
+export namespace Run { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Create a run from its JSON representation.
    * @see [[TextRun.create]], [[FractionRun.create]], and [[LineBreakRun.create]] to create a run directly.
    */

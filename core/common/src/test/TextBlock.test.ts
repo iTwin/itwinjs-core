@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { expect } from "chai";
 import { FractionRunProps, ParagraphProps, RunProps, TextBlock, TextBlockProps, TextRunProps, TextStyleSettingsProps } from "../core-common";
 
 function makeTextRun(content?: string, styleName = "", styleOverrides?: TextStyleSettingsProps): TextRunProps {
@@ -21,8 +21,8 @@ function makeFractionRun(numerator?: string, denominator?: string, styleName = "
     denominator,
     styleName,
     styleOverrides,
-  }
-};
+  };
+}
 
 function makeParagraph(runs?: RunProps[], styleName = "", styleOverrides?: TextStyleSettingsProps): ParagraphProps {
   return {
@@ -35,7 +35,7 @@ function makeParagraph(runs?: RunProps[], styleName = "", styleOverrides?: TextS
 describe.only("TextBlockComponent", () => {
   describe("applyStyle", () => {
     it("clears overrides and propagates to subcomponents by default", () => {
-      
+
     });
   });
 
@@ -57,7 +57,7 @@ describe.only("TextBlockComponent", () => {
         makeParagraph([{ type: "linebreak", styleName: "" }]),
         makeParagraph([makeFractionRun()]),
         makeParagraph([makeTextRun("mno")]),
-        makeParagraph([{ type: "linebreak", styleName: "" }, { type: "linebreak", styleName: "" }])
+        makeParagraph([{ type: "linebreak", styleName: "" }, { type: "linebreak", styleName: "" }]),
       ],
     };
 
@@ -70,25 +70,25 @@ describe.only("TextBlockComponent", () => {
 
   describe("clone", () => {
     it("creates an identical deep copy", () => {
-      
+
     });
   });
 
   describe("create", () => {
-    
+
   });
 
   describe("createEffectiveSettings", () => {
-    
+
   });
 });
 
 describe("TextBlock", () => {
   describe("appendParagraph", () => {
-    
+
   });
 
   describe("appendRun", () => {
-    
+
   });
-})
+});

@@ -9675,25 +9675,25 @@ export interface TextStyleProps {
 // @beta
 export class TextStyleSettings {
     clone(alteredProps?: TextStyleSettingsProps): TextStyleSettings;
-    color: TextStyleColor;
+    readonly color: TextStyleColor;
     static defaultProps: Readonly<Required<TextStyleSettingsProps>>;
     static defaults: TextStyleSettings;
     // (undocumented)
     equals(other: TextStyleSettings): boolean;
-    fontName: string;
+    readonly fontName: string;
     static fromJSON(props?: TextStyleSettingsProps): TextStyleSettings;
-    isBold: boolean;
-    isItalic: boolean;
-    isUnderlined: boolean;
-    lineHeight: number;
-    lineSpacingFactor: number;
-    stackedFractionScale: number;
-    stackedFractionType: StackedFractionType;
-    subScriptOffsetFactor: number;
-    subScriptScale: number;
-    superScriptOffsetFactor: number;
-    superScriptScale: number;
-    widthFactor: number;
+    readonly isBold: boolean;
+    readonly isItalic: boolean;
+    readonly isUnderlined: boolean;
+    readonly lineHeight: number;
+    readonly lineSpacingFactor: number;
+    readonly stackedFractionScale: number;
+    readonly stackedFractionType: StackedFractionType;
+    readonly subScriptOffsetFactor: number;
+    readonly subScriptScale: number;
+    readonly superScriptOffsetFactor: number;
+    readonly superScriptScale: number;
+    readonly widthFactor: number;
 }
 
 // @beta

@@ -16,7 +16,7 @@ import { ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart } fro
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { IModelError, IModelStatus } from "./IModelError";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
-import { TextAnnotationProps } from "./core-common";
+import { TextAnnotationProps } from "./annotation/TextAnnotation";
 
 /** Properties of a NavigationProperty.
  * @public

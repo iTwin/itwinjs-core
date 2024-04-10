@@ -109,55 +109,55 @@ export interface TextStyleSettingsProps {
  */
 export class TextStyleSettings {
   /** The color of the text. */
-  color: TextStyleColor;
+  public readonly color: TextStyleColor;
   /** The name of a font stored in a [Workspace]($backend), used to draw the contents of a [[TextRun]].
    * @note Font names must be unique within a workspace. Uniqueness is semi-case-insensitive per [SQLite's NOCASE collating function](https://www.sqlite.org/datatype3.html#collating_sequences): namely,
    * the letters A through Z are compared without regard to case, so that "Arial", "arial", and "ARiaL" all refer to the same font.
    * ###TODO obtain clarity on collation rules.
    */
-  fontName: string;
+  public readonly fontName: string;
   /** The height each line of text, in meters. Many other settings use the line height as the basis for computing their own values.
    * For example, the height and offset from baseline of a subscript [[TextRun]]  are compuated as lineHeight * [[subScriptScale]] and
    * lineHeight * [[subScriptOffsetFactor]], respectively.
    */
-  lineHeight: number;
+  public readonly lineHeight: number;
   /** Multiplier used to compute the vertical distance between two lines of text.
    * The distance is computed in meters as lineSpacingFactor * [[lineHeight]].
    */
-  lineSpacingFactor: number;
+  public readonly lineSpacingFactor: number;
   /** Specifies whether the content of a [[TextRun]] should be rendered **bold**. */
-  isBold: boolean;
+  public readonly isBold: boolean;
   /** Specifies whether the content of a [[TextRun]] should be rendered in *italics*. */
-  isItalic: boolean;
+  public readonly isItalic: boolean;
   /** Specifies whether the content of a [[TextRun]] should be underlined. */
-  isUnderlined: boolean;
+  public readonly isUnderlined: boolean;
   /** Multiplier used to compute the height of both the numerator and denominator of a [[FractionRun]].
    * The height is computed in meters as stackedFractionScale * [[lineHeight]].
    */
-  stackedFractionScale: number;
+  public readonly stackedFractionScale: number;
   /** Specifies how to separate the numerator and denominator of a [[FractionRun]]. */
-  stackedFractionType: StackedFractionType;
+  public readonly stackedFractionType: StackedFractionType;
   /** Multiplier used to compute the vertical offset from the baseline for a subscript [[TextRun]].
    * The offset is computed in meters as subScriptOffsetFactor * [[lineHeight]].
    */
-  subScriptOffsetFactor: number;
+  public readonly subScriptOffsetFactor: number;
   /** Multiplier used to compute the height of a subscript [[TextRun]].
    * The height is computed as subScriptScale * [[lineHeight]].
    */
-  subScriptScale: number;
+  public readonly subScriptScale: number;
   /** Multiplier used to compute the vertical offset from the baseline for a super [[TextRun]].
    * The offset is computed in meters as superScriptOffsetFactor * [[lineHeight]].
    */
-  superScriptOffsetFactor: number;
+  public readonly superScriptOffsetFactor: number;
   /** Multiplier used to compute the height of a superscript [[TextRun]].
    * The height is computed as superScriptScale * [[lineHeight]].
    */
-  superScriptScale: number;
+  public readonly superScriptScale: number;
   /** Multiplier used to compute the width of each glyph.
    * The width in meters is computed as widthFactor * [[lineHeight]].
    * ###TODO Obtain clarity.
    */
-  widthFactor: number;
+  public readonly widthFactor: number;
 
   /** A fully-populated JSON representation of the default settings. */
   public static defaultProps: Readonly<Required<TextStyleSettingsProps>> = {
@@ -176,7 +176,7 @@ export class TextStyleSettings {
     superScriptScale: 2 / 3,
     widthFactor: 1,
   };
-  
+
   /** Settings initialized to all default values. */
   public static defaults: TextStyleSettings = new TextStyleSettings({ });
 
