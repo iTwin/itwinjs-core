@@ -10,7 +10,6 @@ import { expect } from "chai";
 import { CountriesDataset } from "./CountriesDataset";
 import { MapCartoRectangle } from "@itwin/core-frontend";
 import { base64StringToUint8Array } from "@itwin/core-bentley";
-import { Exception } from "typemoq/_all";
 
 function stubFetchMetadata(sandbox: sinon.SinonSandbox, urlContent: { [url: string]: string }  ) {
 
