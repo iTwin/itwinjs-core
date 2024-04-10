@@ -14,16 +14,23 @@ export interface TextLayoutRanges {
   justification: Range2d;
 }
 
-/** A function that uses a font to compute the layout and justification ranges of a string of text.
+/** Arguments to [[ComputeRangesForTextLayout]].
  * @internal
  */
-export type ComputeRangesForTextLayout = (args: {
+export interface ComputeRangesForTextLayoutArgs {
   chars: string;
   bold: boolean;
   italic: boolean;
   baselineShift: BaselineShift;
   fontId: FontId;
-}) => TextLayoutRanges;
+  widthFactor: number;
+  lineHeight: number;
+}
+
+/** A function that uses a font to compute the layout and justification ranges of a string of text.
+ * @internal
+ */
+export type ComputeRangesForTextLayout = (args: ComputeRangesForTextLayoutArgs) => TextLayoutRanges;
 
 /** @internal */
 export type FindFontId = (name: string) => FontId;
@@ -140,6 +147,8 @@ class LayoutContext {
       baselineShift,
       bold: style.isBold,
       italic: style.isItalic,
+      lineHeight: this.blockSettings.lineHeight,
+      widthFactor: this.blockSettings.widthFactor,
     });
 
     if ("none" !== baselineShift) {

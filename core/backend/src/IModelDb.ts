@@ -57,6 +57,7 @@ import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./Vi
 import { ViewStore } from "./ViewStore";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { Workspace } from "./workspace/Workspace";
+import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotationLayout"; 
 
 import type { BlobContainer } from "./BlobContainerService";
 /** @internal */
@@ -1432,6 +1433,16 @@ export abstract class IModelDb extends IModel {
 
   public set codeValueBehavior(newBehavior: "exact" | "trim-unicode-whitespace") {
     this.nativeDb.setCodeValueBehavior(newBehavior);
+  }
+
+  /** @internal */
+  public computeRangesForText(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
+    let emphasis = args.bold ? IModelJsNative.TextEmphasis.Bold : IModelJsNative.TextEmphasis.None;
+    if (args.italic) {
+      emphasis |= IModelJsNative.TextEmphasis.Italic;
+    }
+
+    return this.nativeDb.computeRangesForText(args.chars, args.fontId, emphasis, args.widthFactor, args.lineHeight);
   }
 }
 
