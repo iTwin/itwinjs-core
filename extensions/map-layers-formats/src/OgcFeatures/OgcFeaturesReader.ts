@@ -42,7 +42,7 @@ export class OgcFeaturesReader extends FeatureInfoReader  {
     }
   }
 
-  public async readAndRender(data: any, renderer: FeatureGeometryRenderer) {
+  public async readAndRender(data: Geojson.FeatureCollection, renderer: FeatureGeometryRenderer) {
     const responseObj = data;
     if (responseObj.type === "FeatureCollection") {
 
