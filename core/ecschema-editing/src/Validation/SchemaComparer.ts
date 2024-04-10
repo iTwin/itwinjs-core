@@ -8,9 +8,9 @@
 
 import {
   AnyClass, AnyEnumerator, AnyProperty, classModifierToString, Constant, containerTypeToString, CustomAttribute, CustomAttributeClass,
-  CustomAttributeContainerProps, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon,
+  CustomAttributeContainerProps, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, OverrideFormat, Phenomenon,
   primitiveTypeToString, PropertyCategory, propertyTypeToString, RelationshipClass, RelationshipConstraint, Schema,
-  SchemaItem, SchemaItemKey, strengthDirectionToString, strengthToString, StructProperty, Unit,
+  SchemaItem, SchemaItemKey, strengthDirectionToString, strengthToString, Unit,
 } from "@itwin/ecschema-metadata";
 import { formatTraitsToArray, formatTypeToString, scientificTypeToString, showSignOptionToString } from "@itwin/core-quantity";
 import { ISchemaCompareReporter } from "./SchemaCompareReporter";
@@ -439,9 +439,9 @@ export class SchemaComparer {
     const promises: Array<Promise<void>> = [];
 
     if (koqB && koqA.presentationFormats) {
-      for (const unit of koqA.presentationFormats) {
-        if (-1 === koqB.presentationFormats.findIndex((u) => u.fullName === unit.fullName))
-          promises.push(this._reporter.reportPresentationUnitMissing(koqA, unit, this._compareDirection));
+      for (const unitA of koqA.presentationFormats) {
+        if (-1 === koqB.presentationFormats.findIndex((unitB) => this.areOverrideFormatsSameByName(unitA, unitB, koqA.schema.name, koqB.schema.name)))
+          promises.push(this._reporter.reportPresentationUnitMissing(koqA, unitA, this._compareDirection));
       }
     }
 
@@ -458,7 +458,9 @@ export class SchemaComparer {
       const unitNameA = koqA.persistenceUnit?.fullName;
       const unitNameB = koqB.persistenceUnit?.fullName;
       if (unitNameA !== unitNameB) {
-        promises.push(this._reporter.reportKoqDelta(koqA, "persistenceUnit", unitNameA, unitNameB, this._compareDirection));
+        const eqByName = this.areItemsSameByName(koqA.persistenceUnit, koqB.persistenceUnit, koqA.schema.name, koqB.schema.name);
+        if (!eqByName)
+          promises.push(this._reporter.reportKoqDelta(koqA, "persistenceUnit", unitNameA, unitNameB, this._compareDirection));
       }
     }
 
@@ -564,15 +566,21 @@ export class SchemaComparer {
     if (unitA.phenomenon || unitB.phenomenon) {
       const fullNameA = unitA.phenomenon?.fullName;
       const fullNameB = unitB.phenomenon?.fullName;
-      if (fullNameA !== fullNameB)
-        promises.push(this._reporter.reportUnitDelta(unitA, "phenomenon", fullNameA, fullNameB, this._compareDirection));
+      if (fullNameA !== fullNameB) {
+        const eqByName = this.areItemsSameByName(unitA.phenomenon, unitB.phenomenon, unitA.schema.name, unitB.schema.name);
+        if (!eqByName)
+          promises.push(this._reporter.reportUnitDelta(unitA, "phenomenon", fullNameA, fullNameB, this._compareDirection));
+      }
     }
 
     if (unitA.unitSystem || unitB.unitSystem) {
       const fullNameA = unitA.unitSystem?.fullName;
       const fullNameB = unitB.unitSystem?.fullName;
-      if (fullNameA !== fullNameB)
-        promises.push(this._reporter.reportUnitDelta(unitA, "unitSystem", fullNameA, fullNameB, this._compareDirection));
+      if (fullNameA !== fullNameB) {
+        const eqByName = this.areItemsSameByName(unitA.unitSystem, unitB.unitSystem, unitA.schema.name, unitB.schema.name);
+        if (!eqByName)
+          promises.push(this._reporter.reportUnitDelta(unitA, "unitSystem", fullNameA, fullNameB, this._compareDirection));
+      }
     }
 
     if (unitA.definition !== unitB.definition)
@@ -604,15 +612,21 @@ export class SchemaComparer {
     if (invertedUnitA.invertsUnit || invertedUnitB.invertsUnit) {
       const fullNameA = invertedUnitA.invertsUnit?.fullName;
       const fullNameB = invertedUnitB.invertsUnit?.fullName;
-      if (fullNameA !== fullNameB)
-        promises.push(this._reporter.reportInvertedUnitDelta(invertedUnitA, "invertsUnit", fullNameA, fullNameB, this._compareDirection));
+      if (fullNameA !== fullNameB) {
+        const eqByName = this.areItemsSameByName(invertedUnitA.invertsUnit, invertedUnitB.invertsUnit, invertedUnitA.schema.name, invertedUnitB.schema.name);
+        if (!eqByName)
+          promises.push(this._reporter.reportInvertedUnitDelta(invertedUnitA, "invertsUnit", fullNameA, fullNameB, this._compareDirection));
+      }
     }
 
     if (invertedUnitA.unitSystem || invertedUnitB.unitSystem) {
       const fullNameA = invertedUnitA.unitSystem?.fullName;
       const fullNameB = invertedUnitB.unitSystem?.fullName;
-      if (fullNameA !== fullNameB)
-        promises.push(this._reporter.reportInvertedUnitDelta(invertedUnitA, "unitSystem", fullNameA, fullNameB, this._compareDirection));
+      if (fullNameA !== fullNameB) {
+        const eqByName = this.areItemsSameByName(invertedUnitA.unitSystem, invertedUnitB.unitSystem, invertedUnitA.schema.name, invertedUnitB.schema.name);
+        if (!eqByName)
+          promises.push(this._reporter.reportInvertedUnitDelta(invertedUnitA, "unitSystem", fullNameA, fullNameB, this._compareDirection));
+      }
     }
 
     await Promise.all(promises);
@@ -645,8 +659,11 @@ export class SchemaComparer {
     if (constantA.phenomenon || constantB.phenomenon) {
       const fullNameA = constantA.phenomenon?.fullName;
       const fullNameB = constantB.phenomenon?.fullName;
-      if (fullNameA !== fullNameB)
-        promises.push(this._reporter.reportConstantDelta(constantA, "phenomenon", fullNameA, fullNameB, this._compareDirection));
+      if (fullNameA !== fullNameB) {
+        const eqByName = this.areItemsSameByName(constantA.phenomenon, constantB.phenomenon, constantA.schema.name, constantB.schema.name);
+        if (!eqByName)
+          promises.push(this._reporter.reportConstantDelta(constantA, "phenomenon", fullNameA, fullNameB, this._compareDirection));
+      }
     }
 
     if (constantA.definition !== constantB.definition)
@@ -792,7 +809,7 @@ export class SchemaComparer {
     const promises: Array<Promise<void>> = [];
 
     for (const unitA of formatA.units) {
-      const unitB = formatB.units ? formatB.units.find((u) => u[0].fullName === unitA[0].fullName) : undefined;
+      const unitB = formatB.units ? formatB.units.find((u) => this.areItemsSameByName(unitA[0], u[0], formatA.schema.name, formatB.schema.name)) : undefined;
       if (!unitB) {
         promises.push(this._reporter.reportFormatUnitMissing(formatA, unitA[0], this._compareDirection));
         continue;
@@ -811,6 +828,27 @@ export class SchemaComparer {
     await Promise.all(promises);
   }
 
+  private areOverrideFormatsSameByName(
+    itemKeyA: Format | OverrideFormat,
+    itemKeyB: Format | OverrideFormat,
+    topLevelSchemaNameA: string,
+    topLevelSchemaNameB: string | undefined ): boolean {
+
+    if (itemKeyA.units) {
+      for (const unitA of itemKeyA.units) {
+        if (!itemKeyB.units
+          || -1 === itemKeyB.units.findIndex((unitB) => this.areItemsSameByName(unitA[0], unitB[0], topLevelSchemaNameA, topLevelSchemaNameB)
+            && unitA[1] === unitB[1]))
+          return false;
+      }
+    }
+
+    const itemA = OverrideFormat.isOverrideFormat(itemKeyA) ? itemKeyA.parent : itemKeyA;
+    const itemB = OverrideFormat.isOverrideFormat(itemKeyB) ? itemKeyB.parent : itemKeyB;
+
+    return itemKeyA.precision === itemKeyB.precision && this.areItemsSameByName(itemA, itemB, topLevelSchemaNameA, topLevelSchemaNameB);
+  }
+
   /**
    * Compares two item keys.
    * @param itemKeyA item key A to compare to.
@@ -820,16 +858,25 @@ export class SchemaComparer {
    * @returns true if both names are the same and they come from their respective top level schema.
    */
   private areItemsSameByName(
-    itemKeyA: Readonly<SchemaItemKey> | undefined,
-    itemKeyB: Readonly<SchemaItemKey> | undefined,
+    itemKeyA: Readonly<SchemaItemKey> | SchemaItem | undefined,
+    itemKeyB: Readonly<SchemaItemKey> | SchemaItem | undefined,
     topLevelSchemaNameA: string,
     topLevelSchemaNameB: string | undefined ): boolean {
 
     const nameA = itemKeyA ? itemKeyA.name : undefined;
     const nameB = itemKeyB ? itemKeyB.name : undefined;
 
-    const schemaNameA = itemKeyA ? itemKeyA.schemaName : undefined;
-    const schemaNameB = itemKeyB ? itemKeyB.schemaName : undefined;
+    const schemaNameA = itemKeyA
+      ? SchemaItem.isSchemaItem(itemKeyA)
+        ? itemKeyA.schema.name
+        : itemKeyA.schemaName
+      : undefined;
+
+    const schemaNameB = itemKeyB
+      ? SchemaItem.isSchemaItem(itemKeyB)
+        ? itemKeyB.schema.name
+        : itemKeyB.schemaName
+      : undefined;
 
     return (nameA === nameB && schemaNameA === topLevelSchemaNameA && schemaNameB === topLevelSchemaNameB) || (nameA === nameB && schemaNameA === schemaNameB);
   }
