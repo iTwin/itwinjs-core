@@ -18,11 +18,11 @@ export interface TextLayoutRanges {
  * @internal
  */
 export type ComputeRangesForTextLayout = (args: {
-  chars: string,
-  bold: boolean,
-  italic: boolean,
-  baselineShift: BaselineShift,
-  fontId: FontId,
+  chars: string;
+  bold: boolean;
+  italic: boolean;
+  baselineShift: BaselineShift;
+  fontId: FontId;
 }) => TextLayoutRanges;
 
 /** @internal */
@@ -33,8 +33,8 @@ export type FindTextStyle = (name: string) => TextStyleSettings;
 
 /** @internal */
 export interface LayoutTextBlockArgs {
-  textBlock:TextBlock;
-  iModel:IModelDb;
+  textBlock: TextBlock;
+  iModel: IModelDb;
   /** @internal chiefly for tests, by default uses IModelJsNative.DgnDb.computeRangesForText. */
   computeTextRange?: ComputeRangesForTextLayout;
   /** @internal chiefly for tests, by default looks up styles from a workspace. */
@@ -52,7 +52,7 @@ export interface LayoutTextBlockArgs {
  * @internal
  */
 export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
-  let { computeTextRange, findTextStyle, findFontId } = args;
+  const { computeTextRange, findTextStyle, findFontId } = args;
   if (!computeTextRange || !findTextStyle || !findFontId) {
     throw new Error("###TODO use default implementations");
   }
@@ -85,7 +85,7 @@ class LayoutContext {
   private readonly _textStyles = new Map<string, TextStyleSettings>();
   private readonly _fontIds = new Map<string, FontId>();
   public readonly blockSettings: TextStyleSettings;
-  
+
   public constructor(block: TextBlock, private readonly _computeTextRange: ComputeRangesForTextLayout, private readonly _findTextStyle: FindTextStyle, private readonly _findFontId: FindFontId) {
     const settings = this.findTextStyle(block.styleName);
     this.blockSettings = applyBlockSettings(settings, block.styleOverrides);
@@ -284,7 +284,7 @@ export class TextBlockLayout {
     this.justifyLines();
   }
 
-  private get back(): LineLayout {
+  private get _back(): LineLayout {
     assert(this.lines.length > 0);
     return this.lines[this.lines.length - 1];
   }
@@ -378,15 +378,15 @@ export class TextBlockLayout {
 
   private flushLine(context: LayoutContext, line: LineLayout, nextParagraph?: Paragraph): LineLayout {
     nextParagraph = nextParagraph ?? line.source;
-    
+
     // We want to guarantee that each layout line has at least one run.
     if (line.runs.length === 0) {
       // If we're empty, there should always be a preceding run, and it should be a line break.
-      if (this.lines.length === 0 || this.back.runs.length === 0) {
+      if (this.lines.length === 0 || this._back.runs.length === 0) {
         return new LineLayout(nextParagraph);
       }
 
-      const prevRun = this.back.back.source;
+      const prevRun = this._back.back.source;
       assert(prevRun.type === "linebreak");
       if (prevRun.type !== "linebreak") {
         return new LineLayout(nextParagraph);
@@ -396,11 +396,11 @@ export class TextBlockLayout {
     }
 
     // Line origin is its baseline.
-    const lineOffset = { x: 0, y: -line.range.yLength };
+    const lineOffset = { x: 0, y: -line.range.yLength() };
 
     // Place it below any existing lines
     if (this.lines.length > 0) {
-      lineOffset.y += this.back.offsetFromDocument.y;
+      lineOffset.y += this._back.offsetFromDocument.y;
       lineOffset.y -= context.blockSettings.lineSpacingFactor * context.blockSettings.lineHeight;
     }
 

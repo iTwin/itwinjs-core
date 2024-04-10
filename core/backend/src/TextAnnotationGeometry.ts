@@ -7,7 +7,7 @@
  */
 
 import { TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
-import { ComputeRangesForTextLayout, FindFontId, FindTextStyle, RunLayout, TextBlockLayout, layoutTextBlock } from "./TextAnnotationLayout";
+import { ComputeRangesForTextLayout, FindFontId, FindTextStyle, layoutTextBlock, RunLayout, TextBlockLayout } from "./TextAnnotationLayout";
 import { LineSegment3d, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
 import { IModelDb } from "./IModelDb";
@@ -28,12 +28,12 @@ function createTextString(text: string, run: RunLayout, origin?: Point3d): TextS
   assert(text.length > 0);
 
   const { lineHeight, widthFactor, isBold, isItalic, isUnderlined } = run.style;
-  
+
   return new TextString({
     text,
     font: run.fontId,
     height: lineHeight,
-    widthFactor: widthFactor,
+    widthFactor,
     bold: isBold,
     italic: isItalic,
     underline: isUnderlined,
@@ -59,7 +59,7 @@ function processTextRun(run: RunLayout, transform: Transform, context: GeometryC
   }
 
   ts.transformInPlace(transform);
-  
+
   setColor(run.style.color, context);
   context.entries.push({ text: ts});
 }
@@ -85,7 +85,7 @@ function processFractionRun(run: RunLayout, transform: Transform, context: Geome
   }
 
   assert(undefined !== run.numeratorRange && undefined !== run.denominatorRange);
-  
+
   // ###TODO native computes this and calls TextString.style.SetSize, unclear...below I just scale the height and width factors instead.
   const fontSize = new Vector2d(run.style.lineHeight * run.style.widthFactor, run.style.lineHeight);
   fontSize.scale(run.style.stackedFractionScale, fontSize);
@@ -119,7 +119,7 @@ function processFractionRun(run: RunLayout, transform: Transform, context: Geome
     separator: {
       startPoint: separator.point0Ref.toJSON(),
       endPoint: separator.point1Ref.toJSON(),
-    }
+    },
   });
 
   if (source.denominator.length > 0) {
@@ -157,7 +157,7 @@ export interface ProduceTextAnnotationGeometryArgs {
   /** The annotation from which to produce the geometry. */
   annotation: TextAnnotation;
   /** The iModel from which to obtain fonts and text styles. */
-  iModel:IModelDb;
+  iModel: IModelDb;
   /** @internal chiefly for tests */
   computeTextRange?: ComputeRangesForTextLayout;
   /** @internal chiefly for tests */
