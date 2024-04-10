@@ -63,12 +63,10 @@ describe.only("layoutTextBlock", () => {
   it("produces one line per paragraph if document width <= 0", () => {
     const textBlock = TextBlock.create({ styleName: "" });
     for (let i = 0; i < 4; i++) {
-      console.log(textBlock.stringify());
       let layout = doLayout(textBlock);
       if (i === 0) {
         expect(layout.range.isNull).to.be.true;
       } else {
-        console.log(`${JSON.stringify(layout.range.toJSON())}`);
         expect(layout.lines.length).to.equal(i);
         expect(layout.range.low.x).to.equal(0);
         expect(layout.range.low.y).to.equal(-i - (0.5 * (i - 1))); // lineSpacingFactor=0.5
@@ -79,9 +77,17 @@ describe.only("layoutTextBlock", () => {
       for (let l = 0; l < layout.lines.length; l++) {
         const line = layout.lines[l];
         expect(line.runs.length).to.equal(l + 1);
-        for (let r = 0; r < line.runs.length; r++) {
-          expect(line.runs[r].charOffset).to.equal(0);
-          expect(line.runs[r].numChars).to.equal(3);
+        expect(line.range.low.x).to.equal(0);
+        expect(line.range.low.y).to.equal(0);
+        expect(line.range.high.y).to.equal(1);
+        expect(line.range.high.x).to.equal(3 * (l + 1));
+        for (const run of line.runs){
+          expect(run.charOffset).to.equal(0);
+          expect(run.numChars).to.equal(3);
+          expect(run.range.low.x).to.equal(0);
+          expect(run.range.low.y).to.equal(0);
+          expect(run.range.high.x).to.equal(3);
+          expect(run.range.high.y).to.equal(1);
         }
       }
 
