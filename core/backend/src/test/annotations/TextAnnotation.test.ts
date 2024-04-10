@@ -63,9 +63,18 @@ describe.only("layoutTextBlock", () => {
   it("produces one line per paragraph if document width <= 0", () => {
     const textBlock = TextBlock.create({ styleName: "" });
     for (let i = 0; i < 4; i++) {
-      console.log(`tb=${textBlock.stringify()}`);
+      console.log(textBlock.stringify());
       let layout = doLayout(textBlock);
-      expect(layout.lines.length).to.equal(i);
+      if (i === 0) {
+        expect(layout.range.isNull).to.be.true;
+      } else {
+        expect(layout.lines.length).to.equal(i);
+        expect(layout.range.low.x).to.equal(0);
+        expect(layout.range.low.y).to.equal(0);
+        expect(layout.range.high.x).to.equal(i * 3);
+        expect(layout.range.high.y).to.equal(i + 1);
+      }
+
       for (let l = 0; l < layout.lines.length; l++) {
         const line = layout.lines[l];
         expect(line.runs.length).to.equal(l + 1);
