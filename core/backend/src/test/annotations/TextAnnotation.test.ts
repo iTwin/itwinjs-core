@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, TextBlockLayout, TextLayoutRanges, layoutTextBlock } from "../../TextAnnotationLayout";
 import { Range2d } from "@itwin/core-geometry";
-import { LineBreakRun, Paragraph, TextBlock, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { LineBreakRun, TextBlock, TextRun, TextStyleSettings } from "@itwin/core-common";
 
 function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
   const range = new Range2d(0, 0, args.chars.length, args.lineHeight);
@@ -131,7 +131,7 @@ describe.only("layoutTextBlock", () => {
 
   it("splits paragraphs into multiple lines if runs exceed the document width", () => {
     const textBlock = TextBlock.create({ styleName: "" });
-    textBlock.width = 5;
+    textBlock.width = 6;
     textBlock.appendRun(makeTextRun("ab"));
     expect(doLayout(textBlock).lines.length).to.equal(1);
     textBlock.appendRun(makeTextRun("cd"));
