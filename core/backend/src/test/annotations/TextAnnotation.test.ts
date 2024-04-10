@@ -26,6 +26,10 @@ function doLayout(textBlock: TextBlock, args?: {
   });
 }
 
+function makeTextRun(content: string, styleName = ""): TextRun {
+  return TextRun.create({ content, styleName });
+}
+
 describe.only("layoutTextBlock", () => {
   it("resolves TextStyleSettings from combination of TextBlock and Run", () => {
     const textBlock = TextBlock.create({ styleName: "block", styleOverrides: { widthFactor: 34, color: 0x00ff00 }});
@@ -126,6 +130,30 @@ describe.only("layoutTextBlock", () => {
   });
 
   it("splits paragraphs into multiple lines if runs exceed the document width", () => {
+    const textBlock = TextBlock.create({ styleName: "" });
+    textBlock.width = 5;
+    textBlock.appendRun(makeTextRun("ab"));
+    expect(doLayout(textBlock).lines.length).to.equal(1);
+    textBlock.appendRun(makeTextRun("cd"));
+    expect(doLayout(textBlock).lines.length).to.equal(1);
+
+    textBlock.appendRun(makeTextRun("ef"));
+    expect(doLayout(textBlock).lines.length).to.equal(2);
+    textBlock.appendRun(makeTextRun("ghi"));
+    expect(doLayout(textBlock).lines.length).to.equal(2);
+
+    textBlock.appendRun(makeTextRun("jklmnop"));
+    expect(doLayout(textBlock).lines.length).to.equal(3);
+
+    textBlock.appendRun(makeTextRun("q"));
+    expect(doLayout(textBlock).lines.length).to.equal(4);
+    textBlock.appendRun(makeTextRun("r"));
+    expect(doLayout(textBlock).lines.length).to.equal(4);
+    textBlock.appendRun(makeTextRun("stu"));
+    expect(doLayout(textBlock).lines.length).to.equal(4);
+
+    textBlock.appendRun(makeTextRun("vwxyz"));
+    expect(doLayout(textBlock).lines.length).to.equal(5);
   })
 
   it.skip("splits a single TextRun at word boundaries if it exceeds the document width", () => {
