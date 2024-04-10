@@ -51,9 +51,11 @@ import { Constructor } from '@itwin/core-bentley';
 import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
+import { DbChangeStage } from '@itwin/core-bentley';
 import { DbConflictCause } from '@itwin/core-bentley';
 import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
+import { DbValueType } from '@itwin/core-bentley';
 import { DefinitionElementProps } from '@itwin/core-common';
 import { DisplayStyle3dProps } from '@itwin/core-common';
 import { DisplayStyle3dSettings } from '@itwin/core-common';
@@ -699,11 +701,29 @@ export interface ChangesetConflictArgs {
     // (undocumented)
     changesetFile?: string;
     // (undocumented)
+    columnCount: number;
+    // (undocumented)
     dump: () => void;
     // (undocumented)
     getForeignKeyConflicts: () => number;
     // (undocumented)
+    getPrimaryKeyColumns: () => number[];
+    // (undocumented)
+    getValueBinary: (columnIndex: number, stage: DbChangeStage) => Uint8Array | null | undefined;
+    // (undocumented)
+    getValueDouble: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
+    // (undocumented)
+    getValueId: (columnIndex: number, stage: DbChangeStage) => Id64String | null | undefined;
+    // (undocumented)
+    getValueInteger: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
+    // (undocumented)
+    getValueText: (columnIndex: number, stage: DbChangeStage) => string | null | undefined;
+    // (undocumented)
+    getValueType: (columnIndex: number, stage: DbChangeStage) => DbValueType | null | undefined;
+    // (undocumented)
     indirect: boolean;
+    // (undocumented)
+    isValueNull: (columnIndex: number, stage: DbChangeStage) => boolean | undefined;
     // (undocumented)
     opcode: DbOpcode;
     // (undocumented)
@@ -794,8 +814,6 @@ export class ChannelAdmin implements ChannelControl {
     // (undocumented)
     getChannelKey(elementId: Id64String): ChannelKey;
     // (undocumented)
-    get hasChannels(): boolean;
-    // (undocumented)
     insertChannelSubject(args: {
         subjectName: string;
         channelKey: ChannelKey;
@@ -808,9 +826,9 @@ export class ChannelAdmin implements ChannelControl {
         channelKey: ChannelKey;
     }): void;
     // (undocumented)
-    removeAllowedChannel(channelKey: ChannelKey): void;
+    queryChannelRoot(channelKey: ChannelKey): Id64String | undefined;
     // (undocumented)
-    static readonly sharedChannel = "shared";
+    removeAllowedChannel(channelKey: ChannelKey): void;
     // (undocumented)
     verifyChannel(modelId: Id64String): void;
 }
@@ -819,7 +837,6 @@ export class ChannelAdmin implements ChannelControl {
 export interface ChannelControl {
     addAllowedChannel(channelKey: ChannelKey): void;
     getChannelKey(elementId: Id64String): ChannelKey;
-    get hasChannels(): boolean;
     insertChannelSubject(args: {
         subjectName: string;
         channelKey: ChannelKey;
@@ -830,6 +847,7 @@ export interface ChannelControl {
         elementId: Id64String;
         channelKey: ChannelKey;
     }): void;
+    queryChannelRoot(channelKey: ChannelKey): Id64String | undefined;
     removeAllowedChannel(channelKey: ChannelKey): void;
     // @internal (undocumented)
     verifyChannel(modelId: Id64String): void;
@@ -894,7 +912,6 @@ export class ClassRegistry {
     static isNotFoundError(err: any): boolean;
     // @internal (undocumented)
     static makeMetaDataNotFoundError(className: string): IModelError;
-    // @internal (undocumented)
     static register(entityClass: typeof Entity, schema: typeof Schema): void;
     static registerModule(moduleObj: any, schema: typeof Schema): void;
     // @internal
@@ -3196,7 +3213,7 @@ export namespace IModelDb {
         tryGetElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T | undefined;
         tryGetElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined;
         updateAspect(aspectProps: ElementAspectProps): void;
-        updateElement(elProps: ElementProps): void;
+        updateElement<T extends ElementProps>(elProps: Partial<T>): void;
     }
     // (undocumented)
     export interface GuidMapper {
@@ -3412,6 +3429,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
 
 // @public
 export interface IModelHostOptions {
+    allowSharedChannel?: boolean;
     appAssetsDir?: LocalDirName;
     authorizationClient?: AuthorizationClient;
     cacheDir?: LocalDirName;
@@ -5016,11 +5034,19 @@ export class SqliteChangesetReader implements IDisposable {
     get disableSchemaCheck(): boolean;
     dispose(): void;
     getChangeValue(columnIndex: number, stage: SqliteValueStage): SqliteValue_2;
+    getChangeValueBinary(columnIndex: number, stage: SqliteValueStage): Uint8Array | null | undefined;
+    getChangeValueDouble(columnIndex: number, stage: SqliteValueStage): number | null | undefined;
+    getChangeValueId(columnIndex: number, stage: SqliteValueStage): Id64String | null | undefined;
+    getChangeValueInteger(columnIndex: number, stage: SqliteValueStage): number | null | undefined;
     getChangeValuesArray(stage: SqliteValueStage): SqliteValueArray | undefined;
     getChangeValuesObject(stage: SqliteValueStage, args?: ChangeFormatArgs): SqliteChange | undefined;
+    getChangeValueText(columnIndex: number, stage: SqliteValueStage): string | null | undefined;
+    getChangeValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined;
     getColumnNames(tableName: string): string[];
+    getColumnValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined;
     getPrimaryKeyColumnNames(): string[];
     get hasRow(): boolean;
+    isColumnValueNull(columnIndex: number, stage: SqliteValueStage): boolean | undefined;
     get isIndirect(): boolean;
     get op(): SqliteChangeOp;
     static openFile(args: {

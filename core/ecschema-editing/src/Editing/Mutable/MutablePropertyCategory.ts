@@ -11,4 +11,5 @@ import { PropertyCategory } from "@itwin/ecschema-metadata";
 export abstract class MutablePropertyCategory extends PropertyCategory {
   public abstract override setPriority(priority: number): void;
   public abstract override setDisplayLabel(displayLabel: string): void;
+  public abstract override setDescription(description: string): void;
 }

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Added note to `GenericInstanceFilterRuleOperator` that `like` operator should be handled as a contains operator.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

@@ -18,11 +18,17 @@ import {
   MapLayerScaleRangeVisibility,
   MapTileTreeScaleRangeVisibility,
   PrimitiveTool,
+  ToolAssistance,
+  ToolAssistanceImage,
+  ToolAssistanceInputMethod,
+  ToolAssistanceInstruction,
+  ToolAssistanceSection,
   Viewport,
 } from "@itwin/core-frontend";
 import { BeEvent } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapImageryProps, MapImagerySettings, MapLayerProps } from "@itwin/core-common";
 import { MapFeatureInfoDecorator } from "./MapFeatureInfoDecorator";
+import { mapInfoIcon } from "../Icons/MapInfoIcon";
 
 /**
  * Data provided every time [[MapFeatureInfoTool]] retrieves feature information.
@@ -112,7 +118,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
   public readonly onInfoCleared =  new BeEvent();
 
   public static override toolId = "MapFeatureInfoTool";
-  public static override iconSpec = "icon-map";
+  public static override iconSpec = mapInfoIcon.dataUri;
 
   private _decorator: MapFeatureInfoDecorator = new MapFeatureInfoDecorator();
   private _layerSettingsCache = new Map<string, MapLayerInfoFromTileTree[]>();
@@ -123,6 +129,11 @@ export class MapFeatureInfoTool extends PrimitiveTool {
 
   public override requireWriteableTarget(): boolean {
     return false;
+  }
+
+  /** @internal */
+  protected setupAndPromptForNextAction(): void {
+    this.showPrompt();
   }
 
   private updateDecorator(vp: Viewport) {
@@ -140,6 +151,9 @@ export class MapFeatureInfoTool extends PrimitiveTool {
 
   public override async onPostInstall() {
     await super.onPostInstall();
+
+    this.setupAndPromptForNextAction();
+
     this.initLocateElements();
     IModelApp.locateManager.options.allowDecorations = true;
 
@@ -192,6 +206,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
     }
 
     IModelApp.viewManager.addDecorator(this._decorator);
+
   }
 
   public override async onCleanup() {
@@ -284,5 +299,26 @@ export class MapFeatureInfoTool extends PrimitiveTool {
     const tool = new MapFeatureInfoTool();
     if (!(await tool.run()))
       return this.exitTool();
+  }
+
+  /** @internal */
+  protected showPrompt(): void {
+
+    const promptEnterPoint = IModelApp.localization.getLocalizedString("mapLayersFormats:tools.MapFeatureInfoTool.Prompts.EnterPoint");
+    const promptClickIdentify= IModelApp.localization.getLocalizedString("mapLayersFormats:tools.MapFeatureInfoTool.Prompts.clickToIdentify");
+    const promptClickClear = IModelApp.localization.getLocalizedString("mapLayersFormats:tools.MapFeatureInfoTool.Prompts.clickToClear");
+
+    // Mouse Instructions
+    const mouseInstructions: ToolAssistanceInstruction[] = [];
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, promptClickIdentify, false, ToolAssistanceInputMethod.Mouse));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, promptClickClear, false, ToolAssistanceInputMethod.Mouse));
+    const sections: ToolAssistanceSection[] = [];
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+
+    // Main Instruction
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, promptEnterPoint);
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+
+    IModelApp.notifications.setToolAssistance(instructions);
   }
 }
