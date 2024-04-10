@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, FontId, FractionRun, Paragraph, Run, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, FontId, FractionRun, Paragraph, Run, TextBlock, TextRun, TextStyle, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 import { assert } from "@itwin/core-bentley";
@@ -52,8 +52,15 @@ export interface LayoutTextBlockArgs {
  * @internal
  */
 export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
-  const { computeTextRange, findTextStyle, findFontId } = args;
-  if (!computeTextRange || !findTextStyle || !findFontId) {
+  const findFontId = args.findFontId ?? ((name) => args.iModel.fontMap.getFont(name)?.id ?? 0);
+
+  // ###TODO finding text styles in workspaces.
+  const findTextStyle = args.findTextStyle ?? (() => TextStyleSettings.fromJSON());
+
+  // ###TODO hook up NativeDgnDb.computeRangesForText
+  const { computeTextRange } = args;
+
+  if (!computeTextRange) {
     throw new Error("###TODO use default implementations");
   }
 
