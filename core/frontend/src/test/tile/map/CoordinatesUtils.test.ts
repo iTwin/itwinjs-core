@@ -6,7 +6,7 @@
 import { CoordinatesUtils } from "../../../tile/internal";
 import { expect } from "chai";
 
-describe.only("CoordinatesUtils", () => {
+describe("CoordinatesUtils", () => {
   it.only("should deflate coordinates array", async () => {
     // Simple deflate stride = 2
     let doubleArray = [[1, 2], [3, 4]];
