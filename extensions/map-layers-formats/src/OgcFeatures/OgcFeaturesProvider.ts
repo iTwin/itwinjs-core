@@ -45,7 +45,7 @@ export class DefaultOgcSymbology implements FeatureDefaultSymbology {
 
   private static readonly _defaultSFSProps: EsriSFSProps = {
     type: "esriSFS",
-    color:  [0, 0, 255, 100],   // blue fill
+    color:  [0, 0, 255, 255],   // blue fill
     style: "esriSFSSolid",
     outline: DefaultOgcSymbology._defaultSLSProps,
   };
@@ -66,12 +66,16 @@ export class DefaultOgcSymbology implements FeatureDefaultSymbology {
     const randomColors = color.colors;
     const newSLSProps = {
       ...DefaultOgcSymbology._defaultSLSProps,
-      color: [randomColors.r, randomColors.g, randomColors.b, 255]};
+      color: [randomColors.r, randomColors.g, randomColors.b, 255],
+    };
     this._defaultSLS = EsriSLS.fromJSON(newSLSProps);
     this._defaultSFS = EsriSFS.fromJSON({
       ...DefaultOgcSymbology._defaultSFSProps,
-      color: [randomColors.r, randomColors.g, randomColors.b, 100],
-      outline: newSLSProps,
+      color: [randomColors.r, randomColors.g, randomColors.b, 255],
+      outline: {
+        ...DefaultOgcSymbology._defaultSLSProps,
+        color: [0, 0, 0, 255],
+      },
     });
   }
 
