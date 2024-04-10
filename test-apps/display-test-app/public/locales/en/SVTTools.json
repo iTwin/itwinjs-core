@@ -181,6 +181,9 @@
     },
     "DtaClipByElementGeometry": {
       "keyin": "dta clip element geometry"
+    },
+    "DtaClassify": {
+      "keyin": "dta classify"
     }
   }
 }

@@ -1667,12 +1667,14 @@ export abstract class ContentIdProvider {
 
 // @public
 export class ContextRealityModel {
-    constructor(props: ContextRealityModelProps);
+    constructor(props: ContextRealityModelProps, options?: {
+        createClassifiers: (container: SpatialClassifiersContainer) => SpatialClassifiers;
+    });
     get appearanceOverrides(): FeatureAppearance | undefined;
     set appearanceOverrides(overrides: FeatureAppearance | undefined);
     // (undocumented)
     protected _appearanceOverrides?: FeatureAppearance;
-    readonly classifiers?: SpatialClassifiers;
+    get classifiers(): SpatialClassifiers;
     readonly description: string;
     // @beta
     get displaySettings(): RealityModelDisplaySettings;
@@ -7192,19 +7194,13 @@ export enum QueryParamType {
 
 // @public (undocumented)
 export interface QueryPropertyMetaData {
-    // (undocumented)
+    accessString?: string;
     className: string;
-    // (undocumented)
     extendType: string;
-    // (undocumented)
     generated: boolean;
-    // (undocumented)
     index: number;
-    // (undocumented)
     jsonName: string;
-    // (undocumented)
     name: string;
-    // (undocumented)
     typeName: string;
 }
 

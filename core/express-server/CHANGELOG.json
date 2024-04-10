@@ -2,6 +2,30 @@
   "name": "@itwin/express-server",
   "entries": [
     {
+      "version": "4.5.1",
+      "tag": "@itwin/express-server_v4.5.1",
+      "date": "Wed, 03 Apr 2024 18:26:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.5.0",
+      "tag": "@itwin/express-server_v4.5.0",
+      "date": "Tue, 02 Apr 2024 19:06:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.8",
+      "tag": "@itwin/express-server_v4.4.8",
+      "date": "Mon, 25 Mar 2024 22:22:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.7",
+      "tag": "@itwin/express-server_v4.4.7",
+      "date": "Fri, 15 Mar 2024 19:15:14 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.4.6",
       "tag": "@itwin/express-server_v4.4.6",
       "date": "Fri, 08 Mar 2024 15:57:11 GMT",
@@ -48,6 +72,18 @@
           }
         ]
       }
+    },
+    {
+      "version": "4.3.5",
+      "tag": "@itwin/express-server_v4.3.5",
+      "date": "Mon, 25 Mar 2024 16:54:37 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.3.4",
+      "tag": "@itwin/express-server_v4.3.4",
+      "date": "Fri, 22 Mar 2024 13:30:31 GMT",
+      "comments": {}
     },
     {
       "version": "4.3.3",
