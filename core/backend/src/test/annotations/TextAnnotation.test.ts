@@ -68,11 +68,12 @@ describe.only("layoutTextBlock", () => {
       if (i === 0) {
         expect(layout.range.isNull).to.be.true;
       } else {
+        console.log(`${JSON.stringify(layout.range.toJSON())}`);
         expect(layout.lines.length).to.equal(i);
         expect(layout.range.low.x).to.equal(0);
-        expect(layout.range.low.y).to.equal(0);
+        expect(layout.range.low.y).to.equal(-i - (0.5 * (i - 1))); // lineSpacingFactor=0.5
         expect(layout.range.high.x).to.equal(i * 3);
-        expect(layout.range.high.y).to.equal(i + 1);
+        expect(layout.range.high.y).to.equal(0);
       }
 
       for (let l = 0; l < layout.lines.length; l++) {

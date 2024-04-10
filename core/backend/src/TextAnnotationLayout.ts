@@ -405,6 +405,8 @@ export class TextBlockLayout {
       line.runs.push(new RunLayout(prevRun.clone(), context));
     }
 
+    line.computeRanges();
+
     // Line origin is its baseline.
     const lineOffset = { x: 0, y: -line.range.yLength() };
 
@@ -419,7 +421,6 @@ export class TextBlockLayout {
     // Update document range from computed line range and position
     this.range.extendRange(line.range.cloneTranslated(lineOffset));
 
-    line.computeRanges();
     this.lines.push(line);
     return new LineLayout(nextParagraph);
   }
