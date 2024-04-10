@@ -168,12 +168,15 @@ export class AuxChannel {
   }
 }
 
-/**  The `PolyfaceAuxData` structure contains one or more analytical data channels for each vertex of a [[Polyface]], allowing the polyface to be styled
+/**
+ * The `PolyfaceAuxData` structure contains one or more analytical data channels for each vertex of a [[Polyface]], allowing the polyface to be styled
  * using an [AnalysisStyle]($common).
- * Typically a polyface will contain only vertex data required for its basic display: the vertex position, normal
- * and possibly texture parameter. `PolyfaceAuxData` provides supplemental data that is generally computed
- * in an analysis program or other external data source. This can be scalar data used to either override the vertex colors through, or
- * XYZ data used to deform the mesh by adjusting the vertex positions and/or normals.
+ * Typically a polyface will contain only vertex data required for its basic display: vertex position, normal, texture parameter, color.
+ * `PolyfaceAuxData` provides supplemental per-vertex data that is generally computed in an analysis program or other external data source.
+ * This supplemental data can be either 1D (e.g., height, override color) or 3D (e.g., displacement vector); see [[AuxChannel.entriesPerValue]], [[AuxChannel.dataType]].
+ * All data channels are indexed by the same indices, which must have the same length and structure as the other Polyface indices.
+ * This means that if a facet's face loop is found at index range [i0,i1] in the Polyface vertex index array, then the same index range [i0,i1]
+ * locates the data for this facet in all the other Polyface index arrays, including the `PolyfaceAuxData` indices.
  * @see [[PolyfaceData.auxData]] to associate auxiliary data with a polyface.
  * @public
  */
