@@ -302,9 +302,9 @@ describe("Changeset Reader API", async () => {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x6d" });
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.CodeSpec, { Id: "0x1", RelECClassId: "0x5c" });
+      assert.deepEqual(el.CodeSpec, { Id: "0x1", RelECClassId: "0x69" });
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.CodeScope, { Id: "0x1", RelECClassId: "0x5e" });
+      assert.deepEqual(el.CodeScope, { Id: "0x1", RelECClassId: "0x6b" });
 
       assert.deepEqual(el.$meta, {
         tables: [
