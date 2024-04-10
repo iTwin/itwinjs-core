@@ -211,6 +211,10 @@ export class TextStyleSettings {
     return props ? new TextStyleSettings(props) : TextStyleSettings.defaults;
   }
 
+  public toJSON(): TextStyleSettingsProps {
+    return { ...this };
+  }
+
   public equals(other: TextStyleSettings): boolean {
     return this.color === other.color && this.fontName === other.fontName
       && this.lineHeight === other.lineHeight && this.lineSpacingFactor === other.lineSpacingFactor && this.widthFactor === other.widthFactor
