@@ -440,8 +440,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     }
 
     if (!data || !Array.isArray(data.features) || data.features.length === 0) {
-      Logger.logError(loggerCategory, `No data to render for tile (${zoomLevel}/${row}/${column}).`);
-      return undefined;
+      Logger.logInfo(loggerCategory, `No data to render for tile (${zoomLevel}/${row}/${column}).`);
     }
 
     // Rendering starts here

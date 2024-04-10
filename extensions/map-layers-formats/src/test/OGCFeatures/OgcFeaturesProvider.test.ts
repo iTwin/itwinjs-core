@@ -27,7 +27,7 @@ const getTestSettings = (url: string, subLayers = [{id: "public.countries", name
   });
 };
 
-describe.only("OgcFeaturesProvider", () => {
+describe("OgcFeaturesProvider", () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(async () => {

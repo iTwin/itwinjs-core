@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import * as GeoJson from "geojson";
 
 /** @internal */
 export type Coord = number[];
@@ -12,51 +13,13 @@ export type RingCoords = Coord[];
 /** @internal */
 export type MultiRingCoords = RingCoords[];
 
-/** @internal */
-export type GeoJSONGeometryType = "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
-
-/** @internal */
-export interface GeoJSONGeometry {
-  type: GeoJSONGeometryType;
-  coordinates: Coord | RingCoords | MultiRingCoords | MultiRingCoords[];
+export interface MultiPath {
+  lengths: number[];
+  coords: number[];
 }
 
-/** @internal */
-export interface GeoJSONMultiRing extends GeoJSONGeometry {
-  type:  "Polygon" | "MultiLineString";
-  coordinates:  MultiRingCoords;
-}
-
-/** @internal */
-export interface GeoJSONPoint extends GeoJSONGeometry {
-  type: "Point";
-  coordinates: Coord;
-}
-
-/** @internal */
-export interface GeoJSONMultiPoint extends GeoJSONGeometry  {
-  type: "MultiPoint";
-  coordinates: Coord[];
-}
-
-/** @internal */
-export interface GeoJSONLineString extends GeoJSONGeometry {
-  type: "LineString";
-  coordinates: RingCoords;
-}
-
-/** @internal */
-export interface GeoJSONMultiLineString extends GeoJSONMultiRing  {
-  type: "MultiLineString";
-}
-
-/** @internal */
-export interface GeoJSONPolygon extends GeoJSONMultiRing {
-  type: "Polygon";
-}
-
-/** @internal */
-export interface GeoJSONMultiPolygon extends GeoJSONGeometry  {
-  type: "MultiPolygon";
-  coordinates: MultiRingCoords[];
+export class GeoJSONGeometryUtils {
+  public static isRingOrPath(geom: GeoJson.Geometry) {return geom.type === "LineString" || geom.type === "MultiLineString" || geom.type === "Polygon" || geom.type === "MultiPolygon";}
+  public static isFilled(geom: GeoJson.Geometry) {return  geom.type === "Polygon" || geom.type === "MultiPolygon";}
+  public static isPoint(geom: GeoJson.Geometry) {return geom.type === "Point" || geom.type === "MultiPoint";}
 }
