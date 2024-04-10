@@ -121,6 +121,10 @@ describe.only("layoutTextBlock", () => {
     expect(tb.range.low.y).to.equal(-(lineSpacingFactor * 2 + lineHeight * 3));
   });
 
+  it("computes ranges based on custom line spacing and line height", () => {
+    
+  });
+
   it("splits paragraphs into multiple lines if runs exceed the document width", () => {
   })
 
