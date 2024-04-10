@@ -32,7 +32,7 @@ function makeParagraph(runs?: RunProps[], styleName = "", styleOverrides?: TextS
   };
 }
 
-describe.only("TextBlockComponent", () => {
+describe("TextBlockComponent", () => {
   describe("applyStyle", () => {
     let block: TextBlock;
     let paragraph: Paragraph;
@@ -107,28 +107,43 @@ describe.only("TextBlockComponent", () => {
     const fractionSeparator = "F";
     expect(tb.stringify({ paragraphBreak, lineBreak, fractionSeparator })).to.equal("abcP1Fπ def   ghiLj k lPPPLPFPmnoPLL");
   });
-
-  describe("clone", () => {
-    it("creates an identical deep copy", () => {
-
-    });
-  });
-
-  describe("create", () => {
-
-  });
-
-  describe("createEffectiveSettings", () => {
-
-  });
 });
 
 describe("TextBlock", () => {
   describe("appendParagraph", () => {
+    it("uses the TextBlock's style with no overrides if no paragraphs exist", () => {
+      const tb = TextBlock.create({ styleName: "block", styleOverrides: { lineHeight: 42 } });
+      const p = tb.appendParagraph();
+      expect(p.styleName).to.equal("block");
+      expect(p.styleOverrides).to.deep.equal({});
+    });
 
+    it("uses the style and overrides of the last paragraph if one exists", () => {
+      const tb = TextBlock.create({ styleName: "block", styleOverrides: { lineHeight: 42 } });
+      const p1 = tb.appendParagraph();
+      expect(p1.styleName).to.equal("block");
+      expect(p1.styleOverrides).to.deep.equal({});
+      
+      p1.styleName = "paragraph";
+      p1.styleOverrides = { widthFactor: 1234 };
+      const p2 = tb.appendParagraph();
+      expect(p2.styleName).to.equal(p1.styleName);
+      expect(p2.styleOverrides).to.deep.equal(p1.styleOverrides);
+    });
   });
 
   describe("appendRun", () => {
+    it("appends a paragraph IFF the text block is empty", () => {
+      const tb = TextBlock.create({ styleName: "block" });
+      expect(tb.paragraphs.length).to.equal(0);
 
+      tb.appendRun(TextRun.create({ styleName: "run1" }));
+      expect(tb.paragraphs.length).to.equal(1);
+      expect(tb.paragraphs[0].runs.length).to.equal(1);
+
+      tb.appendRun(TextRun.create({ styleName: "r2" }));
+      expect(tb.paragraphs.length).to.equal(1);
+      expect(tb.paragraphs[0].runs.length).to.equal(2);
+    });
   });
 });
