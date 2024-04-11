@@ -321,6 +321,10 @@ describe.only("layoutTextBlock", () => {
   });
 });
 
+describe.only("produceTextAnnotationGeometry", () => {
+  
+});
+
 describe.only("TextAnnotation element", () => {
   function mockIModel(): IModelDb {
     const iModel: Pick<IModelDb, "fontMap" | "computeRangesForText" | "forEachMetaData"> = {
