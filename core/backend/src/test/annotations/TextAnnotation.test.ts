@@ -156,10 +156,49 @@ describe.only("layoutTextBlock", () => {
     expect(doLayout(textBlock).lines.length).to.equal(5);
   })
 
-  it.skip("splits a single TextRun at word boundaries if it exceeds the document width", () => {
-    // ###TODO word wrapping
+  it("splits a single TextRun at word boundaries if it exceeds the document width", () => {
+    const textBlock = TextBlock.create({ styleName: "" });
+    textBlock.width = 6;
+    const run = makeTextRun("a bc def ghij klmno pqrstu vwxyz")
+    textBlock.appendRun(run);
+    const layout = doLayout(textBlock);
+    expect(layout.lines.length).to.equal(8);
+    expect(layout.lines.every((line) => line.runs.length === 1)).to.be.true;
+    expect(layout.lines.every((line) => line.runs[0].source === run)).to.be.true;
+
+    const expected = [
+      "a bc ",
+      "def ",
+      "ghij ",
+      "klmno",
+      " ",
+      "pqrstu",
+      " ",
+      "vwxyz",
+    ];
+
+    for (let i = 0; i < layout.lines.length; i++) {
+      const runLayout = layout.lines[i].runs[0];
+      const text = run.content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars);
+      expect(text).to.equal(expected[i]);
+    }
   });
   
+  it("considers consecutive whitespace a single 'word'", () => {
+    
+  });
+
+  it("performs word-wrapping on non-English text", () => {
+    
+  });
+
+  it("does not word-wrap fractions", () => {
+    
+  });
+
+  it("performs word-wrapping and line-wrapping with multiple runs", () => {
+    
+  });
 });
 
 describe.only("produceTextAnnotationGeometry", () => {
