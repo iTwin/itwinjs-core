@@ -156,18 +156,29 @@ describe.only("layoutTextBlock", () => {
     expect(doLayout(textBlock).lines.length).to.equal(5);
   })
 
-  it("splits a single TextRun at word boundaries if it exceeds the document width", () => {
-    const textBlock = TextBlock.create({ styleName: "" });
-    textBlock.width = 5;
-    const run = makeTextRun("a bc def ghij klmno pqrstu vwxyz")
-    textBlock.appendRun(run);
-    const layout = doLayout(textBlock);
+  function expectLines(input: string, width: number, expectedLines: string[]): TextBlockLayout {
+    const segmenter = new Intl.Segmenter(undefined, { granularity: "word" });
+    const segments = segmenter.segment(input);
+    console.log(">" + Array.from(segments).map((segment) => segment.segment));
 
-    expect(layout.lines.length).to.equal(8);
+    const textBlock = TextBlock.create({ styleName: "" });
+    textBlock.width = width;
+    const run = makeTextRun(input);
+    textBlock.appendRun(run);
+
+    const layout = doLayout(textBlock);
     expect(layout.lines.every((line) => line.runs.length === 1)).to.be.true;
     expect(layout.lines.every((line) => line.runs[0].source === run)).to.be.true;
+    
+    const actual = layout.lines.map((line) => line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars)).join(""));
+    console.log(actual);
+    expect(actual).to.deep.equal(expectedLines);
 
-    const expected = [
+    return layout;
+  }
+
+  it("splits a single TextRun at word boundaries if it exceeds the document width", () => {
+    expectLines("a bc def ghij klmno pqrstu vwxyz", 5, [
       "a bc ",
       "def ",
       "ghij ",
@@ -176,13 +187,7 @@ describe.only("layoutTextBlock", () => {
       "pqrstu",
       " ",
       "vwxyz",
-    ];
-
-    for (let i = 0; i < layout.lines.length; i++) {
-      const runLayout = layout.lines[i].runs[0];
-      const text = run.content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars);
-      expect(text).to.equal(expected[i]);
-    }
+    ]);
   });
   
   it("considers consecutive whitespace a single 'word'", () => {
@@ -191,6 +196,11 @@ describe.only("layoutTextBlock", () => {
 
   it("performs word-wrapping on non-English text", () => {
     
+  });
+
+  it("performs word-wrapping with punctuation", () => {
+    expectLines("1.24 56.7 8,910", 1, ["1.24", " ", "56.7", " ", "8,910"]);
+    expectLines("a.bc de.f g,hij", 1, ["a", ".", "bc", " ", "de", ".", "f", " ", "g", ",", "hij"]);
   });
 
   it("does not word-wrap fractions", () => {
