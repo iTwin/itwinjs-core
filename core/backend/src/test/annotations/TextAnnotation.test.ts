@@ -204,6 +204,16 @@ describe.only("layoutTextBlock", () => {
     // NOTE: Chrome splits a.bc and de.f on the periods. Safari and electron do not.
     // Since text layout is done in the backend, we're going to assume electron is right, and if not, that it's their responsibility to fix it.
     expectLines("a.bc de.f g,hij", 1, ["a.bc", " ", "de.f", " ", "g", ",", "hij"]);
+
+    expectLines("Let's see...can you (or anyone) predict?!", 1, [
+      "Let's", " ",
+      "see",
+      ".", ".", ".",
+      "can", " ",
+      "you", " ",
+      "(", "or", " ", "anyone", ")", " ",
+      "predict", "?", "!",
+    ])
   });
 
   it("does not word-wrap fractions", () => {
