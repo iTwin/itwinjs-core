@@ -11,8 +11,8 @@ import { join } from "path";
 import * as touch from "touch";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
-  IModelStatus, JsonUtils, Logger, LogLevel, OpenMode, UnexpectedErrors,
+  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, Constructor, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
+  IModelStatus, isInstanceOf, JsonUtils, Logger, LogLevel, OpenMode, UnexpectedErrors,
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetFileProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
@@ -61,11 +61,13 @@ import { Workspace } from "./workspace/Workspace";
 import type { BlobContainer } from "./BlobContainerService";
 import { FilePropertyConflictHandler } from "./FilePropertyConflictHandler";
 /** @internal */
-export interface ISingleTableDataConflictHandler {
+export interface ISingleTableConflictHandler {
   get tableName(): string;
   onConflict(args: ChangesetConflictArgs): DbConflictResolution | undefined;
-  onBeforeSingleChangesetApply(changeset: ChangesetFileProps): void;
-  onAfterSingleChangesetApply(changeset: ChangesetFileProps): void;
+  onBeforeSingleChangesetApply?: (changeset: ChangesetFileProps) => void;
+  onAfterSingleChangesetApply?: (changeset: ChangesetFileProps) => void;
+  onBeforeApplyChangesets?: (changesets: ChangesetFileProps[]) => void;
+  onAfterApplyChangesets?: (changesets: ChangesetFileProps[]) => void;
 }
 
 /** @internal */
@@ -2568,7 +2570,7 @@ export class BriefcaseDb extends IModelDb {
   public readonly briefcaseId: BriefcaseId;
 
   /** @internal */
-  public tableConflictHandlers = new Map<string, ISingleTableDataConflictHandler>();
+  public tableConflictHandlers = new Map<string, ISingleTableConflictHandler>();
 
   /**
    * Event raised just before a BriefcaseDb is opened. Supplies the arguments that will be used to open the BriefcaseDb.
@@ -2732,7 +2734,14 @@ export class BriefcaseDb extends IModelDb {
     this.onOpened.raiseEvent(briefcaseDb, args);
     return briefcaseDb;
   }
-
+  /* @internal */
+  public findConflictHandler<T extends ISingleTableConflictHandler>(type: Constructor<T>): T | undefined {
+    for (const entry of this.tableConflictHandlers) {
+      if (isInstanceOf(entry[1], type))
+        return entry[1] as T;
+    }
+    return undefined;
+  }
   /* This is called by native code when applying a changeset */
   private onChangesetConflict(args: ChangesetConflictArgs): DbConflictResolution | undefined {
     // returning undefined will result in native handler to resolve conflict
@@ -2804,6 +2813,10 @@ export class BriefcaseDb extends IModelDb {
         Logger.logWarning(category, "PRIMARY KEY INSERT CONFLICT - resolved by replacing the existing row with the incoming row");
         args.dump();
       } else {
+        const resolution = invokeTableConflictHandler();
+        if (resolution !== undefined)
+          return resolution;
+
         const msg = "PRIMARY KEY INSERT CONFLICT - rejecting this changeset";
         args.setLastError(msg);
         Logger.logError(category, msg);
