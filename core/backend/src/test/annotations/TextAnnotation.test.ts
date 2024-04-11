@@ -60,10 +60,6 @@ describe.only("layoutTextBlock", () => {
     expect(s1.color).to.equal("subcategory");
   });
 
-  it("produces one line for a paragraph if the total width of the runs is less than the document width", () => {
-    
-  });
-
   it("produces one line per paragraph if document width <= 0", () => {
     const textBlock = TextBlock.create({ styleName: "" });
     for (let i = 0; i < 4; i++) {
@@ -126,7 +122,32 @@ describe.only("layoutTextBlock", () => {
   });
 
   it("computes ranges based on custom line spacing and line height", () => {
-    
+    const lineSpacingFactor = 2;
+    const lineHeight = 3;
+    const textBlock = TextBlock.create({ styleName: "", styleOverrides: { lineSpacingFactor, lineHeight } });
+    textBlock.appendRun(TextRun.create({ styleName: "", content: "abc" }));
+    textBlock.appendRun(LineBreakRun.create({ styleName: "" }));
+    textBlock.appendRun(TextRun.create({ styleName: "", content: "def" }));
+    textBlock.appendRun(TextRun.create({ styleName: "", content: "ghi" }));
+    textBlock.appendRun(LineBreakRun.create({ styleName: "" }));
+    textBlock.appendRun(TextRun.create({ styleName: "", content: "jkl"}));
+
+    const tb = doLayout(textBlock);
+    expect(tb.lines.length).to.equal(3);
+    expect(tb.lines[0].runs.length).to.equal(2);
+    expect(tb.lines[1].runs.length).to.equal(3);
+    expect(tb.lines[2].runs.length).to.equal(1);
+
+    // We have 3 lines each `lineHeight` high, plus 2 line breaks in between each `lineHeight*lineSpacingFactor` high.
+    expect(tb.range.low.x).to.equal(0);
+    expect(tb.range.high.x).to.equal(6);
+    expect(tb.range.high.y).to.equal(0);
+    expect(tb.range.low.y).to.equal(-(lineHeight * 3 + (lineHeight * lineSpacingFactor) * 2));
+
+    expect(tb.lines[0].offsetFromDocument.y).to.equal(-lineHeight);
+    expect(tb.lines[1].offsetFromDocument.y).to.equal(tb.lines[0].offsetFromDocument.y - (lineHeight + lineHeight * lineSpacingFactor));
+    expect(tb.lines[2].offsetFromDocument.y).to.equal(tb.lines[1].offsetFromDocument.y - (lineHeight + lineHeight * lineSpacingFactor));
+    expect(tb.lines.every((line) => line.offsetFromDocument.x === 0)).to.be.true;
   });
 
   it("splits paragraphs into multiple lines if runs exceed the document width", () => {
@@ -157,10 +178,6 @@ describe.only("layoutTextBlock", () => {
   })
 
   function expectLines(input: string, width: number, expectedLines: string[]): TextBlockLayout {
-    const segmenter = new Intl.Segmenter(undefined, { granularity: "word" });
-    const segments = segmenter.segment(input);
-    console.log(">" + Array.from(segments).map((segment) => segment.segment));
-
     const textBlock = TextBlock.create({ styleName: "" });
     textBlock.width = width;
     const run = makeTextRun(input);
@@ -171,7 +188,6 @@ describe.only("layoutTextBlock", () => {
     expect(layout.lines.every((line) => line.runs[0].source === run)).to.be.true;
     
     const actual = layout.lines.map((line) => line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars)).join(""));
-    console.log(actual);
     expect(actual).to.deep.equal(expectedLines);
 
     return layout;
