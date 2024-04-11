@@ -115,7 +115,8 @@ public;ECSqlInsertResult
 public;ECSqlStatement 
 public;ECSqlValue
 public;ECSqlValueIterator 
-internal;EditableWorkspaceDb 
+beta;EditableWorkspaceDb 
+beta;EditableWorkspaceDb
 public;ElementAspect 
 beta;ElementDrivesElement 
 beta;ElementDrivesElementProps 
@@ -242,9 +243,6 @@ public;class IpcHandler
 public;IpcHost
 public;IpcHostOpts
 public;ITwinIdArg
-internal;ITwinWorkspace 
-internal;ITwinWorkspaceContainer 
-internal;ITwinWorkspaceDb 
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -418,8 +416,11 @@ beta;ViewStore
 public;VolumeElement 
 public;WebMercatorModel 
 beta;Workspace
+beta;Workspace
+internal;construct(settings: Settings, opts?: WorkspaceOpts): Workspace
 beta;WorkspaceCloudCacheProps 
 beta;WorkspaceContainer
+internal;validateVersion(version?: WorkspaceDb.Version): string
 beta;WorkspaceContainer
 beta;WorkspaceDb
 beta;WorkspaceDb

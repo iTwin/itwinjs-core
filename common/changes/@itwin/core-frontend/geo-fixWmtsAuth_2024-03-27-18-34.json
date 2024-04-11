@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix map layer WMTS validation process to correctly return authentication error",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

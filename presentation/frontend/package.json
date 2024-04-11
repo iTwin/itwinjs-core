@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "4.5.0-dev.37",
+  "version": "4.6.0-dev.10",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/cjs/presentation-frontend.js",
   "module": "lib/esm/presentation-frontend.js",
@@ -42,16 +42,17 @@
     "prettier:fix": "prettier --write ."
   },
   "dependencies": {
+    "@itwin/unified-selection": "^0.1.0",
     "rxjs": "^7.8.1",
     "rxjs-for-await": "^1.0.0"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.5.0-dev.37",
-    "@itwin/core-common": "workspace:^4.5.0-dev.37",
-    "@itwin/core-frontend": "workspace:^4.5.0-dev.37",
-    "@itwin/core-quantity": "workspace:^4.5.0-dev.37",
-    "@itwin/ecschema-metadata": "workspace:^4.5.0-dev.37",
-    "@itwin/presentation-common": "workspace:^4.5.0-dev.37"
+    "@itwin/core-bentley": "workspace:^4.6.0-dev.10",
+    "@itwin/core-common": "workspace:^4.6.0-dev.10",
+    "@itwin/core-frontend": "workspace:^4.6.0-dev.10",
+    "@itwin/core-quantity": "workspace:^4.6.0-dev.10",
+    "@itwin/ecschema-metadata": "workspace:^4.6.0-dev.10",
+    "@itwin/presentation-common": "workspace:^4.6.0-dev.10"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",

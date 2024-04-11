@@ -292,9 +292,11 @@ import { SolarShadowSettings } from '@itwin/core-common';
 import { SolidPrimitive } from '@itwin/core-geometry';
 import { SortedArray } from '@itwin/core-bentley';
 import { SpatialClassifier } from '@itwin/core-common';
+import { SpatialClassifierFlags } from '@itwin/core-common';
 import { SpatialClassifierInsideDisplay } from '@itwin/core-common';
 import { SpatialClassifierOutsideDisplay } from '@itwin/core-common';
 import { SpatialClassifiers } from '@itwin/core-common';
+import { SpatialClassifiersContainer } from '@itwin/core-common';
 import { SpatialViewDefinitionProps } from '@itwin/core-common';
 import { StandaloneOpenOptions } from '@itwin/core-common';
 import { StopWatch } from '@itwin/core-bentley';
@@ -1080,6 +1082,9 @@ export enum ACSType {
 
 // @alpha (undocumented)
 export type ActivationEvent = "onStartup";
+
+// @public
+export type ActiveSpatialClassifier = DynamicSpatialClassifier | PersistentSpatialClassifier;
 
 // @public
 export class ActivityMessageDetails {
@@ -2313,6 +2318,7 @@ export enum ContextMode {
 export class ContextRealityModelState extends ContextRealityModel {
     // @internal
     constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState);
+    get classifiers(): SpatialClassifiersState;
     readonly iModel: IModelConnection;
     get isGlobal(): boolean;
     get modelId(): Id64String | undefined;
@@ -2456,7 +2462,7 @@ export class CoreTools {
 }
 
 // @internal (undocumented)
-export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference;
+export function createClassifierTileTreeReference(classifiers: SpatialClassifiersState, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference;
 
 // @internal
 export function createDefaultViewFlagOverrides(options: {
@@ -2657,6 +2663,21 @@ export class DebugShaderFile {
 
 // @internal (undocumented)
 export function decodeImdlGraphics(options: ImdlDecodeOptions): Promise<RenderGraphic | undefined>;
+
+// @internal (undocumented)
+export function decodeMeshoptBuffer(source: Uint8Array, args: DecodeMeshoptBufferArgs): Promise<Uint8Array | undefined>;
+
+// @internal
+export interface DecodeMeshoptBufferArgs {
+    // (undocumented)
+    byteStride: number;
+    // (undocumented)
+    count: number;
+    // (undocumented)
+    filter?: ExtMeshoptCompressionFilter;
+    // (undocumented)
+    mode: ExtMeshoptCompressionMode;
+}
 
 // @public
 export class DecorateContext extends RenderContext {
@@ -3176,6 +3197,13 @@ export class DynamicsContext extends RenderContext {
     createGraphic(options: Omit<ViewportGraphicBuilderOptions, "viewport">): GraphicBuilder;
 }
 
+// @public
+export interface DynamicSpatialClassifier {
+    flags: SpatialClassifierFlags;
+    name: string;
+    tileTreeReference: TileTreeReference;
+}
+
 // @internal
 export interface EdgeParams {
     readonly indexed?: IndexedEdgeParams;
@@ -3620,6 +3648,12 @@ export interface ExternalTileStatistics {
     // (undocumented)
     selected: number;
 }
+
+// @internal (undocumented)
+export type ExtMeshoptCompressionFilter = "NONE" | "OCTAHEDRAL" | "QUATERNION";
+
+// @internal (undocumented)
+export type ExtMeshoptCompressionMode = "ATTRIBUTES" | "TRIANGLES" | "INDICES";
 
 // @public
 export function extractImageSourceDimensions(source: ImageSource): Promise<Point2d>;
@@ -4146,6 +4180,7 @@ export class GeometryAccumulator {
     // (undocumented)
     get isEmpty(): boolean;
     saveToGraphicList(graphics: RenderGraphic[], options: GeometryOptions, tolerance: number, pickable: {
+        isVolumeClassifier?: boolean;
         modelId?: string;
     } | undefined): MeshList | undefined;
     // (undocumented)
@@ -4155,10 +4190,12 @@ export class GeometryAccumulator {
     // (undocumented)
     readonly tileRange: Range3d;
     toMeshBuilderMap(options: GeometryOptions, tolerance: number, pickable: {
+        isVolumeClassifier?: boolean;
         modelId?: string;
     } | undefined): MeshBuilderMap;
     // (undocumented)
     toMeshes(options: GeometryOptions, tolerance: number, pickable: {
+        isVolumeClassifier?: boolean;
         modelId?: string;
     } | undefined): MeshList;
     // (undocumented)
@@ -4667,6 +4704,12 @@ export interface GltfBuffer extends GltfChildOfRootProperty {
     // (undocumented)
     byteLength?: number;
     // (undocumented)
+    extensions?: GltfExtensions & {
+        EXT_meshopt_compression?: {
+            fallback?: boolean;
+        };
+    };
+    // (undocumented)
     uri?: string;
 }
 
@@ -4688,6 +4731,24 @@ export enum GltfBufferTarget {
     ElementArrayBuffer = 24963
 }
 
+// @internal
+export interface GltfBufferViewMeshoptCompressionExtension {
+    // (undocumented)
+    buffer: number;
+    // (undocumented)
+    byteLength: number;
+    // (undocumented)
+    byteOffset?: number;
+    // (undocumented)
+    byteStride: number;
+    // (undocumented)
+    count: number;
+    // (undocumented)
+    filter?: ExtMeshoptCompressionFilter;
+    // (undocumented)
+    mode: ExtMeshoptCompressionMode;
+}
+
 // @internal (undocumented)
 export interface GltfBufferViewProps extends GltfChildOfRootProperty {
     // (undocumented)
@@ -4698,6 +4759,10 @@ export interface GltfBufferViewProps extends GltfChildOfRootProperty {
     byteOffset?: number;
     // (undocumented)
     byteStride?: number;
+    // (undocumented)
+    extensions?: GltfExtensions & {
+        EXT_meshopt_compression?: GltfBufferViewMeshoptCompressionExtension;
+    };
     // (undocumented)
     target?: GltfBufferTarget;
 }
@@ -4987,7 +5052,9 @@ export abstract class GltfReader {
         resolvedBuffer?: Uint8Array;
     }>;
     // (undocumented)
-    protected get _bufferViews(): GltfDictionary<GltfBufferViewProps>;
+    protected get _bufferViews(): GltfDictionary<GltfBufferViewProps & {
+        resolvedBuffer?: Uint8Array;
+    }>;
     // (undocumented)
     protected _computedContentRange?: ElementAlignedBox3d;
     // (undocumented)
@@ -8137,6 +8204,8 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
     // @internal
     constructor(_layerSettings: MapLayerSettings, _layerIndex: number, iModel: IModelConnection);
     // (undocumented)
+    canSupplyToolTip(hit: HitDetail): boolean;
+    // (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
     get imageryProvider(): MapLayerImageryProvider | undefined;
     // (undocumented)
@@ -8467,6 +8536,8 @@ export class MapTileTreeReference extends TileTreeReference {
     addToScene(context: SceneContext): void;
     // (undocumented)
     get baseColor(): ColorDef | undefined;
+    // (undocumented)
+    canSupplyToolTip(hit: HitDetail): boolean;
     // (undocumented)
     get castsShadows(): boolean;
     // (undocumented)
@@ -9204,10 +9275,12 @@ export namespace MeshBuilder {
 // @internal (undocumented)
 export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> {
     constructor(tolerance: number, range: Range3d, is2d: boolean, options: GeometryOptions, pickable: {
+        isVolumeClassifier?: boolean;
         modelId?: Id64String;
     } | undefined);
     // (undocumented)
     static createFromGeometries(geometries: GeometryList, tolerance: number, range: Range3d, is2d: boolean, options: GeometryOptions, pickable: {
+        isVolumeClassifier?: boolean;
         modelId?: Id64String;
     } | undefined): MeshBuilderMap;
     // (undocumented)
@@ -10072,6 +10145,8 @@ export namespace OrbitGtTileTree {
 export class OrbitGtTreeReference extends RealityModelTileTree.Reference {
     constructor(props: OrbitGtTileTree.ReferenceProps);
     // (undocumented)
+    canSupplyToolTip(hit: HitDetail): boolean;
+    // (undocumented)
     get castsShadows(): boolean;
     // (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
@@ -10344,6 +10419,11 @@ export namespace PerModelCategoryVisibility {
 }
 
 // @public
+export type PersistentSpatialClassifier = SpatialClassifier & {
+    tileTreeReference?: never;
+};
+
+// @public
 export class PhysicalModelState extends SpatialModelState {
     // (undocumented)
     static get className(): string;
@@ -10353,6 +10433,7 @@ export class PhysicalModelState extends SpatialModelState {
 export interface PickableGraphicOptions extends BatchOptions {
     geometryClass?: GeometryClass;
     id: Id64String;
+    isVolumeClassifier?: boolean;
     modelId?: Id64String;
     subCategoryId?: Id64String;
 }
@@ -11157,7 +11238,7 @@ export namespace RealityModelTileTree {
     // (undocumented)
     export interface ReferenceBaseProps {
         // (undocumented)
-        classifiers?: SpatialClassifiers;
+        classifiers?: SpatialClassifiersState;
         // (undocumented)
         getDisplaySettings(): RealityModelDisplaySettings;
         // (undocumented)
@@ -11515,6 +11596,8 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     addLogoCards(cards: HTMLTableElement): void;
     // (undocumented)
     addToScene(context: SceneContext): void;
+    // (undocumented)
+    canSupplyToolTip(hit: HitDetail): boolean;
     // (undocumented)
     get castsShadows(): boolean;
     // (undocumented)
@@ -12105,7 +12188,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // (undocumented)
     createGraphicBuilder(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder;
     // (undocumented)
-    createPlanarClassifier(_properties?: SpatialClassifier): RenderPlanarClassifier | undefined;
+    createPlanarClassifier(_properties?: ActiveSpatialClassifier): RenderPlanarClassifier | undefined;
     // (undocumented)
     cssPixelsToDevicePixels(cssPixels: number, floor?: boolean): number;
     // (undocumented)
@@ -12322,7 +12405,7 @@ export class SceneContext extends RenderContext {
     requestMissingTiles(): void;
     readonly scene: Scene;
     // @internal (undocumented)
-    setVolumeClassifier(classifier: SpatialClassifier, modelId: Id64String): void;
+    setVolumeClassifier(classifier: ActiveSpatialClassifier, modelId: Id64String): void;
     // @internal (undocumented)
     get textureDrapes(): Map<string, RenderTextureDrape>;
     get viewingSpace(): ViewingSpace;
@@ -12333,7 +12416,7 @@ export class SceneContext extends RenderContext {
 // @internal
 export interface SceneVolumeClassifier {
     // (undocumented)
-    classifier: SpatialClassifier;
+    classifier: ActiveSpatialClassifier;
     // (undocumented)
     modelId: Id64String;
 }
@@ -12990,12 +13073,18 @@ export enum SnapStatus {
     Success = 0
 }
 
+// @public
+export class SpatialClassifiersState extends SpatialClassifiers {
+    get activeClassifier(): ActiveSpatialClassifier | undefined;
+    set activeClassifier(active: ActiveSpatialClassifier | undefined);
+    // @internal (undocumented)
+    static create(container: SpatialClassifiersContainer): SpatialClassifiersState;
+}
+
 // @internal (undocumented)
 export abstract class SpatialClassifierTileTreeReference extends TileTreeReference {
     // (undocumented)
-    abstract get activeClassifier(): SpatialClassifier | undefined;
-    // (undocumented)
-    get isOpaque(): boolean;
+    abstract get activeClassifier(): ActiveSpatialClassifier | undefined;
     // (undocumented)
     abstract get isPlanar(): boolean;
     // (undocumented)
@@ -13022,7 +13111,7 @@ export class SpatialModelState extends GeometricModel3dState {
     constructor(props: ModelProps, iModel: IModelConnection, state?: SpatialModelState);
     // @internal (undocumented)
     get asSpatialModel(): SpatialModelState;
-    readonly classifiers?: SpatialClassifiers;
+    readonly classifiers?: SpatialClassifiersState;
     // (undocumented)
     static get className(): string;
     get isRealityModel(): boolean;
@@ -13432,7 +13521,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     activeVolumeClassifierModelId?: Id64String;
     // (undocumented)
-    activeVolumeClassifierProps?: SpatialClassifier;
+    activeVolumeClassifierProps?: ActiveSpatialClassifier;
     // (undocumented)
     activeVolumeClassifierTexture?: WebGLTexture;
     // (undocumented)
@@ -13493,7 +13582,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     copyImageToCanvas(): HTMLCanvasElement;
     // (undocumented)
-    createPlanarClassifier(properties?: SpatialClassifier): PlanarClassifier;
+    createPlanarClassifier(properties?: ActiveSpatialClassifier): PlanarClassifier;
     // (undocumented)
     protected cssViewRectToDeviceViewRect(rect: ViewRect): ViewRect;
     // (undocumented)
@@ -14716,6 +14805,7 @@ export abstract class TileTreeReference {
     accumulateTransformedRange(range: Range3d, matrix: Matrix4d, frustumPlanes?: FrustumPlanes): void;
     addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void;
     addToScene(context: SceneContext): void;
+    canSupplyToolTip(_hit: HitDetail): boolean;
     get castsShadows(): boolean;
     collectStatistics(stats: RenderMemory.Statistics): void;
     // @beta
@@ -14748,6 +14838,7 @@ export abstract class TileTreeReference {
     // @internal (undocumented)
     getTerrainHeight(_terrainHeights: Range1d): void;
     getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined>;
+    getToolTipPromise(hit: HitDetail): Promise<HTMLElement | string | undefined> | undefined;
     protected getViewFlagOverrides(tree: TileTree): ViewFlagOverrides;
     get isGlobal(): boolean;
     get isLoadingComplete(): boolean;

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Transform } from "@itwin/core-geometry";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   DecorateContext, GraphicBranch, GraphicType, IModelApp, readGltfGraphics, RenderGraphic, Tool,
 } from "@itwin/core-frontend";
@@ -68,10 +68,11 @@ export class GltfDecorationTool extends Tool {
   }
 
   public override async run(url?: string) {
-    const iModel = IModelApp.viewManager.selectedView?.iModel;
-    if (!iModel)
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp)
       return false;
 
+    const iModel = vp.iModel;
     try {
       const buffer = await this.queryAsset(url);
       if (!buffer)
@@ -105,6 +106,13 @@ export class GltfDecorationTool extends Tool {
       // Install the decorator.
       const decorator = new GltfDecoration(graphicOwner, url, id);
       IModelApp.viewManager.addDecorator(decorator);
+
+      // Fit the view to the decoration
+      const range = new Range3d();
+      graphic.unionRange(range);
+      vp.view.lookAtVolume(range, vp.viewRect.aspect);
+      vp.synchWithView({ animateFrustumChange: true });
+      vp.viewCmdTargetCenter = undefined;
 
       // Once the iModel is closed, dispose of the graphic and uninstall the decorator.
       iModel.onClose.addOnce(() => {

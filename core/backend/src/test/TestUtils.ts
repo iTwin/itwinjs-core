@@ -60,12 +60,13 @@ export class TestUtils {
    * The provided config is used and will override any of the default values used in this method.
    *
    * The default includes:
-   * - concurrentQuery.current === 4
-   * - cacheDir === path.join(__dirname, ".cache")
+   * - cacheDir = path.join(__dirname, ".cache")
+   * - allowSharedChannel = false;
    */
   public static async startBackend(config?: IModelHostOptions): Promise<void> {
     const cfg = config ?? {};
     cfg.cacheDir = TestUtils.getCacheDir(cfg.cacheDir);
+    cfg.allowSharedChannel ??= false; // Override default to test shared channel enforcement. Remove in version 5.0.
     await IModelHost.startup(cfg);
   }
 

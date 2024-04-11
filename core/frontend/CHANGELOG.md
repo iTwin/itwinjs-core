@@ -1,6 +1,37 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 15 Mar 2024 19:16:22 GMT and should not be manually modified.
+This log was last generated on Wed, 03 Apr 2024 18:28:10 GMT and should not be manually modified.
+
+## 4.5.1
+Wed, 03 Apr 2024 18:26:58 GMT
+
+### Updates
+
+- Fix map layer WMTS validation process to correctly return authentication error
+
+## 4.5.0
+Tue, 02 Apr 2024 19:06:00 GMT
+
+### Updates
+
+- Change gpuMemoryLimit setting used when undefined
+- Disable tile preloading when under memory pressure
+- Add textures to reality mesh stats
+- Fix an issue where the background map would become blank after adding a new map-layer
+- added ability of batched tiles to generate cut plane graphics
+- Fix regression in GPU timings due a  change in chromium's behavior.
+- Dispose of all viewports when IModelApp.shutdown() is called to clear up WebGL resources, and avoid memory leak
+- make CheckpointConnection.openRemote work for IPC
+- Add TileTreeReference.createFromRenderGraphic. Permit TiledGraphicsProvider to supply a tooltip.
+- Added an iterator over the entries in a BatchTableProperties.
+- Add support for custom data sources in TerrainSettings, including Cesium ION assets.
+- Add support for dynamic spatial classifiers.
+- Fix incorrect transforms computed for instanced glTF meshes.
+
+## 4.4.8
+Mon, 25 Mar 2024 22:22:26 GMT
+
+_Version update only_
 
 ## 4.4.7
 Fri, 15 Mar 2024 19:15:14 GMT
@@ -75,6 +106,18 @@ Mon, 12 Feb 2024 18:15:58 GMT
 - Fix incorrect transparency for text rendered as raster glyphs.
 - Remove maximum depth constraint for reality tile trees.
 - Clone view attachments when cloning a sheet or drawing view.
+
+## 4.3.5
+Mon, 25 Mar 2024 16:54:36 GMT
+
+_Version update only_
+
+## 4.3.4
+Fri, 22 Mar 2024 13:30:31 GMT
+
+### Updates
+
+- Bump @itwin/object-storage-core
 
 ## 4.3.3
 Wed, 03 Jan 2024 19:28:38 GMT

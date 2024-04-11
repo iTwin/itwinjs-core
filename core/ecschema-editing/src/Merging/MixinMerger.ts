@@ -2,34 +2,36 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Mixin, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
-import { SchemaItemEditResults } from "../Editing/Editor";
-import { ClassMerger } from "./ClassMerger";
+import { type MixinClassDifference } from "../Differencing/SchemaDifference";
+import { type SchemaItemMergerHandler, updateSchemaItemFullName, updateSchemaItemKey } from "./SchemaItemMerger";
+import { type MutableMixin } from "../Editing/Mutable/MutableMixin";
+import { modifyClass } from "./ClassMerger";
 
 /**
+ * Defines a merge handler to merge Mixin schema items.
  * @internal
  */
-export default class MixinMerger extends ClassMerger<Mixin> {
-
-  protected override async create(schemaKey: SchemaKey, ecClass: Mixin): Promise<SchemaItemEditResults> {
-    if (ecClass.appliesTo === undefined) {
-      return { errorMessage: `The Mixin ${ecClass.fullName} is missing the required 'appliesTo' attribute.` };
+export const mixinClassMerger: SchemaItemMergerHandler<MixinClassDifference> = {
+  async add(context, change) {
+    if (change.difference.appliesTo === undefined) {
+      return { errorMessage: "Mixin must define appliesTo" };
     }
-
-    const appliesTo = new SchemaItemKey(ecClass.appliesTo.name, this.context.sourceSchema.schemaKey.matches(ecClass.appliesTo.schemaKey)
-      ? this.context.targetSchema.schemaKey
-      : ecClass.appliesTo.schemaKey);
-    return this.context.editor.mixins.create(schemaKey, ecClass.name, appliesTo);
-  }
-
-  protected override async mergeAttributes(ecClass: Mixin, attributeName: string, attributeNewValue: any, attributeOldValue: any): Promise<SchemaItemEditResults | boolean> {
-    switch(attributeName) {
-      case "appliesTo":
-        if (attributeOldValue !== undefined) {
-          return { errorMessage: `Changing the mixin '${ecClass.name}' appliesTo is not supported.` };
-        }
-        return true;
+    return context.editor.mixins.createFromProps(context.targetSchemaKey, {
+      ...change.difference,
+      name: change.itemName,
+      schemaItemType: change.schemaType,
+      appliesTo: await updateSchemaItemFullName(context, change.difference.appliesTo),
+    });
+  },
+  async modify(context, change, itemKey, item: MutableMixin) {
+    if(change.difference.appliesTo !== undefined) {
+      const appliesTo = await updateSchemaItemKey(context, change.difference.appliesTo);
+      const currentValue = await item.appliesTo;
+      if (currentValue !== undefined && !appliesTo.matches(currentValue.key)) {
+        return { errorMessage: `Changing the mixin '${itemKey.name}' appliesTo is not supported.` };
+      }
     }
-    return super.mergeAttributes(ecClass, attributeName, attributeNewValue, attributeOldValue);
-  }
-}
+    return modifyClass(context, change, itemKey, item);
+  },
+};
+

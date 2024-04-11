@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "change signature to updateElement to be Partial<ElementProps>. Also update documentation that model and classFullName may not be changed.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

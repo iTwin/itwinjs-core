@@ -1,6 +1,24 @@
 # Change Log - @itwin/presentation-backend
 
-This log was last generated on Fri, 15 Mar 2024 19:16:22 GMT and should not be manually modified.
+This log was last generated on Wed, 03 Apr 2024 18:28:10 GMT and should not be manually modified.
+
+## 4.5.1
+Wed, 03 Apr 2024 18:26:59 GMT
+
+_Version update only_
+
+## 4.5.0
+Tue, 02 Apr 2024 19:06:00 GMT
+
+### Updates
+
+- Only add "descriptor only" flag when requests come through RPC or if input content flags are `undefined`. This effectively removes the flag for `getElementProperties` request (multi-elements case), which improves performance when requesting content set.
+- Refactor iModel updates' tracking to work without polling. Also, the updates are now always tracked - no additional configuration is needed.
+
+## 4.4.8
+Mon, 25 Mar 2024 22:22:26 GMT
+
+_Version update only_
 
 ## 4.4.7
 Fri, 15 Mar 2024 19:15:14 GMT
@@ -51,6 +69,16 @@ Mon, 12 Feb 2024 18:15:58 GMT
 - Improve performance of `PresentationManager.getElementProperties` "multi" case by ~100%. Add a way to provide custom content parser.
 - Add support for default formats when formatting values in TS (when `Presentation` is initialized with `schemaContextProvider`).
 - Refactor iModel updates' tracking to work without polling. Also, the updates are now always tracked - no additional configuration is needed.
+
+## 4.3.5
+Mon, 25 Mar 2024 16:54:37 GMT
+
+_Version update only_
+
+## 4.3.4
+Fri, 22 Mar 2024 13:30:31 GMT
+
+_Version update only_
 
 ## 4.3.3
 Wed, 03 Jan 2024 19:28:38 GMT

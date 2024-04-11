@@ -31,7 +31,7 @@ import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileCont
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { EditingScopeTool, PlaceLineStringTool } from "./EditingTools";
-import { PlaceSpheresTool } from "./PlaceSpheresTool";
+import { DynamicClassifierTool } from "./DynamicClassifierTool";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
 import { FrameStatsTool } from "./FrameStatsTool";
@@ -339,7 +339,7 @@ export class DisplayTestApp {
       OpenRealityModelSettingsTool,
       OutputShadersTool,
       PlaceLineStringTool,
-      PlaceSpheresTool,
+      DynamicClassifierTool,
       PullChangesTool,
       PushChangesTool,
       PurgeTileTreesTool,

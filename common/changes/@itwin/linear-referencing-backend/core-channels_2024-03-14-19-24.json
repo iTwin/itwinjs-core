@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/linear-referencing-backend",
+      "comment": "React to API changes (Channels).",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/linear-referencing-backend"
+}
