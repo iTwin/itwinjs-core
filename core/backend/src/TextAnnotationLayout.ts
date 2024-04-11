@@ -210,7 +210,7 @@ export class RunLayout {
   public style: TextStyleSettings;
   public fontId: FontId;
 
-  private constructor(props: NonFunctionPropertiesOf<Omit<RunLayout, "canWrap">>) {
+  private constructor(props: NonFunctionPropertiesOf<RunLayout>) {
     this.source = props.source;
     this.charOffset = props.charOffset;
     this.numChars = props.numChars;
@@ -258,12 +258,12 @@ export class RunLayout {
     return new RunLayout({ source, charOffset, numChars, range, justificationRange, denominatorRange, numeratorRange, offsetFromLine, style, fontId });
   }
 
-  get canWrap(): boolean {
+  canWrap(): this is { source: TextRun } {
     return this.source.type === "text";
   }
 
-  private clone(args: { ranges: TextLayoutRanges, charOffset: number, numChars: number}): RunLayout {
-    assert("text" === this.source.type);
+  private cloneForWrap(args: { ranges: TextLayoutRanges, charOffset: number, numChars: number}): RunLayout {
+    assert(this.canWrap());
     
     return new RunLayout({
       ...this,
@@ -276,7 +276,7 @@ export class RunLayout {
   }
 
   public wrap(availableWidth: number, shouldForceLeadingUnit: boolean, context: LayoutContext): RunLayout | undefined {
-    if ("text" !== this.source.type) {
+    if (!this.canWrap()) {
       return undefined;
     }
 
@@ -311,7 +311,7 @@ export class RunLayout {
     this.numChars = breakPos;
     
     const leftover = this.source.content.substring(charOffset, charOffset + numChars);
-    return this.clone({
+    return this.cloneForWrap({
       ranges: context.computeRangeForText(leftover, this.style, this.source.baselineShift),
       charOffset,
       numChars,
@@ -419,7 +419,7 @@ export class TextBlockLayout {
         }
 
         // Can't fit, but can't wrap? Force on the line if it's the first thing; otherwise flush and add to the next line.
-        if (!layoutRun.canWrap) {
+        if (!layoutRun.canWrap()) {
           if (line.runs.length === 0) {
             line.append(layoutRun);
             line = this.flushLine(context, line);
