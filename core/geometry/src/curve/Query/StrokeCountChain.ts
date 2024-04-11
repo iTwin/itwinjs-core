@@ -9,12 +9,13 @@
 import { Geometry } from "../../Geometry";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d } from "../../geometry3d/Range";
-import { AnyCurve } from "../CurveTypes";
 import { CurveChain, CurveCollection } from "../CurveCollection";
+import { AnyCurve } from "../CurveTypes";
 import { LineString3d } from "../LineString3d";
 import { Loop } from "../Loop";
 import { ParityRegion } from "../ParityRegion";
 import { StrokeOptions } from "../StrokeOptions";
+import { UnionRegion } from "../UnionRegion";
 import { StrokeCountMap } from "./StrokeCountMap";
 
 // cspell:word remapa
@@ -248,15 +249,27 @@ export class StrokeCountSection {
    * construct array of arrays of `StrokeCountMap`s
    * @param parent
    */
-  public static createForParityRegionOrChain(parent: CurveCollection, options?: StrokeOptions): StrokeCountSection {
+  public static create(parent: CurveCollection, options?: StrokeOptions): StrokeCountSection {
     const result = new StrokeCountSection(parent);
-    if (parent instanceof ParityRegion) {
-      for (const child of parent.children) {
-        const p = StrokeCountChain.createForCurveChain(child, options);
-        result.chains.push(p);
+    const appendCurveChain = (chain: CurveChain) => {
+      result.chains.push(StrokeCountChain.createForCurveChain(chain, options));
+    };
+    const appendParityRegion = (region: ParityRegion) => {
+      for (const child of region.children) {
+        appendCurveChain(child);
       }
+    };
+    if (parent instanceof UnionRegion) {
+      for (const child of parent.children) {
+        if (child instanceof ParityRegion)
+          appendParityRegion(child);
+        else
+          appendCurveChain(child);
+      }
+    } else if (parent instanceof ParityRegion) {
+      appendParityRegion(parent);
     } else if (parent instanceof CurveChain) {
-      result.chains.push(StrokeCountChain.createForCurveChain(parent, options));
+      appendCurveChain(parent);
     }
     return result;
   }

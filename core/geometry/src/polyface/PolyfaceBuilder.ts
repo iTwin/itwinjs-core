@@ -1126,7 +1126,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    */
   public addRotationalSweep(surface: RotationalSweep) {
     const contour = surface.getCurves();
-    const section0 = StrokeCountSection.createForParityRegionOrChain(contour, this._options);
+    const section0 = StrokeCountSection.create(contour, this._options);
     const baseStrokes = section0.getStrokes();
 
     const axis = surface.cloneAxisRay();
@@ -1276,7 +1276,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    */
   public addLinearSweep(surface: LinearSweep) {
     const contour = surface.getCurvesRef();
-    const section0 = StrokeCountSection.createForParityRegionOrChain(contour, this._options);
+    const section0 = StrokeCountSection.create(contour, this._options);
     const stroke0 = section0.getStrokes();
     const sweepVector = surface.cloneSweepVector();
     const sweepTransform = Transform.createTranslation(sweepVector);
@@ -1302,7 +1302,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     let stroke1: AnyCurve;
     const sectionMaps = [];
     for (const contour of contours) {
-      sectionMaps.push(StrokeCountSection.createForParityRegionOrChain(contour.curves, this._options));
+      sectionMaps.push(StrokeCountSection.create(contour.curves, this._options));
     }
     if (StrokeCountSection.enforceStrokeCountCompatibility(sectionMaps)) {
       StrokeCountSection.enforceCompatibleDistanceSums(sectionMaps);
@@ -1697,7 +1697,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     options?: StrokeOptions,
     acceptFaceFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testNodeMaskNotExterior(node),
     isEdgeVisibleFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testMateMaskExterior(node),
-    ): IndexedPolyface {
+  ): IndexedPolyface {
     const builder = PolyfaceBuilder.create(options);
     builder.addGraph(graph, acceptFaceFunction, isEdgeVisibleFunction);
     builder.endFace();
