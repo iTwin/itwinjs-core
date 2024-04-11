@@ -704,7 +704,7 @@ describe("RegionBoolean", () => {
     }
     for (const testCase of testCases) {
       const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase.jsonFilePath, "utf8"))) as Loop[];
-      if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
+      if (ck.testDefined(inputs, "inputs successfully parsed")) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs, x0, y0);
         const range: Range3d = Range3d.createFromVariantData(inputs.map((loop: Loop) => { return [loop.range().low, loop.range().high]; }));
         xDelta = 1.5 * range.xLength();
@@ -712,7 +712,7 @@ describe("RegionBoolean", () => {
         let merged: Loop[] | AnyRegion | undefined = inputs;
         if (!testCase.skipBoolean) {
           merged = RegionOps.regionBooleanXY(inputs, undefined, RegionBinaryOpType.Union, testCase.tolerance);
-          if (ck.testDefined(merged, "regionBooleanXY succeeded") && merged) {
+          if (ck.testDefined(merged, "regionBooleanXY succeeded")) {
             x0 += xDelta;
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged, x0, y0);
             ck.testType(merged, UnionRegion, "regionBooleanXY produced a UnionRegion");
@@ -831,7 +831,7 @@ describe("PlaneAltitudeRangeContext", () => {
           lowHigh = geom.projectedParameterRange(rayParam.ray, lowHigh);
         else if (undefined !== geom)
           lowHigh = PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(geom, rayParam.ray, lowHigh);
-        if (ck.testDefined(lowHigh) && lowHigh) {
+        if (ck.testDefined(lowHigh)) {
           ck.testFalse(lowHigh.isNull, "projection range computed");
           ck.testTrue(lowHigh.isSinglePoint, "projection range is single point");
           ck.testCoordinate(rayParam.param, lowHigh.low, "low projection as expected");
@@ -892,7 +892,7 @@ describe("PlaneAltitudeRangeContext", () => {
         lowHigh = param.geom.projectedParameterRange(param.ray, lowHigh);
       else if (param.geom instanceof CurvePrimitive)
         lowHigh = param.geom.projectedParameterRange(param.ray, lowHigh);
-      if (ck.testDefined(lowHigh) && lowHigh) {
+      if (ck.testDefined(lowHigh)) {
         ck.testFalse(lowHigh.isNull, `${param.label} projection range computed`);
         ck.testCoordinate(param.minParam, lowHigh.low, `${param.label} low projection as expected`);
         ck.testCoordinate(param.maxParam, lowHigh.high, `${param.label} high projection as expected`);

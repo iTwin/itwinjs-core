@@ -312,7 +312,7 @@ describe("InsertAndRetriangulateContext", () => {
         GeometryCoreTestIO.consoleTimeEnd(timerName);
         y0 += yShiftDisplay;
         GeometryCoreTestIO.captureGeometry(allGeometry, polyface, x0, y0);
-        if (ck.testDefined(polyface, "polyface triangulation") && polyface) {
+        if (ck.testDefined(polyface, "polyface triangulation")) {
           const polyfaceArea = PolyfaceQuery.sumFacetAreas(polyface);
           const hullArea = PolygonOps.areaXY(hull);
           ck.testCoordinate(polyfaceArea, hullArea, `mesh, hull area match for ${numPoints}point triangulation`);

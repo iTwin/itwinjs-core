@@ -277,7 +277,7 @@ describe("Arc3d", () => {
         const point2 = Point3d.create(3, 0);
         const arcData = Arc3d.createFilletArc(point0, point1, point2, radius);
         GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(point0, point1, point2), x0, y0);
-        if (ck.testDefined(arcData, "Fillet Arc exists") && arcData && arcData.arc) {
+        if (ck.testDefined(arcData, "Fillet Arc exists") && arcData.arc) {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, arcData.arc, x0, y0);
           GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, point1.interpolate(arcData.fraction10, point0), markerRadius, x0, y0);
           GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, point1.interpolate(arcData.fraction12, point2), markerRadius, x0, y0);
@@ -348,7 +348,7 @@ describe("Arc3d", () => {
     GeometryCoreTestIO.captureGeometry(allGeometry, arc, x0, y0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "ArnoldasFailureLinearSys3d");
     const r = arc.circularRadius();
-    if (ck.testDefined(r) && r !== undefined) {
+    if (ck.testDefined(r)) {
       ck.testCoordinate(r, point0.distance(arc.center));
       ck.testCoordinate(r, point1.distance(arc.center));
       ck.testCoordinate(r, point2.distance(arc.center));

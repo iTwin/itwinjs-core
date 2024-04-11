@@ -190,7 +190,7 @@ describe("OrderedRotationAngles", () => {
           ]) {
             const matrixA = anglesA.toMatrix3d();
             const anglesB = OrderedRotationAngles.createFromMatrix3d(matrixA, axisOrder);
-            if (ck.testDefined(anglesB) && anglesB)
+            if (ck.testDefined(anglesB))
               testEqualOrderedRotationAngles(ck, anglesA, anglesB);
 
             expect(ck.getNumErrors()).equals(0);
@@ -695,7 +695,7 @@ describe("OrderedRotationAngles", () => {
     const matrix = Matrix3d.createIdentity();
     const angles = OrderedRotationAngles.createFromMatrix3d(matrix, AxisOrder.XYZ); // order doesn't matter
     const expectedAngles = OrderedRotationAngles.createRadians(0, 0, 0, AxisOrder.XYZ);
-    if (ck.testDefined(angles) && angles)
+    if (ck.testDefined(angles))
       testEqualOrderedRotationAngles(ck, angles, expectedAngles);
 
     // The three classic "base rotation matrixes" (column-based from)
@@ -718,52 +718,52 @@ describe("OrderedRotationAngles", () => {
     // One Rotation (order doesn't matter)
     OrderedRotationAngles.createFromMatrix3d(rX, AxisOrder.XYZ, angles);
     OrderedRotationAngles.createRadians(x, 0, 0, AxisOrder.XYZ, undefined, expectedAngles);
-    if (ck.testDefined(angles) && angles)
+    if (ck.testDefined(angles))
       testEqualOrderedRotationAngles(ck, angles, expectedAngles);
     OrderedRotationAngles.createFromMatrix3d(rY, AxisOrder.XYZ, angles);
     OrderedRotationAngles.createRadians(0, y, 0, AxisOrder.XYZ, undefined, expectedAngles);
-    if (ck.testDefined(angles) && angles)
+    if (ck.testDefined(angles))
       testEqualOrderedRotationAngles(ck, angles, expectedAngles);
     OrderedRotationAngles.createFromMatrix3d(rZ, AxisOrder.XYZ, angles);
     OrderedRotationAngles.createRadians(0, 0, z, AxisOrder.XYZ, undefined, expectedAngles);
-    if (ck.testDefined(angles) && angles)
+    if (ck.testDefined(angles))
       testEqualOrderedRotationAngles(ck, angles, expectedAngles);
 
     // Three Rotations
     const rZrYrX = rZ.multiplyMatrixMatrix(rY).multiplyMatrixMatrix(rX);
     OrderedRotationAngles.createFromMatrix3d(rZrYrX, AxisOrder.XYZ, angles);
     OrderedRotationAngles.createRadians(x, y, z, AxisOrder.XYZ, undefined, expectedAngles);
-    if (ck.testDefined(angles) && angles)
+    if (ck.testDefined(angles))
       testEqualOrderedRotationAngles(ck, angles, expectedAngles);
 
     const rZrXrY = rZ.multiplyMatrixMatrix(rX).multiplyMatrixMatrix(rY);
     OrderedRotationAngles.createFromMatrix3d(rZrXrY, AxisOrder.YXZ, angles);
     OrderedRotationAngles.createRadians(x, y, z, AxisOrder.YXZ, undefined, expectedAngles);
-    if (ck.testDefined(angles) && angles)
+    if (ck.testDefined(angles))
       testEqualOrderedRotationAngles(ck, angles, expectedAngles);
 
     const rYrXrZ = rY.multiplyMatrixMatrix(rX).multiplyMatrixMatrix(rZ);
     OrderedRotationAngles.createFromMatrix3d(rYrXrZ, AxisOrder.ZXY, angles);
     OrderedRotationAngles.createRadians(x, y, z, AxisOrder.ZXY, undefined, expectedAngles);
-    if (ck.testDefined(angles) && angles)
+    if (ck.testDefined(angles))
       testEqualOrderedRotationAngles(ck, angles, expectedAngles);
 
     const rXrYrZ = rX.multiplyMatrixMatrix(rY).multiplyMatrixMatrix(rZ);
     OrderedRotationAngles.createFromMatrix3d(rXrYrZ, AxisOrder.ZYX, angles);
     OrderedRotationAngles.createRadians(x, y, z, AxisOrder.ZYX, undefined, expectedAngles);
-    if (ck.testDefined(angles) && angles)
+    if (ck.testDefined(angles))
       testEqualOrderedRotationAngles(ck, angles, expectedAngles);
 
     const rXrZrY = rX.multiplyMatrixMatrix(rZ).multiplyMatrixMatrix(rY);
     OrderedRotationAngles.createFromMatrix3d(rXrZrY, AxisOrder.YZX, angles);
     OrderedRotationAngles.createRadians(x, y, z, AxisOrder.YZX, undefined, expectedAngles);
-    if (ck.testDefined(angles) && angles)
+    if (ck.testDefined(angles))
       testEqualOrderedRotationAngles(ck, angles, expectedAngles);
 
     const rYrZrX = rY.multiplyMatrixMatrix(rZ).multiplyMatrixMatrix(rX);
     OrderedRotationAngles.createFromMatrix3d(rYrZrX, AxisOrder.XZY, angles);
     OrderedRotationAngles.createRadians(x, y, z, AxisOrder.XZY, undefined, expectedAngles);
-    if (ck.testDefined(angles) && angles)
+    if (ck.testDefined(angles))
       testEqualOrderedRotationAngles(ck, angles, expectedAngles);
 
     expect(ck.getNumErrors()).equals(0);

@@ -385,7 +385,7 @@ describe("Ray3d.IntersectionWithTriangle", () => {
     if (ck.testDefined(rotatedIntersectionPoint)) {
       ck.testPoint3d(
         rotatedOriginalIntersectionPoint,
-        rotatedIntersectionPoint!,
+        rotatedIntersectionPoint,
         "rotating original intersection points gives rotated intersection points",
       );
     }
@@ -409,7 +409,7 @@ describe("Ray3d.IntersectionWithTriangle", () => {
     if (ck.testDefined(rotatedIntersectionPoint)) {
       ck.testPoint3d(
         rotatedOriginalIntersectionPoint,
-        rotatedIntersectionPoint!,
+        rotatedIntersectionPoint,
         "rotating original intersection points gives rotated intersection points",
       );
     }
@@ -435,7 +435,7 @@ describe("Ray3d.IntersectionWithTriangle", () => {
     if (ck.testDefined(rotatedIntersectionPoint)) {
       ck.testPoint3d(
         rotatedOriginalIntersectionPoint,
-        rotatedIntersectionPoint!,
+        rotatedIntersectionPoint,
         "rotating original intersection points gives rotated intersection points",
       );
     }

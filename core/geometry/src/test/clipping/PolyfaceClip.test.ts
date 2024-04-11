@@ -402,12 +402,12 @@ describe("PolyfaceClip", () => {
     const boxRange = new Range3d(-targetSize / 2, -targetSize / 2, 0, targetSize / 2, targetSize / 2, targetSize);
     let box = Box.createRange(boxRange, true);
     if (ck.testDefined(box))
-      builder.addBox(box!);
+      builder.addBox(box);
     boxRange.low.z += 2 * targetSize;
     boxRange.high.z += 2 * targetSize;
     box = Box.createRange(boxRange, true);
     if (ck.testDefined(box))
-      builder.addBox(box!);
+      builder.addBox(box);
     targetMeshes.push(builder.claimPolyface(true));
 
     // create a star-shaped linear sweep
@@ -831,7 +831,7 @@ describe("PolyfaceClip", () => {
     const polyface = IModelJson.Reader.parse(meshData);
     const vectorA = Vector3d.create(-1, -1, -0.234);
     vectorA.normalizeInPlace();
-    if (ck.testDefined(polyface) && ck.testTrue(polyface instanceof Polyface) && polyface instanceof Polyface) {
+    if (ck.testType(polyface, Polyface)) {
       for (const transform of Sample.createRigidTransforms(1.0)) {
         y0 = 0.0;
         for (const clipPlane of [ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, -1), -0.8221099398657934)!,
@@ -844,7 +844,7 @@ describe("PolyfaceClip", () => {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceA, x0, y0);
           for (const inside of [false, true]) {
             const clip = PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(polyfaceA, clipPlaneA, inside, true);
-            if (ck.testDefined(clip) && clip) {
+            if (ck.testDefined(clip)) {
               ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(clip), " clip closure");
               GeometryCoreTestIO.captureCloneGeometry(allGeometry, clip, x0, y0 += yStep);
             }
@@ -1068,7 +1068,7 @@ describe("PolyfaceClip", () => {
       meshData.indexedMesh.pointIndex = pointIndex1;
     }
     const polyface = IModelJson.Reader.parse(meshData) as Polyface;
-    if (ck.testDefined(polyface) && polyface) {
+    if (ck.testDefined(polyface)) {
 
       const pointA = polyface.data.point.getPoint3dAtUncheckedPointIndex(33);
       const pointB = polyface.data.point.getPoint3dAtUncheckedPointIndex(25);
@@ -1078,7 +1078,7 @@ describe("PolyfaceClip", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, basePoint.x, basePoint.y, basePoint.z);
       for (const shiftDistance of [0, 0.1, -0.01]) {
         const plane = ClipPlane.createNormalAndDistance(Vector3d.create(0.040888310883825336, 0.998909753725443, 0.022526649667507826), -475.2718707964355 + shiftDistance);
-        if (ck.testDefined(plane) && plane) {
+        if (ck.testDefined(plane)) {
           const inside = PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(polyface, plane, true, true);
           const outside = PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(polyface, plane, false, true);
           const plane1 = plane.getPlane3d();
@@ -1182,7 +1182,7 @@ describe("PolyfaceClip", () => {
           if (ck.testType(drapeMesh, IndexedPolyface, `${label}: draped mesh is created`) &&
             ck.testFalse(drapeMesh.isEmpty, `${label}: draped mesh is nonempty`)) {
             const area = knownAreaXY ? knownAreaXY : RegionOps.computeXYArea(regionXY);
-            if (ck.testDefined(area, `${label}: region area computed`) && area) {
+            if (ck.testDefined(area, `${label}: region area computed`)) {
               const projectedArea = PolyfaceQuery.sumFacetAreas(drapeMesh, sweepDir ? sweepDir : regionNormal);
               ck.testCoordinateWithToleranceFactor(Math.abs(area), Math.abs(projectedArea), 1000, `${label}: projected area of draped mesh agrees with tool region area`);
             }
@@ -1261,7 +1261,7 @@ describe("PolyfaceClip", () => {
         const arcUnion = UnionRegion.create(loop0, loop1);
         ck.testExactNumber(arcUnion.children.length, 2, "UnionRegion constructor created a union with two loops");
         const arcUnionDisjoint = RegionOps.regionBooleanXY(arcUnion, undefined, RegionBinaryOpType.Union);
-        if (ck.testDefined(arcUnionDisjoint, "boolean union succeeded") && arcUnionDisjoint) {
+        if (ck.testDefined(arcUnionDisjoint, "boolean union succeeded")) {
           ck.testLT(arcUnion.children.length, arcUnionDisjoint.children.length, "region boolean added at least one face for the overlap");
           facetAndDrapeRegion("unionOfIntersectingCircles", arcUnionDisjoint, unionArea);
         }

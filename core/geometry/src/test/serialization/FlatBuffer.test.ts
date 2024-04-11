@@ -152,7 +152,7 @@ function testGeometryQueryRoundTripGo(ck: Checker, g: GeometryQuery | GeometryQu
     if (ck.testType(justTheBytes, Uint8Array, "to FB")) {
       const g1 = BentleyGeometryFlatBuffer.bytesToGeometry(justTheBytes);
       if (ck.testFalse(Array.isArray(g1), "Unexpected array from FB") && !Array.isArray(g1)) {
-        if (ck.testDefined(g1, "FB back to geometry") && g1) {
+        if (ck.testDefined(g1, "FB back to geometry")) {
           if (ck.testTrue(g.isAlmostEqual(g1), "GeometryQuery round-tripped through FB without signature")) {
             const justTheBytes2 = BentleyGeometryFlatBuffer.geometryToBytes(g1);
             if (ck.testType(justTheBytes2, Uint8Array)) {
@@ -179,7 +179,7 @@ function testGeometryQueryRoundTripGo(ck: Checker, g: GeometryQuery | GeometryQu
     const json = IModelJson.Writer.toIModelJson(g);
     if (ck.testDefined(json, "to json")) {
       const g2 = IModelJson.Reader.parse(json);
-      if (ck.testDefined(g2, "json back to geometry") && ck.testTrue(g2 instanceof GeometryQuery) && g2 instanceof GeometryQuery) {
+      if (ck.testType(g2, GeometryQuery, "json back to geometry")) {
         if (ck.testTrue(g.isAlmostEqual(g2), "GeometryQuery round-tripped through json", g)) {
           const json2 = IModelJson.Writer.toIModelJson(g2);
           if (ck.testDefined(json2)) {
@@ -281,7 +281,7 @@ it("HelloNativeBytes", () => {
     const g0 = BentleyGeometryFlatBuffer.bytesToGeometry(nativeBytes, true);
     if (Checker.noisy.flatBuffer)
       GeometryCoreTestIO.consoleLog("nativeBytes=>g types", geometryTypes(g0));
-    if (ck.testDefined(g0, "native bytes to geometry") && g0) {
+    if (ck.testDefined(g0, "native bytes to geometry")) {
       testGeometryQueryRoundTrip(ck, g0);
       const jsBytes = BentleyGeometryFlatBuffer.geometryToBytes(g0, true);
       if (Checker.noisy.flatBuffer) {
@@ -290,7 +290,7 @@ it("HelloNativeBytes", () => {
       }
       if (ck.testDefined(jsBytes, "geometry to bytes") && jsBytes) {
         const g1 = BentleyGeometryFlatBuffer.bytesToGeometry(jsBytes, true);
-        if (ck.testDefined(g1, "jsBytes to geometry") && g1)
+        if (ck.testDefined(g1, "jsBytes to geometry"))
           GeometryCoreTestIO.consoleLog("nativeBytes=>g=>jsBytes=>g types", geometryTypes(g1));
         testGeometryQueryRoundTrip(ck, g1);
         if (isGeometry(g1) && isGeometry(g0)) {

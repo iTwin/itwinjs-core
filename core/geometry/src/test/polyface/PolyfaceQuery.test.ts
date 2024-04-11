@@ -1036,7 +1036,7 @@ describe("ReorientFacets", () => {
         const boundary = PolyfaceQuery.collectBoundaryEdges(surfMesh);
         const silhouette = PolyfaceQuery.collectSilhouetteEdges(surfMesh, viewVector);
         const allEdges: AnyCurve[] = [];
-        if (ck.testDefined(boundary, "boundary found") && boundary) {
+        if (ck.testDefined(boundary, "boundary found")) {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundary, x0, 20, 0);
           allEdges.push(boundary);
         }
@@ -1067,7 +1067,7 @@ describe("ReorientFacets", () => {
         if (exteriorLoop) {
           const jointOptions = new JointOptions(Geometry.smallMetricDistance); // enlarge to catch boundary points
           const offsetChain = RegionOps.constructPolygonWireXYOffset(exteriorLoop.getPackedStrokes()!.getArray(), true, jointOptions);
-          if (ck.testDefined(offsetChain, "offset computed") && offsetChain) {
+          if (ck.testDefined(offsetChain, "offset computed")) {
             const offsetPolygon = offsetChain.getPackedStrokes()!;
             offsetPolygon.forceClosure();
             for (let i = 0; i < surfMesh.pointCount; ++i) {
@@ -1106,7 +1106,7 @@ function exerciseMultiUnionDiff(ck: Checker, allGeometry: GeometryQuery[],
   y0 += 3 * dyA;
   GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYXY(x0, y0, x0 + rangeA.xLength(), y0));
   const meshB = RegionOps.polygonBooleanXYToPolyface(data, RegionBinaryOpType.AMinusB, dataB, true);
-  if (ck.testDefined(meshB) && meshB) {
+  if (ck.testDefined(meshB)) {
     const yStep = dyA;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshB, x0, y0 += yStep);
     const boundaryB = PolyfaceQuery.boundaryEdges(meshB);

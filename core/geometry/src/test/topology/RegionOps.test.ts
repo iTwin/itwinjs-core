@@ -699,8 +699,8 @@ function testOffsetSingle(
       for (const cp of baseCurve.children) {
         for (let u = 0.0738; u < 1.0; u += 0.0467) {
           const basePt = cp.fractionToPoint(u);
-          const offsetDetail = offsetCurve!.closestPoint(basePt);
-          if (ck.testDefined(offsetDetail, "Closest point to offset computed") && offsetDetail !== undefined) {
+          const offsetDetail = offsetCurve.closestPoint(basePt);
+          if (ck.testDefined(offsetDetail, "Closest point to offset computed")) {
             let projectsToVertex = offsetDetail.fraction === 0 || offsetDetail.fraction === 1;
             if (!projectsToVertex && offsetDetail.curve instanceof LineString3d) {
               const scaledParam = offsetDetail.fraction * (offsetDetail.curve.numPoints() - 1);
@@ -1145,7 +1145,7 @@ describe("RectangleRecognizer", () => {
       ck.testUndefined(RegionOps.rectangleEdgeTransform(points.slice(0, 3), false), "short array should fail");
       const transform4 = RegionOps.rectangleEdgeTransform(points.slice(0, 4), false);
       const transform5 = RegionOps.rectangleEdgeTransform(points, true);
-      if (ck.testDefined(transform4) && transform4 && ck.testDefined(transform5) && transform5)
+      if (ck.testDefined(transform4) && ck.testDefined(transform5))
         ck.testTransform(transform4, transform5);
       ck.testUndefined(RegionOps.rectangleEdgeTransform(points.slice(0, 3), false), "short array should fail");
 
@@ -1227,7 +1227,7 @@ describe("RegionOps2", () => {
     options.maximizeConvexFacets = true;
     for (const testCase of testCases) {
       const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase, "utf8"))) as Loop[];
-      if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
+      if (ck.testDefined(inputs, "inputs successfully parsed")) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs, x, y);
         // generate a region from loops
         const region = RegionOps.sortOuterAndHoleLoopsXY(inputs);
@@ -1287,7 +1287,7 @@ describe("RegionOps2", () => {
     options.maximizeConvexFacets = true;
     for (const testCase of testCases) {
       const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase.filename, "utf8"))) as Loop[];
-      if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
+      if (ck.testDefined(inputs, "inputs successfully parsed")) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs, x);
         const region = RegionOps.sortOuterAndHoleLoopsXY(inputs);
         const area = RegionOps.computeXYArea(region)!;
@@ -1316,7 +1316,7 @@ describe("RegionOps2", () => {
         // test polygon decomposition
         if (region instanceof Loop) {
           const convexPolygons = RegionOps.convexDecomposePolygonXY(region.getPackedStrokes()!, true);
-          if (ck.testDefined(convexPolygons, "decomposition succeeded") && convexPolygons) {
+          if (ck.testDefined(convexPolygons, "decomposition succeeded")) {
             ck.testExactNumber(testCase.numFacets, convexPolygons.length, "decomposition has expected number of polygons");
             const convexPolygonsPoint3dArrays = Point3dArray.cloneDeepXYZPoint3dArrays(convexPolygons);
             const polygonArea = PolygonOps.sumAreaXY(convexPolygonsPoint3dArrays);

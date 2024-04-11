@@ -562,7 +562,7 @@ describe("ClipPrimitive", () => {
       }
 
       const polygonGraph = Triangulator.createTriangulatedGraphFromSingleLoop(polygon);
-      if (ck.testDefined(polygonGraph) && polygonGraph) {
+      if (ck.testDefined(polygonGraph)) {
         Triangulator.flipTriangles(polygonGraph);
 
         polygonGraph.announceFaceLoops((_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {

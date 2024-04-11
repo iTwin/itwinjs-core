@@ -249,8 +249,7 @@ describe("OffsetByClip", () => {
                 GeometryCoreTestIO.captureCloneGeometry(allGeometry, rangeRectangle, x0, y0 + dy);
               }
               const num0 = fullRoadMesh.facetCount;
-              if (ck.testDefined(clipA) && clipA
-                && ck.testDefined(clipB) && clipB) {
+              if (ck.testDefined(clipA) && ck.testDefined(clipB)) {
                 // hard to say what the output "should" be ... be test that counts are similar . .
                 // (The motivation for this problem was that there were many, many unnecessary interior edges)
                 const numA = clipA.facetCount;

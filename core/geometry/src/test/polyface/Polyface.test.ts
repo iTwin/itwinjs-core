@@ -1981,9 +1981,9 @@ describe("Polyface", () => {
     let colors: number[] | undefined;
     const normalToColorIndex = new Dictionary<Vector3d, number>(compareNormals, cloneNormal);
     if (
-      ck.testDefined(mesh.data.color, "input mesh has colors") && mesh.data.color !== undefined &&
-      ck.testDefined(mesh.data.colorIndex, "input mesh has color indices") && mesh.data.colorIndex !== undefined &&
-      ck.testDefined(mesh.data.normal, "input mesh has normals") && mesh.data.normal !== undefined
+      ck.testDefined(mesh.data.color, "input mesh has colors") &&
+      ck.testDefined(mesh.data.colorIndex, "input mesh has color indices") &&
+      ck.testDefined(mesh.data.normal, "input mesh has normals")
     ) {
       colors = mesh.data.color.slice();
       for (const visitor = mesh.createVisitor(); visitor.moveToNextFacet();)
@@ -1994,9 +1994,9 @@ describe("Polyface", () => {
     let params: GrowableXYArray | undefined;
     const vertexIndexToSector = [];
     if (
-      ck.testDefined(mesh.data.param, "input mesh has params") && mesh.data.param !== undefined &&
-      ck.testDefined(mesh.data.paramIndex, "input mesh has param indices") && mesh.data.paramIndex !== undefined &&
-      ck.testDefined(mesh.data.normal, "input mesh has normals") && mesh.data.normal !== undefined
+      ck.testDefined(mesh.data.param, "input mesh has params") &&
+      ck.testDefined(mesh.data.paramIndex, "input mesh has param indices") &&
+      ck.testDefined(mesh.data.normal, "input mesh has normals")
     ) {
       params = mesh.data.param.clone();
       for (let vi = 0; vi < mesh.data.pointCount; ++vi) {
@@ -2030,7 +2030,7 @@ describe("Polyface", () => {
     if (colors) {
       for (const visitor = mesh1.createVisitor(); visitor.moveToNextFacet();) {
         const colorIndex = normalToColorIndex.get(visitor.getNormal(0, normal)!);
-        if (ck.testDefined(colorIndex, "found color index in map") && colorIndex !== undefined) {
+        if (ck.testDefined(colorIndex, "found color index in map")) {
           for (let i = 0; i < visitor.numEdgesThisFacet; ++i)
             mesh1.addColorIndex(colorIndex);
         }
@@ -2048,7 +2048,7 @@ describe("Polyface", () => {
           for (let i = 0; i < visitor.numEdgesThisFacet; ++i) {
             if (vertex.isAlmostEqual(visitor.getPoint(i, vertex1)!)) {
               const uvIndex = vertexIndexToSector[vi].get(visitor.getNormal(i, normal)!);
-              if (ck.testDefined(uvIndex, "found uv index in map") && uvIndex !== undefined)
+              if (ck.testDefined(uvIndex, "found uv index in map"))
                 mesh1.data.paramIndex[mesh1.facetIndex0(visitor.currentReadIndex()) + i] = uvIndex;
             }
           }

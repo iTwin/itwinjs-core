@@ -343,7 +343,7 @@ describe("ConvexClipPlaneSet", () => {
 
   it("CreateFromConvexPolyface", () => {
     const mesh = ImportedSample.createPolyhedron62();
-    if (ck.testDefined(mesh) && undefined !== mesh) {
+    if (ck.testDefined(mesh)) {
       testConvertMeshToClipper(mesh);
       // verify that the reversed closed mesh produces same clipper with inward plane normals
       mesh.reverseIndices();

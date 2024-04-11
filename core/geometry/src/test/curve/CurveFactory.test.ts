@@ -422,9 +422,7 @@ describe("PipeConnections", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, centerline, x0Out, y0Out);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, rectangleA, x0Out, y0Out, z0Out);
         if (sweeps !== undefined) {
-          if (ck.testDefined(sweeps.sections) && sweeps.sections !== undefined
-            && ck.testDefined(sweeps.planes) && sweeps.planes !== undefined
-            && ck.testExactNumber(sweeps.planes.length, sweeps.sections.length, "Same number of planes and sections")) {
+          if (ck.testDefined(sweeps.sections) && ck.testDefined(sweeps.planes) && ck.testExactNumber(sweeps.planes.length, sweeps.sections.length, "Same number of planes and sections")) {
 
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweeps.sections, x0Out, y0Out);
             ck.testExactNumber(centerline.length - numDuplicates[centerlineIndex], sweeps.sections.length, "confirm section count");

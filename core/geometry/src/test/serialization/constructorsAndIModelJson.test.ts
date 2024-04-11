@@ -214,7 +214,7 @@ describe("constructorsAndImodelJson", () => {
       const json = IModelJson.Writer.toIModelJson(obj);
       if (ck.testDefined(json, "to json")) {
         const obj1 = IModelJson.Reader.parseTaggedNumericProps(json);
-        if (ck.testDefined(obj1) && obj1)
+        if (ck.testDefined(obj1))
           ck.testTrue(obj.isAlmostEqual(obj1), "json round trip");
       }
     }

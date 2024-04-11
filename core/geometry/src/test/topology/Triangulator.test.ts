@@ -556,7 +556,7 @@ describe("Triangulation", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsB, x0, y0);
         Triangulator.clearAndEnableDebugGraphCapture(true);
         const graph = Triangulator.createTriangulatedGraphFromSingleLoop(pointsB)!;
-        if (ck.testDefined(graph, "unexpected empty graph from triangulation") && graph) {
+        if (ck.testDefined(graph, "unexpected empty graph from triangulation")) {
           const faceSummary = HalfEdgeGraphSearch.collectFaceAreaSummary(graph, false);
           ck.testExactNumber(1, faceSummary.numNegative, "Exactly one outer loop after triangulation");
           ck.testExactNumber(0, faceSummary.numZero, " no slivers");
@@ -1024,7 +1024,7 @@ describe("Triangulation", () => {
       }
       case 2: { // collect, isolate and delete edges
         const removableEdges = HalfEdgeGraphOps.collectRemovableEdgesToExpandConvexFaces(graph);
-        if ((succeeded = ck.testDefined(removableEdges, "expandConvexFaces did not return any removable edges.")) && removableEdges) {
+        if (succeeded = ck.testDefined(removableEdges, "expandConvexFaces did not return any removable edges.")) {
           for (const node of removableEdges) node.isolateEdge();
           numRemovedEdges = graph.deleteIsolatedEdges() / 2;
           const polyface2 = PolyfaceBuilder.graphToPolyface(graph);
@@ -1044,7 +1044,7 @@ describe("Triangulation", () => {
    * @return whether tests succeeded
    */
   function tryExpandConvex2(ck: Checker, allGeometry: GeometryQuery[], graph1: HalfEdgeGraph | undefined, graph2: HalfEdgeGraph | undefined, position: Point2d): boolean {
-    if (ck.testDefined(graph1, "Triangulation failed") && graph1) {
+    if (ck.testDefined(graph1, "Triangulation failed")) {
       const range = HalfEdgeGraphOps.graphRange(graph1);
       const numRemovedEdges1 = tryExpandConvex(ck, allGeometry, graph1, 1, position);
       position.x += range.xLength();

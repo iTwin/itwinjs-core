@@ -158,7 +158,7 @@ describe("CurveOffset", () => {
     const allGeometry: GeometryQuery[] = [];
     const path = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
       "./src/test/testInputs/ChainCollector/gapAtSmallShift.imjs", "utf8")))!;
-    if (ck.testDefined(path) && path instanceof CurveChain) {
+    if (ck.testType(path, CurveChain)) {
       const x0 = 0;
       const y0 = 0;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, 0.1);

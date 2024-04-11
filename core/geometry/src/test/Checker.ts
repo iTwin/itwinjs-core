@@ -23,6 +23,8 @@ import { IModelJson } from "../serialization/IModelJsonSchema";
 import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
 import { prettyPrint } from "./testFunctions";
 
+type NonUndefined<T> = T extends undefined ? never : T;
+
 export class Checker {
   private _savedErrors: number;
   private _savedOK: number;
@@ -252,15 +254,16 @@ export class Checker {
 
     return false;
   }
-  public testUndefined(dataA: any, ...params: any[]): boolean {
+  public testUndefined(dataA: any, ...params: any[]): dataA is undefined {
     if (dataA === undefined)
       return this.announceOK();
     this.announceError("Expect undefined", dataA, params);
 
     return false;
   }
+
   /** Fails if dataA is undefined */
-  public testDefined(dataA: any, ...params: any[]): boolean {
+  public testDefined<T>(dataA: T, ...params: any[]): dataA is NonUndefined<T> {
     if (dataA !== undefined)
       return this.announceOK();
     this.announceError("Expect defined", dataA, params);

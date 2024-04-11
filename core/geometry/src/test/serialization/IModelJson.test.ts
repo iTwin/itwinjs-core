@@ -365,7 +365,7 @@ describe("ParseCurveCollections", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/pathWithBSplines.imjs", "utf8"))) as Path[];
-    if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
+    if (ck.testDefined(inputs, "inputs successfully parsed")) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs);
       for (const input of inputs) {
         ck.testExactNumber(7, input.children.length, "path has expected number of children");

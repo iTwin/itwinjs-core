@@ -641,7 +641,7 @@ describe("IndexedRangeHeap", () => {
         for (let u = 0; u <= 1.00001; u += 0.05) {
           const xyz = path.fractionToPoint(u);
           const result = context.searchForClosestPoint(xyz, maxDist, true);
-          if (ck.testDefined(result, "search with maxDist found closest point or close points") && result) {
+          if (ck.testDefined(result, "search with maxDist found closest point or close points")) {
             if (Array.isArray(result)) {
               ck.testTrue(result.length > 1, "array is only returned when > 1 points are found within trigger distance");
               ++numArray;
@@ -713,7 +713,7 @@ describe("IndexedRangeHeap", () => {
                 ++numAttempts;
                 const xyz = helix.fractionToPoint(u);
                 const fld = context1.searchForClosestPoint(xyz, undefined, true);
-                if (ck.testDefined(fld, "search found closest point") && fld && !Array.isArray(fld)) {
+                if (ck.testDefined(fld, "search found closest point") && !Array.isArray(fld)) {
                   if (fld.isConvex)
                     ++convexHits;
                   else
@@ -814,7 +814,7 @@ describe("IndexedRangeHeap", () => {
     let numArray = 0;
     for (const maxDist of [0.6, 0.53, 0.4] ) { // min dist is ~0.52
       const result = PolyfaceRangeTreeContext.searchForClosestApproach(contextA, contextB, maxDist);
-      if (ck.testDefined(result, "two-tree search with maxDist succeeded") && result) {
+      if (ck.testDefined(result, "two-tree search with maxDist succeeded")) {
         if (Array.isArray(result)) {
           ck.testTrue(result.length > 1, "array is only returned when > 1 points are found within trigger distance");
           ++numArray;
@@ -888,7 +888,7 @@ describe("IndexedRangeHeap", () => {
       x0 += 20;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pointsA, pointsB], x0);
       const result = LineString3dRangeTreeContext.searchForClosestApproach(contextA, contextB, maxDist);
-      if (ck.testDefined(result, "two-tree search with maxDist succeeded") && result) {
+      if (ck.testDefined(result, "two-tree search with maxDist succeeded")) {
         if (Array.isArray(result)) {
           ck.testTrue(result.length > 1, "array is only returned when > 1 points are found within trigger distance");
           ++numArray;
@@ -937,7 +937,7 @@ describe("IndexedRangeHeap", () => {
       x0 += 20;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pointsA, pointsB], x0);
       const result = Point3dArrayRangeTreeContext.searchForClosestApproach(contextA1, contextB1, maxDist);
-      if (ck.testDefined(result, "two-tree search with maxDist succeeded") && result) {
+      if (ck.testDefined(result, "two-tree search with maxDist succeeded")) {
         if (Array.isArray(result)) {
           ck.testTrue(result.length > 1, "array is only returned when > 1 points are found within trigger distance");
           ++numArray;

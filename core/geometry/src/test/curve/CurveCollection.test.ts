@@ -333,7 +333,7 @@ describe("ConsolidateAdjacentPrimitives", () => {
           //  (This does not confirm that the correct primitive was chosen)
           if (ck.testDefined(detail.curve)) {
             for (const f of [0.0, 0.153, 0.389, 0.82342, 1.0]) {
-              const xyzF = detail.curve!.fractionToPoint(f);
+              const xyzF = detail.curve.fractionToPoint(f);
               ck.testLE(detail.a, xyz.distance(xyzF) + tolerance);
             }
           }

@@ -566,21 +566,21 @@ describe("GrowableXYArray", () => {
 
     const xyzArray = GrowableXYZArray.createArrayOfGrowableXYZArray([[[0,1,2]], [[3,4,5],[6,7,8]]]);
     if (ck.testDefined(xyzArray, "variant XYZ input ctor: defined")) {
-      ck.testExactNumber(xyzArray!.length, 2, "variant XYZ input ctor: outer length");
-      ck.testExactNumber(xyzArray![0].length, 1, "variant XYZ input ctor: first array length");
-      ck.testExactNumber(xyzArray![1].length, 2, "variant XYZ input ctor: second array length");
-      const a2 = GrowableXYArray.createFromGrowableXYZArray(xyzArray![0], undefined, a0);   // clears a0 first
+      ck.testExactNumber(xyzArray.length, 2, "variant XYZ input ctor: outer length");
+      ck.testExactNumber(xyzArray[0].length, 1, "variant XYZ input ctor: first array length");
+      ck.testExactNumber(xyzArray[1].length, 2, "variant XYZ input ctor: second array length");
+      const a2 = GrowableXYArray.createFromGrowableXYZArray(xyzArray[0], undefined, a0);   // clears a0 first
       ck.testTrue (a0 === a2, "create from pre-allocated object returns same object");
       if (ck.testExactNumber(a0.length, 1, "create from GrowableXYZArray: count")) {
-        ck.testExactNumber(a0.getXAtUncheckedPointIndex(0), xyzArray![0].getXAtUncheckedPointIndex(0), "create from GrowableXYZArray: x-value");
-        ck.testExactNumber(a0.getYAtUncheckedPointIndex(0), xyzArray![0].getYAtUncheckedPointIndex(0), "create from GrowableXYZArray: y-value");
+        ck.testExactNumber(a0.getXAtUncheckedPointIndex(0), xyzArray[0].getXAtUncheckedPointIndex(0), "create from GrowableXYZArray: x-value");
+        ck.testExactNumber(a0.getYAtUncheckedPointIndex(0), xyzArray[0].getYAtUncheckedPointIndex(0), "create from GrowableXYZArray: y-value");
       }
-      a0.pushFrom(xyzArray![1]);
+      a0.pushFrom(xyzArray[1]);
       if (ck.testExactNumber(a0.length, 3, "pushFrom GrowableXYZArray: count")) {
-        ck.testExactNumber(a0.getXAtUncheckedPointIndex(1), xyzArray![1].getXAtUncheckedPointIndex(0), "pushFrom GrowableXYZArray: x-value 0");
-        ck.testExactNumber(a0.getYAtUncheckedPointIndex(1), xyzArray![1].getYAtUncheckedPointIndex(0), "pushFrom GrowableXYZArray: y-value 0");
-        ck.testExactNumber(a0.getXAtUncheckedPointIndex(2), xyzArray![1].getXAtUncheckedPointIndex(1), "pushFrom GrowableXYZArray: x-value 1");
-        ck.testExactNumber(a0.getYAtUncheckedPointIndex(2), xyzArray![1].getYAtUncheckedPointIndex(1), "pushFrom GrowableXYZArray: y-value 1");
+        ck.testExactNumber(a0.getXAtUncheckedPointIndex(1), xyzArray[1].getXAtUncheckedPointIndex(0), "pushFrom GrowableXYZArray: x-value 0");
+        ck.testExactNumber(a0.getYAtUncheckedPointIndex(1), xyzArray[1].getYAtUncheckedPointIndex(0), "pushFrom GrowableXYZArray: y-value 0");
+        ck.testExactNumber(a0.getXAtUncheckedPointIndex(2), xyzArray[1].getXAtUncheckedPointIndex(1), "pushFrom GrowableXYZArray: x-value 1");
+        ck.testExactNumber(a0.getYAtUncheckedPointIndex(2), xyzArray[1].getYAtUncheckedPointIndex(1), "pushFrom GrowableXYZArray: y-value 1");
       }
     }
     expect(ck.getNumErrors()).equals(0);
