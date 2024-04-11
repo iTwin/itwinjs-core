@@ -59,10 +59,10 @@ jobs:
         path: itwinjs-core
         clean: true
 
-      - task: NodeTool@0
-        displayName: Use Node 18
+      - task: NodeTool@1
+        displayName: Use Node 20
         inputs:
-          nodeVersion: 18.16.1
+          nodeVersion: 20.12.1
           checkLatest: false
 
       - script: |
