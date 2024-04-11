@@ -239,4 +239,4 @@ You can find more ECSQL examples in the respective section of the [ECSQL Referen
 
 ---
 
-[**< Previous**](./FirstExamples.md) &nbsp; | &nbsp; [**Next >**](./Joins.md)
+[< Previous](./FirstExamples.md) &nbsp; | &nbsp; [Next >](./Joins.md)

@@ -154,7 +154,7 @@ above will return following
 | ---------------------------------------------- |
 | `{"Id":"0x80000000003","RelECClassId":"0x51"}` |
 
-While following will not return any row
+While following will not return any rows
 
 ```sql
     SELECT $->[Model].[Id] from [RevitDynamic].[Computer] where [ECInstanceId] = 0x8000000014c;
@@ -197,36 +197,6 @@ On the other hand, the following query makes `Foo` optional by adding `?` at the
 ```
 
 > Note: Optional properties may slow down performance while non-optional properties will improve the performance of an instance query.
-
-## Accessing composite properties
-
-Only top level instance properties can be accessed using instance property accessor syntax `$-><prop>`.\
-Using `$-><prop>.<sub prop>` will not work at the moment and will return zero rows.\
-Only following property types can be used directly and they return strong type values:
-
-- Binary
-- DateTime
-- Double
-- Integer
-- Long
-- String
-
-```sql
--- Composite property will be returned as a JSON
-  SELECT $->Model from RevitDynamic.Computer where ECInstanceId = 0x8000000014c;
-
--- Output:{"Id":"0x80000000003","RelECClassId":"0x51"}
-```
-
-```sql
--- Following will not return any rows
-  SELECT $->Model.Id from RevitDynamic.Computer where ECInstanceId = 0x8000000014c;
-
--- However, the child property can be accessed using JSON_EXTRACT()
-  SELECT JSON_EXTRACT($->Model, '$.Id') AS ModelId from RevitDynamic.Computer where ECInstanceId = 0x8000000014c;
-
--- Output: 0x80000000003
-```
 
 ## Examples
 
@@ -280,6 +250,6 @@ Generally speaking the performance of instance prop is pretty good, though it in
 
 - Use regular properties accessors where possible.
 - Do not use instance property access for local properties of class selected.
-- Try avoiding filtering queries by instance properties. Though it fast be without a index it could be slow depending on number of rows to which filter will be applied.
+- Try avoiding filtering queries by instance properties. It could be slow depending on number of rows to which filter will be applied.
 
 [ECSql Syntax](./index.md)

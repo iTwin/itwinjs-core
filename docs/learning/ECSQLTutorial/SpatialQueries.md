@@ -58,4 +58,4 @@ See also other [ECSQL built-in geometry functions](../GeometrySqlFuncs.md) which
 
 ---
 
-[**< Previous**](./PolymorphicQueries.md) &nbsp; | &nbsp; [**Next >**](./MetaQueries.md)
+[< Previous](./PolymorphicQueries.md) &nbsp; | &nbsp; [Next >](./MetaQueries.md)

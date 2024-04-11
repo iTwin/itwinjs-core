@@ -115,4 +115,4 @@ Again for the purpose of learning, the same ECSQL expressed with relationship cl
 
 ---
 
-[**< Previous**](./ECSQLDataTypes.md) &nbsp; | &nbsp; [**Next >**](./PolymorphicQueries.md)
+[< Previous](./ECSQLDataTypes.md) &nbsp; | &nbsp; [Next >](./PolymorphicQueries.md)

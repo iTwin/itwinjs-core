@@ -276,4 +276,4 @@ Note, that the `instr` function can be replaced by using the standard SQL `LIKE`
 
 ---
 
-[**< Previous**](./KeyToECSQL.md) &nbsp; | &nbsp; [**Next >**](./ECSQLDataTypes.md)
+[< Previous](./KeyToECSQL.md) &nbsp; | &nbsp; [Next >](./ECSQLDataTypes.md)

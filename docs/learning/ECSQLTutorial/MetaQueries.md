@@ -53,4 +53,4 @@ were a `Building` subclass in another schema, those instances would also be retu
 
 ---
 
-[**< Previous**](./SpatialQueries.md) &nbsp; | &nbsp; [**Next >**](./ChangeSummaryQueries.md)
+[< Previous](./SpatialQueries.md) &nbsp; | &nbsp; [Next >](./ChangeSummaryQueries.md)

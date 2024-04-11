@@ -48,4 +48,4 @@ Look [here](../ECSqlReference/index.md) for an overview of supported features in
 
 ---
 
-[**< Previous**](./index.md) &nbsp; | &nbsp; [**Next >**](./FirstExamples.md)
+[< Previous](./index.md) &nbsp; | &nbsp; [Next >](./FirstExamples.md)

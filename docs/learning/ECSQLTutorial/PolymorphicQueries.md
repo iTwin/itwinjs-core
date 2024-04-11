@@ -84,4 +84,4 @@ The following shows how you can perform simple statistics on the distribution of
 
 ---
 
-[**< Previous**](./Joins.md) &nbsp; | &nbsp; [**Next >**](./SpatialQueries.md)
+[< Previous](./Joins.md) &nbsp; | &nbsp; [Next >](./SpatialQueries.md)

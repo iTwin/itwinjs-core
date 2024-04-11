@@ -71,8 +71,8 @@ PRAGMA experimental_features_enabled
 PRAGMA integrity_check ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES;
 ```
 
-output of above will look like listing all check with result and time took to run the test.
-
+The output of `integrety_check` is a table with each test performed, the result and time took to run the test.
+```
 | sno | check                        | result | elapsed_sec |
 | --- | ---------------------------- | ------ | ----------- |
 | 1   | check_data_columns           | True   | 0.005       |
@@ -84,5 +84,6 @@ output of above will look like listing all check with result and time took to ru
 | 7   | check_class_ids              | True   | 0.039       |
 | 8   | check_data_schema            | True   | 0.000       |
 | 9   | check_schema_load            | True   | 0.000       |
+```
 
 [ECSql Syntax](./index.md)

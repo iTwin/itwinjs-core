@@ -46,4 +46,4 @@ See [Reference Docs](../ECSqlReference/ECClassFilter.md) for more information on
 
 ---
 
-[**< Previous**](./ChangeSummaryQueries.md) &nbsp;
+[< Previous](./ChangeSummaryQueries.md) &nbsp;

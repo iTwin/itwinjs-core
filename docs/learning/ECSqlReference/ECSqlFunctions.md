@@ -19,7 +19,7 @@ For the specified ecClassId, returns the class name as a string formatted accord
 ### Parameters
 
 `ecclassId`: An integer which could be a constant, column or a parameter.
-`format-string | format-id`: Optional format specifier and could be one of the following values. `NULL` is also valid value -- this is the same as not specifying the second parameter at all
+`format-string | format-id`: Optional format specifier and could be one of the following values. `NULL` is also valid value, if specified the default format will be used
 
 | format-id | format-string | output                    |
 | --------- | ------------- | ------------------------- |

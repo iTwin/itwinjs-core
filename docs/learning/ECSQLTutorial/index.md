@@ -76,4 +76,4 @@ Or simply use the provided sample below:
 
 ---
 
-[**Next >**](./KeyToECSQL.md)
+[Next >](./KeyToECSQL.md)
