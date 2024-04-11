@@ -574,8 +574,7 @@ export class Point3dArray {
     const numValues = 3 * data.length;
     if (!result)
       result = Array<number>(numValues);
-    if (result.length < numValues)
-      result.length = numValues;
+    result.length = numValues;
     let i = 0;
     for (const p of data) {
       result[i++] = p.x;
