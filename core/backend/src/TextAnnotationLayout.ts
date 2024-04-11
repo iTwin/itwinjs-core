@@ -285,7 +285,12 @@ export class RunLayout {
     let runningWidth = 0;
     let breakPos = 0;
     const segmenter = new Intl.Segmenter(undefined, { granularity: "word" });
-    for (const segment of segmenter.segment(this.source.content)) {
+    const myText = this.source.content.substring(this.charOffset, this.charOffset + this.numChars);
+    if (myText.length === 0) {
+      return undefined;
+    }
+
+    for (const segment of segmenter.segment(myText)) {
       const testContent = segment.segment;
       const forceCurrentUnit = shouldForceLeadingUnit && (0 === breakPos);
 
