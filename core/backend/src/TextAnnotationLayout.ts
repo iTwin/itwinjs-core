@@ -400,7 +400,7 @@ export class TextBlockLayout {
       }
 
       for (const run of paragraph.runs) {
-        const layoutRun = RunLayout.create(run, context);
+        let layoutRun = RunLayout.create(run, context);
 
         // Line break? It always "fits" and causes us to flush the line.
         if ("linebreak" === run.type) {
@@ -410,7 +410,7 @@ export class TextBlockLayout {
         }
 
         const effectiveRunWidth = isWrapped ? layoutRun.range.xLength() : 0;
-        const effectiveRemainingWidth = isWrapped ? doc.width - line.range.xLength() : Number.MAX_VALUE;
+        let effectiveRemainingWidth = isWrapped ? doc.width - line.range.xLength() : Number.MAX_VALUE;
 
         // Do we fit (no wrapping or narrow enough)? Append and go around to the next run.
         if (effectiveRunWidth < effectiveRemainingWidth) {
@@ -432,7 +432,15 @@ export class TextBlockLayout {
         }
 
         // Otherwise, keep splitting the run into lines until the whole thing is appended.
-        line.append(layoutRun); // ###TODO Word-wrapping
+        let leftOver;
+        while (leftOver = layoutRun.wrap(effectiveRemainingWidth, line.runs.length === 0, context)) {
+          line.append(layoutRun);
+          line = this.flushLine(context, line);
+          effectiveRemainingWidth = doc.width;
+          layoutRun = leftOver;
+        }
+
+        line.append(layoutRun);
       }
     }
 
