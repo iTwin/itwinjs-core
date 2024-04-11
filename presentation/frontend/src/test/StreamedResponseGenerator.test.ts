@@ -160,7 +160,6 @@ describe("StreamedResponseGenerator", () => {
       items: items.slice(page.start, page.start + 1),
     }));
     const props: StreamedResponseGeneratorProps<number> = {
-      // paging: { size: 1 },
       batchSize: 1,
       getBatch: fakePageRetriever,
     };
