@@ -6,7 +6,7 @@
 import { BaselineShift, FontId, FractionRun, Paragraph, Run, TextBlock, TextRun, TextStyle, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
-import { assert } from "@itwin/core-bentley";
+import { NonFunctionPropertiesOf, assert } from "@itwin/core-bentley";
 
 /** @internal */
 export interface TextLayoutRanges {
@@ -200,48 +200,77 @@ class LayoutContext {
 /** @internal */
 export class RunLayout {
   public source: Run;
-  public charOffset = 0;
-  public numChars = 0;
+  public charOffset: number;
+  public numChars: number;
   public range: Range2d;
   public justificationRange?: Range2d;
   public denominatorRange?: Range2d;
   public numeratorRange?: Range2d;
-  public offsetFromLine = { x: 0, y: 0 };
+  public offsetFromLine: { x: number, y: number };
   public style: TextStyleSettings;
   public fontId: FontId;
 
-  public constructor(source: Run, context: LayoutContext) {
-    this.source = source;
-    this.style = context.createRunSettings(source);
-    this.fontId = context.findFontId(this.style.fontName);
-    this.charOffset = 0;
+  private constructor(props: NonFunctionPropertiesOf<Omit<RunLayout, "canWrap">>) {
+    this.source = props.source;
+    this.charOffset = props.charOffset;
+    this.numChars = props.numChars;
+    this.range = props.range;
+    this.justificationRange = props.justificationRange;
+    this.denominatorRange = props.denominatorRange;
+    this.numeratorRange = props.numeratorRange;
+    this.offsetFromLine = props.offsetFromLine;
+    this.style = props.style;
+    this.fontId = props.fontId;
+  }
 
+  public static create(source: Run, context: LayoutContext): RunLayout {
+    const style = context.createRunSettings(source);
+    const fontId = context.findFontId(style.fontName);
+    const charOffset = 0;
+    const offsetFromLine = { x: 0, y: 0 };
+    let numChars = 0;
+
+    let range, justificationRange, numeratorRange, denominatorRange;
+    
     switch (source.type) {
       case "text": {
-        this.numChars = source.content.length;
-        const ranges = context.computeRangeForTextRun(this.style, source, this.charOffset, this.numChars);
-        this.range = ranges.layout;
-        this.justificationRange = ranges.justification;
+        numChars = source.content.length;
+        const ranges = context.computeRangeForTextRun(style, source, charOffset, numChars);
+        range = ranges.layout;
+        justificationRange = ranges.justification;
         break;
       }
       case "fraction": {
-        this.numChars = 1;
-        const ranges = context.computeRangeForFractionRun(this.style, source);
-        this.range = ranges.layout;
-        this.numeratorRange = ranges.numerator;
-        this.denominatorRange = ranges.denominator;
+        numChars = 1;
+        const ranges = context.computeRangeForFractionRun(style, source);
+        range = ranges.layout;
+        numeratorRange = ranges.numerator;
+        denominatorRange = ranges.denominator;
         break;
       }
       default: {
         // We do this so that blank lines space correctly without special casing later.
-        this.range = new Range2d(0, 0, 0, this.style.lineHeight);
+        range = new Range2d(0, 0, 0, style.lineHeight);
         break;
       }
     }
+
+    return new RunLayout({ source, charOffset, numChars, range, justificationRange, denominatorRange, numeratorRange, offsetFromLine, style, fontId });
   }
 
   get canWrap(): boolean {
     return false; // ###TODO return this.source.type === "text";
+  }
+
+  private clone(): RunLayout {
+    return new RunLayout({
+      ...this,
+      range: this.range.clone(),
+      justificationRange: this.justificationRange?.clone(),
+      numeratorRange: this.numeratorRange?.clone(),
+      denominatorRange: this.denominatorRange?.clone(),
+      offsetFromLine: { ...this.offsetFromLine },
+    })
   }
 }
 
@@ -326,7 +355,7 @@ export class TextBlockLayout {
       }
 
       for (const run of paragraph.runs) {
-        const layoutRun = new RunLayout(run, context);
+        const layoutRun = RunLayout.create(run, context);
 
         // Line break? It always "fits" and causes us to flush the line.
         if ("linebreak" === run.type) {
@@ -413,7 +442,7 @@ export class TextBlockLayout {
         return new LineLayout(nextParagraph);
       }
 
-      line.append(new RunLayout(prevRun.clone(), context));
+      line.append(RunLayout.create(prevRun.clone(), context));
     }
 
     // Line origin is its baseline.
