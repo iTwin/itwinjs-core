@@ -44,6 +44,10 @@ export class TextAnnotation2d extends AnnotationElement2d {
   public static override get className(): string { return "TextAnnotation2d"; }
   protected constructor(props: TextAnnotation2dProps, iModel: IModelDb) { super(props, iModel); }
 
+  public static fromJSON(props: TextAnnotation2dProps, iModel: IModelDb): TextAnnotation2d {
+    return new TextAnnotation2d(props, iModel);
+  }
+
   public override toJSON(): TextAnnotation2dProps {
     return super.toJSON();
   }
@@ -76,6 +80,10 @@ export class TextAnnotation3d extends GraphicalElement3d {
   /** @internal */
   public static override get className(): string { return "TextAnnotation3d"; }
   protected constructor(props: TextAnnotation3dProps, iModel: IModelDb) { super(props, iModel); }
+
+  public static fromJSON(props: TextAnnotation3dProps, iModel: IModelDb): TextAnnotation3d {
+    return new TextAnnotation3d(props, iModel);
+  }
 
   public override toJSON(): TextAnnotation3dProps {
     return super.toJSON();

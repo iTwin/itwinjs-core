@@ -5,7 +5,9 @@
 import { expect } from "chai";
 import { ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, TextBlockLayout, TextLayoutRanges, layoutTextBlock } from "../../TextAnnotationLayout";
 import { Range2d } from "@itwin/core-geometry";
-import { LineBreakRun, TextBlock, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { FontMap, LineBreakRun, TextAnnotation2dProps, TextBlock, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { IModelDb } from "../../IModelDb";
+import { TextAnnotation2d } from "../../TextAnnotationElement";
 
 function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
   const range = new Range2d(0, 0, args.chars.length, args.lineHeight);
@@ -319,6 +321,68 @@ describe.only("layoutTextBlock", () => {
   });
 });
 
-describe.only("produceTextAnnotationGeometry", () => {
-  
+describe.only("TextAnnotation element", () => {
+  function mockIModel(): IModelDb {
+    const iModel: Pick<IModelDb, "fontMap" | "computeRangesForText" | "forEachMetaData"> = {
+      fontMap: new FontMap(),
+      computeRangesForText: () => { return { layout: new Range2d(0, 0, 1, 1), justification: new Range2d(0, 0, 1, 1) } },
+      forEachMetaData: () => undefined,
+    };
+
+    return iModel as IModelDb;
+  }
+
+  function makeElement(props?: Partial<TextAnnotation2dProps>): TextAnnotation2d {
+    return TextAnnotation2d.fromJSON({
+      category: "0x12",
+      model: "0x34",
+      code: {
+        spec: "0x56",
+        scope: "0x78",
+      },
+      classFullName: TextAnnotation2d.classFullName,
+      ...props,
+    }, mockIModel());
+  }
+
+  describe("getAnnotation", () => {
+    it("returns undefined if not present in JSON properties", () => {
+      expect(makeElement().getAnnotation()).to.be.undefined;
+    });
+
+    it("extracts from JSON properties", () => {
+      const elem = makeElement({
+        jsonProperties: {
+          annotation: {
+            textBlock: TextBlock.create({ styleName: "block" }).toJSON(),
+          }
+        }
+      });
+
+      const anno = elem.getAnnotation()!;
+      expect(anno).not.to.be.undefined;
+      expect(anno.textBlock.isEmpty).to.be.true;
+      expect(anno.textBlock.styleName).to.equal("block");
+    });
+
+    it("produces a new object each time it is called", () => {
+      const elem = makeElement({
+        jsonProperties: {
+          annotation: {
+            textBlock: TextBlock.create({ styleName: "block" }).toJSON(),
+          }
+        }
+      });
+      
+      const anno1 = elem.getAnnotation()!;
+      const anno2 = elem.getAnnotation()!;
+      expect(anno1).not.to.equal(anno2);
+      expect(anno1.textBlock.equals(anno2.textBlock)).to.be.true;
+    });
+  });
+
+  describe("setAnnotation", () => {
+    it("updates JSON properties and recomputes geometry stream", () => {
+    });
+  });
 });
