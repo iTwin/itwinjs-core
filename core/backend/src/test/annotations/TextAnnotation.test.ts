@@ -235,7 +235,7 @@ describe.only("layoutTextBlock", () => {
     ]);
   });
 
-  it("performs word-wrapping on non-English text", () => {
+  it("performs word-wrapping on Japanese text", () => {
     // "I am a cat. The name is Tanuki."
     expectLines("吾輩は猫である。名前はたぬき。", 1, ["吾輩", "は", "猫", "で", "ある", "。", "名前", "は", "たぬき", "。"]);
   });
@@ -259,6 +259,47 @@ describe.only("layoutTextBlock", () => {
   });
 
   it("performs word-wrapping and line-splitting with multiple runs", () => {
+    const textBlock = TextBlock.create({ styleName: "" });
+    for (const str of ["The ", "quick brown", " fox jumped over ", "the lazy ", "dog"]) {
+      textBlock.appendRun(makeTextRun(str));
+    }
+
+    function test(width: number, expected: string[]): void {
+      textBlock.width = width;
+      const layout = doLayout(textBlock);
+      const actual = layout.lines.map((line) => line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars)).join(""));
+      expect(actual).to.deep.equal(expected);
+    }
+    
+    test(50, ["The quick brown fox jumped over the lazy dog"]);
+    test(40, [
+      //        1         2         3         4
+      //234567890123456789012345678901234567890
+      "The quick brown fox jumped over the lazy",
+      " dog",
+    ]);
+    test(30, [
+      //        1         2         3
+      //23456789012345678901234567890
+      "The quick brown fox jumped ",
+      "over the lazy dog",
+    ]);
+    test(20, [
+      //        1         2
+      //2345678901234567890
+      "The quick brown fox ",
+      "jumped over the lazy",
+      " dog",
+    ]);
+    test(10, [
+      //        1
+      //234567890
+      "The quick ",
+      "brown fox ",
+      "jumped ",
+      "over the ",
+      "lazy dog",
+    ]);
   });
 });
 
