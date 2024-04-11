@@ -162,9 +162,9 @@ export abstract class SchemaFileLocater {
    * @param format The type of file that the schema key refers to. json or xml
    */
   private addCandidateSchemaKeys(foundFiles: FileSchemaKey[], schemaPath: string, fileFilter: string, desiredKey: Readonly<SchemaKey>, matchType: SchemaMatchType, format: string) {
-    const fullPath = path.join(schemaPath, fileFilter).replace(/\\/g, "/");
+    const fullPath = path.join(schemaPath, fileFilter);
 
-    const result = globSync(fullPath);
+    const result = globSync(fullPath, { windowsPathsNoEscape: true });
     for (const match of result) {
       let fileName = path.basename(match, (`.ecschema.${format}`));
       // TODO: should this be moved or handled elsewhere?

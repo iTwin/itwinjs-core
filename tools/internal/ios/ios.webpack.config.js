@@ -11,9 +11,8 @@ module.exports = {
   entry: [
     path.resolve(__dirname, "scripts/configureMocha.js"),
     ...globSync(
-      path
-        .resolve(__dirname, path.relative(__dirname, process.env.TESTS_GLOB))
-        .replace(/\\/g, "/")
+      path.resolve(__dirname, path.relative(__dirname, process.env.TESTS_GLOB)),
+      { windowsPathsNoEscape: true }
     ),
     path.resolve(__dirname, "scripts/runMocha.js")
   ],

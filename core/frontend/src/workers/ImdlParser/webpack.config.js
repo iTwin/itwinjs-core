@@ -13,9 +13,8 @@ module.exports = [{
   // stats: "verbose",
   mode: "production",
   entry: globSync(
-    path
-      .resolve(frontendLib, "esm/workers/ImdlParser/Worker.js")
-      .replace(/\\/g, "/")
+    path.resolve(frontendLib, "esm/workers/ImdlParser/Worker.js"),
+    { windowsPathsNoEscape: true }
   ),
   output: {
     path: path.resolve(frontendLib, "workers/webpack/"),

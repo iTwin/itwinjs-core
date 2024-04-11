@@ -13,9 +13,8 @@ module.exports = [{
   // stats: "verbose",
   mode: "production",
   entry: globSync(
-    path
-      .resolve(frontendLib, "esm/test/worker/test-worker.js")
-      .replace(/\\/g, "/")
+    path.resolve(frontendLib, "esm/test/worker/test-worker.js"),
+    { windowsPathsNoEscape: true }
   ),
   output: {
     path: path.resolve(frontendLib, "test"),

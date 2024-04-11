@@ -24,8 +24,8 @@ describe("SchemaXmlStringLocater tests:", () => {
 
   const loadSchemaStrings = () => {
     const schemas: string [] = [];
-    const searchPath = path.join(__dirname, "assets", "Schema*.ecschema.xml").replace(/\\/g, "/");
-    const result = globSync(searchPath);
+    const searchPath = path.join(__dirname, "assets", "Schema*.ecschema.xml");
+    const result = globSync(searchPath, { windowsPathsNoEscape: true });
     for (const match of result) {
       const file = fs.readFileSync(match);
       if (!file)

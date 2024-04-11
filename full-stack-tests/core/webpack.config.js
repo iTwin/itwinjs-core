@@ -28,9 +28,9 @@ loadEnv(path.join(__dirname, ".env"));
 function createConfig(shouldInstrument) {
   const config = {
     mode: "development",
-    entry: globSync(
-      path.resolve(__dirname, "lib/**/*.test.js").replace(/\\/g, "/")
-    ),
+    entry: globSync(path.resolve(__dirname, "lib/**/*.test.js"), {
+      windowsPathsNoEscape: true,
+    }),
     output: {
       path: path.resolve(__dirname, "lib/dist"),
       filename: "bundled-tests.js",

@@ -12,11 +12,9 @@ const frontendLib = path.resolve(__dirname, "../../../../lib/cjs");
 function createConfig() {
   const config = {
     mode: "development",
-    entry: globSync(
-      path
-        .resolve(frontendLib, "test/frontend/**/*.test.js")
-        .replace(/\\/g, "/")
-    ),
+    entry: globSync(path.resolve(frontendLib, "test/frontend/**/*.test.js"), {
+      windowsPathsNoEscape: true,
+    }),
     output: {
       path: path.resolve(frontendLib, "test/frontend/webpack/"),
       filename: "bundled-tests.js",
