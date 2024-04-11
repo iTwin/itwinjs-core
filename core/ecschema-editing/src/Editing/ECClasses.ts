@@ -19,6 +19,7 @@ import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from 
 import { MutableClass } from "./Mutable/MutableClass";
 import * as Rules from "../Validation/ECRules";
 import { MutableProperty } from "./Mutable/MutableProperty";
+import { ArrayProperties, EnumerationProperties, PrimitiveProperties, Properties } from "./Properties";
 
 /**
  * @alpha
@@ -27,6 +28,23 @@ import { MutableProperty } from "./Mutable/MutableProperty";
 export class ECClasses {
 
   protected constructor(protected _schemaEditor: SchemaContextEditor) { }
+
+  /**
+   * Allows access for editing of base Property attributes.
+   */
+  public readonly properties = new Properties(this._schemaEditor);
+  /**
+   * Allows access for editing of ArrayProperty attributes.
+   */
+  public readonly arrayProperties = new ArrayProperties(this._schemaEditor);
+  /**
+   * Allows access for editing of PrimitiveProperty attributes.
+   */
+  public readonly primitiveProperties = new PrimitiveProperties(this._schemaEditor);
+  /**
+   * Allows access for editing of EnumerationProperty attributes.
+   */
+  public readonly enumerationProperties = new EnumerationProperties(this._schemaEditor);
 
   /**
    * Creates a property on class identified by the given SchemaItemKey. This method restricts the
