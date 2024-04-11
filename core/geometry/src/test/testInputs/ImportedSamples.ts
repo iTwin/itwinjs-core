@@ -28,10 +28,13 @@ export class ImportedSample {
   /** Create IndexedPolyface from imjs file. Returns the first mesh found. */
   public static createIndexedPolyface(imjsPath: string): IndexedPolyface | undefined {
     const json = fs.readFileSync(imjsPath, "utf8");
-    const inputs = IModelJson.Reader.parse(JSON.parse(json)) as GeometryQuery[];
-    for (const mesh of inputs) {
-      if (undefined !== mesh && mesh instanceof IndexedPolyface)
-        return mesh;
+    const geometry = IModelJson.Reader.parse(JSON.parse(json)) as GeometryQuery[] | GeometryQuery;
+    if (geometry instanceof IndexedPolyface)
+      return geometry;
+    if (Array.isArray(geometry)) {
+      for (const mesh of geometry)
+        if (mesh instanceof IndexedPolyface)
+          return mesh;
     }
     return undefined;
   }
