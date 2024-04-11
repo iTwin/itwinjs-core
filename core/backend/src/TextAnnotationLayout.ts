@@ -424,7 +424,8 @@ export class TextBlockLayout {
         }
 
         // Can't fit, but can't wrap? Force on the line if it's the first thing; otherwise flush and add to the next line.
-        if (!layoutRun.canWrap()) {
+        let leftOver = layoutRun.wrap(effectiveRemainingWidth, line.runs.length === 0, context);
+        if (!leftOver) {
           if (line.runs.length === 0) {
             line.append(layoutRun);
             line = this.flushLine(context, line);
@@ -437,13 +438,12 @@ export class TextBlockLayout {
         }
 
         // Otherwise, keep splitting the run into lines until the whole thing is appended.
-        let leftOver;
-        while (leftOver = layoutRun.wrap(effectiveRemainingWidth, line.runs.length === 0, context)) {
+        do {
           line.append(layoutRun);
           line = this.flushLine(context, line);
           effectiveRemainingWidth = doc.width;
           layoutRun = leftOver;
-        }
+        } while (leftOver = layoutRun.wrap(effectiveRemainingWidth, line.runs.length === 0, context))
 
         line.append(layoutRun);
       }

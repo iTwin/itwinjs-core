@@ -163,14 +163,6 @@ describe.only("layoutTextBlock", () => {
     textBlock.appendRun(run);
     const layout = doLayout(textBlock);
 
-    for (const line of layout.lines) {
-      const runLayout = line.runs[0];
-      const textRun = runLayout.source as TextRun;
-      let text = "> " + textRun.content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars);
-      text = text.replaceAll(" ", "_");
-      console.log(text);
-    }
-
     expect(layout.lines.length).to.equal(8);
     expect(layout.lines.every((line) => line.runs.length === 1)).to.be.true;
     expect(layout.lines.every((line) => line.runs[0].source === run)).to.be.true;
