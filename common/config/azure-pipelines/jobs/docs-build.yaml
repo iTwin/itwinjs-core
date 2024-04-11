@@ -63,7 +63,7 @@ jobs:
         displayName: Use Node 18
         inputs:
           nodeVersion: 18.16.1
-          checkLatest: true
+          checkLatest: false
 
       - script: |
           git config --local user.email imodeljs-admin@users.noreply.github.com
