@@ -10780,7 +10780,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     get iModel(): IModelConnection;
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     onCleanup(): Promise<void>;
     onRedoPreviousStep(): Promise<boolean>;
     onReinitialize(): Promise<void>;
