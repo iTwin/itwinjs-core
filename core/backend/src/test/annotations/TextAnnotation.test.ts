@@ -236,7 +236,8 @@ describe.only("layoutTextBlock", () => {
   });
 
   it("performs word-wrapping on non-English text", () => {
-    
+    // "I am a cat. The name is Tanuki."
+    expectLines("吾輩は猫である。名前はたぬき。", 1, ["吾輩", "は", "猫", "で", "ある", "。", "名前", "は", "たぬき", "。"]);
   });
 
   it("performs word-wrapping with punctuation", () => {
@@ -257,12 +258,7 @@ describe.only("layoutTextBlock", () => {
     ])
   });
 
-  it("does not word-wrap fractions", () => {
-    
-  });
-
-  it("performs word-wrapping and line-wrapping with multiple runs", () => {
-    
+  it("performs word-wrapping and line-splitting with multiple runs", () => {
   });
 });
 
