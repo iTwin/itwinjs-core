@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Mutable, OpenMode, assert } from "@itwin/core-bentley";
+import { assert, Mutable, OpenMode } from "@itwin/core-bentley";
 import { SnapshotDb, StandaloneDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { SettingDictionary, SettingsPriority } from "../../workspace/Settings";
 import { SettingSchema, SettingSchemaGroup, SettingsSchemas } from "../../workspace/SettingsSchemas";
-import { IModelTestUtils } from "../IModelTestUtils";
 import { WorkspaceContainer, WorkspaceDb } from "../../workspace/Workspace";
+import { IModelTestUtils } from "../IModelTestUtils";
 
 /// cspell:ignore devstoreaccount1
 
@@ -217,7 +217,7 @@ describe.only("Settings", () => {
     expect(defaultGcs[0].dbName).equal("base");
     expect(defaultGcs[1].dbName).equal("allEarth");
     expect(defaultGcs[0].prefetch).true;
-    expect(defaultGcs[1].prefetch).false;
+    expect(defaultGcs[1].prefetch).undefined;
     expect(defaultGcs[1].storageType).equals("azure");
 
     iTwinSettings["app2/setting6"] = "new value for 6";

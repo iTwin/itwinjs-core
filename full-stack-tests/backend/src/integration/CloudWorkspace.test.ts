@@ -11,7 +11,7 @@ import { BaseSettings, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs,
 import { assert } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 
-describe("Cloud workspace containers", () => {
+describe.only("Cloud workspace containers", () => {
 
   async function initializeContainer(containerId: string) {
     await AzuriteTest.Sqlite.createAzContainer({ containerId });
@@ -55,12 +55,13 @@ describe("Cloud workspace containers", () => {
     const accessToken = await CloudSqlite.requestToken(props);
     const wsCont1 = workspace1.getContainer({ ...props, accessToken });
 
+    const user = "workspace admin";
     const makeVersion = async (version?: string) => {
       expect(wsCont1.cloudContainer).not.undefined;
-      await CloudSqlite.withWriteLock({ user: "Cloud workspace test", container: wsCont1.cloudContainer! }, async () => {
+      await CloudSqlite.withWriteLock({ user, container: wsCont1.cloudContainer! }, async () => {
         const wsDbEdit = EditableWorkspaceDb.construct({ dbName: testDbName }, wsCont1);
         try {
-          await wsDbEdit.createDb(version);
+          await wsDbEdit.createDb({ version, manifest: { workspaceName: "test workspace" } });
           const contain1 = settings.getString("cloudSqlite/containerId")!;
           expect(contain1).equals(containerId);
 
@@ -92,6 +93,8 @@ describe("Cloud workspace containers", () => {
     expect(() => ws2Cloud.acquireWriteLock("other session")).to.throw("container is not writeable");
 
     let ws2 = wsCont2.getWorkspaceDb({ dbName: testDbName });
+    const manifest = ws2.manifest;
+    expect(manifest.lastEditedBy).equals(user);
     expect(ws2.getString("string 1")).equals("value of string 1");
     ws2.container.closeWorkspaceDb(ws2);
 

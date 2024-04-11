@@ -15,18 +15,18 @@ import { EditableWorkspaceDb, Workspace, WorkspaceContainer, WorkspaceDb } from 
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-describe("WorkspaceFile", () => {
+describe.only("WorkspaceFile", () => {
 
   const workspace = Workspace.construct(new BaseSettings(), { containerDir: join(KnownTestLocations.outputDir, "TestWorkspaces") });
 
-  function makeEditableDb(props: WorkspaceDb.Props & WorkspaceContainer.Props) {
+  function makeEditableDb(props: WorkspaceDb.Props & WorkspaceContainer.Props, manifest: WorkspaceDb.Manifest) {
     const container = workspace.getContainer(props);
     const wsFile = EditableWorkspaceDb.construct(props, container);
 
     IModelJsFs.purgeDirSync(container.filesDir);
     if (IModelJsFs.existsSync(wsFile.dbFileName))
       IModelJsFs.unlinkSync(wsFile.dbFileName);
-    EditableWorkspaceDb.createEmpty(wsFile.dbFileName);
+    EditableWorkspaceDb.createEmpty({ fileName: wsFile.dbFileName, manifest });
     wsFile.open();
     return wsFile;
   }
@@ -96,7 +96,8 @@ describe("WorkspaceFile", () => {
   });
 
   it("create new WorkspaceDb", async () => {
-    const wsFile = makeEditableDb({ containerId: "acme-engineering-inc-2", dbName: "db1", baseUri: "", storageType: "azure" });
+    const manifest: WorkspaceDb.Manifest = { workspaceName: "resources for acme users", contactName: "contact me" };
+    const wsFile = makeEditableDb({ containerId: "acme-engineering-inc-2", dbName: "db1", baseUri: "", storageType: "azure" }, manifest);
     const inFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
     const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
     let blobVal = new Uint8Array(testRange.toFloat64Array().buffer);
@@ -104,6 +105,15 @@ describe("WorkspaceFile", () => {
     const strRscName = "string-resource/1";
     const blobRscName = "blob.resource:1";
     const fileRscName = "settings files/my settings/a.json5";
+
+    let testManifest = wsFile.manifest;
+    expect(testManifest.workspaceName).equals(manifest.workspaceName);
+    expect(testManifest.contactName).equals(manifest.contactName);
+
+    wsFile.updateManifest({ ...testManifest, contactName: "new contact" });
+    testManifest = wsFile.manifest;
+    expect(testManifest.workspaceName).equals(manifest.workspaceName);
+    expect(testManifest.contactName).equals("new contact");
 
     expect(() => wsFile.addFile(fileRscName, "bad file name")).to.throw("no such file");
     expect(() => wsFile.updateFile(fileRscName, inFile)).to.throw("error replacing");
@@ -147,7 +157,7 @@ describe("WorkspaceFile", () => {
 
   it("resolve workspace alias", async () => {
     const settingsFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
-    const defaultDb = makeEditableDb({ containerId: "default", dbName: "db1", baseUri: "", storageType: "azure" });
+    const defaultDb = makeEditableDb({ containerId: "default", dbName: "db1", baseUri: "", storageType: "azure" }, { workspaceName: "default resources", contactName: "contact 123" });
     defaultDb.addString("default-settings", fs.readFileSync(settingsFile, "utf-8"));
     defaultDb.close();
 
@@ -156,8 +166,9 @@ describe("WorkspaceFile", () => {
     workspace.loadSettingsDictionary("default-settings", wsDb, SettingsPriority.defaults);
     expect(settings.getSetting("editor/renderWhitespace")).equals("selection");
 
+    const workspaceName = "all fonts workspace";
     const schemaFile = IModelTestUtils.resolveAssetFile("TestSettings.schema.json");
-    const fontsDb = makeEditableDb({ containerId: "fonts", dbName: "fonts", baseUri: "", storageType: "azure" });
+    const fontsDb = makeEditableDb({ containerId: "fonts", dbName: "fonts", baseUri: "", storageType: "azure" }, { workspaceName, contactName: "font guy" });
 
     fontsDb.addFile("Helvetica.ttf", schemaFile, "ttf");
     fontsDb.close();
@@ -165,6 +176,8 @@ describe("WorkspaceFile", () => {
     const fontList = settings.getArray<string>("workspace/fontDbs")!;
     const fonts = await workspace.getWorkspaceDb(fontList[0]);
     expect(fonts).to.not.be.undefined;
+    expect(fonts.manifest.workspaceName).equal(workspaceName);
+
     const fontFile = fonts.getFile("Helvetica.ttf")!;
     expect(fontFile).contains(".ttf");
     compareFiles(fontFile, schemaFile);

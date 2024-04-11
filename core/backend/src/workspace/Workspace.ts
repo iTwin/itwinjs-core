@@ -141,6 +141,26 @@ export namespace WorkspaceDb {
     readonly prefetch?: boolean;
   }
 
+  /**
+   * Manifest stored *inside* every WorkspaceDb that describes the meaning, content, and context of what's in a WorkspaceDb. This can be used to
+   * help users understand when to use the WorkspaceDb, as well as who to contact with questions, etc.
+   * @note Only the `workspaceName` field is required. Users may add additional fields for their own purposes.
+   * @note Since this information is stored within the WorkspaceDb itself, it is versioned along with the rest of the contents.
+   */
+  export interface Manifest {
+    /** the name of this WorkspaceDb to be shown in user interfaces. Organizations should attempt to make this name informative enough
+     * so that uses may refer to this name in conversations. It should also be unique enough that there's no confusion when it appears in
+     * lists of WorkspaceDbs.
+     */
+    readonly workspaceName: string;
+    /** A description of the contents of this WorkspaceDb to help users understand its purpose and appropriate usage */
+    readonly description?: string;
+    /** the moniker of the individual to contact with questions about this WorkspaceDb */
+    readonly contactName?: string;
+    /** the moniker of the individual who last modified this WorkspaceDb */
+    readonly lastEditedBy?: string;
+  }
+
   /** Scope to increment for a version number.
    * @see semver.ReleaseType
    */
@@ -208,6 +228,8 @@ export interface WorkspaceDb {
   readonly sqliteDb: SQLiteDb;
   /** determine whether this WorkspaceDb is currently open */
   readonly isOpen: boolean;
+  /** The manifest that describes the content of this WorkspaceDb. */
+  get manifest(): WorkspaceDb.Manifest;
 
   open(): void;
   close(): void;
@@ -406,7 +428,12 @@ export interface WorkspaceContainer {
  * @beta
  */
 export interface EditableWorkspaceDb extends WorkspaceDb {
-  createDb(version?: string): Promise<void>;
+
+  /** create a new empty WorkspaceDb. */
+  createDb(args: { manifest: WorkspaceDb.Manifest, version?: string }): Promise<void>;
+
+  /** Update the contents of the manifest in this WorkspaceDb. */
+  updateManifest(manifest: WorkspaceDb.Manifest): void;
 
   /** Add a new string resource to this WorkspaceDb.
    * @param rscName The name of the string resource.
@@ -470,10 +497,11 @@ export namespace EditableWorkspaceDb {
     return new EditableWorkspaceDbImpl(props, container);
   }
   /** Create a new, empty, EditableWorkspaceDb file on the local filesystem for importing Workspace resources. */
-  export function createEmpty(fileName: LocalFileName) {
+  export function createEmpty(args: { fileName: LocalFileName, manifest: WorkspaceDb.Manifest }) {
     const db = new SQLiteDb();
-    IModelJsFs.recursiveMkDirSync(dirname(fileName));
-    db.createDb(fileName);
+    IModelJsFs.recursiveMkDirSync(dirname(args.fileName));
+    db.createDb(args.fileName);
+    db.nativeDb.saveFileProperty(WorkspaceDbImpl.manifestProperty, JSON.stringify(args.manifest));
     const timeStampCol = "lastMod TIMESTAMP NOT NULL DEFAULT(julianday('now'))";
     db.executeSQL(`CREATE TABLE strings(id TEXT PRIMARY KEY NOT NULL,value TEXT,${timeStampCol})`);
     db.executeSQL(`CREATE TABLE blobs(id TEXT PRIMARY KEY NOT NULL,value BLOB,${timeStampCol})`);
@@ -709,6 +737,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
 
 /** Implementation of WorkspaceDb */
 class WorkspaceDbImpl implements WorkspaceDb {
+  public static manifestProperty = { namespace: "workspace", name: "manifest" };
   public readonly sqliteDb = new SQLiteDb();
   public readonly dbName: WorkspaceDb.DbName;
   public readonly container: WorkspaceContainer;
@@ -746,9 +775,14 @@ class WorkspaceDbImpl implements WorkspaceDb {
   public close() {
     if (this.isOpen) {
       this.onClose.raiseEvent();
-      this.sqliteDb.closeDb();
+      this.sqliteDb.closeDb(true);
       this.container.closeWorkspaceDb(this);
     }
+  }
+
+  public get manifest(): WorkspaceDb.Manifest {
+    const manifestJson = this.sqliteDb.nativeDb.queryFileProperty(WorkspaceDbImpl.manifestProperty, true) as string | undefined;
+    return manifestJson ? JSON.parse(manifestJson) : { workspaceName: this.dbName };
   }
 
   public getString(rscName: WorkspaceResource.Name): string | undefined {
@@ -835,6 +869,16 @@ class EditableWorkspaceDbImpl extends WorkspaceDbImpl implements EditableWorkspa
     this.sqliteDb.openDb(this.dbFileName, OpenMode.ReadWrite, this.container.cloudContainer);
   }
 
+  public override close() {
+    if (!this.isOpen)
+      return;
+
+    const lastEditedBy = (this.container.cloudContainer as any)?.writeLockHeldBy;
+    if (lastEditedBy !== undefined)
+      this.updateManifest({ ...this.manifest, lastEditedBy });
+    super.close();
+  }
+
   private getFileModifiedTime(localFileName: LocalFileName): number {
     return Math.round(fs.statSync(localFileName).mtimeMs);
   }
@@ -854,22 +898,25 @@ class EditableWorkspaceDbImpl extends WorkspaceDbImpl implements EditableWorkspa
     this.sqliteDb.saveChanges();
   }
 
-  public async createDb(version?: string) {
+  public async createDb(args: { version?: string, manifest: WorkspaceDb.Manifest }) {
     if (!this.container.cloudContainer) {
-      EditableWorkspaceDb.createEmpty(this.dbFileName);
+      EditableWorkspaceDb.createEmpty({ fileName: this.dbFileName, manifest: args.manifest });
     } else {
       // currently the only way to create a workspaceDb in a cloud container is to create a temporary workspaceDb and upload it.
       const tempDbFile = join(KnownLocations.tmpdir, `empty.${WorkspaceDb.fileExt}`);
       if (fs.existsSync(tempDbFile))
         IModelJsFs.removeSync(tempDbFile);
-      EditableWorkspaceDb.createEmpty(tempDbFile);
-      this.dbFileName = WorkspaceContainer.makeDbFileName(this.dbName, version);
+      EditableWorkspaceDb.createEmpty({ fileName: tempDbFile, manifest: args.manifest });
+      this.dbFileName = WorkspaceContainer.makeDbFileName(this.dbName, args.version);
       await CloudSqlite.uploadDb(this.container.cloudContainer, { localFileName: tempDbFile, dbName: this.dbFileName });
       IModelJsFs.removeSync(tempDbFile);
     }
     this.open();
   }
 
+  public updateManifest(manifest: WorkspaceDb.Manifest) {
+    this.sqliteDb.nativeDb.saveFileProperty(WorkspaceDbImpl.manifestProperty, JSON.stringify(manifest));
+  }
   public addString(rscName: WorkspaceResource.Name, val: string): void {
     EditableWorkspaceDbImpl.validateResourceName(rscName);
     this.validateResourceSize(val);
