@@ -62,7 +62,7 @@ jobs:
       - task: NodeTool@0
         displayName: Use Node 18
         inputs:
-          versionSpec: 18.x
+          nodeVersion: 18.16.1
           checkLatest: true
 
       - script: |
