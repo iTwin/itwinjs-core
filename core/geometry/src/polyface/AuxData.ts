@@ -48,7 +48,7 @@ export class AuxChannelData {
   /** The vertex values for this data. A single value per vertex for scalar and distance types and 3 values (x,y,z) for normal or vector channels. */
   public values: number[];
 
-  /** Construct a new [[AuxChannelData]] from input value and vertex values. */
+  /** Constructor. If `values` is a number array, it is captured.  */
   constructor(input: number, values: number[] | Float64Array) {
     this.input = input;
     if (values instanceof Float64Array) {
@@ -91,7 +91,7 @@ export class AuxChannel {
   /** The input name. */
   public inputName?: string;
 
-  /** Create a [[AuxChannel]] */
+  /** Constructor with CAPTURED inputs. */
   public constructor(data: AuxChannelData[], dataType: AuxChannelDataType, name?: string, inputName?: string) {
     this.data = data;
     this.dataType = dataType;
@@ -173,7 +173,7 @@ export class AuxChannel {
  * using an [AnalysisStyle]($common).
  * Typically a polyface will contain only vertex data required for its basic display: vertex position, normal, texture parameter, color.
  * `PolyfaceAuxData` provides supplemental per-vertex data that is generally computed in an analysis program or other external data source.
- * This supplemental data can be either 1D (e.g., height, override color) or 3D (e.g., displacement vector); see [[AuxChannel.entriesPerValue]], [[AuxChannel.dataType]].
+ * This supplemental data can be either 1D (e.g., height, override color) or 3D (e.g., displacement vector, override normal); see [[AuxChannel.entriesPerValue]], [[AuxChannel.dataType]].
  * All data channels are indexed by the same indices, which must have the same length and structure as the other Polyface indices.
  * This means that if a facet's face loop is found at index range [i0,i1] in the Polyface vertex index array, then the same index range [i0,i1]
  * locates the data for this facet in all the other Polyface index arrays, including the `PolyfaceAuxData` indices.
@@ -186,6 +186,7 @@ export class PolyfaceAuxData {
   /** The indices (shared by all data in all channels) mapping the data to the mesh facets. */
   public indices: number[];
 
+  /** Constructor with CAPTURED inputs. */
   public constructor(channels: AuxChannel[], indices: number[]) {
     this.channels = channels;
     this.indices = indices;
