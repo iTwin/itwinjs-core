@@ -191,14 +191,48 @@ describe.only("layoutTextBlock", () => {
 
     const fox = "The quick brown fox jumped over the lazy dog";
     expectLines(fox, 50, [fox]);
-    expectLines(fox, 40, ["The quick brown fox jumped over the lazy", " dog"]);
-    expectLines(fox, 30, ["The quick brown fox jumped ", "over the lazy dog"]);
-    expectLines(fox, 20, ["The quick brown fox ", "jumped over the lazy", " dog"]);
-    expectLines(fox, 10, ["The quick ", "brown fox ", "jumped ", "over the ", "lazy dog"]);
+    expectLines(fox, 40, [
+      //        1         2         3         4
+      //234567890123456789012345678901234567890
+      "The quick brown fox jumped over the lazy",
+      " dog",
+    ]);
+    expectLines(fox, 30, [
+      //        1         2         3
+      //23456789012345678901234567890
+      "The quick brown fox jumped ",
+      "over the lazy dog",
+    ]);
+    expectLines(fox, 20, [
+      //        1         2
+      //2345678901234567890
+      "The quick brown fox ",
+      "jumped over the lazy",
+      " dog",
+    ]);
+    expectLines(fox, 10, [
+      //        1
+      //234567890
+      "The quick ",
+      "brown fox ",
+      "jumped ",
+      "over the ",
+      "lazy dog",
+    ]);
   });
   
   it("considers consecutive whitespace a single 'word'", () => {
-    
+    expectLines("a b  c   d    e     f      ", 3, [
+      "a b",
+      "  c",
+      "   ",
+      "d",
+      "    ",
+      "e",
+      "     ",
+      "f",
+      "      ",
+    ]);
   });
 
   it("performs word-wrapping on non-English text", () => {
