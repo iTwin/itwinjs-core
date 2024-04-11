@@ -200,7 +200,10 @@ describe.only("layoutTextBlock", () => {
 
   it("performs word-wrapping with punctuation", () => {
     expectLines("1.24 56.7 8,910", 1, ["1.24", " ", "56.7", " ", "8,910"]);
-    expectLines("a.bc de.f g,hij", 1, ["a", ".", "bc", " ", "de", ".", "f", " ", "g", ",", "hij"]);
+
+    // NOTE: Chrome splits a.bc and de.f on the periods. Safari and electron do not.
+    // Since text layout is done in the backend, we're going to assume electron is right, and if not, that it's their responsibility to fix it.
+    expectLines("a.bc de.f g,hij", 1, ["a.bc", " ", "de.f", " ", "g", ",", "hij"]);
   });
 
   it("does not word-wrap fractions", () => {
