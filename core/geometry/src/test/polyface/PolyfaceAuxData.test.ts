@@ -8,12 +8,17 @@ import { Arc3d } from "../../curve/Arc3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Path } from "../../curve/Path";
 import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Geometry } from "../../Geometry";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { AuxChannel, AuxChannelData, AuxChannelDataType, PolyfaceAuxData } from "../../polyface/AuxData";
+import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { BentleyGeometryFlatBuffer } from "../../serialization/BentleyGeometryFlatBuffer";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
+import { ImportedSample } from "../testInputs/ImportedSamples";
+import { NumberArray, Point3dArray } from "../../geometry3d/PointHelpers";
 
 /** Create a polyface representing a cantilever beam with [[PolyfaceAuxData]] representing the stress and deflection. */
 function createCantileverBeamPolyface(beamRadius: number = 10.0, beamLength: number = 100.0, facetSize: number = 1.0, zScale: number = 1.0) {
@@ -137,11 +142,52 @@ describe("PolyfaceAuxData", () => {
     ck.testFalse(PolyfaceAuxData.isAlmostEqual(undefined, auxDataA));
     if (ck.testPointer(auxDataA)) {
       const auxDataB = beam.data.auxData!.clone();
-      ck.testTrue(auxDataA.isAlmostEqual(auxDataB), "cloned PpolyfaceAuxData");
+      ck.testTrue(auxDataA.isAlmostEqual(auxDataB), "cloned PolyfaceAuxData");
       ck.testFalse(auxDataA.isAlmostEqual(beam1.data.auxData!, 1.0e-9));
     }
     ck.testFalse(beam1.isAlmostEqual(beam2));
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("Compress", () => {
+    const ck = new Checker();
+    const mesh = ImportedSample.createPolyhedron62();
+    if (ck.testType(mesh, IndexedPolyface, "imported mesh")) {
+      const latitude = mesh.data.point.getPoint3dArray().map((pt: Point3d) => { return pt.z; });
+      const latitudeChannel = new AuxChannel([new AuxChannelData(0, latitude)], AuxChannelDataType.Distance, "Latitude", "Time");
+
+      const octant = mesh.data.point.getPoint3dArray().map((pt: Point3d) => { return Point3d.create(Geometry.split3Way01(pt.x), Geometry.split3Way01(pt.y), Geometry.split3Way01(pt.z)); });
+      const octantChannel = new AuxChannel([new AuxChannelData(0, Point3dArray.packToNumberArray(octant))], AuxChannelDataType.Vector, "Octant", "Time");
+
+      const mesh0 = mesh.clone();
+      mesh0.data.auxData = new PolyfaceAuxData([latitudeChannel.clone()], mesh0.data.pointIndex.slice());
+      mesh0.data.compress();
+      ck.testFalse(NumberArray.isAlmostEqual(mesh.data.pointIndex, mesh0.data.auxData.indices, 0.0), "Single 1D channel AuxData was compressed");
+      ck.testExactNumber(mesh0.data.auxData.channels[0].valueCount, 13, "Compress leaves expected number of AuxData 1D values");
+
+      const mesh1 = mesh.clone();
+      mesh1.data.auxData = new PolyfaceAuxData([octantChannel.clone()], mesh1.data.pointIndex.slice());
+      mesh1.data.compress();
+      ck.testFalse(NumberArray.isAlmostEqual(mesh.data.pointIndex, mesh1.data.auxData.indices, 0.0), "Single 3D channel AuxData was compressed");
+      ck.testExactNumber(mesh1.data.auxData.channels[0].valueCount, 20, "Compress leaves expected number of AuxData 3D values");
+
+      const mesh2 = mesh.clone();
+      mesh2.data.auxData = new PolyfaceAuxData([latitudeChannel.clone(), octantChannel.clone()], mesh2.data.pointIndex.slice());
+      mesh2.data.compress();
+      ck.testNumberArray(mesh.data.pointIndex, mesh2.data.auxData.indices, "Multichannel AuxData indices was untouched by compress");
+      ck.testExactNumber(mesh2.data.auxData.channels[0].valueCount, 60, "Compress leaves multichannel AuxData 1D values untouched");
+      ck.testExactNumber(mesh2.data.auxData.channels[1].valueCount, 60, "Compress leaves multichannel AuxData 3D values untouched");
+
+      // sanity check roundtrips
+      for (const meshWithAuxData of [mesh0, mesh1, mesh2]) {
+        const bytes = BentleyGeometryFlatBuffer.geometryToBytes(meshWithAuxData, true);
+        const meshFB = bytes ? BentleyGeometryFlatBuffer.bytesToGeometry(bytes, true) : undefined;
+        const json = IModelJson.Writer.toIModelJson(meshWithAuxData);
+        const meshJson = json ? IModelJson.Reader.parse(json) as IndexedPolyface : undefined;
+        if (ck.testType(meshFB, IndexedPolyface) && ck.testType(meshJson, IndexedPolyface))
+          ck.testTrue(meshFB.isAlmostEqual(meshJson), "roundtrip through FB compares to roundtrip through JSON");
+        }
+      }
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
