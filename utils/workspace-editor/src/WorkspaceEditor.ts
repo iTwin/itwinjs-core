@@ -54,6 +54,10 @@ interface WorkspaceDbOpt extends EditorOpts {
   glob?: string;
 }
 
+interface CreateWorkspaceDbOpt extends WorkspaceDbOpt {
+  workspaceName: string;
+}
+
 /** options for copying a WorkspaceDb to a new name */
 interface CopyWorkspaceDbOpt extends WorkspaceDbOpt {
   newDbName: WorkspaceDb.DbFullName;
@@ -139,10 +143,10 @@ function friendlyFileSize(size: number) {
 }
 
 /** Create a new empty WorkspaceDb  */
-async function createWorkspaceDb(args: WorkspaceDbOpt) {
+async function createWorkspaceDb(args: CreateWorkspaceDbOpt) {
   args.writeable = true;
   const wsFile = EditableWorkspaceDb.construct(args, IModelHost.appWorkspace.getContainer(args));
-  await wsFile.createDb();
+  await wsFile.createDb({ manifest: { workspaceName: args.workspaceName } });
   showMessage(`created WorkspaceDb ${wsFile.sqliteDb.nativeDb.getFilePath()}`);
   wsFile.close();
 }
@@ -630,9 +634,12 @@ Yargs.command<WorkspaceDbOpt>({
   describe: "delete a WorkspaceDb from a cloud container",
   handler: runCommand(deleteWorkspaceDb),
 });
-Yargs.command<WorkspaceDbOpt>({
+Yargs.command<CreateWorkspaceDbOpt>({
   command: "createDb <dbName>",
   describe: "create a new WorkspaceDb",
+  builder: {
+    workspaceName: { describe: "user interface name for the WorkspaceDb", string: true },
+  },
   handler: runCommand(createWorkspaceDb),
 });
 Yargs.command<CopyWorkspaceDbOpt>({

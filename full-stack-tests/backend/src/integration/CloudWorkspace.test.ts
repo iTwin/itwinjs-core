@@ -56,12 +56,13 @@ describe.only("Cloud workspace containers", () => {
     const wsCont1 = workspace1.getContainer({ ...props, accessToken });
 
     const user = "workspace admin";
+    const workspaceName = "test workspace";
     const makeVersion = async (version?: string) => {
       expect(wsCont1.cloudContainer).not.undefined;
       await CloudSqlite.withWriteLock({ user, container: wsCont1.cloudContainer! }, async () => {
         const wsDbEdit = EditableWorkspaceDb.construct({ dbName: testDbName }, wsCont1);
         try {
-          await wsDbEdit.createDb({ version, manifest: { workspaceName: "test workspace" } });
+          await wsDbEdit.createDb({ version, manifest: { workspaceName } });
           const contain1 = settings.getString("cloudSqlite/containerId")!;
           expect(contain1).equals(containerId);
 
@@ -94,7 +95,8 @@ describe.only("Cloud workspace containers", () => {
 
     let ws2 = wsCont2.getWorkspaceDb({ dbName: testDbName });
     const manifest = ws2.manifest;
-    expect(manifest.lastEditedBy).equals(user);
+    expect(manifest.lastEditedBy).equals(user); // updated when the EditableWorkspaceDb is closed with the write lock held
+    expect(manifest.workspaceName).equals(workspaceName);
     expect(ws2.getString("string 1")).equals("value of string 1");
     ws2.container.closeWorkspaceDb(ws2);
 
@@ -103,7 +105,8 @@ describe.only("Cloud workspace containers", () => {
     // change the workspace in one cache and see that it is updated in the other
     const newVal = "new value for string 1";
     assert(undefined !== wsCont1.cloudContainer);
-    await CloudSqlite.withWriteLock({ user: "Cloud workspace test", container: wsCont1.cloudContainer }, async () => {
+    const admin2 = "Cloud workspace admin 2";
+    await CloudSqlite.withWriteLock({ user: admin2, container: wsCont1.cloudContainer }, async () => {
       const ws3 = EditableWorkspaceDb.construct({ dbName: testDbName, version: "1.1.4-beta" }, wsCont1);
       ws3.open();
       ws3.updateString("string 1", newVal);
@@ -117,6 +120,8 @@ describe.only("Cloud workspace containers", () => {
     expect(wsCont2.resolveDbFileName({ dbName: testDbName, version: "1.0.0" })).contains("1.0.0");
 
     ws2 = wsCont2.getWorkspaceDb({ dbName: testDbName, version: "~1.1.0", includePrerelease: true });
+    expect(ws2.manifest.lastEditedBy).equal(admin2);
+    expect(ws2.manifest.workspaceName).equals(workspaceName);
     expect(ws2.dbFileName).contains("1.1.4-beta");
     expect(ws2.getString("string 1")).equals(newVal);
     expect(ws2.getString("myVersion")).equals("1.1.4-beta");
