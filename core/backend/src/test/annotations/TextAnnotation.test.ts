@@ -188,6 +188,13 @@ describe.only("layoutTextBlock", () => {
       " ",
       "vwxyz",
     ]);
+
+    const fox = "The quick brown fox jumped over the lazy dog";
+    expectLines(fox, 50, [fox]);
+    expectLines(fox, 40, ["The quick brown fox jumped over the lazy", " dog"]);
+    expectLines(fox, 30, ["The quick brown fox jumped ", "over the lazy dog"]);
+    expectLines(fox, 20, ["The quick brown fox ", "jumped over the lazy", " dog"]);
+    expectLines(fox, 10, ["The quick ", "brown fox ", "jumped ", "over the ", "lazy dog"]);
   });
   
   it("considers consecutive whitespace a single 'word'", () => {
