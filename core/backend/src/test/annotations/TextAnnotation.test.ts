@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, TextBlockLayout, TextLayoutRanges, layoutTextBlock } from "../../TextAnnotationLayout";
 import { Range2d } from "@itwin/core-geometry";
-import { FontMap, LineBreakRun, TextAnnotation2dProps, TextBlock, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { FontMap, LineBreakRun, TextAnnotation, TextAnnotation2dProps, TextBlock, TextRun, TextStyleSettings } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { TextAnnotation2d } from "../../TextAnnotationElement";
 
@@ -383,6 +383,15 @@ describe.only("TextAnnotation element", () => {
 
   describe("setAnnotation", () => {
     it("updates JSON properties and recomputes geometry stream", () => {
+      const elem = makeElement();
+      expect(elem.geom).to.be.undefined;
+
+      const annotation = { textBlock: TextBlock.create({ styleName: "block" }).toJSON() };
+      elem.setAnnotation(TextAnnotation.fromJSON(annotation));
+
+      expect(elem.geom).not.to.be.undefined;
+      expect(elem.jsonProperties.annotation).to.deep.equal(annotation);
+      expect(elem.jsonProperties.annotation).not.to.equal(annotation);
     });
   });
 });

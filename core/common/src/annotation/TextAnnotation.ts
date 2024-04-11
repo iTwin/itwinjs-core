@@ -98,9 +98,9 @@ export class TextAnnotation {
   public toJSON(): TextAnnotationProps {
     const props: TextAnnotationProps = {};
 
-    if (!this.textBlock.isEmpty) {
-      props.textBlock = this.textBlock.toJSON();
-    }
+    // Even if the text block is empty, we want to record its style name and overrides, e.g.,
+    // so the user can pick up where they left off editing it next time.
+    props.textBlock = this.textBlock.toJSON();
 
     if (!this.origin.isZero) {
       props.origin = this.origin.toJSON();
