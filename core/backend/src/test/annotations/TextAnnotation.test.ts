@@ -5,9 +5,10 @@
 import { expect } from "chai";
 import { ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, TextBlockLayout, TextLayoutRanges, layoutTextBlock } from "../../TextAnnotationLayout";
 import { Range2d } from "@itwin/core-geometry";
-import { FontMap, LineBreakRun, TextAnnotation, TextAnnotation2dProps, TextBlock, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, FontMap, FractionRun, GeometryStreamProps, LineBreakRun, Run, TextAnnotation, TextAnnotation2dProps, TextBlock, TextBlockGeometryPropsEntry, TextRun, TextStyleColor, TextStyleSettings } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { TextAnnotation2d } from "../../TextAnnotationElement";
+import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry";
 
 function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
   const range = new Range2d(0, 0, args.chars.length, args.lineHeight);
@@ -321,21 +322,118 @@ describe.only("layoutTextBlock", () => {
   });
 });
 
+function mockIModel(): IModelDb {
+  const iModel: Pick<IModelDb, "fontMap" | "computeRangesForText" | "forEachMetaData"> = {
+    fontMap: new FontMap(),
+    computeRangesForText: () => { return { layout: new Range2d(0, 0, 1, 1), justification: new Range2d(0, 0, 1, 1) } },
+    forEachMetaData: () => undefined,
+  };
+
+  return iModel as IModelDb;
+}
+
 describe.only("produceTextAnnotationGeometry", () => {
+  type Color = ColorDef | "subcategory";
   
+  function makeText(color?: Color): TextRun {
+    const styleOverrides = undefined !== color ? { color: color instanceof ColorDef ? color.toJSON() : color } : undefined;
+    return TextRun.create({ styleName: "", styleOverrides, content: "text" });
+  }
+
+  function makeFraction(color?: Color): FractionRun {
+    const styleOverrides = undefined !== color ? { color: color instanceof ColorDef ? color.toJSON() : color } : undefined;
+    return FractionRun.create({ numerator: "num", denominator: "denom", styleName: "", styleOverrides });
+  }
+
+  function makeBreak(color?: Color): LineBreakRun {
+    const styleOverrides = undefined !== color ? { color: color instanceof ColorDef ? color.toJSON() : color } : undefined;
+    return LineBreakRun.create({ styleName: "", styleOverrides });
+  }
+
+  function makeTextBlock(runs: Run[]): TextBlock {
+    const block = TextBlock.create({ styleName: "" });
+    for (const run of runs) {
+      block.appendRun(run);
+    }
+
+    return block;
+  }
+
+  function makeGeometry(runs: Run[]): TextBlockGeometryPropsEntry[] {
+    const block = makeTextBlock(runs);
+    const annotation = TextAnnotation.fromJSON({ textBlock: block.toJSON() });
+    return produceTextAnnotationGeometry({ iModel: mockIModel(), annotation }).entries;
+  }
+
+  it("produces an empty array for an empty text block", () => {
+    expect(makeGeometry([])).to.deep.equal([]);
+  });
+
+  it("produces an empty array for a block consisting only of line breaks", () => {
+    expect(makeGeometry([makeBreak(), makeBreak(), makeBreak()])).to.deep.equal([]);
+  });
+  
+  it("produces one appearance entry if all runs use subcategory color", () => {
+    const geom = makeGeometry([makeText(), makeFraction(), makeText("subcategory"), makeFraction("subcategory")]);
+    console.log(JSON.stringify(geom));
+    expect(geom.length).to.equal(9);
+    expect(geom[0].color).to.equal("subcategory");
+    expect(geom.slice(1).some((entry) => entry.color !== undefined)).to.be.false;
+  });
+
+  it("produces strings and fraction separators", () => {
+    const geom = makeGeometry([makeText(), makeFraction(), makeFraction(), makeText()]);
+    expect(geom.length).to.equal(9);
+    expect(geom[0].color).to.equal("subcategory");
+    
+    expect(geom[1].text).not.to.be.undefined;
+
+    expect(geom[2].text).not.to.be.undefined;
+    expect(geom[3].separator).not.to.be.undefined;
+    expect(geom[4].text).not.to.be.undefined;
+
+    expect(geom[5].text).not.to.be.undefined;
+    expect(geom[6].separator).not.to.be.undefined;
+    expect(geom[7].text).not.to.be.undefined;
+    
+    expect(geom[8].text).not.to.be.undefined;
+  });
+
+  it("produces an appearance change for each non-break run that is a different color from the previous run", () => {
+    const geom = makeGeometry([
+      makeText(ColorDef.blue),
+      makeText(), // subcategory by default
+      makeText(),
+      makeText(ColorDef.red),
+      makeText(ColorDef.white),
+      makeText(ColorDef.white),
+      makeBreak("subcategory"),
+      makeFraction(ColorDef.green),
+      makeText(ColorDef.green),
+      makeBreak(ColorDef.black),
+      makeText(ColorDef.green),
+    ]).map((entry) => entry.text ? "text" : (entry.separator ? "sep" : (typeof entry.color === "number" ? ColorDef.fromJSON(entry.color) : entry.color)));
+
+    expect(geom).to.deep.equal([
+      ColorDef.blue,
+      "text",
+      "subcategory",
+      "text",
+      "text",
+      ColorDef.red,
+      "text",
+      ColorDef.white,
+      "text",
+      "text",
+      ColorDef.green,
+      "text", "sep", "text",
+      "text",
+      "text",
+    ]);
+  });
 });
 
 describe.only("TextAnnotation element", () => {
-  function mockIModel(): IModelDb {
-    const iModel: Pick<IModelDb, "fontMap" | "computeRangesForText" | "forEachMetaData"> = {
-      fontMap: new FontMap(),
-      computeRangesForText: () => { return { layout: new Range2d(0, 0, 1, 1), justification: new Range2d(0, 0, 1, 1) } },
-      forEachMetaData: () => undefined,
-    };
-
-    return iModel as IModelDb;
-  }
-
   function makeElement(props?: Partial<TextAnnotation2dProps>): TextAnnotation2d {
     return TextAnnotation2d.fromJSON({
       category: "0x12",
