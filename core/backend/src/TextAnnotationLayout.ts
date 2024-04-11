@@ -262,24 +262,60 @@ export class RunLayout {
     return this.source.type === "text";
   }
 
-  private clone(): RunLayout {
+  private clone(args: { ranges: TextLayoutRanges, charOffset: number, numChars: number}): RunLayout {
+    assert("text" === this.source.type);
+    
     return new RunLayout({
       ...this,
-      range: this.range.clone(),
-      justificationRange: this.justificationRange?.clone(),
-      numeratorRange: this.numeratorRange?.clone(),
-      denominatorRange: this.denominatorRange?.clone(),
+      charOffset: args.charOffset,
+      numChars: args.numChars,
+      range: args.ranges.layout,
+      justificationRange: args.ranges.justification,
       offsetFromLine: { ...this.offsetFromLine },
     })
   }
 
-  public wrap(_availableWidth: number, _shouldForceLeadingUnit: boolean): RunLayout | undefined {
-    if (!this.canWrap) {
+  public wrap(availableWidth: number, shouldForceLeadingUnit: boolean, context: LayoutContext): RunLayout | undefined {
+    if ("text" !== this.source.type) {
       return undefined;
     }
 
+    // An optimization that tracks the computed width so far so we don't have to repeatedly recompute preceding character ranges.
+    // Assumes (to the best of Jeff's knowledge) that characters before a break point can't affect the shaping of subsequent characters.
+    let runningWidth = 0;
+    let breakPos = 0;
     const segmenter = new Intl.Segmenter(undefined, { granularity: "word" });
-    return this.clone(); // ###TODO
+    for (const segment of segmenter.segment(this.source.content)) {
+      const testContent = segment.segment;
+      const forceCurrentUnit = shouldForceLeadingUnit && (0 === breakPos);
+
+      // If we don't fit, the previous break position is the split point.
+      const ranges = context.computeRangeForText(testContent, this.style, this.source.baselineShift);
+      if (!forceCurrentUnit && (runningWidth + ranges.justification.xLength()) > availableWidth) {
+        break;
+      }
+
+      // Otherwise, we fit; keep trying.
+      runningWidth += ranges.layout.xLength();
+      breakPos = segment.index + testContent.length;
+    }
+
+    // If the whole thing fits, we don't have to wrap (i.e., we just wasted a bunch of time).
+    if (breakPos >= this.source.content.length) {
+      return undefined;
+    }
+
+    // Trim this run and return the remainder.
+    const charOffset = this.charOffset + breakPos;
+    const numChars = this.numChars - breakPos;
+    this.numChars = breakPos;
+    
+    const leftover = this.source.content.substring(charOffset, charOffset + numChars);
+    return this.clone({
+      ranges: context.computeRangeForText(leftover, this.style, this.source.baselineShift),
+      charOffset,
+      numChars,
+    });
   }
 }
 
