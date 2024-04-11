@@ -393,5 +393,19 @@ describe.only("TextAnnotation element", () => {
       expect(elem.jsonProperties.annotation).to.deep.equal(annotation);
       expect(elem.jsonProperties.annotation).not.to.equal(annotation);
     });
+
+    it("uses default subcategory by default", () => {
+      const elem = makeElement();
+      elem.setAnnotation(TextAnnotation.fromJSON({ textBlock: { styleName: "block" } }));
+      expect(elem.geom!.length).to.equal(1);
+      expect(elem.geom![0].appearance!.subCategory).to.equal("0x13");
+    });
+
+    it("uses specific subcategory if provided", () => {
+      const elem = makeElement();
+      elem.setAnnotation(TextAnnotation.fromJSON({ textBlock: { styleName: "block" } }), "0x1234");
+      expect(elem.geom!.length).to.equal(1);
+      expect(elem.geom![0].appearance!.subCategory).to.equal("0x1234");
+    });
   });
 });
