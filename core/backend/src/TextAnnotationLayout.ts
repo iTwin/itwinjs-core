@@ -272,6 +272,15 @@ export class RunLayout {
       offsetFromLine: { ...this.offsetFromLine },
     })
   }
+
+  public wrap(_availableWidth: number, _shouldForceLeadingUnit: boolean): RunLayout | undefined {
+    if (!this.canWrap) {
+      return undefined;
+    }
+
+    // ###TODO
+    return this.clone();
+  }
 }
 
 /** @internal */
