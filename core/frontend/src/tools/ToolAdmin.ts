@@ -502,6 +502,7 @@ export class ToolAdmin {
 
     // Remove any events associated with this viewport.
     ToolAdmin._toolEvents = ToolAdmin._toolEvents.filter((ev) => ev.vp !== vp);
+    void this.currentTool.onCleanup();
   }
 
   private getMousePosition(event: ToolEvent): XAndY {
