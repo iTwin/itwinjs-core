@@ -267,7 +267,7 @@ async function listWorkspaceDb(args: ListOptions) {
 /** Add files into a WorkspaceDb. */
 async function addResource(args: AddFileOptions) {
   return editWorkspace(args, async (wsFile, args) => {
-    globSync(args.files, { cwd: args.root ?? process.cwd(), nodir: true }).forEach((filePath) => {
+    globSync(args.files.replace(/\\/g, "/"), { cwd: args.root ?? process.cwd(), nodir: true }).forEach((filePath) => {
       const file = args.root ? join(args.root, filePath) : filePath;
       if (!IModelJsFs.existsSync(file))
         throw new Error(`file [${file}] does not exist`);
@@ -293,7 +293,7 @@ async function addResource(args: AddFileOptions) {
 /** Replace files in a WorkspaceDb. */
 async function replaceResource(args: AddFileOptions) {
   return editWorkspace(args, async (wsFile, args) => {
-    globSync(args.files, { cwd: args.root ?? process.cwd(), nodir: true }).forEach((filePath) => {
+    globSync(args.files.replace(/\\/g, "/"), { cwd: args.root ?? process.cwd(), nodir: true }).forEach((filePath) => {
       const file = args.root ? join(args.root, filePath) : filePath;
       if (!IModelJsFs.existsSync(file))
         throw new Error(`file [${file}] does not exist`);
