@@ -584,7 +584,7 @@ Yargs.options({
   nRequests: { describe: "Number of simultaneous http requests for cloud operations", number: true, hidden: true },
   containerId: { alias: "c", describe: "ContainerId for WorkspaceDb", string: true, demandOption: true },
   user: { describe: "String shown in cloud container locked message", string: true, default: "workspace-editor" },
-  baseUri: { alias: "b", describe: "The base uri for the container", string: true },
+  baseUri: { describe: "The base uri for the container", string: true },
   accessToken: { describe: "Token that grants access to the container (either SAS or account key)", string: true, default: "" },
   storageType: { describe: "Cloud storage module type", string: true, default: "azure" },
   logging: { describe: "enable log messages", boolean: true, default: false, hidden: true },

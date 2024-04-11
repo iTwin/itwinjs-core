@@ -139,8 +139,6 @@ export namespace WorkspaceDb {
     readonly includePrerelease?: boolean;
     /** start a prefetch operation whenever this WorkspaceDb is opened. */
     readonly prefetch?: boolean;
-    /** for sorted WorkspaceDbs, provides priority sort value */
-    readonly priority?: number;
   }
 
   /** Scope to increment for a version number.

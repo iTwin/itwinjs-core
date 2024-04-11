@@ -71,7 +71,7 @@
       "properties": {
         "workspace": {
           "type": "object",
-          "extends": "itwin/workspace/workspaceDb",
+          "extends": "itwin/core/workspace/workspaceDb",
           "description": "workspaceDb for font",
           "required": [
             "workspaceLimit"

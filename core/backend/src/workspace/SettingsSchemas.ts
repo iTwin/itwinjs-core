@@ -98,7 +98,7 @@ export class SettingsSchemas {
   }
 
   /** @internal */
-  public static getObjectProperties(propDef: Readonly<SettingSchema>): { required?: string[], properties: { [name: string]: SettingSchema } } {
+  public static getObjectProperties(propDef: Readonly<SettingSchema>, scope: string): { required?: string[], properties: { [name: string]: SettingSchema } } {
     let required = propDef.required;
     let properties = propDef.properties;
 
@@ -106,8 +106,8 @@ export class SettingsSchemas {
     if (propDef.extends !== undefined) {
       const typeDef = this.typeDefs.get(propDef.extends);
       if (undefined === typeDef)
-        throw new Error(`typeDef ${propDef.extends} does not exist`);
-      const expanded = this.getObjectProperties(typeDef);
+        throw new Error(`typeDef ${propDef.extends} does not exist for ${scope}`);
+      const expanded = this.getObjectProperties(typeDef, `${scope}.${typeDef}`);
       if (expanded.required)
         required = required ? [...required, ...expanded.required] : expanded.required;
       if (expanded.properties) {
@@ -137,7 +137,7 @@ export class SettingsSchemas {
     if (!val || typeof val !== "object")
       throw new Error(`${path} must be an object`);
 
-    const { required, properties } = this.getObjectProperties(propDef);
+    const { required, properties } = this.getObjectProperties(propDef, path);
 
     // first ensure all required properties are present
     if (undefined !== required) {
@@ -147,6 +147,15 @@ export class SettingsSchemas {
           throw new Error(`required value for "${entry}" is missing in "${path}"`);
       }
     }
+
+    // you can supply default values in typeDefs. See if any members are undefined that have a default.
+    if (undefined !== properties) {
+      for (const [key, prop] of Object.entries(properties)) {
+        if ((val as any)[key] === undefined && prop.default)
+          (val as any)[key] = prop.default;
+      }
+    }
+
     // then validate all values in the supplied object are valid
     for (const key of Object.keys(val)) {
       const prop = properties[key];

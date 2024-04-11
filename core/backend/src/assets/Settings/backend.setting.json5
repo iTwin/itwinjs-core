@@ -1,5 +1,5 @@
 {
-  "workspace/databases": [
+  "itwin/core/gcs/default/databases": [
     {
       "name": "itwin/core/gcs/base",
       "dbName": "base",

@@ -4,12 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Mutable, OpenMode } from "@itwin/core-bentley";
+import { Mutable, OpenMode, assert } from "@itwin/core-bentley";
 import { SnapshotDb, StandaloneDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { SettingDictionary, SettingsPriority } from "../../workspace/Settings";
 import { SettingSchema, SettingSchemaGroup, SettingsSchemas } from "../../workspace/SettingsSchemas";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { WorkspaceContainer, WorkspaceDb } from "../../workspace/Workspace";
 
 /// cspell:ignore devstoreaccount1
 
@@ -145,7 +146,6 @@ describe.only("Settings", () => {
     "app1/sub2": {
       arr: ["a21", "a22"],
     },
-    "testApp/fontList": { list: 1 },
   };
 
   const iTwinSettings = {
@@ -168,7 +168,6 @@ describe.only("Settings", () => {
   };
 
   it("settings priorities", () => {
-
     const settings = iModel.workspace.settings;
     SettingsSchemas.addGroup(app1);
     IModelHost.appWorkspace.settings.addDictionary("app1", SettingsPriority.application, app1Settings);
@@ -209,6 +208,18 @@ describe.only("Settings", () => {
     expect(settings.getSetting("app1/not there")).is.undefined;
     expect(settings.getString("app2/not there", "fallback")).equals("fallback");
 
+    // list of default Gcs databases is in the backend.setting.json5 file loaded on startup
+    const defaultGcs = settings.getArray<WorkspaceDb.Props & WorkspaceContainer.Props>("itwin/core/gcs/default/databases");
+    assert(undefined !== defaultGcs);
+    expect(defaultGcs.length).equals(2);
+    expect(defaultGcs[0].baseUri).equal("https://geocoord-workspace.itwinjs.org");
+    expect(defaultGcs[1].baseUri).equal(defaultGcs[1].baseUri);
+    expect(defaultGcs[0].dbName).equal("base");
+    expect(defaultGcs[1].dbName).equal("allEarth");
+    expect(defaultGcs[0].prefetch).true;
+    expect(defaultGcs[1].prefetch).false;
+    expect(defaultGcs[1].storageType).equals("azure");
+
     iTwinSettings["app2/setting6"] = "new value for 6";
     settings.addDictionary("iTwin.setting.json", SettingsPriority.iTwin, iTwinSettings);
     expect(settings.getString("app2/setting6")).equals(iTwinSettings["app2/setting6"]);
@@ -233,17 +244,13 @@ describe.only("Settings", () => {
     expect(settings.getString("app2/setting6")).is.undefined;
 
     // test validation of values vs. setting schemas
-    const workspace: any = {
-      dbName: "abc",
-      containerId: "123",
-      baseUri: "aab.com",
-    };
+    const workspace: any = { dbName: "abc", containerId: "123", baseUri: "aab.com" };
     const fontListVal: any = [{ workspace, fontName: "arial" }, { workspace, fontName: "helvetica", fontType: 3 }];
     expect(() => SettingsSchemas.validateSetting(fontListVal, "testApp/fontList")).throws("required value for \"workspaceLimit\" is missing");
-    workspace.workspaceLimit = 4;
+    workspace.workspaceLimit = 4; // add missing value
     expect(() => SettingsSchemas.validateSetting(fontListVal, "testApp/fontList")).throws("value for testApp/fontList[1].fontType");
-    fontListVal[1].fontType = "ttf";
-    expect(SettingsSchemas.validateSetting(fontListVal, "testApp/fontList")).equal(fontListVal);
+    fontListVal[1].fontType = "ttf"; // correct font type to string
+    expect(SettingsSchemas.validateSetting(fontListVal, "testApp/fontList")).equal(fontListVal); // should now pass
   });
 
   it("read settings file", () => {

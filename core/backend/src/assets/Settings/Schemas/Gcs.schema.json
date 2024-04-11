@@ -8,7 +8,7 @@
       "description": "array of GCS WorkspaceDbs",
       "items": {
         "type": "object",
-        "extends": "itwin/core/gcs/GcsWorkspaceDb",
+        "extends": "itwin/core/workspace/workspaceDb",
         "description": "Properties of a WorkspaceDb holding GCS data.",
         "properties": {
           "priority": {
@@ -17,26 +17,7 @@
             "default": 500
           }
         }
-      },
-      "default": [
-        {
-          "dbName": "base",
-          "version": "^1",
-          "baseUri": "https://geocoord-workspace.itwinjs.org",
-          "containerId": "gcs",
-          "isPublic": true,
-          "priority": 10000,
-          "prefetch": true
-        },
-        {
-          "dbName": "allEarth",
-          "version": "^1",
-          "baseUri": "https://geocoord-workspace.itwinjs.org",
-          "containerId": "gcs",
-          "isPublic": true,
-          "priority": 100
-        }
-      ]
+      }
     },
     "disableWorkspaces": {
       "type": "boolean",

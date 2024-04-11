@@ -10,9 +10,13 @@ import { BentleyError, Logger } from "@itwin/core-bentley";
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelHost } from "./IModelHost";
 import { Settings } from "./workspace/Settings";
-import { WorkspaceContainer } from "./workspace/Workspace";
+import { WorkspaceContainer, WorkspaceDb } from "./workspace/Workspace";
 
 const loggerCat = "GeoCoord";
+
+interface GcsDbProps extends WorkspaceDb.Props, WorkspaceContainer.Props {
+  priority?: number;
+}
 
 /**
  * Internal class to configure and load the gcs workspaces for an iModel.
@@ -22,54 +26,47 @@ export class GeoCoordConfig {
   /** array of cloud prefetch tasks that may be awaited to permit offline usage */
   public static readonly prefetches: CloudSqlite.CloudPrefetch[] = [];
 
-  private static addGcsWorkspace(gcsDbAlias: string) {
+  private static addGcsWorkspace(dbProps: GcsDbProps) {
     // override to disable loading GCS data from workspaces
     if (IModelHost.appWorkspace.settings.getBoolean("itwin/core/gcs/disableWorkspaces", false))
       return;
 
-    let containerProps: WorkspaceContainer.Props | undefined;
     try {
       const ws = IModelHost.appWorkspace;
-      const dbProps = ws.resolveDatabase(gcsDbAlias);
-      containerProps = ws.resolveContainer(dbProps.containerName);
-      const container = ws.getContainer(containerProps);
+      const container = ws.getContainer(dbProps);
       const cloudContainer = container.cloudContainer;
       if (!cloudContainer?.isConnected) {
-        Logger.logError("GeoCoord", `could not load gcs database "${gcsDbAlias}"`);
+        Logger.logError("GeoCoord", `could not load gcs database "${dbProps.dbName}"`);
         return;
       }
 
       const gcsDbName = container.resolveDbFileName(dbProps);
       const gcsDbProps = cloudContainer.queryDatabase(gcsDbName);
       if (undefined === gcsDbProps)
-        throw new Error(`database "${gcsDbName}" not found in container "${containerProps.containerId}"`);
+        throw new Error(`database "${gcsDbName}" not found in container "${dbProps.containerId}"`);
 
       if (!IModelHost.platform.addGcsWorkspaceDb(gcsDbName, cloudContainer, dbProps.priority))
         return; // already had this db
 
-      Logger.logInfo(loggerCat, `loaded gcsDb "${gcsDbName}", from "${containerProps.baseUri}/${containerProps.containerId}" size=${gcsDbProps.totalBlocks}, local=${gcsDbProps.localBlocks}`);
+      Logger.logInfo(loggerCat, `loaded gcsDb "${gcsDbName}", from "${dbProps.baseUri}/${dbProps.containerId}" size=${gcsDbProps.totalBlocks}, local=${gcsDbProps.localBlocks}`);
 
       if (true === dbProps.prefetch)
         this.prefetches.push(CloudSqlite.startCloudPrefetch(cloudContainer, gcsDbName));
 
     } catch (e: any) {
       let msg = `Cannot load GCS workspace (${e.errorNumber}): ${BentleyError.getErrorMessage(e)}`;
-      if (containerProps)
-        msg += `,container=${containerProps.baseUri}/${containerProps.containerId}, storage=${containerProps.storageType}, public=${containerProps.isPublic}, cacheDir=${IModelHost.cacheDir}`;
+      msg += `,container=${dbProps.baseUri}/${dbProps.containerId}, storage=${dbProps.storageType}, public=${dbProps.isPublic}, cacheDir=${IModelHost.cacheDir}`;
       Logger.logError(loggerCat, msg);
     }
   }
 
   private static loadAll(settings: Settings, settingName: string) {
-    settings.resolveSetting(settingName, (val) => {
-      if (Array.isArray(val)) {
-        for (const entry of val) {
-          if (typeof entry === "string")
-            this.addGcsWorkspace(entry);
-        }
+    const dbProps = settings.getArray<GcsDbProps>(settingName);
+    if (dbProps) {
+      for (const entry of dbProps) {
+        this.addGcsWorkspace(entry);
       }
-      return undefined; // keep going through all dictionaries
-    });
+    }
   }
 
   private static _defaultDbsLoaded = false;
