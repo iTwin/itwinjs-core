@@ -158,7 +158,7 @@ describe.only("layoutTextBlock", () => {
 
   it("splits a single TextRun at word boundaries if it exceeds the document width", () => {
     const textBlock = TextBlock.create({ styleName: "" });
-    textBlock.width = 6;
+    textBlock.width = 5;
     const run = makeTextRun("a bc def ghij klmno pqrstu vwxyz")
     textBlock.appendRun(run);
     const layout = doLayout(textBlock);

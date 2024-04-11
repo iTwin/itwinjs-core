@@ -306,7 +306,7 @@ export class RunLayout {
     }
 
     // If the whole thing fits, we don't have to wrap (i.e., we just wasted a bunch of time).
-    if (breakPos >= this.source.content.length) {
+    if (breakPos >= myText.length) {
       return undefined;
     }
 
