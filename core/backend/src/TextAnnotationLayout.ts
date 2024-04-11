@@ -259,7 +259,7 @@ export class RunLayout {
   }
 
   get canWrap(): boolean {
-    return false; // ###TODO return this.source.type === "text";
+    return this.source.type === "text";
   }
 
   private clone(): RunLayout {
@@ -278,8 +278,8 @@ export class RunLayout {
       return undefined;
     }
 
-    // ###TODO
-    return this.clone();
+    const segmenter = new Intl.Segmenter(undefined, { granularity: "word" });
+    return this.clone(); // ###TODO
   }
 }
 
