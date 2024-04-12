@@ -9441,6 +9441,7 @@ export class TextAnnotation {
     anchor: TextAnnotationAnchor;
     // @internal
     computeDocumentTransform(layoutRange: Range2d): Transform;
+    equals(other: TextAnnotation): boolean;
     static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation;
     orientation: YawPitchRollAngles;
     origin: Point3d;

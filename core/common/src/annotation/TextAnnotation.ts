@@ -145,4 +145,11 @@ export class TextAnnotation {
 
     return Transform.createRefs(origin, matrix);
   }
+
+  /** Returns true if this annotation is logically equivalent to `other`. */
+  public equals(other: TextAnnotation): boolean {
+    return this.anchor.horizontal === other.anchor.horizontal && this.anchor.vertical === other.anchor.vertical
+      && this.orientation.isAlmostEqual(other.orientation) && this.origin.isAlmostEqual(other.origin)
+      && this.textBlock.equals(other.textBlock);
+  }
 }

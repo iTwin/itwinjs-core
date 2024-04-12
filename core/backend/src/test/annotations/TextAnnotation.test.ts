@@ -11,7 +11,7 @@ import { TextAnnotation2d, TextAnnotation3d } from "../../TextAnnotationElement"
 import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { GeometricElement3d } from "../../Element";
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
 
 function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
   const range = new Range2d(0, 0, args.chars.length, args.lineHeight);
@@ -513,10 +513,10 @@ describe("TextAnnotation element", () => {
     });
   });
 
-  describe.only("insert and update", () => {
+  describe("insert", () => {
     let imodel: SnapshotDb;
     let seed: GeometricElement3d;
-    
+
     before(() => {
       const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
       const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
@@ -525,7 +525,7 @@ describe("TextAnnotation element", () => {
       seed = imodel.elements.getElement<GeometricElement3d>("0x1d");
       assert.exists(seed);
       assert.isTrue(seed.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
-    })
+    });
 
     after(() => imodel.close());
 
@@ -558,12 +558,27 @@ describe("TextAnnotation element", () => {
           expect(anno).to.be.undefined;
         } else {
           expect(anno).not.to.be.undefined;
-          // ###TODO expect(anno!.equals(annotation)).to.be.true;
+          expect(anno!.equals(annotation)).to.be.true;
         }
       }
 
       test();
       test(TextAnnotation.fromJSON({ textBlock: { styleName: "block" } }));
+
+      const block = TextBlock.createEmpty();
+      block.styleName = "block";
+      block.appendRun(makeTextRun("run", "run1"));
+      block.appendRun(makeTextRun("RUN!!!!!", "run2"));
+
+      test(TextAnnotation.fromJSON({
+        textBlock: block.toJSON(),
+        anchor: {
+          vertical: "middle",
+          horizontal: "right",
+        },
+        origin: [0, -5, 100],
+        orientation: { yaw: 1, pitch: 0, roll: -1 },
+      }));
     });
   });
 });
