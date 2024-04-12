@@ -1446,12 +1446,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   public computeRangesForText(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
-    let emphasis = 0; // args.bold ? IModelHost.platform.TextEmphasis.Bold : IModelHost.platform.TextEmphasis.None;
-    // if (args.italic) {
-    //   emphasis |= IModelJsNative.TextEmphasis.Italic;
-    // }
-
-    const props = (this.nativeDb as any).computeRangeForText(args.chars, args.fontId, emphasis, args.widthFactor, args.lineHeight);
+    const props = this.nativeDb.computeRangesForText(args.chars, args.fontId, args.bold, args.italic, args.widthFactor, args.lineHeight);
     return {
       layout: Range2d.fromJSON(props.layout),
       justification: Range2d.fromJSON(props.justification),
