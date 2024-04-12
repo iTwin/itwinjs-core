@@ -35,11 +35,7 @@ jobs:
           nodeVersion: 20.11.1
         Windows_node_20_x:
           imageName: windows-latest
-<<<<<<< HEAD
-          nodeVersion: 20.11.1
-=======
           nodeVersion: 20.12.1
->>>>>>> 3a8593d961 (use previously working node version until rush issue is fixed (#6611))
         MacOS_node_20_x:
           imageName: macos-latest
           nodeVersion: 20.11.1

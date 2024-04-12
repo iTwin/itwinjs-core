@@ -106,20 +106,12 @@ jobs:
         clean: true
       - template: ../templates/core-build.yaml
         parameters:
-<<<<<<< HEAD
-          nodeVersion: 20.11.1
-=======
           nodeVersion: 20.12.1
->>>>>>> 3a8593d961 (use previously working node version until rush issue is fixed (#6611))
           buildMobile: true
       # Will run if even there is a failure somewhere else in the pipeline.
       - template: ../templates/publish-test-results.yaml
         parameters:
-<<<<<<< HEAD
-          nodeVersion: 20.11.1
-=======
           nodeVersion: 20.12.1
->>>>>>> 3a8593d961 (use previously working node version until rush issue is fixed (#6611))
       # The publish script identifies any new packages not previously published and tags the build
       - template: ../templates/publish.yaml
 
