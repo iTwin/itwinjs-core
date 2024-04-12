@@ -120,9 +120,7 @@ export abstract class TextBlockComponent {
   /** Create a deep copy of this component. */
   public abstract clone(): TextBlockComponent;
 
-  /** Compute a string representation of the contents of this component and all of its sub-components.
-   * ###TODO link to TextBlockLayout for doing actual layout, once that's available.
-   */
+  /** Compute a string representation of the contents of this component and all of its sub-components. */
   public abstract stringify(options?: TextBlockStringifyOptions): string;
 
   /** Convert this component to its JSON representation. */
@@ -466,7 +464,7 @@ export interface TextBlockProps extends TextBlockComponentProps {
 /** Represents a formatted text document consisting of a series of [[Paragraph]]s, each laid out on a separate line and containing their own content in the form of [[Run]]s.
  * You can change the content of the document by directly modifying the contents of its [[paragraphs]], or via [[appendParagraph]] and [[appendRun]].
  * No word-wrapping is applied to the document unless a [[width]] greater than zero is specified.
- * ###TODO link to layout and persistence APIs once they become available.
+ * @see [[TextAnnotation]] to position a text block as an annotation in 2d or 3d space.
  * @beta
  * @preview
  * @extensions

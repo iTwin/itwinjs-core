@@ -348,7 +348,8 @@ export class GeometryStreamBuilder {
         if (entry.color === "subcategory") {
           result = this.appendSubCategoryChange(Id64.invalid);
         } else {
-          result = false; // ###TODO this.appendGeometryParamsChange({ lineColor: ColorDef.fromJSON(entry.color) });
+          this.geometryStream.push({ appearance: { color: entry.color } });
+          result = true;
         }
       } else {
         result = this.appendGeometry(LineSegment3d.fromJSON(entry.separator));

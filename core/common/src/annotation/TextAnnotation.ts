@@ -47,8 +47,9 @@ export interface TextAnnotationProps {
 }
 
 /**
- * Represents a formatted block of text positioned in 2D or 3D space.
+ * Represents a formatted block of text positioned in 2d or 3d space.
  * [TextAnnotation2d]($backend) and [TextAnnotation3d]($backend) elements store a TextAnnotation from which their geometric representation is generated.
+ * @see [produceTextAnnotationGeometry]($backend) to decompose the annotation into a set of geometric primitives suitable for use with [[GeometryStreamBuilder.appendTextBlock]].
  * @beta
  */
 export class TextAnnotation {

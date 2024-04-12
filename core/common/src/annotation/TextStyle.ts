@@ -37,9 +37,6 @@ export interface TextStyleSettingsProps {
   color?: TextStyleColor;
   /** The name of a font stored in a [Workspace]($backend), used to draw the contents of a [[TextRun]].
    * Default: "" (an invalid font name).
-   * @note Font names must be unique within a workspace. Uniqueness is semi-case-insensitive per [SQLite's NOCASE collating function](https://www.sqlite.org/datatype3.html#collating_sequences): namely,
-   * the letters A through Z are compared without regard to case, so that "Arial", "arial", and "ARiaL" all refer to the same font.
-   * ###TODO obtain clarity on collation rules.
    */
   fontName?: string;
   /** The height each line of text, in meters. Many other settings use the line height as the basis for computing their own values.
@@ -111,9 +108,6 @@ export class TextStyleSettings {
   /** The color of the text. */
   public readonly color: TextStyleColor;
   /** The name of a font stored in a [Workspace]($backend), used to draw the contents of a [[TextRun]].
-   * @note Font names must be unique within a workspace. Uniqueness is semi-case-insensitive per [SQLite's NOCASE collating function](https://www.sqlite.org/datatype3.html#collating_sequences): namely,
-   * the letters A through Z are compared without regard to case, so that "Arial", "arial", and "ARiaL" all refer to the same font.
-   * ###TODO obtain clarity on collation rules.
    */
   public readonly fontName: string;
   /** The height each line of text, in meters. Many other settings use the line height as the basis for computing their own values.
@@ -153,10 +147,7 @@ export class TextStyleSettings {
    * The height is computed as superScriptScale * [[lineHeight]].
    */
   public readonly superScriptScale: number;
-  /** Multiplier used to compute the width of each glyph.
-   * The width in meters is computed as widthFactor * [[lineHeight]].
-   * ###TODO Obtain clarity.
-   */
+  /** Multiplier used to compute the width of each glyph, relative to [[lineHeight]]. */
   public readonly widthFactor: number;
 
   /** A fully-populated JSON representation of the default settings. */
@@ -240,7 +231,8 @@ export interface TextStyleProps {
   settings?: TextStyleSettingsProps;
 }
 
-/** ###TODO
+/** A named, immutable [[TextStyleSettings]] stored in a [Workspace]($backend).
+ * @see [[TextBlockComponent.styleName]] to define the text style for a component of a [[TextBlock]].
  * @note This is an immutable type. Use [[clone]] to create a modified copy.
  * @beta
  * @preview
