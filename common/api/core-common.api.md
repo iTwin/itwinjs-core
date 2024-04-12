@@ -6432,7 +6432,6 @@ export class Paragraph extends TextBlockComponent {
     applyStyle(styleName: string, options?: ApplyTextStyleOptions): void;
     // (undocumented)
     clone(): Paragraph;
-    // (undocumented)
     static create(props: ParagraphProps): Paragraph;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
@@ -9487,13 +9486,10 @@ export class TextBlock extends TextBlockComponent {
     applyStyle(styleName: string, options?: ApplyTextStyleOptions): void;
     // (undocumented)
     clone(): TextBlock;
-    // (undocumented)
     static create(props: TextBlockProps): TextBlock;
-    // (undocumented)
     static createEmpty(): TextBlock;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
-    // (undocumented)
     get isEmpty(): boolean;
     justification: TextBlockJustification;
     readonly paragraphs: Paragraph[];

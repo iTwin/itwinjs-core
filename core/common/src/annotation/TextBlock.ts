@@ -401,6 +401,7 @@ export class Paragraph extends TextBlockComponent {
     };
   }
 
+  /** Create a paragraph from its JSON representation. */
   public static create(props: ParagraphProps): Paragraph {
     return new Paragraph(props);
   }
@@ -496,14 +497,17 @@ export class TextBlock extends TextBlockComponent {
     };
   }
 
+  /** Create a text block from its JSON representation. */
   public static create(props: TextBlockProps): TextBlock {
     return new TextBlock(props);
   }
 
+  /** Create an empty text block containing no [[paragraphs]] and an empty [[styleName]]. */
   public static createEmpty(): TextBlock {
     return TextBlock.create({ styleName: "" });
   }
 
+  /** Returns true if every paragraph in this text block is empty. */
   public get isEmpty(): boolean {
     return this.paragraphs.every((p) => p.runs.length === 0);
   }
