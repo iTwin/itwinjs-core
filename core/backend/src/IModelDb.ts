@@ -1446,7 +1446,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   public computeRangesForText(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
-    let emphasis = args.bold ? IModelJsNative.TextEmphasis.Bold : IModelJsNative.TextEmphasis.None;
+    let emphasis = args.bold ? IModelHost.platform.TextEmphasis.Bold : IModelHost.platform.TextEmphasis.None;
     if (args.italic) {
       emphasis |= IModelJsNative.TextEmphasis.Italic;
     }
