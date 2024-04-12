@@ -46,4 +46,8 @@ jobs:
       - checkout: self
       - template: ./templates/core-build.yaml
         parameters:
+<<<<<<< HEAD
           nodeVersion: 20.11.1
+=======
+          nodeVersion: 20.12.1
+>>>>>>> 3a8593d961 (use previously working node version until rush issue is fixed (#6611))
