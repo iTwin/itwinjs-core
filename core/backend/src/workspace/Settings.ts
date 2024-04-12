@@ -111,6 +111,8 @@ export interface Settings {
    */
   addJson(dictionaryName: DictionaryName, priority: SettingsPriority, settingsJson: string): void;
 
+  getDictionary(dictionaryName: DictionaryName): SettingDictionary | undefined;
+
   /** Add a SettingDictionary object.
    * @param dictionaryName the name of the SettingDictionary
    * @param priority the SettingsPriority for the SettingDictionary
@@ -243,6 +245,13 @@ export class BaseSettings implements Settings {
     this.onSettingsChanged.raiseEvent();
   }
 
+  public getDictionary(dictionaryName: string): SettingDictionary | undefined {
+    for (const dictionary of this._dictionaries) {
+      if (dictionary.name === dictionaryName)
+        return dictionary.settings;
+    }
+    return undefined;
+  }
   public dropDictionary(dictionaryName: DictionaryName, raiseEvent = true) {
     for (let i = 0; i < this._dictionaries.length; ++i) {
       if (this._dictionaries[i].name === dictionaryName) {

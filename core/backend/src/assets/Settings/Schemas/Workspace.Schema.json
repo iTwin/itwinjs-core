@@ -2,10 +2,31 @@
   "$schema": "itwin-settings/schema/1.1",
   "description": "settings for workspaces",
   "groupName": "itwin/core/workspace",
+  "settingDefs": {
+    "settingsWorkspaces": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "extends": "itwin/core/workspace/workspaceDb",
+        "properties": {
+          "resourceName": {
+            "type": "string",
+            "description": "the name of the string resource holing the settings dictionary in this WorkspaceDb",
+            "default": "settingsDictionary"
+          },
+          "priority": {
+            "type": "integer",
+            "description": "the SettingsPriority for the settingsDictionary",
+            "default": 500
+          }
+        }
+      }
+    }
+  },
   "typeDefs": {
     "workspaceDb": {
       "type": "object",
-      "description": "array of WorkspaceDb properties",
+      "description": "WorkspaceDb properties",
       "required": [
         "dbName",
         "containerId",
@@ -46,7 +67,19 @@
         "prefetch": {
           "type": "boolean",
           "description": "if true, pre-fetch all of the data from the cloud in the background"
+        },
+        "syncOnConnect": {
+          "type": "boolean",
+          "description": "if false, do not attempt to synchronize with cloud when workspace is loaded",
+          "hidden": true
         }
+      }
+    },
+    "workspaceDbArray": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "extends": "itwin/core/workspace/workspaceDb"
       }
     }
   }

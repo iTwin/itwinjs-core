@@ -118,6 +118,20 @@ export class SettingsSchemas {
     return { required, properties };
   }
 
+  /** @internal */
+  public static getArrayItems(propDef: Readonly<SettingSchema>, scope: string): SettingSchema {
+    let items = propDef.items;
+    if (undefined === items && propDef.extends) {
+      const typeDef = this.typeDefs.get(propDef.extends);
+      if (undefined === typeDef)
+        throw new Error(`typeDef ${propDef.extends} does not exist for ${scope}`);
+      items = typeDef.items;
+    }
+    if (undefined === items)
+      throw new Error(`array ${scope} has no items definition`);
+    return items;
+  }
+
   private static validateProperty<T>(val: T, propDef: Readonly<SettingSchema>, path: string) {
     switch (propDef.type) {
       case "boolean":
@@ -130,8 +144,9 @@ export class SettingsSchemas {
       case "array":
         if (!Array.isArray(val))
           throw new Error(`Property ${path} must be an array`);
+        const items = this.getArrayItems(propDef, path);
         for (let i = 0; i < val.length; ++i)
-          this.validateProperty(val[i], propDef.items as SettingSchema, `${path}[${i}]`);
+          this.validateProperty(val[i], items, `${path}[${i}]`);
         return;
     }
     if (!val || typeof val !== "object")

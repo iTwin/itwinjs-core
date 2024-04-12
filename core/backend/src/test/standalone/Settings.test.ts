@@ -14,7 +14,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 
 /// cspell:ignore devstoreaccount1
 
-describe.only("Settings", () => {
+describe("Settings", () => {
   let iModel: SnapshotDb;
 
   before(() => {

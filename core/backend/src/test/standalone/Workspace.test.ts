@@ -15,7 +15,7 @@ import { EditableWorkspaceDb, Workspace, WorkspaceContainer, WorkspaceDb } from 
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-describe.only("WorkspaceFile", () => {
+describe("WorkspaceFile", () => {
 
   const workspace = Workspace.construct(new BaseSettings(), { containerDir: join(KnownTestLocations.outputDir, "TestWorkspaces") });
 
@@ -155,15 +155,15 @@ describe.only("WorkspaceFile", () => {
     compareFiles(inFile2, outFile);
   });
 
-  it("resolve workspace alias", async () => {
+  it("load workspace settings", async () => {
     const settingsFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
     const defaultDb = makeEditableDb({ containerId: "default", dbName: "db1", baseUri: "", storageType: "azure" }, { workspaceName: "default resources", contactName: "contact 123" });
     defaultDb.addString("default-settings", fs.readFileSync(settingsFile, "utf-8"));
     defaultDb.close();
 
     const settings = workspace.settings;
-    const wsDb = workspace.getWorkspaceDbFromProps({ dbName: "db1" }, { containerId: "default", baseUri: "", storageType: "azure" });
-    workspace.loadSettingsDictionary("default-settings", wsDb, SettingsPriority.defaults);
+    await workspace.loadSettingsDictionary(
+      { dbName: "db1", containerId: "default", baseUri: "", storageType: "azure", resourceName: "default-settings", priority: SettingsPriority.defaults });
     expect(settings.getSetting("editor/renderWhitespace")).equals("selection");
 
     const workspaceName = "all fonts workspace";
@@ -172,35 +172,6 @@ describe.only("WorkspaceFile", () => {
 
     fontsDb.addFile("Helvetica.ttf", schemaFile, "ttf");
     fontsDb.close();
-
-    const fontList = settings.getArray<string>("workspace/fontDbs")!;
-    const fonts = await workspace.getWorkspaceDb(fontList[0]);
-    expect(fonts).to.not.be.undefined;
-    expect(fonts.manifest.workspaceName).equal(workspaceName);
-
-    const fontFile = fonts.getFile("Helvetica.ttf")!;
-    expect(fontFile).contains(".ttf");
-    compareFiles(fontFile, schemaFile);
-    fonts.container.closeWorkspaceDb(fonts);
-
-    const setting2: SettingDictionary = {
-      "cloud/containers": [
-        { name: "icons/default", containerId: "icons-01", accountName: "" },
-        { name: "fonts/public", containerId: "fonts-02", accountName: "" },
-      ],
-    };
-    settings.addDictionary("imodel-02", SettingsPriority.iModel, setting2);
-    const gcsDb = workspace.resolveDatabase("gcs/entire-world");
-    const gcsContainer = workspace.resolveContainer(gcsDb.containerName);
-    expect(gcsContainer.containerId).equals("gcs");
-    expect(gcsDb.dbName).equals("entireEarth");
-    expect(gcsDb.version).equals("^1");
-
-    const dbProps = workspace.resolveDatabase(fontList[0]);
-    expect(workspace.resolveContainer(dbProps.containerName).containerId).equals("fonts-02");
-
-    settings.dropDictionary("imodel-02");
-    expect(workspace.resolveContainer(dbProps.containerName).containerId).equals("fonts");
   });
 
 });

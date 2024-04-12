@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { SettingsSchemas } from "../../workspace/SettingsSchemas";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-describe.only("SettingsSchemas", () => {
+describe("SettingsSchemas", () => {
 
   it("add groups", () => {
     SettingsSchemas.reset();

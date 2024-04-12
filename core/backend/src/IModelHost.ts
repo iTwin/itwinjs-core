@@ -237,7 +237,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
 class ApplicationSettings extends BaseSettings {
   private _remove?: VoidFunction;
   protected override verifyPriority(priority: SettingsPriority) {
-    if (priority >= SettingsPriority.iModel) // iModel settings may not appear in ApplicationSettings
+    if (priority > SettingsPriority.application) // only application or lower may appear in ApplicationSettings
       throw new Error("Use IModelSettings");
   }
   private updateDefaults() {

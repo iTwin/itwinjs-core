@@ -56,7 +56,7 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
-import { Workspace } from "./workspace/Workspace";
+import { Workspace, WorkspaceSettings } from "./workspace/Workspace";
 
 import type { BlobContainer } from "./BlobContainerService";
 /** @internal */
@@ -2230,7 +2230,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       this._viewStore = viewStore;
     }
     /** @beta */
-    public async accessViewStore(args: { userToken?: AccessToken, props?: CloudSqlite.ContainerProps, accessLevel?: BlobContainer.RequestAccessLevel }): Promise<ViewStore.CloudAccess> {
+    public async accessViewStore(args: { props?: CloudSqlite.ContainerProps, accessLevel?: BlobContainer.RequestAccessLevel }): Promise<ViewStore.CloudAccess> {
       let props = args.props;
       if (undefined === props) {
         const propsString = this._iModel.queryFilePropertyString(Views.viewStoreProperty);
@@ -2241,7 +2241,6 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       }
       const accessToken = await CloudSqlite.requestToken({
         ...props,
-        userToken: args.userToken,
         accessLevel: args.accessLevel,
       });
       if (!this._viewStore)
@@ -2706,6 +2705,10 @@ export class BriefcaseDb extends IModelDb {
         watcher.close();
       });
     }
+
+    const settingsDbs = briefcaseDb.workspace.settings.getArray<WorkspaceSettings.Props>(Workspace.settingName.settingsWorkspaces);
+    if (settingsDbs)
+      await briefcaseDb.workspace.loadSettingsDictionary(settingsDbs);
 
     if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {
       try {

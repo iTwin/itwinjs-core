@@ -38,7 +38,7 @@ export namespace CloudSqlite {
    */
   export async function requestToken(args: RequestTokenArgs): Promise<AccessToken> {
     // allow the userToken to be supplied via Rpc. If not supplied, or blank, use the backend's accessToken.
-    const userToken = args.userToken ? args.userToken : (await IModelHost.getAccessToken());
+    const userToken = args.userToken ? args.userToken : ((await IModelHost.getAccessToken()) ?? RpcTrace.currentActivity?.accessToken);
     if (BlobContainer.service === undefined) {
       throw new Error(`BlobContainer.service is not defined`);
     }

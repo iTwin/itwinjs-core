@@ -7,11 +7,11 @@ import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after al
 import { expect } from "chai";
 import * as fs from "fs-extra";
 import { join } from "path";
-import { BaseSettings, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, SettingsPriority, Workspace } from "@itwin/core-backend";
+import { BaseSettings, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, SettingsPriority, Workspace, WorkspaceDb } from "@itwin/core-backend";
 import { assert } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 
-describe.only("Cloud workspace containers", () => {
+describe("Cloud workspace containers", () => {
 
   async function initializeContainer(containerId: string) {
     await AzuriteTest.Sqlite.createAzContainer({ containerId });
@@ -94,6 +94,7 @@ describe.only("Cloud workspace containers", () => {
     expect(() => ws2Cloud.acquireWriteLock("other session")).to.throw("container is not writeable");
 
     let ws2 = wsCont2.getWorkspaceDb({ dbName: testDbName });
+    ws2.open();
     const manifest = ws2.manifest;
     expect(manifest.lastEditedBy).equals(user); // updated when the EditableWorkspaceDb is closed with the write lock held
     expect(manifest.workspaceName).equals(workspaceName);
@@ -120,6 +121,7 @@ describe.only("Cloud workspace containers", () => {
     expect(wsCont2.resolveDbFileName({ dbName: testDbName, version: "1.0.0" })).contains("1.0.0");
 
     ws2 = wsCont2.getWorkspaceDb({ dbName: testDbName, version: "~1.1.0", includePrerelease: true });
+    ws2.open();
     expect(ws2.manifest.lastEditedBy).equal(admin2);
     expect(ws2.manifest.workspaceName).equals(workspaceName);
     expect(ws2.dbFileName).contains("1.1.4-beta");
@@ -128,6 +130,7 @@ describe.only("Cloud workspace containers", () => {
     ws2.container.closeWorkspaceDb(ws2);
 
     ws2 = wsCont2.getWorkspaceDb({ dbName: testDbName });
+    ws2.open();
     expect(ws2.dbFileName).contains("3.0.0");
     expect(ws2.getString("string 1")).equals("value of string 1");
     expect(ws2.getString("myVersion")).equals("3.0.0");
@@ -136,34 +139,21 @@ describe.only("Cloud workspace containers", () => {
     workspace1.close();
     workspace2.close();
 
-    const dict = {
-      "cloud/containers": [
-        {
-          name: "test/container1",
-          baseUri: "http://127.0.0.1:10000/devstoreaccount1",
-          storageType: "azure",
-          containerId,
-        },
-      ],
-      "workspace/databases": [
-        {
-          name: "test/test1",
-          dbName: testDbName,
-          containerName: "test/container1",
-          version: "^1",
-        },
-      ],
+    const wsTest1: WorkspaceDb.CloudProps = {
+      dbName: testDbName,
+      containerId,
+      baseUri: "http://127.0.0.1:10000/devstoreaccount1",
+      storageType: "azure",
+      version: "^1",
     };
     const workspace3 = Workspace.construct(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace3"), testCloudCache: makeCloudCache("test3") });
-    workspace3.settings.addDictionary("testDict", SettingsPriority.application, dict);
-    const db = await workspace3.getWorkspaceDb("test/test1");
+    const db = await workspace3.getWorkspaceDb(wsTest1);
     expect(db.dbFileName).equal("testDb:1.2.4");
     expect(db.dbName).equal(testDbName);
     expect(db.container.id).equal(containerId);
 
-    const db2 = await workspace3.getWorkspaceDb("test/test1");
+    const db2 = await workspace3.getWorkspaceDb(wsTest1);
     expect(db2).equal(db);
-
     workspace3.close();
   });
 
