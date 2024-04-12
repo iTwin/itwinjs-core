@@ -1001,9 +1001,11 @@ export class MapTileTreeReference extends TileTreeReference {
 
     for (; treeIndex < this._layerTrees.length; treeIndex++) {
       const layerTreeRef = this._layerTrees[treeIndex];
+      const isImageryMapLayer = layerTreeRef instanceof ImageryMapLayerTreeReference;
       // Load tile tree for each configured layer.
-      // Note: Non-visible layer are also added to allow proper tile tree scale range visibility reporting.
+      // Note: Non-visible imagery layer are always added to allow proper tile tree scale range visibility reporting.
       if (layerTreeRef && TileTreeLoadStatus.NotFound !== layerTreeRef.treeOwner.loadStatus
+        && (isImageryMapLayer || (!isImageryMapLayer && layerTreeRef.layerSettings.visible))
         && !layerTreeRef.layerSettings.allSubLayersInvisible) {
         const layerTree = layerTreeRef.treeOwner.load();
         if (layerTree !== undefined) {
