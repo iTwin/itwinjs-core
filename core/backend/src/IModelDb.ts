@@ -26,7 +26,7 @@ import {
   SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps,
   UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
-import { Range3d } from "@itwin/core-geometry";
+import { Range2d, Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
 import { ChannelAdmin, ChannelControl } from "./ChannelControl";
@@ -1446,12 +1446,16 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   public computeRangesForText(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
-    let emphasis = args.bold ? IModelHost.platform.TextEmphasis.Bold : IModelHost.platform.TextEmphasis.None;
-    if (args.italic) {
-      emphasis |= IModelJsNative.TextEmphasis.Italic;
-    }
+    let emphasis = 0; // args.bold ? IModelHost.platform.TextEmphasis.Bold : IModelHost.platform.TextEmphasis.None;
+    // if (args.italic) {
+    //   emphasis |= IModelJsNative.TextEmphasis.Italic;
+    // }
 
-    return this.nativeDb.computeRangesForText(args.chars, args.fontId, emphasis, args.widthFactor, args.lineHeight);
+    const props = (this.nativeDb as any).computeRangeForText(args.chars, args.fontId, emphasis, args.widthFactor, args.lineHeight);
+    return {
+      layout: Range2d.fromJSON(props.layout),
+      justification: Range2d.fromJSON(props.justification),
+    };
   }
 }
 
