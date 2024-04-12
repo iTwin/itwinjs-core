@@ -2,13 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import { ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
 import { Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontMap, FractionRun, LineBreakRun, Run, TextAnnotation, TextAnnotation2dProps, TextBlock, TextBlockGeometryPropsEntry, TextRun, TextStyleSettings } from "@itwin/core-common";
-import { IModelDb } from "../../IModelDb";
-import { TextAnnotation2d } from "../../TextAnnotationElement";
+import { ColorDef, FontMap, FractionRun, LineBreakRun, Run, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextBlockGeometryPropsEntry, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { IModelDb, SnapshotDb } from "../../IModelDb";
+import { TextAnnotation2d, TextAnnotation3d } from "../../TextAnnotationElement";
 import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { GeometricElement3d } from "../../Element";
+import { Id64, Id64String } from "@itwin/core-bentley";
 
 function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
   const range = new Range2d(0, 0, args.chars.length, args.lineHeight);
@@ -507,6 +510,60 @@ describe("TextAnnotation element", () => {
       elem.setAnnotation(TextAnnotation.fromJSON({ textBlock: { styleName: "block" } }), "0x1234");
       expect(elem.geom!.length).to.equal(1);
       expect(elem.geom![0].appearance!.subCategory).to.equal("0x1234");
+    });
+  });
+
+  describe.only("insert and update", () => {
+    let imodel: SnapshotDb;
+    let seed: GeometricElement3d;
+    
+    before(() => {
+      const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+      const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
+      imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+
+      seed = imodel.elements.getElement<GeometricElement3d>("0x1d");
+      assert.exists(seed);
+      assert.isTrue(seed.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    })
+
+    after(() => imodel.close());
+
+    function createElement(props?: Partial<TextAnnotation3dProps>): TextAnnotation3d {
+      return TextAnnotation3d.fromJSON({
+        category: seed.category,
+        model: seed.model,
+        code: {
+          spec: seed.code.spec,
+          scope: seed.code.scope,
+        },
+        ...props,
+        classFullName: TextAnnotation3d.classFullName,
+      }, imodel);
+    }
+
+    it("round-trips through JSON", () => {
+      function test(annotation?: TextAnnotation): void {
+        const props = annotation ? { jsonProperties: { annotation: annotation.toJSON() } } : undefined;
+        const el0 = createElement(props);
+        const elId = el0.insert();
+        expect(Id64.isValidId64(elId)).to.be.true;
+
+        const el1 = imodel.elements.getElement<TextAnnotation3d>(elId)!;
+        expect(el1).not.to.be.undefined;
+        expect(el1 instanceof TextAnnotation3d).to.be.true;
+
+        const anno = el1.getAnnotation();
+        if (!annotation) {
+          expect(anno).to.be.undefined;
+        } else {
+          expect(anno).not.to.be.undefined;
+          // ###TODO expect(anno!.equals(annotation)).to.be.true;
+        }
+      }
+
+      test();
+      test(TextAnnotation.fromJSON({ textBlock: { styleName: "block" } }));
     });
   });
 });
