@@ -93,7 +93,7 @@ export class SortableEdge extends Float64Array {
 
 export type SortableEdgeCluster = SortableEdge | SortableEdge[];
 /**
- * An IndexedEdgeMatcher carries an array (`edges`) of edges start & end indices for sorting and subsequent analyses (such as testing for closed mesh)
+ * An IndexedEdgeMatcher carries an array of edges for sorting and subsequent analyses, such as testing for closed mesh.
  */
 export class IndexedEdgeMatcher {
   public edges: SortableEdge[];

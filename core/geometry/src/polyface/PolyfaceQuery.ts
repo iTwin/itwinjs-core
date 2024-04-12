@@ -539,7 +539,7 @@ export class PolyfaceQuery {
    * construct a CurveCollection containing boundary edges.
    *   * each edge is a LineSegment3d
    * @param source polyface or visitor
-   * @param includeTypical true to in include typical boundary edges with a single incident facet
+   * @param includeTypical true to include typical boundary edges with a single incident facet
    * @param includeMismatch true to include edges with more than 2 incident facets
    * @param includeNull true to include edges with identical start and end vertex indices.
    */
@@ -558,7 +558,7 @@ export class PolyfaceQuery {
    * Collect boundary edges.
    * * Return the edges as the simplest collection of chains of line segments.
    * @param source facets
-   * @param includeTypical true to in include typical boundary edges with a single incident facet
+   * @param includeTypical true to include typical boundary edges with a single incident facet
    * @param includeMismatch true to include edges with more than 2 incident facets
    * @param includeNull true to include edges with identical start and end vertex indices.
    */
