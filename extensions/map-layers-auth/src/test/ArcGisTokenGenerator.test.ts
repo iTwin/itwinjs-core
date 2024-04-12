@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { ArcGisTokenGenerator } from "../map-layers-auth";
+import * as fetchMock from "fetch-mock";
 
 describe("ArcGisTokenGenerator", () => {
   const sandbox = sinon.createSandbox();
@@ -15,21 +16,27 @@ describe("ArcGisTokenGenerator", () => {
 
   afterEach(async () => {
     sandbox.restore();
+    fetchMock.restore()
   });
 
   it("should make proper info request and extract tokenServicesUrl from response", async () => {
     const fetchStub = sandbox.stub(global, "fetch").callsFake(async function (_input, _init) {
-
       return Promise.resolve((({
         status: 200,
-        json: async () => {return {authInfo: {isTokenBasedSecurity: true, tokenServicesUrl: sampleGenerateTokenUrl}};},
+        json: async () => {return ;},
       } as unknown) as Response));
     });
 
-    const tokenServiceUrl = await ArcGisTokenGenerator.fetchTokenServiceUrl(sampleServiceUrl);
-    expect(fetchStub.calledOnce).to.be.true;
-    expect(fetchStub.getCalls()[0].args[0]).to.be.equals(`${sampleBaseRestUrl}info?f=pjson`);
+    const mock = fetchMock.mock("*",  {
+      status: 200,
+      headers: {"Content-Type": "application/json"},
+      body: {authInfo: {isTokenBasedSecurity: true, tokenServicesUrl: sampleGenerateTokenUrl}},
+    });
 
+
+    const tokenServiceUrl = await ArcGisTokenGenerator.fetchTokenServiceUrl(sampleServiceUrl);
+    expect(mock.called()).to.be.true;
+    expect(mock.lastUrl()).to.be.equals(`${sampleBaseRestUrl}info?f=pjson`);
     expect(sampleGenerateTokenUrl).to.be.equals(tokenServiceUrl);
 
   });
