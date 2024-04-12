@@ -121,12 +121,8 @@ export * from "./ChangesetECAdaptor";
  * See [the learning articles]($docs/learning/backend/index.md).
  */
 /**
- * @docs-group-description Categories
- * Classes for [Categories]($docs/bis/guide/fundamentals/categories.md).
- */
-/**
- * @docs-group-description Symbology
- * Classes for defining the appearance of element geometry
+ * @docs-group-description ElementGeometry
+ * Classes for defining the symbology and geometry of geometric elements
  */
 /**
  * @docs-group-description ECDb
@@ -153,10 +149,6 @@ export * from "./ChangesetECAdaptor";
  * Classes to help write [portable apps]($docs/learning/Portability.md) and libraries that will run on any platform, including web apps, node services, Electron desktops apps, and mobile apps.
  */
 /**
- * @docs-group-description Utils
- * Miscellaneous utility classes.
- */
-/**
  * @docs-group-description Logging
  * Logger categories used by this package.
  */
@@ -173,14 +165,6 @@ export * from "./ChangesetECAdaptor";
  * Class for working with cloud storage using iTwin/object-storage cloud providers
  */
 /**
- * @docs-group-description Authentication
- * Classes for working with Authentication.
- */
-/**
- * @docs-group-description Tiles
- * APIs for working with tile graphics.
- */
-/**
  * @docs-group-description HubAccess
  * APIs for working with IModelHub
  */
@@ -192,3 +176,7 @@ export * from "./ChangesetECAdaptor";
  * @docs-group-description ViewStateHydrator
  * Class responsible for loading ViewStates.
  */
+ /**
+  * @docs-group-description ExportGraphics
+  * APIs for producing low-level graphics primitives from element geometry.
+  */
