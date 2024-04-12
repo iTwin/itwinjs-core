@@ -284,7 +284,11 @@ export class RunLayout {
     // Assumes (to the best of Jeff's knowledge) that characters before a break point can't affect the shaping of subsequent characters.
     let runningWidth = 0;
     let breakPos = 0;
-    const segmenter = new Intl.Segmenter(undefined, { granularity: "word" });
+
+    // ###TODO TypeScript only provides type declarations for Intl.Segmenter if targeting ES2022+.
+    // But doing so causes inexplicable issues with initialization of Model.modeledElement.
+    // So until that's resolved, access it via cast to any.
+    const segmenter = new (global as any).Intl.Segmenter(undefined, { granularity: "word" });
     const myText = this.source.content.substring(this.charOffset, this.charOffset + this.numChars);
     if (myText.length === 0) {
       return undefined;
