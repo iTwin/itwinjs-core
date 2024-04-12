@@ -56,7 +56,7 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
-import { Workspace, WorkspaceSettings } from "./workspace/Workspace";
+import { Workspace, WorkspaceDb, WorkspaceSettings } from "./workspace/Workspace";
 
 import type { BlobContainer } from "./BlobContainerService";
 /** @internal */
@@ -222,7 +222,7 @@ const withBriefcaseDb = async (briefcase: OpenBriefcaseArgs, fn: (_db: Briefcase
 
 /**
  * Settings for an individual iModel. May only include settings priority for iModel, iTwin and organization.
- * @note if there is more than one iModel for an iTwin or organization, they will *each* hold a copy of the settings for those priorities.
+ * @note if there is more than one iModel for an iTwin or organization, they will *each* hold an independent copy of the settings for those priorities.
  */
 class IModelSettings extends BaseSettings {
   protected override verifyPriority(priority: SettingsPriority) {
@@ -230,9 +230,9 @@ class IModelSettings extends BaseSettings {
       throw new Error("Use IModelHost.appSettings");
   }
 
-  // attempt to resolve a setting from this iModel's settings, otherwise use appWorkspace's settings, otherwise defaultValue.
-  public override resolveSetting<T extends SettingType>(name: SettingName, resolver: SettingResolver<T>, defaultValue?: T): T | undefined {
-    return super.resolveSetting(name, resolver) ?? IModelHost.appWorkspace.settings.resolveSetting(name, resolver, defaultValue);
+  // attempt to resolve a setting from this iModel's settings, otherwise optionally use appWorkspace's settings, otherwise defaultValue.
+  public override resolveSetting<T extends SettingType>(arg: { settingName: SettingName, resolver: SettingResolver<T>, skipAppWorkspace?: boolean }, defaultValue?: T): T | undefined {
+    return super.resolveSetting(arg) ?? arg.skipAppWorkspace ? defaultValue : IModelHost.appWorkspace.settings.resolveSetting(arg, defaultValue);
   }
 }
 
@@ -379,7 +379,7 @@ export abstract class IModelDb extends IModel {
 
     this.nativeDb.setIModelDb(this);
 
-    this.loadSettingDictionaries();
+    this.loadIModelSettings();
     GeoCoordConfig.loadForImodel(this.workspace.settings); // load gcs data specified by iModel's settings dictionaries, must be done before calling initializeIModelDb
 
     this.initializeIModelDb();
@@ -1414,7 +1414,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Load all setting dictionaries in this iModel into `this.workspace.settings` */
-  private loadSettingDictionaries() {
+  private loadIModelSettings() {
     if (!this.nativeDb.isOpen())
       return;
 
@@ -1425,10 +1425,22 @@ export abstract class IModelDb extends IModel {
           const dict = JSON.parse(stmt.getValueString(1));
           this.workspace.settings.addDictionary(stmt.getValueString(0), SettingsPriority.iModel, dict);
         } catch (e) {
-          UnexpectedErrors.handle(e);
+          Workspace.exceptionDiagnosticFn(e);
         }
       }
     });
+  }
+
+  /** @internal */
+  protected async loadWorkspaceSettings() {
+    try {
+      const settingsDbs = this.workspace.settings.getArray<WorkspaceSettings.Props>(Workspace.settingName.settingsWorkspaces);
+      if (settingsDbs)
+        await this.workspace.loadSettingsDictionary(settingsDbs);
+    } catch (e) {
+      // we don't want to throw exceptions when attempting to load Dictionaries. Call the diagnostics function instead.
+      Workspace.exceptionDiagnosticFn(e);
+    }
   }
 
   /**
@@ -2706,9 +2718,8 @@ export class BriefcaseDb extends IModelDb {
       });
     }
 
-    const settingsDbs = briefcaseDb.workspace.settings.getArray<WorkspaceSettings.Props>(Workspace.settingName.settingsWorkspaces);
-    if (settingsDbs)
-      await briefcaseDb.workspace.loadSettingsDictionary(settingsDbs);
+    // load all of the settings from workspaces
+    await briefcaseDb.loadWorkspaceSettings();
 
     if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {
       try {
@@ -2724,8 +2735,10 @@ export class BriefcaseDb extends IModelDb {
     return briefcaseDb;
   }
 
-  /* This is called by native code when applying a changeset */
-  private onChangesetConflict(args: ChangesetConflictArgs): DbConflictResolution | undefined {
+  /**  This is called by native code when applying a changeset
+   * @internal
+   */
+  public onChangesetConflict(args: ChangesetConflictArgs): DbConflictResolution | undefined {
     // returning undefined will result in native handler to resolve conflict
 
     const category = "DgnCore";
@@ -2850,7 +2863,6 @@ export class BriefcaseDb extends IModelDb {
      * + Also see comments in TxnManager::MergeDataChanges()
      */
     if (Logger.isEnabled(category, LogLevel.Info)) {
-      Logger.logInfo(category, "------------------------------------------------------------------");
       Logger.logInfo(category, `Conflict detected - Cause: ${interpretConflictCause(args.cause)}`);
       args.dump();
       Logger.logInfo(category, "Conflicting resolved by replacing the existing entry with the change");
@@ -3096,7 +3108,9 @@ export class SnapshotDb extends IModelDb {
   private static async attachAndOpenCheckpoint(checkpoint: CheckpointProps): Promise<SnapshotDb> {
     const { dbName, container } = await V2CheckpointManager.attach(checkpoint);
     const key = CheckpointManager.getKey(checkpoint);
-    return SnapshotDb.openFile(dbName, { key, container });
+    const db = SnapshotDb.openFile(dbName, { key, container });
+    await db.loadWorkspaceSettings();
+    return db;
   }
 
   /** @internal */

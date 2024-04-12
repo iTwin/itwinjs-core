@@ -37,8 +37,10 @@ export namespace CloudSqlite {
    * If the service is unavailable or returns an error, an empty token is returned.
    */
   export async function requestToken(args: RequestTokenArgs): Promise<AccessToken> {
-    // allow the userToken to be supplied via Rpc. If not supplied, or blank, use the backend's accessToken.
-    const userToken = args.userToken ? args.userToken : ((await IModelHost.getAccessToken()) ?? RpcTrace.currentActivity?.accessToken);
+    // allow the userToken to be supplied via args. If not supplied, or blank, use the backend's accessToken. If that fails, use the value from the current RPC request
+    let userToken = args.userToken ? args.userToken : await IModelHost.getAccessToken();
+    if (userToken === "")
+      userToken = RpcTrace.currentActivity?.accessToken ?? "";
     if (BlobContainer.service === undefined) {
       throw new Error(`BlobContainer.service is not defined`);
     }

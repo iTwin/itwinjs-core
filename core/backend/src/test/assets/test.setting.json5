@@ -24,36 +24,6 @@
         "cat 2",
         "vital2"
     ],
-    "workspace/databases": [
-        {
-            "name": "gcs/base",
-            "dbName": "base",
-            "containerName": "gcs/container",
-            "version": "^1"
-        },
-        {
-            "name": "gcs/entire-world",
-            "dbName": "entireEarth",
-            "containerName": "gcs/container",
-            "version": "^1"
-        },
-        {
-            "name": "fonts/public-fonts",
-            "dbName": "fonts",
-            "version": "^1",
-            "containerName": "fonts/public"
-        },
-        {
-            "name": "fonts/more-fonts",
-            "dbName": "fonts2",
-            "version": "^1",
-            "containerName": "fonts/public"
-        }
-    ],
-    "workspace/fontDbs": [
-        "fonts/public-fonts",
-        "fonts/more-fonts"
-    ],
     "editor/tokenColorCustomizations": {
         "Default High Contrast": {
             "comments": "#FF0000"

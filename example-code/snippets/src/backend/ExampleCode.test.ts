@@ -168,42 +168,11 @@ describe("Example Code", () => {
     defaultTool = settings.getString("core/default-tool"); // returns "select" again
     // __PUBLISH_EXTRACT_END__
     expect(defaultTool).eq(defaultsDict["core/default-tool"]);
-
-    // __PUBLISH_EXTRACT_START__ Settings.containerAlias
-    const iTwinDict: SettingDictionary = {
-      "cloud/containers": [
-        { name: "default-fonts", containerId: "fonts-01", accountName: "" },
-        { name: "gcs-data", containerId: "gcsdata-01", accountName: "" },
-      ],
-    };
-    const iModelDict: SettingDictionary = {
-      "cloud/containers": [
-        { name: "default-icons", containerId: "icons-01", accountName: "" },
-        { name: "default-lang", containerId: "lang-05", accountName: "" },
-        { name: "default-fonts", containerId: "fonts-02", accountName: "" },
-        { name: "default-key", containerId: "key-05", accountName: "" },
-      ],
-    };
-
-    workspace = iModel.workspace;
-    settings = workspace.settings;
-    const fontContainerName = "default-fonts";
-    settings.addDictionary("iTwin", SettingsPriority.iTwin, iTwinDict);
-    settings.addDictionary("iModel", SettingsPriority.iModel, iModelDict);
-
-    expect(workspace.resolveContainer(fontContainerName).containerId).equals("fonts-02"); // iModel has higher priority than iTwin
-
-    settings.dropDictionary("iModel"); // drop iModel dict
-    expect(workspace.resolveContainer(fontContainerName).containerId).equals("fonts-01"); // now resolves to iTwin value
-
-    settings.dropDictionary("iTwin"); // drop iTwin dict
-    expect(() => workspace.resolveContainer(fontContainerName)).to.throw("no setting");
-    // __PUBLISH_EXTRACT_END__
   });
 
   it("CodeService", async () => {
 
-    if (false) { // this will compile but it will not run, because the root elementhas no federationGuid -- waiting for a fix
+    if (false) { // this will compile but it will not run, because the root element has no federationGuid -- waiting for a fix
 
       // __PUBLISH_EXTRACT_START__ CodeService.reserveInternalCodeForNewElement
       const code = Subject.createCode(iModel, IModel.rootSubjectId, "main transfer pump"); // an example a code that an app might use

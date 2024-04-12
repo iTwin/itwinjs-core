@@ -131,8 +131,8 @@ export interface Settings {
    * @param defaultValue value returned if settingName is not present in any SettingDictionary or resolver never returned a value.
    * @returns the resolved setting value.
    */
-  resolveSetting<T extends SettingType>(settingName: SettingName, resolver: SettingResolver<T>, defaultValue: T): T;
-  resolveSetting<T extends SettingType>(settingName: SettingName, resolver: SettingResolver<T>, defaultValue?: T): T | undefined;
+  resolveSetting<T extends SettingType>(arg: { settingName: SettingName, resolver: SettingResolver<T> }, defaultValue: T): T;
+  resolveSetting<T extends SettingType>(arg: { settingName: SettingName, resolver: SettingResolver<T> }, defaultValue?: T): T | undefined;
 
   /** Get the highest priority setting for a SettingName.
    * @param settingName The name of the setting
@@ -264,10 +264,10 @@ export class BaseSettings implements Settings {
     return false;
   }
 
-  public resolveSetting<T extends SettingType>(name: SettingName, resolver: SettingResolver<T>, defaultValue?: T): T | undefined {
+  public resolveSetting<T extends SettingType>(arg: { settingName: SettingName, resolver: SettingResolver<T> }, defaultValue?: T): T | undefined {
     for (const dict of this._dictionaries) {
-      const val = dict.getSetting(name) as T | undefined;
-      const resolved = val && resolver(val, dict.name, dict.priority);
+      const val = dict.getSetting(arg.settingName) as T | undefined;
+      const resolved = val && arg.resolver(val, dict.name, dict.priority);
       if (undefined !== resolved) {
         return resolved;
       }
@@ -275,18 +275,20 @@ export class BaseSettings implements Settings {
     return defaultValue;
   }
 
-  public getSetting<T extends SettingType>(name: SettingName, defaultValue?: T): T | undefined {
-    return this.resolveSetting(name, (val) => deepClone<T>(val)) ?? defaultValue;
+  public getSetting<T extends SettingType>(settingName: SettingName, defaultValue?: T): T | undefined {
+    return this.resolveSetting({ settingName, resolver: (val) => deepClone<T>(val) }) ?? defaultValue;
   }
 
   /** for debugging. Returns an array of all values for a setting, sorted by priority.
    * @note values are not cloned. Do not modify objects or arrays.
    */
-  public inspectSetting<T extends SettingType>(name: SettingName): SettingInspector<T>[] {
+  public inspectSetting<T extends SettingType>(settingName: SettingName): SettingInspector<T>[] {
     const all: SettingInspector<T>[] = [];
-    this.resolveSetting<T>(name, (value, dictionary, priority) => {
-      all.push({ value, dictionary, priority });
-      return undefined;
+    this.resolveSetting<T>({
+      settingName, resolver: (value, dictionary, priority) => {
+        all.push({ value, dictionary, priority });
+        return undefined;
+      },
     });
 
     return all;

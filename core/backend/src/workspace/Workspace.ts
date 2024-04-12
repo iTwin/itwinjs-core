@@ -10,7 +10,7 @@ import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
 import * as semver from "semver";
-import { AccessToken, BeEvent, DbResult, Logger, OpenMode, Optional } from "@itwin/core-bentley";
+import { AccessToken, BeEvent, DbResult, Logger, OpenMode, Optional, UnexpectedErrors } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { CloudSqlite } from "../CloudSqlite";
 import { IModelHost, KnownLocations } from "../IModelHost";
@@ -164,6 +164,12 @@ export namespace WorkspaceDb {
    * @internal
    */
   export const fileExt = "itwin-workspace";
+
+  export class LoadError extends Error {
+    constructor(msg: string, public problems: Error[]) {
+      super(msg);
+    }
+  }
 
   /** construct a new instance of a WorkspaceDb */
   export function construct(props: WorkspaceDb.Props, container: WorkspaceContainer): WorkspaceDb {
@@ -349,6 +355,13 @@ export interface Workspace {
 
 /** @beta */
 export namespace Workspace {
+  /** applications may supply a different implementation to diagnose (rather than merely log) errors loading workspace data */
+  export let exceptionDiagnosticFn = (e: any) => {  // eslint-disable-line prefer-const
+    if (e instanceof Error)
+      Logger.logException(loggerCategory, e);
+    else
+      UnexpectedErrors.handle(e);
+  };
   export const makeSettingName = (name: string) => `${"itwin/core/Workspace"}/${name}`;
   export const settingName = {
     settingsWorkspaces: makeSettingName("settingsWorkspaces"),
@@ -548,6 +561,7 @@ class WorkspaceImpl implements Workspace {
     if (!Array.isArray(props))
       props = [props];
 
+    const problems: Error[] = [];
     for (const prop of props) {
       const db = await this.getWorkspaceDb(prop);
       db.open();
@@ -557,7 +571,7 @@ class WorkspaceImpl implements Workspace {
         if (undefined === this.settings.getDictionary(dictName)) {
           const settingsJson = db.getString(prop.resourceName);
           if (undefined === settingsJson)
-            throw new Error(`could not load setting resource ${prop.resourceName} from ${db.manifest.workspaceName}`);
+            throw new Error(`could not load setting resource ${prop.resourceName} from ${manifest.workspaceName}`);
 
           db.close(); // don't leave this db open in case we're going to find another dictionary in it recursively.
 
@@ -576,9 +590,11 @@ class WorkspaceImpl implements Workspace {
         }
       } catch (e) {
         db.close();
-        throw e;
+        problems.push(e as Error);
       }
     }
+    if (problems.length !== 0)
+      throw new WorkspaceDb.LoadError("Error(s) loading settings dictionary", problems);
   }
 
   public close() {
@@ -748,7 +764,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
   public close() {
     if (this.isOpen) {
       this.onClose.raiseEvent();
-      this.sqliteDb.closeDb(true);
+      this.sqliteDb.closeDb(true); // save changes, if present
       this.container.closeWorkspaceDb(this);
     }
   }

@@ -21,9 +21,13 @@ import { IModelJsFs } from "../IModelJsFs";
  * @beta
  */
 export interface SettingSchema extends Readonly<JSONSchema> {
-  readonly items?: SettingSchema; // must be single object, not array
-  readonly type: JSONSchemaTypeName; // type is required for settings
-  readonly extends?: string; // name of typeDef for objects to inherit properties
+  /** entries for an array. Must be single object, not array */
+  readonly items?: SettingSchema;
+  /** type is required for settings */
+  readonly type: JSONSchemaTypeName;
+  /** name of typeDef for objects or arrays to inherit */
+  readonly extends?: string;
+  /** for objects, a list of named properties and their definitions */
   readonly properties?: { [name: string]: SettingSchema };
 
   /** whether the setting replaces lower priority entries with the same name or combines with them. */
@@ -202,7 +206,7 @@ export class SettingsSchemas {
     try {
       this.addJson(fs.readFileSync(fileName, "utf-8"));
     } catch (e: any) {
-      throw new Error(`parsing SettingSchema file "${fileName}": ${e.message} "`);
+      throw new Error(`parsing SettingSchema file "${fileName}": ${e.message}"`);
     }
   }
 

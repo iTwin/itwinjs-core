@@ -62,7 +62,7 @@
         },
         "includePrerelease": {
           "type": "boolean",
-          "description": "include prerelease version as acceptable versions"
+          "description": "include prerelease as acceptable version"
         },
         "prefetch": {
           "type": "boolean",
@@ -75,7 +75,7 @@
         }
       }
     },
-    "workspaceDbArray": {
+    "workspaceDbList": {
       "type": "array",
       "items": {
         "type": "object",
