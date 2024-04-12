@@ -563,6 +563,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "fetch-mock",
+      "allowedCategories": [ "extensions" ]
+    },
+    {
       "name": "file-loader",
       "allowedCategories": [ "tools" ]
     },
@@ -657,6 +661,10 @@
     {
       "name": "memfs",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "meshoptimizer",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "mkdirp",

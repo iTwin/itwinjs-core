@@ -8,6 +8,7 @@ import { AnyClass } from '@itwin/ecschema-metadata';
 import { AnyECType } from '@itwin/ecschema-metadata';
 import { AnyEnumerator } from '@itwin/ecschema-metadata';
 import { AnyProperty } from '@itwin/ecschema-metadata';
+import { AnyPropertyProps } from '@itwin/ecschema-metadata';
 import { Constant } from '@itwin/ecschema-metadata';
 import { ConstantProps } from '@itwin/ecschema-metadata';
 import { CustomAttribute } from '@itwin/ecschema-metadata';
@@ -43,6 +44,7 @@ import { PropertyCategoryProps } from '@itwin/ecschema-metadata';
 import { RelationshipClass } from '@itwin/ecschema-metadata';
 import { RelationshipClassProps } from '@itwin/ecschema-metadata';
 import { RelationshipConstraint } from '@itwin/ecschema-metadata';
+import { RelationshipConstraintProps } from '@itwin/ecschema-metadata';
 import { RelationshipEnd } from '@itwin/ecschema-metadata';
 import { RelationshipMultiplicity } from '@itwin/ecschema-metadata';
 import { Schema } from '@itwin/ecschema-metadata';
@@ -54,6 +56,7 @@ import { SchemaItemProps } from '@itwin/ecschema-metadata';
 import { SchemaItemType } from '@itwin/ecschema-metadata';
 import { SchemaItemUnitProps } from '@itwin/ecschema-metadata';
 import { SchemaKey } from '@itwin/ecschema-metadata';
+import { SchemaReferenceProps } from '@itwin/ecschema-metadata';
 import { StrengthDirection } from '@itwin/ecschema-metadata';
 import { StrengthType } from '@itwin/ecschema-metadata';
 import { StructArrayPropertyProps } from '@itwin/ecschema-metadata';
@@ -1444,7 +1447,10 @@ export class SchemaItemMissing extends SchemaItemChange {
 
 // @beta
 export class SchemaMerger {
+    constructor(editingContext: SchemaContext);
     merge(targetSchema: Schema, sourceSchema: Schema): Promise<Schema>;
+    // @alpha
+    merge(differences: SchemaDifferences): Promise<Schema>;
 }
 
 // @alpha

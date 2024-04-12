@@ -12,7 +12,9 @@ import { expect } from "chai";
 describe("Difference Conflict Reporting", () => {
 
   function findConflictItem(differences: SchemaDifferences, name: string, path?: string) {
-    return differences.conflicts.find((entry) => entry.itemName === name && (entry.path === path || entry.path));
+    return differences.conflicts && differences.conflicts.find((entry) => {
+      return entry.itemName === name && (entry.path === path || entry.path);
+    });
   }
 
   async function runDifferences(sourceSchemaJson: SchemaProps, targetSchemaJson: SchemaProps) {

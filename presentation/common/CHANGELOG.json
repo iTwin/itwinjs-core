@@ -2,6 +2,33 @@
   "name": "@itwin/presentation-common",
   "entries": [
     {
+      "version": "4.5.1",
+      "tag": "@itwin/presentation-common_v4.5.1",
+      "date": "Wed, 03 Apr 2024 18:26:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.5.0",
+      "tag": "@itwin/presentation-common_v4.5.0",
+      "date": "Tue, 02 Apr 2024 19:06:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updated `KeySet` to work correctly when class names uses both separators: `.` and `:`."
+          },
+          {
+            "comment": "Support creating hierarchy level descriptor for hierarchies that use `parent` symbol in their instance filters."
+          },
+          {
+            "comment": "Provide an option to control batch size for `PresentationManager.getElementProperties` multi-elements case."
+          },
+          {
+            "comment": "Introduce 2 new types of `PropertiesField`: `ArrayPropertiesField` and `StructPropertiesField`. Ensure values of these values can be customized, formatted, localized."
+          }
+        ]
+      }
+    },
+    {
       "version": "4.4.8",
       "tag": "@itwin/presentation-common_v4.4.8",
       "date": "Mon, 25 Mar 2024 22:22:26 GMT",

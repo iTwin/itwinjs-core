@@ -732,7 +732,7 @@ describe("Class Registry - generated classes", () => {
           ActualDerivedWithNavProp,
           Derived2,
           Derived4,
-        // eslint-disable-next-line @typescript-eslint/dot-notation
+          // eslint-disable-next-line @typescript-eslint/dot-notation
         ].map((e) => e.prototype["collectReferenceIds"]), // eslint-disable-line @typescript-eslint/dot-notation
       ),
     );

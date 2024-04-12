@@ -26,7 +26,7 @@ import * as displayStyleMod from "./DisplayStyle";
  *
  * It is automatically registered when [[IModelHost.startup]] is called.
  *
- * ** Example:**
+ * Example:
  * ``` ts
  * [[include:BisCore.registerSchemaAndGetClass]]
  * ```
