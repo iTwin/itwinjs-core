@@ -1,4 +1,4 @@
-import { ECName, ECObjectsError, ECObjectsStatus, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
+import { ECClass, ECName, ECObjectsError, ECObjectsStatus, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
 import { MutableArrayProperty } from "./Mutable/MutableArrayProperty";
 import { MutableProperty } from "./Mutable/MutableProperty";
@@ -14,10 +14,10 @@ type MutablePropertyType = MutableProperty | MutableArrayProperty | MutablePrimi
 export class Properties {
   public constructor(protected _schemaEditor: SchemaContextEditor) { }
 
-  public async setName(classKey: SchemaItemKey, existingPropertyName: string, newPropertyName: string) {
+  public async setName(classKey: SchemaItemKey, propertyName: string, newPropertyName: string) {
     const newName = new ECName(newPropertyName);
 
-    const existingProperty = await this.getProperty<MutableProperty>(classKey, existingPropertyName);
+    const existingProperty = await this.getProperty<MutableProperty>(classKey, propertyName);
 
     const baseProperty = await existingProperty.class.getProperty(newPropertyName, true) as MutableProperty;
     if (baseProperty)
@@ -30,7 +30,7 @@ export class Properties {
       if (await derivedClass.getProperty(newPropertyName))
         throw new Error(`An ECProperty with the name ${newPropertyName} already exists in the class ${derivedClass.fullName}.`);
 
-      const propertyOverride = await derivedClass.getProperty(existingPropertyName) as MutableProperty;
+      const propertyOverride = await derivedClass.getProperty(propertyName) as MutableProperty;
       // If found the property is overridden in the derived class.
       if (propertyOverride)
         derivedProperties.push(propertyOverride);
@@ -90,15 +90,13 @@ export class Properties {
 
   private async findDerivedClasses(mutableClass: MutableClass): Promise<Array<MutableClass>>{
     const derivedClasses: Array<MutableClass> = [];
-    const schemaItems = this._schemaEditor.schemaContext.getSchemaItems();
-    let { value, done } = schemaItems.next();
-    while (!done) {
-      if (await value.is(mutableClass)) {
-        if (!mutableClass.key.matches(value.key)) {
-          derivedClasses.push(value);
+
+    for await (const schemaItem of this._schemaEditor.schemaContext.getSchemaItems()) {
+      if(ECClass.isECClass(schemaItem) && await schemaItem.is(mutableClass)) {
+        if (!mutableClass.key.matches(schemaItem.key)) {
+          derivedClasses.push(schemaItem as MutableClass);
         }
       }
-      ({ value, done } = schemaItems.next());
     }
 
     return derivedClasses;
@@ -110,13 +108,7 @@ export class Properties {
    * @param propertyName The name of the property to retrieve.
    */
   protected async getProperty<T extends MutablePropertyType>(classKey: SchemaItemKey, propertyName: string): Promise<T> {
-    let mutableClass: MutableClass;
-    try {
-      mutableClass = await this.getClass(classKey);
-    } catch (e: any) {
-      // TODO: Update error
-      throw new Error(e.message);
-    }
+    const mutableClass = await this.getClass(classKey);
 
     const property = await mutableClass.getProperty(propertyName) as T;
     if (property === undefined) {
@@ -132,22 +124,15 @@ export class Properties {
     if (schema === undefined)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema,`Schema Key ${classKey.schemaKey.toString(true)} not found in context`);
 
-    const ecClass = await schema.getItem<MutableClass>(classKey.name);
+    const ecClass = await schema.getItem(classKey.name);
     if (ecClass === undefined)
       throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Class ${classKey.name} was not found in schema ${classKey.schemaKey.toString(true)}`);
 
-    switch (ecClass.schemaItemType) {
-      case SchemaItemType.EntityClass:
-      case SchemaItemType.Mixin:
-      case SchemaItemType.StructClass:
-      case SchemaItemType.CustomAttributeClass:
-      case SchemaItemType.RelationshipClass:
-        break;
-      default:
-        throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Schema item type not supported`);
+    if (!(ecClass instanceof ECClass)) {
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Schema item type not supported`);
     }
 
-    return ecClass;
+    return ecClass as MutableClass;
   }
 }
 
