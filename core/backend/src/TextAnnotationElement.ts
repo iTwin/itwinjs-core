@@ -25,7 +25,6 @@ function updateAnnotation(element: TextAnnotation2d | TextAnnotation3d, annotati
     return false;
   }
 
-  // ###TODO are we supposed to adjust placement.origin based on annotation.origin?
   element.geom = builder.geometryStream;
   element.jsonProperties.annotation = annotation.toJSON();
 

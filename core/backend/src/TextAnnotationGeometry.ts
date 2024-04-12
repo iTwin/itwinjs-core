@@ -86,7 +86,6 @@ function processFractionRun(run: RunLayout, transform: Transform, context: Geome
 
   assert(undefined !== run.numeratorRange && undefined !== run.denominatorRange);
 
-  // ###TODO native computes this and calls TextString.style.SetSize, unclear...below I just scale the height and width factors instead.
   const fontSize = new Vector2d(run.style.lineHeight * run.style.widthFactor, run.style.lineHeight);
   fontSize.scale(run.style.stackedFractionScale, fontSize);
 
