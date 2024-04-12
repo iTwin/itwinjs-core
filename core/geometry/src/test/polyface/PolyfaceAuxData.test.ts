@@ -19,6 +19,8 @@ import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { ImportedSample } from "../testInputs/ImportedSamples";
 import { NumberArray, Point3dArray } from "../../geometry3d/PointHelpers";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { GeometryQuery } from "../../curve/GeometryQuery";
 
 /** Create a polyface representing a cantilever beam with [[PolyfaceAuxData]] representing the stress and deflection. */
 function createCantileverBeamPolyface(beamRadius: number = 10.0, beamLength: number = 100.0, facetSize: number = 1.0, zScale: number = 1.0) {
@@ -151,6 +153,7 @@ describe("PolyfaceAuxData", () => {
 
   it("Compress", () => {
     const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
     const mesh = ImportedSample.createPolyhedron62();
     if (ck.testType(mesh, IndexedPolyface, "imported mesh")) {
       const latitude = mesh.data.point.getPoint3dArray().map((pt: Point3d) => { return pt.z; });
@@ -173,6 +176,7 @@ describe("PolyfaceAuxData", () => {
 
       const mesh2 = mesh.clone();
       mesh2.data.auxData = new PolyfaceAuxData([latitudeChannel.clone(), octantChannel.clone()], mesh2.data.pointIndex.slice());
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh2);
       mesh2.data.compress();
       ck.testNumberArray(mesh.data.pointIndex, mesh2.data.auxData.indices, "Multichannel AuxData indices was untouched by compress");
       ck.testExactNumber(mesh2.data.auxData.channels[0].valueCount, 60, "Compress leaves multichannel AuxData 1D values untouched");
@@ -188,6 +192,7 @@ describe("PolyfaceAuxData", () => {
           ck.testTrue(meshFB.isAlmostEqual(meshJson), "roundtrip through FB compares to roundtrip through JSON");
         }
       }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceAuxData", "Compress");
     expect(ck.getNumErrors()).equals(0);
   });
 });
