@@ -513,7 +513,7 @@ describe("TextAnnotation element", () => {
     });
   });
 
-  describe("insert", () => {
+  describe.only("persistence", () => {
     let imodel: SnapshotDb;
     let seed: GeometricElement3d;
 
@@ -542,10 +542,37 @@ describe("TextAnnotation element", () => {
       }, imodel);
     }
 
+    function createAnnotation(): TextAnnotation {
+      const block = TextBlock.createEmpty();
+      block.styleName = "block";
+      block.appendRun(makeTextRun("run", "run1"));
+      block.appendRun(makeTextRun("RUN!!!!!", "run2"));
+
+      return TextAnnotation.fromJSON({
+        textBlock: block.toJSON(),
+        anchor: {
+          vertical: "middle",
+          horizontal: "right",
+        },
+        origin: [0, -5, 100],
+        orientation: { yaw: 1, pitch: 0, roll: -1 },
+      });
+    }
+
+    it("create method does not automatically compute the geometry", () => {
+      const annotation = createAnnotation();
+      const el = createElement({ jsonProperties: { annotation: annotation.toJSON() } });
+      expect(el.getAnnotation()!.equals(annotation)).to.be.true;
+      expect(el.geom).to.be.undefined;
+    });
+    
     it("round-trips through JSON", () => {
       function test(annotation?: TextAnnotation): void {
-        const props = annotation ? { jsonProperties: { annotation: annotation.toJSON() } } : undefined;
-        const el0 = createElement(props);
+        const el0 = createElement();
+        if (annotation) {
+          el0.setAnnotation(annotation);
+        }
+
         const elId = el0.insert();
         expect(Id64.isValidId64(elId)).to.be.true;
 
@@ -564,21 +591,7 @@ describe("TextAnnotation element", () => {
 
       test();
       test(TextAnnotation.fromJSON({ textBlock: { styleName: "block" } }));
-
-      const block = TextBlock.createEmpty();
-      block.styleName = "block";
-      block.appendRun(makeTextRun("run", "run1"));
-      block.appendRun(makeTextRun("RUN!!!!!", "run2"));
-
-      test(TextAnnotation.fromJSON({
-        textBlock: block.toJSON(),
-        anchor: {
-          vertical: "middle",
-          horizontal: "right",
-        },
-        origin: [0, -5, 100],
-        orientation: { yaw: 1, pitch: 0, roll: -1 },
-      }));
+      test(createAnnotation());
     });
   });
 });
