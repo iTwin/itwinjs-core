@@ -1,4 +1,4 @@
-import { ECClass, ECName, ECObjectsError, ECObjectsStatus, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
+import { ArrayProperty, ECClass, ECName, ECObjectsError, ECObjectsStatus, EnumerationProperty, PrimitiveProperty, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
 import { MutableArrayProperty } from "./Mutable/MutableArrayProperty";
 import { MutableProperty } from "./Mutable/MutableProperty";
@@ -167,6 +167,20 @@ export class ArrayProperties extends Properties {
     const property = await this.getProperty<MutableArrayProperty>(classKey, propertyName);
     property.setMaxOccurs(maxOccurs);
   }
+
+  /**
+   * Override to validate that the found property is an ArrayProperty.
+   * @param classKey The SchemaItemKey of the class.
+   * @param propertyName The name of the property.
+   */
+  protected override async getProperty<T extends MutablePropertyType>(classKey: SchemaItemKey, propertyName: string): Promise<T> {
+    const property = await super.getProperty<MutableArrayProperty>(classKey, propertyName) as T;
+    if (!property.isArray()){
+      // TODO: Update error
+      throw new Error(`The property ${propertyName} is not an ArrayProperty.`);
+    }
+    return property;
+  }
 }
 
 /**
@@ -242,6 +256,20 @@ export class PrimitiveProperties extends PrimitiveOrEnumProperties {
   public constructor(_schemaEditor: SchemaContextEditor) {
     super(_schemaEditor);
   }
+
+  /**
+   * Override to validate that the found property is a PrimitiveProperty.
+   * @param classKey The SchemaItemKey of the class.
+   * @param propertyName The name of the property.
+   */
+  protected override async getProperty<T extends MutablePropertyType>(classKey: SchemaItemKey, propertyName: string): Promise<T> {
+    const property = await super.getProperty<MutablePrimitiveOrEnumPropertyBase>(classKey, propertyName) as T;
+    if (!(property instanceof PrimitiveProperty)){
+      // TODO: Update error
+      throw new Error(`The property ${propertyName} is not an PrimitiveProperty.`);
+    }
+    return property;
+  }
 }
 
 /**
@@ -251,6 +279,20 @@ export class PrimitiveProperties extends PrimitiveOrEnumProperties {
 export class EnumerationProperties extends PrimitiveOrEnumProperties {
   public constructor(_schemaEditor: SchemaContextEditor) {
     super(_schemaEditor);
+  }
+
+  /**
+   * Override to validate that the found property is a EnumerationProperty.
+   * @param classKey The SchemaItemKey of the class.
+   * @param propertyName The name of the property.
+   */
+  protected override async getProperty<T extends MutablePropertyType>(classKey: SchemaItemKey, propertyName: string): Promise<T> {
+    const property = await super.getProperty<MutablePrimitiveOrEnumPropertyBase>(classKey, propertyName) as T;
+    if (!(property instanceof EnumerationProperty)){
+      // TODO: Update error
+      throw new Error(`The property ${propertyName} is not an EnumerationProperty.`);
+    }
+    return property;
   }
 }
 

@@ -1,14 +1,14 @@
-import { ECClassModifier, EntityClass, PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, Schema, SchemaContext, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
+import { ECClassModifier, EntityClass, Enumeration, EnumerationProperty, PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, Schema, SchemaContext, SchemaItemKey, SchemaKey, StructClass } from "@itwin/ecschema-metadata";
 import { expect } from "chai";
 import { SchemaContextEditor } from "../../ecschema-editing";
 
 describe("Properties editing tests", () => {
   // Uses an entity class to create properties.
   let testEditor: SchemaContextEditor;
-  let _testSchema: Schema;
   let testKey: SchemaKey;
   let context: SchemaContext;
   let entityKey: SchemaItemKey;
+  let structKey: SchemaItemKey;
   let entity: EntityClass | undefined;
 
   beforeEach(async () => {
@@ -19,6 +19,8 @@ describe("Properties editing tests", () => {
     const entityRes = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None);
     entityKey = entityRes.itemKey!;
     entity = await testEditor.schemaContext.getSchemaItem(entityKey);
+    const structRes = await testEditor.structs.create(testKey, "testStruct");
+    structKey = structRes.itemKey!;
   });
 
   describe("Base property editing tests", () => {
@@ -222,9 +224,14 @@ describe("Properties editing tests", () => {
       expect(property.minOccurs).to.eql(43);
       expect(property.maxOccurs).to.eql(56);
     });
+
+    it("editing a array property attribute not belonging to the proper property type, rejected with error", async () =>  {
+      const createResult = await testEditor.entities.createPrimitiveProperty(entityKey, "TestProperty", PrimitiveType.Double);
+      await expect(testEditor.entities.arrayProperties.setMaxOccurs(entityKey, createResult.propertyName!, 1)).to.be.rejectedWith(Error, "The property TestProperty is not an ArrayProperty");
+    });
   });
 
-  describe("Primitive or Enum property editing tests", () => {
+  describe("Primitive property editing tests", () => {
     it("should successfully set extendedTypeName", async () => {
       const createResult = await testEditor.entities.createPrimitiveProperty(entityKey, "TestProperty", PrimitiveType.Double);
       const property = await entity?.getProperty(createResult.propertyName!) as PrimitiveProperty;
@@ -273,6 +280,85 @@ describe("Properties editing tests", () => {
       await testEditor.entities.primitiveProperties.setMaxValue(entityKey, "TestProperty", 1000);
 
       expect(property.maxValue).to.eql(1000);
+    });
+
+    it("editing a primitive property attribute not belonging to the proper property type, rejected with error", async () =>  {
+      const structClass = await testEditor.schemaContext.getSchemaItem<StructClass>(structKey);
+      const createResult = await testEditor.entities.createStructProperty(entityKey, "TestProperty", structClass!);
+      await expect(testEditor.entities.primitiveProperties.setMinValue(entityKey, createResult.propertyName!, 1)).to.be.rejectedWith(Error, "The property TestProperty is not an PrimitiveProperty");
+    });
+  });
+
+  describe("Enumeration property editing tests", () => {
+    it("should successfully set extendedTypeName", async () => {
+      const schema = await testEditor.getSchema(testKey);
+      const testEnum = new Enumeration(schema!, "TestEnumeration");
+      const createResult = await testEditor.entities.createEnumerationProperty(entityKey, "TestProperty", testEnum);
+
+      const property = await entity?.getProperty(createResult.propertyName!) as EnumerationProperty;
+      expect(property.extendedTypeName).to.eql(undefined);
+
+      await testEditor.entities.enumerationProperties.setExtendedTypeName(entityKey, "TestProperty", "typeName");
+
+      expect(property.extendedTypeName).to.eql("typeName");
+    });
+
+    it("should successfully set minLength", async () => {
+      const schema = await testEditor.getSchema(testKey);
+      const testEnum = new Enumeration(schema!, "TestEnumeration");
+      const createResult = await testEditor.entities.createEnumerationProperty(entityKey, "TestProperty", testEnum);
+
+      const property = await entity?.getProperty(createResult.propertyName!) as EnumerationProperty;
+      expect(property.minLength).to.eql(undefined);
+
+      await testEditor.entities.enumerationProperties.setMinLength(entityKey, "TestProperty", 7);
+
+      expect(property.minLength).to.eql(7);
+    });
+
+    it("should successfully set maxLength", async () => {
+      const schema = await testEditor.getSchema(testKey);
+      const testEnum = new Enumeration(schema!, "TestEnumeration");
+      const createResult = await testEditor.entities.createEnumerationProperty(entityKey, "TestProperty", testEnum);
+
+      const property = await entity?.getProperty(createResult.propertyName!) as EnumerationProperty;
+      expect(property.maxLength).to.eql(undefined);
+
+      await testEditor.entities.enumerationProperties.setMaxLength(entityKey, "TestProperty", 100);
+
+      expect(property.maxLength).to.eql(100);
+    });
+
+    it("should successfully set minValue", async () => {
+      const schema = await testEditor.getSchema(testKey);
+      const testEnum = new Enumeration(schema!, "TestEnumeration");
+      const createResult = await testEditor.entities.createEnumerationProperty(entityKey, "TestProperty", testEnum);
+
+      const property = await entity?.getProperty(createResult.propertyName!) as EnumerationProperty;
+      expect(property.minValue).to.eql(undefined);
+
+      await testEditor.entities.enumerationProperties.setMinValue(entityKey, "TestProperty", -1);
+
+      expect(property.minValue).to.eql(-1);
+    });
+
+    it("should successfully set maxValue", async () => {
+      const schema = await testEditor.getSchema(testKey);
+      const testEnum = new Enumeration(schema!, "TestEnumeration");
+      const createResult = await testEditor.entities.createEnumerationProperty(entityKey, "TestProperty", testEnum);
+
+      const property = await entity?.getProperty(createResult.propertyName!) as EnumerationProperty;
+      expect(property.maxValue).to.eql(undefined);
+
+      await testEditor.entities.enumerationProperties.setMaxValue(entityKey, "TestProperty", 1000);
+
+      expect(property.maxValue).to.eql(1000);
+    });
+
+    it("editing a enumeration property attribute not belonging to the proper property type, rejected with error", async () =>  {
+      const structClass = await testEditor.schemaContext.getSchemaItem<StructClass>(structKey);
+      const createResult = await testEditor.entities.createStructProperty(entityKey, "TestProperty", structClass!);
+      await expect(testEditor.entities.enumerationProperties.setMinValue(entityKey, createResult.propertyName!, 1)).to.be.rejectedWith(Error, "The property TestProperty is not an EnumerationProperty");
     });
   });
 });
