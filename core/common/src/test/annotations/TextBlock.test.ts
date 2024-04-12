@@ -69,7 +69,7 @@ describe("TextBlockComponent", () => {
       block.applyStyle("new", { preventPropagation: true });
       expect(block.styleName).to.equal("new");
       expect(block.styleOverrides).to.deep.equal({});
-      
+
       expect(paragraph.styleName).to.equal("paragraph");
       expect(paragraph.styleOverrides).to.deep.equal({ lineHeight: 42 });
 
@@ -101,7 +101,7 @@ describe("TextBlockComponent", () => {
     };
 
     const tb = TextBlock.create(props);
-    expect(tb.stringify()).to.equal("abc 1/π def   ghi j k l     / mno   ")
+    expect(tb.stringify()).to.equal("abc 1/π def   ghi j k l     / mno   ");
     const paragraphBreak = "P";
     const lineBreak = "L";
     const fractionSeparator = "F";
@@ -123,7 +123,7 @@ describe("TextBlock", () => {
       const p1 = tb.appendParagraph();
       expect(p1.styleName).to.equal("block");
       expect(p1.styleOverrides).to.deep.equal({});
-      
+
       p1.styleName = "paragraph";
       p1.styleOverrides = { widthFactor: 1234 };
       const p2 = tb.appendParagraph();

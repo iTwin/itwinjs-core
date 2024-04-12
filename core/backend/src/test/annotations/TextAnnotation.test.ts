@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, TextBlockLayout, TextLayoutRanges, layoutTextBlock } from "../../TextAnnotationLayout";
+import { ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
 import { Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontMap, FractionRun, GeometryStreamProps, LineBreakRun, Run, TextAnnotation, TextAnnotation2dProps, TextBlock, TextBlockGeometryPropsEntry, TextRun, TextStyleColor, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, FontMap, FractionRun, LineBreakRun, Run, TextAnnotation, TextAnnotation2dProps, TextBlock, TextBlockGeometryPropsEntry, TextRun, TextStyleSettings } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { TextAnnotation2d } from "../../TextAnnotationElement";
 import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry";
@@ -16,9 +16,9 @@ function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): T
 }
 
 function doLayout(textBlock: TextBlock, args?: {
-  findTextStyle?: FindTextStyle,
-  findFontId?: FindFontId,
-  computeTextRange?: ComputeRangesForTextLayout,
+  findTextStyle?: FindTextStyle;
+  findFontId?: FindFontId;
+  computeTextRange?: ComputeRangesForTextLayout;
 }): TextBlockLayout {
   return layoutTextBlock({
     textBlock,
@@ -66,7 +66,7 @@ describe("layoutTextBlock", () => {
   it("produces one line per paragraph if document width <= 0", () => {
     const textBlock = TextBlock.create({ styleName: "" });
     for (let i = 0; i < 4; i++) {
-      let layout = doLayout(textBlock);
+      const layout = doLayout(textBlock);
       if (i === 0) {
         expect(layout.range.isNull).to.be.true;
       } else {
@@ -178,7 +178,7 @@ describe("layoutTextBlock", () => {
 
     textBlock.appendRun(makeTextRun("vwxyz"));
     expect(doLayout(textBlock).lines.length).to.equal(5);
-  })
+  });
 
   function expectLines(input: string, width: number, expectedLines: string[]): TextBlockLayout {
     const textBlock = TextBlock.create({ styleName: "" });
@@ -189,7 +189,7 @@ describe("layoutTextBlock", () => {
     const layout = doLayout(textBlock);
     expect(layout.lines.every((line) => line.runs.length === 1)).to.be.true;
     expect(layout.lines.every((line) => line.runs[0].source === run)).to.be.true;
-    
+
     const actual = layout.lines.map((line) => line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars)).join(""));
     expect(actual).to.deep.equal(expectedLines);
 
@@ -212,26 +212,26 @@ describe("layoutTextBlock", () => {
     expectLines(fox, 50, [fox]);
     expectLines(fox, 40, [
       //        1         2         3         4
-      //234567890123456789012345678901234567890
+      // 234567890123456789012345678901234567890
       "The quick brown fox jumped over the lazy",
       " dog",
     ]);
     expectLines(fox, 30, [
       //        1         2         3
-      //23456789012345678901234567890
+      // 23456789012345678901234567890
       "The quick brown fox jumped ",
       "over the lazy dog",
     ]);
     expectLines(fox, 20, [
       //        1         2
-      //2345678901234567890
+      // 2345678901234567890
       "The quick brown fox ",
       "jumped over the lazy",
       " dog",
     ]);
     expectLines(fox, 10, [
       //        1
-      //234567890
+      // 234567890
       "The quick ",
       "brown fox ",
       "jumped ",
@@ -239,7 +239,7 @@ describe("layoutTextBlock", () => {
       "lazy dog",
     ]);
   });
-  
+
   it("considers consecutive whitespace a single 'word'", () => {
     expectLines("a b  c   d    e     f      ", 3, [
       "a b",
@@ -274,7 +274,7 @@ describe("layoutTextBlock", () => {
       "you", " ",
       "(", "or", " ", "anyone", ")", " ",
       "predict", "?", "!",
-    ])
+    ]);
   });
 
   it("performs word-wrapping and line-splitting with multiple runs", () => {
@@ -289,30 +289,30 @@ describe("layoutTextBlock", () => {
       const actual = layout.lines.map((line) => line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars)).join(""));
       expect(actual).to.deep.equal(expected);
     }
-    
+
     test(50, ["The quick brown fox jumped over the lazy dog"]);
     test(40, [
       //        1         2         3         4
-      //234567890123456789012345678901234567890
+      // 234567890123456789012345678901234567890
       "The quick brown fox jumped over the lazy",
       " dog",
     ]);
     test(30, [
       //        1         2         3
-      //23456789012345678901234567890
+      // 23456789012345678901234567890
       "The quick brown fox jumped ",
       "over the lazy dog",
     ]);
     test(20, [
       //        1         2
-      //2345678901234567890
+      // 2345678901234567890
       "The quick brown fox ",
       "jumped over the lazy",
       " dog",
     ]);
     test(10, [
       //        1
-      //234567890
+      // 234567890
       "The quick ",
       "brown fox ",
       "jumped ",
@@ -325,7 +325,7 @@ describe("layoutTextBlock", () => {
 function mockIModel(): IModelDb {
   const iModel: Pick<IModelDb, "fontMap" | "computeRangesForText" | "forEachMetaData"> = {
     fontMap: new FontMap(),
-    computeRangesForText: () => { return { layout: new Range2d(0, 0, 1, 1), justification: new Range2d(0, 0, 1, 1) } },
+    computeRangesForText: () => { return { layout: new Range2d(0, 0, 1, 1), justification: new Range2d(0, 0, 1, 1) }; },
     forEachMetaData: () => undefined,
   };
 
@@ -334,7 +334,7 @@ function mockIModel(): IModelDb {
 
 describe("produceTextAnnotationGeometry", () => {
   type Color = ColorDef | "subcategory";
-  
+
   function makeText(color?: Color): TextRun {
     const styleOverrides = undefined !== color ? { color: color instanceof ColorDef ? color.toJSON() : color } : undefined;
     return TextRun.create({ styleName: "", styleOverrides, content: "text" });
@@ -372,10 +372,9 @@ describe("produceTextAnnotationGeometry", () => {
   it("produces an empty array for a block consisting only of line breaks", () => {
     expect(makeGeometry([makeBreak(), makeBreak(), makeBreak()])).to.deep.equal([]);
   });
-  
+
   it("produces one appearance entry if all runs use subcategory color", () => {
     const geom = makeGeometry([makeText(), makeFraction(), makeText("subcategory"), makeFraction("subcategory")]);
-    console.log(JSON.stringify(geom));
     expect(geom.length).to.equal(9);
     expect(geom[0].color).to.equal("subcategory");
     expect(geom.slice(1).some((entry) => entry.color !== undefined)).to.be.false;
@@ -385,7 +384,7 @@ describe("produceTextAnnotationGeometry", () => {
     const geom = makeGeometry([makeText(), makeFraction(), makeFraction(), makeText()]);
     expect(geom.length).to.equal(9);
     expect(geom[0].color).to.equal("subcategory");
-    
+
     expect(geom[1].text).not.to.be.undefined;
 
     expect(geom[2].text).not.to.be.undefined;
@@ -395,7 +394,7 @@ describe("produceTextAnnotationGeometry", () => {
     expect(geom[5].text).not.to.be.undefined;
     expect(geom[6].separator).not.to.be.undefined;
     expect(geom[7].text).not.to.be.undefined;
-    
+
     expect(geom[8].text).not.to.be.undefined;
   });
 
@@ -457,8 +456,8 @@ describe("TextAnnotation element", () => {
         jsonProperties: {
           annotation: {
             textBlock: TextBlock.create({ styleName: "block" }).toJSON(),
-          }
-        }
+          },
+        },
       });
 
       const anno = elem.getAnnotation()!;
@@ -472,10 +471,10 @@ describe("TextAnnotation element", () => {
         jsonProperties: {
           annotation: {
             textBlock: TextBlock.create({ styleName: "block" }).toJSON(),
-          }
-        }
+          },
+        },
       });
-      
+
       const anno1 = elem.getAnnotation()!;
       const anno2 = elem.getAnnotation()!;
       expect(anno1).not.to.equal(anno2);

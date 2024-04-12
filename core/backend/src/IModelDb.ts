@@ -57,7 +57,7 @@ import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./Vi
 import { ViewStore } from "./ViewStore";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { Workspace } from "./workspace/Workspace";
-import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotationLayout"; 
+import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotationLayout";
 
 import type { BlobContainer } from "./BlobContainerService";
 /** @internal */

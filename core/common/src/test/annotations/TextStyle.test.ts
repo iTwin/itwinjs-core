@@ -20,7 +20,7 @@ describe("TextStyleSettings", () => {
     subScriptScale: 0.5,
     superScriptOffsetFactor: 0.6,
     superScriptScale: 0.5,
-    widthFactor: 2,    
+    widthFactor: 2,
   };
 
   it("returns defaults if no props provided", () => {
@@ -31,7 +31,7 @@ describe("TextStyleSettings", () => {
   it("round-trips through JSON", () => {
     expect(TextStyleSettings.defaults.toJSON()).to.deep.equal(TextStyleSettings.defaultProps);
     expect(TextStyleSettings.fromJSON({}).toJSON()).to.deep.equal(TextStyleSettings.defaultProps);
-    
+
     expect(TextStyleSettings.fromJSON(customProps).toJSON()).to.deep.equal(customProps);
   });
 
@@ -42,7 +42,7 @@ describe("TextStyleSettings", () => {
       const key = propName as keyof TextStyleSettingsProps;
       const props: TextStyleSettingsProps = { };
       (props as any)[key] = customProps[key];
-      
+
       const settings = TextStyleSettings.fromJSON(props);
       expect(settings.equals(TextStyleSettings.defaults)).to.be.false;
     }

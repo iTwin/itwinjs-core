@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, FontId, FractionRun, Paragraph, Run, TextBlock, TextRun, TextStyle, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, FontId, FractionRun, Paragraph, Run, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
-import { NonFunctionPropertiesOf, assert } from "@itwin/core-bentley";
+import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 
 /** @internal */
 export interface TextLayoutRanges {
@@ -231,7 +231,7 @@ export class RunLayout {
     let numChars = 0;
 
     let range, justificationRange, numeratorRange, denominatorRange;
-    
+
     switch (source.type) {
       case "text": {
         numChars = source.content.length;
@@ -258,13 +258,13 @@ export class RunLayout {
     return new RunLayout({ source, charOffset, numChars, range, justificationRange, denominatorRange, numeratorRange, offsetFromLine, style, fontId });
   }
 
-  canWrap(): this is { source: TextRun } {
+  public canWrap(): this is { source: TextRun } {
     return this.source.type === "text";
   }
 
   private cloneForWrap(args: { ranges: TextLayoutRanges, charOffset: number, numChars: number}): RunLayout {
     assert(this.canWrap());
-    
+
     return new RunLayout({
       ...this,
       charOffset: args.charOffset,
@@ -272,7 +272,7 @@ export class RunLayout {
       range: args.ranges.layout,
       justificationRange: args.ranges.justification,
       offsetFromLine: { ...this.offsetFromLine },
-    })
+    });
   }
 
   public wrap(availableWidth: number, shouldForceLeadingUnit: boolean, context: LayoutContext): RunLayout | undefined {
@@ -314,7 +314,7 @@ export class RunLayout {
     const charOffset = this.charOffset + breakPos;
     const numChars = this.numChars - breakPos;
     this.numChars = breakPos;
-    
+
     const leftover = this.source.content.substring(charOffset, charOffset + numChars);
     return this.cloneForWrap({
       ranges: context.computeRangeForText(leftover, this.style, this.source.baselineShift),
@@ -443,7 +443,7 @@ export class TextBlockLayout {
           line = this.flushLine(context, line);
           effectiveRemainingWidth = doc.width;
           layoutRun = leftOver;
-        } while (leftOver = layoutRun.wrap(effectiveRemainingWidth, line.runs.length === 0, context))
+        } while (leftOver = layoutRun.wrap(effectiveRemainingWidth, line.runs.length === 0, context));
 
         line.append(layoutRun);
       }
