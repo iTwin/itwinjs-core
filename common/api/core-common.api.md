@@ -9687,6 +9687,8 @@ export class TextStyleSettings {
     readonly subScriptScale: number;
     readonly superScriptOffsetFactor: number;
     readonly superScriptScale: number;
+    // (undocumented)
+    toJSON(): TextStyleSettingsProps;
     readonly widthFactor: number;
 }
 
