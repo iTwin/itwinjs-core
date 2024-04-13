@@ -36,7 +36,7 @@ function makeTextRun(content: string, styleName = ""): TextRun {
   return TextRun.create({ content, styleName });
 }
 
-describe("layoutTextBlock", () => {
+describe.only("layoutTextBlock", () => {
   it("resolves TextStyleSettings from combination of TextBlock and Run", () => {
     const textBlock = TextBlock.create({ styleName: "block", styleOverrides: { widthFactor: 34, color: 0x00ff00 }});
     const run0 = TextRun.create({ content: "run0", styleName: "run", styleOverrides: { lineHeight: 56, color: 0xff0000 }});
@@ -323,6 +323,44 @@ describe("layoutTextBlock", () => {
       "lazy dog",
     ]);
   });
+
+  describe("using persistent fonts", () => {
+    let iModel: SnapshotDb;
+
+    before(() => {
+      const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+      const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
+      iModel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+    });
+
+    after(() => iModel.close());
+
+    it("maps font names to Id (case-insensitively)", () => {
+      iModel.addNewFont("Arial");
+      iModel.addNewFont("Comic Sans");
+      const arial = iModel.fontMap.getFont("Arial")!.id;
+      const comic = iModel.fontMap.getFont("Comic Sans")!.id;
+      expect(arial).to.equal(1);
+      expect(comic).to.equal(2);
+      expect(iModel.fontMap.getFont("Consolas")).to.be.undefined;
+
+      function test(fontName: string, expectedFontId: number): void {
+        const textBlock = TextBlock.create({ styleName: "" });
+        textBlock.appendRun(TextRun.create({ styleName: "", styleOverrides: { fontName } }));
+        const layout = doLayout(textBlock);
+        const run = layout.lines[0].runs[0];
+        expect(run).not.to.be.undefined;
+        expect(run.fontId).to.equal(expectedFontId);
+      }
+
+      test("Arial", arial);
+      test("Comic Sans", comic);
+      test("Consolas", 0);
+
+      test("arial", arial);
+      test("aRIaL", arial);
+    });
+  });
 });
 
 function mockIModel(): IModelDb {
@@ -607,10 +645,6 @@ describe("TextAnnotation element", () => {
       test();
       test(TextAnnotation.fromJSON({ textBlock: { styleName: "block" } }));
       test(createAnnotation());
-    });
-
-    it("updates placement when annotation changes", () => {
-      
     });
   });
 });
