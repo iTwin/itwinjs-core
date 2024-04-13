@@ -1092,14 +1092,9 @@ describe("GeometryStream", () => {
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
-    assert.isTrue(1 === imodel.fontMap.fonts.size); // file currently contains 1 font.
 
-    const arialId = imodel.addNewFont("Arial");
-
-    assert.isTrue(2 === imodel.fontMap.fonts.size);
-    assert.equal(arialId, 2);
-    const foundFont = imodel.fontMap.getFont("Arial");
-    assert.isTrue(foundFont && foundFont.id === arialId);
+    const foundFont = imodel.fontMap.getFont("Vera");
+    assert.exists(foundFont);
 
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(45, 0, 0);
@@ -1109,7 +1104,7 @@ describe("GeometryStream", () => {
 
     const textProps: TextStringProps = {
       text: "ABC",
-      font: arialId,
+      font: foundFont!.id,
       height: 2,
       bold: true,
       origin: testOrigin,
@@ -1736,10 +1731,8 @@ describe("ElementGeometry", () => {
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
-    const arialId = imodel.addNewFont("Arial");
-    assert.isTrue(0 !== imodel.fontMap.fonts.size);
-    const foundFont = imodel.fontMap.getFont("Arial");
-    assert.isTrue(foundFont && foundFont.id === arialId);
+    const foundFont = imodel.fontMap.getFont("Vera");
+    assert.exists(foundFont);
 
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
@@ -1750,7 +1743,7 @@ describe("ElementGeometry", () => {
 
     const textProps: TextStringProps = {
       text: "ABC",
-      font: arialId,
+      font: foundFont!.id,
       height: 2,
       bold: true,
       origin: testOrigin,

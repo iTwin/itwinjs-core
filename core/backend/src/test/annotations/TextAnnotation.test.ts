@@ -324,7 +324,7 @@ describe("layoutTextBlock", () => {
     ]);
   });
 
-  describe.only("using native font library", () => {
+  describe("using native font library", () => {
     let iModel: SnapshotDb;
 
     before(() => {
@@ -398,10 +398,11 @@ describe("layoutTextBlock", () => {
     });
     
     it("computes different ranges for different fonts", () => {
-      // These two don't exist in the iModel, but do exist in its font table - they should both fall back to the default font.
-      expect(computeDimensions({ font: "Arial" })).to.deep.equal(computeDimensions({ font: "Comic Sans" }));
+      // These two are embedded in the iModel.
+      expect(computeDimensions({ font: "Vera" })).not.to.deep.equal(computeDimensions({ font: "Karla" }));
 
-      expect(computeDimensions({ font: "Vera" })).not.to.deep.equal(computeDimensions({ font: "Arial" }));
+      // These two are not embedded in the iModel, but do exist in its font table - they should both fall back to the default font.
+      expect(computeDimensions({ font: "Arial" })).to.deep.equal(computeDimensions({ font: "Comic Sans" }));
     });
 
     it("computes different ranges for different height and width", () => {
