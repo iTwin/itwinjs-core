@@ -324,7 +324,7 @@ describe("layoutTextBlock", () => {
     ]);
   });
 
-  describe("using native font library", () => {
+  describe.only("using native font library", () => {
     let iModel: SnapshotDb;
 
     before(() => {
@@ -366,6 +366,18 @@ describe("layoutTextBlock", () => {
       // ###TODO: we need to fix the collation to use Unicode; SQLite only applies to ASCII characters.
       // test("arial", arial);
       // test("aRIaL", arial);
+    });
+
+    it("computes different ranges for different fonts", () => {
+      
+    });
+
+    it("computes different ranges for different font styles", () => {
+      
+    });
+
+    it("computes different ranges for different height and width", () => {
+      
     });
   });
 });
