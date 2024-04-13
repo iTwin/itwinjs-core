@@ -1092,11 +1092,12 @@ describe("GeometryStream", () => {
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
-    assert.isTrue(0 === imodel.fontMap.fonts.size); // file currently contains no fonts...
+    assert.isTrue(1 === imodel.fontMap.fonts.size); // file currently contains 1 font.
 
     const arialId = imodel.addNewFont("Arial");
 
-    assert.isTrue(0 !== imodel.fontMap.fonts.size);
+    assert.isTrue(2 === imodel.fontMap.fonts.size);
+    assert.equal(arialId, 2);
     const foundFont = imodel.fontMap.getFont("Arial");
     assert.isTrue(foundFont && foundFont.id === arialId);
 
@@ -1734,7 +1735,6 @@ describe("ElementGeometry", () => {
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
-    assert.isTrue(0 === imodel.fontMap.fonts.size); // file currently contains no fonts...
 
     const arialId = imodel.addNewFont("Arial");
     assert.isTrue(0 !== imodel.fontMap.fonts.size);
