@@ -368,16 +368,47 @@ describe("layoutTextBlock", () => {
       // test("aRIaL", arial);
     });
 
-    it("computes different ranges for different fonts", () => {
-      
-    });
+    function computeDimensions(args: { content?: string, bold?: boolean, italic?: boolean, font?: string, height?: number, width?: number }): { x: number, y: number } {
+      const textBlock = TextBlock.create({
+        styleName: "",
+        styleOverrides: {
+          lineHeight: args.height,
+          widthFactor: args.width,
+        },
+      });
 
-    it("computes different ranges for different font styles", () => {
-      
+      textBlock.appendRun(TextRun.create({
+        styleName: "",
+        content: args.content ?? "This is a string of text.",
+        styleOverrides: {
+          isBold: args.bold,
+          isItalic: args.italic,
+          fontName: args.font ?? "Vera",
+        },
+      }));
+
+      const range = layoutTextBlock({ textBlock, iModel }).range;
+      return { x: range.high.x - range.low.x, y: range.high.y - range.low.y };
+    }
+
+    it("computes different ranges for different strings", () => {
+      expect(computeDimensions({ content: "text" })).to.deep.equal(computeDimensions({ content: "text" }));
+      expect(computeDimensions({ content: "text" })).not.to.deep.equal(computeDimensions({ content: "texttexttext" }));
+      expect(computeDimensions({ content: "text" })).not.to.deep.equal(computeDimensions({ content: "TEXT" }));
+    });
+    
+    it("computes different ranges for different fonts", () => {
+      // These two don't exist in the iModel, but do exist in its font table - they should both fall back to the default font.
+      expect(computeDimensions({ font: "Arial" })).to.deep.equal(computeDimensions({ font: "Comic Sans" }));
+
+      expect(computeDimensions({ font: "Vera" })).not.to.deep.equal(computeDimensions({ font: "Arial" }));
     });
 
     it("computes different ranges for different height and width", () => {
-      
+      expect(computeDimensions({ height: 2 })).to.deep.equal(computeDimensions({ height: 2 }));
+      expect(computeDimensions({ height: 2 })).not.to.deep.equal(computeDimensions({ height: 3 }));
+      expect(computeDimensions({ width: 2 })).to.deep.equal(computeDimensions({ width: 2 }));
+      expect(computeDimensions({ width: 2 })).not.to.deep.equal(computeDimensions({ width: 3 }));
     });
   });
 });
