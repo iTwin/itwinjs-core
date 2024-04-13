@@ -566,12 +566,24 @@ describe("TextAnnotation element", () => {
       expect(el.geom).to.be.undefined;
     });
     
-    it("round-trips through JSON", () => {
+    function expectPlacement(el: GeometricElement3d, expectValidBBox: boolean, expectedOrigin = [0, 0, 0], expectedYPR = [0, 0, 0]): void {
+      expect(el.placement.origin.x).to.equal(expectedOrigin[0]);
+      expect(el.placement.origin.y).to.equal(expectedOrigin[1]);
+      expect(el.placement.origin.z).to.equal(expectedOrigin[2]);
+      expect(el.placement.angles.yaw.radians).to.equal(expectedYPR[0]);
+      expect(el.placement.angles.pitch.radians).to.equal(expectedYPR[1]);
+      expect(el.placement.angles.roll.radians).to.equal(expectedYPR[2]);
+      expect(el.placement.bbox.isNull).to.equal(!expectValidBBox);
+    }
+
+    it("inserts and round-trips through JSON", () => {
       function test(annotation?: TextAnnotation): void {
         const el0 = createElement();
         if (annotation) {
           el0.setAnnotation(annotation);
         }
+
+        expectPlacement(el0, false);
 
         const elId = el0.insert();
         expect(Id64.isValidId64(elId)).to.be.true;
@@ -580,7 +592,10 @@ describe("TextAnnotation element", () => {
         expect(el1).not.to.be.undefined;
         expect(el1 instanceof TextAnnotation3d).to.be.true;
 
+        expectPlacement(el1, undefined !== annotation && !annotation.textBlock.isEmpty);
+
         const anno = el1.getAnnotation();
+
         if (!annotation) {
           expect(anno).to.be.undefined;
         } else {
@@ -592,6 +607,10 @@ describe("TextAnnotation element", () => {
       test();
       test(TextAnnotation.fromJSON({ textBlock: { styleName: "block" } }));
       test(createAnnotation());
+    });
+
+    it("updates placement when annotation changes", () => {
+      
     });
   });
 });
