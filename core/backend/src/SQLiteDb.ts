@@ -310,21 +310,20 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
   /**
    * Implement this method to create all tables for this subclass of `VersionedSqliteDb` when a new database file is created. Called from [[createNewDb]].
    */
-  protected abstract createDDL(): void;
+  protected abstract createDDL(args: any): void;
 
   /**
    * Create a new database file for the subclass of VersionedSqliteDb.
-   * @param fileName the name of a local
    * @note The required versions are saved as [[myVersion]] or newer for both read and write.
    */
-  public static createNewDb(fileName: LocalFileName) {
+  public static createNewDb(fileName: LocalFileName, setupArgs?: any) {
     const db = new (this as any)() as VersionedSqliteDb; // "as any" necessary because VersionedSqliteDb is abstract
     IModelJsFs.recursiveMkDirSync(dirname(fileName));
     if (fs.existsSync(fileName))
       fs.unlinkSync(fileName);
 
     db.createDb(fileName);
-    db.createDDL();
+    db.createDDL(setupArgs);
     const minVer = `^${db.myVersion}`;
     db.setRequiredVersions({ readVersion: minVer, writeVersion: minVer });
     db.closeDb(true);

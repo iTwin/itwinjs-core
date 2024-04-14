@@ -237,10 +237,10 @@ export namespace PropertyStore {
 
     /**
      * Initialize a cloud container for use as a PropertyStore. The container must first be created via its storage supplier api (e.g. Azure, or AWS).
-     * A valid sasToken that grants write access must be supplied. This function creates and uploads an empty PropertyDb into the container.
+     * This function creates and uploads an empty PropertyDb into the container.
      * @note this deletes any existing content in the container.
      */
-    public static async initializeDb(args: { props: CloudSqlite.ContainerAccessProps }) {
+    public static async initializeDb(args: { props: CloudSqlite.ContainerProps }) {
       return super._initializeDb({ ...args, dbType: PropertyDb, dbName: defaultDbName });
     }
   }

@@ -112,6 +112,7 @@ export namespace CloudSqlite {
     containerId: string;
     /** true if the container is public (doesn't require authorization) */
     isPublic?: boolean;
+    accessToken?: string;
   }
 
   /** Properties to access a CloudContainer. */
@@ -830,13 +831,13 @@ export namespace CloudSqlite {
      * A valid sasToken that grants write access must be supplied. This function creates and uploads an empty database into the container.
      * @note this deletes any existing content in the container.
      */
-    protected static async _initializeDb(args: { dbType: typeof VersionedSqliteDb, props: ContainerAccessProps, dbName: string, blockSize?: "64K" | "4M" }) {
-      const container = createCloudContainer({ ...args.props, writeable: true });
+    protected static async _initializeDb(args: { dbType: typeof VersionedSqliteDb, props: ContainerProps, dbName: string, blockSize?: "64K" | "4M" }) {
+      const container = createCloudContainer({ ...args.props, writeable: true, accessToken: args.props.accessToken ?? await CloudSqlite.requestToken(args.props) });
       container.initializeContainer({ blockSize: args.blockSize === "4M" ? 4 * 1024 * 1024 : 64 * 1024 });
       container.connect(CloudCaches.getCache({ cacheName: this._cacheName }));
       await withWriteLock({ user: "initialize", container }, async () => {
         const localFileName = join(KnownLocations.tmpdir, "blank.db");
-        args.dbType.createNewDb(localFileName);
+        args.dbType.createNewDb(localFileName, args);
         await transferDb("upload", container, { dbName: args.dbName, localFileName });
         unlinkSync(localFileName);
       });

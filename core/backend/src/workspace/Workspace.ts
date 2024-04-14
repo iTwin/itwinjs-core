@@ -15,7 +15,7 @@ import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { CloudSqlite } from "../CloudSqlite";
 import { IModelHost, KnownLocations } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
-import { SQLiteDb } from "../SQLiteDb";
+import { SQLiteDb, VersionedSqliteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
 import { Settings, SettingsPriority } from "./Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
@@ -104,6 +104,16 @@ export namespace WorkspaceContainer {
   export function makeDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName {
     return `${dbName}:${WorkspaceContainer.validateVersion(version)}`;
   }
+
+  export async function initialize(args: { props: CloudSqlite.ContainerProps, dbName: WorkspaceDb.DbName, manifest: WorkspaceDb.Manifest }) {
+    class CloudAccess extends CloudSqlite.DbAccess<WorkspaceSqliteDb> {
+      public static async initializeWorkspace(args: { props: CloudSqlite.ContainerProps, dbName: WorkspaceDb.DbName, manifest: WorkspaceDb.Manifest }) {
+        const dbName = WorkspaceContainer.makeDbFileName(args.dbName, "1.0.0");
+        return super._initializeDb({ ...args, dbName, dbType: WorkspaceSqliteDb });
+      }
+    }
+    return CloudAccess.initializeWorkspace(args);
+  }
 }
 
 /** @beta */
@@ -158,8 +168,7 @@ export namespace WorkspaceDb {
   /** Scope to increment for a version number.
    * @see semver.ReleaseType
    */
-  export type VersionIncrement = "major" | "minor" | "patch";
-
+  export type VersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
   /** file extension for local WorkspaceDbs
    * @internal
    */
@@ -362,7 +371,7 @@ export namespace Workspace {
     else
       UnexpectedErrors.handle(e);
   };
-  export const makeSettingName = (name: string) => `${"itwin/core/Workspace"}/${name}`;
+  const makeSettingName = (name: string) => `${"itwin/core/workspace"}/${name}`;
   export const settingName = {
     settingsWorkspaces: makeSettingName("settingsWorkspaces"),
   };
@@ -371,6 +380,7 @@ export namespace Workspace {
   export function construct(settings: Settings, opts?: WorkspaceOpts): Workspace {
     return new WorkspaceImpl(settings, opts);
   }
+
 }
 
 /**
@@ -406,11 +416,16 @@ export interface WorkspaceContainer {
    * Create a copy of an existing [[WorkspaceDb]] in this WorkspaceContainer with a new version number. This function is used
    * by administrator tools that modify Workspaces. This requires that the write lock on the container be held. The copy should be modified with
    * new content before the write lock is released, and thereafter should never be modified again.
-   * @param fromProps Properties that describe the source WorkspaceDb for the new version
-   * @param versionType The type of version increment to apply to the existing version.
    * @note The copy actually shares all of the data with the original, but with copy-on-write if/when data in the new WorkspaceDb is modified.
    */
-  makeNewVersion(fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement): Promise<{ oldName: WorkspaceDb.DbName, newName: WorkspaceDb.DbName }>;
+  makeNewVersion(args: {
+    /** Properties that describe the source WorkspaceDb for the new version */
+    fromProps: WorkspaceDb.Props;
+    /** The type of version increment to apply to the existing version. */
+    versionType: WorkspaceDb.VersionIncrement;
+    /** for prerelease versions */
+    identifier?: string;
+  }): Promise<{ oldName: WorkspaceDb.DbName, newName: WorkspaceDb.DbName }>;
 
   /** get a WorkspaceDb from this WorkspaceContainer. */
   getWorkspaceDb(props: WorkspaceDb.Props): WorkspaceDb;
@@ -499,19 +514,7 @@ export namespace EditableWorkspaceDb {
   }
   /** Create a new, empty, EditableWorkspaceDb file on the local filesystem for importing Workspace resources. */
   export function createEmpty(args: { fileName: LocalFileName, manifest: WorkspaceDb.Manifest }) {
-    const db = new SQLiteDb();
-    IModelJsFs.recursiveMkDirSync(dirname(args.fileName));
-    db.createDb(args.fileName);
-    db.nativeDb.saveFileProperty(WorkspaceDbImpl.manifestProperty, JSON.stringify(args.manifest));
-    const timeStampCol = "lastMod TIMESTAMP NOT NULL DEFAULT(julianday('now'))";
-    db.executeSQL(`CREATE TABLE strings(id TEXT PRIMARY KEY NOT NULL,value TEXT,${timeStampCol})`);
-    db.executeSQL(`CREATE TABLE blobs(id TEXT PRIMARY KEY NOT NULL,value BLOB,${timeStampCol})`);
-    const createTrigger = (tableName: string) => {
-      db.executeSQL(`CREATE TRIGGER ${tableName}_timeStamp AFTER UPDATE ON ${tableName} WHEN old.lastMod=new.lastMod AND old.lastMod != julianday('now') BEGIN UPDATE ${tableName} SET lastMod=julianday('now') WHERE id=new.id; END`);
-    };
-    createTrigger("strings");
-    createTrigger("blobs");
-    db.closeDb(true);
+    WorkspaceSqliteDb.createNewDb(args.fileName, args);
   }
 }
 
@@ -681,14 +684,14 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     throw new Error(`No version of [${dbName}] available for "${range}"`);
   }
 
-  public async makeNewVersion(fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement) {
+  public async makeNewVersion(args: { fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement, identifier?: string }) {
     const cloudContainer = this.cloudContainer;
     if (undefined === cloudContainer)
       throw new Error("versions require cloud containers");
 
-    const oldName = this.resolveDbFileName(fromProps);
+    const oldName = this.resolveDbFileName(args.fromProps);
     const oldDb = WorkspaceContainer.parseDbFileName(oldName);
-    const newVersion = semver.inc(oldDb.version, versionType);
+    const newVersion = semver.inc(oldDb.version, args.versionType, args.identifier);
     if (!newVersion)
       throw new Error("invalid version");
 
@@ -724,10 +727,35 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
   }
 }
 
+class WorkspaceSqliteDb extends VersionedSqliteDb {
+  public override myVersion = "1.0.0";
+  public override getRequiredVersions(): SQLiteDb.RequiredVersionRanges {
+    try {
+      return super.getRequiredVersions();
+    } catch (e) {
+      // early versions didn't have a version range, but they're fine
+      return { readVersion: "^1", writeVersion: "^1" };
+    }
+  }
+
+  protected override createDDL(args: any): void {
+    const timeStampCol = "lastMod TIMESTAMP NOT NULL DEFAULT(julianday('now'))";
+    this.executeSQL(`CREATE TABLE strings(id TEXT PRIMARY KEY NOT NULL,value TEXT,${timeStampCol})`);
+    this.executeSQL(`CREATE TABLE blobs(id TEXT PRIMARY KEY NOT NULL,value BLOB,${timeStampCol})`);
+    const createTrigger = (tableName: string) => {
+      this.executeSQL(`CREATE TRIGGER ${tableName}_timeStamp AFTER UPDATE ON ${tableName} WHEN old.lastMod=new.lastMod AND old.lastMod != julianday('now') BEGIN UPDATE ${tableName} SET lastMod=julianday('now') WHERE id=new.id; END`);
+    };
+    createTrigger("strings");
+    createTrigger("blobs");
+    if (args?.manifest)
+      this.nativeDb.saveFileProperty(WorkspaceDbImpl.manifestProperty, JSON.stringify(args.manifest));
+  }
+}
+
 /** Implementation of WorkspaceDb */
 class WorkspaceDbImpl implements WorkspaceDb {
   public static manifestProperty = { namespace: "workspace", name: "manifest" };
-  public readonly sqliteDb = new SQLiteDb();
+  public readonly sqliteDb = new WorkspaceSqliteDb();
   public readonly dbName: WorkspaceDb.DbName;
   public readonly container: WorkspaceContainer;
   public readonly onClose = new BeEvent<() => void>();

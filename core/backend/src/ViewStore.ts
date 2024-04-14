@@ -1390,7 +1390,7 @@ export namespace ViewStore {
     }
 
     /** Initialize a cloud container for use as a ViewDb. */
-    public static async initializeDb(props: CloudSqlite.ContainerAccessProps) {
+    public static async initializeDb(props: CloudSqlite.ContainerProps) {
       return super._initializeDb({ props, dbType: ViewDb, dbName: viewDbName });
     }
   }

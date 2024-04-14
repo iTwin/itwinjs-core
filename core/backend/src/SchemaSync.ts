@@ -73,7 +73,7 @@ export namespace SchemaSync {
    * A valid sasToken that grants write access must be supplied. This function creates and uploads an empty ChannelDb into the container.
    * @note this deletes any existing content in the container.
    */
-    public static async initializeDb(props: CloudSqlite.ContainerAccessProps) {
+    public static async initializeDb(props: CloudSqlite.ContainerProps) {
       return super._initializeDb({ props, dbType: SchemaSyncDb, dbName: defaultDbName });
     }
   }

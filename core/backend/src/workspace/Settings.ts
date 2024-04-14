@@ -96,12 +96,12 @@ export interface Settings {
    * @param priority the SettingsPriority for the SettingDictionary
    * @note If the SettingDictionary was previously added, the new content overrides the old content.
    */
-  addFile(fileName: LocalFileName, priority: SettingsPriority): void;
+  addFile(fileName: LocalFileName, priority: SettingsPriority | number): void;
 
   /** Add all files in the supplied directory with the extension ".json" or ".json5"
    * @param dirName the name of a local settings directory
    */
-  addDirectory(dirName: LocalDirName, priority: SettingsPriority): void;
+  addDirectory(dirName: LocalDirName, priority: SettingsPriority | number): void;
 
   /** Add a SettingDictionary from a JSON5 stringified string. The string is parsed and the resultant object is added as a SettingDictionary.
    * @param dictionaryName the name of the SettingDictionary
@@ -109,7 +109,7 @@ export interface Settings {
    * @param settingsJson the JSON5 stringified string to be parsed.
    * @note If the SettingDictionary was previously added, the new content overrides the old content.
    */
-  addJson(dictionaryName: DictionaryName, priority: SettingsPriority, settingsJson: string): void;
+  addJson(dictionaryName: DictionaryName, priority: SettingsPriority | number, settingsJson: string): void;
 
   getDictionary(dictionaryName: DictionaryName): SettingDictionary | undefined;
 
@@ -119,7 +119,7 @@ export interface Settings {
    * @param settings the SettingDictionary object to be added.
    * @note If the SettingDictionary was previously added, the new content overrides the old content.
    */
-  addDictionary(dictionaryName: DictionaryName, priority: SettingsPriority, settings: SettingDictionary): void;
+  addDictionary(dictionaryName: DictionaryName, priority: SettingsPriority | number, settings: SettingDictionary): void;
 
   /** Remove a SettingDictionary by name. */
   dropDictionary(dictionaryName: DictionaryName): void;
@@ -268,9 +268,8 @@ export class BaseSettings implements Settings {
     for (const dict of this._dictionaries) {
       const val = dict.getSetting(arg.settingName) as T | undefined;
       const resolved = val && arg.resolver(val, dict.name, dict.priority);
-      if (undefined !== resolved) {
+      if (undefined !== resolved)
         return resolved;
-      }
     }
     return defaultValue;
   }
@@ -294,34 +293,41 @@ export class BaseSettings implements Settings {
     return all;
   }
 
+  private getResult<T extends SettingType>(name: SettingName, expectedType: string) {
+    const out = this.getSetting<T>(name);
+    if (out !== undefined && typeof out !== expectedType)
+      throw new Error(`setting ${name} is not a ${expectedType}: ${out}`);
+    return out;
+  }
   public getString(name: SettingName, defaultValue: string): string;
   public getString(name: SettingName): string | undefined;
   public getString(name: SettingName, defaultValue?: string): string | undefined {
-    const out = this.getSetting<string>(name);
-    return typeof out === "string" ? out : defaultValue;
+    return this.getResult<string>(name, "string") ?? defaultValue;
   }
   public getBoolean(name: SettingName, defaultValue: boolean): boolean;
   public getBoolean(name: SettingName): boolean | undefined;
   public getBoolean(name: SettingName, defaultValue?: boolean): boolean | undefined {
-    const out = this.getSetting<boolean>(name);
-    return typeof out === "boolean" ? out : defaultValue;
+    return this.getResult<boolean>(name, "boolean") ?? defaultValue;
   }
   public getNumber(name: SettingName, defaultValue: number): number;
   public getNumber(name: SettingName): number | undefined;
   public getNumber(name: SettingName, defaultValue?: number): number | undefined {
-    const out = this.getSetting<number>(name);
-    return typeof out === "number" ? out : defaultValue;
+    return this.getResult<number>(name, "number") ?? defaultValue;
   }
   public getObject<T extends object>(name: SettingName, defaultValue: T): T;
   public getObject<T extends object>(name: SettingName): T | undefined;
   public getObject<T extends object>(name: SettingName, defaultValue?: T): T | undefined {
-    const out = this.getSetting<T>(name);
-    return typeof out === "object" ? SettingsSchemas.validateSetting(out, name) : defaultValue;
+    const out = this.getResult<T>(name, "object");
+    return out ? SettingsSchemas.validateSetting(out, name) : defaultValue;
   }
   public getArray<T extends SettingType>(name: SettingName, defaultValue: Array<T>): Array<T>;
   public getArray<T extends SettingType>(name: SettingName): Array<T> | undefined;
   public getArray<T extends SettingType>(name: SettingName, defaultValue?: Array<T>): Array<T> | undefined {
     const out = this.getSetting<Array<T>>(name);
-    return Array.isArray(out) ? SettingsSchemas.validateSetting(out, name) : defaultValue;
+    if (out === undefined)
+      return defaultValue;
+    if (!Array.isArray(out))
+      throw new Error(`setting ${name} is not an array: ${out}`);
+    return SettingsSchemas.validateSetting(out, name);
   }
 }

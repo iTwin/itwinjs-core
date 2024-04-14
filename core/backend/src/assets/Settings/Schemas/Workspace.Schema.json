@@ -15,7 +15,7 @@
             "default": "settingsDictionary"
           },
           "priority": {
-            "type": "integer",
+            "type": "number",
             "description": "the SettingsPriority for the settingsDictionary",
             "default": 500
           }
@@ -62,7 +62,7 @@
         },
         "includePrerelease": {
           "type": "boolean",
-          "description": "include prerelease as acceptable version"
+          "description": "include prerelease in acceptable versions"
         },
         "prefetch": {
           "type": "boolean",

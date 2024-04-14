@@ -17,6 +17,7 @@ const loggerCat = "GeoCoord";
 interface GcsDbProps extends WorkspaceDb.Props, WorkspaceContainer.Props {
   priority?: number;
 }
+const makeSettingName = (name: string) => `${"itwin/core/gcs"}/${name}`;
 
 /**
  * Internal class to configure and load the gcs workspaces for an iModel.
@@ -25,6 +26,10 @@ interface GcsDbProps extends WorkspaceDb.Props, WorkspaceContainer.Props {
 export class GeoCoordConfig {
   /** array of cloud prefetch tasks that may be awaited to permit offline usage */
   public static readonly prefetches: CloudSqlite.CloudPrefetch[] = [];
+  public static readonly settingName = {
+    databases: makeSettingName("databases"),
+    defaultDatabases: makeSettingName("default/databases"),
+  };
 
   private static addGcsWorkspace(dbProps: GcsDbProps) {
     // override to disable loading GCS data from workspaces
@@ -78,12 +83,12 @@ export class GeoCoordConfig {
   public static loadDefaultDatabases(): void {
     if (!this._defaultDbsLoaded) {
       this._defaultDbsLoaded = true;
-      this.loadAll(IModelHost.appWorkspace.settings, "itwin/core/gcs/default/databases");
+      this.loadAll(IModelHost.appWorkspace.settings, this.settingName.defaultDatabases);
     }
   }
 
   public static loadForImodel(settings: Settings) {
     this.loadDefaultDatabases();
-    this.loadAll(settings, "itwin/core/gcs/databases");
+    this.loadAll(settings, this.settingName.databases);
   }
 }

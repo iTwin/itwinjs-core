@@ -56,7 +56,7 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
-import { Workspace, WorkspaceDb, WorkspaceSettings } from "./workspace/Workspace";
+import { Workspace, WorkspaceSettings } from "./workspace/Workspace";
 
 import type { BlobContainer } from "./BlobContainerService";
 /** @internal */
@@ -232,7 +232,7 @@ class IModelSettings extends BaseSettings {
 
   // attempt to resolve a setting from this iModel's settings, otherwise optionally use appWorkspace's settings, otherwise defaultValue.
   public override resolveSetting<T extends SettingType>(arg: { settingName: SettingName, resolver: SettingResolver<T>, skipAppWorkspace?: boolean }, defaultValue?: T): T | undefined {
-    return super.resolveSetting(arg) ?? arg.skipAppWorkspace ? defaultValue : IModelHost.appWorkspace.settings.resolveSetting(arg, defaultValue);
+    return super.resolveSetting(arg) ?? (arg.skipAppWorkspace ? defaultValue : IModelHost.appWorkspace.settings.resolveSetting(arg, defaultValue));
   }
 }
 
@@ -1438,6 +1438,8 @@ export abstract class IModelDb extends IModel {
       if (settingsDbs)
         await this.workspace.loadSettingsDictionary(settingsDbs);
     } catch (e) {
+      if (e instanceof Error)
+        e.message = `attempting to load workspace settings for iModel [${this.name}]:\n${e.message}`;
       // we don't want to throw exceptions when attempting to load Dictionaries. Call the diagnostics function instead.
       Workspace.exceptionDiagnosticFn(e);
     }

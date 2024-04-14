@@ -200,10 +200,10 @@ describe("Settings", () => {
     expect(settings.getBoolean("app1/not there", false)).equals(false);
     expect(settings.getString("app1/strVal")).equals(app1.settingDefs.strVal.default);
     expect(settings.getNumber("app1/intVal")).equals(22);
-    expect(settings.getObject("app1/intVal")).equals(undefined); // wrong type
-    expect(settings.getArray("app1/intVal")).equals(undefined); // wrong type
-    expect(settings.getString("app1/intVal", "oops")).equals("oops"); // wrong type
-    expect(settings.getBoolean("app1/intVal", true)).equals(true); // wrong type
+    expect(() => settings.getObject("app1/intVal")).throws("setting app1/intVal");
+    expect(() => settings.getArray("app1/intVal")).throws("setting app1/intVal");
+    expect(() => settings.getString("app1/intVal", "oops")).throws("setting app1/intVal");
+    expect(() => settings.getBoolean("app1/intVal", true)).throws("setting app1/intVal");
     expect(settings.getNumber("app1/not there", 33)).equals(33);
     expect(settings.getSetting("app1/not there")).is.undefined;
     expect(settings.getString("app2/not there", "fallback")).equals("fallback");
@@ -257,6 +257,7 @@ describe("Settings", () => {
     const appSettings = IModelHost.appWorkspace.settings;
     const iModelSettings = iModel.workspace.settings;
     const settingFileName = IModelTestUtils.resolveAssetFile("test.setting.json5");
+    expect(() => appSettings.addFile(settingFileName, SettingsPriority.iTwin)).throws("Use IModelSettings");
     appSettings.addFile(settingFileName, SettingsPriority.application);
     expect(() => iModelSettings.addFile(settingFileName, SettingsPriority.application)).to.throw("Use IModelHost.appSettings");
     expect(appSettings.getString("app1/colorTheme")).equals("Light Theme");
