@@ -8,8 +8,8 @@ import { expect } from "chai";
 import * as fs from "fs-extra";
 import { join } from "path";
 import { BaseSettings, BlobContainer, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, SettingDictionary, SettingsPriority, StandaloneDb, Workspace, WorkspaceContainer, WorkspaceDb } from "@itwin/core-backend";
-import { assert, Guid } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
+import { Guid } from "@itwin/core-bentley";
 
 describe.skip("Cloud workspace containers", () => {
   const iTwinId = Guid.createValue();

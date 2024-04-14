@@ -12,7 +12,7 @@ import * as touch from "touch";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
-  IModelStatus, JsonUtils, Logger, LogLevel, OpenMode, UnexpectedErrors,
+  IModelStatus, JsonUtils, Logger, LogLevel, OpenMode,
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
@@ -55,7 +55,7 @@ import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
-import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
+import { BaseSettings, SettingName, SettingObject, Settings, SettingType } from "./workspace/Settings";
 import { Workspace, WorkspaceSettings } from "./workspace/Workspace";
 
 import type { BlobContainer } from "./BlobContainerService";
@@ -225,13 +225,13 @@ const withBriefcaseDb = async (briefcase: OpenBriefcaseArgs, fn: (_db: Briefcase
  * @note if there is more than one iModel for an iTwin or organization, they will *each* hold an independent copy of the settings for those priorities.
  */
 class IModelSettings extends BaseSettings {
-  protected override verifyPriority(priority: SettingsPriority) {
-    if (priority <= SettingsPriority.application)
+  protected override verifyPriority(priority: Settings.Priority) {
+    if (priority <= Settings.Priority.application)
       throw new Error("Use IModelHost.appSettings");
   }
 
   // attempt to resolve a setting from this iModel's settings, otherwise optionally use appWorkspace's settings, otherwise defaultValue.
-  public override resolveSetting<T extends SettingType>(arg: { settingName: SettingName, resolver: SettingResolver<T>, skipAppWorkspace?: boolean }, defaultValue?: T): T | undefined {
+  public override resolveSetting<T extends SettingType>(arg: { settingName: SettingName, resolver: Settings.Resolver<T>, skipAppWorkspace?: boolean }, defaultValue?: T): T | undefined {
     return super.resolveSetting(arg) ?? (arg.skipAppWorkspace ? defaultValue : IModelHost.appWorkspace.settings.resolveSetting(arg, defaultValue));
   }
 }
@@ -1390,7 +1390,7 @@ export abstract class IModelDb extends IModel {
    * @note All saved `SettingDictionary`s are loaded into [[workspace.settings]] every time an iModel is opened.
    * @beta
    */
-  public saveSettingDictionary(name: string, dict: SettingDictionary) {
+  public saveSettingDictionary(name: string, dict: SettingObject) {
     this.withSqliteStatement("REPLACE INTO be_Prop(id,SubId,TxnMode,Namespace,Name,strData) VALUES(0,0,0,?,?,?)", (stmt) => {
       stmt.bindString(1, IModelDb._settingPropNamespace);
       stmt.bindString(2, name);
@@ -1422,8 +1422,8 @@ export abstract class IModelDb extends IModel {
       stmt.bindString(1, IModelDb._settingPropNamespace);
       while (stmt.nextRow()) {
         try {
-          const dict = JSON.parse(stmt.getValueString(1));
-          this.workspace.settings.addDictionary(stmt.getValueString(0), SettingsPriority.iModel, dict);
+          const settings = JSON.parse(stmt.getValueString(1));
+          this.workspace.settings.addDictionary({ name: stmt.getValueString(0), priority: Settings.Priority.iModel }, settings);
         } catch (e) {
           Workspace.exceptionDiagnosticFn(e);
         }

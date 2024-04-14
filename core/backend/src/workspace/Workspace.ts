@@ -17,7 +17,7 @@ import { IModelHost, KnownLocations } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb, VersionedSqliteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
-import { Settings, SettingsPriority } from "./Settings";
+import { Settings } from "./Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { SettingsSchemas } from "./SettingsSchemas";
 
@@ -118,6 +118,8 @@ export namespace WorkspaceContainer {
 
 /** @beta */
 export namespace WorkspaceDb {
+  export const defaultDbName = "workspace-db";
+
   /** The name of a WorkspaceDb in a "workspace/databases" setting. */
   export type Name = string;
 
@@ -189,7 +191,7 @@ export namespace WorkspaceDb {
 export namespace WorkspaceSettings {
   export interface Props extends WorkspaceDb.CloudProps {
     resourceName: string;
-    priority: SettingsPriority;
+    priority: Settings.Priority;
   }
 }
 
@@ -292,14 +294,6 @@ export interface WorkspaceDb {
   queryFileResource(rscName: WorkspaceResource.Name): { localFileName: LocalFileName, info: IModelJsNative.EmbedFileQuery } | undefined;
 }
 
-/** The properties of the CloudCache used for Workspaces.
- * @beta
- */
-export interface WorkspaceCloudCacheProps extends Optional<CloudSqlite.CacheProps, "name" | "rootDir"> {
-  /** if true, empty the cache before using it. */
-  clearContents?: boolean;
-}
-
 /**
  * Options for constructing a [[Workspace]].
  * @beta
@@ -347,7 +341,7 @@ export interface Workspace {
   */
   getContainer(props: WorkspaceContainer.Props): WorkspaceContainer;
 
-  /** Get an opened [[WorkspaceDb]] from a WorkspaceDb.CloudProps   */
+  /** Get a [[WorkspaceDb]] from a WorkspaceDb.CloudProps   */
   getWorkspaceDb(props: WorkspaceDb.CloudProps): Promise<WorkspaceDb>;
 
   /** Load a settings dictionary from the specified WorkspaceDb, and add it to the current Settings for this Workspace. */
@@ -393,11 +387,11 @@ export namespace Workspace {
  * @beta
  */
 export interface WorkspaceContainer {
-  /** the local directory where this WorkspaceContainer will store temporary files extracted for file-resources. */
+  /** the local directory where this WorkspaceContainer will store temporary files extracted for file-resources.
+   * @internal
+   */
   readonly filesDir: LocalDirName;
   /** The unique identifier for a WorkspaceContainer a cloud storage account. */
-  readonly id: WorkspaceContainer.Id;
-  /** Workspace holding this WorkspaceContainer. */
   readonly workspace: Workspace;
   /** CloudContainer for this WorkspaceContainer (`undefined` if this is a local WorkspaceContainer.) */
   readonly cloudContainer?: CloudSqlite.CloudContainer;
@@ -535,7 +529,7 @@ class WorkspaceImpl implements Workspace {
     if (settingsFiles) {
       if (typeof settingsFiles === "string")
         settingsFiles = [settingsFiles];
-      settingsFiles.forEach((file) => settings.addFile(file, SettingsPriority.application));
+      settingsFiles.forEach((file) => settings.addFile(file, Settings.Priority.application));
     }
   }
 
@@ -570,21 +564,21 @@ class WorkspaceImpl implements Workspace {
       db.open();
       try {
         const manifest = db.manifest;
-        const dictName = `${manifest.workspaceName}-${prop.resourceName}`;
-        if (undefined === this.settings.getDictionary(dictName)) {
+        const dictProps: Settings.Dictionary.Props = { name: prop.resourceName, workspaceDb: db, priority: prop.priority };
+        if (undefined === this.settings.getDictionary(dictProps)) {
           const settingsJson = db.getString(prop.resourceName);
           if (undefined === settingsJson)
             throw new Error(`could not load setting resource ${prop.resourceName} from ${manifest.workspaceName}`);
 
           db.close(); // don't leave this db open in case we're going to find another dictionary in it recursively.
 
-          this.settings.addJson(dictName, prop.priority, settingsJson);
-          Logger.logInfo(loggerCategory, `loaded setting dictionary ${dictName} from ${db.dbFileName}`);
+          this.settings.addJson(dictProps, settingsJson);
+          Logger.logInfo(loggerCategory, `loaded setting dictionary ${dictProps.name} from ${db.dbFileName}`);
 
           // if the dictionary we just loaded has a "settingsWorkspaces" entry, load them too, recursively
-          const dict = this.settings.getDictionary(dictName);
+          const dict = this.settings.getDictionary(dictProps);
           if (dict) {
-            const nested = dict[Workspace.settingName.settingsWorkspaces] as WorkspaceSettings.Props[] | undefined;
+            const nested = dict.getSetting<WorkspaceSettings.Props[]>(Workspace.settingName.settingsWorkspaces);
             if (nested !== undefined) {
               SettingsSchemas.validateSetting<WorkspaceSettings.Props[]>(nested, Workspace.settingName.settingsWorkspaces);
               await this.loadSettingsDictionary(nested);
@@ -597,7 +591,7 @@ class WorkspaceImpl implements Workspace {
       }
     }
     if (problems.length !== 0)
-      throw new WorkspaceDb.LoadError("Error(s) loading settings dictionary", problems);
+      throw new WorkspaceDb.LoadError("Error(s) loading settings dictionaries", problems);
   }
 
   public close() {

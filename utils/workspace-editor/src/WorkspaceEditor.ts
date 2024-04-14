@@ -477,7 +477,7 @@ async function copyWorkspaceDb(args: CopyWorkspaceDbOpt) {
 async function versionWorkspaceDb(args: MakeVersionOpt) {
   fixVersionArg(args);
   const container = getContainer(args);
-  const result = await container.makeNewVersion(args, args.versionType);
+  const result = await container.makeNewVersion({ fromProps: args, versionType: args.versionType });
   showMessage(`created new version: [${result.newName}] from [${result.oldName}] in ${sayContainer(args)}`);
 }
 

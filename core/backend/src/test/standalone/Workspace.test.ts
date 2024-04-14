@@ -10,7 +10,7 @@ import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { IModelJsFs } from "../../IModelJsFs";
-import { BaseSettings, SettingsPriority } from "../../workspace/Settings";
+import { BaseSettings, Settings } from "../../workspace/Settings";
 import { EditableWorkspaceDb, Workspace, WorkspaceContainer, WorkspaceDb } from "../../workspace/Workspace";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -163,7 +163,7 @@ describe("WorkspaceFile", () => {
 
     const settings = workspace.settings;
     await workspace.loadSettingsDictionary(
-      { dbName: "db1", containerId: "default", baseUri: "", storageType: "azure", resourceName: "default-settings", priority: SettingsPriority.defaults });
+      { dbName: "db1", containerId: "default", baseUri: "", storageType: "azure", resourceName: "default-settings", priority: Settings.Priority.defaults });
     expect(settings.getSetting("editor/renderWhitespace")).equals("selection");
 
     const workspaceName = "all fonts workspace";

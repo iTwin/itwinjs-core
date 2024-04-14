@@ -33,7 +33,7 @@ import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { TileStorage } from "./TileStorage";
-import { BaseSettings, SettingDictionary, SettingsPriority } from "./workspace/Settings";
+import { BaseSettings, SettingObject, Settings } from "./workspace/Settings";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
 import { Workspace, WorkspaceOpts } from "./workspace/Workspace";
 import { Container } from "inversify";
@@ -236,17 +236,17 @@ export class IModelHostConfiguration implements IModelHostOptions {
  */
 class ApplicationSettings extends BaseSettings {
   private _remove?: VoidFunction;
-  protected override verifyPriority(priority: SettingsPriority) {
-    if (priority > SettingsPriority.application) // only application or lower may appear in ApplicationSettings
+  protected override verifyPriority(priority: Settings.Priority) {
+    if (priority > Settings.Priority.application) // only application or lower may appear in ApplicationSettings
       throw new Error("Use IModelSettings");
   }
   private updateDefaults() {
-    const defaults: SettingDictionary = {};
+    const defaults: SettingObject = {};
     for (const [schemaName, val] of SettingsSchemas.settingDefs) {
       if (val.default)
         defaults[schemaName] = val.default;
     }
-    this.addDictionary("_default_", 0 as SettingsPriority, defaults);
+    this.addDictionary({ name: "_default_", priority: 0 }, defaults);
   }
 
   public constructor() {
@@ -436,7 +436,7 @@ export class IModelHost {
       throw (e.errorNumber === DbResult.BE_SQLITE_BUSY) ? new IModelError(DbResult.BE_SQLITE_BUSY, `Profile [${this.profileDir}] is already in use by another process`) : e;
     }
 
-    this.appWorkspace.settings.addDirectory(settingAssets, SettingsPriority.defaults);
+    this.appWorkspace.settings.addDirectory(settingAssets, Settings.Priority.defaults);
 
     GeoCoordConfig.onStartup();
     // allow applications to load their default settings

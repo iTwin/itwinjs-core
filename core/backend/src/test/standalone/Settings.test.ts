@@ -7,12 +7,10 @@ import { expect } from "chai";
 import { assert, Mutable, OpenMode } from "@itwin/core-bentley";
 import { SnapshotDb, StandaloneDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
-import { SettingDictionary, SettingsPriority } from "../../workspace/Settings";
+import { SettingObject, Settings } from "../../workspace/Settings";
 import { SettingSchema, SettingSchemaGroup, SettingsSchemas } from "../../workspace/SettingsSchemas";
-import { WorkspaceContainer, WorkspaceDb } from "../../workspace/Workspace";
 import { IModelTestUtils } from "../IModelTestUtils";
-
-/// cspell:ignore devstoreaccount1
+import { GcsDbProps, GeoCoordConfig } from "../../GeoCoordConfig";
 
 describe("Settings", () => {
   let iModel: SnapshotDb;
@@ -170,19 +168,19 @@ describe("Settings", () => {
   it("settings priorities", () => {
     const settings = iModel.workspace.settings;
     SettingsSchemas.addGroup(app1);
-    IModelHost.appWorkspace.settings.addDictionary("app1", SettingsPriority.application, app1Settings);
+    IModelHost.appWorkspace.settings.addDictionary({ name: "app1", priority: Settings.Priority.application }, app1Settings);
 
     let settingsChanged = 0;
     settings.onSettingsChanged.addListener(() => settingsChanged++);
 
-    settings.addDictionary("iModel1.setting.json", SettingsPriority.iModel, imodel1Settings);
+    settings.addDictionary({ name: "iModel1.setting.json", priority: Settings.Priority.iModel }, imodel1Settings);
     expect(settingsChanged).eq(1);
-    settings.addDictionary("iModel2.setting.json", SettingsPriority.iModel, imodel2Settings);
+    settings.addDictionary({ name: "iModel2.setting.json", priority: Settings.Priority.iModel }, imodel2Settings);
     expect(settingsChanged).eq(2);
-    settings.addDictionary("iTwin.setting.json", SettingsPriority.iTwin, iTwinSettings);
+    settings.addDictionary({ name: "iTwin.setting.json", priority: Settings.Priority.iTwin }, iTwinSettings);
     expect(settingsChanged).eq(3);
 
-    expect(() => IModelHost.appWorkspace.settings.addDictionary("iModel", SettingsPriority.iModel, imodel1Settings)).to.throw("Use IModelSettings");
+    expect(() => IModelHost.appWorkspace.settings.addDictionary({ name: "iModel", priority: Settings.Priority.iModel }, imodel1Settings)).to.throw("Use IModelSettings");
 
     expect(settings.getString("app1/sub1")).equals(imodel2Settings["app1/sub1"]);
     expect(settings.getString("app2/setting6")).equals(iTwinSettings["app2/setting6"]);
@@ -200,28 +198,30 @@ describe("Settings", () => {
     expect(settings.getBoolean("app1/not there", false)).equals(false);
     expect(settings.getString("app1/strVal")).equals(app1.settingDefs.strVal.default);
     expect(settings.getNumber("app1/intVal")).equals(22);
-    expect(() => settings.getObject("app1/intVal")).throws("setting app1/intVal");
-    expect(() => settings.getArray("app1/intVal")).throws("setting app1/intVal");
-    expect(() => settings.getString("app1/intVal", "oops")).throws("setting app1/intVal");
-    expect(() => settings.getBoolean("app1/intVal", true)).throws("setting app1/intVal");
+    expect(() => settings.getObject("app1/intVal")).throws("app1/intVal");
+    expect(() => settings.getArray("app1/intVal")).throws("app1/intVal");
+    expect(() => settings.getString("app1/intVal", "oops")).throws("app1/intVal");
+    expect(() => settings.getBoolean("app1/intVal", true)).throws("app1/intVal");
     expect(settings.getNumber("app1/not there", 33)).equals(33);
     expect(settings.getSetting("app1/not there")).is.undefined;
     expect(settings.getString("app2/not there", "fallback")).equals("fallback");
 
     // list of default Gcs databases is in the backend.setting.json5 file loaded on startup
-    const defaultGcs = settings.getArray<WorkspaceDb.Props & WorkspaceContainer.Props>("itwin/core/gcs/default/databases");
+    const defaultGcs = settings.getArray<GcsDbProps>(GeoCoordConfig.settingName.defaultDatabases);
     assert(undefined !== defaultGcs);
     expect(defaultGcs.length).equals(2);
     expect(defaultGcs[0].baseUri).equal("https://geocoord-workspace.itwinjs.org");
     expect(defaultGcs[1].baseUri).equal(defaultGcs[1].baseUri);
     expect(defaultGcs[0].dbName).equal("base");
     expect(defaultGcs[1].dbName).equal("allEarth");
+    expect(defaultGcs[0].priority).equals(10000);
+    expect(defaultGcs[1].priority).equals(100);
     expect(defaultGcs[0].prefetch).true;
     expect(defaultGcs[1].prefetch).undefined;
     expect(defaultGcs[1].storageType).equals("azure");
 
     iTwinSettings["app2/setting6"] = "new value for 6";
-    settings.addDictionary("iTwin.setting.json", SettingsPriority.iTwin, iTwinSettings);
+    settings.addDictionary({ name: "iTwin.setting.json", priority: Settings.Priority.iTwin }, iTwinSettings);
     expect(settings.getString("app2/setting6")).equals(iTwinSettings["app2/setting6"]);
     expect(settingsChanged).eq(4);
 
@@ -231,15 +231,22 @@ describe("Settings", () => {
     // after re-registering, the new default should be updated
     expect(settings.getString("app1/strVal")).equals(app1.settingDefs.strVal.default);
 
+    expect(settings.dictionaries.length).eq(3);
+
     const inspect = settings.inspectSetting("app1/sub1");
     expect(inspect.length).equals(5);
-    expect(inspect[0]).to.deep.equal({ value: "imodel2 value", dictionary: "iModel2.setting.json", priority: 500 });
-    expect(inspect[1]).to.deep.equal({ value: "imodel1 value", dictionary: "iModel1.setting.json", priority: 500 });
-    expect(inspect[2]).to.deep.equal({ value: "val3", dictionary: "iTwin.setting.json", priority: 400 });
-    expect(inspect[3]).to.deep.equal({ value: "app1 value", dictionary: "app1", priority: 200 });
-    expect(inspect[4]).to.deep.equal({ value: "val1", dictionary: "_default_", priority: 0 });
+    expect(inspect[0].dictionary.props).to.deep.equal({ name: "iModel2.setting.json", priority: 500 });
+    expect(inspect[0].value).equal("imodel2 value");
+    expect(inspect[1].dictionary.props).to.deep.equal({ name: "iModel1.setting.json", priority: 500 });
+    expect(inspect[1].value).equal("imodel1 value");
+    expect(inspect[2].dictionary.props).to.deep.equal({ name: "iTwin.setting.json", priority: 400 });
+    expect(inspect[2].value).equal("val3");
+    expect(inspect[3].dictionary.props).to.deep.equal({ name: "app1", priority: 200 });
+    expect(inspect[3].value).equal("app1 value");
+    expect(inspect[4].dictionary.props).to.deep.equal({ name: "_default_", priority: 0 });
+    expect(inspect[4].value).equal("val1");
 
-    settings.dropDictionary("iTwin.setting.json");
+    settings.dropDictionary({ name: "iTwin.setting.json" });
     expect(settingsChanged).eq(5);
     expect(settings.getString("app2/setting6")).is.undefined;
 
@@ -257,29 +264,29 @@ describe("Settings", () => {
     const appSettings = IModelHost.appWorkspace.settings;
     const iModelSettings = iModel.workspace.settings;
     const settingFileName = IModelTestUtils.resolveAssetFile("test.setting.json5");
-    expect(() => appSettings.addFile(settingFileName, SettingsPriority.iTwin)).throws("Use IModelSettings");
-    appSettings.addFile(settingFileName, SettingsPriority.application);
-    expect(() => iModelSettings.addFile(settingFileName, SettingsPriority.application)).to.throw("Use IModelHost.appSettings");
+    expect(() => appSettings.addFile(settingFileName, Settings.Priority.iTwin)).throws("Use IModelSettings");
+    appSettings.addFile(settingFileName, Settings.Priority.application);
+    expect(() => iModelSettings.addFile(settingFileName, Settings.Priority.application)).to.throw("Use IModelHost.appSettings");
     expect(appSettings.getString("app1/colorTheme")).equals("Light Theme");
     expect(iModelSettings.getString("app1/colorTheme")).equals("Light Theme");
     const token = appSettings.getSetting<any>("editor/tokenColorCustomizations")!;
     expect(token["Visual Studio Light"].textMateRules[0].settings.foreground).equals("#d16c6c");
     expect(token["Default High Contrast"].comments).equals("#FF0000");
     expect(appSettings.getArray<string>("editor/enableFiletypes")!.length).equals(17);
-    appSettings.dropDictionary(settingFileName);
+    appSettings.dropDictionary({ name: settingFileName });
   });
 
   it("IModel persistent settings ", () => {
     const iModelName = IModelTestUtils.prepareOutputFile("IModelSetting", "test.bim");
     const iModel2 = IModelTestUtils.createSnapshotFromSeed(iModelName, IModelTestUtils.resolveAssetFile("test.bim"));
 
-    const setting1: SettingDictionary = {
+    const setting1: SettingObject = {
       "imodel/setting1": "this is from setting1",
     };
-    const setting1changed: SettingDictionary = {
+    const setting1changed: SettingObject = {
       "imodel/setting1": "this is changed setting1",
     };
-    const gcsDbDict: SettingDictionary = {
+    const gcsDbDict: SettingObject = {
       "gcs/databases": ["gcs/Usa", "gcs/Canada"],
     };
     iModel2.saveSettingDictionary("gcs-dbs", gcsDbDict);

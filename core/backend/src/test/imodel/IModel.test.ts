@@ -1635,7 +1635,7 @@ describe("iModel", () => {
     iModel.close();
   });
 
-  it.only("should be able to create a snapshot IModel and set geolocation by GCS", async () => {
+  it("should be able to create a snapshot IModel and set geolocation by GCS", async () => {
     const args = {
       rootSubject: { name: "TestSubject", description: "test iTwin" },
       client: "ABC Engineering",
