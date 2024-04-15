@@ -1,5 +1,6 @@
-import { ArrayProperty, ECClass, ECName, ECObjectsError, ECObjectsStatus, EnumerationProperty, PrimitiveProperty, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
+import { CustomAttribute, DelayedPromiseWithProps, ECClass, ECName, ECObjectsError, ECObjectsStatus, EnumerationProperty, PrimitiveProperty, PropertyCategory, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
+import * as Rules from "../Validation/ECRules";
 import { MutableArrayProperty } from "./Mutable/MutableArrayProperty";
 import { MutableProperty } from "./Mutable/MutableProperty";
 import { MutablePrimitiveOrEnumPropertyBase } from "./Mutable/MutablePrimitiveOrEnumProperty";
@@ -88,18 +89,46 @@ export class Properties {
     property.setPriority(priority);
   }
 
-  private async findDerivedClasses(mutableClass: MutableClass): Promise<Array<MutableClass>>{
-    const derivedClasses: Array<MutableClass> = [];
+  /**
+   * Sets the property category.
+   * @param classKey The SchemaItemKey of the class.
+   * @param propertyName The name of the property.
+   * @param categoryKey The SchemaItemKey of the property category.
+   */
+  public async setCategory(classKey: SchemaItemKey, propertyName: string, categoryKey: SchemaItemKey) {
+    const property = await this.getProperty<MutableProperty>(classKey, propertyName);
 
-    for await (const schemaItem of this._schemaEditor.schemaContext.getSchemaItems()) {
-      if(ECClass.isECClass(schemaItem) && await schemaItem.is(mutableClass)) {
-        if (!mutableClass.key.matches(schemaItem.key)) {
-          derivedClasses.push(schemaItem as MutableClass);
-        }
-      }
+    const category = await property.class.schema.lookupItem<PropertyCategory>(categoryKey);
+    if (category === undefined) {
+      return { errorMessage: `Can't locate the Property Category ${categoryKey.fullName} in the schema ${property.class.schema.fullName}.` };
     }
 
-    return derivedClasses;
+    property.setCategory(new DelayedPromiseWithProps<SchemaItemKey, PropertyCategory>(categoryKey, async () => category));
+    return { itemKey: classKey, propertyName };
+  }
+
+  /**
+   * Adds a CustomAttribute instance to the Property identified by the given SchemaItemKey and property name.
+   * @param classKey The SchemaItemKey identifying the class.
+   * @param propertyName The name of the property.
+   * @param customAttribute The CustomAttribute instance to add.
+   */
+  public async addCustomAttribute(classKey: SchemaItemKey, propertyName: string, customAttribute: CustomAttribute) {
+    const property = await this.getProperty<MutableProperty>(classKey, propertyName);
+
+    property.addCustomAttribute(customAttribute);
+
+    const diagnostics = Rules.validateCustomAttributeInstance(property, customAttribute);
+
+    // TODO: Update error
+    const error = new Error();
+    for await (const diagnostic of diagnostics) {
+      error.message += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
+    }
+
+    if (error.message) {
+      throw error;
+    }
   }
 
   /**
@@ -117,6 +146,20 @@ export class Properties {
     }
 
     return property;
+  }
+
+  private async findDerivedClasses(mutableClass: MutableClass): Promise<Array<MutableClass>>{
+    const derivedClasses: Array<MutableClass> = [];
+
+    for await (const schemaItem of this._schemaEditor.schemaContext.getSchemaItems()) {
+      if(ECClass.isECClass(schemaItem) && await schemaItem.is(mutableClass)) {
+        if (!mutableClass.key.matches(schemaItem.key)) {
+          derivedClasses.push(schemaItem as MutableClass);
+        }
+      }
+    }
+
+    return derivedClasses;
   }
 
   private async getClass(classKey: SchemaItemKey): Promise<MutableClass> {
