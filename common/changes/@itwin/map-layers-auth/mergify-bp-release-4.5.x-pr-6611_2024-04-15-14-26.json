@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/map-layers-auth",
-      "comment": "",
+      "comment": "Use fetch-mock package to correctly mock fetch calls in tests.",
       "type": "none"
     }
   ],
