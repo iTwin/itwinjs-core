@@ -7,7 +7,7 @@ import { ElementGeometry, GeometryStreamBuilder, IModelReadRpcInterface, IModelT
 import { GraphicType, IModelApp, RenderGraphic, Tool, readElementGraphics } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
-import { Guid, Id64 } from "@itwin/core-bentley";
+import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 
 function addTextDecoration(graphic: RenderGraphic): void {
   graphic = IModelApp.renderSystem.createGraphicOwner(graphic);
@@ -21,20 +21,22 @@ function addTextDecoration(graphic: RenderGraphic): void {
 
 export class TextDecorationTool extends Tool {
   public static override toolId = "AddTextDecoration";
-  public static override get minArgs() { return 1; }
+  public static override get minArgs() { return 2; }
   public static override get maxArgs() { return undefined; }
 
   private _text?: string;
+  private _category?: Id64String;
 
   public override async parseAndRun(...inArgs: string[]): Promise<boolean> {
     const args = parseArgs(inArgs);
     this._text = args.get("t");
+    this._category = args.get("c");
     return this.run();
   }
 
   public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (!vp || !this._text || !vp.view.is2d()) {
+    if (!vp || !this._text || !this._category || !vp.view.is2d()) {
       return false;
     }
 
@@ -61,7 +63,7 @@ export class TextDecorationTool extends Tool {
         origin: [0, 0, 0],
         angle: 0,
       },
-      categoryId: Id64.invalid, // ###TODO
+      categoryId: this._category,
       geometry: {
         format: "json",
         data: builder.geometryStream,
