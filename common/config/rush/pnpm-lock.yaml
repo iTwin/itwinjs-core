@@ -2242,6 +2242,7 @@ importers:
       semver: ^7.3.5
       sinon: ^17.0.1
       sinon-chai: ^3.7.0
+      source-map-support: ^0.5.6
       typemoq: ^2.1.0
       typescript: ~5.0.2
     dependencies:
@@ -2289,6 +2290,7 @@ importers:
       rimraf: 3.0.2
       sinon: 17.0.1
       sinon-chai: 3.7.0_chai@4.3.10+sinon@17.0.1
+      source-map-support: 0.5.6
       typemoq: 2.1.0
       typescript: 5.0.2
 
@@ -2327,6 +2329,7 @@ importers:
       rimraf: ^3.0.2
       sinon: ^17.0.1
       sinon-chai: ^3.7.0
+      source-map-support: ^0.5.6
       typemoq: ^2.1.0
       typescript: ~5.0.2
       typescript-json-schema: ^0.55.0
@@ -2365,6 +2368,7 @@ importers:
       rimraf: 3.0.2
       sinon: 17.0.1
       sinon-chai: 3.7.0_chai@4.3.10+sinon@17.0.1
+      source-map-support: 0.5.6
       typemoq: 2.1.0
       typescript: 5.0.2
       typescript-json-schema: 0.55.0
@@ -4173,7 +4177,7 @@ packages:
       lodash: 4.17.21
       mocha: 10.2.0
       puppeteer: 15.5.0
-      source-map-support: 0.5.6
+      source-map-support: 0.5.21
       yargs: 17.4.0
     transitivePeerDependencies:
       - bufferutil
@@ -4197,7 +4201,7 @@ packages:
       lodash: 4.17.21
       mocha: 10.2.0
       puppeteer: 15.5.0
-      source-map-support: 0.5.6
+      source-map-support: 0.5.21
       yargs: 17.4.0
     transitivePeerDependencies:
       - bufferutil
