@@ -16,28 +16,26 @@ describe("ArcGisTokenGenerator", () => {
 
   afterEach(async () => {
     sandbox.restore();
-    fetchMock.restore()
+    fetchMock.restore();
   });
 
   it("should make proper info request and extract tokenServicesUrl from response", async () => {
-    const fetchStub = sandbox.stub(global, "fetch").callsFake(async function (_input, _init) {
+    sandbox.stub(global, "fetch").callsFake(async function (_input, _init) {
       return Promise.resolve((({
         status: 200,
-        json: async () => {return ;},
+        json: async () => { return; },
       } as unknown) as Response));
     });
 
-    const mock = fetchMock.mock("*",  {
+    const mock = fetchMock.mock("*", {
       status: 200,
-      headers: {"Content-Type": "application/json"},
-      body: {authInfo: {isTokenBasedSecurity: true, tokenServicesUrl: sampleGenerateTokenUrl}},
+      headers: { "Content-Type": "application/json" },
+      body: { authInfo: { isTokenBasedSecurity: true, tokenServicesUrl: sampleGenerateTokenUrl } },
     });
-
 
     const tokenServiceUrl = await ArcGisTokenGenerator.fetchTokenServiceUrl(sampleServiceUrl);
     expect(mock.called()).to.be.true;
     expect(mock.lastUrl()).to.be.equals(`${sampleBaseRestUrl}info?f=pjson`);
     expect(sampleGenerateTokenUrl).to.be.equals(tokenServiceUrl);
-
   });
 });
