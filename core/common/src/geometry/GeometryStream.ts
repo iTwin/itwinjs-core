@@ -323,14 +323,14 @@ export class GeometryStreamBuilder {
 
   /** Append a [[TextString]] supplied in either local or world coordinates to the [[GeometryStreamProps]] array */
   public appendTextString(textString: TextString): boolean {
-    if (undefined === this._worldToLocal) {
-      this.geometryStream.push({ textString });
-      return true;
+    if (this._worldToLocal) {
+      textString = new TextString(textString);
+      if (!textString.transformInPlace(this._worldToLocal)) {
+        return false;
+      }
     }
-    const localTextString = new TextString(textString);
-    if (!localTextString.transformInPlace(this._worldToLocal))
-      return false;
-    this.geometryStream.push({ textString: localTextString });
+
+    this.geometryStream.push({ textString: textString.toJSON() });
     return true;
   }
 
