@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Change SpanKind of RPC requests to Internal",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
