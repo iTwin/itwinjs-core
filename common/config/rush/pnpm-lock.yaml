@@ -1,8 +1,5 @@
 lockfileVersion: 5.4
 
-overrides:
-  mysql2: ^3.9.4
-
 importers:
 
   .:

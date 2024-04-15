@@ -3,15 +3,9 @@
   "useWorkspaces": true,
   "strictPeerDependencies": false,
   "globalPeerDependencyRules": {
-    "ignoreMissing": [
-      "@babel/core",
-      "@types/node",
-      "@typescript-eslint/parser"
-    ]
+    "ignoreMissing": ["@babel/core", "@types/node", "@typescript-eslint/parser"]
   },
-  "globalOverrides": {
-    "mysql2": "^3.9.4" // https://github.com/advisories/GHSA-fpw7-j2hg-69v5 - azurite has not yet mitigated
-  },
+  "globalOverrides": {},
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
   // for development dependencies only.
