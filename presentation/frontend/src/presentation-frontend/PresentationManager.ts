@@ -93,7 +93,18 @@ export interface IModelContentChangeEventArgs {
  * @public
  */
 export type MultipleValuesRequestOptions = Paged<{
+  /**
+   * Max number of requests that should be made to the backend to fulfill the whole request.
+   * `undefined` means no limit, so in that case all requests are sent at once.
+   */
   maxParallelRequests?: number;
+
+  /**
+   * Size of a single batch when fetching data through multiple requests. If not set,
+   * the fall back is requested page size. If the page size is not set, the backend
+   * decides how many items to return.
+   */
+  batchSize?: number;
 }>;
 
 /**
@@ -529,10 +540,12 @@ export class PresentationManager implements IDisposable {
     requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
   ): Promise<{ descriptor: Descriptor; total: number; items: AsyncIterableIterator<Item> } | undefined> {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
+    const firstPageSize = options.batchSize ?? requestOptions.paging?.size;
     const rpcOptions = this.toRpcTokenOptions({
       ...options,
       descriptor: getDescriptorOverrides(requestOptions.descriptor),
       keys: stripTransientElementKeys(requestOptions.keys).toJSON(),
+      ...(firstPageSize ? { paging: { ...requestOptions.paging, size: firstPageSize } } : undefined),
       ...(!requestOptions.omitFormattedValues && this._schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined),
     });
 
