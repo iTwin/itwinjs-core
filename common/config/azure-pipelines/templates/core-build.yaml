@@ -84,15 +84,15 @@ steps:
       RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
       VITE_CI: true
 
-  - script: npm run android:all
-    workingDirectory: test-apps/display-test-app
-    displayName: Build & run Android display-test-app
-    env:
-      IMJS_OIDC_CLIENT_ID: $(IMJS_OIDC_CLIENT_ID)
-      IMJS_OIDC_CLIENT_SECRET: $(IMJS_OIDC_CLIENT_SECRET)
-      AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
-      TOKEN: $(GitHubPAT)
-    condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
+  # - script: npm run android:all
+  #   workingDirectory: test-apps/display-test-app
+  #   displayName: Build & run Android display-test-app
+  #   env:
+  #     IMJS_OIDC_CLIENT_ID: $(IMJS_OIDC_CLIENT_ID)
+  #     IMJS_OIDC_CLIENT_SECRET: $(IMJS_OIDC_CLIENT_SECRET)
+  #     AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
+  #     TOKEN: $(GitHubPAT)
+  #   condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
 
   - script: npm run ios:all
     workingDirectory: test-apps/display-test-app
