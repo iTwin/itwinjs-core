@@ -8,6 +8,7 @@ import { GraphicType, IModelApp, RenderGraphic, Tool, readElementGraphics } from
 import { parseArgs } from "@itwin/frontend-devtools";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
+import { LineSegment3d } from "@itwin/core-geometry";
 
 function addTextDecoration(graphic: RenderGraphic): void {
   graphic = IModelApp.renderSystem.createGraphicOwner(graphic);
@@ -46,15 +47,18 @@ export class TextDecorationTool extends Tool {
       content: this._text,
     }));
 
+    const origin = vp.view.getCenter();
     const annotation = TextAnnotation.fromJSON({
       textBlock: textBlock.toJSON(),
-      origin: vp.view.getCenter(),
+      origin: [0, 0, 0], // ###TODO vp.view.getCenter(),
     });
 
     const geom = await DtaRpcInterface.getClient().produceTextAnnotationGeometry(vp.iModel.getRpcProps(), annotation.toJSON());
     const builder = new GeometryStreamBuilder();
     builder.appendTextBlock(geom);
 
+    builder.appendGeometry(LineSegment3d.createXYXY(0, 0, origin.x, origin.y));
+    
     const gfx = await IModelTileRpcInterface.getClient().requestElementGraphics(vp.iModel.getRpcProps(), {
       id: Guid.createValue(),
       toleranceLog10: -3,
