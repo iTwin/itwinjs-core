@@ -7,7 +7,7 @@ import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after al
 import { expect } from "chai";
 import * as fs from "fs-extra";
 import { join } from "path";
-import { BaseSettings, BlobContainer, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, SettingDictionary, SettingsPriority, StandaloneDb, Workspace, WorkspaceContainer, WorkspaceDb } from "@itwin/core-backend";
+import { BaseSettings, BlobContainer, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, Settings, Workspace, WorkspaceContainer, WorkspaceDb } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
 import { Guid } from "@itwin/core-bentley";
 
@@ -58,7 +58,7 @@ describe.skip("Cloud workspace containers", () => {
     const workspace1 = Workspace.construct(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace1"), testCloudCache: makeCloudCache("test1") });
     const workspace2 = Workspace.construct(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace2"), testCloudCache: makeCloudCache("test2") });
     const settings = workspace1.settings;
-    settings.addDictionary("containers", SettingsPriority.application, appDict);
+    settings.addDictionary({ name: "containers", priority: Settings.Priority.application }, appDict);
 
     const props = { containerId: orgContainer, writeable: true, baseUri, storageType };
     const accessToken = await CloudSqlite.requestToken(props);

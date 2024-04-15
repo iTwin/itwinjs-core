@@ -10,12 +10,12 @@ import { BentleyError, Logger } from "@itwin/core-bentley";
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelHost } from "./IModelHost";
 import { Settings } from "./workspace/Settings";
-import { WorkspaceContainer, WorkspaceDb } from "./workspace/Workspace";
+import { WorkspaceDb } from "./workspace/Workspace";
 
 const loggerCat = "GeoCoord";
 
 /** @internal */
-export interface GcsDbProps extends WorkspaceDb.Props, WorkspaceContainer.Props {
+export interface GcsDbProps extends WorkspaceDb.CloudProps {
   priority?: number;
 }
 const makeSettingName = (name: string) => `${"itwin/core/gcs"}/${name}`;
@@ -30,11 +30,12 @@ export class GeoCoordConfig {
   public static readonly settingName = {
     databases: makeSettingName("databases"),
     defaultDatabases: makeSettingName("default/databases"),
+    disableWorkspaces: makeSettingName("disableWorkspaces"),
   };
 
   private static addGcsWorkspace(dbProps: GcsDbProps) {
     // override to disable loading GCS data from workspaces
-    if (IModelHost.appWorkspace.settings.getBoolean("itwin/core/gcs/disableWorkspaces", false))
+    if (IModelHost.appWorkspace.settings.getBoolean(GeoCoordConfig.settingName.disableWorkspaces, false))
       return;
 
     try {

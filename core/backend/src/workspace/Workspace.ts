@@ -17,7 +17,7 @@ import { IModelHost, KnownLocations } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb, VersionedSqliteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
-import { Settings } from "./Settings";
+import { SettingName, Settings } from "./Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { SettingsSchemas } from "./SettingsSchemas";
 
@@ -31,11 +31,7 @@ const loggerCategory = "workspace";
 
 /** @beta */
 export namespace WorkspaceContainer {
-  /** The name of a WorkspaceContainer in a "cloud/containers" setting. */
-  export type Name = string;
-
   /** The unique identifier of a WorkspaceContainer. This becomes the base name for the local directory holding the WorkspaceDbs from a WorkspaceContainer.
-   * Usually supplied via the `containerId` member of a "cloud/containers" setting.
    * `WorkspaceContainer.Id`s may:
    *  - only contain lower case letters, numbers or dashes
    *  - not start or end with a dash
@@ -43,13 +39,14 @@ export namespace WorkspaceContainer {
    */
   export type Id = string;
 
-  /** A member named `containerName` that specifies by an entry in a "cloud/containers" setting */
-  export interface Alias { containerName: string }
-
   /** Properties that specify a WorkspaceContainer. */
   export interface Props extends Optional<CloudSqlite.ContainerAccessProps, "accessToken"> {
     /** attempt to synchronize (i.e. call `checkForChanges`) this cloud container whenever it is connected to a cloud cache. Default=true */
     syncOnConnect?: boolean;
+    /** description of what's in this container */
+    description?: string;
+    /** in case of problems loading the container, display this message. */
+    loadingHelp?: string;
   }
 
   /** A function to supply an [AccessToken]($bentley) for a `WorkspaceContainer`.
@@ -118,10 +115,7 @@ export namespace WorkspaceContainer {
 
 /** @beta */
 export namespace WorkspaceDb {
-  export const defaultDbName = "workspace-db";
-
-  /** The name of a WorkspaceDb in a "workspace/databases" setting. */
-  export type Name = string;
+  export const makeDbName = (dbName?: WorkspaceDb.DbName) => dbName ?? "workspace-db";
 
   /** The base name of a WorkspaceDb within a WorkspaceContainer (without any version identifier) */
   export type DbName = string;
@@ -136,7 +130,9 @@ export namespace WorkspaceDb {
   export type VersionRange = string;
 
   /** Properties that specify how to load a WorkspaceDb within a [[WorkspaceContainer]]. */
-  export interface Props extends CloudSqlite.DbNameProp {
+  export interface Props {
+    /** name of database within WorkspaceContainer. If not present, defaults to "workspace-db" */
+    readonly dbName?: string;
     /** a semver version range specifier that determines the acceptable range of versions to load. If not present, use the newest version. */
     readonly version?: VersionRange;
     /** if true, allow semver *prerelease* versions. By default only released version are allowed. */
@@ -215,7 +211,7 @@ export namespace WorkspaceResource {
   }
 
   export interface SearchResult extends Props {
-    db: WorkspaceDb;
+    workspaceDb: WorkspaceDb;
   }
 
   export interface Search {
@@ -374,7 +370,6 @@ export namespace Workspace {
   export function construct(settings: Settings, opts?: WorkspaceOpts): Workspace {
     return new WorkspaceImpl(settings, opts);
   }
-
 }
 
 /**
@@ -430,6 +425,11 @@ export interface WorkspaceContainer {
   /** Close this WorkspaceContainer. All currently opened WorkspaceDbs are closed. */
   close(): void;
 }
+
+// export interface WorkspaceEditor {
+//   // getContainer(props: WorkspaceContainer.Props): EditorContainer;
+//   // createNewContainer():
+// }
 
 /**
  * An editable [[WorkspaceDb]]. This is used only by tools to allow administrators to create and modify `WorkspaceDb`s.
@@ -601,19 +601,49 @@ class WorkspaceImpl implements Workspace {
     this._containers.clear();
   }
 
-  // public async queryResource(dbListSetting: SettingName, search: WorkspaceResource.Search, callback: (result: WorkspaceResource.SearchResult) => void | "stop"): Promise<void | "stop"> {
-  //   const dbNames: WorkspaceDb.Name[] = [];
-  //   this.settings.resolveSetting(dbListSetting, (val: WorkspaceDb.Name[], _dict, _priority) => {
-  //     dbNames.push(...val);
-  //     return dbNames;
-  //   }, dbNames);
+  public resolveWorkspaceDbProps(settingName: SettingName): WorkspaceDb.CloudProps[] {
+    const result: WorkspaceDb.CloudProps[] = [];
+    this.settings.resolveSetting<WorkspaceDb.CloudProps[]>({ settingName, resolver: (props) => (result.push(...props), undefined) });
+    return result;
+  }
 
-  //   for (const dbName of dbNames) {
-  //     const db = await this.getWorkspaceDb(dbName);
-  //     db.queryResource(search, callback);
-  //   }
-  // }
+  public async getWorkspaceDbs(dbList: WorkspaceDb.CloudProps[]): Promise<WorkspaceDb[]> {
+    const result: WorkspaceDb[] = [];
+    for (const dbProps of dbList) {
+      const wsDb = await this.getWorkspaceDb(dbProps);
+      if (!result.includes(wsDb)) // make sure the same db doesn't appear more than once.
+        result.push(wsDb);
+    }
+    return result;
+  }
 
+  public async resolveWorkspaceDbs(settingName: SettingName): Promise<WorkspaceDb[]> {
+    return this.getWorkspaceDbs(this.resolveWorkspaceDbProps(settingName));
+  }
+
+  public queryResource(dbList: WorkspaceDb[], search: WorkspaceResource.Search, callback: (result: WorkspaceResource.SearchResult) => void | "stop"): void | "stop" {
+    for (const db of dbList) {
+      if (db.queryResource(search, callback) === "stop")
+        return;
+    }
+  }
+  public loadStringResource(dbList: WorkspaceDb[], rscName: WorkspaceResource.Name): string | undefined {
+    for (const db of dbList) {
+      const val = db.getString(rscName);
+      if (undefined !== val)
+        return val;
+    }
+    return undefined;
+  }
+
+  public loadBlobResource(dbList: WorkspaceDb[], rscName: WorkspaceResource.Name): Uint8Array | undefined {
+    for (const db of dbList) {
+      const val = db.getBlob(rscName);
+      if (undefined !== val)
+        return val;
+    }
+    return undefined;
+  }
 }
 
 class WorkspaceContainerImpl implements WorkspaceContainer {
@@ -655,7 +685,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     if (undefined === cloudContainer)
       return join(this.dirName, `${props.dbName}.${WorkspaceDb.fileExt}`); // local file, versions not allowed
 
-    const dbName = props.dbName;
+    const dbName = WorkspaceDb.makeDbName(props.dbName);
     const dbs = cloudContainer.queryDatabases(`${dbName}*`); // get all databases that start with dbName
 
     const versions = [];
@@ -701,7 +731,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
   }
 
   public getWorkspaceDb(props: WorkspaceDb.Props): WorkspaceDb {
-    return this._wsDbs.get(props.dbName) ?? new WorkspaceDbImpl(props, this);
+    return this._wsDbs.get(WorkspaceDb.makeDbName(props.dbName)) ?? new WorkspaceDbImpl(props, this);
   }
 
   public closeWorkspaceDb(toDrop: WorkspaceDb) {
@@ -770,8 +800,8 @@ class WorkspaceDbImpl implements WorkspaceDb {
   }
 
   public constructor(props: WorkspaceDb.Props, container: WorkspaceContainer) {
-    WorkspaceContainer.validateDbName(props.dbName);
-    this.dbName = props.dbName;
+    this.dbName = WorkspaceDb.makeDbName(props.dbName);
+    WorkspaceContainer.validateDbName(this.dbName);
     this.container = container;
     this.dbFileName = container.resolveDbFileName(props);
     container.addWorkspaceDb(this);
@@ -796,10 +826,21 @@ class WorkspaceDbImpl implements WorkspaceDb {
     return manifestJson ? JSON.parse(manifestJson) : { workspaceName: this.dbName };
   }
 
+  private withOpenDb<T>(operation: (db: WorkspaceSqliteDb) => T): T {
+    const done = this.isOpen ? () => { } : (this.open(), () => this.close());
+    try {
+      return operation(this.sqliteDb);
+    } finally {
+      done();
+    }
+  }
+
   public getString(rscName: WorkspaceResource.Name): string | undefined {
-    return this.sqliteDb.withSqliteStatement("SELECT value from strings WHERE id=?", (stmt) => {
-      stmt.bindString(1, rscName);
-      return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValueString(0) : undefined;
+    return this.withOpenDb((db) => {
+      return db.withSqliteStatement("SELECT value from strings WHERE id=?", (stmt) => {
+        stmt.bindString(1, rscName);
+        return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValueString(0) : undefined;
+      });
     });
   }
 
@@ -813,36 +854,40 @@ class WorkspaceDbImpl implements WorkspaceDb {
   }
 
   public getBlob(rscName: WorkspaceResource.Name): Uint8Array | undefined {
-    return this.sqliteDb.withSqliteStatement("SELECT value from blobs WHERE id=?", (stmt) => {
-      stmt.bindString(1, rscName);
-      return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValueBlob(0) : undefined;
+    return this.withOpenDb((db) => {
+      return db.withSqliteStatement("SELECT value from blobs WHERE id=?", (stmt) => {
+        stmt.bindString(1, rscName);
+        return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValueBlob(0) : undefined;
+      });
     });
   }
 
   public getFile(rscName: WorkspaceResource.Name, targetFileName?: LocalFileName): LocalFileName | undefined {
-    const file = this.queryFileResource(rscName);
-    if (!file)
-      return undefined;
+    return this.withOpenDb((db) => {
+      const file = this.queryFileResource(rscName);
+      if (!file)
+        return undefined;
 
-    const info = file.info;
-    const localFileName = targetFileName ?? file.localFileName;
+      const info = file.info;
+      const localFileName = targetFileName ?? file.localFileName;
 
-    // check whether the file is already up to date.
-    const stat = fs.existsSync(localFileName) && fs.statSync(localFileName);
-    if (stat && Math.round(stat.mtimeMs) === info.date && stat.size === info.size)
-      return localFileName; // yes, we're done
+      // check whether the file is already up to date.
+      const stat = fs.existsSync(localFileName) && fs.statSync(localFileName);
+      if (stat && Math.round(stat.mtimeMs) === info.date && stat.size === info.size)
+        return localFileName; // yes, we're done
 
-    // extractEmbeddedFile fails if the file exists or if the directory does not exist
-    if (stat)
-      fs.removeSync(localFileName);
-    else
-      IModelJsFs.recursiveMkDirSync(dirname(localFileName));
+      // extractEmbeddedFile fails if the file exists or if the directory does not exist
+      if (stat)
+        fs.removeSync(localFileName);
+      else
+        IModelJsFs.recursiveMkDirSync(dirname(localFileName));
 
-    this.sqliteDb.nativeDb.extractEmbeddedFile({ name: rscName, localFileName });
-    const date = new Date(info.date);
-    fs.utimesSync(localFileName, date, date); // set the last-modified date of the file to match date in container
-    fs.chmodSync(localFileName, "0444"); // set file readonly
-    return localFileName;
+      db.nativeDb.extractEmbeddedFile({ name: rscName, localFileName });
+      const date = new Date(info.date);
+      fs.utimesSync(localFileName, date, date); // set the last-modified date of the file to match date in container
+      fs.chmodSync(localFileName, "0444"); // set file readonly
+      return localFileName;
+    });
   }
 
   public prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch {
@@ -853,12 +898,14 @@ class WorkspaceDbImpl implements WorkspaceDb {
   }
 
   public queryResource(search: WorkspaceResource.Search, callback: (result: WorkspaceResource.SearchResult) => void | "stop"): void {
-    this.sqliteDb.withSqliteStatement(`SELECT value from ${search.resourceType}s WHERE id ${search.nameCompare ?? "="} ?`, (stmt) => {
-      stmt.bindString(1, search.nameSearch);
-      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-        if (callback({ db: this, rscName: stmt.getValueString(0) }) === "stop")
-          return;
-      }
+    this.withOpenDb((db) => {
+      db.withSqliteStatement(`SELECT value from ${search.resourceType}s WHERE id ${search.nameCompare ?? "="} ?`, (stmt) => {
+        stmt.bindString(1, search.nameSearch);
+        while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+          if (callback({ workspaceDb: this, rscName: stmt.getValueString(0) }) === "stop")
+            return;
+        }
+      });
     });
   }
 }

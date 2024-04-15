@@ -28,14 +28,13 @@
       "type": "object",
       "description": "WorkspaceDb properties",
       "required": [
-        "dbName",
         "containerId",
         "baseUri"
       ],
       "properties": {
         "dbName": {
           "type": "string",
-          "description": "the name of the database within its cloud container"
+          "description": "the name of the database within its cloud container. If not present, defaults to 'workspace-db'."
         },
         "baseUri": {
           "type": "string",
@@ -43,12 +42,20 @@
         },
         "containerId": {
           "type": "string",
-          "description": "the containerId of this cloud container. Usually a GUID"
+          "description": "the containerId of this cloud container. Usually a Guid"
         },
         "storageType": {
           "type": "string",
           "description": "one of: 'azure', 'aws', 'google'",
           "default": "azure"
+        },
+        "description": {
+          "type": "string",
+          "description": "information about what is in this workspace"
+        },
+        "loadingHelp": {
+          "type": "string",
+          "description": "in case there is a problem loading this workspace, show this message"
         },
         "isPublic": {
           "type": "boolean",

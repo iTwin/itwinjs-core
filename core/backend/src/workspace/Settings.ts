@@ -213,7 +213,10 @@ const dictionaryMatches = (d1: Settings.Dictionary.Source, d2: Settings.Dictiona
 };
 
 class SettingsDictionaryImpl implements Settings.Dictionary {
-  public constructor(public readonly props: Settings.Dictionary.Props, public readonly settings: SettingObject) { }
+  public readonly props: Settings.Dictionary.Props;
+  public constructor(props: Settings.Dictionary.Props, public readonly settings: SettingObject) {
+    this.props = { ...props }; // make a copy so it can't be changed by caller
+  }
   public getSetting<T extends SettingType>(settingName: string): T | undefined { return this.settings[settingName] as T | undefined; }
 }
 /**
@@ -245,15 +248,15 @@ export class BaseSettings implements Settings {
   public addDictionary(props: Settings.Dictionary.Props, settings: SettingObject) {
     this.verifyPriority(props.priority);
     this.dropDictionary(props, false); // make sure we don't have the same dictionary twice
-    const file = new SettingsDictionaryImpl(props, settings);
+    const dict = new SettingsDictionaryImpl(props, settings);
     const doAdd = () => {
       for (let i = 0; i < this.dictionaries.length; ++i) {
-        if (this.dictionaries[i].props.priority <= file.props.priority) {
-          this.dictionaries.splice(i, 0, file);
+        if (this.dictionaries[i].props.priority <= dict.props.priority) {
+          this.dictionaries.splice(i, 0, dict);
           return;
         }
       }
-      this.dictionaries.push(file);
+      this.dictionaries.push(dict);
     };
     doAdd();
     this.onSettingsChanged.raiseEvent();

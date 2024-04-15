@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import { AccessToken, Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
-import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, Element, IModelHost, PhysicalModel, SettingDictionary, SettingsPriority, StandaloneDb, Subject } from "@itwin/core-backend";
+import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, Element, IModelHost, PhysicalModel, SettingObject, Settings, StandaloneDb, Subject } from "@itwin/core-backend";
 import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, IModel } from "@itwin/core-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 
@@ -122,7 +122,7 @@ describe("Example Code", () => {
       },
     ];
 
-    const defaultsDict: SettingDictionary = {
+    const defaultsDict: SettingObject = {
       "core/default-tool": "select",
       "samples/start/leftPane": true,
       "myApp/tree/label": "distribution of work",
@@ -136,7 +136,7 @@ describe("Example Code", () => {
     // __PUBLISH_EXTRACT_START__ Settings.addDictionary
     let workspace = IModelHost.appWorkspace;
     let settings = workspace.settings;
-    settings.addDictionary("initial values", SettingsPriority.defaults, defaultsDict);
+    settings.addDictionary({ name: "initial values", priority: Settings.Priority.defaults }, defaultsDict);
     let defaultTool = settings.getString("core/default-tool"); // returns "select"
     const leftPane = settings.getBoolean("samples/start/leftPane"); // returns true
     const categories = settings.getArray<string>("myApp/categories"); // returns ["category1", "lowest", "upper"]
@@ -149,14 +149,14 @@ describe("Example Code", () => {
     expect(t1).deep.equal(templates);
 
     // __PUBLISH_EXTRACT_START__ Settings.addITwinDictionary
-    const iTwin555: SettingDictionary = {
+    const iTwin555: SettingObject = {
       "core/default-tool": "measure",
       "app5/markerName": "arrows",
       "app5/markerIcon": "arrows.ico",
     };
     workspace = iModel.workspace;
     settings = workspace.settings;
-    settings.addDictionary("for iTwin 555", SettingsPriority.iTwin, iTwin555);
+    settings.addDictionary({ name: "for iTwin 555", priority: Settings.Priority.iTwin }, iTwin555);
     defaultTool = settings.getString("core/default-tool"); // returns "measure"
     // __PUBLISH_EXTRACT_END__
     expect(defaultTool).eq(iTwin555["core/default-tool"]);
@@ -164,7 +164,7 @@ describe("Example Code", () => {
     // __PUBLISH_EXTRACT_START__ Settings.dropITwinDictionary
     workspace = iModel.workspace;
     settings = workspace.settings;
-    settings.dropDictionary("for iTwin 555");
+    settings.dropDictionary({ name: "for iTwin 555" });
     defaultTool = settings.getString("core/default-tool"); // returns "select" again
     // __PUBLISH_EXTRACT_END__
     expect(defaultTool).eq(defaultsDict["core/default-tool"]);
