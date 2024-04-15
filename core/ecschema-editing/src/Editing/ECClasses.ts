@@ -17,7 +17,7 @@ import { assert } from "@itwin/core-bentley";
 import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableClass } from "./Mutable/MutableClass";
 import * as Rules from "../Validation/ECRules";
-import { ArrayProperties, EnumerationProperties, PrimitiveProperties, Properties } from "./Properties";
+import { ArrayProperties, EnumerationProperties, NavigationProperties, PrimitiveProperties, Properties, StructProperties } from "./Properties";
 
 /**
  * @alpha
@@ -43,6 +43,14 @@ export class ECClasses {
    * Allows access for editing of EnumerationProperty attributes.
    */
   public readonly enumerationProperties = new EnumerationProperties(this._schemaEditor);
+  /**
+   * Allows access for editing of NavigationProperty attributes.
+   */
+  public readonly navigationProperties = new NavigationProperties(this._schemaEditor);
+  /**
+   * Allows access for editing of StructProperty attributes.
+   */
+  public readonly structProperties = new StructProperties(this._schemaEditor);
 
   /**
    * Creates a property on class identified by the given SchemaItemKey. This method restricts the

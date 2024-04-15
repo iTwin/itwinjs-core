@@ -1,12 +1,16 @@
-import { CustomAttribute, DelayedPromiseWithProps, ECClass, ECName, ECObjectsError, ECObjectsStatus, EnumerationProperty, PrimitiveProperty, PropertyCategory, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
+import { CustomAttribute, DelayedPromiseWithProps, ECClass, ECName, ECObjectsError,
+  ECObjectsStatus, EnumerationProperty, NavigationProperty, PrimitiveProperty,
+  PropertyCategory, SchemaItemKey, StructProperty } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
 import * as Rules from "../Validation/ECRules";
 import { MutableArrayProperty } from "./Mutable/MutableArrayProperty";
 import { MutableProperty } from "./Mutable/MutableProperty";
 import { MutablePrimitiveOrEnumPropertyBase } from "./Mutable/MutablePrimitiveOrEnumProperty";
 import { MutableClass } from "./Mutable/MutableClass";
+import { MutableStructProperty } from "./Mutable/MutableStructProperty";
+import { MutableNavigationProperty } from "./Mutable/MutableNavigationProperty";
 
-type MutablePropertyType = MutableProperty | MutableArrayProperty | MutablePrimitiveOrEnumPropertyBase;
+type MutablePropertyType = MutableProperty | MutableArrayProperty | MutablePrimitiveOrEnumPropertyBase | MutableNavigationProperty | MutableStructProperty;
 
 /**
  * @alpha
@@ -334,6 +338,54 @@ export class EnumerationProperties extends PrimitiveOrEnumProperties {
     if (!(property instanceof EnumerationProperty)){
       // TODO: Update error
       throw new Error(`The property ${propertyName} is not an EnumerationProperty.`);
+    }
+    return property;
+  }
+}
+
+/**
+ * @alpha
+ * A class extending Properties allowing editing of NavigationProperties attributes.
+ */
+export class NavigationProperties extends Properties {
+  public constructor(_schemaEditor: SchemaContextEditor) {
+    super(_schemaEditor);
+  }
+
+  /**
+   * Override to validate that the found property is a NavigationProperty.
+   * @param classKey The SchemaItemKey of the class.
+   * @param propertyName The name of the property.
+   */
+  protected override async getProperty<T extends MutablePropertyType>(classKey: SchemaItemKey, propertyName: string): Promise<T> {
+    const property = await super.getProperty<MutableNavigationProperty>(classKey, propertyName) as T;
+    if (!(property instanceof NavigationProperty)){
+      // TODO: Update error
+      throw new Error(`The property ${propertyName} is not a NavigationProperty.`);
+    }
+    return property;
+  }
+}
+
+/**
+ * @alpha
+ * A class extending Properties allowing editing of StructProperty attributes.
+ */
+export class StructProperties extends Properties {
+  public constructor(_schemaEditor: SchemaContextEditor) {
+    super(_schemaEditor);
+  }
+
+  /**
+   * Override to validate that the found property is a StructProperty.
+   * @param classKey The SchemaItemKey of the class.
+   * @param propertyName The name of the property.
+   */
+  protected override async getProperty<T extends MutablePropertyType>(classKey: SchemaItemKey, propertyName: string): Promise<T> {
+    const property = await super.getProperty<MutableStructProperty>(classKey, propertyName) as T;
+    if (!(property instanceof StructProperty)){
+      // TODO: Update error
+      throw new Error(`The property ${propertyName} is not a StructProperty.`);
     }
     return property;
   }

@@ -524,4 +524,21 @@ describe("Properties editing tests", () => {
       await expect(testEditor.entities.enumerationProperties.setMinValue(entityKey, createResult.propertyName!, 1)).to.be.rejectedWith(Error, "The property TestProperty is not an EnumerationProperty");
     });
   });
+
+  describe("Navigation property editing tests", () => {
+    it("editing a property through navigationProperties that is not a NavigationProperty, rejected with error", async () =>  {
+      const structClass = await testEditor.schemaContext.getSchemaItem<StructClass>(structKey);
+      const createResult = await testEditor.entities.createStructProperty(entityKey, "TestProperty", structClass!);
+      await expect(testEditor.entities.navigationProperties.setName(entityKey, createResult.propertyName!, "testName")).to.be.rejectedWith(Error, "The property TestProperty is not a NavigationProperty");
+    });
+  });
+
+  describe("Struct property editing tests", () => {
+    it("editing a property through structProperties that is not a StructProperty, rejected with error", async () =>  {
+      const schema = await testEditor.getSchema(testKey);
+      const testEnum = new Enumeration(schema!, "TestEnumeration");
+      const createResult = await testEditor.entities.createEnumerationProperty(entityKey, "TestProperty", testEnum);
+      await expect(testEditor.entities.structProperties.setName(entityKey, createResult.propertyName!, "testName")).to.be.rejectedWith(Error, "The property TestProperty is not a StructProperty");
+    });
+  });
 });
