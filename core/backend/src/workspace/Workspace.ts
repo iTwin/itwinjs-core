@@ -173,7 +173,13 @@ export namespace WorkspaceDb {
   export const fileExt = "itwin-workspace";
 
   export class LoadError extends Error {
-    constructor(msg: string, public problems: Error[]) {
+    constructor(msg: string, public wsDbProps?: WorkspaceDb.Props) {
+      super(msg);
+    }
+  }
+
+  export class LoadErrors extends Error {
+    constructor(msg: string, public errors: LoadError[]) {
       super(msg);
     }
   }
@@ -549,8 +555,10 @@ class WorkspaceImpl implements Workspace {
 
   public async getWorkspaceDb(props: WorkspaceDb.CloudProps): Promise<WorkspaceDb> {
     let container: WorkspaceContainer | undefined = this.findContainer(props.containerId);
-    if (undefined === container)
-      container = this.getContainer({ ...props, accessToken: props.isPublic ? "" : await CloudSqlite.requestToken(props) });
+    if (undefined === container) {
+      const accessToken = props.isPublic ? "" : await CloudSqlite.requestToken(props);
+      container = new WorkspaceContainerImpl(this, { ...props, accessToken });
+    }
     return container.getWorkspaceDb(props);
   }
 
@@ -558,7 +566,7 @@ class WorkspaceImpl implements Workspace {
     if (!Array.isArray(props))
       props = [props];
 
-    const problems: Error[] = [];
+    const problems: WorkspaceDb.LoadError[] = [];
     for (const prop of props) {
       const db = await this.getWorkspaceDb(prop);
       db.open();
@@ -568,7 +576,7 @@ class WorkspaceImpl implements Workspace {
         if (undefined === this.settings.getDictionary(dictProps)) {
           const settingsJson = db.getString(prop.resourceName);
           if (undefined === settingsJson)
-            throw new Error(`could not load setting resource ${prop.resourceName} from ${manifest.workspaceName}`);
+            throw new WorkspaceDb.LoadError(`could not load setting resource ${prop.resourceName} from ${manifest.workspaceName}`, prop);
 
           db.close(); // don't leave this db open in case we're going to find another dictionary in it recursively.
 
@@ -587,11 +595,11 @@ class WorkspaceImpl implements Workspace {
         }
       } catch (e) {
         db.close();
-        problems.push(e as Error);
+        problems.push(e as WorkspaceDb.LoadError);
       }
     }
     if (problems.length !== 0)
-      throw new WorkspaceDb.LoadError("Error(s) loading settings dictionaries", problems);
+      throw new WorkspaceDb.LoadErrors("Error(s) loading settings dictionaries", problems);
   }
 
   public close() {
@@ -621,9 +629,9 @@ class WorkspaceImpl implements Workspace {
     return this.getWorkspaceDbs(this.resolveWorkspaceDbProps(settingName));
   }
 
-  public queryResource(dbList: WorkspaceDb[], search: WorkspaceResource.Search, callback: (result: WorkspaceResource.SearchResult) => void | "stop"): void | "stop" {
+  public queryResource(dbList: WorkspaceDb[], search: WorkspaceResource.Search, forEachResource: (result: WorkspaceResource.SearchResult) => void | "stop"): void | "stop" {
     for (const db of dbList) {
-      if (db.queryResource(search, callback) === "stop")
+      if (db.queryResource(search, forEachResource) === "stop")
         return;
     }
   }
@@ -705,7 +713,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
         return `${dbName}:${version}`;
     } catch (e: unknown) {
     }
-    throw new Error(`No version of [${dbName}] available for "${range}"`);
+    throw new WorkspaceDb.LoadError(`No version of [${dbName}] available for "${range}"`, props);
   }
 
   public async makeNewVersion(args: { fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement, identifier?: string }) {
@@ -717,7 +725,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     const oldDb = WorkspaceContainer.parseDbFileName(oldName);
     const newVersion = semver.inc(oldDb.version, args.versionType, args.identifier);
     if (!newVersion)
-      throw new Error("invalid version");
+      throw new WorkspaceDb.LoadError("invalid version", args.fromProps);
 
     const newName = WorkspaceContainer.makeDbFileName(oldDb.dbName, newVersion);
     await cloudContainer.copyDatabase(oldName, newName);
