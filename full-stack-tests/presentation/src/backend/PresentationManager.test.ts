@@ -10,7 +10,9 @@ import { Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType } from "@
 import { PresentationManager, PresentationManagerProps } from "@itwin/presentation-backend";
 import {
   ChildNodeSpecificationTypes,
+  ContentFlags,
   ContentSpecificationTypes,
+  DefaultContentDisplayTypes,
   DisplayValue,
   DisplayValuesArray,
   DisplayValuesMap,
@@ -177,6 +179,25 @@ describe("PresentationManager", () => {
           properties.push(...items);
         }
         expect(properties).to.matchSnapshot();
+      });
+    });
+
+    it.only("https://github.com/iTwin/itwinjs-core/discussions/6619", async () => {
+      imodel = SnapshotDb.openFile(process.env.TEST_IMODEL_PATH!);
+      await using(new PresentationManager(), async (manager) => {
+        const content = await manager.getContent({
+          imodel,
+          descriptor: {
+            displayType: DefaultContentDisplayTypes.PropertyPane,
+            contentFlags: ContentFlags.ShowLabels,
+          },
+          rulesetOrId: "ElementProperties",
+          keys: new KeySet([{ className: "BisCore:Element", id: "0x153" }]),
+        });
+        expect(content).to.not.be.undefined;
+
+        const properties = await manager.getElementProperties({ imodel, elementId: "0x153" });
+        expect(properties).to.not.be.undefined;
       });
     });
   });
