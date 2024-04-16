@@ -39,7 +39,7 @@ export class SectionDrawingIpcInvoker implements SectionDrawingIpc {
    */
   public async insertSectionDrawingViewState(
     drawingViewDefinition2dProps: ViewDefinition2dProps,
-    name: string
+    name: string,
   ): Promise<string> {
     return this._ipc.insertSectionDrawingViewState(drawingViewDefinition2dProps, name);
   }
@@ -58,13 +58,13 @@ export class SectionDrawingIpcInvoker implements SectionDrawingIpc {
     return this._ipc.spatialViewDefinitionCode(name);
   }
 
-    /**
+  /**
    * Insert any BIS element based on the props
    * @param props The props used to insert the BIS element. Determines which element class gets created
    * @param locks The ids of elements/models that need to be locked when creating the element
    * @returns The id of the created element
    */
-    public async insertElement(props: ElementProps, locks: string[]): Promise<string> {
-      return this._ipc.insertElement(props, locks);
-    }
+  public async insertElement(props: ElementProps, locks: string[]): Promise<string> {
+    return this._ipc.insertElement(props, locks);
+  }
 }

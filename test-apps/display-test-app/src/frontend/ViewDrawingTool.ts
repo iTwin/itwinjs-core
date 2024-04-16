@@ -1,22 +1,17 @@
 /* eslint-disable no-console */
-import { DrawingViewState, FitViewTool, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, Tool, ViewCreator2d } from "@itwin/core-frontend";
+import { IModelApp, ScreenViewport, SpatialViewState, Tool } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
-import { ComboBoxEntry, createButton, createComboBox, createTextBox } from "@itwin/frontend-devtools";
-import { CategorySelectorProps, Code, ColorDef, DisplayStyleProps, QueryRowFormat, SectionDrawingProps, ViewDefinition2dProps, ViewStateProps } from "@itwin/core-common";
-import { Range3d, Range3dProps } from "@itwin/core-geometry";
+import { createButton, createTextBox } from "@itwin/frontend-devtools";
 import { SectionDrawingIpcInvoker } from "./SectionDrawingIpcInvoker";
 import { ViewSetupApi } from "./ViewSetupApi";
 import { SectionDrawingApi } from "./SectionDrawingApi";
 
 export class ViewDrawingPanel extends ToolBarDropDown {
-  private readonly _vp: ScreenViewport;
   private readonly _element: HTMLElement;
   private _name: string;
-  private _toolName = "ViewDrawing";
 
   public constructor(vp: ScreenViewport, parent: HTMLElement) {
     super();
-    this._vp = vp;
     this._element = IModelApp.makeHTMLElement("div", { className: "toolMenu", parent });
     this._element.style.cssFloat = "left";
     this._element.style.display = "block";
@@ -69,9 +64,9 @@ export class SectionDrawingTool extends Tool {
   public static override toolId = "SectionDrawingTool";
 
   /**
-   * 
+   *
    * @param args arg0 is section drawing name. arg1 is spatial view to attach. arg2 is a flip denoting transform method 1 or 2
-   * @returns 
+   * @returns
    */
   public override async run(...args: any[]): Promise<boolean> {
     if (args.length !== 3 || typeof args[0] !== "string" || !(args[1] instanceof SpatialViewState))

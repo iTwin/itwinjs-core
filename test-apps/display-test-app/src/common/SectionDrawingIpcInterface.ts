@@ -27,7 +27,7 @@ export interface SectionDrawingIpc {
   calculateDrawingViewExtents(spatialViewDefinitionId: string, sectionDrawingModelId: string, drawingToSpatial: TransformProps | undefined): Promise<Range3dProps>;
 
   spatialViewDefinitionCode(name: string): Promise<CodeProps>;
-    /**
+  /**
    * Insert any BIS element based on the props
    * @param props The props used to insert the BIS element. Determines which element class gets created
    * @param locks The ids of elements/models that need to be locked when creating the element
