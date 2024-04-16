@@ -5,28 +5,30 @@
 
 import { expect } from "chai";
 import * as fs from "fs-extra";
-import { extname, join } from "path";
+import { extname } from "path";
 import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
-import { IModelJsFs } from "../../IModelJsFs";
-import { BaseSettings, Settings } from "../../workspace/Settings";
-import { EditableWorkspaceDb, Workspace, WorkspaceContainer, WorkspaceDb } from "../../workspace/Workspace";
+import { Settings } from "../../workspace/Settings";
+import { Workspace, WorkspaceContainer, WorkspaceDb } from "../../workspace/Workspace";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
 
-describe("WorkspaceFile", () => {
+describe.only("WorkspaceFile", () => {
 
-  const workspace = Workspace.construct(new BaseSettings(), { containerDir: join(KnownTestLocations.outputDir, "TestWorkspaces") });
+  let editor: Workspace.Editor;
+  let workspace: Workspace;
 
-  function makeEditableDb(props: WorkspaceDb.Props & WorkspaceContainer.Props, manifest: WorkspaceDb.Manifest) {
-    const container = workspace.getContainer(props);
-    const wsFile = EditableWorkspaceDb.construct(props, container);
+  before(() => {
+    editor = Workspace.constructEditor();
+    workspace = editor.workspace;
+  });
+  after(() => {
+    editor.close();
+  });
 
-    IModelJsFs.purgeDirSync(container.filesDir);
-    if (IModelJsFs.existsSync(wsFile.dbFileName))
-      IModelJsFs.unlinkSync(wsFile.dbFileName);
-    EditableWorkspaceDb.createEmpty({ fileName: wsFile.dbFileName, manifest });
+  async function makeEditableDb(props: WorkspaceDb.Props & WorkspaceContainer.Props & { dbName: string }, manifest: WorkspaceDb.Manifest): Promise<Workspace.Editor.EditableDb> {
+    const container = editor.getContainer(props);
+    const wsFile = await container.createDb({ ...props, manifest });
     wsFile.open();
     return wsFile;
   }
@@ -97,7 +99,7 @@ describe("WorkspaceFile", () => {
 
   it("create new WorkspaceDb", async () => {
     const manifest: WorkspaceDb.Manifest = { workspaceName: "resources for acme users", contactName: "contact me" };
-    const wsFile = makeEditableDb({ containerId: "acme-engineering-inc-2", dbName: "db1", baseUri: "", storageType: "azure" }, manifest);
+    const wsFile = await makeEditableDb({ containerId: "acme-engineering-inc-2", dbName: "db1", baseUri: "", storageType: "azure" }, manifest);
     const inFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
     const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
     let blobVal = new Uint8Array(testRange.toFloat64Array().buffer);
@@ -157,7 +159,7 @@ describe("WorkspaceFile", () => {
 
   it("load workspace settings", async () => {
     const settingsFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
-    const defaultDb = makeEditableDb({ containerId: "default", dbName: "db1", baseUri: "", storageType: "azure" }, { workspaceName: "default resources", contactName: "contact 123" });
+    const defaultDb = await makeEditableDb({ containerId: "default", dbName: "db1", baseUri: "", storageType: "azure" }, { workspaceName: "default resources", contactName: "contact 123" });
     defaultDb.addString("default-settings", fs.readFileSync(settingsFile, "utf-8"));
     defaultDb.close();
 
@@ -168,7 +170,7 @@ describe("WorkspaceFile", () => {
 
     const workspaceName = "all fonts workspace";
     const schemaFile = IModelTestUtils.resolveAssetFile("TestSettings.schema.json");
-    const fontsDb = makeEditableDb({ containerId: "fonts", dbName: "fonts", baseUri: "", storageType: "azure" }, { workspaceName, contactName: "font guy" });
+    const fontsDb = await makeEditableDb({ containerId: "fonts", dbName: "fonts", baseUri: "", storageType: "azure" }, { workspaceName, contactName: "font guy" });
 
     fontsDb.addFile("Helvetica.ttf", schemaFile, "ttf");
     fontsDb.close();

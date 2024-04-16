@@ -11,7 +11,7 @@ import { BaseSettings, BlobContainer, CloudSqlite, EditableWorkspaceDb, IModelHo
 import { AzuriteTest } from "./AzuriteTest";
 import { Guid } from "@itwin/core-bentley";
 
-describe.skip("Cloud workspace containers", () => {
+describe("Cloud workspace containers", () => {
   const iTwinId = Guid.createValue();
   const orgContainer = "organization 1";
   const itwin1Container = "iTwin 1";

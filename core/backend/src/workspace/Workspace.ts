@@ -17,7 +17,7 @@ import { IModelHost, KnownLocations } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb, VersionedSqliteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
-import { SettingName, Settings } from "./Settings";
+import { BaseSettings, SettingName, Settings } from "./Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { SettingsSchemas } from "./SettingsSchemas";
 import { BlobContainer } from "../BlobContainerService";
@@ -103,20 +103,11 @@ export namespace WorkspaceContainer {
     return `${dbName}:${WorkspaceContainer.validateVersion(version)}`;
   }
 
-  export async function initialize(args: { props: CloudSqlite.ContainerProps, dbName: WorkspaceDb.DbName, manifest: WorkspaceDb.Manifest }) {
-    class CloudAccess extends CloudSqlite.DbAccess<WorkspaceSqliteDb> {
-      public static async initializeWorkspace(args: { props: CloudSqlite.ContainerProps, dbName: WorkspaceDb.DbName, manifest: WorkspaceDb.Manifest }) {
-        const dbName = WorkspaceContainer.makeDbFileName(args.dbName, "1.0.0");
-        return super._initializeDb({ ...args, dbName, dbType: WorkspaceSqliteDb });
-      }
-    }
-    return CloudAccess.initializeWorkspace(args);
-  }
 }
 
 /** @beta */
 export namespace WorkspaceDb {
-  export const makeDbName = (dbName?: WorkspaceDb.DbName) => dbName ?? "workspace-db";
+  export const dbNameWithDefault = (dbName?: WorkspaceDb.DbName) => dbName ?? "workspace-db";
 
   /** The base name of a WorkspaceDb within a WorkspaceContainer (without any version identifier) */
   export type DbName = string;
@@ -140,6 +131,7 @@ export namespace WorkspaceDb {
     readonly includePrerelease?: boolean;
     /** start a prefetch operation whenever this WorkspaceDb is opened. */
     readonly prefetch?: boolean;
+    readonly localFileName?: string;
   }
 
   export type CloudProps = Props & WorkspaceContainer.Props;
@@ -169,16 +161,12 @@ export namespace WorkspaceDb {
    */
   export const fileExt = "itwin-workspace";
 
-  export class LoadError extends Error {
-    constructor(msg: string, public wsDbProps?: WorkspaceDb.Props) {
-      super(msg);
-    }
+  export interface LoadError extends Error {
+    wsDbProps?: WorkspaceDb.Props;
   }
 
-  export class LoadErrors extends Error {
-    constructor(msg: string, public errors: LoadError[]) {
-      super(msg);
-    }
+  export interface LoadErrors extends Error {
+    wsLoadErrors?: LoadError[];
   }
 
   /** construct a new instance of a WorkspaceDb */
@@ -415,7 +403,12 @@ export namespace Workspace {
     return new WorkspaceImpl(settings, opts);
   }
 
+  export function constructEditor(): Workspace.Editor {
+    return new EditorImpl();
+  }
+
   export interface Editor {
+    readonly workspace: Workspace;
     getContainer(props: WorkspaceContainer.Props): Editor.Container;
     createNewCloudContainer(props: Editor.CreateNewContainerProps): Promise<Workspace.Editor.Container>;
     /** Close this WorkspaceEditor. All WorkspaceContainers are dropped. */
@@ -430,8 +423,10 @@ export namespace Workspace {
       manifest: WorkspaceDb.Manifest;
       /** Optional human-readable explanation of the information held in the container. This will be displayed in the administrator RBAC panel, and on usage reports. */
       containerDescription?: string;
+      isPublic: boolean;
       dbName?: string;
     }
+
     export interface Container extends WorkspaceContainer {
       /**
        * Create a copy of an existing [[WorkspaceDb]] in this WorkspaceContainer with a new version number. This function is used
@@ -439,30 +434,35 @@ export namespace Workspace {
        * new content before the write lock is released, and thereafter should never be modified again.
        * @note The copy actually shares all of the data with the original, but with copy-on-write if/when data in the new WorkspaceDb is modified.
        */
-      makeNewVersion(args: {
-        /** Properties that describe the source WorkspaceDb for the new version */
-        fromProps: WorkspaceDb.Props;
-        /** The type of version increment to apply to the existing version. */
-        versionType: Container.VersionIncrement;
-        /** for prerelease versions */
-        identifier?: string;
-      }): Promise<{ oldName: WorkspaceDb.DbName, newName: WorkspaceDb.DbName }>;
+      makeNewVersion(props: Container.MakeNewVersionProps): Promise<{ oldName: WorkspaceDb.DbName, newName: WorkspaceDb.DbName }>;
+
+      /** create a new empty WorkspaceDb. */
+      createDb(args: { dbName?: string, version?: string, manifest: WorkspaceDb.Manifest }): Promise<Workspace.Editor.EditableDb>;
 
       getWorkspaceDb(props: WorkspaceDb.Props): Editor.EditableDb;
-      acquireLock(): Promise<void>;
-      releaseLock(): Promise<void>;
-      abandonChanges(): Promise<void>;
+      acquireWriteLock(user: string): void;
+      releaseWriteLock(): void;
+      abandonChanges(): void;
     }
     export namespace Container {
       /** Scope to increment for a version number.
        * @see semver.ReleaseType
        */
       export type VersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
+
+      export interface MakeNewVersionProps {
+        /** Properties that describe the source WorkspaceDb for the new version */
+        fromProps: WorkspaceDb.Props;
+        /** The type of version increment to apply to the existing version. */
+        versionType: Container.VersionIncrement;
+        /** for prerelease versions */
+        identifier?: string;
+      }
     }
 
     /** Create a new, empty, EditableDb file on the local filesystem for importing Workspace resources. */
-    export function createEmptyDb(args: { fileName: LocalFileName, manifest: WorkspaceDb.Manifest }) {
-      WorkspaceSqliteDb.createNewDb(args.fileName, args);
+    export function createEmptyDb(args: { localFileName: LocalFileName, manifest: WorkspaceDb.Manifest }) {
+      WorkspaceSqliteDb.createNewDb(args.localFileName, args);
     }
 
     /**
@@ -472,8 +472,6 @@ export namespace Workspace {
      * @beta
      */
     export interface EditableDb extends WorkspaceDb {
-      /** create a new empty WorkspaceDb. */
-      createDb(args: { manifest: WorkspaceDb.Manifest, version?: string }): Promise<void>;
 
       /** Update the contents of the manifest in this WorkspaceDb. */
       updateManifest(manifest: WorkspaceDb.Manifest): void;
@@ -532,7 +530,19 @@ export namespace Workspace {
       /** Remove a file resource. */
       removeFile(rscName: WorkspaceResource.Name): void;
     }
+
   }
+}
+
+function throwLoadError(msg: string, wsDbProps: WorkspaceDb.Props): never {
+  const error = new Error(msg) as WorkspaceDb.LoadError;
+  error.wsDbProps = wsDbProps;
+  throw error;
+}
+function throwLoadErrors(msg: string, errors: WorkspaceDb.LoadError[]): never {
+  const error = new Error(msg) as WorkspaceDb.LoadErrors;
+  error.wsLoadErrors = errors;
+  throw error;
 }
 
 class WorkspaceImpl implements Workspace {
@@ -593,7 +603,7 @@ class WorkspaceImpl implements Workspace {
         if (undefined === this.settings.getDictionary(dictProps)) {
           const settingsJson = db.getString(prop.resourceName);
           if (undefined === settingsJson)
-            throw new WorkspaceDb.LoadError(`could not load setting resource ${prop.resourceName} from ${manifest.workspaceName}`, prop);
+            throwLoadError(`could not load setting resource ${prop.resourceName} from ${manifest.workspaceName}`, prop);
 
           db.close(); // don't leave this db open in case we're going to find another dictionary in it recursively.
 
@@ -616,7 +626,7 @@ class WorkspaceImpl implements Workspace {
       }
     }
     if (problems.length !== 0)
-      throw new WorkspaceDb.LoadErrors("Error(s) loading settings dictionaries", problems);
+      throwLoadErrors("Error(s) loading settings dictionaries", problems);
   }
 
   public close() {
@@ -694,7 +704,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
   public readonly id: WorkspaceContainer.Id;
 
   public readonly cloudContainer?: CloudSqlite.CloudContainer | undefined;
-  private _wsDbs = new Map<WorkspaceDb.DbName, WorkspaceDb>();
+  protected _wsDbs = new Map<WorkspaceDb.DbName, WorkspaceDb>();
   public get dirName() { return join(this.workspace.containerDir, this.id); }
 
   public constructor(workspace: WorkspaceImpl, props: WorkspaceContainer.Props & { accessToken: AccessToken }) {
@@ -727,7 +737,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     if (undefined === cloudContainer)
       return join(this.dirName, `${props.dbName}.${WorkspaceDb.fileExt}`); // local file, versions not allowed
 
-    const dbName = WorkspaceDb.makeDbName(props.dbName);
+    const dbName = WorkspaceDb.dbNameWithDefault(props.dbName);
     const dbs = cloudContainer.queryDatabases(`${dbName}*`); // get all databases that start with dbName
 
     const versions = [];
@@ -747,23 +757,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
         return `${dbName}:${version}`;
     } catch (e: unknown) {
     }
-    throw new WorkspaceDb.LoadError(`No version of [${dbName}] available for "${range}"`, props);
-  }
-
-  public async makeNewVersion(args: { fromProps: WorkspaceDb.Props, versionType: Workspace.Editor.Container.VersionIncrement, identifier?: string }) {
-    const cloudContainer = this.cloudContainer;
-    if (undefined === cloudContainer)
-      throw new Error("versions require cloud containers");
-
-    const oldName = this.resolveDbFileName(args.fromProps);
-    const oldDb = WorkspaceContainer.parseDbFileName(oldName);
-    const newVersion = semver.inc(oldDb.version, args.versionType, args.identifier);
-    if (!newVersion)
-      throw new WorkspaceDb.LoadError("invalid version", args.fromProps);
-
-    const newName = WorkspaceContainer.makeDbFileName(oldDb.dbName, newVersion);
-    await cloudContainer.copyDatabase(oldName, newName);
-    return { oldName, newName };
+    throwLoadError(`No version of [${dbName}] available for "${range}"`, props);
   }
 
   public addWorkspaceDb(toAdd: WorkspaceDb) {
@@ -773,7 +767,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
   }
 
   public getWorkspaceDb(props: WorkspaceDb.Props): WorkspaceDb {
-    return this._wsDbs.get(WorkspaceDb.makeDbName(props.dbName)) ?? new WorkspaceDbImpl(props, this);
+    return this._wsDbs.get(WorkspaceDb.dbNameWithDefault(props.dbName)) ?? new WorkspaceDbImpl(props, this);
   }
 
   public closeWorkspaceDb(toDrop: WorkspaceDb) {
@@ -842,7 +836,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
   }
 
   public constructor(props: WorkspaceDb.Props, container: WorkspaceContainer) {
-    this.dbName = WorkspaceDb.makeDbName(props.dbName);
+    this.dbName = WorkspaceDb.dbNameWithDefault(props.dbName);
     WorkspaceContainer.validateDbName(this.dbName);
     this.container = container;
     this.dbFileName = container.resolveDbFileName(props);
@@ -953,12 +947,87 @@ class WorkspaceDbImpl implements WorkspaceDb {
 }
 
 class EditorImpl implements Workspace.Editor {
-  public async createNewCloudContainer(props: { scope: BlobContainer.Scope, containerLabel: string, manifest: WorkspaceDb.Manifest, containerDescription?: string | undefined, dbName?: string | undefined }): Promise<Workspace.EditorContainer> {
+  public workspace = new WorkspaceImpl(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "WorkspaceEditor") });
+
+  public async initializeContainer(args: { props: CloudSqlite.ContainerProps, dbName: WorkspaceDb.DbName, manifest: WorkspaceDb.Manifest }) {
+    class CloudAccess extends CloudSqlite.DbAccess<WorkspaceSqliteDb> {
+      public static async initializeWorkspace(args: { props: CloudSqlite.ContainerProps, dbName: WorkspaceDb.DbName, manifest: WorkspaceDb.Manifest }) {
+        const dbFullName = WorkspaceContainer.makeDbFileName(args.dbName, "1.0.0");
+        return super._initializeDb({ ...args, dbName: dbFullName, dbType: WorkspaceSqliteDb });
+      }
+    }
+    return CloudAccess.initializeWorkspace(args);
+  }
+
+  public async createNewCloudContainer(args: Workspace.Editor.CreateNewContainerProps): Promise<Workspace.Editor.Container> {
+    const service = BlobContainer.service;
+    if (undefined === service)
+      throw new Error("no BlobContainer service available");
+    const auth = IModelHost.authorizationClient;
+    if (undefined === auth)
+      throw new Error("no authorization client available");
+
+    const userToken = await auth.getAccessToken();
+    const cloudContainer = await service.create({ scope: args.scope, metadata: { containerType: "workspace", label: args.containerLabel }, userToken });
+    const dbName = WorkspaceDb.dbNameWithDefault(args.dbName);
+    const accessToken = await CloudSqlite.requestToken({ ...cloudContainer, accessLevel: "admin", userToken });
+    await this.initializeContainer({ props: { ...cloudContainer, storageType: cloudContainer.provider, accessToken }, ...args, dbName });
+    return this.getContainer({ accessToken, ...cloudContainer, storageType: cloudContainer.provider, writeable: true, description: args.containerDescription });
+  }
+
+  public getContainer(props: WorkspaceContainer.Props & { accessToken: AccessToken }): Workspace.Editor.Container {
+    return this.workspace.findContainer(props.containerId) as Workspace.Editor.Container | undefined ?? new EditorContainerImpl(this.workspace, props);
+  }
+
+  public close() {
+    this.workspace.close();
   }
 }
 
-class EditorContainerImpl extends WorkspaceContainer implements Workspace.EditorContainer {
+class EditorContainerImpl extends WorkspaceContainerImpl implements Workspace.Editor.Container {
+  public async makeNewVersion(args: Workspace.Editor.Container.MakeNewVersionProps): Promise<{ oldName: WorkspaceDb.DbName, newName: WorkspaceDb.DbName }> {
+    const cloudContainer = this.cloudContainer;
+    if (undefined === cloudContainer)
+      throw new Error("versions require cloud containers");
 
+    const oldName = this.resolveDbFileName(args.fromProps);
+    const oldDb = WorkspaceContainer.parseDbFileName(oldName);
+    const newVersion = semver.inc(oldDb.version, args.versionType, args.identifier);
+    if (!newVersion)
+      throwLoadError("invalid version", args.fromProps);
+
+    const newName = WorkspaceContainer.makeDbFileName(oldDb.dbName, newVersion);
+    await cloudContainer.copyDatabase(oldName, newName);
+    return { oldName, newName };
+
+  }
+
+  public override getWorkspaceDb(props: WorkspaceDb.Props): Workspace.Editor.EditableDb {
+    return this._wsDbs.get(WorkspaceDb.dbNameWithDefault(props.dbName)) as EditableDbImpl | undefined ?? new EditableDbImpl(props, this);
+  }
+  public acquireWriteLock(user: string) {
+    return this.cloudContainer?.acquireWriteLock(user);
+  }
+  public releaseWriteLock() {
+    return this.cloudContainer?.releaseWriteLock();
+  }
+  public abandonChanges() {
+    return this.cloudContainer?.abandonChanges();
+  }
+  public async createDb(args: { dbName?: string, version?: string, manifest: WorkspaceDb.Manifest }): Promise<Workspace.Editor.EditableDb> {
+    if (!this.cloudContainer) {
+      Workspace.Editor.createEmptyDb({ localFileName: this.resolveDbFileName(args), manifest: args.manifest });
+    } else {
+      // currently the only way to create a workspaceDb in a cloud container is to create a temporary workspaceDb and upload it.
+      const tempDbFile = join(KnownLocations.tmpdir, `empty.${WorkspaceDb.fileExt}`);
+      if (fs.existsSync(tempDbFile))
+        IModelJsFs.removeSync(tempDbFile);
+      Workspace.Editor.createEmptyDb({ localFileName: tempDbFile, manifest: args.manifest });
+      await CloudSqlite.uploadDb(this.cloudContainer, { localFileName: tempDbFile, dbName: WorkspaceContainer.makeDbFileName(WorkspaceDb.dbNameWithDefault(args.dbName), args.version) });
+      IModelJsFs.removeSync(tempDbFile);
+    }
+    return this.getWorkspaceDb(args);
+  }
 }
 
 class EditableDbImpl extends WorkspaceDbImpl implements Workspace.Editor.EditableDb {
@@ -980,7 +1049,7 @@ class EditableDbImpl extends WorkspaceDbImpl implements Workspace.Editor.Editabl
 
   public override close() {
     if (this.isOpen) {
-      // whenever we close an EditableWorkspaceDb, update the name of the last editor in the manifest
+      // whenever we close an EditableDb, update the name of the last editor in the manifest
       const lastEditedBy = (this.container.cloudContainer as any)?.writeLockHeldBy;
       if (lastEditedBy !== undefined)
         this.updateManifest({ ...this.manifest, lastEditedBy });
@@ -1005,22 +1074,6 @@ class EditableDbImpl extends WorkspaceDbImpl implements Workspace.Editor.Editabl
       }
     });
     this.sqliteDb.saveChanges();
-  }
-
-  public async createDb(args: { version?: string, manifest: WorkspaceDb.Manifest }) {
-    if (!this.container.cloudContainer) {
-      EditableWorkspaceDb.createEmpty({ fileName: this.dbFileName, manifest: args.manifest });
-    } else {
-      // currently the only way to create a workspaceDb in a cloud container is to create a temporary workspaceDb and upload it.
-      const tempDbFile = join(KnownLocations.tmpdir, `empty.${WorkspaceDb.fileExt}`);
-      if (fs.existsSync(tempDbFile))
-        IModelJsFs.removeSync(tempDbFile);
-      EditableWorkspaceDb.createEmpty({ fileName: tempDbFile, manifest: args.manifest });
-      this.dbFileName = WorkspaceContainer.makeDbFileName(this.dbName, args.version);
-      await CloudSqlite.uploadDb(this.container.cloudContainer, { localFileName: tempDbFile, dbName: this.dbFileName });
-      IModelJsFs.removeSync(tempDbFile);
-    }
-    this.open();
   }
 
   public updateManifest(manifest: WorkspaceDb.Manifest) {

@@ -112,6 +112,7 @@ export namespace CloudSqlite {
     containerId: string;
     /** true if the container is public (doesn't require authorization) */
     isPublic?: boolean;
+    /** access token for container. If not present uses `CloudSqlite.requestToken` */
     accessToken?: string;
   }
 
