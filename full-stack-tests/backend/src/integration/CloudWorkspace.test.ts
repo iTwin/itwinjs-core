@@ -7,39 +7,35 @@ import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after al
 import { expect } from "chai";
 import * as fs from "fs-extra";
 import { join } from "path";
-import { BaseSettings, BlobContainer, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, Settings, Workspace, WorkspaceContainer, WorkspaceDb } from "@itwin/core-backend";
+import { BaseSettings, CloudSqlite, IModelHost, IModelJsFs, Settings, Workspace } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
 import { Guid } from "@itwin/core-bentley";
 
 describe("Cloud workspace containers", () => {
-  const iTwinId = Guid.createValue();
-  const orgContainer = "organization 1";
-  const itwin1Container = "iTwin 1";
-  const itwin2Container = "iTwin 2";
-  const iModelContainer = "iModel 1";
-  const baseUri = AzuriteTest.baseUri;
-  const storageType = "azure" as const;
-  const wsDbName = "workspace-db";
+  // const iTwin1Id = Guid.createValue();
+  const iTwin2Id = Guid.createValue();
+  // const iModel1 = Guid.createValue();
+  // let orgContainer: Workspace.Editor.Container;
+  let itwin2Container: Workspace.Editor.Container;
+  // let iModelContainer: Workspace.Editor.Container;
+  let editor: Workspace.Editor;
 
-  async function initializeWorkspace(containerId: string, dbName: string, manifest: WorkspaceDb.Manifest) {
-    await BlobContainer.service?.create({ scope: { iTwinId }, containerId, metadata: { containerType: "workspace", label: "workspace for test" }, userToken: AzuriteTest.service.userToken.admin });
-    await WorkspaceContainer.initialize({ props: { baseUri, containerId, storageType }, dbName, manifest });
-  }
   before(async () => {
     IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
+    AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
+    editor = Workspace.constructEditor();
+    // orgContainer = await editor.createNewCloudContainer({ containerLabel: "orgContainer1", scope: { iTwinId: iTwin1Id }, containerDescription: "org workspace1", manifest: { workspaceName: "all settings for itwin1" } });
+    itwin2Container = await editor.createNewCloudContainer({ containerLabel: "orgContainer2", scope: { iTwinId: iTwin2Id }, containerDescription: "org workspace2", manifest: { workspaceName: "all settings for itwin2" } });
+    // iModelContainer = await editor.createNewCloudContainer({ containerLabel: "iModel container", scope: { iTwinId: iTwin2Id, iModelId: iModel1 }, containerDescription: "imodel workspace", manifest: { workspaceName: "all settings for imodel" } });
     AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
-
-    await initializeWorkspace(orgContainer, wsDbName, { workspaceName: "all settings for org" });
-    await initializeWorkspace(itwin1Container, wsDbName, { workspaceName: "all settings for iTwin1" });
-    await initializeWorkspace(itwin2Container, wsDbName, { workspaceName: "all settings for iTwin2" });
-    await initializeWorkspace(iModelContainer, wsDbName, { workspaceName: "all settings for iModel 1" });
 
   });
   after(async () => {
     IModelHost.authorizationClient = undefined;
+    editor.close();
   });
 
-  it("cloud workspace", async () => {
+  it.only("cloud workspace", async () => {
     const appDict = {
       "app1/settings/maxTree": 22,
     };
@@ -56,27 +52,28 @@ describe("Cloud workspace containers", () => {
     };
 
     const workspace1 = Workspace.construct(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace1"), testCloudCache: makeCloudCache("test1") });
-    const workspace2 = Workspace.construct(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace2"), testCloudCache: makeCloudCache("test2") });
-    const settings = workspace1.settings;
-    settings.addDictionary({ name: "containers", priority: Settings.Priority.application }, appDict);
 
-    const props = { containerId: orgContainer, writeable: true, baseUri, storageType };
-    const accessToken = await CloudSqlite.requestToken(props);
-    const wsCont1 = workspace1.getContainer({ ...props, accessToken });
+    // const workspace2 = Workspace.construct(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace2"), testCloudCache: makeCloudCache("test2") });
+    const settings = workspace1.settings;
+    settings.addDictionary({ name: "app dictionary", priority: Settings.Priority.application }, appDict);
 
     const user = "workspace admin";
-    const workspaceName = "test workspace";
-    const makeVersion = async (increment: WorkspaceDb.VersionIncrement) => {
-      expect(wsCont1.cloudContainer).not.undefined;
-      await CloudSqlite.withWriteLock({ user, container: wsCont1.cloudContainer! }, async () => {
-        const newVer = await wsCont1.makeNewVersion({ dbName: "workspace" }, increment);
-        const wsDbEdit = EditableWorkspaceDb.construct({ dbName: newVer.newName }, wsCont1);
-        wsDbEdit.addString("myVersion", wsDbEdit.dbFileName.split(":")[1]);
-        wsDbEdit.addString("string 1", "value of string 1");
-        wsDbEdit.close();
-      });
+    const makeVersion = async (args: Workspace.Editor.Container.MakeNewVersionProps) => {
+      expect(itwin2Container.cloudContainer).not.undefined;
+      itwin2Container.acquireWriteLock(user);
+      const copied = await itwin2Container.makeNewVersion(args);
+
+      const wsDbEdit = itwin2Container.getWorkspaceDb(copied.newDb);
+      wsDbEdit.open();
+      wsDbEdit.updateString("myVersion", wsDbEdit.dbFileName.split(":")[1]);
+      wsDbEdit.updateString("string 1", "value of string 1");
+      wsDbEdit.close();
+      itwin2Container.releaseWriteLock();
+      return copied;
     };
-    // await makeVersion("patch");
+
+    expect((await makeVersion({ versionType: "patch" })).newDb.version).equals("1.0.1");
+    expect((await makeVersion({ versionType: "patch" })).newDb.version).equals("1.0.2");
     // await makeVersion("1.2");
     // await makeVersion("v1.2.4");
     // await makeVersion("1.1.3");

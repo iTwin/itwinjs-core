@@ -121,17 +121,18 @@ export namespace WorkspaceDb {
   /** The [semver range format](https://github.com/npm/node-semver) identifier for a range of acceptable versions. */
   export type VersionRange = string;
 
-  /** Properties that specify how to load a WorkspaceDb within a [[WorkspaceContainer]]. */
-  export interface Props {
+  export interface NameAndVersion {
     /** name of database within WorkspaceContainer. If not present, defaults to "workspace-db" */
     readonly dbName?: string;
     /** a semver version range specifier that determines the acceptable range of versions to load. If not present, use the newest version. */
     readonly version?: VersionRange;
+  }
+  /** Properties that specify how to load a WorkspaceDb within a [[WorkspaceContainer]]. */
+  export interface Props extends NameAndVersion {
     /** if true, allow semver *prerelease* versions. By default only released version are allowed. */
     readonly includePrerelease?: boolean;
     /** start a prefetch operation whenever this WorkspaceDb is opened. */
     readonly prefetch?: boolean;
-    readonly localFileName?: string;
   }
 
   export type CloudProps = Props & WorkspaceContainer.Props;
@@ -423,7 +424,6 @@ export namespace Workspace {
       manifest: WorkspaceDb.Manifest;
       /** Optional human-readable explanation of the information held in the container. This will be displayed in the administrator RBAC panel, and on usage reports. */
       containerDescription?: string;
-      isPublic: boolean;
       dbName?: string;
     }
 
@@ -434,7 +434,7 @@ export namespace Workspace {
        * new content before the write lock is released, and thereafter should never be modified again.
        * @note The copy actually shares all of the data with the original, but with copy-on-write if/when data in the new WorkspaceDb is modified.
        */
-      makeNewVersion(props: Container.MakeNewVersionProps): Promise<{ oldName: WorkspaceDb.DbName, newName: WorkspaceDb.DbName }>;
+      makeNewVersion(props: Container.MakeNewVersionProps): Promise<{ oldDb: WorkspaceDb.NameAndVersion, newDb: WorkspaceDb.NameAndVersion }>;
 
       /** create a new empty WorkspaceDb. */
       createDb(args: { dbName?: string, version?: string, manifest: WorkspaceDb.Manifest }): Promise<Workspace.Editor.EditableDb>;
@@ -452,7 +452,7 @@ export namespace Workspace {
 
       export interface MakeNewVersionProps {
         /** Properties that describe the source WorkspaceDb for the new version */
-        fromProps: WorkspaceDb.Props;
+        fromProps?: WorkspaceDb.Props;
         /** The type of version increment to apply to the existing version. */
         versionType: Container.VersionIncrement;
         /** for prerelease versions */
@@ -985,21 +985,20 @@ class EditorImpl implements Workspace.Editor {
 }
 
 class EditorContainerImpl extends WorkspaceContainerImpl implements Workspace.Editor.Container {
-  public async makeNewVersion(args: Workspace.Editor.Container.MakeNewVersionProps): Promise<{ oldName: WorkspaceDb.DbName, newName: WorkspaceDb.DbName }> {
+  public async makeNewVersion(args: Workspace.Editor.Container.MakeNewVersionProps): Promise<{ oldDb: WorkspaceDb.NameAndVersion, newDb: WorkspaceDb.NameAndVersion }> {
     const cloudContainer = this.cloudContainer;
     if (undefined === cloudContainer)
       throw new Error("versions require cloud containers");
 
-    const oldName = this.resolveDbFileName(args.fromProps);
+    const oldName = this.resolveDbFileName(args.fromProps ?? {});
     const oldDb = WorkspaceContainer.parseDbFileName(oldName);
     const newVersion = semver.inc(oldDb.version, args.versionType, args.identifier);
     if (!newVersion)
-      throwLoadError("invalid version", args.fromProps);
+      throwLoadError("invalid version", args.fromProps ?? {});
 
     const newName = WorkspaceContainer.makeDbFileName(oldDb.dbName, newVersion);
     await cloudContainer.copyDatabase(oldName, newName);
-    return { oldName, newName };
-
+    return { oldDb, newDb: { dbName: oldDb.dbName, version: newVersion } };
   }
 
   public override getWorkspaceDb(props: WorkspaceDb.Props): Workspace.Editor.EditableDb {

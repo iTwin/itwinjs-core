@@ -13,7 +13,7 @@ import { Settings } from "../../workspace/Settings";
 import { Workspace, WorkspaceContainer, WorkspaceDb } from "../../workspace/Workspace";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-describe.only("WorkspaceFile", () => {
+describe("WorkspaceFile", () => {
 
   let editor: Workspace.Editor;
   let workspace: Workspace;
@@ -26,7 +26,7 @@ describe.only("WorkspaceFile", () => {
     editor.close();
   });
 
-  async function makeEditableDb(props: WorkspaceDb.Props & WorkspaceContainer.Props & { dbName: string }, manifest: WorkspaceDb.Manifest): Promise<Workspace.Editor.EditableDb> {
+  async function makeEditableDb(props: WorkspaceDb.Props & WorkspaceContainer.Props, manifest: WorkspaceDb.Manifest): Promise<Workspace.Editor.EditableDb> {
     const container = editor.getContainer(props);
     const wsFile = await container.createDb({ ...props, manifest });
     wsFile.open();
