@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-extension",
-  "version": "4.6.0-dev.7",
+  "version": "4.6.0-dev.13",
   "description": "iTwin.js Extension API",
   "type": "module",
   "typings": "index.d.ts",

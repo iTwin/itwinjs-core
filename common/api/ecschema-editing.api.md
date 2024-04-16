@@ -129,10 +129,8 @@ export enum ChangeType {
 export class ClassChanges extends SchemaItemChanges {
     addChange(change: ISchemaChange): void;
     get baseClassDelta(): BaseClassDelta | undefined;
-    get entityMixinChanges(): Map<string, EntityMixinChanges>;
+    get customAttributeChanges(): Map<string, CustomAttributeContainerChanges>;
     get propertyChanges(): Map<string, PropertyChanges>;
-    get sourceConstraintChanges(): Map<string, RelationshipConstraintChanges>;
-    get targetConstraintChanges(): Map<string, RelationshipConstraintChanges>;
 }
 
 // @beta
@@ -289,7 +287,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Schema;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
         code: string;
@@ -302,7 +300,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Schema;
-            messageArgs?: [string, string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         code: string;
@@ -315,7 +313,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Schema;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
         code: string;
@@ -328,7 +326,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyClass;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -340,7 +338,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyClass;
-            messageArgs?: [string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -352,7 +350,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyClass;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -364,7 +362,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: CustomAttributeContainerProps;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
     };
@@ -375,7 +373,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: CustomAttributeContainerProps;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
     };
@@ -386,7 +384,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: CustomAttributeContainerProps;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
     };
@@ -397,7 +395,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Enumeration;
-            messageArgs?: [string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -409,7 +407,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: EntityClass;
-            messageArgs?: [string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -421,7 +419,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
-            messageArgs?: [string, string, string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         code: string;
@@ -433,7 +431,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
-            messageArgs?: [string, string, string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         code: string;
@@ -445,7 +443,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
-            messageArgs?: [string, string, string, string, string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string, string, string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         code: string;
@@ -457,7 +455,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
         code: string;
@@ -469,7 +467,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
-            messageArgs?: [string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         code: string;
@@ -481,7 +479,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
         code: string;
@@ -493,7 +491,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
-            messageArgs?: [string, string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         code: string;
@@ -505,7 +503,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipClass;
-            messageArgs?: [string, string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -517,7 +515,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipClass;
-            messageArgs?: [string, string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -529,7 +527,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipClass;
-            messageArgs?: [string, string, string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string, string, string] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -541,7 +539,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipConstraint;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
     };
@@ -552,7 +550,7 @@ export const Diagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipConstraint;
-            messageArgs?: [string, string] | undefined; /** EC-001: Required message parameters: schema name, referenced schema name */
+            messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
     };
@@ -579,6 +577,12 @@ export function diagnosticTypeToString(type: DiagnosticType): "CustomAttributeCo
 
 // @beta
 export const ECRuleSet: IRuleSet;
+
+// @alpha
+export class EntityClassChanges extends ClassChanges {
+    addChange(change: ISchemaChange): void;
+    get entityMixinChanges(): Map<string, EntityMixinChanges>;
+}
 
 // @alpha
 export class EntityMixinChange extends BaseSchemaChange {
@@ -891,6 +895,13 @@ export class PropertyValueChange extends BaseSchemaChange {
 }
 
 // @alpha
+export class RelationshipClassChanges extends ClassChanges {
+    addChange(change: ISchemaChange): void;
+    get sourceConstraintChanges(): Map<string, RelationshipConstraintChanges>;
+    get targetConstraintChanges(): Map<string, RelationshipConstraintChanges>;
+}
+
+// @alpha
 export class RelationshipConstraintChanges extends BaseSchemaChanges {
     addChange(change: ISchemaChange): void;
     get constraintClassChanges(): RelationshipConstraintClassChange[];
@@ -919,10 +930,12 @@ export class SchemaChanges extends BaseSchemaChanges {
     get allDiagnostics(): AnyDiagnostic[];
     get classChanges(): Map<string, ClassChanges>;
     get customAttributeChanges(): Map<string, CustomAttributeContainerChanges>;
+    get entityClassChanges(): Map<string, EntityClassChanges>;
     get enumerationChanges(): Map<string, EnumerationChanges>;
     get formatChanges(): Map<string, FormatChanges>;
     get kindOfQuantityChanges(): Map<string, KindOfQuantityChanges>;
     get missingSchemaReferences(): SchemaReferenceMissing[];
+    get relationshipClassChanges(): Map<string, RelationshipClassChanges>;
     get schemaItemChanges(): Map<string, SchemaItemChanges>;
     get schemaReferenceDeltas(): SchemaReferenceDelta[];
 }
@@ -1415,7 +1428,6 @@ export abstract class SchemaItemChange extends BaseSchemaChange {
 export class SchemaItemChanges extends BaseSchemaChanges {
     constructor(schema: Schema, schemaItemName: string, schemaItemType: SchemaItemType);
     addChange(change: ISchemaChange): void;
-    get customAttributeChanges(): Map<string, CustomAttributeContainerChanges>;
     // (undocumented)
     protected getSchemaItemNameFromChange(change: ISchemaChange): string | undefined;
     get schemaItemMissing(): SchemaItemMissing | undefined;
