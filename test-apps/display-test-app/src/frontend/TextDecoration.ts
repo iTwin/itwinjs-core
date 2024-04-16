@@ -45,6 +45,9 @@ export class TextDecorationTool extends Tool {
     textBlock.appendRun(TextRun.create({
       styleName: "",
       content: this._text,
+      styleOverrides: {
+        fontName: "Arial",
+      },
     }));
 
     const origin = vp.view.getCenter();
