@@ -69,7 +69,6 @@ function createFractionTextString(text: string, run: RunLayout, origin: Point3d,
   assert(undefined !== ts.widthFactor);
 
   ts.height *= run.style.stackedFractionScale;
-  ts.widthFactor *= run.style.stackedFractionScale;
 
   ts.transformInPlace(transform);
 
