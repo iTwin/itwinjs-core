@@ -216,6 +216,8 @@ import { SynchronizationConfigLinkProps } from '@itwin/core-common';
 import { TextAnnotation } from '@itwin/core-common';
 import { TextAnnotation2dProps } from '@itwin/core-common';
 import { TextAnnotation3dProps } from '@itwin/core-common';
+import { TextBlockGeometryProps } from '@itwin/core-common';
+import { TextStyleSettings } from '@itwin/core-common';
 import { TextureData } from '@itwin/core-common';
 import { TextureLoadProps } from '@itwin/core-common';
 import { TextureMapProps } from '@itwin/core-common';
@@ -4390,6 +4392,21 @@ export interface ProcessChangesetOptions {
     wantPropertyChecksums?: boolean;
     // (undocumented)
     wantRelationshipCaching?: boolean;
+}
+
+// @beta
+export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometryArgs): TextBlockGeometryProps;
+
+// @beta
+export interface ProduceTextAnnotationGeometryArgs {
+    annotation: TextAnnotation;
+    // @internal
+    computeTextRange?: ComputeRangesForTextLayout;
+    // @internal
+    findFontId?: FindFontId;
+    // @internal
+    findTextStyle?: FindTextStyle;
+    iModel: IModelDb;
 }
 
 // @public
