@@ -1,8 +1,5 @@
 lockfileVersion: 5.4
 
-overrides:
-  mysql2: ^3.9.4
-
 importers:
 
   .:
@@ -10,7 +7,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.6.8
+      '@bentley/imodeljs-native': 4.6.9
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.1.0
       '@itwin/core-bentley': workspace:*
@@ -60,7 +57,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
-      '@bentley/imodeljs-native': 4.6.8
+      '@bentley/imodeljs-native': 4.6.9
       '@itwin/cloud-agnostic-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.2.2_scz6qrwecfbbxg4vskopkl3a7u
@@ -2242,6 +2239,7 @@ importers:
       semver: ^7.3.5
       sinon: ^17.0.1
       sinon-chai: ^3.7.0
+      source-map-support: ^0.5.6
       typemoq: ^2.1.0
       typescript: ~5.0.2
     dependencies:
@@ -2289,6 +2287,7 @@ importers:
       rimraf: 3.0.2
       sinon: 17.0.1
       sinon-chai: 3.7.0_chai@4.3.10+sinon@17.0.1
+      source-map-support: 0.5.6
       typemoq: 2.1.0
       typescript: 5.0.2
 
@@ -2327,6 +2326,7 @@ importers:
       rimraf: ^3.0.2
       sinon: ^17.0.1
       sinon-chai: ^3.7.0
+      source-map-support: ^0.5.6
       typemoq: ^2.1.0
       typescript: ~5.0.2
       typescript-json-schema: ^0.55.0
@@ -2365,6 +2365,7 @@ importers:
       rimraf: 3.0.2
       sinon: 17.0.1
       sinon-chai: 3.7.0_chai@4.3.10+sinon@17.0.1
+      source-map-support: 0.5.6
       typemoq: 2.1.0
       typescript: 5.0.2
       typescript-json-schema: 0.55.0
@@ -3782,8 +3783,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.6.8:
-    resolution: {integrity: sha512-9uiHpgwrO6msOAQYZpv1SafdvaujUyCjXw/2OF5wPBPFU2u3rrAhFFL/UkEIN9gLWE9TV64YOu+sLNakZyWf9w==}
+  /@bentley/imodeljs-native/4.6.9:
+    resolution: {integrity: sha512-ncmp21fofYOhg8xVoVVXuPHLcm3gsnpJFyan1zt7Li22InHYktGmTdauYEf3dDGZxL3xhgbPFdKsW2Je/S9wtg==}
     requiresBuild: true
     dev: false
 
@@ -4173,7 +4174,7 @@ packages:
       lodash: 4.17.21
       mocha: 10.2.0
       puppeteer: 15.5.0
-      source-map-support: 0.5.6
+      source-map-support: 0.5.21
       yargs: 17.4.0
     transitivePeerDependencies:
       - bufferutil
@@ -4197,7 +4198,7 @@ packages:
       lodash: 4.17.21
       mocha: 10.2.0
       puppeteer: 15.5.0
-      source-map-support: 0.5.6
+      source-map-support: 0.5.21
       yargs: 17.4.0
     transitivePeerDependencies:
       - bufferutil
