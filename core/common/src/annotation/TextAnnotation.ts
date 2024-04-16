@@ -12,6 +12,8 @@ import { TextBlock, TextBlockProps } from "./TextBlock";
 /**
  * Describes the horizontal and vertical alignment of a [[TextAnnotation]]'s text relative to [[TextAnnotation.origin]].
  * @beta
+ * @preview
+ * @extensions
  */
 export interface TextAnnotationAnchor {
   /**
@@ -34,23 +36,42 @@ export interface TextAnnotationAnchor {
 /**
  * JSON representation of a [[TextAnnotation]].
  * @beta
+ * @preview
+ * @extensions
  */
 export interface TextAnnotationProps {
-  /** See [[TextAnnotation.origin]]. */
+  /** See [[TextAnnotation.origin]]. Default: [0, 0, 0]*/
   origin?: XYZProps;
-  /** See [[TextAnnotation.orientation]]. */
+  /** See [[TextAnnotation.orientation]]. Default: no rotation. */
   orientation?: YawPitchRollProps;
-  /** See [[TextAnnotation.textBlock]]. */
+  /** See [[TextAnnotation.textBlock]]. Default: an empty text block. */
   textBlock?: TextBlockProps;
-  /** See [[TextAnnotation.anchor]]. */
+  /** See [[TextAnnotation.anchor]]. Default: top-left. */
   anchor?: TextAnnotationAnchor;
 }
 
+/** Arguments supplied to [[TextAnnotation.create]].
+ * @beta
+ * @preview
+ * @extensions
+ */
+export interface TextAnnotationCreateArgs {
+  /** See [[TextAnnotation.origin]]. Default: [0, 0, 0]*/
+  origin?: Point3d;
+  /** See [[TextAnnotation.orientation]]. Default: no rotation. */
+  orientation?: YawPitchRollAngles;
+  /** See [[TextAnnotation.textBlock]]. Default: an empty text block. */
+  textBlock?: TextBlock;
+  /** See [[TextAnnotation.anchor]]. Default: top-left. */
+  anchor?: TextAnnotationAnchor;
+}
 /**
  * Represents a formatted block of text positioned in 2d or 3d space.
  * [TextAnnotation2d]($backend) and [TextAnnotation3d]($backend) elements store a TextAnnotation from which their geometric representation is generated.
  * @see [produceTextAnnotationGeometry]($backend) to decompose the annotation into a set of geometric primitives suitable for use with [[GeometryStreamBuilder.appendTextBlock]].
  * @beta
+ * @preview
+ * @extensions
  */
 export class TextAnnotation {
   /**
@@ -81,16 +102,26 @@ export class TextAnnotation {
     this.anchor = anchor;
   }
 
+  /** Creates a new TextAnnotation. */
+  public static create(args?: TextAnnotationCreateArgs): TextAnnotation {
+    const origin = args?.origin ?? new Point3d();
+    const angles = args?.orientation ?? new YawPitchRollAngles();
+    const textBlock = args?.textBlock ?? TextBlock.createEmpty();
+    const anchor = args?.anchor ?? { vertical: "top", horizontal: "left" };
+
+    return new TextAnnotation(origin, angles, textBlock, anchor);
+  }
+
   /**
    * Creates a new TextAnnotation instance from its JSON representation.
    */
   public static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation {
-    const origin = Point3d.fromJSON(props?.origin);
-    const angles = YawPitchRollAngles.fromJSON(props?.orientation);
-    const textBlock = TextBlock.create(props?.textBlock ?? { styleName: "" });
-    const anchor: TextAnnotationAnchor = props?.anchor ? { ...props.anchor } : { vertical: "top", horizontal: "left" };
-
-    return new TextAnnotation(origin, angles, textBlock, anchor);
+    return TextAnnotation.create({
+      origin: props?.origin ? Point3d.fromJSON(props.origin) : undefined,
+      orientation: props?.orientation ? YawPitchRollAngles.fromJSON(props.orientation) : undefined,
+      textBlock: props?.textBlock ? TextBlock.create(props.textBlock) : undefined,
+      anchor: props?.anchor ? { ...props.anchor } : undefined,
+    });
   }
 
   /**

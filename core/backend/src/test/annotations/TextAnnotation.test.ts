@@ -396,7 +396,7 @@ describe("layoutTextBlock", () => {
       expect(computeDimensions({ content: "text" })).not.to.deep.equal(computeDimensions({ content: "texttexttext" }));
       expect(computeDimensions({ content: "text" })).not.to.deep.equal(computeDimensions({ content: "TEXT" }));
     });
-    
+
     it("computes different ranges for different fonts", () => {
       // These two are embedded in the iModel.
       expect(computeDimensions({ font: "Vera" })).not.to.deep.equal(computeDimensions({ font: "Karla" }));
@@ -654,7 +654,7 @@ describe("TextAnnotation element", () => {
       expect(el.getAnnotation()!.equals(annotation)).to.be.true;
       expect(el.geom).to.be.undefined;
     });
-    
+
     function expectPlacement(el: GeometricElement3d, expectValidBBox: boolean, expectedOrigin = [0, 0, 0], expectedYPR = [0, 0, 0]): void {
       expect(el.placement.origin.x).to.equal(expectedOrigin[0]);
       expect(el.placement.origin.y).to.equal(expectedOrigin[1]);
@@ -701,5 +701,5 @@ describe("TextAnnotation element", () => {
 });
 
 describe("IModelDb.computeRangesForText", () => {
-  
+
 });
