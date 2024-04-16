@@ -9,7 +9,8 @@ import { Cartographic, ImageMapLayerSettings, ImageSource, IModelStatus, ServerE
 import { IModelApp } from "../../../IModelApp";
 import {
   ArcGisErrorCode, ArcGisGeometryReaderJSON, ArcGISImageryProvider, ArcGISTileMap, ArcGisUtilities,
-  FeatureGraphicsRenderer, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeature,
+  FeatureGraphicsRenderer,
+  GraphicsGeometryRenderer, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeature,
   MapLayerFeatureInfo, MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
 } from "../../internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";

@@ -292,6 +292,12 @@ describe("OgcFeaturesProvider", () => {
       return (obj as Response);
     });
 
+    sandbox.stub(HTMLCanvasElement.prototype, "getContext").callsFake(function _(_contextId: any, _options?: any) {
+      return {} as RenderingContext;
+    });
+    sandbox.stub(HTMLCanvasElement.prototype, "toDataURL").callsFake(function _(_type?: string, _quality?: any) {
+      return "data:image/png;base64,iVBORw0KGgo";
+    });
     // Now test with an invalid sublayer Id
     const settings = getTestSettings(CountriesDataset.collectionUrl);
     const provider = new OgcFeaturesProvider(settings);
@@ -324,6 +330,13 @@ describe("OgcFeaturesProvider", () => {
         status: 200,
       } as unknown;   // By using unknown type, I can define parts of Response I really need
       return (obj as Response);
+    });
+
+    sandbox.stub(HTMLCanvasElement.prototype, "getContext").callsFake(function _(_contextId: any, _options?: any) {
+      return {} as RenderingContext;
+    });
+    sandbox.stub(HTMLCanvasElement.prototype, "toDataURL").callsFake(function _(_type?: string, _quality?: any) {
+      return "data:image/png;base64,iVBORw0KGgo";
     });
 
     // Now test with an invalid sublayer Id

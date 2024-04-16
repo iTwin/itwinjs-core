@@ -5,7 +5,7 @@
 
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisGeometryReaderJSON, FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, FeatureGraphicsRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
+import { ArcGisGeometryReaderJSON, FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, GraphicsGeometryRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
 import { Transform } from "@itwin/core-geometry";
 import { ArcGisBaseFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisFieldType, ArcGisResponseData } from "./ArcGisFeatureResponse";
@@ -49,7 +49,7 @@ export class ArcGisJsonFeatureReader extends ArcGisBaseFeatureReader {
     }
   }
 
-  public async readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer?: FeatureGraphicsRenderer) {
+  public async readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer?: GraphicsGeometryRenderer) {
     const responseObj = response.data;
     if (responseObj === undefined || !Array.isArray(responseObj.features))
       return;

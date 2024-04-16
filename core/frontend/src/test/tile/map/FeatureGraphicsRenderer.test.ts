@@ -10,7 +10,6 @@ import sinon from "sinon";
 import { IModelApp } from "../../../IModelApp";
 import {
   FeatureGraphicsRenderer,
-
 } from "../../../tile/internal";
 import { BlankConnection, IModelConnection } from "../../../IModelConnection";
 import { GeoServices, GeoServicesOptions } from "../../../GeoServices";

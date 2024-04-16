@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, QuadId, WGS84Extent } from "@itwin/core-frontend";
+import { FeatureGraphicsRenderer, GraphicsGeometryRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, QuadId, WGS84Extent } from "@itwin/core-frontend";
 import { EsriPMS, EsriPMSProps, EsriRenderer, EsriSFS, EsriSFSProps, EsriSLS, EsriSLSProps, EsriSymbol } from "../ArcGisFeature/EsriSymbology";
 import { Cartographic, ColorDef, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError, SubLayerId } from "@itwin/core-common";
 import { Matrix4d, Point3d, Range2d } from "@itwin/core-geometry";

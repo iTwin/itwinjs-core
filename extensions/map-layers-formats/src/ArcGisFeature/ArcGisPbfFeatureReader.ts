@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { esriPBuffer } from "../ArcGisFeature/esriPBuffer.gen";
-import { FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, FeatureGraphicsRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
+import { FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, GraphicsGeometryRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { ArcGisBaseFeatureReader } from "./ArcGisFeatureReader";
@@ -201,7 +201,7 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
     }
   }
 
-  public async readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer?: FeatureGraphicsRenderer) {
+  public async readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer?: GraphicsGeometryRenderer) {
     if (!(response.data instanceof esriPBuffer.FeatureCollectionPBuffer)) {
 
       Logger.logError(loggerCategory, "Response was not in PBF format");

@@ -5,14 +5,14 @@
 import { Logger } from "@itwin/core-bentley";
 import { Cartographic } from "@itwin/core-common";
 import { GrowableXYZArray, LineString3d, Loop, Point3d, Point3dArray, RegionOps } from "@itwin/core-geometry";
-import { FeatureGeometryBaseRenderer, FeatureSymbolizedRenderer, WebMercator } from "../../internal";
+import { FeatureGeometryBaseRenderer, FeatureGeometryRenderer, FeatureSymbolizedRenderer, WebMercator } from "../../internal";
 import { GraphicPrimitive } from "../../../render/GraphicPrimitive";
 import { Viewport } from "../../../Viewport";
 
 const loggerCategory = "MapLayerImageryProvider.FeatureGraphicsRenderer";
 
 /**
- * Properties of [[FeatureGraphicsRenderer]]
+ * Properties of [[GraphicsGeometryRenderer]]
  * @internal
  */
 export interface FeatureGraphicsRendererProps {
@@ -22,11 +22,18 @@ export interface FeatureGraphicsRendererProps {
   crs: "webMercator" | "wgs84";
 }
 
+/**
+ * @internal
+ */
+export interface GraphicsGeometryRenderer extends FeatureGeometryRenderer {
+  moveGraphics(): GraphicPrimitive[];
+}
+
 /** Feature geometry renderer implementation that will "render" a list of [GraphicPrimitive]($frontend)
  * This renderer initial objective is to read geometries when a call to [[MapLayerImageryProvider.getFeatureInfo]] is performed.
  * @internal
  */
-export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer {
+export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer implements GraphicsGeometryRenderer {
 
   public override hasSymbologyRenderer(): this is FeatureSymbolizedRenderer {return false;}
 
@@ -131,7 +138,7 @@ export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer {
         const spatialPoints = await this.toSpatial(pointsArray);
         this._graphics.push({ type: "pointstring", points: spatialPoints });
       } catch (error) {
-        Logger.logError(loggerCategory, "ArcGisFeatureGraphicsRenderer: Could not reproject points");
+        Logger.logError(loggerCategory, "FeatureGraphicsRenderer: Could not reproject points");
       }
 
       this._scratchPointsArray.clear();

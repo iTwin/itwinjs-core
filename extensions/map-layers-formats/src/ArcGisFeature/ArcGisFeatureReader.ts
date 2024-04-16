@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { FeatureGeometryRenderer, FeatureGraphicsRenderer, MapLayerFeatureInfo } from "@itwin/core-frontend";
+import { FeatureGeometryRenderer, GraphicsGeometryRenderer, MapLayerFeatureInfo } from "@itwin/core-frontend";
 import { ArcGisResponseData } from "./ArcGisFeatureResponse";
 import { FeatureInfoReader } from "../Feature/FeatureInfoReader";
 
@@ -14,7 +14,7 @@ import { FeatureInfoReader } from "../Feature/FeatureInfoReader";
  */
 export interface ArcGisFeatureReader {
   readAndRender: (response: ArcGisResponseData, renderer: FeatureGeometryRenderer) => Promise<void>;
-  readFeatureInfo: (response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer: FeatureGraphicsRenderer) => Promise<void>;
+  readFeatureInfo: (response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer: GraphicsGeometryRenderer) => Promise<void>;
 }
 
 /** Internal implementation of [[ArcGisFeatureReader]]
@@ -32,6 +32,6 @@ export abstract class ArcGisBaseFeatureReader extends FeatureInfoReader implemen
   }
 
   public abstract readAndRender(response: ArcGisResponseData, renderer: FeatureGeometryRenderer): Promise<void>;
-  public abstract readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer: FeatureGraphicsRenderer): Promise<void>;
+  public abstract readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer: GraphicsGeometryRenderer): Promise<void>;
 
 }
