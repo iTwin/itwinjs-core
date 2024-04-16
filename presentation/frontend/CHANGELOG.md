@@ -1,6 +1,13 @@
 # Change Log - @itwin/presentation-frontend
 
-This log was last generated on Mon, 15 Apr 2024 20:31:33 GMT and should not be manually modified.
+This log was last generated on Tue, 16 Apr 2024 14:46:22 GMT and should not be manually modified.
+
+## 4.5.2
+Tue, 16 Apr 2024 14:46:22 GMT
+
+### Updates
+
+- Add a way to specify batch size when making multi-value `PresentationManager` requests.
 
 ## 4.5.1
 Wed, 03 Apr 2024 18:26:59 GMT
