@@ -151,7 +151,7 @@ export class OgcFeaturesReader extends FeatureInfoReader  {
           feature.attributes?.push(getRecordInfo(key, value));
       }
 
-      if (geomReader) {
+      if (geomReader && opts.geomRenderer) {
         await geomReader.readGeometry(responseFeature.geometry as any);
         const graphics = opts.geomRenderer.moveGraphics();
         feature.geometries = graphics.map((graphic: GraphicPrimitive) => {
