@@ -3,27 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, ColorDefProps, ElementGeometry, FractionRun, GeometryStreamBuilder, IModelReadRpcInterface, IModelTileRpcInterface, LineBreakRun, Placement2d, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockJustification, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
-import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, RenderGraphic, RenderGraphicOwner, Tool, readElementGraphics } from "@itwin/core-frontend";
-import { parseArgs } from "@itwin/frontend-devtools";
+import { BaselineShift, ColorDef, FractionRun, GeometryStreamBuilder, IModelTileRpcInterface, LineBreakRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockJustification, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, RenderGraphicOwner, Tool, readElementGraphics } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 
-const decorators: Decorator[] = [];
-
-function addTextDecoration(graphic: RenderGraphic): void {
-  graphic = IModelApp.renderSystem.createGraphicOwner(graphic);
-
-  const decorator: Decorator = {
-    decorate: (context) => {
-      context.addDecoration(GraphicType.WorldOverlay, graphic);
-    },
-  };
-  
-  IModelApp.viewManager.addDecorator(decorator);
-  decorators.push(decorator);
-}
 
 class TextEditor implements Decorator {
   // Geometry properties
