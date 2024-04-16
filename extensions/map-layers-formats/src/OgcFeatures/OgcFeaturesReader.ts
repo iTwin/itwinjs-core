@@ -9,7 +9,7 @@ import * as Geojson from "geojson";
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { FeatureInfoReader } from "../Feature/FeatureInfoReader";
-import { FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, GraphicsGeometryRenderer, GraphicPrimitive, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo } from "@itwin/core-frontend";
+import { FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, GraphicPrimitive, GraphicsGeometryRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo } from "@itwin/core-frontend";
 
 export type OgcFeaturePropertyType = "string" | "number" | "integer" | "datetime" | "geometry" | "boolean";
 
@@ -153,7 +153,7 @@ export class OgcFeaturesReader extends FeatureInfoReader  {
 
       if (geomReader) {
         await geomReader.readGeometry(responseFeature.geometry as any);
-        const graphics = opts.geomRenderer!.moveGraphics();
+        const graphics = opts.geomRenderer.moveGraphics();
         feature.geometries = graphics.map((graphic: GraphicPrimitive) => {
           return {graphic};
         });
