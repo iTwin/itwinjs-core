@@ -50,7 +50,7 @@ export class RpcTrace {
   public static async runWithSpan<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T> {
     return Tracing.withSpan(activity.rpcMethod ?? "unknown RPC method", async () => RpcTrace.run(activity, fn), {
       attributes: { ...RpcInvocation.sanitizeForLog(activity) },
-      kind: SpanKind.SERVER,
+      kind: SpanKind.INTERNAL,
     });
   }
 }
