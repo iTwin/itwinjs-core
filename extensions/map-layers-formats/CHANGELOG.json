@@ -23,6 +23,12 @@
       }
     },
     {
+      "version": "4.4.9",
+      "tag": "@itwin/map-layers-formats_v4.4.9",
+      "date": "Mon, 15 Apr 2024 20:29:22 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.4.8",
       "tag": "@itwin/map-layers-formats_v4.4.8",
       "date": "Mon, 25 Mar 2024 22:22:26 GMT",
