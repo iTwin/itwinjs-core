@@ -2,10 +2,11 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+
 import { concat, concatAll, map, mergeMap, Observable, of, range, scan } from "rxjs";
 import { eachValueFrom } from "rxjs-for-await";
-import { PagedResponse, PageOptions } from "@itwin/presentation-common";
 import { SortedArray } from "@itwin/core-bentley";
+import { PagedResponse, PageOptions } from "@itwin/presentation-common";
 import { MultipleValuesRequestOptions } from "./PresentationManager";
 
 /**
@@ -39,7 +40,7 @@ export class StreamedResponseGenerator<TPagedResponseItem> {
    */
   private async fetchFirstPage(): Promise<PagedResponse<TPagedResponseItem>> {
     const start = this._props.paging?.start ?? 0;
-    const batchSize = this._props.paging?.size ?? 0;
+    const batchSize = this._props.batchSize ?? this._props.paging?.size ?? 0;
     return this._props.getBatch({ start, size: batchSize }, 0);
   }
 
@@ -69,10 +70,10 @@ export class StreamedResponseGenerator<TPagedResponseItem> {
     let batchSize: number;
     if (pageSize) {
       itemsToFetch = Math.min(totalItemsToFetch, pageSize) - receivedItemsLength;
-      batchSize = Math.min(pageSize, receivedItemsLength);
+      batchSize = Math.min(this._props.batchSize ?? Number.MAX_SAFE_INTEGER, pageSize, receivedItemsLength);
     } else {
       itemsToFetch = totalItemsToFetch - receivedItemsLength;
-      batchSize = receivedItemsLength;
+      batchSize = Math.min(this._props.batchSize ?? Number.MAX_SAFE_INTEGER, receivedItemsLength);
     }
 
     const remainingBatches = Math.ceil(itemsToFetch / batchSize);
