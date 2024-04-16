@@ -128,7 +128,7 @@ class TextEditor implements Decorator {
 
     const gfx = await IModelTileRpcInterface.getClient().requestElementGraphics(rpcProps, {
       id: Guid.createValue(),
-      toleranceLog10: -3,
+      toleranceLog10: -5,
       type: "2d",
       placement: {
         origin: this.origin.toJSON(),
