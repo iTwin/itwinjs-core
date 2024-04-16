@@ -2,6 +2,39 @@
   "name": "@itwin/ecschema-metadata",
   "entries": [
     {
+      "version": "4.5.2",
+      "tag": "@itwin/ecschema-metadata_v4.5.2",
+      "date": "Tue, 16 Apr 2024 14:46:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.5.1",
+      "tag": "@itwin/ecschema-metadata_v4.5.1",
+      "date": "Wed, 03 Apr 2024 18:26:58 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.5.0",
+      "tag": "@itwin/ecschema-metadata_v4.5.0",
+      "date": "Tue, 02 Apr 2024 19:06:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Units v1.0.8 schema is released which introduces a new unit - Decanewton (daN)"
+          },
+          {
+            "comment": "Added error handle when trying to create a schema fromJson that has referenced custom attributes and no references defined in the schema."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.4.9",
+      "tag": "@itwin/ecschema-metadata_v4.4.9",
+      "date": "Mon, 15 Apr 2024 20:29:22 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.4.8",
       "tag": "@itwin/ecschema-metadata_v4.4.8",
       "date": "Mon, 25 Mar 2024 22:22:26 GMT",

@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
-import { SchemaItemType, schemaItemTypeToString } from "../../ECObjects";
+import { SchemaItemType } from "../../ECObjects";
 import { ECObjectsError } from "../../Exception";
 import { InvertedUnit } from "../../Metadata/InvertedUnit";
 import { Schema } from "../../Metadata/Schema";
@@ -23,7 +23,7 @@ describe("Inverted Unit tests", () => {
     testUnit = new InvertedUnit(schema, "Test");
     it("should return correct item type and string", () => {
       assert.strictEqual(testUnit.schemaItemType, SchemaItemType.InvertedUnit);
-      assert.strictEqual(schemaItemTypeToString(testUnit.schemaItemType), "InvertedUnit");
+      assert.strictEqual(testUnit.schemaItemType, "InvertedUnit");
     });
   });
 
