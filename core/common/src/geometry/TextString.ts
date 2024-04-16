@@ -93,11 +93,11 @@ export class TextString {
       italic: this.italic,
       underline: this.underline,
     };
-    
+
     if (!this.origin.isAlmostZero) {
       props.origin = this.origin.toJSON();
     }
-    
+
     if (!this.rotation.isIdentity()) {
       props.rotation = this.rotation.toJSON();
     }
