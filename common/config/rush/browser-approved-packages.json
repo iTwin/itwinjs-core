@@ -792,7 +792,7 @@
     },
     {
       "name": "source-map-support",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "spdy",

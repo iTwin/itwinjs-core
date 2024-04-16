@@ -2238,6 +2238,7 @@ importers:
       semver: ^7.3.5
       sinon: ^17.0.1
       sinon-chai: ^3.7.0
+      source-map-support: ^0.5.6
       typemoq: ^2.1.0
       typescript: ~5.0.2
     dependencies:
@@ -2285,6 +2286,7 @@ importers:
       rimraf: 3.0.2
       sinon: 17.0.1
       sinon-chai: 3.7.0_chai@4.3.10+sinon@17.0.1
+      source-map-support: 0.5.6
       typemoq: 2.1.0
       typescript: 5.0.2
 
@@ -2323,6 +2325,7 @@ importers:
       rimraf: ^3.0.2
       sinon: ^17.0.1
       sinon-chai: ^3.7.0
+      source-map-support: ^0.5.6
       typemoq: ^2.1.0
       typescript: ~5.0.2
       typescript-json-schema: ^0.55.0
@@ -2361,6 +2364,7 @@ importers:
       rimraf: 3.0.2
       sinon: 17.0.1
       sinon-chai: 3.7.0_chai@4.3.10+sinon@17.0.1
+      source-map-support: 0.5.6
       typemoq: 2.1.0
       typescript: 5.0.2
       typescript-json-schema: 0.55.0
@@ -4169,7 +4173,7 @@ packages:
       lodash: 4.17.21
       mocha: 10.2.0
       puppeteer: 15.5.0
-      source-map-support: 0.5.6
+      source-map-support: 0.5.21
       yargs: 17.4.0
     transitivePeerDependencies:
       - bufferutil
@@ -4193,7 +4197,7 @@ packages:
       lodash: 4.17.21
       mocha: 10.2.0
       puppeteer: 15.5.0
-      source-map-support: 0.5.6
+      source-map-support: 0.5.21
       yargs: 17.4.0
     transitivePeerDependencies:
       - bufferutil
@@ -4899,7 +4903,7 @@ packages:
   /@types/cpx/1.5.2:
     resolution: {integrity: sha512-CL9DbTAdf5NYcbYpBTli6JxVIpCAhJp1FeQiXd9SNjbC4o9k6McnHkU0FHgj9UYoN7TVX3poaaBrwFabTY7Skw==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
     dev: false
 
   /@types/debug/4.1.12:
@@ -5083,10 +5087,6 @@ packages:
   /@types/node/16.18.87:
     resolution: {integrity: sha512-+IzfhNirR/MDbXz6Om5eHV54D9mQlEMGag6AgEzlju0xH3M8baCXYwqQ6RKgGMpn9wSTx6Ltya/0y4Z8eSfdLw==}
     dev: true
-
-  /@types/node/18.16.1:
-    resolution: {integrity: sha512-DZxSZWXxFfOlx7k7Rv4LAyiMroaxa3Ly/7OOzZO8cBNho0YzAi4qlbrx8W27JGqG57IgR/6J7r+nOJWw6kcvZA==}
-    dev: false
 
   /@types/node/18.16.20:
     resolution: {integrity: sha512-nL54VfDjThdP2UXJXZao5wp76CDiDw4zSRO8d4Tk7UgDqNKGKVEQB0/t3ti63NS+YNNkIQDvwEAF04BO+WYu7Q==}
@@ -5932,7 +5932,7 @@ packages:
       '@types/bluebird': 3.5.42
       bluebird: 3.7.2
       lodash: 4.17.21
-      source-map-support: 0.5.6
+      source-map-support: 0.5.21
     dev: true
 
   /asynciterator.prototype/1.0.0:
@@ -12382,7 +12382,7 @@ packages:
       bluebird: 3.7.2
       lodash: 4.17.21
       shell-quote: 1.8.1
-      source-map-support: 0.5.6
+      source-map-support: 0.5.21
     dev: true
 
   /term-size/2.2.1:
