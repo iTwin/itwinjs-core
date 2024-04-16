@@ -16,7 +16,7 @@ import { CountriesDataset } from "./CountriesDataset";
 describe("OgcFeaturesReader", () => {
   const sandbox = sinon.createSandbox();
 
-  const testFeatureInfo = async (reader:OgcFeaturesReader, opts: ReadOgcFeaturesInfoOptions, infos: MapLayerFeatureInfo[]) {
+  const testFeatureInfo = async (reader: OgcFeaturesReader, opts: ReadOgcFeaturesInfoOptions, infos: MapLayerFeatureInfo[]) => {
     await reader.readFeatureInfo(opts, infos);
     expect(infos.length).to.eqls(1);
     expect(infos[0].subLayerInfos?.length).to.eqls(1);
@@ -24,7 +24,8 @@ describe("OgcFeaturesReader", () => {
     expect(subLayer.features.length).to.eqls(1);
     const feature = subLayer.features[0];
     expect(feature.attributes.length).to.eqls(Object.keys(CountriesDataset.queryables.properties).length - 1); // -1 bec
-  }
+  };
+
   afterEach(async () => {
     sandbox.restore();
   });
