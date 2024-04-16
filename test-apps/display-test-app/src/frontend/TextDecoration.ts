@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ColorDefProps, ElementGeometry, GeometryStreamBuilder, IModelReadRpcInterface, IModelTileRpcInterface, Placement2d, TextAnnotation, TextAnnotationAnchor, TextBlock, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { ColorDef, ColorDefProps, ElementGeometry, GeometryStreamBuilder, IModelReadRpcInterface, IModelTileRpcInterface, Placement2d, TextAnnotation, TextAnnotationAnchor, TextBlock, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, RenderGraphic, RenderGraphicOwner, Tool, readElementGraphics } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -42,7 +42,7 @@ class TextEditor implements Decorator {
   }
   
   // Properties to be applied to the next run
-  public runStyle: Omit<TextStyleSettingsProps, "lineHeight" | "widthFactor" | "lineSpacingFactor"> = { };
+  public runStyle: Omit<TextStyleSettingsProps, "lineHeight" | "widthFactor" | "lineSpacingFactor"> = { fontName: "Arial" };
 
   private _textBlock = TextBlock.createEmpty();
   
@@ -54,13 +54,6 @@ class TextEditor implements Decorator {
     this._categoryId = category;
 
     IModelApp.viewManager.addDecorator(this);
-
-    // ###TODO remove this
-    this._textBlock.appendRun(TextRun.create({
-      styleOverrides: { fontName: "Arial" },
-      styleName: "",
-      content: "###TODO remove me",
-    }));
   }
 
   public clear(): void {
@@ -72,12 +65,24 @@ class TextEditor implements Decorator {
     this._textBlock = TextBlock.createEmpty();
     this.origin.setZero();
     this.anchor = { horizontal: "center", vertical: "middle" };
-    this.runStyle = { };
+    this.runStyle = { fontName: "Arial" };
+  }
+
+  public appendText(content: string): void {
+    this._textBlock.appendRun(TextRun.create({
+      styleName: "",
+      styleOverrides: this.runStyle,
+      content,
+    }));
   }
 
   public async update(): Promise<void> {
     if (!this._iModel) {
       throw new Error("Invoke `dta text init` first");
+    }
+
+    if (this._textBlock.isEmpty) {
+      return;
     }
 
     const annotation = TextAnnotation.fromJSON({
@@ -127,21 +132,39 @@ export class TextDecorationTool extends Tool {
   public static override get maxArgs() { return undefined; }
 
   public override async parseAndRun(...inArgs: string[]): Promise<boolean> {
-    const iModel = IModelApp.viewManager.selectedView?.iModel;
-    if (!iModel) {
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp) {
       return false;
     }
 
     const cmd = inArgs[0].toLowerCase();
-    const args = inArgs.slice(1);
+    const arg = inArgs[1];
 
     switch (cmd) {
-      case "init":
-        editor.init(iModel, args[0]);
-        break;
       case "clear":
         editor.clear();
         return true;
+      case "init":
+        editor.init(vp.iModel, arg);
+        break;
+      case "center":
+        editor.origin = vp.view.getCenter();
+        break;
+      case "font":
+        editor.runStyle.fontName = arg;
+        break;
+      case "text":
+        editor.appendText(arg);
+        break;
+      case "color":
+        editor.runStyle.color = ColorDef.fromString(arg).toJSON();
+        break;
+      case "height":
+        editor.documentStyle.lineHeight = Number.parseFloat(arg);
+        break;
+      case "width":
+        editor.documentStyle.widthFactor = Number.parseFloat(arg);
+        break;
       default:
         throw new Error(`unrecognized command ${cmd}`);
     }
