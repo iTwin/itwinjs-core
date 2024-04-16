@@ -4,11 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BaselineShift, ColorDef, FractionRun, GeometryStreamBuilder, IModelTileRpcInterface, LineBreakRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockJustification, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
-import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, RenderGraphicOwner, Tool, readElementGraphics } from "@itwin/core-frontend";
+import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
-
 
 class TextEditor implements Decorator {
   // Geometry properties
@@ -16,7 +15,7 @@ class TextEditor implements Decorator {
   private _iModel?: IModelConnection;
   private _entityId: Id64String = Id64.invalid;
   private _graphic?: RenderGraphicOwner;
-  
+
   // TextAnnotation properties
   public origin: Point3d = new Point3d(0, 0, 0);
   public anchor: TextAnnotationAnchor = { horizontal: "center", vertical: "middle" };
@@ -25,13 +24,13 @@ class TextEditor implements Decorator {
   public get documentStyle(): Pick<TextStyleSettingsProps, "lineHeight" | "widthFactor" | "lineSpacingFactor"> {
     return this._textBlock.styleOverrides;
   }
-  
+
   // Properties to be applied to the next run
   public runStyle: Omit<TextStyleSettingsProps, "lineHeight" | "widthFactor" | "lineSpacingFactor"> = { fontName: "Arial" };
   public baselineShift: BaselineShift = "none";
 
   private _textBlock = TextBlock.createEmpty();
-  
+
   public init(iModel: IModelConnection, category: Id64String): void {
     this.clear();
 
@@ -44,7 +43,7 @@ class TextEditor implements Decorator {
 
   public clear(): void {
     IModelApp.viewManager.dropDecorator(this);
-    
+
     this._iModel = undefined;
     this._graphic?.disposeGraphic();
     this._graphic = undefined;
@@ -70,7 +69,7 @@ class TextEditor implements Decorator {
       styleOverrides: this.runStyle,
       numerator,
       denominator,
-    }))
+    }));
   }
 
   public appendBreak(): void {
