@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ColorDef, ColorDefProps, ElementGeometry, GeometryStreamBuilder, IModelReadRpcInterface, IModelTileRpcInterface, Placement2d, TextAnnotation, TextAnnotationAnchor, TextBlock, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, ColorDefProps, ElementGeometry, FractionRun, GeometryStreamBuilder, IModelReadRpcInterface, IModelTileRpcInterface, LineBreakRun, Placement2d, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockJustification, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, RenderGraphic, RenderGraphicOwner, Tool, readElementGraphics } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -43,6 +43,7 @@ class TextEditor implements Decorator {
   
   // Properties to be applied to the next run
   public runStyle: Omit<TextStyleSettingsProps, "lineHeight" | "widthFactor" | "lineSpacingFactor"> = { fontName: "Arial" };
+  public baselineShift: BaselineShift = "none";
 
   private _textBlock = TextBlock.createEmpty();
   
@@ -66,6 +67,7 @@ class TextEditor implements Decorator {
     this.origin.setZero();
     this.anchor = { horizontal: "center", vertical: "middle" };
     this.runStyle = { fontName: "Arial" };
+    this.baselineShift = "none";
   }
 
   public appendText(content: string): void {
@@ -73,7 +75,36 @@ class TextEditor implements Decorator {
       styleName: "",
       styleOverrides: this.runStyle,
       content,
+      baselineShift: this.baselineShift,
     }));
+  }
+
+  public appendFraction(numerator: string, denominator: string): void {
+    this._textBlock.appendRun(FractionRun.create({
+      styleName: "",
+      styleOverrides: this.runStyle,
+      numerator,
+      denominator,
+    }))
+  }
+
+  public appendBreak(): void {
+    this._textBlock.appendRun(LineBreakRun.create({
+      styleName: "",
+      styleOverrides: this.runStyle,
+    }));
+  }
+
+  public appendParagraph(): void {
+    this._textBlock.appendParagraph();
+  }
+
+  public setDocumentWidth(width: number): void {
+    this._textBlock.width = width;
+  }
+
+  public justify(justification: TextBlockJustification): void {
+    this._textBlock.justification = justification;
   }
 
   public async update(): Promise<void> {
@@ -156,15 +187,84 @@ export class TextDecorationTool extends Tool {
       case "text":
         editor.appendText(arg);
         break;
+      case "fraction":
+        if (inArgs.length !== 3) {
+          throw new Error("Expected numerator and denominator");
+        }
+
+        editor.appendFraction(inArgs[1], inArgs[2]);
+        break;
+      case "break":
+        editor.appendBreak();
+        break;
+      case "paragraph":
+        editor.appendParagraph();
+        break;
       case "color":
         editor.runStyle.color = ColorDef.fromString(arg).toJSON();
         break;
       case "height":
         editor.documentStyle.lineHeight = Number.parseFloat(arg);
         break;
-      case "width":
+      case "widthfactor":
         editor.documentStyle.widthFactor = Number.parseFloat(arg);
         break;
+      case "width":
+        editor.setDocumentWidth(Number.parseFloat(arg));
+        break;
+      case "justify": {
+        const just = arg.toLowerCase();
+        switch (just) {
+          case "left":
+          case "center":
+          case "right":
+            editor.justify(just);
+            break;
+          default:
+            throw new Error("Expected left, right, or center");
+        }
+        break;
+      }
+      case "spacing":
+        editor.documentStyle.lineSpacingFactor = Number.parseFloat(arg);
+        break;
+      case "bold":
+        editor.runStyle.isBold = !editor.runStyle.isBold;
+        break;
+      case "italic":
+        editor.runStyle.isItalic = !editor.runStyle.isItalic;
+        break;
+      case "underline":
+        editor.runStyle.isUnderlined = !editor.runStyle.isUnderlined;
+        break;
+      case "fractionscale":
+        editor.runStyle.stackedFractionScale = Number.parseFloat(arg);
+        break;
+      case "fractiontype": {
+        const type = arg.toLowerCase();
+        switch (type) {
+          case "horizontal":
+          case "diagonal":
+            editor.runStyle.stackedFractionType = type;
+            break;
+          default:
+            throw new Error("Expected horizontal or diagonal");
+        }
+        break;
+      }
+      case "shift": {
+        const shift = arg.toLowerCase();
+        switch (shift) {
+          case "none":
+          case "superscript":
+          case "subscript":
+            editor.baselineShift = shift;
+            break;
+          default:
+            throw new Error("Expected none, superscript, or subscript");
+        }
+        break;
+      }
       default:
         throw new Error(`unrecognized command ${cmd}`);
     }
