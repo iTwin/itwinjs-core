@@ -145,7 +145,7 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
       containerB = parent ? await parent.getProperty(shortName) : undefined;
     } else if (RelationshipConstraint.isRelationshipConstraint(containerA)) {
       const parent = await this._schemaB.lookupItem<RelationshipClass>(containerA.relationshipClass.name);
-      containerB = parent ? await parent.getProperty(shortName) : undefined;
+      containerB = parent ? containerA.isSource ? parent.source : parent.target : undefined;
     }
 
     this._schemaComparer.compareCustomAttributeContainers(containerA, containerB);
