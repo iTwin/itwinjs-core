@@ -453,7 +453,7 @@
 			repositoryURL = "https://github.com/iTwin/mobile-native-ios";
 			requirement = {
 				kind = exactVersion;
-				version = 4.6.6;
+				version = 4.6.10;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

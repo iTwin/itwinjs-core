@@ -59,11 +59,11 @@ jobs:
         path: itwinjs-core
         clean: true
 
-      - task: NodeTool@0
-        displayName: Use Node 18
+      - task: UseNode@1
+        displayName: Use Node 20
         inputs:
-          versionSpec: 18.x
-          checkLatest: true
+          version: 20.x
+          checkLatest: false
 
       - script: |
           git config --local user.email imodeljs-admin@users.noreply.github.com

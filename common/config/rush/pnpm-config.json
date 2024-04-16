@@ -3,11 +3,7 @@
   "useWorkspaces": true,
   "strictPeerDependencies": false,
   "globalPeerDependencyRules": {
-    "ignoreMissing": [
-      "@babel/core",
-      "@types/node",
-      "@typescript-eslint/parser"
-    ]
+    "ignoreMissing": ["@babel/core", "@types/node", "@typescript-eslint/parser"]
   },
   "globalOverrides": {},
   // A list of temporary advisories excluded from the High and Critical list.
