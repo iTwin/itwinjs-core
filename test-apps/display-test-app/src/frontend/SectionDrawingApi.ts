@@ -90,8 +90,15 @@ export class SectionDrawingApi {
          * Step 3: Re-translate back to the spatial view's origin.
          * The question is, how do we do this? After doing steps 1 and 2, when/where does step 3 happen?
          */
-    // This seems to consistently move any attached spatial view to slightly off-screen to the bottom left corner. It has significant culling.
-    const drawingToSpatial = Transform.createOriginAndMatrix(Vector3d.createFrom(spatialViewState.getCenter()).negate(), spatialViewState.rotation.inverse());
+    // This seems to consistently move any attached spatial view to slightly off-screen to the bottom left corner. It has significant culling. Maybe this is doing steps 1 & 2, but missing step 3?
+    const drawingToSpatial = Transform.createOriginAndMatrix(Vector3d.createFrom(spatialViewState.getCenter()), spatialViewState.rotation.inverse());
+    // This seems slightly less consistent in placing than the above transform, but with less culling. Still missing step 3?
+    // const drawingToSpatial = Transform.createOriginAndMatrix(Vector3d.createFrom(spatialViewState.getCenter()).negate(), spatialViewState.rotation.inverse());
+    // This seems to get the view *somewhat* close to the center, except for the top view (which completely disappears). It seems to have worse culling, and I wonder if the top view is completely culled.
+    // const drawingToSpatial = Transform.createOriginAndMatrix(Vector3d.createFrom(spatialViewState.getCenter()), spatialViewState.rotation).inverse();
+    // const step3 = Transform.createTranslation(spatialViewState.origin);
+    // step3.multiplyTransformTransform(drawingToSpatial, drawingToSpatial);
+    // const drawingToSpatial = Transform.createOriginAndMatrix(Point3d.createZero(), spatialViewState.rotation.inverse());
     const sectionDrawingId = await SectionDrawingIpcInvoker.getOrCreate().insertSectionDrawing(
       tempName,
       spatialViewDefinitionId,

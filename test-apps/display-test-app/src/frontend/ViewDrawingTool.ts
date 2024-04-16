@@ -32,9 +32,7 @@ export class ViewDrawingPanel extends ToolBarDropDown {
       tooltip: "Name of new section drawing to create",
       keypresshandler: async (_tb, ev): Promise<void> => {
         ev.stopPropagation();
-        if ("Enter" === ev.key) {
-          this._name = (ev.target as HTMLInputElement).value;
-        }
+        this._name = (ev.target as HTMLInputElement).value;
       },
     });
 
