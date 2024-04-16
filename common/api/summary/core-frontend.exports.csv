@@ -362,6 +362,7 @@ public;GraphicPrimitive = GraphicLineString | GraphicLineString2d | GraphicPoint
 public;GraphicPrimitive2d
 internal;GraphicsCollector
 internal;GraphicsCollectorDrawArgs 
+internal;GraphicsGeometryRenderer 
 public;GraphicShape
 public;GraphicShape2d 
 public;GraphicSolidPrimitive

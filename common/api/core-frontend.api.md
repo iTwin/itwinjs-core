@@ -3639,7 +3639,7 @@ export interface FeatureGeometryRenderer {
 }
 
 // @internal
-export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer {
+export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer implements GraphicsGeometryRenderer {
     constructor(props: FeatureGraphicsRendererProps);
     // (undocumented)
     protected beginPath(): void;
@@ -5677,6 +5677,12 @@ export class GraphicsCollectorDrawArgs extends TileDrawArgs {
     get frustumPlanes(): FrustumPlanes;
     // (undocumented)
     get worldToViewMap(): Map4d;
+}
+
+// @internal (undocumented)
+export interface GraphicsGeometryRenderer extends FeatureGeometryRenderer {
+    // (undocumented)
+    moveGraphics(): GraphicPrimitive[];
 }
 
 // @public
