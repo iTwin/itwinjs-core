@@ -1,6 +1,6 @@
 # Change Log - @itwin/frontend-tiles
 
-This log was last generated on Wed, 03 Apr 2024 18:26:59 GMT and should not be manually modified.
+This log was last generated on Mon, 15 Apr 2024 20:31:33 GMT and should not be manually modified.
 
 ## 4.5.1
 Wed, 03 Apr 2024 18:26:59 GMT
@@ -14,6 +14,11 @@ Tue, 02 Apr 2024 19:06:00 GMT
 
 - Add support for enabling CDN and filtering exports by version
 - Clamp the fit volume of a batched tile tree to the project extents.
+
+## 4.4.9
+Mon, 15 Apr 2024 20:29:22 GMT
+
+_Version update only_
 
 ## 4.4.8
 Mon, 25 Mar 2024 22:22:26 GMT
