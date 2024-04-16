@@ -182,10 +182,11 @@ class LayoutContext {
           numerator.cloneTranslated({ x: (denomLen - numLen) / 2, y: 0 }, numerator);
         }
 
+        numerator.cloneTranslated({ x: 0, y: 1.5 * denominator.yLength() }, numerator);
         break;
       }
       case "diagonal": {
-        numerator.cloneTranslated({ x: 0, y: denomLen }, numerator);
+        numerator.cloneTranslated({ x: 0, y: denominator.yLength() }, numerator);
         denominator.cloneTranslated({ x: numLen, y: 0 }, denominator);
         break;
       }
