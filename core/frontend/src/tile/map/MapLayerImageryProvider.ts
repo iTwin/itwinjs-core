@@ -487,7 +487,7 @@ export abstract class MapLayerImageryProvider {
       return url;
 
     let tmpUrl = UrlUtils.appendQueryParams(url, this._settings.savedQueryParams);
-    tmpUrl = UrlUtils.appendQueryParams(url, this._settings.unsavedQueryParams);
+    tmpUrl = UrlUtils.appendQueryParams(tmpUrl, this._settings.unsavedQueryParams);
     return tmpUrl;
   }
 }
