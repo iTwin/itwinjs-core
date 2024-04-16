@@ -25,6 +25,7 @@ beta;Diagnostics:
 beta;DiagnosticType
 beta;diagnosticTypeToString(type: DiagnosticType): "CustomAttributeContainer" | "None" | "Property" | "RelationshipConstraint" | "Schema" | "SchemaItem"
 beta;ECRuleSet: IRuleSet
+alpha;EntityClassChanges 
 alpha;EntityMixinChange 
 alpha;EntityMixinChanges 
 alpha;EnumerationChanges 
@@ -55,6 +56,7 @@ beta;class PropertyDiagnostic
 alpha;PropertyEditResults
 alpha;PropertyMissing 
 alpha;PropertyValueChange 
+alpha;RelationshipClassChanges 
 alpha;RelationshipConstraintChanges 
 alpha;RelationshipConstraintClassChange 
 beta;class RelationshipConstraintDiagnostic
