@@ -4,20 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ElementGeometry, GeometryStreamBuilder, IModelReadRpcInterface, IModelTileRpcInterface, Placement2d, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
-import { GraphicType, IModelApp, RenderGraphic, Tool, readElementGraphics } from "@itwin/core-frontend";
+import { Decorator, GraphicType, IModelApp, RenderGraphic, Tool, readElementGraphics } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { LineSegment3d } from "@itwin/core-geometry";
+
+const decorators: Decorator[] = [];
 
 function addTextDecoration(graphic: RenderGraphic): void {
   graphic = IModelApp.renderSystem.createGraphicOwner(graphic);
 
-  IModelApp.viewManager.addDecorator({
+  const decorator: Decorator = {
     decorate: (context) => {
       context.addDecoration(GraphicType.WorldOverlay, graphic);
-    }
-  });
+    },
+  };
+  
+  IModelApp.viewManager.addDecorator(decorator);
+  decorators.push(decorator);
 }
 
 export class TextDecorationTool extends Tool {
@@ -29,6 +33,15 @@ export class TextDecorationTool extends Tool {
   private _category?: Id64String;
 
   public override async parseAndRun(...inArgs: string[]): Promise<boolean> {
+    if (inArgs.length === 1 && inArgs[0].toLowerCase() === "clear") {
+      for (const decorator of decorators) {
+        IModelApp.viewManager.dropDecorator(decorator);
+      }
+
+      decorators.length = 0;
+      return true;
+    }
+    
     const args = parseArgs(inArgs);
     this._text = args.get("t");
     this._category = args.get("c");
@@ -50,24 +63,20 @@ export class TextDecorationTool extends Tool {
       },
     }));
 
-    const origin = vp.view.getCenter();
     const annotation = TextAnnotation.fromJSON({
       textBlock: textBlock.toJSON(),
-      origin: [0, 0, 0], // ###TODO vp.view.getCenter(),
     });
 
     const geom = await DtaRpcInterface.getClient().produceTextAnnotationGeometry(vp.iModel.getRpcProps(), annotation.toJSON());
     const builder = new GeometryStreamBuilder();
     builder.appendTextBlock(geom);
 
-    builder.appendGeometry(LineSegment3d.createXYXY(0, 0, origin.x, origin.y));
-    
     const gfx = await IModelTileRpcInterface.getClient().requestElementGraphics(vp.iModel.getRpcProps(), {
       id: Guid.createValue(),
       toleranceLog10: -3,
       type: "2d",
       placement: {
-        origin: [0, 0, 0],
+        origin: vp.view.getCenter(),
         angle: 0,
       },
       categoryId: this._category,
