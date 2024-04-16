@@ -128,11 +128,11 @@ export class Mixins extends ECClasses {
     return { itemKey: classKey, propertyName: navigationProps.name };
   }
 
-  public async setMixinBaseClass(mixinKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<SchemaItemEditResults>{
+  public async setBaseClass(mixinKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<SchemaItemEditResults>{
     const mixin = (await this._schemaEditor.schemaContext.getSchemaItem<MutableMixin>(mixinKey));
 
     if (mixin === undefined)
-      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Mixin Class ${mixinKey.fullName} not found in schema context.`);
+      return { itemKey: mixinKey, errorMessage: `Mixin Class ${mixinKey.fullName} not found in schema context.` };
 
     if (baseClassKey === undefined) {
       mixin.baseClass = undefined;
@@ -141,15 +141,18 @@ export class Mixins extends ECClasses {
 
     const baseClassSchema = !baseClassKey.schemaKey.matches(mixinKey.schemaKey) ? await this._schemaEditor.getSchema(baseClassKey.schemaKey) : mixin.schema;
     if (baseClassSchema === undefined) {
-      return { errorMessage: `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context` };
+      return { itemKey: mixinKey, errorMessage: `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context` };
     }
 
     const baseClassItem = await baseClassSchema.lookupItem<Mixin>(baseClassKey);
     if (baseClassItem === undefined)
-      return { errorMessage: `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.` };
+      return { itemKey: mixinKey, errorMessage: `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.` };
 
     if (baseClassItem.schemaItemType !== SchemaItemType.Mixin)
-      return { errorMessage: `${baseClassItem.fullName} is not of type Mixin Class.` };
+      return { itemKey: mixinKey, errorMessage: `${baseClassItem.fullName} is not of type Mixin Class.` };
+
+    if (mixin.baseClass !== undefined && !await baseClassItem.is(await mixin.baseClass))
+      return { itemKey: mixinKey, errorMessage: `${baseClassItem.fullName} is not from the middle of a class hierarchy.`};
 
     mixin.baseClass = new DelayedPromiseWithProps<SchemaItemKey, Mixin>(baseClassKey, async () => baseClassItem);
     return { itemKey: mixinKey };

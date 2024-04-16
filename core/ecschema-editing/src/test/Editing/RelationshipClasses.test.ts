@@ -187,6 +187,162 @@ describe("Relationship tests from an existing schema", () => {
     expect(await testRelationship?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseRelClass.key));
   });
 
+  it("should remove a base class from relationship class", async () => {
+    const baseClassRes = await testEditor.relationships.create(testKey, "testBaseClass", ECClassModifier.None, StrengthType.Embedding, StrengthDirection.Forward);
+    const relRes = await testEditor.relationships.create(testKey, "testRelationship", ECClassModifier.None, StrengthType.Holding, StrengthDirection.Forward, baseClassRes.itemKey);
+
+    const testRel = await testEditor.schemaContext.getSchemaItem<RelationshipClass>(relRes.itemKey!);
+    expect(await testRel?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<RelationshipClass>(baseClassRes.itemKey!));
+
+    const result = await testEditor.relationships.setBaseClass(relRes.itemKey!, undefined);
+    expect(result.errorMessage).to.be.undefined;
+    expect(await testRel?.baseClass).to.eql(undefined);
+  });
+
+  it("should add a base class to relationship class, that constraints supported by base class constraints", async () => {
+    const baseClassProps: RelationshipClassProps = {
+      name: "BaseRelationship",
+      strength: "Embedding",
+      strengthDirection: "Forward",
+      source: {
+        polymorphic: true,
+        multiplicity: "(0..*)",
+        roleLabel: "Source RoleLabel",
+        constraintClasses: [
+          "TestSchema.SourceBaseEntity",
+        ],
+      },
+      target: {
+        polymorphic: true,
+        multiplicity: "(0..*)",
+        roleLabel: "Target RoleLabel",
+        constraintClasses: [
+          "TestSchema.TargetBaseEntity",
+        ],
+      },
+    };
+
+    const relClassProps: RelationshipClassProps = {
+      name: "TestRelationship",
+      strength: "Embedding",
+      strengthDirection: "Forward",
+      source: {
+        polymorphic: true,
+        multiplicity: "(0..*)",
+        roleLabel: "Source RoleLabel",
+        abstractConstraint: "TestSchema.TestSourceEntity",
+        constraintClasses: [
+          "TestSchema.TestSourceEntity",
+        ],
+      },
+      target: {
+        polymorphic: true,
+        multiplicity: "(0..*)",
+        roleLabel: "Target RoleLabel",
+        abstractConstraint: "TestSchema.TestTargetEntity",
+        constraintClasses: [
+          "TestSchema.TestTargetEntity",
+        ],
+      },
+    };
+
+    const baseClassRes = await testEditor.relationships.createFromProps(testKey, baseClassProps);
+    const relRes = await testEditor.relationships.createFromProps(testKey, relClassProps);
+
+    const baseClass = await testEditor.schemaContext.getSchemaItem(baseClassRes.itemKey!) as RelationshipClass;
+    const relClass = await testEditor.schemaContext.getSchemaItem(relRes.itemKey!) as RelationshipClass;
+    expect(relClass.baseClass).to.be.undefined;
+
+    const result = await testEditor.relationships.setBaseClass(relRes.itemKey!, baseClassRes.itemKey);
+    expect(result.errorMessage).to.be.undefined;
+    expect(await relClass.baseClass).to.be.eq(baseClass);
+  });
+
+  it("should change a relationship base class to one from base class superset", async () => {
+    const newBaseClassProps: RelationshipClassProps = {
+      name: "NewRelationship",
+      baseClass: "TestSchema.BaseRelationship",
+      strength: "Embedding",
+      strengthDirection: "Forward",
+      source: {
+        polymorphic: true,
+        multiplicity: "(0..*)",
+        roleLabel: "Source RoleLabel",
+        constraintClasses: [
+          "TestSchema.SourceBaseEntity",
+        ],
+      },
+      target: {
+        polymorphic: true,
+        multiplicity: "(0..*)",
+        roleLabel: "Target RoleLabel",
+        constraintClasses: [
+          "TestSchema.TargetBaseEntity",
+        ],
+      },
+    };
+
+    const baseClassProps: RelationshipClassProps = {
+      name: "BaseRelationship",
+      strength: "Embedding",
+      strengthDirection: "Forward",
+      source: {
+        polymorphic: true,
+        multiplicity: "(0..*)",
+        roleLabel: "Source RoleLabel",
+        constraintClasses: [
+          "TestSchema.SourceBaseEntity",
+        ],
+      },
+      target: {
+        polymorphic: true,
+        multiplicity: "(0..*)",
+        roleLabel: "Target RoleLabel",
+        constraintClasses: [
+          "TestSchema.TargetBaseEntity",
+        ],
+      },
+    };
+
+    const relClassProps: RelationshipClassProps = {
+      name: "TestRelationship",
+      baseClass: "TestSchema.BaseRelationship",
+      strength: "Embedding",
+      strengthDirection: "Forward",
+      source: {
+        polymorphic: true,
+        multiplicity: "(0..*)",
+        roleLabel: "Source RoleLabel",
+        abstractConstraint: "TestSchema.TestSourceEntity",
+        constraintClasses: [
+          "TestSchema.TestSourceEntity",
+        ],
+      },
+      target: {
+        polymorphic: true,
+        multiplicity: "(0..*)",
+        roleLabel: "Target RoleLabel",
+        abstractConstraint: "TestSchema.TestTargetEntity",
+        constraintClasses: [
+          "TestSchema.TestTargetEntity",
+        ],
+      },
+    };
+
+    const baseClassRes = await testEditor.relationships.createFromProps(testKey, baseClassProps);
+    const newBaseClassRes = await testEditor.relationships.createFromProps(testKey, newBaseClassProps);
+    const relRes = await testEditor.relationships.createFromProps(testKey, relClassProps);
+
+    const baseClass = await testEditor.schemaContext.getSchemaItem(baseClassRes.itemKey!) as RelationshipClass;
+    const newBaseClass = await testEditor.schemaContext.getSchemaItem(newBaseClassRes.itemKey!) as RelationshipClass;
+    const relClass = await testEditor.schemaContext.getSchemaItem(relRes.itemKey!) as RelationshipClass;
+    expect(await relClass.baseClass).to.eq(baseClass);
+
+    const result = await testEditor.relationships.setBaseClass(relRes.itemKey!, newBaseClassRes.itemKey);
+    expect(result.errorMessage).to.be.undefined;
+    expect(await relClass.baseClass).to.eq(newBaseClass);
+  });
+
   it("should set source and target constraints to the relationship", async () => {
     const relClassResult = await testEditor.relationships.create(testKey, "TestRelationship", ECClassModifier.None, StrengthType.Embedding, StrengthDirection.Forward);
     const relClass = await testEditor.schemaContext.getSchemaItem(relClassResult.itemKey!) as RelationshipClass;
@@ -619,5 +775,122 @@ describe("Relationship tests from an existing schema", () => {
 
     const delRes = await testEditor.relationships.delete(classKey);
     expect(delRes).to.eql({});
+  });
+
+  it("try adding base class to relationship class with different SchemaItemType, returns error", async () => {
+    const baseClassRes = await testEditor.entities.create(testKey, "testBaseClass", ECClassModifier.None);
+    const relRes = await testEditor.relationships.create(testKey, "testRelationship", ECClassModifier.None, StrengthType.Holding, StrengthDirection.Forward);
+    const result = await testEditor.relationships.setBaseClass(relRes.itemKey!, baseClassRes.itemKey);
+
+    expect(result.errorMessage).to.not.be.undefined;
+    expect(result.errorMessage).to.equal(`${baseClassRes.itemKey?.fullName} is not of type Relationship Class.`);
+  });
+
+  it("try adding base class to a relationship class where the base class cannot be located, returns error", async () => {
+    const baseClassKey = new SchemaItemKey("testBaseClass", testKey);
+    const relRes = await testEditor.relationships.create(testKey, "testRelationship", ECClassModifier.None, StrengthType.Referencing, StrengthDirection.Forward);
+    const result = await testEditor.relationships.setBaseClass(relRes.itemKey!, baseClassKey);
+
+    expect(result.errorMessage).to.not.be.undefined;
+    expect(result.errorMessage).to.equal(`Unable to locate base class ${baseClassKey.fullName} in schema ${testKey.name}.`);
+  });
+
+  it("try adding base class to non-existing relationship class, returns error", async () => {
+    const baseClassRes = await testEditor.relationships.create(testKey, "testBaseClass", ECClassModifier.None, StrengthType.Referencing, StrengthDirection.Forward);
+    const relationshipKey = new SchemaItemKey("testRelationship", testKey);
+
+    const result = await testEditor.relationships.setBaseClass(relationshipKey, baseClassRes.itemKey);
+    expect(result.errorMessage).to.not.be.undefined;
+    expect(result.errorMessage).to.equal(`Relationship Class ${relationshipKey.fullName} not found in schema context.`);
+  });
+
+  it("try adding base class with unknown schema to relationship class, returns error", async () => {
+    const schemaKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
+    const baseClassKey = new SchemaItemKey("testBaseClass", schemaKey);
+    const relRes = await testEditor.relationships.create(testKey, "testRelationship", ECClassModifier.None, StrengthType.Referencing, StrengthDirection.Forward);
+
+    const result = await testEditor.relationships.setBaseClass(relRes.itemKey!, baseClassKey);
+    expect(result.errorMessage).to.not.be.undefined;
+    expect(result.errorMessage).to.equal(`Schema Key ${schemaKey.toString(true)} not found in context`);
+  });
+
+  it("try changing the base class of relationship with one that is not in the existing base class superset, returns error", async () => {
+    const baseClassRes = await testEditor.relationships.create(testKey, "testBaseClass", ECClassModifier.None, StrengthType.Embedding, StrengthDirection.Forward);
+    const relRes = await testEditor.relationships.create(testKey, "testRelationship", ECClassModifier.None, StrengthType.Holding, StrengthDirection.Forward, baseClassRes.itemKey);
+    const newBaseClassRes = await testEditor.relationships.create(testKey, "newBaseClass", ECClassModifier.None, StrengthType.Embedding, StrengthDirection.Forward);
+
+    const relClass = await testEditor.schemaContext.getSchemaItem<RelationshipClass>(relRes.itemKey!);
+    const baseClass = await testEditor.schemaContext.getSchemaItem<RelationshipClass>(baseClassRes.itemKey!);
+    expect(await relClass?.baseClass).to.eql(baseClass);
+
+    const result = await testEditor.relationships.setBaseClass(relRes.itemKey!, newBaseClassRes.itemKey);
+    expect(result.errorMessage).to.be.not.undefined;
+    expect(result.errorMessage).to.equal(`${newBaseClassRes.itemKey!.fullName} is not from the middle of a class hierarchy.`);
+    expect(await relClass?.baseClass).to.eql(baseClass);
+  });
+
+  it("try adding base class to relationship class, that constraints not supported by base class constraints, returns error", async () => {
+    const baseClassProps: RelationshipClassProps = {
+      name: "BaseRelationship",
+      strength: "Embedding",
+      strengthDirection: "Forward",
+      source: {
+        polymorphic: true,
+        multiplicity: "(0..*)",
+        roleLabel: "Source RoleLabel",
+        abstractConstraint: "TestSchema.SourceBaseEntity",
+        constraintClasses: [
+          "TestSchema.SourceBaseEntity",
+        ],
+      },
+      target: {
+        polymorphic: true,
+        multiplicity: "(0..*)",
+        roleLabel: "Target RoleLabel",
+        constraintClasses: [
+          "TestSchema.TestTargetEntity",
+        ],
+      },
+    };
+
+    const relClassProps: RelationshipClassProps = {
+      name: "TestRelationship",
+      strength: "Embedding",
+      strengthDirection: "Forward",
+      source: {
+        polymorphic: true,
+        multiplicity: "(0..*)",
+        roleLabel: "Source RoleLabel",
+        abstractConstraint: "TestSchema.SourceBaseEntity",
+        constraintClasses: [
+          "TestSchema.SourceBaseEntity",
+        ],
+      },
+      target: {
+        polymorphic: true,
+        multiplicity: "(0..*)",
+        roleLabel: "Target RoleLabel",
+        abstractConstraint: "TestSchema.TargetBaseEntity",
+        constraintClasses: [
+          "TestSchema.TargetBaseEntity",
+        ],
+      },
+    };
+
+    const baseClassRes = await testEditor.relationships.createFromProps(testKey, baseClassProps);
+    const relRes = await testEditor.relationships.createFromProps(testKey, relClassProps);
+
+    const baseClass = await testEditor.schemaContext.getSchemaItem(baseClassRes.itemKey!) as RelationshipClass;
+    const relClass = await testEditor.schemaContext.getSchemaItem(relRes.itemKey!) as RelationshipClass;
+    expect(relClass.baseClass).to.be.undefined;
+
+    const result = await testEditor.relationships.setBaseClass(relRes.itemKey!, baseClassRes.itemKey);
+    expect(relClass.baseClass).to.be.undefined;
+    expect(result.errorMessage).to.not.be.undefined;
+    const errros = [
+      new Diagnostics.AbstractConstraintMustNarrowBaseConstraints(relClass, ["TestSchema.TargetBaseEntity", "Target", relClass.fullName, baseClass.fullName]),
+      new Diagnostics.DerivedConstraintsMustNarrowBaseConstraints(relClass, ["TestSchema.TargetBaseEntity", "Target", relClass.fullName, baseClass.fullName]),
+    ];
+    expect(result.errorMessage).to.eq(errros.map((error) => `${error.code}: ${error.messageText}`).join("\r\n"));
   });
 });

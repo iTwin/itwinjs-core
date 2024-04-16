@@ -150,7 +150,7 @@ async function setBaseClass(context: SchemaMergeContext, item: ECClass, baseClas
   if (isInitial && item.baseClass === undefined) {
     return baseClassSetter(item.key, baseClassKey);
   }
-  if (item.baseClass !== undefined) {
+  /* if (item.baseClass !== undefined) {
     const currentBaseClass = await item.baseClass;
     const newBaseClass = await context.editor.schemaContext.getSchemaItem<ECClass>(baseClassKey);
     if (newBaseClass === undefined) {
@@ -159,7 +159,7 @@ async function setBaseClass(context: SchemaMergeContext, item: ECClass, baseClas
     if (await newBaseClass.is(currentBaseClass)) {
       return baseClassSetter(item.key, baseClassKey);
     }
-  }
+  } */
   return { errorMessage: `Changing the class '${item.key.name}' baseClass is not supported.` };
 }
 
@@ -179,8 +179,9 @@ function getBaseClassSetter(context: SchemaMergeContext, item: ECClass) {
   return async (itemKey: SchemaItemKey, baseClassKey: SchemaItemKey) => {
     switch (item.schemaItemType) {
       case SchemaItemType.EntityClass: return context.editor.entities.setBaseClass(itemKey, baseClassKey);
-      case SchemaItemType.Mixin: return context.editor.mixins.setMixinBaseClass(itemKey, baseClassKey);
-      // TODO: verify; structs and relationship classes can't have base classes?
+      case SchemaItemType.Mixin: return context.editor.mixins.setBaseClass(itemKey, baseClassKey);
+      case SchemaItemType.RelationshipClass: return context.editor.relationships.setBaseClass(itemKey, baseClassKey);
+      case SchemaItemType.StructClass: return context.editor.structs.setBaseClass(itemKey, baseClassKey);
     }
     return { itemKey, errorMessage: `Changing the base class '${item.name}' is not supported.` };
   };

@@ -187,7 +187,7 @@ export class Entities extends ECClasses {
     const entity = (await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(entityKey));
 
     if (entity === undefined)
-      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${entityKey.fullName} not found in schema context.`);
+      return { itemKey: entityKey, errorMessage: `Entity Class ${entityKey.fullName} not found in schema context.` };
 
     if (baseClassKey === undefined) {
       entity.baseClass = undefined;
@@ -196,15 +196,18 @@ export class Entities extends ECClasses {
 
     const baseClassSchema = !baseClassKey.schemaKey.matches(entityKey.schemaKey) ? await this._schemaEditor.getSchema(baseClassKey.schemaKey) : entity.schema;
     if (baseClassSchema === undefined) {
-      return { errorMessage: `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context` };
+      return { itemKey: entityKey, errorMessage: `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context` };
     }
 
     const baseClassItem = await baseClassSchema.lookupItem<EntityClass>(baseClassKey);
     if (baseClassItem === undefined)
-      return { errorMessage: `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.` };
+      return { itemKey: entityKey, errorMessage: `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.` };
 
     if (baseClassItem.schemaItemType !== SchemaItemType.EntityClass)
-      return { errorMessage: `${baseClassItem.fullName} is not of type Entity Class.` };
+      return { itemKey: entityKey, errorMessage: `${baseClassItem.fullName} is not of type Entity Class.` };
+
+    if (entity.baseClass !== undefined && !await baseClassItem.is(await entity.baseClass))
+      return { itemKey: entityKey, errorMessage: `${baseClassItem.fullName} is not from the middle of a class hierarchy.`};
 
     entity.baseClass = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(baseClassKey, async () => baseClassItem);
     return { itemKey: entityKey };
