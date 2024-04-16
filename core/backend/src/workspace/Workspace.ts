@@ -20,6 +20,7 @@ import { SqliteStatement } from "../SqliteStatement";
 import { SettingName, Settings } from "./Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { SettingsSchemas } from "./SettingsSchemas";
+import { BlobContainer } from "../BlobContainerService";
 
 // cspell:ignore rowid primarykey julianday
 
@@ -163,10 +164,6 @@ export namespace WorkspaceDb {
     readonly lastEditedBy?: string;
   }
 
-  /** Scope to increment for a version number.
-   * @see semver.ReleaseType
-   */
-  export type VersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
   /** file extension for local WorkspaceDbs
    * @internal
    */
@@ -352,30 +349,12 @@ export interface Workspace {
   /** Close this Workspace. All WorkspaceContainers are dropped. */
   close(): void;
 
-  // queryResource(dbListSetting: SettingName, search: WorkspaceResource.Search, callback: (result: WorkspaceResource.SearchResult) => void | "stop"): Promise<void>;
-
-  // getStringResource(dbListSetting: SettingName, resourceName: WorkspaceResource.Name): string | undefined;
-  // getBlobResource(dbListSetting: SettingName, resourceName: WorkspaceResource.Name): string | undefined;
-}
-
-/** @beta */
-export namespace Workspace {
-  /** applications may supply a different implementation to diagnose (rather than merely log) errors loading workspace data */
-  export let exceptionDiagnosticFn = (e: any) => {  // eslint-disable-line prefer-const
-    if (e instanceof Error)
-      Logger.logException(loggerCategory, e);
-    else
-      UnexpectedErrors.handle(e);
-  };
-  const makeSettingName = (name: string) => `${"itwin/core/workspace"}/${name}`;
-  export const settingName = {
-    settingsWorkspaces: makeSettingName("settingsWorkspaces"),
-  };
-
-  /** @internal */
-  export function construct(settings: Settings, opts?: WorkspaceOpts): Workspace {
-    return new WorkspaceImpl(settings, opts);
-  }
+  resolveWorkspaceDbProps(settingName: SettingName, filter?: (dbProp: WorkspaceDb.CloudProps, dict: Settings.Dictionary) => boolean): WorkspaceDb.CloudProps[];
+  getWorkspaceDbs(dbList: WorkspaceDb.CloudProps[], onLoadError?: (dbProps: WorkspaceDb.LoadError) => void): Promise<WorkspaceDb[]>;
+  resolveWorkspaceDbs(settingName: SettingName): Promise<WorkspaceDb[]>;
+  queryResource(dbList: WorkspaceDb[], search: WorkspaceResource.Search, forEachResource: (result: WorkspaceResource.SearchResult) => void | "stop"): void | "stop";
+  loadStringResource(dbList: WorkspaceDb[], rscName: WorkspaceResource.Name): string | undefined;
+  loadBlobResource(dbList: WorkspaceDb[], rscName: WorkspaceResource.Name): Uint8Array | undefined;
 }
 
 /**
@@ -407,21 +386,6 @@ export interface WorkspaceContainer {
    */
   resolveDbFileName(props: WorkspaceDb.Props): WorkspaceDb.DbFullName;
 
-  /**
-   * Create a copy of an existing [[WorkspaceDb]] in this WorkspaceContainer with a new version number. This function is used
-   * by administrator tools that modify Workspaces. This requires that the write lock on the container be held. The copy should be modified with
-   * new content before the write lock is released, and thereafter should never be modified again.
-   * @note The copy actually shares all of the data with the original, but with copy-on-write if/when data in the new WorkspaceDb is modified.
-   */
-  makeNewVersion(args: {
-    /** Properties that describe the source WorkspaceDb for the new version */
-    fromProps: WorkspaceDb.Props;
-    /** The type of version increment to apply to the existing version. */
-    versionType: WorkspaceDb.VersionIncrement;
-    /** for prerelease versions */
-    identifier?: string;
-  }): Promise<{ oldName: WorkspaceDb.DbName, newName: WorkspaceDb.DbName }>;
-
   /** get a WorkspaceDb from this WorkspaceContainer. */
   getWorkspaceDb(props: WorkspaceDb.Props): WorkspaceDb;
 
@@ -432,89 +396,142 @@ export interface WorkspaceContainer {
   close(): void;
 }
 
-// export interface WorkspaceEditor {
-//   // getContainer(props: WorkspaceContainer.Props): EditorContainer;
-//   // createNewContainer():
-// }
-
-/**
- * An editable [[WorkspaceDb]]. This is used only by tools to allow administrators to create and modify `WorkspaceDb`s.
- * For CloudSqlite Workspaces, the write token must be obtained before the methods in this interface may be used. Normally
- * only admins will have write access to Workspaces. Only one admin at at time may be editing a Workspace.
- * @beta
- */
-export interface EditableWorkspaceDb extends WorkspaceDb {
-
-  /** create a new empty WorkspaceDb. */
-  createDb(args: { manifest: WorkspaceDb.Manifest, version?: string }): Promise<void>;
-
-  /** Update the contents of the manifest in this WorkspaceDb. */
-  updateManifest(manifest: WorkspaceDb.Manifest): void;
-
-  /** Add a new string resource to this WorkspaceDb.
-   * @param rscName The name of the string resource.
-   * @param val The string to save.
-   */
-  addString(rscName: WorkspaceResource.Name, val: string): void;
-
-  /** Update an existing string resource with a new value, or add it if it does not exist.
-   * @param rscName The name of the string resource.
-   * @param val The new value.
-   */
-  updateString(rscName: WorkspaceResource.Name, val: string): void;
-
-  /** Remove a string resource. */
-  removeString(rscName: WorkspaceResource.Name): void;
-
-  /** Add a new blob resource to this WorkspaceDb.
-   * @param rscName The name of the blob resource.
-   * @param val The blob to save.
-   */
-  addBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
-
-  /** Update an existing blob resource with a new value, or add it if it does not exist.
-   * @param rscName The name of the blob resource.
-   * @param val The new value.
-   */
-  updateBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
-
-  /** Get a BlobIO writer for a previously-added blob WorkspaceResource.
-   * @note after writing is complete, caller must call `close` on the BlobIO and must call `saveChanges` on the `db`.
-   */
-  getBlobWriter(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO;
-
-  /** Remove a blob resource. */
-  removeBlob(rscName: WorkspaceResource.Name): void;
-
-  /** Copy the contents of an existing local file into this WorkspaceDb as a file resource.
-   * @param rscName The name of the file resource.
-   * @param localFileName The name of a local file to be read.
-   * @param fileExt The extension (do not include the leading ".") to be appended to the generated fileName
-   * when this WorkspaceDb is extracted from the WorkspaceDb. By default the characters after the last "." in `localFileName`
-   * are used. Pass this argument to override that.
-   */
-  addFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName, fileExt?: string): void;
-
-  /** Replace an existing file resource with the contents of another local file.
-   * @param rscName The name of the file resource.
-   * @param localFileName The name of a local file to be read.
-   * @throws if rscName does not exist
-   */
-  updateFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName): void;
-
-  /** Remove a file resource. */
-  removeFile(rscName: WorkspaceResource.Name): void;
-}
-
 /** @beta */
-export namespace EditableWorkspaceDb {
-  /** construct a new instance of an EditableWorkspaceDb */
-  export function construct(props: WorkspaceDb.Props, container: WorkspaceContainer): EditableWorkspaceDb {
-    return new EditableWorkspaceDbImpl(props, container);
+export namespace Workspace {
+  /** applications may supply a different implementation to diagnose (rather than merely log) errors loading workspace data */
+  export let exceptionDiagnosticFn = (e: any) => {  // eslint-disable-line prefer-const
+    if (e instanceof Error)
+      Logger.logException(loggerCategory, e);
+    else
+      UnexpectedErrors.handle(e);
+  };
+  const makeSettingName = (name: string) => `${"itwin/core/workspace"}/${name}`;
+  export const settingName = {
+    settingsWorkspaces: makeSettingName("settingsWorkspaces"),
+  };
+
+  /** @internal */
+  export function construct(settings: Settings, opts?: WorkspaceOpts): Workspace {
+    return new WorkspaceImpl(settings, opts);
   }
-  /** Create a new, empty, EditableWorkspaceDb file on the local filesystem for importing Workspace resources. */
-  export function createEmpty(args: { fileName: LocalFileName, manifest: WorkspaceDb.Manifest }) {
-    WorkspaceSqliteDb.createNewDb(args.fileName, args);
+
+  export interface Editor {
+    getContainer(props: WorkspaceContainer.Props): Editor.Container;
+    createNewCloudContainer(props: Editor.CreateNewContainerProps): Promise<Workspace.Editor.Container>;
+    /** Close this WorkspaceEditor. All WorkspaceContainers are dropped. */
+    close(): void;
+  }
+
+  export namespace Editor {
+
+    export interface CreateNewContainerProps {
+      scope: BlobContainer.Scope;
+      containerLabel: string;
+      manifest: WorkspaceDb.Manifest;
+      /** Optional human-readable explanation of the information held in the container. This will be displayed in the administrator RBAC panel, and on usage reports. */
+      containerDescription?: string;
+      dbName?: string;
+    }
+    export interface Container extends WorkspaceContainer {
+      /**
+       * Create a copy of an existing [[WorkspaceDb]] in this WorkspaceContainer with a new version number. This function is used
+       * by administrator tools that modify Workspaces. This requires that the write lock on the container be held. The copy should be modified with
+       * new content before the write lock is released, and thereafter should never be modified again.
+       * @note The copy actually shares all of the data with the original, but with copy-on-write if/when data in the new WorkspaceDb is modified.
+       */
+      makeNewVersion(args: {
+        /** Properties that describe the source WorkspaceDb for the new version */
+        fromProps: WorkspaceDb.Props;
+        /** The type of version increment to apply to the existing version. */
+        versionType: Container.VersionIncrement;
+        /** for prerelease versions */
+        identifier?: string;
+      }): Promise<{ oldName: WorkspaceDb.DbName, newName: WorkspaceDb.DbName }>;
+
+      getWorkspaceDb(props: WorkspaceDb.Props): Editor.EditableDb;
+      acquireLock(): Promise<void>;
+      releaseLock(): Promise<void>;
+      abandonChanges(): Promise<void>;
+    }
+    export namespace Container {
+      /** Scope to increment for a version number.
+       * @see semver.ReleaseType
+       */
+      export type VersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
+    }
+
+    /** Create a new, empty, EditableDb file on the local filesystem for importing Workspace resources. */
+    export function createEmptyDb(args: { fileName: LocalFileName, manifest: WorkspaceDb.Manifest }) {
+      WorkspaceSqliteDb.createNewDb(args.fileName, args);
+    }
+
+    /**
+     * An editable [[WorkspaceDb]]. This is used only by tools to allow administrators to create and modify `WorkspaceDb`s.
+     * For cloud based WorkspacesDbs, the write token must be obtained before the methods in this interface may be used. Normally
+     * only admins will have write access to Workspaces. Only one admin at at time may be editing a Workspace.
+     * @beta
+     */
+    export interface EditableDb extends WorkspaceDb {
+      /** create a new empty WorkspaceDb. */
+      createDb(args: { manifest: WorkspaceDb.Manifest, version?: string }): Promise<void>;
+
+      /** Update the contents of the manifest in this WorkspaceDb. */
+      updateManifest(manifest: WorkspaceDb.Manifest): void;
+
+      /** Add a new string resource to this WorkspaceDb.
+       * @param rscName The name of the string resource.
+       * @param val The string to save.
+       */
+      addString(rscName: WorkspaceResource.Name, val: string): void;
+
+      /** Update an existing string resource with a new value, or add it if it does not exist.
+       * @param rscName The name of the string resource.
+       * @param val The new value.
+       */
+      updateString(rscName: WorkspaceResource.Name, val: string): void;
+
+      /** Remove a string resource. */
+      removeString(rscName: WorkspaceResource.Name): void;
+
+      /** Add a new blob resource to this WorkspaceDb.
+       * @param rscName The name of the blob resource.
+       * @param val The blob to save.
+       */
+      addBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
+
+      /** Update an existing blob resource with a new value, or add it if it does not exist.
+       * @param rscName The name of the blob resource.
+       * @param val The new value.
+       */
+      updateBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
+
+      /** Get a BlobIO writer for a previously-added blob WorkspaceResource.
+       * @note after writing is complete, caller must call `close` on the BlobIO and must call `saveChanges` on the `db`.
+       */
+      getBlobWriter(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO;
+
+      /** Remove a blob resource. */
+      removeBlob(rscName: WorkspaceResource.Name): void;
+
+      /** Copy the contents of an existing local file into this WorkspaceDb as a file resource.
+       * @param rscName The name of the file resource.
+       * @param localFileName The name of a local file to be read.
+       * @param fileExt The extension (do not include the leading ".") to be appended to the generated fileName
+       * when this WorkspaceDb is extracted from the WorkspaceDb. By default the characters after the last "." in `localFileName`
+       * are used. Pass this argument to override that.
+       */
+      addFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName, fileExt?: string): void;
+
+      /** Replace an existing file resource with the contents of another local file.
+       * @param rscName The name of the file resource.
+       * @param localFileName The name of a local file to be read.
+       * @throws if rscName does not exist
+       */
+      updateFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName): void;
+
+      /** Remove a file resource. */
+      removeFile(rscName: WorkspaceResource.Name): void;
+    }
   }
 }
 
@@ -609,18 +626,35 @@ class WorkspaceImpl implements Workspace {
     this._containers.clear();
   }
 
-  public resolveWorkspaceDbProps(settingName: SettingName): WorkspaceDb.CloudProps[] {
+  public resolveWorkspaceDbProps(settingName: SettingName, filter?: (dbProp: WorkspaceDb.CloudProps, dict: Settings.Dictionary) => boolean): WorkspaceDb.CloudProps[] {
     const result: WorkspaceDb.CloudProps[] = [];
-    this.settings.resolveSetting<WorkspaceDb.CloudProps[]>({ settingName, resolver: (props) => (result.push(...props), undefined) });
+    this.settings.resolveSetting<WorkspaceDb.CloudProps[]>({
+      settingName, resolver: (dbProps, dict) => {
+        for (const dbProp of dbProps) {
+          if (filter?.(dbProp, dict) !== true)
+            result.push(dbProp);
+        }
+        return undefined;
+      },
+    });
     return result;
   }
 
-  public async getWorkspaceDbs(dbList: WorkspaceDb.CloudProps[]): Promise<WorkspaceDb[]> {
+  public async getWorkspaceDbs(dbList: WorkspaceDb.CloudProps[], onLoadError?: (dbProps: WorkspaceDb.LoadError) => void): Promise<WorkspaceDb[]> {
     const result: WorkspaceDb[] = [];
-    for (const dbProps of dbList) {
-      const wsDb = await this.getWorkspaceDb(dbProps);
+    const pushUnique = (wsDb: WorkspaceDb) => {
       if (!result.includes(wsDb)) // make sure the same db doesn't appear more than once.
         result.push(wsDb);
+    };
+
+    for (const dbProps of dbList) {
+      try {
+        pushUnique(await this.getWorkspaceDb(dbProps));
+      } catch (e) {
+        if (!onLoadError)
+          throw e;
+        onLoadError(e as WorkspaceDb.LoadError);
+      }
     }
     return result;
   }
@@ -716,7 +750,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     throw new WorkspaceDb.LoadError(`No version of [${dbName}] available for "${range}"`, props);
   }
 
-  public async makeNewVersion(args: { fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement, identifier?: string }) {
+  public async makeNewVersion(args: { fromProps: WorkspaceDb.Props, versionType: Workspace.Editor.Container.VersionIncrement, identifier?: string }) {
     const cloudContainer = this.cloudContainer;
     if (undefined === cloudContainer)
       throw new Error("versions require cloud containers");
@@ -918,7 +952,16 @@ class WorkspaceDbImpl implements WorkspaceDb {
   }
 }
 
-class EditableWorkspaceDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
+class EditorImpl implements Workspace.Editor {
+  public async createNewCloudContainer(props: { scope: BlobContainer.Scope, containerLabel: string, manifest: WorkspaceDb.Manifest, containerDescription?: string | undefined, dbName?: string | undefined }): Promise<Workspace.EditorContainer> {
+  }
+}
+
+class EditorContainerImpl extends WorkspaceContainer implements Workspace.EditorContainer {
+
+}
+
+class EditableDbImpl extends WorkspaceDbImpl implements Workspace.Editor.EditableDb {
   private static validateResourceName(name: WorkspaceResource.Name) {
     noLeadingOrTrailingSpaces(name, "resource name");
     if (name.length > 1024)
@@ -984,7 +1027,7 @@ class EditableWorkspaceDbImpl extends WorkspaceDbImpl implements EditableWorkspa
     this.sqliteDb.nativeDb.saveFileProperty(WorkspaceDbImpl.manifestProperty, JSON.stringify(manifest));
   }
   public addString(rscName: WorkspaceResource.Name, val: string): void {
-    EditableWorkspaceDbImpl.validateResourceName(rscName);
+    EditableDbImpl.validateResourceName(rscName);
     this.validateResourceSize(val);
     this.performWriteSql(rscName, "INSERT INTO strings(id,value) VALUES(?,?)", (stmt) => stmt.bindString(2, val));
   }
@@ -996,7 +1039,7 @@ class EditableWorkspaceDbImpl extends WorkspaceDbImpl implements EditableWorkspa
     this.performWriteSql(rscName, "DELETE FROM strings WHERE id=?");
   }
   public addBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void {
-    EditableWorkspaceDbImpl.validateResourceName(rscName);
+    EditableDbImpl.validateResourceName(rscName);
     this.validateResourceSize(val);
     this.performWriteSql(rscName, "INSERT INTO blobs(id,value) VALUES(?,?)", (stmt) => stmt.bindBlob(2, val));
   }
@@ -1016,7 +1059,7 @@ class EditableWorkspaceDbImpl extends WorkspaceDbImpl implements EditableWorkspa
     this.performWriteSql(rscName, "DELETE FROM blobs WHERE id=?");
   }
   public addFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName, fileExt?: string): void {
-    EditableWorkspaceDbImpl.validateResourceName(rscName);
+    EditableDbImpl.validateResourceName(rscName);
     fileExt = fileExt ?? extname(localFileName);
     if (fileExt?.[0] === ".")
       fileExt = fileExt.slice(1);
