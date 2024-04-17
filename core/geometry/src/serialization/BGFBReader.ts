@@ -358,9 +358,10 @@ return undefined;
 
   /**
    * Extract auxData for a mesh.
-   * Typescript format for Polyface/PolyfaceAuxData indices is 0-based, unterminated.
-   * FB format for Polyface/PolyfaceAuxData indices is 1-based, 0-terminated/padded.
-   * FB legacy format for PolyfaceAuxData indices is 0-based, unterminated.
+   * Typescript object format for Polyface/PolyfaceAuxData indices is 0-based, unterminated.
+   * FlatBuffer format for Polyface/PolyfaceAuxData indices is 1-based, 0-terminated/padded.
+   * Typescript API previously wrote FlatBuffer PolyfaceAuxData indices as 0-based, unterminated;
+   * heuristics are used herein to identify this legacy format so it can still be read.
    */
   public readPolyfaceAuxData(fbPolyface: BGFBAccessors.Polyface | null, fbAuxData: BGFBAccessors.PolyfaceAuxData | null): PolyfaceAuxData | undefined {
     if (!fbPolyface || !fbAuxData)
