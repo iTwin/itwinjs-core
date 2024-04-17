@@ -22,7 +22,7 @@ while getopts "v:b:" options; do
   esac
 done
 
-if [ "$AddonVersion" = "" ] || [ "$AddonBranch" = "" ]; then
+if [ "$AddonVersion" = "" ]; then
   usage
   exit 1
 fi
@@ -74,7 +74,11 @@ git commit -am"@bentley/imodeljs-native $AddonVersion"
 checkfail
 
 # Generate empty change logs.
-yes "" | rush change -b "$AddonBranch"
+if [ "$AddonBranch" = "" ]; then
+  yes "" | rush change
+else
+  yes "" | rush change -b "$AddonBranch"
+fi
 checkfail
 
 git add "$RepoRoot/common/changes"
