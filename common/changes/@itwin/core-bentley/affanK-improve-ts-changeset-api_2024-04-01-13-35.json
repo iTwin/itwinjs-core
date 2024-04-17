@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Improve ChangesetConflictArgs & SqliteChangeSetReader API",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}
