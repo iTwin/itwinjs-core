@@ -94,7 +94,8 @@ describe("Schema Difference Reporting", () => {
     const targetSchema = await Schema.fromJson(targetJson, targetContext);
 
     schemaDifferences = await SchemaDifference.fromSchemas(targetSchema, sourceSchema);
-    expect(schemaDifferences.conflicts).equals(undefined, `This test suite should not have conflicts.`);
+    expect(schemaDifferences.conflicts).equals(undefined, "This test suite should not have conflicts.");
+    expect(schemaDifferences.changes).has.a.lengthOf(27, "Unexpected count of changes.");
   });
 
   it("should have the expected source and target schema names in differences", () => {
