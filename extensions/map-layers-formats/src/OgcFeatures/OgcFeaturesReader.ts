@@ -11,6 +11,7 @@ import { ImageMapLayerSettings } from "@itwin/core-common";
 import { FeatureInfoReader } from "../Feature/FeatureInfoReader";
 import { FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, GraphicPrimitive, GraphicsGeometryRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo } from "@itwin/core-frontend";
 
+/** @internal */
 export type OgcFeaturePropertyType = "string" | "number" | "integer" | "datetime" | "geometry" | "boolean";
 
 /** @internal */
