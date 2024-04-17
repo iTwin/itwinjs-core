@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import {
   ECClassModifier, ECObjectsError, EntityClass, Enumeration, EnumerationArrayProperty, EnumerationProperty, NavigationProperty,
-  PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, PropertyCategory, RelationshipClass, RelationshipClassProps,
+  PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, RelationshipClass, RelationshipClassProps,
   RelationshipConstraintProps, Schema, SchemaContext, SchemaItemKey, SchemaKey, StrengthDirection,
   StructArrayProperty, StructClass, StructProperty, UnitSystem,
 } from "@itwin/ecschema-metadata";
