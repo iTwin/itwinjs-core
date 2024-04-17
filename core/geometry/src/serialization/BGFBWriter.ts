@@ -541,8 +541,8 @@ export class BGFBWriter {
       let paramOffset = 0;
       let auxDataOffset = 0;
       let taggedNumericDataOffset = 0;
-      const meshStyle = 1;  // That is  . . . MESH_ELM_STYLE_INDEXED_FACE_LOOPS (and specifically, variable size with with 0 terminators)
-      const numPerFace = 0;
+      const meshStyle = 1;  // That is  . . . MESH_ELM_STYLE_INDEXED_FACE_LOOPS
+      const numPerFace = 0; // specifically, variable size with 0 terminators
       this.fillOneBasedIndexArray(mesh, mesh.data.pointIndex, mesh.data.edgeVisible, 0, indexArray);
 
       const twoSided = mesh.twoSided;
