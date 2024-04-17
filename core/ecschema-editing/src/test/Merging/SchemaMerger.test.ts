@@ -2,15 +2,42 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import { Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
+import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { ConflictCode, SchemaConflictsError, SchemaDifferenceConflict } from "../../Differencing/SchemaConflicts";
 import { expect } from "chai";
 import "chai-as-promised";
-import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("Schema merge tests", () => {
+  it("should throw an error if the differences has conflicts.", async () => {
+    const conflict: SchemaDifferenceConflict = {
+      code: ConflictCode.ConflictingPropertyName,
+      schemaType: SchemaItemType.EntityClass,
+      itemName: "ConflictingPropertyEntity",
+      path: "MyProperty",
+      source: "boolean",
+      target: "string",
+      description: "Target class already contains a property with a different type.",
+    };
+
+    const merger = new SchemaMerger(new SchemaContext());
+    const merge = merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      conflicts: [ conflict ],
+    });
+
+    await expect(merge).to.be.rejectedWith(SchemaConflictsError, "Schema's can't be merged if there are unresolved conflicts.")
+      .then((error: SchemaConflictsError) => {
+        expect(error.sourceSchema.name).equals("SourceSchema", "Unexpected source schema name");
+        expect(error.targetSchema.name).equals("TargetSchema", "Unexpected target schema name");
+        expect(error.conflicts).includes(conflict);
+      });
+  });
+
   it("should merge label and description from schema", async () => {
     const targetContext = new SchemaContext();
     await Schema.fromJson({
