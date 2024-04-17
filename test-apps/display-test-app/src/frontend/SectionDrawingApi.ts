@@ -158,7 +158,9 @@ export class SectionDrawingApi {
 
     const spatialViewState: SpatialViewState = await iModelConnection.views.load(spatialViewDefinitionId) as SpatialViewState;
     // Rotate around world space
-    const drawingToSpatial = Transform.createOriginAndMatrix(Point3d.createZero(), spatialViewState.rotation.inverse());
+    const frustum = spatialViewState.calculateFrustum();
+    const center = frustum ? frustum.frontCenter : Point3d.createZero();
+    const drawingToSpatial = Transform.createOriginAndMatrix(center, spatialViewState.rotation.inverse());
     const sectionDrawingId = await SectionDrawingIpcInvoker.getOrCreate().insertSectionDrawing(
       tempName,
       spatialViewDefinitionId,
