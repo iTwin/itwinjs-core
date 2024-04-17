@@ -252,3 +252,7 @@ export * from "./WhiteOnWhiteReversalSettings";
  * @docs-group-description MapLayers
  * Types for working with the MapLayers API.
  */
+/**
+ * @docs-group-description Annotation
+ * APIs for producing and manipulating annotations like text, dimensions, and labels.
+ */
