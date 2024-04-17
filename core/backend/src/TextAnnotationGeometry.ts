@@ -165,7 +165,7 @@ export interface ProduceTextAnnotationGeometryArgs {
 }
 
 /** Produce a geometric representation of a text annotation.
- * The result can be supplied to [GeometryStreamBuilder.appendTextAnnotation]($common).
+ * The result can be supplied to [GeometryStreamBuilder.appendTextBlock]($common).
  * @see [[TextAnnotation2d.setAnnotation]] and [[TextAnnotation3d.setAnnotation]] to update the annotation, geometry, and placement of an annotation element.
  * @beta
  */

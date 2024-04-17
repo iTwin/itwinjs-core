@@ -30,7 +30,7 @@ export interface ApplyTextStyleOptions {
  * @extensions
  */
 export interface TextBlockComponentProps {
-  /** The name of a [[TextStyle]] stored in a [Worksapce]($backend) from which the base [[TextStyleSettings]] applied to the component originates. */
+  /** The name of a [[TextStyle]] stored in a [Workspace]($backend) from which the base [[TextStyleSettings]] applied to the component originates. */
   styleName: string;
   /** Deviations from the base [[TextStyleSettings]] defined by the [[TextStyle]] applied to this component.
    * This permits you to, e.g., create a [[TextRun]] using "Arial" font and override it to use "Comic Sans" instead.
@@ -75,7 +75,7 @@ export abstract class TextBlockComponent {
   }
 
   /** The name of the [[TextStyle]] that provides the base formatting for the contents of this component.
-   * @note Assigning to this property is equivalent to calling [[applyStyle]] with default [[TextStyleApplyOptions]], which propagates the style change to all of
+   * @note Assigning to this property is equivalent to calling [[applyStyle]] with default [[ApplyTextStyleOptions]], which propagates the style change to all of
    * the components sub-components and clears any [[styleOverrides]].
    */
   public get styleName(): string {
