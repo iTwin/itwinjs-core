@@ -6,7 +6,7 @@ A `Txn` (pronounced "Texan") is a **set of changes to a briefcase**, created by 
 
 Txns are created by *tracking* all changes made to the briefcase at the lowest level. When the call to `SaveChanges` ends the underlying [SQLite transaction](https://sqlite.org/lang_transaction.html), all tracked changes are combined into a *changeset* of what happened. A Txn holds that changeset and it is stored *in the briefcase* within the same SQLite transaction as the changes it describes. In this manner, all changes to the briefcase, and the Txn that describes them, are atomic - either they are all saved or none are are saved.
 
-> Txns are stored in a "local" table, so they are don't attempt to track themselves.
+> Note: Txns are stored in a special kind of table (called a "local" table) whose contents are not included in changesets.
 
 Txns hold the *net changes* made during the transaction. That is, the Txn does not hold the sequence of individual changes made to the briefcase, only the final result of all changes together. For example, if an element is added and later deleted in the same transaction, the net is no change. Likewise if a property of an element is modified more than once, the Txn will only hold the final value.
 
