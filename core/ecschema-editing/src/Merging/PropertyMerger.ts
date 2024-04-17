@@ -71,7 +71,7 @@ async function addClassProperty(context: SchemaMergeContext, itemKey: SchemaItem
     const result = await applyCustomAttributes(context, property.customAttributes as CustomAttribute[], async (ca) => {
       try{
         await context.editor.entities.properties.addCustomAttribute(itemKey, property.name, ca);
-        return { errorMessage: "" };
+        return {};
       } catch(e: any) {
         return { errorMessage: e.message };
       }
