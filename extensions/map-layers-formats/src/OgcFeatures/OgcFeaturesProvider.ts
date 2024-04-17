@@ -95,7 +95,7 @@ export class DefaultOgcSymbology implements FeatureDefaultSymbology {
     throw new Error(`Could not get default symbology for geometry type ${geometryType}`);
   }
 }
-
+/** @internal */
 export class OgcFeaturesProvider extends MapLayerImageryProvider {
 
   // Debug flags, should always be committed to FALSE !

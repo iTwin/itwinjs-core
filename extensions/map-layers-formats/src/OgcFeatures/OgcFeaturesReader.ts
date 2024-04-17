@@ -13,6 +13,7 @@ import { FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, GraphicPrimit
 
 export type OgcFeaturePropertyType = "string" | "number" | "integer" | "datetime" | "geometry" | "boolean";
 
+/** @internal */
 export interface ReadOgcFeaturesInfoOptions {
   collection: Geojson.FeatureCollection;
   layerSettings: ImageMapLayerSettings;

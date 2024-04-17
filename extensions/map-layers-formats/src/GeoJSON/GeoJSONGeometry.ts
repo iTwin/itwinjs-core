@@ -13,11 +13,13 @@ export type RingCoords = Coord[];
 /** @internal */
 export type MultiRingCoords = RingCoords[];
 
+/** @internal */
 export interface MultiPath {
   lengths: number[];
   coords: number[];
 }
 
+/** @internal */
 export class GeoJSONGeometryUtils {
   public static isRingOrPath(geom: GeoJson.Geometry) {return geom.type === "LineString" || geom.type === "MultiLineString" || geom.type === "Polygon" || geom.type === "MultiPolygon";}
   public static isFilled(geom: GeoJson.Geometry) {return  geom.type === "Polygon" || geom.type === "MultiPolygon";}
