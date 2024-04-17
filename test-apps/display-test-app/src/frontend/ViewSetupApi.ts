@@ -11,6 +11,7 @@ import {
   FitViewTool,
   IModelApp,
   IModelConnection,
+  SpatialViewState,
   ViewCreator2d,
   ViewCreator3d,
   Viewport,
@@ -156,6 +157,10 @@ export class ViewSetupApi {
     const vp = IModelApp.viewManager.selectedView;
     const targetView = await ViewSetupApi.createViewState(iModel, viewStateModels);
     if (vp && targetView) {
+      if (targetView instanceof SpatialViewState) {
+        targetView.turnCameraOff();
+      }
+
       vp.changeView(targetView);
       if (fitView)
         void IModelApp.tools.run(FitViewTool.toolId, vp, true, false);
