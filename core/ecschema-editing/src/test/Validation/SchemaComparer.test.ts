@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { AnyECType, AnyProperty, Constant, CustomAttributeClass, ECClass, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon, PropertyCategory,
-  RelationshipClass, Schema, SchemaContext, Unit,
+  RelationshipClass, Schema, SchemaContext, StructClass, Unit,
 } from "@itwin/ecschema-metadata";
 import { AnyDiagnostic, DiagnosticCategory, DiagnosticType } from "../../Validation/Diagnostic";
 import { ISchemaChanges, SchemaChanges } from "../../Validation/SchemaChanges";
@@ -277,20 +277,34 @@ describe("Schema comparison tests", () => {
     it("Different SchemaItems, diagnostic reported for each schema", async () => {
       const aItems = {
         TestClassA: {
-          schemaItemType: "EntityClass",
+          schemaItemType: "StructClass",
+          properties: [
+            {
+              name: "BooleanProperty",
+              type: "PrimitiveProperty",
+              typeName: "boolean",
+            },
+          ],
         },
       };
       const bItems = {
         TestClassB: {
-          schemaItemType: "EntityClass",
+          schemaItemType: "StructClass",
+          properties: [
+            {
+              name: "StringProperty",
+              type: "PrimitiveProperty",
+              typeName: "string",
+            },
+          ],
         },
       };
       const aJson = getSchemaJsonWithItems(schemaAJson, aItems);
       const bJson = getSchemaJsonWithItems(schemaAJson, bItems);
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
-      const itemA = await schemaA.getItem<EntityClass>("TestClassA");
-      const itemB = await schemaB.getItem<EntityClass>("TestClassB");
+      const itemA = await schemaA.getItem<StructClass>("TestClassA");
+      const itemB = await schemaB.getItem<StructClass>("TestClassB");
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
@@ -660,6 +674,13 @@ describe("Schema comparison tests", () => {
           schemaItemType: "EntityClass",
           baseClass: "SchemaA.BaseClassA",
           modifier: "Sealed",
+          properties: [
+            {
+              name: "StringProperty",
+              type: "PrimitiveArrayProperty",
+              typeName: "string",
+            },
+          ],
         },
       };
       const bItems = {
@@ -2633,10 +2654,24 @@ describe("Schema comparison tests", () => {
         TestClassA: {
           schemaItemType: "EntityClass",
           mixins: ["SchemaA.MixinA"],
+          properties: [
+            {
+              name: "StringProperty",
+              type: "PrimitiveProperty",
+              typeName: "string",
+            },
+          ],
         },
         MixinA: {
           schemaItemType: "Mixin",
           appliesTo: "SchemaA.TestClassA",
+          properties: [
+            {
+              name: "IntegerProperty",
+              type: "PrimitiveProperty",
+              typeName: "int",
+            },
+          ],
         },
       };
       const bItems = {};
@@ -2754,6 +2789,13 @@ describe("Schema comparison tests", () => {
         MixinB: {
           schemaItemType: "Mixin",
           appliesTo: "SchemaA.TestClassA",
+          properties: [
+            {
+              name: "BooleanProperty",
+              type: "PrimitiveProperty",
+              typeName: "boolean",
+            },
+          ],
         },
       };
       const bItems = {
@@ -2790,6 +2832,13 @@ describe("Schema comparison tests", () => {
           schemaItemType: "RelationshipClass",
           strength: "referencing",
           strengthDirection: "forward",
+          properties: [
+            {
+              name: "StringProperty",
+              type: "PrimitiveProperty",
+              typeName: "string",
+            },
+          ],
           source: {
             multiplicity: "(0..*)",
             roleLabel: "LabelA",
@@ -3551,6 +3600,13 @@ describe("Schema comparison tests", () => {
         TestCustomAttribute: {
           schemaItemType: "CustomAttributeClass",
           appliesTo: "Schema, AnyProperty",
+          properties: [
+            {
+              name: "DoubleArrayProperty",
+              type: "PrimitiveArrayProperty",
+              typeName: "double",
+            },
+          ],
         },
       };
       const aJson = getSchemaJsonWithItems(schemaAJson, aItems);
