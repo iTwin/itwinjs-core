@@ -32,6 +32,9 @@ parameters:
   - name: useCurrentAuthClientsDocsArtifact
     type: boolean
     default: false
+  - name: useCurrentConnectorFrameworkDocsArtifact
+    type: boolean
+    default: false
   - name: shouldPublish
     type: boolean
     default: false
@@ -56,11 +59,11 @@ jobs:
         path: itwinjs-core
         clean: true
 
-      - task: NodeTool@0
-        displayName: Use Node 18
+      - task: UseNode@1
+        displayName: Use Node 20
         inputs:
-          versionSpec: 18.x
-          checkLatest: true
+          version: 20.x
+          checkLatest: false
 
       - script: |
           git config --local user.email imodeljs-admin@users.noreply.github.com
@@ -113,6 +116,7 @@ jobs:
           useCurrentPresentationDocsArtifact: ${{ parameters.useCurrentPresentationDocsArtifact }}
           useCurrentTransformerDocsArtifact: ${{ parameters.useCurrentTransformerDocsArtifact }}
           useCurrentAuthClientsDocsArtifact: ${{ parameters.useCurrentAuthClientsDocsArtifact }}
+          useCurrentConnectorFrameworkDocsArtifact: ${{ parameters.useCurrentConnectorFrameworkDocsArtifact }}
 
       # Currently BeMetalsmith is an internal only tool
       - script: npm install @bentley/bemetalsmith@5.2.x --legacy-peer-deps

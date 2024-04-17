@@ -154,7 +154,6 @@ public;IndexedXYZCollectionInterval
 public;IndexedXYZCollectionPolygonOps
 public;IntegratedSpiral3d 
 public;IntegratedSpiralTypeName = "clothoid" | "bloss" | "biquadratic" | "cosine" | "sine"
-internal;interpolateColor(color0: number, fraction: number, color1: number): number
 public;InterpolationCurve3d 
 public;InterpolationCurve3dOptions
 public;InterpolationCurve3dProps
@@ -172,7 +171,9 @@ public;LongitudeLatitudeNumber
 public;Loop 
 public;LoopCurveLoopCurve
 public;LowAndHighXY = Readonly
+public;LowAndHighXYProps
 public;LowAndHighXYZ = Readonly
+public;LowAndHighXYZProps
 public;Map4d 
 public;Matrix3d 
 public;Matrix3dProps = number[][] | number[]
@@ -240,9 +241,9 @@ public;Range1d
 internal;Range1dArray
 public;Range1dProps =
 public;Range2d 
-public;Range2dProps =
+public;Range2dProps = LowAndHighXYProps | XYProps[]
 public;Range3d 
-public;Range3dProps =
+public;Range3dProps = LowAndHighXYZProps | XYZProps[]
 public;class RangeBase
 public;Ray2d
 public;Ray3d 
@@ -257,6 +258,7 @@ public;RuledSweep
 alpha;Sample
 public;SectionSequenceWithPlanes
 public;Segment1d
+public;SerializationHelpers
 public;SignedLoops
 internal;SineCosinePolynomial
 public;SmallSystem

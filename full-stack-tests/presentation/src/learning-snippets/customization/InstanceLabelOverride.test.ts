@@ -8,6 +8,7 @@ import { Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate, testLocalization } from "../../IntegrationTests";
 import { printRuleset } from "../Utils";
+import { collect } from "../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -66,10 +67,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // verify that label was not overriden because imodel has older BisCore schema than required by label override
-        const nodes = await Presentation.presentation.getNodes({
-          imodel,
-          rulesetOrId: ruleset,
-        });
+        const nodes = await Presentation.presentation
+          .getNodesIterator({
+            imodel,
+            rulesetOrId: ruleset,
+          })
+          .then(async (x) => collect(x.items));
         expect(nodes)
           .to.be.lengthOf(2)
           .and.to.containSubset([{ label: { displayValue: "Physical Object [0-38]" } }, { label: { displayValue: "Physical Object [0-39]" } }]);
@@ -96,7 +99,7 @@ describe("Learning Snippets", () => {
             },
             {
               ruleType: "InstanceLabelOverride",
-              priority: 1,
+              priority: 1000,
               class: { schemaName: "BisCore", className: "GeometricModel3d" },
               values: [
                 {
@@ -107,7 +110,7 @@ describe("Learning Snippets", () => {
             },
             {
               ruleType: "InstanceLabelOverride",
-              priority: 2,
+              priority: 2000,
               class: { schemaName: "BisCore", className: "GeometricModel3d" },
               values: [
                 {
@@ -122,13 +125,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // verify that label override with higher priority was applied
-        const nodes = await Presentation.presentation.getNodes({
+        const nodes = await Presentation.presentation.getNodesIterator({
           imodel,
           rulesetOrId: ruleset,
         });
-        expect(nodes)
-          .to.be.lengthOf(1)
-          .and.to.containSubset([{ label: { displayValue: "Model B" } }]);
+        expect(nodes.total).to.eq(1);
+        expect((await nodes.items.next()).value).to.containSubset({ label: { displayValue: "Model B" } });
       });
 
       it("uses `onlyIfNotHandled` attribute", async () => {
@@ -153,7 +155,7 @@ describe("Learning Snippets", () => {
             },
             {
               ruleType: "InstanceLabelOverride",
-              priority: 1,
+              priority: 1000,
               onlyIfNotHandled: true,
               class: { schemaName: "BisCore", className: "GeometricModel3d" },
               values: [
@@ -165,7 +167,7 @@ describe("Learning Snippets", () => {
             },
             {
               ruleType: "InstanceLabelOverride",
-              priority: 2,
+              priority: 2000,
               class: { schemaName: "BisCore", className: "GeometricModel3d" },
               values: [
                 {
@@ -180,13 +182,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // verify that only label override with higher priority was applied
-        const nodes = await Presentation.presentation.getNodes({
+        const nodes = await Presentation.presentation.getNodesIterator({
           imodel,
           rulesetOrId: ruleset,
         });
-        expect(nodes)
-          .to.be.lengthOf(1)
-          .and.to.containSubset([{ label: { displayValue: "Ñót spêçìfíêd" } }]);
+        expect(nodes.total).to.eq(1);
+        expect((await nodes.items.next()).value).to.containSubset({ label: { displayValue: "Ñót spêçìfíêd" } });
       });
 
       it("uses `class` attribute", async () => {
@@ -223,10 +224,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // verify that only `bis.GeometricModel3d` instances label was overriden
-        const nodes = await Presentation.presentation.getNodes({
-          imodel,
-          rulesetOrId: ruleset,
-        });
+        const nodes = await Presentation.presentation
+          .getNodesIterator({
+            imodel,
+            rulesetOrId: ruleset,
+          })
+          .then(async (x) => collect(x.items));
         expect(nodes)
           .to.be.lengthOf(8)
           .and.to.containSubset([
@@ -276,13 +279,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // verify that label was set to composed value
-        const nodes = await Presentation.presentation.getNodes({
+        const nodes = await Presentation.presentation.getNodesIterator({
           imodel,
           rulesetOrId: ruleset,
         });
-        expect(nodes)
-          .to.be.lengthOf(1)
-          .and.to.containSubset([{ label: { displayValue: "ECClass-PhysicalModel" } }]);
+        expect(nodes.total).to.eq(1);
+        expect((await nodes.items.next()).value).to.containSubset({ label: { displayValue: "ECClass-PhysicalModel" } });
       });
 
       it("uses property value specification", async () => {
@@ -319,10 +321,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // verify that labels was set to `Pitch` property value
-        const nodes = await Presentation.presentation.getNodes({
-          imodel,
-          rulesetOrId: ruleset,
-        });
+        const nodes = await Presentation.presentation
+          .getNodesIterator({
+            imodel,
+            rulesetOrId: ruleset,
+          })
+          .then(async (x) => collect(x.items));
         expect(nodes)
           .to.be.lengthOf(4)
           .and.to.containSubset([
@@ -372,10 +376,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // verify that labels were set to related `meta.ECSchemaDef` instance `Alias` property value
-        const nodes = await Presentation.presentation.getNodes({
-          imodel,
-          rulesetOrId: ruleset,
-        });
+        const nodes = await Presentation.presentation
+          .getNodesIterator({
+            imodel,
+            rulesetOrId: ruleset,
+          })
+          .then(async (x) => collect(x.items));
         expect(nodes)
           .to.be.lengthOf(18)
           .and.to.containSubset([
@@ -434,13 +440,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // verify that label was set to "Model Node"
-        const nodes = await Presentation.presentation.getNodes({
+        const nodes = await Presentation.presentation.getNodesIterator({
           imodel,
           rulesetOrId: ruleset,
         });
-        expect(nodes)
-          .to.be.lengthOf(1)
-          .and.to.containSubset([{ label: { displayValue: "Model Node" } }]);
+        expect(nodes.total).to.eq(1);
+        expect((await nodes.items.next()).value).to.containSubset({ label: { displayValue: "Model Node" } });
       });
 
       it("uses class name value specification", async () => {
@@ -477,13 +482,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // verify that label was set to full class name
-        const nodes = await Presentation.presentation.getNodes({
+        const nodes = await Presentation.presentation.getNodesIterator({
           imodel,
           rulesetOrId: ruleset,
         });
-        expect(nodes)
-          .to.be.lengthOf(1)
-          .and.to.containSubset([{ label: { displayValue: "BisCore:PhysicalModel" } }]);
+        expect(nodes.total).to.eq(1);
+        expect((await nodes.items.next()).value).to.containSubset({ label: { displayValue: "BisCore:PhysicalModel" } });
       });
 
       it("uses class label value specification", async () => {
@@ -519,13 +523,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // verify that label value was set to instance ECClass label
-        const nodes = await Presentation.presentation.getNodes({
+        const nodes = await Presentation.presentation.getNodesIterator({
           imodel,
           rulesetOrId: ruleset,
         });
-        expect(nodes)
-          .to.be.lengthOf(1)
-          .and.to.containSubset([{ label: { displayValue: "Physical Model" } }]);
+        expect(nodes.total).to.eq(1);
+        expect((await nodes.items.next()).value).to.containSubset({ label: { displayValue: "Physical Model" } });
       });
 
       it("uses briefcaseId value specification", async () => {
@@ -561,13 +564,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // verify that only label override with higher priority was applied
-        const nodes = await Presentation.presentation.getNodes({
+        const nodes = await Presentation.presentation.getNodesIterator({
           imodel,
           rulesetOrId: ruleset,
         });
-        expect(nodes)
-          .to.be.lengthOf(1)
-          .and.to.containSubset([{ label: { displayValue: "0" } }]);
+        expect(nodes.total).to.eq(1);
+        expect((await nodes.items.next()).value).to.containSubset({ label: { displayValue: "0" } });
       });
 
       it("uses localId value specification", async () => {
@@ -603,13 +605,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // verify that only label override with higher priority was applied
-        const nodes = await Presentation.presentation.getNodes({
+        const nodes = await Presentation.presentation.getNodesIterator({
           imodel,
           rulesetOrId: ruleset,
         });
-        expect(nodes)
-          .to.be.lengthOf(1)
-          .and.to.containSubset([{ label: { displayValue: "S" } }]);
+        expect(nodes.total).to.eq(1);
+        expect((await nodes.items.next()).value).to.containSubset({ label: { displayValue: "S" } });
       });
 
       it("uses related instance label value specification", async () => {
@@ -650,10 +651,12 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // verify that only label override with higher priority was applied
-        const nodes = await Presentation.presentation.getNodes({
-          imodel,
-          rulesetOrId: ruleset,
-        });
+        const nodes = await Presentation.presentation
+          .getNodesIterator({
+            imodel,
+            rulesetOrId: ruleset,
+          })
+          .then(async (x) => collect(x.items));
         expect(nodes)
           .to.be.lengthOf(2)
           .and.to.containSubset([{ label: { displayValue: "Properties_60InstancesWithUrl2" } }, { label: { displayValue: "Properties_60InstancesWithUrl2" } }]);

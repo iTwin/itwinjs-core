@@ -2165,6 +2165,7 @@ export class Geometry {
     static hypotenuseXYZ(x: number, y: number, z: number): number;
     static hypotenuseXYZW(x: number, y: number, z: number, w: number): number;
     static interpolate(a: number, f: number, b: number): number;
+    static interpolateColor(color0: number, fraction: number, color1: number): number;
     static inverseInterpolate(x0: number, f0: number, x1: number, f1: number, fTarget?: number, defaultResult?: number): number | undefined;
     static inverseInterpolate01(f0: number, f1: number, fTarget?: number): number | undefined;
     static inverseMetricDistance(distance: number): number | undefined;
@@ -2474,6 +2475,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     getPoint3dAtUncheckedPointIndex(pointIndex: number, result?: Point3d): Point3d;
     getRange(transform?: Transform): Range3d;
     getVector3dAtCheckedVectorIndex(vectorIndex: number, result?: Vector3d): Vector3d | undefined;
+    getVector3dAtUncheckedVectorIndex(vectorIndex: number, result?: Vector3d): Vector3d;
     getXAtUncheckedPointIndex(pointIndex: number): number;
     getYAtUncheckedPointIndex(pointIndex: number): number;
     getZAtUncheckedPointIndex(pointIndex: number): number;
@@ -2803,7 +2805,7 @@ export class IndexedPolyface extends Polyface {
     cloneTransformed(transform: Transform): IndexedPolyface;
     get colorCount(): number;
     static create(needNormals?: boolean, needParams?: boolean, needColors?: boolean, twoSided?: boolean): IndexedPolyface;
-    createVisitor(numWrap?: number): PolyfaceVisitor;
+    createVisitor(numWrap?: number): IndexedPolyfaceVisitor;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     extendRange(range: Range3d, transform?: Transform): void;
     get faceCount(): number;
@@ -2844,7 +2846,7 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
 
 // @public
 export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisitor {
-    protected constructor(facets: IndexedPolyface, numWrap: number);
+    protected constructor(polyface: IndexedPolyface, numWrap: number);
     clearArrays(): void;
     clientAuxIndex(i: number): number;
     clientColorIndex(i: number): number;
@@ -2977,9 +2979,6 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
 
 // @public
 export type IntegratedSpiralTypeName = "clothoid" | "bloss" | "biquadratic" | "cosine" | "sine";
-
-// @internal
-export function interpolateColor(color0: number, fraction: number, color1: number): number;
 
 // @public
 export class InterpolationCurve3d extends ProxyCurve {
@@ -3368,7 +3367,23 @@ export class LoopCurveLoopCurve {
 export type LowAndHighXY = Readonly<WritableLowAndHighXY>;
 
 // @public
+export interface LowAndHighXYProps {
+    // (undocumented)
+    high: XYProps;
+    // (undocumented)
+    low: XYProps;
+}
+
+// @public
 export type LowAndHighXYZ = Readonly<WritableLowAndHighXYZ>;
+
+// @public
+export interface LowAndHighXYZProps {
+    // (undocumented)
+    high: XYZProps;
+    // (undocumented)
+    low: XYZProps;
+}
 
 // @public
 export class Map4d implements BeJSONFunctions {
@@ -4458,9 +4473,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     addFacetsFromVisitor(visitor: PolyfaceVisitor): void;
     addGeometryQuery(g: GeometryQuery): void;
     // @internal
-    addGraph(graph: HalfEdgeGraph, acceptFaceFunction?: HalfEdgeToBooleanFunction, isEdgeVisibleFunction?: HalfEdgeToBooleanFunction | undefined): void;
+    addGraph(graph: HalfEdgeGraph, acceptFaceFunction?: HalfEdgeToBooleanFunction, isEdgeVisibleFunction?: HalfEdgeToBooleanFunction): void;
     // @internal
-    addGraphFaces(_graph: HalfEdgeGraph, faces: HalfEdge[]): void;
+    addGraphFaces(faces: HalfEdge[]): void;
     addGreedyTriangulationBetweenLineStrings(pointsA: Point3d[] | LineString3d | IndexedXYZCollection, pointsB: Point3d[] | LineString3d | IndexedXYZCollection): void;
     addIndexedPolyface(source: IndexedPolyface, reversed?: boolean, transform?: Transform): void;
     addLinearSweep(surface: LinearSweep): void;
@@ -4503,9 +4518,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     // @deprecated
     findOrAddPointXYZ(x: number, y: number, z: number): number;
     // @internal
-    static graphFacesToPolyface(graph: HalfEdgeGraph, faces: HalfEdge[]): IndexedPolyface;
+    static graphFacesToPolyface(faces: HalfEdge[]): IndexedPolyface;
     // @internal
-    static graphToPolyface(graph: HalfEdgeGraph, options?: StrokeOptions, acceptFaceFunction?: HalfEdgeToBooleanFunction): IndexedPolyface;
+    static graphToPolyface(graph: HalfEdgeGraph, options?: StrokeOptions, acceptFaceFunction?: HalfEdgeToBooleanFunction, isEdgeVisibleFunction?: HalfEdgeToBooleanFunction): IndexedPolyface;
     handleBox(g: Box): any;
     handleCone(g: Cone): any;
     handleLinearSweep(g: LinearSweep): any;
@@ -4564,12 +4579,12 @@ export class PolyfaceData {
     gatherIndexedData(other: PolyfaceData, index0: number, index1: number, numWrap: number): void;
     getColor(i: number): number;
     getEdgeVisible(i: number): boolean;
-    getNormal(i: number): Vector3d | undefined;
-    getParam(i: number): Point2d | undefined;
-    getPoint(i: number, out?: Point3d): Point3d | undefined;
+    getNormal(i: number, result?: Vector3d): Vector3d | undefined;
+    getParam(i: number, result?: Point2d): Point2d | undefined;
+    getPoint(i: number, result?: Point3d): Point3d | undefined;
     get indexCount(): number;
     isAlmostEqual(other: PolyfaceData): boolean;
-    isAlmostEqualParamIndexUV(index: number, u: number, v: number): boolean;
+    isAlmostEqualParamIndexUV(i: number, u: number, v: number): boolean;
     static isValidFacetStartIndexArray(facetStartIndex: number[]): boolean;
     normal: GrowableXYZArray | undefined;
     get normalCount(): number;
@@ -4583,12 +4598,16 @@ export class PolyfaceData {
     get pointCount(): number;
     pointIndex: number[];
     range(result?: Range3d, transform?: Transform): Range3d;
+    get requireColors(): boolean;
     get requireNormals(): boolean;
+    get requireParams(): boolean;
+    resizeAllArrays(length: number): void;
+    // @deprecated
     resizeAllDataArrays(length: number): void;
-    reverseIndices(facetStartIndex?: number[]): void;
     static reverseIndices<T>(facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean;
-    reverseIndicesSingleFacet(facetId: number, facetStartIndex: number[]): void;
-    static reverseIndicesSingleFacet<T>(facetId: number, facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean;
+    reverseIndices(facetStartIndex?: number[]): void;
+    static reverseIndicesSingleFacet<T>(facetIndex: number, facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean;
+    reverseIndicesSingleFacet(facetIndex: number, facetStartIndex: number[]): void;
     reverseNormals(): void;
     setTaggedNumericData(data: TaggedNumericData | undefined): void;
     taggedNumericData: TaggedNumericData | undefined;
@@ -4979,10 +4998,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
 }
 
 // @public
-export type Range2dProps = {
-    low: XYProps;
-    high: XYProps;
-} | XYProps[];
+export type Range2dProps = LowAndHighXYProps | XYProps[];
 
 // @public
 export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions {
@@ -5081,10 +5097,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
 }
 
 // @public
-export type Range3dProps = {
-    low: XYZProps;
-    high: XYZProps;
-} | XYZProps[];
+export type Range3dProps = LowAndHighXYZProps | XYZProps[];
 
 // @public
 export abstract class RangeBase {
@@ -5487,6 +5500,47 @@ export class Segment1d {
     signedDelta(): number;
     x0: number;
     x1: number;
+}
+
+// @public
+export namespace SerializationHelpers {
+    export interface BSplineCurveData {
+        dim: number;
+        params: BSplineParams;
+        poles: number[][] | Float64Array;
+        weights?: number[] | Float64Array;
+    }
+    export interface BSplineDataOptions {
+        jsonKnots?: boolean;
+        jsonPoles?: boolean;
+        removeExtraKnots?: boolean;
+    }
+    export interface BSplineParams {
+        closed?: boolean;
+        knots: number[] | Float64Array;
+        numPoles: number;
+        order: number;
+        wrapMode?: BSplineWrapMode;
+    }
+    export interface BSplineSurfaceData {
+        dim: number;
+        poles: number[][][] | Float64Array;
+        uParams: BSplineParams;
+        vParams: BSplineParams;
+        weights?: number[][] | Float64Array;
+    }
+    export function cloneBSplineCurveData(source: BSplineCurveData): BSplineCurveData;
+    export function cloneBSplineSurfaceData(source: BSplineSurfaceData): BSplineSurfaceData;
+    export function createBSplineCurveData(poles: number[][] | Float64Array, dim: number, knots: number[] | Float64Array, numPoles: number, order: number): BSplineCurveData;
+    export function createBSplineSurfaceData(poles: number[][][] | Float64Array, dim: number, uKnots: number[] | Float64Array, uNumPoles: number, uOrder: number, vKnots: number[] | Float64Array, vNumPoles: number, vOrder: number): BSplineSurfaceData;
+    export class Export {
+        static prepareBSplineCurveData(data: BSplineCurveData, options?: BSplineDataOptions): boolean;
+        static prepareBSplineSurfaceData(data: BSplineSurfaceData, options?: BSplineDataOptions): boolean;
+    }
+    export class Import {
+        static prepareBSplineCurveData(data: BSplineCurveData, options?: BSplineDataOptions): boolean;
+        static prepareBSplineSurfaceData(data: BSplineSurfaceData, options?: BSplineDataOptions): boolean;
+    }
 }
 
 // @public

@@ -277,6 +277,35 @@ export type ComputePriorityFunction<T> = (value: T) => number;
 // @public
 export type Constructor<T> = new (...args: any[]) => T;
 
+// @internal
+export enum DbChangeStage {
+    // (undocumented)
+    New = 1,
+    // (undocumented)
+    Old = 0
+}
+
+// @internal
+export enum DbConflictCause {
+    // (undocumented)
+    Conflict = 3,
+    // (undocumented)
+    Constraint = 4,
+    // (undocumented)
+    Data = 1,
+    // (undocumented)
+    ForeignKey = 5,
+    // (undocumented)
+    NotFound = 2
+}
+
+// @internal
+export enum DbConflictResolution {
+    Abort = 2,
+    Replace = 1,
+    Skip = 0
+}
+
 // @public
 export enum DbOpcode {
     Delete = 9,
@@ -422,6 +451,20 @@ export enum DbResult {
     BE_SQLITE_ROW = 100,
     BE_SQLITE_SCHEMA = 17,
     BE_SQLITE_TOOBIG = 18
+}
+
+// @internal
+export enum DbValueType {
+    // (undocumented)
+    BlobVal = 4,
+    // (undocumented)
+    FloatVal = 2,
+    // (undocumented)
+    IntegerVal = 1,
+    // (undocumented)
+    NullVal = 5,
+    // (undocumented)
+    TextVal = 3
 }
 
 // @public
@@ -785,6 +828,8 @@ export enum IModelHubStatus {
 // @public
 export enum IModelStatus {
     // (undocumented)
+    Aborted = 65608,
+    // (undocumented)
     AlreadyLoaded = 65537,
     // (undocumented)
     AlreadyOpen = 65538,
@@ -1138,6 +1183,10 @@ export type LogFunction = (category: string, message: string, metaData: LoggingM
 
 // @public
 export class Logger {
+    // @internal (undocumented)
+    static get categoryFilter(): {
+        [x: string]: LogLevel;
+    };
     static configureLevels(cfg: LoggerLevelsConfig): void;
     static getLevel(category: string): LogLevel | undefined;
     static getMetaData(metaData?: LoggingMetaData): object;
@@ -1160,6 +1209,8 @@ export class Logger {
     static logWarning(category: string, message: string, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logWarning: LogFunction | undefined;
+    // @internal (undocumented)
+    static get minLevel(): LogLevel | undefined;
     static parseLogLevel(str: string): LogLevel;
     static setLevel(category: string, minLevel: LogLevel): void;
     static setLevelDefault(minLevel: LogLevel): void;
@@ -1541,7 +1592,7 @@ export abstract class StatusCategory {
     // (undocumented)
     abstract error: boolean;
     // (undocumented)
-    static for(error: BentleyError): StatusCategory;
+    static for(error: Error): StatusCategory;
     // (undocumented)
     static handlers: Set<StatusCategoryHandler>;
     // (undocumented)
@@ -1549,7 +1600,7 @@ export abstract class StatusCategory {
 }
 
 // @alpha (undocumented)
-export type StatusCategoryHandler = (error: BentleyError) => StatusCategory | undefined;
+export type StatusCategoryHandler = (error: Error) => StatusCategory | undefined;
 
 // @internal
 export interface StatusCodeWithMessage<ErrorCodeType> {

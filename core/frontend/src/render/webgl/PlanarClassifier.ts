@@ -9,7 +9,7 @@
 
 import { dispose } from "@itwin/core-bentley";
 import {
-  ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifier, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, TextureTransparency,
+  ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, TextureTransparency,
 } from "@itwin/core-common";
 import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@itwin/core-geometry";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
@@ -37,6 +37,7 @@ import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { Texture, TextureHandle } from "./Texture";
+import { ActiveSpatialClassifier } from "../../SpatialClassifiersState";
 
 export enum PlanarClassifierContent { None = 0, MaskOnly = 1, ClassifierOnly = 2, ClassifierAndMask = 3 }
 
@@ -251,7 +252,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _anyHilited = false;
   private _anyOpaque = false;
   private _anyTranslucent = false;
-  private _classifier?: SpatialClassifier;
+  private _classifier?: ActiveSpatialClassifier;
   private readonly _plane = Plane3dByOriginAndUnitNormal.create(new Point3d(0, 0, 0), new Vector3d(0, 0, 1))!;    // TBD -- Support other planes - default to X-Y for now.
   private readonly _renderState = new RenderState();
   private readonly _renderCommands: RenderCommands;
@@ -273,7 +274,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _isClassifyingPointCloud?: boolean; // we will detect this the first time we draw
   private readonly _bgColor = ColorDef.from(0, 0, 0, 255);
 
-  private constructor(classifier: SpatialClassifier | undefined, target: Target) {
+  private constructor(classifier: ActiveSpatialClassifier | undefined, target: Target) {
     super();
     this._classifier = classifier;
 
@@ -311,7 +312,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._graphics!.push(graphic);
   }
 
-  public static create(properties: SpatialClassifier | undefined, target: Target): PlanarClassifier {
+  public static create(properties: ActiveSpatialClassifier | undefined, target: Target): PlanarClassifier {
     return new PlanarClassifier(properties, target);
   }
 

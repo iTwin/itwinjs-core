@@ -17,6 +17,7 @@ export type EditCommandType = typeof EditCommand;
 /**
  * An EditCommand performs an editing action on the backend. EditCommands are usually paired with and driven by EditTools on the frontend.
  * EditCommands have a *commandId* that uniquely identifies them, so they can be found via a lookup in the [[EditCommandAdmin]].
+ * Each EditCommand must be registered in the [[EditCommandAdmin]] with [[EditCommandAdmin.register]] or [[EditCommandAdmin.registerModule]].
  * Every time an EditCommand runs, a new instance of (a subclass of) this class is created.
  * @beta
  */

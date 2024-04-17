@@ -502,6 +502,31 @@ export function isGltf1Material(material: GltfMaterial): material is Gltf1Materi
 export interface GltfBuffer extends GltfChildOfRootProperty {
   uri?: string;
   byteLength?: number;
+  extensions?: GltfExtensions & {
+    // https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md
+    EXT_meshopt_compression?: { // eslint-disable-line @typescript-eslint/naming-convention
+      fallback?: boolean;
+    };
+  };
+}
+
+/** @internal */
+export type ExtMeshoptCompressionMode = "ATTRIBUTES" | "TRIANGLES" | "INDICES";
+
+/** @internal */
+export type ExtMeshoptCompressionFilter = "NONE" | "OCTAHEDRAL" | "QUATERNION";
+
+/** https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md
+ * @internal
+*/
+export interface GltfBufferViewMeshoptCompressionExtension {
+  buffer: number;
+  byteOffset?: number;
+  byteLength: number;
+  byteStride: number;
+  count: number;
+  mode: ExtMeshoptCompressionMode;
+  filter?: ExtMeshoptCompressionFilter;
 }
 
 /** @internal */
@@ -511,6 +536,9 @@ export interface GltfBufferViewProps extends GltfChildOfRootProperty {
   byteOffset?: number;
   byteStride?: number;
   target?: GltfBufferTarget;
+  extensions?: GltfExtensions & {
+    EXT_meshopt_compression?: GltfBufferViewMeshoptCompressionExtension; // eslint-disable-line @typescript-eslint/naming-convention
+  };
 }
 
 /** @internal */

@@ -32,7 +32,7 @@ export interface PresentationProps {
   presentation?: PresentationManagerProps;
 
   /** Props for [[SelectionManager]]. */
-  selection?: SelectionManagerProps;
+  selection?: Partial<SelectionManagerProps>;
 
   /** Props for [[FavoritePropertiesManager]]. */
   favorites?: FavoritePropertiesManagerProps;
@@ -77,22 +77,25 @@ export class Presentation {
       presentationManager = PresentationManager.create(managerProps);
     }
     if (!selectionManager) {
-      selectionManager = new SelectionManager(
-        props?.selection ?? {
-          scopes: new SelectionScopesManager({
+      selectionManager = new SelectionManager({
+        ...props?.selection,
+        scopes:
+          props?.selection?.scopes ??
+          new SelectionScopesManager({
             rpcRequestsHandler: presentationManager.rpcRequestsHandler,
             localeProvider: () => this.presentation.activeLocale,
           }),
-        },
-      );
+      });
     }
     if (!favoritePropertiesManager) {
       favoritePropertiesManager = new FavoritePropertiesManager({
         storage: props?.favorites ? props.favorites.storage : createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.Noop),
       });
     }
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    presentationManager.onNewiModelConnection = favoritePropertiesManager.initializeConnection.bind(favoritePropertiesManager);
+
+    presentationManager.startIModelInitialization = (imodel) => favoritePropertiesManager?.startConnectionInitialization(imodel);
+    presentationManager.ensureIModelInitialized = async (imodel) => favoritePropertiesManager?.ensureInitialized(imodel);
+
     await FrontendLocalizationHelper.registerNamespaces();
     for (const handler of initializationHandlers) {
       const cleanup = await handler();
@@ -124,6 +127,9 @@ export class Presentation {
     }
     favoritePropertiesManager = undefined;
 
+    if (selectionManager) {
+      selectionManager.dispose();
+    }
     selectionManager = undefined;
     localization = undefined;
   }

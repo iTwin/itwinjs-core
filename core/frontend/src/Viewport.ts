@@ -1047,19 +1047,28 @@ export abstract class Viewport implements IDisposable, TileUser {
   */
   public async getToolTip(hit: HitDetail): Promise<HTMLElement | string> {
     const promises = new Array<Promise<string | HTMLElement | undefined>>();
-    if (this.displayStyle) {
-      this.displayStyle.forEachTileTreeRef(async (tree) => {
-        promises.push(tree.getToolTip(hit).catch(() => undefined));
+    this.view.forEachTileTreeRef((ref) => {
+      const promise = ref.getToolTipPromise(hit);
+      if (promise)
+        promises.push(promise);
+    });
+
+    this.forEachMapTreeRef((ref) => {
+      const promise = ref.getToolTipPromise(hit);
+      if (promise)
+        promises.push(promise);
+    });
+
+    for (const provider of this.tiledGraphicsProviders) {
+      provider.forEachTileTreeRef(this, (ref) => {
+        const promise = ref.getToolTipPromise(hit);
+        if (promise)
+          promises.push(promise);
       });
     }
-    this.forEachMapTreeRef(async (tree) => promises.push(tree.getToolTip(hit)));
 
     const results = await Promise.all(promises);
-    for (const result of results)
-      if (result !== undefined)
-        return result;
-
-    return "";
+    return results.find((result) => undefined !== result) ?? "";
   }
 
   /** Obtain feature information from a map layer model, if any, identified by the specified [[HitDetail]].

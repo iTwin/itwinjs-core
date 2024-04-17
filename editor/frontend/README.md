@@ -20,35 +20,6 @@ The following key-ins are available for this package.
 * `editor undo single` - Undo last change to elements.
 * `editor redo` - Redo last undone change to elements.
 
-###### Basic manipulation tools
-
-* `editor delete elements` - Delete selected elements.
-* `editor move elements` - Move selected elements.
-* `editor rotate elements` - Rotate selected elements. Accepts 0-3 arguments:
-  * `method=0|1` How rotate angle will be specified. 0 for by 3 points, 1 for by specified angle.
-  * `about=0|1|2` Location to rotate about. 0 for point, 1 for placement origin, and 2 for center of range.
-  * `angle=number` Rotation angle in degrees when not defining angle by points.
-
-###### Sketching tools
-
-* `editor create arc` - Create a new arc element or add an arc to an existing open path. Accepts 0-3 arguments:
-  * `method=0|1|2|3` How arc will be defined. 0 for center/start, 1 for start/center, 2 for start/mid/end, and 3 for start/end/mid.
-  * `radius=number` Arc radius for start/center or center/start, 0 to define by points.
-  * `sweep=number` Arc sweep angle in degrees for start/center or center/start, 0 to define by points.
-* `editor create circle` - Create a new circle element.
-* `editor create ellipse` - Create a new ellipse element.
-* `editor create linestring` - Create a new linestring element or add a linestring to an existing path.
-* `editor create rectangle` - Create a new rectangle element.
-* `editor create bcurve` - Create a new bspline curve element or add a bspline curve to an existing path.
-
-###### Solid primitive tools
-
-* `editor create sphere` - Create a new sphere element.
-* `editor create cylinder` - Create a new cylinder element.
-* `editor create cone` - Create a new cone element.
-* `editor create box` - Create a new box element.
-* `editor create torus` - Create a new torus element.
-
 ###### Project extents and geolocation tools
 
 * `editor project location show` - Show the decoration for editing the iModel's project extents and geolocation.

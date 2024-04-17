@@ -8,6 +8,8 @@
  */
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
+// cspell:word internaldocs
+
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
@@ -106,8 +108,9 @@ export abstract class Polyface extends GeometryQuery {
  */
 export class IndexedPolyface extends Polyface { // more info can be found at geometry/internaldocs/Polyface.md
   /**
-   * Index to the `this.data.pointIndex` array entry for a specific facet.
-   * * The facet count is `facetStart.length - 1`.
+   * Start indices of all facets of the polyface.
+   * * Each element is an index to the `this.data.pointIndex` array entry for a specific facet.
+   * * The facet count is `_facetStart.length - 1`.
    * * The face loop for the i_th facet consists of the entries in `this.data.pointIndex` at indices `_facetStart[i]`
    * up to (but not including) `_facetStart[i + 1]`.
    * * Note the array is initialized with one entry (value 0).
@@ -332,10 +335,10 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   }
   /**
    * Create an empty facet set with coordinate and index data to be supplied later.
-   * @param needNormals true if normals will be constructed.
-   * @param needParams true if uv parameters will be constructed.
-   * @param needColors true if colors will be constructed.
-   * @param twoSided true if the facets are to be considered viewable from the back.
+   * @param needNormals `true` to allocate empty normal data and index arrays; `false` (default) to leave undefined.
+   * @param needParams `true` to allocate empty uv parameter data and index arrays; `false` (default) to leave undefined.
+   * @param needColors `true` to allocate empty color data and index arrays; `false` (default) to leave undefined.
+   * @param twoSided `true` if the facets are to be considered viewable from the back; `false` (default) if not.
    */
   public static create(
     needNormals: boolean = false,
@@ -409,19 +412,19 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
    */
   public addNormal(normal: Vector3d, priorIndexA?: number, priorIndexB?: number): number {
     // check if `normal` is duplicate of `dataNormal` at index `i`
-    const normalIsDuplicate = (dataNormal: GrowableXYZArray, i: number) => {
-      const distance = dataNormal.distanceIndexToPoint(i, normal);
+    const normalIsDuplicate = (i: number) => {
+      const distance = this.data.normal!.distanceIndexToPoint(i, normal);
       return distance !== undefined && Geometry.isSmallMetricDistance(distance);
     };
     if (this.data.normal !== undefined) {
-      if (priorIndexA !== undefined && normalIsDuplicate(this.data.normal, priorIndexA))
+      if (priorIndexA !== undefined && normalIsDuplicate(priorIndexA))
         return priorIndexA;
-      if (priorIndexB !== undefined && normalIsDuplicate(this.data.normal, priorIndexB))
+      if (priorIndexB !== undefined && normalIsDuplicate(priorIndexB))
         return priorIndexB;
       // check the tail index for possible duplicate
       if (priorIndexA !== undefined || priorIndexB !== undefined) {
         const tailIndex = this.data.normal.length - 1;
-        if (normalIsDuplicate(this.data.normal, tailIndex))
+        if (normalIsDuplicate(tailIndex))
           return tailIndex;
       }
     }
@@ -509,11 +512,23 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
       if (this.data.edgeVisible.length !== lengthB)
         messages.push("visibleIndex count must equal pointIndex count");
       if (!Polyface.areIndicesValid(
+        this.data.pointIndex, lengthA, lengthB, this.data.point, this.data.point ? this.data.point.length : 0,
+      ))
+        messages.push("invalid point indices in the last facet");
+      if (!Polyface.areIndicesValid(
         this.data.normalIndex, lengthA, lengthB, this.data.normal, this.data.normal ? this.data.normal.length : 0,
       ))
         messages.push("invalid normal indices in the last facet");
+      if (!Polyface.areIndicesValid(
+        this.data.paramIndex, lengthA, lengthB, this.data.param, this.data.param ? this.data.param.length : 0,
+      ))
+        messages.push("invalid param indices in the last facet");
+      if (!Polyface.areIndicesValid(
+        this.data.colorIndex, lengthA, lengthB, this.data.color, this.data.color ? this.data.color.length : 0,
+      ))
+        messages.push("invalid color indices in the last facet");
       if (messages.length > 0) {
-        this.data.trimAllIndexArrays(lengthB);
+        this.data.trimAllIndexArrays(lengthA);
         return messages;
       }
     }
@@ -563,7 +578,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
     return this._facetStart[index + 1];
   }
   /** Create a visitor for this polyface */
-  public createVisitor(numWrap: number = 0): PolyfaceVisitor {
+  public createVisitor(numWrap: number = 0): IndexedPolyfaceVisitor {
     return IndexedPolyfaceVisitor.create(this, numWrap);
   }
   /** Return the range of (optionally transformed) points in this mesh. */
@@ -621,8 +636,8 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
 /**
  * A PolyfaceVisitor manages data while walking through facets.
  * * The polyface visitor holds data for one facet at a time.
- * * The caller can request the position in the addressed polyfaceData as a "readIndex."
- * * The readIndex values (as numbers) are not promised to be sequential. (I.e. it might be a simple facet count
+ * * The caller can request the position in the addressed polyfaceData as a "readIndex".
+ * * The readIndex values (as numbers) are not promised to be sequential (i.e., it might be a simple facet count
  * or might have "gaps" at the whim of the particular PolyfaceVisitor implementation).
  * @public
  */
@@ -647,7 +662,14 @@ export interface PolyfaceVisitor extends PolyfaceData {
   clientAuxIndex(i: number): number;
   /** Return the client polyface. */
   clientPolyface(): Polyface | undefined;
-  /** Set the number of vertices to replicate in visitor arrays. */
+  /**
+   * Set the number of vertices replicated in visitor arrays (both data and index arrays).
+   * * 0,1,2 are the most common as numWrap.
+   * * Example: suppose `[6,7,8]` is the pointIndex array representing a triangle. First edge would be `6,7`. Second
+   * edge is `7,8`. Third edge is `8,6`. To access `6` for the third edge, we have to go back to the start of array.
+   * Therefore, it is useful to store `6` at the end of pointIndex array, i.e., `[6,7,8,6]` meaning `numWrap = 1`.
+   * * `numWrap = 2` is useful when vertex visit requires two adjacent vectors, e.g. for cross products.
+   */
   setNumWrap(numWrap: number): void;
   /** Clear the contents of all arrays. Use this along with `pushDataFrom` to build up new facets. */
   clearArrays(): void;

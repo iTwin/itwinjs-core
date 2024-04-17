@@ -8,6 +8,7 @@ import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../IntegrationTests";
 import { printRuleset } from "../Utils";
+import { collect } from "../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -52,19 +53,16 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Ensure that content of grandparent element is returned
-      const content = await Presentation.presentation.getContent({
+      const content = await Presentation.presentation.getContentIterator({
         imodel,
         rulesetOrId: ruleset,
         keys: new KeySet([{ className: "BisCore:Element", id: "0x1b" }]),
         descriptor: {},
       });
-      expect(content!.contentSet)
-        .to.have.lengthOf(1)
-        .and.to.containSubset([
-          {
-            primaryKeys: [{ id: "0x1" }],
-          },
-        ]);
+      expect(content!.total).to.eq(1);
+      expect((await content!.items.next()).value).to.containSubset({
+        primaryKeys: [{ id: "0x1" }],
+      });
     });
 
     it("using recursive specification", async () => {
@@ -95,13 +93,15 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Ensure that content of the root subject's children is returned
-      const content = await Presentation.presentation.getContent({
-        imodel,
-        rulesetOrId: ruleset,
-        keys: new KeySet([{ className: "BisCore:Element", id: "0x1" }]),
-        descriptor: {},
-      });
-      expect(content!.contentSet)
+      const contentSet = await Presentation.presentation
+        .getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Element", id: "0x1" }]),
+          descriptor: {},
+        })
+        .then(async (x) => collect(x!.items));
+      expect(contentSet)
         .to.have.lengthOf(9)
         .and.to.containSubset([
           {
@@ -175,19 +175,16 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Ensure that elements' category is returned when requesting content for those elements' model
-      const content = await Presentation.presentation.getContent({
+      const content = await Presentation.presentation.getContentIterator({
         imodel,
         rulesetOrId: ruleset,
         keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
         descriptor: {},
       });
-      expect(content!.contentSet)
-        .to.have.lengthOf(1)
-        .and.to.containSubset([
-          {
-            primaryKeys: [{ id: "0x17" }],
-          },
-        ]);
+      expect(content!.total).to.eq(1);
+      expect((await content!.items.next()).value).to.containSubset({
+        primaryKeys: [{ id: "0x17" }],
+      });
     });
 
     it("combining multiple recursive specifications", async () => {
@@ -237,19 +234,21 @@ describe("Learning Snippets", () => {
 
       // Ensure that the count is correct (62 elements + 1 category + 1 sub-category) and both
       // categories are included. Not checking the elements...
-      const content = await Presentation.presentation.getContent({
-        imodel,
-        rulesetOrId: ruleset,
-        keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
-        descriptor: {},
-      });
-      expect(content!.contentSet).to.have.lengthOf(62 + 1 + 1);
-      expect(content!.contentSet).to.containSubset([
+      const contentSet = await Presentation.presentation
+        .getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
+          descriptor: {},
+        })
+        .then(async (x) => collect(x!.items));
+      expect(contentSet).to.have.lengthOf(62 + 1 + 1);
+      expect(contentSet).to.containSubset([
         {
           primaryKeys: [{ className: "BisCore:SpatialCategory", id: "0x17" }],
         },
       ]);
-      expect(content!.contentSet).to.containSubset([
+      expect(contentSet).to.containSubset([
         {
           primaryKeys: [{ className: "BisCore:SubCategory", id: "0x18" }],
         },

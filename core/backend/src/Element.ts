@@ -19,7 +19,7 @@ import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
-import { DefinitionModel, DrawingModel, PhysicalModel } from "./Model";
+import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
 
 /** Argument for the `Element.onXxx` static methods
@@ -91,16 +91,23 @@ export interface OnSubModelIdArg extends OnElementArg {
   subModelId: Id64String;
 }
 
-/** Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
- * Each element represents an entity in the real world. Sets of Elements (contained in [[Model]]s) are used to model
+/** The smallest individually identifiable building block for modeling the real world in an iModel.
+ * Each element represents an [[Entity]] in the real world. Sets of Elements (contained in [[Model]]s) are used to model
  * other Elements that represent larger scale real world entities. Using this recursive modeling strategy,
  * Elements can represent entities at any scale. Elements can represent physical things or abstract concepts
  * or simply be information records.
  *
  * Every Element has a 64-bit id (inherited from Entity) that uniquely identifies it within an iModel. Every Element also
- * has a "code" that identifies its meaning in the real world. Additionally, Elements may have a "federationGuid"
+ * has a [[code]] that identifies its meaning in the real world. Additionally, Elements may have a [[federationGuid]]
  * to hold a GUID, if the element was assigned that GUID by some other federated database. The iModel database enforces
  * uniqueness of id, code, and federationGuid.
+ *
+ * The Element class provides `static` methods like [[onInsert]], [[onUpdated]], [[onCloned]], and [[onChildAdded]] that enable
+ * it to customize persistence operations. For example, the base implementations of [[onInsert]], [[onUpdate]], and [[onDelete]]
+ * validate that the appropriate [locks]($docs/learning/backend/ConcurrencyControl.md), [codes]($docs/learning/backend/CodeService.md),
+ * and [channel permissions]($docs/learning/backend/Channel.md) are obtained before a change to the element is written to the iModel.
+ * A subclass of Element that overrides any of these methods **must** call the `super` method as well. An application that supplies its
+ * own Element subclasses should register them at startup via [[ClassRegistry.registerModule]] or [[ClassRegistry.register]].
  *
  * See:
  * * [Element Fundamentals]($docs/bis/guide/fundamentals/element-fundamentals.md)
@@ -800,6 +807,11 @@ export class Drawing extends Document {
   public static override get className(): string { return "Drawing"; }
   protected constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 
+  /** The name of the DrawingModel class modeled by this element type.
+   * @internal
+   */
+  protected static get drawingModelFullClassName(): string { return DrawingModel.classFullName; }
+
   /** Create a Code for a Drawing given a name that is meant to be unique within the scope of the specified DocumentListModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DocumentListModel that contains the Drawing and provides the scope for its name.
@@ -825,7 +837,7 @@ export class Drawing extends Document {
     };
     const drawingId: Id64String = iModelDb.elements.insertElement(drawingProps);
     const model: DrawingModel = iModelDb.models.createModel({
-      classFullName: DrawingModel.classFullName,
+      classFullName: this.drawingModelFullClassName,
       modeledElement: { id: drawingId },
     });
     return iModelDb.models.insertModel(model.toJSON());
@@ -856,6 +868,9 @@ export class SectionDrawing extends Drawing {
 
   /** @internal */
   public static override get className(): string { return "SectionDrawing"; }
+
+  /** @internal */
+  protected static override get drawingModelFullClassName(): string { return SectionDrawingModel.classFullName; }
 
   protected constructor(props: SectionDrawingProps, iModel: IModelDb) {
     super(props, iModel);

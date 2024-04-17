@@ -96,6 +96,7 @@ export enum IModelStatus {
   NotRegistered = IMODEL_ERROR_BASE + 69,
   FunctionNotFound = IMODEL_ERROR_BASE + 70,
   NoActiveCommand = IMODEL_ERROR_BASE + 71,
+  Aborted = IMODEL_ERROR_BASE + 72,
 }
 
 /** Error statuses produced by various briefcase operations, typically encountered as the `errorNumber` of an [IModelError]($common).

@@ -10,6 +10,7 @@ import { InstanceKey, NodeKey, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
+import { collect } from "../../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -61,7 +62,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Confirm that at least some nodes are merged from multiple elements
-        const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(nodes).to.satisfy(
           () =>
             nodes.length > 0 &&
@@ -129,7 +130,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Confirm that at least some nodes are merged from multiple elements
-        const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         expect(nodes)
           .to.have.lengthOf(8)
           .and.to.containSubset([

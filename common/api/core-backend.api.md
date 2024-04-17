@@ -51,7 +51,11 @@ import { Constructor } from '@itwin/core-bentley';
 import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
+import { DbChangeStage } from '@itwin/core-bentley';
+import { DbConflictCause } from '@itwin/core-bentley';
+import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
+import { DbValueType } from '@itwin/core-bentley';
 import { DefinitionElementProps } from '@itwin/core-common';
 import { DisplayStyle3dProps } from '@itwin/core-common';
 import { DisplayStyle3dSettings } from '@itwin/core-common';
@@ -154,6 +158,7 @@ import { NormalMapProps } from '@itwin/core-common';
 import { OpenBriefcaseProps } from '@itwin/core-common';
 import { OpenCheckpointArgs } from '@itwin/core-common';
 import { OpenMode } from '@itwin/core-bentley';
+import { OpenSqliteArgs } from '@itwin/core-common';
 import { Optional } from '@itwin/core-bentley';
 import * as os from 'os';
 import { OverriddenBy } from '@itwin/core-common';
@@ -686,6 +691,44 @@ export interface ChangesetArg extends IModelIdArg {
     readonly changeset: ChangesetIndexOrId;
 }
 
+// @internal (undocumented)
+export interface ChangesetConflictArgs {
+    // (undocumented)
+    cause: DbConflictCause;
+    // (undocumented)
+    changesetFile?: string;
+    // (undocumented)
+    columnCount: number;
+    // (undocumented)
+    dump: () => void;
+    // (undocumented)
+    getForeignKeyConflicts: () => number;
+    // (undocumented)
+    getPrimaryKeyColumns: () => number[];
+    // (undocumented)
+    getValueBinary: (columnIndex: number, stage: DbChangeStage) => Uint8Array | null | undefined;
+    // (undocumented)
+    getValueDouble: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
+    // (undocumented)
+    getValueId: (columnIndex: number, stage: DbChangeStage) => Id64String | null | undefined;
+    // (undocumented)
+    getValueInteger: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
+    // (undocumented)
+    getValueText: (columnIndex: number, stage: DbChangeStage) => string | null | undefined;
+    // (undocumented)
+    getValueType: (columnIndex: number, stage: DbChangeStage) => DbValueType | null | undefined;
+    // (undocumented)
+    indirect: boolean;
+    // (undocumented)
+    isValueNull: (columnIndex: number, stage: DbChangeStage) => boolean | undefined;
+    // (undocumented)
+    opcode: DbOpcode;
+    // (undocumented)
+    setLastError: (message: string) => void;
+    // (undocumented)
+    tableName: string;
+}
+
 // @beta
 export class ChangesetECAdaptor implements IDisposable {
     constructor(reader: SqliteChangesetReader, disableMetaData?: boolean);
@@ -768,8 +811,6 @@ export class ChannelAdmin implements ChannelControl {
     // (undocumented)
     getChannelKey(elementId: Id64String): ChannelKey;
     // (undocumented)
-    get hasChannels(): boolean;
-    // (undocumented)
     insertChannelSubject(args: {
         subjectName: string;
         channelKey: ChannelKey;
@@ -782,9 +823,9 @@ export class ChannelAdmin implements ChannelControl {
         channelKey: ChannelKey;
     }): void;
     // (undocumented)
-    removeAllowedChannel(channelKey: ChannelKey): void;
+    queryChannelRoot(channelKey: ChannelKey): Id64String | undefined;
     // (undocumented)
-    static readonly sharedChannel = "shared";
+    removeAllowedChannel(channelKey: ChannelKey): void;
     // (undocumented)
     verifyChannel(modelId: Id64String): void;
 }
@@ -793,7 +834,6 @@ export class ChannelAdmin implements ChannelControl {
 export interface ChannelControl {
     addAllowedChannel(channelKey: ChannelKey): void;
     getChannelKey(elementId: Id64String): ChannelKey;
-    get hasChannels(): boolean;
     insertChannelSubject(args: {
         subjectName: string;
         channelKey: ChannelKey;
@@ -804,6 +844,7 @@ export interface ChannelControl {
         elementId: Id64String;
         channelKey: ChannelKey;
     }): void;
+    queryChannelRoot(channelKey: ChannelKey): Id64String | undefined;
     removeAllowedChannel(channelKey: ChannelKey): void;
     // @internal (undocumented)
     verifyChannel(modelId: Id64String): void;
@@ -868,7 +909,6 @@ export class ClassRegistry {
     static isNotFoundError(err: any): boolean;
     // @internal (undocumented)
     static makeMetaDataNotFoundError(className: string): IModelError;
-    // @internal (undocumented)
     static register(entityClass: typeof Entity, schema: typeof Schema): void;
     static registerModule(moduleObj: any, schema: typeof Schema): void;
     // @internal
@@ -1666,6 +1706,8 @@ export class Drawing extends Document_2 {
     // @internal (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
+    // @internal
+    protected static get drawingModelFullClassName(): string;
     static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string): Id64String;
 }
 
@@ -1923,23 +1965,26 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
     next(): IteratorResult<ECSqlValue>;
 }
 
-// @internal
-export class EditableWorkspaceDb extends ITwinWorkspaceDb {
+// @beta
+export interface EditableWorkspaceDb extends WorkspaceDb {
     addBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
     addFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName, fileExt?: string): void;
     addString(rscName: WorkspaceResource.Name, val: string): void;
     // (undocumented)
     createDb(version?: string): Promise<void>;
-    static createEmpty(fileName: LocalFileName): void;
     getBlobWriter(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO;
-    // (undocumented)
-    open(): void;
     removeBlob(rscName: WorkspaceResource.Name): void;
     removeFile(rscName: WorkspaceResource.Name): void;
     removeString(rscName: WorkspaceResource.Name): void;
     updateBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
     updateFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName): void;
     updateString(rscName: WorkspaceResource.Name, val: string): void;
+}
+
+// @beta (undocumented)
+export namespace EditableWorkspaceDb {
+    export function construct(props: WorkspaceDb.Props, container: WorkspaceContainer): EditableWorkspaceDb;
+    export function createEmpty(fileName: LocalFileName): void;
 }
 
 // @public
@@ -3074,7 +3119,7 @@ export abstract class IModelDb extends IModel {
     static openDgnDb(file: {
         path: LocalFileName;
         key?: string;
-    }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions & CloudContainerArgs): IModelJsNative.DgnDb;
+    }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions & CloudContainerArgs & OpenSqliteArgs): IModelJsNative.DgnDb;
     get pathName(): LocalFileName;
     performCheckpoint(): void;
     // @internal
@@ -3165,7 +3210,7 @@ export namespace IModelDb {
         tryGetElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T | undefined;
         tryGetElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined;
         updateAspect(aspectProps: ElementAspectProps): void;
-        updateElement(elProps: ElementProps): void;
+        updateElement<T extends ElementProps>(elProps: Partial<T>): void;
     }
     // (undocumented)
     export interface GuidMapper {
@@ -3297,8 +3342,6 @@ export class IModelHost {
     }): string;
     // (undocumented)
     static configuration?: IModelHostOptions;
-    // @internal (undocumented)
-    static flushLog(): void;
     static getAccessToken(): Promise<AccessToken>;
     // @internal
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
@@ -3383,6 +3426,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
 
 // @public
 export interface IModelHostOptions {
+    allowSharedChannel?: boolean;
     appAssetsDir?: LocalDirName;
     authorizationClient?: AuthorizationClient;
     cacheDir?: LocalDirName;
@@ -3583,109 +3627,6 @@ export interface IpcHostOpts {
 export interface ITwinIdArg {
     // (undocumented)
     readonly iTwinId: GuidString;
-}
-
-// @internal (undocumented)
-export class ITwinWorkspace implements Workspace {
-    constructor(settings: Settings, opts?: WorkspaceOpts);
-    // (undocumented)
-    addContainer(toAdd: ITwinWorkspaceContainer): void;
-    // (undocumented)
-    close(): void;
-    // (undocumented)
-    readonly containerDir: LocalDirName;
-    // (undocumented)
-    findContainer(containerId: WorkspaceContainer.Id): ITwinWorkspaceContainer | undefined;
-    // (undocumented)
-    getCloudCache(): CloudSqlite.CloudCache;
-    // (undocumented)
-    getContainer(props: WorkspaceContainer.Props): WorkspaceContainer;
-    // (undocumented)
-    getWorkspaceDb(dbAlias: string): Promise<WorkspaceDb>;
-    // (undocumented)
-    getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props): WorkspaceDb;
-    // (undocumented)
-    loadSettingsDictionary(settingRsc: WorkspaceResource.Name, db: WorkspaceDb, priority: SettingsPriority): void;
-    // (undocumented)
-    resolveContainer(containerName: string): WorkspaceContainer.Props;
-    // (undocumented)
-    resolveDatabase(databaseName: string): WorkspaceDb.Props & WorkspaceContainer.Alias;
-    // (undocumented)
-    readonly settings: Settings;
-}
-
-// @internal (undocumented)
-export class ITwinWorkspaceContainer implements WorkspaceContainer {
-    constructor(workspace: ITwinWorkspace, props: WorkspaceContainer.Props);
-    // (undocumented)
-    addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
-    // (undocumented)
-    close(): void;
-    // (undocumented)
-    readonly cloudContainer?: CloudSqlite.CloudContainer | undefined;
-    // (undocumented)
-    get dirName(): string;
-    // (undocumented)
-    dropWorkspaceDb(toDrop: WorkspaceDb): void;
-    // (undocumented)
-    readonly filesDir: LocalDirName;
-    // (undocumented)
-    getWorkspaceDb(props: WorkspaceDb.Props): WorkspaceDb;
-    // (undocumented)
-    readonly id: WorkspaceContainer.Id;
-    // (undocumented)
-    static makeDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName;
-    static makeNewVersion(cloudContainer: CloudSqlite.CloudContainer, fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement): Promise<{
-        oldName: string;
-        newName: string;
-    }>;
-    // (undocumented)
-    static noLeadingOrTrailingSpaces(name: string, msg: string): void;
-    // (undocumented)
-    static parseDbFileName(dbFileName: WorkspaceDb.DbFullName): {
-        dbName: WorkspaceDb.DbName;
-        version: WorkspaceDb.Version;
-    };
-    purgeContainerFiles(): void;
-    // (undocumented)
-    static resolveCloudFileName(cloudContainer: CloudSqlite.CloudContainer, props: WorkspaceDb.Props): WorkspaceDb.DbFullName;
-    resolveDbFileName(props: WorkspaceDb.Props): WorkspaceDb.DbFullName;
-    // (undocumented)
-    static validateDbName(dbName: WorkspaceDb.DbName): void;
-    // (undocumented)
-    static validateVersion(version?: WorkspaceDb.Version): string;
-    // (undocumented)
-    readonly workspace: ITwinWorkspace;
-}
-
-// @internal
-export class ITwinWorkspaceDb implements WorkspaceDb {
-    constructor(props: WorkspaceDb.Props, container: WorkspaceContainer);
-    // (undocumented)
-    close(): void;
-    readonly container: WorkspaceContainer;
-    dbFileName: string;
-    readonly dbName: WorkspaceDb.DbName;
-    static readonly fileExt = "itwin-workspace";
-    // (undocumented)
-    getBlob(rscName: WorkspaceResource.Name): Uint8Array | undefined;
-    getBlobReader(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO;
-    // (undocumented)
-    getFile(rscName: WorkspaceResource.Name, targetFileName?: LocalFileName): LocalFileName | undefined;
-    // (undocumented)
-    getString(rscName: WorkspaceResource.Name): string | undefined;
-    get isOpen(): boolean;
-    readonly onClose: BeEvent<() => void>;
-    // (undocumented)
-    open(): void;
-    // (undocumented)
-    prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch;
-    // (undocumented)
-    queryFileResource(rscName: WorkspaceResource.Name): {
-        localFileName: string;
-        info: IModelJsNative;
-    } | undefined;
-    readonly sqliteDb: SQLiteDb;
 }
 
 // @public
@@ -4037,6 +3978,7 @@ export interface LockControl {
     holdsExclusiveLock(id: Id64String): boolean;
     holdsSharedLock(id: Id64String): boolean;
     readonly isServerBased: boolean;
+    // @internal
     releaseAllLocks(): Promise<void>;
 }
 
@@ -4304,7 +4246,7 @@ export interface OnSubModelPropsArg extends OnElementArg {
 }
 
 // @public
-export type OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs;
+export type OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs & OpenSqliteArgs;
 
 // @public
 export class OrthographicViewDefinition extends SpatialViewDefinition {
@@ -4748,6 +4690,8 @@ export class SectionDrawing extends Drawing {
     static get className(): string;
     displaySpatialView: boolean;
     drawingBoundaryClip?: ClipVector;
+    // @internal (undocumented)
+    protected static get drawingModelFullClassName(): string;
     drawingToSpatialTransform?: Transform;
     sectionType: SectionType;
     sheetToSpatialTransform?: Transform;
@@ -4974,7 +4918,7 @@ export class SnapshotDb extends IModelDb {
 }
 
 // @public
-export type SnapshotDbOpenArgs = SnapshotOpenOptions & CloudContainerArgs;
+export type SnapshotDbOpenArgs = SnapshotOpenOptions & CloudContainerArgs & OpenSqliteArgs;
 
 export { SourceAndTarget }
 
@@ -5087,11 +5031,19 @@ export class SqliteChangesetReader implements IDisposable {
     get disableSchemaCheck(): boolean;
     dispose(): void;
     getChangeValue(columnIndex: number, stage: SqliteValueStage): SqliteValue_2;
+    getChangeValueBinary(columnIndex: number, stage: SqliteValueStage): Uint8Array | null | undefined;
+    getChangeValueDouble(columnIndex: number, stage: SqliteValueStage): number | null | undefined;
+    getChangeValueId(columnIndex: number, stage: SqliteValueStage): Id64String | null | undefined;
+    getChangeValueInteger(columnIndex: number, stage: SqliteValueStage): number | null | undefined;
     getChangeValuesArray(stage: SqliteValueStage): SqliteValueArray | undefined;
     getChangeValuesObject(stage: SqliteValueStage, args?: ChangeFormatArgs): SqliteChange | undefined;
+    getChangeValueText(columnIndex: number, stage: SqliteValueStage): string | null | undefined;
+    getChangeValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined;
     getColumnNames(tableName: string): string[];
+    getColumnValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined;
     getPrimaryKeyColumnNames(): string[];
     get hasRow(): boolean;
+    isColumnValueNull(columnIndex: number, stage: SqliteValueStage): boolean | undefined;
     get isIndirect(): boolean;
     get op(): SqliteChangeOp;
     static openFile(args: {
@@ -6297,6 +6249,12 @@ export interface Workspace {
     readonly settings: Settings;
 }
 
+// @beta (undocumented)
+export namespace Workspace {
+    // @internal (undocumented)
+    export function construct(settings: Settings, opts?: WorkspaceOpts): Workspace;
+}
+
 // @beta
 export interface WorkspaceCloudCacheProps extends Optional<CloudSqlite.CacheProps, "name" | "rootDir"> {
     clearContents?: boolean;
@@ -6309,31 +6267,44 @@ export namespace WorkspaceContainer {
         containerName: string;
     }
     export type Id = string;
+    export function makeDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName;
     export type Name = string;
+    export function parseDbFileName(dbFileName: WorkspaceDb.DbFullName): {
+        dbName: WorkspaceDb.DbName;
+        version: WorkspaceDb.Version;
+    };
     export interface Props extends Optional<CloudSqlite.ContainerAccessProps, "accessToken"> {
         syncOnConnect?: boolean;
     }
     export type TokenFunc = (props: Props) => Promise<AccessToken>;
+    export function validateContainerId(id: WorkspaceContainer.Id): void;
+    // (undocumented)
+    export function validateDbName(dbName: WorkspaceDb.DbName): void;
+    // @internal (undocumented)
+    export function validateVersion(version?: WorkspaceDb.Version): string;
 }
 
 // @beta
 export interface WorkspaceContainer {
     // @internal (undocumented)
-    addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
+    addWorkspaceDb(toAdd: WorkspaceDbImpl): void;
     close(): void;
-    // @internal
+    closeWorkspaceDb(container: WorkspaceDb): void;
     readonly cloudContainer?: CloudSqlite.CloudContainer;
-    dropWorkspaceDb(container: WorkspaceDb): void;
     readonly filesDir: LocalDirName;
     getWorkspaceDb(props: WorkspaceDb.Props): WorkspaceDb;
     readonly id: WorkspaceContainer.Id;
-    // @internal (undocumented)
-    resolveDbFileName(props: WorkspaceDb.Props): string;
+    makeNewVersion(fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement): Promise<{
+        oldName: WorkspaceDb.DbName;
+        newName: WorkspaceDb.DbName;
+    }>;
+    resolveDbFileName(props: WorkspaceDb.Props): WorkspaceDb.DbFullName;
     readonly workspace: Workspace;
 }
 
 // @beta (undocumented)
 export namespace WorkspaceDb {
+    export function construct(props: WorkspaceDb.Props, container: WorkspaceContainer): WorkspaceDb;
     export type DbFullName = string;
     export type DbName = string;
     export type Name = string;
@@ -6343,21 +6314,33 @@ export namespace WorkspaceDb {
     }
     export type Version = string;
     export type VersionIncrement = "major" | "minor" | "patch";
+    const // @internal
+    fileExt = "itwin-workspace";
     export type VersionRange = string;
 }
 
 // @beta
 export interface WorkspaceDb {
+    // (undocumented)
+    close(): void;
     readonly container: WorkspaceContainer;
     readonly dbFileName: string;
     readonly dbName: WorkspaceDb.DbName;
     getBlob(rscName: WorkspaceResource.Name): Uint8Array | undefined;
-    // @internal (undocumented)
+    // @internal
     getBlobReader(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO;
     getFile(rscName: WorkspaceResource.Name, targetFileName?: LocalFileName): LocalFileName | undefined;
     getString(rscName: WorkspaceResource.Name): string | undefined;
     readonly onClose: BeEvent<() => void>;
-    prefetch(): CloudSqlite.CloudPrefetch;
+    // (undocumented)
+    open(): void;
+    prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch;
+    // @internal (undocumented)
+    queryFileResource(rscName: WorkspaceResource.Name): {
+        localFileName: LocalFileName;
+        info: IModelJsNative.EmbedFileQuery;
+    } | undefined;
+    readonly sqliteDb: SQLiteDb;
 }
 
 // @beta
@@ -6378,7 +6361,6 @@ export namespace WorkspaceResource {
 
 // @beta
 export const WorkspaceSetting: {
-    Accounts: string;
     Containers: string;
     Databases: string;
 };

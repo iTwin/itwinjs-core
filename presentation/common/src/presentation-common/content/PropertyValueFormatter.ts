@@ -13,15 +13,15 @@ import { KoqPropertyValueFormatter } from "../KoqPropertyValueFormatter";
 import { ValuesDictionary } from "../Utils";
 import { Content } from "./Content";
 import { Descriptor } from "./Descriptor";
-import { Field, PropertiesField } from "./Fields";
+import { ArrayPropertiesField, Field, PropertiesField, StructPropertiesField } from "./Fields";
 import { Item } from "./Item";
 import { ArrayTypeDescription, PrimitiveTypeDescription, PropertyValueFormat, StructTypeDescription, TypeDescription } from "./TypeDescription";
-import { DisplayValue, DisplayValuesMap, NestedContentValue, Value } from "./Value";
+import { DisplayValue, DisplayValuesMap, NestedContentValue, Value, ValuesArray, ValuesMap } from "./Value";
 
 /** @alpha */
 export class ContentFormatter {
   constructor(
-    private _propertyValueFormatter: ContentPropertyValueFormatter,
+    private _propertyValueFormatter: { formatPropertyValue: (field: Field, value: Value, unitSystem?: UnitSystemKey) => Promise<DisplayValue> },
     private _unitSystem?: UnitSystemKey,
   ) {}
 
@@ -56,6 +56,12 @@ export class ContentFormatter {
         continue;
       }
 
+      // format property items
+      if (field.isPropertiesField()) {
+        displayValues[field.name] = await this.formatPropertyValue(value, field);
+        continue;
+      }
+
       displayValues[field.name] = await this._propertyValueFormatter.formatPropertyValue(field, value, this._unitSystem);
     }
   }
@@ -64,6 +70,32 @@ export class ContentFormatter {
     for (const nestedValue of nestedValues) {
       await this.formatValues(nestedValue.values, nestedValue.displayValues, fields, nestedValue.mergedFieldNames);
     }
+  }
+
+  private async formatPropertyValue(value: Value, field: PropertiesField): Promise<DisplayValue> {
+    if (field.isArrayPropertiesField()) {
+      assert(Value.isArray(value));
+      return this.formatArrayItems(value, field);
+    }
+    if (field.isStructPropertiesField()) {
+      assert(Value.isMap(value));
+      return this.formatStructMembers(value, field);
+    }
+    return this._propertyValueFormatter.formatPropertyValue(field, value, this._unitSystem);
+  }
+
+  private async formatArrayItems(itemValues: ValuesArray, field: ArrayPropertiesField) {
+    return Promise.all(itemValues.map(async (value) => this.formatPropertyValue(value, field.itemsField)));
+  }
+
+  private async formatStructMembers(memberValues: ValuesMap, field: StructPropertiesField) {
+    const displayValues: DisplayValuesMap = {};
+    await Promise.all(
+      field.memberFields.map(async (memberField) => {
+        displayValues[memberField.name] = await this.formatPropertyValue(memberValues[memberField.name], memberField);
+      }),
+    );
+    return displayValues;
   }
 }
 

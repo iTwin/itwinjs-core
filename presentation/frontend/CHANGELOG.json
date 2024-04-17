@@ -2,6 +2,93 @@
   "name": "@itwin/presentation-frontend",
   "entries": [
     {
+      "version": "4.5.2",
+      "tag": "@itwin/presentation-frontend_v4.5.2",
+      "date": "Tue, 16 Apr 2024 14:46:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add a way to specify batch size when making multi-value `PresentationManager` requests."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.5.1",
+      "tag": "@itwin/presentation-frontend_v4.5.1",
+      "date": "Wed, 03 Apr 2024 18:26:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.5.0",
+      "tag": "@itwin/presentation-frontend_v4.5.0",
+      "date": "Tue, 02 Apr 2024 19:06:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added ability to provide custom selection storage. This allows to use `@itwin/presentation-frontned` with `@itwin/unified-selection`."
+          },
+          {
+            "comment": "Add `getNodesIterator`, `getDistinctValuesIterator`, `getContentIterator` and `getDisplayLabelDefinitionIterator` methods to `PresentationManager` which return async iterators and load data using multiple parallel requests."
+          },
+          {
+            "comment": "Deprecate `getNodes`, `getNodesAndCount`, `getContent`, `getContentAndSize`, `getPagedDistinctValues` and `getDisplayLabelDefinitions` in favor of the alternatives which return iterators."
+          },
+          {
+            "comment": "Made initialization of a new iModel connection non-blocking in most cases and moved the responsibility of doing that to the `FavoritePropertiesManager` class."
+          },
+          {
+            "comment": "Deprecated synchronous `FavoritePropertiesManager` functions `has` and `sortFields` in favor of `hasAsync` and `sortFieldsAsync`."
+          },
+          {
+            "comment": "Deprecated `FavoritePropertiesManager.initializeConnection` because it's not necessary to call anymore."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.4.9",
+      "tag": "@itwin/presentation-frontend_v4.4.9",
+      "date": "Mon, 15 Apr 2024 20:29:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.8",
+      "tag": "@itwin/presentation-frontend_v4.4.8",
+      "date": "Mon, 25 Mar 2024 22:22:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.7",
+      "tag": "@itwin/presentation-frontend_v4.4.7",
+      "date": "Fri, 15 Mar 2024 19:15:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.6",
+      "tag": "@itwin/presentation-frontend_v4.4.6",
+      "date": "Fri, 08 Mar 2024 15:57:12 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.5",
+      "tag": "@itwin/presentation-frontend_v4.4.5",
+      "date": "Tue, 05 Mar 2024 20:37:18 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.4",
+      "tag": "@itwin/presentation-frontend_v4.4.4",
+      "date": "Fri, 01 Mar 2024 18:21:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.3",
+      "tag": "@itwin/presentation-frontend_v4.4.3",
+      "date": "Fri, 23 Feb 2024 21:26:07 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.4.2",
       "tag": "@itwin/presentation-frontend_v4.4.2",
       "date": "Fri, 16 Feb 2024 14:22:01 GMT",
@@ -30,6 +117,18 @@
           }
         ]
       }
+    },
+    {
+      "version": "4.3.5",
+      "tag": "@itwin/presentation-frontend_v4.3.5",
+      "date": "Mon, 25 Mar 2024 16:54:37 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.3.4",
+      "tag": "@itwin/presentation-frontend_v4.3.4",
+      "date": "Fri, 22 Mar 2024 13:30:31 GMT",
+      "comments": {}
     },
     {
       "version": "4.3.3",

@@ -1,6 +1,65 @@
 # Change Log - @itwin/presentation-frontend
 
-This log was last generated on Fri, 16 Feb 2024 14:23:08 GMT and should not be manually modified.
+This log was last generated on Tue, 16 Apr 2024 14:47:36 GMT and should not be manually modified.
+
+## 4.5.2
+Tue, 16 Apr 2024 14:46:22 GMT
+
+### Updates
+
+- Add a way to specify batch size when making multi-value `PresentationManager` requests.
+
+## 4.5.1
+Wed, 03 Apr 2024 18:26:59 GMT
+
+_Version update only_
+
+## 4.5.0
+Tue, 02 Apr 2024 19:06:00 GMT
+
+### Updates
+
+- Added ability to provide custom selection storage. This allows to use `@itwin/presentation-frontned` with `@itwin/unified-selection`.
+- Add `getNodesIterator`, `getDistinctValuesIterator`, `getContentIterator` and `getDisplayLabelDefinitionIterator` methods to `PresentationManager` which return async iterators and load data using multiple parallel requests.
+- Deprecate `getNodes`, `getNodesAndCount`, `getContent`, `getContentAndSize`, `getPagedDistinctValues` and `getDisplayLabelDefinitions` in favor of the alternatives which return iterators.
+- Made initialization of a new iModel connection non-blocking in most cases and moved the responsibility of doing that to the `FavoritePropertiesManager` class.
+- Deprecated synchronous `FavoritePropertiesManager` functions `has` and `sortFields` in favor of `hasAsync` and `sortFieldsAsync`.
+- Deprecated `FavoritePropertiesManager.initializeConnection` because it's not necessary to call anymore.
+
+## 4.4.9
+Mon, 15 Apr 2024 20:29:22 GMT
+
+_Version update only_
+
+## 4.4.8
+Mon, 25 Mar 2024 22:22:26 GMT
+
+_Version update only_
+
+## 4.4.7
+Fri, 15 Mar 2024 19:15:14 GMT
+
+_Version update only_
+
+## 4.4.6
+Fri, 08 Mar 2024 15:57:12 GMT
+
+_Version update only_
+
+## 4.4.5
+Tue, 05 Mar 2024 20:37:18 GMT
+
+_Version update only_
+
+## 4.4.4
+Fri, 01 Mar 2024 18:21:01 GMT
+
+_Version update only_
+
+## 4.4.3
+Fri, 23 Feb 2024 21:26:07 GMT
+
+_Version update only_
 
 ## 4.4.2
 Fri, 16 Feb 2024 14:22:01 GMT
@@ -20,6 +79,16 @@ Mon, 12 Feb 2024 18:15:58 GMT
 - Fix descriptor, node path and distinct value responses not being localized
 - Added 'getHiliteSetIterator' method to `HiliteSetProvider`. It allows to handle hilite set in batches instead of waiting for whole set to be loaded. 
 - Add support for default formats when formatting values on the frontend (when `Presentation` is initialized with `schemaContextProvider`).
+
+## 4.3.5
+Mon, 25 Mar 2024 16:54:37 GMT
+
+_Version update only_
+
+## 4.3.4
+Fri, 22 Mar 2024 13:30:31 GMT
+
+_Version update only_
 
 ## 4.3.3
 Wed, 03 Jan 2024 19:28:38 GMT

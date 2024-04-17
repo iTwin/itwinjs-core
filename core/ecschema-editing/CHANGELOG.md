@@ -1,6 +1,63 @@
 # Change Log - @itwin/ecschema-editing
 
-This log was last generated on Fri, 16 Feb 2024 14:23:08 GMT and should not be manually modified.
+This log was last generated on Tue, 16 Apr 2024 14:47:36 GMT and should not be manually modified.
+
+## 4.5.2
+Tue, 16 Apr 2024 14:46:22 GMT
+
+_Version update only_
+
+## 4.5.1
+Wed, 03 Apr 2024 18:26:58 GMT
+
+_Version update only_
+
+## 4.5.0
+Tue, 02 Apr 2024 19:06:00 GMT
+
+### Updates
+
+- Units v1.0.8 schema is released which introduces a new unit - Decanewton (daN)
+- Added navigation property merging
+- Added Schema Differencing API
+- Added multi-pass to class changes in SchemaMerger
+- Adjusted EC-001 supplemental test to add custom attribute after the reference was added
+- Added RelationshipClass merging
+
+## 4.4.9
+Mon, 15 Apr 2024 20:29:22 GMT
+
+_Version update only_
+
+## 4.4.8
+Mon, 25 Mar 2024 22:22:26 GMT
+
+_Version update only_
+
+## 4.4.7
+Fri, 15 Mar 2024 19:15:14 GMT
+
+_Version update only_
+
+## 4.4.6
+Fri, 08 Mar 2024 15:57:11 GMT
+
+_Version update only_
+
+## 4.4.5
+Tue, 05 Mar 2024 20:37:18 GMT
+
+_Version update only_
+
+## 4.4.4
+Fri, 01 Mar 2024 18:21:01 GMT
+
+_Version update only_
+
+## 4.4.3
+Fri, 23 Feb 2024 21:26:07 GMT
+
+_Version update only_
 
 ## 4.4.2
 Fri, 16 Feb 2024 14:22:01 GMT
@@ -27,6 +84,16 @@ Mon, 12 Feb 2024 18:15:58 GMT
 - Added methods for creating relationship or setting its properties
 - Added Merge function to merge CustomAttributes
 - Added kind of quantity merging
+
+## 4.3.5
+Mon, 25 Mar 2024 16:54:37 GMT
+
+_Version update only_
+
+## 4.3.4
+Fri, 22 Mar 2024 13:30:31 GMT
+
+_Version update only_
 
 ## 4.3.3
 Wed, 03 Jan 2024 19:28:38 GMT

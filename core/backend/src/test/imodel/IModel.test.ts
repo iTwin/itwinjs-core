@@ -28,13 +28,13 @@ import {
   Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, SpatialCategory, SqliteStatement,
   SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
 } from "../../core-backend";
-import { BriefcaseDb } from "../../IModelDb";
+import { BriefcaseDb, SnapshotDbOpenArgs } from "../../IModelDb";
 import { HubMock } from "../../HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { DisableNativeAssertions } from "../TestUtils";
 import { samplePngTexture } from "../imageData";
-
+import { performance } from "perf_hooks";
 // spell-checker: disable
 
 async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | undefined> {
@@ -230,9 +230,9 @@ describe("iModel", () => {
     const newEl = el3.toJSON();
     newEl.federationGuid = undefined;
     newEl.code = { scope: "bad scope", spec: "0x10", value: "new code" };
-    expect(() => imodel2.elements.insertElement(newEl)).throws("invalid code scope");
+    expect(() => imodel2.elements.insertElement(newEl)).throws("invalid code scope").to.have.property("metadata");
     newEl.code.scope = "0x34322"; // valid id, but element doesn't exist
-    expect(() => imodel2.elements.insertElement(newEl)).throws("invalid code scope");
+    expect(() => imodel2.elements.insertElement(newEl)).throws("invalid code scope").to.have.property("metadata");
 
     newEl.code.scope = el3.federationGuid!;
     const newId = imodel2.elements.insertElement(newEl); // code scope from FederationGuid should get converted to ElementId
@@ -240,15 +240,20 @@ describe("iModel", () => {
     expect(a4.code.scope).equal(el3.id);
 
     a4.code.scope = "0x13343";
-    expect(() => imodel2.elements.updateElement(a4)).throws("invalid code scope");
+    expect(() => imodel2.elements.updateElement(a4)).throws("invalid code scope").to.have.property("metadata");
 
     a4.code.scope = "0x1";
     imodel2.elements.updateElement(a4); // should change the code scope to new element
     let a5 = imodel2.elements.getElementProps(newId);
     expect(a5.code.scope).equal("0x1");
 
-    a4.code.scope = el3.federationGuid!; // should convert FederationGuid to ElementId
-    imodel2.elements.updateElement(a4);
+    // only pass minimum, but expect model and classFullName to be added.
+    const newProps = { id: a4.id, code: a4.code, classFullName: undefined, model: undefined };
+    newProps.code.scope = el3.federationGuid!; // should convert FederationGuid to ElementId
+    imodel2.elements.updateElement(newProps);
+    expect(newProps.classFullName).eq(a4.classFullName);
+    expect(newProps.model).eq(a4.model);
+
     a5 = imodel2.elements.getElementProps(newId);
     expect(a5.code.scope).equal(el3.id);
   });
@@ -982,7 +987,7 @@ describe("iModel", () => {
     const categoryId = SpatialCategory.insert(imodel4, IModel.dictionaryId, "MyTestCategory", new SubCategoryAppearance());
     const category = imodel4.elements.getElement<SpatialCategory>(categoryId);
     const subCategory = imodel4.elements.getElement<SubCategory>(category.myDefaultSubCategoryId());
-    assert.throws(() => imodel4.elements.deleteElement(categoryId), "error deleting element");
+    expect(() => imodel4.elements.deleteElement(categoryId)).throws("error deleting element").to.have.property("metadata");
     assert.exists(imodel4.elements.getElement(categoryId), "Category deletes should be blocked in native code");
     assert.exists(imodel4.elements.getElement(subCategory.id), "Children should not be deleted if parent delete is blocked");
 
@@ -2263,6 +2268,36 @@ describe("iModel", () => {
     }
   }
 
+  it("Check busyTimeout option", () => {
+    const standaloneFile = IModelTestUtils.prepareOutputFile("IModel", "StandaloneReadWrite.bim");
+    const tryOpen = (fileName: string, options?: SnapshotDbOpenArgs) => {
+      const start = performance.now();
+      let didThrow = false;
+      try {
+        StandaloneDb.openFile(fileName, OpenMode.ReadWrite, options);
+      } catch (e: any) {
+        assert.strictEqual(e.errorNumber, DbResult.BE_SQLITE_BUSY, "Expect error 'Db is busy'");
+        didThrow = true;
+      }
+      assert.isTrue(didThrow);
+      return performance.now() - start;
+    };
+    const seconds = (s: number) => s * 1000;
+
+    const db = StandaloneDb.createEmpty(standaloneFile, { rootSubject: { name: "Standalone" } });
+    db.saveChanges();
+    // lock db so another connection cannot write to it.
+    db.saveFileProperty({ name: "test", namespace: "test" }, "");
+
+    assert.isAtMost(tryOpen(standaloneFile, { busyTimeout: seconds(0) }), seconds(1), "open should fail with busy error instantly");
+    assert.isAtLeast(tryOpen(standaloneFile, { busyTimeout: seconds(1) }), seconds(1), "open should fail with atleast 1 sec delay due to retry");
+    assert.isAtLeast(tryOpen(standaloneFile, { busyTimeout: seconds(2) }), seconds(2), "open should fail with atleast 2 sec delay due to retry");
+    assert.isAtLeast(tryOpen(standaloneFile, { busyTimeout: seconds(3) }), seconds(3), "open should fail with atleast 3 sec delay due to retry");
+
+    db.abandonChanges();
+    db.close();
+  });
+
   it("Standalone iModel properties", () => {
     const standaloneRootSubjectName = "Standalone";
     const standaloneFile1 = IModelTestUtils.prepareOutputFile("IModel", "Standalone1.bim");
@@ -2698,11 +2733,7 @@ describe("iModel", () => {
     assert.isUndefined(subject4.federationGuid);
 
     // test partial update of Description (auto-handled)
-    imodel1.elements.updateElement({
-      id: subject1.id,
-      classFullName: subject1.classFullName,
-      description: "Description1-Updated",
-    } as SubjectProps);
+    imodel1.elements.updateElement<SubjectProps>({ id: subject1.id, description: "Description1-Updated" });
     subject1 = imodel1.elements.getElement<Subject>(subjectId1, Subject);
     assert.equal(subject1.description, "Description1-Updated"); // should have been updated
     assert.isDefined(subject1.model);
@@ -2712,11 +2743,7 @@ describe("iModel", () => {
     assert.equal(subject1.federationGuid, federationGuid1); // should not have changed
 
     // test partial update of UserLabel (custom-handled)
-    imodel1.elements.updateElement({
-      id: subject2.id,
-      classFullName: subject2.classFullName,
-      userLabel: "UserLabel2-Updated",
-    } as SubjectProps);
+    imodel1.elements.updateElement<SubjectProps>({ id: subject2.id, userLabel: "UserLabel2-Updated" });
     subject2 = imodel1.elements.getElement<Subject>(subjectId2, Subject);
     assert.isDefined(subject2.model);
     assert.isDefined(subject2.parent);
@@ -2755,11 +2782,7 @@ describe("iModel", () => {
 
     // test partial update of Description to undefined
     const s3Fed = subject3.federationGuid;
-    imodel1.elements.updateElement({
-      id: subject3.id,
-      classFullName: subject3.classFullName,
-      description: undefined,
-    } as SubjectProps);
+    imodel1.elements.updateElement<SubjectProps>({ id: subject3.id, description: undefined });
     subject3 = imodel1.elements.getElement<Subject>(subjectId3, Subject);
     assert.isUndefined(subject3.description); // should have been updated
     assert.isDefined(subject3.model);
@@ -2769,11 +2792,7 @@ describe("iModel", () => {
     assert.equal(subject3.federationGuid, s3Fed); // should not have changed
 
     // test partial update of UserLabel to undefined
-    imodel1.elements.updateElement({
-      id: subject4.id,
-      classFullName: subject4.classFullName,
-      userLabel: undefined,
-    } as SubjectProps);
+    imodel1.elements.updateElement<SubjectProps>({ id: subject4.id, userLabel: undefined });
     subject4 = imodel1.elements.getElement<Subject>(subjectId4, Subject);
     assert.isDefined(subject4.model);
     assert.isDefined(subject4.parent);
@@ -2821,5 +2840,17 @@ describe("iModel", () => {
     expect(categ3.code.value).to.equal(code3.trimmedCodeVal);
 
     imodel.close();
+  });
+
+  it("throws NotFound when attempting to access element props after closing the iModel", () => {
+    const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "accessAfterClose.bim");
+    const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "accessAfterClose" } });
+
+    const elem = imodel.elements.getElement<Subject>(IModel.rootSubjectId);
+    expect(elem.id).to.equal(IModel.rootSubjectId);
+
+    imodel.close();
+
+    expect(() => imodel.elements.getElement<Subject>(IModel.rootSubjectId)).to.throw(IModelError, "Element=0x1", "Not Found");
   });
 });

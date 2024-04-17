@@ -25,6 +25,11 @@ function tryGetFieldByLabelInternal(fields: Field[], label: string, allFields: F
       if (nestedMatchingField) {
         return nestedMatchingField;
       }
+    } else if (field.isPropertiesField() && field.isStructPropertiesField()) {
+      const matchingMemberField = tryGetFieldByLabelInternal(field.memberFields, label, allFields);
+      if (matchingMemberField) {
+        return matchingMemberField;
+      }
     }
 
     allFields.push(field);
@@ -101,4 +106,15 @@ export async function waitFor<T>(check: () => Promise<T> | T, timeout?: number):
     }
   } while (timer.current.milliseconds < timeout);
   throw lastError;
+}
+
+/**
+ * Collects items of an async iterable to an array.
+ */
+export async function collect<T>(iter: AsyncIterable<T>): Promise<T[]> {
+  const result = new Array<T>();
+  for await (const item of iter) {
+    result.push(item);
+  }
+  return result;
 }

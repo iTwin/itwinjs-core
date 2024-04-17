@@ -1001,9 +1001,13 @@ export class MapTileTreeReference extends TileTreeReference {
 
     for (; treeIndex < this._layerTrees.length; treeIndex++) {
       const layerTreeRef = this._layerTrees[treeIndex];
+      const hasValidTileTree = layerTreeRef && TileTreeLoadStatus.NotFound !== layerTreeRef.treeOwner.loadStatus;
+      const isImageryMapLayer = layerTreeRef instanceof ImageryMapLayerTreeReference;
+      const isLayerVisible = (isImageryMapLayer || (!isImageryMapLayer && layerTreeRef?.layerSettings.visible));
       // Load tile tree for each configured layer.
-      // Note: Non-visible layer are also added to allow proper tile tree scale range visibility reporting.
-      if (layerTreeRef && TileTreeLoadStatus.NotFound !== layerTreeRef.treeOwner.loadStatus
+      // Note: Non-visible imagery layer are always added to allow proper tile tree scale range visibility reporting.
+      if (hasValidTileTree
+        && isLayerVisible
         && !layerTreeRef.layerSettings.allSubLayersInvisible) {
         const layerTree = layerTreeRef.treeOwner.load();
         if (layerTree !== undefined) {
@@ -1157,9 +1161,14 @@ export class MapTileTreeReference extends TileTreeReference {
     }
   }
 
+  public override canSupplyToolTip(hit: HitDetail): boolean {
+    const tree = this.treeOwner.tileTree;
+    return undefined !== tree && tree.modelId === hit.modelId;
+  }
+
   public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
-    const tree = this.treeOwner.tileTree as MapTileTree;
-    if (tree.modelId !== hit.modelId)
+    const tree = this.treeOwner.tileTree as MapTileTree | undefined;
+    if (undefined === tree || tree.modelId !== hit.modelId)
       return undefined;
 
     let carto: Cartographic | undefined;

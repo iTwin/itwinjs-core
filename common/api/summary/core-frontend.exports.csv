@@ -29,6 +29,7 @@ internal;AcquireImdlParserArgs
 public;ACSDisplayOptions
 public;ACSType
 alpha;ActivationEvent = "onStartup"
+public;ActiveSpatialClassifier = DynamicSpatialClassifier | PersistentSpatialClassifier
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
 internal;addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void
@@ -76,7 +77,7 @@ internal;AzureMapsLayerImageryProvider
 internal;B3dmReader 
 internal;BackgroundMapGeometry
 beta;class BaseUnitFormattingSettingsProvider 
-internal;BatchedTileIdMap
+internal;BatchedTileIdMap 
 public;BatchOptions
 beta;BatchTableProperties
 public;BeButton
@@ -137,7 +138,7 @@ public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
 internal;CoreTools
-internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
+internal;createClassifierTileTreeReference(classifiers: SpatialClassifiersState, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
 internal;createDefaultViewFlagOverrides(options:
 internal;createEdgeParams(meshArgs: MeshArgs, maxWidth?: number): EdgeParams | undefined
 internal;createEmptyRenderPlan(): RenderPlan
@@ -164,6 +165,8 @@ public;CustomGraphicBuilderOptions
 public;CustomQuantityTypeDefinition 
 internal;DebugShaderFile
 internal;decodeImdlGraphics(options: ImdlDecodeOptions): Promise
+internal;decodeMeshoptBuffer(source: Uint8Array, args: DecodeMeshoptBufferArgs): Promise
+internal;DecodeMeshoptBufferArgs
 public;DecorateContext 
 public;DecorateContextCreateArgs
 public;Decorations 
@@ -193,6 +196,7 @@ public;DrawingModelState
 public;DrawingViewState 
 internal;class DynamicIModelTile 
 public;DynamicsContext 
+public;DynamicSpatialClassifier
 internal;EdgeParams
 internal;edgeParamsFromImdl(imdl: ImdlModel.EdgeParams): EdgeParams
 internal;EdgeTable
@@ -215,6 +219,8 @@ alpha;ExtensionManifest
 alpha;ExtensionProvider
 public;ExtentLimits
 internal;ExternalTileStatistics
+internal;ExtMeshoptCompressionFilter = "NONE" | "OCTAHEDRAL" | "QUATERNION"
+internal;ExtMeshoptCompressionMode = "ATTRIBUTES" | "TRIANGLES" | "INDICES"
 public;extractImageSourceDimensions(source: ImageSource): Promise
 internal;eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeight?: boolean): Cartographic | undefined
 internal;eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeight?: boolean): Promise
@@ -292,6 +298,7 @@ internal;GltfAsset
 internal;GltfBuffer 
 internal;GltfBufferData
 internal;GltfBufferTarget
+internal;GltfBufferViewMeshoptCompressionExtension
 internal;GltfBufferViewProps 
 internal;GltfChildOfRootProperty 
 internal;GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array
@@ -628,6 +635,7 @@ internal;PatternGraphicParams
 internal;PerformanceMetrics
 public;PerModelCategoryVisibility
 beta;Props
+public;PersistentSpatialClassifier = SpatialClassifier &
 public;PhysicalModelState 
 public;PickableGraphicOptions 
 internal;PingTestResult
@@ -725,6 +733,7 @@ internal;RenderDiagnostics
 internal;RenderGeometry = IDisposable & RenderMemory.Consumer
 public;class RenderGraphic 
 public;class RenderGraphicOwner 
+beta;RenderGraphicTileTreeArgs
 internal;RenderMaterialSource
 public;RenderMemory
 internal;Buffers 
@@ -794,6 +803,7 @@ public;SnapHeat
 public;SnapMode
 public;SnapshotConnection 
 public;SnapStatus
+public;SpatialClassifiersState 
 internal;class SpatialClassifierTileTreeReference 
 alpha;SpatialLocationAndExtents
 public;SpatialLocationModelState 
@@ -888,6 +898,7 @@ public;TileTreeLoadStatus
 public;TileTreeOwner
 public;TileTreeParams
 public;class TileTreeReference
+internal;tileTreeReferenceFromRenderGraphic(args: RenderGraphicTileTreeArgs): TileTreeReference
 public;TileTreeSupplier
 internal;TileUrlImageryProvider 
 public;TileUsageMarker

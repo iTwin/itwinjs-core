@@ -24,6 +24,31 @@ import { UnitSystemKey } from '@itwin/core-quantity';
 export function addFieldHierarchy(rootHierarchies: FieldHierarchy[], hierarchy: FieldHierarchy): void;
 
 // @public
+export class ArrayPropertiesField extends PropertiesField {
+    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, itemsField: PropertiesField, isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription, renderer?: RendererDescription);
+    // (undocumented)
+    clone(): ArrayPropertiesField;
+    static fromCompressedJSON(json: ArrayPropertiesFieldJSON<Id64String>, classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }, categories: CategoryDescription[]): ArrayPropertiesField;
+    static fromJSON(json: ArrayPropertiesFieldJSON, categories: CategoryDescription[]): ArrayPropertiesField;
+    // (undocumented)
+    isArrayPropertiesField(): this is ArrayPropertiesField;
+    // (undocumented)
+    itemsField: PropertiesField;
+    toCompressedJSON(classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): ArrayPropertiesFieldJSON<string>;
+    toJSON(): ArrayPropertiesFieldJSON;
+}
+
+// @public
+export interface ArrayPropertiesFieldJSON<TClassInfoJSON = ClassInfo> extends PropertiesFieldJSON<TClassInfoJSON> {
+    // (undocumented)
+    itemsField: PropertiesFieldJSON<TClassInfoJSON>;
+}
+
+// @public
 export interface ArrayTypeDescription extends BaseTypeDescription {
     memberType: TypeDescription;
     valueFormat: PropertyValueFormat.Array;
@@ -337,7 +362,9 @@ export enum ContentFlags {
 
 // @alpha (undocumented)
 export class ContentFormatter {
-    constructor(_propertyValueFormatter: ContentPropertyValueFormatter, _unitSystem?: UnitSystemKey | undefined);
+    constructor(_propertyValueFormatter: {
+        formatPropertyValue: (field: Field, value: Value, unitSystem?: UnitSystemKey) => Promise<DisplayValue>;
+    }, _unitSystem?: UnitSystemKey | undefined);
     // (undocumented)
     formatContent(content: Content): Promise<Content>;
     // (undocumented)
@@ -981,7 +1008,7 @@ export class Field {
     rebuildParentship(parentField?: NestedContentField): void;
     renderer?: RendererDescription;
     resetParentship(): void;
-    toCompressedJSON(classesMap: {
+    toCompressedJSON(_classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }): FieldJSON<string>;
     toJSON(): FieldJSON;
@@ -1021,7 +1048,7 @@ export interface FieldHierarchy {
 }
 
 // @public
-export type FieldJSON<TClassInfoJSON = ClassInfoJSON> = BaseFieldJSON | PropertiesFieldJSON<TClassInfoJSON> | NestedContentFieldJSON<TClassInfoJSON>;
+export type FieldJSON<TClassInfoJSON = ClassInfoJSON> = BaseFieldJSON | PropertiesFieldJSON<TClassInfoJSON> | ArrayPropertiesFieldJSON<TClassInfoJSON> | StructPropertiesFieldJSON<TClassInfoJSON> | NestedContentFieldJSON<TClassInfoJSON>;
 
 // @public
 export interface FilterByInstancePathsHierarchyRequestOptions<TIModel, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
@@ -1683,6 +1710,8 @@ export class LocalizationHelper {
     // (undocumented)
     getLocalizedLabelDefinitions(labelDefinitions: LabelDefinition[]): LabelDefinition[];
     // (undocumented)
+    getLocalizedNode(node: Node_2): Node_2;
+    // (undocumented)
     getLocalizedNodePathElement(npe: NodePathElement): NodePathElement;
     // (undocumented)
     getLocalizedNodes(nodes: Node_2[]): Node_2[];
@@ -1792,6 +1821,9 @@ export class NestedContentField extends Field {
     rebuildParentship(parentField?: NestedContentField): void;
     relationshipMeaning: RelationshipMeaning;
     resetParentship(): void;
+    toCompressedJSON(classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): NestedContentFieldJSON<string>;
     toJSON(): NestedContentFieldJSON;
 }
 
@@ -2289,9 +2321,14 @@ export class PropertiesField extends Field {
     }, categories: CategoryDescription[]): PropertiesField | undefined;
     static fromJSON(json: PropertiesFieldJSON | undefined, categories: CategoryDescription[]): PropertiesField | undefined;
     getFieldDescriptor(): FieldDescriptor;
+    isArrayPropertiesField(): this is ArrayPropertiesField;
+    isStructPropertiesField(): this is StructPropertiesField;
     // @beta
     matchesDescriptor(descriptor: FieldDescriptor): boolean;
     properties: Property[];
+    toCompressedJSON(classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): PropertiesFieldJSON<string>;
     toJSON(): PropertiesFieldJSON;
 }
 
@@ -3112,6 +3149,31 @@ export interface StructFieldMemberDescription {
     label: string;
     name: string;
     type: TypeDescription;
+}
+
+// @public
+export class StructPropertiesField extends PropertiesField {
+    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, memberFields: PropertiesField[], isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription, renderer?: RendererDescription);
+    // (undocumented)
+    clone(): StructPropertiesField;
+    static fromCompressedJSON(json: StructPropertiesFieldJSON<Id64String>, classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }, categories: CategoryDescription[]): StructPropertiesField;
+    static fromJSON(json: StructPropertiesFieldJSON, categories: CategoryDescription[]): StructPropertiesField;
+    // (undocumented)
+    isStructPropertiesField(): this is StructPropertiesField;
+    // (undocumented)
+    memberFields: PropertiesField[];
+    toCompressedJSON(classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): StructPropertiesFieldJSON<string>;
+    toJSON(): StructPropertiesFieldJSON;
+}
+
+// @public
+export interface StructPropertiesFieldJSON<TClassInfoJSON = ClassInfo> extends PropertiesFieldJSON<TClassInfoJSON> {
+    // (undocumented)
+    memberFields: PropertiesFieldJSON<TClassInfoJSON>[];
 }
 
 // @public
