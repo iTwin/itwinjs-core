@@ -186,7 +186,12 @@ class SectionAttachment {
     return this._drawingExtents.z;
   }
 
-  public constructor(view: ViewState3d, toDrawing: Transform, fromDrawing: Transform, toSheet: Transform | undefined) {
+  public get drawingRange() {
+    const frustum3d = this._originalFrustum.transformBy(this._toDrawing);
+    return frustum3d.toRange();
+  }
+  
+  public constructor(view: ViewState3d, toDrawing: Transform, fromDrawing: Transform, _toSheet: Transform | undefined) {
     // Save the input for clone(). Attach a copy to the viewport.
     this._toDrawing = toDrawing;
     this._fromDrawing = fromDrawing;
@@ -197,10 +202,11 @@ class SectionAttachment {
     let clipVolume;
     let clip = this.view.getViewClip();
     if (clip) {
-      clip = clip.clone();
-      const clipTransform = toSheet ? toSheet.multiplyTransformTransform(this._toDrawing) : this._toDrawing;
-      clip.transformInPlace(clipTransform);
-      clipVolume = IModelApp.renderSystem.createClipVolume(clip);
+      // this.view.setViewClip(undefined);
+      // clip = clip.clone();
+      // const clipTransform = toSheet ? toSheet.multiplyTransformTransform(this._toDrawing) : this._toDrawing;
+      // clip.transformInPlace(clipTransform);
+      // clipVolume = IModelApp.renderSystem.createClipVolume(clip);
     }
 
     this._branchOptions = {
@@ -439,7 +445,12 @@ export class DrawingViewState extends ViewState2d {
   }
 
   public getViewedExtents(): AxisAlignedBox3d {
-    return this._viewedExtents;
+    const extents = this._viewedExtents.clone();
+    if (this._attachment) {
+      extents.extendRange(this._attachment.drawingRange);
+    }
+
+    return extents;
   }
 
   public get defaultExtentLimits() {
