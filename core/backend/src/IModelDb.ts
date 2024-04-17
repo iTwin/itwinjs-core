@@ -26,7 +26,7 @@ import {
   SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps,
   UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
-import { Range3d } from "@itwin/core-geometry";
+import { Range2d, Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
 import { ChannelAdmin, ChannelControl } from "./ChannelControl";
@@ -57,6 +57,7 @@ import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./Vi
 import { ViewStore } from "./ViewStore";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { Workspace } from "./workspace/Workspace";
+import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotationLayout";
 
 import type { BlobContainer } from "./BlobContainerService";
 /** @internal */
@@ -1441,6 +1442,15 @@ export abstract class IModelDb extends IModel {
 
   public set codeValueBehavior(newBehavior: "exact" | "trim-unicode-whitespace") {
     this.nativeDb.setCodeValueBehavior(newBehavior);
+  }
+
+  /** @internal */
+  public computeRangesForText(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
+    const props = this.nativeDb.computeRangesForText(args.chars, args.fontId, args.bold, args.italic, args.widthFactor, args.lineHeight);
+    return {
+      layout: Range2d.fromJSON(props.layout),
+      justification: Range2d.fromJSON(props.justification),
+    };
   }
 }
 
