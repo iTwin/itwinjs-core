@@ -909,7 +909,6 @@ export class ClassRegistry {
     static isNotFoundError(err: any): boolean;
     // @internal (undocumented)
     static makeMetaDataNotFoundError(className: string): IModelError;
-    // @internal (undocumented)
     static register(entityClass: typeof Entity, schema: typeof Schema): void;
     static registerModule(moduleObj: any, schema: typeof Schema): void;
     // @internal

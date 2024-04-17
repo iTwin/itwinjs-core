@@ -563,6 +563,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "fetch-mock",
+      "allowedCategories": [ "extensions" ]
+    },
+    {
       "name": "file-loader",
       "allowedCategories": [ "tools" ]
     },
@@ -792,7 +796,7 @@
     },
     {
       "name": "source-map-support",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "spdy",
