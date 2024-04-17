@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/rpcinterface-full-stack-tests",
-      "comment": "Update glob package to latest version",
+      "comment": "",
       "type": "none"
     }
   ],

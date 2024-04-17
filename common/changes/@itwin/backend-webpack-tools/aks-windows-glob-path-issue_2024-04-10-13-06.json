@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/backend-webpack-tools",
-      "comment": "Update glob package to latest version",
+      "comment": "",
       "type": "none"
     }
   ],
