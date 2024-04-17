@@ -276,6 +276,94 @@ export namespace SerializationHelpers {
     }
   }
 
+  /**
+   * Process 1-based blocked indices into 0-based indices.
+   * @param sourceIndices signed, 1-based, 0-terminated/padded source indices, blocking specified by `numPerBlock`
+   * @param numPerBlock index blocking: fixed blocks of size numPerBlock > 1, possibly 0-padded; otherwise, variable-sized blocks terminated by 0
+   * @param announceZeroBasedIndex callback to receive a 0-based index and optional flag indicating whether the sign of the source index is positive
+   * @param terminateFacet optional callback called after each index block has been announced
+  */
+  export function announceZeroBasedIndicesFromSignedOneBasedIndices(
+    sourceIndices: Int32Array,
+    numPerBlock: number,
+    announceZeroBasedIndex: (i0: number, flag?: boolean) => any,
+    terminateFacet?: () => any,
+  ): void {
+    let numIndices = sourceIndices.length;
+    if (numPerBlock > 1) {
+      numIndices -= sourceIndices.length % numPerBlock;
+      for (let i = 0; i < numIndices; i++) {
+        const p = sourceIndices[i];
+        if (p !== 0)  // skip padding
+          announceZeroBasedIndex(Math.abs(p) - 1, p > 0);
+        if (terminateFacet && ((i + 1) % numPerBlock) === 0)
+          terminateFacet();
+      }
+    } else {
+      for (let i = 0; i < numIndices; i++) {
+        const p = sourceIndices[i];
+        if (p !== 0)  // skip terminator
+          announceZeroBasedIndex(Math.abs(p) - 1, p > 0);
+        if (terminateFacet) {
+          if (p === 0) {
+            if (i + 1 === numIndices || sourceIndices[i + 1] !== 0)  // skip extra terminators
+              terminateFacet();
+          } else {
+            if (i + 1 === numIndices)  // missing last terminator
+              terminateFacet();
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Process 0-based indices with blocking specified by another index array.
+   * @param sourceIndices 0-based source indices. This array is compressed (has no blocking).
+   * @param blockingIndices 1-based source indices, blocking specified by `numPerBlock`. Assumed to have length equal to its zero count plus `sourceIndices.length`.
+   * @param numPerBlock index blocking: fixed blocks of size numPerBlock > 1, possibly 0-padded; otherwise, variable-sized blocks terminated by 0
+   * @param announceZeroBasedIndex callback to receive a 0-based index
+   * @param terminateFacet optional callback called after each index block has been announced
+  */
+  export function announceZeroBasedIndicesWithExternalBlocking(
+    sourceIndices: Int32Array,
+    blockingIndices: Int32Array,
+    numPerBlock: number,
+    announceZeroBasedIndex: (i0: number) => any,
+    terminateFacet?: () => any,
+  ): void {
+    const blockingZeroCount = blockingIndices.filter((i) => i === 0).length;
+    if (sourceIndices.length + blockingZeroCount !== blockingIndices.length)
+      return; // invalid input
+    let iSource = 0;
+    let numBlocking = blockingIndices.length;
+    if (numPerBlock > 1) {
+      numBlocking -= blockingIndices.length % numPerBlock;
+      for (let iBlocking = 0; iBlocking < numBlocking; iBlocking++) {
+        const p = blockingIndices[iBlocking];
+        if (p !== 0)  // skip padding
+          announceZeroBasedIndex(sourceIndices[iSource++]);
+        if (terminateFacet && ((iBlocking + 1) % numPerBlock) === 0)
+          terminateFacet();
+      }
+    } else {
+      for (let iBlocking = 0; iBlocking < numBlocking; iBlocking++) {
+        const p = blockingIndices[iBlocking];
+        if (p !== 0)  // skip terminator
+          announceZeroBasedIndex(sourceIndices[iSource++]);
+        if (terminateFacet) {
+          if (p === 0) {
+            if (iBlocking + 1 === numBlocking || blockingIndices[iBlocking + 1] !== 0)  // skip extra terminators
+              terminateFacet();
+          } else {
+            if (iBlocking + 1 === numBlocking)  // missing last terminator
+              terminateFacet();
+          }
+        }
+      }
+    }
+  }
+
   /** Helper class for preparing geometry data for import. */
   export class Import {
     /** copy knots, with options to control destination type and extraneous knot removal */

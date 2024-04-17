@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { flatbuffers } from "flatbuffers";
-import { assert } from "@itwin/core-bentley";
 import { AkimaCurve3d, AkimaCurve3dOptions } from "../bspline/AkimaCurve3d";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
@@ -285,10 +284,7 @@ return undefined;
     }
     return undefined;
   }
-  /**
- * Extract auxData for a mesh
- * @param variant read position in the flat buffer.
- */
+  /** Extract auxData channel data for a mesh */
   public readPolyfaceAuxChannelData(channelDataHeader: BGFBAccessors.PolyfaceAuxChannelData | null): AuxChannelData | undefined {
     if (channelDataHeader !== null) {
       const input = channelDataHeader.input();
@@ -299,10 +295,7 @@ return undefined;
     return undefined;
   }
 
-  /**
- * Extract auxData for a mesh
- * @param variant read position in the flat buffer.
- */
+  /** Extract auxData channel for a mesh */
   public readPolyfaceAuxChannel(channelHeader: BGFBAccessors.PolyfaceAuxChannel | null): AuxChannel | undefined {
     if (channelHeader) {
       const dataType = channelHeader.dataType();
@@ -319,63 +312,105 @@ return undefined;
     }
     return undefined;
   }
-  /**
- * Extract auxData for a mesh
- * @param variant read position in the flat buffer.
- */
-  public readPolyfaceAuxData(polyfaceHeader: BGFBAccessors.Polyface | null, auxDataHeader: BGFBAccessors.PolyfaceAuxData | null): PolyfaceAuxData | undefined {
-    if (!polyfaceHeader || !auxDataHeader)
-      return undefined;
 
-    const pointIndices = nullToUndefined<Int32Array>(polyfaceHeader.pointIndexArray());
-    const auxIndices = nullToUndefined<Int32Array>(auxDataHeader.indicesArray());
-    const channelsLength = auxDataHeader.channelsLength();
-    if (!pointIndices || !pointIndices.length || !auxIndices || !auxIndices.length || channelsLength <= 0)
-      return undefined;
+  /** Compute the number of logical entries in every flat data array in the AuxData */
+  private channelDataLength(fbAuxData: BGFBAccessors.PolyfaceAuxData): number {
+    if (fbAuxData.channelsLength() <= 0)
+      return 0;
 
-    const numPerFace = polyfaceHeader.numPerFace();
-    const numIndex = pointIndices.length;
+    const fbChannel0 = nullToUndefined<BGFBAccessors.PolyfaceAuxChannel>(fbAuxData.channels(0));
+    if (!fbChannel0)
+      return 0;
 
-    // HEURISTICS to identify legacy AuxData indices, mistakenly serialized as 0-based and unterminated
-    let isLegacy = false;
-    if (numPerFace > 1) {
-      isLegacy = pointIndices.length === auxIndices.length;
-      assert(false, "Fixed size Polyface AuxData indices unexpected. Assume legacy format.");
-    } else {
-      const numZeroesInPointIndices = pointIndices.filter((index) => index === 0).length;
-      isLegacy = (auxIndices.length < numIndex) && (numZeroesInPointIndices === numIndex - auxIndices.length);
+    const numChannel0Data = fbChannel0.dataLength();
+    if (numChannel0Data <= 0)
+      return 0;
+
+    const fbChannel0Data0 = nullToUndefined<BGFBAccessors.PolyfaceAuxChannelData>(fbChannel0.data(0));
+    if (!fbChannel0Data0)
+      return 0;
+
+    let numChannelDataValues = fbChannel0Data0.valuesLength();
+    if (numChannelDataValues <= 0)
+      return 0;
+
+    if (!AuxChannel.isScalar(fbChannel0.dataType()))
+      numChannelDataValues /= 3;
+
+    return numChannelDataValues;
+  }
+
+  /** Examine int array for range and zero count  */
+  private countIntArray(ints: Int32Array): { min: number, max: number, numZeroes: number } {
+    let min = Infinity;
+    let max = -Infinity;
+    let numZeroes = 0;
+    for (const i of ints) {
+      if (min > i)
+        min = i;
+      if (max < i)
+        max = i;
+      if (0 === i)
+        ++numZeroes;
     }
-    if (auxIndices.length !== numIndex && !isLegacy)
+    return {min, max, numZeroes};
+  }
+
+  /**
+   * Extract auxData for a mesh.
+   * Typescript format for Polyface/PolyfaceAuxData indices is 0-based, unterminated.
+   * FB format for Polyface/PolyfaceAuxData indices is 1-based, 0-terminated/padded.
+   * FB legacy format for PolyfaceAuxData indices is 0-based, unterminated.
+   */
+  public readPolyfaceAuxData(fbPolyface: BGFBAccessors.Polyface | null, fbAuxData: BGFBAccessors.PolyfaceAuxData | null): PolyfaceAuxData | undefined {
+    if (!fbPolyface || !fbAuxData)
       return undefined;
+
+    const fbPointIndices = nullToUndefined<Int32Array>(fbPolyface.pointIndexArray());
+    const fbAuxIndices = nullToUndefined<Int32Array>(fbAuxData.indicesArray());
+    const numChannels = fbAuxData.channelsLength();
+    const fbNumData = this.channelDataLength(fbAuxData);
+    if (!fbPointIndices || !fbPointIndices.length || !fbAuxIndices || !fbAuxIndices.length || numChannels <= 0 || fbNumData <= 0)
+      return undefined;
+
+    const numPerFace = fbPolyface.numPerFace();
+
+    // HEURISTICS to detect legacy AuxData indices, previously mistakenly serialized by BGFBWriter.writePolyfaceAsFBVariantGeometry as 0-based unblocked indices
+    let isLegacy = false;
+    const pointIndicesPadCount = fbPointIndices.filter((index) => index === 0).length;
+    if (numPerFace > 1) {
+      const auxIndexCounts = this.countIntArray(fbAuxIndices);
+      if (auxIndexCounts.max > fbNumData) // auxIndices invalid
+        return undefined;
+      else if (auxIndexCounts.max === fbNumData) // auxIndices 1-based
+        isLegacy = false;
+      else if (auxIndexCounts.max <= 0 || auxIndexCounts.min < 0) // auxIndices 1-based (signed)
+        isLegacy = false;
+      else if (auxIndexCounts.min === 0) // auxIndices likely legacy 0-based index, but could be modern with padding
+        isLegacy = pointIndicesPadCount !== auxIndexCounts.numZeroes;
+      else if (auxIndexCounts.min > 0) // auxIndices likely modern without padding, but could be legacy if first datum not indexed
+        isLegacy = pointIndicesPadCount > 0;
+    } else {
+      isLegacy = (fbAuxIndices.length < fbPointIndices.length) && (fbAuxIndices.length + pointIndicesPadCount === fbPointIndices.length);
+    }
+    if (!isLegacy && fbAuxIndices.length !== fbPointIndices.length)
+      return undefined; // auxIndices invalid
 
     const indices: number[] = [];
-    const addAuxDataIndicesInBlock = (k0: number, k1: number) => {
-      for (let k = k0; k < k1; k++) {
-        const index = isLegacy ? auxIndices[k] : Math.abs(auxIndices[k]) - 1;
-        indices.push(index);
-      }
-    };
-    if (numPerFace > 1) {
-      for (let i0 = 0; i0 + numPerFace <= numIndex; i0 += numPerFace) {
-        addAuxDataIndicesInBlock(i0, i0 + numPerFace);
-      }
-    } else {
-      for (let i0 = 0, i1 = i0; i1 < numIndex; i1++) {
-        if (pointIndices[i1] === 0) {
-          addAuxDataIndicesInBlock(i0, i1);
-          i0 = i1 + 1;  // skip over terminator
-        }
-      }
-    }
+    if (isLegacy)
+      SerializationHelpers.announceZeroBasedIndicesWithExternalBlocking(fbAuxIndices, fbPointIndices, numPerFace, (i0: number) => { indices.push(i0); });
+    else
+      SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(fbAuxIndices, numPerFace, (i0: number) => { indices.push(i0); });
+
     const maxIndex = Math.max(...indices);
 
     const channels: AuxChannel[] = [];
-    for (let i = 0; i < channelsLength; i++) {
-      const channelHeader = auxDataHeader.channels(i);
+    for (let i = 0; i < numChannels; i++) {
+      const channelHeader = fbAuxData.channels(i);
       const channelContent = this.readPolyfaceAuxChannel(channelHeader);
       if (channelContent) {
         if (maxIndex >= channelContent.valueCount)
-          return undefined;
+          return undefined; // invalid index
         channels.push(channelContent);
       }
     }
@@ -385,10 +420,7 @@ return undefined;
     return new PolyfaceAuxData(channels, indices);
   }
 
-  /**
- * Extract auxData for a mesh
- * @param variant read position in the flat buffer.
- */
+  /** Extract tagged numeric data for a mesh */
   public readTaggedNumericData(accessor: BGFBAccessors.TaggedNumericData | undefined): TaggedNumericData | undefined {
     if (accessor) {
       const taggedNumericData = new TaggedNumericData(accessor.tagA(), accessor.tagB());
@@ -410,9 +442,9 @@ return undefined;
     return undefined;
   }
   /**
- * Extract a mesh
- * @param variant read position in the flat buffer.
- */
+   * Extract a mesh
+   * @param variant read position in the flat buffer.
+   */
   public readPolyfaceFromVariant(variant: BGFBAccessors.VariantGeometry): IndexedPolyface | undefined {
     const geometryType = variant.geometryType();
     if (geometryType === BGFBAccessors.VariantGeometryUnion.tagPolyface) {
