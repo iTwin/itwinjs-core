@@ -10,7 +10,7 @@ import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
 import * as semver from "semver";
-import { AccessToken, BeEvent, DbResult, Logger, OpenMode, Optional, UnexpectedErrors } from "@itwin/core-bentley";
+import { AccessToken, BeEvent, DbResult, Logger, Mutable, OpenMode, Optional, UnexpectedErrors } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { CloudSqlite } from "../CloudSqlite";
 import { IModelHost, KnownLocations } from "../IModelHost";
@@ -164,6 +164,7 @@ export namespace WorkspaceDb {
 
   export interface LoadError extends Error {
     wsDbProps?: WorkspaceDb.Props;
+    wsDb?: WorkspaceDb;
   }
 
   export interface LoadErrors extends Error {
@@ -394,6 +395,10 @@ export namespace Workspace {
     else
       UnexpectedErrors.handle(e);
   };
+  export let onSettingsDictionaryLoadedFn = (dict: { props: Settings.Dictionary.Props, from: WorkspaceDb }) => {  // eslint-disable-line prefer-const
+    Logger.logInfo(loggerCategory, `loaded setting dictionary ${dict.props.name} from ${dict.from.dbFileName}`);
+  };
+
   const makeSettingName = (name: string) => `${"itwin/core/workspace"}/${name}`;
   export const settingName = {
     settingsWorkspaces: makeSettingName("settingsWorkspaces"),
@@ -439,6 +444,8 @@ export namespace Workspace {
       /** create a new empty WorkspaceDb. */
       createDb(args: { dbName?: string, version?: string, manifest: WorkspaceDb.Manifest }): Promise<Workspace.Editor.EditableDb>;
 
+      get cloudProps(): WorkspaceContainer.Props | undefined;
+      getEditableDb(props: WorkspaceDb.Props): Editor.EditableDb;
       getWorkspaceDb(props: WorkspaceDb.Props): Editor.EditableDb;
       acquireWriteLock(user: string): void;
       releaseWriteLock(): void;
@@ -472,6 +479,7 @@ export namespace Workspace {
      * @beta
      */
     export interface EditableDb extends WorkspaceDb {
+      get cloudProps(): WorkspaceDb.CloudProps | undefined;
 
       /** Update the contents of the manifest in this WorkspaceDb. */
       updateManifest(manifest: WorkspaceDb.Manifest): void;
@@ -534,9 +542,10 @@ export namespace Workspace {
   }
 }
 
-function throwLoadError(msg: string, wsDbProps: WorkspaceDb.Props): never {
+function throwLoadError(msg: string, wsDbProps: WorkspaceDb.Props, db?: WorkspaceDb): never {
   const error = new Error(msg) as WorkspaceDb.LoadError;
   error.wsDbProps = wsDbProps;
+  error.wsDb = db;
   throw error;
 }
 function throwLoadErrors(msg: string, errors: WorkspaceDb.LoadError[]): never {
@@ -549,7 +558,7 @@ class WorkspaceImpl implements Workspace {
   private _containers = new Map<WorkspaceContainer.Id, WorkspaceContainerImpl>();
   public readonly containerDir: LocalDirName;
   public readonly settings: Settings;
-  private _cloudCache?: CloudSqlite.CloudCache;
+  protected _cloudCache?: CloudSqlite.CloudCache;
   public getCloudCache(): CloudSqlite.CloudCache {
     return this._cloudCache ??= CloudSqlite.CloudCaches.getCache({ cacheName: "Workspace", cacheSize: "20G" });
   }
@@ -600,15 +609,16 @@ class WorkspaceImpl implements Workspace {
       try {
         const manifest = db.manifest;
         const dictProps: Settings.Dictionary.Props = { name: prop.resourceName, workspaceDb: db, priority: prop.priority };
+        // don't load if we already have this dictionary. Happens if the same WorkspaceDb is in more than one list
         if (undefined === this.settings.getDictionary(dictProps)) {
           const settingsJson = db.getString(prop.resourceName);
           if (undefined === settingsJson)
-            throwLoadError(`could not load setting resource ${prop.resourceName} from ${manifest.workspaceName}`, prop);
+            throwLoadError(`could not load setting dictionary "${prop.resourceName}" from: "${manifest.workspaceName}"`, prop, db);
 
           db.close(); // don't leave this db open in case we're going to find another dictionary in it recursively.
 
           this.settings.addJson(dictProps, settingsJson);
-          Logger.logInfo(loggerCategory, `loaded setting dictionary ${dictProps.name} from ${db.dbFileName}`);
+          Workspace.onSettingsDictionaryLoadedFn({ props: dictProps, from: db });
 
           // if the dictionary we just loaded has a "settingsWorkspaces" entry, load them too, recursively
           const dict = this.settings.getDictionary(dictProps);
@@ -858,8 +868,10 @@ class WorkspaceDbImpl implements WorkspaceDb {
   }
 
   public get manifest(): WorkspaceDb.Manifest {
-    const manifestJson = this.sqliteDb.nativeDb.queryFileProperty(WorkspaceDbImpl.manifestProperty, true) as string | undefined;
-    return manifestJson ? JSON.parse(manifestJson) : { workspaceName: this.dbName };
+    return this.withOpenDb((db) => {
+      const manifestJson = db.nativeDb.queryFileProperty(WorkspaceDbImpl.manifestProperty, true) as string | undefined;
+      return manifestJson ? JSON.parse(manifestJson) : { workspaceName: this.dbName };
+    });
   }
 
   private withOpenDb<T>(operation: (db: WorkspaceSqliteDb) => T): T {
@@ -945,15 +957,21 @@ class WorkspaceDbImpl implements WorkspaceDb {
     });
   }
 }
+const workspaceEditorName = "WorkspaceEditor";
+class EditorWorkspaceImpl extends WorkspaceImpl {
+  public override getCloudCache(): CloudSqlite.CloudCache {
+    return this._cloudCache ??= CloudSqlite.CloudCaches.getCache({ cacheName: workspaceEditorName, cacheSize: "20G" });
+  }
+}
 
 class EditorImpl implements Workspace.Editor {
-  public workspace = new WorkspaceImpl(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "WorkspaceEditor") });
+  public workspace = new EditorWorkspaceImpl(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, workspaceEditorName) });
 
   public async initializeContainer(args: { props: CloudSqlite.ContainerProps, dbName: WorkspaceDb.DbName, manifest: WorkspaceDb.Manifest }) {
     class CloudAccess extends CloudSqlite.DbAccess<WorkspaceSqliteDb> {
       public static async initializeWorkspace(args: { props: CloudSqlite.ContainerProps, dbName: WorkspaceDb.DbName, manifest: WorkspaceDb.Manifest }) {
         const dbFullName = WorkspaceContainer.makeDbFileName(args.dbName, "1.0.0");
-        return super._initializeDb({ ...args, dbName: dbFullName, dbType: WorkspaceSqliteDb });
+        return super._initializeDb({ ...args, dbName: dbFullName, dbType: WorkspaceSqliteDb, blockSize: "4M" });
       }
     }
     return CloudAccess.initializeWorkspace(args);
@@ -984,7 +1002,22 @@ class EditorImpl implements Workspace.Editor {
   }
 }
 
+interface EditCloudContainer extends CloudSqlite.CloudContainer {
+  writeLockHeldBy?: string;
+}
+
 class EditorContainerImpl extends WorkspaceContainerImpl implements Workspace.Editor.Container {
+  public get cloudProps(): WorkspaceContainer.Props | undefined {
+    const cloudContainer = this.cloudContainer;
+    if (undefined === cloudContainer)
+      return undefined;
+    return {
+      baseUri: cloudContainer.baseUri,
+      containerId: cloudContainer.containerId,
+      storageType: cloudContainer.storageType as "azure" | "google",
+      isPublic: cloudContainer.isPublic,
+    };
+  }
   public async makeNewVersion(args: Workspace.Editor.Container.MakeNewVersionProps): Promise<{ oldDb: WorkspaceDb.NameAndVersion, newDb: WorkspaceDb.NameAndVersion }> {
     const cloudContainer = this.cloudContainer;
     if (undefined === cloudContainer)
@@ -1002,16 +1035,32 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements Workspace.Ed
   }
 
   public override getWorkspaceDb(props: WorkspaceDb.Props): Workspace.Editor.EditableDb {
+    return this.getEditableDb(props);
+  }
+  public getEditableDb(props: WorkspaceDb.Props): Workspace.Editor.EditableDb {
     return this._wsDbs.get(WorkspaceDb.dbNameWithDefault(props.dbName)) as EditableDbImpl | undefined ?? new EditableDbImpl(props, this);
   }
-  public acquireWriteLock(user: string) {
-    return this.cloudContainer?.acquireWriteLock(user);
+
+  public acquireWriteLock(user: string): void {
+    const cloudContainer = this.cloudContainer as EditCloudContainer | undefined;
+    if (cloudContainer) {
+      cloudContainer.acquireWriteLock(user);
+      cloudContainer.writeLockHeldBy = user;
+    }
   }
   public releaseWriteLock() {
-    return this.cloudContainer?.releaseWriteLock();
+    const cloudContainer = this.cloudContainer as EditCloudContainer | undefined;
+    if (cloudContainer) {
+      cloudContainer.releaseWriteLock();
+      cloudContainer.writeLockHeldBy = undefined;
+    }
   }
   public abandonChanges() {
-    return this.cloudContainer?.abandonChanges();
+    const cloudContainer = this.cloudContainer as EditCloudContainer | undefined;
+    if (cloudContainer) {
+      cloudContainer.abandonChanges();
+      cloudContainer.writeLockHeldBy = undefined;
+    }
   }
   public async createDb(args: { dbName?: string, version?: string, manifest: WorkspaceDb.Manifest }): Promise<Workspace.Editor.EditableDb> {
     if (!this.cloudContainer) {
@@ -1040,6 +1089,14 @@ class EditableDbImpl extends WorkspaceDbImpl implements Workspace.Editor.Editabl
     const len = typeof val === "string" ? val.length : val.byteLength;
     if (len > (1024 * 1024 * 1024)) // one gigabyte
       throw new Error("value is too large");
+  }
+  public get cloudProps(): WorkspaceDb.CloudProps | undefined {
+    const props = (this.container as EditorContainerImpl).cloudProps as Mutable<WorkspaceDb.CloudProps>;
+    if (props === undefined)
+      return undefined;
+
+    const parsed = WorkspaceContainer.parseDbFileName(this.dbFileName);
+    return { ...props, dbName: parsed.dbName, version: parsed.version };
   }
 
   public override open() {
