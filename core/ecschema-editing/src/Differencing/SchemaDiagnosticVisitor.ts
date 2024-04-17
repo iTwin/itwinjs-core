@@ -181,12 +181,6 @@ export class SchemaDiagnosticVisitor {
 
   private visitChangedSchemaItem(diagnostic: AnyDiagnostic) {
     const schemaItem = diagnostic.ecDefinition as AnySchemaItem;
-
-    // TODO: Remove after fix #6560 has been merged into master.
-    if (this.schemaItemChanges.find((entry) => entry.changeType === "add" && entry.itemName === schemaItem.name)) {
-      return;
-    }
-
     const [propertyName, sourceValue, targetValue] = diagnostic.messageArgs as [string, unknown, unknown];
     if (propertyName === "schemaItemType") {
       return this.addConflict({
@@ -246,12 +240,6 @@ export class SchemaDiagnosticVisitor {
 
   private visitMissingEnumerator(diagnostic: AnyDiagnostic) {
     const enumeration = diagnostic.ecDefinition as Enumeration;
-
-    // TODO: Remove after fix #6560 has been merged into master.
-    if (this.schemaItemPathChanges.find((entry) => entry.changeType === "add" && entry.itemName === enumeration.name)) {
-      return;
-    }
-
     const [enumerator] = diagnostic.messageArgs as [AnyEnumerator];
     this.schemaItemPathChanges.push({
       changeType: "add",
@@ -274,12 +262,6 @@ export class SchemaDiagnosticVisitor {
 
   private visitChangedEnumerator(diagnostic: AnyDiagnostic) {
     const enumeration = diagnostic.ecDefinition as Enumeration;
-
-    // TODO: Remove after fix #6560 has been merged into master.
-    if (this.schemaItemPathChanges.find((entry) => entry.changeType === "add" && entry.itemName === enumeration.name)) {
-      return;
-    }
-
     const [enumerator, propertyName, sourceValue, targetValue] = diagnostic.messageArgs as [AnyEnumerator, keyof AnyEnumerator, any, any];
     if (this.lookupEnumeratorEntry("add", enumeration.name, enumerator.name)) {
       return;
@@ -328,12 +310,6 @@ export class SchemaDiagnosticVisitor {
 
   private visitMissingProperty(diagnostic: AnyDiagnostic) {
     const property = diagnostic.ecDefinition as Property;
-
-    // TODO: Remove after fix #6560 has been merged into master.
-    if (this.schemaItemChanges.find((entry) => entry.changeType === "add" && entry.schemaType in SchemaItemType && entry.itemName === property.class.name)) {
-      return;
-    }
-
     this.schemaItemPathChanges.push({
       changeType: "add",
       schemaType: SchemaOtherTypes.Property,
@@ -345,16 +321,6 @@ export class SchemaDiagnosticVisitor {
 
   private visitChangedProperty(diagnostic: AnyDiagnostic) {
     const property = diagnostic.ecDefinition as Property;
-
-    // TODO: Remove after fix #6560 has been merged into master.
-    if (this.schemaItemChanges.find((entry) => entry.changeType === "add" && entry.itemName === property.class.name)) {
-      return;
-    }
-    // TODO: Remove after fix #6560 has been merged into master.
-    if (this.schemaItemPathChanges.find((entry) => entry.changeType === "add" && entry.itemName === property.class.name && entry.path === property.name)) {
-      return;
-    }
-
     const [propertyName, sourceValue, targetValue] = diagnostic.messageArgs as [keyof PropertyProps, any, any];
     if (!this.validatePropertyChange(property, propertyName, sourceValue, targetValue)) {
       return;
@@ -398,12 +364,6 @@ export class SchemaDiagnosticVisitor {
 
   private visitMissingBaseClass(diagnostic: AnyDiagnostic) {
     const ecClass = diagnostic.ecDefinition as ECClass;
-
-    // TODO: Remove after fix #6560 has been merged into master.
-    if (this.schemaItemChanges.find((entry) => entry.changeType === "add" && entry.itemName === ecClass.name)) {
-      return;
-    }
-
     const [sourceBaseClass, targetBaseClass] = diagnostic.messageArgs as [ECClass, ECClass];
     if (!this.validateBaseClassChange(ecClass, sourceBaseClass, targetBaseClass)) {
       return;
@@ -470,12 +430,6 @@ export class SchemaDiagnosticVisitor {
 
   private visitMissingMixinOnClass(diagnostic: AnyDiagnostic) {
     const ecClass = diagnostic.ecDefinition as ECClass;
-
-    // TODO: Remove after fix #6560 has been merged into master.
-    if (this.schemaItemChanges.find((entry) => entry.changeType === "add" && entry.itemName === ecClass.name)) {
-      return;
-    }
-
     const [mixin] = diagnostic.messageArgs as [Mixin];
     if (!this.validateMixin(ecClass, mixin)) {
       return;
@@ -518,11 +472,6 @@ export class SchemaDiagnosticVisitor {
     const constraint = diagnostic.ecDefinition as RelationshipConstraint;
     const className = constraint.relationshipClass.name;
     const constraintPath = constraint.isSource ? "$source" : "$target";
-
-    // TODO: Remove after fix #6560 has been merged into master.
-    if (this.schemaItemChanges.find((entry) => entry.changeType === "add" && entry.itemName === className)) {
-      return;
-    }
 
     let modifyEntry = this.schemaItemPathChanges.find((entry): entry is RelationshipConstraintClassDifference => {
       return entry.changeType === "add" && entry.schemaType === SchemaOtherTypes.RelationshipConstraintClass, entry.itemName === className && entry.path === constraintPath;
@@ -606,10 +555,6 @@ export class SchemaDiagnosticVisitor {
     }
 
     if (SchemaItem.isSchemaItem(ecType)) {
-      // TODO: Remove after fix #6560 has been merged into master.
-      if (this.schemaItemChanges.find((entry) => entry.changeType === "add" && entry.itemName === ecType.name)) {
-        return;
-      }
       return this.customAttributeChanges.push({
         changeType: "add",
         schemaType: SchemaOtherTypes.CustomAttributeInstance,
@@ -620,15 +565,6 @@ export class SchemaDiagnosticVisitor {
     }
 
     if (Property.isProperty(ecType)) {
-      // TODO: Remove after fix #6560 has been merged into master.
-      if (this.schemaItemChanges.find((entry) => entry.changeType === "add" && entry.itemName === ecType.name)) {
-        return;
-      }
-      // TODO: Remove after fix #6560 has been merged into master.
-      if (this.schemaItemPathChanges.find((entry) => entry.changeType === "add" && entry.itemName === ecType.name && entry.path === ecType.name)) {
-        return;
-      }
-
       return this.customAttributeChanges.push({
         changeType: "add",
         schemaType: SchemaOtherTypes.CustomAttributeInstance,
@@ -640,11 +576,6 @@ export class SchemaDiagnosticVisitor {
     }
 
     if (RelationshipConstraint.isRelationshipConstraint(ecType)) {
-      // TODO: Remove after fix #6560 has been merged into master.
-      if (this.schemaItemChanges.find((entry) => entry.changeType === "add" && entry.itemName === ecType.relationshipClass.name)) {
-        return;
-      }
-
       return this.customAttributeChanges.push({
         changeType: "add",
         schemaType: SchemaOtherTypes.CustomAttributeInstance,

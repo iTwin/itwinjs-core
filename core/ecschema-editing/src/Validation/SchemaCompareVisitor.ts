@@ -65,10 +65,10 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
     let propertyB: AnyProperty | undefined;
 
     const classB = await this._schemaB.lookupItem<ECClass>(propertyA.class.name);
-    if (classB)
+    if (classB) {
       propertyB = await classB.getProperty(propertyA.name) as AnyProperty;
-
-    this._schemaComparer.compareProperties(propertyA, propertyB);
+      this._schemaComparer.compareProperties(propertyA, propertyB);
+    }
   }
 
   /**
