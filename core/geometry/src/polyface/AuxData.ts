@@ -126,7 +126,7 @@ export class AuxChannel {
     return dataType === AuxChannelDataType.Distance || dataType === AuxChannelDataType.Scalar;
   }
 
-  /** True if [[entriesPerValue]] is `1`. */
+  /** True if the data stored in this AuxChannel is 1-dimensional. */
   public get isScalar(): boolean {
     return AuxChannel.isScalar(this.dataType);
   }
@@ -136,12 +136,12 @@ export class AuxChannel {
     return this.isScalar(dataType) ? 1 : 3;
   }
 
-  /** The number of values in `data.values` per entry - 1 for scalar and distance types, 3 for normal and vector types. */
+  /** The dimension (1D or 3D) of each datum in the data arrays of this AuxChannel. */
   public get entriesPerValue(): number {
     return AuxChannel.entriesPerValue(this.dataType);
   }
 
-  /** The number of entries in `data.values`. */
+  /** The number of data stored in each data array of this AuxChannel, equal to the length of the array divided by `entriesPerValue`. */
   public get valueCount(): number {
     return 0 === this.data.length ? 0 : this.data[0].values.length / this.entriesPerValue;
   }
