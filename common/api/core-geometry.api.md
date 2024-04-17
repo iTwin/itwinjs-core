@@ -347,9 +347,11 @@ export class AuxChannel {
     computeDisplacementRange(scale?: number, result?: Range3d): Range3d;
     data: AuxChannelData[];
     dataType: AuxChannelDataType;
+    static entriesPerValue(dataType: AuxChannelDataType): number;
     get entriesPerValue(): number;
     inputName?: string;
     isAlmostEqual(other: AuxChannel, tol?: number): boolean;
+    static isScalar(dataType: AuxChannelDataType): boolean;
     get isScalar(): boolean;
     name?: string;
     get scalarRange(): Range1d | undefined;
@@ -4244,6 +4246,7 @@ export class Point3dArray {
     } | undefined;
     static multiplyInPlace(transform: Transform, xyz: Float64Array): void;
     static packToFloat64Array(data: Point3d[], result?: Float64Array): Float64Array;
+    static packToNumberArray(data: Point3d[], result?: number[]): number[];
     static sumEdgeLengths(data: Point3d[] | Float64Array, addClosureEdge?: boolean, maxPointsToUse?: number): number;
     static sumWeightedX(weights: Float64Array, points: Point3d[]): number;
     static sumWeightedY(weights: Float64Array, points: Point3d[]): number;
@@ -5504,6 +5507,8 @@ export class Segment1d {
 
 // @public
 export namespace SerializationHelpers {
+    export function announceZeroBasedIndicesFromSignedOneBasedIndices(sourceIndices: Int32Array, numPerBlock: number, announceZeroBasedIndex: (i0: number, flag?: boolean) => any, terminateFacet?: () => any): void;
+    export function announceZeroBasedIndicesWithExternalBlocking(sourceIndices: Int32Array, blockingIndices: Int32Array, numPerBlock: number, announceZeroBasedIndex: (i0: number) => any, terminateFacet?: () => any): void;
     export interface BSplineCurveData {
         dim: number;
         params: BSplineParams;

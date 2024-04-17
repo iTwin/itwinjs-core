@@ -132,7 +132,7 @@ export class AuxChannel {
   }
 
   /** The dimension (1D or 3D) of each datum of an AuxChannel of the given type. */
-  public static entriesPerValue(dataType: AuxChannelDataType): 1 | 3 {
+  public static entriesPerValue(dataType: AuxChannelDataType): number {
     return this.isScalar(dataType) ? 1 : 3;
   }
 

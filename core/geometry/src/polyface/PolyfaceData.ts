@@ -509,7 +509,7 @@ export class PolyfaceData {
    * * Search for duplicates within vertices, normals, params, and colors.
    * * Compress each data array.
    * * Revise all indexing for the relocated data.
-   * * [[AuxData]] is only compressed if exactly one [[AuxDataChannel]] is present.
+   * * [[AuxData]] is only compressed if exactly one [[AuxChannelData]] is present.
    * @param tolerance (optional) tolerance for clustering mesh vertices only. Default value, and the tolerance used to cluster all other data, is [[Geometry.smallMetricDistance]].
    */
   public compress(tolerance: number = Geometry.smallMetricDistance): void {
