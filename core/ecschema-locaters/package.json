@@ -70,7 +70,7 @@
     "typescript": "~5.0.2"
   },
   "dependencies": {
-    "glob": "^7.1.2",
+    "glob": "^10.3.12",
     "fs-extra": "^8.1.0",
     "@xmldom/xmldom": "~0.8.5"
   },
