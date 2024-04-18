@@ -50,6 +50,9 @@ enum ElementPruningClassification { PRUNING_CLASS_Normal = 0, PRUNING_CLASS_Subj
 
 function classifyElementForPruning(iModel: IModelDb, elementId: Id64String): ElementPruningClassification {
   const el = iModel.elements.getElement(elementId);
+  // DefinitionContainer is submodeled by a DefinitionModel and so it must be classified as PRUNING_CLASS_DefinitionPartition for tree-walking purposes.
+  // Since DefinitionContainer is-a DefinitionElement the (el instanceof DefinitionElement) case below would classify it as PRUNING_CLASS_Definition.
+  // That is why we special-case it here.
   if (el instanceof DefinitionContainer)
     return ElementPruningClassification.PRUNING_CLASS_DefinitionPartition;
   return (el instanceof Subject) ? ElementPruningClassification.PRUNING_CLASS_Subject :
