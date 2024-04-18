@@ -31,7 +31,7 @@ export interface CodeProps {
 }
 
 /**
- * A three-part structure contaiing information about the [Code]($docs/bis/guide/fundamentals/codes) of an Element
+ * A three-part structure containing information about the [Code]($docs/bis/guide/fundamentals/codes) of an Element
  * @public
  */
 export class Code implements CodeProps {
