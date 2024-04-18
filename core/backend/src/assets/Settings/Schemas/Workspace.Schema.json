@@ -11,7 +11,7 @@
         "properties": {
           "resourceName": {
             "type": "string",
-            "description": "the name of the string resource holing the settings dictionary in this WorkspaceDb",
+            "description": "the name of the string resource holding the settings dictionary in this WorkspaceDb",
             "default": "settingsDictionary"
           },
           "priority": {

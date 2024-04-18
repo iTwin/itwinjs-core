@@ -27,9 +27,9 @@ describe.only("Cloud workspace containers", () => {
     IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
     AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
     editor = Workspace.constructEditor();
-    orgContainer = await editor.createNewCloudContainer({ containerLabel: "orgContainer1", scope: { iTwinId: iTwin1Id }, containerDescription: "org workspace1", manifest: { workspaceName: "all settings for itwin1" } });
-    itwin2Container = await editor.createNewCloudContainer({ containerLabel: "orgContainer2", scope: { iTwinId: iTwin2Id }, containerDescription: "org workspace2", manifest: { workspaceName: "all settings for itwin2" } });
-    iModelContainer = await editor.createNewCloudContainer({ containerLabel: "iModel container", scope: { iTwinId: iTwin2Id, iModelId: iModel1 }, containerDescription: "imodel workspace", manifest: { workspaceName: "all settings for imodel" } });
+    orgContainer = await editor.createNewCloudContainer({ metadata: { label: "orgContainer1", description: "org workspace1" }, scope: { iTwinId: iTwin1Id }, manifest: { workspaceName: "all settings for itwin1" } });
+    itwin2Container = await editor.createNewCloudContainer({ metadata: { label: "orgContainer2", description: "org workspace2" }, scope: { iTwinId: iTwin2Id }, manifest: { workspaceName: "all settings for itwin2" } });
+    iModelContainer = await editor.createNewCloudContainer({ metadata: { label: "iModel container", description: "imodel workspace" }, scope: { iTwinId: iTwin2Id, iModelId: iModel1 }, manifest: { workspaceName: "all settings for imodel" } });
     AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
 
     itwin2ContainerProps = itwin2Container.cloudProps!;

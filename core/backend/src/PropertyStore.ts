@@ -7,7 +7,9 @@
  * @module SQLiteDb
  */
 
+import { BlobContainer } from "./BlobContainerService";
 import { CloudSqlite } from "./CloudSqlite";
+import { IModelHost } from "./IModelHost";
 import { VersionedSqliteDb } from "./SQLiteDb";
 import { SettingObject } from "./workspace/Settings";
 
@@ -221,6 +223,11 @@ export namespace PropertyStore {
 
   const defaultDbName = "PropertyDb" as const;
 
+  export interface CreateNewContainerProps {
+    scope: BlobContainer.Scope;
+    metadata: Omit<BlobContainer.Metadata, "containerType">;
+  }
+
   /**
    * Provides access to a cloud-based `PropertyDb` to hold a set of values of type `PropertyType`, each with a unique `PropertyName`.
    * `PropertyStore.PropertyDb`s that are stored in cloud containers require an access token that grants permission to read and/or write them.
@@ -242,6 +249,21 @@ export namespace PropertyStore {
      */
     public static async initializeDb(args: { props: CloudSqlite.ContainerProps }) {
       return super._initializeDb({ ...args, dbType: PropertyDb, dbName: defaultDbName });
+    }
+
+    public static async createNewCloudContainer(args: CreateNewContainerProps): Promise<CloudSqlite.ContainerProps> {
+      const service = BlobContainer.service;
+      if (undefined === service)
+        throw new Error("no BlobContainer service available");
+      const auth = IModelHost.authorizationClient;
+      if (undefined === auth)
+        throw new Error("no authorization client available");
+
+      const userToken = await auth.getAccessToken();
+      const cloudContainer = await service.create({ scope: args.scope, metadata: { ...args.metadata, containerType: "property-store" }, userToken });
+      const props: CloudSqlite.ContainerProps = { baseUri: cloudContainer.baseUri, containerId: cloudContainer.baseUri, storageType: cloudContainer.provider };
+      await this.initializeDb({ props });
+      return props;
     }
   }
 }

@@ -442,10 +442,8 @@ export namespace Workspace {
 
     export interface CreateNewContainerProps {
       scope: BlobContainer.Scope;
-      containerLabel: string;
       manifest: WorkspaceDb.Manifest;
-      /** Optional human-readable explanation of the information held in the container. This will be displayed in the administrator RBAC panel, and on usage reports. */
-      containerDescription?: string;
+      metadata: Omit<BlobContainer.Metadata, "containerType">;
       dbName?: string;
     }
 
@@ -908,7 +906,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
   public close() {
     if (this.isOpen) {
       this.onClose.raiseEvent();
-      this.sqliteDb.closeDb(true); // save changes, if present
+      this.sqliteDb.closeDb();
       this.container.closeWorkspaceDb(this);
     }
   }
@@ -993,7 +991,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
 
   public queryResource(search: WorkspaceResource.Search, callback: (result: WorkspaceResource.SearchResult) => void | "stop"): void {
     this.withOpenDb((db) => {
-      db.withSqliteStatement(`SELECT value from ${search.resourceType}s WHERE id ${search.nameCompare ?? "="} ?`, (stmt) => {
+      db.withSqliteStatement(`SELECT id from ${search.resourceType}s WHERE id ${search.nameCompare ?? "="} ?`, (stmt) => {
         stmt.bindString(1, search.nameSearch);
         while (DbResult.BE_SQLITE_ROW === stmt.step()) {
           if (callback({ workspaceDb: this, rscName: stmt.getValueString(0) }) === "stop")
@@ -1032,11 +1030,11 @@ class EditorImpl implements Workspace.Editor {
       throw new Error("no authorization client available");
 
     const userToken = await auth.getAccessToken();
-    const cloudContainer = await service.create({ scope: args.scope, metadata: { containerType: "workspace", label: args.containerLabel }, userToken });
+    const cloudContainer = await service.create({ scope: args.scope, metadata: { ...args.metadata, containerType: "workspace" }, userToken });
     const dbName = WorkspaceDb.dbNameWithDefault(args.dbName);
     const accessToken = await CloudSqlite.requestToken({ ...cloudContainer, accessLevel: "admin", userToken });
     await this.initializeContainer({ props: { ...cloudContainer, storageType: cloudContainer.provider, accessToken }, ...args, dbName });
-    return this.getContainer({ accessToken, ...cloudContainer, storageType: cloudContainer.provider, writeable: true, description: args.containerDescription });
+    return this.getContainer({ accessToken, ...cloudContainer, storageType: cloudContainer.provider, writeable: true, description: args.metadata.description });
   }
 
   public getContainer(props: WorkspaceContainer.Props & { accessToken: AccessToken }): Workspace.Editor.Container {
@@ -1158,6 +1156,9 @@ class EditableDbImpl extends WorkspaceDbImpl implements Workspace.Editor.Editabl
       const lastEditedBy = (this.container.cloudContainer as any)?.writeLockHeldBy;
       if (lastEditedBy !== undefined)
         this.updateManifest({ ...this.manifest, lastEditedBy });
+
+      // make sure all changes were saved before we close
+      this.sqliteDb.saveChanges();
     }
     super.close();
   }
