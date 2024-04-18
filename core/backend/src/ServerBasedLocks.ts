@@ -192,8 +192,6 @@ export class ServerBasedLocks implements LockControl {
 
   /** When an element is newly created in a session, we hold the lock on it implicitly. Save that fact. */
   public elementWasCreated(id: Id64String) {
-    if (this.ownerHoldsExclusiveLock(id))
-      return;
     this.insertLock(id, LockState.Exclusive, LockOrigin.NewElement);
     this.lockDb.saveChanges();
   }

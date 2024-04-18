@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Don't lock child if parent is already locked",
+      "comment": "Don't save to lock-database when inserting elements if their Model is locked",
       "type": "none"
     }
   ],
