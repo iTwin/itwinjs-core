@@ -157,7 +157,7 @@ export class FilePropertyConflictHandler implements ISingleTableConflictHandler 
     const notHandled = undefined;
     const incomingProjectExtentSourceType = this.getProjectExtendSourceFromChangesetFile(args.changesetFile as string);
     const localProjectExtentSourceType = this.getProjectExtentFromLocalTxns();
-    const projectExtentJson = args.getValueText(FilePropertyConflictHandler.strDataColIdx, DbChangeStage.New);
+    const projectExtentJson = FilePropertyConflictHandler.hasValue(args.opcode, DbChangeStage.New) ? args.getValueText(FilePropertyConflictHandler.strDataColIdx, DbChangeStage.New) : undefined;
     if (typeof projectExtentJson !== "string") {
       return notHandled;
     }
@@ -179,7 +179,8 @@ export class FilePropertyConflictHandler implements ISingleTableConflictHandler 
     // if local sourceType !== User && incoming sourceType === User then replace
     if (incomingProjectExtentSourceType === ProjectExtentSource.User && localProjectExtentSourceType !== ProjectExtentSource.User) {
       Logger.logInfo(BackendLoggerCategory.IModelDb, `Incoming change for user defined project extents will override local none-user defined project extents.`);
-      return DbConflictResolution.Replace;
+      this._mergeProjectExtent = Range3d.fromJSON(JSON.parse(projectExtentJson) as Range3dProps);
+      return DbConflictResolution.Skip;
     }
 
     // if local sourceType === User && incoming sourceType !== User then skip
@@ -202,7 +203,7 @@ export class FilePropertyConflictHandler implements ISingleTableConflictHandler 
       return undefined;
     }
     // default conflict
-    return this.recordConflict(DbConflictResolution.Replace, args);
+    return this.recordConflict(DbConflictResolution.Skip, args);
   }
 
   private static decompress(binData: Uint8Array, rawSize: number): Uint8Array | undefined {
@@ -212,12 +213,17 @@ export class FilePropertyConflictHandler implements ISingleTableConflictHandler 
       return undefined;
     }
   }
-
+  private static hasValue(op: DbOpcode, stage: DbChangeStage): boolean {
+    if (stage === DbChangeStage.New)
+      return op === DbOpcode.Update || op === DbOpcode.Insert;
+    return op === DbOpcode.Update || op === DbOpcode.Delete;
+  }
   private getValueFromConflictArgs(args: ChangesetConflictArgs, stage: DbChangeStage): FilePropValue {
-    let blobVal = args.getValueBinary(FilePropertyConflictHandler.dataColIdx, stage);
-    let strValue = args.getValueText(FilePropertyConflictHandler.strDataColIdx, stage);
+
+    let blobVal = FilePropertyConflictHandler.hasValue(args.opcode, stage) ? args.getValueBinary(FilePropertyConflictHandler.dataColIdx, stage) : undefined;
+    let strValue = FilePropertyConflictHandler.hasValue(args.opcode, stage) ? args.getValueText(FilePropertyConflictHandler.strDataColIdx, stage) : undefined;
     if (blobVal !== undefined && blobVal !== null) {
-      let rawSize = args.getValueInteger(FilePropertyConflictHandler.rawSizeColIdx, stage);
+      let rawSize = FilePropertyConflictHandler.hasValue(args.opcode, stage) ? args.getValueInteger(FilePropertyConflictHandler.rawSizeColIdx, stage) : undefined;
       if (!rawSize) {
         const key = FilePropertyConflictHandler.getPrimaryKeyFromConflictArgs(args);
         rawSize = this._db.withSqliteStatement(`SELECT [RawSize] FROM [be_Prop] WHERE [Namespace] = ? AND [Name] = ?`, (stmt) => {

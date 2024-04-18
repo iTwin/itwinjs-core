@@ -40,6 +40,19 @@ async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
   }
   throw new Error(`Failed to throw error with message: "${msg}"`);
 }
+function setProjectExtentsSource(db: BriefcaseDb, source: "user" | "computed") {
+  const unitsJson = db.queryFilePropertyString({ namespace: "dgn_Db", name: "Units" });
+  let units: any;
+  if (unitsJson) {
+    units = JSON.parse(unitsJson);
+    units.extentsSource = source === "user" ? 1 : 0;
+  } else
+    units = source === "user" ? { extentsSource: 1 } : undefined;
+
+  if (units) {
+    db.saveFileProperty({ namespace: "dgn_Db", name: "Units" }, JSON.stringify(units));
+  }
+}
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
   const [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true, parent);
@@ -391,7 +404,7 @@ describe.only("Changeset conflict handler", () => {
       },
     );
   });
-  it.only("FileProps conflict handler", async () => {
+  it("FileProps conflict handler", async () => {
 
     const kB1LargeBlob = Uint8Array.from(Array(1024).fill(1)); // will be compressed by default
     const kB1SmallBlob = Uint8Array.from(Array(50).fill(1)); // we do not compress < 100 bytes by default.
@@ -510,7 +523,7 @@ describe.only("Changeset conflict handler", () => {
     expect(conflicts[0].oldVal).deep.equals({ strValue: "large blob b1", blobVal: kB1LargeBlob });
     expect(conflicts[0].localVal).deep.equals({ strValue: "large blob b3", blobVal: kB3LargeBlob });
     expect(conflicts[0].opCode).eq(DbOpcode.Update);
-    expect(conflicts[0].resolution).eq(DbConflictResolution.Replace);
+    expect(conflicts[0].resolution).eq(DbConflictResolution.Skip);
 
     expect(conflicts[1].cause).eq(DbConflictCause.Data);
     expect(conflicts[1].changeset.index).equals(3);
@@ -519,7 +532,7 @@ describe.only("Changeset conflict handler", () => {
     expect(conflicts[1].oldVal).deep.equals({ strValue: undefined, blobVal: kB1LargeBlob });
     expect(conflicts[1].localVal).deep.equals({ strValue: undefined, blobVal: kB3LargeBlob });
     expect(conflicts[1].opCode).eq(DbOpcode.Update);
-    expect(conflicts[1].resolution).eq(DbConflictResolution.Replace);
+    expect(conflicts[1].resolution).eq(DbConflictResolution.Skip);
 
     expect(conflicts[2].cause).eq(DbConflictCause.Data);
     expect(conflicts[2].changeset.index).equals(3);
@@ -528,7 +541,7 @@ describe.only("Changeset conflict handler", () => {
     expect(conflicts[2].oldVal).deep.equals({ strValue: undefined, blobVal: kB1SmallBlob });
     expect(conflicts[2].localVal).deep.equals({ strValue: undefined, blobVal: kB3SmallBlob });
     expect(conflicts[2].opCode).eq(DbOpcode.Update);
-    expect(conflicts[2].resolution).eq(DbConflictResolution.Replace);
+    expect(conflicts[2].resolution).eq(DbConflictResolution.Skip);
 
     expect(conflicts[3].cause).eq(DbConflictCause.Data);
     expect(conflicts[3].changeset.index).equals(3);
@@ -537,7 +550,7 @@ describe.only("Changeset conflict handler", () => {
     expect(conflicts[3].oldVal).deep.equals({ strValue: "small blob b1", blobVal: kB1SmallBlob });
     expect(conflicts[3].localVal).deep.equals({ strValue: "small blob b3", blobVal: kB3SmallBlob });
     expect(conflicts[3].opCode).eq(DbOpcode.Update);
-    expect(conflicts[3].resolution).eq(DbConflictResolution.Replace);
+    expect(conflicts[3].resolution).eq(DbConflictResolution.Skip);
 
     expect(conflicts[4].cause).eq(DbConflictCause.Data);
     expect(conflicts[4].changeset.index).equals(3);
@@ -546,7 +559,7 @@ describe.only("Changeset conflict handler", () => {
     expect(conflicts[4].oldVal).deep.equals({ strValue: "Test data form briefcase 1", blobVal: undefined });
     expect(conflicts[4].localVal).deep.equals({ strValue: "update this property", blobVal: undefined });
     expect(conflicts[4].opCode).eq(DbOpcode.Delete);
-    expect(conflicts[4].resolution).eq(DbConflictResolution.Replace);
+    expect(conflicts[4].resolution).eq(DbConflictResolution.Skip);
 
     expect(conflicts[5].cause).eq(DbConflictCause.Data);
     expect(conflicts[5].changeset.index).equals(3);
@@ -555,16 +568,22 @@ describe.only("Changeset conflict handler", () => {
     expect(conflicts[5].oldVal).deep.equals({ strValue: "Test data form briefcase 1", blobVal: undefined });
     expect(conflicts[5].localVal).deep.equals({ strValue: "Test data form briefcase 3", blobVal: undefined });
     expect(conflicts[5].opCode).eq(DbOpcode.Update);
-    expect(conflicts[5].resolution).eq(DbConflictResolution.Replace);
+    expect(conflicts[5].resolution).eq(DbConflictResolution.Skip);
+    // await b3.pushChanges({ description: "hello" });
 
     // all the incoming change took precedence application can override and still set them back to local value.
-    conflicts.forEach((conflict) => {
-      b3.saveFileProperty(conflict.key, conflict.localVal?.strValue, conflict.localVal?.blobVal);
-    });
+    // conflicts.forEach((conflict) => {
+    //   b3.saveFileProperty(conflict.key, conflict.newVal?.strValue, conflict.localVal?.blobVal);
+    // });
     b3.saveChanges();
-    await b3.pushChanges({ description: "" });
-    await b1.pullChanges();
+
+    await b3.pushChanges({ description: "hello" });
     await b2.pullChanges();
+    await b1.pullChanges();
+
+    b2.clearCaches();
+    b2.saveChanges();
+    b3.saveChanges();
 
     expect(b3.queryFilePropertyString({ namespace: "Test", name: "LargeBlobWithStrData", id: "0xaabbcc", subId: "0xccddee" })).equals("large blob b3");
     expect(b3.queryFilePropertyBlob({ namespace: "Test", name: "LargeBlobWithStrData", id: "0xaabbcc", subId: "0xccddee" })).deep.equals(kB3LargeBlob);
@@ -796,62 +815,41 @@ describe.only("Changeset conflict handler", () => {
     );
   });
 
-  it("DbConflictCause.Data - Project Extent Conflict", async () => {
-    const setProjectExtentsSource = (db: BriefcaseDb, source: "user" | "computed") => {
-      const unitsJson = db.queryFilePropertyString({ namespace: "dgn_Db", name: "Units" });
-      let units: any;
-      if (unitsJson) {
-        units = JSON.parse(unitsJson);
-        units.extentsSource = source === "user" ? 1 : 0;
-      } else
-        units = source === "user" ? { extentsSource: 1 } : undefined;
-
-      if (units) {
-        db.saveFileProperty({ namespace: "dgn_Db", name: "Units" }, JSON.stringify(units));
-      }
-    };
+  it.only("DbConflictCause.Data - Project Extent Conflict", async () => {
     insertPhysicalObject(b1);
     b1.saveChanges();
     await b1.pushChanges({ accessToken: accessToken1, description: "" });
     await b1.pullChanges();
     await b2.pullChanges();
+    await b3.pullChanges();
 
-    // {"low":[-50,-50,-10],"high":[50,50,30]}
-    const originalExtents = b1.projectExtents;
-    const newExtentsByB1 = Range3d.create(originalExtents.low, originalExtents.high);
-    newExtentsByB1.low.x -= 50;
-    newExtentsByB1.low.y -= 50;
-    newExtentsByB1.low.z -= 10;
-    newExtentsByB1.high.x += 50;
-    newExtentsByB1.high.y += 50;
-    newExtentsByB1.high.z += 30;
+    const newExtentsByB1 = Range3d.create(Point3d.fromJSON([-40, -10, 20]), Point3d.fromJSON([40, 100, 200]));
     b1.updateProjectExtents(newExtentsByB1);
     setProjectExtentsSource(b1, "user");
     b1.saveChanges();
+    await b1.pushChanges({ accessToken: accessToken1, description: "" });
 
-    const newExtentsByB2 = Range3d.create(originalExtents.low, originalExtents.high);
-    newExtentsByB2.low.x -= 10;
-    newExtentsByB2.low.y -= 10;
-    newExtentsByB2.low.z -= 10;
-    newExtentsByB2.high.x += 10;
-    newExtentsByB2.high.y += 10;
-    newExtentsByB2.high.z += 10;
+    const newExtentsByB2 = Range3d.create(Point3d.fromJSON([-5, -75, -15]), Point3d.fromJSON([20, 75, 75]));
     b2.updateProjectExtents(newExtentsByB2);
     setProjectExtentsSource(b2, "user");
     b2.saveChanges();
 
-    await spyChangesetConflictHandler(
-      b1,
-      async () => b1.pushChanges({ accessToken: accessToken1, description: "" }),
-      (spy) => expect(spy.callCount).eq(0, "changeset conflict handler should not be called"),
-    );
-
     await b2.pullChanges({ accessToken: accessToken1 });
+
+    // '{"low":[-40,-75,-15],"high":[40,100,200]}'
     const expectedProjectExtents = newExtentsByB1.union(newExtentsByB2);
     assert.isTrue(b2.projectExtents.isAlmostEqual(expectedProjectExtents));
     b2.saveChanges();
     await b2.pushChanges({ accessToken: accessToken1, description: "" });
+
+    await b1.pullChanges();
+    assert.isTrue(b1.projectExtents.isAlmostEqual(expectedProjectExtents));
+
+    await b2.pullChanges();
+    assert.isTrue(b2.projectExtents.isAlmostEqual(expectedProjectExtents));
+
     await b3.pullChanges();
+    assert.isTrue(b3.projectExtents.isAlmostEqual(expectedProjectExtents));
 
     // attempt to set project source extents to computed
     const newExtentsByB3 = Range3d.create(Point3d.fromJSON([-10, -10, -10]), Point3d.fromJSON([10, 10, 10]));
