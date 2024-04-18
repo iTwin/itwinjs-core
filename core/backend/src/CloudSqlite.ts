@@ -105,13 +105,13 @@ export namespace CloudSqlite {
   }
   export interface ContainerProps {
     /** The type of storage provider. */
-    storageType: "azure" | "google";
+    readonly storageType: "azure" | "google";
     /** The base URI for the container. */
-    baseUri: string;
+    readonly baseUri: string;
     /** The name of the container. */
-    containerId: string;
+    readonly containerId: string;
     /** true if the container is public (doesn't require authorization) */
-    isPublic?: boolean;
+    readonly isPublic?: boolean;
     /** access token for container. If not present uses `CloudSqlite.requestToken` */
     accessToken?: string;
   }
@@ -119,19 +119,19 @@ export namespace CloudSqlite {
   /** Properties to access a CloudContainer. */
   export interface ContainerAccessProps extends ContainerProps {
     /** an alias for the container. Defaults to `containerId` */
-    alias?: string;
+    readonly alias?: string;
     /** SAS token that grants access to the container. */
     accessToken: string;
     /** if true, container is allowed to request the write lock. */
-    writeable?: boolean;
+    readonly writeable?: boolean;
     /** if true, container is attached in "secure" mode (blocks are encrypted). Only supported in daemon mode. */
-    secure?: boolean;
+    readonly secure?: boolean;
     /** string attached to log messages from CloudSQLite. This is most useful for identifying usage from daemon mode. */
-    logId?: string;
+    readonly logId?: string;
     /** Duration for holding write lock, in seconds. After this time the write lock expires if not refreshed. Default is one hour. */
-    lockExpireSeconds?: number;
+    readonly lockExpireSeconds?: number;
     /** number of seconds between auto-refresh of access token. If <=0 no auto-refresh. Default is 1 hour (60*60) */
-    tokenRefreshSeconds?: number;
+    readonly tokenRefreshSeconds?: number;
   }
 
   /** Returned from `CloudContainer.queryDatabase` describing one database in the container */

@@ -132,13 +132,10 @@ describe.only("Cloud workspace containers", () => {
     imodel.close();
 
     const errors: WorkspaceDb.LoadErrors[] = [];
-    Workspace.exceptionDiagnosticFn = (e: any) => {
-      errors.push(e);
-    };
     const loadedDictionaries: Workspace.SettingsDictionaryLoaded[] = [];
-    Workspace.onSettingsDictionaryLoadedFn = (dict: Workspace.SettingsDictionaryLoaded) => {
-      loadedDictionaries.push(dict);
-    };
+    Workspace.exceptionDiagnosticFn = (e: any) => errors.push(e);
+    Workspace.onSettingsDictionaryLoadedFn = (dict: Workspace.SettingsDictionaryLoaded) => loadedDictionaries.push(dict);
+
     let imodel2 = await StandaloneDb.open({ fileName });
     imodel2.close();
     expect(errors.length).equal(1);

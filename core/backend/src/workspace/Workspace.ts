@@ -43,11 +43,11 @@ export namespace WorkspaceContainer {
   /** Properties that specify a WorkspaceContainer. */
   export interface Props extends Optional<CloudSqlite.ContainerAccessProps, "accessToken"> {
     /** attempt to synchronize (i.e. call `checkForChanges`) this cloud container whenever it is connected to a cloud cache. Default=true */
-    syncOnConnect?: boolean;
+    readonly syncOnConnect?: boolean;
     /** description of what's in this container */
-    description?: string;
+    readonly description?: string;
     /** in case of problems loading the container, display this message. */
-    loadingHelp?: string;
+    readonly loadingHelp?: string;
   }
 
   /** A function to supply an [AccessToken]($bentley) for a `WorkspaceContainer`.
@@ -376,6 +376,8 @@ export interface WorkspaceContainer {
   readonly workspace: Workspace;
   /** CloudContainer for this WorkspaceContainer (`undefined` if this is a local WorkspaceContainer.) */
   readonly cloudContainer?: CloudSqlite.CloudContainer;
+  /** properties supplied when this container was loaded */
+  readonly fromProps: WorkspaceContainer.Props;
 
   /** @internal */
   addWorkspaceDb(toAdd: WorkspaceDb): void;
@@ -754,6 +756,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
   public readonly workspace: WorkspaceImpl;
   public readonly filesDir: LocalDirName;
   public readonly id: WorkspaceContainer.Id;
+  public readonly fromProps: WorkspaceContainer.Props;
 
   public readonly cloudContainer?: WorkspaceCloudContainer | undefined;
   protected _wsDbs = new Map<WorkspaceDb.DbName, WorkspaceDb>();
@@ -763,6 +766,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     WorkspaceContainer.validateContainerId(props.containerId);
     this.workspace = workspace;
     this.id = props.containerId;
+    this.fromProps = props;
 
     if (props.baseUri !== "")
       this.cloudContainer = getWorkspaceCloudContainer(props, this.workspace.getCloudCache());
@@ -1080,7 +1084,10 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements Workspace.Ed
     return this.getEditableDb(props);
   }
   public getEditableDb(props: WorkspaceDb.Props): Workspace.Editor.EditableDb {
-    return this._wsDbs.get(WorkspaceDb.dbNameWithDefault(props.dbName)) as EditableDbImpl | undefined ?? new EditableDbImpl(props, this);
+    const db = this._wsDbs.get(WorkspaceDb.dbNameWithDefault(props.dbName)) as EditableDbImpl | undefined ?? new EditableDbImpl(props, this);
+    if (this.cloudContainer && this.cloudContainer.queryDatabase(db.dbFileName)?.state !== "copied")
+      throw new Error(`${db.dbFileName} has been published and is not editable. Create a new version first`);
+    return db;
   }
 
   public acquireWriteLock(user: string): void {
