@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "glob": "^7.1.2",
+    "glob": "^10.3.12",
     "mocha": "^10.2.0"
   }
 }
