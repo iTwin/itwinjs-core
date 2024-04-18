@@ -11,7 +11,7 @@ import { TextAnnotation2d, TextAnnotation3d } from "../../TextAnnotationElement"
 import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { GeometricElement3d } from "../../Element";
-import { Id64 } from "@itwin/core-bentley";
+import { Id64, ProcessDetector } from "@itwin/core-bentley";
 
 function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
   const range = new Range2d(0, 0, args.chars.length, args.lineHeight);
@@ -156,173 +156,177 @@ describe("layoutTextBlock", () => {
     expect(tb.lines.every((line) => line.offsetFromDocument.x === 0)).to.be.true;
   });
 
-  it("splits paragraphs into multiple lines if runs exceed the document width", () => {
-    const textBlock = TextBlock.create({ styleName: "" });
-    textBlock.width = 6;
-    textBlock.appendRun(makeTextRun("ab"));
-    expect(doLayout(textBlock).lines.length).to.equal(1);
-    textBlock.appendRun(makeTextRun("cd"));
-    expect(doLayout(textBlock).lines.length).to.equal(1);
+  // Node in the mobile add-on does not include Intl, so these tests fail. Right now, mobile users
+  // are not expected to do any editing, but long term we will attempt to find a better solution.
+  if (!ProcessDetector.isMobileAppFrontend) {
+    it("splits paragraphs into multiple lines if runs exceed the document width", () => {
+      const textBlock = TextBlock.create({ styleName: "" });
+      textBlock.width = 6;
+      textBlock.appendRun(makeTextRun("ab"));
+      expect(doLayout(textBlock).lines.length).to.equal(1);
+      textBlock.appendRun(makeTextRun("cd"));
+      expect(doLayout(textBlock).lines.length).to.equal(1);
 
-    textBlock.appendRun(makeTextRun("ef"));
-    expect(doLayout(textBlock).lines.length).to.equal(2);
-    textBlock.appendRun(makeTextRun("ghi"));
-    expect(doLayout(textBlock).lines.length).to.equal(2);
+      textBlock.appendRun(makeTextRun("ef"));
+      expect(doLayout(textBlock).lines.length).to.equal(2);
+      textBlock.appendRun(makeTextRun("ghi"));
+      expect(doLayout(textBlock).lines.length).to.equal(2);
 
-    textBlock.appendRun(makeTextRun("jklmnop"));
-    expect(doLayout(textBlock).lines.length).to.equal(3);
+      textBlock.appendRun(makeTextRun("jklmnop"));
+      expect(doLayout(textBlock).lines.length).to.equal(3);
 
-    textBlock.appendRun(makeTextRun("q"));
-    expect(doLayout(textBlock).lines.length).to.equal(4);
-    textBlock.appendRun(makeTextRun("r"));
-    expect(doLayout(textBlock).lines.length).to.equal(4);
-    textBlock.appendRun(makeTextRun("stu"));
-    expect(doLayout(textBlock).lines.length).to.equal(4);
+      textBlock.appendRun(makeTextRun("q"));
+      expect(doLayout(textBlock).lines.length).to.equal(4);
+      textBlock.appendRun(makeTextRun("r"));
+      expect(doLayout(textBlock).lines.length).to.equal(4);
+      textBlock.appendRun(makeTextRun("stu"));
+      expect(doLayout(textBlock).lines.length).to.equal(4);
 
-    textBlock.appendRun(makeTextRun("vwxyz"));
-    expect(doLayout(textBlock).lines.length).to.equal(5);
-  });
+      textBlock.appendRun(makeTextRun("vwxyz"));
+      expect(doLayout(textBlock).lines.length).to.equal(5);
+    });
 
-  function expectLines(input: string, width: number, expectedLines: string[]): TextBlockLayout {
-    const textBlock = TextBlock.create({ styleName: "" });
-    textBlock.width = width;
-    const run = makeTextRun(input);
-    textBlock.appendRun(run);
-
-    const layout = doLayout(textBlock);
-    expect(layout.lines.every((line) => line.runs.length === 1)).to.be.true;
-    expect(layout.lines.every((line) => line.runs[0].source === run)).to.be.true;
-
-    const actual = layout.lines.map((line) => line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars)).join(""));
-    expect(actual).to.deep.equal(expectedLines);
-
-    return layout;
-  }
-
-  it("splits a single TextRun at word boundaries if it exceeds the document width", () => {
-    expectLines("a bc def ghij klmno pqrstu vwxyz", 5, [
-      "a bc ",
-      "def ",
-      "ghij ",
-      "klmno",
-      " ",
-      "pqrstu",
-      " ",
-      "vwxyz",
-    ]);
-
-    const fox = "The quick brown fox jumped over the lazy dog";
-    expectLines(fox, 50, [fox]);
-    expectLines(fox, 40, [
-      //        1         2         3         4
-      // 234567890123456789012345678901234567890
-      "The quick brown fox jumped over the lazy",
-      " dog",
-    ]);
-    expectLines(fox, 30, [
-      //        1         2         3
-      // 23456789012345678901234567890
-      "The quick brown fox jumped ",
-      "over the lazy dog",
-    ]);
-    expectLines(fox, 20, [
-      //        1         2
-      // 2345678901234567890
-      "The quick brown fox ",
-      "jumped over the lazy",
-      " dog",
-    ]);
-    expectLines(fox, 10, [
-      //        1
-      // 234567890
-      "The quick ",
-      "brown fox ",
-      "jumped ",
-      "over the ",
-      "lazy dog",
-    ]);
-  });
-
-  it("considers consecutive whitespace a single 'word'", () => {
-    expectLines("a b  c   d    e     f      ", 3, [
-      "a b",
-      "  c",
-      "   ",
-      "d",
-      "    ",
-      "e",
-      "     ",
-      "f",
-      "      ",
-    ]);
-  });
-
-  it("performs word-wrapping on Japanese text", () => {
-    // "I am a cat. The name is Tanuki."
-    expectLines("吾輩は猫である。名前はたぬき。", 1, ["吾輩", "は", "猫", "で", "ある", "。", "名前", "は", "たぬき", "。"]);
-  });
-
-  it("performs word-wrapping with punctuation", () => {
-    expectLines("1.24 56.7 8,910", 1, ["1.24", " ", "56.7", " ", "8,910"]);
-
-    // NOTE: Chrome splits a.bc and de.f on the periods. Safari and electron do not.
-    // Since text layout is done in the backend, we're going to assume electron is right, and if not, that it's their responsibility to fix it.
-    expectLines("a.bc de.f g,hij", 1, ["a.bc", " ", "de.f", " ", "g", ",", "hij"]);
-
-    expectLines("Let's see...can you (or anyone) predict?!", 1, [
-      "Let's", " ",
-      "see",
-      ".", ".", ".",
-      "can", " ",
-      "you", " ",
-      "(", "or", " ", "anyone", ")", " ",
-      "predict", "?", "!",
-    ]);
-  });
-
-  it("performs word-wrapping and line-splitting with multiple runs", () => {
-    const textBlock = TextBlock.create({ styleName: "" });
-    for (const str of ["The ", "quick brown", " fox jumped over ", "the lazy ", "dog"]) {
-      textBlock.appendRun(makeTextRun(str));
-    }
-
-    function test(width: number, expected: string[]): void {
+    function expectLines(input: string, width: number, expectedLines: string[]): TextBlockLayout {
+      const textBlock = TextBlock.create({ styleName: "" });
       textBlock.width = width;
+      const run = makeTextRun(input);
+      textBlock.appendRun(run);
+
       const layout = doLayout(textBlock);
+      expect(layout.lines.every((line) => line.runs.length === 1)).to.be.true;
+      expect(layout.lines.every((line) => line.runs[0].source === run)).to.be.true;
+
       const actual = layout.lines.map((line) => line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars)).join(""));
-      expect(actual).to.deep.equal(expected);
+      expect(actual).to.deep.equal(expectedLines);
+
+      return layout;
     }
 
-    test(50, ["The quick brown fox jumped over the lazy dog"]);
-    test(40, [
-      //        1         2         3         4
-      // 234567890123456789012345678901234567890
-      "The quick brown fox jumped over the lazy",
-      " dog",
-    ]);
-    test(30, [
-      //        1         2         3
-      // 23456789012345678901234567890
-      "The quick brown fox jumped ",
-      "over the lazy dog",
-    ]);
-    test(20, [
-      //        1         2
-      // 2345678901234567890
-      "The quick brown fox ",
-      "jumped over the lazy",
-      " dog",
-    ]);
-    test(10, [
-      //        1
-      // 234567890
-      "The quick ",
-      "brown fox ",
-      "jumped ",
-      "over the ",
-      "lazy dog",
-    ]);
-  });
+    it("splits a single TextRun at word boundaries if it exceeds the document width", () => {
+      expectLines("a bc def ghij klmno pqrstu vwxyz", 5, [
+        "a bc ",
+        "def ",
+        "ghij ",
+        "klmno",
+        " ",
+        "pqrstu",
+        " ",
+        "vwxyz",
+      ]);
+
+      const fox = "The quick brown fox jumped over the lazy dog";
+      expectLines(fox, 50, [fox]);
+      expectLines(fox, 40, [
+        //        1         2         3         4
+        // 234567890123456789012345678901234567890
+        "The quick brown fox jumped over the lazy",
+        " dog",
+      ]);
+      expectLines(fox, 30, [
+        //        1         2         3
+        // 23456789012345678901234567890
+        "The quick brown fox jumped ",
+        "over the lazy dog",
+      ]);
+      expectLines(fox, 20, [
+        //        1         2
+        // 2345678901234567890
+        "The quick brown fox ",
+        "jumped over the lazy",
+        " dog",
+      ]);
+      expectLines(fox, 10, [
+        //        1
+        // 234567890
+        "The quick ",
+        "brown fox ",
+        "jumped ",
+        "over the ",
+        "lazy dog",
+      ]);
+    });
+
+    it("considers consecutive whitespace a single 'word'", () => {
+      expectLines("a b  c   d    e     f      ", 3, [
+        "a b",
+        "  c",
+        "   ",
+        "d",
+        "    ",
+        "e",
+        "     ",
+        "f",
+        "      ",
+      ]);
+    });
+
+    it("performs word-wrapping on Japanese text", () => {
+      // "I am a cat. The name is Tanuki."
+      expectLines("吾輩は猫である。名前はたぬき。", 1, ["吾輩", "は", "猫", "で", "ある", "。", "名前", "は", "たぬき", "。"]);
+    });
+
+    it("performs word-wrapping with punctuation", () => {
+      expectLines("1.24 56.7 8,910", 1, ["1.24", " ", "56.7", " ", "8,910"]);
+
+      // NOTE: Chrome splits a.bc and de.f on the periods. Safari and electron do not.
+      // Since text layout is done in the backend, we're going to assume electron is right, and if not, that it's their responsibility to fix it.
+      expectLines("a.bc de.f g,hij", 1, ["a.bc", " ", "de.f", " ", "g", ",", "hij"]);
+
+      expectLines("Let's see...can you (or anyone) predict?!", 1, [
+        "Let's", " ",
+        "see",
+        ".", ".", ".",
+        "can", " ",
+        "you", " ",
+        "(", "or", " ", "anyone", ")", " ",
+        "predict", "?", "!",
+      ]);
+    });
+
+    it("performs word-wrapping and line-splitting with multiple runs", () => {
+      const textBlock = TextBlock.create({ styleName: "" });
+      for (const str of ["The ", "quick brown", " fox jumped over ", "the lazy ", "dog"]) {
+        textBlock.appendRun(makeTextRun(str));
+      }
+
+      function test(width: number, expected: string[]): void {
+        textBlock.width = width;
+        const layout = doLayout(textBlock);
+        const actual = layout.lines.map((line) => line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars)).join(""));
+        expect(actual).to.deep.equal(expected);
+      }
+
+      test(50, ["The quick brown fox jumped over the lazy dog"]);
+      test(40, [
+        //        1         2         3         4
+        // 234567890123456789012345678901234567890
+        "The quick brown fox jumped over the lazy",
+        " dog",
+      ]);
+      test(30, [
+        //        1         2         3
+        // 23456789012345678901234567890
+        "The quick brown fox jumped ",
+        "over the lazy dog",
+      ]);
+      test(20, [
+        //        1         2
+        // 2345678901234567890
+        "The quick brown fox ",
+        "jumped over the lazy",
+        " dog",
+      ]);
+      test(10, [
+        //        1
+        // 234567890
+        "The quick ",
+        "brown fox ",
+        "jumped ",
+        "over the ",
+        "lazy dog",
+      ]);
+    });
+  }
 
   describe("using native font library", () => {
     let iModel: SnapshotDb;
@@ -689,7 +693,7 @@ describe("TextAnnotation element", () => {
           expect(anno).to.be.undefined;
         } else {
           expect(anno).not.to.be.undefined;
-          expect(anno!.equals(annotation)).to.be.true;
+          expect(anno.equals(annotation)).to.be.true;
         }
       }
 
