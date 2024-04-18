@@ -69,7 +69,12 @@ async function addClassProperty(context: SchemaMergeContext, itemKey: SchemaItem
 
   if (property.customAttributes !== undefined) {
     const result = await applyCustomAttributes(context, property.customAttributes as CustomAttribute[], async (ca) => {
-      return context.editor.entities.addCustomAttributeToProperty(itemKey, property.name, ca);
+      try{
+        await context.editor.entities.properties.addCustomAttribute(itemKey, property.name, ca);
+        return {};
+      } catch(e: any) {
+        return { errorMessage: e.message };
+      }
     });
     if (result.errorMessage) {
       return result;
@@ -128,7 +133,7 @@ async function modifyClassProperty(context: SchemaMergeContext, itemKey: SchemaI
 
   if (propertyProps.category !== undefined) {
     const categoryKey = await updateSchemaItemKey(context, propertyProps.category);
-    await context.editor.entities.setPropertyCategory(itemKey, property.name, categoryKey);
+    await context.editor.entities.properties.setCategory(itemKey, property.name, categoryKey);
   }
 
   if (property.isEnumeration()) {
