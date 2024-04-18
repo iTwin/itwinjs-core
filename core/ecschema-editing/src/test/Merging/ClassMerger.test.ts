@@ -257,6 +257,58 @@ describe("Class merger tests", () => {
     });
   });
 
+  it("should merge mixin base class from the middle of a class hierarchy", async () => {
+    await Schema.fromJson({
+      ...targetJson,
+      items: {
+        BaseEntity: {
+          schemaItemType: SchemaItemType.EntityClass,
+          modifier: "Abstract",
+        },
+        TestEntity: {
+          schemaItemType: SchemaItemType.EntityClass,
+          baseClass: "TargetSchema.BaseEntity",
+        },
+        BaseMixin: {
+          schemaItemType: "Mixin",
+          appliesTo: "TargetSchema.BaseEntity",
+        },
+        TestMixin: {
+          schemaItemType: "Mixin",
+          baseClass: "TargetSchema.BaseMixin",
+          appliesTo: "TargetSchema.TestEntity",
+        },
+      },
+    }, targetContext);
+
+    const merger = new SchemaMerger(targetContext);
+    const mergedSchema = await merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "add",
+          schemaType: SchemaItemType.Mixin,
+          itemName: "TestBase",
+          difference: {
+            baseClass: "SourceSchema.BaseMixin",
+            appliesTo: "SourceSchema.BaseEntity",
+          },
+        },
+        {
+          changeType: "modify",
+          schemaType: SchemaItemType.Mixin,
+          itemName: "TestMixin",
+          difference: {
+            baseClass: "SourceSchema.TestBase",
+          },
+        },
+      ],
+    });
+    const mergedItem = await mergedSchema.getItem<Mixin>("TestMixin");
+    expect(mergedItem!.toJSON().baseClass).deep.eq("TargetSchema.TestBase");
+  });
+
   it("should merge struct class changes", async () => {
     await Schema.fromJson({
       ...targetJson,
@@ -291,6 +343,47 @@ describe("Class merger tests", () => {
       description: "Description for Test Structure",
       label: "Test Structure",
     });
+  });
+
+  it("should merge struct base class from the middle of a class hierarchy", async () => {
+    await Schema.fromJson({
+      ...targetJson,
+      items: {
+        BaseStruct: {
+          schemaItemType: "StructClass",
+        },
+        TestStruct: {
+          schemaItemType: "StructClass",
+          baseClass: "TargetSchema.BaseStruct",
+        },
+      },
+    }, targetContext);
+
+    const merger = new SchemaMerger(targetContext);
+    const mergedSchema = await merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "add",
+          schemaType: SchemaItemType.StructClass,
+          itemName: "TestBase",
+          difference: {
+            baseClass: "SourceSchema.BaseStruct",
+          },
+        },
+        {
+          changeType: "modify",
+          schemaType: SchemaItemType.StructClass,
+          itemName: "TestStruct",
+          difference: {
+            baseClass: "SourceSchema.TestBase",
+          },
+        },
+      ],
+    });
+    const mergedItem = await mergedSchema.getItem<StructClass>("TestStruct");
+    expect(mergedItem!.toJSON().baseClass).deep.eq("TargetSchema.TestBase");
   });
 
   it("should merge custom attribute class changes", async () => {
@@ -363,7 +456,7 @@ describe("Class merger tests", () => {
     });
   });
 
-  it("should merge class baseclass from the middle of a class hierarchy", async () => {
+  it("should merge entity base class from the middle of a class hierarchy", async () => {
     await Schema.fromJson({
       ...targetJson,
       items: {
@@ -463,38 +556,55 @@ describe("Class merger tests", () => {
     await expect(merge).to.be.rejectedWith("Changing the class 'TestEntity' modifier is not supported.");
   });
 
-  // it.skip("should throw an error when merging base class not in the middle of a class hierarchy", async () => {
-  //   const sourceSchema = await Schema.fromJson({
-  //     ...sourceJson,
-  //     items: {
-  //       SourceBase: {
-  //         schemaItemType: "EntityClass",
-  //       },
-  //       TestEntity: {
-  //         schemaItemType: "EntityClass",
-  //         baseClass: "SourceSchema.SourceBase",
-  //       },
-  //     },
-  //   }, sourceContext);
+  it("should throw an error when merging entity base class not in the middle of a class hierarchy", async () => {
+    await Schema.fromJson({
+      ...targetJson,
+      items: {
+        TargetBase: {
+          schemaItemType: "EntityClass",
+        },
+        TestEntity: {
+          schemaItemType: "EntityClass",
+          baseClass: "TargetSchema.TargetBase",
+        },
+      },
+    }, targetContext);
 
-  //   const targetSchema = await Schema.fromJson({
-  //     ...targetJson,
-  //     items: {
-  //       TargetBase: {
-  //         schemaItemType: "EntityClass",
-  //       },
-  //       TestEntity: {
-  //         schemaItemType: "EntityClass",
-  //         baseClass: "TargetSchema.TargetBase",
-  //       },
-  //     },
-  //   }, targetContext);
+    const merger = new SchemaMerger(targetContext);
+    const merge = merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "add",
+          schemaType: SchemaItemType.EntityClass,
+          itemName: "SourceBase",
+          difference: {
+          },
+        },
+        {
+          changeType: "add",
+          schemaType: SchemaItemType.EntityClass,
+          itemName: "TestBase",
+          difference: {
+            baseClass: "SourceSchema.SourceBase",
+          },
+        },
+        {
+          changeType: "modify",
+          schemaType: SchemaItemType.EntityClass,
+          itemName: "TestEntity",
+          difference: {
+            baseClass: "SourceSchema.TestBase",
+          },
+        },
+      ],
+    });
 
-  //   const merger = new SchemaMerger(targetContext);
-  //   await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Changing the class 'TestEntity' baseClass is not supported.");
-  // });
+    await expect(merge).to.be.rejectedWith("TargetSchema.TestBase is not from the middle of a class hierarchy.");
+  });
 
-  it.skip("should throw an error when merging base class changed from existing one to undefined", async () => {
+  it.skip("should throw an error when merging entity base class changed from existing one to undefined", async () => {
     await Schema.fromJson({
       ...targetJson,
       items: {
@@ -527,7 +637,7 @@ describe("Class merger tests", () => {
     await expect(merge).to.be.rejectedWith("Changing the class 'TestEntity' baseClass is not supported.");
   });
 
-  it("should throw an error when merging base class changed from undefined to existing one", async () => {
+  it("should throw an error when merging entity base class changed from undefined to existing one", async () => {
     await Schema.fromJson({
       ...targetJson,
       items: {
@@ -684,5 +794,87 @@ describe("Class merger tests", () => {
     });
 
     await expect(merge).to.be.rejectedWith("Mixin Class TargetSchema.NotExistingMixin not found in schema context.");
+  });
+
+  it("should throw an error when merging struct base class changed from undefined to existing one", async () => {
+    await Schema.fromJson({
+      ...targetJson,
+      items: {
+        TestStruct: {
+          schemaItemType: "StructClass",
+        },
+      },
+    }, targetContext);
+
+    const merger = new SchemaMerger(targetContext);
+    const merge = merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "add",
+          schemaType: SchemaItemType.StructClass,
+          itemName: "BaseStruct",
+          difference: {
+          },
+        },
+        {
+          changeType: "modify",
+          schemaType: SchemaItemType.StructClass,
+          itemName: "TestStruct",
+          difference: {
+            baseClass: "SourceSchema.BaseStruct",
+          },
+        },
+      ],
+    });
+
+    await expect(merge).to.be.rejectedWith("Changing the class 'TestStruct' baseClass is not supported.");
+  });
+
+  it("should throw an error when merging mixin base class not in the middle of a class hierarchy", async () => {
+    await Schema.fromJson({
+      ...targetJson,
+      items: {
+        TestEntity: {
+          schemaItemType: "EntityClass",
+        },
+        BaseMixin: {
+          schemaItemType: "Mixin",
+          appliesTo: "TargetSchema.TestEntity",
+        },
+        TestMixin: {
+          schemaItemType: "Mixin",
+          baseClass: "TargetSchema.BaseMixin",
+          appliesTo: "TargetSchema.TestEntity",
+        },
+      },
+    }, targetContext);
+
+    const merger = new SchemaMerger(targetContext);
+    const merge = merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "add",
+          schemaType: SchemaItemType.Mixin,
+          itemName: "TestBase",
+          difference: {
+            appliesTo: "SourceSchema.TestEntity",
+          },
+        },
+        {
+          changeType: "modify",
+          schemaType: SchemaItemType.Mixin,
+          itemName: "TestMixin",
+          difference: {
+            baseClass: "SourceSchema.TestBase",
+          },
+        },
+      ],
+    });
+
+    await expect(merge).to.be.rejectedWith("TargetSchema.TestBase is not from the middle of a class hierarchy.");
   });
 });

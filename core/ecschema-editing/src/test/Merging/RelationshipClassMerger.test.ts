@@ -50,7 +50,7 @@ describe("Relationship Class merger tests", () => {
       },
       ...createBaseRelationship(
         { constraintClasses: ["TestSchema.SourceBaseEntity"] },
-        { constraintClasses: ["TestSchema.TargetEntity"] },
+        { constraintClasses: ["TestSchema.TargetBaseEntity"] },
       ),
     },
   };
@@ -183,6 +183,78 @@ describe("Relationship Class merger tests", () => {
         roleLabel: "is referenced by",
       },
     });
+  });
+
+  it("should merge relationship class baseclass from the middle of a class hierarchy", async () => {
+    await Schema.fromJson(testJson, targetContext);
+    await Schema.fromJson({
+      ...targetJson,
+      references: [
+        {
+          name: "TestSchema",
+          version: "01.00.15",
+        },
+      ],
+      items: {
+        ...createChildRelationship(
+          {
+            constraintClasses: [
+              "TestSchema.SourceEntity",
+            ],
+          },
+          {
+            constraintClasses: [
+              "TestSchema.TargetEntity",
+            ],
+          },
+        ),
+      },
+    }, targetContext);
+
+    const merger = new SchemaMerger(targetContext);
+    const mergedSchema = await merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "add",
+          schemaType: SchemaItemType.RelationshipClass,
+          itemName: "TestRelationship",
+          difference: {
+            modifier: "None",
+            baseClass: "TestSchema.BaseRelationship",
+            strength: "Referencing",
+            strengthDirection: "Forward",
+            source: {
+              multiplicity: "(0..*)",
+              roleLabel: "refers to",
+              polymorphic: true,
+              constraintClasses: [
+                "TestSchema.SourceBaseEntity",
+              ],
+            },
+            target: {
+              multiplicity: "(0..*)",
+              roleLabel: "is referenced by",
+              polymorphic: true,
+              constraintClasses: [
+                "TestSchema.TargetBaseEntity",
+              ],
+            },
+          },
+        },
+        {
+          changeType: "modify",
+          schemaType: SchemaItemType.RelationshipClass,
+          itemName: "ChildRelationship",
+          difference: {
+            baseClass: "SourceSchema.TestRelationship",
+          },
+        },
+      ],
+    });
+    const mergedItem = await mergedSchema.getItem<RelationshipClass>("ChildRelationship");
+    expect(mergedItem!.toJSON().baseClass).deep.eq("TargetSchema.TestRelationship");
   });
 
   it("should merge class and constraint attribute changes", async () => {
@@ -661,5 +733,121 @@ describe("Relationship Class merger tests", () => {
     });
 
     await expect(merge).to.be.rejectedWith(Error, `Changing the relationship constraint 'BaseRelationship:Source' multiplicity is not supported.`);
+  });
+
+  it("should throw an error when merging base class not in the middle of a class hierarchy", async () => {
+    await Schema.fromJson(testJson, targetContext);
+    await Schema.fromJson({
+      ...targetJson,
+      references: [
+        {
+          name: "TestSchema",
+          version: "01.00.15",
+        },
+      ],
+      items: {
+        ...createChildRelationship(
+          {
+            constraintClasses: [
+              "TestSchema.SourceEntity",
+            ],
+          },
+          {
+            constraintClasses: [
+              "TestSchema.TargetEntity",
+            ],
+          },
+        ),
+      },
+    }, targetContext);
+
+    const merger = new SchemaMerger(targetContext);
+    const merge = merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "add",
+          schemaType: SchemaItemType.RelationshipClass,
+          itemName: "TestRelationship",
+          difference: {
+            modifier: "None",
+            strength: "Referencing",
+            strengthDirection: "Forward",
+            source: {
+              multiplicity: "(0..*)",
+              roleLabel: "refers to",
+              polymorphic: true,
+              constraintClasses: [
+                "TestSchema.SourceEntity",
+              ],
+            },
+            target: {
+              multiplicity: "(0..*)",
+              roleLabel: "is referenced by",
+              polymorphic: true,
+              constraintClasses: [
+                "TestSchema.TargetEntity",
+              ],
+            },
+          },
+        },
+        {
+          changeType: "modify",
+          schemaType: SchemaItemType.RelationshipClass,
+          itemName: "ChildRelationship",
+          difference: {
+            baseClass: "SourceSchema.TestRelationship",
+          },
+        },
+      ],
+    });
+
+    await expect(merge).to.be.rejectedWith("TargetSchema.TestRelationship is not from the middle of a class hierarchy.");
+  });
+
+  it("should throw an error merging base class changed from undefined to existing one", async () => {
+    await Schema.fromJson(testJson, targetContext);
+    await Schema.fromJson({
+      ...targetJson,
+      references: [
+        {
+          name: "TestSchema",
+          version: "01.00.15",
+        },
+      ],
+      items: {
+        ...createBaseRelationship(
+          {
+            constraintClasses: [
+              "TestSchema.SourceEntity",
+            ],
+          },
+          {
+            constraintClasses: [
+              "TestSchema.TargetEntity",
+            ],
+          },
+        ),
+      },
+    }, targetContext);
+
+    const merger = new SchemaMerger(targetContext);
+    const merge = merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "modify",
+          schemaType: SchemaItemType.RelationshipClass,
+          itemName: "BaseRelationship",
+          difference: {
+            baseClass: "TestSchema.BaseRelationship",
+          },
+        },
+      ],
+    });
+
+    await expect(merge).to.be.rejectedWith("Changing the class 'BaseRelationship' baseClass is not supported.");
   });
 });
