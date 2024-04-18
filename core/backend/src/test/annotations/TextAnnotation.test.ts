@@ -701,7 +701,7 @@ describe("TextAnnotation element", () => {
       expect(el.placement.bbox.isNull).to.equal(!expectValidBBox);
     }
 
-    it("inserts and round-trips through JSON", function () {
+    it("inserts and round-trips through JSON", () => {
       function test(annotation?: TextAnnotation): void {
         const el0 = createElement();
         if (annotation) {
