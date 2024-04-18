@@ -610,24 +610,6 @@ export class DrawingGraphic extends GraphicalElement2d {
   protected constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/** 2D Text Annotation
- * @public
- */
-export class TextAnnotation2d extends AnnotationElement2d {
-  /** @internal */
-  public static override get className(): string { return "TextAnnotation2d"; }
-  protected constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
-}
-
-/** 3D Text Annotation
- * @public
- */
-export class TextAnnotation3d extends GraphicalElement3d {
-  /** @internal */
-  public static override get className(): string { return "TextAnnotation3d"; }
-  protected constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
-}
-
 /** An Element that occupies real world space. Its coordinates are in the project space of its iModel.
  * @public
  */

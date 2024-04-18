@@ -1,6 +1,13 @@
 # Change Log - @itwin/presentation-frontend
 
-This log was last generated on Wed, 03 Apr 2024 18:28:10 GMT and should not be manually modified.
+This log was last generated on Tue, 16 Apr 2024 14:47:36 GMT and should not be manually modified.
+
+## 4.5.2
+Tue, 16 Apr 2024 14:46:22 GMT
+
+### Updates
+
+- Add a way to specify batch size when making multi-value `PresentationManager` requests.
 
 ## 4.5.1
 Wed, 03 Apr 2024 18:26:59 GMT
@@ -18,6 +25,11 @@ Tue, 02 Apr 2024 19:06:00 GMT
 - Made initialization of a new iModel connection non-blocking in most cases and moved the responsibility of doing that to the `FavoritePropertiesManager` class.
 - Deprecated synchronous `FavoritePropertiesManager` functions `has` and `sortFields` in favor of `hasAsync` and `sortFieldsAsync`.
 - Deprecated `FavoritePropertiesManager.initializeConnection` because it's not necessary to call anymore.
+
+## 4.4.9
+Mon, 15 Apr 2024 20:29:22 GMT
+
+_Version update only_
 
 ## 4.4.8
 Mon, 25 Mar 2024 22:22:26 GMT

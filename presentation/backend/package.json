@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-backend",
-  "version": "4.6.0-dev.11",
+  "version": "4.6.0-dev.15",
   "description": "Backend of iTwin.js Presentation library",
   "license": "MIT",
   "repository": {
@@ -39,12 +39,12 @@
     "prettier:fix": "prettier --write ."
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.6.0-dev.11",
-    "@itwin/core-bentley": "workspace:^4.6.0-dev.11",
-    "@itwin/core-common": "workspace:^4.6.0-dev.11",
-    "@itwin/core-quantity": "workspace:^4.6.0-dev.11",
-    "@itwin/ecschema-metadata": "workspace:^4.6.0-dev.11",
-    "@itwin/presentation-common": "workspace:^4.6.0-dev.11"
+    "@itwin/core-backend": "workspace:^4.6.0-dev.15",
+    "@itwin/core-bentley": "workspace:^4.6.0-dev.15",
+    "@itwin/core-common": "workspace:^4.6.0-dev.15",
+    "@itwin/core-quantity": "workspace:^4.6.0-dev.15",
+    "@itwin/ecschema-metadata": "workspace:^4.6.0-dev.15",
+    "@itwin/presentation-common": "workspace:^4.6.0-dev.15"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -86,6 +86,7 @@
     "rimraf": "^3.0.2",
     "sinon": "^17.0.1",
     "sinon-chai": "^3.7.0",
+    "source-map-support": "^0.5.6",
     "typemoq": "^2.1.0",
     "typescript": "~5.0.2"
   },

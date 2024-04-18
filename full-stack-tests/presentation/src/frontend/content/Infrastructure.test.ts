@@ -5,39 +5,41 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { BeDuration, BeTimePoint, Id64 } from "@itwin/core-bentley";
+import { assert, BeDuration, BeTimePoint, Id64 } from "@itwin/core-bentley";
 import { ContentSpecificationTypes, InstanceKey, KeySet, PresentationError, PresentationStatus, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../IntegrationTests";
+import { collect } from "../../Utils";
 import { describeContentTestSuite } from "./Utils";
 
-describeContentTestSuite("waits for frontend timeout when request exceeds the backend timeout time", ({ getDefaultSuiteIModel }) => {
-  let raceStub: sinon.SinonStub<[readonly unknown[]], Promise<unknown>>;
+describeContentTestSuite("Error handling", ({ getDefaultSuiteIModel }) => {
   const frontendTimeout = 50;
 
-  beforeEach(async () => {
+  before(async () => {
     await terminate();
     await initialize({
-      // this defaults to 0, which means "no timeouts" - reinitialize with something else
-      backendTimeout: 1,
+      // this defaults to 0, which means "no timeouts" - reinitialize with non-zero
+      backendTimeout: 9999,
       frontendTimeout,
     });
+  });
 
-    // mock `Promise.race` to always reject
+  async function withRejectingPromiseRace(cb: () => Promise<void>) {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     const realRace = Promise.race;
-    const rejectedPromise = Promise.reject();
-    raceStub = sinon.stub(Promise, "race").callsFake(async (values) => {
-      (values as Array<Promise<any>>).splice(0, 0, rejectedPromise);
+    // mock `Promise.race` to always reject
+    const raceStub = sinon.stub(Promise, "race").callsFake(async (values) => {
+      (values as Array<Promise<any>>).splice(0, 0, Promise.reject());
       return realRace.call(Promise, values);
     });
-  });
+    try {
+      await cb();
+    } finally {
+      raceStub.restore();
+    }
+  }
 
-  afterEach(async () => {
-    raceStub.restore();
-  });
-
-  it("should throw PresentationError", async () => {
+  it("waits for frontend timeout when request exceeds the backend timeout time", async () => {
     const ruleset: Ruleset = {
       id: "test",
       rules: [
@@ -51,9 +53,38 @@ describeContentTestSuite("waits for frontend timeout when request exceeds the ba
     const key2: InstanceKey = { id: Id64.fromString("0x17"), className: "BisCore:SpatialCategory" };
     const keys = new KeySet([key1, key2]);
     const start = BeTimePoint.now();
-    await expect(Presentation.presentation.getContentDescriptor({ imodel: await getDefaultSuiteIModel(), rulesetOrId: ruleset, keys, displayType: "Grid" }))
-      .to.be.eventually.rejectedWith(PresentationError)
-      .and.have.property("errorNumber", PresentationStatus.BackendTimeout);
+    await withRejectingPromiseRace(async () => {
+      await expect(Presentation.presentation.getContentDescriptor({ imodel: await getDefaultSuiteIModel(), rulesetOrId: ruleset, keys, displayType: "Grid" }))
+        .to.be.eventually.rejectedWith(PresentationError)
+        .and.have.property("errorNumber", PresentationStatus.BackendTimeout);
+    });
     expect(BeTimePoint.now().milliseconds).to.be.greaterThanOrEqual(start.plus(BeDuration.fromMilliseconds(frontendTimeout)).milliseconds);
+  });
+
+  it("throws a timeout error when iterator request exceeds the backend timeout time", async () => {
+    const ruleset: Ruleset = {
+      id: "test",
+      rules: [
+        {
+          ruleType: RuleTypes.Content,
+          specifications: [{ specType: ContentSpecificationTypes.SelectedNodeInstances }],
+        },
+      ],
+    };
+    const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
+    const key2: InstanceKey = { id: Id64.fromString("0x17"), className: "BisCore:SpatialCategory" };
+    const keys = new KeySet([key1, key2]);
+    const result = await Presentation.presentation.getContentIterator({
+      imodel: await getDefaultSuiteIModel(),
+      rulesetOrId: ruleset,
+      keys,
+      descriptor: {},
+      batchSize: 1,
+      maxParallelRequests: 100,
+    });
+    assert(!!result);
+    await withRejectingPromiseRace(async () => {
+      await expect(collect(result.items)).to.eventually.be.rejectedWith(PresentationError).and.have.property("errorNumber", PresentationStatus.BackendTimeout);
+    });
   });
 });
