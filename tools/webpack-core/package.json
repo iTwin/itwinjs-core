@@ -29,7 +29,7 @@
     "file-loader": "^6.2.0",
     "findup": "0.1.5",
     "fs-extra": "^8.1.0",
-    "glob": "^7.1.2",
+    "glob": "^10.3.12",
     "lodash": "^4.17.21",
     "resolve": "1.19.0",
     "source-map-loader": "^4.0.0"
