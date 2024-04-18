@@ -157,7 +157,7 @@ describe("layoutTextBlock", () => {
   });
 
   it("splits paragraphs into multiple lines if runs exceed the document width", function () {
-    if (ProcessDetector.isMobileAppFrontend) {
+    if (ProcessDetector.isMobileAppBackend) {
       // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
       // users are not expected to do any editing, but long term we will attempt to find a better
       // solution.
@@ -206,7 +206,7 @@ describe("layoutTextBlock", () => {
   }
 
   it("splits a single TextRun at word boundaries if it exceeds the document width", function () {
-    if (ProcessDetector.isMobileAppFrontend) {
+    if (ProcessDetector.isMobileAppBackend) {
       // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
       // users are not expected to do any editing, but long term we will attempt to find a better
       // solution.
@@ -256,7 +256,7 @@ describe("layoutTextBlock", () => {
   });
 
   it("considers consecutive whitespace a single 'word'", function () {
-    if (ProcessDetector.isMobileAppFrontend) {
+    if (ProcessDetector.isMobileAppBackend) {
       // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
       // users are not expected to do any editing, but long term we will attempt to find a better
       // solution.
@@ -276,7 +276,7 @@ describe("layoutTextBlock", () => {
   });
 
   it("performs word-wrapping on Japanese text", function () {
-    if (ProcessDetector.isMobileAppFrontend) {
+    if (ProcessDetector.isMobileAppBackend) {
       // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
       // users are not expected to do any editing, but long term we will attempt to find a better
       // solution.
@@ -287,7 +287,7 @@ describe("layoutTextBlock", () => {
   });
 
   it("performs word-wrapping with punctuation", function () {
-    if (ProcessDetector.isMobileAppFrontend) {
+    if (ProcessDetector.isMobileAppBackend) {
       // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
       // users are not expected to do any editing, but long term we will attempt to find a better
       // solution.
@@ -311,7 +311,7 @@ describe("layoutTextBlock", () => {
   });
 
   it("performs word-wrapping and line-splitting with multiple runs", function () {
-    if (ProcessDetector.isMobileAppFrontend) {
+    if (ProcessDetector.isMobileAppBackend) {
       // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
       // users are not expected to do any editing, but long term we will attempt to find a better
       // solution.
