@@ -589,7 +589,8 @@ export class BGFBWriter {
       const polyfaceOffset = BGFBAccessors.Polyface.createPolyface(
         this.builder, pointOffset, paramOffset, normalOffset, 0, intColorOffset, pointIndexOffset, paramIndexOffset,
         normalIndexOffset, colorIndexOffset, 0, 0, 0, meshStyle, twoSided, numPerFace, 0, auxDataOffset,
-        expectedClosure, taggedNumericDataOffset);
+        expectedClosure, taggedNumericDataOffset,
+      );
 
       return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagPolyface, polyfaceOffset, 0);
 

@@ -314,7 +314,7 @@ return undefined;
   }
 
   /** Compute the number of logical entries in every flat data array in the AuxData */
-  private channelDataLength(fbAuxData: BGFBAccessors.PolyfaceAuxData): number {
+  private static channelDataLength(fbAuxData: BGFBAccessors.PolyfaceAuxData): number {
     if (fbAuxData.channelsLength() <= 0)
       return 0;
 
@@ -330,14 +330,11 @@ return undefined;
     if (!fbChannel0Data0)
       return 0;
 
-    let numChannelDataValues = fbChannel0Data0.valuesLength();
+    const numChannelDataValues = fbChannel0Data0.valuesLength();
     if (numChannelDataValues <= 0)
       return 0;
 
-    if (!AuxChannel.isScalar(fbChannel0.dataType()))
-      numChannelDataValues /= 3;
-
-    return numChannelDataValues;
+    return numChannelDataValues / AuxChannel.entriesPerValue(fbChannel0.dataType());
   }
 
   /** Examine int array for range and zero count  */
@@ -370,7 +367,7 @@ return undefined;
     const fbPointIndices = nullToUndefined<Int32Array>(fbPolyface.pointIndexArray());
     const fbAuxIndices = nullToUndefined<Int32Array>(fbAuxData.indicesArray());
     const numChannels = fbAuxData.channelsLength();
-    const fbNumData = this.channelDataLength(fbAuxData);
+    const fbNumData = BGFBReader.channelDataLength(fbAuxData);
     if (!fbPointIndices || !fbPointIndices.length || !fbAuxIndices || !fbAuxIndices.length || numChannels <= 0 || fbNumData <= 0)
       return undefined;
 
@@ -383,7 +380,7 @@ return undefined;
       const auxIndexCounts = this.countIntArray(fbAuxIndices);
       if (auxIndexCounts.max > fbNumData) // auxIndices invalid
         return undefined;
-      else if (auxIndexCounts.max === fbNumData) // auxIndices 1-based
+      if (auxIndexCounts.max === fbNumData) // auxIndices 1-based
         isLegacy = false;
       else if (auxIndexCounts.max <= 0 || auxIndexCounts.min < 0) // auxIndices 1-based (signed)
         isLegacy = false;
@@ -402,7 +399,8 @@ return undefined;
       SerializationHelpers.announceZeroBasedIndicesWithExternalBlocking(fbAuxIndices, fbPointIndices, numPerFace, (i0: number) => { indices.push(i0); });
     else
       SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(fbAuxIndices, numPerFace, (i0: number) => { indices.push(i0); });
-
+    if (indices.length + pointIndicesPadCount !== fbPointIndices.length)
+      return undefined;
     const maxIndex = Math.max(...indices);
 
     const channels: AuxChannel[] = [];
