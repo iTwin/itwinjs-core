@@ -8,7 +8,7 @@
 import { assert, DbResult, Id64Array, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { DefinitionElement, DefinitionPartition, Element, Subject } from "./Element";
+import { DefinitionContainer, DefinitionElement, DefinitionPartition, Element, Subject } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel, Model } from "./Model";
 
@@ -50,6 +50,8 @@ enum ElementPruningClassification { PRUNING_CLASS_Normal = 0, PRUNING_CLASS_Subj
 
 function classifyElementForPruning(iModel: IModelDb, elementId: Id64String): ElementPruningClassification {
   const el = iModel.elements.getElement(elementId);
+  if (el instanceof DefinitionContainer)
+    return ElementPruningClassification.PRUNING_CLASS_DefinitionPartition;
   return (el instanceof Subject) ? ElementPruningClassification.PRUNING_CLASS_Subject :
     (el instanceof DefinitionElement) ? ElementPruningClassification.PRUNING_CLASS_Definition :
       (el instanceof DefinitionPartition) ? ElementPruningClassification.PRUNING_CLASS_DefinitionPartition :
