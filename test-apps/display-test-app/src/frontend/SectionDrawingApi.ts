@@ -4,6 +4,7 @@ import {
   Code,
   ColorDef,
   DisplayStyleProps,
+  Frustum,
   Npc,
   QueryRowFormat,
   SectionDrawingViewProps,
@@ -18,7 +19,7 @@ import {
   SpatialViewState,
   ViewCreator2d,
 } from "@itwin/core-frontend";
-import { Point3d, Range3d, Range3dProps, Transform, Vector3d } from "@itwin/core-geometry";
+import { Point3d, Range1d, Range3d, Range3dProps, Transform, Vector3d } from "@itwin/core-geometry";
 import { SectionDrawingIpcInvoker } from "./SectionDrawingIpcInvoker";
 // eslint-disable-next-line @itwin/no-internal-barrel-imports
 
@@ -152,6 +153,47 @@ export class SectionDrawingApi {
     viewport.changeView(drawingViewState);
   }
 
+  private static adjustZPlanes(view: SpatialViewState): void {
+    const viewOrigin = view.getOrigin().clone();
+    const viewDelta = view.getExtents().clone();
+    const viewRot = view.getRotation().clone();
+    const origin = view.getOrigin().clone();
+    const delta = view.getExtents().clone();
+    delta.z = Math.max(delta.z, 1);
+
+    const extents = view.getViewedExtents();
+    const frustum = new Frustum();
+    const worldToNpc = view.computeWorldToNpc(viewRot, viewOrigin, viewDelta, false).map!;
+    if (!worldToNpc) {
+      return;
+    }
+
+    worldToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frustum.points);
+    const clipPlanes = frustum.getRangePlanes(false, false, 0);
+    const viewedExtentCorners = extents.corners();
+
+    const depthRange = Range1d.createNull();
+    if (!extents.isNull) {
+      const viewZ = viewRot.getRow(2);
+      const corners = extents.corners();
+      for (const corner of corners) {
+        depthRange.extendX(viewZ.dotProduct(corner));
+      }
+
+      if (depthRange.isNull) {
+        return;
+      }
+
+      viewRot.multiplyVectorInPlace(origin);
+      origin.z = depthRange.low;
+      delta.z = Math.max(depthRange.high - depthRange.low, 1)
+      viewRot.multiplyTransposeVectorInPlace(origin);
+    }
+
+    view.setOrigin(origin);
+    view.setExtents(delta);
+  }
+
   public static async createAndViewSectionDrawingMethod2(iModelConnection: IModelConnection, name: string, spatialViewDefinitionId: string, saveView: boolean = true): Promise<void> {
     if (!iModelConnection)
       return;
@@ -159,6 +201,7 @@ export class SectionDrawingApi {
 
     const spatialViewState: SpatialViewState = await iModelConnection.views.load(spatialViewDefinitionId) as SpatialViewState;
     // Rotate around world space
+    this.adjustZPlanes(spatialViewState);
     const frustum = spatialViewState.calculateFrustum()!;
     const center = frustum!.frontCenter;
     const translate = Transform.createTranslation(center);
@@ -262,6 +305,7 @@ export class SectionDrawingApi {
 
     const spatialToDrawing = drawingToSpatial.inverse()!;
     const spatialViewState: SpatialViewState = await iModelConnection.views.load(spatialViewDefinitionId) as SpatialViewState;
+    this.adjustZPlanes(spatialViewState);
     const frustum = spatialViewState.calculateFrustum()!;
     frustum.multiply(spatialToDrawing);
     const drawingViewExtents = Range3d.create(frustum.getCorner(Npc.LeftBottomFront), frustum.getCorner(Npc.RightTopFront));
