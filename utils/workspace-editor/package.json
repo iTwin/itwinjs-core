@@ -26,7 +26,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-backend": "workspace:*",
-    "glob": "^7.1.2",
+    "glob": "^10.3.12",
     "yargs": "^17.4.0"
   },
   "devDependencies": {
