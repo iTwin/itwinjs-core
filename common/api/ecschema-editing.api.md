@@ -9,6 +9,7 @@ import { AnyECType } from '@itwin/ecschema-metadata';
 import { AnyEnumerator } from '@itwin/ecschema-metadata';
 import { AnyProperty } from '@itwin/ecschema-metadata';
 import { AnyPropertyProps } from '@itwin/ecschema-metadata';
+import { ArrayProperty } from '@itwin/ecschema-metadata';
 import { Constant } from '@itwin/ecschema-metadata';
 import { ConstantProps } from '@itwin/ecschema-metadata';
 import { CustomAttribute } from '@itwin/ecschema-metadata';
@@ -17,6 +18,7 @@ import { CustomAttributeClassProps } from '@itwin/ecschema-metadata';
 import { CustomAttributeContainerProps } from '@itwin/ecschema-metadata';
 import { CustomAttributeContainerType } from '@itwin/ecschema-metadata';
 import { ECClassModifier } from '@itwin/ecschema-metadata';
+import { ECName } from '@itwin/ecschema-metadata';
 import { EntityClass } from '@itwin/ecschema-metadata';
 import { EntityClassProps } from '@itwin/ecschema-metadata';
 import { Enumeration } from '@itwin/ecschema-metadata';
@@ -29,16 +31,20 @@ import { InvertedUnitProps } from '@itwin/ecschema-metadata';
 import { ISchemaPartVisitor } from '@itwin/ecschema-metadata';
 import { KindOfQuantity } from '@itwin/ecschema-metadata';
 import { KindOfQuantityProps } from '@itwin/ecschema-metadata';
+import { LazyLoadedPropertyCategory } from '@itwin/ecschema-metadata';
 import { Localization } from '@itwin/core-common';
 import { Mixin } from '@itwin/ecschema-metadata';
 import { MixinProps } from '@itwin/ecschema-metadata';
+import { NavigationProperty } from '@itwin/ecschema-metadata';
 import { NavigationPropertyProps } from '@itwin/ecschema-metadata';
 import { OverrideFormat } from '@itwin/ecschema-metadata';
 import { Phenomenon } from '@itwin/ecschema-metadata';
 import { PhenomenonProps } from '@itwin/ecschema-metadata';
 import { PrimitiveArrayPropertyProps } from '@itwin/ecschema-metadata';
+import { PrimitiveOrEnumPropertyBase } from '@itwin/ecschema-metadata';
 import { PrimitivePropertyProps } from '@itwin/ecschema-metadata';
 import { PrimitiveType } from '@itwin/ecschema-metadata';
+import { Property } from '@itwin/ecschema-metadata';
 import { PropertyCategory } from '@itwin/ecschema-metadata';
 import { PropertyCategoryProps } from '@itwin/ecschema-metadata';
 import { RelationshipClass } from '@itwin/ecschema-metadata';
@@ -62,6 +68,7 @@ import { StrengthType } from '@itwin/ecschema-metadata';
 import { StructArrayPropertyProps } from '@itwin/ecschema-metadata';
 import { StructClass } from '@itwin/ecschema-metadata';
 import { StructClassProps } from '@itwin/ecschema-metadata';
+import { StructProperty } from '@itwin/ecschema-metadata';
 import { StructPropertyProps } from '@itwin/ecschema-metadata';
 import { Unit } from '@itwin/ecschema-metadata';
 import { UnitSystem } from '@itwin/ecschema-metadata';
@@ -129,10 +136,8 @@ export enum ChangeType {
 export class ClassChanges extends SchemaItemChanges {
     addChange(change: ISchemaChange): void;
     get baseClassDelta(): BaseClassDelta | undefined;
-    get entityMixinChanges(): Map<string, EntityMixinChanges>;
+    get customAttributeChanges(): Map<string, CustomAttributeContainerChanges>;
     get propertyChanges(): Map<string, PropertyChanges>;
-    get sourceConstraintChanges(): Map<string, RelationshipConstraintChanges>;
-    get targetConstraintChanges(): Map<string, RelationshipConstraintChanges>;
 }
 
 // @beta
@@ -581,6 +586,12 @@ export function diagnosticTypeToString(type: DiagnosticType): "CustomAttributeCo
 export const ECRuleSet: IRuleSet;
 
 // @alpha
+export class EntityClassChanges extends ClassChanges {
+    addChange(change: ISchemaChange): void;
+    get entityMixinChanges(): Map<string, EntityMixinChanges>;
+}
+
+// @alpha
 export class EntityMixinChange extends BaseSchemaChange {
     get changeKey(): string;
     get defaultChangeType(): ChangeType;
@@ -891,6 +902,13 @@ export class PropertyValueChange extends BaseSchemaChange {
 }
 
 // @alpha
+export class RelationshipClassChanges extends ClassChanges {
+    addChange(change: ISchemaChange): void;
+    get sourceConstraintChanges(): Map<string, RelationshipConstraintChanges>;
+    get targetConstraintChanges(): Map<string, RelationshipConstraintChanges>;
+}
+
+// @alpha
 export class RelationshipConstraintChanges extends BaseSchemaChanges {
     addChange(change: ISchemaChange): void;
     get constraintClassChanges(): RelationshipConstraintClassChange[];
@@ -919,10 +937,12 @@ export class SchemaChanges extends BaseSchemaChanges {
     get allDiagnostics(): AnyDiagnostic[];
     get classChanges(): Map<string, ClassChanges>;
     get customAttributeChanges(): Map<string, CustomAttributeContainerChanges>;
+    get entityClassChanges(): Map<string, EntityClassChanges>;
     get enumerationChanges(): Map<string, EnumerationChanges>;
     get formatChanges(): Map<string, FormatChanges>;
     get kindOfQuantityChanges(): Map<string, KindOfQuantityChanges>;
     get missingSchemaReferences(): SchemaReferenceMissing[];
+    get relationshipClassChanges(): Map<string, RelationshipClassChanges>;
     get schemaItemChanges(): Map<string, SchemaItemChanges>;
     get schemaReferenceDeltas(): SchemaReferenceDelta[];
 }
@@ -1415,7 +1435,6 @@ export abstract class SchemaItemChange extends BaseSchemaChange {
 export class SchemaItemChanges extends BaseSchemaChanges {
     constructor(schema: Schema, schemaItemName: string, schemaItemType: SchemaItemType);
     addChange(change: ISchemaChange): void;
-    get customAttributeChanges(): Map<string, CustomAttributeContainerChanges>;
     // (undocumented)
     protected getSchemaItemNameFromChange(change: ISchemaChange): string | undefined;
     get schemaItemMissing(): SchemaItemMissing | undefined;

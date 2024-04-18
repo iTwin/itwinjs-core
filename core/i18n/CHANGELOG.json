@@ -2,6 +2,12 @@
   "name": "@itwin/core-i18n",
   "entries": [
     {
+      "version": "4.5.2",
+      "tag": "@itwin/core-i18n_v4.5.2",
+      "date": "Tue, 16 Apr 2024 14:46:22 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.5.1",
       "tag": "@itwin/core-i18n_v4.5.1",
       "date": "Wed, 03 Apr 2024 18:26:58 GMT",
@@ -11,6 +17,12 @@
       "version": "4.5.0",
       "tag": "@itwin/core-i18n_v4.5.0",
       "date": "Tue, 02 Apr 2024 19:06:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.9",
+      "tag": "@itwin/core-i18n_v4.4.9",
+      "date": "Mon, 15 Apr 2024 20:29:22 GMT",
       "comments": {}
     },
     {
