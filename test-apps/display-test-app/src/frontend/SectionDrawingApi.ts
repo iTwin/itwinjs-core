@@ -157,11 +157,6 @@ export class SectionDrawingApi {
       return;
     const tempName = `SectionDrawingDemo-${name}`;
 
-    function expect(input: Point3d, transform: Transform): void {
-      const actual = transform.multiplyPoint3d(input);
-      console.log(`${JSON.stringify(input.toJSON())} => ${JSON.stringify(actual.toJSON())}`);
-    }
-
     const spatialViewState: SpatialViewState = await iModelConnection.views.load(spatialViewDefinitionId) as SpatialViewState;
     // Rotate around world space
     const frustum = spatialViewState.calculateFrustum()!;
@@ -170,20 +165,6 @@ export class SectionDrawingApi {
     const rotate = Transform.createFixedPointAndMatrix(center, spatialViewState.rotation.inverse()!);
     const drawingToSpatial = rotate.multiplyTransformTransform(translate);
 
-    expect(center, rotate);
-    expect(new Point3d(), drawingToSpatial);
-    expect(center, drawingToSpatial.inverse()!);
-    expect(frustum.getCorner(Npc.LeftBottomFront), drawingToSpatial.inverse()!);
-    expect(frustum.getCorner(Npc.RightTopFront), drawingToSpatial.inverse()!);
-    // const drawingToSpatial = Transform.createRefs(center, spatialViewState.rotation.inverse()!);
-
-    // const drawingToSpatial = Transform.createFixedPointAndMatrix(center, spatialViewState.rotation.inverse()!);
-
-
-
-
-
-    
     const sectionDrawingId = await SectionDrawingIpcInvoker.getOrCreate().insertSectionDrawing(
       tempName,
       spatialViewDefinitionId,
@@ -343,17 +324,6 @@ export class SectionDrawingApi {
       spatialOriginInDrawingSpace.y + spatialRangeInDrawingSpace.y,
       spatialOriginInDrawingSpace.z + spatialRangeInDrawingSpace.z,
     );
-    console.log(`spatialRangeInDrawingSpace=${JSON.stringify(spatialRangeInDrawingSpace)}`);
-    console.log(`spatialOriginInDrawingSpace=${JSON.stringify(spatialOriginInDrawingSpace)}`);
-    console.log(`viewRange=${JSON.stringify(viewRange)}`);
-    console.log("viewRange length=" + viewRange.xLength() + " " + viewRange.yLength() + " " + viewRange.zLength());
-    console.log(`spatialExtents=${JSON.stringify(spatialViewState.extents)}`);
-    console.log("Extents length in spatial=" + spatialViewState.extents.magnitude() + " in drawing=" + spatialRangeInDrawingSpace.magnitude());
-    
-
-
-    
-    // Translate to drawing origin?
 
     const sectionDrawing: SectionDrawingViewProps = {
       spatialView: spatialViewDefinitionId,
