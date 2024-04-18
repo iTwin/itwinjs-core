@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Don't lock child if parent is already locked",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
