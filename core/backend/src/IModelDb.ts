@@ -56,7 +56,7 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { BaseSettings, SettingName, SettingObject, Settings, SettingType } from "./workspace/Settings";
-import { Workspace, WorkspaceSettings } from "./workspace/Workspace";
+import { Workspace, WorkspaceDb, WorkspaceSettings } from "./workspace/Workspace";
 
 import type { BlobContainer } from "./BlobContainerService";
 /** @internal */
@@ -1435,11 +1435,13 @@ export abstract class IModelDb extends IModel {
   protected async loadWorkspaceSettings() {
     try {
       const settingsDbs = this.workspace.settings.getArray<WorkspaceSettings.Props>(Workspace.settingName.settingsWorkspaces);
-      if (settingsDbs)
-        await this.workspace.loadSettingsDictionary(settingsDbs);
+      if (settingsDbs) {
+        const problems: WorkspaceDb.LoadError[] = [];
+        await this.workspace.loadSettingsDictionary(settingsDbs, problems);
+        if (problems.length > 0)
+          WorkspaceDb.throwLoadErrors(`attempting to load workspace settings for iModel [${this.name}]:`, problems);
+      }
     } catch (e) {
-      if (e instanceof Error)
-        e.message = `attempting to load workspace settings for iModel [${this.name}]:\n${e.message}`;
       // we don't want to throw exceptions when attempting to load Dictionaries. Call the diagnostics function instead.
       Workspace.exceptionDiagnosticFn(e);
     }

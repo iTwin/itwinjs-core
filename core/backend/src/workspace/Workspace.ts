@@ -175,6 +175,17 @@ export namespace WorkspaceDb {
   export function construct(props: WorkspaceDb.Props, container: WorkspaceContainer): WorkspaceDb {
     return new WorkspaceDbImpl(props, container);
   }
+  export function throwLoadError(msg: string, wsDbProps: WorkspaceDb.Props, db?: WorkspaceDb): never {
+    const error = new Error(msg) as WorkspaceDb.LoadError;
+    error.wsDbProps = wsDbProps;
+    error.wsDb = db;
+    throw error;
+  }
+  export function throwLoadErrors(msg: string, errors: WorkspaceDb.LoadError[]): never {
+    const error = new Error(msg) as WorkspaceDb.LoadErrors;
+    error.wsLoadErrors = errors;
+    throw error;
+  }
 }
 
 export namespace WorkspaceSettings {
@@ -334,7 +345,7 @@ export interface Workspace {
   getWorkspaceDb(props: WorkspaceDb.CloudProps): Promise<WorkspaceDb>;
 
   /** Load a settings dictionary from the specified WorkspaceDb, and add it to the current Settings for this Workspace. */
-  loadSettingsDictionary(props: WorkspaceSettings.Props | WorkspaceSettings.Props[]): Promise<void>;
+  loadSettingsDictionary(props: WorkspaceSettings.Props | WorkspaceSettings.Props[], problems?: WorkspaceDb.LoadError[]): Promise<void>;
 
   /** Close this Workspace. All WorkspaceContainers are dropped. */
   close(): void;
@@ -395,8 +406,12 @@ export namespace Workspace {
     else
       UnexpectedErrors.handle(e);
   };
-  export let onSettingsDictionaryLoadedFn = (dict: { props: Settings.Dictionary.Props, from: WorkspaceDb }) => {  // eslint-disable-line prefer-const
-    Logger.logInfo(loggerCategory, `loaded setting dictionary ${dict.props.name} from ${dict.from.dbFileName}`);
+  export interface SettingsDictionaryLoaded {
+    dict: Settings.Dictionary;
+    from: WorkspaceDb;
+  }
+  export let onSettingsDictionaryLoadedFn = (loaded: SettingsDictionaryLoaded) => {  // eslint-disable-line prefer-const
+    Logger.logInfo(loggerCategory, `loaded setting dictionary ${loaded.dict.props.name} from ${loaded.from.dbFileName}`);
   };
 
   const makeSettingName = (name: string) => `${"itwin/core/workspace"}/${name}`;
@@ -542,31 +557,62 @@ export namespace Workspace {
   }
 }
 
-function throwLoadError(msg: string, wsDbProps: WorkspaceDb.Props, db?: WorkspaceDb): never {
-  const error = new Error(msg) as WorkspaceDb.LoadError;
-  error.wsDbProps = wsDbProps;
-  error.wsDb = db;
-  throw error;
+interface WorkspaceCloudContainer extends CloudSqlite.CloudContainer {
+  connectCount: number;
+  sharedConnect(): boolean;
+  sharedDisconnect(): void;
 }
-function throwLoadErrors(msg: string, errors: WorkspaceDb.LoadError[]): never {
-  const error = new Error(msg) as WorkspaceDb.LoadErrors;
-  error.wsLoadErrors = errors;
-  throw error;
+interface WorkspaceCloudCache extends CloudSqlite.CloudCache {
+  workspaceContainers: Map<string, WorkspaceCloudContainer>;
+}
+
+function getContainerFullId(props: WorkspaceContainer.Props) {
+  return `${props.baseUri}/${props.containerId}`;
+}
+
+function getWorkspaceCloudContainer(props: CloudSqlite.ContainerAccessProps, cache: WorkspaceCloudCache) {
+  const id = getContainerFullId(props);
+  let cloudContainer = cache.workspaceContainers.get(id);
+  if (undefined !== cloudContainer)
+    return cloudContainer;
+  cloudContainer = CloudSqlite.createCloudContainer(props) as WorkspaceCloudContainer;
+  cache.workspaceContainers.set(id, cloudContainer);
+  cloudContainer.connectCount = 0;
+  cloudContainer.sharedConnect = function (this: WorkspaceCloudContainer) {
+    if (this.connectCount++ === 0) {
+      this.connect(cache);
+      return true;
+    }
+    return false;
+  };
+  cloudContainer.sharedDisconnect = function (this: WorkspaceCloudContainer) {
+    if (--this.connectCount <= 0) {
+      this.disconnect();
+      cache.workspaceContainers.delete(id);
+      this.connectCount = 0;
+    }
+  };
+  return cloudContainer;
+}
+function makeWorkspaceCloudCache(arg: CloudSqlite.CreateCloudCacheArg): WorkspaceCloudCache {
+  const cache = CloudSqlite.CloudCaches.getCache(arg) as WorkspaceCloudCache;
+  if (undefined === cache.workspaceContainers) // if we just created this container, add the map.
+    cache.workspaceContainers = new Map<string, WorkspaceCloudContainer>();
+  return cache;
 }
 
 class WorkspaceImpl implements Workspace {
   private _containers = new Map<WorkspaceContainer.Id, WorkspaceContainerImpl>();
   public readonly containerDir: LocalDirName;
   public readonly settings: Settings;
-  protected _cloudCache?: CloudSqlite.CloudCache;
-  public getCloudCache(): CloudSqlite.CloudCache {
-    return this._cloudCache ??= CloudSqlite.CloudCaches.getCache({ cacheName: "Workspace", cacheSize: "20G" });
+  protected _cloudCache?: WorkspaceCloudCache;
+  public getCloudCache(): WorkspaceCloudCache {
+    return this._cloudCache ??= makeWorkspaceCloudCache({ cacheName: "Workspace", cacheSize: "20G" });
   }
 
   public constructor(settings: Settings, opts?: WorkspaceOpts) {
     this.settings = settings;
     this.containerDir = opts?.containerDir ?? join(IModelHost.cacheDir, "Workspace");
-    this._cloudCache = opts?.testCloudCache;
     let settingsFiles = opts?.settingsFiles;
     if (settingsFiles) {
       if (typeof settingsFiles === "string")
@@ -598,11 +644,10 @@ class WorkspaceImpl implements Workspace {
     return container.getWorkspaceDb(props);
   }
 
-  public async loadSettingsDictionary(props: WorkspaceSettings.Props | WorkspaceSettings.Props[]) {
+  public async loadSettingsDictionary(props: WorkspaceSettings.Props | WorkspaceSettings.Props[], problems?: WorkspaceDb.LoadError[]) {
     if (!Array.isArray(props))
       props = [props];
 
-    const problems: WorkspaceDb.LoadError[] = [];
     for (const prop of props) {
       const db = await this.getWorkspaceDb(prop);
       db.open();
@@ -613,30 +658,27 @@ class WorkspaceImpl implements Workspace {
         if (undefined === this.settings.getDictionary(dictProps)) {
           const settingsJson = db.getString(prop.resourceName);
           if (undefined === settingsJson)
-            throwLoadError(`could not load setting dictionary "${prop.resourceName}" from: "${manifest.workspaceName}"`, prop, db);
+            WorkspaceDb.throwLoadError(`could not load setting dictionary "${prop.resourceName}" from: "${manifest.workspaceName}"`, prop, db);
 
           db.close(); // don't leave this db open in case we're going to find another dictionary in it recursively.
 
           this.settings.addJson(dictProps, settingsJson);
-          Workspace.onSettingsDictionaryLoadedFn({ props: dictProps, from: db });
-
-          // if the dictionary we just loaded has a "settingsWorkspaces" entry, load them too, recursively
           const dict = this.settings.getDictionary(dictProps);
           if (dict) {
+            Workspace.onSettingsDictionaryLoadedFn({ dict, from: db });
+            // if the dictionary we just loaded has a "settingsWorkspaces" entry, load them too, recursively
             const nested = dict.getSetting<WorkspaceSettings.Props[]>(Workspace.settingName.settingsWorkspaces);
             if (nested !== undefined) {
               SettingsSchemas.validateSetting<WorkspaceSettings.Props[]>(nested, Workspace.settingName.settingsWorkspaces);
-              await this.loadSettingsDictionary(nested);
+              await this.loadSettingsDictionary(nested, problems);
             }
           }
         }
       } catch (e) {
         db.close();
-        problems.push(e as WorkspaceDb.LoadError);
+        problems?.push(e as WorkspaceDb.LoadError);
       }
     }
-    if (problems.length !== 0)
-      throwLoadErrors("Error(s) loading settings dictionaries", problems);
   }
 
   public close() {
@@ -713,7 +755,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
   public readonly filesDir: LocalDirName;
   public readonly id: WorkspaceContainer.Id;
 
-  public readonly cloudContainer?: CloudSqlite.CloudContainer | undefined;
+  public readonly cloudContainer?: WorkspaceCloudContainer | undefined;
   protected _wsDbs = new Map<WorkspaceDb.DbName, WorkspaceDb>();
   public get dirName() { return join(this.workspace.containerDir, this.id); }
 
@@ -723,7 +765,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     this.id = props.containerId;
 
     if (props.baseUri !== "")
-      this.cloudContainer = CloudSqlite.createCloudContainer(props);
+      this.cloudContainer = getWorkspaceCloudContainer(props, this.workspace.getCloudCache());
 
     workspace.addContainer(this);
     this.filesDir = join(this.dirName, "Files");
@@ -732,8 +774,8 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     if (undefined === cloudContainer)
       return;
 
-    cloudContainer.connect(this.workspace.getCloudCache());
-    if (false !== props.syncOnConnect) {
+    // sharedConnect returns true if we just connected (if the container is shared, it may have already been connected)
+    if (cloudContainer.sharedConnect() && false !== props.syncOnConnect) {
       try {
         cloudContainer.checkForChanges();
       } catch (e: unknown) {
@@ -767,7 +809,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
         return `${dbName}:${version}`;
     } catch (e: unknown) {
     }
-    throwLoadError(`No version of [${dbName}] available for "${range}"`, props);
+    WorkspaceDb.throwLoadError(`No version of [${dbName}] available for "${range}"`, props);
   }
 
   public addWorkspaceDb(toAdd: WorkspaceDb) {
@@ -793,7 +835,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     for (const [_name, db] of this._wsDbs)
       db.close();
     this._wsDbs.clear();
-    this.cloudContainer?.disconnect();
+    this.cloudContainer?.sharedDisconnect();
   }
 }
 
@@ -959,8 +1001,8 @@ class WorkspaceDbImpl implements WorkspaceDb {
 }
 const workspaceEditorName = "WorkspaceEditor";
 class EditorWorkspaceImpl extends WorkspaceImpl {
-  public override getCloudCache(): CloudSqlite.CloudCache {
-    return this._cloudCache ??= CloudSqlite.CloudCaches.getCache({ cacheName: workspaceEditorName, cacheSize: "20G" });
+  public override getCloudCache(): WorkspaceCloudCache {
+    return this._cloudCache ??= makeWorkspaceCloudCache({ cacheName: workspaceEditorName, cacheSize: "20G" });
   }
 }
 
@@ -1027,7 +1069,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements Workspace.Ed
     const oldDb = WorkspaceContainer.parseDbFileName(oldName);
     const newVersion = semver.inc(oldDb.version, args.versionType, args.identifier);
     if (!newVersion)
-      throwLoadError("invalid version", args.fromProps ?? {});
+      WorkspaceDb.throwLoadError("invalid version", args.fromProps ?? {});
 
     const newName = WorkspaceContainer.makeDbFileName(oldDb.dbName, newVersion);
     await cloudContainer.copyDatabase(oldName, newName);

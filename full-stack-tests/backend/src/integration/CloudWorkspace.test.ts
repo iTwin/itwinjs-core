@@ -135,13 +135,36 @@ describe.only("Cloud workspace containers", () => {
     Workspace.exceptionDiagnosticFn = (e: any) => {
       errors.push(e);
     };
-    const imodel2 = await StandaloneDb.open({ fileName });
+    const loadedDictionaries: Workspace.SettingsDictionaryLoaded[] = [];
+    Workspace.onSettingsDictionaryLoadedFn = (dict: Workspace.SettingsDictionaryLoaded) => {
+      loadedDictionaries.push(dict);
+    };
+    let imodel2 = await StandaloneDb.open({ fileName });
     imodel2.close();
     expect(errors.length).equal(1);
     expect(errors[0].message).contains("settings resource tests");
     expect(errors[0].wsLoadErrors?.length).equal(1);
     expect(errors[0].wsLoadErrors?.[0].wsDb?.dbFileName).contains("1.0.0");
 
+    iModelContainer.acquireWriteLock("admin3");
+    const copied = await iModelContainer.makeNewVersion({ versionType: "patch" });
+    // somehow, it should not be possible to edit a db after it's been published.
+    const editDb = iModelContainer.getEditableDb(copied.newDb);
+    editDb.open();
+    const iModelWsSettings: SettingObject = {};
+    iModelWsSettings["app1/maxVal"] = 10;
+    iModelWsSettings[Workspace.settingName.settingsWorkspaces] = [{ ...itwin2ContainerProps, priority: Settings.Priority.iTwin }];
+    editDb.updateString("settingsDictionary", JSON.stringify(iModelWsSettings));
+    editDb.close();
+    iModelContainer.releaseWriteLock();
+    const c1 = IModelHost.appWorkspace.getContainer(iModelContainerProps);
+    c1.cloudContainer?.checkForChanges();
+
+    errors.length = 0;
+    loadedDictionaries.length = 0;
+    imodel2 = await StandaloneDb.open({ fileName });
+    imodel2.close();
+    expect(loadedDictionaries.length).equal(1);
   });
 
 });
