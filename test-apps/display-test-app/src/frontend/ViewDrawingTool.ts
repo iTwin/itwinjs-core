@@ -37,19 +37,10 @@ export class ViewDrawingPanel extends ToolBarDropDown {
     });
 
     createButton({
-      value: "Create section drawing using method 1",
-      handler: async () => void IModelApp.tools.run(SectionDrawingTool.toolId, this._name, vp.view, "method1"),
+      value: "Create drawing",
+      handler: async () => void IModelApp.tools.run(SectionDrawingTool.toolId, this._name, vp.view),
       parent: this._element,
       inline: true,
-      tooltip: "Method 1",
-    });
-
-    createButton({
-      value: "Create section drawing using method 2",
-      handler: async () => void IModelApp.tools.run(SectionDrawingTool.toolId, this._name, vp.view, "method2"),
-      parent: this._element,
-      inline: true,
-      tooltip: "Method 2",
     });
   }
 
@@ -67,7 +58,7 @@ export class SectionDrawingTool extends Tool {
    * @returns
    */
   public override async run(...args: any[]): Promise<boolean> {
-    if (args.length !== 3 || typeof args[0] !== "string" || !(args[1] instanceof SpatialViewState))
+    if (args.length !== 2 || typeof args[0] !== "string" || !(args[1] instanceof SpatialViewState))
       return false;
     const iModelConnection = IModelApp.viewManager.selectedView?.iModel;
     if (!iModelConnection) {
@@ -81,11 +72,7 @@ export class SectionDrawingTool extends Tool {
 
     await SectionDrawingIpcInvoker.getOrCreate().setup(iModelConnection.key);
     const spatialViewDefinitionId = await SectionDrawingApi.insertSpatialView(args[0], args[1]);
-    if (args[2] === "method1") {
-      await SectionDrawingApi.createAndViewSectionDrawingMethod1(iModelConnection, args[0], spatialViewDefinitionId, true);
-    } else {
-      await SectionDrawingApi.createAndViewSectionDrawingMethod2(iModelConnection, args[0], spatialViewDefinitionId, true);
-    }
+    await SectionDrawingApi.createAndViewSectionDrawingMethod2(iModelConnection, args[0], spatialViewDefinitionId, true);
     return true;
   }
 }

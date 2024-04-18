@@ -73,68 +73,6 @@ export class SectionDrawingApi {
     return drawingViewDefinitionId;
   }
 
-  /**
-     * Create a new section drawing and drawing view state viewing the section drawing. Switch views to new drawing view state.
-     * @param name The name of the SpatialViewDefinition AND new section drawing.
-     * @param spatialViewDefinitionId The id of the SpatialViewDefinition.
-     * TODO: What happens on undo? Is the user stuck with bad data? Are all created/modified elements removed? Can we modify undo to remove them (via bundling the transactions)? Tools have to be able to create more than 1 element.
-     */
-  public static async createAndViewSectionDrawingMethod1(iModelConnection: IModelConnection, name: string, spatialViewDefinitionId: string, saveView: boolean = true): Promise<void> {
-    if (!iModelConnection)
-      return;
-    const tempName = `SectionDrawingDemo-${name}`;
-
-    const spatialViewState: SpatialViewState = await iModelConnection.views.load(spatialViewDefinitionId) as SpatialViewState;
-    /**
-         * The idea is to do a 3 step process.
-         * Step 1: Untranslate from the spatial view's origin to the center of the spatial view.
-         * Step 2: Rotate the view.
-         * Step 3: Re-translate back to the spatial view's origin.
-         * The question is, how do we do this? After doing steps 1 and 2, when/where does step 3 happen?
-         */
-    // This seems to consistently move any attached spatial view to slightly off-screen to the bottom left corner. It has significant culling. Maybe this is doing steps 1 & 2, but missing step 3?
-    const drawingToSpatial = Transform.createOriginAndMatrix(Vector3d.createFrom(spatialViewState.getCenter()), spatialViewState.rotation.inverse());
-    // This seems slightly less consistent in placing than the above transform, but with less culling. Still missing step 3?
-    // const drawingToSpatial = Transform.createOriginAndMatrix(Vector3d.createFrom(spatialViewState.getCenter()).negate(), spatialViewState.rotation.inverse());
-    // This seems to get the view *somewhat* close to the center, except for the top view (which completely disappears). It seems to have worse culling, and I wonder if the top view is completely culled.
-    // const drawingToSpatial = Transform.createOriginAndMatrix(Vector3d.createFrom(spatialViewState.getCenter()), spatialViewState.rotation).inverse();
-    // const step3 = Transform.createTranslation(spatialViewState.origin);
-    // step3.multiplyTransformTransform(drawingToSpatial, drawingToSpatial);
-    // const drawingToSpatial = Transform.createOriginAndMatrix(Point3d.createZero(), spatialViewState.rotation.inverse());
-    const sectionDrawingId = await SectionDrawingIpcInvoker.getOrCreate().insertSectionDrawing(
-      tempName,
-      spatialViewDefinitionId,
-      drawingToSpatial!.toJSON(),
-    );
-    const drawingViewCreator = new ViewCreator2d(iModelConnection);
-    const drawingViewState = (await drawingViewCreator.createViewForModel(sectionDrawingId)) as DrawingViewState;
-
-    // Manually set the extents and origin of the drawing view for testing purposes
-    drawingViewState.extentLimits = {min:0.1, max: 50000};
-    drawingViewState.setExtents({x:100, y: 100});
-    drawingViewState.setOrigin({x: 0, y: 0});
-
-    // This reads the transform from the saved SectionDrawing, so we do not have to deal with setting up our own view state.
-    await drawingViewState.changeViewedModel(sectionDrawingId);
-
-    if (saveView) {
-      // Insert a new drawing view definition and view it
-      const drawingViewDefinitionId = await this.insertSectionDrawingViewDefinition(
-        iModelConnection,
-        tempName,
-        drawingViewState.toProps(),
-      );
-      await this.viewSectionDrawing(iModelConnection, drawingViewDefinitionId, sectionDrawingId);
-    } else {
-      // View new drawing view state directly (without saving it)
-      await drawingViewState.load();
-      const viewport = IModelApp.viewManager.selectedView;
-      if (!viewport)
-        return;
-      viewport.changeView(drawingViewState);
-    }
-  }
-
   public static async viewSectionDrawing(iModelConnection: IModelConnection, drawingViewDefinitionId: string, sectionDrawingId?: string): Promise<void> {
     if (!iModelConnection)
       return;
