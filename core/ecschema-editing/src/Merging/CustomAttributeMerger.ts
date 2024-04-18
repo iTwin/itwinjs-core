@@ -45,7 +45,11 @@ export async function mergeCustomAttribute(context: SchemaMergeContext, change: 
     if (change.appliedTo === "Property") {
       const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
       const [propertyName] = change.path.split(".");
-      return context.editor.entities.addCustomAttributeToProperty(itemKey, propertyName, caInstance);
+      try{
+        await context.editor.entities.properties.addCustomAttribute(itemKey, propertyName, caInstance);
+      } catch(e: any) {
+        return { errorMessage: e.message };
+      }
     }
     if (change.appliedTo === "RelationshipConstraint") {
       const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
