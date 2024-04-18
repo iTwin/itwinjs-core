@@ -8,7 +8,7 @@
 
 import { assert, ReadonlySortedArray, SortedArray } from "@itwin/core-bentley";
 import { RenderMemory } from "../render/RenderMemory";
-import { RealityTile, Tile } from "./internal";
+import { Tile } from "./internal";
 
 /** Maintains in sorted order a set of [[TileUser]] Ids for which a given tile has been selected for display. The number of users in a set is expected to be very small - often only 1 for a typical application.
  * Strictly for use by LRUTileList.
@@ -323,9 +323,7 @@ export class LRUTileList {
     while (prev && prev !== this._sentinel && this.totalBytesUsed > maxBytes) {
       const tile = prev as Tile;
       prev = tile.next;
-      // prevent freeing if AdditiveRefinementStepChildren are in play, as they depend on the parent tile to draw
-      if (!tile.children || !tile.children.some((child) => (child as RealityTile).isStepChild))
-        tile.freeMemory();
+      tile.freeMemory();
 
       // Some tiles (ImageryMapTile) use reference-counting, in which case freeMemory() may not actually free the contents.
       // If the contents *were* disposed, then `this.drop` will have been called, and `tile` is no longer in the list.
