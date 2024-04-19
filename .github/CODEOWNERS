@@ -95,7 +95,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /core/bentley                   @iTwin/itwinjs-core-admins
 /core/common                    @iTwin/itwinjs-core-admins @iTwin/itwinjs-core-display
 /core/common/src/rpc/IModelTileRpcInterface.ts    @pmconne
-/core/ecschema-*                @calebmshafer @ColinKerr @wgoehrig @christophermlawson
+/core/ecschema-*                @calebmshafer @ColinKerr @wgoehrig @christophermlawson @StefanApfel-Bentley
 /core/electron                  @wgoehrig @GytisCepk @ben-polinsky
 /core/express-server            @paulius-valiunas @wgoehrig
 /core/extension                 @calebmshafer @wgoehrig @aruniverse @ben-polinsky

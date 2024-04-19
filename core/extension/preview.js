@@ -10,5 +10,15 @@ const ext = globalThis[globalSymbol].getExtensionApi(import.meta.url);
 export const {
 // @itwin/core-frontend:
 // @itwin/core-common:
+	FractionRun,
+	LineBreakRun,
+	Paragraph,
+	Run,
+	TextAnnotation,
+	TextBlock,
+	TextBlockComponent,
+	TextRun,
+	TextStyle,
+	TextStyleSettings,
 } = ext.exports;
 // END GENERATED CODE

@@ -312,6 +312,11 @@ export class Point2d extends XY implements BeJSONFunctions {
       result,
     );
   }
+  /** Multiply the x, y parts by scale. */
+  public scaleInPlace(scale: number) {
+    this.x *= scale;
+    this.y *= scale;
+  }
   /**
    * Return the dot product of vector from this to targetA and vector from this to targetB
    * @param targetA target of first vector
