@@ -1,6 +1,6 @@
 # Updating KindOfQuantity on an ECProperty
 
-This document provides instructions for iModel users on how to remove or replace a [KindOfQuantity (KoQ)](./kindofquantity.md) associated with an [ECProperty](./ec-property.md) in an iModel schema.
+This document provides instructions for iModel users on how to change a properties persistence unit by removing or replacing the [KindOfQuantity (KoQ)](./kindofquantity.md) associated with an [ECProperty](./ec-property.md) in an iModel schema.
 
 ## Overview
 
