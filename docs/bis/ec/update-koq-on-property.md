@@ -9,9 +9,9 @@ Normally changing the persistence unit of a property is not supported unless you
 | Change | AllowUnitChange required|
 |-|-|
 | Add KOQ to property that has none | not required |
-| Change KOQ to KOQ with same persistence unit | not required |
+| Change KOQ to KOQ with the same persistence unit | not required |
 | Remove KOQ from property that has one | required |
-| Change KOQ to KOQ with different persistence unit | required | 
+| Change KOQ to KOQ with a different persistence unit | required | 
 
 The `AllowUnitChange` custom attribute is intended for cases where the persistence unit is incorrect but the persisted value is correct.  Changing the persistence unit only updates the metadata, it **does not transform existing values**.  If conversion is needed you must do it yourself and consider updating the write (middle) schema version to make it clear that the persisted data format has changed.
 

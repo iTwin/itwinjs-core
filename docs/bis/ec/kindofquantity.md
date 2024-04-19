@@ -112,6 +112,6 @@ The below represents the string literal syntax. All italicized values are to be 
 
 ### Updating KindOfQuantity on ECProperty
 
-The KindOfQuantity assigned to a property can be switch to any other KindOfQuantity that has the same persistence unit.  In some scenarios, you may need to remove or change the persistence unit of an [ECProperty](./ec-property.md) within your iModel schema.
+The KindOfQuantity assigned to a property can be switched to any other KindOfQuantity that has the same persistence unit.  In some scenarios, you may need to remove or change the persistence unit of an [ECProperty](./ec-property.md) within your iModel schema.
 
 For detailed steps on how to update the KindOfQuantity on an [ECProperty](./ec-property.md), see our guide on [Updating KindOfQuantity on an ECProperty](update-koq-on-property.md). This guide provides comprehensive instructions for using the `AllowUnitChange` [Custom Attribute](./ec-custom-attributes.md) to modify KindOfQuantity effectively.
