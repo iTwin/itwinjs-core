@@ -2,7 +2,18 @@
 
 This document provides instructions for iModel users on how to remove or replace a [KindOfQuantity (KoQ)](./kindofquantity.md) associated with an [ECProperty](./ec-property.md) in an iModel schema.
 
-**Note**: Removing or Replacing KindOfQuantity from a property does not alter other attributes or the fundamental data type of the property.
+## Overview
+
+Normally changing the persistence unit of a property is not supported unless you change the major schema version.  So you can change the KOQ applied to a property so long as it does not change the persistence unit.  Applying the `AllowUnitChange` custom attribute to a property allows you to change the persistence unit with only a minor version change.  
+
+| Change | AllowUnitChange required|
+|-|-|
+| Add KOQ to property that has none | not required |
+| Change KOQ to KOQ with same persistence unit | not required |
+| Remove KOQ from property that has one | required |
+| Change KOQ to KOQ with different persistence unit | required | 
+
+The `AllowUnitChange` custom attribute is intended for cases where the persistence unit is incorrect but the persisted value is correct.  Changing the persistence unit only updates the metadata, it **does not transform existing values**.  If conversion is needed you must do it yourself and consider updating the write (middle) schema version to make it clear that the persisted data format has changed.
 
 ## Removing KindOfQuantity from a property
 
