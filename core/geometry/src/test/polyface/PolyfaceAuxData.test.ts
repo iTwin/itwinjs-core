@@ -191,7 +191,13 @@ describe("PolyfaceAuxData", () => {
         if (ck.testType(meshFB, IndexedPolyface) && ck.testType(meshJson, IndexedPolyface))
           ck.testTrue(meshFB.isAlmostEqual(meshJson), "roundtrip through FB compares to roundtrip through JSON");
         }
-      }
+
+      // sanity check flatbuffer text file write
+      const bytes2 = BentleyGeometryFlatBuffer.geometryToBytes(mesh2, true);
+      if (bytes2)
+        GeometryCoreTestIO.writeByteArrayToTextFile(bytes2, "PolyfaceAuxData", `Compress`, undefined, "fbjs");
+    }
+
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceAuxData", "Compress");
     expect(ck.getNumErrors()).equals(0);
   });

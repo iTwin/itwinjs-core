@@ -93,6 +93,41 @@ export class GeometryCoreTestIO {
       }
     }
   }
+
+  // write bytes to text file (like native GTestFileOps::WriteByteArrayToTextFile)
+  public static writeByteArrayToTextFile(bytes: Uint8Array, directoryName?: string, nameB?: string, nameC?: string, extension?: string) {
+    if (!this.enableSave)
+      return;
+    let filename = this.makeOutputDir(directoryName);
+    if (nameB)
+      filename = filename.concat(`/${nameB}`);
+    if (nameC)
+      filename = filename.concat(`/${nameC}`);
+    if (extension)
+      filename = filename.concat(`.${extension}`);
+
+    const maxBytesOnLine = 120;
+    let bytesOnLine = 0;
+
+    let text: string = "";
+    text = text.concat("[\n");
+    for (let i = 0; i < bytes.length; ++i) {
+      const byte = bytes[i];
+      const byteStr = `${byte}`;
+      const newBytes = byteStr.length;
+      if (newBytes + 1 + bytesOnLine > maxBytesOnLine) {
+        text = text.concat("\n");
+        bytesOnLine = 0;
+      }
+      text = text.concat(byteStr);
+      if (i + 1 !== bytes.length)
+        text = text.concat(",");
+      bytesOnLine += newBytes + 1;
+    }
+    text = text.concat("]\n");
+    fs.writeFileSync(filename, text);
+  }
+
   /**
    * Append the geometry to the collection, e.g., for output by saveGeometry.
    * Also try to move the geometry by dx,dy,dz.
