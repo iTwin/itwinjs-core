@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import * as chai from "chai";
 import { GeoJSONGeometryReader } from "../../GeoJSON/GeoJSONGeometryReader";
 import { MockGeometryRenderer } from "./Mocks";
-import { CoordinatesUtils } from "@itwin/core-frontend";
+import { deflateCoordinates } from "@itwin/core-frontend";
 describe("GeoJSONGeometryReader", () => {
 
   const sandbox = sinon.createSandbox();
@@ -45,7 +45,7 @@ describe("GeoJSONGeometryReader", () => {
     chai.expect(getPointCalls.length).to.be.equals(1);
     chai.expect(getPointCalls[0].args[0]).to.eql([1,1]);
     const flatCoords: number[] = [];
-    CoordinatesUtils.deflateCoordinates(coordinates, flatCoords, 2, 0);
+    deflateCoordinates(coordinates, flatCoords, 2, 0);
 
     chai.expect(getPointCalls[0].args[1]).to.eql(flatCoords );
     chai.expect(renderPathSpy.called).to.be.false;

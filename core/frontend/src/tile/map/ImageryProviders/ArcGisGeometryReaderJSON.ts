@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CoordinatesUtils, FeatureGeometryRenderer } from "../../internal";
+import { deflateCoordinates, FeatureGeometryRenderer } from "../../internal";
 
 /** @internal */
 export class ArcGisGeometryReaderJSON {
@@ -36,12 +36,12 @@ export class ArcGisGeometryReaderJSON {
 
     if (geometry?.rings) {
       for (const ring of geometry?.rings) {
-        offset = CoordinatesUtils.deflateCoordinates(ring, coords, 2, offset);
+        offset = deflateCoordinates(ring, coords, 2, offset);
         lengths.push(ring.length);
       }
     } else if (geometry?.paths) {
       for (const path of geometry?.paths) {
-        offset = CoordinatesUtils.deflateCoordinates(path, coords, 2, offset);
+        offset = deflateCoordinates(path, coords, 2, offset);
         lengths.push(path.length);
       }
     }

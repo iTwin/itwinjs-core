@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Logger } from "@itwin/core-bentley";
-import { CoordinatesUtils, FeatureGeometryRenderer } from "@itwin/core-frontend";
+import { deflateCoordinates, FeatureGeometryRenderer } from "@itwin/core-frontend";
 import { Coord, GeoJSONGeometryUtils, MultiPath, MultiRingCoords, RingCoords } from "./GeoJSONGeometry";
 import * as GeoJson from "geojson";
 
@@ -34,7 +34,7 @@ export class GeoJSONGeometryReader {
     let polys: MultiPath[] | undefined;
 
     const readPath = (ring: RingCoords, offset: number, result: MultiPath) => {
-      const newOffset = CoordinatesUtils.deflateCoordinates(ring, result.coords, 2, offset);
+      const newOffset = deflateCoordinates(ring, result.coords, 2, offset);
       result.lengths.push(ring.length);
       return newOffset;
     };

@@ -130,7 +130,6 @@ internal;convertFeatureTable(imdlFeatureTable: ImdlModel.FeatureTable, batchMode
 internal;CoordinateConverter
 internal;CoordinateConverterOptions
 public;CoordinateLockOverrides
-internal;CoordinatesUtils
 public;CoordSource
 public;CoordSystem
 internal;CoreTools
@@ -171,6 +170,7 @@ public;Decorator
 internal;DefaultViewTouchTool 
 internal;DefineACSByElementTool 
 internal;DefineACSByPointsTool 
+internal;deflateCoordinates(coordinates: number[][], flatCoordinates: number[], stride: number, offset: number): number
 public;DepthPointOptions
 public;DepthPointSource
 public;DepthRangeNpc

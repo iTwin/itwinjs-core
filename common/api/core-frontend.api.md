@@ -2353,12 +2353,6 @@ export enum CoordinateLockOverrides {
     None = 0
 }
 
-// @internal (undocumented)
-export class CoordinatesUtils {
-    // (undocumented)
-    static deflateCoordinates(coordinates: number[][], flatCoordinates: number[], stride: number, offset: number): number;
-}
-
 // @public
 export enum CoordSource {
     ElemSnap = 3,
@@ -2728,6 +2722,9 @@ export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
     // (undocumented)
     static toolId: string;
 }
+
+// @internal
+export function deflateCoordinates(coordinates: number[][], flatCoordinates: number[], stride: number, offset: number): number;
 
 // @public
 export interface DepthPointOptions {
