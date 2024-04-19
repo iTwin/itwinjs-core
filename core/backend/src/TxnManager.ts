@@ -8,7 +8,7 @@
 
 import * as touch from "touch";
 import {
-  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
+  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType, Id64Array, Id64String, IModelStatus, IndexMap, Logger, LogLevel, OrderedId64Array,
 } from "@itwin/core-bentley";
 import { ChangedEntities, EntityIdAndClassIdIterable, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -72,6 +72,34 @@ export interface ChangeInstanceKey {
 }
 
 type EntitiesChangedEvent = BeEvent<(changes: TxnChangedEntities) => void>;
+
+/** @internal */
+export interface TxnArgs {
+  id: Id64String;
+  type: "Data" | "Schema";
+  descr: string;
+}
+
+/** @internal */
+export interface ChangesetConflictArgs {
+  cause: DbConflictCause;
+  opcode: DbOpcode;
+  indirect: boolean;
+  tableName: string;
+  columnCount: number;
+  txn: TxnArgs;
+  getForeignKeyConflicts: () => number;
+  dump: () => void;
+  setLastError: (message: string) => void;
+  getPrimaryKeyColumns: () => number[];
+  getValueType: (columnIndex: number, stage: DbChangeStage) => DbValueType | null | undefined;
+  getValueBinary: (columnIndex: number, stage: DbChangeStage) => Uint8Array | null | undefined;
+  getValueId: (columnIndex: number, stage: DbChangeStage) => Id64String | null | undefined;
+  getValueText: (columnIndex: number, stage: DbChangeStage) => string | null | undefined;
+  getValueInteger: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
+  getValueDouble: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
+  isValueNull: (columnIndex: number, stage: DbChangeStage) => boolean | undefined;
+}
 
 /** Strictly for tests. @internal */
 export function setMaxEntitiesPerEvent(max: number): number {
@@ -338,6 +366,77 @@ export class TxnManager {
     this.touchWatchFile();
     this.onAfterUndoRedo.raiseEvent(isUndo);
     IpcHost.notifyTxns(this._iModel, "notifyAfterUndoRedo", isUndo);
+  }
+
+  /** @internal */
+  protected _onRebaseBeginLocalTxn(_txn: TxnArgs) {
+  }
+
+  /** @internal */
+  protected _onRebaseEndLocalTxn(_txn: TxnArgs) {
+  }
+
+  /** @internal */
+  protected _onRebaseLocalTxnConflict(args: ChangesetConflictArgs): DbConflictResolution {
+    const category = "DgnCore";
+    const interpretConflictCause = (cause: DbConflictCause) => {
+      switch (cause) {
+        case DbConflictCause.Data:
+          return "data";
+        case DbConflictCause.NotFound:
+          return "not found";
+        case DbConflictCause.Conflict:
+          return "conflict";
+        case DbConflictCause.Constraint:
+          return "constraint";
+        case DbConflictCause.ForeignKey:
+          return "foreign key";
+      }
+    };
+
+    if (args.cause === DbConflictCause.Data && !args.indirect) {
+      const msg = "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.";
+      args.setLastError(msg);
+      Logger.logError(category, msg);
+      args.dump();
+      return DbConflictResolution.Abort;
+    }
+
+    if (args.cause === DbConflictCause.Conflict) {
+      const msg = "PRIMARY KEY INSERT CONFLICT - rejecting this changeset";
+      args.setLastError(msg);
+      Logger.logError(category, msg);
+      args.dump();
+      return DbConflictResolution.Abort;
+
+    }
+
+    if (args.cause === DbConflictCause.ForeignKey) {
+      const nConflicts = args.getForeignKeyConflicts();
+      const msg = `Detected ${nConflicts} foreign key conflicts in ChangeSet. Aborting merge.`;
+      args.setLastError(msg);
+      return DbConflictResolution.Abort;
+    }
+
+    if (args.cause === DbConflictCause.NotFound) {
+      return DbConflictResolution.Skip;
+    }
+
+    if (args.cause === DbConflictCause.Constraint) {
+      if (Logger.isEnabled(category, LogLevel.Info)) {
+        Logger.logInfo(category, `Conflict detected - Cause: ${interpretConflictCause(args.cause)}`);
+        args.dump();
+      }
+      Logger.logWarning(category, "Constraint conflict handled by rejecting incoming change. Constraint conflicts are NOT expected. These happen most often when two clients both insert elements with the same code. That indicates a bug in the client or the code server.");
+      return DbConflictResolution.Skip;
+    }
+
+    if (Logger.isEnabled(category, LogLevel.Info)) {
+      Logger.logInfo(category, `Conflict detected - Cause: ${interpretConflictCause(args.cause)}`);
+      args.dump();
+      Logger.logInfo(category, "Conflicting resolved by replacing the existing entry with the change");
+    }
+    return DbConflictResolution.Replace;
   }
 
   /** Dependency handlers may call method this to report a validation error.

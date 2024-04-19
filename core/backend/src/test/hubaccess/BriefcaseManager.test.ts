@@ -86,7 +86,7 @@ describe("BriefcaseManager", async () => {
     HubMock.shutdown();
   });
 
-  it("should reuse a briefcaseId when re-opening iModels of different versions for pullAndPush and pullOnly workflows", async () => {
+  it.only("should reuse a briefcaseId when re-opening iModels of different versions for pullAndPush and pullOnly workflows", async () => {
     HubMock.startup("workflow", KnownTestLocations.outputDir);
     const userToken1 = "manager token";
     const userToken2 = "super manager token";

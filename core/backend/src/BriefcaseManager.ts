@@ -441,12 +441,14 @@ export class BriefcaseManager {
     if (reverse)
       changesets.reverse();
 
+    db.nativeDb.beginPullMerge("Rebase");
     for (const changeset of changesets) {
       const stopwatch = new StopWatch(`[${changeset.id}]`, true);
       Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
       await this.applySingleChangeset(db, changeset);
       Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
     }
+    db.nativeDb.endPullMerge();
     // notify listeners
     db.notifyChangesetApplied();
   }
