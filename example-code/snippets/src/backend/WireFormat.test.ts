@@ -43,6 +43,7 @@ describe("Wire Format Snippets", () => {
       },
       "description": "",
       "id": "0x1",
+      "lastMod": "2017-08-16T19:47:13.007Z",
       "model": "0x1"
     }
       // __PUBLISH_EXTRACT_END__
