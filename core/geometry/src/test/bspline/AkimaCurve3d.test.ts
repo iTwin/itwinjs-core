@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 
-import { AkimaCurve3d } from "../../bspline/AkimaCurve3d";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Sample } from "../../serialization/GeometrySamples";
+import { expect } from "chai";
 import { Checker } from "../Checker";
+import { Sample } from "../../serialization/GeometrySamples";
+import { AkimaCurve3d } from "../../bspline/AkimaCurve3d";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { GeometryQuery } from "../../curve/GeometryQuery";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 
 describe("AkimaCurve3d", () => {
