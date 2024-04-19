@@ -15,7 +15,7 @@ import { FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, GraphicPrimit
 export type OgcFeaturePropertyType = "string" | "number" | "integer" | "datetime" | "geometry" | "boolean";
 
 /** @internal */
-export interface ReadOgcFeaturesInfoOptions {
+export interface ReadOgcApiFeaturesInfoOptions {
   collection: Geojson.FeatureCollection;
   layerSettings: ImageMapLayerSettings;
   queryables?: any;
@@ -23,7 +23,7 @@ export interface ReadOgcFeaturesInfoOptions {
 }
 
 /** @internal */
-export class OgcFeaturesReader extends FeatureInfoReader  {
+export class OgcApiFeaturesReader extends FeatureInfoReader  {
   public transform: Transform | undefined;
 
   public constructor() {
@@ -65,7 +65,7 @@ export class OgcFeaturesReader extends FeatureInfoReader  {
     }
   }
 
-  public async readFeatureInfo(opts: ReadOgcFeaturesInfoOptions, featureInfos: MapLayerFeatureInfo[]) {
+  public async readFeatureInfo(opts: ReadOgcApiFeaturesInfoOptions, featureInfos: MapLayerFeatureInfo[]) {
     if (!Array.isArray(opts.collection.features))
       return;
 

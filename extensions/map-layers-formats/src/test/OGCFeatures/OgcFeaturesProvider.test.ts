@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as sinon from "sinon";
-import { DefaultOgcSymbology, OgcFeaturesProvider } from "../../OgcFeatures/OgcFeaturesProvider";
+import { DefaultOgcSymbology, OgcApiFeaturesProvider } from "../../OgcApiFeatures/OgcApiFeaturesProvider";
 import { ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { expect } from "chai";
 import { CountriesDataset } from "./CountriesDataset";
@@ -13,7 +13,7 @@ import { base64StringToUint8Array } from "@itwin/core-bentley";
 
 function stubFetchMetadata(sandbox: sinon.SinonSandbox, urlContent: { [url: string]: string }  ) {
 
-  return sandbox.stub(OgcFeaturesProvider.prototype as any, "fetchMetadata").callsFake(async function _(url: unknown): Promise<any> {
+  return sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchMetadata").callsFake(async function _(url: unknown): Promise<any> {
     return Promise.resolve(JSON.parse(urlContent[url as string]));
   });
 }
@@ -22,12 +22,12 @@ const getTestSettings = (url: string, subLayers = [{id: "public.countries", name
   return ImageMapLayerSettings.fromJSON({
     name: "test",
     url,
-    formatId: "OgcFeatures",
+    formatId: "OgcApiFeatures",
     subLayers,
   });
 };
 
-describe("OgcFeaturesProvider", () => {
+describe("OgcApiFeaturesProvider", () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(async () => {
@@ -46,16 +46,16 @@ describe("OgcFeaturesProvider", () => {
     const settings = getTestSettings(CountriesDataset.collectionUrl, undefined);
     stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
-    const fetchAllItemsStub = sandbox.stub(OgcFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
+    const fetchAllItemsStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
       return true;
     });
 
     const symbInitSpy = sinon.spy(DefaultOgcSymbology.prototype, "initialize");
-    const indexDataStub = sandbox.stub(OgcFeaturesProvider.prototype as any, "indexStaticData").callsFake(async function _() {
+    const indexDataStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "indexStaticData").callsFake(async function _() {
       return true;
     });
 
-    const provider = new OgcFeaturesProvider(settings);
+    const provider = new OgcApiFeaturesProvider(settings);
     await provider.initialize();
 
     expect((provider as any)._queryables).to.not.undefined;
@@ -76,11 +76,11 @@ describe("OgcFeaturesProvider", () => {
   it("should initialize when a specific collection URL is passed and a single subLayer id is specified", async () => {
     const settings = getTestSettings(CountriesDataset.collectionUrl);
     stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
-    const fetchAllItemsStub = sandbox.stub(OgcFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
+    const fetchAllItemsStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
       return false;
     });
 
-    const provider = new OgcFeaturesProvider(settings);
+    const provider = new OgcApiFeaturesProvider(settings);
 
     // Initialize should not throw since subLayer.Id = collection Id
     await provider.initialize();
@@ -95,11 +95,11 @@ describe("OgcFeaturesProvider", () => {
     urlContent[CountriesDataset.collectionUrl] = JSON.stringify(CountriesDataset.collection);
     urlContent[CountriesDataset.queryablesUrl] = JSON.stringify(CountriesDataset.queryables);
     stubFetchMetadata(sandbox,  urlContent);
-    const fetchAllItemsStub = sandbox.stub(OgcFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
+    const fetchAllItemsStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
       return false;
     });
 
-    const provider = new OgcFeaturesProvider(settings);
+    const provider = new OgcApiFeaturesProvider(settings);
     await provider.initialize();
 
     // FetchAllItems should have been called
@@ -111,13 +111,13 @@ describe("OgcFeaturesProvider", () => {
     urlContent[CountriesDataset.collectionUrl] = JSON.stringify(CountriesDataset.collection);
     urlContent[CountriesDataset.queryablesUrl] = JSON.stringify(CountriesDataset.queryables);
     stubFetchMetadata(sandbox,  urlContent);
-    sandbox.stub(OgcFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
+    sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
       return false;
     });
 
     // Now test with an invalid sublayer Id
     const settings = getTestSettings(CountriesDataset.collectionUrl, [{id: "bad", name:"bad" }]);
-    const provider = new OgcFeaturesProvider(settings);
+    const provider = new OgcApiFeaturesProvider(settings);
 
     // Initialize should not throw since subLayer.Id != collection Id
     await expect(provider.initialize()).to.be.rejectedWith(Error, `Collection metadata and sub-layers id mismatch`);
@@ -127,13 +127,13 @@ describe("OgcFeaturesProvider", () => {
 
     const stubMetadata = stubFetchMetadata(sandbox,  CountriesDataset.urlsContent);
 
-    const fetchAllItemsStub = sandbox.stub(OgcFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
+    const fetchAllItemsStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
       return false;
     });
 
     // Now test with an invalid sublayer Id
     const settings = getTestSettings(CountriesDataset.collectionItemsUrl);
-    const provider = new OgcFeaturesProvider(settings);
+    const provider = new OgcApiFeaturesProvider(settings);
     await provider.initialize();
 
     // FetchAllItems should have been called
@@ -148,13 +148,13 @@ describe("OgcFeaturesProvider", () => {
 
     const stubMetadata = stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
-    const fetchAllItemsStub = sandbox.stub(OgcFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
+    const fetchAllItemsStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
       return false;
     });
 
     // Now test with an invalid sublayer Id
     const settings = getTestSettings(CountriesDataset.collectionsUrl);
-    const provider = new OgcFeaturesProvider(settings);
+    const provider = new OgcApiFeaturesProvider(settings);
 
     // Initialize should not throw since subLayer.Id = collection Id
     await provider.initialize();
@@ -173,7 +173,7 @@ describe("OgcFeaturesProvider", () => {
 
     // Now test with an invalid sublayer Id
     const settings = getTestSettings(CountriesDataset.collectionUrl, [{id: "bad", name:"bad" }]);
-    const provider = new OgcFeaturesProvider(settings);
+    const provider = new OgcApiFeaturesProvider(settings);
 
     await expect(provider.initialize()).to.be.rejectedWith(Error, `Collection metadata and sub-layers id mismatch`);
   });
@@ -182,12 +182,12 @@ describe("OgcFeaturesProvider", () => {
 
     const stubMetadata = stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
-    const fetchAllItemsStub = sandbox.stub(OgcFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
+    const fetchAllItemsStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
       return false;
     });
     // Now test with an invalid sublayer Id
     const settings = getTestSettings(CountriesDataset.collectionUrl, undefined);
-    const provider = new OgcFeaturesProvider(settings);
+    const provider = new OgcApiFeaturesProvider(settings);
 
     // Initialize should not throw since subLayer.Id = collection Id
     await provider.initialize();
@@ -203,12 +203,12 @@ describe("OgcFeaturesProvider", () => {
 
     const stubMetadata = stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
-    const fetchAllItemsStub = sandbox.stub(OgcFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
+    const fetchAllItemsStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
       return false;
     });
     // Now test with an invalid sublayer Id
     const settings = getTestSettings(CountriesDataset.collectionUrl);
-    const provider = new OgcFeaturesProvider(settings);
+    const provider = new OgcApiFeaturesProvider(settings);
 
     // Initialize should not throw since subLayer.Id = collection Id
     await provider.initialize();
@@ -224,13 +224,13 @@ describe("OgcFeaturesProvider", () => {
 
     const stubMetadata = stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
-    const fetchAllItemsStub = sandbox.stub(OgcFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
+    const fetchAllItemsStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
       return false;
     });
 
     // Now test with an invalid sublayer Id
     const settings = getTestSettings(CountriesDataset.landingPageUrl);
-    const provider = new OgcFeaturesProvider(settings);
+    const provider = new OgcApiFeaturesProvider(settings);
     await provider.initialize();
 
     // FetchAllItems should have been called
@@ -245,7 +245,7 @@ describe("OgcFeaturesProvider", () => {
   it("should fetch all items and follow next page links on initialize" , async () => {
     stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
-    const tileRequestStub = sandbox.stub(OgcFeaturesProvider.prototype, "makeTileRequest").callsFake(async function _(url: string, _timeoutMs?: number ) {
+    const tileRequestStub = sandbox.stub(OgcApiFeaturesProvider.prototype, "makeTileRequest").callsFake(async function _(url: string, _timeoutMs?: number ) {
       const obj = {
         headers: { "content-type": "application/json" },
         json: async () => {
@@ -261,7 +261,7 @@ describe("OgcFeaturesProvider", () => {
 
     // Now test with an invalid sublayer Id
     const settings = getTestSettings(CountriesDataset.collectionUrl);
-    const provider = new OgcFeaturesProvider(settings);
+    const provider = new OgcApiFeaturesProvider(settings);
     await provider.initialize();
     expect(tileRequestStub.getCalls().length).to.equals(2);
     expect(tileRequestStub.getCall(0).args[0]).to.equals(`${CountriesDataset.collectionUrl}/items?limit=10000`);
@@ -271,14 +271,14 @@ describe("OgcFeaturesProvider", () => {
   it("should not make tile request in static mode" , async () => {
     stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
-    sandbox.stub(OgcFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
+    sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
       return true;
     });
-    sandbox.stub(OgcFeaturesProvider.prototype as any, "indexStaticData").callsFake(async function _() {
+    sandbox.stub(OgcApiFeaturesProvider.prototype as any, "indexStaticData").callsFake(async function _() {
       return true;
     });
-    sandbox.stub(OgcFeaturesProvider.prototype, "staticMode").get(() => true);
-    const tileRequestStub = sandbox.stub(OgcFeaturesProvider.prototype, "makeTileRequest").callsFake(async function _(url: string, _timeoutMs?: number ) {
+    sandbox.stub(OgcApiFeaturesProvider.prototype, "staticMode").get(() => true);
+    const tileRequestStub = sandbox.stub(OgcApiFeaturesProvider.prototype, "makeTileRequest").callsFake(async function _(url: string, _timeoutMs?: number ) {
       const obj = {
         headers: { "content-type": "application/json" },
         json: async () => {
@@ -300,7 +300,7 @@ describe("OgcFeaturesProvider", () => {
     });
     // Now test with an invalid sublayer Id
     const settings = getTestSettings(CountriesDataset.collectionUrl);
-    const provider = new OgcFeaturesProvider(settings);
+    const provider = new OgcApiFeaturesProvider(settings);
     await provider.initialize();
     await provider.loadTile(0, 0, 0);
 
@@ -311,14 +311,14 @@ describe("OgcFeaturesProvider", () => {
   it("should not make request while loading tile in static mode" , async () => {
     stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
-    sandbox.stub(OgcFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
+    sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
       return true;
     });
-    const indexStaticData = sandbox.stub(OgcFeaturesProvider.prototype as any, "indexStaticData").callsFake(async function _() {
+    const indexStaticData = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "indexStaticData").callsFake(async function _() {
       return true;
     });
-    sandbox.stub(OgcFeaturesProvider.prototype, "staticMode").get(() => true);
-    const tileRequestStub = sandbox.stub(OgcFeaturesProvider.prototype, "makeTileRequest").callsFake(async function _(url: string, _timeoutMs?: number ) {
+    sandbox.stub(OgcApiFeaturesProvider.prototype, "staticMode").get(() => true);
+    const tileRequestStub = sandbox.stub(OgcApiFeaturesProvider.prototype, "makeTileRequest").callsFake(async function _(url: string, _timeoutMs?: number ) {
       const obj = {
         headers: { "content-type": "application/json" },
         json: async () => {
@@ -341,7 +341,7 @@ describe("OgcFeaturesProvider", () => {
 
     // Now test with an invalid sublayer Id
     const settings = getTestSettings(CountriesDataset.collectionUrl);
-    const provider = new OgcFeaturesProvider(settings);
+    const provider = new OgcApiFeaturesProvider(settings);
     await provider.initialize();
     await provider.loadTile(0, 0, 0);
 
@@ -354,11 +354,11 @@ describe("OgcFeaturesProvider", () => {
     stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
     // By returning false we force the non-static mode
-    sandbox.stub(OgcFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
+    sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
       return false;
     });
 
-    const fetchItemsStub = sandbox.stub(OgcFeaturesProvider.prototype as any, "fetchItems").callsFake(async function _(_url: unknown, _timeoutMs?: unknown ) {
+    const fetchItemsStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchItems").callsFake(async function _(_url: unknown, _timeoutMs?: unknown ) {
       return CountriesDataset.singleItem;
     });
 
@@ -372,7 +372,7 @@ describe("OgcFeaturesProvider", () => {
 
     // Now test with an invalid sublayer Ida
     const settings = getTestSettings(CountriesDataset.collectionUrl);
-    const provider = new OgcFeaturesProvider(settings);
+    const provider = new OgcApiFeaturesProvider(settings);
     await provider.initialize();
     await provider.loadTile(0, 0, 0);
 
@@ -386,13 +386,13 @@ describe("OgcFeaturesProvider", () => {
   it("should handle exceptions from makeTileRequest" , async () => {
     stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
-    const makeTileRequestStub = sandbox.stub(OgcFeaturesProvider.prototype, "makeTileRequest").callsFake(async function _() {
+    const makeTileRequestStub = sandbox.stub(OgcApiFeaturesProvider.prototype, "makeTileRequest").callsFake(async function _() {
       throw new Error();
     });
 
     // Now test with an invalid sublayer Ida
     const settings = getTestSettings(CountriesDataset.collectionUrl);
-    const provider = new OgcFeaturesProvider(settings);
+    const provider = new OgcApiFeaturesProvider(settings);
     await provider.initialize();
     const success = await (provider as any).fetchAllItems();
 
@@ -403,7 +403,7 @@ describe("OgcFeaturesProvider", () => {
   it("should create image source from data url" , async () => {
     // Now test with an invalid sublayer Ida
     const settings = getTestSettings(CountriesDataset.collectionUrl);
-    const provider = new OgcFeaturesProvider(settings);
+    const provider = new OgcApiFeaturesProvider(settings);
     const base64Png = "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsEAAA7BAbiRa+0AAAAiSURBVDhPY2RgYPgPxGQDJihNNhg1YNQAEBg1YOANYGAAAE1AAR90Oy6aAAAAAElFTkSuQmCC";
     const sampleDataUrl = `data:image/png;base64,${base64Png}`;
     const imageSource: ImageSource = (provider as any).createImageSourceFromDataURL(sampleDataUrl, ImageSourceFormat.Png);

@@ -12,11 +12,11 @@ import { FeatureCanvasRenderer } from "../Feature/FeatureCanvasRenderer";
 import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
 import * as Geojson from "geojson";
 import { FeatureDefaultSymbology } from "../Feature/FeatureSymbology";
-import { OgcFeaturesReader } from "./OgcFeaturesReader";
+import { OgcApiFeaturesReader } from "./OgcApiFeaturesReader";
 import { RandomMapColor } from "../Feature/RandomMapColor";
 import { DefaultMarkerIcon } from "../Feature/DefaultMarkerIcon";
 
-const loggerCategory = "MapLayersFormats.OgcFeatures";
+const loggerCategory = "MapLayersFormats.OgcApiFeatures";
 const dataUrlHeaderToken = "base64,";
 
 /**  Provide tiles from a ESRI ArcGIS Feature service
@@ -96,7 +96,7 @@ export class DefaultOgcSymbology implements FeatureDefaultSymbology {
   }
 }
 /** @internal */
-export class OgcFeaturesProvider extends MapLayerImageryProvider {
+export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
 
   // Debug flags, should always be committed to FALSE !
   private readonly _drawDebugInfo = false;
@@ -291,7 +291,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       if (e instanceof DOMException && e.name === "AbortError") {
         Logger.logInfo(loggerCategory, "Request to fetch all features time out, switching to tile mode.");
       } else {
-        Logger.logError(loggerCategory, "Unknown error occurred when fetching OgcFeatures data.");
+        Logger.logError(loggerCategory, "Unknown error occurred when fetching OgcApiFeatures data.");
       }
     }
     return success ? data : undefined;
@@ -435,7 +435,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       } catch (_e) {
       }
       if (!data) {
-        Logger.logError(loggerCategory, "Could not fetch OgcFeatures data.");
+        Logger.logError(loggerCategory, "Could not fetch OgcApiFeatures data.");
       }
     }
 
@@ -469,7 +469,7 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
       const symbRenderer = ArcGisSymbologyCanvasRenderer.create(this._renderer, this._defaultSymbol);
       const renderer = new FeatureCanvasRenderer(ctx, symbRenderer, transfo);
 
-      const featureReader  = new OgcFeaturesReader();
+      const featureReader  = new OgcApiFeaturesReader();
 
       await featureReader.readAndRender(data, renderer);
       if (this._drawDebugInfo)
@@ -528,10 +528,10 @@ export class OgcFeaturesProvider extends MapLayerImageryProvider {
     } catch (_e) {
     }
     if (!data) {
-      Logger.logError(loggerCategory, "Could not fetch OgcFeatures data.");
+      Logger.logError(loggerCategory, "Could not fetch OgcApiFeatures data.");
     }
 
-    const featureReader = new OgcFeaturesReader();
+    const featureReader = new OgcApiFeaturesReader();
     await featureReader.readFeatureInfo({
       collection:data,
       layerSettings: this._settings,

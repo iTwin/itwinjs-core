@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { ImageryMapLayerFormat, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, UrlUtils, ValidateSourceArgs } from "@itwin/core-frontend";
-import { OgcFeaturesProvider } from "./OgcFeaturesProvider";
+import { OgcApiFeaturesProvider } from "./OgcApiFeaturesProvider";
 
 /** @internal */
-export class OgcFeaturesMapLayerFormat extends ImageryMapLayerFormat {
-  public static override formatId = "OgcFeatures";
-  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined { return new OgcFeaturesProvider(settings); }
+export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
+  public static override formatId = "OgcApiFeatures";
+  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined { return new OgcApiFeaturesProvider(settings); }
 
   public static override async validate(args: ValidateSourceArgs): Promise<MapLayerSourceValidation> {
 

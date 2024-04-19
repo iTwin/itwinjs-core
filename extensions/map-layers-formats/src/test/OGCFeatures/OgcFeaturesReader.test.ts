@@ -6,17 +6,17 @@
 import * as sinon from "sinon";
 import { expect } from "chai";
 import { MapLayerFeatureInfo } from "@itwin/core-frontend";
-import { OgcFeaturesReader, ReadOgcFeaturesInfoOptions } from "../../OgcFeatures/OgcFeaturesReader";
+import { OgcApiFeaturesReader, ReadOgcApiFeaturesInfoOptions } from "../../OgcApiFeatures/OgcApiFeaturesReader";
 import { PhillyDataset } from "./PhillyDataset";
 import { FakeSymbGeomRenderer, MockFeatureSymbologyRenderer, MockGeometryRenderer, MockGraphicsRenderer } from "./Mocks";
 import { GeoJSONGeometryReader } from "../../GeoJSON/GeoJSONGeometryReader";
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { CountriesDataset } from "./CountriesDataset";
 
-describe("OgcFeaturesReader", () => {
+describe("OgcApiFeaturesReader", () => {
   const sandbox = sinon.createSandbox();
 
-  const testFeatureInfo = async (reader: OgcFeaturesReader, opts: ReadOgcFeaturesInfoOptions, infos: MapLayerFeatureInfo[]) => {
+  const testFeatureInfo = async (reader: OgcApiFeaturesReader, opts: ReadOgcApiFeaturesInfoOptions, infos: MapLayerFeatureInfo[]) => {
     await reader.readFeatureInfo(opts, infos);
     expect(infos.length).to.eqls(1);
     expect(infos[0].subLayerInfos?.length).to.eqls(1);
@@ -32,7 +32,7 @@ describe("OgcFeaturesReader", () => {
 
   it("should read multi features", async () => {
 
-    const reader = new OgcFeaturesReader();
+    const reader = new OgcApiFeaturesReader();
     const renderPathSpy = sandbox.spy(GeoJSONGeometryReader.prototype, "readGeometry");
     await reader.readAndRender(PhillyDataset.multiItemPoint as any, new MockGeometryRenderer());
     expect(renderPathSpy.getCalls().length).to.equals(PhillyDataset.multiItemPoint.features.length);
@@ -40,7 +40,7 @@ describe("OgcFeaturesReader", () => {
   });
 
   it("should read features and update the symbology renderer", async () => {
-    const reader = new OgcFeaturesReader();
+    const reader = new OgcApiFeaturesReader();
     const fakeGeomRenderer = new FakeSymbGeomRenderer();
     const mockSymbRenderer = fakeGeomRenderer.symbolRenderer as MockFeatureSymbologyRenderer;
     mockSymbRenderer.rendererFields = ["gid", "objectid"];
@@ -53,14 +53,14 @@ describe("OgcFeaturesReader", () => {
 
   it("should read features info", async () => {
 
-    const reader = new OgcFeaturesReader();
+    const reader = new OgcApiFeaturesReader();
     const layerSettings = ImageMapLayerSettings.fromJSON({
       name: "test",
       url: "",
-      formatId: "OgcFeatures",
+      formatId: "OgcApiFeatures",
     });
     const geomRenderer = new MockGraphicsRenderer();
-    const opts: ReadOgcFeaturesInfoOptions = {
+    const opts: ReadOgcApiFeaturesInfoOptions = {
       collection: CountriesDataset.singleItem as any,
       layerSettings,
       queryables: CountriesDataset.queryables,
@@ -77,13 +77,13 @@ describe("OgcFeaturesReader", () => {
 
   it("should read features info without geometry renderer", async () => {
 
-    const reader = new OgcFeaturesReader();
+    const reader = new OgcApiFeaturesReader();
     const layerSettings = ImageMapLayerSettings.fromJSON({
       name: "test",
       url: "",
-      formatId: "OgcFeatures",
+      formatId: "OgcApiFeatures",
     });
-    const opts: ReadOgcFeaturesInfoOptions = {
+    const opts: ReadOgcApiFeaturesInfoOptions = {
       collection: CountriesDataset.singleItem as any,
       layerSettings,
       queryables: CountriesDataset.queryables,

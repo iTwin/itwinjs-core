@@ -184,7 +184,7 @@ export class AttachModelMapLayerTool extends Tool {
 }
 
 // @beta
-export class AttachOgcFeaturesMapLayerTool extends AttachMapLayerByURLBaseTool {
+export class AttachOgcApiFeaturesMapLayerTool extends AttachMapLayerByURLBaseTool {
     constructor();
     // (undocumented)
     static toolId: string;

@@ -11,7 +11,7 @@ import { IModelApp } from "@itwin/core-frontend";
 import { ArcGisFeatureMapLayerFormat } from "./ArcGisFeature/ArcGisFeatureFormat";
 import { MapFeatureInfoTool } from "./Tools/MapFeatureInfoTool";
 import { Localization } from "@itwin/core-common";
-import { OgcFeaturesMapLayerFormat } from "./OgcFeatures/OgcFeaturesFormat";
+import { OgcApiFeaturesMapLayerFormat } from "./OgcApiFeatures/OgcApiFeaturesFormat";
 
 /** Configuration options.
  * @beta
@@ -36,7 +36,7 @@ export class MapLayersFormats {
     assert(IModelApp.initialized, "MapLayersFormats.initialize must be called after IModelApp.startup and before IModelApp.shutdown");
     if (IModelApp.initialized) {
       IModelApp.mapLayerFormatRegistry.register(ArcGisFeatureMapLayerFormat);
-      IModelApp.mapLayerFormatRegistry.register(OgcFeaturesMapLayerFormat);
+      IModelApp.mapLayerFormatRegistry.register(OgcApiFeaturesMapLayerFormat);
     }
 
     // register namespace containing localized strings for this package
