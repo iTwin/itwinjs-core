@@ -70,6 +70,18 @@ export interface IpcAppNotifications {
   notifyApp: () => void;
 }
 
+/** Wire format for TxnNotifications' notifyElementsChanged and notifyModelsChanged.
+ * It adds 3 "class" arrays that parallel the inserted, updated, and deleted sets such that the nth entry in the class array provides
+ * the index of the full BIS class name of the nth entity in the set.
+ * @internal
+ */
+export interface NotifyEntitiesChangedArgs extends ChangedEntities {
+  insertedClass: number[];
+  deletedClass: number[];
+  updatedClass: number[];
+  classNames: string[];
+}
+
 /** Interface implemented by the frontend [NotificationHandler]($common) to be notified of changes to an iModel.
  * @see [TxnManager]($backend) for the source of these events.
  * @see [BriefcaseTxns]($frontend) for the frontend implementation.

@@ -10,7 +10,9 @@ import * as touch from "touch";
 import {
   assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
 } from "@itwin/core-bentley";
-import { ChangedEntities, EntityIdAndClassIdIterable, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@itwin/core-common";
+import {
+  ChangedEntities, EntityIdAndClassIdIterable, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs,
+} from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
@@ -111,9 +113,14 @@ class ChangedEntitiesArray {
     this._classIndices.length = 0;
   }
 
-  public addToChangedEntities(entities: ChangedEntities, type: "deleted" | "inserted" | "updated"): void {
-    if (this.entityIds.length > 0)
+  public addToChangedEntities(entities: NotifyEntitiesChangedArgs, type: "deleted" | "inserted" | "updated"): void {
+    if (this.entityIds.length > 0) {
       entities[type] = CompressedId64Set.compressIds(this.entityIds);
+
+      // NB: Caller won't call `clear` until after dispatching the event,
+      // but copy the array anyway in case an event listener tries to save the event for later processing.
+      entities[`${type}Class`] = [...this._classIndices];
+    }
   }
 
   public iterable(classIds: Id64Array): EntityIdAndClassIdIterable {
@@ -166,11 +173,28 @@ class ChangedEntitiesProc {
     evt.raiseEvent(txnEntities);
 
     // Notify frontend listeners.
-    const entities: ChangedEntities = {};
-    this._inserted.addToChangedEntities(entities, "inserted");
-    this._deleted.addToChangedEntities(entities, "deleted");
-    this._updated.addToChangedEntities(entities, "updated");
-    IpcHost.notifyTxns(iModel, evtName, entities);
+    const args: NotifyEntitiesChangedArgs = {
+      insertedClass: [],
+      deletedClass: [],
+      updatedClass: [],
+      classNames: [],
+    };
+
+    const selectClassId = "SELECT Name FROM ec_class WHERE Id = ?";
+    iModel.withPreparedSqliteStatement(selectClassId, (stmt) => {
+      args.classNames = classIds.map((classId) => {
+        stmt.bindId(1, classId);
+        // Potentially processing a class that was removed/undone by a schema change?
+        const className = DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValueString(0) : classId;
+        stmt.reset();
+        return className;
+      });
+    })
+    
+    this._inserted.addToChangedEntities(args, "inserted");
+    this._deleted.addToChangedEntities(args, "deleted");
+    this._updated.addToChangedEntities(args, "updated");
+    IpcHost.notifyTxns(iModel, evtName, args);
 
     // Reset state.
     this._inserted.clear();
