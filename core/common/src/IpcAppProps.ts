@@ -88,8 +88,8 @@ export interface NotifyEntitiesChangedArgs extends ChangedEntities {
  * @internal
  */
 export interface TxnNotifications {
-  notifyElementsChanged: (changes: ChangedEntities) => void;
-  notifyModelsChanged: (changes: ChangedEntities) => void;
+  notifyElementsChanged: (changes: NotifyEntitiesChangedArgs) => void;
+  notifyModelsChanged: (changes: NotifyEntitiesChangedArgs) => void;
   notifyGeometryGuidsChanged: (changes: ModelIdAndGeometryGuid[]) => void;
   notifyCommit: () => void;
   notifyCommitted: (hasPendingTxns: boolean, time: number) => void;

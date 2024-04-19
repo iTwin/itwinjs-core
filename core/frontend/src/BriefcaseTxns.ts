@@ -9,7 +9,7 @@
 import { BeEvent } from "@itwin/core-bentley";
 import {
   ChangedEntities, ChangesetIndexAndId, EcefLocation, EcefLocationProps, GeographicCRS, GeographicCRSProps, IModelStatus, ipcAppChannels,
-  ModelIdAndGeometryGuid, RemoveFunction, RootSubjectProps, TxnNotifications,
+  ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, RemoveFunction, RootSubjectProps, TxnNotifications,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, XYZProps } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
@@ -217,12 +217,12 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   }
 
   /** @internal */
-  public notifyElementsChanged(changed: ChangedEntities): void {
+  public notifyElementsChanged(changed: NotifyEntitiesChangedArgs): void {
     this.onElementsChanged.raiseEvent(changed);
   }
 
   /** @internal */
-  public notifyModelsChanged(changed: ChangedEntities): void {
+  public notifyModelsChanged(changed: NotifyEntitiesChangedArgs): void {
     this.onModelsChanged.raiseEvent(changed);
   }
 
