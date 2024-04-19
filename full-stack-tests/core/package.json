@@ -81,7 +81,7 @@
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
     "eslint": "^8.44.0",
-    "glob": "^7.1.2",
+    "glob": "^10.3.12",
     "https-browserify": "^1.0.0",
     "internal-tools": "workspace:*",
     "mkdirp": "^1.0.4",
