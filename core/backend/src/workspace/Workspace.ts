@@ -468,8 +468,6 @@ class WorkspaceImpl implements Workspace {
   public readonly settings: Settings;
   private _cloudCache?: CloudSqlite.CloudCache;
   public getCloudCache(): CloudSqlite.CloudCache {
-    const mycloudCache = this._cloudCache ??= CloudSqlite.CloudCaches.getCache({ cacheName: "Workspace", cacheSize: "20G" });
-    mycloudCache.setLogMask(CloudSqlite.LoggingMask.HTTP);
     return this._cloudCache ??= CloudSqlite.CloudCaches.getCache({ cacheName: "Workspace", cacheSize: "20G" });
   }
 
