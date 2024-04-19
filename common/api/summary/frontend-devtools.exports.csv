@@ -12,7 +12,7 @@ beta;AttachCesiumAssetTool
 beta;AttachMapLayerTool 
 beta;AttachMapOverlayTool 
 beta;AttachModelMapLayerTool 
-beta;AttachOgcFeaturesMapLayerTool 
+beta;AttachOgcApiFeaturesMapLayerTool 
 beta;AttachRealityModelTool 
 beta;AttachTileURLMapLayerByUrlTool 
 beta;AttachWmsMapLayerByUrlTool 
