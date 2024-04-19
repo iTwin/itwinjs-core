@@ -384,7 +384,13 @@ export abstract class IModelDb extends IModel {
     GeoCoordConfig.loadForImodel(this.workspace.settings); // load gcs data specified by iModel's settings dictionaries, must be done before calling initializeIModelDb
 
     this.initializeIModelDb();
-    IModelDb._openDbs.set(this._fileKey, this);
+    // TODO: The nativeDb should always be open here and there is no valid codepath that will get
+    // here with nativeDb closed. Future versions should throw an exception otherwise. However, for
+    // backwards compatibility for tests that stub "fake" IModelDb, just ignore it in the list of
+    // opened Dbs.
+    // Note: Keith Bentley provided the above comment.
+    if (this.isOpen)
+      IModelDb._openDbs.set(this._fileKey, this);
 
     if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
       IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
@@ -945,7 +951,9 @@ export abstract class IModelDb extends IModel {
   */
   public static findByFilename(fileName: LocalFileName): IModelDb | undefined {
     for (const entry of this._openDbs) {
-      if (entry[1].pathName === fileName)
+      // It shouldn't be possible for anything in _openDbs to not be open, but unit test stubs
+      // have caused that to happen.
+      if (entry[1].isOpen && entry[1].pathName === fileName)
         return entry[1];
     }
     return undefined;
