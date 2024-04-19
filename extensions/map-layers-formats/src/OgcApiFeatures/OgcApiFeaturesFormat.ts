@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
-import { ImageryMapLayerFormat, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, UrlUtils, ValidateSourceArgs } from "@itwin/core-frontend";
+import { appendQueryParams, ImageryMapLayerFormat, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, ValidateSourceArgs } from "@itwin/core-frontend";
 import { OgcApiFeaturesProvider } from "./OgcApiFeaturesProvider";
 
 /** @internal */
@@ -28,8 +28,8 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
         headers,
       };
 
-      let url = UrlUtils.appendQueryParams(source.url, source.savedQueryParams);
-      url = UrlUtils.appendQueryParams(url, source.unsavedQueryParams);
+      let url = appendQueryParams(source.url, source.savedQueryParams);
+      url = appendQueryParams(url, source.unsavedQueryParams);
       let response = await fetch(url, opts);
       let json = await response.json();
       if (!json) {
@@ -77,8 +77,8 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
       } else if (Array.isArray(json.links)) {
         // This might be the main landing page
         const collectionsLink = json.links.find((link: any)=> link.rel.includes("data") && link.type === "application/json");
-        let collectionsUrl = UrlUtils.appendQueryParams(collectionsLink.href, source.savedQueryParams);
-        collectionsUrl = UrlUtils.appendQueryParams(collectionsUrl, source.unsavedQueryParams);
+        let collectionsUrl = appendQueryParams(collectionsLink.href, source.savedQueryParams);
+        collectionsUrl = appendQueryParams(collectionsUrl, source.unsavedQueryParams);
         response = await fetch(collectionsUrl, opts);
         json = await response.json();
         if (Array.isArray(json.collections)) {

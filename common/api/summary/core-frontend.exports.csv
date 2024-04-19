@@ -42,6 +42,7 @@ internal;AnimationBranchStates
 internal;AnimationNodeId
 public;Animator
 internal;AnyImdlPrimitive = ImdlMeshPrimitive | ImdlPolylinePrimitive | ImdlPointStringPrimitive
+internal;appendQueryParams(url: string, queryParams?:
 internal;ArcGisErrorCode
 internal;ArcGisGeometryReaderJSON
 internal;ArcGisGetServiceJsonArgs
@@ -955,7 +956,6 @@ internal;UniqueTileUserSets
 public;UnitFormattingSettingsProvider
 public;UnitNameKey = string
 internal;UpsampledMapTile 
-internal;UrlUtils
 beta;UserPreferencesAccess
 beta;ValidateSourceArgs
 public;VaryingType

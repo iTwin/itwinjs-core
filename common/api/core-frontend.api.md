@@ -1179,6 +1179,11 @@ export interface Animator {
 export type AnyImdlPrimitive = ImdlMeshPrimitive | ImdlPolylinePrimitive | ImdlPointStringPrimitive;
 
 // @internal
+export function appendQueryParams(url: string, queryParams?: {
+    [key: string]: string;
+}): string;
+
+// @internal
 export enum ArcGisErrorCode {
     // (undocumented)
     InvalidCredentials = 401,
@@ -15586,13 +15591,6 @@ export class UpsampledMapTile extends MapTile {
     markUsed(args: TileDrawArgs): void;
     // (undocumented)
     get renderGeometry(): RenderTerrainGeometry | undefined;
-}
-
-// @internal (undocumented)
-export class UrlUtils {
-    static appendQueryParams(url: string, queryParams?: {
-        [key: string]: string;
-    }): string;
 }
 
 // @beta

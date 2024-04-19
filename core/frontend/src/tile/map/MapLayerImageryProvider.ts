@@ -12,7 +12,7 @@ import { Angle } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { ScreenViewport } from "../../Viewport";
-import { GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapTilingScheme, QuadId, UrlUtils, WebMercatorTilingScheme } from "../internal";
+import { appendQueryParams, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 import { HitDetail } from "../../HitDetail";
 import { headersIncludeAuthMethod, setBasicAuthorization, setRequestTimeout } from "../../request/utils";
 
@@ -486,8 +486,8 @@ export abstract class MapLayerImageryProvider {
     if (!this._settings.savedQueryParams && !this._settings.unsavedQueryParams)
       return url;
 
-    let tmpUrl = UrlUtils.appendQueryParams(url, this._settings.savedQueryParams);
-    tmpUrl = UrlUtils.appendQueryParams(tmpUrl, this._settings.unsavedQueryParams);
+    let tmpUrl = appendQueryParams(url, this._settings.savedQueryParams);
+    tmpUrl = appendQueryParams(tmpUrl, this._settings.unsavedQueryParams);
     return tmpUrl;
   }
 }
