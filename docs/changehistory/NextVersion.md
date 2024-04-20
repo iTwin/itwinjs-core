@@ -6,10 +6,15 @@ publish: false
 
 Table of contents:
 
+- [Text APIs](#text-apis)
 - [Display](#display)
   - [Compressed 3D assets](#compressed-3d-assets)
 - [Electron 30 support](#electron-30-support)
 - [API deprecations](#api-deprecations)
+
+## Text APIs
+
+iTwin.js now provides APIs for creating and manipulating blocks of formatted text. A [TextBlock]($common) defines [Run]($common)s of text grouped into paragraphs. Each run can be formatted differently, based on its [TextStyle]($common). A text block can be associated with 2d or 3d model as a [TextAnnotation]($common). Annotations can be persisted as [TextAnnotation2d]($backend) and [TextAnnotation3d]($backend) elements, causing the text block to be displayed when viewing the model. Updating the annotation stored on the element via [TextAnnotation2d.setAnnotation]($backend) or [TextAnnotation3d.setAnnotation]($backend) will also update the geometric representation of the element. You can also produce a geometric representation of an annotation via [produceTextAnnotationGeometry]($backend), which can then be added to a geometry stream using [GeometryStreamBuilder.appendTextBlock]($common).
 
 ## Display
 

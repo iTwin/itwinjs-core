@@ -9,8 +9,10 @@ import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { IModelHost, IModelHostOptions, LocalhostIpcHost } from "@itwin/core-backend";
-import { IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager, SnapshotIModelRpcInterface } from "@itwin/core-common";
+import { IModelDb, IModelHost, IModelHostOptions, LocalhostIpcHost, produceTextAnnotationGeometry } from "@itwin/core-backend";
+import {
+  IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager, SnapshotIModelRpcInterface, TextAnnotation, TextAnnotationProps, TextBlockGeometryProps,
+} from "@itwin/core-common";
 import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -175,6 +177,12 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 
   public override async getAccessToken(): Promise<string> {
     return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
+  }
+
+  public override async produceTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps): Promise<TextBlockGeometryProps> {
+    const iModel = IModelDb.findByKey(iModelToken.key);
+    const annotation = TextAnnotation.fromJSON(annotationProps);
+    return produceTextAnnotationGeometry({ iModel, annotation });
   }
 }
 

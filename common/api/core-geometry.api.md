@@ -4159,6 +4159,7 @@ export class Point2d extends XY implements BeJSONFunctions {
     plus3Scaled(vectorA: XAndY, scalarA: number, vectorB: XAndY, scalarB: number, vectorC: XAndY, scalarC: number, result?: Point2d): Point2d;
     plusScaled(vector: XAndY, scaleFactor: number, result?: Point2d): Point2d;
     plusXY(dx?: number, dy?: number, result?: Point2d): Point2d;
+    scaleInPlace(scale: number): void;
 }
 
 // @public
@@ -4943,6 +4944,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     constructor(lowX?: number, lowY?: number, highX?: number, highY?: number);
     get center(): Point2d;
     clone(result?: this): this;
+    cloneTranslated(shift: XAndY, result?: this): this;
     containsPoint(point: XAndY): boolean;
     containsRange(other: LowAndHighXY): boolean;
     containsXY(x: number, y: number): boolean;
