@@ -1,5 +1,8 @@
 lockfileVersion: 5.4
 
+overrides:
+  mysql2: ^3.9.4
+
 importers:
 
   .:
@@ -5989,9 +5992,9 @@ packages:
       lokijs: 1.5.12
       morgan: 1.10.0
       multistream: 2.1.1
-      mysql2: 3.7.1
+      mysql2: 3.9.6
       rimraf: 3.0.2
-      sequelize: 6.35.2_tzgr72vms3h4goocrl5366wzf4
+      sequelize: 6.35.2_h5xd2ht7l23sq7kmzts5gomubi
       stoppable: 1.1.0
       tedious: 16.6.1
       to-readable-stream: 2.1.0
@@ -10161,8 +10164,8 @@ packages:
       readable-stream: 2.3.8
     dev: false
 
-  /mysql2/3.7.1:
-    resolution: {integrity: sha512-4EEqYu57mnkW5+Bvp5wBebY7PpfyrmvJ3knHcmLkp8FyBu4kqgrF2GxIjsC2tbLNZWqJaL21v/MYH7bU5f03oA==}
+  /mysql2/3.9.6:
+    resolution: {integrity: sha512-9NYUMLQv6yXnu+5hUh8PZ5CdKoG6VWDzXbojIdTyob8upNZXU3rBNQK9viaEqfgw+LMifhd+53VEZPxZk3bTWA==}
     engines: {node: '>= 8.0'}
     dependencies:
       denque: 2.1.0
@@ -11634,7 +11637,7 @@ packages:
     engines: {node: '>= 10.0.0'}
     dev: false
 
-  /sequelize/6.35.2_tzgr72vms3h4goocrl5366wzf4:
+  /sequelize/6.35.2_h5xd2ht7l23sq7kmzts5gomubi:
     resolution: {integrity: sha512-EdzLaw2kK4/aOnWQ7ed/qh3B6/g+1DvmeXr66RwbcqSm/+QRS9X0LDI5INBibsy4eNJHWIRPo3+QK0zL+IPBHg==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
@@ -11675,7 +11678,7 @@ packages:
       lodash: 4.17.21
       moment: 2.30.1
       moment-timezone: 0.5.44
-      mysql2: 3.7.1
+      mysql2: 3.9.6
       pg-connection-string: 2.6.2
       retry-as-promised: 7.0.4
       semver: 7.6.0
