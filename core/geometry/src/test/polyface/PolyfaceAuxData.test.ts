@@ -190,12 +190,23 @@ describe("PolyfaceAuxData", () => {
         const meshJson = json ? IModelJson.Reader.parse(json) as IndexedPolyface : undefined;
         if (ck.testType(meshFB, IndexedPolyface) && ck.testType(meshJson, IndexedPolyface))
           ck.testTrue(meshFB.isAlmostEqual(meshJson), "roundtrip through FB compares to roundtrip through JSON");
-        }
+      }
 
-      // sanity check flatbuffer text file write
+      // sanity check flatbuffer file write
       const bytes2 = BentleyGeometryFlatBuffer.geometryToBytes(mesh2, true);
-      if (bytes2)
-        GeometryCoreTestIO.writeByteArrayToTextFile(bytes2, "PolyfaceAuxData", `Compress`, undefined, "fbjs");
+      if (bytes2 && GeometryCoreTestIO.enableSave) {
+        const dir = "PolyfaceAuxData";
+        const filename = "Compress";
+        GeometryCoreTestIO.writeByteArrayToTextFile(bytes2, dir, filename, undefined, "fbjs");  // used for fuzz seed
+        const pathname = GeometryCoreTestIO.makeOutputDir(dir).concat(`/${filename}`).concat(".fb");
+        GeometryCoreTestIO.writeBytesToFile(bytes2, pathname);
+        const bytes3 = GeometryCoreTestIO.readBytesFromFile(pathname);
+        if (ck.testDefined(bytes3, "read file")) {
+          ck.testTrue(bytes2.length === bytes3.length, "read expected number bytes");
+          for (let i = 0; i < bytes2.length; ++i)
+            ck.testTrue(bytes2[i] === bytes3[i], "bytes are the same");
+        }
+      }
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceAuxData", "Compress");

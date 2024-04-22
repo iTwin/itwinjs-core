@@ -55,7 +55,7 @@ export class GeometryCoreTestIO {
       return;
     console.timeEnd(label); // eslint-disable-line no-console
   }
-  private static makeOutputDir(subDirectoryName?: string): string {
+  public static makeOutputDir(subDirectoryName?: string): string {
     let path = GeometryCoreTestIO.outputRootDirectory;
     if (!fs.existsSync(path))
       fs.mkdirSync(path);
@@ -92,6 +92,21 @@ export class GeometryCoreTestIO {
         fs.writeFileSync(filename, JSON.stringify(data[property])); // prettyPrint(data[property]));
       }
     }
+  }
+
+  // write bytes to binary file
+  public static writeBytesToFile(bytes: Uint8Array, fullFilePath: string) {
+    if (!this.enableSave)
+      return;
+    fs.writeFileSync(fullFilePath, bytes, {encoding: "binary"});
+  }
+
+  // read bytes from binary file
+  public static readBytesFromFile(fullPathName: string): Uint8Array | undefined {
+    if (!this.enableSave)
+      return undefined;
+    const buf = fs.readFileSync(fullPathName);
+    return buf.length > 0 ? new Uint8Array(buf) : undefined;
   }
 
   // write bytes to text file (like native GTestFileOps::WriteByteArrayToTextFile)
