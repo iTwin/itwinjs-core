@@ -41,6 +41,7 @@ class List extends LRUTileList {
 
   public moveTileToEnd(tile: Tile) { this.moveToEnd(tile); }
   public moveTileBeforeSentinel(tile: Tile) { this.moveBeforeSentinel(tile); }
+  public moveTileAfterSentinel(tile: Tile) { this.moveAfterSentinel(tile); }
 }
 
 function expectUnlinked(node: LRUTileListNode): void {
@@ -62,32 +63,31 @@ describe("LRUTileList", () => {
       tiles.push(tile);
       list.add(tile);
 
-      expect(list.head).to.equal(tiles[0]);
-      expect(list.tail).to.equal(list.sentinel);
-      expect(tile.previous).to.equal(i > 0 ? tiles[i - 1] : undefined);
-      if (tile.previous)
-        expect(tile.previous.next).to.equal(tile);
-
-      expect(tile.next).to.equal(list.sentinel);
+      expect(list.head).to.equal(list.sentinel);
+      expect(list.tail).to.equal(tiles[0]);
+      expect(tile.previous).to.equal(list.sentinel);
+      expect(tile.next).to.equal(i > 0 ? tiles[i - 1] : undefined);
+      if (tile.next)
+        expect(tile.next.previous).to.equal(tile);
     }
 
-    list.expectOrder(...tiles, list.sentinel);
+    list.expectOrder(list.sentinel, tiles[4], tiles[3], tiles[2], tiles[1], tiles[0]);
 
     list.drop(tiles[3]);
     expectUnlinked(tiles[3]);
-    expect(tiles[2].next).to.equal(tiles[4]);
-    expect(tiles[4].previous).to.equal(tiles[2]);
-    list.expectOrder(tiles[0], tiles[1], tiles[2], tiles[4], list.sentinel);
+    expect(tiles[2].previous).to.equal(tiles[4]);
+    expect(tiles[4].next).to.equal(tiles[2]);
+    list.expectOrder(list.sentinel, tiles[4], tiles[2], tiles[1], tiles[0]);
 
     list.drop(tiles[4]);
     expectUnlinked(tiles[4]);
-    list.expectOrder(tiles[0], tiles[1], tiles[2], list.sentinel);
+    list.expectOrder(list.sentinel, tiles[2], tiles[1], tiles[0]);
 
-    expect(list.head).to.equal(tiles[0]);
+    expect(list.tail).to.equal(tiles[0]);
     list.drop(tiles[0]);
     expectUnlinked(tiles[0]);
-    expect(list.head).to.equal(tiles[1]);
-    list.expectOrder(tiles[1], tiles[2], list.sentinel);
+    expect(list.tail).to.equal(tiles[1]);
+    list.expectOrder(list.sentinel, tiles[2], tiles[1]);
   });
 
   it("ignores empty nodes", () => {
@@ -109,23 +109,32 @@ describe("LRUTileList", () => {
     const s = list.sentinel;
 
     list.add(t1);
+    list.moveTileBeforeSentinel(t1);
     list.expectOrder(t1, s);
     list.moveTileToEnd(t1);
     list.expectOrder(s, t1);
 
     list.add(t2);
-    list.expectOrder(t2, s, t1);
+    list.expectOrder(s, t2, t1);
     list.moveTileToEnd(t2);
     list.expectOrder(s, t1, t2);
     list.moveTileBeforeSentinel(t1);
     list.expectOrder(t1, s, t2);
     list.moveTileBeforeSentinel(t2);
     list.expectOrder(t1, t2, s);
+    list.moveTileAfterSentinel(t1);
+    list.expectOrder(t2, s, t1);
+    list.moveTileAfterSentinel(t2);
+    list.expectOrder(s, t2, t1);
 
     list.add(t3);
     list.add(t4);
-    list.expectOrder(t1, t2, t3, t4, s);
-    list.moveTileToEnd(t4);
+    list.expectOrder(s, t4, t3, t2, t1);
+    list.moveTileBeforeSentinel(t1);
+    list.expectOrder(t1, s, t4, t3, t2);
+    list.moveTileBeforeSentinel(t2);
+    list.expectOrder(t1, t2, s, t4, t3);
+    list.moveTileBeforeSentinel(t3);
     list.expectOrder(t1, t2, t3, s, t4);
     list.moveTileToEnd(t2);
     list.expectOrder(t1, t3, s, t4, t2);
@@ -152,9 +161,13 @@ describe("LRUTileList", () => {
     const list = new List();
     const s = list.sentinel;
     list.add(t1);
+    list.moveTileBeforeSentinel(t1);
     list.add(t2);
+    list.moveTileBeforeSentinel(t2);
     list.add(t3);
+    list.moveTileBeforeSentinel(t3);
     list.add(t4);
+    list.moveTileBeforeSentinel(t4);
     list.expectOrder(t1, t2, t3, t4, s);
 
     list.markUsed(vp1, [t1, t2]);
@@ -225,10 +238,14 @@ describe("LRUTileList", () => {
     const t2 = mockTile(2);
     const t3 = mockTile(3);
     list.add(t1);
-    expectUnselected(t1);
+    expectSelected(t1);
     list.add(t2);
-    expectUnselected(t1, t2);
+    expectSelected(t2, t1);
     list.add(t3);
+    expectSelected(t3, t2, t1);
+    list.moveTileBeforeSentinel(t1);
+    list.moveTileBeforeSentinel(t2);
+    list.moveTileBeforeSentinel(t3);
     expectUnselected(t1, t2, t3);
     list.moveTileToEnd(t1);
     expectUnselected(t2, t3);
@@ -287,6 +304,7 @@ describe("LRUTileList", () => {
     for (let i = 0; i < 4; i++) {
       tiles.push(mockTile(i + 1));
       list.add(tiles[i]);
+      list.moveTileBeforeSentinel(tiles[i]);
     }
 
     expect(list.head).not.to.equal(list.tail);
