@@ -6,12 +6,22 @@
 import { expect } from "chai";
 import { SettingsSchemas } from "../../workspace/SettingsSchemas";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelHost } from "../../IModelHost";
 
 describe("SettingsSchemas", () => {
 
-  it("add groups", () => {
-    SettingsSchemas.reset();
+  const restartSession = async () => {
+    await IModelHost.shutdown();
+    await IModelHost.startup();
+  };
+  before(async () => {
+    await restartSession();
+  });
+  after(async () => {
+    await restartSession();
+  });
 
+  it("add groups", async () => {
     // can't add a group with no name
     expect(() => SettingsSchemas.addGroup({} as any)).throws(`has no "groupName" member`);
     // can't add a group with no properties

@@ -368,7 +368,11 @@ export abstract class IModelDb extends IModel {
     super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
     this.nativeDb = args.nativeDb;
 
-    // PR https://github.com/iTwin/imodel-native/pull/558 ill-advisedly renamed closeIModel to closeFile.
+    // it is illegal to create an IModelDb unless the nativeDb has been opened. Throw otherwise.
+    if (!this.isOpen)
+      throw new Error("cannot create an IModelDb unless it has already been opened");
+
+    // PR https://github.com/iTwin/imodel-native/pull/558 renamed closeIModel to closeFile because it changed its behavior.
     // Ideally, nobody outside of core-backend would be calling it, but somebody important is.
     // Make closeIModel available so their code doesn't break.
     (this.nativeDb as any).closeIModel = () => {
@@ -384,13 +388,7 @@ export abstract class IModelDb extends IModel {
     GeoCoordConfig.loadForImodel(this.workspace.settings); // load gcs data specified by iModel's settings dictionaries, must be done before calling initializeIModelDb
 
     this.initializeIModelDb();
-    // TODO: The nativeDb should always be open here and there is no valid codepath that will get
-    // here with nativeDb closed. Future versions should throw an exception otherwise. However, for
-    // backwards compatibility for tests that stub "fake" IModelDb, just ignore it in the list of
-    // opened Dbs.
-    // Note: Keith Bentley provided the above comment.
-    if (this.isOpen)
-      IModelDb._openDbs.set(this._fileKey, this);
+    IModelDb._openDbs.set(this._fileKey, this);
 
     if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
       IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
