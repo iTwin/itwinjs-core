@@ -191,7 +191,7 @@ class SectionAttachment {
     return frustum3d.toRange();
   }
   
-  public constructor(view: ViewState3d, toDrawing: Transform, fromDrawing: Transform, _toSheet: Transform | undefined) {
+  public constructor(view: ViewState3d, toDrawing: Transform, fromDrawing: Transform, toSheet: Transform | undefined) {
     // Save the input for clone(). Attach a copy to the viewport.
     this._toDrawing = toDrawing;
     this._fromDrawing = fromDrawing;
@@ -202,11 +202,10 @@ class SectionAttachment {
     let clipVolume;
     let clip = this.view.getViewClip();
     if (clip) {
-      // this.view.setViewClip(undefined);
-      // clip = clip.clone();
-      // const clipTransform = toSheet ? toSheet.multiplyTransformTransform(this._toDrawing) : this._toDrawing;
-      // clip.transformInPlace(clipTransform);
-      // clipVolume = IModelApp.renderSystem.createClipVolume(clip);
+      clip = clip.clone();
+      const clipTransform = toSheet ? toSheet.multiplyTransformTransform(this._toDrawing) : this._toDrawing;
+      clip.transformInPlace(clipTransform);
+      clipVolume = IModelApp.renderSystem.createClipVolume(clip);
     }
 
     this._branchOptions = {
