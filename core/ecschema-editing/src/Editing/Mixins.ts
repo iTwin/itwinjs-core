@@ -14,6 +14,7 @@ import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from 
 import { ECClasses } from "./ECClasses";
 import { MutableMixin } from "./Mutable/MutableMixin";
 import { MutableEntityClass } from "./Mutable/MutableEntityClass";
+import { NavigationProperties } from "./Properties";
 
 /**
  * @alpha
@@ -21,8 +22,13 @@ import { MutableEntityClass } from "./Mutable/MutableEntityClass";
  */
 export class Mixins extends ECClasses {
   public constructor(_schemaEditor: SchemaContextEditor) {
-    super(_schemaEditor);
+    super(SchemaItemType.Mixin, _schemaEditor);
   }
+
+  /**
+   * Allows access for editing of NavigationProperty attributes.
+   */
+  public readonly navigationProperties = new NavigationProperties(this.schemaItemType, this._schemaEditor);
 
   public async create(schemaKey: SchemaKey, name: string, appliesTo: SchemaItemKey, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);

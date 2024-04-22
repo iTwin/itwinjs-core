@@ -1,6 +1,6 @@
 import { CustomAttribute, DelayedPromiseWithProps, ECClass, ECName, ECObjectsError,
   ECObjectsStatus, EnumerationProperty, NavigationProperty, PrimitiveProperty,
-  PropertyCategory, SchemaItemKey, StructProperty } from "@itwin/ecschema-metadata";
+  PropertyCategory, SchemaItemKey, SchemaItemType, StructProperty } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
 import * as Rules from "../Validation/ECRules";
 import { MutableArrayProperty } from "./Mutable/MutableArrayProperty";
@@ -17,7 +17,7 @@ type MutablePropertyType = MutableProperty | MutableArrayProperty | MutablePrimi
  * A class allowing editing of attributes of the base Property class.
  */
 export class Properties {
-  public constructor(protected _schemaEditor: SchemaContextEditor) { }
+  public constructor(protected ecClassType: SchemaItemType, protected _schemaEditor: SchemaContextEditor) { }
 
   public async setName(classKey: SchemaItemKey, propertyName: string, newPropertyName: string) {
     const newName = new ECName(newPropertyName);
@@ -143,6 +143,10 @@ export class Properties {
   protected async getProperty<T extends MutablePropertyType>(classKey: SchemaItemKey, propertyName: string): Promise<T> {
     const mutableClass = await this.getClass(classKey);
 
+    if (mutableClass.schemaItemType !== this.ecClassType){
+      throw new Error(`The class ${classKey.fullName} is not an ${SchemaItemType[this.ecClassType]}.`);
+    }
+
     const property = await mutableClass.getProperty(propertyName) as T;
     if (property === undefined) {
       // TODO: Update error
@@ -189,8 +193,8 @@ export class Properties {
  * EnumerationArrayProperty and StructArrayProperty.
  */
 export class ArrayProperties extends Properties {
-  public constructor(_schemaEditor: SchemaContextEditor) {
-    super(_schemaEditor);
+  public constructor(ecClassType: SchemaItemType, _schemaEditor: SchemaContextEditor) {
+    super(ecClassType, _schemaEditor);
   }
 
   /**
@@ -235,8 +239,8 @@ export class ArrayProperties extends Properties {
  * A class extending Properties allowing editing of attributes of PrimitiveProperty and EnumerationProperty.
  */
 class PrimitiveOrEnumProperties extends Properties {
-  public constructor(_schemaEditor: SchemaContextEditor) {
-    super(_schemaEditor);
+  public constructor(ecClassType: SchemaItemType, _schemaEditor: SchemaContextEditor) {
+    super(ecClassType, _schemaEditor);
   }
 
   /**
@@ -300,8 +304,8 @@ class PrimitiveOrEnumProperties extends Properties {
  * A class extending Properties allowing editing of PrimitiveProperty attributes.
  */
 export class PrimitiveProperties extends PrimitiveOrEnumProperties {
-  public constructor(_schemaEditor: SchemaContextEditor) {
-    super(_schemaEditor);
+  public constructor(ecClassType: SchemaItemType, _schemaEditor: SchemaContextEditor) {
+    super(ecClassType, _schemaEditor);
   }
 
   /**
@@ -324,8 +328,8 @@ export class PrimitiveProperties extends PrimitiveOrEnumProperties {
  * A class extending Properties allowing editing of EnumerationProperty attributes.
  */
 export class EnumerationProperties extends PrimitiveOrEnumProperties {
-  public constructor(_schemaEditor: SchemaContextEditor) {
-    super(_schemaEditor);
+  public constructor(ecClassType: SchemaItemType, _schemaEditor: SchemaContextEditor) {
+    super(ecClassType, _schemaEditor);
   }
 
   /**
@@ -348,8 +352,8 @@ export class EnumerationProperties extends PrimitiveOrEnumProperties {
  * A class extending Properties allowing editing of NavigationProperties attributes.
  */
 export class NavigationProperties extends Properties {
-  public constructor(_schemaEditor: SchemaContextEditor) {
-    super(_schemaEditor);
+  public constructor(ecClassType: SchemaItemType, _schemaEditor: SchemaContextEditor) {
+    super(ecClassType, _schemaEditor);
   }
 
   /**
@@ -372,8 +376,8 @@ export class NavigationProperties extends Properties {
  * A class extending Properties allowing editing of StructProperty attributes.
  */
 export class StructProperties extends Properties {
-  public constructor(_schemaEditor: SchemaContextEditor) {
-    super(_schemaEditor);
+  public constructor(ecClassType: SchemaItemType, _schemaEditor: SchemaContextEditor) {
+    super(ecClassType, _schemaEditor);
   }
 
   /**

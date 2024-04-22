@@ -16,7 +16,7 @@ import { MutableClass, MutableStructClass } from "./Mutable/MutableClass";
  */
 export class Structs extends ECClasses {
   public constructor(_schemaEditor: SchemaContextEditor) {
-    super(_schemaEditor);
+    super(SchemaItemType.StructClass, _schemaEditor);
   }
 
   public async create(schemaKey: SchemaKey, name: string, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults> {

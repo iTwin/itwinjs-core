@@ -364,6 +364,10 @@ describe("Properties editing tests", () => {
       await expect(testEditor.entities.properties.addCustomAttribute(testClass?.key as SchemaItemKey, "badPropertyName", { className: "testCustomAttribute" })).to.be.rejectedWith(
         Error, `Property with the name badPropertyName could not be found in the class ${testClass?.key.fullName}.`);
     });
+
+    it("editing an entities property where the specified SchemaItemKey does return an EntityClass, rejected with error", async () =>  {
+      await expect(testEditor.entities.arrayProperties.setMaxOccurs(structKey, "TestProperty", 1)).to.be.rejectedWith(Error, `The class ${structKey.fullName} is not an EntityClass.`);
+    });
   });
 
   describe("Array property editing tests", () => {
