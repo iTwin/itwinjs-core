@@ -355,8 +355,6 @@ export class DrawingViewState extends ViewState2d {
       this._modelLimits = { min: Constant.oneMillimeter, max: 10 * extents.maxLength() };
       this._attachmentInfo = SectionAttachmentInfo.fromJSON(sectionDrawing);
     }
-
-    this.extentLimits = { min: 0.001, max: 99999 };
   }
 
   /** See [[ViewState.attachToViewport]]. */
