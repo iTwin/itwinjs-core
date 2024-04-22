@@ -949,7 +949,7 @@ export abstract class IModelDb extends IModel {
   */
   public static findByFilename(fileName: LocalFileName): IModelDb | undefined {
     for (const entry of this._openDbs) {
-      // It shouldn't be possible for anything in _openDbs to not be open, but if so just skip them
+      // It shouldn't be possible for anything in _openDbs to not be open, but if so just skip them because `pathName` will throw an exception.
       if (entry[1].isOpen && entry[1].pathName === fileName)
         return entry[1];
     }
