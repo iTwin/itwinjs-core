@@ -441,11 +441,33 @@ export class BriefcaseManager {
     if (reverse)
       changesets.reverse();
 
+    const briefcaseDb = db instanceof BriefcaseDb ? db : undefined;
+    if (briefcaseDb) {
+      for (const handler of briefcaseDb.tableConflictHandlers.values())
+        if (handler.onBeforeApplyChangesets)
+          handler.onBeforeApplyChangesets(changesets);
+    }
+
     for (const changeset of changesets) {
+      if (briefcaseDb) {
+        for (const handler of briefcaseDb.tableConflictHandlers.values())
+          if (handler.onBeforeSingleChangesetApply)
+            handler.onBeforeSingleChangesetApply(changeset);
+      }
       const stopwatch = new StopWatch(`[${changeset.id}]`, true);
       Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
       await this.applySingleChangeset(db, changeset);
       Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
+      if (briefcaseDb) {
+        for (const handler of briefcaseDb.tableConflictHandlers.values())
+          if (handler.onAfterSingleChangesetApply)
+            handler.onAfterSingleChangesetApply(changeset);
+      }
+    }
+    if (briefcaseDb) {
+      for (const handler of briefcaseDb.tableConflictHandlers.values())
+        if (handler.onAfterApplyChangesets)
+          handler.onAfterApplyChangesets(changesets);
     }
     // notify listeners
     db.notifyChangesetApplied();

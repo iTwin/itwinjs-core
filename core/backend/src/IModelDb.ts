@@ -11,11 +11,11 @@ import { join } from "path";
 import * as touch from "touch";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
-  IModelStatus, JsonUtils, Logger, LogLevel, OpenMode, UnexpectedErrors,
+  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, Constructor, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
+  IModelStatus, isInstanceOf, JsonUtils, Logger, LogLevel, OpenMode, UnexpectedErrors,
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
+  AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetFileProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
   DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps,
   ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
@@ -60,6 +60,17 @@ import { Workspace } from "./workspace/Workspace";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotationLayout";
 
 import type { BlobContainer } from "./BlobContainerService";
+import { FilePropertyConflictHandler } from "./FilePropertyConflictHandler";
+/** @internal */
+export interface ISingleTableConflictHandler {
+  get tableName(): string;
+  onConflict(args: ChangesetConflictArgs): DbConflictResolution | undefined;
+  onBeforeSingleChangesetApply?: (changeset: ChangesetFileProps) => void;
+  onAfterSingleChangesetApply?: (changeset: ChangesetFileProps) => void;
+  onBeforeApplyChangesets?: (changesets: ChangesetFileProps[]) => void;
+  onAfterApplyChangesets?: (changesets: ChangesetFileProps[]) => void;
+}
+
 /** @internal */
 export interface ChangesetConflictArgs {
   cause: DbConflictCause;
@@ -2568,6 +2579,9 @@ export class BriefcaseDb extends IModelDb {
   /* the BriefcaseId of the briefcase opened with this BriefcaseDb */
   public readonly briefcaseId: BriefcaseId;
 
+  /** @internal */
+  public tableConflictHandlers = new Map<string, ISingleTableConflictHandler>();
+
   /**
    * Event raised just before a BriefcaseDb is opened. Supplies the arguments that will be used to open the BriefcaseDb.
    * Throw an exception to stop the open.
@@ -2625,7 +2639,7 @@ export class BriefcaseDb extends IModelDb {
     super({ ...args, changeset: args.nativeDb.getCurrentChangeset() });
     this._openMode = args.openMode;
     this.briefcaseId = args.briefcaseId;
-
+    FilePropertyConflictHandler.register(this);
     if (this.useLockServer) // if the iModel uses a lock server, create a ServerBasedLocks LockControl for this BriefcaseDb.
       this._locks = new ServerBasedLocks(this);
   }
@@ -2730,7 +2744,14 @@ export class BriefcaseDb extends IModelDb {
     this.onOpened.raiseEvent(briefcaseDb, args);
     return briefcaseDb;
   }
-
+  /* @internal */
+  public findConflictHandler<T extends ISingleTableConflictHandler>(type: Constructor<T>): T | undefined {
+    for (const entry of this.tableConflictHandlers) {
+      if (isInstanceOf(entry[1], type))
+        return entry[1] as T;
+    }
+    return undefined;
+  }
   /* This is called by native code when applying a changeset */
   private onChangesetConflict(args: ChangesetConflictArgs): DbConflictResolution | undefined {
     // returning undefined will result in native handler to resolve conflict
@@ -2749,6 +2770,13 @@ export class BriefcaseDb extends IModelDb {
         case DbConflictCause.ForeignKey:
           return "foreign key";
       }
+    };
+
+    const invokeTableConflictHandler = () => {
+      const handler = this.tableConflictHandlers.get(args.tableName);
+      if (handler)
+        return handler.onConflict(args);
+      return undefined;
     };
 
     if (args.cause === DbConflictCause.Data && !args.indirect) {
@@ -2772,6 +2800,10 @@ export class BriefcaseDb extends IModelDb {
         Logger.logWarning(category, "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.");
         args.dump();
       } else {
+        const resolution = invokeTableConflictHandler();
+        if (resolution !== undefined)
+          return resolution;
+
         const msg = "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.";
         args.setLastError(msg);
         Logger.logError(category, msg);
@@ -2791,6 +2823,10 @@ export class BriefcaseDb extends IModelDb {
         Logger.logWarning(category, "PRIMARY KEY INSERT CONFLICT - resolved by replacing the existing row with the incoming row");
         args.dump();
       } else {
+        const resolution = invokeTableConflictHandler();
+        if (resolution !== undefined)
+          return resolution;
+
         const msg = "PRIMARY KEY INSERT CONFLICT - rejecting this changeset";
         args.setLastError(msg);
         Logger.logError(category, msg);

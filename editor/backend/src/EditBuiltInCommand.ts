@@ -202,15 +202,12 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     // Set source from calculated to user so connectors preserve the change.
     const unitsProps: FilePropertyProps = { name: "Units", namespace: "dgn_Db" };
     const unitsStr = this.iModel.queryFilePropertyString(unitsProps);
+    const unitsVal = unitsStr ? JSON.parse(unitsStr) : {};
+    const calculated = 1;
 
-    if (undefined !== unitsStr) {
-      const unitsVal = JSON.parse(unitsStr);
-      const calculated = 1;
-
-      if (calculated !== unitsVal.extentsSource) {
-        unitsVal.extentsSource = calculated;
-        this.iModel.saveFileProperty(unitsProps, JSON.stringify(unitsVal));
-      }
+    if (calculated !== unitsVal.extentsSource) {
+      unitsVal.extentsSource = calculated;
+      this.iModel.saveFileProperty(unitsProps, JSON.stringify(unitsVal));
     }
   }
 
