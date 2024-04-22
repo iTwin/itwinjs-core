@@ -319,7 +319,6 @@ export class DrawingViewState extends ViewState2d {
    */
   public static hideDrawingGraphics = false;
 
-  private readonly _modelLimits: ExtentLimits;
   private readonly _viewedExtents: AxisAlignedBox3d;
   private _attachmentInfo: SectionAttachmentInfo;
   private _attachment?: SectionAttachment;
@@ -348,11 +347,9 @@ export class DrawingViewState extends ViewState2d {
     super(props, iModel, categories, displayStyle);
     if (categories instanceof DrawingViewState) {
       this._viewedExtents = categories._viewedExtents.clone();
-      this._modelLimits = { ...categories._modelLimits };
       this._attachmentInfo = categories._attachmentInfo.clone(iModel);
     } else {
       this._viewedExtents = extents;
-      this._modelLimits = { min: Constant.oneMillimeter, max: 10 * extents.maxLength() };
       this._attachmentInfo = SectionAttachmentInfo.fromJSON(sectionDrawing);
     }
   }
@@ -451,7 +448,10 @@ export class DrawingViewState extends ViewState2d {
   }
 
   public get defaultExtentLimits() {
-    return this._modelLimits;
+    return {
+      min: Constant.oneMillimeter,
+      max: 3 * Constant.diameterOfEarth,
+    };
   }
 
   /** @internal */
