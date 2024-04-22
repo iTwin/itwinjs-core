@@ -51,3 +51,24 @@ export interface ChangedEntities {
  * @extensions
  */
 export type EntityIdAndClassIdIterable = Iterable<Readonly<EntityIdAndClassId>>;
+
+export type TxnEntityChangeType = "inserted" | "deleted" | "updated";
+
+export interface TxnEntityChange {
+  type: TxnEntityChangeType;
+  id: Id64String;
+  className: string;
+}
+
+export type TxnEntityChangeIterable = Iterable<Readonly<TxnEntityChange>>;
+
+export type TxnEntityChangeClassCriterion = (className: string) => boolean;
+
+export interface TxnEntityChangesFilterOptions {
+  includeClass?: TxnEntityChangeClassCriterion;
+  includeTypes?: TxnEntityChangeType[];
+}
+
+export interface TxnEntityChanges extends ChangedEntities, TxnEntityChangeIterable {
+  filter(options: TxnEntityChangesFilterOptions): TxnEntityChangeIterable;
+}
