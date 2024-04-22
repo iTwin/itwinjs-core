@@ -2,8 +2,9 @@
 
 usage() {
   echo "Updates the itwinjs-core repository to use a new version of the @bentley/imodeljs-native package."
-  echo "Usage: $0 -v VERSION"
+  echo "Usage: $0 -v VERSION -b BRANCH"
   echo "  -v VERSION: The semantic version (e.g., 3.2.7) of the @bentley/imodeljs-native package to which to update."
+  echo "  -b BRANCH: The branch on itwinjs-core repository (e.g., release/4.5.x) that the update is based off and checked against. If left empty, default to master branch"
 }
 
 checkfail() {
@@ -13,9 +14,10 @@ checkfail() {
   fi
 }
 
-while getopts "v:" options; do
+while getopts "v:b:" options; do
   case "${options}" in
     v) AddonVersion=${OPTARG} ;;
+    b) AddonBranch=${OPTARG} ;;
     ?) usage ; exit 1 ;;
   esac
 done
@@ -72,7 +74,11 @@ git commit -am"@bentley/imodeljs-native $AddonVersion"
 checkfail
 
 # Generate empty change logs.
-yes "" | rush change
+if [ "$AddonBranch" = "" ]; then
+  yes "" | rush change
+else
+  yes "" | rush change -b "origin/$AddonBranch"
+fi
 checkfail
 
 git add "$RepoRoot/common/changes"
