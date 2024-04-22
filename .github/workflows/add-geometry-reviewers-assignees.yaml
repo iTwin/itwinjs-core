@@ -1,0 +1,29 @@
+# This workflow adds geometry reviewers\assignees to PRs\issues labled with "geometry"
+
+name: add-geometry-reviewers-assignees
+
+on:
+  issues:
+    types: [ labeled ]
+  pull_request:
+    types: [ labeled ]
+
+jobs:
+  build:
+    if: ${{ github.event.label.name == 'geometry' }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Add Reviewers to PR
+      uses: madrapps/add-reviewers@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        reviewers: dassaf4,saeeedtorabi
+  build:
+    if: ${{ github.event.label.name == 'geometry' }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Add Assignees to Issues
+      uses: pozil/auto-assign-issue@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        assignees: dassaf4,saeeedtorabi
