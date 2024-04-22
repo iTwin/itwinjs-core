@@ -35,13 +35,15 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
   const fakeSnapshotDb: any = {
     cloudContainer,
     isReadonly: () => true,
-    isOpen: () => false,
+    isOpen: () => true,
     getIModelId: () => iModelId,
     getITwinId: () => iTwinId,
     getCurrentChangeset: () => changeset,
     setIModelDb: () => { },
     closeIModel: () => { },
     restartDefaultTxn: () => { },
+    closeFile: () => { },
+    getFilePath: () => "fakeFilePath",
   };
 
   it("should restart default txn after inactivity", async () => {
@@ -56,6 +58,7 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
 
     const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
+    sinon.stub(IModelDb.prototype, "loadSettingDictionaries" as any);
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
 
     const userAccessToken = "token";
@@ -103,6 +106,7 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
 
     const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
+    sinon.stub(IModelDb.prototype, "loadSettingDictionaries" as any);
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
 
     const userAccessToken = "token";
@@ -163,10 +167,12 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
+    sinon.stub(IModelDb.prototype, "loadSettingDictionaries" as any);
 
     const snapshot = V1CheckpointManager.openCheckpointV1("fakeFilePath", { iTwinId: "fakeITwinId", iModelId: "fake1", changeset });
     const nowStub = sinon.stub(Date, "now");
     await snapshot.refreshContainerForRpc("");
+    snapshot.close();
     expect(nowStub.called).to.be.false;
   });
 });
