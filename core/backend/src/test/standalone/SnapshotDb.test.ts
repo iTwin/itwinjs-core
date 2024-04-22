@@ -42,6 +42,8 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     setIModelDb: () => { },
     closeIModel: () => { },
     restartDefaultTxn: () => { },
+    closeFile: () => { },
+    getFilePath: () => "fakeFilePath",
   };
 
   it("should restart default txn after inactivity", async () => {
@@ -170,6 +172,7 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     const snapshot = V1CheckpointManager.openCheckpointV1("fakeFilePath", { iTwinId: "fakeITwinId", iModelId: "fake1", changeset });
     const nowStub = sinon.stub(Date, "now");
     await snapshot.refreshContainerForRpc("");
+    snapshot.close();
     expect(nowStub.called).to.be.false;
   });
 });
