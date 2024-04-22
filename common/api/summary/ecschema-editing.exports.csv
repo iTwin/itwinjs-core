@@ -67,6 +67,9 @@ alpha;SchemaCompareDirection
 alpha;SchemaComparer
 alpha;SchemaContextEditor
 beta;class SchemaDiagnostic
+alpha;SchemaDifference
+internal;fromSchemaChanges(targetSchema: Schema, schemaChanges: SchemaChanges): Promise
+alpha;SchemaDifference
 alpha;SchemaEditResults
 alpha;class SchemaItemChange 
 alpha;SchemaItemChanges 
