@@ -10,6 +10,8 @@ import { IModelHost } from "../../IModelHost";
 
 describe("SettingsSchemas", () => {
 
+  // SettingsSchema tests change the state of the IModelHost object. They should always clear
+  // the current state before and after they run so they're not affected by, nor influence, other tests running in the same process.
   const restartSession = async () => {
     await IModelHost.shutdown();
     await IModelHost.startup();
