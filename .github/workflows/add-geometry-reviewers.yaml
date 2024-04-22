@@ -3,6 +3,8 @@
 name: add-geometry-reviewers
 
 on:
+  issues:
+    types: [ labeled ]
   pull_request:
     types: [ labeled ]
 
