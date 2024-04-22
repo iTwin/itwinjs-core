@@ -155,7 +155,7 @@ describe("Structs tests", () => {
     expect(result.errorMessage).to.equal(`Schema Key ${schemaKey.toString(true)} not found in context`);
   });
 
-  it("try changing the base class of struct with one that is not in the existing base class superset, returns error", async () => {
+  it("try changing the struct base class to one that doesn't derive from, returns error", async () => {
     const baseClassRes = await testEditor.structs.create(testKey, "testBaseClass");
     const structRes = await testEditor.structs.create(testKey, "testStruct", "testLabel", baseClassRes.itemKey);
 
@@ -165,6 +165,6 @@ describe("Structs tests", () => {
     const newBaseClassRes = await testEditor.structs.create(testKey, "newBaseClass");
     const result = await testEditor.structs.setBaseClass(structRes.itemKey!, newBaseClassRes.itemKey);
     expect(result.errorMessage).to.be.not.undefined;
-    expect(result.errorMessage).to.equal(`${newBaseClassRes.itemKey!.fullName} is not from the middle of a class hierarchy.`);
+    expect(result.errorMessage).to.equal(`Baseclass ${newBaseClassRes.itemKey!.fullName} must derive from ${baseClassRes.itemKey!.fullName}.`);
   });
 });

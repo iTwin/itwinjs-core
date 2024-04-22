@@ -148,7 +148,7 @@ export class RelationshipClasses extends ECClasses {
       return { itemKey: relationshipKey, errorMessage: `${baseClass.fullName} is not of type Relationship Class.` };
 
     if (relClass.baseClass !== undefined && !await baseClass.is(await relClass.baseClass))
-      return { itemKey: relationshipKey, errorMessage: `${baseClass.fullName} is not from the middle of a class hierarchy.` };
+      return { itemKey: relationshipKey, errorMessage: `Baseclass ${baseClass.fullName} must derive from ${relClass.baseClass.fullName}.`};
 
     const currentBaseClass = relClass.baseClass;
     relClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, RelationshipClass>(baseClassKey, async () => baseClass);

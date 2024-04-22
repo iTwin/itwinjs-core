@@ -97,7 +97,7 @@ export class Structs extends ECClasses {
       return { itemKey: structKey, errorMessage: `${baseClass.fullName} is not of type Struct Class.` };
 
     if (structClass.baseClass !== undefined && !await baseClass.is(await structClass.baseClass))
-      return { itemKey: structKey, errorMessage: `${baseClass.fullName} is not from the middle of a class hierarchy.`};
+      return { itemKey: structKey, errorMessage: `Baseclass ${baseClass.fullName} must derive from ${structClass.baseClass.fullName}.`};
 
     structClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, StructClass>(baseClassKey, async () => baseClass);
     return { itemKey: structKey };

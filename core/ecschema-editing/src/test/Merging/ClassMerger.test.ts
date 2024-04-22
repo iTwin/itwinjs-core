@@ -257,7 +257,7 @@ describe("Class merger tests", () => {
     });
   });
 
-  it("should merge mixin base class from the middle of a class hierarchy", async () => {
+  it("should merge mixin base class derived from the current base class", async () => {
     await Schema.fromJson({
       ...targetJson,
       items: {
@@ -345,7 +345,7 @@ describe("Class merger tests", () => {
     });
   });
 
-  it("should merge struct base class from the middle of a class hierarchy", async () => {
+  it("should merge struct base class derived from the existing base class", async () => {
     await Schema.fromJson({
       ...targetJson,
       items: {
@@ -456,7 +456,7 @@ describe("Class merger tests", () => {
     });
   });
 
-  it("should merge entity base class from the middle of a class hierarchy", async () => {
+  it("should merge entity base class derived from the existing base class", async () => {
     await Schema.fromJson({
       ...targetJson,
       items: {
@@ -556,7 +556,7 @@ describe("Class merger tests", () => {
     await expect(merge).to.be.rejectedWith("Changing the class 'TestEntity' modifier is not supported.");
   });
 
-  it("should throw an error when merging entity base class not in the middle of a class hierarchy", async () => {
+  it("should throw an error when merging entity base class to one that doesn't derive from", async () => {
     await Schema.fromJson({
       ...targetJson,
       items: {
@@ -601,7 +601,7 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("TargetSchema.TestBase is not from the middle of a class hierarchy.");
+    await expect(merge).to.be.rejectedWith("Baseclass TargetSchema.TestBase must derive from TargetSchema.TargetBase");
   });
 
   it.skip("should throw an error when merging entity base class changed from existing one to undefined", async () => {
@@ -832,7 +832,7 @@ describe("Class merger tests", () => {
     await expect(merge).to.be.rejectedWith("Changing the class 'TestStruct' baseClass is not supported.");
   });
 
-  it("should throw an error when merging mixin base class not in the middle of a class hierarchy", async () => {
+  it("should throw an error when merging mixin base class to one that doesn't derive from", async () => {
     await Schema.fromJson({
       ...targetJson,
       items: {
@@ -875,6 +875,6 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("TargetSchema.TestBase is not from the middle of a class hierarchy.");
+    await expect(merge).to.be.rejectedWith("Baseclass TargetSchema.TestBase must derive from TargetSchema.BaseMixin.");
   });
 });

@@ -167,6 +167,7 @@ async function setClassModifier(item: MutableClass, modifierValue: string): Prom
 function getBaseClassSetter(context: SchemaMergeContext, item: ECClass) {
   return async (itemKey: SchemaItemKey, baseClassKey: SchemaItemKey) => {
     switch (item.schemaItemType) {
+      // TODO: CustomAttributeClasses
       case SchemaItemType.EntityClass: return context.editor.entities.setBaseClass(itemKey, baseClassKey);
       case SchemaItemType.Mixin: return context.editor.mixins.setBaseClass(itemKey, baseClassKey);
       case SchemaItemType.RelationshipClass: return context.editor.relationships.setBaseClass(itemKey, baseClassKey);

@@ -207,7 +207,7 @@ export class Entities extends ECClasses {
       return { itemKey: entityKey, errorMessage: `${baseClassItem.fullName} is not of type Entity Class.` };
 
     if (entity.baseClass !== undefined && !await baseClassItem.is(await entity.baseClass))
-      return { itemKey: entityKey, errorMessage: `${baseClassItem.fullName} is not from the middle of a class hierarchy.`};
+      return { itemKey: entityKey, errorMessage: `Baseclass ${baseClassItem.fullName} must derive from ${entity.baseClass.fullName}.`};
 
     entity.baseClass = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(baseClassKey, async () => baseClassItem);
     return { itemKey: entityKey };

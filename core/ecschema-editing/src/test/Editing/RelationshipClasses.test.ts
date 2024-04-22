@@ -814,7 +814,7 @@ describe("Relationship tests from an existing schema", () => {
     expect(result.errorMessage).to.equal(`Schema Key ${schemaKey.toString(true)} not found in context`);
   });
 
-  it("try changing the base class of relationship with one that is not in the existing base class superset, returns error", async () => {
+  it("try changing the relationship base class to one that doesn't derive from, returns error", async () => {
     const baseClassRes = await testEditor.relationships.create(testKey, "testBaseClass", ECClassModifier.None, StrengthType.Embedding, StrengthDirection.Forward);
     const relRes = await testEditor.relationships.create(testKey, "testRelationship", ECClassModifier.None, StrengthType.Holding, StrengthDirection.Forward, baseClassRes.itemKey);
     const newBaseClassRes = await testEditor.relationships.create(testKey, "newBaseClass", ECClassModifier.None, StrengthType.Embedding, StrengthDirection.Forward);
@@ -825,7 +825,7 @@ describe("Relationship tests from an existing schema", () => {
 
     const result = await testEditor.relationships.setBaseClass(relRes.itemKey!, newBaseClassRes.itemKey);
     expect(result.errorMessage).to.be.not.undefined;
-    expect(result.errorMessage).to.equal(`${newBaseClassRes.itemKey!.fullName} is not from the middle of a class hierarchy.`);
+    expect(result.errorMessage).to.equal(`Baseclass ${newBaseClassRes.itemKey!.fullName} must derive from ${baseClassRes.itemKey!.fullName}.`);
     expect(await relClass?.baseClass).to.eql(baseClass);
   });
 

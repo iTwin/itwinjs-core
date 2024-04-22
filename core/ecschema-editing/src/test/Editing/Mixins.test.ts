@@ -147,7 +147,7 @@ describe("Mixins tests", () => {
     expect(result.errorMessage).to.equal(`Schema Key ${schemaKey.toString(true)} not found in context`);
   });
 
-  it("changing a base class with one that is not from superset of existing base class, should result in an error message", async () => {
+  it("changing the mixin base class to one that doesn't derive from, should result in an error message", async () => {
     const baseClassRes = await testEditor.mixins.create(testKey, "testBaseClass", entityKey);
     const mixinRes = await testEditor.mixins.create(testKey, "testMixin", entityKey, "testLabel", baseClassRes.itemKey);
 
@@ -157,6 +157,6 @@ describe("Mixins tests", () => {
     const newBaseClassRes = await testEditor.mixins.create(testKey, "newBaseClass", entityKey);
     const result = await testEditor.mixins.setBaseClass(mixinRes.itemKey!, newBaseClassRes.itemKey);
     expect(result.errorMessage).to.be.not.undefined;
-    expect(result.errorMessage).to.equal(`${newBaseClassRes.itemKey!.fullName} is not from the middle of a class hierarchy.`);
+    expect(result.errorMessage).to.equal(`Baseclass ${newBaseClassRes.itemKey!.fullName} must derive from ${baseClassRes.itemKey!.fullName}.`);
   });
 });

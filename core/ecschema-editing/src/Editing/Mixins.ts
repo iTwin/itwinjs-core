@@ -152,7 +152,7 @@ export class Mixins extends ECClasses {
       return { itemKey: mixinKey, errorMessage: `${baseClassItem.fullName} is not of type Mixin Class.` };
 
     if (mixin.baseClass !== undefined && !await baseClassItem.is(await mixin.baseClass))
-      return { itemKey: mixinKey, errorMessage: `${baseClassItem.fullName} is not from the middle of a class hierarchy.`};
+      return { itemKey: mixinKey, errorMessage: `Baseclass ${baseClassItem.fullName} must derive from ${mixin.baseClass.fullName}.`};
 
     mixin.baseClass = new DelayedPromiseWithProps<SchemaItemKey, Mixin>(baseClassKey, async () => baseClassItem);
     return { itemKey: mixinKey };

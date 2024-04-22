@@ -185,7 +185,7 @@ describe("Relationship Class merger tests", () => {
     });
   });
 
-  it("should merge relationship class baseclass from the middle of a class hierarchy", async () => {
+  it("should merge relationship class baseclass to one that derives from", async () => {
     await Schema.fromJson(testJson, targetContext);
     await Schema.fromJson({
       ...targetJson,
@@ -735,7 +735,7 @@ describe("Relationship Class merger tests", () => {
     await expect(merge).to.be.rejectedWith(Error, `Changing the relationship constraint 'BaseRelationship:Source' multiplicity is not supported.`);
   });
 
-  it("should throw an error when merging base class not in the middle of a class hierarchy", async () => {
+  it("should throw an error when merging base class to one that doesn't derive from", async () => {
     await Schema.fromJson(testJson, targetContext);
     await Schema.fromJson({
       ...targetJson,
@@ -803,7 +803,7 @@ describe("Relationship Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("TargetSchema.TestRelationship is not from the middle of a class hierarchy.");
+    await expect(merge).to.be.rejectedWith("Baseclass TargetSchema.TestRelationship must derive from TestSchema.BaseRelationship.");
   });
 
   it("should throw an error merging base class changed from undefined to existing one", async () => {

@@ -274,7 +274,7 @@ describe("Entities tests", () => {
     expect(result.errorMessage).to.equal(`Schema Key ${schemaKey.toString(true)} not found in context`);
   });
 
-  it("try changing the base class of entity not from the middle of a class hierarchy, returns error", async () => {
+  it("try changing the entity base class to one that doesn't derive from, returns error", async () => {
     const baseClassRes = await testEditor.entities.create(testKey, "testBaseClass", ECClassModifier.None, "testLabel");
     const entityRes = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", baseClassRes.itemKey);
 
@@ -284,6 +284,6 @@ describe("Entities tests", () => {
     const newBaseClassRes = await testEditor.entities.create(testKey, "newBaseClass", ECClassModifier.None, "testLabel");
     const result = await testEditor.entities.setBaseClass(entityRes.itemKey!, newBaseClassRes.itemKey);
     expect(result.errorMessage).to.be.not.undefined;
-    expect(result.errorMessage).to.equal(`${newBaseClassRes.itemKey!.fullName} is not from the middle of a class hierarchy.`);
+    expect(result.errorMessage).to.equal(`Baseclass ${newBaseClassRes.itemKey!.fullName} must derive from ${baseClassRes.itemKey!.fullName}.`);
   });
 });
