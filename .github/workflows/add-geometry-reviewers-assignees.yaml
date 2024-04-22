@@ -18,7 +18,6 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         reviewers: dassaf4,saeeedtorabi
-  build:
     if: ${{ github.event.label.name == 'geometry' }}
     runs-on: ubuntu-latest
     steps:
