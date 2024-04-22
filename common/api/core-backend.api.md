@@ -4807,8 +4807,6 @@ export class SettingsSchemas {
     static readonly allSchemas: Map<string, SettingSchema>;
     static readonly onSchemaChanged: BeEvent<() => void>;
     static removeGroup(groupName: string): void;
-    // @internal
-    static reset(): void;
     // @internal (undocumented)
     static validateArrayObject<T>(val: T, schemaName: string, msg: string): T;
 }
