@@ -27,7 +27,7 @@ import {
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { ServerBasedLocks } from "../../ServerBasedLocks";
-import exp = require("constants");
+
 chai.use(chaiAsPromised);
 
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
