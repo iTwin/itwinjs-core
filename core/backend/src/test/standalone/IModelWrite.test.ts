@@ -23,9 +23,11 @@ import {
   BriefcaseDb,
   BriefcaseManager,
   ChannelControl,
-  DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, OpenBriefcaseArgs, SpatialCategory, Subject,
+  DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, LockState, OpenBriefcaseArgs, SpatialCategory, Subject,
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
+import { ServerBasedLocks } from "../../ServerBasedLocks";
+import exp = require("constants");
 chai.use(chaiAsPromised);
 
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
@@ -647,7 +649,7 @@ describe("IModelWriteTest", () => {
   it("parent lock should suffice when inserting into deeply nested sub-model", async () => {
     const version0 = IModelTestUtils.resolveAssetFile("test.bim");
     const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "subModelCoveredByParentLockTest", version0 });
-    const iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId });
+    let iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId });
     iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     /*
@@ -660,7 +662,10 @@ describe("IModelWriteTest", () => {
     const definitionModelId = DefinitionModel.insert(iModel, jobSubjectId, "Definition");
 
     iModel.saveChanges();
+    const locks = iModel.locks;
+    expect(locks.isServerBased).true;
     await iModel.pushChanges({ description: "create model" });
+    expect(iModel.locks).equal(locks); // pushing should not change your locks
 
     /*
     Job Subject                                           <--- Lock this
@@ -752,11 +757,30 @@ describe("IModelWriteTest", () => {
     const drawingGraphicId1 = iModel.elements.insertElement(drawingGraphicProps1);
 
     assert.isTrue(iModel.elements.getElement(drawingGraphicId1).model === drawingModelId);
-
     iModel.saveChanges();
+    expect(iModel.locks.holdsExclusiveLock(drawingModelId)).true;
+
+    const fileName = iModel.nativeDb.getFilePath();
+    iModel.close(); // close rw
+    iModel = await BriefcaseDb.open({ fileName, readonly: true }); // reopen readonly
+    expect(iModel.locks.isServerBased).false; // readonly sessions should not have server based locks
+
+    // verify we can push changes from a readonly briefcase
     await iModel.pushChanges({ description: "insert graphic into nested sub-model" });
 
+    // try it again to verify we can get the ServerBasedLocks again
+    await iModel.pushChanges({ description: "should do nothing" });
     iModel.close();
+
+    // reopen readwrite to verify we released all locks from readonly briefcase
+    iModel = await BriefcaseDb.open({ fileName });
+    expect(iModel.locks.isServerBased).true;
+    const serverLocks = iModel.locks as ServerBasedLocks;
+    expect(serverLocks.holdsExclusiveLock(drawingModelId)).false;
+    expect(serverLocks.getLockCount(LockState.Shared)).equal(0);
+    expect(serverLocks.getLockCount(LockState.Exclusive)).equal(0);
+    iModel.close();
+
   });
 
 });

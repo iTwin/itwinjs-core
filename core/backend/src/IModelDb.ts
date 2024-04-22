@@ -2618,16 +2618,20 @@ export class BriefcaseDb extends IModelDb {
    * - the "no locking" flag is not present. This is a property of an iModel, established when the iModel is created in IModelHub.
    */
   protected get useLockServer(): boolean {
-    return !this.isReadonly && (this.briefcaseId !== BriefcaseIdValue.Unassigned) && (undefined === this.nativeDb.queryLocalValue(BriefcaseLocalValue.NoLocking));
+    return !this.nativeDb.isReadonly() && (this.briefcaseId !== BriefcaseIdValue.Unassigned) && (undefined === this.nativeDb.queryLocalValue(BriefcaseLocalValue.NoLocking));
+  }
+
+  // if the iModel uses a lock server, create a ServerBasedLocks LockControl for this BriefcaseDb.
+  protected makeLockControl() {
+    if (this.useLockServer)
+      this._locks = new ServerBasedLocks(this);
   }
 
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, openMode: OpenMode, briefcaseId: number }) {
     super({ ...args, changeset: args.nativeDb.getCurrentChangeset() });
     this._openMode = args.openMode;
     this.briefcaseId = args.briefcaseId;
-
-    if (this.useLockServer) // if the iModel uses a lock server, create a ServerBasedLocks LockControl for this BriefcaseDb.
-      this._locks = new ServerBasedLocks(this);
+    this.makeLockControl();
   }
 
   /** Upgrades the profile or domain schemas. File must be closed before this call and is always left closed. */
@@ -2873,15 +2877,23 @@ export class BriefcaseDb extends IModelDb {
    */
   public async executeWritable(func: () => Promise<void>): Promise<void> {
     const fileName = this.pathName;
-
+    const isReadonly = this.isReadonly;
+    let locks: LockControl | undefined;
     try {
-      if (this.isReadonly)
+      if (isReadonly) {
         this.closeAndReopen(OpenMode.ReadWrite, fileName);
-
+        locks = this.locks;
+        this.makeLockControl(); // create a ServerBasedLocks, if necessary
+      }
       await func();
     } finally {
-      if (this.isReadonly)
+      if (isReadonly) {
+        if (locks !== this._locks) { // did we have to create a ServerBasedLocks?
+          this.locks.close(); // yes, close it and reset back to previous
+          this._locks = locks;
+        }
         this.closeAndReopen(OpenMode.Readonly, fileName);
+      }
     }
   }
 
@@ -2917,8 +2929,11 @@ export class BriefcaseDb extends IModelDb {
     if (!this.nativeDb.hasPendingTxns())
       return; // nothing to push
 
-    await BriefcaseManager.pullMergePush(this, arg);
-    this.initializeIModelDb();
+    // pushing changes requires a writeable briefcase
+    await this.executeWritable(async () => {
+      await BriefcaseManager.pullMergePush(this, arg);
+      this.initializeIModelDb();
+    });
 
     const changeset = this.changeset as ChangesetIndexAndId;
     IpcHost.notifyTxns(this, "notifyPushedChanges", changeset);
