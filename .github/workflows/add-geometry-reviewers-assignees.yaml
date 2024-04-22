@@ -18,9 +18,6 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         reviewers: dassaf4,saeeedtorabi
-    if: ${{ github.event.label.name == 'geometry' }}
-    runs-on: ubuntu-latest
-    steps:
     - name: Add Assignees to Issues
       uses: pozil/auto-assign-issue@v1
       with:
