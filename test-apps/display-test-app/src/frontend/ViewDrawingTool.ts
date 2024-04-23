@@ -3,7 +3,6 @@ import { IModelApp, ScreenViewport, SpatialViewState, Tool } from "@itwin/core-f
 import { ToolBarDropDown } from "./ToolBar";
 import { createButton, createTextBox } from "@itwin/frontend-devtools";
 import { SectionDrawingIpcInvoker } from "./SectionDrawingIpcInvoker";
-import { ViewSetupApi } from "./ViewSetupApi";
 import { SectionDrawingApi } from "./SectionDrawingApi";
 
 export class ViewDrawingPanel extends ToolBarDropDown {
@@ -16,14 +15,6 @@ export class ViewDrawingPanel extends ToolBarDropDown {
     this._element.style.cssFloat = "left";
     this._element.style.display = "block";
     this._name = "section-drawing";
-
-    createButton({
-      value: "Open 3d view",
-      handler: async () => void ViewSetupApi.changeViewportView(vp.iModel, { models: undefined }),
-      parent: this._element,
-      inline: true,
-      tooltip: "Open 3d view",
-    });
 
     createTextBox({
       id: "txt_sectionDrawing",
