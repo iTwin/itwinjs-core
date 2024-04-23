@@ -185,7 +185,7 @@
     "DtaClassify": {
       "keyin": "dta classify"
     },
-    "DtaCreateSectionDrawing": {
+    "CreateSectionDrawing": {
       "keyin": "dta create section drawing"
     }
   }
