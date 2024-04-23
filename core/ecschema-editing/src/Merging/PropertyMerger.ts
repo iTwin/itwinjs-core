@@ -9,7 +9,6 @@ import { AnyProperty, AnyPropertyProps, ArrayPropertyProps, CustomAttribute, ECC
 import { updateSchemaItemFullName, updateSchemaItemKey } from "./SchemaItemMerger";
 import { MutableProperty } from "../Editing/Mutable/MutableProperty";
 import { MutableArrayProperty } from "../Editing/Mutable/MutableArrayProperty";
-import { MutablePrimitiveOrEnumPropertyBase } from "../Editing/Mutable/MutablePrimitiveOrEnumProperty";
 import { applyCustomAttributes } from "./CustomAttributeMerger";
 
 type PartialEditable<T> = {
@@ -115,20 +114,20 @@ async function modifyClassProperty(context: SchemaMergeContext, itemKey: SchemaI
   }
 
   if (propertyProps.description !== undefined) {
-    property.setDescription(propertyProps.description);
+    await context.editor.entities.properties.setDescription(itemKey, property.name, propertyProps.description);
   }
   if (propertyProps.label !== undefined) {
-    property.setLabel(propertyProps.label);
+    await context.editor.entities.properties.setLabel(itemKey, property.name, propertyProps.label);
   }
   if (propertyProps.isReadOnly !== undefined) {
-    property.setIsReadOnly(propertyProps.isReadOnly);
+    await context.editor.entities.properties.setIsReadOnly(itemKey, property.name, propertyProps.isReadOnly);
   }
   if (propertyProps.priority !== undefined) {
-    property.setPriority(propertyProps.priority);
+    await context.editor.entities.properties.setPriority(itemKey, property.name, propertyProps.priority);
   }
 
   if (property.isArray()) {
-    await arrayProperty.merge(property as any, propertyProps);
+    await arrayProperty.merge(context, itemKey, property as any, propertyProps);
   }
 
   if (propertyProps.category !== undefined) {
@@ -156,12 +155,12 @@ const arrayProperty = {
   is(property: AnyPropertyProps): boolean {
     return "minOccurs" in property && "maxOccurs" in property;
   },
-  async merge(property: MutableArrayProperty, props: ArrayPropertyProps) {
+  async merge(context: SchemaMergeContext, itemKey: SchemaItemKey, property: MutableArrayProperty, props: ArrayPropertyProps) {
     if (props.minOccurs !== undefined) {
-      property.setMinOccurs(props.minOccurs);
+      await context.editor.entities.arrayProperties.setMinOccurs(itemKey, property.name, props.minOccurs);
     }
     if (props.maxOccurs !== undefined) {
-      property.setMaxOccurs(props.maxOccurs);
+      await context.editor.entities.arrayProperties.setMaxOccurs(itemKey, property.name, props.maxOccurs);
     }
   },
 };
@@ -238,26 +237,24 @@ const primitiveProperty: PropertyMerger<PrimitivePropertyProps> = {
       ? context.editor.entities.createPrimitiveArrayPropertyFromProps(itemKey, property.name, propertyType, property)
       : context.editor.entities.createPrimitivePropertyFromProps(itemKey, property.name, propertyType, property);
   },
-  async merge(_context, _itemKey, property, props) {
-    const mutable = property as unknown as MutablePrimitiveOrEnumPropertyBase;
+  async merge(context, itemKey, property, props) {
     if (props.typeName) {
       return { errorMessage: `Changing the property '${property.fullName}' primitiveType is not supported.` };
     }
-
     if (props.extendedTypeName !== undefined) {
-      mutable.setExtendedTypeName(props.extendedTypeName);
+      await context.editor.entities.primitiveProperties.setExtendedTypeName(itemKey, property.name, props.extendedTypeName);
     }
     if (props.minLength !== undefined) {
-      mutable.setMinLength(props.minLength);
+      await context.editor.entities.primitiveProperties.setMinLength(itemKey, property.name, props.minLength);
     }
     if (props.maxLength !== undefined) {
-      mutable.setMaxLength(props.maxLength);
+      await context.editor.entities.primitiveProperties.setMaxLength(itemKey, property.name, props.maxLength);
     }
     if (props.minValue !== undefined) {
-      mutable.setMinValue(props.minValue);
+      await context.editor.entities.primitiveProperties.setMinValue(itemKey, property.name, props.minValue);
     }
     if (props.maxValue !== undefined) {
-      mutable.setMaxValue(props.maxValue);
+      await context.editor.entities.primitiveProperties.setMaxValue(itemKey, property.name, props.maxValue);
     }
     return {};
   },
