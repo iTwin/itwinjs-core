@@ -65,41 +65,4 @@ export class Structs extends ECClasses {
     await newClass.fromJSON(structProps);
     return { itemKey: newClass.key };
   }
-
-  /**
-   * Sets the base class of a Struct.
-   * @param structKey The SchemaItemKey of the Struct.
-   * @param baseClassKey The SchemaItemKey of the base class. Specifying 'undefined' removes the base class.
-   */
-  public async setBaseClass(structKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<SchemaItemEditResults> {
-    const structClass = await this._schemaEditor.schemaContext.getSchemaItem<MutableStructClass>(structKey);
-    if (structClass === undefined)
-      return { itemKey: structKey, errorMessage: `Struct Class ${structKey.fullName} not found in schema context.` };
-
-    if (baseClassKey === undefined) {
-      structClass.baseClass = undefined;
-      return { itemKey: structKey };
-    }
-
-    const baseClassSchema = baseClassKey.schemaKey.matches(structKey.schemaKey)
-      ? structClass.schema
-      : await this._schemaEditor.getSchema(baseClassKey.schemaKey);
-
-    if (baseClassSchema === undefined) {
-      return { itemKey: structKey, errorMessage: `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context` };
-    }
-
-    const baseClass = await baseClassSchema.lookupItem<StructClass>(baseClassKey);
-    if (baseClass === undefined)
-      return { itemKey: structKey, errorMessage: `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.` };
-
-    if (baseClass.schemaItemType !== SchemaItemType.StructClass)
-      return { itemKey: structKey, errorMessage: `${baseClass.fullName} is not of type Struct Class.` };
-
-    if (structClass.baseClass !== undefined && !await baseClass.is(await structClass.baseClass))
-      return { itemKey: structKey, errorMessage: `Baseclass ${baseClass.fullName} must derive from ${structClass.baseClass.fullName}.`};
-
-    structClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, StructClass>(baseClassKey, async () => baseClass);
-    return { itemKey: structKey };
-  }
 }

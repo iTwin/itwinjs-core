@@ -423,6 +423,50 @@ describe("Class merger tests", () => {
     });
   });
 
+  it("should merge custom attribute base class derived from the current base class", async () => {
+    await Schema.fromJson({
+      ...targetJson,
+      items: {
+        BaseCAClass: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "AnyProperty",
+        },
+        TestCAClass: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "AnyProperty",
+          baseClass: "TargetSchema.BaseCAClass",
+        },
+      },
+    }, targetContext);
+
+    const merger = new SchemaMerger(targetContext);
+    const mergedSchema = await merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "add",
+          schemaType: SchemaItemType.CustomAttributeClass,
+          itemName: "TestBase",
+          difference: {
+            baseClass: "SourceSchema.BaseCAClass",
+            appliesTo: "AnyProperty",
+          },
+        },
+        {
+          changeType: "modify",
+          schemaType: SchemaItemType.CustomAttributeClass,
+          itemName: "TestCAClass",
+          difference: {
+            baseClass: "SourceSchema.TestBase",
+          },
+        },
+      ],
+    });
+    const mergedItem = await mergedSchema.getItem<CustomAttributeClass>("TestCAClass");
+    expect(mergedItem!.toJSON().baseClass).deep.eq("TargetSchema.TestBase");
+  });
+
   it("should merge class modifier changed from Sealed to None", async () => {
     await Schema.fromJson({
       ...targetJson,
@@ -876,5 +920,95 @@ describe("Class merger tests", () => {
     });
 
     await expect(merge).to.be.rejectedWith("Baseclass TargetSchema.TestBase must derive from TargetSchema.BaseMixin.");
+  });
+
+  it("should throw an error when merging custom attribute base class changed from undefined to existing one", async () => {
+    await Schema.fromJson({
+      ...targetJson,
+      items: {
+        testCAClass: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "AnyClass",
+        },
+      },
+    }, targetContext);
+
+    const merger = new SchemaMerger(targetContext);
+    const merge = merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "add",
+          schemaType: SchemaItemType.CustomAttributeClass,
+          itemName: "BaseCAClass",
+          difference: {
+            appliesTo: "AnyClass",
+          },
+        },
+        {
+          changeType: "modify",
+          schemaType: SchemaItemType.CustomAttributeClass,
+          itemName: "testCAClass",
+          difference: {
+            baseClass: "SourceSchema.BaseCAClass",
+          },
+        },
+      ],
+    });
+
+    await expect(merge).to.be.rejectedWith("Changing the class 'testCAClass' baseClass is not supported.");
+  });
+
+  it("should throw an error when merging custom attribute base class to one that doesn't derive from", async () => {
+    await Schema.fromJson({
+      ...targetJson,
+      items: {
+        TargetBase: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "AnyProperty",
+        },
+        TestCAClass: {
+          schemaItemType: "CustomAttributeClass",
+          baseClass: "TargetSchema.TargetBase",
+          appliesTo: "AnyProperty",
+        },
+      },
+    }, targetContext);
+
+    const merger = new SchemaMerger(targetContext);
+    const merge = merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "add",
+          schemaType: SchemaItemType.CustomAttributeClass,
+          itemName: "SourceBase",
+          difference: {
+            appliesTo: "AnyProperty",
+          },
+        },
+        {
+          changeType: "add",
+          schemaType: SchemaItemType.CustomAttributeClass,
+          itemName: "TestBase",
+          difference: {
+            baseClass: "SourceSchema.SourceBase",
+            appliesTo: "AnyProperty",
+          },
+        },
+        {
+          changeType: "modify",
+          schemaType: SchemaItemType.CustomAttributeClass,
+          itemName: "TestCAClass",
+          difference: {
+            baseClass: "SourceSchema.TestBase",
+          },
+        },
+      ],
+    });
+
+    await expect(merge).to.be.rejectedWith("Baseclass TargetSchema.TestBase must derive from TargetSchema.TargetBase");
   });
 });

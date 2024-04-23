@@ -116,7 +116,7 @@ describe("Mixins tests", () => {
 
     expect(setResult).to.not.be.undefined;
     expect(setResult.errorMessage).to.not.be.undefined;
-    expect(setResult.errorMessage).to.equal(`${entityKey.fullName} is not of type Mixin Class.`);
+    expect(setResult.errorMessage).to.equal(`${entityKey.fullName} is not of type Mixin.`);
   });
 
   it("should return an error message when a base class cannot be found in the context", async () => {
@@ -134,7 +134,7 @@ describe("Mixins tests", () => {
 
     const result = await testEditor.mixins.setBaseClass(mixinKey, baseClassRes.itemKey);
     expect(result.errorMessage).to.not.be.undefined;
-    expect(result.errorMessage).to.equal(`Mixin Class ${mixinKey.fullName} not found in schema context.`);
+    expect(result.errorMessage).to.equal(`Class ${mixinKey.fullName} not found in schema context.`);
   });
 
   it("adding a base class with an unknown schema to mixin, should result in an error message", async () => {

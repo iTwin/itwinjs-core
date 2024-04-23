@@ -124,7 +124,7 @@ describe("Structs tests", () => {
     const result = await testEditor.structs.setBaseClass(structRes.itemKey!, baseClassRes.itemKey);
 
     expect(result.errorMessage).to.not.be.undefined;
-    expect(result.errorMessage).to.equal(`${baseClassRes.itemKey?.fullName} is not of type Struct Class.`);
+    expect(result.errorMessage).to.equal(`${baseClassRes.itemKey?.fullName} is not of type StructClass.`);
   });
 
   it("try adding base class to a struct class where the base class cannot be located, returns error", async () => {
@@ -142,7 +142,7 @@ describe("Structs tests", () => {
 
     const result = await testEditor.structs.setBaseClass(structKey, baseClassRes.itemKey);
     expect(result.errorMessage).to.not.be.undefined;
-    expect(result.errorMessage).to.equal(`Struct Class ${structKey.fullName} not found in schema context.`);
+    expect(result.errorMessage).to.equal(`Class ${structKey.fullName} not found in schema context.`);
   });
 
   it("try adding base class with unknown schema to existing struct class, returns error", async () => {

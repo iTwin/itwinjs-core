@@ -127,34 +127,4 @@ export class Mixins extends ECClasses {
 
     return { itemKey: classKey, propertyName: navigationProps.name };
   }
-
-  public async setBaseClass(mixinKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<SchemaItemEditResults>{
-    const mixin = (await this._schemaEditor.schemaContext.getSchemaItem<MutableMixin>(mixinKey));
-
-    if (mixin === undefined)
-      return { itemKey: mixinKey, errorMessage: `Mixin Class ${mixinKey.fullName} not found in schema context.` };
-
-    if (baseClassKey === undefined) {
-      mixin.baseClass = undefined;
-      return { itemKey: mixinKey };
-    }
-
-    const baseClassSchema = !baseClassKey.schemaKey.matches(mixinKey.schemaKey) ? await this._schemaEditor.getSchema(baseClassKey.schemaKey) : mixin.schema;
-    if (baseClassSchema === undefined) {
-      return { itemKey: mixinKey, errorMessage: `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context` };
-    }
-
-    const baseClassItem = await baseClassSchema.lookupItem<Mixin>(baseClassKey);
-    if (baseClassItem === undefined)
-      return { itemKey: mixinKey, errorMessage: `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.` };
-
-    if (baseClassItem.schemaItemType !== SchemaItemType.Mixin)
-      return { itemKey: mixinKey, errorMessage: `${baseClassItem.fullName} is not of type Mixin Class.` };
-
-    if (mixin.baseClass !== undefined && !await baseClassItem.is(await mixin.baseClass))
-      return { itemKey: mixinKey, errorMessage: `Baseclass ${baseClassItem.fullName} must derive from ${mixin.baseClass.fullName}.`};
-
-    mixin.baseClass = new DelayedPromiseWithProps<SchemaItemKey, Mixin>(baseClassKey, async () => baseClassItem);
-    return { itemKey: mixinKey };
-  }
 }

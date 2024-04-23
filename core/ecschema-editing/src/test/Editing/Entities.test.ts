@@ -261,7 +261,7 @@ describe("Entities tests", () => {
 
     expect(result).to.not.be.undefined;
     expect(result.errorMessage).to.not.be.undefined;
-    expect(result.errorMessage).to.equal(`${unitResult.itemKey?.fullName} is not of type Entity Class.`);
+    expect(result.errorMessage).to.equal(`${unitResult.itemKey?.fullName} is not of type EntityClass.`);
   });
 
   it("try adding base class with unknown schema to existing entity class, returns error", async () => {

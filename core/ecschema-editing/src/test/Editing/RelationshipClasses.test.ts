@@ -783,7 +783,7 @@ describe("Relationship tests from an existing schema", () => {
     const result = await testEditor.relationships.setBaseClass(relRes.itemKey!, baseClassRes.itemKey);
 
     expect(result.errorMessage).to.not.be.undefined;
-    expect(result.errorMessage).to.equal(`${baseClassRes.itemKey?.fullName} is not of type Relationship Class.`);
+    expect(result.errorMessage).to.equal(`${baseClassRes.itemKey?.fullName} is not of type RelationshipClass.`);
   });
 
   it("try adding base class to a relationship class where the base class cannot be located, returns error", async () => {
@@ -801,7 +801,7 @@ describe("Relationship tests from an existing schema", () => {
 
     const result = await testEditor.relationships.setBaseClass(relationshipKey, baseClassRes.itemKey);
     expect(result.errorMessage).to.not.be.undefined;
-    expect(result.errorMessage).to.equal(`Relationship Class ${relationshipKey.fullName} not found in schema context.`);
+    expect(result.errorMessage).to.equal(`Class ${relationshipKey.fullName} not found in schema context.`);
   });
 
   it("try adding base class with unknown schema to relationship class, returns error", async () => {

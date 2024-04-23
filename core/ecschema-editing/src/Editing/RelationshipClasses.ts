@@ -122,43 +122,19 @@ export class RelationshipClasses extends ECClasses {
    * @param relationshipKey The SchemaItemKey of the RelationshipClass.
    * @param baseClassKey The SchemaItemKey of the base class. Specifying 'undefined' removes the base class.
    */
-  public async setBaseClass(relationshipKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<SchemaItemEditResults> {
-    const relClass = await this._schemaEditor.schemaContext.getSchemaItem<MutableRelationshipClass>(relationshipKey);
-    if (relClass === undefined)
-      return { itemKey: relationshipKey, errorMessage: `Relationship Class ${relationshipKey.fullName} not found in schema context.` };
+  public override async setBaseClass(itemKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<SchemaItemEditResults> {
+    const relClass = await this._schemaEditor.schemaContext.getSchemaItem<RelationshipClass>(itemKey);
+    const baseClass = relClass?.baseClass;
 
-    if (baseClassKey === undefined) {
-      relClass.baseClass = undefined;
-      return { itemKey: relationshipKey };
+    const setResult = await super.setBaseClass(itemKey, baseClassKey);
+    if (setResult.errorMessage === undefined) {
+      const result = await this.validate(relClass!);
+      if (result.errorMessage !== undefined) {
+        relClass!.baseClass = baseClass;
+        return { itemKey, errorMessage: result.errorMessage };
+      }
     }
-
-    const baseClassSchema = baseClassKey.schemaKey.matches(relationshipKey.schemaKey)
-      ? relClass.schema
-      : await this._schemaEditor.getSchema(baseClassKey.schemaKey);
-
-    if (baseClassSchema === undefined) {
-      return { itemKey: relationshipKey, errorMessage: `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context` };
-    }
-
-    const baseClass = await baseClassSchema.lookupItem<RelationshipClass>(baseClassKey);
-    if (baseClass === undefined)
-      return { itemKey: relationshipKey, errorMessage: `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.` };
-
-    if (baseClass.schemaItemType !== SchemaItemType.RelationshipClass)
-      return { itemKey: relationshipKey, errorMessage: `${baseClass.fullName} is not of type Relationship Class.` };
-
-    if (relClass.baseClass !== undefined && !await baseClass.is(await relClass.baseClass))
-      return { itemKey: relationshipKey, errorMessage: `Baseclass ${baseClass.fullName} must derive from ${relClass.baseClass.fullName}.`};
-
-    const currentBaseClass = relClass.baseClass;
-    relClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, RelationshipClass>(baseClassKey, async () => baseClass);
-    const result = await this.validate(relClass);
-    if (result.errorMessage) {
-      relClass.baseClass = currentBaseClass;
-      return { itemKey: relationshipKey, errorMessage: result.errorMessage };
-    }
-
-    return { itemKey: relationshipKey };
+    return setResult;
   }
 
   public async createNavigationProperty(relationshipKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<PropertyEditResults> {
