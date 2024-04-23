@@ -1011,30 +1011,24 @@ class EditorWorkspaceImpl extends WorkspaceImpl {
 class EditorImpl implements Workspace.Editor {
   public workspace = new EditorWorkspaceImpl(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, workspaceEditorName) });
 
-  public async initializeContainer(args: { props: CloudSqlite.ContainerProps, dbName: WorkspaceDb.DbName, manifest: WorkspaceDb.Manifest }) {
+  public async initializeContainer(args: Workspace.Editor.CreateNewContainerProps) {
     class CloudAccess extends CloudSqlite.DbAccess<WorkspaceSqliteDb> {
-      public static async initializeWorkspace(args: { props: CloudSqlite.ContainerProps, dbName: WorkspaceDb.DbName, manifest: WorkspaceDb.Manifest }) {
-        const dbFullName = WorkspaceContainer.makeDbFileName(args.dbName, "1.0.0");
-        return super._initializeDb({ ...args, dbName: dbFullName, dbType: WorkspaceSqliteDb, blockSize: "4M" });
+      protected static override _cacheName = workspaceEditorName;
+      public static async initializeWorkspace(args: Workspace.Editor.CreateNewContainerProps) {
+        const props = await this.createBlobContainer({ scope: args.scope, metadata: { ...args.metadata, containerType: "workspace" } });
+        const dbFullName = WorkspaceContainer.makeDbFileName(WorkspaceDb.dbNameWithDefault(args.dbName), "1.0.0");
+        await super._initializeDb({ props, dbName: dbFullName, dbType: WorkspaceSqliteDb, blockSize: "4M" });
+        return props;
       }
     }
     return CloudAccess.initializeWorkspace(args);
   }
 
   public async createNewCloudContainer(args: Workspace.Editor.CreateNewContainerProps): Promise<Workspace.Editor.Container> {
-    const service = BlobContainer.service;
-    if (undefined === service)
-      throw new Error("no BlobContainer service available");
-    const auth = IModelHost.authorizationClient;
-    if (undefined === auth)
-      throw new Error("no authorization client available");
-
-    const userToken = await auth.getAccessToken();
-    const cloudContainer = await service.create({ scope: args.scope, metadata: { ...args.metadata, containerType: "workspace" }, userToken });
-    const dbName = WorkspaceDb.dbNameWithDefault(args.dbName);
-    const accessToken = await CloudSqlite.requestToken({ ...cloudContainer, accessLevel: "admin", userToken });
-    await this.initializeContainer({ props: { ...cloudContainer, storageType: cloudContainer.provider, accessToken }, ...args, dbName });
-    return this.getContainer({ accessToken, ...cloudContainer, storageType: cloudContainer.provider, writeable: true, description: args.metadata.description });
+    const cloudContainer = await this.initializeContainer(args);
+    const userToken = await IModelHost.authorizationClient?.getAccessToken();
+    const accessToken = await CloudSqlite.requestToken({ ...cloudContainer, accessLevel: "write", userToken });
+    return this.getContainer({ accessToken, ...cloudContainer, writeable: true, description: args.metadata.description });
   }
 
   public getContainer(props: WorkspaceContainer.Props & { accessToken: AccessToken }): Workspace.Editor.Container {

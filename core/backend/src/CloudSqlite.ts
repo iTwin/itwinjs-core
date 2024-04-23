@@ -828,8 +828,8 @@ export namespace CloudSqlite {
     }
 
     /**
-     * Initialize a cloud container to hold a Cloud SQliteDb. The container must first be created via its storage supplier api (e.g. Azure, or Google).
-     * A valid sasToken that grants write access must be supplied. This function creates and uploads an empty database into the container.
+     * Initialize a cloud container to hold VersionedSqliteDbs. The container must first be created by [[createBlobContainer]].
+     * This function creates and uploads an empty database into the container.
      * @note this deletes any existing content in the container.
      */
     protected static async _initializeDb(args: { dbType: typeof VersionedSqliteDb, props: ContainerProps, dbName: string, blockSize?: "64K" | "4M" }) {
@@ -843,6 +843,24 @@ export namespace CloudSqlite {
         unlinkSync(localFileName);
       });
       container.disconnect({ detach: true });
+    }
+
+    /**
+     * Create a new BlobContainer from the BlobContainer service to hold one or more VersionedSqliteDbs.
+     * @returns A ContainerProps that describes the newly created container.
+     * @note the current user must have administrator rights to create containers.
+     */
+    protected static async createBlobContainer(args: Omit<BlobContainer.CreateNewContainerProps, "userToken">): Promise<CloudSqlite.ContainerProps> {
+      const service = BlobContainer.service;
+      if (undefined === service)
+        throw new Error("no BlobContainer service available");
+      const auth = IModelHost.authorizationClient;
+      if (undefined === auth)
+        throw new Error("no authorization client available");
+
+      const userToken = await auth.getAccessToken();
+      const cloudContainer = await service.create({ scope: args.scope, metadata: { ...args.metadata, containerType: "property-store" }, userToken });
+      return { baseUri: cloudContainer.baseUri, containerId: cloudContainer.containerId, storageType: cloudContainer.provider };
     }
 
     /**

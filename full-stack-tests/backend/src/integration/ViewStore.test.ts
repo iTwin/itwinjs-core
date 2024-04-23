@@ -22,25 +22,17 @@ import {
 import { LineString3d, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { AzuriteTest } from "./AzuriteTest";
 
-const viewContainer = "views-itwin1";
-const storageType = "azure" as const;
+const iTwinId = Guid.createValue();
+let cloudProps: CloudSqlite.ContainerProps;
 let iModel: StandaloneDb;
 let vs1: ViewStore.CloudAccess;
 let drawingViewId: Id64String;
 let auxCoordSystemId: Id64String;
 let guidMap: IModelDb.GuidMapper;
 
-async function initializeContainer(containerId: string) {
-  await AzuriteTest.Sqlite.createAzContainer({ containerId });
-  const props = { baseUri: AzuriteTest.baseUri, storageType, containerId, writeable: true };
-  const accessToken = await CloudSqlite.requestToken(props);
-  await ViewStore.CloudAccess.initializeDb({ ...props, accessToken });
-}
-
-async function makeViewStore(user: string) {
-  const props = { baseUri: AzuriteTest.baseUri, storageType, containerId: viewContainer, writeable: true };
-  const accessToken = await CloudSqlite.requestToken(props);
-  const viewStore = new ViewStore.CloudAccess({ ...props, accessToken });
+async function makeViewStoreAccess(user: string) {
+  const accessToken = await CloudSqlite.requestToken(cloudProps);
+  const viewStore = new ViewStore.CloudAccess({ ...cloudProps, accessToken });
   viewStore.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: user }));
   viewStore.lockParams.user = user;
   return viewStore;
@@ -207,10 +199,12 @@ describe("ViewStore", function (this: Suite) {
 
   before(async () => {
     IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
+
+    AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
+    cloudProps = await ViewStore.CloudAccess.createNewContainer({ metadata: { label: "for ViewStore tests" }, scope: { iTwinId } });
     AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
 
-    await initializeContainer(viewContainer);
-    vs1 = await makeViewStore("viewStore1");
+    vs1 = await makeViewStoreAccess("viewStore1");
     iModel = StandaloneDb.createEmpty(prepareOutputFile("ViewStore", "test.bim"), {
       rootSubject: { name: "ViewStore tests", description: "ViewStore tests" },
       client: "integration tests",

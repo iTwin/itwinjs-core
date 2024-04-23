@@ -9,7 +9,6 @@
 
 import { BlobContainer } from "./BlobContainerService";
 import { CloudSqlite } from "./CloudSqlite";
-import { IModelHost } from "./IModelHost";
 import { VersionedSqliteDb } from "./SQLiteDb";
 import { SettingObject } from "./workspace/Settings";
 
@@ -251,17 +250,11 @@ export namespace PropertyStore {
       return super._initializeDb({ ...args, dbType: PropertyDb, dbName: defaultDbName });
     }
 
-    public static async createNewCloudContainer(args: CreateNewContainerProps): Promise<CloudSqlite.ContainerProps> {
-      const service = BlobContainer.service;
-      if (undefined === service)
-        throw new Error("no BlobContainer service available");
-      const auth = IModelHost.authorizationClient;
-      if (undefined === auth)
-        throw new Error("no authorization client available");
-
-      const userToken = await auth.getAccessToken();
-      const cloudContainer = await service.create({ scope: args.scope, metadata: { ...args.metadata, containerType: "property-store" }, userToken });
-      const props: CloudSqlite.ContainerProps = { baseUri: cloudContainer.baseUri, containerId: cloudContainer.baseUri, storageType: cloudContainer.provider };
+    /** Create and initialize a new BlobContainer to hold a PropertyStore
+     * @note the current user must have administrator rights to create containers.
+     */
+    public static async createNewContainer(args: CreateNewContainerProps): Promise<CloudSqlite.ContainerProps> {
+      const props = await this.createBlobContainer({ scope: args.scope, metadata: { ...args.metadata, containerType: "property-store" } });
       await this.initializeDb({ props });
       return props;
     }
