@@ -565,11 +565,11 @@ describe("iModel", () => {
       const expected = test[0] ?? {};
       const styleId = DisplayStyle3d.insert(imodel2, IModel.dictionaryId, `TestStyle${suffix++}`, expected);
       const style = imodel2.elements.getElement<DisplayStyle3d>(styleId).toJSON();
-      expect(style.jsonProperties.styles!).not.to.be.undefined;
+      expect(style.jsonProperties?.styles).not.to.be.undefined;
 
       expect(style.jsonProperties).not.to.be.undefined;
-      expect(style.jsonProperties.styles).not.to.be.undefined;
-      const actual = style.jsonProperties.styles!;
+      expect(style.jsonProperties?.styles).not.to.be.undefined;
+      const actual = style.jsonProperties?.styles;
 
       expect(actual.viewflags).not.to.be.undefined;
       const expectedVf = ViewFlags.fromJSON(test[1]);

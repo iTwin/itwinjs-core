@@ -192,10 +192,10 @@ export class RenderMaterialElement extends DefinitionElement {
     for (const mapName in sourceProps.jsonProperties?.materialAssets?.renderMaterial?.Map ?? {}) {
       if (typeof mapName !== "string")
         continue;
-      const sourceMap = sourceProps.jsonProperties.materialAssets.renderMaterial.Map[mapName];
+      const sourceMap = sourceProps.jsonProperties?.materialAssets.renderMaterial.Map[mapName];
       if (!Id64.isValid(sourceMap.TextureId) || sourceMap.TextureId === undefined)
         continue;
-      targetProps.jsonProperties.materialAssets.renderMaterial.Map[mapName].TextureId = context.findTargetElementId(sourceMap.TextureId ?? Id64.invalid);
+      (targetProps.jsonProperties ?? {}).materialAssets.renderMaterial.Map[mapName].TextureId = context.findTargetElementId(sourceMap.TextureId ?? Id64.invalid);
     }
   }
 }
