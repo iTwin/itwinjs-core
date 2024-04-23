@@ -25,5 +25,5 @@ export interface DtaIpcInterface {
   /** Creates and inserts a copy of the specified spatial view, along with model+category selectors; and a section drawing model and view thereof.
    * Returns the Id of the section drawing view.
    */
-  createSectionDrawingView(args: CreateSectionDrawingViewArgs): Promise<Id64String>;
+  createSectionDrawing(args: CreateSectionDrawingViewArgs): Promise<Id64String>;
 }

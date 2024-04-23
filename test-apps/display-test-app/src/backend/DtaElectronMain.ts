@@ -9,7 +9,7 @@ import { CreateSectionDrawingViewArgs, dtaChannel, DtaIpcInterface } from "../co
 import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Backend";
 import { IpcHandler } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration";
-import { createSectionDrawingView, SectionDrawingImpl } from "./SectionDrawingImpl";
+import { createSectionDrawing, SectionDrawingImpl } from "./SectionDrawingImpl";
 
 const mainWindowName = "mainWindow";
 const getWindowSize = (winSize?: string) => {
@@ -37,8 +37,8 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
     return "Hello from backend";
   }
 
-  public async createSectionDrawingView(args: CreateSectionDrawingViewArgs): Promise<Id64String> {
-    return createSectionDrawingView(args);
+  public async createSectionDrawing(args: CreateSectionDrawingViewArgs): Promise<Id64String> {
+    return createSectionDrawing(args);
   }
 }
 
