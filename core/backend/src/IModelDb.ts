@@ -358,7 +358,11 @@ export abstract class IModelDb extends IModel {
     super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
     this.nativeDb = args.nativeDb;
 
-    // PR https://github.com/iTwin/imodel-native/pull/558 ill-advisedly renamed closeIModel to closeFile.
+    // it is illegal to create an IModelDb unless the nativeDb has been opened. Throw otherwise.
+    if (!this.isOpen)
+      throw new Error("cannot create an IModelDb unless it has already been opened");
+
+    // PR https://github.com/iTwin/imodel-native/pull/558 renamed closeIModel to closeFile because it changed its behavior.
     // Ideally, nobody outside of core-backend would be calling it, but somebody important is.
     // Make closeIModel available so their code doesn't break.
     (this.nativeDb as any).closeIModel = () => {
@@ -935,7 +939,8 @@ export abstract class IModelDb extends IModel {
   */
   public static findByFilename(fileName: LocalFileName): IModelDb | undefined {
     for (const entry of this._openDbs) {
-      if (entry[1].pathName === fileName)
+      // It shouldn't be possible for anything in _openDbs to not be open, but if so just skip them because `pathName` will throw an exception.
+      if (entry[1].isOpen && entry[1].pathName === fileName)
         return entry[1];
     }
     return undefined;
