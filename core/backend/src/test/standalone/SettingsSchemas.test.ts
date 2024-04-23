@@ -13,7 +13,7 @@ describe("SettingsSchemas", () => {
     SettingsSchemas.reset();
 
     // can't add a group with no name
-    expect(() => SettingsSchemas.addGroup({} as any)).throws(`has no "groupName" member`);
+    expect(() => SettingsSchemas.addGroup({} as any)).throws(`has no "schemaPrefix" member`);
 
     SettingsSchemas.addFile(IModelTestUtils.resolveAssetFile("TestSettings.schema.json"));
     expect(SettingsSchemas.settingDefs.get("testApp/list/openMode")!.type).equals("string");

@@ -1,7 +1,7 @@
 {
-  "$schema": "itwin-settings/schema/1.1",
+  "$schema": "../Base.Schema.json",
   "description": "settings for workspaces",
-  "groupName": "itwin/core/workspace",
+  "schemaPrefix": "itwin/core/workspace",
   "settingDefs": {
     "settingsWorkspaces": {
       "type": "array",

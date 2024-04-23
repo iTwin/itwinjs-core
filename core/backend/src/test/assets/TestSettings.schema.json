@@ -1,8 +1,7 @@
 {
-  "$schema": "itwin-settings/schema/1.1",
+  "$schema": "../../assets/Settings/Base.Schema.json",
   "description": "the settings for test application 1",
-  "groupName": "testApp",
-  "order": 7,
+  "schemaPrefix": "testApp",
   "settingDefs": {
     "list/multiSelectModifier": {
       "type": "string",

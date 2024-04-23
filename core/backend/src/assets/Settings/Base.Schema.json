@@ -1,0 +1,23 @@
+{
+  "$comment": "This schema describes the meta-structure of an iTwin Settings Schema file. It is used to provide a guide for the schema files themselves.",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "settingDefs": {
+      "type": "object",
+      "description": "A group of setting definitions."
+    },
+    "typeDefs": {
+      "type": "object",
+      "description": "A group of type definitions that can be extended in setting definitions."
+    },
+    "schemaPrefix": {
+      "type": "string",
+      "description": "The unique prefix of the schema."
+    },
+    "description": {
+      "type": "string",
+      "description": "A description of the schema."
+    }
+  }
+}
