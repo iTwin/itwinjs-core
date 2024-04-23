@@ -6,9 +6,9 @@
 import { Base64EncodedString, ColorDef } from "@itwin/core-common";
 import {
   BeButtonEvent, Cluster, CollectTileStatus, DecorateContext, Decorator, DisclosedTileTreeSet,
-  GeometryTileTreeReference, GraphicType, IModelApp, MapTileTreeReference, Marker, MarkerImage, MarkerSet,
+  GeometryTileTreeReference, GraphicPrimitive, GraphicType, IModelApp, MapTileTreeReference, Marker, MarkerImage, MarkerSet,
   Tile, TileGeometryCollector, TileTreeReference, TileUser, Viewport } from "@itwin/core-frontend";
-import { ConvexClipPlaneSet, CurvePrimitive, GrowableXYZArray, LineString3d, Point2d, Point3d, PolyfaceQuery, Range3d, SweepLineStringToFacetsOptions, Transform, Vector3d, XAndY, XYAndZ } from "@itwin/core-geometry";
+import { ConvexClipPlaneSet, CurvePrimitive, GrowableXYZArray, LineString3d, Loop, Point2d, Point3d, Polyface, PolyfaceClip, PolyfaceQuery, Range3d, SweepLineStringToFacetsOptions, Transform, Vector3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { MapFeatureInfoToolData } from "./MapFeatureInfoTool";
 
 /** A TileGeometryCollector that restricts collection to tiles that overlap a line string.
@@ -86,6 +86,34 @@ class TerrainDraper implements TileUser {
 
     return "loading";
   }
+
+  public drapeLoop(outMeshes: Polyface[], loop: Loop, tolerance: number, maxDistance = 1.0E5): "loading" | "complete" {
+    const tree = this.treeRef.treeOwner.load();
+    if (!tree)
+      return "loading";
+
+    const range = loop.range();
+    range.extendZOnly(-maxDistance);  // Expand - but not so much that we get opposite side of globe.
+    range.extendZOnly(maxDistance);
+
+    const strokes = loop.getPackedStrokes();
+    if (!strokes)
+      return "complete";
+
+    const collector = new DrapeLineStringCollector(this, tolerance, range, tree.iModelTransform, strokes);
+    this.treeRef.collectTileGeometry(collector);
+    collector.requestMissingTiles();
+
+    if (collector.isAllGeometryLoaded && collector.polyfaces.length > 0) {
+      for (const polyface of collector.polyfaces) {
+        const mesh = PolyfaceClip.drapeRegion(polyface, loop);
+        if (mesh?.tryTranslateInPlace(0, 0, 1 * tolerance)) // shift up to see it better
+          outMeshes.push(mesh);
+      }
+      return "complete";
+    }
+    return "loading";
+  }
 }
 
 /** @internal */
@@ -142,11 +170,16 @@ interface DrapePointState {
   collectorState: string;
 }
 
+interface DrapeGraphicState {
+  graphic: GraphicPrimitive;
+  collectorState: string;
+}
+
 /** @internal */
 export class MapFeatureInfoDecorator implements Decorator {
   public hidden = false;
   public readonly useCachedDecorations = true;
-  public readonly disableTerrainDraper = true;
+  public readonly disableTerrainDraper = false;
   public markerSize = new Point2d(32, 32);
   public lineWidth =  3;
   private _highlightColor = ColorDef.from(0, 255, 255, 127);
@@ -163,7 +196,10 @@ export class MapFeatureInfoDecorator implements Decorator {
   private _scratchPoints = new GrowableXYZArray();
 
   private _drapePointsStates: DrapePointState[] = [];
+  private _drapeGraphicsStates: DrapeGraphicState[] = [];
+
   private _drapedStrings?: LineString3d[];
+  private _drapedMeshes?: Polyface[];
   private _allGeomDraped = false;
   private _draper?: TerrainDraper;
   private _markerImage: HTMLImageElement;
@@ -214,6 +250,7 @@ export class MapFeatureInfoDecorator implements Decorator {
 
     this._drapePoints.clear();
     this._drapePointsStates = [];
+    this._drapeGraphicsStates = [];
 
     if (!this.disableTerrainDraper && this._state.mapInfo?.layerInfos && state.hit.viewport.displayStyle.displayTerrain) {
 
@@ -247,6 +284,7 @@ export class MapFeatureInfoDecorator implements Decorator {
   }
 
   protected renderGraphics(context: DecorateContext) {
+    console.log("renderGraphics called");
     this._markerSet.markers.clear();
 
     if (this._state?.mapInfo?.layerInfos === undefined || this.hidden) {
@@ -261,7 +299,8 @@ export class MapFeatureInfoDecorator implements Decorator {
     const builder = context.createGraphicBuilder(this._graphicType, transform);
 
     if (this._draper) {
-      if (this._drapePoints.length === 0 && this._state.mapInfo.layerInfos) {
+      // if (this._drapePoints.length === 0 && this._state.mapInfo.layerInfos) {
+      if (this._drapeGraphicsStates.length === 0 && this._state.mapInfo.layerInfos) {
 
         for (const layerInfo of this._state.mapInfo.layerInfos) {
           if (layerInfo.subLayerInfos) {
@@ -273,6 +312,7 @@ export class MapFeatureInfoDecorator implements Decorator {
                       this._drapePointsStates.push({ count: geom.graphic.points.length, collectorState: "loading" });
                       this._drapePoints.pushAll(geom.graphic.points);
                     }
+                    this._drapeGraphicsStates.push({graphic: geom.graphic, collectorState: "loading" });
                   }
                 }
               }
@@ -285,37 +325,55 @@ export class MapFeatureInfoDecorator implements Decorator {
       if (!this._allGeomDraped) {
 
         let hasMissingLineStrings = false;
-        let drapePointsOffset = 0;
-        for (const state of this._drapePointsStates) {
+        // for (const state of this._drapePointsStates) {
+        for (const state of this._drapeGraphicsStates) {
 
           if (state.collectorState === "loading") {
             this._scratchPoints.clear();
-            this._scratchPoints.resize(state.count);
 
-            let dstIdx = 0;
-            for (let srcIdx = drapePointsOffset; srcIdx < drapePointsOffset + state.count; srcIdx++) {
-              this._scratchPoints.transferFromGrowableXYZArray(dstIdx++, this._drapePoints, srcIdx);
-            }
+            if (state.graphic.type === "linestring") {
 
-            const drapeRange = Range3d.createNull();
-            drapeRange.extendArray(this._scratchPoints);
-            const drapedStrings: LineString3d[] = [];
-            const tolerance = this._computeChordTolerance(context.viewport, true, () => drapeRange) * 10;  // 10 pixels
-            if ("loading" === this._draper.drapeLineString(drapedStrings, this._scratchPoints, tolerance)) {
-              hasMissingLineStrings = true;
-            } else {
-              this.addDrapedStrings(drapedStrings);
-              state.collectorState = "complete";
+              this._scratchPoints.pushAll(state.graphic.points);
+              const drapeRange = Range3d.createNull();
+              drapeRange.extendArray(this._scratchPoints);
+              const drapedStrings: LineString3d[] = [];
+              const tolerance = this._computeChordTolerance(context.viewport, true, () => drapeRange) * 10;  // 10 pixels
+              if ("loading" === this._draper.drapeLineString(drapedStrings, this._scratchPoints, tolerance)) {
+                hasMissingLineStrings = true;
+              } else {
+                this.addDrapedStrings(drapedStrings);
+                state.collectorState = "complete";
+              }
+            } else if (state.graphic.type === "loop") {
+              const loop =  state.graphic.loop;
+              const outMeshes: Polyface[] = [];
+              const tolerance = this._computeChordTolerance(context.viewport, true, () => loop.range()) * 5;  // 10 pixels
+              if ("loading" === this._draper.drapeLoop(outMeshes, loop, tolerance)) {
+                console.log("loop still loading mesh...");
+                hasMissingLineStrings = true;
+              } else {
+                console.log("loop draped complete");
+                this.addDrapedMeshes(outMeshes);
+                state.collectorState = "complete";
+              }
             }
+            // drapePointsOffset += state.graphic;
           }
-          drapePointsOffset += state.count;
         }
         this._allGeomDraped = !hasMissingLineStrings;
       }
 
+      if (!this._allGeomDraped)
+        return undefined;
+
       if (this._drapedStrings) {
         builder.setSymbology(this.highlightColor, this.highlightColor, this.lineWidth);
         this._drapedStrings.forEach((line) => builder.addLineString(line.points));
+      }
+
+      if (this._drapedMeshes) {
+        builder.setSymbology(this.highlightColor, this.highlightColor, this.lineWidth);
+        this._drapedMeshes.forEach((polyface) => builder.addPolyface(polyface, true));
       }
 
     } else {
@@ -362,7 +420,14 @@ export class MapFeatureInfoDecorator implements Decorator {
       this._drapedStrings.push(ds);
   }
 
+  public addDrapedMeshes(drapedMeshes: Polyface[]) {
+    if (!this._drapedMeshes)
+      this._drapedMeshes = [];
+    drapedMeshes.forEach((ds) => this._drapedMeshes!.push(ds));
+  }
+
   public decorate(context: DecorateContext): void {
+    console.log("decorate");
     const graphics = this.renderGraphics(context);
     if (graphics)
       context.addDecoration(this._graphicType, graphics);
