@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fixed problem cases freeing tile memory under memory pressure",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
