@@ -178,50 +178,6 @@ export class SectionDrawingApi {
     }
   }
 
-  public static async createAndViewSectionDrawingRevitWay(iModelConnection: IModelConnection, name: string, spatialViewDefinitionId: string, saveView: boolean = true): Promise<void> {
-    if (!iModelConnection)
-      return;
-    const tempName = `SectionDrawingDemo-${name}`;
-
-    const spatialViewState: SpatialViewState = await iModelConnection.views.load(spatialViewDefinitionId) as SpatialViewState;
-    const drawingToSpatial = Transform.createIdentity();
-    const nonsense = iModelConnection.ecefLocation?.getTransform();
-    drawingToSpatial.multiplyTransformTransform(nonsense!, drawingToSpatial);
-    const huh = Transform.createOriginAndMatrix(spatialViewState.origin, spatialViewState.rotation.inverse());
-    if (huh)
-      drawingToSpatial.multiplyTransformTransform(huh, drawingToSpatial);
-    const sectionDrawingId = await SectionDrawingIpcInvoker.getOrCreate().insertSectionDrawing(
-      tempName,
-      spatialViewDefinitionId,
-      drawingToSpatial.toJSON(),
-    );
-    // Create view state
-    const viewStateProps = await this.createSectionDrawingViewStateProps(
-      iModelConnection,
-      spatialViewDefinitionId,
-      sectionDrawingId,
-      drawingToSpatial,
-    );
-    const drawingViewState = DrawingViewState.createFromProps(viewStateProps, iModelConnection);
-
-    if (saveView) {
-      // Insert a new drawing view definition and view it
-      const drawingViewDefinitionId = await this.insertSectionDrawingViewDefinition(
-        iModelConnection,
-        tempName,
-        drawingViewState.toProps(),
-      );
-      await this.viewSectionDrawing(iModelConnection, drawingViewDefinitionId, sectionDrawingId);
-    } else {
-      // View new drawing view state directly (without saving it)
-      await drawingViewState.load();
-      const viewport = IModelApp.viewManager.selectedView;
-      if (!viewport)
-        return;
-      viewport.changeView(drawingViewState);
-    }
-  }
-
   private static async createSectionDrawingViewStateProps(
     iModelConnection: IModelConnection,
     spatialViewDefinitionId: string,
