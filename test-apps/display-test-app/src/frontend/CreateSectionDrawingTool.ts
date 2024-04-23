@@ -83,7 +83,7 @@ export class CreateSectionDrawingTool extends Tool {
       angle: { radians: 0 },
       code: Code.createEmpty(),
       model: IModel.dictionaryId,
-      classFullName: "BisCore.ViewDefinition2d",
+      classFullName: DrawingViewState.classFullName,
     };
 
     const displayStyleProps: DisplayStyleProps = {
@@ -111,8 +111,9 @@ export class CreateSectionDrawingTool extends Tool {
     };
     
     const drawingView = DrawingViewState.createFromProps(viewStateProps, vp.iModel);
-    vp.changeView(drawingView);
+    await drawingView.load();
     
+    vp.changeView(drawingView);
     return true;
   }
 }

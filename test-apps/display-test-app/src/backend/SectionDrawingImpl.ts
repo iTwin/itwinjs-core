@@ -341,9 +341,11 @@ function insertSpatialView(db: BriefcaseDb, args: Pick<CreateSectionDrawingViewA
 
   const styleProps: DisplayStyle3dProps = {
     ...args.displayStyle,
+    classFullName: DisplayStyle3d.classFullName,
     id: Id64.invalid,
-    code: DisplayStyle3d.createCode(db, dictionary, args.baseName),
+    code: DisplayStyle3d.createCode(db, dictionary, args.baseName).toJSON(),
     model: dictionary,
+    federationGuid: "",
   };
 
   const displayStyleId = db.elements.insertElement(styleProps);
@@ -356,6 +358,7 @@ function insertSpatialView(db: BriefcaseDb, args: Pick<CreateSectionDrawingViewA
     displayStyleId,
     modelSelectorId,
     categorySelectorId,
+    federationGuid: "",
   };
 
   return db.elements.insertElement(viewProps);
