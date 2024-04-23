@@ -56,16 +56,6 @@ export class SettingsSchemas {
   /** event that signals that the values in [[allSchemas]] have changed in some way. */
   public static readonly onSchemaChanged = new BeEvent<() => void>();
 
-  /** Clear the contents of the registry and remove all event listeners.
-   * @note This is really only necessary for tests of the Settings system.
-   * @internal
-   */
-  public static reset() {
-    this._allGroups.clear();
-    this.allSchemas.clear();
-    this.onSchemaChanged.clear();
-  }
-
   /** @internal */
   public static validateArrayObject<T>(val: T, schemaName: string, msg: string): T {
     const schema = this.allSchemas.get(schemaName);
