@@ -47,8 +47,6 @@ export interface ElementProps extends EntityProps {
   federationGuid?: GuidString;
   /** A [user-assigned label]($docs/bis/guide/fundamentals/element-fundamentals.md#userlabel) for this element. */
   userLabel?: string;
-  /** Optional [json properties]($docs/bis/guide/fundamentals/element-fundamentals.md#jsonproperties) of this element. */
-  jsonProperties?: any;
 }
 
 /** The Id and relationship class of an Element that is somehow related to another Element
