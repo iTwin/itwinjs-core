@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { assert } from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { CreateSectionDrawingViewArgs, dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Backend";
 import { IpcHandler } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration";
-import { SectionDrawingImpl } from "./SectionDrawingImpl";
+import { createSectionDrawingView, SectionDrawingImpl } from "./SectionDrawingImpl";
 
 const mainWindowName = "mainWindow";
 const getWindowSize = (winSize?: string) => {
@@ -37,8 +37,8 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
     return "Hello from backend";
   }
 
-  public async createSectionDrawingView(_args: CreateSectionDrawingViewArgs): Promise<string> {
-    throw new Error("###TODO");
+  public async createSectionDrawingView(args: CreateSectionDrawingViewArgs): Promise<Id64String> {
+    return createSectionDrawingView(args);
   }
 }
 

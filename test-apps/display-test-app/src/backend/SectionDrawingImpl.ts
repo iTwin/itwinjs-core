@@ -10,7 +10,8 @@ import {
 import { sectionDrawingChannel, SectionDrawingIpc } from "../common/SectionDrawingIpcInterface";
 import { Range3d, Range3dProps, Transform, TransformProps } from "@itwin/core-geometry";
 import { Code, CodeProps, DbResult, ElementProps, GeometricModel2dProps, IModelError, RelatedElementProps, SectionDrawingProps, SectionType, ViewDefinition2dProps } from "@itwin/core-common";
-import { Id64String } from "@itwin/core-bentley";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { CreateSectionDrawingViewArgs } from "../common/DtaIpcInterface";
 
 export class SectionDrawingImpl extends IpcHandler implements SectionDrawingIpc {
   private _briefcaseDbKey: string = "";
@@ -263,5 +264,47 @@ export class SectionDrawingImpl extends IpcHandler implements SectionDrawingIpc 
       // TODO: Return user readable error messages
       return (error as IModelError).message;
     }
+  }
+}
+
+async function getDrawingProductionListModel(db: BriefcaseDb): Promise<Id64String> {
+  const documentListName = "DrawingProductionDrawings";
+  let documentListModelId: Id64String | undefined;
+  db.withPreparedStatement(
+    "SELECT ECInstanceId FROM bis.DocumentPartition WHERE CodeValue = ?",
+    (stmt) => {
+      stmt.bindString(1, documentListName);
+      if (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        documentListModelId = stmt.getRow().id;
+      }
+    },
+  );
+
+  if (undefined === documentListModelId) {
+    const rootSubjectId = db.elements.getRootSubject().id;
+    await db.locks.acquireLocks({ shared: [rootSubjectId] });
+    documentListModelId = DocumentListModel.insert(db, rootSubjectId, documentListName);
+  }
+
+  if (!Id64.isValidId64(documentListModelId)) {
+    throw new Error("Failed to obtain document list model");
+  }
+
+  return documentListModelId;
+}
+
+export async function createSectionDrawingView(args: CreateSectionDrawingViewArgs): Promise<Id64String> {
+  const db = BriefcaseDb.findByKey(args.iModelKey);
+
+  try {
+    await db.locks.acquireLocks({ shared: [ BriefcaseDb.dictionaryId ] });
+
+    const documentListModelId = await getDrawingProductionListModel(db);
+
+  // ###TODO
+  return documentListModelId;
+  } catch (e) {
+    db.abandonChanges();
+    throw e;
   }
 }
