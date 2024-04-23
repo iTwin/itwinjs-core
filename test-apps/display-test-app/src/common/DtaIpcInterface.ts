@@ -19,11 +19,16 @@ export interface CreateSectionDrawingViewArgs {
   drawingToSpatialTransform: TransformProps;
 }
 
+export interface CreateSectionDrawingViewResult {
+  sectionDrawingId: Id64String;
+  spatialViewId: Id64String;
+}
+
 export interface DtaIpcInterface {
   sayHello: () => Promise<string>;
 
   /** Creates and inserts a copy of the specified spatial view, along with model+category selectors; and a section drawing model and view thereof.
    * Returns the Id of the section drawing view.
    */
-  createSectionDrawing(args: CreateSectionDrawingViewArgs): Promise<Id64String>;
+  createSectionDrawing(args: CreateSectionDrawingViewArgs): Promise<CreateSectionDrawingViewResult>;
 }

@@ -14,7 +14,7 @@ import { sectionDrawingChannel, SectionDrawingIpc } from "../common/SectionDrawi
 import { Range3d, Range3dProps, Transform, TransformProps } from "@itwin/core-geometry";
 import { Code, CodeProps, DbResult, DisplayStyle3dProps, ElementProps, GeometricModel2dProps, IModelError, RelatedElementProps, SectionDrawingProps, SectionType, SpatialViewDefinitionProps, ViewDefinition2dProps } from "@itwin/core-common";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { CreateSectionDrawingViewArgs } from "../common/DtaIpcInterface";
+import { CreateSectionDrawingViewArgs, CreateSectionDrawingViewResult } from "../common/DtaIpcInterface";
 
 export class SectionDrawingImpl extends IpcHandler implements SectionDrawingIpc {
   private _briefcaseDbKey: string = "";
@@ -361,17 +361,17 @@ function insertSpatialView(db: BriefcaseDb, args: Pick<CreateSectionDrawingViewA
   return db.elements.insertElement(viewProps);
 }
 
-export async function createSectionDrawing(args: CreateSectionDrawingViewArgs): Promise<Id64String> {
+export async function createSectionDrawing(args: CreateSectionDrawingViewArgs): Promise<CreateSectionDrawingViewResult> {
   const db = BriefcaseDb.findByKey(args.iModelKey);
 
   try {
     await db.locks.acquireLocks({ shared: [ BriefcaseDb.dictionaryId ] });
 
     const spatialViewId = insertSpatialView(db, args);
-    const drawingViewId = await insertSectionDrawing(db, spatialViewId, args.baseName, args.drawingToSpatialTransform);
+    const sectionDrawingId = await insertSectionDrawing(db, spatialViewId, args.baseName, args.drawingToSpatialTransform);
 
     db.saveChanges(`Created section drawing '${args.baseName}'`);
-    return drawingViewId;
+    return { spatialViewId, sectionDrawingId };
   } catch (e) {
     db.abandonChanges();
     throw e;
