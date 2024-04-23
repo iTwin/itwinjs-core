@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { assert, Id64String } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { CreateSectionDrawingViewArgs, CreateSectionDrawingViewResult, dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Backend";
 import { IpcHandler } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration";
-import { createSectionDrawing, SectionDrawingImpl } from "./SectionDrawingImpl";
+import { createSectionDrawing } from "./SectionDrawingImpl";
 
 const mainWindowName = "mainWindow";
 const getWindowSize = (winSize?: string) => {
@@ -55,7 +55,7 @@ const dtaElectronMain = async () => {
     webResourcesPath: path.join(__dirname, "..", "..", "lib"),
     iconName: "display-test-app.ico",
     rpcInterfaces: getRpcInterfaces(),
-    ipcHandlers: [DtaHandler, SectionDrawingImpl],
+    ipcHandlers: [DtaHandler],
     developmentServer: process.env.NODE_ENV === "development",
   };
 

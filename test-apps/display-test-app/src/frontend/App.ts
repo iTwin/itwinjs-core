@@ -64,7 +64,6 @@ import { OpenRealityModelSettingsTool } from "./RealityModelDisplaySettingsWidge
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { getConfigurationString } from "./DisplayTestApp";
-import { SectionDrawingTool } from "./ViewDrawingTool";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -365,7 +364,6 @@ export class DisplayTestApp {
       ToggleShadowMapTilesTool,
       ViewClipByElementGeometryTool,
       ZoomToSelectedElementsTool,
-      SectionDrawingTool,
     ].forEach((tool) => tool.register(svtToolNamespace));
 
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;

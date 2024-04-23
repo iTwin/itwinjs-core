@@ -29,7 +29,6 @@ import { Window } from "./Window";
 import { openIModel, OpenIModelProps } from "./openIModel";
 import { HubPicker } from "./HubPicker";
 import { RealityModelSettingsPanel } from "./RealityModelDisplaySettingsWidget";
-import { ViewDrawingPanel } from "./ViewDrawingTool";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
@@ -405,15 +404,6 @@ export class Viewer extends Window {
         return panel;
       },
       tooltip: "Point cloud settings",
-    });
-
-    this.toolBar.addDropDown({
-      iconUnicode: "\ue923",
-      createDropDown: async (container: HTMLElement) => {
-        const panel = new ViewDrawingPanel(this.viewport, container);
-        return panel;
-      },
-      tooltip: "Create and view section drawing",
     });
 
     this.updateTitle();
