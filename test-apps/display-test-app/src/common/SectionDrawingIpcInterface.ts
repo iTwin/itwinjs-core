@@ -1,5 +1,19 @@
-import { CodeProps, ElementProps, ViewDefinition2dProps } from "@itwin/core-common";
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+import { Id64String } from "@itwin/core-bentley";
+import { CodeProps, DisplayStyle3dProps, ElementProps, SpatialViewDefinitionProps, ViewDefinition2dProps } from "@itwin/core-common";
 import { Range3dProps, TransformProps } from "@itwin/core-geometry";
+
+export interface CreateSectionDrawingViewArgs {
+  baseName: string;
+  spatialView: SpatialViewDefinitionProps;
+  models: Id64String[];
+  categories: Id64String[];
+  displayStyle: Id64String | DisplayStyle3dProps;
+  drawingToSpatialTransform: TransformProps;
+}
 
 export const sectionDrawingChannel = "SectionDrawingChannel";
 export interface SectionDrawingIpc {
@@ -34,4 +48,9 @@ export interface SectionDrawingIpc {
    * @returns The id of the created element
    */
   insertElement(props: ElementProps, locks: string[]): Promise<string>;
+
+  /** Creates and inserts a copy of the specified spatial view, along with model+category selectors; and a section drawing model and view thereof.
+   * Returns the Id of the section drawing view.
+   */
+  createSectionDrawingView(args: CreateSectionDrawingViewArgs): Promise<Id64String>;
 }

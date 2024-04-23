@@ -1,7 +1,12 @@
-import { IpcApp } from "@itwin/core-frontend";
-import { sectionDrawingChannel, SectionDrawingIpc } from "../common/SectionDrawingIpcInterface";
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+import { IpcApp, SpatialViewState } from "@itwin/core-frontend";
+import { CreateSectionDrawingViewArgs, sectionDrawingChannel, SectionDrawingIpc } from "../common/SectionDrawingIpcInterface";
 import { Range3dProps, Transform, TransformProps } from "@itwin/core-geometry";
 import { CodeProps, ElementProps, ViewDefinition2dProps } from "@itwin/core-common";
+import { Id64String } from "@itwin/core-bentley";
 
 export class SectionDrawingIpcInvoker implements SectionDrawingIpc {
   private static _instance: SectionDrawingIpcInvoker | undefined;
@@ -66,5 +71,9 @@ export class SectionDrawingIpcInvoker implements SectionDrawingIpc {
    */
   public async insertElement(props: ElementProps, locks: string[]): Promise<string> {
     return this._ipc.insertElement(props, locks);
+  }
+
+  public async createSectionDrawingView(args: CreateSectionDrawingViewArgs): Promise<Id64String> {
+    return this._ipc.createSectionDrawingView(args);
   }
 }
