@@ -132,7 +132,7 @@ export class SectionDrawingApi {
     view.setExtents(delta);
   }
 
-  public static async createAndViewSectionDrawingMethod2(iModelConnection: IModelConnection, name: string, spatialViewDefinitionId: string, saveView: boolean = true): Promise<void> {
+  public static async createAndViewSectionDrawing(iModelConnection: IModelConnection, name: string, spatialViewDefinitionId: string, saveView: boolean = true): Promise<void> {
     if (!iModelConnection)
       return;
     const tempName = `SectionDrawingDemo-${name}`;
