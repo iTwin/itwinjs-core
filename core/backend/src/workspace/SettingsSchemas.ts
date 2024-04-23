@@ -36,11 +36,11 @@ export interface SettingSchema extends Readonly<JSONSchema> {
 
 /**
  * The properties of a group of [[SettingSchema]]s for an application. Groups can be added and removed from [[SettingsSchemas]]
- * and are identified by their (required) `groupName` member
+ * and are identified by their (required) `schemaPrefix` member
  * @beta
  */
 export interface SettingSchemaGroup {
-  readonly groupName: string;
+  readonly schemaPrefix: string;
   readonly settingDefs: { [name: string]: SettingSchema };
   readonly typeDefs?: { [name: string]: SettingSchema };
   readonly order?: number;
@@ -106,7 +106,7 @@ export class SettingsSchemas {
     let required = propDef.required;
     let properties = propDef.properties;
 
-    // if this oject extends a typeDef, add typeDef's properties and required values, recursively
+    // if this object extends a typeDef, add typeDef's properties and required values, recursively
     if (propDef.extends !== undefined) {
       const typeDef = this.typeDefs.get(propDef.extends);
       if (undefined === typeDef)
@@ -185,7 +185,7 @@ export class SettingsSchemas {
   }
 
   /**
-   * Add one or more [[SettingSchemaGroup]]s. `SettingSchemaGroup`s must include a `groupName` member that is used
+   * Add one or more [[SettingSchemaGroup]]s. `SettingSchemaGroup`s must include a `schemaPrefix` member that is used
    * to identify the group. If a group with the same name is already registered, the old values are first removed and then the new group is added.
    */
   public static addGroup(settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]): void {
@@ -219,34 +219,34 @@ export class SettingsSchemas {
     }
   }
 
-  /** Remove a previously added [[SettingSchemaGroup]] by groupName */
-  public static removeGroup(groupName: string): void {
-    this.doRemove(groupName);
+  /** Remove a previously added [[SettingSchemaGroup]] by schemaPrefix */
+  public static removeGroup(schemaPrefix: string): void {
+    this.doRemove(schemaPrefix);
     this.onSchemaChanged.raiseEvent();
   }
 
   private static doAdd(settingsGroup: SettingSchemaGroup[]) {
     settingsGroup.forEach((group) => {
-      if (undefined === group.groupName)
-        throw new Error(`settings group has no "groupName" member`);
+      if (undefined === group.schemaPrefix)
+        throw new Error(`settings group has no "schemaPrefix" member`);
 
-      this.doRemove(group.groupName);
+      this.doRemove(group.schemaPrefix);
       this.validateAndAdd(group);
-      this._allGroups.set(group.groupName, group);
+      this._allGroups.set(group.schemaPrefix, group);
     });
   }
 
-  private static doRemove(groupName: string) {
-    const group = this._allGroups.get(groupName);
+  private static doRemove(schemaPrefix: string) {
+    const group = this._allGroups.get(schemaPrefix);
     if (undefined !== group?.settingDefs) {
       for (const key of Object.keys(group.settingDefs))
-        this.settingDefs.delete(makeSettingKey(groupName, key));
+        this.settingDefs.delete(makeSettingKey(schemaPrefix, key));
     }
     if (undefined !== group?.typeDefs) {
       for (const key of Object.keys(group.typeDefs))
-        this.settingDefs.delete(makeSettingKey(groupName, key));
+        this.settingDefs.delete(makeSettingKey(schemaPrefix, key));
     }
-    this._allGroups.delete(groupName);
+    this._allGroups.delete(schemaPrefix);
   }
 
   private static validateName(name: string) {
@@ -311,14 +311,14 @@ export class SettingsSchemas {
         this.verifyPropertyDef(key, properties[key]);
         const property: Mutable<SettingSchema> = properties[key];
         property.default = property.default ?? this.getDefaultValue(property.type);
-        this.settingDefs.set(makeSettingKey(group.groupName, key), property);
+        this.settingDefs.set(makeSettingKey(group.schemaPrefix, key), property);
       }
     }
     properties = group.typeDefs ?? {};
     for (const key of Object.keys(properties)) {
       this.validateName(key);
       this.verifyPropertyDef(key, properties[key]);
-      this.typeDefs.set(makeSettingKey(group.groupName, key), properties[key]);
+      this.typeDefs.set(makeSettingKey(group.schemaPrefix, key), properties[key]);
     }
   }
 

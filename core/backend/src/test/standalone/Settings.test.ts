@@ -27,7 +27,7 @@ describe("Settings", () => {
   });
 
   const app1: SettingSchemaGroup = {
-    groupName: "app1",
+    schemaPrefix: "app1",
     settingDefs: {
       sub1: {
         type: "string",
