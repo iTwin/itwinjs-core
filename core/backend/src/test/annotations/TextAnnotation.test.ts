@@ -11,7 +11,7 @@ import { TextAnnotation2d, TextAnnotation3d } from "../../TextAnnotationElement"
 import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { GeometricElement3d } from "../../Element";
-import { Id64 } from "@itwin/core-bentley";
+import { Id64, ProcessDetector } from "@itwin/core-bentley";
 
 function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
   const range = new Range2d(0, 0, args.chars.length, args.lineHeight);
@@ -156,7 +156,13 @@ describe("layoutTextBlock", () => {
     expect(tb.lines.every((line) => line.offsetFromDocument.x === 0)).to.be.true;
   });
 
-  it("splits paragraphs into multiple lines if runs exceed the document width", () => {
+  it("splits paragraphs into multiple lines if runs exceed the document width", function () {
+    if (ProcessDetector.isMobileAppBackend) {
+      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
+      // users are not expected to do any editing, but long term we will attempt to find a better
+      // solution.
+      this.skip();
+    }
     const textBlock = TextBlock.create({ styleName: "" });
     textBlock.width = 6;
     textBlock.appendRun(makeTextRun("ab"));
@@ -199,7 +205,13 @@ describe("layoutTextBlock", () => {
     return layout;
   }
 
-  it("splits a single TextRun at word boundaries if it exceeds the document width", () => {
+  it("splits a single TextRun at word boundaries if it exceeds the document width", function () {
+    if (ProcessDetector.isMobileAppBackend) {
+      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
+      // users are not expected to do any editing, but long term we will attempt to find a better
+      // solution.
+      this.skip();
+    }
     expectLines("a bc def ghij klmno pqrstu vwxyz", 5, [
       "a bc ",
       "def ",
@@ -243,7 +255,13 @@ describe("layoutTextBlock", () => {
     ]);
   });
 
-  it("considers consecutive whitespace a single 'word'", () => {
+  it("considers consecutive whitespace a single 'word'", function () {
+    if (ProcessDetector.isMobileAppBackend) {
+      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
+      // users are not expected to do any editing, but long term we will attempt to find a better
+      // solution.
+      this.skip();
+    }
     expectLines("a b  c   d    e     f      ", 3, [
       "a b",
       "  c",
@@ -257,12 +275,24 @@ describe("layoutTextBlock", () => {
     ]);
   });
 
-  it("performs word-wrapping on Japanese text", () => {
+  it("performs word-wrapping on Japanese text", function () {
+    if (ProcessDetector.isMobileAppBackend) {
+      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
+      // users are not expected to do any editing, but long term we will attempt to find a better
+      // solution.
+      this.skip();
+    }
     // "I am a cat. The name is Tanuki."
     expectLines("吾輩は猫である。名前はたぬき。", 1, ["吾輩", "は", "猫", "で", "ある", "。", "名前", "は", "たぬき", "。"]);
   });
 
-  it("performs word-wrapping with punctuation", () => {
+  it("performs word-wrapping with punctuation", function () {
+    if (ProcessDetector.isMobileAppBackend) {
+      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
+      // users are not expected to do any editing, but long term we will attempt to find a better
+      // solution.
+      this.skip();
+    }
     expectLines("1.24 56.7 8,910", 1, ["1.24", " ", "56.7", " ", "8,910"]);
 
     // NOTE: Chrome splits a.bc and de.f on the periods. Safari and electron do not.
@@ -280,7 +310,13 @@ describe("layoutTextBlock", () => {
     ]);
   });
 
-  it("performs word-wrapping and line-splitting with multiple runs", () => {
+  it("performs word-wrapping and line-splitting with multiple runs", function () {
+    if (ProcessDetector.isMobileAppBackend) {
+      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
+      // users are not expected to do any editing, but long term we will attempt to find a better
+      // solution.
+      this.skip();
+    }
     const textBlock = TextBlock.create({ styleName: "" });
     for (const str of ["The ", "quick brown", " fox jumped over ", "the lazy ", "dog"]) {
       textBlock.appendRun(makeTextRun(str));
