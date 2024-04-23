@@ -7,7 +7,7 @@ import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after al
 import { expect } from "chai";
 import * as fs from "fs-extra";
 import { join } from "path";
-import { IModelHost, IModelJsFs, SettingObject, Settings, StandaloneDb, Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceSettings } from "@itwin/core-backend";
+import { CloudSqlite, IModelHost, IModelJsFs, SettingObject, Settings, StandaloneDb, Workspace, WorkspaceContainer, WorkspaceDb } from "@itwin/core-backend";
 import { assert, Guid } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 
@@ -22,6 +22,9 @@ describe.only("Cloud workspace containers", () => {
   let orgContainerProps: WorkspaceContainer.Props;
   let branchContainerProps: WorkspaceContainer.Props;
   let itwin2ContainerProps: WorkspaceContainer.Props;
+  let styles1: Workspace.Editor.Container;
+  let styles2: Workspace.Editor.Container;
+
   const itwin1WsName = "all settings for itwin1";
   const itwin2WsName = "all settings for itwin2";
   const iModelWsName = "all settings for imodel";
@@ -33,6 +36,8 @@ describe.only("Cloud workspace containers", () => {
     orgContainer = await editor.createNewCloudContainer({ metadata: { label: "orgContainer1", description: "org workspace1" }, scope: { iTwinId: iTwin1Id }, manifest: { workspaceName: itwin1WsName } });
     itwin2Container = await editor.createNewCloudContainer({ metadata: { label: "orgContainer2", description: "org workspace2" }, scope: { iTwinId: iTwin2Id }, manifest: { workspaceName: itwin2WsName } });
     branchContainer = await editor.createNewCloudContainer({ metadata: { label: "iModel container", description: "imodel workspace" }, scope: { iTwinId: iTwin2Id, iModelId: iModel1 }, manifest: { workspaceName: iModelWsName } });
+    styles1 = await editor.createNewCloudContainer({ metadata: { label: "styles 1 container", description: "styles definitions 1" }, scope: { iTwinId: iTwin1Id }, manifest: { workspaceName: "styles 1 ws" } });
+    styles2 = await editor.createNewCloudContainer({ metadata: { label: "styles 2 container", description: "styles definitions 2" }, scope: { iTwinId: iTwin1Id }, manifest: { workspaceName: "styles 2 ws" } });
     AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
 
     itwin2ContainerProps = itwin2Container.cloudProps!;
@@ -110,6 +115,16 @@ describe.only("Cloud workspace containers", () => {
     expect(wsDb.getString("myVersion")).equal("2.0.0");
   });
 
+  const withPatchVersion = async (container: Workspace.Editor.Container, fn: (db: Workspace.Editor.EditableDb) => void) => {
+    container.acquireWriteLock("admin3");
+    const copied = await container.makeNewVersion({ versionType: "patch" });
+    const editDb = container.getEditableDb(copied.newDb);
+    editDb.open();
+    fn(editDb);
+    editDb.close();
+    container.releaseWriteLock();
+  };
+
   it.only("Settings Workspaces", async () => {
     const tmpdir = join(__dirname, "output", "settingsTest");
     IModelJsFs.recursiveMkDirSync(tmpdir);
@@ -122,9 +137,8 @@ describe.only("Cloud workspace containers", () => {
       projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
     });
 
-    const settingsWorkspaces: WorkspaceSettings.Props = {
+    const settingsWorkspaces = {
       ...branchContainerProps,
-      resourceName: "settingsDictionary",
       priority: Settings.Priority.branch,
     };
 
@@ -149,19 +163,17 @@ describe.only("Cloud workspace containers", () => {
     expect(loadErrors.length).equal(1);
     expect(loadErrors[0].wsDb?.version).equal("1.0.0");
 
-    branchContainer.acquireWriteLock("admin3");
-    let copied = await branchContainer.makeNewVersion({ versionType: "patch" });
-    let editDb = branchContainer.getEditableDb(copied.newDb);
-    editDb.open();
-    const iModelWsSettings: SettingObject = {};
-    iModelWsSettings["app1/max1"] = 10;
-    iModelWsSettings["app1/max2"] = 20;
-    iModelWsSettings[Workspace.settingName.settingsWorkspaces] = [{ ...itwin2ContainerProps, priority: Settings.Priority.iTwin }];
-    editDb.updateString("settingsDictionary", JSON.stringify(iModelWsSettings));
-    editDb.close();
-    branchContainer.releaseWriteLock();
-    const c1 = IModelHost.appWorkspace.getContainer(branchContainerProps);
-    c1.cloudContainer?.checkForChanges();
+    await withPatchVersion(branchContainer, (editDb) => {
+      const iModelWsSettings: SettingObject = {};
+      iModelWsSettings["app1/max1"] = 10;
+      iModelWsSettings["app1/max2"] = 20;
+      iModelWsSettings[Workspace.settingName.settingsWorkspaces] = [{ ...itwin2ContainerProps, priority: Settings.Priority.iTwin }];
+      editDb.updateSettingsResource(iModelWsSettings);
+    });
+
+    const c1 = await IModelHost.appWorkspace.getContainerAsync(branchContainerProps);
+    assert(c1.cloudContainer !== undefined);
+    c1.cloudContainer.checkForChanges();
 
     resetErrors();
     loadedDictionaries.length = 0;
@@ -179,28 +191,54 @@ describe.only("Cloud workspace containers", () => {
     expect(loadErrors[0].wsDb?.version).equal("1.0.0");
     expect(loadErrors[0].message).contains(itwin2WsName);
 
-    itwin2Container.acquireWriteLock("admin3");
-    copied = await itwin2Container.makeNewVersion({ versionType: "patch" });
-    editDb = itwin2Container.getEditableDb(copied.newDb);
-    editDb.open();
-    const iTwin2WsSettings: SettingObject = {};
-    iTwin2WsSettings["app1/max1"] = 1;
-    iTwin2WsSettings["app1/max2"] = 2;
-    iTwin2WsSettings["app1/max3"] = 3;
-    editDb.updateString("settingsDictionary", JSON.stringify(iTwin2WsSettings));
-    editDb.close();
-    itwin2Container.releaseWriteLock();
-
+    await withPatchVersion(itwin2Container, (editDb) => {
+      const iTwin2WsSettings: SettingObject = {};
+      iTwin2WsSettings["app1/max1"] = 1;
+      iTwin2WsSettings["app1/max2"] = 2;
+      iTwin2WsSettings["app1/max3"] = 3;
+      editDb.updateSettingsResource(iTwin2WsSettings);
+    });
     resetErrors();
     loadedDictionaries.length = 0;
     imodel2 = await StandaloneDb.open({ fileName });
     expect(loadedDictionaries.length).equal(2);
     expect(loadedDictionaries[1].from.version).equal("1.0.1");
 
+    // test loading settings from containers and iModel
     const settings = imodel2.workspace.settings;
+    expect(settings.dictionaries.length).equal(3);
     expect(settings.getNumber("app1/max1")).equal(100); // resolved from settings stored in iModel
-    expect(settings.getNumber("app1/max2")).equal(20); // resolved from branch container
-    expect(settings.getNumber("app1/max3")).equal(3); // resolved from iTwin container
+    expect(settings.getNumber("app1/max2")).equal(20); // resolved from branch container, found from iModel settings
+    expect(settings.getNumber("app1/max3")).equal(3); // resolved from iTwin container, found from resource in branch container
+
+    const defineStyles = (editDb: Workspace.Editor.EditableDb, prefix: string) => {
+      for (let i = 0; i < 10; ++i)
+        editDb.updateString(`styles/num-${i}`, `${prefix}/value ${i}`);
+    };
+
+    await withPatchVersion(styles1, (editDb) => {
+      defineStyles(editDb, "batch1");
+    });
+    await withPatchVersion(styles2, (editDb) => {
+      defineStyles(editDb, "batch2");
+    });
+
+    const db1 = await imodel2.workspace.getWorkspaceDb(styles1.cloudProps!);
+    const styles: string[] = [];
+    const globSearch = { nameSearch: "styles/*", nameCompare: "GLOB" as const, resourceType: "string" as const };
+    db1.queryResource(globSearch, (result) => {
+      styles.push(result.rscName);
+    });
+    expect(styles.length).equal(10);
+
+    styles.length = 0;
+    const db2 = await imodel2.workspace.getWorkspaceDb(styles2.cloudProps!);
+    imodel2.workspace.queryResource([db1, db2], globSearch, (result) => {
+      styles.push(result.rscName);
+    });
+    expect(styles.length).equal(20);
+    expect(imodel2.workspace.loadStringResource([db1, db2], styles[0])).equal("batch1/value 0");
+    expect(imodel2.workspace.loadStringResource([db2, db1], styles[0])).equal("batch2/value 0");
 
     imodel2.close();
   });

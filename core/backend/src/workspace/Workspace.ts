@@ -17,7 +17,7 @@ import { IModelHost, KnownLocations } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb, VersionedSqliteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
-import { BaseSettings, SettingName, Settings } from "./Settings";
+import { BaseSettings, SettingName, SettingObject, Settings } from "./Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { SettingsSchemas } from "./SettingsSchemas";
 import { BlobContainer } from "../BlobContainerService";
@@ -338,17 +338,21 @@ export interface Workspace {
    * Otherwise it is created.
    * @param account If present, the properties for this container if it is to be opened from the cloud. If not present, the container is just a local directory.
   */
-  getContainer(props: WorkspaceContainer.Props): WorkspaceContainer;
+  getContainerAsync(props: WorkspaceContainer.Props): Promise<WorkspaceContainer>;
 
-  /** Get a [[WorkspaceDb]] from a WorkspaceDb.CloudProps   */
-  getWorkspaceDb(props: WorkspaceDb.CloudProps): Promise<WorkspaceDb>;
+  /** get a WorkspaceContainer with a supplied access token */
+  getContainer(props: WorkspaceContainer.Props & Workspace.WithAccessToken): WorkspaceContainer;
 
   /** Load a settings dictionary from the specified WorkspaceDb, and add it to the current Settings for this Workspace. */
   loadSettingsDictionary(props: WorkspaceSettings.Props | WorkspaceSettings.Props[], problems?: WorkspaceDb.LoadError[]): Promise<void>;
 
+  /** Get a [[WorkspaceDb]] from a WorkspaceDb.CloudProps   */
+  getWorkspaceDb(props: WorkspaceDb.CloudProps): Promise<WorkspaceDb>;
+
   resolveWorkspaceDbProps(settingName: SettingName, filter?: (dbProp: WorkspaceDb.CloudProps, dict: Settings.Dictionary) => boolean): WorkspaceDb.CloudProps[];
   getWorkspaceDbs(dbList: WorkspaceDb.CloudProps[], onLoadError?: (dbProps: WorkspaceDb.LoadError) => void): Promise<WorkspaceDb[]>;
   resolveWorkspaceDbs(settingName: SettingName): Promise<WorkspaceDb[]>;
+
   queryResource(dbList: WorkspaceDb[], search: WorkspaceResource.Search, forEachResource: (result: WorkspaceResource.SearchResult) => void | "stop"): void | "stop";
   loadStringResource(dbList: WorkspaceDb[], rscName: WorkspaceResource.Name): string | undefined;
   loadBlobResource(dbList: WorkspaceDb[], rscName: WorkspaceResource.Name): Uint8Array | undefined;
@@ -392,7 +396,7 @@ export interface WorkspaceContainer {
   resolveDbFileName(props: WorkspaceDb.Props): WorkspaceDb.DbFullName;
 
   /** get a WorkspaceDb from this WorkspaceContainer. */
-  getWorkspaceDb(props: WorkspaceDb.Props): WorkspaceDb;
+  getWorkspaceDb(props?: WorkspaceDb.Props): WorkspaceDb;
 
   /** Close and remove a currently opened [[WorkspaceDb]] from this Workspace.
    * @internal
@@ -429,6 +433,9 @@ export namespace Workspace {
 
   export function constructEditor(): Workspace.Editor {
     return new EditorImpl();
+  }
+  export interface WithAccessToken {
+    accessToken: AccessToken;
   }
 
   export interface Editor {
@@ -499,6 +506,9 @@ export namespace Workspace {
 
       /** Update the contents of the manifest in this WorkspaceDb. */
       updateManifest(manifest: WorkspaceDb.Manifest): void;
+
+      /** add or update a Settings resource to this WorkspaceDb */
+      updateSettingsResource(settings: SettingObject, rscName?: string): void;
 
       /** Add a new string resource to this WorkspaceDb.
        * @param rscName The name of the string resource.
@@ -632,14 +642,18 @@ class WorkspaceImpl implements Workspace {
     return this._containers.get(containerId);
   }
 
-  public getContainer(props: WorkspaceContainer.Props & { accessToken: AccessToken }): WorkspaceContainer {
+  public getContainer(props: WorkspaceContainer.Props & Workspace.WithAccessToken): WorkspaceContainer {
     return this.findContainer(props.containerId) ?? new WorkspaceContainerImpl(this, props);
+  }
+
+  public async getContainerAsync(props: WorkspaceContainer.Props): Promise<WorkspaceContainer> {
+    return this.getContainer({ ...props, accessToken: props.isPublic ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "read" }) });
   }
 
   public async getWorkspaceDb(props: WorkspaceDb.CloudProps): Promise<WorkspaceDb> {
     let container: WorkspaceContainer | undefined = this.findContainer(props.containerId);
     if (undefined === container) {
-      const accessToken = props.isPublic ? "" : await CloudSqlite.requestToken(props);
+      const accessToken = props.isPublic ? "" : await CloudSqlite.requestToken({ accessLevel: "read", ...props });
       container = new WorkspaceContainerImpl(this, { ...props, accessToken });
     }
     return container.getWorkspaceDb(props);
@@ -821,8 +835,8 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     this._wsDbs.set(toAdd.dbName, toAdd);
   }
 
-  public getWorkspaceDb(props: WorkspaceDb.Props): WorkspaceDb {
-    return this._wsDbs.get(WorkspaceDb.dbNameWithDefault(props.dbName)) ?? new WorkspaceDbImpl(props, this);
+  public getWorkspaceDb(props?: WorkspaceDb.Props): WorkspaceDb {
+    return this._wsDbs.get(WorkspaceDb.dbNameWithDefault(props?.dbName)) ?? new WorkspaceDbImpl(props ?? {}, this);
   }
 
   public closeWorkspaceDb(toDrop: WorkspaceDb) {
@@ -1182,6 +1196,9 @@ class EditableDbImpl extends WorkspaceDbImpl implements Workspace.Editor.Editabl
 
   public updateManifest(manifest: WorkspaceDb.Manifest) {
     this.sqliteDb.nativeDb.saveFileProperty(WorkspaceDbImpl.manifestProperty, JSON.stringify(manifest));
+  }
+  public updateSettingsResource(settings: SettingObject, rscName?: string) {
+    this.updateString(rscName ?? "settingsDictionary", JSON.stringify(settings));
   }
   public addString(rscName: WorkspaceResource.Name, val: string): void {
     EditableDbImpl.validateResourceName(rscName);

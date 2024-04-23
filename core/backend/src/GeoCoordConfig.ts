@@ -40,7 +40,7 @@ export class GeoCoordConfig {
 
     try {
       const ws = IModelHost.appWorkspace;
-      const container = ws.getContainer(dbProps);
+      const container = ws.getContainer({ ...dbProps, accessToken: "" }); // all gcs containers are public so no accessToken is required
       const cloudContainer = container.cloudContainer;
       if (!cloudContainer?.isConnected) {
         Logger.logError("GeoCoord", `could not load gcs database "${dbProps.dbName}"`);
