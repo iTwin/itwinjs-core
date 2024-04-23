@@ -242,9 +242,10 @@ export namespace PropertyStore {
     }
 
     /**
-     * Initialize a cloud container for use as a PropertyStore. The container must first be created via its storage supplier api (e.g. Azure, or AWS).
-     * This function creates and uploads an empty PropertyDb into the container.
+     * Initialize a cloud container for use as a PropertyStore. This method is called by [[createNewContainer]].
+     * It is only necessary to convert an existing container to a PropertyStore container.
      * @note this deletes any existing content in the container.
+     * @internal
      */
     public static async initializeDb(args: { props: CloudSqlite.ContainerProps }) {
       return super._initializeDb({ ...args, dbType: PropertyDb, dbName: defaultDbName });

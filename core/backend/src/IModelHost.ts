@@ -35,7 +35,7 @@ import { initializeRpcBackend } from "./RpcBackend";
 import { TileStorage } from "./TileStorage";
 import { BaseSettings, SettingObject, Settings } from "./workspace/Settings";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
-import { Workspace, WorkspaceOpts } from "./workspace/Workspace";
+import { OwnedWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
 import { Container } from "inversify";
 import { join, normalize as normalizeDir } from "path";
 
@@ -263,6 +263,12 @@ class ApplicationSettings extends BaseSettings {
   }
 }
 
+const definedInStartup = <T>(obj: T | undefined): T => {
+  if (obj === undefined)
+    throw new Error("IModelHost.startup must be called first");
+  return obj;
+};
+
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
  * See [the learning article]($docs/learning/backend/IModelHost.md)
  * @public
@@ -276,15 +282,11 @@ export class IModelHost {
   public static backendVersion = "";
   private static _profileName: string;
   private static _cacheDir = "";
-  private static _appWorkspace?: Workspace;
+  private static _appWorkspace?: OwnedWorkspace;
 
   private static _platform?: typeof IModelJsNative;
   /** @internal */
-  public static get platform(): typeof IModelJsNative {
-    if (this._platform === undefined)
-      throw new Error("IModelHost.startup must be called first");
-    return this._platform;
-  }
+  public static get platform(): typeof IModelJsNative { return definedInStartup(this._platform); }
 
   public static configuration?: IModelHostOptions;
 
@@ -347,7 +349,7 @@ export class IModelHost {
    * attempting to add them to this Workspace will fail.
    * @beta
    */
-  public static get appWorkspace(): Workspace { return this._appWorkspace!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  public static get appWorkspace(): Workspace { return definedInStartup(this._appWorkspace); }
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
   public static snapshotFileNameResolver?: FileNameResolver;

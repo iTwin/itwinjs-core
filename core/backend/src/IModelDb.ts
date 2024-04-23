@@ -58,7 +58,7 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { BaseSettings, SettingName, SettingObject, Settings, SettingType } from "./workspace/Settings";
-import { Workspace, WorkspaceDb, WorkspaceSettings } from "./workspace/Workspace";
+import { OwnedWorkspace, Workspace, WorkspaceDb, WorkspaceSettings } from "./workspace/Workspace";
 
 import type { BlobContainer } from "./BlobContainerService";
 
@@ -262,8 +262,7 @@ export abstract class IModelDb extends IModel {
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
   protected _fontMap?: FontMap;
-  /** @internal */
-  private _workspace?: Workspace;
+  private _workspace?: OwnedWorkspace;
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
   /** @internal */
@@ -1428,7 +1427,7 @@ export abstract class IModelDb extends IModel {
           const settings = JSON.parse(stmt.getValueString(1));
           this.workspace.settings.addDictionary({ name: stmt.getValueString(0), priority: Settings.Priority.iModel }, settings);
         } catch (e) {
-          Workspace.exceptionDiagnosticFn(e);
+          Workspace.exceptionDiagnosticFn(e as WorkspaceDb.LoadError);
         }
       }
     });
@@ -1442,11 +1441,11 @@ export abstract class IModelDb extends IModel {
         const problems: WorkspaceDb.LoadError[] = [];
         await this.workspace.loadSettingsDictionary(settingsDbs, problems);
         if (problems.length > 0)
-          WorkspaceDb.throwLoadErrors(`attempting to load workspace settings for iModel [${this.name}]:`, problems);
+          WorkspaceDb.throwLoadErrors(`attempting to load workspace settings for iModel '${this.name}':`, problems);
       }
     } catch (e) {
       // we don't want to throw exceptions when attempting to load Dictionaries. Call the diagnostics function instead.
-      Workspace.exceptionDiagnosticFn(e);
+      Workspace.exceptionDiagnosticFn(e as WorkspaceDb.LoadErrors);
     }
   }
 

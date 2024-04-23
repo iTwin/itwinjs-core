@@ -1395,7 +1395,12 @@ export namespace ViewStore {
       super({ dbType: ViewDb, props, dbName: viewDbName });
     }
 
-    /** Initialize a cloud container for use as a ViewDb. */
+    /**
+     * Initialize a cloud container for use as a ViewDb. This method is called by [[createNewContainer]].
+     * It is only necessary to convert an existing container to a ViewStore container.
+     * @note this deletes any existing content in the container.
+     * @internal
+     */
     public static async initializeDb(props: CloudSqlite.ContainerProps) {
       return super._initializeDb({ props, dbType: ViewDb, dbName: viewDbName });
     }

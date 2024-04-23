@@ -17,28 +17,31 @@ describe.only("Cloud workspace containers", () => {
   const iModel1 = Guid.createValue();
   let orgContainer: Workspace.Editor.Container;
   let itwin2Container: Workspace.Editor.Container;
-  let iModelContainer: Workspace.Editor.Container;
+  let branchContainer: Workspace.Editor.Container;
   let editor: Workspace.Editor;
   let orgContainerProps: WorkspaceContainer.Props;
-  let iModelContainerProps: WorkspaceContainer.Props;
+  let branchContainerProps: WorkspaceContainer.Props;
   let itwin2ContainerProps: WorkspaceContainer.Props;
+  const itwin1WsName = "all settings for itwin1";
+  const itwin2WsName = "all settings for itwin2";
+  const iModelWsName = "all settings for imodel";
 
   before(async () => {
     IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
     AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
     editor = Workspace.constructEditor();
-    orgContainer = await editor.createNewCloudContainer({ metadata: { label: "orgContainer1", description: "org workspace1" }, scope: { iTwinId: iTwin1Id }, manifest: { workspaceName: "all settings for itwin1" } });
-    itwin2Container = await editor.createNewCloudContainer({ metadata: { label: "orgContainer2", description: "org workspace2" }, scope: { iTwinId: iTwin2Id }, manifest: { workspaceName: "all settings for itwin2" } });
-    iModelContainer = await editor.createNewCloudContainer({ metadata: { label: "iModel container", description: "imodel workspace" }, scope: { iTwinId: iTwin2Id, iModelId: iModel1 }, manifest: { workspaceName: "all settings for imodel" } });
+    orgContainer = await editor.createNewCloudContainer({ metadata: { label: "orgContainer1", description: "org workspace1" }, scope: { iTwinId: iTwin1Id }, manifest: { workspaceName: itwin1WsName } });
+    itwin2Container = await editor.createNewCloudContainer({ metadata: { label: "orgContainer2", description: "org workspace2" }, scope: { iTwinId: iTwin2Id }, manifest: { workspaceName: itwin2WsName } });
+    branchContainer = await editor.createNewCloudContainer({ metadata: { label: "iModel container", description: "imodel workspace" }, scope: { iTwinId: iTwin2Id, iModelId: iModel1 }, manifest: { workspaceName: iModelWsName } });
     AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
 
     itwin2ContainerProps = itwin2Container.cloudProps!;
     orgContainerProps = orgContainer.cloudProps!;
-    iModelContainerProps = iModelContainer.cloudProps!;
+    branchContainerProps = branchContainer.cloudProps!;
 
     assert(itwin2ContainerProps !== undefined);
     assert(orgContainerProps !== undefined);
-    assert(iModelContainerProps !== undefined);
+    assert(branchContainerProps !== undefined);
   });
   after(async () => {
     IModelHost.authorizationClient = undefined;
@@ -54,7 +57,7 @@ describe.only("Cloud workspace containers", () => {
 
       const wsDbEdit = itwin2Container.getEditableDb(copied.newDb);
       wsDbEdit.open();
-      wsDbEdit.updateString("myVersion", wsDbEdit.dbFileName.split(":")[1]);
+      wsDbEdit.updateString("myVersion", wsDbEdit.version);
       wsDbEdit.updateString("string 1", "value of string 1");
       wsDbEdit.close();
       itwin2Container.releaseWriteLock();
@@ -120,48 +123,86 @@ describe.only("Cloud workspace containers", () => {
     });
 
     const settingsWorkspaces: WorkspaceSettings.Props = {
-      ...iModelContainerProps,
+      ...branchContainerProps,
       resourceName: "settingsDictionary",
-      priority: Settings.Priority.iModel,
+      priority: Settings.Priority.branch,
     };
 
     const imodelSettings: SettingObject = {};
     imodelSettings[Workspace.settingName.settingsWorkspaces] = [settingsWorkspaces];
-
+    imodelSettings["app1/max1"] = 100;
     imodel.saveSettingDictionary("Dict2", imodelSettings);
     imodel.close();
 
-    const errors: WorkspaceDb.LoadErrors[] = [];
+    let errors: WorkspaceDb.LoadErrors | undefined;
     const loadedDictionaries: Workspace.SettingsDictionaryLoaded[] = [];
-    Workspace.exceptionDiagnosticFn = (e: any) => errors.push(e);
+    const resetErrors = () => errors = undefined;
+    Workspace.exceptionDiagnosticFn = (e: WorkspaceDb.LoadErrors) => errors = e;
     Workspace.onSettingsDictionaryLoadedFn = (dict: Workspace.SettingsDictionaryLoaded) => loadedDictionaries.push(dict);
 
     let imodel2 = await StandaloneDb.open({ fileName });
     imodel2.close();
-    expect(errors.length).equal(1);
-    expect(errors[0].message).contains("settings resource tests");
-    expect(errors[0].wsLoadErrors?.length).equal(1);
-    expect(errors[0].wsLoadErrors?.[0].wsDb?.dbFileName).contains("1.0.0");
+    assert(errors !== undefined);
+    expect(errors.message).contains("settings resource tests");
+    let loadErrors = errors.wsLoadErrors;
+    assert(loadErrors !== undefined);
+    expect(loadErrors.length).equal(1);
+    expect(loadErrors[0].wsDb?.version).equal("1.0.0");
 
-    iModelContainer.acquireWriteLock("admin3");
-    const copied = await iModelContainer.makeNewVersion({ versionType: "patch" });
-    // somehow, it should not be possible to edit a db after it's been published.
-    const editDb = iModelContainer.getEditableDb(copied.newDb);
+    branchContainer.acquireWriteLock("admin3");
+    let copied = await branchContainer.makeNewVersion({ versionType: "patch" });
+    let editDb = branchContainer.getEditableDb(copied.newDb);
     editDb.open();
     const iModelWsSettings: SettingObject = {};
-    iModelWsSettings["app1/maxVal"] = 10;
+    iModelWsSettings["app1/max1"] = 10;
+    iModelWsSettings["app1/max2"] = 20;
     iModelWsSettings[Workspace.settingName.settingsWorkspaces] = [{ ...itwin2ContainerProps, priority: Settings.Priority.iTwin }];
     editDb.updateString("settingsDictionary", JSON.stringify(iModelWsSettings));
     editDb.close();
-    iModelContainer.releaseWriteLock();
-    const c1 = IModelHost.appWorkspace.getContainer(iModelContainerProps);
+    branchContainer.releaseWriteLock();
+    const c1 = IModelHost.appWorkspace.getContainer(branchContainerProps);
     c1.cloudContainer?.checkForChanges();
 
-    errors.length = 0;
+    resetErrors();
     loadedDictionaries.length = 0;
     imodel2 = await StandaloneDb.open({ fileName });
     imodel2.close();
     expect(loadedDictionaries.length).equal(1);
+    expect(loadedDictionaries[0].from.manifest.workspaceName).equal(iModelWsName);
+    expect(loadedDictionaries[0].from.version).equal("1.0.1");
+
+    assert(errors !== undefined);
+    expect(errors.message).contains("settings resource tests");
+    loadErrors = errors.wsLoadErrors;
+    assert(loadErrors !== undefined);
+    expect(loadErrors.length).equal(1);
+    expect(loadErrors[0].wsDb?.version).equal("1.0.0");
+    expect(loadErrors[0].message).contains(itwin2WsName);
+
+    itwin2Container.acquireWriteLock("admin3");
+    copied = await itwin2Container.makeNewVersion({ versionType: "patch" });
+    editDb = itwin2Container.getEditableDb(copied.newDb);
+    editDb.open();
+    const iTwin2WsSettings: SettingObject = {};
+    iTwin2WsSettings["app1/max1"] = 1;
+    iTwin2WsSettings["app1/max2"] = 2;
+    iTwin2WsSettings["app1/max3"] = 3;
+    editDb.updateString("settingsDictionary", JSON.stringify(iTwin2WsSettings));
+    editDb.close();
+    itwin2Container.releaseWriteLock();
+
+    resetErrors();
+    loadedDictionaries.length = 0;
+    imodel2 = await StandaloneDb.open({ fileName });
+    expect(loadedDictionaries.length).equal(2);
+    expect(loadedDictionaries[1].from.version).equal("1.0.1");
+
+    const settings = imodel2.workspace.settings;
+    expect(settings.getNumber("app1/max1")).equal(100); // resolved from settings stored in iModel
+    expect(settings.getNumber("app1/max2")).equal(20); // resolved from branch container
+    expect(settings.getNumber("app1/max3")).equal(3); // resolved from iTwin container
+
+    imodel2.close();
   });
 
 });

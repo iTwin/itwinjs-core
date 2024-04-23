@@ -65,8 +65,10 @@ export namespace Settings {
     organization = 300,
     /** values that apply to all iModels in an iTwin. */
     iTwin = 400,
-    /** values that apply to a single iModel. */
-    iModel = 500,
+    /** values that apply to all branches of an iModel. */
+    branch = 500,
+    /** values stored in an iModel. */
+    iModel = 600,
   }
 
   /**

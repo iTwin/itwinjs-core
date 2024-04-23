@@ -248,6 +248,8 @@ export interface WorkspaceDb {
   readonly isOpen: boolean;
   /** The manifest that describes the content of this WorkspaceDb. */
   get manifest(): WorkspaceDb.Manifest;
+  /** Get the version of this WorkspaceDb */
+  get version(): WorkspaceDb.Version;
 
   open(): void;
   close(): void;
@@ -307,11 +309,6 @@ export interface WorkspaceOpts {
 
   /** the local fileName(s) of one or more settings files to load after the Workspace is first created. */
   settingsFiles?: LocalFileName | [LocalFileName];
-
-  /**
-   * only for tests
-   * @internal */
-  testCloudCache?: CloudSqlite.CloudCache;
 }
 
 /**
@@ -320,7 +317,9 @@ export interface WorkspaceOpts {
  * @beta
  */
 export interface Workspace {
-  /** The directory for local WorkspaceDb files with the name `${containerId}/${dbId}.itwin-workspace`. */
+  /** The directory for local WorkspaceDb files with the name `${containerId}/${dbId}.itwin-workspace`.
+   * @internal
+   */
   readonly containerDir: LocalDirName;
   /** The [[Settings]] for this Workspace */
   readonly settings: Settings;
@@ -347,15 +346,18 @@ export interface Workspace {
   /** Load a settings dictionary from the specified WorkspaceDb, and add it to the current Settings for this Workspace. */
   loadSettingsDictionary(props: WorkspaceSettings.Props | WorkspaceSettings.Props[], problems?: WorkspaceDb.LoadError[]): Promise<void>;
 
-  /** Close this Workspace. All WorkspaceContainers are dropped. */
-  close(): void;
-
   resolveWorkspaceDbProps(settingName: SettingName, filter?: (dbProp: WorkspaceDb.CloudProps, dict: Settings.Dictionary) => boolean): WorkspaceDb.CloudProps[];
   getWorkspaceDbs(dbList: WorkspaceDb.CloudProps[], onLoadError?: (dbProps: WorkspaceDb.LoadError) => void): Promise<WorkspaceDb[]>;
   resolveWorkspaceDbs(settingName: SettingName): Promise<WorkspaceDb[]>;
   queryResource(dbList: WorkspaceDb[], search: WorkspaceResource.Search, forEachResource: (result: WorkspaceResource.SearchResult) => void | "stop"): void | "stop";
   loadStringResource(dbList: WorkspaceDb[], rscName: WorkspaceResource.Name): string | undefined;
   loadBlobResource(dbList: WorkspaceDb[], rscName: WorkspaceResource.Name): Uint8Array | undefined;
+}
+
+/** @internal */
+export interface OwnedWorkspace extends Workspace {
+  /** Only the owner of a Workspace may close it. */
+  close(): void;
 }
 
 /**
@@ -392,17 +394,16 @@ export interface WorkspaceContainer {
   /** get a WorkspaceDb from this WorkspaceContainer. */
   getWorkspaceDb(props: WorkspaceDb.Props): WorkspaceDb;
 
-  /** Close and remove a currently opened [[WorkspaceDb]] from this Workspace. */
+  /** Close and remove a currently opened [[WorkspaceDb]] from this Workspace.
+   * @internal
+   */
   closeWorkspaceDb(container: WorkspaceDb): void;
-
-  /** Close this WorkspaceContainer. All currently opened WorkspaceDbs are closed. */
-  close(): void;
 }
 
 /** @beta */
 export namespace Workspace {
   /** applications may supply a different implementation to diagnose (rather than merely log) errors loading workspace data */
-  export let exceptionDiagnosticFn = (e: any) => {  // eslint-disable-line prefer-const
+  export let exceptionDiagnosticFn = (e: WorkspaceDb.LoadErrors) => {  // eslint-disable-line prefer-const
     if (e instanceof Error)
       Logger.logException(loggerCategory, e);
     else
@@ -422,7 +423,7 @@ export namespace Workspace {
   };
 
   /** @internal */
-  export function construct(settings: Settings, opts?: WorkspaceOpts): Workspace {
+  export function construct(settings: Settings, opts?: WorkspaceOpts): OwnedWorkspace {
     return new WorkspaceImpl(settings, opts);
   }
 
@@ -658,7 +659,7 @@ class WorkspaceImpl implements Workspace {
         if (undefined === this.settings.getDictionary(dictProps)) {
           const settingsJson = db.getString(prop.resourceName);
           if (undefined === settingsJson)
-            WorkspaceDb.throwLoadError(`could not load setting dictionary "${prop.resourceName}" from: "${manifest.workspaceName}"`, prop, db);
+            WorkspaceDb.throwLoadError(`could not load setting dictionary resource '${prop.resourceName}' from: '${manifest.workspaceName}'`, prop, db);
 
           db.close(); // don't leave this db open in case we're going to find another dictionary in it recursively.
 
@@ -811,12 +812,12 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
         return `${dbName}:${version}`;
     } catch (e: unknown) {
     }
-    WorkspaceDb.throwLoadError(`No version of [${dbName}] available for "${range}"`, props);
+    WorkspaceDb.throwLoadError(`No version of '${dbName}' available for "${range}"`, props);
   }
 
   public addWorkspaceDb(toAdd: WorkspaceDb) {
     if (undefined !== this._wsDbs.get(toAdd.dbName))
-      throw new Error(`workspaceDb ${toAdd.dbName} already exists in workspace`);
+      throw new Error(`workspaceDb '${toAdd.dbName}' already exists in workspace`);
     this._wsDbs.set(toAdd.dbName, toAdd);
   }
 
@@ -909,6 +910,9 @@ class WorkspaceDbImpl implements WorkspaceDb {
       this.sqliteDb.closeDb();
       this.container.closeWorkspaceDb(this);
     }
+  }
+  public get version() {
+    return WorkspaceContainer.parseDbFileName(this.dbFileName).version;
   }
 
   public get manifest(): WorkspaceDb.Manifest {
@@ -1017,7 +1021,7 @@ class EditorImpl implements Workspace.Editor {
       public static async initializeWorkspace(args: Workspace.Editor.CreateNewContainerProps) {
         const props = await this.createBlobContainer({ scope: args.scope, metadata: { ...args.metadata, containerType: "workspace" } });
         const dbFullName = WorkspaceContainer.makeDbFileName(WorkspaceDb.dbNameWithDefault(args.dbName), "1.0.0");
-        await super._initializeDb({ props, dbName: dbFullName, dbType: WorkspaceSqliteDb, blockSize: "4M" });
+        await super._initializeDb({ ...args, props, dbName: dbFullName, dbType: WorkspaceSqliteDb, blockSize: "4M" });
         return props;
       }
     }
@@ -1078,7 +1082,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements Workspace.Ed
   public getEditableDb(props: WorkspaceDb.Props): Workspace.Editor.EditableDb {
     const db = this._wsDbs.get(WorkspaceDb.dbNameWithDefault(props.dbName)) as EditableDbImpl | undefined ?? new EditableDbImpl(props, this);
     if (this.cloudContainer && this.cloudContainer.queryDatabase(db.dbFileName)?.state !== "copied")
-      throw new Error(`${db.dbFileName} has been published and is not editable. Create a new version first`);
+      throw new Error(`${db.dbFileName} has been published and is not editable. Make a new version first.`);
     return db;
   }
 
