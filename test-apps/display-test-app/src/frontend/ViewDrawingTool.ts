@@ -63,7 +63,7 @@ export class SectionDrawingTool extends Tool {
 
     await SectionDrawingIpcInvoker.getOrCreate().setup(iModelConnection.key);
     const spatialViewDefinitionId = await SectionDrawingApi.insertSpatialView(args[0], args[1]);
-    await SectionDrawingApi.createAndViewSectionDrawingMethod2(iModelConnection, args[0], spatialViewDefinitionId, true);
+    await SectionDrawingApi.createAndViewSectionDrawing(iModelConnection, args[0], spatialViewDefinitionId, true);
     return true;
   }
 }
