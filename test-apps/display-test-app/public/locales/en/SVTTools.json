@@ -184,6 +184,9 @@
     },
     "DtaClassify": {
       "keyin": "dta classify"
+    },
+    "DtaCreateSectionDrawing": {
+      "keyin": "dta create section drawing"
     }
   }
 }

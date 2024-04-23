@@ -5,7 +5,7 @@
 import * as path from "path";
 import { assert } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
-import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
+import { CreateSectionDrawingViewArgs, dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Backend";
 import { IpcHandler } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration";
@@ -35,6 +35,10 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
   public get channelName() { return dtaChannel; }
   public async sayHello() {
     return "Hello from backend";
+  }
+
+  public async createSectionDrawingView(_args: CreateSectionDrawingViewArgs): Promise<string> {
+    throw new Error("###TODO");
   }
 }
 

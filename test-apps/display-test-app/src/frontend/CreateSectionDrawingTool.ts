@@ -4,16 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelApp, SpatialViewState, Tool } from "@itwin/core-frontend";
-import { SectionDrawingIpcInvoker } from "./SectionDrawingIpcInvoker";
 import { Id64 } from "@itwin/core-bentley";
+import { CreateSectionDrawingViewArgs } from "../common/DtaIpcInterface";
+import { dtaIpc } from "./App";
+import { Transform } from "@itwin/core-geometry";
 
 export class CreateSectionDrawingTool extends Tool {
   public static override toolId = "CreateSectionDrawing";
   public static override get minArgs() { return 1; }
   public static override get maxArgs() { return 1; }
   
-  public override async run(...args: any[]): Promise<boolean> {
-    if (args.length !== 1 || typeof args[0] !== "string") {
+  public override async run(...toolArgs: any[]): Promise<boolean> {
+    if (toolArgs.length !== 1 || typeof toolArgs[0] !== "string") {
       return false;
     }
 
@@ -26,7 +28,19 @@ export class CreateSectionDrawingTool extends Tool {
       throw new Error("Writable briefcase required");
     }
 
-    const drawingViewId = await SectionDrawingIpcInvoker.createSectionDrawingView(spatialView, args[0]);
+    const drawingToSpatialTransform = Transform.identity.toJSON(); // ###TODO
+    
+    const args: CreateSectionDrawingViewArgs = {
+      iModelKey: spatialView.iModel.key,
+      baseName: toolArgs[0],
+      spatialView: spatialView.toJSON(),
+      models: Array.from(spatialView.modelSelector.models),
+      categories: Array.from(spatialView.categorySelector.categories),
+      displayStyle: spatialView.displayStyle.toJSON(),
+      drawingToSpatialTransform,
+    };
+
+    const drawingViewId = await dtaIpc.createSectionDrawingView(args);
     if (!Id64.isValidId64(drawingViewId)) {
       return false;
     }
