@@ -92,7 +92,7 @@
   ],
   "dependencies": {
     "@itwin/cloud-agnostic-core": "^2.1.0",
-    "@itwin/object-storage-core": "^2.2.2",
+    "@itwin/object-storage-core": "^2.2.3",
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
