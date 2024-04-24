@@ -58,7 +58,7 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
 
     const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
-    sinon.stub(IModelDb.prototype, "loadSettingDictionaries" as any);
+    sinon.stub(IModelDb.prototype, "loadIModelSettings" as any);
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
 
     const userAccessToken = "token";
@@ -106,7 +106,7 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
 
     const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
-    sinon.stub(IModelDb.prototype, "loadSettingDictionaries" as any);
+    sinon.stub(IModelDb.prototype, "loadIModelSettings" as any);
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
 
     const userAccessToken = "token";
@@ -167,7 +167,7 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
-    sinon.stub(IModelDb.prototype, "loadSettingDictionaries" as any);
+    sinon.stub(IModelDb.prototype, "loadIModelSettings" as any);
 
     const snapshot = V1CheckpointManager.openCheckpointV1("fakeFilePath", { iTwinId: "fakeITwinId", iModelId: "fake1", changeset });
     const nowStub = sinon.stub(Date, "now");

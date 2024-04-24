@@ -2209,7 +2209,7 @@ describe("iModel", () => {
 
     const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
-    sinon.stub(IModelDb.prototype, "loadSettingDictionaries" as any);
+    sinon.stub(IModelDb.prototype, "loadIModelSettings" as any);
 
     const accessToken = "token";
     const checkpoint = await SnapshotDb.openCheckpointFromRpc({ accessToken, iTwinId, iModelId, changeset });
