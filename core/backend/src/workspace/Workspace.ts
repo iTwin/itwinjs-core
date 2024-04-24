@@ -348,7 +348,7 @@ export interface Workspace {
   /** Get a [[WorkspaceDb]] from a WorkspaceDb.CloudProps   */
   getWorkspaceDb(props: WorkspaceDb.CloudProps): Promise<WorkspaceDb>;
 
-  resolveWorkspaceDbProps(settingName: SettingName, filter?: (dbProp: WorkspaceDb.CloudProps, dict: Settings.Dictionary) => boolean): WorkspaceDb.CloudProps[];
+  resolveWorkspaceDbSetting(settingName: SettingName, filter?: (dbProp: WorkspaceDb.CloudProps, dict: Settings.Dictionary) => boolean): WorkspaceDb.CloudProps[];
   getWorkspaceDbs(dbList: WorkspaceDb.CloudProps[], problems?: WorkspaceDb.LoadError[]): Promise<WorkspaceDb[]>;
 }
 
@@ -729,7 +729,7 @@ class WorkspaceImpl implements Workspace {
     this._containers.clear();
   }
 
-  public resolveWorkspaceDbProps(settingName: SettingName, filter?: (dbProp: WorkspaceDb.CloudProps, dict: Settings.Dictionary) => boolean): WorkspaceDb.CloudProps[] {
+  public resolveWorkspaceDbSetting(settingName: SettingName, filter?: (dbProp: WorkspaceDb.CloudProps, dict: Settings.Dictionary) => boolean): WorkspaceDb.CloudProps[] {
     const result: WorkspaceDb.CloudProps[] = [];
     this.settings.resolveSetting<WorkspaceDb.CloudProps[]>({
       settingName, resolver: (dbProps, dict) => {
@@ -737,7 +737,7 @@ class WorkspaceImpl implements Workspace {
           if (filter?.(dbProp, dict) !== true)
             result.push(dbProp);
         }
-        return undefined;
+        return undefined; // means keep going
       },
     });
     return result;

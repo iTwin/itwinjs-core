@@ -29,7 +29,6 @@ export interface SettingSchema extends Readonly<JSONSchema> {
   readonly extends?: string;
   /** for objects, a list of named properties and their definitions */
   readonly properties?: { [name: string]: SettingSchema };
-
   /** whether the setting replaces lower priority entries with the same name or combines with them. */
   readonly cumulative?: true;
 }
@@ -41,13 +40,13 @@ export interface SettingSchema extends Readonly<JSONSchema> {
  */
 export interface SettingSchemaGroup {
   readonly schemaPrefix: string;
-  readonly settingDefs: { [name: string]: SettingSchema };
+  readonly settingDefs?: { [name: string]: SettingSchema };
   readonly typeDefs?: { [name: string]: SettingSchema };
   readonly order?: number;
   readonly description?: string;
 }
 
-const makeSettingKey = (group: string, key: string) => `${group}/${key}`;
+const makeSettingKey = (prefix: string, key: string) => `${prefix}/${key}`;
 /**
  * The registry of available [[SettingSchemaGroup]]s.
  * The registry is used for editing Settings files and for finding default values for settings.
@@ -278,6 +277,8 @@ export class SettingsSchemas {
         return;
 
       case "array":
+        if (typeof property.extends === "string")
+          return;
         if (typeof property.items !== "object")
           throw new Error(`array property ${name} has no items member`);
         try {
@@ -293,21 +294,21 @@ export class SettingsSchemas {
   }
 
   private static validateAndAdd(group: SettingSchemaGroup) {
-    let properties = group.settingDefs;
-    if (undefined !== properties) {
-      for (const key of Object.keys(properties)) {
+    const settingDefs = group.settingDefs;
+    if (undefined !== settingDefs) {
+      for (const key of Object.keys(settingDefs)) {
         this.validateName(key);
-        this.verifyPropertyDef(key, properties[key]);
-        const property: Mutable<SettingSchema> = properties[key];
+        this.verifyPropertyDef(key, settingDefs[key]);
+        const property: Mutable<SettingSchema> = settingDefs[key];
         property.default = property.default ?? this.getDefaultValue(property.type);
         this.settingDefs.set(makeSettingKey(group.schemaPrefix, key), property);
       }
     }
-    properties = group.typeDefs ?? {};
-    for (const key of Object.keys(properties)) {
+    const typeDefs = group.typeDefs ?? {};
+    for (const key of Object.keys(typeDefs)) {
       this.validateName(key);
-      this.verifyPropertyDef(key, properties[key]);
-      this.typeDefs.set(makeSettingKey(group.schemaPrefix, key), properties[key]);
+      this.verifyPropertyDef(key, typeDefs[key]);
+      this.typeDefs.set(makeSettingKey(group.schemaPrefix, key), typeDefs[key]);
     }
   }
 
