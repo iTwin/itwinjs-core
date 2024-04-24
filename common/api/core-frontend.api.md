@@ -7737,6 +7737,8 @@ export class LRUTileList {
     protected _head: LRUTileListNode;
     markUsed(userId: number, tiles: Iterable<Tile>): void;
     // (undocumented)
+    protected moveAfterSentinel(tile: Tile): void;
+    // (undocumented)
     protected moveBeforeSentinel(tile: Tile): void;
     // (undocumented)
     protected moveToEnd(tile: Tile): void;
@@ -11305,6 +11307,8 @@ export class RealityTile extends Tile {
     disposeContents(): void;
     // @internal (undocumented)
     protected forceSelectRealityTile(): boolean;
+    // @internal (undocumented)
+    freeMemory(): void;
     // @beta
     get geometry(): RealityTileGeometry | undefined;
     // @internal (undocumented)

@@ -369,7 +369,11 @@ export abstract class IModelDb extends IModel {
     super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
     this.nativeDb = args.nativeDb;
 
-    // PR https://github.com/iTwin/imodel-native/pull/558 ill-advisedly renamed closeIModel to closeFile.
+    // it is illegal to create an IModelDb unless the nativeDb has been opened. Throw otherwise.
+    if (!this.isOpen)
+      throw new Error("cannot create an IModelDb unless it has already been opened");
+
+    // PR https://github.com/iTwin/imodel-native/pull/558 renamed closeIModel to closeFile because it changed its behavior.
     // Ideally, nobody outside of core-backend would be calling it, but somebody important is.
     // Make closeIModel available so their code doesn't break.
     (this.nativeDb as any).closeIModel = () => {
@@ -946,7 +950,8 @@ export abstract class IModelDb extends IModel {
   */
   public static findByFilename(fileName: LocalFileName): IModelDb | undefined {
     for (const entry of this._openDbs) {
-      if (entry[1].pathName === fileName)
+      // It shouldn't be possible for anything in _openDbs to not be open, but if so just skip them because `pathName` will throw an exception.
+      if (entry[1].isOpen && entry[1].pathName === fileName)
         return entry[1];
     }
     return undefined;
@@ -2634,16 +2639,20 @@ export class BriefcaseDb extends IModelDb {
    * - the "no locking" flag is not present. This is a property of an iModel, established when the iModel is created in IModelHub.
    */
   protected get useLockServer(): boolean {
-    return !this.isReadonly && (this.briefcaseId !== BriefcaseIdValue.Unassigned) && (undefined === this.nativeDb.queryLocalValue(BriefcaseLocalValue.NoLocking));
+    return !this.nativeDb.isReadonly() && (this.briefcaseId !== BriefcaseIdValue.Unassigned) && (undefined === this.nativeDb.queryLocalValue(BriefcaseLocalValue.NoLocking));
+  }
+
+  // if the iModel uses a lock server, create a ServerBasedLocks LockControl for this BriefcaseDb.
+  protected makeLockControl() {
+    if (this.useLockServer)
+      this._locks = new ServerBasedLocks(this);
   }
 
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, openMode: OpenMode, briefcaseId: number }) {
     super({ ...args, changeset: args.nativeDb.getCurrentChangeset() });
     this._openMode = args.openMode;
     this.briefcaseId = args.briefcaseId;
-
-    if (this.useLockServer) // if the iModel uses a lock server, create a ServerBasedLocks LockControl for this BriefcaseDb.
-      this._locks = new ServerBasedLocks(this);
+    this.makeLockControl();
   }
 
   /** Upgrades the profile or domain schemas. File must be closed before this call and is always left closed. */
@@ -2893,15 +2902,23 @@ export class BriefcaseDb extends IModelDb {
    */
   public async executeWritable(func: () => Promise<void>): Promise<void> {
     const fileName = this.pathName;
-
+    const isReadonly = this.isReadonly;
+    let locks: LockControl | undefined;
     try {
-      if (this.isReadonly)
+      if (isReadonly) {
         this.closeAndReopen(OpenMode.ReadWrite, fileName);
-
+        locks = this.locks;
+        this.makeLockControl(); // create a ServerBasedLocks, if necessary
+      }
       await func();
     } finally {
-      if (this.isReadonly)
+      if (isReadonly) {
+        if (locks !== this._locks) { // did we have to create a ServerBasedLocks?
+          this.locks.close(); // yes, close it and reset back to previous
+          this._locks = locks;
+        }
         this.closeAndReopen(OpenMode.Readonly, fileName);
+      }
     }
   }
 
@@ -2937,8 +2954,11 @@ export class BriefcaseDb extends IModelDb {
     if (!this.nativeDb.hasPendingTxns())
       return; // nothing to push
 
-    await BriefcaseManager.pullMergePush(this, arg);
-    this.initializeIModelDb();
+    // pushing changes requires a writeable briefcase
+    await this.executeWritable(async () => {
+      await BriefcaseManager.pullMergePush(this, arg);
+      this.initializeIModelDb();
+    });
 
     const changeset = this.changeset as ChangesetIndexAndId;
     IpcHost.notifyTxns(this, "notifyPushedChanges", changeset);

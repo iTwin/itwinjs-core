@@ -63,65 +63,6 @@ export class SettingsSchemas {
   /** event that signals that the values in [[allSchemas]] have changed in some way. */
   public static readonly onSchemaChanged = new BeEvent<() => void>();
 
-  /** Clear the contents of the registry and remove all event listeners.
-   * @note This is really only necessary for tests of the Settings system.
-   * @internal
-   */
-  public static reset() {
-    this._allGroups.clear();
-    this.settingDefs.clear();
-    this.typeDefs.clear();
-    this.onSchemaChanged.clear();
-  }
-
-  private static verifyType<T>(val: T, expectedType: JSONSchemaTypeName, path: string) {
-    if (expectedType === "integer") {
-      if (Number.isInteger(val))
-        return;
-    } else if (expectedType === "null") {
-      if (val === null || val === undefined)
-        return;
-    } else if (typeof val === expectedType)
-      return;
-
-    throw new Error(`value for ${path}: "${val}" is wrong type, expected ${expectedType}`);
-  }
-
-  /**
-   * Ensure that the setting value supplied is valid according to the schema of its setting definition.
-   * @param value the value of the setting to validate.
-   * @param settingName the name of the setting to check [[value]] against. If no SettingSchema exists for this name, no validation is performed and value is returned.
-   * @returns [[value]] if no problems exist.
-   * @throws if [[value]] is invalid according to the SettingSchema with an explanation of the problem.
-   */
-  public static validateSetting<T>(value: T, settingName: string): T {
-    const settingDef = this.settingDefs.get(settingName);
-    if (undefined !== settingDef) // if there's no setting definition, there's no rules so just return ok
-      this.validateProperty(value, settingDef, settingName);
-    return value;
-  }
-
-  /** @internal */
-  public static getObjectProperties(propDef: Readonly<SettingSchema>, scope: string): { required?: string[], properties: { [name: string]: SettingSchema } } {
-    let required = propDef.required;
-    let properties = propDef.properties;
-
-    // if this object extends a typeDef, add typeDef's properties and required values, recursively
-    if (propDef.extends !== undefined) {
-      const typeDef = this.typeDefs.get(propDef.extends);
-      if (undefined === typeDef)
-        throw new Error(`typeDef ${propDef.extends} does not exist for ${scope}`);
-      const expanded = this.getObjectProperties(typeDef, `${scope}.${typeDef}`);
-      if (expanded.required)
-        required = required ? [...required, ...expanded.required] : expanded.required;
-      if (expanded.properties) {
-        properties = properties ? { ...expanded.properties, ...properties } : expanded.properties;
-      }
-    }
-    properties = properties ?? {};
-    return { required, properties };
-  }
-
   /** @internal */
   public static getArrayItems(propDef: Readonly<SettingSchema>, scope: string): SettingSchema {
     let items = propDef.items;
