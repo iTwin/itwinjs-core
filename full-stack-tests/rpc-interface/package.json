@@ -33,10 +33,10 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@itwin/imodels-access-backend": "^3.0.0",
-    "@itwin/imodels-access-frontend": "^3.0.0",
-    "@itwin/imodels-client-authoring": "^3.0.0",
-    "@itwin/imodels-client-management": "^3.0.0",
+    "@itwin/imodels-access-backend": "^5.0.1",
+    "@itwin/imodels-access-frontend": "^5.0.1",
+    "@itwin/imodels-client-authoring": "^5.1.0",
+    "@itwin/imodels-client-management": "^5.1.0",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
