@@ -349,7 +349,7 @@ export interface Workspace {
   getWorkspaceDb(props: WorkspaceDb.CloudProps): Promise<WorkspaceDb>;
 
   resolveWorkspaceDbSetting(settingName: SettingName, filter?: (dbProp: WorkspaceDb.CloudProps, dict: Settings.Dictionary) => boolean): WorkspaceDb.CloudProps[];
-  getWorkspaceDbs(dbList: WorkspaceDb.CloudProps[], problems?: WorkspaceDb.LoadError[]): Promise<WorkspaceDb[]>;
+  getWorkspaceDbs(args: Workspace.DbListOrSettingName & { problems?: WorkspaceDb.LoadError[] }): Promise<WorkspaceDb[]>;
 }
 
 /** @internal */
@@ -423,6 +423,7 @@ export namespace Workspace {
   export type SearchResourceType = "string" | "blob";
   export type IterationReturn = void | "stop";
   export type ForEachResource = (result: WorkspaceResource.SearchResult) => IterationReturn;
+  export type DbListOrSettingName = { readonly dbs: WorkspaceDb.CloudProps[], readonly settingName?: never } | { readonly settingName: string, readonly dbs?: never };
 
   const queryResource = (dbList: WorkspaceDb[] | WorkspaceDb, search: WorkspaceResource.Search, resourceType: SearchResourceType, found: ForEachResource): IterationReturn => {
     if (!Array.isArray(dbList))
@@ -743,7 +744,8 @@ class WorkspaceImpl implements Workspace {
     return result;
   }
 
-  public async getWorkspaceDbs(dbList: WorkspaceDb.CloudProps[], problems?: WorkspaceDb.LoadError[]): Promise<WorkspaceDb[]> {
+  public async getWorkspaceDbs(args: Workspace.DbListOrSettingName & { problems?: WorkspaceDb.LoadError[] }): Promise<WorkspaceDb[]> {
+    const dbList = (args.settingName !== undefined) ? this.resolveWorkspaceDbSetting(args.settingName) : args.dbs;
     const result: WorkspaceDb[] = [];
     const pushUnique = (wsDb: WorkspaceDb) => {
       if (!result.includes(wsDb)) // make sure the same db doesn't appear more than once.
@@ -756,7 +758,7 @@ class WorkspaceImpl implements Workspace {
       } catch (e) {
         const loadErr = e as WorkspaceDb.LoadError;
         loadErr.wsDbProps = dbProps;
-        problems?.push(loadErr);
+        args.problems?.push(loadErr);
       }
     }
     return result;
