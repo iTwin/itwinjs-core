@@ -226,7 +226,21 @@ describe.only("Cloud workspace containers", () => {
       defineStyles(editDb, "batch2", 200);
     });
 
-    const db1 = await imodel2.workspace.getWorkspaceDb(styles1.cloudProps!);
+    const dbs: WorkspaceDb.CloudProps[] = [
+      { ...styles1.cloudProps!, loadingHelp: "if problems with styles1", prefetch: true },
+      { ...styles1.cloudProps!, containerId: "styles3", loadingHelp: "if problems with styles3" },
+      { ...styles2.cloudProps!, loadingHelp: "if problems with styles2" },
+      { ...styles1.cloudProps!, loadingHelp: "if problems with styles1", prefetch: true },
+    ];
+
+    const resolveErrors: WorkspaceDb.LoadError[] = [];
+    const dbList = await imodel2.workspace.getWorkspaceDbs(dbs, resolveErrors);
+    expect(dbList.length).equal(2);
+    expect(resolveErrors.length).equal(1);
+
+    const db1 = dbList[0];
+    const db2 = dbList[1];
+
     const styles: string[] = [];
     const globSearch: WorkspaceResource.Search = { nameSearch: "styles/*", nameCompare: "GLOB" };
     Workspace.queryStringResource(db1, globSearch, (result) => {
@@ -240,22 +254,28 @@ describe.only("Cloud workspace containers", () => {
     expect(styles.length).equal(10);
 
     styles.length = 0;
-    const db2 = await imodel2.workspace.getWorkspaceDb(styles2.cloudProps!);
-    Workspace.queryStringResource([db1, db2], globSearch, (result) => {
+    Workspace.queryStringResource(dbList, globSearch, (result) => {
       styles.push(result.rscName);
     });
     expect(styles.length).equal(20);
     const testStyle = "styles/num-0";
-    expect(Workspace.loadStringResource([db1, db2], testStyle)).equal("batch1/value 0");
+    expect(Workspace.loadStringResource(dbList, testStyle)).equal("batch1/value 0");
     expect(Workspace.loadStringResource([db2, db1], testStyle)).equal("batch2/value 0");
-    expect(Workspace.loadBlobResource([db1, db2], testStyle)).deep.equal(new Uint8Array([100]));
+    expect(Workspace.loadBlobResource(dbList, testStyle)).deep.equal(new Uint8Array([100]));
     expect(Workspace.loadBlobResource([db2, db1], testStyle)).deep.equal(new Uint8Array([200]));
 
     styles.length = 0;
-    Workspace.queryStringResource([db1, db2], { nameSearch: "styles/num-1" }, (result) => {
+    expect(Workspace.queryStringResource(dbList, { nameSearch: "styles/num-1" }, (result) => {
       styles.push(result.rscName);
-    });
+    })).undefined;
     expect(styles.length).equal(2);
+
+    styles.length = 0;
+    expect(Workspace.queryStringResource([db1, db2], { nameSearch: "styles/num-1" }, (result) => {
+      styles.push(result.rscName);
+      return "stop";
+    })).equal("stop");
+    expect(styles.length).equal(1); // aborted after first entry
 
     imodel2.close();
   });

@@ -218,7 +218,7 @@ export namespace WorkspaceResource {
   }
 
   export interface Search {
-    /** The value for the resource name to compare for searching. */
+    /** The resource name to compare for searching. May include wildcards for GLOB and LIKE. */
     readonly nameSearch: string;
     /** The comparison operator for `nameSearch`. Default is `=` */
     readonly nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
@@ -289,7 +289,7 @@ export interface WorkspaceDb {
    */
   prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch;
 
-  queryResource(search: WorkspaceResource.Search, resourceType: Workspace.SearchResourceType, callback: Workspace.ForEachResourceFilter): Workspace.IterationReturn;
+  queryResource(search: WorkspaceResource.Search, resourceType: Workspace.SearchResourceType, found: Workspace.ForEachResource): Workspace.IterationReturn;
 
   /** @internal */
   queryFileResource(rscName: WorkspaceResource.Name): { localFileName: LocalFileName, info: IModelJsNative.EmbedFileQuery } | undefined;
@@ -349,7 +349,7 @@ export interface Workspace {
   getWorkspaceDb(props: WorkspaceDb.CloudProps): Promise<WorkspaceDb>;
 
   resolveWorkspaceDbProps(settingName: SettingName, filter?: (dbProp: WorkspaceDb.CloudProps, dict: Settings.Dictionary) => boolean): WorkspaceDb.CloudProps[];
-  getWorkspaceDbs(dbList: WorkspaceDb.CloudProps[], onLoadError?: (dbProps: WorkspaceDb.LoadError) => void): Promise<WorkspaceDb[]>;
+  getWorkspaceDbs(dbList: WorkspaceDb.CloudProps[], problems?: WorkspaceDb.LoadError[]): Promise<WorkspaceDb[]>;
 }
 
 /** @internal */
@@ -422,15 +422,15 @@ export namespace Workspace {
 
   export type SearchResourceType = "string" | "blob";
   export type IterationReturn = void | "stop";
-  export type ForEachResourceFilter = (result: WorkspaceResource.SearchResult) => IterationReturn;
+  export type ForEachResource = (result: WorkspaceResource.SearchResult) => IterationReturn;
 
-  const queryResource = (dbList: WorkspaceDb[] | WorkspaceDb, search: WorkspaceResource.Search, resourceType: SearchResourceType, filter: ForEachResourceFilter): IterationReturn => {
+  const queryResource = (dbList: WorkspaceDb[] | WorkspaceDb, search: WorkspaceResource.Search, resourceType: SearchResourceType, found: ForEachResource): IterationReturn => {
     if (!Array.isArray(dbList))
       dbList = [dbList];
 
     for (const db of dbList) {
-      if (db.queryResource(search, resourceType, filter) === "stop")
-        return;
+      if ("stop" === db.queryResource(search, resourceType, found))
+        return "stop";
     }
   };
   const loadResource = <T>(dbList: WorkspaceDb[] | WorkspaceDb, resourceType: SearchResourceType, rscName: WorkspaceResource.Name): T | undefined => {
@@ -444,8 +444,8 @@ export namespace Workspace {
     return undefined;
   };
 
-  export const queryStringResource = (dbList: WorkspaceDb[] | WorkspaceDb, search: WorkspaceResource.Search, filter: ForEachResourceFilter): IterationReturn => queryResource(dbList, search, "string", filter);
-  export const queryBlobResource = (dbList: WorkspaceDb[] | WorkspaceDb, search: WorkspaceResource.Search, filter: ForEachResourceFilter): IterationReturn => queryResource(dbList, search, "blob", filter);
+  export const queryStringResource = (dbList: WorkspaceDb[] | WorkspaceDb, search: WorkspaceResource.Search, found: ForEachResource): IterationReturn => queryResource(dbList, search, "string", found);
+  export const queryBlobResource = (dbList: WorkspaceDb[] | WorkspaceDb, search: WorkspaceResource.Search, found: ForEachResource): IterationReturn => queryResource(dbList, search, "blob", found);
   export const loadStringResource = (dbList: WorkspaceDb[] | WorkspaceDb, rscName: WorkspaceResource.Name): string | undefined => loadResource(dbList, "string", rscName);
   export const loadBlobResource = (dbList: WorkspaceDb[] | WorkspaceDb, rscName: WorkspaceResource.Name): Uint8Array | undefined => loadResource(dbList, "blob", rscName);
 
@@ -743,7 +743,7 @@ class WorkspaceImpl implements Workspace {
     return result;
   }
 
-  public async getWorkspaceDbs(dbList: WorkspaceDb.CloudProps[], onLoadError?: (dbProps: WorkspaceDb.LoadError) => void): Promise<WorkspaceDb[]> {
+  public async getWorkspaceDbs(dbList: WorkspaceDb.CloudProps[], problems?: WorkspaceDb.LoadError[]): Promise<WorkspaceDb[]> {
     const result: WorkspaceDb[] = [];
     const pushUnique = (wsDb: WorkspaceDb) => {
       if (!result.includes(wsDb)) // make sure the same db doesn't appear more than once.
@@ -754,9 +754,9 @@ class WorkspaceImpl implements Workspace {
       try {
         pushUnique(await this.getWorkspaceDb(dbProps));
       } catch (e) {
-        if (!onLoadError)
-          throw e;
-        onLoadError(e as WorkspaceDb.LoadError);
+        const loadErr = e as WorkspaceDb.LoadError;
+        loadErr.wsDbProps = dbProps;
+        problems?.push(loadErr);
       }
     }
     return result;
@@ -1006,14 +1006,15 @@ class WorkspaceDbImpl implements WorkspaceDb {
     return CloudSqlite.startCloudPrefetch(cloudContainer, this.dbFileName, opts);
   }
 
-  public queryResource(search: WorkspaceResource.Search, resourceType: Workspace.SearchResourceType, callback: Workspace.ForEachResourceFilter): void {
-    this.withOpenDb((db) => {
-      db.withSqliteStatement(`SELECT id from ${resourceType}s WHERE id ${search.nameCompare ?? "="} ?`, (stmt) => {
+  public queryResource(search: WorkspaceResource.Search, resourceType: Workspace.SearchResourceType, callback: Workspace.ForEachResource): Workspace.IterationReturn {
+    return this.withOpenDb((db) => {
+      return db.withSqliteStatement(`SELECT id from ${resourceType}s WHERE id ${search.nameCompare ?? "="} ?`, (stmt) => {
         stmt.bindString(1, search.nameSearch);
         while (DbResult.BE_SQLITE_ROW === stmt.step()) {
           if (callback({ workspaceDb: this, rscName: stmt.getValueString(0) }) === "stop")
-            return;
+            return "stop";
         }
+        return;
       });
     });
   }
