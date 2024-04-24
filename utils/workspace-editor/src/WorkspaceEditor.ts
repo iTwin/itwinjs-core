@@ -13,7 +13,7 @@ import * as Yargs from "yargs";
 import {
   CloudSqlite, IModelHost, IModelJsFs, SQLiteDb, SqliteStatement, Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceResource,
 } from "@itwin/core-backend";
-import { BentleyError, DbResult, Logger, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
+import { AccessToken, BentleyError, DbResult, Logger, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 
 // cspell:ignore nodir nocase
@@ -39,6 +39,7 @@ interface EditorProps {
 }
 
 interface EditorOpts extends EditorProps, WorkspaceContainer.Props {
+  accessToken: AccessToken;
   /** user name for write lock */
   user: string;
 }

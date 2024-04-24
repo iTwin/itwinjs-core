@@ -27,7 +27,7 @@ describe("WorkspaceFile", () => {
   });
 
   async function makeEditableDb(props: WorkspaceDb.Props & WorkspaceContainer.Props, manifest: WorkspaceDb.Manifest): Promise<Workspace.Editor.EditableDb> {
-    const container = editor.getContainer(props);
+    const container = editor.getContainer({ ...props, accessToken: "" });
     const wsFile = await container.createDb({ ...props, manifest });
     wsFile.open();
     return wsFile;

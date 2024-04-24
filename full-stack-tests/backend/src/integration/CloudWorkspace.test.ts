@@ -7,7 +7,7 @@ import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after al
 import { expect } from "chai";
 import * as fs from "fs-extra";
 import { join } from "path";
-import { CloudSqlite, IModelHost, IModelJsFs, SettingObject, Settings, StandaloneDb, Workspace, WorkspaceContainer, WorkspaceDb } from "@itwin/core-backend";
+import { IModelHost, IModelJsFs, SettingObject, Settings, StandaloneDb, Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceResource } from "@itwin/core-backend";
 import { assert, Guid } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 
@@ -25,7 +25,7 @@ describe.only("Cloud workspace containers", () => {
   let styles1: Workspace.Editor.Container;
   let styles2: Workspace.Editor.Container;
 
-  const itwin1WsName = "all settings for itwin1";
+  const orgWsName = "all settings for org";
   const itwin2WsName = "all settings for itwin2";
   const iModelWsName = "all settings for imodel";
 
@@ -33,7 +33,7 @@ describe.only("Cloud workspace containers", () => {
     IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
     AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
     editor = Workspace.constructEditor();
-    orgContainer = await editor.createNewCloudContainer({ metadata: { label: "orgContainer1", description: "org workspace1" }, scope: { iTwinId: iTwin1Id }, manifest: { workspaceName: itwin1WsName } });
+    orgContainer = await editor.createNewCloudContainer({ metadata: { label: "orgContainer1", description: "org workspace1" }, scope: { iTwinId: iTwin1Id }, manifest: { workspaceName: orgWsName } });
     itwin2Container = await editor.createNewCloudContainer({ metadata: { label: "orgContainer2", description: "org workspace2" }, scope: { iTwinId: iTwin2Id }, manifest: { workspaceName: itwin2WsName } });
     branchContainer = await editor.createNewCloudContainer({ metadata: { label: "iModel container", description: "imodel workspace" }, scope: { iTwinId: iTwin2Id, iModelId: iModel1 }, manifest: { workspaceName: iModelWsName } });
     styles1 = await editor.createNewCloudContainer({ metadata: { label: "styles 1 container", description: "styles definitions 1" }, scope: { iTwinId: iTwin1Id }, manifest: { workspaceName: "styles 1 ws" } });
@@ -49,23 +49,23 @@ describe.only("Cloud workspace containers", () => {
     assert(branchContainerProps !== undefined);
   });
   after(async () => {
-    IModelHost.authorizationClient = undefined;
     editor.close();
+    IModelHost.authorizationClient = undefined;
   });
 
-  it("edit cloud workspace", async () => {
+  it.only("edit cloud workspace", async () => {
     let user: string;
     const makeVersion = async (args: Workspace.Editor.Container.MakeNewVersionProps) => {
-      expect(itwin2Container.cloudContainer).not.undefined;
-      itwin2Container.acquireWriteLock(user);
-      const copied = await itwin2Container.makeNewVersion(args);
+      expect(orgContainer.cloudContainer).not.undefined;
+      orgContainer.acquireWriteLock(user);
+      const copied = await orgContainer.makeNewVersion(args);
 
-      const wsDbEdit = itwin2Container.getEditableDb(copied.newDb);
+      const wsDbEdit = orgContainer.getEditableDb(copied.newDb);
       wsDbEdit.open();
       wsDbEdit.updateString("myVersion", wsDbEdit.version);
       wsDbEdit.updateString("string 1", "value of string 1");
       wsDbEdit.close();
-      itwin2Container.releaseWriteLock();
+      orgContainer.releaseWriteLock();
       return copied;
     };
 
@@ -93,25 +93,25 @@ describe.only("Cloud workspace containers", () => {
     expect(newVer.newDb.version).equal("3.0.0-beta.0");
 
     user = "admin2";
-    itwin2Container.acquireWriteLock(user);
+    orgContainer.acquireWriteLock(user);
 
-    newVer = await itwin2Container.makeNewVersion({ versionType: "patch" });
-    const editDb = itwin2Container.getEditableDb(newVer.newDb);
+    newVer = await orgContainer.makeNewVersion({ versionType: "patch" });
+    const editDb = orgContainer.getEditableDb(newVer.newDb);
 
     editDb.open();
     expect(editDb.getString("myVersion")).equal("2.0.0"); // the patch is from 2.0.0, but we didn't update this string so its value is still from previous version.
     expect(editDb.manifest.lastEditedBy).equal("admin1");
-    expect(editDb.manifest.workspaceName).equal("all settings for itwin2");
+    expect(editDb.manifest.workspaceName).equal(orgWsName);
     editDb.updateString("string 1", "new string 1");
     editDb.close();
-    itwin2Container.abandonChanges();
+    orgContainer.abandonChanges();
 
     // after abandoning changes, the patch version we just made is gone
-    expect(() => itwin2Container.getEditableDb(newVer.newDb)).throws("No version of [workspace-db] available");
+    expect(() => orgContainer.getEditableDb(newVer.newDb)).throws("No version of 'workspace-db' available");
 
     // make sure we can read the workspace from another CloudCache
-    const wsDb = await IModelHost.appWorkspace.getWorkspaceDb({ ...itwin2ContainerProps, version: "~2.0" });
-    expect(wsDb.manifest.workspaceName).equal("all settings for itwin2");
+    const wsDb = await IModelHost.appWorkspace.getWorkspaceDb({ ...orgContainerProps, version: "~2.0" });
+    expect(wsDb.manifest.workspaceName).equal(orgWsName);
     expect(wsDb.getString("myVersion")).equal("2.0.0");
   });
 
@@ -125,7 +125,7 @@ describe.only("Cloud workspace containers", () => {
     container.releaseWriteLock();
   };
 
-  it.only("Settings Workspaces", async () => {
+  it.only("Edit Settings and Workspaces", async () => {
     const tmpdir = join(__dirname, "output", "settingsTest");
     IModelJsFs.recursiveMkDirSync(tmpdir);
     fs.emptyDirSync(tmpdir);
@@ -211,34 +211,51 @@ describe.only("Cloud workspace containers", () => {
     expect(settings.getNumber("app1/max2")).equal(20); // resolved from branch container, found from iModel settings
     expect(settings.getNumber("app1/max3")).equal(3); // resolved from iTwin container, found from resource in branch container
 
-    const defineStyles = (editDb: Workspace.Editor.EditableDb, prefix: string) => {
-      for (let i = 0; i < 10; ++i)
-        editDb.updateString(`styles/num-${i}`, `${prefix}/value ${i}`);
+    const defineStyles = (editDb: Workspace.Editor.EditableDb, prefix: string, bias: number) => {
+      for (let i = 0; i < 10; ++i) {
+        const styleName = `styles/num-${i}`;
+        editDb.updateString(styleName, `${prefix}/value ${i}`);
+        editDb.updateBlob(styleName, new Uint8Array([i + bias]));
+      }
     };
 
     await withPatchVersion(styles1, (editDb) => {
-      defineStyles(editDb, "batch1");
+      defineStyles(editDb, "batch1", 100);
     });
     await withPatchVersion(styles2, (editDb) => {
-      defineStyles(editDb, "batch2");
+      defineStyles(editDb, "batch2", 200);
     });
 
     const db1 = await imodel2.workspace.getWorkspaceDb(styles1.cloudProps!);
     const styles: string[] = [];
-    const globSearch = { nameSearch: "styles/*", nameCompare: "GLOB" as const, resourceType: "string" as const };
-    db1.queryResource(globSearch, (result) => {
+    const globSearch: WorkspaceResource.Search = { nameSearch: "styles/*", nameCompare: "GLOB" };
+    Workspace.queryStringResource(db1, globSearch, (result) => {
+      styles.push(result.rscName);
+    });
+    expect(styles.length).equal(10);
+    styles.length = 0;
+    Workspace.queryBlobResource(db1, globSearch, (result) => {
       styles.push(result.rscName);
     });
     expect(styles.length).equal(10);
 
     styles.length = 0;
     const db2 = await imodel2.workspace.getWorkspaceDb(styles2.cloudProps!);
-    imodel2.workspace.queryResource([db1, db2], globSearch, (result) => {
+    Workspace.queryStringResource([db1, db2], globSearch, (result) => {
       styles.push(result.rscName);
     });
     expect(styles.length).equal(20);
-    expect(imodel2.workspace.loadStringResource([db1, db2], styles[0])).equal("batch1/value 0");
-    expect(imodel2.workspace.loadStringResource([db2, db1], styles[0])).equal("batch2/value 0");
+    const testStyle = "styles/num-0";
+    expect(Workspace.loadStringResource([db1, db2], testStyle)).equal("batch1/value 0");
+    expect(Workspace.loadStringResource([db2, db1], testStyle)).equal("batch2/value 0");
+    expect(Workspace.loadBlobResource([db1, db2], testStyle)).deep.equal(new Uint8Array([100]));
+    expect(Workspace.loadBlobResource([db2, db1], testStyle)).deep.equal(new Uint8Array([200]));
+
+    styles.length = 0;
+    Workspace.queryStringResource([db1, db2], { nameSearch: "styles/num-1" }, (result) => {
+      styles.push(result.rscName);
+    });
+    expect(styles.length).equal(2);
 
     imodel2.close();
   });

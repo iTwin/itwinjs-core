@@ -102,7 +102,6 @@ export namespace WorkspaceContainer {
   export function makeDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName {
     return `${dbName}:${WorkspaceContainer.validateVersion(version)}`;
   }
-
 }
 
 /** @beta */
@@ -219,7 +218,7 @@ export namespace WorkspaceResource {
   }
 
   export interface Search {
-    readonly resourceType: "string" | "blob";
+    /** The value for the resource name to compare for searching. */
     readonly nameSearch: string;
     /** The comparison operator for `nameSearch`. Default is `=` */
     readonly nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
@@ -290,7 +289,7 @@ export interface WorkspaceDb {
    */
   prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch;
 
-  queryResource(search: WorkspaceResource.Search, callback: (result: WorkspaceResource.SearchResult) => void | "stop"): void | "stop";
+  queryResource(search: WorkspaceResource.Search, resourceType: Workspace.SearchResourceType, callback: Workspace.ForEachResourceFilter): Workspace.IterationReturn;
 
   /** @internal */
   queryFileResource(rscName: WorkspaceResource.Name): { localFileName: LocalFileName, info: IModelJsNative.EmbedFileQuery } | undefined;
@@ -351,11 +350,6 @@ export interface Workspace {
 
   resolveWorkspaceDbProps(settingName: SettingName, filter?: (dbProp: WorkspaceDb.CloudProps, dict: Settings.Dictionary) => boolean): WorkspaceDb.CloudProps[];
   getWorkspaceDbs(dbList: WorkspaceDb.CloudProps[], onLoadError?: (dbProps: WorkspaceDb.LoadError) => void): Promise<WorkspaceDb[]>;
-  resolveWorkspaceDbs(settingName: SettingName): Promise<WorkspaceDb[]>;
-
-  queryResource(dbList: WorkspaceDb[], search: WorkspaceResource.Search, forEachResource: (result: WorkspaceResource.SearchResult) => void | "stop"): void | "stop";
-  loadStringResource(dbList: WorkspaceDb[], rscName: WorkspaceResource.Name): string | undefined;
-  loadBlobResource(dbList: WorkspaceDb[], rscName: WorkspaceResource.Name): Uint8Array | undefined;
 }
 
 /** @internal */
@@ -426,6 +420,35 @@ export namespace Workspace {
     settingsWorkspaces: makeSettingName("settingsWorkspaces"),
   };
 
+  export type SearchResourceType = "string" | "blob";
+  export type IterationReturn = void | "stop";
+  export type ForEachResourceFilter = (result: WorkspaceResource.SearchResult) => IterationReturn;
+
+  const queryResource = (dbList: WorkspaceDb[] | WorkspaceDb, search: WorkspaceResource.Search, resourceType: SearchResourceType, filter: ForEachResourceFilter): IterationReturn => {
+    if (!Array.isArray(dbList))
+      dbList = [dbList];
+
+    for (const db of dbList) {
+      if (db.queryResource(search, resourceType, filter) === "stop")
+        return;
+    }
+  };
+  const loadResource = <T>(dbList: WorkspaceDb[] | WorkspaceDb, resourceType: SearchResourceType, rscName: WorkspaceResource.Name): T | undefined => {
+    if (!Array.isArray(dbList))
+      dbList = [dbList];
+    for (const db of dbList) {
+      const val = (resourceType === "string" ? db.getString(rscName) : db.getBlob(rscName)) as T | undefined;
+      if (undefined !== val)
+        return val; // first one wins
+    }
+    return undefined;
+  };
+
+  export const queryStringResource = (dbList: WorkspaceDb[] | WorkspaceDb, search: WorkspaceResource.Search, filter: ForEachResourceFilter): IterationReturn => queryResource(dbList, search, "string", filter);
+  export const queryBlobResource = (dbList: WorkspaceDb[] | WorkspaceDb, search: WorkspaceResource.Search, filter: ForEachResourceFilter): IterationReturn => queryResource(dbList, search, "blob", filter);
+  export const loadStringResource = (dbList: WorkspaceDb[] | WorkspaceDb, rscName: WorkspaceResource.Name): string | undefined => loadResource(dbList, "string", rscName);
+  export const loadBlobResource = (dbList: WorkspaceDb[] | WorkspaceDb, rscName: WorkspaceResource.Name): Uint8Array | undefined => loadResource(dbList, "blob", rscName);
+
   /** @internal */
   export function construct(settings: Settings, opts?: WorkspaceOpts): OwnedWorkspace {
     return new WorkspaceImpl(settings, opts);
@@ -440,8 +463,10 @@ export namespace Workspace {
 
   export interface Editor {
     readonly workspace: Workspace;
-    getContainer(props: WorkspaceContainer.Props): Editor.Container;
+    getContainer(props: WorkspaceContainer.Props & WithAccessToken): Editor.Container;
+    getContainerAsync(props: WorkspaceContainer.Props): Promise<Workspace.Editor.Container>;
     createNewCloudContainer(props: Editor.CreateNewContainerProps): Promise<Workspace.Editor.Container>;
+
     /** Close this WorkspaceEditor. All WorkspaceContainers are dropped. */
     close(): void;
   }
@@ -647,7 +672,8 @@ class WorkspaceImpl implements Workspace {
   }
 
   public async getContainerAsync(props: WorkspaceContainer.Props): Promise<WorkspaceContainer> {
-    return this.getContainer({ ...props, accessToken: props.isPublic ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "read" }) });
+    const accessToken = props.accessToken ?? ((props.baseUri === "") || props.isPublic) ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "read" });
+    return this.getContainer({ ...props, accessToken });
   }
 
   public async getWorkspaceDb(props: WorkspaceDb.CloudProps): Promise<WorkspaceDb> {
@@ -736,33 +762,6 @@ class WorkspaceImpl implements Workspace {
     return result;
   }
 
-  public async resolveWorkspaceDbs(settingName: SettingName): Promise<WorkspaceDb[]> {
-    return this.getWorkspaceDbs(this.resolveWorkspaceDbProps(settingName));
-  }
-
-  public queryResource(dbList: WorkspaceDb[], search: WorkspaceResource.Search, forEachResource: (result: WorkspaceResource.SearchResult) => void | "stop"): void | "stop" {
-    for (const db of dbList) {
-      if (db.queryResource(search, forEachResource) === "stop")
-        return;
-    }
-  }
-  public loadStringResource(dbList: WorkspaceDb[], rscName: WorkspaceResource.Name): string | undefined {
-    for (const db of dbList) {
-      const val = db.getString(rscName);
-      if (undefined !== val)
-        return val;
-    }
-    return undefined;
-  }
-
-  public loadBlobResource(dbList: WorkspaceDb[], rscName: WorkspaceResource.Name): Uint8Array | undefined {
-    for (const db of dbList) {
-      const val = db.getBlob(rscName);
-      if (undefined !== val)
-        return val;
-    }
-    return undefined;
-  }
 }
 
 class WorkspaceContainerImpl implements WorkspaceContainer {
@@ -1007,9 +1006,9 @@ class WorkspaceDbImpl implements WorkspaceDb {
     return CloudSqlite.startCloudPrefetch(cloudContainer, this.dbFileName, opts);
   }
 
-  public queryResource(search: WorkspaceResource.Search, callback: (result: WorkspaceResource.SearchResult) => void | "stop"): void {
+  public queryResource(search: WorkspaceResource.Search, resourceType: Workspace.SearchResourceType, callback: Workspace.ForEachResourceFilter): void {
     this.withOpenDb((db) => {
-      db.withSqliteStatement(`SELECT id from ${search.resourceType}s WHERE id ${search.nameCompare ?? "="} ?`, (stmt) => {
+      db.withSqliteStatement(`SELECT id from ${resourceType}s WHERE id ${search.nameCompare ?? "="} ?`, (stmt) => {
         stmt.bindString(1, search.nameSearch);
         while (DbResult.BE_SQLITE_ROW === stmt.step()) {
           if (callback({ workspaceDb: this, rscName: stmt.getValueString(0) }) === "stop")
@@ -1049,8 +1048,12 @@ class EditorImpl implements Workspace.Editor {
     return this.getContainer({ accessToken, ...cloudContainer, writeable: true, description: args.metadata.description });
   }
 
-  public getContainer(props: WorkspaceContainer.Props & { accessToken: AccessToken }): Workspace.Editor.Container {
+  public getContainer(props: WorkspaceContainer.Props & Workspace.WithAccessToken): Workspace.Editor.Container {
     return this.workspace.findContainer(props.containerId) as Workspace.Editor.Container | undefined ?? new EditorContainerImpl(this.workspace, props);
+  }
+  public async getContainerAsync(props: WorkspaceContainer.Props): Promise<Workspace.Editor.Container> {
+    const accessToken = props.accessToken ?? (props.baseUri === "") ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "write" });
+    return this.getContainer({ ...props, accessToken });
   }
 
   public close() {

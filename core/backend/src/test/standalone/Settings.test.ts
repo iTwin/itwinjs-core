@@ -235,13 +235,13 @@ describe("Settings", () => {
 
     const inspect = settings.inspectSetting("app1/sub1");
     expect(inspect.length).equals(5);
-    expect(inspect[0].dictionary.props).to.deep.equal({ name: "iModel2.setting.json", priority: 500 });
+    expect(inspect[0].dictionary.props).to.deep.equal({ name: "iModel2.setting.json", priority: Settings.Priority.iModel });
     expect(inspect[0].value).equal("imodel2 value");
-    expect(inspect[1].dictionary.props).to.deep.equal({ name: "iModel1.setting.json", priority: 500 });
+    expect(inspect[1].dictionary.props).to.deep.equal({ name: "iModel1.setting.json", priority: Settings.Priority.iModel });
     expect(inspect[1].value).equal("imodel1 value");
-    expect(inspect[2].dictionary.props).to.deep.equal({ name: "iTwin.setting.json", priority: 400 });
+    expect(inspect[2].dictionary.props).to.deep.equal({ name: "iTwin.setting.json", priority: Settings.Priority.iTwin });
     expect(inspect[2].value).equal("val3");
-    expect(inspect[3].dictionary.props).to.deep.equal({ name: "app1", priority: 200 });
+    expect(inspect[3].dictionary.props).to.deep.equal({ name: "app1", priority: Settings.Priority.application });
     expect(inspect[3].value).equal("app1 value");
     expect(inspect[4].dictionary.props).to.deep.equal({ name: "_default_", priority: 0 });
     expect(inspect[4].value).equal("val1");
