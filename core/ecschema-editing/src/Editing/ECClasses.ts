@@ -320,7 +320,13 @@ export class ECClasses {
     } catch (e: any) {
       return { errorMessage: e.message };
     }
+
+    const existingName = classKey.name;
     mutableClass.setName(name);
+
+    // Must reset in schema item map
+    await schema.deleteClass(existingName);
+    schema.addItem(mutableClass);
 
     return {};
   }
