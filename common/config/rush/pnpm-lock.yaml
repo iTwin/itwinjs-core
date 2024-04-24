@@ -240,7 +240,7 @@ importers:
       '@bentley/bis-core-schema': ^1.0.15
       '@bentley/bis-custom-attributes-schema': ^1.0.0
       '@bentley/construction-schema': ^1.0.4
-      '@bentley/core-custom-attributes-schema': ^1.0.3
+      '@bentley/core-custom-attributes-schema': ^1.0.4
       '@bentley/ecdb-map-schema': ^2.0.1
       '@bentley/ecdb-schema-policies-schema': ^1.0.1
       '@bentley/formats-schema': ^1.0.0
@@ -283,7 +283,7 @@ importers:
       '@bentley/bis-core-schema': 1.0.15
       '@bentley/bis-custom-attributes-schema': 1.0.0
       '@bentley/construction-schema': 1.0.4
-      '@bentley/core-custom-attributes-schema': 1.0.3
+      '@bentley/core-custom-attributes-schema': 1.0.4
       '@bentley/ecdb-map-schema': 2.0.1
       '@bentley/ecdb-schema-policies-schema': 1.0.1
       '@bentley/formats-schema': 1.0.0
@@ -3759,8 +3759,8 @@ packages:
     resolution: {integrity: sha512-VuR/K6odSLBXPtUoyX0v4m1l0MLw/pyeX2b1DuMHlnOMS9/Ub9oi6BgMbwOYUslWP8Bxw4HcFoiR8F4aPasmaw==}
     dev: true
 
-  /@bentley/core-custom-attributes-schema/1.0.3:
-    resolution: {integrity: sha512-FrKkgkuMgc85o8Ag8/5YGh7MnwCD19tgJiAmktjlZo43ZxfsiwE+iu+SJzfLsYCDYb6Z3KcRb5O5l4dA0Dp6uA==}
+  /@bentley/core-custom-attributes-schema/1.0.4:
+    resolution: {integrity: sha512-Ciii3iXwm6DmKQrZdhdyI2hHPXGsSEDsL6bGEP2gRfnG6PcXsxITFc6ta7ZTuXVCkWlKnKoW4YEsh0PANFjwcg==}
     dev: true
 
   /@bentley/ecdb-map-schema/2.0.1:

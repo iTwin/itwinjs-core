@@ -38,7 +38,7 @@
     "@bentley/bis-core-schema": "^1.0.15",
     "@bentley/bis-custom-attributes-schema": "^1.0.0",
     "@bentley/construction-schema": "^1.0.4",
-    "@bentley/core-custom-attributes-schema": "^1.0.3",
+    "@bentley/core-custom-attributes-schema": "^1.0.4",
     "@bentley/ecdb-map-schema": "^2.0.1",
     "@bentley/ecdb-schema-policies-schema": "^1.0.1",
     "@bentley/formats-schema": "^1.0.0",
