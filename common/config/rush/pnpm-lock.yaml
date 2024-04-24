@@ -3496,7 +3496,7 @@ packages:
       '@azure/abort-controller': 1.1.0
       '@azure/core-http': 3.0.4
       '@azure/core-lro': 2.7.2
-      '@azure/core-paging': 1.6.2
+      '@azure/core-paging': 1.5.0
       '@azure/core-tracing': 1.0.0-preview.13
       '@azure/logger': 1.1.2
       events: 3.3.0
@@ -3512,7 +3512,7 @@ packages:
       '@azure/abort-controller': 1.1.0
       '@azure/core-http': 3.0.4
       '@azure/core-lro': 2.7.2
-      '@azure/core-paging': 1.6.2
+      '@azure/core-paging': 1.5.0
       '@azure/core-tracing': 1.0.0-preview.13
       '@azure/logger': 1.1.2
       events: 3.3.0
