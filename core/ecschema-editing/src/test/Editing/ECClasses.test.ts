@@ -32,8 +32,11 @@ describe("ECClass tests", () => {
 
   it("should change name of class using SchemaEditor", async () => {
     const result1 = await testEditor.entities.create(testKey, "testEntity1", ECClassModifier.None);
-    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result1.itemKey!);
+    let testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result1.itemKey!);
     const result2 = await testEditor.entities.setName(result1.itemKey!, "testEntity2");
+    const newItemKey = new SchemaItemKey("testEntity2", testKey);
+    testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(newItemKey);
+    expect(testEntity, "renamed EntityClass could not be found in schema").to.not.be.undefined;
     expect(result2).to.eql({});
     expect(testEntity?.name).to.eql("testEntity2");
   });
