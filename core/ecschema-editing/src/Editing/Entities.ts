@@ -20,8 +20,8 @@ import { NavigationProperties } from "./Properties";
  * A class extending ECClasses allowing you to create schema items of type EntityClass.
  */
 export class Entities extends ECClasses {
-  public constructor(_schemaEditor: SchemaContextEditor) {
-    super(SchemaItemType.EntityClass, _schemaEditor);
+  public constructor(schemaEditor: SchemaContextEditor) {
+    super(SchemaItemType.EntityClass, schemaEditor);
   }
 
   /**

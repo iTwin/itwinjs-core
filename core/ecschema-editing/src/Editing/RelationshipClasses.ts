@@ -23,8 +23,8 @@ import { NavigationProperties } from "./Properties";
  * A class extending ECClasses allowing you to create schema items of type RelationshipClass.
  */
 export class RelationshipClasses extends ECClasses {
-  public constructor(_schemaEditor: SchemaContextEditor) {
-    super(SchemaItemType.RelationshipClass, _schemaEditor);
+  public constructor(schemaEditor: SchemaContextEditor) {
+    super(SchemaItemType.RelationshipClass, schemaEditor);
   }
 
   /**

@@ -19,8 +19,8 @@ import { MutableCAClass } from "./Mutable/MutableCAClass";
  * A class extending ECClasses allowing you to create schema items of type CustomAttributeClass.
  */
 export class CustomAttributes extends ECClasses {
-  public constructor(_schemaEditor: SchemaContextEditor) {
-    super(SchemaItemType.CustomAttributeClass, _schemaEditor);
+  public constructor(schemaEditor: SchemaContextEditor) {
+    super(SchemaItemType.CustomAttributeClass, schemaEditor);
   }
 
   public async create(schemaKey: SchemaKey, name: string, containerType: CustomAttributeContainerType, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults> {

@@ -21,8 +21,8 @@ import { NavigationProperties } from "./Properties";
  * A class extending ECClasses allowing you to create schema items of type Mixin.
  */
 export class Mixins extends ECClasses {
-  public constructor(_schemaEditor: SchemaContextEditor) {
-    super(SchemaItemType.Mixin, _schemaEditor);
+  public constructor(schemaEditor: SchemaContextEditor) {
+    super(SchemaItemType.Mixin, schemaEditor);
   }
 
   /**
