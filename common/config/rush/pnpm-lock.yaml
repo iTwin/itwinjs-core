@@ -7,7 +7,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.6.21
+      '@bentley/imodeljs-native': 4.6.22
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.1.0
       '@itwin/core-bentley': workspace:*
@@ -57,7 +57,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
-      '@bentley/imodeljs-native': 4.6.21
+      '@bentley/imodeljs-native': 4.6.22
       '@itwin/cloud-agnostic-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.2.2_scz6qrwecfbbxg4vskopkl3a7u
@@ -3787,8 +3787,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.6.21:
-    resolution: {integrity: sha512-ZU/qdNSaPeI0CAdivIGN58rZ/ijih4zUZwnmPl+eSvr8yZXP/9nuE9MWp3UTFhpnjLW6RQtbBM+1nMyxXB7VnQ==}
+  /@bentley/imodeljs-native/4.6.22:
+    resolution: {integrity: sha512-/ApnReE1U0OB0QBw+DiDZJ/qPEQFwqSa7q1WBhoestlLXWabgZl1gHHf7hQ+XDelkKaY1/rdJp74OlO2r/U9hQ==}
     requiresBuild: true
     dev: false
 
@@ -4906,7 +4906,7 @@ packages:
   /@types/cpx/1.5.2:
     resolution: {integrity: sha512-CL9DbTAdf5NYcbYpBTli6JxVIpCAhJp1FeQiXd9SNjbC4o9k6McnHkU0FHgj9UYoN7TVX3poaaBrwFabTY7Skw==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
     dev: false
 
   /@types/debug/4.1.12:
@@ -5093,10 +5093,6 @@ packages:
   /@types/node/16.18.87:
     resolution: {integrity: sha512-+IzfhNirR/MDbXz6Om5eHV54D9mQlEMGag6AgEzlju0xH3M8baCXYwqQ6RKgGMpn9wSTx6Ltya/0y4Z8eSfdLw==}
     dev: true
-
-  /@types/node/18.16.1:
-    resolution: {integrity: sha512-DZxSZWXxFfOlx7k7Rv4LAyiMroaxa3Ly/7OOzZO8cBNho0YzAi4qlbrx8W27JGqG57IgR/6J7r+nOJWw6kcvZA==}
-    dev: false
 
   /@types/node/18.16.20:
     resolution: {integrity: sha512-nL54VfDjThdP2UXJXZao5wp76CDiDw4zSRO8d4Tk7UgDqNKGKVEQB0/t3ti63NS+YNNkIQDvwEAF04BO+WYu7Q==}
