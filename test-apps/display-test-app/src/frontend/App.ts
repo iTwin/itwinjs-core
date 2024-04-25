@@ -49,6 +49,7 @@ import {
   CloneViewportTool, CloseIModelTool, CloseWindowTool, CreateWindowTool, DockWindowTool, FocusWindowTool, MaximizeWindowTool, OpenIModelTool,
   ReopenIModelTool, ResizeWindowTool, RestoreWindowTool, Surface,
 } from "./Surface";
+import { CreateSectionDrawingTool } from "./CreateSectionDrawingTool";
 import { SyncViewportFrustaTool, SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
@@ -317,6 +318,7 @@ export class DisplayTestApp {
       CloneViewportTool,
       CloseIModelTool,
       CloseWindowTool,
+      CreateSectionDrawingTool,
       CreateWindowTool,
       DisableModelTransformsTool,
       DockWindowTool,
