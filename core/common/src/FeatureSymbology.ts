@@ -820,7 +820,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
 
 /** Interface adopted by an object that can supply the [[FeatureAppearance]] supplied by a [[FeatureAppearanceSource]].
  * This is useful for selectively overriding or agumenting a [Viewport]($frontend)'s symbology overrides.
- * A typical implementation will invoke [[FeatureAppearanceSource.getAppeaprance]] and customize the returned appearance.
+ * A typical implementation will invoke [[FeatureAppearanceSource.getAppearance]] and customize the returned appearance.
  * @see [[FeatureAppearanceProvider.chain]] to chain two providers together.
  * @public
  * @extensions

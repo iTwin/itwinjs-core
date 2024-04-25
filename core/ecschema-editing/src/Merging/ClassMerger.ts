@@ -147,20 +147,9 @@ export async function modifyClass(context: SchemaMergeContext, change: ClassItem
 async function setBaseClass(context: SchemaMergeContext, item: ECClass, baseClass: string, isInitial: boolean): Promise<SchemaEditResults> {
   const baseClassKey = await updateSchemaItemKey(context, baseClass);
   const baseClassSetter = getBaseClassSetter(context, item);
-  if (isInitial && item.baseClass === undefined) {
-    return baseClassSetter(item.key, baseClassKey);
-  }
-  if (item.baseClass !== undefined) {
-    const currentBaseClass = await item.baseClass;
-    const newBaseClass = await context.editor.schemaContext.getSchemaItem<ECClass>(baseClassKey);
-    if (newBaseClass === undefined) {
-      return { errorMessage: `'${baseClassKey.name}' class could not be located in the merged schema.` };
-    }
-    if (await newBaseClass.is(currentBaseClass)) {
-      return baseClassSetter(item.key, baseClassKey);
-    }
-  }
-  return { errorMessage: `Changing the class '${item.key.name}' baseClass is not supported.` };
+  if (!isInitial && item.baseClass === undefined)
+    return { errorMessage: `Changing the class '${item.key.name}' baseClass is not supported.` };
+  return baseClassSetter(item.key, baseClassKey);
 }
 
 async function setClassModifier(item: MutableClass, modifierValue: string): Promise<SchemaEditResults> {
@@ -178,9 +167,11 @@ async function setClassModifier(item: MutableClass, modifierValue: string): Prom
 function getBaseClassSetter(context: SchemaMergeContext, item: ECClass) {
   return async (itemKey: SchemaItemKey, baseClassKey: SchemaItemKey) => {
     switch (item.schemaItemType) {
+      case SchemaItemType.CustomAttributeClass: return context.editor.customAttributes.setBaseClass(itemKey, baseClassKey);
       case SchemaItemType.EntityClass: return context.editor.entities.setBaseClass(itemKey, baseClassKey);
-      case SchemaItemType.Mixin: return context.editor.mixins.setMixinBaseClass(itemKey, baseClassKey);
-      // TODO: verify; structs and relationship classes can't have base classes?
+      case SchemaItemType.Mixin: return context.editor.mixins.setBaseClass(itemKey, baseClassKey);
+      case SchemaItemType.RelationshipClass: return context.editor.relationships.setBaseClass(itemKey, baseClassKey);
+      case SchemaItemType.StructClass: return context.editor.structs.setBaseClass(itemKey, baseClassKey);
     }
     return { itemKey, errorMessage: `Changing the base class '${item.name}' is not supported.` };
   };
