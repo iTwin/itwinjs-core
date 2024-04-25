@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-locaters",
-  "version": "4.6.0-dev.17",
+  "version": "4.6.0-dev.18",
   "description": "EC Schema file locaters",
   "license": "MIT",
   "main": "lib/cjs/ecschema-locaters.js",
@@ -38,7 +38,7 @@
     "@bentley/bis-core-schema": "^1.0.15",
     "@bentley/bis-custom-attributes-schema": "^1.0.0",
     "@bentley/construction-schema": "^1.0.4",
-    "@bentley/core-custom-attributes-schema": "^1.0.3",
+    "@bentley/core-custom-attributes-schema": "^1.0.4",
     "@bentley/ecdb-map-schema": "^2.0.1",
     "@bentley/ecdb-schema-policies-schema": "^1.0.1",
     "@bentley/formats-schema": "^1.0.0",
@@ -75,7 +75,7 @@
     "@xmldom/xmldom": "~0.8.5"
   },
   "peerDependencies": {
-    "@itwin/ecschema-metadata": "workspace:^4.6.0-dev.17"
+    "@itwin/ecschema-metadata": "workspace:^4.6.0-dev.18"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",

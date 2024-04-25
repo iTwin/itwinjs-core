@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-rpcinterface-tests",
-  "version": "4.6.0-dev.17",
+  "version": "4.6.0-dev.18",
   "description": "Integration tests for the Schema RPC Interface",
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -36,10 +36,10 @@
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecschema-rpcinterface-common": "workspace:*",
     "@itwin/ecschema-rpcinterface-impl": "workspace:*",
-    "@itwin/imodels-access-backend": "^3.0.0",
-    "@itwin/imodels-access-frontend": "^3.0.0",
-    "@itwin/imodels-client-authoring": "^3.0.0",
-    "@itwin/imodels-client-management": "^3.0.0",
+    "@itwin/imodels-access-backend": "^5.0.1",
+    "@itwin/imodels-access-frontend": "^5.0.1",
+    "@itwin/imodels-client-authoring": "^5.1.0",
+    "@itwin/imodels-client-management": "^5.1.0",
     "@itwin/oidc-signin-tool": "~3.6.0",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
