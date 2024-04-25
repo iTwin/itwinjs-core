@@ -8,8 +8,8 @@
 import { Cartographic, ImageMapLayerSettings, ImageSource, IModelStatus, ServerError } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import {
-  ArcGisErrorCode, ArcGisGeometryReaderJSON, ArcGisGraphicsRenderer, ArcGISImageryProvider, ArcGISTileMap,
-  ArcGisUtilities, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeature,
+  ArcGisErrorCode, ArcGisGeometryReaderJSON, ArcGISImageryProvider, ArcGISTileMap, ArcGisUtilities,
+  FeatureGraphicsRenderer, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeature,
   MapLayerFeatureInfo, MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
 } from "../../internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
@@ -382,7 +382,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     const tolerancePixel = options?.tolerance ?? 7;
     const json = await this.getIdentifyData(quadId, carto, tolerancePixel, true, maxAllowableOffset);
     if (json && Array.isArray(json.results)) {
-      const renderer = new ArcGisGraphicsRenderer({viewport: hit.viewport});
+      const renderer = new FeatureGraphicsRenderer({viewport: hit.viewport, crs: "webMercator"});
 
       const layerInfo: MapLayerFeatureInfo = { layerName: this._settings.name, subLayerInfos: [] };
 

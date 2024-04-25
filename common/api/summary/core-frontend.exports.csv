@@ -42,14 +42,10 @@ internal;AnimationBranchStates
 internal;AnimationNodeId
 public;Animator
 internal;AnyImdlPrimitive = ImdlMeshPrimitive | ImdlPolylinePrimitive | ImdlPointStringPrimitive
-internal;ArcGisAttributeDrivenSymbology
+internal;appendQueryParams(url: string, queryParams?:
 internal;ArcGisErrorCode
-internal;class ArcGisGeometryBaseRenderer 
 internal;ArcGisGeometryReaderJSON
-internal;ArcGisGeometryRenderer
 internal;ArcGisGetServiceJsonArgs
-internal;ArcGisGraphicsRenderer 
-internal;ArcGisGraphicsRendererProps
 internal;ArcGISIdentifyImageDisplayProps
 internal;ArcGISIdentifyLayersProps
 internal;ArcGISIdentifyRequestUrl
@@ -175,6 +171,7 @@ public;Decorator
 internal;DefaultViewTouchTool 
 internal;DefineACSByElementTool 
 internal;DefineACSByPointsTool 
+internal;deflateCoordinates(coordinates: number[][], flatCoordinates: number[], stride: number, offset: number): number
 public;DepthPointOptions
 public;DepthPointSource
 public;DepthRangeNpc
@@ -224,9 +221,16 @@ internal;ExtMeshoptCompressionMode = "ATTRIBUTES" | "TRIANGLES" | "INDICES"
 public;extractImageSourceDimensions(source: ImageSource): Promise
 internal;eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeight?: boolean): Cartographic | undefined
 internal;eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeight?: boolean): Promise
+internal;FeatureAttributeDrivenSymbology
+internal;class FeatureGeometryBaseRenderer 
+internal;FeatureGeometryRenderer
+internal;FeatureGraphicsRenderer 
+internal;FeatureGraphicsRendererProps
 public;FeatureOverrideProvider
+internal;FeatureSymbolizedRenderer
 public;FeatureSymbology
 alpha;Source
+internal;FeatureSymbologyRenderer
 internal;FetchCloudStorage 
 internal;FetchFunction = (url: URL, options?: RequestInit) => Promise
 public;FitViewTool 
@@ -359,6 +363,7 @@ public;GraphicPrimitive = GraphicLineString | GraphicLineString2d | GraphicPoint
 public;GraphicPrimitive2d
 internal;GraphicsCollector
 internal;GraphicsCollectorDrawArgs 
+internal;GraphicsGeometryRenderer 
 public;GraphicShape
 public;GraphicShape2d 
 public;GraphicSolidPrimitive
@@ -1015,6 +1020,7 @@ internal;wantJointTriangles(weight: number, is2d: boolean): boolean
 internal;WebMercator
 alpha;WebMercatorProjection
 beta;WebMercatorTilingScheme 
+internal;WGS84Extent
 internal;WheelEventProcessor
 public;WindowAreaTool 
 internal;WmsCapabilities

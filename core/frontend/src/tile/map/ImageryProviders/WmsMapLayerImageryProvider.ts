@@ -166,7 +166,7 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
       // For instance, for EPSG:4326 the axis ordering is latitude/longitude, or north/east.
       // WMS 1.1.0 always requires the axis ordering to be longitude/latitude. *sigh*
       if (this._capabilities !== undefined) {
-        bboxString = this.getEPSG4326ExtentString(row, column, zoomLevel, this._capabilities?.isVersion13); // lat/long ordering
+        bboxString = this.getEPSG4326TileExtentString(row, column, zoomLevel, this._capabilities?.isVersion13); // lat/long ordering
         crsString= "EPSG%3A4326";
       }
 
