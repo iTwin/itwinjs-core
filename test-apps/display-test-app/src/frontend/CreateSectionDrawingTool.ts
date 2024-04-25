@@ -10,6 +10,10 @@ import { dtaIpc } from "./App";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { CategorySelectorProps, Code, ColorDef, DisplayStyleProps, IModel, Npc, QueryRowFormat, SectionDrawingViewProps, ViewDefinition2dProps, ViewStateProps } from "@itwin/core-common";
 
+/** Creates a section drawing model that references a copy of the active viewport's spatial view,
+ * then changes the viewport to render a (non-persistent) drawing view displaying the drawing model along
+ * with the spatial view.
+ */
 export class CreateSectionDrawingTool extends Tool {
   public static override toolId = "CreateSectionDrawing";
   public static override get minArgs() { return 1; }
@@ -64,6 +68,7 @@ export class CreateSectionDrawingTool extends Tool {
     frustum.multiply(spatialToDrawing);
     const extents = Range3d.create(frustum.getCorner(Npc.LeftBottomFront), frustum.getCorner(Npc.RightTopFront));
 
+    // Enable all 2d categories.
     const categories = [];
     for await (const row of spatialView.iModel.createQueryReader("SELECT ECInstanceId from BisCore.DrawingCategory", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       categories.push(row.id);
