@@ -100,8 +100,8 @@ export namespace SchemaDifference {
     return {
       sourceSchemaName: schemaChanges.schema.schemaKey.toString(),
       targetSchemaName: targetSchema.schemaKey.toString(),
-      changes: changes.length > 0 ? changes : undefined,
       conflicts: visitor.conflicts.length > 0 ? visitor.conflicts : undefined,
+      changes,
     };
   }
 
@@ -256,7 +256,6 @@ export namespace SchemaDifference {
   export function isRelationshipConstraintClassDifference(difference: AnySchemaDifference): difference is RelationshipConstraintClassDifference {
     return difference.schemaType === SchemaOtherTypes.RelationshipConstraintClass;
   }
-
 }
 
 /**
@@ -270,7 +269,8 @@ export interface SchemaDifferences {
   readonly targetSchemaName: string;
 
   /** List of differences between the compared schemas. */
-  readonly changes?: AnySchemaDifference[];
+  readonly changes: AnySchemaDifference[];
+
   /** List of conflicts found while comparing the schemas. */
   readonly conflicts?: SchemaDifferenceConflict[];
 }

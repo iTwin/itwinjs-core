@@ -129,8 +129,8 @@ describe("Schema Difference Reporting", () => {
     }, new SchemaContext());
 
     const differences = await SchemaDifference.fromSchemas(targetSchema, sourceSchema);
-    expect(differences.conflicts).equals(undefined, `This test should not have conflicts.`);
-    expect(differences.changes).equals(undefined, `This test should not have changes.`);
+    expect(differences.changes).has.lengthOf(0, "This test should not have changes.");
+    expect(differences.conflicts).equals(undefined, "This test should not have conflicts.");
   });
 
   it("should not return items that exists in both or in target schema", () => {
