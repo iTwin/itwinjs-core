@@ -8,7 +8,7 @@ import { Point2d } from "@itwin/core-geometry";
 import { assert } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { DefinitionModel, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, ElementGroupsMembers, ElementOwnsChildElements, ExternalSource, ExternalSourceGroup, IModelDb, Model, PhysicalPartition, SnapshotDb, SpatialCategory, SubCategory, Subject } from "../../core-backend";
+import { DefinitionContainer, DefinitionModel, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, ElementGroupsMembers, ElementOwnsChildElements, ExternalSource, ExternalSourceGroup, IModelDb, Model, PhysicalPartition, SnapshotDb, SpatialCategory, SubCategory, Subject } from "../../core-backend";
 import { deleteElementSubTrees, deleteElementTree, ElementTreeBottomUp, ElementTreeWalkerScope } from "../../ElementTreeWalker";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -73,8 +73,10 @@ describe("ElementTreeWalker", () => {
   let jobSubjectId: Id64String;
   let childSubject: Id64String;
   let definitionModelId: Id64String;
+  let definitionContainerId: Id64String;
   let drawingDefinitionModelId: Id64String;
   let spatialCategoryId: Id64String;
+  let nestedSpatialCategoryId: Id64String;
   let drawingCategoryId: Id64String;
   let drawingSubCategory1Id: Id64String;
   let drawingSubCategory2Id: Id64String;
@@ -119,6 +121,8 @@ describe("ElementTreeWalker", () => {
           |                                 ExternalSource child1
           +- DefinitionParitition  --   [DefinitionModel]
           |                               SpatialCategory
+          |                               DefinitionContainer
+          |                                   SpatialCategory
           |
           +- DocumentList         --    [DocumentListModel]
           |                               Drawing             -- [DrawingModel]
@@ -140,6 +144,9 @@ describe("ElementTreeWalker", () => {
     drawingCategoryId = DrawingCategory.insert(iModel, drawingDefinitionModelId, "DrawingCategory", new SubCategoryAppearance());
     drawingSubCategory1Id = SubCategory.insert(iModel, drawingCategoryId, "SubCategory1", new SubCategoryAppearance());
     drawingSubCategory2Id = SubCategory.insert(iModel, drawingCategoryId, "SubCategory2", new SubCategoryAppearance());
+
+    definitionContainerId = DefinitionContainer.insert(iModel, definitionModelId, Code.createEmpty());
+    nestedSpatialCategoryId = SpatialCategory.insert(iModel, definitionContainerId, "nested", {});
 
     xsGroup = iModel.elements.insertElement({ classFullName: ExternalSourceGroup.classFullName, model: drawingDefinitionModelId, code: Code.createEmpty() });
     xsElement = iModel.elements.insertElement({ classFullName: ExternalSource.classFullName, model: drawingDefinitionModelId, parent: new ElementOwnsChildElements(xsGroup), code: Code.createEmpty() });
@@ -165,9 +172,14 @@ describe("ElementTreeWalker", () => {
       category: spatialCategoryId,
       code: Code.createEmpty(),
     };
-
+    const elementProps2: GeometricElementProps = {
+      classFullName: "TestBim:TestPhysicalObject",
+      model: physicalModelId,
+      category: nestedSpatialCategoryId,
+      code: Code.createEmpty(),
+    };
     physicalObjectId1 = iModel.elements.insertElement(iModel.elements.createElement(elementProps).toJSON());
-    physicalObjectId2 = iModel.elements.insertElement(iModel.elements.createElement(elementProps).toJSON());
+    physicalObjectId2 = iModel.elements.insertElement(iModel.elements.createElement(elementProps2).toJSON());
     physicalObjectId3 = iModel.elements.insertElement(iModel.elements.createElement(elementProps).toJSON());
     ElementGroupsMembers.create(iModel, physicalObjectId1, physicalObjectId2).insert();
     ElementGroupsMembers.create(iModel, physicalObjectId1, physicalObjectId3).insert();
@@ -175,7 +187,9 @@ describe("ElementTreeWalker", () => {
     assert.isTrue(doesElementExist(iModel, repositoryLinkId));
     assert.equal(iModel.elements.getElement(jobSubjectId).parent?.id, IModel.rootSubjectId);
     assert.equal(iModel.elements.getElement(definitionModelId).parent?.id, jobSubjectId);
+    assert.equal(iModel.elements.getElement(definitionContainerId).model, definitionModelId);
     assert.equal(iModel.elements.getElement(spatialCategoryId).model, definitionModelId);
+    assert.equal(iModel.elements.getElement(nestedSpatialCategoryId).model, definitionContainerId);
     assert.equal(iModel.elements.getElement(drawingDefinitionModelId).parent?.id, jobSubjectId);
     assert.equal(iModel.elements.getElement(drawingCategoryId).model, drawingDefinitionModelId);
     assert.equal(iModel.elements.getElement(drawingSubCategory1Id).parent?.id, drawingCategoryId);
@@ -192,6 +206,7 @@ describe("ElementTreeWalker", () => {
     assert.isTrue(doesGroupRelationshipExist(iModel, physicalObjectId1, physicalObjectId2));
     assert.isTrue(doesGroupRelationshipExist(iModel, physicalObjectId1, physicalObjectId3));
     assert.isTrue(doesModelExist(iModel, definitionModelId));
+    assert.isTrue(doesModelExist(iModel, definitionContainerId));
     assert.isTrue(doesModelExist(iModel, drawingDefinitionModelId));
     assert.isTrue(doesModelExist(iModel, drawingModelId));
     assert.isTrue(doesModelExist(iModel, physicalModelId));
@@ -213,17 +228,22 @@ describe("ElementTreeWalker", () => {
       assert.isTrue(collector1.subModels.indexOf(drawingModelId) < collector1.subModels.indexOf(documentListModelId), "in bottom-up search, a child model should be visited before its parent model");
       assert.isFalse(collector1.subModels.includes(definitionModelId));
       assert.isTrue(collector1.definitionModels.includes(definitionModelId));
+      assert.isFalse(collector1.subModels.includes(definitionContainerId));
+      assert.isTrue(collector1.definitionModels.includes(definitionContainerId));
       assert.isFalse(collector1.subModels.includes(drawingDefinitionModelId));
       assert.isTrue(collector1.definitionModels.includes(drawingDefinitionModelId));
       assert.isTrue(collector1.definitions.includes(drawingCategoryId));
       assert.isTrue(collector1.definitions.includes(spatialCategoryId));
+      assert.isTrue(collector1.definitions.includes(nestedSpatialCategoryId));
       assert.isFalse(collector1.elements.includes(drawingCategoryId));
       assert.isFalse(collector1.elements.includes(spatialCategoryId));
+      assert.isFalse(collector1.elements.includes(nestedSpatialCategoryId));
       assert.isTrue(collector1.elements.indexOf(physicalObjectId1) < collector1.elements.indexOf(physicalModelId), "in bottom-up search, an element in a model should be visited before its model's element");
       assert.isTrue(collector1.elements.indexOf(drawingGraphicId1) < collector1.elements.indexOf(drawingModelId), "in bottom-up search, an element in a model should be visited before its model's element");
       assert.isTrue(collector1.elements.indexOf(drawingModelId) < collector1.elements.indexOf(documentListModelId), "in bottom-up search, an element in a model should be visited before its model's element");
       assert.isTrue(collector1.elements.indexOf(documentListModelId) < collector1.elements.indexOf(jobSubjectId), "in bottom-up search, a child element should be visited before its parent element");
       assert.isTrue(collector1.elements.indexOf(definitionModelId) < collector1.elements.indexOf(jobSubjectId), "in bottom-up search, a child element should be visited before its parent element");
+      assert.isTrue(collector1.elements.indexOf(definitionContainerId) < collector1.elements.indexOf(definitionModelId), "in bottom-up search, a child element should be visited before its parent element");
       assert.isTrue(collector1.elements.indexOf(drawingDefinitionModelId) < collector1.elements.indexOf(jobSubjectId), "in bottom-up search, a child element should be visited before its parent element");
       assert.isTrue(collector1.elements.indexOf(childSubject) < collector1.elements.indexOf(jobSubjectId), "in bottom-up search, a child element should be visited before its parent element");
       assert.isTrue(collector1.elements.indexOf(physicalModelId) < collector1.elements.indexOf(childSubject), "in bottom-up search, a child element should be visited before its parent element");
@@ -231,10 +251,11 @@ describe("ElementTreeWalker", () => {
 
     // Exercise the search filters
     {
-      const collector2 = new SelectedElementCollector(iModel, [drawingGraphicId1, spatialCategoryId, physicalObjectId3]);
+      const collector2 = new SelectedElementCollector(iModel, [drawingGraphicId1, spatialCategoryId, nestedSpatialCategoryId, physicalObjectId3]);
       collector2.collect(jobSubjectId);
-      assert.isTrue(collector2.definitions.length === 1);
+      assert.isTrue(collector2.definitions.length === 2);
       assert.isTrue(collector2.definitions.includes(spatialCategoryId));
+      assert.isTrue(collector2.definitions.includes(nestedSpatialCategoryId));
       assert.isTrue(collector2.elements.length === 2);
       assert.isTrue(collector2.elements.includes(drawingGraphicId1));
       assert.isTrue(collector2.elements.includes(physicalObjectId3));
@@ -247,8 +268,10 @@ describe("ElementTreeWalker", () => {
     assert.isTrue(doesModelExist(iModel, IModel.dictionaryId));
     assert.isTrue(doesElementExist(iModel, repositoryLinkId), "RepositoryLink should not have been deleted, since it is not under Job Subject");
     assert.isFalse(doesElementExist(iModel, definitionModelId));
+    assert.isFalse(doesElementExist(iModel, definitionContainerId));
     assert.isFalse(doesElementExist(iModel, drawingDefinitionModelId));
     assert.isFalse(doesElementExist(iModel, spatialCategoryId));
+    assert.isFalse(doesElementExist(iModel, nestedSpatialCategoryId));
     assert.isFalse(doesElementExist(iModel, drawingCategoryId));
     assert.isFalse(doesElementExist(iModel, xsGroup));
     assert.isFalse(doesElementExist(iModel, xsElement));
@@ -280,6 +303,8 @@ describe("ElementTreeWalker", () => {
           |                                 ExternalSource child1
           +- DefinitionParitition  --   [DefinitionModel]
           |                               SpatialCategory
+          |                               DefinitionContainer
+          |                                   SpatialCategory
           |
           +- DocumentList         --    [DocumentListModel]
           |                               Drawing             -- [DrawingModel]   <-- PRUNE
@@ -309,10 +334,12 @@ describe("ElementTreeWalker", () => {
 
     assert.isTrue(doesElementExist(iModel, repositoryLinkId));
     assert.isTrue(doesElementExist(iModel, definitionModelId));
+    assert.isTrue(doesElementExist(iModel, definitionContainerId));
     assert.isTrue(doesElementExist(iModel, drawingDefinitionModelId));
     assert.equal(iModel.elements.getElement(xsGroup).model, drawingDefinitionModelId);
     assert.equal(iModel.elements.getElement(xsElement).parent?.id, xsGroup);
     assert.isTrue(doesElementExist(iModel, spatialCategoryId));
+    assert.isTrue(doesElementExist(iModel, nestedSpatialCategoryId));
     assert.isTrue(doesElementExist(iModel, documentListModelId));
     assert.isTrue(doesElementExist(iModel, physicalModelId));
     assert.isTrue(doesElementExist(iModel, physicalObjectId1));
@@ -320,6 +347,7 @@ describe("ElementTreeWalker", () => {
     assert.isTrue(doesGroupRelationshipExist(iModel, physicalObjectId1, physicalObjectId2));
     assert.isTrue(doesElementExist(iModel, jobSubjectId));
     assert.isTrue(doesModelExist(iModel, definitionModelId));
+    assert.isTrue(doesModelExist(iModel, definitionContainerId));
     assert.isTrue(doesModelExist(iModel, drawingDefinitionModelId));
     assert.isTrue(doesModelExist(iModel, physicalModelId));
     assert.isTrue(doesModelExist(iModel, IModel.repositoryModelId));
@@ -338,7 +366,8 @@ describe("ElementTreeWalker", () => {
           |                                 ExternalSource child1
           +- DefinitionParitition  --   [DefinitionModel]
           |                               SpatialCategory
-          |
+          |                               DefinitionContainer
+          |                                   SpatialCategory          |
           +- DocumentList         --    [DocumentListModel]
           |                               Drawing             -- [DrawingModel]
           |                                                       DrawingGraphic
@@ -369,7 +398,9 @@ describe("ElementTreeWalker", () => {
 
     assert.isTrue(doesElementExist(iModel, repositoryLinkId));
     assert.isTrue(doesElementExist(iModel, definitionModelId));
+    assert.isTrue(doesElementExist(iModel, definitionContainerId));
     assert.isTrue(doesElementExist(iModel, spatialCategoryId));
+    assert.isTrue(doesElementExist(iModel, nestedSpatialCategoryId));
     assert.isTrue(doesElementExist(iModel, physicalModelId));
     assert.isTrue(doesElementExist(iModel, physicalObjectId1));
     assert.isTrue(doesElementExist(iModel, physicalObjectId2));
@@ -378,6 +409,7 @@ describe("ElementTreeWalker", () => {
     assert.isTrue(doesGroupRelationshipExist(iModel, physicalObjectId1, physicalObjectId3));
     assert.isTrue(doesElementExist(iModel, jobSubjectId));
     assert.isTrue(doesModelExist(iModel, definitionModelId));
+    assert.isTrue(doesModelExist(iModel, definitionContainerId));
     assert.isTrue(doesModelExist(iModel, physicalModelId));
     assert.isTrue(doesModelExist(iModel, IModel.repositoryModelId));
     assert.isTrue(doesModelExist(iModel, IModel.dictionaryId));

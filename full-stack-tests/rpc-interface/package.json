@@ -1,6 +1,6 @@
 {
   "name": "@itwin/rpcinterface-full-stack-tests",
-  "version": "4.6.0-dev.6",
+  "version": "4.6.0-dev.18",
   "description": "Test the full iTwin.js Core stack (frontend and backend) using standard RPC interfaces",
   "license": "MIT",
   "scripts": {
@@ -33,10 +33,10 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@itwin/imodels-access-backend": "^3.0.0",
-    "@itwin/imodels-access-frontend": "^3.0.0",
-    "@itwin/imodels-client-authoring": "^3.0.0",
-    "@itwin/imodels-client-management": "^3.0.0",
+    "@itwin/imodels-access-backend": "^5.0.1",
+    "@itwin/imodels-access-frontend": "^5.0.1",
+    "@itwin/imodels-client-authoring": "^5.1.0",
+    "@itwin/imodels-client-management": "^5.1.0",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
@@ -70,7 +70,7 @@
     "buffer": "^6.0.3",
     "cpx2": "^3.0.0",
     "eslint": "^8.44.0",
-    "glob": "^7.1.2",
+    "glob": "^10.3.12",
     "internal-tools": "workspace:*",
     "npm-run-all": "^4.1.5",
     "null-loader": "^4.0.1",

@@ -6,30 +6,23 @@
  * @module Merging
  */
 
-import { Schema, SchemaItemType } from "@itwin/ecschema-metadata";
-import { SchemaChanges, SchemaItemChanges } from "../Validation/SchemaChanges";
-import { SchemaComparer } from "../Validation/SchemaComparer";
+import { Schema, type SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../Editing/Editor";
-import { SchemaItemMerger } from "./SchemaItemMerger";
-
-import mergeSchemaReferences from "./SchemaReferenceMerger";
-import CAClassMerger from "./CAClassMerger";
-import EnumerationMerger from "./EnumerationMerger";
-import ConstantsMerger from "./ConstantMerger";
-import EntityClassMerger from "./EntityClassMerger";
-import StructClassMerger from "./StructClassMerger";
-import MixinMerger from "./MixinMerger";
-import { mergeCustomAttributes } from "./CustomAttributeMerger";
-import KindOfQuantityMerger from "./KindOfQuantityMerger";
-import RelationshipClassMerger from "./RelationshipClassMerger";
+import { MutableSchema } from "../Editing/Mutable/MutableSchema";
+import { SchemaDifference, SchemaDifferences } from "../Differencing/SchemaDifference";
+import { mergeCustomAttribute } from "./CustomAttributeMerger";
+import { mergeSchemaItems } from "./SchemaItemMerger";
+import { mergeSchemaReferences } from "./SchemaReferenceMerger";
+import { SchemaConflictsError } from "../Differencing/SchemaConflicts";
 
 /**
  * Defines the context of a Schema merging run.
- * @beta
+ * @internal
  */
 export interface SchemaMergeContext {
   readonly targetSchema: Schema;
-  readonly sourceSchema: Schema;
+  readonly targetSchemaKey: SchemaKey;
+  readonly sourceSchemaKey: SchemaKey;
   readonly editor: SchemaContextEditor;
 }
 
@@ -39,23 +32,15 @@ export interface SchemaMergeContext {
  * @beta
  */
 export class SchemaMerger {
+
+  private readonly _editor: SchemaContextEditor;
+
   /**
-   * Gets the @see SchemaChanges between the two given Schemas from perspective of the source
-   * to the target schema. For example if source contains a class which does not exists in the
-   * target one, it would be listed as missing.
-   * @param targetSchema  The schema the differences gets merged into.
-   * @param sourceSchema  The schema to compare.
-   * @returns             An instance of @see SchemaChanges between the two schemas.
+   * Constructs a new instance of the SchemaMerger object.
+   * @param editingContext  The schema contexts that holds the schema to be edited.
    */
-  private async getSchemaChanges(targetSchema: Schema, sourceSchema: Schema): Promise<SchemaChanges> {
-    const changesList: SchemaChanges[] = [];
-    const schemaComparer = new SchemaComparer({ report: changesList.push.bind(changesList) });
-
-    // It is important to compare the schema items by name, not full name as otherwise
-    // we'd often see differences when comparing two different schemas.
-    await schemaComparer.compareSchemas(sourceSchema, targetSchema);
-
-    return changesList[0];
+  constructor(editingContext: SchemaContext) {
+    this._editor = new SchemaContextEditor(editingContext);
   }
 
   /**
@@ -64,80 +49,109 @@ export class SchemaMerger {
    * @param sourceSchema  The schema the SchemaItems gets copied from.
    * @returns             The merged target schema.
    */
-  public async merge(targetSchema: Schema, sourceSchema: Schema): Promise<Schema> {
-    const schemaChanges = await this.getSchemaChanges(targetSchema, sourceSchema);
-    const mergeContext: SchemaMergeContext = {
-      editor: new SchemaContextEditor(targetSchema.context),
-      targetSchema,
-      sourceSchema,
+  public merge(targetSchema: Schema, sourceSchema: Schema): Promise<Schema>;
+
+  /**
+   * Merges the schema differences into the target schema context.
+   * @param differences   The changes that shall be applied to the target schema.
+   * @alpha
+   */
+  public merge(differences: SchemaDifferences): Promise<Schema>;
+
+  /**
+   * Merges the source and the target. If the target is a SchemaDifference, the
+   * source parameter must not be set. If it's a schema, it'll internally call
+   * the Differencing api and recall itself with the difference argument overload.
+   * @param input   The methods input either a schema or a SchemaDifferences
+   * @param source  A source schema.
+   * @returns       The merged schema.
+   * @alpha
+   */
+  public async merge(input: SchemaDifferences | Schema, source?: Schema): Promise<Schema> {
+    if(Schema.isSchema(input)) {
+      if(source === undefined) {
+        throw new Error("When merging two schemas, source must not be undefined.");
+      }
+      return this.merge(await SchemaDifference.fromSchemas(input, source));
+    }
+
+    return this.mergeSchemas(input);
+  }
+
+  /**
+   * Merges the schema differences in the target schema. The target schema is defined
+   * in the given differences object.
+   * @param differences   The differences between a source schema and the target schema.
+   * @returns             The modified Schema.
+   */
+  private async mergeSchemas(differences: SchemaDifferences): Promise<Schema> {
+    const targetSchemaKey = SchemaKey.parseString(differences.targetSchemaName);
+    const sourceSchemaKey = SchemaKey.parseString(differences.sourceSchemaName);
+
+    if(differences.conflicts && differences.conflicts.length > 0) {
+      throw new SchemaConflictsError(
+        "Schema's can't be merged if there are unresolved conflicts.",
+        differences.conflicts,
+        sourceSchemaKey,
+        targetSchemaKey,
+      );
+    }
+
+    const schema = await this._editor.getSchema(targetSchemaKey);
+    if (schema === undefined) {
+      throw new Error(`The target schema '${targetSchemaKey.name}' could not be found in the editing context.`);
+    }
+
+    if(differences.changes === undefined || differences.changes.length === 0) {
+      return schema;
+    }
+
+    const context: SchemaMergeContext = {
+      editor: this._editor,
+      targetSchema: schema,
+      targetSchemaKey,
+      sourceSchemaKey,
     };
 
-    await mergeSchemaReferences(mergeContext, schemaChanges);
+    for (const referenceChange of differences.changes.filter(SchemaDifference.isSchemaReferenceDifference)) {
+      await mergeSchemaReferences(context, referenceChange);
+    }
 
-    const itemChanges = getSchemaItemChanges(schemaChanges);
-    await EnumerationMerger.mergeChanges(mergeContext, itemChanges.enumeratations);
-    await SchemaItemMerger.mergeChanges(mergeContext, itemChanges.propertyCategories);
+    const schemaDifference = differences.changes.find(SchemaDifference.isSchemaDifference);
+    if(schemaDifference !== undefined) {
+      await mergeSchemaProperties(schema, schemaDifference);
+    }
 
-    await SchemaItemMerger.mergeChanges(mergeContext, itemChanges.unitSystems);
-    await SchemaItemMerger.mergeChanges(mergeContext, itemChanges.phenomenons);
-    await ConstantsMerger.mergeChanges(mergeContext, itemChanges.constants);
-    await KindOfQuantityMerger.mergeChanges(mergeContext, itemChanges.kindOfQuantities);
+    // Filter a list of possible schema item changes. This list gets filtered and order in the
+    // mergeSchemaItems method.
+    for await (const mergeResult of mergeSchemaItems(context, differences.changes)) {
+      if(mergeResult.errorMessage) {
+        throw new Error(mergeResult.errorMessage);
+      }
+    }
 
-    // TODO: For now we just do simple copy and merging of properties and classes. For more complex types
-    //       with bases classes or relationships, this might need to get extended.
-    await CAClassMerger.mergeItemStubChanges(mergeContext, itemChanges.customAttributeClasses);
-    await StructClassMerger.mergeItemStubChanges(mergeContext, itemChanges.structClasses);
-    await EntityClassMerger.mergeItemStubChanges(mergeContext, itemChanges.entityClasses);
-    await MixinMerger.mergeItemStubChanges(mergeContext, itemChanges.mixins);
-    await RelationshipClassMerger.mergeItemStubChanges(mergeContext, itemChanges.relationships);
+    // At last the custom attributes gets merged because it could be that the CustomAttributes
+    // depend on classes that has to get merged in as items before.
+    for (const customAttributeChange of differences.changes.filter(SchemaDifference.isCustomAttributeDifference)) {
+      const mergeResult = await mergeCustomAttribute(context, customAttributeChange);
+      if(mergeResult.errorMessage) {
+        throw new Error(mergeResult.errorMessage);
+      }
+    }
 
-    // 2nd pass to complete merge changes such as properties, baseClasses and mixins.
-    await CAClassMerger.mergeItemContentChanges(mergeContext, itemChanges.customAttributeClasses);
-    await StructClassMerger.mergeItemContentChanges(mergeContext, itemChanges.structClasses);
-    await EntityClassMerger.mergeItemContentChanges(mergeContext, itemChanges.entityClasses);
-    await MixinMerger.mergeItemContentChanges(mergeContext, itemChanges.mixins);
-    await RelationshipClassMerger.mergeItemContentChanges(mergeContext, itemChanges.relationships);
-
-    await mergeCustomAttributes(mergeContext, schemaChanges.customAttributeChanges.values(), async (ca) => {
-      return mergeContext.editor.addCustomAttribute(mergeContext.targetSchema.schemaKey, ca);
-    });
-
-    // TODO: For now we directly manipulate the target schema. For error handing purposes, we should first
-    //       merge into a temporary schema and eventually swap that with the given instance.
-    return targetSchema;
+    return schema;
   }
 }
 
 /**
- * This helper method composes the different schema change objects to a single easier
- * to use object that should improve readability when the methods get called.
+ * Sets the editable properties of a Schema.
+ * @internal
  */
-function getSchemaItemChanges(schemaChanges: SchemaChanges) {
-  return {
-    get constants() { return filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.Constant); },
-    get customAttributeClasses() { return filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.CustomAttributeClass); },
-    get entityClasses() { return filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.EntityClass); },
-    get enumeratations() { return schemaChanges.enumerationChanges.values(); },
-    get kindOfQuantities() { return schemaChanges.kindOfQuantityChanges.values(); },
-    get mixins() { return filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.Mixin); },
-    get phenomenons() { return filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.Phenomenon); },
-    get propertyCategories() { return filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.PropertyCategory); },
-    get relationships() { return filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.RelationshipClass); },
-    get structClasses() { return filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.StructClass); },
-    get unitSystems() { return filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.UnitSystem); },
-  };
-}
-
-/**
- * Filters and returns the changed items by its schema item type.
- * @param changes   A map of changed schema items.
- * @param types     A list of schema item types to filter.
- * @returns         An Iterable with the filtered schema items.
- */
-function * filterChangesByItemType<TChange extends SchemaItemChanges>(changes: Map<string, TChange>, ...types: SchemaItemType[]): Iterable<TChange> {
-  for(const change of changes.values()) {
-    if (types.includes(change.schemaItemType)) {
-      yield change;
-    }
+async function mergeSchemaProperties(schema: MutableSchema, changes: SchemaDifference) {
+  if(changes.difference.label !== undefined) {
+    schema.setDisplayLabel(changes.difference.label);
+  }
+  if(changes.difference.description !== undefined) {
+    schema.setDescription(changes.difference.description);
   }
 }

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-electron",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-electron"
+}

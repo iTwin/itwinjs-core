@@ -154,7 +154,8 @@ export class SchemaReadHelper<T = unknown> {
     this._schema = schema;
 
     // Need to add this schema to the context to be able to locate schemaItems within the context.
-    this._context.addSchemaSync(schema);
+    if (!this._context.schemaExists(schema.schemaKey))
+      this._context.addSchemaSync(schema);
 
     // Load schema references first
     // Need to figure out if other schemas are present.

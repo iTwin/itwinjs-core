@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { ECVersion, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import { ECVersion, Schema, SchemaContext, SchemaJsonLocater, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { SchemaJsonFileLocater } from "../SchemaJsonFileLocater";
 
 describe("Concurrent schema JSON deserialization", () => {
@@ -165,5 +165,109 @@ describe("Concurrent schema JSON deserialization", () => {
     const asyncSchemas = await Promise.all(schemaPromises);
 
     expect(asyncSchemas.length).to.equal(schemaKeys.length);
+  });
+
+  it("Concurrently get BisCore with SchemaJsonFileLocater", async () => {
+    const schemaContext = new SchemaContext();
+    const jsonFileLocater = new SchemaJsonFileLocater();
+    jsonFileLocater.addSchemaSearchPath(schemaFolder);
+    schemaContext.addLocater(jsonFileLocater);
+
+    const schemas = await Promise.all(
+      [...Array(100).keys()].map(async () => {
+        return schemaContext.getSchema(new SchemaKey("BisCore"));
+      }),
+    );
+    expect(schemas.length).to.equal(100);
+    schemas.forEach((schema) => {
+      assert(schema !== undefined);
+      expect(schema.fullName).to.equal("BisCore");
+    });
+  });
+
+  it("Concurrently get a schema and it's referenced schema with SchemaJsonFileLocater", async () => {
+    const schemaContext = new SchemaContext();
+    const jsonFileLocater = new SchemaJsonFileLocater();
+    jsonFileLocater.addSchemaSearchPath(schemaFolder);
+    schemaContext.addLocater(jsonFileLocater);
+
+    let getBisCoreFirst = 0;
+    const schemas = await Promise.all(
+      [...Array(2).keys()].map(async () => {
+        if (getBisCoreFirst === 0) {
+          getBisCoreFirst = 1;
+          return schemaContext.getSchema(new SchemaKey("BisCore"));
+        }
+        return schemaContext.getSchema(new SchemaKey("CoreCustomAttributes"));
+      }),
+    );
+    expect(schemas.length).to.equal(2);
+    schemas.forEach((schema) => {
+      expect(schema).to.not.be.undefined;
+    });
+  });
+
+  const getSchemaProps = (schemaName: string) => {
+    if (schemaName === "BisCore") {
+      return {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        alias: "bis",
+        description: "The BIS core schema contains classes that all other domain schemas extend.",
+        label: "BIS Core",
+        name: "BisCore",
+        version: "01.00.15",
+        references:[{name:"CoreCustomAttributes", version:"01.00.04"}],
+      };
+    }
+    if (schemaName === "CoreCustomAttributes") {
+      return {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        alias: "CoreCA",
+        description: "Custom attributes to indicate core EC concepts, may include struct classes intended for use in core custom attributes.",
+        label: "Core Custom Attributes",
+        name: "CoreCustomAttributes",
+        version: "01.00.04",
+      };
+    }
+
+    return undefined;
+  };
+
+  it("Concurrently get BisCore with SchemaJsonLocater", async () => {
+    const schemaContext = new SchemaContext();
+    const jsonLocater = new SchemaJsonLocater(getSchemaProps);
+    schemaContext.addLocater(jsonLocater);
+
+    const schemas = await Promise.all(
+      [...Array(100).keys()].map(async () => {
+        return schemaContext.getSchema(new SchemaKey("BisCore"));
+      }),
+    );
+    expect(schemas.length).to.equal(100);
+    schemas.forEach((schema) => {
+      assert(schema !== undefined);
+      expect(schema.fullName).to.equal("BisCore");
+    });
+  });
+
+  it("Concurrently get a schema and it's referenced schema with SchemaJsonLocater", async () => {
+    const schemaContext = new SchemaContext();
+    const jsonLocater = new SchemaJsonLocater(getSchemaProps);
+    schemaContext.addLocater(jsonLocater);
+
+    let getBisCoreFirst = 0;
+    const schemas = await Promise.all(
+      [...Array(2).keys()].map(async () => {
+        if (getBisCoreFirst === 0) {
+          getBisCoreFirst = 1;
+          return schemaContext.getSchema(new SchemaKey("BisCore"));
+        }
+        return schemaContext.getSchema(new SchemaKey("CoreCustomAttributes"));
+      }),
+    );
+    expect(schemas.length).to.equal(2);
+    schemas.forEach((schema) => {
+      expect(schema).to.not.be.undefined;
+    });
   });
 });

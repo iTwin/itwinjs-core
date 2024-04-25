@@ -11,7 +11,6 @@ import {
   SchemaContext,
   SchemaItemFormatProps,
   SchemaItemType,
-  schemaItemTypeToString,
   SchemaItemUnitProps,
   SchemaProps,
   UnitSystemProps,
@@ -183,7 +182,7 @@ describe("KoqPropertyValueFormatter", () => {
 });
 
 const siUnit: SchemaItemUnitProps = {
-  schemaItemType: schemaItemTypeToString(SchemaItemType.Unit),
+  schemaItemType: SchemaItemType.Unit,
   name: "SiUnit",
   definition: "SiUnit",
   label: "SI",
@@ -193,7 +192,7 @@ const siUnit: SchemaItemUnitProps = {
 };
 
 const metricUnit: SchemaItemUnitProps = {
-  schemaItemType: schemaItemTypeToString(SchemaItemType.Unit),
+  schemaItemType: SchemaItemType.Unit,
   name: "MetricUnit",
   definition: "SiUnit",
   label: "Metric",
@@ -203,7 +202,7 @@ const metricUnit: SchemaItemUnitProps = {
 };
 
 const imperialUnit: SchemaItemUnitProps = {
-  schemaItemType: schemaItemTypeToString(SchemaItemType.Unit),
+  schemaItemType: SchemaItemType.Unit,
   name: "ImperialUnit",
   definition: "SiUnit",
   numerator: 1,
@@ -214,7 +213,7 @@ const imperialUnit: SchemaItemUnitProps = {
 };
 
 const usSurveyUnit: SchemaItemUnitProps = {
-  schemaItemType: schemaItemTypeToString(SchemaItemType.Unit),
+  schemaItemType: SchemaItemType.Unit,
   name: "UsSurveyUnit",
   definition: "SiUnit",
   numerator: 1,
@@ -225,7 +224,7 @@ const usSurveyUnit: SchemaItemUnitProps = {
 };
 
 const usCustomUnit: SchemaItemUnitProps = {
-  schemaItemType: schemaItemTypeToString(SchemaItemType.Unit),
+  schemaItemType: SchemaItemType.Unit,
   name: "UsCustomUnit",
   definition: "SiUnit",
   numerator: 1,
@@ -236,48 +235,48 @@ const usCustomUnit: SchemaItemUnitProps = {
 };
 
 const siUnitSystem: UnitSystemProps = {
-  schemaItemType: schemaItemTypeToString(SchemaItemType.UnitSystem),
+  schemaItemType: SchemaItemType.UnitSystem,
   name: "SI",
   schema: "TestSchema",
   description: "Test SI Unit System",
 };
 
 const metricUnitSystem: UnitSystemProps = {
-  schemaItemType: schemaItemTypeToString(SchemaItemType.UnitSystem),
+  schemaItemType: SchemaItemType.UnitSystem,
   name: "Metric",
   schema: "TestSchema",
   description: "Test Metric Unit System",
 };
 
 const imperialUnitSystem: UnitSystemProps = {
-  schemaItemType: schemaItemTypeToString(SchemaItemType.UnitSystem),
+  schemaItemType: SchemaItemType.UnitSystem,
   name: "Imperial",
   schema: "TestSchema",
   description: "Test Imperial Unit System",
 };
 
 const usCustomUnitSystem: UnitSystemProps = {
-  schemaItemType: schemaItemTypeToString(SchemaItemType.UnitSystem),
+  schemaItemType: SchemaItemType.UnitSystem,
   name: "UsCustom",
   schema: "TestSchema",
   description: "Test UsCustom Unit System",
 };
 
 const usSurveyUnitSystem: UnitSystemProps = {
-  schemaItemType: schemaItemTypeToString(SchemaItemType.UnitSystem),
+  schemaItemType: SchemaItemType.UnitSystem,
   name: "UsSurvey",
   schema: "TestSchema",
   description: "Test UsSurvey Unit System",
 };
 
 const phenomenon: PhenomenonProps = {
-  schemaItemType: schemaItemTypeToString(SchemaItemType.Phenomenon),
+  schemaItemType: SchemaItemType.Phenomenon,
   definition: "PhenomenonDefinition",
   name: "TestPhenomenon",
 };
 
 const siFormat: SchemaItemFormatProps = {
-  schemaItemType: schemaItemTypeToString(SchemaItemType.Format),
+  schemaItemType: SchemaItemType.Format,
   name: "SiFormat",
   schema: "TestSchema",
   type: "decimal",
@@ -291,7 +290,7 @@ const siFormat: SchemaItemFormatProps = {
 };
 
 const metricFormat: SchemaItemFormatProps = {
-  schemaItemType: schemaItemTypeToString(SchemaItemType.Format),
+  schemaItemType: SchemaItemType.Format,
   name: "MetricFormat",
   schema: "TestSchema",
   type: "decimal",
@@ -305,7 +304,7 @@ const metricFormat: SchemaItemFormatProps = {
 };
 
 const imperialFormat: SchemaItemFormatProps = {
-  schemaItemType: schemaItemTypeToString(SchemaItemType.Format),
+  schemaItemType: SchemaItemType.Format,
   name: "ImperialFormat",
   schema: "TestSchema",
   type: "decimal",
@@ -319,7 +318,7 @@ const imperialFormat: SchemaItemFormatProps = {
 };
 
 const usSurveyFormat: SchemaItemFormatProps = {
-  schemaItemType: schemaItemTypeToString(SchemaItemType.Format),
+  schemaItemType: SchemaItemType.Format,
   name: "UsSurveyFormat",
   schema: "TestSchema",
   type: "decimal",
@@ -333,7 +332,7 @@ const usSurveyFormat: SchemaItemFormatProps = {
 };
 
 const usCustomFormat: SchemaItemFormatProps = {
-  schemaItemType: schemaItemTypeToString(SchemaItemType.Format),
+  schemaItemType: SchemaItemType.Format,
   name: "UsCustomFormat",
   schema: "TestSchema",
   type: "decimal",
@@ -347,7 +346,7 @@ const usCustomFormat: SchemaItemFormatProps = {
 };
 
 const koq: KindOfQuantityProps = {
-  schemaItemType: schemaItemTypeToString(SchemaItemType.KindOfQuantity),
+  schemaItemType: SchemaItemType.KindOfQuantity,
   name: "TestKOQ",
   schema: "TestSchema",
   relativeError: 6,
@@ -356,7 +355,7 @@ const koq: KindOfQuantityProps = {
 };
 
 const koqOnlyMetric: KindOfQuantityProps = {
-  schemaItemType: schemaItemTypeToString(SchemaItemType.KindOfQuantity),
+  schemaItemType: SchemaItemType.KindOfQuantity,
   name: "TestKOQOnlyMetric",
   schema: "TestSchema",
   relativeError: 6,
@@ -365,7 +364,7 @@ const koqOnlyMetric: KindOfQuantityProps = {
 };
 
 const koqMetricAndSi: KindOfQuantityProps = {
-  schemaItemType: schemaItemTypeToString(SchemaItemType.KindOfQuantity),
+  schemaItemType: SchemaItemType.KindOfQuantity,
   name: "TestKoqMetricAndSi",
   schema: "TestSchema",
   relativeError: 6,
@@ -374,7 +373,7 @@ const koqMetricAndSi: KindOfQuantityProps = {
 };
 
 const koqNoPresentationUnits: KindOfQuantityProps = {
-  schemaItemType: schemaItemTypeToString(SchemaItemType.KindOfQuantity),
+  schemaItemType: SchemaItemType.KindOfQuantity,
   name: "TestKOQNoPresentationUnit",
   schema: "TestSchema",
   relativeError: 6,

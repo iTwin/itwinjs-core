@@ -91,16 +91,23 @@ export interface OnSubModelIdArg extends OnElementArg {
   subModelId: Id64String;
 }
 
-/** Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
- * Each element represents an entity in the real world. Sets of Elements (contained in [[Model]]s) are used to model
+/** The smallest individually identifiable building block for modeling the real world in an iModel.
+ * Each element represents an [[Entity]] in the real world. Sets of Elements (contained in [[Model]]s) are used to model
  * other Elements that represent larger scale real world entities. Using this recursive modeling strategy,
  * Elements can represent entities at any scale. Elements can represent physical things or abstract concepts
  * or simply be information records.
  *
  * Every Element has a 64-bit id (inherited from Entity) that uniquely identifies it within an iModel. Every Element also
- * has a "code" that identifies its meaning in the real world. Additionally, Elements may have a "federationGuid"
+ * has a [[code]] that identifies its meaning in the real world. Additionally, Elements may have a [[federationGuid]]
  * to hold a GUID, if the element was assigned that GUID by some other federated database. The iModel database enforces
  * uniqueness of id, code, and federationGuid.
+ *
+ * The Element class provides `static` methods like [[onInsert]], [[onUpdated]], [[onCloned]], and [[onChildAdded]] that enable
+ * it to customize persistence operations. For example, the base implementations of [[onInsert]], [[onUpdate]], and [[onDelete]]
+ * validate that the appropriate [locks]($docs/learning/backend/ConcurrencyControl.md), [codes]($docs/learning/backend/CodeService.md),
+ * and [channel permissions]($docs/learning/backend/Channel.md) are obtained before a change to the element is written to the iModel.
+ * A subclass of Element that overrides any of these methods **must** call the `super` method as well. An application that supplies its
+ * own Element subclasses should register them at startup via [[ClassRegistry.registerModule]] or [[ClassRegistry.register]].
  *
  * See:
  * * [Element Fundamentals]($docs/bis/guide/fundamentals/element-fundamentals.md)
@@ -159,7 +166,9 @@ export class Element extends Entity {
    * @beta
    */
   protected static onInserted(arg: OnElementIdArg): void {
-    arg.iModel.locks.elementWasCreated(arg.id);
+    const locks = arg.iModel.locks;
+    if (locks && !locks.holdsExclusiveLock(arg.model))
+      locks.elementWasCreated(arg.id);
   }
 
   /** Called before an Element is updated.
@@ -601,24 +610,6 @@ export class DrawingGraphic extends GraphicalElement2d {
   /** @internal */
   public static override get className(): string { return "DrawingGraphic"; }
   protected constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
-}
-
-/** 2D Text Annotation
- * @public
- */
-export class TextAnnotation2d extends AnnotationElement2d {
-  /** @internal */
-  public static override get className(): string { return "TextAnnotation2d"; }
-  protected constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
-}
-
-/** 3D Text Annotation
- * @public
- */
-export class TextAnnotation3d extends GraphicalElement3d {
-  /** @internal */
-  public static override get className(): string { return "TextAnnotation3d"; }
-  protected constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** An Element that occupies real world space. Its coordinates are in the project space of its iModel.
