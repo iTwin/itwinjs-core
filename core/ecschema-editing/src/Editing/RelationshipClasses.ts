@@ -93,7 +93,7 @@ export class RelationshipClasses extends ECClasses {
    * @returns A promise of type SchemaItemEditResults.
    */
   public async setTargetConstraint(relationshipKey: SchemaItemKey, target: RelationshipConstraint): Promise<SchemaItemEditResults> {
-    const relationship = (await this._schemaEditor.schemaContext.getSchemaItem<MutableRelationshipClass>(relationshipKey));
+    const relationship = await this._schemaEditor.schemaContext.getSchemaItem<MutableRelationshipClass>(relationshipKey);
 
     if (relationship === undefined)
       return { itemKey: relationshipKey, errorMessage: `Relationship Class ${relationshipKey.fullName} not found in schema context.` };
@@ -121,6 +121,26 @@ export class RelationshipClasses extends ECClasses {
     await newClass.target.fromJSON(relationshipProps.target);
 
     return { itemKey: newClass.key };
+  }
+
+  /**
+   * Sets the base class of a RelationshipClass.
+   * @param relationshipKey The SchemaItemKey of the RelationshipClass.
+   * @param baseClassKey The SchemaItemKey of the base class. Specifying 'undefined' removes the base class.
+   */
+  public override async setBaseClass(itemKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<SchemaItemEditResults> {
+    const relClass = await this._schemaEditor.schemaContext.getSchemaItem<RelationshipClass>(itemKey);
+    const baseClass = relClass?.baseClass;
+
+    const setResult = await super.setBaseClass(itemKey, baseClassKey);
+    if (setResult.errorMessage === undefined) {
+      const result = await this.validate(relClass!);
+      if (result.errorMessage !== undefined) {
+        relClass!.baseClass = baseClass;
+        return { itemKey, errorMessage: result.errorMessage };
+      }
+    }
+    return setResult;
   }
 
   public async createNavigationProperty(relationshipKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<PropertyEditResults> {

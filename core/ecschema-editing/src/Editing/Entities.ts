@@ -183,37 +183,4 @@ export class Entities extends ECClasses {
 
     return { itemKey: classKey, propertyName: navigationProps.name };
   }
-
-  /**
-   * Sets the base class of an Entity.
-   * @param entityKey The SchemaItemKey of the Entity.
-   * @param baseClassKey The SchemaItemKey of the base class. Specifying 'undefined' removes the base class.
-   */
-  public async setBaseClass(entityKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<SchemaItemEditResults> {
-    const entity = (await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(entityKey));
-
-    if (entity === undefined)
-      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${entityKey.fullName} not found in schema context.`);
-
-    if (baseClassKey === undefined) {
-      entity.baseClass = undefined;
-      return { itemKey: entityKey };
-    }
-
-    const baseClassSchema = !baseClassKey.schemaKey.matches(entityKey.schemaKey) ? await this._schemaEditor.getSchema(baseClassKey.schemaKey) : entity.schema;
-    if (baseClassSchema === undefined) {
-      return { errorMessage: `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context` };
-    }
-
-    const baseClassItem = await baseClassSchema.lookupItem<EntityClass>(baseClassKey);
-    if (baseClassItem === undefined)
-      return { errorMessage: `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.` };
-
-    if (baseClassItem.schemaItemType !== SchemaItemType.EntityClass)
-      return { errorMessage: `${baseClassItem.fullName} is not of type Entity Class.` };
-
-    entity.baseClass = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(baseClassKey, async () => baseClassItem);
-    return { itemKey: entityKey };
-  }
 }
-
