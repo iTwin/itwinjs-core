@@ -9,6 +9,7 @@
 import {
   CustomAttribute,
   CustomAttributeContainerProps,
+  DelayedPromiseWithProps,
   ECClass, ECObjectsError, ECObjectsStatus, Enumeration, EnumerationPropertyProps, PrimitiveArrayPropertyProps,
   PrimitivePropertyProps, PrimitiveType, SchemaItemKey, SchemaItemType, StructArrayPropertyProps,
   StructClass, StructPropertyProps,
@@ -320,9 +321,50 @@ export class ECClasses {
     } catch (e: any) {
       return { errorMessage: e.message };
     }
+
+    const existingName = classKey.name;
     mutableClass.setName(name);
 
+    // Must reset in schema item map
+    await schema.deleteClass(existingName);
+    schema.addItem(mutableClass);
+
     return {};
+  }
+
+  /**
+   * Sets the base class of a SchemaItem.
+   * @param itemKey The SchemaItemKey of the Item.
+   * @param baseClassKey The SchemaItemKey of the base class. Specifying 'undefined' removes the base class.
+   */
+  public async setBaseClass(itemKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<SchemaItemEditResults> {
+    const classItem = await this._schemaEditor.schemaContext.getSchemaItem<MutableClass>(itemKey);
+
+    if (classItem === undefined)
+      return { itemKey, errorMessage: `Class ${itemKey.fullName} not found in schema context.` };
+
+    if (baseClassKey === undefined) {
+      classItem.baseClass = undefined;
+      return { itemKey };
+    }
+
+    const baseClassSchema = !baseClassKey.schemaKey.matches(itemKey.schemaKey) ? await this._schemaEditor.getSchema(baseClassKey.schemaKey) : classItem.schema;
+    if (baseClassSchema === undefined) {
+      return { itemKey, errorMessage: `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context` };
+    }
+
+    const baseClassItem = await baseClassSchema.lookupItem<ECClass>(baseClassKey);
+    if (baseClassItem === undefined)
+      return { itemKey, errorMessage: `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.` };
+
+    if (baseClassItem.schemaItemType !== classItem.schemaItemType)
+      return { itemKey, errorMessage: `${baseClassItem.fullName} is not of type ${classItem.schemaItemType}.` };
+
+    if (classItem.baseClass !== undefined && !await baseClassItem.is(await classItem.baseClass))
+      return { itemKey, errorMessage: `Baseclass ${baseClassItem.fullName} must derive from ${classItem.baseClass.fullName}.`};
+
+    classItem.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClassKey, async () => baseClassItem);
+    return { itemKey };
   }
 
   private async getClass(classKey: SchemaItemKey): Promise<MutableClass> {
@@ -370,4 +412,3 @@ export class ECClasses {
     return derivedClasses;
   }
 }
-

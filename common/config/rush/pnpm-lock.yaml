@@ -7,7 +7,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.6.19
+      '@bentley/imodeljs-native': 4.6.21
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.1.0
       '@itwin/core-bentley': workspace:*
@@ -57,7 +57,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
-      '@bentley/imodeljs-native': 4.6.19
+      '@bentley/imodeljs-native': 4.6.21
       '@itwin/cloud-agnostic-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.2.2_scz6qrwecfbbxg4vskopkl3a7u
@@ -506,7 +506,7 @@ importers:
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
       '@types/sinon': ^17.0.2
-      '@types/supertest': ^2.0.4
+      '@types/supertest': ^6.0.2
       chai: ^4.3.10
       eslint: ^8.44.0
       express: ^4.18.2
@@ -515,7 +515,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^17.0.1
-      supertest: ^3.0.0
+      supertest: ^7.0.0
       typescript: ~5.0.2
     dependencies:
       express: 4.18.2
@@ -532,14 +532,14 @@ importers:
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
       '@types/sinon': 17.0.2
-      '@types/supertest': 2.0.4
+      '@types/supertest': 6.0.2
       chai: 4.3.10
       eslint: 8.44.0
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 17.0.1
-      supertest: 3.0.0
+      supertest: 7.0.0
       typescript: 5.0.2
 
   ../../core/extension:
@@ -866,7 +866,7 @@ importers:
       '@types/lodash': ^4.14.202
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
-      '@types/superagent': ^4.1.14
+      '@types/superagent': ^8.1.6
       '@types/ws': ^7.0.0
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
@@ -876,12 +876,12 @@ importers:
       lodash: ^4.17.21
       mocha: ^10.2.0
       rimraf: ^3.0.2
-      superagent: ^7.1.5
+      superagent: ^9.0.1
       typescript: ~5.0.2
       ws: ^7.5.3
     dependencies:
       lodash: 4.17.21
-      superagent: 7.1.5
+      superagent: 9.0.1
       ws: 7.5.3
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -895,7 +895,7 @@ importers:
       '@types/lodash': 4.14.202
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
-      '@types/superagent': 4.1.14
+      '@types/superagent': 8.1.6
       '@types/ws': 7.2.0
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
@@ -1591,8 +1591,8 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@itwin/imodels-access-backend': ^3.0.0
-      '@itwin/imodels-client-authoring': ^3.0.0
+      '@itwin/imodels-access-backend': ^5.0.1
+      '@itwin/imodels-client-authoring': ^5.1.0
       '@itwin/itwins-client': ^1.2.0
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/perf-tools': workspace:*
@@ -1641,8 +1641,8 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/imodels-access-backend': 3.0.0_wj555zckjupkhkzyssqqpl4sei
-      '@itwin/imodels-client-authoring': 3.0.0
+      '@itwin/imodels-access-backend': 5.0.1_wj555zckjupkhkzyssqqpl4sei
+      '@itwin/imodels-client-authoring': 5.1.0
       '@itwin/itwins-client': 1.2.0
       '@itwin/oidc-signin-tool': 3.6.0_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/perf-tools': link:../../tools/perf-tools
@@ -1695,10 +1695,10 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@itwin/express-server': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
-      '@itwin/imodels-access-backend': ^3.0.0
-      '@itwin/imodels-access-frontend': ^3.0.0
-      '@itwin/imodels-client-authoring': ^3.0.0
-      '@itwin/imodels-client-management': ^3.0.0
+      '@itwin/imodels-access-backend': ^5.0.1
+      '@itwin/imodels-access-frontend': ^5.0.1
+      '@itwin/imodels-client-authoring': ^5.1.0
+      '@itwin/imodels-client-management': ^5.1.0
       '@itwin/itwins-client': ^1.2.0
       '@itwin/object-storage-core': ^2.2.2
       '@itwin/oidc-signin-tool': ~3.6.0
@@ -1761,10 +1761,10 @@ importers:
       '@itwin/electron-authorization': 0.14.1_bplkyfia6fpabkwkmq6hai5lru
       '@itwin/express-server': link:../../core/express-server
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
-      '@itwin/imodels-access-backend': 3.0.0_wj555zckjupkhkzyssqqpl4sei
-      '@itwin/imodels-access-frontend': 3.0.0_ueafa4slb6ohrhyf7kbp6egmha
-      '@itwin/imodels-client-authoring': 3.0.0
-      '@itwin/imodels-client-management': 3.0.0
+      '@itwin/imodels-access-backend': 5.0.1_wj555zckjupkhkzyssqqpl4sei
+      '@itwin/imodels-access-frontend': 5.0.1_ueafa4slb6ohrhyf7kbp6egmha
+      '@itwin/imodels-client-authoring': 5.1.0
+      '@itwin/imodels-client-management': 5.1.0
       '@itwin/reality-data-client': 1.1.0_mdtbcqczpmeuv6yjzfaigjndwi
       azurite: 3.29.0
       chai: 4.3.10
@@ -1827,10 +1827,10 @@ importers:
       '@itwin/ecschema-rpcinterface-impl': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@itwin/express-server': workspace:*
-      '@itwin/imodels-access-backend': ^3.0.0
-      '@itwin/imodels-access-frontend': ^3.0.0
-      '@itwin/imodels-client-authoring': ^3.0.0
-      '@itwin/imodels-client-management': ^3.0.0
+      '@itwin/imodels-access-backend': ^5.0.1
+      '@itwin/imodels-access-frontend': ^5.0.1
+      '@itwin/imodels-client-authoring': ^5.1.0
+      '@itwin/imodels-client-management': ^5.1.0
       '@itwin/itwins-client': ^1.2.0
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/presentation-common': workspace:*
@@ -1871,10 +1871,10 @@ importers:
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
       '@itwin/ecschema-rpcinterface-impl': link:../../core/ecschema-rpc/impl
-      '@itwin/imodels-access-backend': 3.0.0_wj555zckjupkhkzyssqqpl4sei
-      '@itwin/imodels-access-frontend': 3.0.0_ueafa4slb6ohrhyf7kbp6egmha
-      '@itwin/imodels-client-authoring': 3.0.0
-      '@itwin/imodels-client-management': 3.0.0
+      '@itwin/imodels-access-backend': 5.0.1_wj555zckjupkhkzyssqqpl4sei
+      '@itwin/imodels-access-frontend': 5.0.1_ueafa4slb6ohrhyf7kbp6egmha
+      '@itwin/imodels-client-authoring': 5.1.0
+      '@itwin/imodels-client-management': 5.1.0
       '@itwin/oidc-signin-tool': 3.6.0_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
@@ -2109,10 +2109,10 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@itwin/express-server': workspace:*
-      '@itwin/imodels-access-backend': ^3.0.0
-      '@itwin/imodels-access-frontend': ^3.0.0
-      '@itwin/imodels-client-authoring': ^3.0.0
-      '@itwin/imodels-client-management': ^3.0.0
+      '@itwin/imodels-access-backend': ^5.0.1
+      '@itwin/imodels-access-frontend': ^5.0.1
+      '@itwin/imodels-client-authoring': ^5.1.0
+      '@itwin/imodels-client-management': ^5.1.0
       '@itwin/itwins-client': ^1.2.0
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/presentation-backend': workspace:*
@@ -2154,10 +2154,10 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
-      '@itwin/imodels-access-backend': 3.0.0_wj555zckjupkhkzyssqqpl4sei
-      '@itwin/imodels-access-frontend': 3.0.0_ueafa4slb6ohrhyf7kbp6egmha
-      '@itwin/imodels-client-authoring': 3.0.0
-      '@itwin/imodels-client-management': 3.0.0
+      '@itwin/imodels-access-backend': 5.0.1_wj555zckjupkhkzyssqqpl4sei
+      '@itwin/imodels-access-frontend': 5.0.1_ueafa4slb6ohrhyf7kbp6egmha
+      '@itwin/imodels-client-authoring': 5.1.0
+      '@itwin/imodels-client-management': 5.1.0
       '@itwin/oidc-signin-tool': 3.6.0_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
@@ -2473,10 +2473,10 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@itwin/frontend-tiles': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
-      '@itwin/imodels-access-backend': ^3.0.0
-      '@itwin/imodels-access-frontend': ^3.0.0
-      '@itwin/imodels-client-authoring': ^3.0.0
-      '@itwin/imodels-client-management': ^3.0.0
+      '@itwin/imodels-access-backend': ^5.0.1
+      '@itwin/imodels-access-frontend': ^5.0.1
+      '@itwin/imodels-client-authoring': ^5.1.0
+      '@itwin/imodels-client-management': ^5.1.0
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/perf-tools': workspace:*
       '@itwin/reality-data-client': 1.1.0
@@ -2524,10 +2524,10 @@ importers:
       '@itwin/electron-authorization': 0.14.1_bplkyfia6fpabkwkmq6hai5lru
       '@itwin/frontend-tiles': link:../../extensions/frontend-tiles
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
-      '@itwin/imodels-access-backend': 3.0.0_wj555zckjupkhkzyssqqpl4sei
-      '@itwin/imodels-access-frontend': 3.0.0_ueafa4slb6ohrhyf7kbp6egmha
-      '@itwin/imodels-client-authoring': 3.0.0
-      '@itwin/imodels-client-management': 3.0.0
+      '@itwin/imodels-access-backend': 5.0.1_wj555zckjupkhkzyssqqpl4sei
+      '@itwin/imodels-access-frontend': 5.0.1_ueafa4slb6ohrhyf7kbp6egmha
+      '@itwin/imodels-client-authoring': 5.1.0
+      '@itwin/imodels-client-management': 5.1.0
       '@itwin/oidc-signin-tool': 3.6.0_bplkyfia6fpabkwkmq6hai5lru
       '@itwin/reality-data-client': 1.1.0_mdtbcqczpmeuv6yjzfaigjndwi
       body-parser: 1.20.2
@@ -2592,10 +2592,10 @@ importers:
       '@itwin/frontend-devtools': workspace:*
       '@itwin/frontend-tiles': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
-      '@itwin/imodels-access-backend': ^3.0.0
-      '@itwin/imodels-access-frontend': ^3.0.0
-      '@itwin/imodels-client-authoring': ^3.0.0
-      '@itwin/imodels-client-management': ^3.0.0
+      '@itwin/imodels-access-backend': ^5.0.1
+      '@itwin/imodels-access-frontend': ^5.0.1
+      '@itwin/imodels-client-authoring': ^5.1.0
+      '@itwin/imodels-client-management': ^5.1.0
       '@itwin/map-layers-formats': workspace:*
       '@itwin/object-storage-core': ^2.2.2
       '@itwin/reality-data-client': 1.1.0
@@ -2656,10 +2656,10 @@ importers:
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/frontend-tiles': link:../../extensions/frontend-tiles
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
-      '@itwin/imodels-access-backend': 3.0.0_wj555zckjupkhkzyssqqpl4sei
-      '@itwin/imodels-access-frontend': 3.0.0_ueafa4slb6ohrhyf7kbp6egmha
-      '@itwin/imodels-client-authoring': 3.0.0
-      '@itwin/imodels-client-management': 3.0.0
+      '@itwin/imodels-access-backend': 5.0.1_wj555zckjupkhkzyssqqpl4sei
+      '@itwin/imodels-access-frontend': 5.0.1_ueafa4slb6ohrhyf7kbp6egmha
+      '@itwin/imodels-client-authoring': 5.1.0
+      '@itwin/imodels-client-management': 5.1.0
       '@itwin/map-layers-formats': link:../../extensions/map-layers-formats
       '@itwin/object-storage-core': 2.2.2
       '@itwin/reality-data-client': 1.1.0_mdtbcqczpmeuv6yjzfaigjndwi
@@ -3783,8 +3783,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.6.19:
-    resolution: {integrity: sha512-Efh5EPKERfkYGuKhRUYxmJk9WDhN5mBJndnWkFu2TZs/K0h+W8jgbulHrAD1e6osKehlZ1OMamiC7D74gCu4Fg==}
+  /@bentley/imodeljs-native/4.6.21:
+    resolution: {integrity: sha512-ZU/qdNSaPeI0CAdivIGN58rZ/ijih4zUZwnmPl+eSvr8yZXP/9nuE9MWp3UTFhpnjLW6RQtbBM+1nMyxXB7VnQ==}
     requiresBuild: true
     dev: false
 
@@ -4205,14 +4205,6 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/cloud-agnostic-core/1.6.0:
-    resolution: {integrity: sha512-IKj3lxaVQqGezz7bkFjKEf9g7Bk4i2cu2aCJsd9HnV2gn79lo8oU0UiPJ+kuVtMsEcN/yRq/EXk/IR/VnNkLKA==}
-    engines: {node: '>=12.20 <19.0.0'}
-    dependencies:
-      inversify: 5.0.5
-      reflect-metadata: 0.1.13
-    dev: false
-
   /@itwin/cloud-agnostic-core/2.1.0:
     resolution: {integrity: sha512-nVFJ55+sj3IExsXwPXJwtud2cK1+5gYsS1Q96Vz6pBQ1rn84i22JUwGmlBrvf3Em6obseBaDQ6GCRA4aUpAjgQ==}
     engines: {node: '>=12.20 <19.0.0'}
@@ -4309,55 +4301,74 @@ packages:
       semver: 7.3.5
     dev: false
 
-  /@itwin/imodels-access-backend/3.0.0_wj555zckjupkhkzyssqqpl4sei:
-    resolution: {integrity: sha512-kNhwi+qQ28OCGcHvi3/oklb60o1Ziv2zrFwHsrvXZvvCWtxIouMxXKtX30e0R7lByJavXS7g4G/V6Nlo+k0+JQ==}
+  /@itwin/imodels-access-backend/5.0.1_wj555zckjupkhkzyssqqpl4sei:
+    resolution: {integrity: sha512-RAPhMbfNW0EynbclD07KbTKy4E4bMS8lv2Q4ZsNtjLOde+QPjpO+ll/Y7e4BTjK6HjxNOzCHtP/8dH/5WU8hSA==}
     peerDependencies:
-      '@itwin/core-backend': ^3.6.0
-      '@itwin/core-bentley': ^3.6.0
-      '@itwin/core-common': ^3.6.0
+      '@itwin/core-backend': ^4.0.0
+      '@itwin/core-bentley': ^4.0.0
+      '@itwin/core-common': ^4.0.0
     dependencies:
       '@azure/abort-controller': 1.1.0
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
-      '@itwin/imodels-client-authoring': 3.0.0
-      axios: 0.21.4
+      '@itwin/imodels-access-common': 5.0.1_mzyk4ayjeukc3ktflsb4gz56li
+      '@itwin/imodels-client-authoring': 5.1.0
+      axios: 1.6.7
     transitivePeerDependencies:
       - debug
       - encoding
+      - inversify
+      - reflect-metadata
     dev: false
 
-  /@itwin/imodels-access-frontend/3.0.0_ueafa4slb6ohrhyf7kbp6egmha:
-    resolution: {integrity: sha512-b6o5gpx+UfR74qsB6u8r4Ewu/jKDSrWsu7AeBR8WIfubdHFQlat1paODiEcG9RklBNuiD56KkpzxrqB5RRllMA==}
+  /@itwin/imodels-access-common/5.0.1_mzyk4ayjeukc3ktflsb4gz56li:
+    resolution: {integrity: sha512-bIAlAHv7lUi0GlasEjEyvvCWg816+YW8Rrc5X74c9FoYKT63ut4n1H2NLJ5i1japggwB/ss07eJo4p7rUDxzSg==}
     peerDependencies:
-      '@itwin/core-bentley': ^3.6.0
-      '@itwin/core-common': ^3.6.0
-      '@itwin/core-frontend': ^3.6.0
+      '@itwin/core-bentley': ^4.0.0
+      '@itwin/core-common': ^4.0.0
+    dependencies:
+      '@itwin/core-bentley': link:../../core/bentley
+      '@itwin/core-common': link:../../core/common
+      '@itwin/imodels-client-management': 5.1.0
+    transitivePeerDependencies:
+      - debug
+    dev: false
+
+  /@itwin/imodels-access-frontend/5.0.1_ueafa4slb6ohrhyf7kbp6egmha:
+    resolution: {integrity: sha512-iQCqA3NEH79Swea0nY0GxN7R5pjbEGg3E8mbTEqp8PPjI7se4/Gp6zeGy8QNhfzBFQiKGr08knLF/rtJyvGP3A==}
+    peerDependencies:
+      '@itwin/core-bentley': ^4.0.0
+      '@itwin/core-common': ^4.0.0
+      '@itwin/core-frontend': ^4.0.0
     dependencies:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
-      '@itwin/imodels-client-management': 3.0.0
+      '@itwin/imodels-access-common': 5.0.1_mzyk4ayjeukc3ktflsb4gz56li
+      '@itwin/imodels-client-management': 5.1.0
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@itwin/imodels-client-authoring/3.0.0:
-    resolution: {integrity: sha512-LqoviR78mJXB//OF6ZYAMGpSQ4IgOWfRVsrEc/JQ1YaTTG0fLquZeNzH2M/jjpLlqwJp9dMDzOzlxJP2om6eUA==}
+  /@itwin/imodels-client-authoring/5.1.0:
+    resolution: {integrity: sha512-ftgwDRoOqFYhcGzAOm/qGNPMtORjAsHhYDIjtGpOzA//0SQPgd0wC4MkH2biS0gyTVlL/qkrNldV8+xTw11Q2g==}
     dependencies:
-      '@azure/storage-blob': 12.7.0
-      '@itwin/imodels-client-management': 3.0.0
-      '@itwin/object-storage-azure': 1.6.0
-      '@itwin/object-storage-core': 1.6.0
+      '@azure/storage-blob': 12.13.0
+      '@itwin/imodels-client-management': 5.1.0
+      '@itwin/object-storage-azure': 2.2.2
+      '@itwin/object-storage-core': 2.2.2
     transitivePeerDependencies:
       - debug
       - encoding
+      - inversify
+      - reflect-metadata
     dev: false
 
-  /@itwin/imodels-client-management/3.0.0:
-    resolution: {integrity: sha512-yzgizCzXKZ7fyT54DQF+4OE2OCrLgBw10XzNHisDY0kjeXvbxyh5xPdOZf9+rB0nJ5f77RLmEzieqHYrMGvaWw==}
+  /@itwin/imodels-client-management/5.1.0:
+    resolution: {integrity: sha512-DADjPoDkCY4PYcI06uKkB+FB5pilLMtb9bikbYdz7F4p2IiQo7ITAGDtjeCQaEAeMUMSeJ5WubaqFat52mchAA==}
     dependencies:
-      axios: 0.21.4
+      axios: 1.6.7
     transitivePeerDependencies:
       - debug
     dev: false
@@ -4369,16 +4380,17 @@ packages:
     transitivePeerDependencies:
       - debug
 
-  /@itwin/object-storage-azure/1.6.0:
-    resolution: {integrity: sha512-b0rxhn0NAFY1alOEGMAUaJtK8WG7xoJPDOVjuA8nC7zFcxxtP2VOsSOauuie2zzL3GDi9OU6vywR3gAcJcTZww==}
+  /@itwin/object-storage-azure/2.2.2:
+    resolution: {integrity: sha512-bRnRmOX4DK5BAvzii4rsVRuzV5LruBq1MP823sbHnOrop7BKNTkTup5qWHOXOmY71fJ/t26JukBwEIx9eMuOsA==}
     engines: {node: '>=12.20 <19.0.0'}
+    peerDependencies:
+      inversify: ^6.0.1
+      reflect-metadata: ^0.1.13
     dependencies:
       '@azure/core-paging': 1.5.0
       '@azure/storage-blob': 12.13.0
-      '@itwin/cloud-agnostic-core': 1.6.0
-      '@itwin/object-storage-core': 1.6.0
-      inversify: 5.0.5
-      reflect-metadata: 0.1.13
+      '@itwin/cloud-agnostic-core': 2.2.2
+      '@itwin/object-storage-core': 2.2.2
     transitivePeerDependencies:
       - debug
       - encoding
@@ -4400,18 +4412,6 @@ packages:
     transitivePeerDependencies:
       - debug
       - encoding
-    dev: false
-
-  /@itwin/object-storage-core/1.6.0:
-    resolution: {integrity: sha512-6X6YZ5E/kSJJlKQm7+xluzBGBGPILlEmEfzBgEcDqEwABS214OcKU74kW5mfrB6AiNXKZ2RkxfafW/ZpYi24fg==}
-    engines: {node: '>=12.20 <19.0.0'}
-    dependencies:
-      '@itwin/cloud-agnostic-core': 1.6.0
-      axios: 0.27.2
-      inversify: 5.0.5
-      reflect-metadata: 0.1.13
-    transitivePeerDependencies:
-      - debug
     dev: false
 
   /@itwin/object-storage-core/2.2.2:
@@ -5054,6 +5054,10 @@ packages:
     resolution: {integrity: sha512-C/ZFcv+0iIbtLSupcUunpFzKdolJRQ3BOef7d9jfuxkTaPsd4iRgbgfxihe50rnr/Ywu2t5mwgXpddtLxMYi9Q==}
     dev: true
 
+  /@types/methods/1.1.4:
+    resolution: {integrity: sha512-ymXWVrDiCxTBE3+RIrrP533E70eA+9qu7zdWoHuOmGujkYtzf4HQF96b8nwHLqhuf4ykX61IGRIB38CC6/sImQ==}
+    dev: true
+
   /@types/mime/1.3.5:
     resolution: {integrity: sha512-/pyBZWSLD2n0dcHE3hq8s8ZvcETHtEuF+3E7XVt0Ig2nvsVQXdghHVcEkIWjy9A0wKfTn97a/PSDYohKIlnP/w==}
 
@@ -5176,17 +5180,19 @@ packages:
       '@types/node': 18.16.20
     dev: true
 
-  /@types/superagent/4.1.14:
-    resolution: {integrity: sha512-iiXaOL2wSbnSY4qg0mFPWJHL9iwyEsoNYwaHF2w58/fsVAQJlj+KUfFAFZu+nzbz+b7dUprJEAc+O9vhHHhQTA==}
+  /@types/superagent/8.1.6:
+    resolution: {integrity: sha512-yzBOv+6meEHSzV2NThYYOA6RtqvPr3Hbob9ZLp3i07SH27CrYVfm8CrF7ydTmidtelsFiKx2I4gZAiAOamGgvQ==}
     dependencies:
       '@types/cookiejar': 2.1.5
+      '@types/methods': 1.1.4
       '@types/node': 18.16.20
     dev: true
 
-  /@types/supertest/2.0.4:
-    resolution: {integrity: sha512-0TvOJ+6XVMSImgqc2ClNllfVffCxHQhFbsbwOGzGTjdFydoaG052LPqnP8SnmSlnokOcQiPPcbz+Yi30LxWPyA==}
+  /@types/supertest/6.0.2:
+    resolution: {integrity: sha512-137ypx2lk/wTQbW6An6safu9hXmajAifU/s7szAHLN/FeIm5w7yR0Wkl9fdJMRSHwOn4HLAI0DaB2TOORuhPDg==}
     dependencies:
-      '@types/superagent': 4.1.14
+      '@types/methods': 1.1.4
+      '@types/superagent': 8.1.6
     dev: true
 
   /@types/touch/3.1.2:
@@ -5892,7 +5898,6 @@ packages:
 
   /asap/2.0.6:
     resolution: {integrity: sha512-BSHWgDSAiKs50o2Re8ppvp3seVHXSRM44cdSsT9FfNEUUZLOGWVCsiWaRPWM1Znn+mqZ1OfVZ3z3DWEzSp7hRA==}
-    dev: false
 
   /asn1.js/4.10.1:
     resolution: {integrity: sha512-p32cOF5q0Zqs9uBiONKYLm6BClCoBCM5O9JfeUSlnQLBTxYdTK+pW+nXflm8UkKd2UYlEbYz5qEi0JuZR9ckSw==}
@@ -6008,9 +6013,9 @@ packages:
       lokijs: 1.5.12
       morgan: 1.10.0
       multistream: 2.1.1
-      mysql2: 3.9.4
+      mysql2: 3.9.7
       rimraf: 3.0.2
-      sequelize: 6.37.1_krkns5qhdskqgry674am3zbpp4
+      sequelize: 6.37.1_dw5ih2bbpzmw363ktfm3swsk5a
       stoppable: 1.1.0
       tedious: 16.7.1
       to-readable-stream: 2.1.0
@@ -7149,7 +7154,6 @@ packages:
     dependencies:
       asap: 2.0.6
       wrappy: 1.0.2
-    dev: false
 
   /diff/3.5.0:
     resolution: {integrity: sha512-A46qtFgd+g7pDZinpnwiRJtxbC1hpgf0uzP3iG89scHk0AUC7A1TGxf5OiiOUv/JMZR8GOt8hL900hV0bOy5xA==}
@@ -8092,10 +8096,6 @@ packages:
       utils-merge: 1.0.1
       vary: 1.1.2
 
-  /extend/3.0.2:
-    resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
-    dev: true
-
   /extract-zip/2.0.1:
     resolution: {integrity: sha512-GDhU9ntwuKyGXdZBUgTIe+vXnWj0fppUEtMDL0+idd5Sta8TGpHssn/eusA9mrPr9qNDym6SxAYZjNvCn/9RBg==}
     engines: {node: '>= 10.17.0'}
@@ -8133,7 +8133,6 @@ packages:
 
   /fast-safe-stringify/2.1.1:
     resolution: {integrity: sha512-W+KJc2dmILlPplD/H4K9l9LcAHAfPtP6BY84uVLXQ6Evcz9Lcg33Y2z1IVblT6xdY54PXYVHEv+0Wpq8Io6zkA==}
-    dev: false
 
   /fast-sort/3.0.2:
     resolution: {integrity: sha512-DIKDkHBt+IubEEU44/kEulX3SbIuufEHIhRfw0MCh7f/HLGWmR/Dk7xg2tapT28pVFqnEV1ZDtl6SeViAyVe4Q==}
@@ -8325,6 +8324,7 @@ packages:
       asynckit: 0.4.0
       combined-stream: 1.0.8
       mime-types: 2.1.35
+    dev: false
 
   /form-data/4.0.0:
     resolution: {integrity: sha512-ETEklSGi5t0QMZuiXoA/Q6vcnxcLQP5vdugSpuAyi6SVGi2clPPp+xgEhuMaHC+zGgn31Kd235W35f7Hykkaww==}
@@ -8338,19 +8338,12 @@ packages:
     resolution: {integrity: sha512-varLbTj0e0yVyRpqQhuWV+8hlePAgaoFRhNFj50BNjEIrw1/DphHSObtqwskVCPWNgzwPoQrZAbfa/SBiicNeg==}
     dev: true
 
-  /formidable/1.2.6:
-    resolution: {integrity: sha512-KcpbcpuLNOwrEjnbpMC0gS+X8ciDoZE1kkqzat4a8vrprf+s9pKNQ/QIwWfbfs4ltgmFl3MD177SNTkve3BwGQ==}
-    deprecated: 'Please upgrade to latest, formidable@v2 or formidable@v3! Check these notes: https://bit.ly/2ZEqIau'
-    dev: true
-
-  /formidable/2.1.2:
-    resolution: {integrity: sha512-CM3GuJ57US06mlpQ47YcunuUZ9jpm8Vx+P2CGt2j7HpgkKZO/DJYQ0Bobim8G6PFQmK5lOqOOdUXboU+h73A4g==}
+  /formidable/3.5.1:
+    resolution: {integrity: sha512-WJWKelbRHN41m5dumb0/k8TeAx7Id/y3a+Z7QfhxP/htI9Js5zYaEDtG8uMgG0vM0lOlqnmjE99/kfpOYi/0Og==}
     dependencies:
       dezalgo: 1.0.4
       hexoid: 1.0.0
       once: 1.4.0
-      qs: 6.12.0
-    dev: false
 
   /forwarded/0.2.0:
     resolution: {integrity: sha512-buRG0fpBtRHSTCOASe6hD258tEubFoRLb4ZNA6NxMVHNw2gOcwHo9wyablzMzOA5z9xA9L1KNjk/Nt6MT9aYow==}
@@ -8786,7 +8779,6 @@ packages:
   /hexoid/1.0.0:
     resolution: {integrity: sha512-QFLV0taWQOZtvIRIAdBChesmogZrtuXvVWsFHZTk2SU+anspqZ2vMnoLg7IE1+Uk16N19APic1BuF8bC8c2m5g==}
     engines: {node: '>=8'}
-    dev: false
 
   /hmac-drbg/1.0.1:
     resolution: {integrity: sha512-Tti3gMqLdZfhOQY1Mzf/AanLiqh1WTiJgEj26ZuYQ9fbkLomzGchCws4FyrSd4VkpBfiNhaE1On+lOz894jvXg==}
@@ -9000,10 +8992,6 @@ packages:
     resolution: {integrity: sha512-6xwYfHbajpoF0xLW+iwLkhwgvLoZDfjYfoFNu8ftMoXINzwuymNLd9u/KmwtdT2GbR+/Cz66otEGEVVUHX9QLQ==}
     engines: {node: '>=10.13.0'}
     dev: true
-
-  /inversify/5.0.5:
-    resolution: {integrity: sha512-60QsfPz8NAU/GZqXu8hJ+BhNf/C/c+Hp0eDc6XMIJTxBiP36AQyyQKpBkOVTLWBFDQWYVHpbbEuIsHu9dLuJDA==}
-    dev: false
 
   /inversify/6.0.1:
     resolution: {integrity: sha512-B3ex30927698TJENHR++8FfEaJGqoWOgI6ZY5Ht/nLUsFCwHn6akbwtnUAPCgUepAnTpe2qHxhDNjoKLyz6rgQ==}
@@ -10074,7 +10062,6 @@ packages:
     resolution: {integrity: sha512-USPkMeET31rOMiarsBNIHZKLGgvKc/LrjofAnBlOttf5ajRvqiRA8QsenbcooctK6d6Ts6aqZXBA+XbkKthiQg==}
     engines: {node: '>=4.0.0'}
     hasBin: true
-    dev: false
 
   /mimic-fn/2.1.0:
     resolution: {integrity: sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==}
@@ -10243,8 +10230,8 @@ packages:
       readable-stream: 2.3.8
     dev: false
 
-  /mysql2/3.9.4:
-    resolution: {integrity: sha512-OEESQuwxMza803knC1YSt7NMuc1BrK9j7gZhCSs2WAyxr1vfiI7QLaLOKTh5c9SWGz98qVyQUbK8/WckevNQhg==}
+  /mysql2/3.9.7:
+    resolution: {integrity: sha512-KnJT8vYRcNAZv73uf9zpXqNbvBG7DJrs+1nACsjZP1HMJ1TgXEy8wnNilXAn/5i57JizXKtrUtwDB7HxT9DDpw==}
     engines: {node: '>= 8.0'}
     dependencies:
       denque: 2.1.0
@@ -11715,7 +11702,7 @@ packages:
     engines: {node: '>= 10.0.0'}
     dev: false
 
-  /sequelize/6.37.1_krkns5qhdskqgry674am3zbpp4:
+  /sequelize/6.37.1_dw5ih2bbpzmw363ktfm3swsk5a:
     resolution: {integrity: sha512-vIKKzQ9dGp2aBOxQRD1FmUYViuQiKXSJ8yah8TsaBx4U3BokJt+Y2A0qz2C4pj08uX59qpWxRqSLEfRmVOEgQw==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
@@ -11756,7 +11743,7 @@ packages:
       lodash: 4.17.21
       moment: 2.30.1
       moment-timezone: 0.5.45
-      mysql2: 3.9.4
+      mysql2: 3.9.7
       pg-connection-string: 2.6.2
       retry-as-promised: 7.0.4
       semver: 7.6.0
@@ -12233,48 +12220,31 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /superagent/3.8.3:
-    resolution: {integrity: sha512-GLQtLMCoEIK4eDv6OGtkOoSMt3D+oq0y3dsxMuYuDvaNUvuT8eFBuLmfR0iYYzHC1e8hpzC6ZsxbuP6DIalMFA==}
-    engines: {node: '>= 4.0'}
-    deprecated: Please upgrade to v7.0.2+ of superagent.  We have fixed numerous issues with streams, form-data, attach(), filesystem errors not bubbling up (ENOENT on attach()), and all tests are now passing.  See the releases tab for more information at <https://github.com/visionmedia/superagent/releases>.
-    dependencies:
-      component-emitter: 1.3.1
-      cookiejar: 2.1.4
-      debug: 3.2.7
-      extend: 3.0.2
-      form-data: 2.5.1
-      formidable: 1.2.6
-      methods: 1.1.2
-      mime: 1.6.0
-      qs: 6.12.0
-      readable-stream: 2.3.8
-    dev: true
-
-  /superagent/7.1.5:
-    resolution: {integrity: sha512-HQYyGuDRFGmZ6GNC4hq2f37KnsY9Lr0/R1marNZTgMweVDQLTLJJ6DGQ9Tj/xVVs5HEnop9EMmTbywb5P30aqw==}
-    engines: {node: '>=6.4.0 <13 || >=14'}
+  /superagent/9.0.1:
+    resolution: {integrity: sha512-CcRSdb/P2oUVaEpQ87w9Obsl+E9FruRd6b2b7LdiBtJoyMr2DQt7a89anAfiX/EL59j9b2CbRFvf2S91DhuCww==}
+    engines: {node: '>=14.18.0'}
     dependencies:
       component-emitter: 1.3.1
       cookiejar: 2.1.4
       debug: 4.3.4
       fast-safe-stringify: 2.1.1
       form-data: 4.0.0
-      formidable: 2.1.2
+      formidable: 3.5.1
       methods: 1.1.2
       mime: 2.6.0
       qs: 6.12.0
-      readable-stream: 3.6.2
       semver: 7.6.0
     transitivePeerDependencies:
       - supports-color
-    dev: false
 
-  /supertest/3.0.0:
-    resolution: {integrity: sha512-qpiarzDVqh36Q5SfYoCr57Z1HukIUI0WUaXRef9vNj8FrgB/diGLILtxOTh/B8ye2bDCHexMtSwxugL9fI7O4A==}
-    engines: {node: '>=4.0.0'}
+  /supertest/7.0.0:
+    resolution: {integrity: sha512-qlsr7fIC0lSddmA3tzojvzubYxvlGtzumcdHgPwbFWMISQwL22MhM2Y3LNt+6w9Yyx7559VW5ab70dgphm8qQA==}
+    engines: {node: '>=14.18.0'}
     dependencies:
       methods: 1.1.2
-      superagent: 3.8.3
+      superagent: 9.0.1
+    transitivePeerDependencies:
+      - supports-color
     dev: true
 
   /supports-color/2.0.0:

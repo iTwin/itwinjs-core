@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ECClassModifier, Mixin, NavigationProperty, NavigationPropertyProps, RelationshipClass, SchemaContext, SchemaItemKey, SchemaKey, StrengthDirection, StrengthType } from "@itwin/ecschema-metadata";
+import { ECClassModifier, ECVersion, Mixin, NavigationProperty, NavigationPropertyProps, RelationshipClass, SchemaContext, SchemaItemKey, SchemaKey, StrengthDirection, StrengthType } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
 describe("Mixins tests", () => {
@@ -77,7 +77,7 @@ describe("Mixins tests", () => {
     const anotherEntityResult = await testEditor.entities.create(testKey, "anotherTestEntity", ECClassModifier.None);
 
     const mixinBaseClass  = await testEditor.mixins.create(testKey, "testMixinBaseClass", anotherEntityResult.itemKey!);
-    const setResult = await testEditor.mixins.setMixinBaseClass(mixinResult.itemKey!, mixinBaseClass.itemKey);
+    const setResult = await testEditor.mixins.setBaseClass(mixinResult.itemKey!, mixinBaseClass.itemKey);
 
     const mixin = testEditor.schemaContext.getSchemaItemSync(mixinResult.itemKey!) as Mixin;
 
@@ -85,12 +85,78 @@ describe("Mixins tests", () => {
     expect(mixin.baseClass?.fullName).to.deep.equal("testSchema.testMixinBaseClass");
   });
 
+  it("should change the mixin base class with class from superset of existing base class", async () => {
+    const baseClassRes = await testEditor.mixins.create(testKey, "testBaseClass", entityKey);
+    const mixinResult = await testEditor.mixins.create(testKey, "testMixin", entityKey, "testLabel", baseClassRes.itemKey);
+
+    const testMixin = await testEditor.schemaContext.getSchemaItem<Mixin>(mixinResult.itemKey!);
+    expect(await testMixin?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes.itemKey!));
+
+    const newBaseClassRes = await testEditor.mixins.create(testKey, "newBaseClass", entityKey, "newLabel", baseClassRes.itemKey);
+    const result = await testEditor.mixins.setBaseClass(mixinResult.itemKey!, newBaseClassRes.itemKey);
+    expect(result.errorMessage).to.be.undefined;
+    expect(await testMixin?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(newBaseClassRes.itemKey!));
+  });
+
+  it("should remove the base class from the existing mixin", async () => {
+    const baseClassRes = await testEditor.mixins.create(testKey, "testBaseClass", entityKey);
+    const mixinResult = await testEditor.mixins.create(testKey, "testMixin", entityKey, "testLabel", baseClassRes.itemKey);
+
+    const testMixin = await testEditor.schemaContext.getSchemaItem<Mixin>(mixinResult.itemKey!);
+    expect(await testMixin?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes.itemKey!));
+
+    const result = await testEditor.mixins.setBaseClass(mixinResult.itemKey!, undefined);
+    expect(result.errorMessage).to.be.undefined;
+    expect(await testMixin?.baseClass).to.eql(undefined);
+  });
+
   it("should return error message because it tries to set base class that is not of mixin type", async () => {
     const mixinResult = await testEditor.mixins.create(testKey, "testMixin", entityKey);
-    const setResult = await testEditor.mixins.setMixinBaseClass(mixinResult.itemKey!, entityKey);
+    const setResult = await testEditor.mixins.setBaseClass(mixinResult.itemKey!, entityKey);
 
     expect(setResult).to.not.be.undefined;
     expect(setResult.errorMessage).to.not.be.undefined;
-    expect(setResult.errorMessage).to.equal(`${entityKey.fullName} is not of type Mixin Class.`);
+    expect(setResult.errorMessage).to.equal(`${entityKey.fullName} is not of type Mixin.`);
+  });
+
+  it("should return an error message when a base class cannot be found in the context", async () => {
+    const baseClassKey = new SchemaItemKey("testBaseClass", testKey);
+    const mixinRes = await testEditor.mixins.create(testKey, "testMixin", entityKey);
+    const result = await testEditor.mixins.setBaseClass(mixinRes.itemKey!, baseClassKey);
+
+    expect(result.errorMessage).to.not.be.undefined;
+    expect(result.errorMessage).to.equal(`Unable to locate base class ${baseClassKey.fullName} in schema ${testKey.name}.`);
+  });
+
+  it("adding a base class to a non-existing mixin should result in an error message", async () => {
+    const baseClassRes = await testEditor.mixins.create(testKey, "testBaseClass", entityKey);
+    const mixinKey =  new SchemaItemKey("testMixin", testKey);
+
+    const result = await testEditor.mixins.setBaseClass(mixinKey, baseClassRes.itemKey);
+    expect(result.errorMessage).to.not.be.undefined;
+    expect(result.errorMessage).to.equal(`Class ${mixinKey.fullName} not found in schema context.`);
+  });
+
+  it("adding a base class with an unknown schema to mixin, should result in an error message", async () => {
+    const schemaKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
+    const baseClassKey = new SchemaItemKey("testBaseClass", schemaKey);
+    const mixinRes = await testEditor.mixins.create(testKey, "testMixin", entityKey);
+
+    const result = await testEditor.mixins.setBaseClass(mixinRes.itemKey!, baseClassKey);
+    expect(result.errorMessage).to.not.be.undefined;
+    expect(result.errorMessage).to.equal(`Schema Key ${schemaKey.toString(true)} not found in context`);
+  });
+
+  it("changing the mixin base class to one that doesn't derive from, should result in an error message", async () => {
+    const baseClassRes = await testEditor.mixins.create(testKey, "testBaseClass", entityKey);
+    const mixinRes = await testEditor.mixins.create(testKey, "testMixin", entityKey, "testLabel", baseClassRes.itemKey);
+
+    const testMixin = await testEditor.schemaContext.getSchemaItem<Mixin>(mixinRes.itemKey!);
+    expect(await testMixin?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<Mixin>(baseClassRes.itemKey!));
+
+    const newBaseClassRes = await testEditor.mixins.create(testKey, "newBaseClass", entityKey);
+    const result = await testEditor.mixins.setBaseClass(mixinRes.itemKey!, newBaseClassRes.itemKey);
+    expect(result.errorMessage).to.be.not.undefined;
+    expect(result.errorMessage).to.equal(`Baseclass ${newBaseClassRes.itemKey!.fullName} must derive from ${baseClassRes.itemKey!.fullName}.`);
   });
 });
