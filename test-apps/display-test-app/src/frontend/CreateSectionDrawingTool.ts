@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DrawingViewState, IModelApp, SpatialViewState, Tool } from "@itwin/core-frontend";
-import { Id64 } from "@itwin/core-bentley";
+import { DrawingViewState, IModelApp, SpatialViewState, Tool, Viewport } from "@itwin/core-frontend";
+import { Id64, assert } from "@itwin/core-bentley";
 import { CreateSectionDrawingViewArgs } from "../common/DtaIpcInterface";
 import { dtaIpc } from "./App";
 import { Range1d, Range3d, Transform, } from "@itwin/core-geometry";
@@ -34,7 +34,7 @@ export class CreateSectionDrawingTool extends Tool {
     }
 
     // Insert the spatial view and the section drawing model.
-    const drawingToSpatial = computeDrawingToSpatialTransform(spatialView);
+    const drawingToSpatial = computeDrawingToSpatialTransform(IModelApp.viewManager.selectedView!);
     
     const args: CreateSectionDrawingViewArgs = {
       iModelKey: spatialView.iModel.key,
@@ -58,7 +58,7 @@ export class CreateSectionDrawingTool extends Tool {
     }
 
     const spatialToDrawing = drawingToSpatial.inverse()!;
-    const frustum = spatialView.calculateFrustum()!;
+    const frustum = vp.getFrustum();
     frustum.multiply(spatialToDrawing);
     const extents = Range3d.create(frustum.getCorner(Npc.LeftBottomFront), frustum.getCorner(Npc.RightTopFront));
 
@@ -157,13 +157,14 @@ function adjustZPlanes(view: SpatialViewState) {
   view.setExtents(delta);
 }
 
-function computeDrawingToSpatialTransform(view: SpatialViewState): Transform {
-  adjustZPlanes(view);
+function computeDrawingToSpatialTransform(viewport: Viewport): Transform {
+  // adjustZPlanes(view);
+  assert(viewport.view.isSpatialView());
 
-  const frustum = view.calculateFrustum()!;
+  const frustum = viewport.getFrustum();
   const center = frustum!.frontCenter;
   const translate = Transform.createTranslation(center);
-  const rotate = Transform.createFixedPointAndMatrix(center, view.rotation.inverse()!);
+  const rotate = Transform.createFixedPointAndMatrix(center, viewport.view.rotation.inverse()!);
 
   return rotate.multiplyTransformTransform(translate);
 }

@@ -218,13 +218,18 @@ class SectionAttachment {
     };
 
     this._viewFlagOverrides = { ...view.viewFlags, lighting: false, shadows: false };
-    this._drawingExtents = this.viewport.viewingSpace.viewDelta.clone();
-    this._toDrawing.multiplyVector(this._drawingExtents, this._drawingExtents);
-    this._drawingExtents.z = Math.abs(this._drawingExtents.z);
+    // this._drawingExtents = this.viewport.viewingSpace.viewDelta.clone();
+    // this._toDrawing.multiplyVector(this._drawingExtents, this._drawingExtents);
+    // this._drawingExtents.z = Math.abs(this._drawingExtents.z);
 
     // Save off the original frustum (potentially adjusted by viewport).
     this.viewport.setupFromView();
     this.viewport.viewingSpace.getFrustum(CoordSystem.World, true, this._originalFrustum);
+
+    const drawingFrustum = this._originalFrustum.transformBy(this._toDrawing);
+    const drawingRange = drawingFrustum.toRange();
+    this._drawingExtents = drawingRange.diagonal();
+    this._drawingExtents.z = Math.abs(this._drawingExtents.z);
   }
 
   public dispose(): void {
