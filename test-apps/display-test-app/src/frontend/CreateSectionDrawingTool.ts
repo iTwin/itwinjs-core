@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DrawingViewState, IModelApp, SpatialViewState, Tool, Viewport } from "@itwin/core-frontend";
-import { Id64, assert } from "@itwin/core-bentley";
+import { DrawingViewState, IModelApp, Tool } from "@itwin/core-frontend";
+import { Id64 } from "@itwin/core-bentley";
 import { CreateSectionDrawingViewArgs } from "../common/DtaIpcInterface";
 import { dtaIpc } from "./App";
-import { Range1d, Range3d, Transform, } from "@itwin/core-geometry";
-import { CategorySelectorProps, Code, ColorDef, DisplayStyleProps, Frustum, IModel, Npc, QueryRowFormat, SectionDrawingViewProps, ViewDefinition2dProps, ViewDefinitionProps, ViewStateProps } from "@itwin/core-common";
+import { Range3d, Transform, } from "@itwin/core-geometry";
+import { CategorySelectorProps, Code, ColorDef, DisplayStyleProps, IModel, Npc, QueryRowFormat, SectionDrawingViewProps, ViewDefinition2dProps, ViewStateProps } from "@itwin/core-common";
 
 export class CreateSectionDrawingTool extends Tool {
   public static override toolId = "CreateSectionDrawing";
@@ -24,18 +24,26 @@ export class CreateSectionDrawingTool extends Tool {
       return false;
     }
 
-    const spatialView = IModelApp.viewManager.selectedView?.view.clone();
-    if (!(spatialView instanceof SpatialViewState) || spatialView.isCameraOn) {
-      throw new Error("Orthographic spatial view required");
-    }
-
-    if (spatialView.iModel.isReadonly) {
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp || vp.iModel.isReadonly) {
       throw new Error("Writable briefcase required");
     }
 
-    // Insert the spatial view and the section drawing model.
-    const drawingToSpatial = computeDrawingToSpatialTransform(IModelApp.viewManager.selectedView!);
+    const spatialView = vp.view.isSpatialView() ? vp.view.clone() : undefined;
+    if (!spatialView || spatialView.isCameraOn) {
+      throw new Error("Orthographic spatial view required");
+    }
+
+    // Compute a transform from drawing to spatial coordinates.
+    // We want the near plane of the spatial view to coincide with the center of the xy plane of the drawing model at z=0
+    // Note: If we had a section clip plane, we'd want to align that plane with the drawing's z=0.
+    const frustum = vp.getFrustum();
+    const center = frustum!.frontCenter;
+    const translate = Transform.createTranslation(center);
+    const rotate = Transform.createFixedPointAndMatrix(center, spatialView.rotation.inverse()!);
+    const drawingToSpatial = rotate.multiplyTransformTransform(translate);
     
+    // Insert the spatial view and the section drawing model.
     const args: CreateSectionDrawingViewArgs = {
       iModelKey: spatialView.iModel.key,
       baseName,
@@ -52,13 +60,7 @@ export class CreateSectionDrawingTool extends Tool {
     }
 
     // Switch to a view of the section drawing model.
-    const vp = IModelApp.viewManager.selectedView;
-    if (!vp) {
-      return false;
-    }
-
     const spatialToDrawing = drawingToSpatial.inverse()!;
-    const frustum = vp.getFrustum();
     frustum.multiply(spatialToDrawing);
     const extents = Range3d.create(frustum.getCorner(Npc.LeftBottomFront), frustum.getCorner(Npc.RightTopFront));
 
@@ -118,53 +120,3 @@ export class CreateSectionDrawingTool extends Tool {
   }
 }
 
-// ###TODO Use ViewingSpace API.
-function adjustZPlanes(view: SpatialViewState) {
-  const viewOrigin = view.getOrigin().clone();
-  const viewDelta = view.getExtents().clone();
-  const viewRot = view.getRotation().clone();
-  const origin = view.getOrigin().clone();
-  const delta = view.getExtents().clone();
-  delta.z = Math.max(delta.z, 1);
-
-  const extents = view.getViewedExtents();
-  const frustum = new Frustum();
-  const worldToNpc = view.computeWorldToNpc(viewRot, viewOrigin, viewDelta, false).map!;
-  if (!worldToNpc) {
-    return;
-  }
-
-  worldToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frustum.points);
-  const depthRange = Range1d.createNull();
-  if (!extents.isNull) {
-    const viewZ = viewRot.getRow(2);
-    const corners = extents.corners();
-    for (const corner of corners) {
-      depthRange.extendX(viewZ.dotProduct(corner));
-    }
-
-    if (depthRange.isNull) {
-      return;
-    }
-
-    viewRot.multiplyVectorInPlace(origin);
-    origin.z = depthRange.low;
-    delta.z = Math.max(depthRange.high - depthRange.low, 1)
-    viewRot.multiplyTransposeVectorInPlace(origin);
-  }
-
-  view.setOrigin(origin);
-  view.setExtents(delta);
-}
-
-function computeDrawingToSpatialTransform(viewport: Viewport): Transform {
-  // adjustZPlanes(view);
-  assert(viewport.view.isSpatialView());
-
-  const frustum = viewport.getFrustum();
-  const center = frustum!.frontCenter;
-  const translate = Transform.createTranslation(center);
-  const rotate = Transform.createFixedPointAndMatrix(center, viewport.view.rotation.inverse()!);
-
-  return rotate.multiplyTransformTransform(translate);
-}
