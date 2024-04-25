@@ -86,6 +86,7 @@ export * from "./MaterialProps";
 export * from "./ModelClipGroup";
 export * from "./ModelProps";
 export * from "./NativeAppProps";
+export * from "./NativePropsMapping";
 export * from "./OctEncodedNormal";
 export * from "./ConcurrentQuery";
 export * from "./ECSqlReader";

@@ -20,8 +20,8 @@ import {
   DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps,
   ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
-  IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, OpenCheckpointArgs, OpenSqliteArgs,
+  IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, mapNativeProps, MassPropertiesRequestProps,
+  MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, NativeInterfaceMap, OpenBriefcaseProps, OpenCheckpointArgs, OpenSqliteArgs,
   ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps,
   SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps,
   UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
@@ -1731,7 +1731,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     private tryGetElementJson<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
       try {
-        return this._iModel.nativeDb.getElement(loadProps) as T;
+        const nativeElement = this._iModel.nativeDb.getElement(loadProps) as NativeInterfaceMap<T>;
+        return mapNativeProps<T>(nativeElement);
       } catch (err: any) {
         return undefined;
       }
@@ -1748,7 +1749,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         props = { code: props };
       }
       try {
-        return this._iModel.nativeDb.getElement(props) as T;
+        const nativeElement =  this._iModel.nativeDb.getElement(props) as NativeInterfaceMap<T>;
+        return mapNativeProps<T>(nativeElement);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, err.message);
       }
