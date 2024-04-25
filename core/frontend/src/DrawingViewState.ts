@@ -190,7 +190,7 @@ class SectionAttachment {
     const frustum3d = this._originalFrustum.transformBy(this._toDrawing);
     return frustum3d.toRange();
   }
-  
+
   public constructor(view: ViewState3d, toDrawing: Transform, fromDrawing: Transform, toSheet: Transform | undefined) {
     // Save the input for clone(). Attach a copy to the viewport.
     this._toDrawing = toDrawing;
@@ -449,7 +449,7 @@ export class DrawingViewState extends ViewState2d {
     return extents;
   }
 
-  public get defaultExtentLimits() {
+  public get defaultExtentLimits(): ExtentLimits {
     return {
       min: Constant.oneMillimeter,
       max: 3 * Constant.diameterOfEarth,
