@@ -218,9 +218,6 @@ class SectionAttachment {
     };
 
     this._viewFlagOverrides = { ...view.viewFlags, lighting: false, shadows: false };
-    // this._drawingExtents = this.viewport.viewingSpace.viewDelta.clone();
-    // this._toDrawing.multiplyVector(this._drawingExtents, this._drawingExtents);
-    // this._drawingExtents.z = Math.abs(this._drawingExtents.z);
 
     // Save off the original frustum (potentially adjusted by viewport).
     this.viewport.setupFromView();
