@@ -162,7 +162,7 @@ export namespace WorkspaceDb {
   export const fileExt = "itwin-workspace";
 
   export interface LoadError extends Error {
-    wsDbProps?: WorkspaceDb.Props;
+    wsDbProps?: WorkspaceDb.Props & Partial<WorkspaceDb.CloudProps>;
     wsDb?: WorkspaceDb;
   }
 
@@ -174,7 +174,7 @@ export namespace WorkspaceDb {
   export function construct(props: WorkspaceDb.Props, container: WorkspaceContainer): WorkspaceDb {
     return new WorkspaceDbImpl(props, container);
   }
-  export function throwLoadError(msg: string, wsDbProps: WorkspaceDb.Props, db?: WorkspaceDb): never {
+  export function throwLoadError(msg: string, wsDbProps: WorkspaceDb.Props | WorkspaceDb.CloudProps, db?: WorkspaceDb): never {
     const error = new Error(msg) as WorkspaceDb.LoadError;
     error.wsDbProps = wsDbProps;
     error.wsDb = db;
@@ -348,8 +348,8 @@ export interface Workspace {
   /** Get a [[WorkspaceDb]] from a WorkspaceDb.CloudProps   */
   getWorkspaceDb(props: WorkspaceDb.CloudProps): Promise<WorkspaceDb>;
 
-  resolveWorkspaceDbSetting(settingName: SettingName, filter?: (dbProp: WorkspaceDb.CloudProps, dict: Settings.Dictionary) => boolean): WorkspaceDb.CloudProps[];
-  getWorkspaceDbs(args: Workspace.DbListOrSettingName & { problems?: WorkspaceDb.LoadError[] }): Promise<WorkspaceDb[]>;
+  resolveWorkspaceDbSetting(settingName: SettingName, filter?: Workspace.DbListFilter): WorkspaceDb.CloudProps[];
+  getWorkspaceDbs(args: Workspace.DbListOrSettingName & { problems?: WorkspaceDb.LoadError[], filter?: Workspace.DbListFilter }): Promise<WorkspaceDb[]>;
 }
 
 /** @internal */
@@ -424,6 +424,7 @@ export namespace Workspace {
   export type IterationReturn = void | "stop";
   export type ForEachResource = (result: WorkspaceResource.SearchResult) => IterationReturn;
   export type DbListOrSettingName = { readonly dbs: WorkspaceDb.CloudProps[], readonly settingName?: never } | { readonly settingName: string, readonly dbs?: never };
+  export type DbListFilter = (dbProp: WorkspaceDb.CloudProps, dict: Settings.Dictionary) => boolean;
 
   const queryResource = (dbList: WorkspaceDb[] | WorkspaceDb, search: WorkspaceResource.Search, resourceType: SearchResourceType, found: ForEachResource): IterationReturn => {
     if (!Array.isArray(dbList))
@@ -730,12 +731,12 @@ class WorkspaceImpl implements Workspace {
     this._containers.clear();
   }
 
-  public resolveWorkspaceDbSetting(settingName: SettingName, filter?: (dbProp: WorkspaceDb.CloudProps, dict: Settings.Dictionary) => boolean): WorkspaceDb.CloudProps[] {
+  public resolveWorkspaceDbSetting(settingName: SettingName, filter?: Workspace.DbListFilter): WorkspaceDb.CloudProps[] {
     const result: WorkspaceDb.CloudProps[] = [];
     this.settings.resolveSetting<WorkspaceDb.CloudProps[]>({
       settingName, resolver: (dbProps, dict) => {
         for (const dbProp of dbProps) {
-          if (filter?.(dbProp, dict) !== true)
+          if (!filter || filter(dbProp, dict))
             result.push(dbProp);
         }
         return undefined; // means keep going
@@ -744,8 +745,8 @@ class WorkspaceImpl implements Workspace {
     return result;
   }
 
-  public async getWorkspaceDbs(args: Workspace.DbListOrSettingName & { problems?: WorkspaceDb.LoadError[] }): Promise<WorkspaceDb[]> {
-    const dbList = (args.settingName !== undefined) ? this.resolveWorkspaceDbSetting(args.settingName) : args.dbs;
+  public async getWorkspaceDbs(args: Workspace.DbListOrSettingName & { filter?: Workspace.DbListFilter, problems?: WorkspaceDb.LoadError[] }): Promise<WorkspaceDb[]> {
+    const dbList = (args.settingName !== undefined) ? this.resolveWorkspaceDbSetting(args.settingName, args.filter) : args.dbs;
     const result: WorkspaceDb[] = [];
     const pushUnique = (wsDb: WorkspaceDb) => {
       if (!result.includes(wsDb)) // make sure the same db doesn't appear more than once.
@@ -763,7 +764,6 @@ class WorkspaceImpl implements Workspace {
     }
     return result;
   }
-
 }
 
 class WorkspaceContainerImpl implements WorkspaceContainer {

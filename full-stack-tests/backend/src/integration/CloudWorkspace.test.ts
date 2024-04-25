@@ -8,7 +8,7 @@ import { expect } from "chai";
 import * as fs from "fs-extra";
 import { join } from "path";
 import {
-  IModelHost, IModelJsFs, SettingObject, Settings, SettingSchemaGroup, SettingsSchemas, StandaloneDb, Workspace, WorkspaceContainer, WorkspaceDb,
+  IModelHost, IModelJsFs, SettingObject, Settings, SettingsSchemas, StandaloneDb, Workspace, WorkspaceContainer, WorkspaceDb,
   WorkspaceResource,
 } from "@itwin/core-backend";
 import { assert, Guid } from "@itwin/core-bentley";
@@ -81,7 +81,7 @@ describe.only("Cloud workspace containers", () => {
     await restartSession();
   });
 
-  it.only("edit cloud workspace", async () => {
+  it("edit cloud workspace", async () => {
     let user: string;
     const makeVersion = async (args: Workspace.Editor.Container.MakeNewVersionProps) => {
       expect(orgContainer.cloudContainer).not.undefined;
@@ -149,11 +149,12 @@ describe.only("Cloud workspace containers", () => {
     const editDb = container.getEditableDb(copied.newDb);
     editDb.open();
     fn(editDb);
+    editDb.sqliteDb.vacuum();
     editDb.close();
     container.releaseWriteLock();
   };
 
-  it.only("Edit Settings and Workspaces", async () => {
+  it("Edit Settings and Workspaces", async () => {
     const tmpdir = join(__dirname, "output", "settingsTest");
     IModelJsFs.recursiveMkDirSync(tmpdir);
     fs.emptyDirSync(tmpdir);
@@ -182,6 +183,10 @@ describe.only("Cloud workspace containers", () => {
     Workspace.exceptionDiagnosticFn = (e: WorkspaceDb.LoadErrors) => errors = e;
     Workspace.onSettingsDictionaryLoadedFn = (dict: Workspace.SettingsDictionaryLoaded) => loadedDictionaries.push(dict);
 
+    const appSettings: SettingObject = {};
+    appSettings["app1/lineStyleDbs"] = [{ ...orgContainerProps!, loadingHelp: "see org admin for access to org ws", description: "org workspace", version: "^1" }];
+    IModelHost.appWorkspace.settings.addDictionary({ name: "app settings", priority: Settings.Priority.application }, appSettings);
+
     let imodel2 = await StandaloneDb.open({ fileName });
     imodel2.close();
     assert(errors !== undefined);
@@ -191,15 +196,15 @@ describe.only("Cloud workspace containers", () => {
     expect(loadErrors.length).equal(1);
     expect(loadErrors[0].wsDb?.version).equal("1.0.0");
 
-    const style1Db: WorkspaceDb.CloudProps = { ...styles1.cloudProps!, loadingHelp: "see admin1 for access to style1 workspace", description: "line styles for branch", version: "^1", prefetch: true };
-    const style2Db: WorkspaceDb.CloudProps = { ...styles2.cloudProps!, loadingHelp: "see admin2 for access to style2 workspace", description: "text styles for branch", version: "^1" };
-    const style3Db: WorkspaceDb.CloudProps = { ...styles2.cloudProps!, containerId: "not there", loadingHelp: "see admin2 for permission to style3 workspace", description: "more text styles for branch", version: "^1" };
+    const style1Props: WorkspaceDb.CloudProps = { ...styles1.cloudProps!, loadingHelp: "see admin1 for access to style1 workspace", description: "styles 1", version: "^1", prefetch: true };
+    const style2Props: WorkspaceDb.CloudProps = { ...styles2.cloudProps!, loadingHelp: "see admin2 for access to style2 workspace", description: "styles 2", version: "^1" };
+    const style3Props: WorkspaceDb.CloudProps = { ...styles2.cloudProps!, containerId: "not there", loadingHelp: "see admin2 for access to style3 workspace", description: "more text styles for branch", version: "^1" };
     await withPatchVersion(branchContainer, (editDb) => {
       const branchSettings: SettingObject = {};
       branchSettings["app1/max1"] = 10;
       branchSettings["app1/max2"] = 20;
-      branchSettings["app1/lineStyleDbs"] = [style1Db, style3Db]; // style3 purposely causes a load error
-      branchSettings["app1/textStyleDbs"] = [style2Db];
+      branchSettings["app1/lineStyleDbs"] = [style1Props, style3Props]; // style3 purposely causes a load error
+      branchSettings["app1/textStyleDbs"] = [style2Props];
       branchSettings[Workspace.settingName.settingsWorkspaces] = [{ ...itwin2ContainerProps, priority: Settings.Priority.iTwin }];
 
       editDb.updateSettingsResource(branchSettings);
@@ -230,8 +235,8 @@ describe.only("Cloud workspace containers", () => {
       iTwin2WsSettings["app1/max1"] = 1;
       iTwin2WsSettings["app1/max2"] = 2;
       iTwin2WsSettings["app1/max3"] = 3;
-      iTwin2WsSettings["app1/lineStyleDbs"] = [style2Db];
-      iTwin2WsSettings["app1/textStyleDbs"] = [style1Db];
+      iTwin2WsSettings["app1/lineStyleDbs"] = [style2Props];
+      iTwin2WsSettings["app1/textStyleDbs"] = [style1Props, style2Props]; // style2 is redundant with branch
       editDb.updateSettingsResource(iTwin2WsSettings);
     });
     resetErrors();
@@ -259,19 +264,33 @@ describe.only("Cloud workspace containers", () => {
     await withPatchVersion(styles2, (editDb) => defineStyles(editDb, "batch2", 200));
 
     const textDbProps = imodel2.workspace.resolveWorkspaceDbSetting("app1/textStyleDbs");
-    expect(textDbProps.length).equal(2);
+    expect(textDbProps.length).equal(3);
     const lineStyleDbProps = imodel2.workspace.resolveWorkspaceDbSetting("app1/lineStyleDbs");
-    expect(lineStyleDbProps.length).equal(3);
+    expect(lineStyleDbProps.length).equal(4);
 
     const problems: WorkspaceDb.LoadError[] = [];
-    const textDbs = await imodel2.workspace.getWorkspaceDbs({ settingName: "app1/textStyleDbs", problems });
+    let textDbs = await imodel2.workspace.getWorkspaceDbs({ settingName: "app1/textStyleDbs", problems });
+    expect(textDbs.length).equal(2);
+    expect(problems.length).equal(0);
+    textDbs = await imodel2.workspace.getWorkspaceDbs({ dbs: textDbProps, problems });
     expect(textDbs.length).equal(2);
     expect(problems.length).equal(0);
 
     problems.length = 0;
-    const lineStyleDbs = await imodel2.workspace.getWorkspaceDbs({ settingName: "app1/lineStyleDbs", problems });
-    expect(lineStyleDbs.length).equal(2);
+    let lineStyleDbs = await imodel2.workspace.getWorkspaceDbs({
+      settingName: "app1/lineStyleDbs", problems, filter: (_dbProps, dict) => {
+        return (dict.props.priority === Settings.Priority.branch);
+      },
+    });
+    expect(lineStyleDbs.length).equal(1);
+    expect(lineStyleDbs[0].manifest.workspaceName).equal("styles 1 ws");
+
+    problems.length = 0;
+
+    lineStyleDbs = await imodel2.workspace.getWorkspaceDbs({ settingName: "app1/lineStyleDbs", problems });
+    expect(lineStyleDbs.length).equal(3);
     expect(problems.length).equal(1);
+    expect(problems[0].wsDbProps?.loadingHelp).contains("for access to style3");
 
     const found: string[] = [];
     const globSearch: WorkspaceResource.Search = { nameSearch: "styles/*", nameCompare: "GLOB" };
@@ -290,11 +309,17 @@ describe.only("Cloud workspace containers", () => {
       found.push(result.rscName);
     });
     expect(found.length).equal(20);
+
+    // Note: the order of the two style WorkspaceDbs is reversed in the text vs. line style settings so
+    // we should find different values for the same name depending on which list we use
     const styleName = "styles/num-0";
-    expect(Workspace.loadStringResource(textDbs, styleName)).equal("batch2/value 0");
     expect(Workspace.loadStringResource(lineStyleDbs, styleName)).equal("batch1/value 0");
-    expect(Workspace.loadBlobResource(textDbs, styleName)).deep.equal(new Uint8Array([200]));
+    expect(Workspace.loadStringResource(textDbs, styleName)).equal("batch2/value 0");
     expect(Workspace.loadBlobResource(lineStyleDbs, styleName)).deep.equal(new Uint8Array([100]));
+    expect(Workspace.loadBlobResource(textDbs, styleName)).deep.equal(new Uint8Array([200]));
+
+    // get a value from org workspace specified at "app priority" (lowest) in appSetting for "app1/linestyleDbs"
+    expect(Workspace.loadStringResource(lineStyleDbs, "string 1")).equal("value of string 1");
 
     found.length = 0;
     expect(Workspace.queryStringResource(textDbs, { nameSearch: "styles/num-1" }, (result) => {
