@@ -229,7 +229,7 @@ export class TileAdmin {
       smooth: options.generateAllPolyfaceEdges ?? true,
     };
     this.enableImprovedElision = options.enableImprovedElision ?? defaultTileOptions.enableImprovedElision;
-    this.enableFrontendScheduleScripts = options.enableFrontendScheduleScripts ?? false;
+    this.enableFrontendScheduleScripts = true; // options.enableFrontendScheduleScripts ?? false;
     this.decodeImdlInWorker = options.decodeImdlInWorker ?? true;
     this.ignoreAreaPatterns = options.ignoreAreaPatterns ?? defaultTileOptions.ignoreAreaPatterns;
     this.enableExternalTextures = options.enableExternalTextures ?? defaultTileOptions.enableExternalTextures;
