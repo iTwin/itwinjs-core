@@ -27,7 +27,8 @@ describe("Schema merge tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      conflicts: [ conflict ],
+      conflicts: [conflict],
+      changes: [],
     });
 
     await expect(merge).to.be.rejectedWith(SchemaConflictsError, "Schema's can't be merged if there are unresolved conflicts.")
