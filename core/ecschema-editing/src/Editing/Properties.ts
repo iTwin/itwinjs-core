@@ -9,6 +9,7 @@ import { MutablePrimitiveOrEnumPropertyBase } from "./Mutable/MutablePrimitiveOr
 import { MutableClass } from "./Mutable/MutableClass";
 import { MutableStructProperty } from "./Mutable/MutableStructProperty";
 import { MutableNavigationProperty } from "./Mutable/MutableNavigationProperty";
+import { ECClassSchemaItems } from "./ECClasses";
 
 type MutablePropertyType = MutableProperty | MutableArrayProperty | MutablePrimitiveOrEnumPropertyBase | MutableNavigationProperty | MutableStructProperty;
 
@@ -17,7 +18,7 @@ type MutablePropertyType = MutableProperty | MutableArrayProperty | MutablePrimi
  * A class allowing editing of attributes of the base Property class.
  */
 export class Properties {
-  public constructor(protected ecClassType: SchemaItemType, protected _schemaEditor: SchemaContextEditor) { }
+  public constructor(protected ecClassType: ECClassSchemaItems, protected _schemaEditor: SchemaContextEditor) { }
 
   public async setName(classKey: SchemaItemKey, propertyName: string, newPropertyName: string) {
     const newName = new ECName(newPropertyName);
@@ -193,7 +194,7 @@ export class Properties {
  * EnumerationArrayProperty and StructArrayProperty.
  */
 export class ArrayProperties extends Properties {
-  public constructor(ecClassType: SchemaItemType, _schemaEditor: SchemaContextEditor) {
+  public constructor(ecClassType: ECClassSchemaItems, _schemaEditor: SchemaContextEditor) {
     super(ecClassType, _schemaEditor);
   }
 
@@ -239,7 +240,7 @@ export class ArrayProperties extends Properties {
  * A class extending Properties allowing editing of attributes of PrimitiveProperty and EnumerationProperty.
  */
 class PrimitiveOrEnumProperties extends Properties {
-  public constructor(ecClassType: SchemaItemType, _schemaEditor: SchemaContextEditor) {
+  public constructor(ecClassType: ECClassSchemaItems, _schemaEditor: SchemaContextEditor) {
     super(ecClassType, _schemaEditor);
   }
 
@@ -304,7 +305,7 @@ class PrimitiveOrEnumProperties extends Properties {
  * A class extending Properties allowing editing of PrimitiveProperty attributes.
  */
 export class PrimitiveProperties extends PrimitiveOrEnumProperties {
-  public constructor(ecClassType: SchemaItemType, _schemaEditor: SchemaContextEditor) {
+  public constructor(ecClassType: ECClassSchemaItems, _schemaEditor: SchemaContextEditor) {
     super(ecClassType, _schemaEditor);
   }
 
@@ -328,7 +329,7 @@ export class PrimitiveProperties extends PrimitiveOrEnumProperties {
  * A class extending Properties allowing editing of EnumerationProperty attributes.
  */
 export class EnumerationProperties extends PrimitiveOrEnumProperties {
-  public constructor(ecClassType: SchemaItemType, _schemaEditor: SchemaContextEditor) {
+  public constructor(ecClassType: ECClassSchemaItems, _schemaEditor: SchemaContextEditor) {
     super(ecClassType, _schemaEditor);
   }
 
@@ -352,7 +353,7 @@ export class EnumerationProperties extends PrimitiveOrEnumProperties {
  * A class extending Properties allowing editing of NavigationProperties attributes.
  */
 export class NavigationProperties extends Properties {
-  public constructor(ecClassType: SchemaItemType, _schemaEditor: SchemaContextEditor) {
+  public constructor(ecClassType: ECClassSchemaItems, _schemaEditor: SchemaContextEditor) {
     super(ecClassType, _schemaEditor);
   }
 
@@ -376,7 +377,7 @@ export class NavigationProperties extends Properties {
  * A class extending Properties allowing editing of StructProperty attributes.
  */
 export class StructProperties extends Properties {
-  public constructor(ecClassType: SchemaItemType, _schemaEditor: SchemaContextEditor) {
+  public constructor(ecClassType: ECClassSchemaItems, _schemaEditor: SchemaContextEditor) {
     super(ecClassType, _schemaEditor);
   }
 

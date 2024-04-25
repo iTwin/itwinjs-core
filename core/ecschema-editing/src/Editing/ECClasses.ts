@@ -28,7 +28,7 @@ export type ECClassSchemaItems = Extract<SchemaItemType, SchemaItemType.EntityCl
  */
 export class ECClasses {
 
-  protected constructor(protected schemaItemType: SchemaItemType, protected _schemaEditor: SchemaContextEditor) { }
+  protected constructor(protected schemaItemType: ECClassSchemaItems, protected _schemaEditor: SchemaContextEditor) { }
 
   /**
    * Allows access for editing of base Property attributes.
