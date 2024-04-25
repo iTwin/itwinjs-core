@@ -2,7 +2,7 @@
   "name": "@itwin/workspace-editor",
   "license": "MIT",
   "main": "lib/WorkspaceEditor.js",
-  "version": "4.6.0-dev.6",
+  "version": "4.6.0-dev.18",
   "bin": {
     "WorkspaceEditor": "./lib/WorkspaceEditor.js"
   },
@@ -26,7 +26,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-backend": "workspace:*",
-    "glob": "^7.1.2",
+    "glob": "^10.3.12",
     "yargs": "^17.4.0"
   },
   "devDependencies": {
