@@ -7,14 +7,14 @@ import { DrawingViewState, IModelApp, Tool } from "@itwin/core-frontend";
 import { Id64 } from "@itwin/core-bentley";
 import { CreateSectionDrawingViewArgs } from "../common/DtaIpcInterface";
 import { dtaIpc } from "./App";
-import { Range3d, Transform, } from "@itwin/core-geometry";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import { CategorySelectorProps, Code, ColorDef, DisplayStyleProps, IModel, Npc, QueryRowFormat, SectionDrawingViewProps, ViewDefinition2dProps, ViewStateProps } from "@itwin/core-common";
 
 export class CreateSectionDrawingTool extends Tool {
   public static override toolId = "CreateSectionDrawing";
   public static override get minArgs() { return 1; }
   public static override get maxArgs() { return 1; }
-  
+
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args[0]);
   }
@@ -38,11 +38,11 @@ export class CreateSectionDrawingTool extends Tool {
     // We want the near plane of the spatial view to coincide with the center of the xy plane of the drawing model at z=0
     // Note: If we had a section clip plane, we'd want to align that plane with the drawing's z=0.
     const frustum = vp.getFrustum();
-    const center = frustum!.frontCenter;
+    const center = frustum.frontCenter;
     const translate = Transform.createTranslation(center);
     const rotate = Transform.createFixedPointAndMatrix(center, spatialView.rotation.inverse()!);
     const drawingToSpatial = rotate.multiplyTransformTransform(translate);
-    
+
     // Insert the spatial view and the section drawing model.
     const args: CreateSectionDrawingViewArgs = {
       iModelKey: spatialView.iModel.key,
@@ -75,7 +75,7 @@ export class CreateSectionDrawingTool extends Tool {
       model: IModel.dictionaryId,
       classFullName: "BisCore.CategorySelector",
     };
-    
+
     const viewDefinitionProps: ViewDefinition2dProps = {
       baseModelId: sectionDrawingId,
       categorySelectorId: "",
@@ -111,10 +111,10 @@ export class CreateSectionDrawingTool extends Tool {
       viewDefinitionProps,
       sectionDrawing,
     };
-    
+
     const drawingView = DrawingViewState.createFromProps(viewStateProps, vp.iModel);
     await drawingView.load();
-    
+
     vp.changeView(drawingView);
     return true;
   }
