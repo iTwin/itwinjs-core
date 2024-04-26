@@ -328,7 +328,7 @@ export type AnySchemaItemDifference =
 
 /**
  * Union for supported class Schema Items.
- * @internal
+ * @alpha
  */
 export type ClassItemDifference =
   EntityClassDifference |

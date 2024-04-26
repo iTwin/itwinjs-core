@@ -1,6 +1,9 @@
 sep=;
 Release Tag;API Item
 beta;AnyDiagnostic = IDiagnostic
+alpha;AnySchemaDifference = SchemaDifference | SchemaReferenceDifference | AnySchemaItemDifference | AnySchemaItemPathDifference | CustomAttributeDifference
+alpha;AnySchemaItemDifference = ClassItemDifference | ConstantDifference | EnumerationDifference | EntityClassMixinDifference | FormatDifference | KindOfQuantityDifference | InvertedUnitDifference | PhenomenonDifference | PropertyCategoryDifference | UnitDifference | UnitSystemDifference
+alpha;AnySchemaItemPathDifference = RelationshipConstraintDifference | RelationshipConstraintClassDifference | CustomAttributePropertyDifference | EnumeratorDifference | ClassPropertyDifference
 alpha;BaseClassDelta 
 beta;class BaseDiagnostic
 beta;BaseRule
@@ -9,35 +12,52 @@ alpha;class BaseSchemaChanges
 alpha;ChangeType
 alpha;ClassChanges 
 beta;class ClassDiagnostic
+alpha;ClassItemDifference = EntityClassDifference | MixinClassDifference | StructClassDifference | CustomAttributeClassDifference | RelationshipClassDifference
+alpha;ClassPropertyDifference
+alpha;ConflictCode
+alpha;ConstantDifference 
 beta;createClassDiagnosticClass
 beta;createCustomAttributeContainerDiagnosticClass
 beta;createPropertyDiagnosticClass
 beta;createRelationshipConstraintDiagnosticClass
 beta;createSchemaDiagnosticClass
 beta;createSchemaItemDiagnosticClass
+alpha;CustomAttributeClassDifference 
 alpha;CustomAttributeContainerChange 
 alpha;CustomAttributeContainerChanges 
 beta;class CustomAttributeContainerDiagnostic
+alpha;CustomAttributeDifference = CustomAttributeSchemaDifference | CustomAttributeSchemaItemDifference | CustomAttributePropertyDifference | CustomAttributeRelationshipConstraintDifference
+alpha;CustomAttributePropertyDifference
+alpha;CustomAttributeRelationshipConstraintDifference
+alpha;CustomAttributeSchemaDifference
+alpha;CustomAttributeSchemaItemDifference
 beta;DiagnosticCategory
 beta;diagnosticCategoryToString(category: DiagnosticCategory): "Error" | "Warning" | "Message" | "Suggestion"
 beta;DiagnosticCodes:
 beta;Diagnostics:
 beta;DiagnosticType
 beta;diagnosticTypeToString(type: DiagnosticType): "CustomAttributeContainer" | "None" | "Property" | "RelationshipConstraint" | "Schema" | "SchemaItem"
+alpha;DifferenceType = "add" | "modify"
 beta;ECRuleSet: IRuleSet
 alpha;EntityClassChanges 
+alpha;EntityClassDifference 
+alpha;EntityClassMixinDifference
 alpha;EntityMixinChange 
 alpha;EntityMixinChanges 
 alpha;EnumerationChanges 
+alpha;EnumerationDifference 
 alpha;EnumeratorChanges 
 alpha;EnumeratorDelta 
+alpha;EnumeratorDifference
 alpha;EnumeratorMissing 
 alpha;FormatChanges 
 beta;class FormatDiagnosticReporter 
+alpha;FormatDifference 
 alpha;FormatUnitChange 
 alpha;FormatUnitChanges 
 beta;IDiagnostic
 beta;IDiagnosticReporter
+alpha;InvertedUnitDifference 
 beta;IRule
 beta;IRuleSet
 beta;IRuleSuppressionMap
@@ -48,28 +68,38 @@ alpha;ISchemaComparer
 alpha;ISchemaCompareReporter
 beta;ISuppressionRule
 alpha;KindOfQuantityChanges 
+alpha;KindOfQuantityDifference 
 beta;LoggingDiagnosticReporter 
+alpha;MixinClassDifference 
+alpha;PhenomenonDifference 
 alpha;PresentationUnitChange 
 alpha;PresentationUnitChanges 
+alpha;PropertyCategoryDifference 
 alpha;PropertyChanges 
 beta;class PropertyDiagnostic
 alpha;PropertyEditResults
 alpha;PropertyMissing 
 alpha;PropertyValueChange 
 alpha;RelationshipClassChanges 
+alpha;RelationshipClassDifference 
 alpha;RelationshipConstraintChanges 
 alpha;RelationshipConstraintClassChange 
+alpha;RelationshipConstraintClassDifference
 beta;class RelationshipConstraintDiagnostic
+alpha;RelationshipConstraintDifference
 alpha;SchemaChanges 
 beta;SchemaCompareCodes:
 beta;SchemaCompareDiagnostics:
 alpha;SchemaCompareDirection
 alpha;SchemaComparer
+alpha;SchemaConflictsError 
 alpha;SchemaContextEditor
 beta;class SchemaDiagnostic
 alpha;SchemaDifference
 internal;fromSchemaChanges(targetSchema: Schema, schemaChanges: SchemaChanges): Promise
 alpha;SchemaDifference
+alpha;SchemaDifferenceConflict
+alpha;SchemaDifferences
 alpha;SchemaEditResults
 alpha;class SchemaItemChange 
 alpha;SchemaItemChanges 
@@ -77,10 +107,16 @@ beta;class SchemaItemDiagnostic
 alpha;SchemaItemEditResults
 alpha;SchemaItemMissing 
 beta;SchemaMerger
+alpha;SchemaOtherTypes
 alpha;SchemaReferenceDelta 
+alpha;SchemaReferenceDifference
 alpha;SchemaReferenceMissing 
+alpha;SchemaType = SchemaOtherTypes | SchemaItemType
 beta;SchemaValidater
 beta;SchemaValidationVisitor 
 internal;SchemaWalker
+alpha;StructClassDifference 
 beta;class SuppressionDiagnosticReporter 
+alpha;UnitDifference 
 alpha;UnitLabelOverrideDelta 
+alpha;UnitSystemDifference 
