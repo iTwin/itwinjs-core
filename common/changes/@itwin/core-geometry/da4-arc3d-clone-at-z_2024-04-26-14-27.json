@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Arc3d.cloneAtZ ignored z",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
