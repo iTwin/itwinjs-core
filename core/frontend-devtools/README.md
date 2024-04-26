@@ -153,11 +153,12 @@ Several keyins enable attaching map layers of a particular format. Each takes th
 
 These keyins take the form `fdt attach <format> maplayer <arguments>` where `format` is one of the following:
 
-* `wms` - a very common OGC standard Web Map Service that produces images on demand.
-* `wmts` - a Web Map Tile Service that produces cached tiles.
-* `arcgis` - uses the ArcGIS REST API directly. The URL typically ends with "MapServer".
-* `arcgisfeature` - obtains vector data from the ArcGIS REST API and converts it to tiles.
-* `tileurl` - obtains tailes directly from a file server using a supplied URL template.
+* `WMS` - a very common OGC standard Web Map Service that produces images on demand.
+* `WMTS` - a Web Map Tile Service that produces cached tiles.
+* `ArcGIS` - uses the ArcGIS REST API directly. The URL typically ends with "MapServer".
+* `ArcGISFeature` - obtains vector data from the ArcGIS REST API and converts it to tiles. (Requires `@itwin/map-layers-formats)
+* `TileURL` - obtains tailes directly from a file server using a supplied URL template.
+* `OgcApiFeatures` - obtains vector data from a OGC API - Feature server converts it to tiles (Requires `@itwin/map-layers-formats)
 
 ### Reality model key-ins
 

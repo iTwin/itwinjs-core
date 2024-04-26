@@ -8,8 +8,8 @@ import type { ClassItemDifference, ClassPropertyDifference, DifferenceType } fro
 import { AnyProperty, AnyPropertyProps, ArrayPropertyProps, CustomAttribute, ECClass, Enumeration, EnumerationPropertyProps, NavigationPropertyProps, parsePrimitiveType, PrimitivePropertyProps, RelationshipClass, SchemaItemKey, SchemaItemType, StructClass, StructPropertyProps } from "@itwin/ecschema-metadata";
 import { updateSchemaItemFullName, updateSchemaItemKey } from "./SchemaItemMerger";
 import { MutableProperty } from "../Editing/Mutable/MutableProperty";
-import { MutableArrayProperty } from "../Editing/Mutable/MutableArrayProperty";
 import { applyCustomAttributes } from "./CustomAttributeMerger";
+import { ECClasses } from "../Editing/ECClasses";
 
 type PartialEditable<T> = {
   -readonly [P in keyof T]: T[P];
@@ -52,7 +52,6 @@ async function mergeClassProperty(context: SchemaMergeContext, change: { changeT
 }
 
 async function addClassProperty(context: SchemaMergeContext, itemKey: SchemaItemKey, property: PartialEditable<AnyPropertyProps>): Promise<SchemaEditResults> {
-
   if (property.category !== undefined) {
     property.category = await updateSchemaItemFullName(context, property.category);
   }
@@ -69,7 +68,8 @@ async function addClassProperty(context: SchemaMergeContext, itemKey: SchemaItem
   if (property.customAttributes !== undefined) {
     const result = await applyCustomAttributes(context, property.customAttributes as CustomAttribute[], async (ca) => {
       try{
-        await context.editor.entities.properties.addCustomAttribute(itemKey, property.name, ca);
+        const classEditor = await getClassEditor(context, itemKey);
+        await classEditor.properties.addCustomAttribute(itemKey, property.name, ca);
         return {};
       } catch(e: any) {
         return { errorMessage: e.message };
@@ -113,26 +113,28 @@ async function modifyClassProperty(context: SchemaMergeContext, itemKey: SchemaI
     return { errorMessage: `Changing the property '${property.fullName}' kind of quantity is not supported.` };
   }
 
+  const classEditor = await getClassEditor(context, ecClass);
+
   if (propertyProps.description !== undefined) {
-    await context.editor.entities.properties.setDescription(itemKey, property.name, propertyProps.description);
+    await classEditor.properties.setDescription(itemKey, propertyProps.name, propertyProps.description);
   }
   if (propertyProps.label !== undefined) {
-    await context.editor.entities.properties.setLabel(itemKey, property.name, propertyProps.label);
+    await classEditor.properties.setLabel(itemKey, propertyProps.name, propertyProps.label);
   }
   if (propertyProps.isReadOnly !== undefined) {
-    await context.editor.entities.properties.setIsReadOnly(itemKey, property.name, propertyProps.isReadOnly);
+    await classEditor.properties.setIsReadOnly(itemKey, propertyProps.name, propertyProps.isReadOnly);
   }
   if (propertyProps.priority !== undefined) {
-    await context.editor.entities.properties.setPriority(itemKey, property.name, propertyProps.priority);
+    await classEditor.properties.setPriority(itemKey, propertyProps.name, propertyProps.priority);
   }
 
   if (property.isArray()) {
-    await arrayProperty.merge(context, itemKey, property as any, propertyProps);
+    await arrayProperty.merge(context, itemKey, property.name, propertyProps);
   }
 
   if (propertyProps.category !== undefined) {
     const categoryKey = await updateSchemaItemKey(context, propertyProps.category);
-    await context.editor.entities.properties.setCategory(itemKey, property.name, categoryKey);
+    await classEditor.properties.setCategory(itemKey, property.name, categoryKey);
   }
 
   if (property.isEnumeration()) {
@@ -151,16 +153,38 @@ async function modifyClassProperty(context: SchemaMergeContext, itemKey: SchemaI
   return {};
 }
 
+async function getClassEditor(context: SchemaMergeContext, ecClass: ECClass | SchemaItemKey): Promise<ECClasses> {
+  const schemaItemType = ECClass.isECClass(ecClass)
+    ? ecClass.schemaItemType
+    : (await context.editor.schemaContext.getSchemaItem<ECClass>(ecClass))?.schemaItemType;
+
+  switch(schemaItemType) {
+    case SchemaItemType.EntityClass:
+      return context.editor.entities;
+    case SchemaItemType.Mixin:
+      return context.editor.mixins;
+    case SchemaItemType.StructClass:
+      return context.editor.structs;
+    case SchemaItemType.CustomAttributeClass:
+      return context.editor.customAttributes;
+    case SchemaItemType.RelationshipClass:
+      return context.editor.relationships;
+    default:
+      throw new Error("SchemaItemType not supported");
+  }
+}
+
 const arrayProperty = {
   is(property: AnyPropertyProps): boolean {
     return "minOccurs" in property && "maxOccurs" in property;
   },
-  async merge(context: SchemaMergeContext, itemKey: SchemaItemKey, property: MutableArrayProperty, props: ArrayPropertyProps) {
+  async merge(context: SchemaMergeContext, itemKey: SchemaItemKey, propertyName: string, props: ArrayPropertyProps) {
+    const classEditor = await getClassEditor(context, itemKey);
     if (props.minOccurs !== undefined) {
-      await context.editor.entities.arrayProperties.setMinOccurs(itemKey, property.name, props.minOccurs);
+      await classEditor.arrayProperties.setMinOccurs(itemKey, propertyName, props.minOccurs);
     }
     if (props.maxOccurs !== undefined) {
-      await context.editor.entities.arrayProperties.setMaxOccurs(itemKey, property.name, props.maxOccurs);
+      await classEditor.arrayProperties.setMaxOccurs(itemKey, propertyName, props.maxOccurs);
     }
   },
 };
@@ -178,9 +202,10 @@ const enumerationProperty: PropertyMerger<EnumerationPropertyProps> = {
 
     property.typeName = enumerationKey.fullName;
 
+    const classEditor = await getClassEditor(context, itemKey);
     return arrayProperty.is(property)
-      ? context.editor.entities.createEnumerationArrayPropertyFromProps(itemKey, property.name, enumerationType, property)
-      : context.editor.entities.createEnumerationPropertyFromProps(itemKey, property.name, enumerationType, property);
+      ? classEditor.createEnumerationArrayPropertyFromProps(itemKey, property.name, enumerationType, property)
+      : classEditor.createEnumerationPropertyFromProps(itemKey, property.name, enumerationType, property);
   },
   async merge(context, itemKey, property, props) {
     if ("enumeration" in props && props.enumeration !== undefined) {
@@ -233,28 +258,31 @@ const primitiveProperty: PropertyMerger<PrimitivePropertyProps> = {
       return { errorMessage: `Invalid property type ${property.typeName} on property ${property.name}` };
     }
 
+    const classEditor = await getClassEditor(context, itemKey);
     return arrayProperty.is(property)
-      ? context.editor.entities.createPrimitiveArrayPropertyFromProps(itemKey, property.name, propertyType, property)
-      : context.editor.entities.createPrimitivePropertyFromProps(itemKey, property.name, propertyType, property);
+      ? classEditor.createPrimitiveArrayPropertyFromProps(itemKey, property.name, propertyType, property)
+      : classEditor.createPrimitivePropertyFromProps(itemKey, property.name, propertyType, property);
   },
   async merge(context, itemKey, property, props) {
     if (props.typeName) {
       return { errorMessage: `Changing the property '${property.fullName}' primitiveType is not supported.` };
     }
+
+    const classEditor = await getClassEditor(context, itemKey);
     if (props.extendedTypeName !== undefined) {
-      await context.editor.entities.primitiveProperties.setExtendedTypeName(itemKey, property.name, props.extendedTypeName);
+      await classEditor.primitiveProperties.setExtendedTypeName(itemKey, property.name, props.extendedTypeName);
     }
     if (props.minLength !== undefined) {
-      await context.editor.entities.primitiveProperties.setMinLength(itemKey, property.name, props.minLength);
+      await classEditor.primitiveProperties.setMinLength(itemKey, property.name, props.minLength);
     }
     if (props.maxLength !== undefined) {
-      await context.editor.entities.primitiveProperties.setMaxLength(itemKey, property.name, props.maxLength);
+      await classEditor.primitiveProperties.setMaxLength(itemKey, property.name, props.maxLength);
     }
     if (props.minValue !== undefined) {
-      await context.editor.entities.primitiveProperties.setMinValue(itemKey, property.name, props.minValue);
+      await classEditor.primitiveProperties.setMinValue(itemKey, property.name, props.minValue);
     }
     if (props.maxValue !== undefined) {
-      await context.editor.entities.primitiveProperties.setMaxValue(itemKey, property.name, props.maxValue);
+      await classEditor.primitiveProperties.setMaxValue(itemKey, property.name, props.maxValue);
     }
     return {};
   },
@@ -273,9 +301,10 @@ const structProperty: PropertyMerger<StructPropertyProps> = {
 
     property.typeName = structKey.fullName;
 
+    const classEditor = await getClassEditor(context, itemKey);
     return arrayProperty.is(property)
-      ? context.editor.entities.createStructArrayPropertyFromProps(itemKey, property.name, structType, property)
-      : context.editor.entities.createStructPropertyFromProps(itemKey, property.name, structType, property);
+      ? classEditor.createStructArrayPropertyFromProps(itemKey, property.name, structType, property)
+      : classEditor.createStructPropertyFromProps(itemKey, property.name, structType, property);
   },
   async merge(_context, _itemKey, property, props) {
     if ("structClass" in props && props.structClass !== undefined) {

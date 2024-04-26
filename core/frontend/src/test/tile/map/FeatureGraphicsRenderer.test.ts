@@ -9,8 +9,7 @@ import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";
 import { IModelApp } from "../../../IModelApp";
 import {
-  ArcGisGraphicsRenderer,
-
+  FeatureGraphicsRenderer,
 } from "../../../tile/internal";
 import { BlankConnection, IModelConnection } from "../../../IModelConnection";
 import { GeoServices, GeoServicesOptions } from "../../../GeoServices";
@@ -131,7 +130,7 @@ const sampleiModelProps = {
   iTwinId: Guid.createValue(),
 };
 
-describe("ArcGisGraphicsRenderer", () => {
+describe("FeatureGraphicsRenderer", () => {
   const sandbox = sinon.createSandbox();
   let viewportMock: ViewportMock|undefined;
   beforeEach(async () => {
@@ -147,7 +146,7 @@ describe("ArcGisGraphicsRenderer", () => {
   });
 
   it("render non-filled paths correctly", async () => {
-    const renderer = new ArcGisGraphicsRenderer({viewport: viewportMock!.object});
+    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object, crs: "webMercator"});
     const testLengths = [2,2];
     const testCoords = [
       -8368830.26, 4866490.12,
@@ -156,9 +155,9 @@ describe("ArcGisGraphicsRenderer", () => {
       -8368850.49, 4866434.57,
     ];
 
-    // We stub 'ArcGisGraphicsRenderer.toSpatialFromEcf' to have the same input/output points, and simplify testing.  We make sure
+    // We stub 'FeatureGraphicsRenderer.toSpatialFromEcf' to have the same input/output points, and simplify testing.  We make sure
     // 'toSpatialFromEcf' is being called.
-    const toSpatialStub = sandbox.stub(ArcGisGraphicsRenderer.prototype, "toSpatial" as any).callsFake(function _(geoPoints: any): any {
+    const toSpatialStub = sandbox.stub(FeatureGraphicsRenderer.prototype, "toSpatial" as any).callsFake(function _(geoPoints: any): any {
       return geoPoints;
     });
 
@@ -185,11 +184,11 @@ describe("ArcGisGraphicsRenderer", () => {
   });
 
   it("render filled paths correctly", async () => {
-    const renderer = new ArcGisGraphicsRenderer({viewport: viewportMock!.object});
+    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object, crs: "webMercator"});
 
-    // We stub 'ArcGisGraphicsRenderer.toSpatialFromEcf' to have the same input/output points, and simplify testing.  We make sure
+    // We stub 'FeatureGraphicsRenderer.toSpatialFromEcf' to have the same input/output points, and simplify testing.  We make sure
     // 'toSpatialFromEcf' is being called.
-    const toSpatialStub = sandbox.stub(ArcGisGraphicsRenderer.prototype, "toSpatial" as any).callsFake(function _(geoPoints: any): any {
+    const toSpatialStub = sandbox.stub(FeatureGraphicsRenderer.prototype, "toSpatial" as any).callsFake(function _(geoPoints: any): any {
       return geoPoints;
     });
 
@@ -225,11 +224,11 @@ describe("ArcGisGraphicsRenderer", () => {
   });
 
   it("render point correctly", async () => {
-    const renderer = new ArcGisGraphicsRenderer({viewport: viewportMock!.object});
+    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object, crs: "webMercator"});
 
-    // We stub 'ArcGisGraphicsRenderer.toSpatialFromEcf' to have the same input/output points, and simplify testing.  We make sure
+    // We stub 'FeatureGraphicsRenderer.toSpatialFromEcf' to have the same input/output points, and simplify testing.  We make sure
     // 'toSpatialFromEcf' is being called.
-    const toSpatialStub = sandbox.stub(ArcGisGraphicsRenderer.prototype, "toSpatial" as any).callsFake(function _(geoPoints: any): any {
+    const toSpatialStub = sandbox.stub(FeatureGraphicsRenderer.prototype, "toSpatial" as any).callsFake(function _(geoPoints: any): any {
       return geoPoints;
     });
 
@@ -259,7 +258,7 @@ describe("ArcGisGraphicsRenderer", () => {
     viewportMock!.imodel = connection;
     viewportMock!.displayStyle = new DisplayStyle3dState(styleProps, connection);
     viewportMock!.setup();
-    const renderer = new ArcGisGraphicsRenderer({viewport: viewportMock!.object});
+    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object, crs: "webMercator"});
 
     const testLengths = [4,4];
     const testCoords = [
@@ -300,7 +299,7 @@ describe("ArcGisGraphicsRenderer", () => {
     viewportMock!.imodel = connection;
     viewportMock!.displayStyle = new DisplayStyle3dState(styleProps, connection);
     viewportMock!.setup();
-    const renderer = new ArcGisGraphicsRenderer({viewport: viewportMock!.object});
+    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object, crs: "webMercator"});
 
     const testLengths = [4,4];
     const testCoords = [
@@ -318,4 +317,5 @@ describe("ArcGisGraphicsRenderer", () => {
     await renderer.renderPath(testLengths, testCoords, false, 2, false);
     expect(connection.toIModelCoordsCount).to.equals(0);
   });
+
 });

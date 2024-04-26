@@ -583,6 +583,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "flatbush",
+      "allowedCategories": [ "extensions" ]
+    },
+    {
       "name": "form-data",
       "allowedCategories": [ "backend" ]
     },
