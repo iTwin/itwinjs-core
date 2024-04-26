@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add awareness to legacy Channels created by Batch Connectors. Update tests and documentation regarding creation of Channels against Partitions instead of Subjects. Remove sharedChannel from the list of allowedChannels by default.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

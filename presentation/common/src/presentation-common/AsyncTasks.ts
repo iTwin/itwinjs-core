@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Core
  */
@@ -23,7 +23,9 @@ import { Guid, GuidString, IDisposable } from "@itwin/core-bentley";
  */
 export class AsyncTasksTracker {
   private _asyncsInProgress = new Set<GuidString>();
-  public get pendingAsyncs() { return this._asyncsInProgress; }
+  public get pendingAsyncs() {
+    return this._asyncsInProgress;
+  }
   public trackAsyncTask(): IDisposable {
     const id = Guid.createValue();
     this._asyncsInProgress.add(id);

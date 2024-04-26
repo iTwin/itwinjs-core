@@ -1,13 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { using } from "@itwin/core-bentley";
 import { AsyncTasksTracker } from "../presentation-common";
 
 describe("AsyncTasksTracker", () => {
-
   it("tracks async task while it's disposed", () => {
     const tracker = new AsyncTasksTracker();
     expect(tracker.pendingAsyncs.size).to.eq(0);
@@ -28,5 +27,4 @@ describe("AsyncTasksTracker", () => {
     });
     expect(tracker.pendingAsyncs.size).to.eq(0);
   });
-
 });

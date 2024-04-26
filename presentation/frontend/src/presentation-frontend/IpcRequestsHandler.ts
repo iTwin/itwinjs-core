@@ -1,11 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 import { IpcApp } from "@itwin/core-frontend";
 import {
-  PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcInterface, RulesetVariable, RulesetVariableJSON, SetRulesetVariableParams, UnsetRulesetVariableParams,
+  PRESENTATION_IPC_CHANNEL_NAME,
+  PresentationIpcInterface,
+  RulesetVariable,
+  RulesetVariableJSON,
+  SetRulesetVariableParams,
+  UnsetRulesetVariableParams,
 } from "@itwin/presentation-common";
 
 /** @internal */

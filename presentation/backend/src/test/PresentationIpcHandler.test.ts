@@ -1,12 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { CompressedId64Set, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
-  Id64sRulesetVariableJSON, RulesetVariableJSON, SetRulesetVariableParams, StringRulesetVariable, UnsetRulesetVariableParams, VariableValueTypes,
+  Id64sRulesetVariableJSON,
+  RulesetVariableJSON,
+  SetRulesetVariableParams,
+  StringRulesetVariable,
+  UnsetRulesetVariableParams,
+  VariableValueTypes,
 } from "@itwin/presentation-common";
 import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation } from "../presentation-backend/Presentation";

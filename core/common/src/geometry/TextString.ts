@@ -84,20 +84,25 @@ export class TextString {
   }
 
   public toJSON(): TextStringProps {
-    const val: any = {};
-    val.text = this.text;
-    val.font = this.font;
-    val.height = this.height;
-    val.widthFactor = this.widthFactor;
-    val.bold = this.bold;
-    val.italic = this.italic;
-    val.underline = this.underline;
-    if (!this.origin.isAlmostZero)
-      val.origin = this.origin;
-    if (!this.rotation.isIdentity())
-      val.rotation = this.rotation;
+    const props: TextStringProps = {
+      text: this.text,
+      font: this.font,
+      height: this.height,
+      widthFactor: this.widthFactor,
+      bold: this.bold,
+      italic: this.italic,
+      underline: this.underline,
+    };
 
-    return val;
+    if (!this.origin.isAlmostZero) {
+      props.origin = this.origin.toJSON();
+    }
+
+    if (!this.rotation.isIdentity()) {
+      props.rotation = this.rotation.toJSON();
+    }
+
+    return props;
   }
 
   public transformInPlace(transform: Transform): boolean {

@@ -3,14 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 import { expect } from "chai";
 import * as fs from "fs-extra";
 import { join } from "path";
-import { BaseSettings, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, ITwinWorkspace, SettingsPriority } from "@itwin/core-backend";
+import { BaseSettings, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, SettingsPriority, Workspace } from "@itwin/core-backend";
 import { assert } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
-
-import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
 describe("Cloud workspace containers", () => {
 
@@ -46,8 +45,8 @@ describe("Cloud workspace containers", () => {
       return CloudSqlite.CloudCaches.getCache(cacheProps);
     };
 
-    const workspace1 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace1"), testCloudCache: makeCloudCache("test1") });
-    const workspace2 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace2"), testCloudCache: makeCloudCache("test2") });
+    const workspace1 = Workspace.construct(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace1"), testCloudCache: makeCloudCache("test1") });
+    const workspace2 = Workspace.construct(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace2"), testCloudCache: makeCloudCache("test2") });
     const settings = workspace1.settings;
     settings.addDictionary("containers", SettingsPriority.application, containerDict);
 
@@ -59,7 +58,7 @@ describe("Cloud workspace containers", () => {
     const makeVersion = async (version?: string) => {
       expect(wsCont1.cloudContainer).not.undefined;
       await CloudSqlite.withWriteLock({ user: "Cloud workspace test", container: wsCont1.cloudContainer! }, async () => {
-        const wsDbEdit = new EditableWorkspaceDb({ dbName: testDbName }, wsCont1);
+        const wsDbEdit = EditableWorkspaceDb.construct({ dbName: testDbName }, wsCont1);
         try {
           await wsDbEdit.createDb(version);
           const contain1 = settings.getString("cloudSqlite/containerId")!;
@@ -69,7 +68,7 @@ describe("Cloud workspace containers", () => {
           wsDbEdit.addString("string 1", "value of string 1");
           wsDbEdit.close();
         } finally {
-          wsCont1.dropWorkspaceDb(wsDbEdit);
+          wsCont1.closeWorkspaceDb(wsDbEdit);
         }
       });
     };
@@ -94,7 +93,7 @@ describe("Cloud workspace containers", () => {
 
     let ws2 = wsCont2.getWorkspaceDb({ dbName: testDbName });
     expect(ws2.getString("string 1")).equals("value of string 1");
-    ws2.container.dropWorkspaceDb(ws2);
+    ws2.container.closeWorkspaceDb(ws2);
 
     expect(() => wsCont2.getWorkspaceDb({ dbName: testDbName, version: "^2.0.0" })).throws("No version of");
 
@@ -102,7 +101,7 @@ describe("Cloud workspace containers", () => {
     const newVal = "new value for string 1";
     assert(undefined !== wsCont1.cloudContainer);
     await CloudSqlite.withWriteLock({ user: "Cloud workspace test", container: wsCont1.cloudContainer }, async () => {
-      const ws3 = new EditableWorkspaceDb({ dbName: testDbName, version: "1.1.4-beta" }, wsCont1);
+      const ws3 = EditableWorkspaceDb.construct({ dbName: testDbName, version: "1.1.4-beta" }, wsCont1);
       ws3.open();
       ws3.updateString("string 1", newVal);
       ws3.close();
@@ -118,13 +117,13 @@ describe("Cloud workspace containers", () => {
     expect(ws2.dbFileName).contains("1.1.4-beta");
     expect(ws2.getString("string 1")).equals(newVal);
     expect(ws2.getString("myVersion")).equals("1.1.4-beta");
-    ws2.container.dropWorkspaceDb(ws2);
+    ws2.container.closeWorkspaceDb(ws2);
 
     ws2 = wsCont2.getWorkspaceDb({ dbName: testDbName });
     expect(ws2.dbFileName).contains("3.0.0");
     expect(ws2.getString("string 1")).equals("value of string 1");
     expect(ws2.getString("myVersion")).equals("3.0.0");
-    ws2.container.dropWorkspaceDb(ws2);
+    ws2.container.closeWorkspaceDb(ws2);
 
     workspace1.close();
     workspace2.close();
@@ -147,7 +146,7 @@ describe("Cloud workspace containers", () => {
         },
       ],
     };
-    const workspace3 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace3"), testCloudCache: makeCloudCache("test3") });
+    const workspace3 = Workspace.construct(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace3"), testCloudCache: makeCloudCache("test3") });
     workspace3.settings.addDictionary("testDict", SettingsPriority.application, dict);
     const db = await workspace3.getWorkspaceDb("test/test1");
     expect(db.dbFileName).equal("testDb:1.2.4");

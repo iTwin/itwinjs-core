@@ -155,7 +155,7 @@ export class GeometryAccumulator {
    * note  : removed featureTable, ViewContext
    * @param tolerance should derive from Viewport.getPixelSizeAtPoint
    */
-  public toMeshBuilderMap(options: GeometryOptions, tolerance: number, pickable: { modelId?: string } | undefined): MeshBuilderMap {
+  public toMeshBuilderMap(options: GeometryOptions, tolerance: number, pickable: { isVolumeClassifier?: boolean, modelId?: string } | undefined): MeshBuilderMap {
     const { geometries } = this; // declare internal dependencies
 
     const range = geometries.computeRange();
@@ -164,7 +164,7 @@ export class GeometryAccumulator {
     return MeshBuilderMap.createFromGeometries(geometries, tolerance, range, is2d, options, pickable);
   }
 
-  public toMeshes(options: GeometryOptions, tolerance: number, pickable: { modelId?: string } | undefined): MeshList {
+  public toMeshes(options: GeometryOptions, tolerance: number, pickable: { isVolumeClassifier?: boolean, modelId?: string } | undefined): MeshList {
     if (this.geometries.isEmpty)
       return new MeshList();
 
@@ -176,7 +176,7 @@ export class GeometryAccumulator {
    * Populate a list of Graphic objects from the accumulated Geometry objects.
    * removed ViewContext
    */
-  public saveToGraphicList(graphics: RenderGraphic[], options: GeometryOptions, tolerance: number, pickable: { modelId?: string } | undefined): MeshList | undefined {
+  public saveToGraphicList(graphics: RenderGraphic[], options: GeometryOptions, tolerance: number, pickable: { isVolumeClassifier?: boolean, modelId?: string } | undefined): MeshList | undefined {
     const meshes = this.toMeshes(options, tolerance, pickable);
     if (0 === meshes.length)
       return undefined;

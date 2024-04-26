@@ -714,6 +714,22 @@ describe("ECSql Abstract Syntax Tree", () => {
       assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
+  it("parse NAVIGATION_VALUE", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT NAVIGATION_VALUE(Bis.Element.Model, 1)",
+        expectedECSql: "SELECT NAVIGATION_VALUE([BisCore].[Element].[Model], 1)",
+      },
+      {
+        orignalECSql: "SELECT NAVIGATION_VALUE(Bis.Element.Model, 1, 2)",
+        expectedECSql: "SELECT NAVIGATION_VALUE([BisCore].[Element].[Model], 1, 2)",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+    }
+  });
   it("parse complex query", async () => {
     const ecsql = `
     WITH RECURSIVE

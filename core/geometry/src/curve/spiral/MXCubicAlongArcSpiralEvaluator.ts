@@ -54,7 +54,7 @@ export class MXCubicAlongArcEvaluator extends CubicEvaluator {
     super.scaleInPlace(scaleFactor);
   }
   /** return a deep copy of the evaluator */
-  public clone(): MXCubicAlongArcEvaluator { return new MXCubicAlongArcEvaluator(this.nominalLength1, this.nominalRadius1, super._axisLength, this.cubicM); }
+  public clone(): MXCubicAlongArcEvaluator { return new MXCubicAlongArcEvaluator(this.nominalLength1, this.nominalRadius1, this.axisLength, this.cubicM); }
   /** Member by member matchup ... */
   public isAlmostEqual(other: any): boolean {
     if (other instanceof MXCubicAlongArcEvaluator) {

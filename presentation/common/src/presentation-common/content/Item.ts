@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Content
  */
@@ -73,8 +73,16 @@ export class Item {
    * @param mergedFieldNames List of field names whose values are merged (see [Merging values]($docs/presentation/content/Terminology#value-merging))
    * @param extendedData Extended data injected into this content item
    */
-  public constructor(primaryKeys: InstanceKey[], label: string | LabelDefinition, imageId: string, classInfo: ClassInfo | undefined,
-    values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, mergedFieldNames: string[], extendedData?: { [key: string]: any }) {
+  public constructor(
+    primaryKeys: InstanceKey[],
+    label: string | LabelDefinition,
+    imageId: string,
+    classInfo: ClassInfo | undefined,
+    values: ValuesDictionary<Value>,
+    displayValues: ValuesDictionary<DisplayValue>,
+    mergedFieldNames: string[],
+    extendedData?: { [key: string]: any },
+  ) {
     this.primaryKeys = primaryKeys;
     this.imageId = imageId; // eslint-disable-line deprecation/deprecation
     this.classInfo = classInfo;
@@ -82,7 +90,7 @@ export class Item {
     this.displayValues = displayValues;
     this.mergedFieldNames = mergedFieldNames;
     this.extendedData = extendedData;
-    this.label = (typeof label === "string") ? LabelDefinition.fromLabelString(label) : label;
+    this.label = typeof label === "string" ? LabelDefinition.fromLabelString(label) : label;
   }
 
   /**
@@ -108,10 +116,12 @@ export class Item {
 
   /** Deserialize [[Item]] from JSON */
   public static fromJSON(json: ItemJSON | string | undefined): Item | undefined {
-    if (!json)
+    if (!json) {
       return undefined;
-    if (typeof json === "string")
+    }
+    if (typeof json === "string") {
       return JSON.parse(json, (key, value) => Item.reviver(key, value));
+    }
     const item = Object.create(Item.prototype);
     const { labelDefinition, ...baseJson } = json;
     return Object.assign(item, baseJson, {

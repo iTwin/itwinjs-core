@@ -170,10 +170,9 @@ describe("obtainMeshExportTilesetUrl", () => {
       { id: "c", href: "http://tiles.com/c", changesetId: "ccc" },
     ];
 
-    const changesetPrefix = "changesetId=";
-    const changesetPrefixIndex = url.indexOf(changesetPrefix);
-    if (-1 !== changesetPrefixIndex) {
-      const changesetId = url.substring(changesetPrefixIndex + changesetPrefix.length);
+    const result = url.match(/changesetId=([^\&]+)/);
+    if (result) {
+      const changesetId = result[1];
       exports = exports.filter((x) => x.changesetId === changesetId);
     }
 

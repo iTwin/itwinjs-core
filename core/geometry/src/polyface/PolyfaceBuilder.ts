@@ -112,8 +112,8 @@ class FacetSector {
    */
   public loadIndexedPointAndDerivativeCoordinatesFromPackedArrays(i: number, packedXYZ: GrowableXYZArray, packedDerivatives?: GrowableXYZArray, fractions?: GrowableFloat64Array, v?: number) {
     packedXYZ.getPoint3dAtCheckedPointIndex(i, this.xyz);
-    if (fractions && v !== undefined)
-      this.uv = Point2d.create(fractions.atUncheckedIndex(i), v);
+    if (this.uv && fractions && v !== undefined)
+      this.uv.set(fractions.atUncheckedIndex(i), v);
     this.xyzIndex = -1;
     this.normalIndex = -1;
     this.uvIndex = -1;
@@ -825,8 +825,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         this.addIndexedTriangleNormalIndexes(sectorA0.normalIndex, sectorA1.normalIndex, sectorA2.normalIndex);
       if (this._options.needParams)
         this.addIndexedTriangleParamIndexes(sectorA0.uvIndex, sectorA1.uvIndex, sectorA2.uvIndex);
-      this.addIndexedTrianglePointIndexes(sectorA0.xyzIndex, sectorA1.xyzIndex, sectorA2.xyzIndex);
-      this._polyface.terminateFacet();
+      this.addIndexedTrianglePointIndexes(sectorA0.xyzIndex, sectorA1.xyzIndex, sectorA2.xyzIndex, true);
     }
   }
   private addSectorQuadA01B01(sectorA0: FacetSector, sectorA1: FacetSector, sectorB0: FacetSector, sectorB1: FacetSector) {
@@ -840,8 +839,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         this.addIndexedQuadNormalIndexes(sectorA0.normalIndex, sectorA1.normalIndex, sectorB0.normalIndex, sectorB1.normalIndex);
       if (this._options.needParams)
         this.addIndexedQuadParamIndexes(sectorA0.uvIndex, sectorA1.uvIndex, sectorB0.uvIndex, sectorB1.uvIndex);
-      this.addIndexedQuadPointIndexes(sectorA0.xyzIndex, sectorA1.xyzIndex, sectorB0.xyzIndex, sectorB1.xyzIndex);
-      this._polyface.terminateFacet();
+      this.addIndexedQuadPointIndexes(sectorA0.xyzIndex, sectorA1.xyzIndex, sectorB0.xyzIndex, sectorB1.xyzIndex, true);
     }
   }
 
@@ -917,14 +915,14 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     for (let i = 1; i < numPoints; i++) {
       if (this.options.shouldTriangulate) {
         if (distinctIndices(pointA.atUncheckedIndex(i - 1), pointA.atUncheckedIndex(i), pointB.atUncheckedIndex(i))) {
-          this.addIndexedTrianglePointIndexes(pointA.atUncheckedIndex(i - 1), pointA.atUncheckedIndex(i), pointB.atUncheckedIndex(i));
+          this.addIndexedTrianglePointIndexes(pointA.atUncheckedIndex(i - 1), pointA.atUncheckedIndex(i), pointB.atUncheckedIndex(i), false);
           if (normalA && normalB)
             this.addIndexedTriangleNormalIndexes(normalA.atUncheckedIndex(i - 1), normalA.atUncheckedIndex(i), normalB.atUncheckedIndex(i - 1));
           if (paramA && paramB)
             this.addIndexedTriangleParamIndexes(paramA.atUncheckedIndex(i - 1), paramA.atUncheckedIndex(i), paramB.atUncheckedIndex(i - 1));
         }
         if (distinctIndices(pointB.atUncheckedIndex(i), pointB.atUncheckedIndex(i - 1), pointA.atUncheckedIndex(i - 1))) {
-          this.addIndexedTrianglePointIndexes(pointA.atUncheckedIndex(i - 1), pointB.atUncheckedIndex(i), pointB.atUncheckedIndex(i - 1));
+          this.addIndexedTrianglePointIndexes(pointA.atUncheckedIndex(i - 1), pointB.atUncheckedIndex(i), pointB.atUncheckedIndex(i - 1), false);
           if (normalA && normalB)
             this.addIndexedTriangleNormalIndexes(normalA.atUncheckedIndex(i - 1), normalB.atUncheckedIndex(i), normalB.atUncheckedIndex(i - 1));
           if (paramA && paramB)
@@ -932,14 +930,14 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         }
       } else {
         if (pointA.atUncheckedIndex(i - 1) !== pointA.atUncheckedIndex(i) || pointB.atUncheckedIndex(i - 1) !== pointB.atUncheckedIndex(i)) {
-          this.addIndexedQuadPointIndexes(pointA.atUncheckedIndex(i - 1), pointA.atUncheckedIndex(i), pointB.atUncheckedIndex(i - 1), pointB.atUncheckedIndex(i));
+          this.addIndexedQuadPointIndexes(pointA.atUncheckedIndex(i - 1), pointA.atUncheckedIndex(i), pointB.atUncheckedIndex(i - 1), pointB.atUncheckedIndex(i), false);
           if (normalA && normalB)
             this.addIndexedQuadNormalIndexes(normalA.atUncheckedIndex(i - 1), normalA.atUncheckedIndex(i), normalB.atUncheckedIndex(i - 1), normalB.atUncheckedIndex(i));
           if (paramA && paramB)
             this.addIndexedQuadParamIndexes(paramA.atUncheckedIndex(i - 1), paramA.atUncheckedIndex(i), paramB.atUncheckedIndex(i - 1), paramB.atUncheckedIndex(i));
         }
-        this._polyface.terminateFacet();
       }
+      this._polyface.terminateFacet();
     }
   }
 
@@ -1196,7 +1194,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
   }
   private createIndicesInLineString(ls: LineString3d, vParam: number, transform?: Transform) {
-
     const n = ls.numPoints();
     {
       const pointIndices = ls.ensureEmptyPointIndices();
@@ -1623,15 +1620,21 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public addGeometryQuery(g: GeometryQuery) { g.dispatchToGeometryHandler(this); }
 
   /**
-   *
-   * * Visit all faces
-   * * Test each face with f(node) for any node on the face.
-   * * For each face that passes, pass its coordinates to the builder.
-   * * Rely on the builder's compress step to find common vertex coordinates
+   * Add a graph to the builder.
+   * * Visit one node per face
+   * * If `acceptFaceFunction(node)` returns true, pass face coordinates to the builder
+   * * Accepted face edge visibility is determined by `isEdgeVisibleFunction`.
+   * * Rely on the builder's compress step to find common vertex coordinates.
+   * @param graph faces to add as facets
+   * @param acceptFaceFunction optional test for whether to add a given face. Default: ignore exterior faces
+   * @param isEdgeVisibleFunction optional test for whether to hide an edge. Default: hide interior edges
    * @internal
    */
-  public addGraph(graph: HalfEdgeGraph, acceptFaceFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testNodeMaskNotExterior(node),
-    isEdgeVisibleFunction: HalfEdgeToBooleanFunction | undefined = (node) => HalfEdge.testMateMaskExterior(node)) {
+  public addGraph(
+    graph: HalfEdgeGraph,
+    acceptFaceFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testNodeMaskNotExterior(node),
+    isEdgeVisibleFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testMateMaskExterior(node),
+  ) {
     let index = 0;
     const needNormals = this._options.needNormals;
     const needParams = this._options.needParams;
@@ -1669,7 +1672,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    *  * terminate the facet
    * @internal
    */
-  public addGraphFaces(_graph: HalfEdgeGraph, faces: HalfEdge[]) {
+  public addGraphFaces(faces: HalfEdge[]) {
     let index = 0;
     for (const seed of faces) {
       let node = seed;
@@ -1681,21 +1684,31 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this._polyface.terminateFacet();
     }
   }
-  /** Create a polyface containing the faces of a HalfEdgeGraph, with test function to filter faces.
+  /**
+   * Create a polyface containing the faces of a HalfEdgeGraph, with test functions to filter faces and hide edges.
+   * * This is a static wrapper of [[addGraph]].
+   * @param graph faces to add as facets
+   * @param acceptFaceFunction optional test for whether to add a given face. Default: ignore exterior faces
+   * @param isEdgeVisibleFunction optional test for whether to hide an edge. Default: hide interior edges
    * @internal
    */
-  public static graphToPolyface(graph: HalfEdgeGraph, options?: StrokeOptions, acceptFaceFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testNodeMaskNotExterior(node)): IndexedPolyface {
+  public static graphToPolyface(
+    graph: HalfEdgeGraph,
+    options?: StrokeOptions,
+    acceptFaceFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testNodeMaskNotExterior(node),
+    isEdgeVisibleFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testMateMaskExterior(node),
+    ): IndexedPolyface {
     const builder = PolyfaceBuilder.create(options);
-    builder.addGraph(graph, acceptFaceFunction);
+    builder.addGraph(graph, acceptFaceFunction, isEdgeVisibleFunction);
     builder.endFace();
     return builder.claimPolyface();
   }
   /** Create a polyface containing the faces of a HalfEdgeGraph that are specified by the HalfEdge array.
    * @internal
    */
-  public static graphFacesToPolyface(graph: HalfEdgeGraph, faces: HalfEdge[]): IndexedPolyface {
+  public static graphFacesToPolyface(faces: HalfEdge[]): IndexedPolyface {
     const builder = PolyfaceBuilder.create();
-    builder.addGraphFaces(graph, faces);
+    builder.addGraphFaces(faces);
     builder.endFace();
     return builder.claimPolyface();
   }

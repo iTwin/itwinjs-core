@@ -84,6 +84,7 @@ export class MeshGraphic extends Graphic {
   public readonly meshData: MeshData;
   private readonly _primitives: Primitive[] = [];
   private readonly _instances?: InstanceBuffers | PatternBuffers;
+  private readonly _meshRange: Range3d;
 
   public static create(geometry: MeshRenderGeometry, instances?: InstancedGraphicParams | PatternBuffers): MeshGraphic | undefined {
     let buffers;
@@ -114,6 +115,7 @@ export class MeshGraphic extends Graphic {
   private constructor(geometry: MeshRenderGeometry, instances?: InstanceBuffers | PatternBuffers) {
     super();
     this.meshData = geometry.data;
+    this._meshRange = geometry.range;
     this._instances = instances;
 
     this.addPrimitive(geometry.surface);
@@ -139,6 +141,13 @@ export class MeshGraphic extends Graphic {
     this.meshData.collectStatistics(stats);
     this._primitives.forEach((prim) => prim.collectStatistics(stats));
     this._instances?.collectStatistics(stats);
+  }
+
+  public override unionRange(range: Range3d) {
+    if (this._instances)
+      range.extendRange(range);
+    else
+      range.extendRange(this._meshRange);
   }
 
   public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }

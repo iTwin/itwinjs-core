@@ -183,9 +183,12 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
         return { status: MapLayerSourceStatus.InvalidTileTree };
 
       return { status: MapLayerSourceStatus.Valid, subLayers };
-    } catch (err) {
-      console.error(err); // eslint-disable-line no-console
-      return { status: MapLayerSourceStatus.InvalidUrl };
+    } catch (err: any) {
+      let status = MapLayerSourceStatus.InvalidUrl;
+      if (err?.status === 401) {
+        status = ((userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth);
+      }
+      return { status};
     }
   }
 

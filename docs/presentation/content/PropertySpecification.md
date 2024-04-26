@@ -21,7 +21,12 @@ This specification allows overriding some attributes of specific ECProperty or d
 
 ### Attribute: `name`
 
-Name of the ECProperty to apply overrides to. A `"*"` may be specified to match all properties in current context. The current context is determined based on where the override is specified:
+Name of the ECProperty to apply overrides to.
+
+A `[*]` suffix may be used for array properties to target their items rather than arrays themselves, for example: `MyArrayProperty[*]`. In this case, only [`renderer`](#attribute-renderer) and
+[`editor`](#attribute-editor) overrides have effect.
+
+A `"*"` may be specified to match all properties in current context. The current context is determined based on where the override is specified:
 
 - When used in a [content modifier](./contentModifier.md#attribute-propertyoverrides), the properties of the ECClass specified by the [`class` attribute](./contentModifier.md#attribute-class) are used.
 - When used in one of the [content specifications](./contentRule.md#attribute-specifications), properties produced by that specification are used.

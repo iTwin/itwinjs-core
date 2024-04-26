@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { BentleyError, Logger, StatusCategory } from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley";
 import { CommonLoggerCategory, RpcInvocation, RpcProtocolEvent, WebAppRpcLogging } from "@itwin/core-common";
 import * as os from "os";
 
@@ -35,9 +35,7 @@ export class WebAppRpcLoggingBackend extends WebAppRpcLogging {
       method: invocation.request.method,
       path: invocation.request.path,
       status: invocation.status,
-      httpStatus: StatusCategory.for(result).code,
       errorMessage,
-      error: BentleyError.getErrorProps(result),
       // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
       ActivityId: invocation.request.id, // eslint-disable-line @typescript-eslint/naming-convention
       MachineName: this.getHostname(), // eslint-disable-line @typescript-eslint/naming-convention

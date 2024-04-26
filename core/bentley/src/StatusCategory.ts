@@ -23,7 +23,7 @@ import {
 /* eslint-disable @typescript-eslint/no-shadow */
 
 /** @alpha */
-export type StatusCategoryHandler = (error: BentleyError) => StatusCategory | undefined;
+export type StatusCategoryHandler = (error: Error) => StatusCategory | undefined;
 
 /** A group of related statuses for aggregate reporting purposes.
  * @alpha
@@ -31,7 +31,7 @@ export type StatusCategoryHandler = (error: BentleyError) => StatusCategory | un
 export abstract class StatusCategory {
   public static handlers: Set<StatusCategoryHandler> = new Set();
 
-  public static for(error: BentleyError): StatusCategory {
+  public static for(error: Error): StatusCategory {
     for (const handler of this.handlers) {
       const category = handler(error);
       if (category) {
@@ -39,7 +39,11 @@ export abstract class StatusCategory {
       }
     }
 
-    return lookupCategory(error);
+    const errorNumber = (error as BentleyError).errorNumber as unknown;
+    if (typeof errorNumber === "number")
+      return lookupHttpStatusCategory(errorNumber);
+
+    return new UnknownError();
   }
 
   public abstract name: string;
@@ -133,8 +137,10 @@ class UnknownError extends HTTP.InternalServerError { }
 
 class NotImplemented extends HTTP.NotImplemented { }
 
-function lookupCategory(error: BentleyError): StatusCategory {
-  switch (error.errorNumber) {
+class Aborted extends HTTP.BadRequest { }
+
+function lookupHttpStatusCategory(statusCode: number): StatusCategory {
+  switch (statusCode) {
     case BentleyStatus.SUCCESS: return new Success();
     case BentleyStatus.ERROR: return new UnknownError();
 
@@ -209,6 +215,7 @@ function lookupCategory(error: BentleyError): StatusCategory {
     case IModelStatus.NotRegistered: return new NotImplemented();
     case IModelStatus.FunctionNotFound: return new NotImplemented();
     case IModelStatus.NoActiveCommand: return new StateViolation();
+    case IModelStatus.Aborted: return new Aborted();
 
     case BriefcaseStatus.CannotAcquire: return new OperationFailed();
     case BriefcaseStatus.CannotDownload: return new OperationFailed();

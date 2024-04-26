@@ -13,6 +13,7 @@ export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise
 // @beta
 export interface FrontendTilesOptions {
     computeSpatialTilesetBaseUrl?: ComputeSpatialTilesetBaseUrl;
+    enableCDN?: boolean;
     // @internal
     enableEdges?: boolean;
     maxLevelsToSkip?: number;
@@ -69,6 +70,7 @@ export function obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs)
 // @beta
 export interface ObtainMeshExportTilesetUrlArgs {
     accessToken: AccessToken;
+    enableCDN?: boolean;
     iModel: IModelConnection;
     requireExactChangeset?: boolean;
     urlPrefix?: string;
@@ -81,6 +83,7 @@ export function queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableItera
 export interface QueryMeshExportsArgs {
     accessToken: AccessToken;
     changesetId?: string;
+    enableCDN?: boolean;
     iModelId: string;
     includeIncomplete?: boolean;
     urlPrefix?: string;

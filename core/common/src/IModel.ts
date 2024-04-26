@@ -136,6 +136,19 @@ export interface IModelEncryptionProps {
 }
 
 /**
+ * Sqlite options.
+ * @public
+ */
+export interface OpenSqliteArgs {
+  /**
+   * Specify timeout after which SQLite stop retrying to acquire lock to database file and throw SQLITE_BUSY error.
+   * Timeout is specified in milliseconds.
+   * For more information https://www.sqlite.org/c3ref/busy_timeout.html.
+   * */
+  readonly busyTimeout?: number;
+}
+
+/**
  * A key used to identify an opened [IModelDb]($backend) between the frontend and backend for Rpc and Ipc communications.
  * Keys must be unique - that is there can never be two IModelDbs opened with the same key at any given time.
  * If no key is supplied in a call to open an IModelDb, one is generated and returned.
@@ -298,9 +311,9 @@ export class EcefLocation implements EcefLocationProps {
   /** Construct ECEF Location from transform with optional position on the earth used to establish the ECEF origin and orientation. */
   public static createFromTransform(transform: Transform): EcefLocation {
     const ecefOrigin = transform.getOrigin();
-    const angleFromInput = YawPitchRollAngles.createDegrees(0,0,0);
+    const angleFromInput = YawPitchRollAngles.createDegrees(0, 0, 0);
     const locationOrientationFromInputT = YawPitchRollAngles.createFromMatrix3d(transform.getMatrix(), angleFromInput);
-    const transformProps =  transform.toJSON();
+    const transformProps = transform.toJSON();
 
     return new EcefLocation({ origin: ecefOrigin, orientation: locationOrientationFromInputT ?? angleFromInput, transform: transformProps });
   }

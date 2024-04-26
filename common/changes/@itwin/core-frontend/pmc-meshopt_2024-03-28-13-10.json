@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add support for EXT_meshopt_compression glTF extension.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

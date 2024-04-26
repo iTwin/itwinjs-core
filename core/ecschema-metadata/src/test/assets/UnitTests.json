@@ -9034,5 +9034,17 @@
     "input": 42.42,
     "to": "FAHRENHEIT",
     "expect": 108.35600000000001
+  },
+  {
+    "from": "N",
+    "input": 42.42,
+    "to": "DECAN",
+    "expect": 4.242
+  },
+  {
+    "from": "DECAN",
+    "input": 42.42,
+    "to": "N",
+    "expect": 424.2
   }
 ]

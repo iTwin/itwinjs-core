@@ -1,6 +1,6 @@
 # `IndexedPolyface`
 
-Here is a simple indexed polyface mesh along with some of its data shown in 2 different styles. This data is required to represent an indexed polyface mesh. Other data, such as color, normal, uv parameters, and edge visibility, are not required.
+Here is a simple indexed polyface mesh along with some of its data shown in 2 different styles. This data is required to represent an indexed polyface mesh. Other data, such as color, normal, uv parameters, and edge visibility, are not required. Note that on the graph, black numbers are point coordinates and red numbers are point indices.
 
 ![>](./figs/Polyface/simplePolyfaceMesh.png)
 
@@ -14,3 +14,35 @@ Second style is `zero-terminated` style and is used to serialize an `IndexedPoly
 
 **Note:**<br>
 If an IndexedPolyface is defined with only the required data, then it is a complete specification of a mesh's geometry, but an incomplete specification of its topology. That is because a Polyface only knows how to get to the next vertex around a facet (but not to adjacent facets) and how to get to the next facet in the collection (but not to the next adjacent facet). The benefit is it requires less storage and it is straightforward to compute the full topology when we need it.
+
+# `Compress Polyface Data`
+
+`PolyfaceData.compress` function removes duplicate data. Here is an example. Suppose we create a polyface with 2 facets (which shares a common edge) using the following code:
+```
+    const pf = IndexedPolyface.create();
+    // add first facet
+    pf.addPointXYZ(0, 0, 0);
+    pf.addPointXYZ(1, 0, 0);
+    pf.addPointXYZ(1, 1, 0);
+    pf.addPointXYZ(0, 1, 0);
+    pf.addPointIndex(0);
+    pf.addPointIndex(1);
+    pf.addPointIndex(2);
+    pf.addPointIndex(3);
+    pf.terminateFacet(true);
+    // add second facet
+    pf.addPointXYZ(1, 0, 0);
+    pf.addPointXYZ(2, 0, 0);
+    pf.addPointXYZ(2, 1, 0);
+    pf.addPointXYZ(1, 1, 0);
+    pf.addPointIndex(4);
+    pf.addPointIndex(5);
+    pf.addPointIndex(6);
+    pf.addPointIndex(7);
+    pf.terminateFacet(true);
+```
+This generates the following graph. Black numbers on the graph are point coordinates and red numbers are point indices.
+![>](./figs/Polyface/polyfaceDataBeforeCompress.png)
+
+As you can see the shared edge leads to duplicate data in `data.point`. To remove duplicate data, we call `pf.data.compress()` which results into the following graph:
+![>](./figs/Polyface/polyfaceDataAfterCompress.png)

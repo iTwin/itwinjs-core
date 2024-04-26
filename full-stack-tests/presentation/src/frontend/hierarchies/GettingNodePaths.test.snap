@@ -1,0 +1,437 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Hierarchies Getting node paths gets filtered node paths 1`] = `
+Array [
+  Object {
+    "children": Array [
+      Object {
+        "children": Array [],
+        "filteringData": Object {
+          "childMatchesCount": 0,
+          "matchesCount": 1,
+        },
+        "index": 0,
+        "isMarked": false,
+        "node": Object {
+          "key": Object {
+            "pathFromRoot": Array [
+              "ef8e53f5adeee8a94e0e44ac734d3472",
+              "9699954a7e706f1b6c93124bd60b2ad0",
+            ],
+            "type": "nodeType11",
+            "version": 2,
+          },
+          "label": Object {
+            "displayValue": "filter ch1",
+            "rawValue": "filter ch1",
+            "typeName": "string",
+          },
+        },
+      },
+      Object {
+        "children": Array [
+          Object {
+            "children": Array [],
+            "filteringData": Object {
+              "childMatchesCount": 0,
+              "matchesCount": 1,
+            },
+            "index": 0,
+            "isMarked": false,
+            "node": Object {
+              "key": Object {
+                "pathFromRoot": Array [
+                  "ef8e53f5adeee8a94e0e44ac734d3472",
+                  "1ea1d1239c8778fbf20ac5360ba16a1b",
+                  "6bcfef7cee585ef3d7724170bce50c93",
+                ],
+                "type": "nodeType131",
+                "version": 2,
+              },
+              "label": Object {
+                "displayValue": "filter ch4",
+                "rawValue": "filter ch4",
+                "typeName": "string",
+              },
+            },
+          },
+        ],
+        "filteringData": Object {
+          "childMatchesCount": 1,
+          "matchesCount": 0,
+        },
+        "index": 1,
+        "isMarked": false,
+        "node": Object {
+          "hasChildren": true,
+          "key": Object {
+            "pathFromRoot": Array [
+              "ef8e53f5adeee8a94e0e44ac734d3472",
+              "1ea1d1239c8778fbf20ac5360ba16a1b",
+            ],
+            "type": "nodeType13",
+            "version": 2,
+          },
+          "label": Object {
+            "displayValue": "other ch3",
+            "rawValue": "other ch3",
+            "typeName": "string",
+          },
+        },
+      },
+    ],
+    "filteringData": Object {
+      "childMatchesCount": 2,
+      "matchesCount": 1,
+    },
+    "index": 0,
+    "isMarked": false,
+    "node": Object {
+      "hasChildren": true,
+      "key": Object {
+        "pathFromRoot": Array [
+          "ef8e53f5adeee8a94e0e44ac734d3472",
+        ],
+        "type": "nodeType1",
+        "version": 2,
+      },
+      "label": Object {
+        "displayValue": "filter r1",
+        "rawValue": "filter r1",
+        "typeName": "string",
+      },
+    },
+  },
+  Object {
+    "children": Array [
+      Object {
+        "children": Array [],
+        "filteringData": Object {
+          "childMatchesCount": 0,
+          "matchesCount": 1,
+        },
+        "index": 0,
+        "isMarked": false,
+        "node": Object {
+          "key": Object {
+            "pathFromRoot": Array [
+              "42839683b47c322cd95a82ba13b75e13",
+              "ce5c2b56d7bc7a1dd7e8ad4b827a9f40",
+            ],
+            "type": "nodeType32",
+            "version": 2,
+          },
+          "label": Object {
+            "displayValue": "filter ch6",
+            "rawValue": "filter ch6",
+            "typeName": "string",
+          },
+        },
+      },
+    ],
+    "filteringData": Object {
+      "childMatchesCount": 1,
+      "matchesCount": 0,
+    },
+    "index": 1,
+    "isMarked": false,
+    "node": Object {
+      "hasChildren": true,
+      "key": Object {
+        "pathFromRoot": Array [
+          "42839683b47c322cd95a82ba13b75e13",
+        ],
+        "type": "nodeType3",
+        "version": 2,
+      },
+      "label": Object {
+        "displayValue": "other r3",
+        "rawValue": "other r3",
+        "typeName": "string",
+      },
+    },
+  },
+]
+`;
+
+exports[`Hierarchies Getting node paths gets node paths based on instance key paths 1`] = `
+Array [
+  Object {
+    "children": Array [
+      Object {
+        "children": Array [
+          Object {
+            "children": Array [
+              Object {
+                "children": Array [],
+                "filteringData": Object {
+                  "childMatchesCount": 0,
+                  "matchesCount": 0,
+                },
+                "index": 0,
+                "isMarked": false,
+                "node": Object {
+                  "key": Object {
+                    "instanceKeys": Array [
+                      Object {
+                        "className": "BisCore:DefinitionPartition",
+                        "id": "0x10",
+                      },
+                    ],
+                    "instanceKeysSelectQuery": Object {
+                      "bindings": Array [
+                        Object {
+                          "type": "Id",
+                          "value": "0x6d",
+                        },
+                        Object {
+                          "type": "Id",
+                          "value": "0x10",
+                        },
+                      ],
+                      "query": "SELECT ? AS [/ECClassId/], ? AS [/ECInstanceId/]",
+                    },
+                    "pathFromRoot": Array [
+                      "528e1df542291a3ac06651b6cdbccfae",
+                      "bf6434c763c07bfe533914bfaa316e9f",
+                      "8384337fc6996c24d642e0104685b044",
+                      "f7356481e260e191b8e54498a094bafe",
+                      "852cdc3c21dea005182e8015051fb0cb",
+                    ],
+                    "type": "ECInstancesNode",
+                    "version": 2,
+                  },
+                  "label": Object {
+                    "displayValue": "BisCore.DictionaryModel",
+                    "rawValue": "BisCore.DictionaryModel",
+                    "typeName": "string",
+                  },
+                  "supportsFiltering": true,
+                },
+              },
+            ],
+            "filteringData": Object {
+              "childMatchesCount": 0,
+              "matchesCount": 0,
+            },
+            "index": 0,
+            "isMarked": false,
+            "node": Object {
+              "description": "A Definition Partition element indicates that there is a definition-related modeling perspective within the overall DgnDb information hierarchy. A Definition Partition is always parented to a Subject and broken down by a Definition Model.",
+              "hasChildren": true,
+              "key": Object {
+                "className": "BisCore:DefinitionPartition",
+                "groupedInstancesCount": 1,
+                "instanceKeysSelectQuery": Object {
+                  "bindings": Array [
+                    Object {
+                      "type": "Id",
+                      "value": "0x1",
+                    },
+                    Object {
+                      "type": "Id",
+                      "value": "0x1",
+                    },
+                  ],
+                  "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM (SELECT * FROM [bis].[Element] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[GeometricElement]))) [this] INNER JOIN [bis].[Subject] [related] ON [related].[ECInstanceId] = [this].[Parent].[Id] WHERE ([related].[ECInstanceId] IN (?)) UNION ALL SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM [bis].[GeometricElement] [this] INNER JOIN [bis].[Subject] [related] ON [related].[ECInstanceId] = [this].[Parent].[Id] WHERE ([related].[ECInstanceId] IN (?))) WHERE ([/ECClassId/] IS (ONLY [BisCore].[DefinitionPartition]))",
+                },
+                "pathFromRoot": Array [
+                  "528e1df542291a3ac06651b6cdbccfae",
+                  "bf6434c763c07bfe533914bfaa316e9f",
+                  "8384337fc6996c24d642e0104685b044",
+                  "f7356481e260e191b8e54498a094bafe",
+                ],
+                "type": "ECClassGroupingNode",
+                "version": 2,
+              },
+              "label": Object {
+                "displayValue": "Definition Partition",
+                "rawValue": "Definition Partition",
+                "typeName": "string",
+              },
+              "supportsFiltering": true,
+            },
+          },
+          Object {
+            "children": Array [
+              Object {
+                "children": Array [],
+                "filteringData": Object {
+                  "childMatchesCount": 0,
+                  "matchesCount": 0,
+                },
+                "index": 0,
+                "isMarked": true,
+                "node": Object {
+                  "key": Object {
+                    "instanceKeys": Array [
+                      Object {
+                        "className": "BisCore:LinkPartition",
+                        "id": "0xe",
+                      },
+                    ],
+                    "instanceKeysSelectQuery": Object {
+                      "bindings": Array [
+                        Object {
+                          "type": "Id",
+                          "value": "0xa1",
+                        },
+                        Object {
+                          "type": "Id",
+                          "value": "0xe",
+                        },
+                      ],
+                      "query": "SELECT ? AS [/ECClassId/], ? AS [/ECInstanceId/]",
+                    },
+                    "pathFromRoot": Array [
+                      "528e1df542291a3ac06651b6cdbccfae",
+                      "bf6434c763c07bfe533914bfaa316e9f",
+                      "8384337fc6996c24d642e0104685b044",
+                      "82b256383b3d18e4145edba541109359",
+                      "4fbd55c8b57aefdb4d93cf59efd66dca",
+                    ],
+                    "type": "ECInstancesNode",
+                    "version": 2,
+                  },
+                  "label": Object {
+                    "displayValue": "BisCore.RealityDataSources",
+                    "rawValue": "BisCore.RealityDataSources",
+                    "typeName": "string",
+                  },
+                  "supportsFiltering": true,
+                },
+              },
+            ],
+            "filteringData": Object {
+              "childMatchesCount": 0,
+              "matchesCount": 0,
+            },
+            "index": 1,
+            "isMarked": false,
+            "node": Object {
+              "description": "A Link Partition element indicates that there is a link-related modeling perspective within the overall DgnDb information hierarchy. A Link Partition is always parented to a Subject and broken down by a Link Model.",
+              "hasChildren": true,
+              "key": Object {
+                "className": "BisCore:LinkPartition",
+                "groupedInstancesCount": 1,
+                "instanceKeysSelectQuery": Object {
+                  "bindings": Array [
+                    Object {
+                      "type": "Id",
+                      "value": "0x1",
+                    },
+                    Object {
+                      "type": "Id",
+                      "value": "0x1",
+                    },
+                  ],
+                  "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM (SELECT * FROM [bis].[Element] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[GeometricElement]))) [this] INNER JOIN [bis].[Subject] [related] ON [related].[ECInstanceId] = [this].[Parent].[Id] WHERE ([related].[ECInstanceId] IN (?)) UNION ALL SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM [bis].[GeometricElement] [this] INNER JOIN [bis].[Subject] [related] ON [related].[ECInstanceId] = [this].[Parent].[Id] WHERE ([related].[ECInstanceId] IN (?))) WHERE ([/ECClassId/] IS (ONLY [BisCore].[LinkPartition]))",
+                },
+                "pathFromRoot": Array [
+                  "528e1df542291a3ac06651b6cdbccfae",
+                  "bf6434c763c07bfe533914bfaa316e9f",
+                  "8384337fc6996c24d642e0104685b044",
+                  "82b256383b3d18e4145edba541109359",
+                ],
+                "type": "ECClassGroupingNode",
+                "version": 2,
+              },
+              "label": Object {
+                "displayValue": "Link Partition",
+                "rawValue": "Link Partition",
+                "typeName": "string",
+              },
+              "supportsFiltering": true,
+            },
+          },
+        ],
+        "filteringData": Object {
+          "childMatchesCount": 0,
+          "matchesCount": 0,
+        },
+        "index": 0,
+        "isMarked": false,
+        "node": Object {
+          "hasChildren": true,
+          "key": Object {
+            "instanceKeys": Array [
+              Object {
+                "className": "BisCore:Subject",
+                "id": "0x1",
+              },
+            ],
+            "instanceKeysSelectQuery": Object {
+              "bindings": Array [
+                Object {
+                  "type": "Id",
+                  "value": "0xce",
+                },
+                Object {
+                  "type": "Id",
+                  "value": "0x1",
+                },
+              ],
+              "query": "SELECT ? AS [/ECClassId/], ? AS [/ECInstanceId/]",
+            },
+            "pathFromRoot": Array [
+              "528e1df542291a3ac06651b6cdbccfae",
+              "bf6434c763c07bfe533914bfaa316e9f",
+              "8384337fc6996c24d642e0104685b044",
+            ],
+            "type": "ECInstancesNode",
+            "version": 2,
+          },
+          "label": Object {
+            "displayValue": "DgnV8Bridge",
+            "rawValue": "DgnV8Bridge",
+            "typeName": "string",
+          },
+          "supportsFiltering": true,
+        },
+      },
+    ],
+    "filteringData": Object {
+      "childMatchesCount": 0,
+      "matchesCount": 0,
+    },
+    "index": 0,
+    "isMarked": false,
+    "node": Object {
+      "hasChildren": true,
+      "key": Object {
+        "instanceKeys": Array [
+          Object {
+            "className": "BisCore:RepositoryModel",
+            "id": "0x1",
+          },
+        ],
+        "instanceKeysSelectQuery": Object {
+          "bindings": Array [
+            Object {
+              "type": "Id",
+              "value": "0xb9",
+            },
+            Object {
+              "type": "Id",
+              "value": "0x1",
+            },
+          ],
+          "query": "SELECT ? AS [/ECClassId/], ? AS [/ECInstanceId/]",
+        },
+        "pathFromRoot": Array [
+          "528e1df542291a3ac06651b6cdbccfae",
+          "bf6434c763c07bfe533914bfaa316e9f",
+        ],
+        "type": "ECInstancesNode",
+        "version": 2,
+      },
+      "label": Object {
+        "displayValue": "DgnV8Bridge",
+        "rawValue": "DgnV8Bridge",
+        "typeName": "string",
+      },
+      "supportsFiltering": true,
+    },
+  },
+]
+`;

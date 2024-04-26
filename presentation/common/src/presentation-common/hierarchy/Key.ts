@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Hierarchies
  */
@@ -26,7 +26,8 @@ export enum StandardNodeTypes {
  */
 export type NodeKey = BaseNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
 /** @public */
-export namespace NodeKey { // eslint-disable-line @typescript-eslint/no-redeclare
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export namespace NodeKey {
   /**
    * Serialize given [[NodeKey]] to JSON
    * @deprecated in 3.x. Use [[NodeKey]].
@@ -106,18 +107,21 @@ export namespace NodeKey { // eslint-disable-line @typescript-eslint/no-redeclar
    */
   export function equals(lhs: NodeKey, rhs: NodeKey): boolean {
     // types must always be equal
-    if (lhs.type !== rhs.type)
+    if (lhs.type !== rhs.type) {
       return false;
+    }
 
     // `pathFromRoot` lengths must always be equal
-    if (lhs.pathFromRoot.length !== rhs.pathFromRoot.length)
+    if (lhs.pathFromRoot.length !== rhs.pathFromRoot.length) {
       return false;
+    }
 
     // when versions are equal, compare using contents of `pathFromRoot` array
     if (lhs.version === rhs.version) {
       for (let i = 0; i < lhs.pathFromRoot.length; ++i) {
-        if (lhs.pathFromRoot[i] !== rhs.pathFromRoot[i])
+        if (lhs.pathFromRoot[i] !== rhs.pathFromRoot[i]) {
           return false;
+        }
       }
       return true;
     }
@@ -126,11 +130,13 @@ export namespace NodeKey { // eslint-disable-line @typescript-eslint/no-redeclar
     // of different key versions can't be compared
     if (isInstancesNodeKey(lhs)) {
       assert(isInstancesNodeKey(rhs));
-      if (lhs.instanceKeys.length !== rhs.instanceKeys.length)
+      if (lhs.instanceKeys.length !== rhs.instanceKeys.length) {
         return false;
+      }
       for (let i = 0; i < lhs.instanceKeys.length; ++i) {
-        if (0 !== InstanceKey.compare(lhs.instanceKeys[i], rhs.instanceKeys[i]))
+        if (0 !== InstanceKey.compare(lhs.instanceKeys[i], rhs.instanceKeys[i])) {
           return false;
+        }
       }
       return true;
     }

@@ -10,6 +10,7 @@ import { DbResult, Id64String, IModelStatus, RepositoryStatus } from "@itwin/cor
 import { ChannelRootAspectProps, IModel, IModelError } from "@itwin/core-common";
 import { Subject } from "./Element";
 import { IModelDb } from "./IModelDb";
+import { IModelHost } from "./IModelHost";
 
 /** The key for a channel. Used for "allowed channels" in [[ChannelControl]]
  * @beta
@@ -23,8 +24,6 @@ export type ChannelKey = string;
  * @beta
  */
 export interface ChannelControl {
-  /** Determine whether this [[IModelDb]] has any channels in it. */
-  get hasChannels(): boolean;
   /** Add a new channel to the list of allowed channels of the [[IModelDb]] for this session.
    * @param channelKey The key for the channel to become editable in this session.
    */
@@ -38,10 +37,11 @@ export interface ChannelControl {
    */
   getChannelKey(elementId: Id64String): ChannelKey;
   /** Make an existing element a new Channel root.
-   * @note if the element is already in a channel, this will throw an error.
+   * @throws if the element is already in a channel different than the shared channel, or if
+   * there is already another channelRoot element for the specified channelKey
    */
   makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey }): void;
-  /** Insert a new Subject element that is a Channel root in this iModel.
+  /** Insert a new Subject element that is a Channel Root in this iModel.
    * @returns the ElementId of the new Subject element.
    * @note if the parentSubject element is already in a channel, this will add the Subject element and then throw an error without making it a Channel root.
    */
@@ -55,6 +55,13 @@ export interface ChannelControl {
     /** Optional description for new Subject. */
     description?: string;
   }): Id64String;
+  /**
+   * Queries for the element Id acting as the ChannelRoot for a given channelKey, if any
+   * @param channelKey The key for the channel to query for
+   * @returns The element Id of the ChannelRoot element of the specified Channel key, or undefined if
+   * there is no ChannelRoot for it
+   */
+  queryChannelRoot(channelKey: ChannelKey): Id64String | undefined;
 
   /** @internal */
   verifyChannel(modelId: Id64String): void;
@@ -68,15 +75,16 @@ export namespace ChannelControl {
 
 /** @internal */
 export class ChannelAdmin implements ChannelControl {
-  public static readonly sharedChannel = "shared";
   public static readonly channelClassName = "bis:ChannelRootAspect";
   private _allowedChannels = new Set<ChannelKey>();
   private _allowedModels = new Set<Id64String>();
   private _deniedModels = new Map<Id64String, ChannelKey>();
-  private _hasChannels?: boolean;
 
   public constructor(private _iModel: IModelDb) {
-    this._allowedChannels.add(ChannelControl.sharedChannelName);
+    // for backwards compatibility, allow the shared channel unless explicitly turned off in IModelHostOptions.
+    if (IModelHost.configuration?.allowSharedChannel !== false)
+      this._allowedChannels.add(ChannelControl.sharedChannelName);
+
   }
   public addAllowedChannel(channelKey: ChannelKey) {
     this._allowedChannels.add(channelKey);
@@ -86,27 +94,22 @@ export class ChannelAdmin implements ChannelControl {
     this._allowedChannels.delete(channelKey);
     this._allowedModels.clear();
   }
-  public get hasChannels(): boolean {
-    if (undefined === this._hasChannels) {
-      try {
-        this._hasChannels = this._iModel.withStatement(`SELECT 1 FROM ${ChannelAdmin.channelClassName}`, (stmt) => stmt.step() === DbResult.BE_SQLITE_ROW, false);
-      } catch (e) {
-        // iModel doesn't have channel class in its BIS schema
-        this._hasChannels = false;
-      }
-    }
-    return this._hasChannels;
-  }
   public getChannelKey(elementId: Id64String): ChannelKey {
-    if (!this.hasChannels || elementId === IModel.rootSubjectId)
+    if (elementId === IModel.rootSubjectId)
       return ChannelControl.sharedChannelName;
 
-    const channel = this._iModel.withPreparedStatement(`SELECT Owner FROM ${ChannelAdmin.channelClassName} WHERE Element.Id=?`, (stmt) => {
-      stmt.bindId(1, elementId);
-      return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValue(0).getString() : undefined;
-    });
-    if (channel !== undefined)
-      return channel;
+    try {
+      const channel = this._iModel.withPreparedStatement(`SELECT Owner FROM ${ChannelAdmin.channelClassName} WHERE Element.Id=?`, (stmt) => {
+        stmt.bindId(1, elementId);
+        return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValue(0).getString() : undefined;
+      });
+      if (channel !== undefined)
+        return channel;
+    } catch {
+      // Exception happens if the iModel is too old: ChannelRootAspect class not present in the BisCore schema (older than v1.0.10).
+      // In that case all data in such iModel is assumed to be in the shared channel.
+      return ChannelControl.sharedChannelName;
+    }
     const parentId = this._iModel.withPreparedSqliteStatement("SELECT ParentId,ModelId FROM bis_Element WHERE id=?", (stmt) => {
       stmt.bindId(1, elementId);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
@@ -117,7 +120,7 @@ export class ChannelAdmin implements ChannelControl {
   }
   public verifyChannel(modelId: Id64String): void {
     // Note: indirect changes are permitted to change any channel
-    if (!this.hasChannels || this._allowedModels.has(modelId) || this._iModel.nativeDb.isIndirectChanges())
+    if (this._allowedModels.has(modelId) || this._iModel.nativeDb.isIndirectChanges())
       return;
 
     const deniedChannel = this._deniedModels.get(modelId);
@@ -136,13 +139,39 @@ export class ChannelAdmin implements ChannelControl {
     if (ChannelControl.sharedChannelName !== this.getChannelKey(args.elementId))
       throw new Error("channels may not nest");
 
+    if (this.queryChannelRoot(args.channelKey) !== undefined)
+      throw new Error("a channel root for the specified key already exists");
+
     const props: ChannelRootAspectProps = { classFullName: ChannelAdmin.channelClassName, element: { id: args.elementId }, owner: args.channelKey };
     this._iModel.elements.insertAspect(props);
-    this._hasChannels = true;
   }
   public insertChannelSubject(args: { subjectName: string, channelKey: ChannelKey, parentSubjectId?: Id64String, description?: string }): Id64String {
+    // Check if channelKey already exists before inserting Subject.
+    // makeChannelRoot will check that again, but at that point the new Subject is already inserted.
+    // Prefer to check twice instead of deleting the Subject in the latter option.
+    if (this.queryChannelRoot(args.channelKey) !== undefined)
+      throw new Error("a channel root for the specified key already exists");
+
     const elementId = Subject.insert(this._iModel, args.parentSubjectId ?? IModel.rootSubjectId, args.subjectName, args.description);
     this.makeChannelRoot({ elementId, channelKey: args.channelKey });
     return elementId;
+  }
+  public queryChannelRoot(channelKey: ChannelKey): Id64String | undefined {
+    if (channelKey === ChannelControl.sharedChannelName)
+      // RootSubject acts as the ChannelRoot element of the shared channel
+      return IModel.rootSubjectId;
+
+    try {
+      const channelRoot = this._iModel.withPreparedStatement(`SELECT Element.Id FROM ${ChannelAdmin.channelClassName} WHERE Owner=?`, (stmt) => {
+        stmt.bindString(1, channelKey);
+        return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValue(0).getId() : undefined;
+      });
+      return channelRoot;
+    } catch {
+      // Exception happens if the iModel is too old: ChannelRootAspect class not present in the BisCore schema (older than v1.0.10).
+      // In that case all data in such iModel is assumed to be in the shared channel.
+      return undefined;
+    }
+
   }
 }

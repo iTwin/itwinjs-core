@@ -14,6 +14,7 @@ import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { SqliteChangesetReader } from "../../SqliteChangesetReader";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { ChannelControl } from "../../core-backend";
 
 describe("Changeset Reader API", async () => {
   let iTwinId: GuidString;
@@ -48,6 +49,7 @@ describe("Changeset Reader API", async () => {
       const postPushChangeSetId = rwIModel.changeset.id;
       assert(!!postPushChangeSetId);
       expect(prePushChangeSetId !== postPushChangeSetId);
+      rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     }
     await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
     const codeProps = Code.createEmpty();
@@ -148,7 +150,7 @@ describe("Changeset Reader API", async () => {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       assert.deepEqual(el.BBoxHigh, { X: 15, Y: 15 });
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x60" });
+      assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x6d" });
       assert.equal(el.s, "xxxxxxxxx");
       assert.isNull(el.CodeValue);
       assert.isNull(el.UserLabel);
@@ -161,11 +163,11 @@ describe("Changeset Reader API", async () => {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       assert.deepEqual(el.TypeDefinition, { Id: null, RelECClassId: null });
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x60" });
+      assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x6d" });
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.CodeSpec, { Id: "0x1", RelECClassId: "0x5c" });
+      assert.deepEqual(el.CodeSpec, { Id: "0x1", RelECClassId: "0x69" });
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.CodeScope, { Id: "0x1", RelECClassId: "0x5e" });
+      assert.deepEqual(el.CodeScope, { Id: "0x1", RelECClassId: "0x6b" });
 
       assert.deepEqual(el.$meta, {
         tables: [
@@ -202,7 +204,7 @@ describe("Changeset Reader API", async () => {
 
       // new value
       assert.equal(changes[0].ECInstanceId, "0x20000000004");
-      assert.equal(changes[0].ECClassId, "0x140");
+      assert.equal(changes[0].ECClassId, "0x14d");
       assert.equal(changes[0].s, "updated property");
       assert.equal(changes[0].$meta?.classFullName, "TestDomain:Test2dElement");
       assert.equal(changes[0].$meta?.op, "Updated");
@@ -210,7 +212,7 @@ describe("Changeset Reader API", async () => {
 
       // old value
       assert.equal(changes[1].ECInstanceId, "0x20000000004");
-      assert.equal(changes[1].ECClassId, "0x140");
+      assert.equal(changes[1].ECClassId, "0x14d");
       assert.equal(changes[1].s, "xxxxxxxxx");
       assert.equal(changes[1].$meta?.classFullName, "TestDomain:Test2dElement");
       assert.equal(changes[1].$meta?.op, "Updated");
@@ -285,7 +287,7 @@ describe("Changeset Reader API", async () => {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       assert.deepEqual(el.BBoxHigh, { X: 15, Y: 15 });
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x60" });
+      assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x6d" });
       assert.equal(el.s, "xxxxxxxxx");
       assert.isNull(el.CodeValue);
       assert.isNull(el.UserLabel);
@@ -298,11 +300,11 @@ describe("Changeset Reader API", async () => {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       assert.deepEqual(el.TypeDefinition, { Id: null, RelECClassId: null });
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x60" });
+      assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x6d" });
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.CodeSpec, { Id: "0x1", RelECClassId: "0x5c" });
+      assert.deepEqual(el.CodeSpec, { Id: "0x1", RelECClassId: "0x69" });
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.CodeScope, { Id: "0x1", RelECClassId: "0x5e" });
+      assert.deepEqual(el.CodeScope, { Id: "0x1", RelECClassId: "0x6b" });
 
       assert.deepEqual(el.$meta, {
         tables: [

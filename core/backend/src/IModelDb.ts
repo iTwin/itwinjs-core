@@ -11,8 +11,8 @@ import { join } from "path";
 import * as touch from "touch";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
-  IModelStatus, JsonUtils, Logger, OpenMode, UnexpectedErrors,
+  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
+  IModelStatus, JsonUtils, Logger, LogLevel, OpenMode, UnexpectedErrors,
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
@@ -21,12 +21,12 @@ import {
   ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
-  PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps,
-  SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions,
-  ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
+  MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, OpenCheckpointArgs, OpenSqliteArgs,
+  ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps,
+  SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps,
+  UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
-import { Range3d } from "@itwin/core-geometry";
+import { Range2d, Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
 import { ChannelAdmin, ChannelControl } from "./ChannelControl";
@@ -56,9 +56,30 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
-import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
+import { Workspace } from "./workspace/Workspace";
+import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotationLayout";
 
 import type { BlobContainer } from "./BlobContainerService";
+/** @internal */
+export interface ChangesetConflictArgs {
+  cause: DbConflictCause;
+  opcode: DbOpcode;
+  indirect: boolean;
+  tableName: string;
+  changesetFile?: string;
+  columnCount: number;
+  getForeignKeyConflicts: () => number;
+  dump: () => void;
+  setLastError: (message: string) => void;
+  getPrimaryKeyColumns: () => number[];
+  getValueType: (columnIndex: number, stage: DbChangeStage) => DbValueType | null | undefined;
+  getValueBinary: (columnIndex: number, stage: DbChangeStage) => Uint8Array | null | undefined;
+  getValueId: (columnIndex: number, stage: DbChangeStage) => Id64String | null | undefined;
+  getValueText: (columnIndex: number, stage: DbChangeStage) => string | null | undefined;
+  getValueInteger: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
+  getValueDouble: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
+  isValueNull: (columnIndex: number, stage: DbChangeStage) => boolean | undefined;
+}
 
 // spell:ignore fontid fontmap
 
@@ -151,6 +172,8 @@ export interface LockControl {
   }): Promise<void>;
   /**
    * Release all locks currently held by this Briefcase from the lock server.
+   * Not possible to release locks unless push or abandon all changes. Should only be called internally.
+   * @internal
    */
   releaseAllLocks(): Promise<void>;
 }
@@ -262,7 +285,7 @@ export abstract class IModelDb extends IModel {
    */
   public get workspace(): Workspace {
     if (undefined === this._workspace)
-      this._workspace = new ITwinWorkspace(new IModelSettings());
+      this._workspace = Workspace.construct(new IModelSettings());
     return this._workspace;
   }
 
@@ -345,7 +368,11 @@ export abstract class IModelDb extends IModel {
     super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
     this.nativeDb = args.nativeDb;
 
-    // PR https://github.com/iTwin/imodel-native/pull/558 ill-advisedly renamed closeIModel to closeFile.
+    // it is illegal to create an IModelDb unless the nativeDb has been opened. Throw otherwise.
+    if (!this.isOpen)
+      throw new Error("cannot create an IModelDb unless it has already been opened");
+
+    // PR https://github.com/iTwin/imodel-native/pull/558 renamed closeIModel to closeFile because it changed its behavior.
     // Ideally, nobody outside of core-backend would be calling it, but somebody important is.
     // Make closeIModel available so their code doesn't break.
     (this.nativeDb as any).closeIModel = () => {
@@ -393,7 +420,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public async refreshContainer(_userAccessToken: AccessToken): Promise<void> { }
+  public async refreshContainerForRpc(_userAccessToken: AccessToken): Promise<void> { }
 
   /** Event called when the iModel is about to be closed. */
   public readonly onBeforeClose = new BeEvent<() => void>();
@@ -922,7 +949,8 @@ export abstract class IModelDb extends IModel {
   */
   public static findByFilename(fileName: LocalFileName): IModelDb | undefined {
     for (const entry of this._openDbs) {
-      if (entry[1].pathName === fileName)
+      // It shouldn't be possible for anything in _openDbs to not be open, but if so just skip them because `pathName` will throw an exception.
+      if (entry[1].isOpen && entry[1].pathName === fileName)
         return entry[1];
     }
     return undefined;
@@ -949,7 +977,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public static openDgnDb(file: { path: LocalFileName, key?: string }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions & CloudContainerArgs): IModelJsNative.DgnDb {
+  public static openDgnDb(file: { path: LocalFileName, key?: string }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions & CloudContainerArgs & OpenSqliteArgs): IModelJsNative.DgnDb {
     file.key = file.key ?? Guid.createValue();
     if (this.tryFindByKey(file.key))
       throw new IModelError(IModelStatus.AlreadyOpen, `key [${file.key}] for file [${file.path}] is already in use`);
@@ -960,7 +988,14 @@ export abstract class IModelDb extends IModel {
 
     try {
       const nativeDb = new IModelHost.platform.DgnDb();
-      nativeDb.openIModel(file.path, openMode, upgradeOptions, props, props?.container);
+      const container = props?.container;
+      if (container) {
+        // temp files for cloud-based Dbs should be in the profileDir in a subdirectory named for their container
+        const baseDir = join(IModelHost.profileDir, "CloudDbTemp", container.containerId);
+        IModelJsFs.recursiveMkDirSync(baseDir);
+        props = { ...props, tempFileBase: join(baseDir, file.path) };
+      }
+      nativeDb.openIModel(file.path, openMode, upgradeOptions, props, props?.container, props);
       return nativeDb;
     } catch (err: any) {
       throw new IModelError(err.errorNumber, `${err.message}, ${file.path}`);
@@ -1413,6 +1448,15 @@ export abstract class IModelDb extends IModel {
   public set codeValueBehavior(newBehavior: "exact" | "trim-unicode-whitespace") {
     this.nativeDb.setCodeValueBehavior(newBehavior);
   }
+
+  /** @internal */
+  public computeRangesForText(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
+    const props = this.nativeDb.computeRangesForText(args.chars, args.fontId, args.bold, args.italic, args.widthFactor, args.lineHeight);
+    return {
+      layout: Range2d.fromJSON(props.layout),
+      justification: Range2d.fromJSON(props.justification),
+    };
+  }
 }
 
 /** @public */
@@ -1827,23 +1871,29 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       try {
         return elProps.id = this._iModel.nativeDb.insertElement(elProps);
       } catch (err: any) {
-        err.message = `error inserting element: ${err.message}`;
+        err.message = `Error inserting element [${err.message}]`;
+        err.metadata = { elProps };
         throw err;
       }
     }
 
-    /** Update some properties of an existing element.
+    /**
+     * Update some properties of an existing element.
+     * All parts of `elProps` are optional *other than* `id`. If id is missing, an exception is thrown.
+     *
      * To support clearing a property value, every property name that is present in the `elProps` object will be updated even if the value is `undefined`.
      * To keep an individual element property unchanged, it should either be excluded from the `elProps` parameter or set to its current value.
      * @param elProps the properties of the element to update.
-     * @note As described above, this is a special case where there is a difference between a property being excluded and a property being present in `elProps` but set to `undefined`.
+     * @note The values of `classFullName` and `model` *may not be changed* by this method. Further, it will permute the `elProps` object by adding or
+     * overwriting their values to the correct values.
      * @throws [[IModelError]] if unable to update the element.
      */
-    public updateElement(elProps: ElementProps): void {
+    public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
       try {
         this._iModel.nativeDb.updateElement(elProps);
       } catch (err: any) {
-        err.message = `error updating element: ${err.message}`;
+        err.message = `Error updating element [${err.message}], id: ${elProps.id}`;
+        err.metadata = { elProps };
         throw err;
       }
     }
@@ -1859,7 +1909,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         try {
           iModel.nativeDb.deleteElement(id);
         } catch (err: any) {
-          err.message = `error deleting element: ${err.message}`;
+          err.message = `Error deleting element [${err.message}], id: ${id}`;
+          err.metadata = { elementId: id };
           throw err;
         }
       });
@@ -2203,7 +2254,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
         props = JSON.parse(propsString) as CloudSqlite.ContainerProps;
       }
-      const accessToken = await CloudSqlite.requestToken(props);
+      const accessToken = await CloudSqlite.requestToken({
+        ...props,
+        userToken: args.userToken,
+        accessLevel: args.accessLevel,
+      });
       if (!this._viewStore)
         this._viewStore = new ViewStore.CloudAccess({ ...props, accessToken, iModel: this._iModel });
 
@@ -2495,13 +2550,13 @@ export interface CloudContainerArgs {
 /** Options to open a [SnapshotDb]($backend).
  * @public
  */
-export type SnapshotDbOpenArgs = SnapshotOpenOptions & CloudContainerArgs;
+export type SnapshotDbOpenArgs = SnapshotOpenOptions & CloudContainerArgs & OpenSqliteArgs;
 
 /**
  * Arguments to open a BriefcaseDb
  * @public
  */
-export type OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs;
+export type OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs & OpenSqliteArgs;
 
 /**
  * A local copy of an iModel from iModelHub that can pull and potentially push changesets.
@@ -2568,16 +2623,20 @@ export class BriefcaseDb extends IModelDb {
    * - the "no locking" flag is not present. This is a property of an iModel, established when the iModel is created in IModelHub.
    */
   protected get useLockServer(): boolean {
-    return !this.isReadonly && (this.briefcaseId !== BriefcaseIdValue.Unassigned) && (undefined === this.nativeDb.queryLocalValue(BriefcaseLocalValue.NoLocking));
+    return !this.nativeDb.isReadonly() && (this.briefcaseId !== BriefcaseIdValue.Unassigned) && (undefined === this.nativeDb.queryLocalValue(BriefcaseLocalValue.NoLocking));
+  }
+
+  // if the iModel uses a lock server, create a ServerBasedLocks LockControl for this BriefcaseDb.
+  protected makeLockControl() {
+    if (this.useLockServer)
+      this._locks = new ServerBasedLocks(this);
   }
 
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, openMode: OpenMode, briefcaseId: number }) {
     super({ ...args, changeset: args.nativeDb.getCurrentChangeset() });
     this._openMode = args.openMode;
     this.briefcaseId = args.briefcaseId;
-
-    if (this.useLockServer) // if the iModel uses a lock server, create a ServerBasedLocks LockControl for this BriefcaseDb.
-      this._locks = new ServerBasedLocks(this);
+    this.makeLockControl();
   }
 
   /** Upgrades the profile or domain schemas. File must be closed before this call and is always left closed. */
@@ -2608,12 +2667,33 @@ export class BriefcaseDb extends IModelDb {
     // - push changes
     // - release schema lock
     // good thing computers are fast. Fortunately upgrading should be rare (and the push time will dominate anyway.) Don't try to optimize any of this away.
-    await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
     try {
-      await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade, schemaLockHeld: true }, "Upgraded profile");
-      await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
-    } finally {
-      await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
+      await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade }, "Upgraded profile");
+    } catch (error: any) {
+      if (error.errorNumber === DbResult.BE_SQLITE_ERROR_DataTransformRequired) {
+        Logger.logInfo(loggerCategory, `Profile upgrade contains data transform. Retrying upgrade with a schema lock.`);
+        try {
+          await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
+          await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade, schemaLockHeld: true }, "Upgraded profile");
+          await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
+        } finally {
+          await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
+        }
+        return;
+      }
+    }
+    try {
+      await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade }, "Upgraded domain schemas");
+    } catch (error: any) {
+      if (error.errorNumber === DbResult.BE_SQLITE_ERROR_DataTransformRequired) {
+        Logger.logInfo(loggerCategory, `Domain schema upgrade contains data transform. Retrying upgrade with a schema lock.`);
+        try {
+          await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
+          await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
+        } finally {
+          await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
+        }
+      }
     }
   }
 
@@ -2660,6 +2740,140 @@ export class BriefcaseDb extends IModelDb {
     return briefcaseDb;
   }
 
+  /* This is called by native code when applying a changeset */
+  private onChangesetConflict(args: ChangesetConflictArgs): DbConflictResolution | undefined {
+    // returning undefined will result in native handler to resolve conflict
+
+    const category = "DgnCore";
+    const interpretConflictCause = (cause: DbConflictCause) => {
+      switch (cause) {
+        case DbConflictCause.Data:
+          return "data";
+        case DbConflictCause.NotFound:
+          return "not found";
+        case DbConflictCause.Conflict:
+          return "conflict";
+        case DbConflictCause.Constraint:
+          return "constraint";
+        case DbConflictCause.ForeignKey:
+          return "foreign key";
+      }
+    };
+
+    if (args.cause === DbConflictCause.Data && !args.indirect) {
+      /*
+      * From SQLite Docs CHANGESET_DATA as the second argument
+      * when processing a DELETE or UPDATE change if a row with the required
+      * PRIMARY KEY fields is present in the database, but one or more other
+      * (non primary-key) fields modified by the update do not contain the
+      * expected "before" values.
+      *
+      * The conflicting row, in this case, is the database row with the matching
+      * primary key.
+      *
+      * Another reason this will be invoked is when SQLITE_CHANGESETAPPLY_FKNOACTION
+      * is passed ApplyChangeset(). The flag will disable CASCADE action and treat
+      * them as CASCADE NONE resulting in conflict handler been called.
+      */
+      if (!this.txns.hasPendingTxns) {
+        // This changeset is bad. However, it is already in the timeline. We must allow services such as
+        // checkpoint-creation, change history, and other apps to apply any changeset that is in the timeline.
+        Logger.logWarning(category, "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.");
+        args.dump();
+      } else {
+        const msg = "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.";
+        args.setLastError(msg);
+        Logger.logError(category, msg);
+        args.dump();
+        return DbConflictResolution.Abort;
+      }
+    }
+
+    // Handle some special cases
+    if (args.cause === DbConflictCause.Conflict) {
+      // From the SQLite docs: "CHANGESET_CONFLICT is passed as the second argument to the conflict handler while processing an INSERT change if the operation would result in duplicate primary key values."
+      // This is always a fatal error - it can happen only if the app started with a briefcase that is behind the tip and then uses the same primary key values (e.g., ElementIds)
+      // that have already been used by some other app using the SAME briefcase ID that recently pushed changes. That can happen only if the app makes changes without first pulling and acquiring locks.
+      if (!this.txns.hasPendingTxns) {
+        // This changeset is bad. However, it is already in the timeline. We must allow services such as
+        // checkpoint-creation, change history, and other apps to apply any changeset that is in the timeline.
+        Logger.logWarning(category, "PRIMARY KEY INSERT CONFLICT - resolved by replacing the existing row with the incoming row");
+        args.dump();
+      } else {
+        const msg = "PRIMARY KEY INSERT CONFLICT - rejecting this changeset";
+        args.setLastError(msg);
+        Logger.logError(category, msg);
+        args.dump();
+        return DbConflictResolution.Abort;
+      }
+    }
+
+    if (args.cause === DbConflictCause.ForeignKey) {
+      // Note: No current or conflicting row information is provided if it's a FKey conflict
+      // Since we abort on FKey conflicts, always try and provide details about the error
+      const nConflicts = args.getForeignKeyConflicts();
+
+      // Note: There is no performance implication of follow code as it happen toward end of
+      // apply_changeset only once so we be querying value for 'DebugAllowFkViolations' only once.
+      if (this.nativeDb.queryLocalValue("DebugAllowFkViolations")) {
+        Logger.logError(category, `Detected ${nConflicts} foreign key conflicts in changeset. Continuing merge as 'DebugAllowFkViolations' flag is set. Run 'PRAGMA foreign_key_check' to get list of violations.`);
+        return DbConflictResolution.Skip;
+      } else {
+        const msg = `Detected ${nConflicts} foreign key conflicts in ChangeSet. Aborting merge.`;
+        args.setLastError(msg);
+        return DbConflictResolution.Abort;
+      }
+    }
+
+    if (args.cause === DbConflictCause.NotFound) {
+      /*
+       * Note: If DbConflictCause = NotFound, the primary key was not found, and returning DbConflictResolution::Replace is
+       * not an option at all - this will cause a BE_SQLITE_MISUSE error.
+       */
+      return DbConflictResolution.Skip;
+    }
+
+    if (args.cause === DbConflictCause.Constraint) {
+      if (Logger.isEnabled(category, LogLevel.Info)) {
+        Logger.logInfo(category, "------------------------------------------------------------------");
+        Logger.logInfo(category, `Conflict detected - Cause: ${interpretConflictCause(args.cause)}`);
+        args.dump();
+      }
+
+      Logger.logWarning(category, "Constraint conflict handled by rejecting incoming change. Constraint conflicts are NOT expected. These happen most often when two clients both insert elements with the same code. That indicates a bug in the client or the code server.");
+      return DbConflictResolution.Skip;
+    }
+
+    /*
+     * If we don't have a control, we always accept the incoming revision in cases of conflicts:
+     *
+     * + In a briefcase with no local changes, the state of a row in the Db (i.e., the final state of a previous revision)
+     *   may not exactly match the initial state of the incoming revision. This will cause a conflict.
+     *      - The final state of the incoming (later) revision will always be setup exactly right to accommodate
+     *        cases where dependency handlers won't be available (for instance on the server), and we have to rely on
+     *        the revision to correctly set the final state of the row in the Db. Therefore it's best to resolve the
+     *        conflict in favor of the incoming change.
+     * + In a briefcase with local changes, the state of relevant dependent properties (due to propagated indirect changes)
+     *   may not correspond with the initial state of these properties in an incoming revision. This will cause a conflict.
+     *      - Resolving the conflict in favor of the incoming revision may cause some dependent properties to be set
+     *        incorrectly, but the dependency handlers will run anyway and set this right. The new changes will be part of
+     *        a subsequent revision generated from that briefcase.
+     *
+     * + Note that conflicts can NEVER happen between direct changes made locally and direct changes in the incoming revision.
+     *      - Only one user can make a direct change at one time, and the next user has to pull those changes before getting a
+     *        lock to the same element
+     *
+     * + Also see comments in TxnManager::MergeDataChanges()
+     */
+    if (Logger.isEnabled(category, LogLevel.Info)) {
+      Logger.logInfo(category, "------------------------------------------------------------------");
+      Logger.logInfo(category, `Conflict detected - Cause: ${interpretConflictCause(args.cause)}`);
+      args.dump();
+      Logger.logInfo(category, "Conflicting resolved by replacing the existing entry with the change");
+    }
+    return DbConflictResolution.Replace;
+  }
+
   /** If the briefcase is read-only, reopen the native briefcase for writing.
    * Execute the supplied function.
    * If the briefcase was read-only, reopen the native briefcase as read-only.
@@ -2668,15 +2882,23 @@ export class BriefcaseDb extends IModelDb {
    */
   public async executeWritable(func: () => Promise<void>): Promise<void> {
     const fileName = this.pathName;
-
+    const isReadonly = this.isReadonly;
+    let locks: LockControl | undefined;
     try {
-      if (this.isReadonly)
+      if (isReadonly) {
         this.closeAndReopen(OpenMode.ReadWrite, fileName);
-
+        locks = this.locks;
+        this.makeLockControl(); // create a ServerBasedLocks, if necessary
+      }
       await func();
     } finally {
-      if (this.isReadonly)
+      if (isReadonly) {
+        if (locks !== this._locks) { // did we have to create a ServerBasedLocks?
+          this.locks.close(); // yes, close it and reset back to previous
+          this._locks = locks;
+        }
         this.closeAndReopen(OpenMode.Readonly, fileName);
+      }
     }
   }
 
@@ -2712,8 +2934,11 @@ export class BriefcaseDb extends IModelDb {
     if (!this.nativeDb.hasPendingTxns())
       return; // nothing to push
 
-    await BriefcaseManager.pullMergePush(this, arg);
-    this.initializeIModelDb();
+    // pushing changes requires a writeable briefcase
+    await this.executeWritable(async () => {
+      await BriefcaseManager.pullMergePush(this, arg);
+      this.initializeIModelDb();
+    });
 
     const changeset = this.changeset as ChangesetIndexAndId;
     IpcHost.notifyTxns(this, "notifyPushedChanges", changeset);
@@ -2793,11 +3018,11 @@ class RefreshV2CheckpointSas {
 export class SnapshotDb extends IModelDb {
   public override get isSnapshot() { return true; }
   private _refreshSas: RefreshV2CheckpointSas | undefined;
-  /** Timer used to restart the default txn on the snapshotdb after some inactivity. This is only used for v2 checkpoints, and is useful because it aids in the process of cachefile management.
-   *  Restarting the default txn lets CloudSQLite know that any blocks that may have been read during the lifetime of that txn can now be safely added to the LRU list that CloudSQLite manages.
-   *  Without restarting the default txn, CloudSQLite is more likely to get into a state where it can not evict any blocks to make space for more blocks.
+  /** Timer used to restart the default txn on the SnapshotDb after some inactivity. This is only used for checkpoints.
+   *  Restarting the default txn lets CloudSqlite know that any blocks that may have been read may now be ejected.
+   *  Without restarting the default txn, CloudSQLite can get into a state where it can not evict any blocks to make space for more blocks.
    */
-  private _restartDefaultTxnTimer: NodeJS.Timeout | undefined;
+  private _restartDefaultTxnTimer?: NodeJS.Timeout;
   private _createClassViewsOnClose?: boolean;
   public static readonly onOpen = new BeEvent<(path: LocalFileName, opts?: SnapshotDbOpenArgs) => void>();
   public static readonly onOpened = new BeEvent<(_iModelDb: SnapshotDb) => void>();
@@ -2830,6 +3055,7 @@ export class SnapshotDb extends IModelDb {
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
 
     const snapshotDb = new SnapshotDb(nativeDb, Guid.createValue());
+    snapshotDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     if (options.createClassViews)
       snapshotDb._createClassViewsOnClose = true; // save flag that will be checked when close() is called
     return snapshotDb;
@@ -2894,32 +3120,15 @@ export class SnapshotDb extends IModelDb {
     return db;
   }
 
-  /** Open a previously downloaded V1 checkpoint file.
-   * @note The key is generated by this call is predictable and is formed from the IModelId and ChangeSetId.
-   * This is so every backend working on the same checkpoint will use the same key, to permit multiple backends
-   * servicing the same checkpoint.
-   * @internal
-   */
-  public static openCheckpointV1(fileName: LocalFileName, checkpoint: CheckpointProps) {
-    const snapshot = this.openFile(fileName, { key: CheckpointManager.getKey(checkpoint) });
-    snapshot._iTwinId = checkpoint.iTwinId;
-    return snapshot;
-  }
-
-  /** Open a V2 *checkpoint*, a special form of snapshot iModel that represents a read-only snapshot of an iModel from iModelHub at a particular point in time.
-   * > Note: The checkpoint daemon must already be running and a checkpoint must already exist in iModelHub's storage *before* this function is called.
-   * @param checkpoint The checkpoint to open
-   * @note The key generated by this call is predictable and is formed from the IModelId and ChangeSetId.
-   * This is so every backend working on the same checkpoint will use the same key, to permit multiple backends
-   * servicing the same checkpoint.
-   * @throws [[IModelError]] If the checkpoint is not found in iModelHub or the checkpoint daemon is not supported in the current environment.
-   * @internal
-   */
-  public static async openCheckpointV2(checkpoint: CheckpointProps): Promise<SnapshotDb> {
+  private static async attachAndOpenCheckpoint(checkpoint: CheckpointProps): Promise<SnapshotDb> {
     const { dbName, container } = await V2CheckpointManager.attach(checkpoint);
     const key = CheckpointManager.getKey(checkpoint);
-    const tempFileBase = join(IModelHost.cacheDir, `${checkpoint.iModelId}\$${checkpoint.changeset.id}`); // temp files for this checkpoint should go in the cacheDir.
-    const snapshot = SnapshotDb.openFile(dbName, { key, tempFileBase, container });
+    return SnapshotDb.openFile(dbName, { key, container });
+  }
+
+  /** @internal */
+  public static async openCheckpointFromRpc(checkpoint: CheckpointProps): Promise<SnapshotDb> {
+    const snapshot = await this.attachAndOpenCheckpoint(checkpoint);
     snapshot._iTwinId = checkpoint.iTwinId;
     try {
       CheckpointManager.validateCheckpointGuids(checkpoint, snapshot);
@@ -2931,16 +3140,25 @@ export class SnapshotDb extends IModelDb {
     // unref timer, so it doesn't prevent a process from shutting down.
     snapshot._restartDefaultTxnTimer = setTimeout(() => {
       snapshot.restartDefaultTxn();
-    }, (10 * 60) * 1000).unref(); // 10 * 60 is 10 minutes in seconds, then converted to milliseconds (* 1000);
-    snapshot._refreshSas = new RefreshV2CheckpointSas(container.accessToken, checkpoint.reattachSafetySeconds);
+    }, (10 * 60) * 1000).unref(); // 10 minutes
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    snapshot._refreshSas = new RefreshV2CheckpointSas(snapshot.nativeDb.cloudContainer!.accessToken, checkpoint.reattachSafetySeconds);
     return snapshot;
+  }
+
+  /**
+   * Open a Checkpoint directly from its cloud container.
+   * @beta
+   */
+  public static async openCheckpoint(args: OpenCheckpointArgs): Promise<SnapshotDb> {
+    return this.attachAndOpenCheckpoint(await CheckpointManager.toCheckpointProps(args));
   }
 
   /** Used to refresh the container sasToken using the current user's accessToken.
    * Also restarts the timer which causes the default txn to be restarted on db if the timer activates.
    * @internal
    */
-  public override async refreshContainer(userAccessToken: AccessToken): Promise<void> {
+  public override async refreshContainerForRpc(userAccessToken: AccessToken): Promise<void> {
     this._restartDefaultTxnTimer?.refresh();
     return this._refreshSas?.refreshSas(userAccessToken, this);
   }
@@ -3002,7 +3220,9 @@ export class StandaloneDb extends BriefcaseDb {
     nativeDb.setITwinId(Guid.empty);
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();
-    return new StandaloneDb({ nativeDb, key: Guid.createValue(), briefcaseId: BriefcaseIdValue.Unassigned, openMode: OpenMode.ReadWrite });
+    const db = new StandaloneDb({ nativeDb, key: Guid.createValue(), briefcaseId: BriefcaseIdValue.Unassigned, openMode: OpenMode.ReadWrite });
+    db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    return db;
   }
 
   /**
@@ -3050,7 +3270,8 @@ export class StandaloneDb extends BriefcaseDb {
       if (iTwinId !== Guid.empty) // a "standalone" iModel means it is not associated with an iTwin
         throw new IModelError(IModelStatus.WrongIModel, `${filePath} is not a Standalone iModel. iTwinId=${iTwinId}`);
       assert(undefined !== file.key);
-      return new StandaloneDb({ nativeDb, key: file.key, openMode, briefcaseId: BriefcaseIdValue.Unassigned });
+      const db = new StandaloneDb({ nativeDb, key: file.key, openMode, briefcaseId: BriefcaseIdValue.Unassigned });
+      return db;
     } catch (error) {
       nativeDb.closeFile();
       throw error;

@@ -1,7 +1,6 @@
 sep=;
 Release Tag;API Item
 internal;BrowserLocalFavoritePropertiesStorage 
-internal;buildPagedArrayResponse: 
 beta;consoleDiagnosticsHandler(diagnostics: ClientDiagnostics): void
 beta;createCombinedDiagnosticsHandler(handlers: ClientDiagnosticsHandler[]): (diagnostics: ClientDiagnostics) => void
 public;createFavoritePropertiesStorage(type: DefaultFavoritePropertiesStorageTypes): IFavoritePropertiesStorage
@@ -15,7 +14,10 @@ public;FavoritePropertiesManager
 public;FavoritePropertiesManagerProps
 public;FavoritePropertiesOrderInfo
 public;FavoritePropertiesScope
+public;GetContentRequestOptions = ContentRequestOptions
+public;GetDistinctValuesRequestOptions = DistinctValuesRequestOptions
 internal;getFieldInfos: (field: Field) => Set
+public;GetNodesRequestOptions = HierarchyRequestOptions
 public;getScopeId(scope: SelectionScope | string | undefined): string
 deprecated;getScopeId(scope: SelectionScope | string | undefined): string
 internal;HILITE_RULESET: Ruleset

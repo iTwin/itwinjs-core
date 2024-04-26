@@ -44,7 +44,9 @@ import { LogFunction } from '@itwin/core-bentley';
 import { LoggingMetaData } from '@itwin/core-bentley';
 import { LogLevel } from '@itwin/core-bentley';
 import { LowAndHighXY } from '@itwin/core-geometry';
+import { LowAndHighXYProps } from '@itwin/core-geometry';
 import { LowAndHighXYZ } from '@itwin/core-geometry';
+import { LowAndHighXYZProps } from '@itwin/core-geometry';
 import { Map4d } from '@itwin/core-geometry';
 import { Matrix3d } from '@itwin/core-geometry';
 import { Matrix4dProps } from '@itwin/core-geometry';
@@ -243,6 +245,12 @@ export interface AppearanceOverrideProps {
     color?: ColorDefProps;
     ids?: Id64Array;
     overrideType?: FeatureOverrideType;
+}
+
+// @beta
+export interface ApplyTextStyleOptions {
+    preserveOverrides?: boolean;
+    preventPropagation?: boolean;
 }
 
 // @public
@@ -574,6 +582,9 @@ export type BaseLayerSettings = BaseMapLayerSettings | ColorDef;
 export namespace BaseLayerSettings {
     export function fromJSON(props: BaseLayerProps): BaseLayerSettings;
 }
+
+// @beta
+export type BaselineShift = "subscript" | "superscript" | "none";
 
 // @public
 export interface BaseMapLayerProps extends ImageMapLayerProps {
@@ -1665,12 +1676,14 @@ export abstract class ContentIdProvider {
 
 // @public
 export class ContextRealityModel {
-    constructor(props: ContextRealityModelProps);
+    constructor(props: ContextRealityModelProps, options?: {
+        createClassifiers: (container: SpatialClassifiersContainer) => SpatialClassifiers;
+    });
     get appearanceOverrides(): FeatureAppearance | undefined;
     set appearanceOverrides(overrides: FeatureAppearance | undefined);
     // (undocumented)
     protected _appearanceOverrides?: FeatureAppearance;
-    readonly classifiers?: SpatialClassifiers;
+    get classifiers(): SpatialClassifiers;
     readonly description: string;
     // @beta
     get displaySettings(): RealityModelDisplaySettings;
@@ -2629,6 +2642,7 @@ export namespace ElementGeometry {
         appendGeometryQuery(geometry: GeometryQuery): boolean;
         appendGeometryRanges(): boolean;
         appendImageGraphic(image: ImageGraphic): boolean;
+        appendTextBlock(block: TextBlockGeometryProps): boolean;
         appendTextString(text: TextString): boolean;
         readonly entries: ElementGeometryDataEntry[];
         get localToWorld(): Transform | undefined;
@@ -3354,6 +3368,29 @@ export interface FormDataCommon {
     append(name: string, value: string | Blob | BackendBuffer, fileName?: string): void;
 }
 
+// @beta
+export class FractionRun extends TextBlockComponent {
+    // (undocumented)
+    clone(): FractionRun;
+    // (undocumented)
+    static create(props: Omit<FractionRunProps, "type">): FractionRun;
+    denominator: string;
+    // (undocumented)
+    equals(other: TextBlockComponent): boolean;
+    numerator: string;
+    stringify(options?: TextBlockStringifyOptions): string;
+    // (undocumented)
+    toJSON(): FractionRunProps;
+    readonly type = "fraction";
+}
+
+// @beta
+export interface FractionRunProps extends TextBlockComponentProps {
+    denominator?: string;
+    numerator?: string;
+    readonly type: "fraction";
+}
+
 // @public
 export class FresnelSettings {
     clone(changedProps?: FresnelSettingsProps): FresnelSettings;
@@ -3826,7 +3863,7 @@ export interface GeometryPartInstanceProps {
 // @public
 export interface GeometryPartProps extends ElementProps {
     // (undocumented)
-    bbox?: LowAndHighXYZ;
+    bbox?: LowAndHighXYZProps;
     // @beta
     elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
     // (undocumented)
@@ -3852,6 +3889,8 @@ export class GeometryStreamBuilder {
     appendGeometryRanges(): void;
     appendImage(image: ImageGraphic): boolean;
     appendSubCategoryChange(subCategoryId: Id64String): boolean;
+    // @beta
+    appendTextBlock(block: TextBlockGeometryProps): boolean;
     appendTextString(textString: TextString): boolean;
     readonly geometryStream: GeometryStreamProps;
     // @internal (undocumented)
@@ -5094,8 +5133,9 @@ export interface IpcAppFunctions {
     isRedoPossible: (key: string) => Promise<boolean>;
     isUndoPossible: (key: string) => Promise<boolean>;
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
-    openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
-    openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
+    openBriefcase: (args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
+    openCheckpoint: (args: OpenCheckpointArgs) => Promise<IModelConnectionProps>;
+    openStandalone: (filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
     pullChanges: (key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions) => Promise<ChangesetIndexAndId>;
     pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
     queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
@@ -5337,6 +5377,25 @@ export interface LightSettingsProps {
     };
     solar?: SolarLightProps;
     specularIntensity?: number;
+}
+
+// @beta
+export class LineBreakRun extends TextBlockComponent {
+    // (undocumented)
+    clone(): LineBreakRun;
+    // (undocumented)
+    static create(props: TextBlockComponentProps): LineBreakRun;
+    // (undocumented)
+    equals(other: TextBlockComponent): boolean;
+    stringify(options?: TextBlockStringifyOptions): string;
+    // (undocumented)
+    toJSON(): LineBreakRunProps;
+    readonly type = "linebreak";
+}
+
+// @beta
+export interface LineBreakRunProps extends TextBlockComponentProps {
+    readonly type: "linebreak";
 }
 
 // @public
@@ -6204,10 +6263,23 @@ export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
     readonly watchForChanges?: boolean;
 }
 
+// @beta
+export interface OpenCheckpointArgs {
+    readonly changeset?: ChangesetIndexOrId;
+    readonly iModelId: GuidString;
+    // (undocumented)
+    readonly iTwinId: GuidString;
+}
+
 // @public
 export interface OpenDbKey {
     // (undocumented)
     readonly key?: string;
+}
+
+// @public
+export interface OpenSqliteArgs {
+    readonly busyTimeout?: number;
 }
 
 // @internal (undocumented)
@@ -6356,6 +6428,25 @@ export interface PackedFeatureWithIndex extends PackedFeature {
     index: number;
 }
 
+// @beta
+export class Paragraph extends TextBlockComponent {
+    applyStyle(styleName: string, options?: ApplyTextStyleOptions): void;
+    // (undocumented)
+    clone(): Paragraph;
+    static create(props: ParagraphProps): Paragraph;
+    // (undocumented)
+    equals(other: TextBlockComponent): boolean;
+    readonly runs: Run[];
+    stringify(options?: TextBlockStringifyOptions): string;
+    // (undocumented)
+    toJSON(): ParagraphProps;
+}
+
+// @beta
+export interface ParagraphProps extends TextBlockComponentProps {
+    runs?: RunProps[];
+}
+
 // @internal
 export interface ParsedTileTreeIdAndContentId {
     // (undocumented)
@@ -6429,7 +6520,7 @@ export interface Placement2dProps {
     // (undocumented)
     angle: AngleProps;
     // (undocumented)
-    bbox?: LowAndHighXY;
+    bbox?: LowAndHighXYProps;
     // (undocumented)
     origin: XYProps;
 }
@@ -6459,7 +6550,7 @@ export interface Placement3dProps {
     // (undocumented)
     angles: YawPitchRollProps;
     // (undocumented)
-    bbox?: LowAndHighXYZ;
+    bbox?: LowAndHighXYZProps;
     // (undocumented)
     origin: XYZProps;
 }
@@ -7176,19 +7267,13 @@ export enum QueryParamType {
 
 // @public (undocumented)
 export interface QueryPropertyMetaData {
-    // (undocumented)
+    accessString?: string;
     className: string;
-    // (undocumented)
     extendType: string;
-    // (undocumented)
     generated: boolean;
-    // (undocumented)
     index: number;
-    // (undocumented)
     jsonName: string;
-    // (undocumented)
     name: string;
-    // (undocumented)
     typeName: string;
 }
 
@@ -8660,6 +8745,17 @@ export class RpcSessionInvocation extends RpcInvocation {
     get rejected(): boolean;
 }
 
+// @beta (undocumented)
+export type Run = TextRun | FractionRun | LineBreakRun;
+
+// @beta
+export namespace Run {
+    export function fromJSON(props: RunProps): Run;
+}
+
+// @beta
+export type RunProps = TextRunProps | FractionRunProps | LineBreakRunProps;
+
 // @beta
 export enum SchemaState {
     TooNew = 4,
@@ -9155,6 +9251,9 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
     modelSelectorId: ViewIdString;
 }
 
+// @beta
+export type StackedFractionType = "horizontal" | "diagonal";
+
 // @public
 export type StandaloneOpenOptions = OpenDbKey;
 
@@ -9337,6 +9436,166 @@ export class TestRpcManager {
     static initialize(interfaces: RpcInterfaceDefinition[]): void;
 }
 
+// @beta
+export class TextAnnotation {
+    anchor: TextAnnotationAnchor;
+    // @internal
+    computeDocumentTransform(layoutRange: Range2d): Transform;
+    static create(args?: TextAnnotationCreateArgs): TextAnnotation;
+    equals(other: TextAnnotation): boolean;
+    static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation;
+    orientation: YawPitchRollAngles;
+    origin: Point3d;
+    textBlock: TextBlock;
+    toJSON(): TextAnnotationProps;
+}
+
+// @public
+export interface TextAnnotation2dProps extends GeometricElement2dProps {
+    // (undocumented)
+    jsonProperties?: {
+        [key: string]: any;
+        annotation?: TextAnnotationProps;
+    };
+}
+
+// @public
+export interface TextAnnotation3dProps extends GeometricElement3dProps {
+    // (undocumented)
+    jsonProperties?: {
+        [key: string]: any;
+        annotation?: TextAnnotationProps;
+    };
+}
+
+// @beta
+export interface TextAnnotationAnchor {
+    horizontal: "left" | "center" | "right";
+    vertical: "top" | "middle" | "bottom";
+}
+
+// @beta
+export interface TextAnnotationCreateArgs {
+    anchor?: TextAnnotationAnchor;
+    orientation?: YawPitchRollAngles;
+    origin?: Point3d;
+    textBlock?: TextBlock;
+}
+
+// @beta
+export interface TextAnnotationProps {
+    anchor?: TextAnnotationAnchor;
+    orientation?: YawPitchRollProps;
+    origin?: XYZProps;
+    textBlock?: TextBlockProps;
+}
+
+// @beta
+export class TextBlock extends TextBlockComponent {
+    appendParagraph(): Paragraph;
+    appendRun(run: Run): void;
+    applyStyle(styleName: string, options?: ApplyTextStyleOptions): void;
+    // (undocumented)
+    clone(): TextBlock;
+    static create(props: TextBlockProps): TextBlock;
+    static createEmpty(): TextBlock;
+    // (undocumented)
+    equals(other: TextBlockComponent): boolean;
+    get isEmpty(): boolean;
+    justification: TextBlockJustification;
+    readonly paragraphs: Paragraph[];
+    stringify(options?: TextBlockStringifyOptions): string;
+    // (undocumented)
+    toJSON(): TextBlockProps;
+    width: number;
+}
+
+// @beta
+export abstract class TextBlockComponent {
+    // @internal
+    protected constructor(props: TextBlockComponentProps);
+    applyStyle(styleName: string, options?: ApplyTextStyleOptions): void;
+    clearStyleOverrides(): void;
+    abstract clone(): TextBlockComponent;
+    equals(other: TextBlockComponent): boolean;
+    get overridesStyle(): boolean;
+    abstract stringify(options?: TextBlockStringifyOptions): string;
+    get styleName(): string;
+    set styleName(styleName: string);
+    get styleOverrides(): TextStyleSettingsProps;
+    set styleOverrides(overrides: TextStyleSettingsProps);
+    toJSON(): TextBlockComponentProps;
+}
+
+// @beta
+export interface TextBlockComponentProps {
+    styleName: string;
+    styleOverrides?: TextStyleSettingsProps;
+}
+
+// @beta
+export interface TextBlockGeometryProps {
+    entries: TextBlockGeometryPropsEntry[];
+}
+
+// @beta
+export type TextBlockGeometryPropsEntry = {
+    text: TextStringProps;
+    separator?: never;
+    color?: never;
+} | {
+    text?: never;
+    separator: {
+        startPoint: XYZProps;
+        endPoint: XYZProps;
+    };
+    color?: never;
+} | {
+    text?: never;
+    separator?: never;
+    color: TextStyleColor;
+};
+
+// @beta
+export type TextBlockJustification = "left" | "center" | "right";
+
+// @beta
+export interface TextBlockProps extends TextBlockComponentProps {
+    justification?: TextBlockJustification;
+    paragraphs?: ParagraphProps[];
+    width?: number;
+}
+
+// @beta
+export interface TextBlockStringifyOptions {
+    fractionSeparator?: string;
+    lineBreak?: string;
+    paragraphBreak?: string;
+}
+
+// @beta
+export class TextRun extends TextBlockComponent {
+    baselineShift: BaselineShift;
+    // (undocumented)
+    clone(): TextRun;
+    content: string;
+    // (undocumented)
+    static create(props: Omit<TextRunProps, "type">): TextRun;
+    // (undocumented)
+    equals(other: TextBlockComponent): boolean;
+    stringify(): string;
+    // (undocumented)
+    toJSON(): TextRunProps;
+    readonly type = "text";
+}
+
+// @beta
+export interface TextRunProps extends TextBlockComponentProps {
+    baselineShift?: BaselineShift;
+    content?: string;
+    readonly type: "text";
+}
+
 // @public
 export class TextString {
     constructor(props: TextStringProps);
@@ -9389,6 +9648,72 @@ export interface TextStringProps {
     text: string;
     underline?: boolean;
     // (undocumented)
+    widthFactor?: number;
+}
+
+// @beta
+export class TextStyle {
+    clone(alteredSettings: TextStyleSettingsProps): TextStyle;
+    static create(name: string, settings: TextStyleSettings): TextStyle;
+    // (undocumented)
+    equals(other: TextStyle): boolean;
+    static fromJSON(json: TextStyleProps): TextStyle;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly settings: TextStyleSettings;
+}
+
+// @beta
+export type TextStyleColor = ColorDefProps | "subcategory";
+
+// @beta
+export interface TextStyleProps {
+    name: string;
+    settings?: TextStyleSettingsProps;
+}
+
+// @beta
+export class TextStyleSettings {
+    clone(alteredProps?: TextStyleSettingsProps): TextStyleSettings;
+    readonly color: TextStyleColor;
+    static defaultProps: Readonly<Required<TextStyleSettingsProps>>;
+    static defaults: TextStyleSettings;
+    // (undocumented)
+    equals(other: TextStyleSettings): boolean;
+    readonly fontName: string;
+    static fromJSON(props?: TextStyleSettingsProps): TextStyleSettings;
+    readonly isBold: boolean;
+    readonly isItalic: boolean;
+    readonly isUnderlined: boolean;
+    readonly lineHeight: number;
+    readonly lineSpacingFactor: number;
+    readonly stackedFractionScale: number;
+    readonly stackedFractionType: StackedFractionType;
+    readonly subScriptOffsetFactor: number;
+    readonly subScriptScale: number;
+    readonly superScriptOffsetFactor: number;
+    readonly superScriptScale: number;
+    // (undocumented)
+    toJSON(): TextStyleSettingsProps;
+    readonly widthFactor: number;
+}
+
+// @beta
+export interface TextStyleSettingsProps {
+    color?: TextStyleColor;
+    fontName?: string;
+    isBold?: boolean;
+    isItalic?: boolean;
+    isUnderlined?: boolean;
+    lineHeight?: number;
+    lineSpacingFactor?: number;
+    stackedFractionScale?: number;
+    stackedFractionType?: StackedFractionType;
+    subScriptOffsetFactor?: number;
+    subScriptScale?: number;
+    superScriptOffsetFactor?: number;
+    superScriptScale?: number;
     widthFactor?: number;
 }
 
@@ -10376,7 +10701,6 @@ export class ViewFlags {
     static fromJSON(json?: ViewFlagProps): ViewFlags;
     readonly grid: boolean;
     readonly hiddenEdges: boolean;
-    // @internal (undocumented)
     hiddenEdgesVisible(): boolean;
     readonly lighting: boolean;
     readonly materials: boolean;

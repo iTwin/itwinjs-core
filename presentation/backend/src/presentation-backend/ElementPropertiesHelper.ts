@@ -93,7 +93,7 @@ export async function getBatchedClassElementIds(
   imodel: IModelDb,
   fullClassName: string,
   batchSize: number,
-): Promise<Array<{ from: Id64String, to: Id64String }>> {
+): Promise<Array<{ from: Id64String; to: Id64String }>> {
   const batches = [];
   const reader = imodel.createQueryReader(`SELECT ECInstanceId id FROM ${getECSqlName(fullClassName)} ORDER BY ECInstanceId`);
   let currId: Id64String | undefined;
@@ -143,7 +143,10 @@ interface IPropertiesAppender {
 class ElementPropertiesAppender implements IPropertiesAppender {
   private _propertyItems: { [label: string]: ElementPropertiesItem } = {};
   private _categoryItemAppenders: { [categoryName: string]: IPropertiesAppender } = {};
-  constructor(private _item: Item, private _onItemFinished: (item: ElementProperties) => void) {}
+  constructor(
+    private _item: Item,
+    private _onItemFinished: (item: ElementProperties) => void,
+  ) {}
 
   public append(label: string, item: ElementPropertiesItem): void {
     this._propertyItems[label] = item;
@@ -176,7 +179,10 @@ class ElementPropertiesAppender implements IPropertiesAppender {
 
 class CategoryItemAppender implements IPropertiesAppender {
   private _items: { [label: string]: ElementPropertiesItem } = {};
-  constructor(private _parentAppender: IPropertiesAppender, private _category: CategoryDescription) {}
+  constructor(
+    private _parentAppender: IPropertiesAppender,
+    private _category: CategoryDescription,
+  ) {}
   public append(label: string, item: ElementPropertiesItem): void {
     this._items[label] = item;
   }
@@ -194,7 +200,10 @@ class CategoryItemAppender implements IPropertiesAppender {
 
 class ArrayItemAppender implements IPropertiesAppender {
   private _items: ElementPropertiesPropertyItem[] = [];
-  constructor(private _parentAppender: IPropertiesAppender, private _props: StartArrayProps) {}
+  constructor(
+    private _parentAppender: IPropertiesAppender,
+    private _props: StartArrayProps,
+  ) {}
   public append(_label: string, item: ElementPropertiesItem): void {
     assert(item.type !== "category");
     this._items.push(item);
@@ -231,7 +240,10 @@ class ArrayItemAppender implements IPropertiesAppender {
 
 class StructItemAppender implements IPropertiesAppender {
   private _members: { [label: string]: ElementPropertiesPropertyItem } = {};
-  constructor(private _parentAppender: IPropertiesAppender, private _props: StartStructProps) {}
+  constructor(
+    private _parentAppender: IPropertiesAppender,
+    private _props: StartStructProps,
+  ) {}
   public append(label: string, item: ElementPropertiesItem): void {
     assert(item.type !== "category");
     this._members[label] = item;

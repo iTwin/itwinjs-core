@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Hierarchies
  */
@@ -100,8 +100,9 @@ export namespace LabelDefinition {
    */
   // eslint-disable-next-line deprecation/deprecation
   export function fromJSON(json: LabelDefinitionJSON | string): LabelDefinition {
-    if (typeof json === "string")
+    if (typeof json === "string") {
       return JSON.parse(json);
+    }
     return { ...json };
   }
 

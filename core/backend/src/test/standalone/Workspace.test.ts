@@ -11,17 +11,17 @@ import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { IModelJsFs } from "../../IModelJsFs";
 import { BaseSettings, SettingDictionary, SettingsPriority } from "../../workspace/Settings";
-import { EditableWorkspaceDb, ITwinWorkspace, ITwinWorkspaceContainer, ITwinWorkspaceDb, WorkspaceContainer, WorkspaceDb } from "../../workspace/Workspace";
+import { EditableWorkspaceDb, Workspace, WorkspaceContainer, WorkspaceDb } from "../../workspace/Workspace";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("WorkspaceFile", () => {
 
-  const workspace = new ITwinWorkspace(new BaseSettings(), { containerDir: join(KnownTestLocations.outputDir, "TestWorkspaces") });
+  const workspace = Workspace.construct(new BaseSettings(), { containerDir: join(KnownTestLocations.outputDir, "TestWorkspaces") });
 
   function makeEditableDb(props: WorkspaceDb.Props & WorkspaceContainer.Props) {
     const container = workspace.getContainer(props);
-    const wsFile = new EditableWorkspaceDb(props, container);
+    const wsFile = EditableWorkspaceDb.construct(props, container);
 
     IModelJsFs.purgeDirSync(container.filesDir);
     if (IModelJsFs.existsSync(wsFile.dbFileName))
@@ -39,7 +39,7 @@ describe("WorkspaceFile", () => {
   it("WorkspaceContainer names", () => {
     const expectBadName = (names: string[]) => {
       names.forEach((containerId) => {
-        expect(() => new ITwinWorkspaceContainer(workspace, { containerId, baseUri: "", storageType: "azure" }), containerId).to.throw("containerId");
+        expect(() => WorkspaceContainer.validateContainerId(containerId), containerId).to.throw("containerId");
       });
     };
 
@@ -62,14 +62,13 @@ describe("WorkspaceFile", () => {
       "-leading-dash",
       "trailing-dash-"]);
 
-    new ITwinWorkspaceContainer(workspace, { containerId: Guid.createValue(), baseUri: "", storageType: "azure" }); // guids should be valid
+    WorkspaceContainer.validateContainerId(Guid.createValue()); // guids should be valid
   });
 
   it("WorkspaceDbNames", () => {
-    const container = new ITwinWorkspaceContainer(workspace, { containerId: "test", baseUri: "", storageType: "azure" });
     const expectBadName = (names: string[]) => {
       names.forEach((dbName) => {
-        expect(() => new ITwinWorkspaceDb({ dbName }, container)).to.throw("dbName");
+        expect(() => WorkspaceContainer.validateDbName(dbName)).to.throw("dbName");
       });
     };
 
@@ -93,7 +92,7 @@ describe("WorkspaceFile", () => {
       " leading space",
       "trailing space "]);
 
-    new ITwinWorkspaceDb({ dbName: Guid.createValue() }, container); // guids should be valid
+    WorkspaceContainer.validateDbName(Guid.createValue()); // guids should be valid
   });
 
   it("create new WorkspaceDb", async () => {
@@ -169,7 +168,7 @@ describe("WorkspaceFile", () => {
     const fontFile = fonts.getFile("Helvetica.ttf")!;
     expect(fontFile).contains(".ttf");
     compareFiles(fontFile, schemaFile);
-    fonts.container.dropWorkspaceDb(fonts);
+    fonts.container.closeWorkspaceDb(fonts);
 
     const setting2: SettingDictionary = {
       "cloud/containers": [

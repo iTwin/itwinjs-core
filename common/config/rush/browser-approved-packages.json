@@ -347,6 +347,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/unified-selection",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@itwin/webgl-compatibility",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -535,6 +539,10 @@
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "eslint-config-prettier",
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
       "name": "express",
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
@@ -551,6 +559,14 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "fast-xml-parser",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "fetch-mock",
+      "allowedCategories": [ "extensions" ]
+    },
+    {
       "name": "file-loader",
       "allowedCategories": [ "tools" ]
     },
@@ -565,6 +581,10 @@
     {
       "name": "flatbuffers",
       "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "flatbush",
+      "allowedCategories": [ "extensions" ]
     },
     {
       "name": "form-data",
@@ -647,6 +667,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "meshoptimizer",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "mkdirp",
       "allowedCategories": [ "internal" ]
     },
@@ -661,6 +685,10 @@
     {
       "name": "multiparty",
       "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "mysql2",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "nock",
@@ -705,6 +733,10 @@
     {
       "name": "playwright",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "prettier",
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "raf",
@@ -772,7 +804,7 @@
     },
     {
       "name": "source-map-support",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "spdy",

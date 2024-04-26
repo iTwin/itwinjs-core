@@ -4,7 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 
 // import { expect } from "chai";
-import * as g from "../../core-geometry";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { PointString3d } from "../../curve/PointString3d";
+import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
+import { Range1d, Range2d, Range3d } from "../../geometry3d/Range";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { Transform } from "../../geometry3d/Transform";
+import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
+import { Map4d } from "../../geometry4d/Map4d";
+import { Matrix4d } from "../../geometry4d/Matrix4d";
+import { Point4d } from "../../geometry4d/Point4d";
+import { Complex } from "../../numerics/Complex";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { SimpleFactory } from "../SimpleFactory";
@@ -35,7 +50,7 @@ describe("SimpleFactory ", () => {
         if (a === undefined)
           break;
         const json = a.toJSON();
-        const b = g.LineSegment3d.fromJSON(json);
+        const b = LineSegment3d.fromJSON(json);
         report(a, b);
         ck.testTrue(a.isAlmostEqual(b));
       }
@@ -48,7 +63,7 @@ describe("SimpleFactory ", () => {
         if (a === undefined)
           break;
         const json = a.toJSON();
-        const b = g.LineString3d.fromJSON(json);
+        const b = LineString3d.fromJSON(json);
         report(a, b);
         ck.testTrue(a.isAlmostEqual(b));
       }
@@ -61,7 +76,7 @@ describe("SimpleFactory ", () => {
         if (a === undefined)
           break;
         const json = a.toJSON();
-        const b = g.PointString3d.fromJSON(json);
+        const b = PointString3d.fromJSON(json);
         report(a, b);
         ck.testTrue(a.isAlmostEqual(b));
       }
@@ -74,7 +89,7 @@ describe("SimpleFactory ", () => {
         if (a === undefined)
           break;
         const json = a.toJSON();
-        const b = g.Angle.fromJSON(json);
+        const b = Angle.fromJSON(json);
         report(a, b);
         ck.testTrue(a.isAlmostEqual(b));
       }
@@ -87,7 +102,7 @@ describe("SimpleFactory ", () => {
         if (a === undefined)
           break;
         const json = a.toJSON();
-        const b = g.AngleSweep.fromJSON(json);
+        const b = AngleSweep.fromJSON(json);
         report(a, b);
         ck.testTrue(a.isAlmostEqual(b));
       }
@@ -100,7 +115,7 @@ describe("SimpleFactory ", () => {
         if (a === undefined)
           break;
         const json = a.toJSON();
-        const b = g.Matrix3d.fromJSON(json);
+        const b = Matrix3d.fromJSON(json);
         report(a, b);
         ck.testTrue(a.isAlmostEqual(b));
       }
@@ -113,7 +128,7 @@ describe("SimpleFactory ", () => {
         if (a === undefined)
           break;
         const json = a.toJSON();
-        const b = g.Plane3dByOriginAndUnitNormal.fromJSON(json);
+        const b = Plane3dByOriginAndUnitNormal.fromJSON(json);
         report(a, b);
         ck.testTrue(a.isAlmostEqual(b));
       }
@@ -126,7 +141,7 @@ describe("SimpleFactory ", () => {
         if (a === undefined)
           break;
         const json = a.toJSON();
-        const b = g.Plane3dByOriginAndVectors.fromJSON(json);
+        const b = Plane3dByOriginAndVectors.fromJSON(json);
         report(a, b);
         ck.testTrue(a.isAlmostEqual(b));
       }
@@ -139,7 +154,7 @@ describe("SimpleFactory ", () => {
         if (a === undefined)
           break;
         const json = a.toJSON();
-        const b = g.Range3d.fromJSON(json);
+        const b = Range3d.fromJSON(json);
         report(a, b);
         ck.testTrue(a.isAlmostEqual(b));
       }
@@ -152,7 +167,7 @@ describe("SimpleFactory ", () => {
         if (a === undefined)
           break;
         const json = a.toJSON();
-        const b = g.Range1d.fromJSON(json);
+        const b = Range1d.fromJSON(json);
         report(a, b);
         ck.testTrue(a.isAlmostEqual(b));
       }
@@ -165,7 +180,7 @@ describe("SimpleFactory ", () => {
         if (a === undefined)
           break;
         const json = a.toJSON();
-        const b = g.Range2d.fromJSON(json);
+        const b = Range2d.fromJSON(json);
         report(a, b);
         ck.testTrue(a.isAlmostEqual(b));
       }
@@ -178,7 +193,7 @@ describe("SimpleFactory ", () => {
         if (a === undefined)
           break;
         const json = a.toJSON();
-        const b = g.Ray3d.fromJSON(json);
+        const b = Ray3d.fromJSON(json);
         report(a, b);
         ck.testTrue(a.isAlmostEqual(b));
       }
@@ -191,7 +206,7 @@ describe("SimpleFactory ", () => {
         if (a === undefined)
           break;
         const json = a.toJSON();
-        const b = g.Transform.fromJSON(json);
+        const b = Transform.fromJSON(json);
         report(a, b);
         ck.testTrue(a.isAlmostEqual(b));
       }
@@ -204,7 +219,7 @@ describe("SimpleFactory ", () => {
         if (a === undefined)
           break;
         const json = a.toJSON();
-        const b = g.YawPitchRollAngles.fromJSON(json);
+        const b = YawPitchRollAngles.fromJSON(json);
         report(a, b);
         ck.testTrue(a.isAlmostEqual(b));
       }
@@ -217,7 +232,7 @@ describe("SimpleFactory ", () => {
         if (a === undefined)
           break;
         const json = a.toJSON();
-        const b = g.Map4d.fromJSON(json);
+        const b = Map4d.fromJSON(json);
         report(a, b);
         ck.testTrue(a.isAlmostEqual(b));
       }
@@ -230,7 +245,7 @@ describe("SimpleFactory ", () => {
         if (a === undefined)
           break;
         const json = a.toJSON();
-        const b = g.Matrix4d.fromJSON(json);
+        const b = Matrix4d.fromJSON(json);
         report(a, b);
         ck.testTrue(a.isAlmostEqual(b));
       }
@@ -243,7 +258,7 @@ describe("SimpleFactory ", () => {
         if (a === undefined)
           break;
         const json = a.toJSON();
-        const b = g.Point4d.fromJSON(json);
+        const b = Point4d.fromJSON(json);
         report(a, b);
         ck.testTrue(a.isAlmostEqual(b));
       }
@@ -256,7 +271,7 @@ describe("SimpleFactory ", () => {
         if (a === undefined)
           break;
         const json = a.toJSON();
-        const b = g.Complex.fromJSON(json);
+        const b = Complex.fromJSON(json);
         report(a, b);
         ck.testTrue(a.isAlmostEqual(b));
       }

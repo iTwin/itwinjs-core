@@ -397,7 +397,7 @@ describe("PolygonOps", () => {
     ck.testCoordinate(area, 6.0, "PolygonOps.sumTriangleAreasPerpendicularToUpVector on GrowableXYZArray with tiny upVector");
 
     const pld = PolygonOps.closestPoint(dart, Point3d.create(0.1, 0.1));
-    ck.testTrue(pld.code === PolygonLocation.InsidePolygonProjectsToVertex, "PolygonOps.closestPoint on concave poly");
+    ck.testTrue(pld.code === PolygonLocation.OnPolygonEdgeInterior, "PolygonOps.closestPoint on concave poly");
 
     PolygonOps.forceClosure(dart);
     ck.testExactNumber(dart.length, 5, "PolygonOps.forceClosure on open input pushes a point");
@@ -416,6 +416,7 @@ describe("PolygonOps", () => {
     const openDart = dart.slice(0, -1);
     closedDart = PolygonOps.ensureClosed(openDart);
     ck.testType(closedDart, GrowableXYZArray, "PolygonOps.ensureClosed returns new GrowableXYZArray if input open");
-    ck.testExactNumber(closedDart.length, dart.length + 1, "PolygonOps.ensureClosed returns poly of length + 1 if input open");
+    ck.testExactNumber(closedDart.length, openDart.length + 1, "PolygonOps.ensureClosed returns poly of length + 1 if input open");
+    expect(ck.getNumErrors()).equals(0);
   });
 });

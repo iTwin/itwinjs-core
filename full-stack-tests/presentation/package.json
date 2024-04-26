@@ -10,7 +10,7 @@
   "private": true,
   "scripts": {
     "build": "npm run -s copy:locale && tsc 1>&2",
-    "build:watch": "tsc -w",
+    "build:watch": "npm run build -- -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:locale": "cpx \"./public/**/*\" ./lib/public",
     "docs": "npm run -s extract",
@@ -20,7 +20,8 @@
     "test:integration": "",
     "test:performance": "mocha --no-config --grep \"#performance\" --no-timeouts",
     "copy:config": "internal-tools copy-config",
-    "cover": "npm run -s test"
+    "cover": "npm run -s test",
+    "prettier:fix": "prettier --write ."
   },
   "dependencies": {
     "@itwin/core-backend": "workspace:*",
@@ -57,6 +58,7 @@
     "deep-equal": "^1",
     "faker": "^4.1.0",
     "fast-sort": "^3.0.2",
+    "fast-xml-parser": "^4.3.5",
     "mocha": "^10.2.0",
     "rimraf": "^3.0.2",
     "sinon": "^17.0.1",
@@ -72,9 +74,11 @@
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
     "eslint": "^8.44.0",
+    "eslint-config-prettier": "^9.1.0",
     "internal-tools": "workspace:*",
     "jsdom": "^19.0.0",
     "jsdom-global": "3.0.2",
+    "prettier": "^3.2.5",
     "sanitize-filename": "^1.6.3",
     "typescript": "~5.0.2",
     "i18next-http-backend": "^1.4.4"

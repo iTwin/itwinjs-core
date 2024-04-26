@@ -133,11 +133,12 @@ export class PixelDataSet extends SortedArray<Pixel.Data> {
 
   public get array(): Pixel.Data[] { return this._array; }
 
-  public containsFeature(elemId?: Id64String, subcatId?: Id64String, geomClass?: GeometryClass) {
+  public containsFeature(elemId?: Id64String, subcatId?: Id64String, geomClass?: GeometryClass, modelId?: Id64String) {
     return this.containsWhere((pxl) =>
       (undefined === elemId || pxl.elementId === elemId) &&
       (undefined === subcatId || pxl.subCategoryId === subcatId) &&
-      (undefined === geomClass || pxl.geometryClass === geomClass));
+      (undefined === geomClass || pxl.geometryClass === geomClass) &&
+      (undefined === modelId || pxl.modelId === modelId));
   }
   public containsElement(id: Id64String) { return this.containsWhere((pxl) => pxl.elementId === id); }
   public containsPlanarity(planarity: Pixel.Planarity) { return this.containsWhere((pxl) => pxl.planarity === planarity); }

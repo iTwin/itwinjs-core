@@ -78,7 +78,7 @@ describe("V1 Checkpoint Manager", () => {
 
     const request = { localFile, checkpoint: { iTwinId, iModelId, changeset } };
     await CheckpointManager.downloadCheckpoint(request);
-    const db = SnapshotDb.openCheckpointV1(localFile, request.checkpoint);
+    const db = V1CheckpointManager.openCheckpointV1(localFile, request.checkpoint);
     assert.equal(iModelId, db.nativeDb.getIModelId(), "expected the V1 Checkpoint download to fix the improperly set dbGuid.");
     db.close();
   });

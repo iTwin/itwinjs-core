@@ -9,7 +9,7 @@
 import { assert, dispose, Id64, Id64String, IDisposable } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@itwin/core-geometry";
 import {
-  AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassifier, ThematicDisplayMode, ViewFlags,
+  AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, ThematicDisplayMode, ViewFlags,
 } from "@itwin/core-common";
 import { AnimationNodeId } from "../../common/render/AnimationNodeId";
 import { ViewRect } from "../../common/ViewRect";
@@ -62,6 +62,7 @@ import { EdgeSettings } from "./EdgeSettings";
 import { TargetGraphics } from "./TargetGraphics";
 import { VisibleTileFeatures } from "./VisibleTileFeatures";
 import { FrameStatsCollector } from "../FrameStats";
+import { ActiveSpatialClassifier } from "../../SpatialClassifiersState";
 
 function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   const tmp = image.data[i0];
@@ -134,7 +135,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _screenSpaceEffects: string[] = [];
   public isFadeOutActive = false;
   public activeVolumeClassifierTexture?: WebGLTexture;
-  public activeVolumeClassifierProps?: SpatialClassifier;
+  public activeVolumeClassifierProps?: ActiveSpatialClassifier;
   public activeVolumeClassifierModelId?: Id64String;
   private _currentAnimationTransformNodeId?: number;
 
@@ -213,7 +214,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public override getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined {
     return undefined !== this._planarClassifiers ? this._planarClassifiers.get(id) : undefined;
   }
-  public override createPlanarClassifier(properties?: SpatialClassifier): PlanarClassifier {
+  public override createPlanarClassifier(properties?: ActiveSpatialClassifier): PlanarClassifier {
     return PlanarClassifier.create(properties, this);
   }
   public override getTextureDrape(id: Id64String): RenderTextureDrape | undefined {

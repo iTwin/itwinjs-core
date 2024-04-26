@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module PresentationRules
  */
@@ -36,12 +36,12 @@ import { StyleOverride } from "./StyleOverride";
  * @public
  */
 export declare type CustomizationRule =
-  InstanceLabelOverride |
-  CheckBoxRule | // eslint-disable-line deprecation/deprecation
-  GroupingRule |
-  ImageIdOverride | // eslint-disable-line deprecation/deprecation
-  LabelOverride | // eslint-disable-line deprecation/deprecation
-  SortingRule |
-  StyleOverride | // eslint-disable-line deprecation/deprecation
-  ExtendedDataRule |
-  NodeArtifactsRule;
+  | InstanceLabelOverride
+  | CheckBoxRule // eslint-disable-line deprecation/deprecation
+  | GroupingRule
+  | ImageIdOverride // eslint-disable-line deprecation/deprecation
+  | LabelOverride // eslint-disable-line deprecation/deprecation
+  | SortingRule
+  | StyleOverride // eslint-disable-line deprecation/deprecation
+  | ExtendedDataRule
+  | NodeArtifactsRule;

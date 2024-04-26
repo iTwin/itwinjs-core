@@ -2,128 +2,144 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SchemaItem, SchemaItemKey } from "@itwin/ecschema-metadata";
-import { ChangeType, PropertyValueChange, SchemaItemChanges } from "../Validation/SchemaChanges";
-import { SchemaItemFactory } from "./SchemaItemFactory";
-import { SchemaMergeContext } from "./SchemaMerger";
+import type { SchemaMergeContext } from "./SchemaMerger";
+import type { SchemaEditResults, SchemaItemEditResults } from "../Editing/Editor";
+import { AnySchemaDifference, AnySchemaItemDifference, AnySchemaItemPathDifference, SchemaDifference } from "../Differencing/SchemaDifference";
+import { ECObjectsError, ECObjectsStatus, SchemaContext, SchemaItem, SchemaItemKey } from "@itwin/ecschema-metadata";
+import { enumerationMerger, enumeratorMerger } from "./EnumerationMerger";
+import { phenomenonMerger } from "./PhenomenonMerger";
+import { propertyCategoryMerger } from "./PropertyCategoryMerger";
+import { unitSystemMerger } from "./UnitSystemMerger";
+import { kindOfQuantityMerger } from "./KindOfQuantityMerger";
+import { constantMerger } from "./ConstantMerger";
+import { mergeClassItems } from "./ClassMerger";
 
 /**
- * Defines a type-safe interface of Property Value resolver.
  * @internal
  */
-export type PropertyValueResolver<T extends SchemaItem, TProps=MutableSchemaItemProps<T>> = {
-  [P in keyof TProps]?: (newValue: any, item: SchemaItemKey, oldValue?: any) => any;
-};
+export interface SchemaItemMergerHandler<T extends AnySchemaItemDifference | AnySchemaItemPathDifference> {
+  add:    (context: SchemaMergeContext, change: T) => Promise<SchemaItemEditResults>;
+  modify: (context: SchemaMergeContext, change: T, itemKey: SchemaItemKey, item: any) => Promise<SchemaItemEditResults>;
+}
 
 /**
- * Defines a Mutable Schema Props interface.
- */
-type MutableSchemaItemProps<T extends SchemaItem> = {
-  -readonly [key in keyof ReturnType<T["toJSON"]>]: ReturnType<T["toJSON"]>[key];
-};
-
-/**
- * The SchemaItemMerger is an base class for several other mergers with the actual logic
- * to perform merging for a certain schema item type. The class provides the shared logics
- * that is shared for all schema item mergers and custom logic can be applied by overriding
- * the protected class members.
+ * Handles the merging logic for everything that is same for all schema items such as labels or descriptions
  * @internal
  */
-export class SchemaItemMerger<TItem extends SchemaItem> {
-
-  protected readonly context: SchemaMergeContext;
-
-  /**
-   * Constructor of the SchemaItemMerger class. This should not be overriden or extended
-   * by sub-implementations.
-   * @param context   The current merging context.
-   */
-  constructor(context: SchemaMergeContext) {
-    this.context = context;
+async function mergeSchemaItem<T extends AnySchemaItemDifference|AnySchemaItemPathDifference>(context: SchemaMergeContext, change: T, merger: SchemaItemMergerHandler<T>): Promise<SchemaEditResults> {
+  if(change.changeType === "add") {
+    return merger.add(context, change);
   }
 
-  /**
-   * This overridable method allows to create a property value resolver that gets defines
-   * a handler function for every possible property change. This allows adding complex handing
-   * if a property value requires complicated merging.
-   * @returns   A resolver map with resolvers for the property.
-   */
-  protected async createPropertyValueResolver(): Promise<PropertyValueResolver<TItem>> {
-    // Can be overriden for complex property value merging
-    return {};
+  if(change.changeType === "modify") {
+    const schemaItem = await locateSchemaItem(context, change.itemName, change.schemaType);
+    return merger.modify(context, change, schemaItem.key, schemaItem);
   }
 
-  /**
-   * This overridable method gets called for more complex merging.
-   * @param _itemKey  The key of the current schema item.
-   * @param _source   The source item that shall gets merged into.
-   * @param _change   The schema item change to be applied.
-   */
-  protected async merge(_itemKey: SchemaItemKey, _source: TItem, _change: SchemaItemChanges) {
-    // Can be overriden for complex merging
+  return { errorMessage: `The merger does not support ${change.changeType} of ${change.schemaType}.` };
+}
+
+/**
+ * @internal
+ */
+export async function locateSchemaItem(context: SchemaMergeContext, itemName: string, schemaType: string) {
+  const schemaItemKey = new SchemaItemKey(itemName, context.targetSchemaKey);
+  const schemaItem = await context.editor.schemaContext.getSchemaItem(schemaItemKey);
+  if (schemaItem === undefined) {
+    throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `${schemaType} ${schemaItemKey.fullName} not found in schema context.`);
   }
 
-  protected async lookup<T extends SchemaItem>(schemaItem: T): Promise<T | undefined>{
-    const itemKey = new SchemaItemKey(schemaItem.name, this.context.sourceSchema.schemaKey.matches(schemaItem.schema.schemaKey)
-      ? this.context.targetSchema.schemaKey
-      : schemaItem.schema.schemaKey,
-    );
-    return this.context.targetSchema.lookupItem<T>(itemKey);
+  return schemaItem;
+}
+
+/**
+ * Merges the given set of schema items. As schema items may depend or relate with other
+ * schema items, the list gets filtered to ensure the items get merged in a certain order.
+ * @param context       The current merging context.
+ * @param itemChanges   Set of schema item that differed.
+ * @returns             An async iterable with the merge result for each schema item.
+ * @internal
+ */
+export async function* mergeSchemaItems(context: SchemaMergeContext, itemChanges: AnySchemaDifference[]) {
+  for (const difference of itemChanges.filter(SchemaDifference.isUnitSystemDifference)) {
+    yield await mergeSchemaItem(context, difference, unitSystemMerger);
   }
 
-  /**
-   * Merges the given schema item changes in the current context.
-   * @param context             The merging context
-   * @param schemaItemChanges   An iterable of item changes.
-   */
-  public static async mergeChanges<TChange extends SchemaItemChanges>(context: SchemaMergeContext, schemaItemChanges: Iterable<TChange>) {
-    const merger = new this(context);
-    for(const change of schemaItemChanges) {
-
-      // Gets the source and the target item. The target item could be undefined at that point.
-      const sourceItem = (await context.sourceSchema.getItem<SchemaItem>(change.ecTypeName))!;
-      let targetItemKey = new SchemaItemKey(change.ecTypeName, context.targetSchema.schemaKey);
-
-      // In case the schema item does not exists in the target schema, an instance for
-      // this schema item is created. It's properties get set by the merger then.
-      if(change.schemaItemMissing?.changeType === ChangeType.Missing) {
-        // Check for name to make sure there is no collision for items with the same name
-        // but different type.
-        if(await context.targetSchema.lookupItem(targetItemKey) !== undefined) {
-          throw new Error(`Schema ${context.targetSchema.name} already contains a Schema Item ${change.ecTypeName}.`);
-        }
-
-        // TODO: Think about renaming the Schema Item. This could be controlled though a flag.
-        targetItemKey = await SchemaItemFactory.create(context, sourceItem);
-      }
-
-      await merger.mergeItemPropertyValues(targetItemKey, change.propertyValueChanges);
-      await merger.merge(targetItemKey, sourceItem, change);
-    }
+  for (const difference of itemChanges.filter(SchemaDifference.isPropertyCategoryDifference)) {
+    yield await mergeSchemaItem(context, difference, propertyCategoryMerger);
   }
-  /**
-   * Merges the property values.
-   * @param targetItem  The current schema item
-   * @param changes     The property changes.
-   */
-  private async mergeItemPropertyValues(targetItemKey: SchemaItemKey, changes: PropertyValueChange[]) {
-    // No need to process anything if no properties differ.
-    if(changes.length === 0) {
-      return;
-    }
 
-    const targetItem = (await this.context.targetSchema.lookupItem<SchemaItem>(targetItemKey));
-    const jsonProps = (targetItem?.toJSON() ?? {}) as MutableSchemaItemProps<TItem>;
-    const propertyResolver = await this.createPropertyValueResolver();
-
-    for(const change of changes) {
-      const [propertyName, propertyNewValue, propertyOldValue] = change.diagnostic.messageArgs! as [keyof typeof jsonProps, any, any];
-      const resolver = propertyResolver[propertyName];
-      jsonProps[propertyName] = resolver !== undefined
-        ? resolver(propertyNewValue, targetItemKey, propertyOldValue)
-        : propertyNewValue;
-    }
-
-    await this.context.editor.schemaItems.applyProps(targetItemKey, jsonProps);
+  for (const difference of itemChanges.filter(SchemaDifference.isEnumerationDifference)) {
+    yield await mergeSchemaItem(context, difference, enumerationMerger);
   }
+
+  for (const difference of itemChanges.filter(SchemaDifference.isEnumeratorDifference)) {
+    yield await mergeSchemaItem(context, difference, enumeratorMerger);
+  }
+
+  for (const difference of itemChanges.filter(SchemaDifference.isPhenomenonDifference)) {
+    yield await mergeSchemaItem(context, difference, phenomenonMerger);
+  }
+
+  // TODO:
+  // The following schema items are not supported yet. Mentioned in the processing order:
+  // - Unit
+  // - Inverted Unit
+  // - Format
+
+  for (const difference of itemChanges.filter(SchemaDifference.isKindOfQuantityDifference)) {
+    yield await mergeSchemaItem(context, difference, kindOfQuantityMerger);
+  }
+
+  for (const difference of itemChanges.filter(SchemaDifference.isConstantDifference)) {
+    yield await mergeSchemaItem(context, difference, constantMerger);
+  }
+
+  // Classes are slightly differently merged, since they can refer each other the process
+  // uses several stages to merge.
+  for await (const classMergeResult of mergeClassItems(context, itemChanges)) {
+    yield classMergeResult;
+  }
+}
+
+/**
+ * Convenience-method around updateSchemaItemKey that returns the full name instead of a SchemaItemKey.
+ * @internal
+ */
+export async function updateSchemaItemFullName(context: SchemaMergeContext, reference: string) {
+  const schemaItemKey = await updateSchemaItemKey(context, reference);
+  return schemaItemKey.fullName;
+}
+
+/**
+ * Updates the given reference if it refers to a SchemaItem in the source Schema and
+ * returns a SchemaItemKey. If any other schema is referred the reference is not change.
+ * @internal
+ */
+export async function updateSchemaItemKey(context: SchemaMergeContext, reference: string) {
+  const [schemaName, itemName] = SchemaItem.parseFullName(reference);
+  if (context.sourceSchemaKey.compareByName(schemaName)) {
+    return resolveSchemaItemKey(context.editor.schemaContext, new SchemaItemKey(itemName, context.targetSchemaKey));
+  }
+
+  const referencedSchema = await context.targetSchema.getReference(schemaName);
+  if (referencedSchema !== undefined) {
+    return resolveSchemaItemKey(context.editor.schemaContext, new SchemaItemKey(itemName, referencedSchema.schemaKey));
+  }
+
+  throw new Error(`Cannot locate referenced schema item ${reference}`);
+}
+
+/**
+ * To support case insensitivity for schema items, the given key is checked if there
+ * exists an item for it.
+ * @internal
+ */
+async function resolveSchemaItemKey(schemaContext: SchemaContext, itemKey: SchemaItemKey): Promise<SchemaItemKey> {
+  const item = await schemaContext.getSchemaItem(itemKey);
+  if (item === undefined) {
+    // If the schema item hasn't been created yet, we have to trust the given key is correctly spelled.
+    return itemKey;
+  }
+  return item.key;
 }

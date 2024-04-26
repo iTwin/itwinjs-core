@@ -1,6 +1,8 @@
 sep=;
 Release Tag;API Item
 public;addFieldHierarchy(rootHierarchies: FieldHierarchy[], hierarchy: FieldHierarchy): void
+public;ArrayPropertiesField 
+public;ArrayPropertiesFieldJSON
 public;ArrayTypeDescription 
 internal;AsyncTasksTracker
 public;BaseFieldJSON
@@ -67,6 +69,7 @@ public;ContentSpecificationBase
 public;ContentSpecificationTypes
 alpha;ContentUpdateInfo = typeof UPDATE_FULL
 public;createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean): FieldHierarchy[]
+public;CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule
 public;CustomNodeSpecification 
 public;CustomQueryInstanceNodesSpecification 
 public;CustomRendererSpecification
@@ -357,8 +360,11 @@ public;RelatedClassInfoJSON
 public;RelatedClassInfoWithOptionalRelationship = PartialBy
 public;RelatedClassInfoWithOptionalRelationship
 public;RelatedClassInfoWithOptionalRelationshipJSON
+public;RelatedInstanceByPathSpecification 
+public;RelatedInstanceByTargetInstancesSpecification 
 public;RelatedInstanceNodesSpecification 
-public;RelatedInstanceSpecification
+public;RelatedInstanceSpecification = RelatedInstanceByPathSpecification | RelatedInstanceByTargetInstancesSpecification
+public;RelatedInstanceSpecificationBase
 public;RelatedPropertiesSpecialValues
 public;RelatedPropertiesSpecification
 public;RelationshipDirection
@@ -423,6 +429,8 @@ deprecated;StringRulesetVariableJSON
 public;StrippedRelatedClassInfo
 public;StrippedRelationshipPath = StrippedRelatedClassInfo[]
 public;StructFieldMemberDescription
+public;StructPropertiesField 
+public;StructPropertiesFieldJSON
 public;StructTypeDescription 
 public;StyleOverride 
 deprecated;StyleOverride 

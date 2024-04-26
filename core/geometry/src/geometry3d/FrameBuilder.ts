@@ -235,6 +235,8 @@ export class FrameBuilder {
           this.announcePoint(point);
         else break;
       }
+    } else if (data.hasOwnProperty("x") && data.hasOwnProperty("y") && data.hasOwnProperty("z")) {
+      this.announcePoint(Point3d.create(data.x, data.y, data.z));
     }
   }
   /**

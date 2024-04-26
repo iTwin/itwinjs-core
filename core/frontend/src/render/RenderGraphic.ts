@@ -8,6 +8,7 @@
 
 import { IDisposable } from "@itwin/core-bentley";
 import { RenderMemory } from "./RenderMemory";
+import { Range3d } from "@itwin/core-geometry";
 
 /** Abstract representation of an object which can be rendered by a [[RenderSystem]].
  * Two broad classes of graphics exist:
@@ -22,6 +23,11 @@ export abstract class RenderGraphic implements IDisposable /* , RenderMemory.Con
 
   /** @internal */
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
+
+  /** Extend `range` to include the bounding box of this graphic, including any child graphics.
+  * @internal
+  */
+  public abstract unionRange(range: Range3d): void;
 }
 
 /** A graphic that owns another graphic. By default, every time a [[Viewport]]'s decorations or dynamics graphics change, the previous graphics are disposed of.
@@ -40,6 +46,8 @@ export abstract class RenderGraphicOwner extends RenderGraphic {
   public disposeGraphic(): void { this.graphic.dispose(); }
   /** @internal */
   public collectStatistics(stats: RenderMemory.Statistics): void { this.graphic.collectStatistics(stats); }
+  /** @internal */
+  public override unionRange(range: Range3d): void { this.graphic.unionRange(range); }
 }
 
 /** An array of [[RenderGraphic]]s.

@@ -586,6 +586,8 @@ export type {
 	SubjectProps,
 	TerrainProps,
 	TerrainProviderName,
+	TextAnnotation2dProps,
+	TextAnnotation3dProps,
 	TextStringPrimitive,
 	TextStringProps,
 	TextureData,

@@ -4,4 +4,3 @@ beta;BasicManipulationCommand
 beta;EditCommand 
 beta;EditCommandAdmin
 beta;EditCommandType = typeof EditCommand
-alpha;SolidModelingCommand 

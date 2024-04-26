@@ -152,6 +152,9 @@ export interface BatchTableProperties {
    * @note Treat the JSON properties as read-only - do not modify them.
    */
   getFeatureProperties(id: Id64String): Record<string, any> | undefined;
+
+  /** Obtain an iterator over all of the features in the batch table and their properties. */
+  entries(): Iterable<{ id: Id64String, properties: Record<string, any> }>;
 }
 
 /** @internal */
@@ -460,7 +463,7 @@ export class RealityTileTree extends TileTree {
 
     const baseDepth = this.getBaseRealityDepth(args.context);
 
-    if (!args.context.target.renderSystem.isMobile && 0 === context.missing.length) { // We skip preloading on mobile devices.
+    if (IModelApp.tileAdmin.isPreloadingAllowed && 0 === context.missing.length) {
       if (baseDepth > 0)        // Maps may force loading of low level globe tiles.
         rootTile.preloadRealityTilesAtDepth(baseDepth, context, args);
 

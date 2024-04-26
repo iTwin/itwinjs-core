@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Promote ClassRegistry.register to public.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

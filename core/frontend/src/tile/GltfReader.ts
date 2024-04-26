@@ -27,7 +27,7 @@ import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Triangle } from "../render/primitives/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
-import { RealityTileGeometry, TileContent } from "./internal";
+import { decodeMeshoptBuffer, RealityTileGeometry, TileContent } from "./internal";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
 import { CreateRenderMaterialArgs } from "../render/CreateRenderMaterialArgs";
 import { DisplayParams } from "../common/render/primitives/DisplayParams";
@@ -303,7 +303,7 @@ function trsMatrix(translation: [number, number, number] | undefined, rotation: 
   const rotTf = Transform.createRefs(undefined, rotation ? Matrix3d.createFromQuaternion(Point4d.create(rotation[0], rotation[1], rotation[2], rotation[3])) : Matrix3d.identity);
   rotTf.matrix.transposeInPlace(); // See comment on Matrix3d.createFromQuaternion
   const transTf = Transform.createTranslation(translation ? new Point3d(translation[0], translation[1], translation[2]) : Point3d.createZero());
-  const tf = scaleTf.multiplyTransformTransform(rotTf, result);
+  const tf = rotTf.multiplyTransformTransform(scaleTf, result);
   transTf.multiplyTransformTransform(tf, tf);
   return tf;
 }
@@ -425,7 +425,7 @@ export abstract class GltfReader {
   protected get _nodes(): GltfDictionary<GltfNode> { return this._glTF.nodes ?? emptyDict; }
   protected get _meshes(): GltfDictionary<GltfMesh> { return this._glTF.meshes ?? emptyDict; }
   protected get _accessors(): GltfDictionary<GltfAccessor> { return this._glTF.accessors ?? emptyDict; }
-  protected get _bufferViews(): GltfDictionary<GltfBufferViewProps> { return this._glTF.bufferViews ?? emptyDict; }
+  protected get _bufferViews(): GltfDictionary<GltfBufferViewProps & { resolvedBuffer?: Uint8Array }> { return this._glTF.bufferViews ?? emptyDict; }
   protected get _materials(): GltfDictionary<GltfMaterial> { return this._glTF.materials ?? emptyDict; }
   protected get _samplers(): GltfDictionary<GltfSampler> { return this._glTF.samplers ?? emptyDict; }
   protected get _textures(): GltfDictionary<GltfTexture> { return this._glTF.textures ?? emptyDict; }
@@ -807,11 +807,18 @@ export abstract class GltfReader {
 
       const bufferViewAccessorValue = accessor.bufferView;
       const bufferView = undefined !== bufferViewAccessorValue ? this._bufferViews[bufferViewAccessorValue] : undefined;
-      if (!bufferView || undefined === bufferView.buffer)
+      if (!bufferView)
         return undefined;
 
-      const buffer = this._buffers[bufferView.buffer];
-      const bufferData = buffer?.resolvedBuffer;
+      let bufferData = bufferView.resolvedBuffer;
+      if (!bufferData) {
+        if (undefined === bufferView.buffer)
+          return undefined;
+
+        const buffer = this._buffers[bufferView.buffer];
+        bufferData = buffer?.resolvedBuffer;
+      }
+
       if (!bufferData)
         return undefined;
 
@@ -1041,7 +1048,7 @@ export abstract class GltfReader {
   protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfPrimitiveData | undefined {
     const meshMode = JsonUtils.asInt(primitive.mode, GltfMeshMode.Triangles);
     if (meshMode === GltfMeshMode.Points /* && !this._vertexTableRequired */) {
-      const pointCloud = this.readPointCloud(primitive, undefined !== featureTable);
+      const pointCloud = this.readPointCloud2(primitive, undefined !== featureTable);
       if (pointCloud)
         return pointCloud;
     }
@@ -1184,14 +1191,59 @@ export abstract class GltfReader {
     return mesh;
   }
 
-  private readPointCloud(primitive: GltfMeshPrimitive, hasFeatures: boolean): GltfPointCloud | undefined {
-    const posView = this.getBufferView(primitive.attributes, "POSITION");
-    if (!posView || GltfDataType.Float !== posView.type)
-      return undefined;
+  private readPointCloud2(primitive: GltfMeshPrimitive, hasFeatures: boolean): GltfPointCloud | undefined {
+    let pointRange: Range3d | undefined;
+    let positions: Uint8Array | Uint16Array | Float32Array;
+    let qparams: QParams3d | undefined;
 
-    const posData = posView.toBufferData(GltfDataType.Float);
-    if (!(posData?.buffer instanceof Float32Array))
-      return undefined;
+    const posView = this.getBufferView(primitive.attributes, "POSITION");
+    switch (posView?.type) {
+      case GltfDataType.Float: {
+        const posData = posView.toBufferData(GltfDataType.Float);
+        if (!(posData?.buffer instanceof Float32Array)) {
+          return undefined;
+        }
+
+        positions = posData.buffer;
+        const strideSkip = posView.stride - 3;
+        pointRange = new Range3d();
+        for (let i = 0; i < positions.length; i += strideSkip) {
+          pointRange.extendXYZ(positions[i++], positions[i++], positions[i++]);
+        }
+
+        qparams = QParams3d.fromOriginAndScale(new Point3d(0, 0, 0), new Point3d(1, 1, 1));
+        break;
+      }
+      case GltfDataType.UnsignedByte:
+      case GltfDataType.UnsignedShort: {
+        const posData = posView.toBufferData(posView.type);
+        if (!(posData?.buffer instanceof Uint8Array || posData?.buffer instanceof Uint16Array)) {
+          return undefined;
+        }
+
+        positions = posData.buffer;
+        let min, max;
+        const ext = posView.accessor.extensions?.WEB3D_quantized_attributes;
+        if (ext) {
+          min = ext.decodedMin;
+          max = ext.decodedMax;
+        } else {
+          // Assume KHR_mesh_quantization...
+          min = posView.accessor.min;
+          max = posView.accessor.max;
+        }
+
+        if (undefined === min || undefined === max) {
+          return undefined;
+        }
+
+        pointRange = Range3d.createXYZXYZ(min[0], min[1], min[2], max[0], max[1], max[2]);
+        qparams = QParams3d.fromRange(pointRange);
+        break;
+      }
+      default:
+        return undefined;
+    }
 
     const colorView = this.getBufferView(primitive.attributes, "COLOR_0");
     if (!colorView || GltfDataType.UnsignedByte !== colorView.type)
@@ -1200,11 +1252,6 @@ export abstract class GltfReader {
     const colorData = colorView.toBufferData(GltfDataType.UnsignedByte);
     if (!(colorData?.buffer instanceof Uint8Array))
       return undefined;
-
-    const strideSkip = posView.stride - 3;
-    const pointRange = new Range3d();
-    for (let i = 0; i < posData.buffer.length; i+= strideSkip)
-      pointRange.extendXYZ(posData.buffer[i++], posData.buffer[i++], posData.buffer[i++]);
 
     let colors = colorData.buffer;
     if ("VEC4" === colorView.accessor.type) {
@@ -1219,14 +1266,15 @@ export abstract class GltfReader {
     }
 
     const features = new FeatureIndex();
-    if (hasFeatures)
+    if (hasFeatures) {
       features.type = FeatureIndexType.Uniform;
+    }
 
     this._containsPointCloud = true;
     return {
       type: "pointcloud",
-      positions: posData.buffer,
-      qparams: QParams3d.fromOriginAndScale(new Point3d(0, 0, 0), new Point3d(1, 1, 1)),
+      positions,
+      qparams,
       pointRange,
       colors,
       colorFormat: "rgb",
@@ -1380,10 +1428,18 @@ export abstract class GltfReader {
       if (GltfDataType.UnsignedShort !== view.type)
         return false;
 
+      let rangeMin, rangeMax;
       const quantized = view.accessor.extensions?.WEB3D_quantized_attributes;
-      const rangeMin = quantized?.decodedMin;
-      const rangeMax = quantized?.decodedMax;
-      if (!rangeMin || !rangeMax) // required by spec...
+      if (quantized) {
+        rangeMin = quantized.decodedMin;
+        rangeMax = quantized.decodedMax;
+      } else {
+        // Assume KHR_mesh_quantization...
+        rangeMin = view.accessor.min;
+        rangeMax = view.accessor.max;
+      }
+
+      if (undefined === rangeMin || undefined === rangeMax) // required by spec...
         return false;
 
       // ###TODO apply WEB3D_quantized_attributes.decodeMatrix? Have not encountered in the wild; glTF 1.0 only.
@@ -1616,6 +1672,29 @@ export abstract class GltfReader {
   protected async resolveResources(): Promise<void> {
     // Load any external images and buffers.
     await this._resolveResources();
+
+    // Decompress any meshopt-compressed buffer views
+    const decodeMeshoptBuffers: Array<Promise<void>> = [];
+    for (const bv of gltfDictionaryIterator(this._bufferViews)) {
+      const ext = bv.extensions?.EXT_meshopt_compression;
+      if (ext) {
+        const bufferData = this._buffers[ext.buffer]?.resolvedBuffer;
+        if (bufferData) {
+          const source = new Uint8Array(bufferData.buffer, bufferData.byteOffset + (ext.byteOffset ?? 0), ext.byteLength ?? 0);
+          const decode = async () => {
+            bv.resolvedBuffer = await decodeMeshoptBuffer(source, ext);
+            if (bv.resolvedBuffer) {
+              bv.byteLength = bv.resolvedBuffer.byteLength;
+              bv.byteOffset = 0;
+            }
+          };
+
+          decodeMeshoptBuffers.push(decode());
+        }
+      }
+    }
+
+    await Promise.all(decodeMeshoptBuffers);
 
     // If any meshes are draco-compressed, dynamically load the decoder module and then decode the meshes.
     const dracoMeshes: DracoMeshCompression[] = [];

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Core
  */
@@ -9,12 +9,30 @@
 import * as path from "path";
 import { gt as versionGt, gte as versionGte, lt as versionLt } from "semver";
 import {
-  DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, Entity, IModelDb, KnownLocations, Model, Subject,
+  DefinitionElement,
+  DefinitionModel,
+  DefinitionPartition,
+  ECSqlStatement,
+  Element,
+  Entity,
+  IModelDb,
+  KnownLocations,
+  Model,
+  Subject,
 } from "@itwin/core-backend";
 import { assert, DbResult, Id64String } from "@itwin/core-bentley";
 import {
-  BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps, ElementProps, InformationPartitionElementProps, ModelProps, QueryBinder,
-  QueryRowFormat, SubjectProps,
+  BisCodeSpec,
+  Code,
+  CodeScopeSpec,
+  CodeSpec,
+  DefinitionElementProps,
+  ElementProps,
+  InformationPartitionElementProps,
+  ModelProps,
+  QueryBinder,
+  QueryRowFormat,
+  SubjectProps,
 } from "@itwin/core-common";
 import { Ruleset } from "@itwin/presentation-common";
 import { PresentationRules } from "./domain/PresentationRulesDomain";
@@ -90,7 +108,6 @@ export interface RulesetEmbedderProps {
  * @public
  */
 export class RulesetEmbedder {
-
   private _imodel: IModelDb;
   private readonly _schemaPath = path.join(KnownLocations.nativeAssetsDir, "ECSchemas/Domain/PresentationRules.ecschema.xml");
   private readonly _rulesetModelName = "PresentationRules";
@@ -140,14 +157,16 @@ export class RulesetEmbedder {
     }
 
     // check if we need to do anything at all
-    const shouldSkip = normalizedOptions.skip === "same-id" && rulesetsWithSameId.length > 0
-      || normalizedOptions.skip === "same-id-and-version-eq" && rulesetsWithSameId.some((entry) => entry.normalizedVersion === rulesetVersion)
-      || normalizedOptions.skip === "same-id-and-version-gte" && rulesetsWithSameId.some((entry) => versionGte(entry.normalizedVersion, rulesetVersion));
+    const shouldSkip =
+      (normalizedOptions.skip === "same-id" && rulesetsWithSameId.length > 0) ||
+      (normalizedOptions.skip === "same-id-and-version-eq" && rulesetsWithSameId.some((entry) => entry.normalizedVersion === rulesetVersion)) ||
+      (normalizedOptions.skip === "same-id-and-version-gte" && rulesetsWithSameId.some((entry) => versionGte(entry.normalizedVersion, rulesetVersion)));
     if (shouldSkip) {
       // we're not inserting anything - return ID of the ruleset element with the highest version
       const rulesetEntryWithHighestVersion = rulesetsWithSameId.reduce((highest, curr) => {
-        if (!highest.ruleset.version || curr.ruleset.version && versionGt(curr.ruleset.version, highest.ruleset.version))
+        if (!highest.ruleset.version || (curr.ruleset.version && versionGt(curr.ruleset.version, highest.ruleset.version))) {
           return curr;
+        }
         return highest;
       }, rulesetsWithSameId[0]);
       return rulesetEntryWithHighestVersion.id;
@@ -165,8 +184,9 @@ export class RulesetEmbedder {
       return false;
     };
     rulesetsWithSameId.forEach((entry) => {
-      if (shouldRemove(entry.ruleset, entry.normalizedVersion))
+      if (shouldRemove(entry.ruleset, entry.normalizedVersion)) {
         rulesetsToRemove.push(entry.id);
+      }
     });
     this._imodel.elements.deleteElement(rulesetsToRemove);
 
@@ -210,8 +230,9 @@ export class RulesetEmbedder {
    * Get all rulesets embedded in the iModel.
    */
   public async getRulesets(): Promise<Ruleset[]> {
-    if (!this._imodel.containsClass(RulesetElements.Ruleset.classFullName))
+    if (!this._imodel.containsClass(RulesetElements.Ruleset.classFullName)) {
       return [];
+    }
 
     const rulesetList: Ruleset[] = [];
     this._imodel.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${RulesetElements.Ruleset.classFullName}`, (statement: ECSqlStatement) => {
@@ -227,8 +248,9 @@ export class RulesetEmbedder {
 
   private async getOrCreateRulesetModel(callbacks?: InsertCallbacks): Promise<DefinitionModel> {
     const rulesetModel = this.queryRulesetModel();
-    if (undefined !== rulesetModel)
+    if (undefined !== rulesetModel) {
       return rulesetModel;
+    }
 
     const rulesetSubject = await this.insertSubject(callbacks);
     const definitionPartition = await this.insertDefinitionPartition(rulesetSubject, callbacks);
@@ -237,16 +259,18 @@ export class RulesetEmbedder {
 
   private queryRulesetModel(): DefinitionModel | undefined {
     const definitionPartition = this.queryDefinitionPartition();
-    if (undefined === definitionPartition)
+    if (undefined === definitionPartition) {
       return undefined;
+    }
 
     return this._imodel.models.getSubModel(definitionPartition.id);
   }
 
   private queryDefinitionPartition(): DefinitionPartition | undefined {
     const subject = this.querySubject();
-    if (undefined === subject)
+    if (undefined === subject) {
       return undefined;
+    }
 
     return this._imodel.elements.tryGetElement<DefinitionPartition>(DefinitionPartition.createCode(this._imodel, subject.id, this._rulesetModelName));
   }
@@ -311,8 +335,9 @@ export class RulesetEmbedder {
   }
 
   private async handleElementOperationPrerequisites(): Promise<void> {
-    if (this._imodel.containsClass(RulesetElements.Ruleset.classFullName))
+    if (this._imodel.containsClass(RulesetElements.Ruleset.classFullName)) {
       return;
+    }
 
     // import PresentationRules ECSchema
     await this._imodel.importSchemas([this._schemaPath]);
@@ -361,8 +386,9 @@ export class RulesetEmbedder {
 }
 
 function normalizeRulesetInsertOptions(options?: RulesetInsertOptions): RulesetInsertOptions {
-  if (options === undefined)
+  if (options === undefined) {
     return { skip: "same-id-and-version-eq", replaceVersions: "exact" };
+  }
 
   return {
     skip: options.skip ?? "same-id-and-version-eq",

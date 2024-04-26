@@ -24,14 +24,14 @@ const frontendApi: ITwinElectronApi = {
   },
   addListener(channel: string, listener: ElectronListener) {
     checkPrefix(channel);
-    return ipcRenderer.addListener(channel, listener);
+    ipcRenderer.addListener(channel, listener);
   },
   removeListener(channel: string, listener: ElectronListener) {
-    return ipcRenderer.removeListener(channel, listener);
+    ipcRenderer.removeListener(channel, listener);
   },
   once(channel: string, listener: ElectronListener) {
     checkPrefix(channel);
-    return ipcRenderer.once(channel, listener);
+    ipcRenderer.once(channel, listener);
   },
   async invoke(channel: string, ...data: any[]): Promise<any> {
     checkPrefix(channel);

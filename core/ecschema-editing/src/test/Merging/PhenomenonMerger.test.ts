@@ -2,20 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Phenomenon, Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import { Phenomenon, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 
 describe("Phenomenon merger tests", () => {
-  let targetContext: SchemaContext;
-  let sourceContext: SchemaContext;
-
-  const sourceJson = {
-    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-    name: "SourceSchema",
-    version: "1.2.3",
-    alias: "source",
-  };
   const targetJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "TargetSchema",
@@ -23,71 +14,64 @@ describe("Phenomenon merger tests", () => {
     alias: "target",
   };
 
-  beforeEach(() => {
-    targetContext = new SchemaContext();
-    sourceContext = new SchemaContext();
-  });
+  it("should merge missing phenomenon item", async () => {
+    const targetSchema = await Schema.fromJson(targetJson, new SchemaContext());
+    const merger = new SchemaMerger(targetSchema.context);
 
-  describe("Phenomenon missing test", () => {
-    it("should merge missing phenomenon item", async () => {
-      const sourceSchema = await Schema.fromJson({
-        ...sourceJson,
-        items: {
-          testPhenomenon: {
-            schemaItemType: "Phenomenon",
-            name: "AREA",
+    const mergedSchema = await merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "add",
+          schemaType: SchemaItemType.Phenomenon,
+          itemName: "testPhenomenon",
+          difference: {
             label: "Area",
             description: "Area description",
             definition: "Units.LENGTH(2)",
           },
         },
-      }, sourceContext);
+      ],
+    });
 
-      const targetSchema = await Schema.fromJson({
-        ...targetJson,
-      }, targetContext);
-
-      const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
-
-      const sourcePhenomenon = await sourceSchema.getItem<Phenomenon>("testPhenomenon");
-      const mergedPhenomenon = await mergedSchema.getItem<Phenomenon>("testPhenomenon");
-
-      expect(sourcePhenomenon!.toJSON()).deep.eq(mergedPhenomenon!.toJSON());
-
+    const mergedPhenomenon = await mergedSchema.getItem<Phenomenon>("testPhenomenon");
+    expect(mergedPhenomenon!.toJSON()).deep.equals({
+      schemaItemType: "Phenomenon",
+      label: "Area",
+      description: "Area description",
+      definition: "Units.LENGTH(2)",
     });
   });
 
-  describe("Phenomenon attribute conflict tests", () => {
-    it("should throw error for definition conflict", async () => {
-      const sourceSchema = await Schema.fromJson({
-        ...sourceJson,
-        items: {
-          testPhenomenon: {
-            schemaItemType: "Phenomenon",
-            name: "AREA",
-            label: "Area",
-            description: "Area description",
+  it("should throw error for definition conflict", async () => {
+    const targetSchema = await Schema.fromJson({
+      ...targetJson,
+      items: {
+        testPhenomenon: {
+          schemaItemType: "Phenomenon",
+          name: "AREA",
+          label: "Area",
+          description: "Area description",
+          definition: "Units.LENGTH(4)",
+        },
+      },
+    }, new SchemaContext());
+
+    const merger = new SchemaMerger(targetSchema.context);
+    await expect(merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      changes: [
+        {
+          changeType: "modify",
+          schemaType: SchemaItemType.Phenomenon,
+          itemName: "testPhenomenon",
+          difference: {
             definition: "Units.LENGTH(2)",
           },
         },
-      }, sourceContext);
-
-      const targetSchema = await Schema.fromJson({
-        ...targetJson,
-        items: {
-          testPhenomenon: {
-            schemaItemType: "Phenomenon",
-            name: "AREA",
-            label: "Area",
-            description: "Area description",
-            definition: "Units.LENGTH(4)",
-          },
-        },
-      }, targetContext);
-
-      const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("The Phenomenon testPhenomenon has an invalid 'definition' attribute.");
-    });
+      ],
+    })).to.be.rejectedWith("The Phenomenon testPhenomenon has an invalid 'definition' attribute.");
   });
 });

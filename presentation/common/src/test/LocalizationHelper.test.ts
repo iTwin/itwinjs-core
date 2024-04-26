@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { NodePathElement } from "../presentation-common";
+import { ArrayPropertiesField, NestedContentField, NodePathElement, StructPropertiesField } from "../presentation-common";
 import { Content } from "../presentation-common/content/Content";
 import { Item } from "../presentation-common/content/Item";
 import { DisplayValueGroup, NavigationPropertyValue } from "../presentation-common/content/Value";
@@ -13,12 +13,17 @@ import { LocalizationHelper } from "../presentation-common/LocalizationHelper";
 import {
   createRandomECInstancesNode,
   createRandomLabelCompositeValue,
-  createRandomLabelDefinition,
+  createTestArrayPropertiesContentField,
   createTestCategoryDescription,
   createTestContentDescriptor,
   createTestContentItem,
   createTestECInstanceKey,
+  createTestLabelDefinition,
+  createTestNestedContentField,
+  createTestPropertiesContentField,
+  createTestPropertyInfo,
   createTestSimpleContentField,
+  createTestStructPropertiesContentField,
 } from "./_helpers";
 
 function getTestLocalizedString(key: string) {
@@ -146,23 +151,87 @@ describe("LocalizationHelper", () => {
   });
 
   describe("getLocalizedContent", () => {
-    it("translates contentItem labelDefinitions", () => {
-      const contentItem = new Item([], createRandomLabelDefinition(), "", undefined, {}, {}, []);
-      contentItem.label.rawValue = "@namespace:LocalizedValue@";
+    it("translates content item label", () => {
+      const contentItem = createTestContentItem({
+        label: createTestLabelDefinition({ rawValue: "@namespace:LocalizedValue@" }),
+        values: {},
+        displayValues: {},
+      });
       const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
       const result = localizationHelper.getLocalizedContent(content);
       expect(result.contentSet[0]!.label.rawValue).to.be.eq("LocalizedValue");
     });
 
-    it("translates contentItem value", () => {
-      const contentItem = new Item([], createRandomLabelDefinition(), "", undefined, {}, {}, []);
-      contentItem.values.property = "@namespace:LocalizedValue@";
+    it("translates content item direct value", () => {
+      const contentItem = createTestContentItem({
+        values: {
+          property: "@namespace:LocalizedRawValue@",
+        },
+        displayValues: {
+          property: "@namespace:LocalizedDisplayValue@",
+        },
+      });
       const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
       const result = localizationHelper.getLocalizedContent(content);
-      expect(result.contentSet[0]!.values.property).to.be.eq("LocalizedValue");
+      expect(result.contentSet[0]!.values.property).to.be.eq("LocalizedRawValue");
+      expect(result.contentSet[0]!.displayValues.property).to.be.eq("LocalizedDisplayValue");
     });
 
-    it("translates contentItem nested value", () => {
+    it("translates content item direct array item values", () => {
+      const contentItem = createTestContentItem({
+        values: {
+          property: ["@namespace:LocalizedRawValue1@", "@namespace:LocalizedRawValue2@"],
+        },
+        displayValues: {
+          property: ["@namespace:LocalizedDisplayValue1@", "@namespace:LocalizedDisplayValue2@"],
+        },
+      });
+      const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
+      const result = localizationHelper.getLocalizedContent(content);
+      expect(result.contentSet[0]!.values.property).to.deep.eq(["LocalizedRawValue1", "LocalizedRawValue2"]);
+      expect(result.contentSet[0]!.displayValues.property).to.deep.eq(["LocalizedDisplayValue1", "LocalizedDisplayValue2"]);
+    });
+
+    it("translates content item direct struct member values", () => {
+      const contentItem = createTestContentItem({
+        values: {
+          property: {
+            prop1: "@namespace:LocalizedRawValue1@",
+            prop2: "@namespace:LocalizedRawValue2@",
+          },
+        },
+        displayValues: {
+          property: {
+            prop1: "@namespace:LocalizedDisplayValue1@",
+            prop2: "@namespace:LocalizedDisplayValue2@",
+          },
+        },
+      });
+      const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
+      const result = localizationHelper.getLocalizedContent(content);
+      expect(result.contentSet[0]!.values.property).to.deep.eq({ prop1: "LocalizedRawValue1", prop2: "LocalizedRawValue2" });
+      expect(result.contentSet[0]!.displayValues.property).to.deep.eq({ prop1: "LocalizedDisplayValue1", prop2: "LocalizedDisplayValue2" });
+    });
+
+    it("translates navigation property value", () => {
+      const navigationPropertyValue: NavigationPropertyValue = {
+        id: "0x1",
+        className: "Schema:Class",
+        label: createTestLabelDefinition({ rawValue: "@namespace:LocalizedValue@" }),
+      };
+      const contentItem = createTestContentItem({
+        values: {
+          navigationProperty: navigationPropertyValue,
+        },
+        displayValues: {},
+      });
+      const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
+      const result = localizationHelper.getLocalizedContent(content);
+      const localizedValue = result.contentSet[0]!.values.navigationProperty as NavigationPropertyValue;
+      expect(localizedValue.label.rawValue).to.be.eq("LocalizedValue");
+    });
+
+    it("translates content item nested value", () => {
       const contentItem = createTestContentItem({
         values: {
           parent: [
@@ -186,77 +255,87 @@ describe("LocalizationHelper", () => {
         .to.have.lengthOf(1)
         .and.to.containSubset([
           {
-            displayValues: {
-              child: "DisplayValue",
-            },
-            mergedFieldNames: [],
             primaryKeys: [createTestECInstanceKey()],
             values: {
               child: "LocalizedValue",
             },
+            displayValues: {
+              child: "DisplayValue",
+            },
+            mergedFieldNames: [],
           },
         ]);
     });
 
-    it("translates contentItem display value", () => {
-      const contentItem = new Item([], createRandomLabelDefinition(), "", undefined, {}, {}, []);
-      contentItem.displayValues.property = "@namespace:LocalizedValue@";
-      const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
-      const result = localizationHelper.getLocalizedContent(content);
-      expect(result.contentSet[0]!.displayValues.property).to.be.eq("LocalizedValue");
-    });
-
-    it("does not translate contentItem non-translatable value", () => {
-      const contentItem = new Item([], createRandomLabelDefinition(), "", undefined, {}, {}, []);
+    it("does not translate content item non-translatable value", () => {
+      const contentItem = new Item([], createTestLabelDefinition(), "", undefined, {}, {}, []);
       contentItem.values.property = 10;
       const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
       const result = localizationHelper.getLocalizedContent(content);
       expect(result.contentSet[0]!.values.property).to.be.eq(10);
     });
 
-    it("translates content descriptor field label", () => {
-      const contentItem = new Item([], createRandomLabelDefinition(), "", undefined, {}, {}, []);
+    it("translates content descriptor direct field label", () => {
       const field = createTestSimpleContentField({ label: "@namespace:LocalizedValue@" });
-      const content = new Content(createTestContentDescriptor({ fields: [field] }), [contentItem]);
-      const result = localizationHelper.getLocalizedContent(content);
-      expect(result.descriptor.fields[0].label).to.be.eq("LocalizedValue");
+      const descriptor = createTestContentDescriptor({ fields: [field] });
+      const result = localizationHelper.getLocalizedContentDescriptor(descriptor);
+      expect(result.fields[0].label).to.be.eq("LocalizedValue");
     });
 
-    it("translates content descriptor category label", () => {
-      const contentItem = new Item([], createRandomLabelDefinition(), "", undefined, {}, {}, []);
-      const testCategory = createTestCategoryDescription({ label: "@namespace:LocalizedLabel@" });
+    it("translates content descriptor direct struct member field label", () => {
+      const field = createTestStructPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo() }],
+        memberFields: [
+          createTestPropertiesContentField({
+            name: "member1",
+            label: "@namespace:LocalizedValue@",
+            properties: [{ property: createTestPropertyInfo() }],
+          }),
+        ],
+      });
+      const descriptor = createTestContentDescriptor({ fields: [field] });
+      const result = localizationHelper.getLocalizedContentDescriptor(descriptor);
+      expect((result.fields[0] as StructPropertiesField).memberFields[0].label).to.be.eq("LocalizedValue");
+    });
+
+    it("translates content descriptor direct struct array member field label", () => {
+      const field = createTestArrayPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo() }],
+        itemsField: createTestStructPropertiesContentField({
+          properties: [{ property: createTestPropertyInfo() }],
+          memberFields: [
+            createTestPropertiesContentField({
+              name: "member1",
+              label: "@namespace:LocalizedValue@",
+              properties: [{ property: createTestPropertyInfo() }],
+            }),
+          ],
+        }),
+      });
+      const descriptor = createTestContentDescriptor({ fields: [field] });
+      const result = localizationHelper.getLocalizedContentDescriptor(descriptor);
+      expect(((result.fields[0] as ArrayPropertiesField).itemsField as StructPropertiesField).memberFields[0].label).to.be.eq("LocalizedValue");
+    });
+
+    it("translates content descriptor nested field label", () => {
+      const nestedField = createTestSimpleContentField({ label: "@namespace:LocalizedValue@" });
+      const nestingField = createTestNestedContentField({ nestedFields: [nestedField] });
+      const descriptor = createTestContentDescriptor({ fields: [nestingField] });
+      const result = localizationHelper.getLocalizedContentDescriptor(descriptor);
+      expect((result.fields[0] as NestedContentField).nestedFields[0].label).to.be.eq("LocalizedValue");
+    });
+
+    it("translates content descriptor category label & description", () => {
+      const contentItem = new Item([], createTestLabelDefinition(), "", undefined, {}, {}, []);
+      const testCategory = createTestCategoryDescription({
+        label: "@namespace:LocalizedLabel@",
+        description: "@namespace:LocalizedDescription@",
+      });
       const field = createTestSimpleContentField({ category: testCategory });
       const content = new Content(createTestContentDescriptor({ fields: [field], categories: [testCategory] }), [contentItem]);
       const result = localizationHelper.getLocalizedContent(content);
       expect(result.descriptor.categories[0].label).to.be.eq("LocalizedLabel");
-    });
-
-    it("translates content descriptor category description", () => {
-      const contentItem = new Item([], createRandomLabelDefinition(), "", undefined, {}, {}, []);
-      const testCategory = createTestCategoryDescription({ description: "@namespace:LocalizedDescription@" });
-      const field = createTestSimpleContentField({ category: testCategory });
-      const content = new Content(createTestContentDescriptor({ fields: [field], categories: [testCategory] }), [contentItem]);
-      const result = localizationHelper.getLocalizedContent(content);
       expect(result.descriptor.categories[0].description).to.be.eq("LocalizedDescription");
-    });
-
-    it("translates navigation property value label", () => {
-      const navigationPropertyValue: NavigationPropertyValue = {
-        id: "0x1",
-        className: "Schema:Class",
-        label: createRandomLabelDefinition(),
-      };
-      navigationPropertyValue.label.rawValue = "@namespace:LocalizedValue@";
-      const contentItem = createTestContentItem({
-        values: {
-          navigationProperty: navigationPropertyValue,
-        },
-        displayValues: {},
-      });
-      const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
-      const result = localizationHelper.getLocalizedContent(content);
-      const localizedValue = result.contentSet[0]!.values.navigationProperty as NavigationPropertyValue;
-      expect(localizedValue.label.rawValue).to.be.eq("LocalizedValue");
     });
 
     it("translates element properties label", () => {
@@ -267,8 +346,7 @@ describe("LocalizationHelper", () => {
 
   describe("getLocalizedLabelDefinition", () => {
     it("translates labelDefinition", () => {
-      const labelDefinition = createRandomLabelDefinition();
-      labelDefinition.rawValue = "@namespace:LocalizedValue@";
+      const labelDefinition = createTestLabelDefinition({ rawValue: "@namespace:LocalizedValue@" });
       const result = localizationHelper.getLocalizedLabelDefinition(labelDefinition);
       expect(result.rawValue).to.be.eq("LocalizedValue");
     });
@@ -302,12 +380,12 @@ describe("LocalizationHelper", () => {
 
   describe("getLocalizedLabelDefinitions", () => {
     it("translates labelDefinitions", () => {
-      const labelDefinitions = [createRandomLabelDefinition(), createRandomLabelDefinition()];
-      labelDefinitions.forEach((labelDefinition) => (labelDefinition.rawValue = "@namespace:LocalizedValue@"));
+      const labelDefinitions = [
+        createTestLabelDefinition({ rawValue: "@namespace:LocalizedValue1@" }),
+        createTestLabelDefinition({ rawValue: "@namespace:LocalizedValue2@" }),
+      ];
       const result = localizationHelper.getLocalizedLabelDefinitions(labelDefinitions);
-      result.forEach((labelDefinition) => {
-        expect(labelDefinition.rawValue).to.be.eq("LocalizedValue");
-      });
+      expect(result.map((d) => d.rawValue)).to.deep.eq(["LocalizedValue1", "LocalizedValue2"]);
     });
   });
 });

@@ -26,7 +26,7 @@ jobs:
           nodeVersion: 18.x
         Windows_node_18_x:
           imageName: windows-latest
-          nodeVersion: 18.x
+          nodeVersion: 18.16.1
         MacOS_node_18_x:
           imageName: macos-latest
           nodeVersion: 18.x
@@ -35,7 +35,7 @@ jobs:
           nodeVersion: 20.x
         Windows_node_20_x:
           imageName: windows-latest
-          nodeVersion: 20.x
+          nodeVersion: 20.12.1
         MacOS_node_20_x:
           imageName: macos-latest
           nodeVersion: 20.x

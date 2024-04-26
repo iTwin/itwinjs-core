@@ -21,6 +21,7 @@ import { ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
+import { Range3d } from "@itwin/core-geometry";
 
 /** @internal */
 export class Primitive extends Graphic {
@@ -78,6 +79,10 @@ export class Primitive extends Graphic {
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.cachedGeometry.collectStatistics(stats);
+  }
+
+  public override unionRange(range: Range3d) {
+    range.extendRange(this.cachedGeometry.computeRange());
   }
 
   public getPass(target: Target): Pass {

@@ -31,6 +31,8 @@ describe("Tiles", () => {
       if (this._size > 0)
         stats.addTexture(this._size);
     }
+
+    public unionRange() { }
   }
 
   class TestTile extends Tile {

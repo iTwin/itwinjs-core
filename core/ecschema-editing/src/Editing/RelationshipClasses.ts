@@ -7,7 +7,7 @@
  */
 
 import {
-  DelayedPromiseWithProps, ECClassModifier, EntityClass, LazyLoadedRelationshipConstraintClass, Mixin, NavigationPropertyProps,
+  CustomAttribute, DelayedPromiseWithProps, ECClassModifier, EntityClass, LazyLoadedRelationshipConstraintClass, Mixin, NavigationPropertyProps,
   RelationshipClass, RelationshipClassProps, RelationshipConstraint, RelationshipEnd, RelationshipMultiplicity, SchemaItemKey, SchemaItemType,
   SchemaKey, StrengthDirection, StrengthType,
 } from "@itwin/ecschema-metadata";
@@ -16,15 +16,21 @@ import { ECClasses } from "./ECClasses";
 import { MutableRelationshipClass, MutableRelationshipConstraint } from "./Mutable/MutableRelationshipClass";
 import * as Rules from "../Validation/ECRules";
 import { RelationshipConstraintDiagnostic, SchemaItemDiagnostic } from "../Validation/Diagnostic";
+import { NavigationProperties } from "./Properties";
 
 /**
  * @alpha
  * A class extending ECClasses allowing you to create schema items of type RelationshipClass.
  */
 export class RelationshipClasses extends ECClasses {
-  public constructor(_schemaEditor: SchemaContextEditor) {
-    super(_schemaEditor);
+  public constructor(schemaEditor: SchemaContextEditor) {
+    super(SchemaItemType.RelationshipClass, schemaEditor);
   }
+
+  /**
+   * Allows access for editing of NavigationProperty attributes.
+   */
+  public readonly navigationProperties = new NavigationProperties(this.schemaItemType, this._schemaEditor);
 
   /**
    * Creates a RelationshipClass.
@@ -87,7 +93,7 @@ export class RelationshipClasses extends ECClasses {
    * @returns A promise of type SchemaItemEditResults.
    */
   public async setTargetConstraint(relationshipKey: SchemaItemKey, target: RelationshipConstraint): Promise<SchemaItemEditResults> {
-    const relationship = (await this._schemaEditor.schemaContext.getSchemaItem<MutableRelationshipClass>(relationshipKey));
+    const relationship = await this._schemaEditor.schemaContext.getSchemaItem<MutableRelationshipClass>(relationshipKey);
 
     if (relationship === undefined)
       return { itemKey: relationshipKey, errorMessage: `Relationship Class ${relationshipKey.fullName} not found in schema context.` };
@@ -117,6 +123,26 @@ export class RelationshipClasses extends ECClasses {
     return { itemKey: newClass.key };
   }
 
+  /**
+   * Sets the base class of a RelationshipClass.
+   * @param relationshipKey The SchemaItemKey of the RelationshipClass.
+   * @param baseClassKey The SchemaItemKey of the base class. Specifying 'undefined' removes the base class.
+   */
+  public override async setBaseClass(itemKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<SchemaItemEditResults> {
+    const relClass = await this._schemaEditor.schemaContext.getSchemaItem<RelationshipClass>(itemKey);
+    const baseClass = relClass?.baseClass;
+
+    const setResult = await super.setBaseClass(itemKey, baseClassKey);
+    if (setResult.errorMessage === undefined) {
+      const result = await this.validate(relClass!);
+      if (result.errorMessage !== undefined) {
+        relClass!.baseClass = baseClass;
+        return { itemKey, errorMessage: result.errorMessage };
+      }
+    }
+    return setResult;
+  }
+
   public async createNavigationProperty(relationshipKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<PropertyEditResults> {
     const relationshipClass = (await this._schemaEditor.schemaContext.getSchemaItem<MutableRelationshipClass>(relationshipKey));
 
@@ -130,8 +156,13 @@ export class RelationshipClasses extends ECClasses {
     return { itemKey: relationshipKey, propertyName: name };
   }
 
+  /**
+   * Creates a Navigation Property through a NavigationPropertyProps.
+   * @param classKey a SchemaItemKey of the Relationship Class that will house the new property.
+   * @param navigationProps a json object that will be used to populate the new Navigation Property.
+   */
   public async createNavigationPropertyFromProps(relationshipKey: SchemaItemKey, navigationProps: NavigationPropertyProps): Promise<PropertyEditResults> {
-    const relationshipClass = (await this._schemaEditor.schemaContext.getSchemaItem<MutableRelationshipClass>(relationshipKey));
+    const relationshipClass = await this._schemaEditor.schemaContext.getSchemaItem<MutableRelationshipClass>(relationshipKey);
 
     if (relationshipClass === undefined)
       return { itemKey: relationshipKey, propertyName: navigationProps.name, errorMessage: `Relationship Class ${relationshipKey.fullName} not found in schema context.` };
@@ -213,6 +244,24 @@ export class RelationshipClasses extends ECClasses {
     const result = await this.validate(constraint);
     if (result.errorMessage) {
       mutableConstraint.addClass(ecClass);
+      return result;
+    }
+
+    return { itemKey: constraint.relationshipClass.key };
+  }
+
+  public async addCustomAttributeToConstraint(constraint: RelationshipConstraint, customAttribute: CustomAttribute): Promise<SchemaItemEditResults> {
+    const mutableConstraint = constraint as MutableRelationshipConstraint;
+    mutableConstraint.addCustomAttribute(customAttribute);
+
+    const diagnostics = Rules.validateCustomAttributeInstance(constraint, customAttribute);
+    const result: SchemaItemEditResults = { errorMessage: "" };
+    for await (const diagnostic of diagnostics) {
+      result.errorMessage += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
+    }
+
+    if (result.errorMessage) {
+      this.removeCustomAttribute(constraint, customAttribute);
       return result;
     }
 

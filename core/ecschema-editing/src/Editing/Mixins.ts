@@ -7,22 +7,28 @@
  */
 
 import {
-  DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, EntityClass, Mixin, MixinProps, RelationshipClass,
+  DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, EntityClass, Mixin, MixinProps, NavigationPropertyProps, RelationshipClass,
   SchemaItemKey, SchemaItemType, SchemaKey, StrengthDirection,
 } from "@itwin/ecschema-metadata";
 import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
 import { MutableMixin } from "./Mutable/MutableMixin";
 import { MutableEntityClass } from "./Mutable/MutableEntityClass";
+import { NavigationProperties } from "./Properties";
 
 /**
  * @alpha
  * A class extending ECClasses allowing you to create schema items of type Mixin.
  */
 export class Mixins extends ECClasses {
-  public constructor(_schemaEditor: SchemaContextEditor) {
-    super(_schemaEditor);
+  public constructor(schemaEditor: SchemaContextEditor) {
+    super(SchemaItemType.Mixin, schemaEditor);
   }
+
+  /**
+   * Allows access for editing of NavigationProperty attributes.
+   */
+  public readonly navigationProperties = new NavigationProperties(this.schemaItemType, this._schemaEditor);
 
   public async create(schemaKey: SchemaKey, name: string, appliesTo: SchemaItemKey, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
@@ -109,30 +115,22 @@ export class Mixins extends ECClasses {
     return { itemKey: mixinKey, propertyName: name };
   }
 
-  public async setMixinBaseClass(mixinKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<SchemaItemEditResults>{
-    const mixin = (await this._schemaEditor.schemaContext.getSchemaItem<MutableMixin>(mixinKey));
-
+  /**
+   * Creates a Navigation Property through a NavigationPropertyProps.
+   * @param classKey a SchemaItemKey of the Mixin that will house the new property.
+   * @param navigationProps a json object that will be used to populate the new Navigation Property.
+   */
+  public async createNavigationPropertyFromProps(classKey: SchemaItemKey, navigationProps: NavigationPropertyProps): Promise<PropertyEditResults> {
+    const mixin = await this._schemaEditor.schemaContext.getSchemaItem<MutableMixin>(classKey);
     if (mixin === undefined)
-      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Mixin Class ${mixinKey.fullName} not found in schema context.`);
+      return { itemKey: classKey, propertyName: navigationProps.name, errorMessage: `Mixin ${classKey.fullName} not found in schema context.`};
 
-    if (baseClassKey === undefined) {
-      mixin.baseClass = undefined;
-      return { itemKey: mixinKey };
-    }
+    if (mixin.schemaItemType !== SchemaItemType.Mixin)
+      return { itemKey: classKey, propertyName: navigationProps.name, errorMessage: `Expected ${classKey.fullName} to be of type Mixin.`};
 
-    const baseClassSchema = !baseClassKey.schemaKey.matches(mixinKey.schemaKey) ? await this._schemaEditor.getSchema(baseClassKey.schemaKey) : mixin.schema;
-    if (baseClassSchema === undefined) {
-      return { errorMessage: `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context` };
-    }
+    const navigationProperty  = await mixin.createNavigationProperty(navigationProps.name, navigationProps.relationshipName, navigationProps.direction);
+    await navigationProperty.fromJSON(navigationProps);
 
-    const baseClassItem = await baseClassSchema.lookupItem<Mixin>(baseClassKey);
-    if (baseClassItem === undefined)
-      return { errorMessage: `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.` };
-
-    if (baseClassItem.schemaItemType !== SchemaItemType.Mixin)
-      return { errorMessage: `${baseClassItem.fullName} is not of type Mixin Class.` };
-
-    mixin.baseClass = new DelayedPromiseWithProps<SchemaItemKey, Mixin>(baseClassKey, async () => baseClassItem);
-    return { itemKey: mixinKey };
+    return { itemKey: classKey, propertyName: navigationProps.name };
   }
 }

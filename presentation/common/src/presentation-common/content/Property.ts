@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Content
  */
@@ -45,7 +45,7 @@ export namespace Property {
   /**
    * Serialize [[Property]] to JSON
    * @deprecated in 3.x. Use [[toCompressedJSON]]
-  */
+   */
   // istanbul ignore next
   export function toJSON(prop: Property): PropertyJSON {
     return { ...prop };

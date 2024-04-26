@@ -12,7 +12,7 @@ import {
   IModelError, IModelVersion, LocalDirName, LocalFileName,
 } from "@itwin/core-common";
 import { CheckpointProps, DownloadRequest, ProgressFunction } from "./CheckpointManager";
-import { TokenArg } from "./IModelDb";
+import type { TokenArg } from "./IModelDb";
 
 /** The state of a lock.
  * @public

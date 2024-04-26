@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
-import { IndexedPolyface, InterpolationCurve3d, InterpolationCurve3dOptions } from "../../core-geometry";
+import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -17,7 +17,10 @@ import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-import { ConvexFacetLocationDetail, FacetLocationDetail, FacetLocationDetailPair, NonConvexFacetLocationDetail } from "../../polyface/FacetLocationDetail";
+import {
+  ConvexFacetLocationDetail, FacetLocationDetail, FacetLocationDetailPair, NonConvexFacetLocationDetail,
+} from "../../polyface/FacetLocationDetail";
+import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { LineString3dRangeTreeContext } from "../../polyface/RangeTree/LineString3dRangeTreeContext";

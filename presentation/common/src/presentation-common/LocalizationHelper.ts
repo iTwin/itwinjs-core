@@ -128,12 +128,27 @@ export class LocalizationHelper {
         displayValues: Object.entries(item.displayValues).reduce((o, [k, v]) => ({ ...o, [k]: this.getLocalizedDisplayValue(v) }), {}),
       }));
     }
+    if (Value.isArray(value)) {
+      return value.map((v) => this.getLocalizedRawValue(v));
+    }
+    if (Value.isMap(value)) {
+      return Object.entries(value).reduce((o, [k, v]) => ({ ...o, [k]: this.getLocalizedRawValue(v) }), {});
+    }
     return value;
   }
 
   // warning: this function mutates the field
-  private getLocalizedContentField(field: Field) {
+  private getLocalizedContentField<TField extends Field>(field: TField) {
     field.label = this.getLocalizedString(field.label);
+    if (field.isPropertiesField()) {
+      if (field.isStructPropertiesField()) {
+        field.memberFields = field.memberFields.map((m) => this.getLocalizedContentField(m));
+      } else if (field.isArrayPropertiesField()) {
+        field.itemsField = this.getLocalizedContentField(field.itemsField);
+      }
+    } else if (field.isNestedContentField()) {
+      field.nestedFields = field.nestedFields.map((m) => this.getLocalizedContentField(m));
+    }
     return field;
   }
 
@@ -144,7 +159,7 @@ export class LocalizationHelper {
     return category;
   }
 
-  private getLocalizedNode(node: Node) {
+  public getLocalizedNode(node: Node): Node {
     return {
       ...node,
       label: this.getLocalizedLabelDefinition(node.label),
@@ -159,7 +174,7 @@ export class LocalizationHelper {
     if (typeof value === "string") {
       return this.getLocalizedString(value);
     }
-    if (Array.isArray(value)) {
+    if (DisplayValue.isArray(value)) {
       return value.map((v) => this.getLocalizedDisplayValue(v));
     }
     return Object.entries(value).reduce((o, [k, v]) => ({ ...o, [k]: this.getLocalizedDisplayValue(v) }), {});

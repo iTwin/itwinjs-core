@@ -49,6 +49,7 @@ alpha;LiteralValueType
 alpha;MemberFuncCallExpr 
 alpha;NativeECSqlParseNode
 alpha;NativeECSqlParseNodeProvider
+alpha;NavValueCreationFuncExpr 
 alpha;NextSelect
 alpha;NotExpr 
 alpha;OrderByClauseExpr 

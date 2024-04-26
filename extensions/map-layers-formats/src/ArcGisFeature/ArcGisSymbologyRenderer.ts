@@ -5,9 +5,11 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
-import { EsriPMS, EsriRenderer, EsriSFS, EsriSimpleRenderer, EsriSLS, EsriSLSStyle, EsriSMS, EsriSymbol, EsriUniqueValueRenderer } from "./EsriSymbology";
-import { ArcGisAttributeDrivenSymbology } from "@itwin/core-frontend";
+import { EsriClassBreaksRenderer, EsriPMS, EsriRenderer, EsriSFS, EsriSimpleRenderer, EsriSLS, EsriSLSStyle, EsriSMS, EsriSymbol, EsriUniqueValueRenderer } from "./EsriSymbology";
+import { FeatureAttributeDrivenSymbology, FeatureSymbologyRenderer } from "@itwin/core-frontend";
 import { Angle } from "@itwin/core-geometry";
+import { FeatureDefaultSymbology } from "../Feature/FeatureSymbology";
+import { ArcGisFeatureGeometryType } from "./ArcGisFeatureQuery";
 
 /** @internal */
 const loggerCategory =  "MapLayersFormats.ArcGISFeature";
@@ -15,21 +17,40 @@ const loggerCategory =  "MapLayersFormats.ArcGISFeature";
 /** @internal */
 export type ArcGisSymbologyRendererType = "simple" | "attributeDriven";
 
+/** Feature Symbology renderer applicable to an HTML 2D Canvas
+ * @internal
+ */
+export interface FeatureSymbologyCanvasRenderer extends FeatureSymbologyRenderer {
+  applyFillStyle(context: CanvasRenderingContext2D): void;
+  applyStrokeStyle(context: CanvasRenderingContext2D): void;
+  drawPoint(context: CanvasRenderingContext2D, ptX: number, ptY: number): void;
+}
+
 /** @internal */
-export abstract class ArcGisSymbologyRenderer {
-  public abstract isAttributeDriven(): this is ArcGisAttributeDrivenSymbology;
+export abstract class ArcGisSymbologyCanvasRenderer implements FeatureSymbologyCanvasRenderer {
+
+  public abstract readonly renderer?: EsriRenderer;
+
+  public abstract get symbol(): EsriSymbol;
+  public abstract set symbol(symbol: EsriSymbol|undefined);
+  public abstract get defaultSymbol(): EsriSymbol;
+  public activeGeometryType: string = "";
+  public abstract isAttributeDriven(): this is FeatureAttributeDrivenSymbology;
   public abstract applyFillStyle(context: CanvasRenderingContext2D): void;
   public abstract applyStrokeStyle(context: CanvasRenderingContext2D): void;
   public abstract drawPoint(context: CanvasRenderingContext2D, ptX: number, ptY: number): void;
 
-  public static create(renderer: EsriRenderer|undefined, defaultSymbol: EsriSymbol) {
+  public static create(renderer: EsriRenderer|undefined, defaultSymbol: FeatureDefaultSymbology, geometryType?: ArcGisFeatureGeometryType): ArcGisSymbologyCanvasRenderer {
     if (renderer?.type === "uniqueValue") {
-      return new ArcGisUniqueValueSymbologyRenderer(renderer as EsriUniqueValueRenderer, defaultSymbol);
+      return new ArcGisUniqueValueSymbologyRenderer(renderer as EsriUniqueValueRenderer, defaultSymbol, geometryType);
+    } else if (renderer?.type === "classBreaks") {
+      return new ArcGisClassBreaksSymbologyRenderer(renderer as EsriClassBreaksRenderer, defaultSymbol, geometryType);
     } else {
-      return new ArcGisSimpleSymbologyRenderer(renderer, defaultSymbol);
+      return new ArcGisSimpleSymbologyRenderer(renderer, defaultSymbol, geometryType);
     }
   }
 }
+
 /** @internal */
 export class ArcGisDashLineStyle {
   // ESRI does not provide any values for their line style definition, those values have been
@@ -62,28 +83,33 @@ export class ArcGisDashLineStyle {
 }
 
 /** @internal */
-export class ArcGisSimpleSymbologyRenderer extends ArcGisSymbologyRenderer {
-  public override isAttributeDriven(): this is ArcGisAttributeDrivenSymbology {return false;}
+export class ArcGisSimpleSymbologyRenderer extends ArcGisSymbologyCanvasRenderer {
+
+  protected _symbol: EsriSymbol|undefined;
+  protected _defaultSymbol: FeatureDefaultSymbology;
+
+  public override isAttributeDriven(): this is FeatureAttributeDrivenSymbology {return false;}
   public lineWidthScaleFactor = 2;    // This is value is empirical, this might need to be adjusted
 
-  public get symbol() {return this._symbol;}
-  public get defaultSymbol() {return this._defaultSymbol;}
-  protected _symbol: EsriSymbol;
-  protected _defaultSymbol: EsriSymbol;
+  public get symbol(): EsriSymbol {return (this._symbol ?? this.defaultSymbol);}
+  public set symbol(symbol: EsriSymbol|undefined) {this._symbol = symbol;}
 
-  public readonly renderer?: EsriRenderer;
+  public get defaultSymbol() {return this._defaultSymbol.getSymbology(this.activeGeometryType) as EsriSymbol;}
+  public override readonly renderer?: EsriRenderer;
 
-  public  constructor(renderer: EsriRenderer|undefined, defaultSymbol: EsriSymbol) {
+  public constructor(renderer: EsriRenderer|undefined, defaultSymbol: FeatureDefaultSymbology, geometryType?: ArcGisFeatureGeometryType) {
     super();
     this._defaultSymbol = defaultSymbol;
+
+    // ArcGIS service normally advertise upfront he geometry of all features.  It's always possible to opt-out, but then
+    // you will have to set the activeGeometryType before rendering.
+    if (geometryType)
+      this.activeGeometryType = geometryType;
     this.renderer = renderer;
 
     if (this.renderer?.type === "simple") {
       this._symbol = (this.renderer as EsriSimpleRenderer).symbol;
-    }  else {
-      this._symbol = defaultSymbol;
     }
-
   }
 
   public applyFillStyle(context: CanvasRenderingContext2D) {
@@ -99,14 +125,15 @@ export class ArcGisSimpleSymbologyRenderer extends ArcGisSymbologyRenderer {
   }
 
   private getFillColor() {
+    const symbol = this.symbol;
     let fillColor: ColorDef | undefined;
-    if (this._symbol.type === "esriSFS") {
-      const sfs = this._symbol as EsriSFS;
+    if (symbol.type === "esriSFS") {
+      const sfs = symbol as EsriSFS;
       if (sfs.color) {
         fillColor = sfs.color;
       }
-    } else  if (this._symbol.type === "esriSMS") {
-      const sms = this._symbol as EsriSMS;
+    } else  if (symbol.type === "esriSMS") {
+      const sms = symbol as EsriSMS;
       if (sms.color) {
         fillColor = sms.color;
       }
@@ -127,15 +154,16 @@ export class ArcGisSimpleSymbologyRenderer extends ArcGisSymbologyRenderer {
 
     // Stroke style can be from SFS's outline style or a SLS's color
     let sls: EsriSLS | undefined;
-    if (this._symbol.type === "esriSFS") {
-      const sfs = this._symbol as EsriSFS;
+    const symbol = this.symbol;
+    if (symbol.type === "esriSFS") {
+      const sfs = this.symbol as EsriSFS;
       if (sfs.outline) {
         sls = sfs.outline;
       }
-    } else if (this._symbol.type === "esriSLS") {
-      sls = this._symbol as EsriSLS;
-    } else if (this._symbol.type === "esriSMS") {
-      const sms = this._symbol as EsriSMS;
+    } else if (symbol.type === "esriSLS") {
+      sls = this.symbol as EsriSLS;
+    } else if (symbol.type === "esriSMS") {
+      const sms = this.symbol as EsriSMS;
       if (sms.outline) {
         sls = sms.outline;
       }
@@ -144,7 +172,7 @@ export class ArcGisSimpleSymbologyRenderer extends ArcGisSymbologyRenderer {
     if (sls) {
 
       context.lineWidth = (sls.width > 0 ? sls.width : 1);
-      if (this._symbol.type === "esriSLS")
+      if (symbol.type === "esriSLS")
         context.lineWidth *= this.lineWidthScaleFactor;
       if (sls.color) {
         context.strokeStyle = sls.color.toRgbaString();
@@ -259,13 +287,17 @@ export class ArcGisSimpleSymbologyRenderer extends ArcGisSymbologyRenderer {
     if (!context)
       return;
 
-    if (this._symbol.type === "esriPMS") {
-      const pms = this._symbol as EsriPMS;
+    const symbol = this.symbol;
+
+    if (symbol.type === "esriPMS") {
+      const pms = this.symbol as EsriPMS;
       const angleDegrees = pms.angle;
 
       // We scale up a little a bit the size of symbol.
-      const width = pms.width === undefined ? pms.width : pms.width * 1.25;
-      const height = pms.height === undefined ? pms.height : pms.height * 1.25;
+      // const width = pms.width === undefined ? pms.width : pms.width * 1.25;
+      // const height = pms.height === undefined ? pms.height : pms.height * 1.25;
+      const width =  pms.width;
+      const height = pms.height;
 
       let xOffset = 0, yOffset = 0;
 
@@ -301,8 +333,8 @@ export class ArcGisSimpleSymbologyRenderer extends ArcGisSymbologyRenderer {
       if (angleDegrees)
         context.restore();
 
-    } else if (this._symbol.type === "esriSMS") {
-      const sms = this._symbol as EsriSMS;
+    } else if (symbol.type === "esriSMS") {
+      const sms = this.symbol as EsriSMS;
 
       let xOffset = 0;
       let yOffset = 0;
@@ -319,10 +351,13 @@ export class ArcGisSimpleSymbologyRenderer extends ArcGisSymbologyRenderer {
 }
 
 /** @internal */
-export class ArcGisUniqueValueSymbologyRenderer extends ArcGisSimpleSymbologyRenderer implements ArcGisAttributeDrivenSymbology {
-  public override isAttributeDriven(): this is ArcGisAttributeDrivenSymbology {return true;}
+export class ArcGisUniqueValueSymbologyRenderer extends ArcGisSimpleSymbologyRenderer implements FeatureAttributeDrivenSymbology {
+  public override isAttributeDriven(): this is FeatureAttributeDrivenSymbology {return true;}
   protected _activeFeatureAttributes:  {[key: string]: any} | undefined;
   protected uvRenderer: EsriUniqueValueRenderer;
+  private _defaultRenderSymbol: EsriSymbol|undefined;
+
+  public override get defaultSymbol() {return this._defaultRenderSymbol ?? super.defaultSymbol;}
 
   public get rendererFields() {
     if (this.uvRenderer.field1)
@@ -331,14 +366,11 @@ export class ArcGisUniqueValueSymbologyRenderer extends ArcGisSimpleSymbologyRen
       return undefined;
   }
 
-  public  constructor(renderer: EsriUniqueValueRenderer, defaultSymbol: EsriSymbol) {
-    super(renderer, defaultSymbol);
+  public  constructor(renderer: EsriUniqueValueRenderer, defaultSymbol: FeatureDefaultSymbology, geometryType?: ArcGisFeatureGeometryType) {
+    super(renderer, defaultSymbol, geometryType);
 
     this.uvRenderer = (this.renderer as EsriUniqueValueRenderer);
-    if (this.uvRenderer.defaultSymbol) {
-      this._defaultSymbol = this.uvRenderer.defaultSymbol;
-      this._symbol = this.defaultSymbol;
-    }
+    this._defaultRenderSymbol = this.uvRenderer.defaultSymbol;
   }
 
   public setActiveFeatureAttributes(attributes: { [key: string]: any }) {
@@ -355,7 +387,7 @@ export class ArcGisUniqueValueSymbologyRenderer extends ArcGisSimpleSymbologyRen
           // Strangely, ArcGIS documentation says 'value' is a string,
           // not too sure if a comparison on other types is possible, or its always forced to string properties?
             if (uvi.value  === queryValue.toString()) {
-              this._symbol = uvi.symbol;
+              this.symbol = uvi.symbol ;
               newSymbolApplied = true;
               break;
             }
@@ -366,7 +398,70 @@ export class ArcGisUniqueValueSymbologyRenderer extends ArcGisSimpleSymbologyRen
 
     // Fallback to default symbology to make sure we render something
     if (!newSymbolApplied) {
-      this._symbol = this.defaultSymbol;
+      this.symbol = undefined;
+    }
+  }
+}
+
+/** @internal */
+export class ArcGisClassBreaksSymbologyRenderer extends ArcGisSimpleSymbologyRenderer implements FeatureAttributeDrivenSymbology {
+  public override isAttributeDriven(): this is FeatureAttributeDrivenSymbology {return true;}
+  protected _activeFeatureAttributes:  {[key: string]: any} | undefined;
+  protected cbRenderer: EsriClassBreaksRenderer;
+  private _defaultRenderSymbol: EsriSymbol|undefined;
+
+  public override get defaultSymbol() {return this._defaultRenderSymbol ?? super.defaultSymbol;}
+
+  public get rendererFields() {
+    if (this.cbRenderer)
+      return [this.cbRenderer.field];
+    else
+      return undefined;
+  }
+
+  public constructor(renderer: EsriClassBreaksRenderer, defaultSymbol: FeatureDefaultSymbology, geometryType?: ArcGisFeatureGeometryType) {
+    super(renderer, defaultSymbol, geometryType);
+
+    this.cbRenderer = (this.renderer as EsriClassBreaksRenderer);
+    this._defaultRenderSymbol = this.cbRenderer.defaultSymbol;
+  }
+
+  public setActiveFeatureAttributes(attributes: { [key: string]: any }) {
+    this._activeFeatureAttributes = attributes;
+
+    const newSymbolApplied = false;
+    if (this._activeFeatureAttributes) {
+      if (Object.keys(this._activeFeatureAttributes).includes(this.cbRenderer.field)) {
+
+        const queryValue = this._activeFeatureAttributes[this.cbRenderer.field];
+
+        if (queryValue !== null && queryValue !== undefined) {
+          let currentMinValue: number|undefined;
+          let currentClassIdx = 0;
+          do {
+            const currentClass = this.cbRenderer.classBreakInfos[currentClassIdx];
+            if (currentClass.classMinValue !== undefined) {
+              currentMinValue = currentClass.classMinValue;
+            } else if (currentClass.classMinValue === undefined && currentClassIdx > 0) {
+              currentMinValue = this.cbRenderer.classBreakInfos[currentClassIdx-1].classMaxValue;
+            } else {
+              currentMinValue = this.cbRenderer.minValue;
+            }
+
+            if ( queryValue >=  currentMinValue
+              && queryValue <=  currentClass.classMaxValue) {
+              this.symbol = currentClass.symbol;
+              return;
+            }
+          }
+          while (++currentClassIdx < this.cbRenderer.classBreakInfos.length);
+        }
+      }
+
+      // Fallback to default symbology to make sure we render something
+      if (!newSymbolApplied) {
+        this.symbol = this.defaultSymbol;
+      }
     }
   }
 }

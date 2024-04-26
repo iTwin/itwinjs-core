@@ -16,11 +16,16 @@ import { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTree
  */
 export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
 
-function createMeshExportServiceQueryUrl(args: { iModelId: string, urlPrefix?: string, changesetId?: string }): string {
+function createMeshExportServiceQueryUrl(args: { iModelId: string, urlPrefix?: string, changesetId?: string, enableCDN?: boolean }): string {
   const prefix = args.urlPrefix ?? "";
   let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.iModelId}&$orderBy=date:desc`;
   if (args.changesetId)
     url = `${url}&changesetId=${args.changesetId}`;
+
+  if (args.enableCDN)
+    url = `${url}&cdn=1`;
+
+  url = `${url}&tileVersion=1&exportType=IMODEL`;
 
   return url;
 }
@@ -77,6 +82,8 @@ export interface QueryMeshExportsArgs {
   urlPrefix?: string;
   /** If true, exports whose status is not "Complete" (indicating the export successfully finished) will be included in the results. */
   includeIncomplete?: boolean;
+  /** If true, enables a CDN (content delivery network) to access tiles faster. */
+  enableCDN?: boolean;
 }
 
 /** Query the [mesh export service](https://developer.bentley.com/apis/mesh-export/operations/get-exports/) for exports of type "IMODEL" matching
@@ -84,7 +91,7 @@ export interface QueryMeshExportsArgs {
  * The exports are sorted from most-recently- to least-recently-produced.
  * @beta
  */
-export async function * queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator<MeshExport> {
+export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator<MeshExport> {
   const headers = {
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
     Authorization: args.accessToken ?? await IModelApp.getAccessToken(),
@@ -128,6 +135,8 @@ export interface ObtainMeshExportTilesetUrlArgs {
    * the most recent export for any changeset will be used.
    */
   requireExactChangeset?: boolean;
+  /** If true, enables a CDN (content delivery network) to access tiles faster. */
+  enableCDN?: boolean;
 }
 
 /** Obtains a URL pointing to a tileset appropriate for visualizing a specific iModel.
@@ -147,6 +156,7 @@ export async function obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUr
     iModelId: args.iModel.iModelId,
     changesetId: args.iModel.changeset.id,
     urlPrefix: args.urlPrefix,
+    enableCDN: args.enableCDN,
   };
 
   let selectedExport;
@@ -198,6 +208,11 @@ export interface FrontendTilesOptions {
    * @internal
    */
   enableEdges?: boolean;
+  /** Specifies whether to enable a CDN (content delivery network) to access tiles faster.
+   * This option is only used if computeSpatialTilesetBaseUrl is not defined.
+   * @beta
+   */
+  enableCDN?: boolean;
 }
 
 /** Global configuration initialized by [[initializeFrontendTiles]].
@@ -219,7 +234,7 @@ export function initializeFrontendTiles(options: FrontendTilesOptions): void {
     frontendTilesOptions.enableEdges = true;
 
   const computeUrl = options.computeSpatialTilesetBaseUrl ?? (
-    async (iModel: IModelConnection) => obtainMeshExportTilesetUrl({ iModel, accessToken: await IModelApp.getAccessToken() })
+    async (iModel: IModelConnection) => obtainMeshExportTilesetUrl({ iModel, accessToken: await IModelApp.getAccessToken(), enableCDN: options.enableCDN })
   );
 
   SpatialTileTreeReferences.create = (view: SpatialViewState) => createBatchedSpatialTileTreeReferences(view, computeUrl);

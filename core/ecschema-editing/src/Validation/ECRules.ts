@@ -10,12 +10,13 @@ import {
   AnyClass, AnyProperty, CustomAttribute, CustomAttributeContainerProps, ECClass, ECClassModifier,
   ECStringConstants, EntityClass, Enumeration, PrimitiveProperty, PrimitiveType, primitiveTypeToString,
   Property, RelationshipClass, RelationshipConstraint, RelationshipMultiplicity, Schema, SchemaGraph, SchemaItemType,
-  schemaItemTypeToString, StrengthDirection, strengthDirectionToString,
+  StrengthDirection, strengthDirectionToString,
 } from "@itwin/ecschema-metadata";
 import {
   ClassDiagnostic, createClassDiagnosticClass, createCustomAttributeContainerDiagnosticClass, createPropertyDiagnosticClass,
   createRelationshipConstraintDiagnosticClass, createSchemaDiagnosticClass, createSchemaItemDiagnosticClass, CustomAttributeContainerDiagnostic,
-  PropertyDiagnostic, RelationshipConstraintDiagnostic, SchemaDiagnostic, SchemaItemDiagnostic,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  DiagnosticType, PropertyDiagnostic, RelationshipConstraintDiagnostic, SchemaDiagnostic, SchemaItemDiagnostic,
 } from "./Diagnostic";
 import { IRuleSet } from "./Rules";
 
@@ -295,7 +296,7 @@ export async function* baseClassIsOfDifferentType(ecClass: AnyClass): AsyncItera
   if (baseClass.schemaItemType === ecClass.schemaItemType)
     return;
 
-  const itemType = schemaItemTypeToString(baseClass.schemaItemType);
+  const itemType = baseClass.schemaItemType;
   yield new Diagnostics.BaseClassIsOfDifferentType(ecClass, [ecClass.fullName, baseClass.fullName, itemType]);
 }
 

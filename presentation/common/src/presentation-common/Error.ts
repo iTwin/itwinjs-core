@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Core
  */
@@ -43,7 +43,6 @@ export enum PresentationStatus {
  * @public
  */
 export class PresentationError extends BentleyError {
-
   /**
    * Creates an instance of Error.
    * @param errorNumber Error code
@@ -63,8 +62,9 @@ export class PresentationError extends BentleyError {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   protected override _initName(): string {
     let value = PresentationStatus[this.errorNumber];
-    if (!value)
+    if (!value) {
       value = `Unknown Error (${this.errorNumber})`;
+    }
     return value;
   }
 }

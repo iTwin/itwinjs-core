@@ -13,7 +13,7 @@ import {
   UpgradeOptions,
 } from "@itwin/core-common";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { ElementDrivesElementProps, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb } from "../../core-backend";
+import { ChannelControl, ElementDrivesElementProps, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
 export function copyFile(newName: string, pathToCopy: string): string {
@@ -63,6 +63,7 @@ class TestHelper {
     const writeDbFileName = copyFile(`${testName}.bim`, dbInfo.seedFileName);
     this.db = StandaloneDb.openFile(writeDbFileName, OpenMode.ReadWrite);
     assert.isTrue(this.db !== undefined);
+    this.db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     this.db.nativeDb.enableTxnTesting();
     assert.equal(this.db.nativeDb.addChildPropagatesChangesToParentRelationship("TestBim", "ChildPropagatesChangesToParent"), 0);
@@ -160,6 +161,7 @@ describe("ElementDependencyGraph", () => {
     performUpgrade(testFileName);
     const imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     await imodel.importSchemas([schemaFileName]); // will throw an exception if import fails
+    imodel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const physicalModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "EDGTestModel");
     const codeSpecId = imodel.codeSpecs.insert(CodeSpec.create(imodel, "EDGTestCodeSpec", CodeScopeSpec.Type.Model));
     const spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "EDGTestSpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));

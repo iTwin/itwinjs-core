@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Core
  */
@@ -10,7 +10,14 @@ import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
 import { assert, BeEvent, IDisposable } from "@itwin/core-bentley";
 import { FormatProps } from "@itwin/core-quantity";
 import {
-  DiagnosticsScopeLogs, NodeKey, PresentationError, PresentationStatus, UpdateInfo, VariableValue, VariableValueJSON, VariableValueTypes,
+  DiagnosticsScopeLogs,
+  NodeKey,
+  PresentationError,
+  PresentationStatus,
+  UpdateInfo,
+  VariableValue,
+  VariableValueJSON,
+  VariableValueTypes,
 } from "@itwin/presentation-common";
 import { HierarchyCacheMode } from "./PresentationManager";
 
@@ -110,9 +117,12 @@ export class PresentationNativePlatformResponseError extends PresentationError {
 
 function getPresentationStatusFromNativeResponseStatus(nativeResponseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
   switch (nativeResponseStatus) {
-    case IModelJsNative.ECPresentationStatus.InvalidArgument: return PresentationStatus.InvalidArgument;
-    case IModelJsNative.ECPresentationStatus.ResultSetTooLarge: return PresentationStatus.ResultSetTooLarge;
-    case IModelJsNative.ECPresentationStatus.Canceled: return PresentationStatus.Canceled;
+    case IModelJsNative.ECPresentationStatus.InvalidArgument:
+      return PresentationStatus.InvalidArgument;
+    case IModelJsNative.ECPresentationStatus.ResultSetTooLarge:
+      return PresentationStatus.ResultSetTooLarge;
+    case IModelJsNative.ECPresentationStatus.Canceled:
+      return PresentationStatus.Canceled;
   }
   return PresentationStatus.Error;
 }
@@ -142,21 +152,29 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     }
     private createSuccessResponse<T>(response: IModelJsNative.ECPresentationManagerResponse<T>): NativePlatformResponse<T> {
       const retValue: NativePlatformResponse<T> = { result: response.result! };
-      if (response.diagnostics)
+      if (response.diagnostics) {
         retValue.diagnostics = response.diagnostics;
+      }
       return retValue;
     }
     private handleResult<T>(response: IModelJsNative.ECPresentationManagerResponse<T>): NativePlatformResponse<T> {
-      if (response.error)
+      if (response.error) {
         throw new PresentationNativePlatformResponseError(response);
+      }
       return this.createSuccessResponse(response);
     }
-    private handleConvertedResult<TSource, TTarget>(response: IModelJsNative.ECPresentationManagerResponse<TSource>, conv: (s: TSource) => TTarget): NativePlatformResponse<TTarget> {
-      return this.handleResult<TTarget>((response.result ? { ...response, result: conv(response.result) } : response) as IModelJsNative.ECPresentationManagerResponse<TTarget>);
+    private handleConvertedResult<TSource, TTarget>(
+      response: IModelJsNative.ECPresentationManagerResponse<TSource>,
+      conv: (s: TSource) => TTarget,
+    ): NativePlatformResponse<TTarget> {
+      return this.handleResult<TTarget>(
+        (response.result ? { ...response, result: conv(response.result) } : response) as IModelJsNative.ECPresentationManagerResponse<TTarget>,
+      );
     }
     private handleVoidResult(response: IModelJsNative.ECPresentationManagerResponse<void>): NativePlatformResponse<void> {
-      if (response.error)
+      if (response.error) {
         throw new PresentationNativePlatformResponseError(response);
+      }
       return this.createSuccessResponse(response);
     }
     public dispose() {
@@ -164,8 +182,9 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     }
     public async forceLoadSchemas(db: any): Promise<NativePlatformResponse<void>> {
       const response = await this._nativeAddon.forceLoadSchemas(db);
-      if (response.error)
+      if (response.error) {
         throw new PresentationError(PresentationStatus.Error, response.error.message);
+      }
       return this.createSuccessResponse(response);
     }
     public setupRulesetDirectories(directories: string[]) {
@@ -175,8 +194,9 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       return this.handleVoidResult(this._nativeAddon.setupSupplementalRulesetDirectories(directories));
     }
     public getImodelAddon(imodel: IModelDb): any {
-      if (!imodel.isOpen)
+      if (!imodel.isOpen) {
         throw new PresentationError(PresentationStatus.InvalidArgument, "imodel");
+      }
       return imodel.nativeDb;
     }
     public registerSupplementalRuleset(serializedRulesetJson: string) {

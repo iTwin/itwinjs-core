@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
@@ -19,13 +19,11 @@ import { NativePlatformDefinition } from "../presentation-backend/NativePlatform
 import { join } from "path";
 
 describe("Presentation", () => {
-
   afterEach(async () => {
     Presentation.terminate();
   });
 
   describe("initialize", () => {
-
     it("registers rpc implementation", () => {
       const registerSpy = sinon.spy(RpcManager, "registerImpl");
       Presentation.initialize();
@@ -60,7 +58,6 @@ describe("Presentation", () => {
     });
 
     describe("props handling", () => {
-
       it("sets unused client lifetime provided through props", () => {
         Presentation.initialize({ unusedClientLifetime: faker.random.number() });
         const storage = (Presentation as any)._clientsStorage as TemporaryStorage<PresentationManager>;
@@ -89,21 +86,16 @@ describe("Presentation", () => {
         const clientId = faker.random.word();
         expect(manager).to.be.eq(Presentation.getManager(clientId));
       });
-
     });
-
   });
 
   describe("getRequestTimeout", () => {
-
     it("should throw PresentationError if initialize is not called", () => {
       expect(() => Presentation.getRequestTimeout()).to.throw(PresentationError);
     });
-
   });
 
   describe("terminate", () => {
-
     it("resets manager instance", () => {
       Presentation.initialize();
       expect(Presentation.getManager()).to.be.not.null;
@@ -134,11 +126,9 @@ describe("Presentation", () => {
       Presentation.terminate();
       expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(0);
     });
-
   });
 
   describe("preloading schemas", () => {
-
     it("calls addon's `forceLoadSchemas` on `BriefcaseDb.onOpened` events", () => {
       const imodelMock = moq.Mock.ofType<BriefcaseDb>();
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
@@ -150,7 +140,5 @@ describe("Presentation", () => {
       BriefcaseDb.onOpened.raiseEvent(imodelMock.object, {} as any);
       nativePlatformMock.verify(async (x) => x.forceLoadSchemas(moq.It.isAny()), moq.Times.once());
     });
-
   });
-
 });

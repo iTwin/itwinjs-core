@@ -1549,11 +1549,11 @@ export class Sample {
     const base = Loop.create(LineString3d.createRectangleXY(Point3d.create(), 2, 3));
     const vectorZ = Vector3d.create(0, 0, 1.234);
     const vectorQ = Vector3d.create(0.1, 0.21, 1.234);
-    result.push(LinearSweep.create(base, vectorZ, false) as LinearSweep);
-    result.push(LinearSweep.create(base, vectorZ, true) as LinearSweep);
-    result.push(LinearSweep.create(base, vectorQ, false) as LinearSweep);
-    result.push(LinearSweep.create(base, vectorQ, true) as LinearSweep);
-    result.push(LinearSweep.create(Sample.createCappedArcLoop(5, -45, 90), vectorQ, true) as LinearSweep);
+    result.push(LinearSweep.create(base, vectorZ, false)!);
+    result.push(LinearSweep.create(base, vectorZ, true)!);
+    result.push(LinearSweep.create(base, vectorQ, false)!);
+    result.push(LinearSweep.create(base, vectorQ, true)!);
+    result.push(LinearSweep.create(Sample.createCappedArcLoop(5, -45, 90), vectorQ, true)!);
     for (const curve of Sample.createSmoothCurvePrimitives()) {
       const path = Path.create(curve);
       result.push(LinearSweep.create(path, vectorZ, false)!);
@@ -1613,8 +1613,8 @@ export class Sample {
       Ray3d.createXYZUVW(5, 0, 0, 0, 1, 0),
       Ray3d.createXYZUVW(-1, 0, 0, -1, 1, 0),
     ]) {
-      result.push(RotationalSweep.create(base, axis, Angle.createDegrees(45.0), false) as RotationalSweep);
-      result.push(RotationalSweep.create(base, axis, Angle.createDegrees(150.0), true) as RotationalSweep);
+      result.push(RotationalSweep.create(base, axis, Angle.createDegrees(45.0), false)!);
+      result.push(RotationalSweep.create(base, axis, Angle.createDegrees(150.0), true)!);
     }
     return result;
   }
@@ -1789,10 +1789,10 @@ export class Sample {
     const contour2 = Loop.create(LineString3d.create(this.createRectangleXY(0, 0, 4, 3.5, 4)));
     const contour3 = Loop.create(LineString3d.create(this.createRectangleXY(0, 0, 2, 1, 7)));
     const allContours = [contour0, contour1, contour2];
-    allSweeps.push(RuledSweep.create([contour0, contour1], true) as RuledSweep);
-    allSweeps.push(RuledSweep.create([contour0, contour1, contour2], true) as RuledSweep);
-    allSweeps.push(RuledSweep.create([contour0, contour1, contour2, contour3], true) as RuledSweep);
-    allSweeps.push(RuledSweep.create(allContours, false) as RuledSweep);
+    allSweeps.push(RuledSweep.create([contour0, contour1], true)!);
+    allSweeps.push(RuledSweep.create([contour0, contour1, contour2], true)!);
+    allSweeps.push(RuledSweep.create([contour0, contour1, contour2, contour3], true)!);
+    allSweeps.push(RuledSweep.create(allContours, false)!);
     const curves = Sample.createSmoothCurvePrimitives();
     for (const c of curves) {
       const frame = c.fractionToFrenetFrame(0.0);

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 // eslint-disable-next-line
 const RulesetSchema = require("../../../../../Ruleset.schema.json");
 import { Ruleset } from "../../../presentation-common";
@@ -12,15 +12,17 @@ const hasIndexSignature = (obj: any): obj is IndexedType => {
 };
 const fixEmptyStrings = (obj: any) => {
   for (const key in obj) {
-    if (!obj.hasOwnProperty(key))
+    if (!obj.hasOwnProperty(key)) {
       continue;
+    }
     const value: unknown = obj[key];
     if (hasIndexSignature(value)) {
       fixEmptyStrings(value);
     } else if (typeof value === "string") {
       obj[key] = value.trim();
-      if (obj[key] === "")
+      if (obj[key] === "") {
         obj[key] = "was empty string";
+      }
     }
   }
 };

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
@@ -12,13 +12,19 @@ import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
 import { IConnectivityInformationProvider } from "../../presentation-frontend/ConnectivityInformationProvider";
 import { FavoritePropertiesOrderInfo, PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 import {
-  BrowserLocalFavoritePropertiesStorage, createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes,
-  DEPRECATED_PROPERTIES_SETTING_NAMESPACE, FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME, FAVORITE_PROPERTIES_SETTING_NAME,
-  IModelAppFavoritePropertiesStorage, IMODELJS_PRESENTATION_SETTING_NAMESPACE, NoopFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage,
+  BrowserLocalFavoritePropertiesStorage,
+  createFavoritePropertiesStorage,
+  DefaultFavoritePropertiesStorageTypes,
+  DEPRECATED_PROPERTIES_SETTING_NAMESPACE,
+  FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME,
+  FAVORITE_PROPERTIES_SETTING_NAME,
+  IModelAppFavoritePropertiesStorage,
+  IMODELJS_PRESENTATION_SETTING_NAMESPACE,
+  NoopFavoritePropertiesStorage,
+  OfflineCachingFavoritePropertiesStorage,
 } from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
 
 describe("IModelAppFavoritePropertiesStorage", () => {
-
   let storage: IModelAppFavoritePropertiesStorage;
   let settingsAdminMock: moq.IMock<UserPreferencesAccess>;
   let authorizationClientMock: moq.IMock<AuthorizationClient>;
@@ -40,9 +46,10 @@ describe("IModelAppFavoritePropertiesStorage", () => {
   });
 
   describe("loadProperties", () => {
-
     it("returns favorite properties", async () => {
-      settingsAdminMock.setup(async (x) => x.get(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME }))).returns(async () => []);
+      settingsAdminMock
+        .setup(async (x) => x.get(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME })))
+        .returns(async () => []);
 
       const properties = await storage.loadProperties();
       expect(properties).to.be.not.undefined;
@@ -50,11 +57,13 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     });
 
     it("is backwards compatible", async () => {
-      settingsAdminMock.setup(async (x) => x.get(moq.It.isObjectWith({ namespace: DEPRECATED_PROPERTIES_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME }))).returns(async () => ({
-        nestedContentInfos: new Set<string>(["nestedContentInfo"]),
-        propertyInfos: new Set<string>(["propertyInfo"]),
-        baseFieldInfos: new Set<string>(["baseFieldInfo"]),
-      }));
+      settingsAdminMock
+        .setup(async (x) => x.get(moq.It.isObjectWith({ namespace: DEPRECATED_PROPERTIES_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME })))
+        .returns(async () => ({
+          nestedContentInfos: new Set<string>(["nestedContentInfo"]),
+          propertyInfos: new Set<string>(["propertyInfo"]),
+          baseFieldInfos: new Set<string>(["baseFieldInfo"]),
+        }));
 
       const properties = await storage.loadProperties();
       expect(properties).to.be.not.undefined;
@@ -62,7 +71,9 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     });
 
     it("returns undefined", async () => {
-      settingsAdminMock.setup(async (x) => x.get(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME }))).returns(async () => undefined);
+      settingsAdminMock
+        .setup(async (x) => x.get(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME })))
+        .returns(async () => undefined);
       const properties = await storage.loadProperties();
       expect(properties).to.be.undefined;
     });
@@ -80,13 +91,13 @@ describe("IModelAppFavoritePropertiesStorage", () => {
       IModelApp.authorizationClient = undefined;
       await expect(storage.loadProperties()).to.eventually.be.rejected;
     });
-
   });
 
   describe("saveProperties", () => {
-
     it("saves favorite properties", async () => {
-      settingsAdminMock.setup(async (x) => x.save(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME }))).returns(async () => { });
+      settingsAdminMock
+        .setup(async (x) => x.save(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME })))
+        .returns(async () => {});
 
       const properties = new Set<PropertyFullName>(["propertyInfo1", "propertyInfo2"]);
       await storage.saveProperties(properties);
@@ -106,11 +117,9 @@ describe("IModelAppFavoritePropertiesStorage", () => {
       IModelApp.authorizationClient = undefined;
       await expect(storage.loadProperties()).to.eventually.be.rejected;
     });
-
   });
 
   describe("loadPropertiesOrder", () => {
-
     it("returns properties order", async () => {
       const orderInfo: FavoritePropertiesOrderInfo = {
         parentClassName: undefined,
@@ -118,7 +127,11 @@ describe("IModelAppFavoritePropertiesStorage", () => {
         priority: 5,
         orderedTimestamp: new Date(),
       };
-      settingsAdminMock.setup(async (x) => x.get(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME }))).returns(async () => [orderInfo]);
+      settingsAdminMock
+        .setup(async (x) =>
+          x.get(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME })),
+        )
+        .returns(async () => [orderInfo]);
 
       const properties = await storage.loadPropertiesOrder("iTwinId", "imodelId");
       expect(properties).to.be.not.undefined;
@@ -127,7 +140,11 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     });
 
     it("returns undefined", async () => {
-      settingsAdminMock.setup(async (x) => x.get(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME }))).returns(async () => undefined);
+      settingsAdminMock
+        .setup(async (x) =>
+          x.get(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME })),
+        )
+        .returns(async () => undefined);
       sinon.stub(IModelApp, "userPreferences").get(() => settingsAdminMock.object);
 
       const properties = await storage.loadPropertiesOrder("iTwinId", "imodelId");
@@ -147,11 +164,9 @@ describe("IModelAppFavoritePropertiesStorage", () => {
       IModelApp.authorizationClient = undefined;
       await expect(storage.loadProperties()).to.eventually.be.rejected;
     });
-
   });
 
   describe("savePropertiesOrder", () => {
-
     it("saves properties order", async () => {
       const orderInfo: FavoritePropertiesOrderInfo = {
         parentClassName: undefined,
@@ -161,14 +176,18 @@ describe("IModelAppFavoritePropertiesStorage", () => {
       };
 
       settingsAdminMock
-        .setup(async (x) => x.save(moq.It.isObjectWith({
-          iTwinId: "iTwinId",
-          iModelId: "imodelId",
-          namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE,
-          key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME,
-          content: [orderInfo],
-        })))
-        .returns(async () => { })
+        .setup(async (x) =>
+          x.save(
+            moq.It.isObjectWith({
+              iTwinId: "iTwinId",
+              iModelId: "imodelId",
+              namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE,
+              key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME,
+              content: [orderInfo],
+            }),
+          ),
+        )
+        .returns(async () => {})
         .verifiable();
 
       await storage.savePropertiesOrder([orderInfo], "iTwinId", "imodelId");
@@ -188,13 +207,10 @@ describe("IModelAppFavoritePropertiesStorage", () => {
       IModelApp.authorizationClient = undefined;
       await expect(storage.loadProperties()).to.eventually.be.rejected;
     });
-
   });
-
 });
 
 describe("OfflineCachingFavoritePropertiesStorage", () => {
-
   const impl = {
     loadProperties: sinon.stub(),
     saveProperties: sinon.stub(),
@@ -222,9 +238,7 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
   });
 
   describe("saveProperties", () => {
-
     describe("when offline", () => {
-
       beforeEach(() => {
         sinon.stub(connectivityInfo, "status").get(() => InternetConnectivityStatus.Offline);
       });
@@ -233,11 +247,9 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
         await storage.saveProperties(new Set());
         expect(impl.saveProperties).to.not.be.called;
       });
-
     });
 
     describe("when online", () => {
-
       beforeEach(() => {
         sinon.stub(connectivityInfo, "status").get(() => InternetConnectivityStatus.Online);
       });
@@ -288,10 +300,7 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
         impl.saveProperties.resetBehavior();
         impl.saveProperties.onFirstCall().returns(implPromises[0]);
         impl.saveProperties.onSecondCall().returns(implPromises[1]);
-        const result = Promise.all([
-          storage.saveProperties(new Set(["1"]), "x", "z"),
-          storage.saveProperties(new Set(["2"]), "x", "z"),
-        ]);
+        const result = Promise.all([storage.saveProperties(new Set(["1"]), "x", "z"), storage.saveProperties(new Set(["2"]), "x", "z")]);
         expect(impl.saveProperties).to.be.calledTwice;
         implPromises.forEach(async (promise) => promise.reject());
         await result;
@@ -304,10 +313,7 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
         impl.saveProperties.resetBehavior();
         impl.saveProperties.onFirstCall().returns(implPromises[0]);
         impl.saveProperties.onSecondCall().returns(implPromises[1]);
-        const result = Promise.all([
-          storage.saveProperties(new Set(["1"]), "x", "z"),
-          storage.saveProperties(new Set(["2"]), "x", "z"),
-        ]);
+        const result = Promise.all([storage.saveProperties(new Set(["1"]), "x", "z"), storage.saveProperties(new Set(["2"]), "x", "z")]);
         expect(impl.saveProperties).to.be.calledTwice;
         implPromises.reverse().forEach(async (promise) => promise.reject());
         await result;
@@ -340,15 +346,11 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
         // verify the offline cache now contains value of the most recent `saveProperties` call
         expect(await offline(async () => storage.loadProperties("x", "z"))).to.contain("2");
       });
-
     });
-
   });
 
   describe("loadProperties", () => {
-
     describe("when offline", () => {
-
       beforeEach(() => {
         sinon.stub(connectivityInfo, "status").get(() => InternetConnectivityStatus.Offline);
       });
@@ -366,11 +368,9 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
         expect(result).to.contain("test1");
         expect(result).to.contain("test2");
       });
-
     });
 
     describe("when online", () => {
-
       beforeEach(() => {
         sinon.stub(connectivityInfo, "status").get(() => InternetConnectivityStatus.Online);
       });
@@ -389,15 +389,11 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
         expect(result?.size).to.eq(1);
         expect(result).to.contain("cached");
       });
-
     });
-
   });
 
   describe("savePropertiesOrder", () => {
-
     describe("when offline", () => {
-
       beforeEach(() => {
         sinon.stub(connectivityInfo, "status").get(() => InternetConnectivityStatus.Offline);
       });
@@ -406,11 +402,9 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
         await storage.savePropertiesOrder([createRandomPropertiesOrderInfo()], "a", "b");
         expect(impl.savePropertiesOrder).to.not.be.called;
       });
-
     });
 
     describe("when online", () => {
-
       beforeEach(() => {
         sinon.stub(connectivityInfo, "status").get(() => InternetConnectivityStatus.Online);
       });
@@ -512,15 +506,11 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
         // verify the offline cache now contains value of the most recent `savePropertiesOrder` call
         expect(await offline(async () => storage.loadPropertiesOrder("x", "z"))).to.contain(orderInfos[1]);
       });
-
     });
-
   });
 
   describe("loadPropertiesOrder", () => {
-
     describe("when offline", () => {
-
       beforeEach(() => {
         sinon.stub(connectivityInfo, "status").get(() => InternetConnectivityStatus.Offline);
       });
@@ -538,11 +528,9 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
         expect(result?.length).to.eq(1);
         expect(result).to.contain(orderInfo);
       });
-
     });
 
     describe("when online", () => {
-
       beforeEach(() => {
         sinon.stub(connectivityInfo, "status").get(() => InternetConnectivityStatus.Online);
       });
@@ -562,13 +550,10 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
         expect(result?.length).to.eq(1);
         expect(result).to.contain(order);
       });
-
     });
-
   });
 
   describe("reacting to connectivity status changes", () => {
-
     it("saves cached offline properties and order when comes online", async () => {
       // store some data to offline cache
       const propertiesSet = new Set(["a"]);
@@ -588,7 +573,6 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
       expect(await offline(async () => storage.loadProperties("b", "c"))).to.be.undefined;
       expect(await offline(async () => storage.loadPropertiesOrder("b", "c"))).to.be.undefined;
     });
-
   });
 
   it("disposes IConnectivityInformationProvider", () => {
@@ -602,25 +586,23 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
     expect(disposableConnectivityInfo.dispose).to.be.calledOnce;
   });
 
-  const callInConnectivityContext = async <T>(cb: (() => Promise<T>), connectivityStatus: InternetConnectivityStatus) => {
+  const callInConnectivityContext = async <T>(cb: () => Promise<T>, connectivityStatus: InternetConnectivityStatus) => {
     const stub = sinon.stub(connectivityInfo, "status").get(() => connectivityStatus);
     const result = await cb();
     stub.restore();
     return result;
   };
 
-  const offline = async <T>(cb: (() => Promise<T>)) => {
+  const offline = async <T>(cb: () => Promise<T>) => {
     return callInConnectivityContext(cb, InternetConnectivityStatus.Offline);
   };
 
-  const online = async <T>(cb: (() => Promise<T>)) => {
+  const online = async <T>(cb: () => Promise<T>) => {
     return callInConnectivityContext(cb, InternetConnectivityStatus.Online);
   };
-
 });
 
 describe("BrowserLocalFavoritePropertiesStorage", () => {
-
   let storage: BrowserLocalFavoritePropertiesStorage;
   let storageMock: moq.IMock<Storage>;
 
@@ -634,16 +616,13 @@ describe("BrowserLocalFavoritePropertiesStorage", () => {
   });
 
   describe("saveProperties", () => {
-
     it("saves properties to local storage", async () => {
       await storage.saveProperties(new Set(["test"]), "a", "b");
       storageMock.verify((x) => x.setItem(storage.createFavoritesSettingItemKey("a", "b"), `["test"]`), moq.Times.once());
     });
-
   });
 
   describe("loadProperties", () => {
-
     it("returns `undefined`and there's no cached value", async () => {
       storageMock.setup((x) => x.getItem(moq.It.isAny())).returns(() => null);
       const result = await storage.loadProperties("a", "b");
@@ -651,28 +630,27 @@ describe("BrowserLocalFavoritePropertiesStorage", () => {
     });
 
     it("loads from local storage where there's a value", async () => {
-      storageMock.setup((x) => x.getItem(storage.createFavoritesSettingItemKey("a", "b"))).returns(() => `["abc", "def"]`).verifiable();
+      storageMock
+        .setup((x) => x.getItem(storage.createFavoritesSettingItemKey("a", "b")))
+        .returns(() => `["abc", "def"]`)
+        .verifiable();
       const result = await storage.loadProperties("a", "b");
       storageMock.verifyAll();
       expect(result?.size).to.eq(2);
       expect(result).to.contain("abc");
       expect(result).to.contain("def");
     });
-
   });
 
   describe("savePropertiesOrder", () => {
-
     it("saves properties order to local storage", async () => {
       const orderInfos = [createRandomPropertiesOrderInfo()];
       await storage.savePropertiesOrder(orderInfos, "a", "b");
       storageMock.verify((x) => x.setItem(storage.createOrderSettingItemKey("a", "b"), JSON.stringify(orderInfos)), moq.Times.once());
     });
-
   });
 
   describe("loadPropertiesOrder", () => {
-
     it("returns `undefined` and there's no cached value", async () => {
       storageMock.setup((x) => x.getItem(moq.It.isAny())).returns(() => null);
       const result = await storage.loadPropertiesOrder("a", "b");
@@ -681,14 +659,15 @@ describe("BrowserLocalFavoritePropertiesStorage", () => {
 
     it("loads from cache and there's cached value", async () => {
       const orderInfos = [createRandomPropertiesOrderInfo()];
-      storageMock.setup((x) => x.getItem(storage.createOrderSettingItemKey("a", "b"))).returns(() => JSON.stringify(orderInfos)).verifiable();
+      storageMock
+        .setup((x) => x.getItem(storage.createOrderSettingItemKey("a", "b")))
+        .returns(() => JSON.stringify(orderInfos))
+        .verifiable();
       const result = await storage.loadPropertiesOrder("a", "b");
       storageMock.verifyAll();
       expect(result).to.deep.eq(orderInfos);
     });
-
   });
-
 });
 
 const createRandomPropertiesOrderInfo = () => ({
@@ -699,7 +678,6 @@ const createRandomPropertiesOrderInfo = () => ({
 });
 
 describe("createFavoritePropertiesStorage", () => {
-
   afterEach(() => {
     sinon.restore();
   });
@@ -720,5 +698,4 @@ describe("createFavoritePropertiesStorage", () => {
     expect(result).to.be.instanceOf(OfflineCachingFavoritePropertiesStorage);
     expect((result as OfflineCachingFavoritePropertiesStorage).impl).to.be.instanceOf(IModelAppFavoritePropertiesStorage);
   });
-
 });

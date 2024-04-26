@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module PresentationRules
  */
@@ -74,7 +74,7 @@ export interface InstanceLabelOverrideCompositeValueSpecification extends Instan
    * If any of the parts with `isRequired` flag evaluate to an empty string, the
    * result of this specification is also an empty string.
    */
-  parts: Array<{ spec: InstanceLabelOverrideValueSpecification, isRequired?: boolean }>;
+  parts: Array<{ spec: InstanceLabelOverrideValueSpecification; isRequired?: boolean }>;
 
   /** Separator to use when joining the parts. Defaults to a space character. */
   separator?: string;
@@ -179,7 +179,11 @@ export interface InstanceLabelOverrideRelatedInstanceLabelSpecification extends 
  * @public
  */
 export type InstanceLabelOverrideValueSpecification =
-  InstanceLabelOverrideCompositeValueSpecification | InstanceLabelOverridePropertyValueSpecification |
-  InstanceLabelOverrideStringValueSpecification | InstanceLabelOverrideClassNameSpecification |
-  InstanceLabelOverrideClassLabelSpecification | InstanceLabelOverrideBriefcaseIdSpecification |
-  InstanceLabelOverrideLocalIdSpecification | InstanceLabelOverrideRelatedInstanceLabelSpecification;
+  | InstanceLabelOverrideCompositeValueSpecification
+  | InstanceLabelOverridePropertyValueSpecification
+  | InstanceLabelOverrideStringValueSpecification
+  | InstanceLabelOverrideClassNameSpecification
+  | InstanceLabelOverrideClassLabelSpecification
+  | InstanceLabelOverrideBriefcaseIdSpecification
+  | InstanceLabelOverrideLocalIdSpecification
+  | InstanceLabelOverrideRelatedInstanceLabelSpecification;

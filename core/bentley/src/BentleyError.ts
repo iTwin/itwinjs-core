@@ -96,6 +96,7 @@ export enum IModelStatus {
   NotRegistered = IMODEL_ERROR_BASE + 69,
   FunctionNotFound = IMODEL_ERROR_BASE + 70,
   NoActiveCommand = IMODEL_ERROR_BASE + 71,
+  Aborted = IMODEL_ERROR_BASE + 72,
 }
 
 /** Error statuses produced by various briefcase operations, typically encountered as the `errorNumber` of an [IModelError]($common).
@@ -668,7 +669,6 @@ export class BentleyError extends Error {
       case GeoServiceStatus.CSMapError: return "CSMap error";
       case GeoServiceStatus.Pending: return "Pending";
       case RealityDataStatus.InvalidData: return "Invalid or unknown data";
-      case IModelStatus.Success:
       case DbResult.BE_SQLITE_OK:
       case DbResult.BE_SQLITE_ROW:
       case DbResult.BE_SQLITE_DONE:

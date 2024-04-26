@@ -1,0 +1,166 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Hierarchies Getting node instances count correctly counts instances when key set contains grouping node keys 1`] = `
+Array [
+  Object {
+    "description": "A container for persisting definition elements.",
+    "hasChildren": true,
+    "key": Object {
+      "className": "BisCore:DefinitionModel",
+      "groupedInstancesCount": 1,
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM (SELECT * FROM [bis].[Model] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[RepositoryModel]))) [this] UNION ALL SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM [bis].[RepositoryModel] [this]) WHERE ([/ECClassId/] IS (ONLY [BisCore].[DefinitionModel]))",
+      },
+      "pathFromRoot": Array [
+        "753b4e5e0e9f83b9c353e99e11580061",
+      ],
+      "type": "ECClassGroupingNode",
+      "version": 2,
+    },
+    "label": Object {
+      "displayValue": "Definition Model",
+      "rawValue": "Definition Model",
+      "typeName": "string",
+    },
+    "supportsFiltering": true,
+  },
+  Object {
+    "description": "The singleton container for repository-specific definition elements.",
+    "hasChildren": true,
+    "key": Object {
+      "className": "BisCore:DictionaryModel",
+      "groupedInstancesCount": 1,
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM (SELECT * FROM [bis].[Model] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[RepositoryModel]))) [this] UNION ALL SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM [bis].[RepositoryModel] [this]) WHERE ([/ECClassId/] IS (ONLY [BisCore].[DictionaryModel]))",
+      },
+      "pathFromRoot": Array [
+        "3bb337eb081b12b585892e8b48b9945d",
+      ],
+      "type": "ECClassGroupingNode",
+      "version": 2,
+    },
+    "label": Object {
+      "displayValue": "Dictionary Model",
+      "rawValue": "Dictionary Model",
+      "typeName": "string",
+    },
+    "supportsFiltering": true,
+  },
+  Object {
+    "description": "Contains a list of document elements.",
+    "hasChildren": true,
+    "key": Object {
+      "className": "BisCore:DocumentListModel",
+      "groupedInstancesCount": 2,
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM (SELECT * FROM [bis].[Model] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[RepositoryModel]))) [this] UNION ALL SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM [bis].[RepositoryModel] [this]) WHERE ([/ECClassId/] IS (ONLY [BisCore].[DocumentListModel]))",
+      },
+      "pathFromRoot": Array [
+        "58a34604adba67cce337f8abf3ca9156",
+      ],
+      "type": "ECClassGroupingNode",
+      "version": 2,
+    },
+    "label": Object {
+      "displayValue": "Document List",
+      "rawValue": "Document List",
+      "typeName": "string",
+    },
+    "supportsFiltering": true,
+  },
+  Object {
+    "hasChildren": true,
+    "key": Object {
+      "className": "Generic:GroupModel",
+      "groupedInstancesCount": 1,
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM (SELECT * FROM [bis].[Model] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[RepositoryModel]))) [this] UNION ALL SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM [bis].[RepositoryModel] [this]) WHERE ([/ECClassId/] IS (ONLY [Generic].[GroupModel]))",
+      },
+      "pathFromRoot": Array [
+        "299d7f9305cef9cf3c6801b57a5acb96",
+      ],
+      "type": "ECClassGroupingNode",
+      "version": 2,
+    },
+    "label": Object {
+      "displayValue": "Group Model",
+      "rawValue": "Group Model",
+      "typeName": "string",
+    },
+    "supportsFiltering": true,
+  },
+  Object {
+    "description": "A container for persisting link elements.",
+    "hasChildren": true,
+    "key": Object {
+      "className": "BisCore:LinkModel",
+      "groupedInstancesCount": 1,
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM (SELECT * FROM [bis].[Model] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[RepositoryModel]))) [this] UNION ALL SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM [bis].[RepositoryModel] [this]) WHERE ([/ECClassId/] IS (ONLY [BisCore].[LinkModel]))",
+      },
+      "pathFromRoot": Array [
+        "010c21fa3da8617b482849d9316ec5ce",
+      ],
+      "type": "ECClassGroupingNode",
+      "version": 2,
+    },
+    "label": Object {
+      "displayValue": "Link Model",
+      "rawValue": "Link Model",
+      "typeName": "string",
+    },
+    "supportsFiltering": true,
+  },
+  Object {
+    "description": "A container for persisting physical elements that model physical space.",
+    "hasChildren": true,
+    "key": Object {
+      "className": "BisCore:PhysicalModel",
+      "groupedInstancesCount": 1,
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM (SELECT * FROM [bis].[Model] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[RepositoryModel]))) [this] UNION ALL SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM [bis].[RepositoryModel] [this]) WHERE ([/ECClassId/] IS (ONLY [BisCore].[PhysicalModel]))",
+      },
+      "pathFromRoot": Array [
+        "5022db83e3c815aa6b9e1b666af53794",
+      ],
+      "type": "ECClassGroupingNode",
+      "version": 2,
+    },
+    "label": Object {
+      "displayValue": "Physical Model",
+      "rawValue": "Physical Model",
+      "typeName": "string",
+    },
+    "supportsFiltering": true,
+  },
+  Object {
+    "description": "The singleton container of repository-related information elements.",
+    "hasChildren": true,
+    "key": Object {
+      "className": "BisCore:RepositoryModel",
+      "groupedInstancesCount": 1,
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM (SELECT * FROM [bis].[Model] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[RepositoryModel]))) [this] UNION ALL SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM [bis].[RepositoryModel] [this]) WHERE ([/ECClassId/] IS (ONLY [BisCore].[RepositoryModel]))",
+      },
+      "pathFromRoot": Array [
+        "ec598145d0036d964837884b3c0f192e",
+      ],
+      "type": "ECClassGroupingNode",
+      "version": 2,
+    },
+    "label": Object {
+      "displayValue": "Repository Model",
+      "rawValue": "Repository Model",
+      "typeName": "string",
+    },
+    "supportsFiltering": true,
+  },
+]
+`;

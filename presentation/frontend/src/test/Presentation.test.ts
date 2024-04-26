@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
+import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
 import { PresentationError } from "@itwin/presentation-common";
 import { Presentation, SelectionManager } from "../presentation-frontend";
 import * as favorites from "../presentation-frontend/favorite-properties/FavoritePropertiesManager";
@@ -15,7 +15,6 @@ import * as selection from "../presentation-frontend/selection/SelectionManager"
 import { SelectionScopesManager } from "../presentation-frontend/selection/SelectionScopesManager";
 
 describe("Presentation", () => {
-
   const shutdownIModelApp = async () => {
     await IModelApp.shutdown();
   };
@@ -33,7 +32,6 @@ describe("Presentation", () => {
   });
 
   describe("initialize", () => {
-
     it("throws when initialized before IModelApp.startup()", async () => {
       await shutdownIModelApp();
       expect(Presentation.initialize()).to.be.rejectedWith(PresentationError, "IModelApp.startup"); // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -123,10 +121,24 @@ describe("Presentation", () => {
       expect(Presentation.selection.scopes.activeLocale).to.eq("other");
     });
 
+    it("sets `startIModelInitialization` and `ensureIModelInitialized` callbacks of `PresentationManager` as proxies to `FavoritePropertiesManager`", async () => {
+      await Presentation.initialize({ presentation: { activeLocale: "test" } });
+      const manager = Presentation.presentation;
+      const favoriteProperties = Presentation.favoriteProperties;
+
+      const startInitializationSpy = sinon.spy(favoriteProperties, "startConnectionInitialization");
+      const ensureInitializedSpy = sinon.spy(favoriteProperties, "ensureInitialized");
+      const imodel = {} as unknown as IModelConnection;
+
+      manager.startIModelInitialization(imodel);
+      expect(startInitializationSpy).to.be.called;
+
+      await manager.ensureIModelInitialized(imodel);
+      expect(ensureInitializedSpy).to.be.called;
+    });
   });
 
   describe("terminate", () => {
-
     it("resets manager instances", async () => {
       await Presentation.initialize();
       expect(Presentation.presentation).to.be.not.null;
@@ -147,11 +159,9 @@ describe("Presentation", () => {
       Presentation.terminate();
       expect(spy).to.be.calledOnce;
     });
-
   });
 
   describe("setPresentationManager", () => {
-
     it("overwrites presentation manager instance before initialization", async () => {
       const manager = PresentationManager.create();
       Presentation.setPresentationManager(manager);
@@ -167,11 +177,9 @@ describe("Presentation", () => {
       Presentation.setPresentationManager(otherManager);
       expect(Presentation.presentation).to.eq(otherManager);
     });
-
   });
 
   describe("setSelectionManager", () => {
-
     it("overwrites selection manager instance before initialization", async () => {
       const manager = new SelectionManager({ scopes: moq.Mock.ofType<SelectionScopesManager>().object });
       Presentation.setSelectionManager(manager);
@@ -187,11 +195,9 @@ describe("Presentation", () => {
       Presentation.setSelectionManager(otherManager);
       expect(Presentation.selection).to.eq(otherManager);
     });
-
   });
 
   describe("setFavoritePropertiesManager", () => {
-
     it("overwrites favoriteProperties instance before initialization", async () => {
       const manager = new favorites.FavoritePropertiesManager({ storage: moq.Mock.ofType<IFavoritePropertiesStorage>().object });
       Presentation.setFavoritePropertiesManager(manager);
@@ -207,11 +213,9 @@ describe("Presentation", () => {
       Presentation.setFavoritePropertiesManager(otherManager);
       expect(Presentation.favoriteProperties).to.eq(otherManager);
     });
-
   });
 
   describe("setLocalization", () => {
-
     it("overwrites i18n instance before initialization", async () => {
       const i18nMock = mockI18N();
       Presentation.setLocalization(i18nMock.object);
@@ -227,7 +231,5 @@ describe("Presentation", () => {
       Presentation.setLocalization(i18nMock.object);
       expect(Presentation.localization).to.eq(i18nMock.object);
     });
-
   });
-
 });

@@ -3307,6 +3307,11 @@ export class AccuDrawHintBuilder {
     return true;
   }
 
+  /** Adjust the location of the last data button. If dynamics are enabled on this event, [[InteractiveTool.onDynamicFrame]] is called with this location. */
+  public setLastPoint(ev: BeButtonEvent): void {
+    IModelApp.toolAdmin.setAdjustedDataPoint(ev);
+  }
+
   /** Create a [[Ray3d]] whose origin is the supplied space point and direction is into the view */
   public static getBoresite(spacePt: Point3d, vp: Viewport, checkAccuDraw: boolean = false, checkACS: boolean = false): Ray3d {
     if (checkAccuDraw && IModelApp.accuDraw.isActive)
@@ -3364,6 +3369,14 @@ export class AccuDrawHintBuilder {
   public static getCurrentRotation(vp: Viewport, checkAccuDraw: boolean, checkACS: boolean, matrix?: Matrix3d): Matrix3d | undefined {
     const current = AccuDraw.getCurrentOrientation(vp, checkAccuDraw, checkACS, matrix);
     return (undefined !== current ? current.inverse() : undefined);
+  }
+
+  /** Return a [[Matrix3d]] from a [[SnapDetail]].
+   * Uses [[SnapDetail.normal]] and [[SnapDetail.primitive]] when available to create the most well defined rotation for the given snap location.
+   */
+  public static getSnapRotation(snap: SnapDetail, matrix?: Matrix3d): Matrix3d | undefined {
+    const out = AccuDraw.getSnapRotation(snap, undefined, matrix);
+    return (undefined !== out ? out.inverse() : undefined);
   }
 
   /** Return a [[Matrix3d]] corresponding to the supplied [[ContextRotationId]].

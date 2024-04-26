@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
 import * as ec from "../../../presentation-common/EC";
 import { createRandomId } from "./Misc";
@@ -53,8 +53,9 @@ export const createRandomRelatedClassInfo = (): ec.RelatedClassInfo => {
  */
 export const createRandomRelationshipPath = (length: number = 2): ec.RelationshipPath => {
   const path = new Array<ec.RelatedClassInfo>();
-  while (length--)
+  while (length--) {
     path.push(createRandomRelatedClassInfo());
+  }
   return path;
 };
 

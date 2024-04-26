@@ -55,7 +55,7 @@ export class PolishCubicEvaluator extends CubicEvaluator {
     super.scaleInPlace(scaleFactor);
   }
   /** return a deep copy of the evaluator */
-  public clone(): PolishCubicEvaluator { return new PolishCubicEvaluator(this.nominalLength1, this.nominalRadius1, super._axisLength, this.cubicM); }
+  public clone(): PolishCubicEvaluator { return new PolishCubicEvaluator(this.nominalLength1, this.nominalRadius1, this.axisLength, this.cubicM); }
   /** Member by member matchup ... */
   public isAlmostEqual(other: any): boolean {
     if (other instanceof PolishCubicEvaluator) {

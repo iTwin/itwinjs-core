@@ -461,4 +461,4 @@ In the third changeset the Device with code `DEV-A-G-3` which was inserted in th
 
 ---
 
-[**< Previous**](./MetaQueries.md) &nbsp; | &nbsp; [**Next >**](./ClassFilter.md)
+[< Previous](./MetaQueries.md) &nbsp; | &nbsp; [Next >](./ClassFilter.md)

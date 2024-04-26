@@ -8,12 +8,12 @@ import * as fs from "fs";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { Arc3d } from "../../curve/Arc3d";
-import { AnyCurve, AnyRegion } from "../../curve/CurveTypes";
 import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
 import { CurveFactory } from "../../curve/CurveFactory";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { RecursiveCurveProcessor } from "../../curve/CurveProcessor";
+import { AnyCurve, AnyRegion } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { ChainCollectorContext } from "../../curve/internalContexts/ChainCollectorContext";
 import { PolygonWireOffsetContext } from "../../curve/internalContexts/PolygonOffsetContext";
@@ -37,7 +37,6 @@ import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { Range2d, Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-import { IndexedPolyfaceVisitor } from "../../polyface/IndexedPolyfaceVisitor";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
@@ -1246,7 +1245,7 @@ describe("RegionOps2", () => {
             x += xDelta;
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x, y);
             // verify triangulation with no degenerate triangles
-            const visitor = mesh.createVisitor() as IndexedPolyfaceVisitor;
+            const visitor = mesh.createVisitor();
             for (; visitor.moveToNextFacet();) {
               ck.testExactNumber(3, visitor.numEdgesThisFacet, "facet is triangular");
               ck.testFalse(visitor.pointIndex[0] === visitor.pointIndex[1], "first two point indices are different");

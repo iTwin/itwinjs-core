@@ -198,6 +198,7 @@ export class Checker {
     }
     return this.announceOK();
   }
+  /** Test if both ranges have equal low and high parts, or both are null ranges. */
   public testRange3d(dataA: Range3d, dataB: Range3d, ...params: any[]): boolean {
     if (dataA.isAlmostEqual(dataB))
       return this.announceOK();

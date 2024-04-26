@@ -28,9 +28,10 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
   public readonly is2d: boolean;
   public readonly features?: FeatureTable;
   public readonly options: GeometryOptions;
+  private readonly _isVolumeClassifier: boolean;
   private _keyOrder = 0;
 
-  constructor(tolerance: number, range: Range3d, is2d: boolean, options: GeometryOptions, pickable: { modelId?: Id64String } | undefined) {
+  constructor(tolerance: number, range: Range3d, is2d: boolean, options: GeometryOptions, pickable: { isVolumeClassifier?: boolean, modelId?: Id64String } | undefined) {
     super((lhs: MeshBuilderMap.Key, rhs: MeshBuilderMap.Key) => lhs.compare(rhs));
     this.tolerance = tolerance;
     this.vertexTolerance = tolerance * ToleranceRatio.vertex;
@@ -38,12 +39,13 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
     this.range = range;
     this.is2d = is2d;
     this.options = options;
+    this._isVolumeClassifier = pickable?.isVolumeClassifier ?? false;
 
     if (pickable)
       this.features = new FeatureTable(2048 * 1024, pickable.modelId);
   }
 
-  public static createFromGeometries(geometries: GeometryList, tolerance: number, range: Range3d, is2d: boolean, options: GeometryOptions, pickable: { modelId?: Id64String } | undefined): MeshBuilderMap {
+  public static createFromGeometries(geometries: GeometryList, tolerance: number, range: Range3d, is2d: boolean, options: GeometryOptions, pickable: { isVolumeClassifier?: boolean, modelId?: Id64String } | undefined): MeshBuilderMap {
     const map = new MeshBuilderMap(tolerance, range, is2d, options, pickable);
 
     for (const geom of geometries)
@@ -142,6 +144,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
       tolerance,
       areaTolerance: facetAreaTolerance,
       features: this.features,
+      isVolumeClassifier: this._isVolumeClassifier,
     });
   }
 

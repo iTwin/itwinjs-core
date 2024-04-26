@@ -1,20 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { InstanceKey, RelationshipPath } from "../presentation-common";
 import {
-  RelatedClassInfo, RelatedClassInfoWithOptionalRelationship, RelatedClassInfoWithOptionalRelationshipJSON, StrippedRelatedClassInfo,
+  RelatedClassInfo,
+  RelatedClassInfoWithOptionalRelationship,
+  RelatedClassInfoWithOptionalRelationshipJSON,
+  StrippedRelatedClassInfo,
 } from "../presentation-common/EC";
 import { createTestECClassInfo, createTestRelatedClassInfo, createTestRelatedClassInfoWithOptionalRelationship } from "./_helpers/EC";
 import { createRandomECClassInfo } from "./_helpers/random";
 
 describe("InstanceKey", () => {
-
   describe("compare", () => {
-
     it("returns less than 0 when `lhs.className` < `rhs.className`", () => {
       const lhs = { className: "a", id: Id64.invalid };
       const rhs = { className: "b", id: Id64.invalid };
@@ -44,15 +45,11 @@ describe("InstanceKey", () => {
       const rhs = { className: "a", id: "0x1" };
       expect(InstanceKey.compare(lhs, rhs)).to.be.gt(0);
     });
-
   });
-
 });
 
 describe("RelatedClassInfo", () => {
-
   describe("to/from JSON", () => {
-
     it("passes roundtrip", () => {
       const src = createTestRelatedClassInfo();
       // eslint-disable-next-line deprecation/deprecation
@@ -61,11 +58,9 @@ describe("RelatedClassInfo", () => {
       const res = RelatedClassInfo.fromJSON(json);
       expect(res).to.deep.eq(src);
     });
-
   });
 
   describe("to/from compressed JSON", () => {
-
     it("passes roundtrip", () => {
       const src = createTestRelatedClassInfo();
       const classesMap = {};
@@ -73,11 +68,9 @@ describe("RelatedClassInfo", () => {
       const res = RelatedClassInfo.fromCompressedJSON(json, classesMap);
       expect(res).to.deep.eq(src);
     });
-
   });
 
   describe("equals", () => {
-
     it("returns `true` when `RelatedClassInfo` equals to another `RelatedClassInfo`", () => {
       const lhs: RelatedClassInfo = {
         isForwardRelationship: true,
@@ -139,11 +132,9 @@ describe("RelatedClassInfo", () => {
       };
       expect(RelatedClassInfo.equals(lhs, rhs)).to.be.false;
     });
-
   });
 
   describe("strip", () => {
-
     it("correctly creates `StrippedRelatedClassInfo` from given `RelatedClassInfo`", () => {
       const source: RelatedClassInfo = {
         isForwardRelationship: true,
@@ -160,15 +151,11 @@ describe("RelatedClassInfo", () => {
         targetClassName: source.targetClassInfo.name,
       });
     });
-
   });
-
 });
 
 describe("RelatedClassInfoWithOptionalRelationship", () => {
-
   describe("to/from compressed JSON", () => {
-
     it("passes roundtrip", () => {
       const src = createTestRelatedClassInfoWithOptionalRelationship({
         isForwardRelationship: true,
@@ -211,35 +198,35 @@ describe("RelatedClassInfoWithOptionalRelationship", () => {
       const res = RelatedClassInfoWithOptionalRelationship.fromCompressedJSON(json, classInfos);
       expect(res.relationshipInfo).to.be.undefined;
     });
-
   });
-
 });
 
 describe("RelationshipPath", () => {
-
   describe("reverse", () => {
-
     it("reverses single-step path", () => {
       const src = createRandomECClassInfo();
       const tgt = createRandomECClassInfo();
       const rel = { ...createRandomECClassInfo(), name: "src-to-tgt" };
-      const path: RelationshipPath = [{
-        sourceClassInfo: src,
-        relationshipInfo: rel,
-        isForwardRelationship: true,
-        targetClassInfo: tgt,
-        isPolymorphicRelationship: true,
-        isPolymorphicTargetClass: true,
-      }];
-      const expected: RelationshipPath = [{
-        sourceClassInfo: tgt,
-        relationshipInfo: rel,
-        isForwardRelationship: false,
-        targetClassInfo: src,
-        isPolymorphicRelationship: true,
-        isPolymorphicTargetClass: true,
-      }];
+      const path: RelationshipPath = [
+        {
+          sourceClassInfo: src,
+          relationshipInfo: rel,
+          isForwardRelationship: true,
+          targetClassInfo: tgt,
+          isPolymorphicRelationship: true,
+          isPolymorphicTargetClass: true,
+        },
+      ];
+      const expected: RelationshipPath = [
+        {
+          sourceClassInfo: tgt,
+          relationshipInfo: rel,
+          isForwardRelationship: false,
+          targetClassInfo: src,
+          isPolymorphicRelationship: true,
+          isPolymorphicTargetClass: true,
+        },
+      ];
       const reversed = RelationshipPath.reverse(path);
       expect(reversed).to.deep.eq(expected);
     });
@@ -250,66 +237,74 @@ describe("RelationshipPath", () => {
       const tgt = createRandomECClassInfo();
       const rel1 = { ...createRandomECClassInfo(), name: "src-to-mid" };
       const rel2 = { ...createRandomECClassInfo(), name: "tgt-to-mid" };
-      const path: RelationshipPath = [{
-        sourceClassInfo: src,
-        relationshipInfo: rel1,
-        isForwardRelationship: true,
-        targetClassInfo: mid,
-        isPolymorphicRelationship: true,
-        isPolymorphicTargetClass: true,
-      }, {
-        sourceClassInfo: mid,
-        relationshipInfo: rel2,
-        isForwardRelationship: false,
-        targetClassInfo: tgt,
-        isPolymorphicRelationship: true,
-        isPolymorphicTargetClass: true,
-      }];
-      const expected: RelationshipPath = [{
-        sourceClassInfo: tgt,
-        relationshipInfo: rel2,
-        isForwardRelationship: true,
-        targetClassInfo: mid,
-        isPolymorphicRelationship: true,
-        isPolymorphicTargetClass: true,
-      }, {
-        sourceClassInfo: mid,
-        relationshipInfo: rel1,
-        isForwardRelationship: false,
-        targetClassInfo: src,
-        isPolymorphicRelationship: true,
-        isPolymorphicTargetClass: true,
-      }];
+      const path: RelationshipPath = [
+        {
+          sourceClassInfo: src,
+          relationshipInfo: rel1,
+          isForwardRelationship: true,
+          targetClassInfo: mid,
+          isPolymorphicRelationship: true,
+          isPolymorphicTargetClass: true,
+        },
+        {
+          sourceClassInfo: mid,
+          relationshipInfo: rel2,
+          isForwardRelationship: false,
+          targetClassInfo: tgt,
+          isPolymorphicRelationship: true,
+          isPolymorphicTargetClass: true,
+        },
+      ];
+      const expected: RelationshipPath = [
+        {
+          sourceClassInfo: tgt,
+          relationshipInfo: rel2,
+          isForwardRelationship: true,
+          targetClassInfo: mid,
+          isPolymorphicRelationship: true,
+          isPolymorphicTargetClass: true,
+        },
+        {
+          sourceClassInfo: mid,
+          relationshipInfo: rel1,
+          isForwardRelationship: false,
+          targetClassInfo: src,
+          isPolymorphicRelationship: true,
+          isPolymorphicTargetClass: true,
+        },
+      ];
       const reversed = RelationshipPath.reverse(path);
       expect(reversed).to.deep.eq(expected);
     });
-
   });
 
   describe("equals", () => {
-
     it("returns `true` when paths are equal", () => {
-      const lhs: RelationshipPath = [{
-        isForwardRelationship: true,
-        isPolymorphicRelationship: true,
-        relationshipInfo: createRandomECClassInfo(),
-        sourceClassInfo: createRandomECClassInfo(),
-        targetClassInfo: createRandomECClassInfo(),
-        isPolymorphicTargetClass: true,
-      }];
+      const lhs: RelationshipPath = [
+        {
+          isForwardRelationship: true,
+          isPolymorphicRelationship: true,
+          relationshipInfo: createRandomECClassInfo(),
+          sourceClassInfo: createRandomECClassInfo(),
+          targetClassInfo: createRandomECClassInfo(),
+          isPolymorphicTargetClass: true,
+        },
+      ];
       const rhs = [{ ...lhs[0] }];
       expect(RelationshipPath.equals(lhs, rhs)).to.be.true;
     });
 
     it("returns `false` when lengths are different", () => {
-      const lhs: RelationshipPath = [{
-        isForwardRelationship: true,
-        isPolymorphicRelationship: true,
-        relationshipInfo: createRandomECClassInfo(),
-        sourceClassInfo: createRandomECClassInfo(),
-        targetClassInfo: createRandomECClassInfo(),
-        isPolymorphicTargetClass: true,
-      }];
+      const lhs: RelationshipPath = [
+        {
+          isForwardRelationship: true,
+          isPolymorphicRelationship: true,
+          relationshipInfo: createRandomECClassInfo(),
+          sourceClassInfo: createRandomECClassInfo(),
+          targetClassInfo: createRandomECClassInfo(),
+          isPolymorphicTargetClass: true,
+        },
+      ];
       const rhs = [
         ...lhs,
         {
@@ -325,45 +320,49 @@ describe("RelationshipPath", () => {
     });
 
     it("returns `false` when path components are different", () => {
-      const lhs: RelationshipPath = [{
-        isForwardRelationship: true,
-        isPolymorphicRelationship: true,
-        relationshipInfo: createRandomECClassInfo(),
-        sourceClassInfo: createRandomECClassInfo(),
-        targetClassInfo: createRandomECClassInfo(),
-        isPolymorphicTargetClass: true,
-      }];
-      const rhs = [{
-        ...lhs[0],
-        relationshipInfo: {
-          ...lhs[0].relationshipInfo,
-          name: "different",
+      const lhs: RelationshipPath = [
+        {
+          isForwardRelationship: true,
+          isPolymorphicRelationship: true,
+          relationshipInfo: createRandomECClassInfo(),
+          sourceClassInfo: createRandomECClassInfo(),
+          targetClassInfo: createRandomECClassInfo(),
+          isPolymorphicTargetClass: true,
         },
-      }];
+      ];
+      const rhs = [
+        {
+          ...lhs[0],
+          relationshipInfo: {
+            ...lhs[0].relationshipInfo,
+            name: "different",
+          },
+        },
+      ];
       expect(RelationshipPath.equals(lhs, rhs)).to.be.false;
     });
-
   });
 
   describe("strip", () => {
-
     it("correctly creates `StrippedRelationshipPath` from given `RelationshipPath`", () => {
-      const source: RelationshipPath = [{
-        isForwardRelationship: true,
-        isPolymorphicRelationship: true,
-        relationshipInfo: createRandomECClassInfo(),
-        sourceClassInfo: createRandomECClassInfo(),
-        targetClassInfo: createRandomECClassInfo(),
-        isPolymorphicTargetClass: true,
-      }];
-      expect(RelationshipPath.strip(source)).to.deep.eq(source.map((s) => ({
-        isForwardRelationship: s.isForwardRelationship,
-        relationshipName: s.relationshipInfo.name,
-        sourceClassName: s.sourceClassInfo.name,
-        targetClassName: s.targetClassInfo.name,
-      })));
+      const source: RelationshipPath = [
+        {
+          isForwardRelationship: true,
+          isPolymorphicRelationship: true,
+          relationshipInfo: createRandomECClassInfo(),
+          sourceClassInfo: createRandomECClassInfo(),
+          targetClassInfo: createRandomECClassInfo(),
+          isPolymorphicTargetClass: true,
+        },
+      ];
+      expect(RelationshipPath.strip(source)).to.deep.eq(
+        source.map((s) => ({
+          isForwardRelationship: s.isForwardRelationship,
+          relationshipName: s.relationshipInfo.name,
+          sourceClassName: s.sourceClassInfo.name,
+          targetClassName: s.targetClassInfo.name,
+        })),
+      );
     });
-
   });
-
 });

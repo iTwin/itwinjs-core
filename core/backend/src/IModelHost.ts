@@ -35,7 +35,7 @@ import { initializeRpcBackend } from "./RpcBackend";
 import { TileStorage } from "./TileStorage";
 import { BaseSettings, SettingDictionary, SettingsPriority } from "./workspace/Settings";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
-import { ITwinWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
+import { Workspace, WorkspaceOpts } from "./workspace/Workspace";
 import { Container } from "inversify";
 import { join, normalize as normalizeDir } from "path";
 
@@ -183,6 +183,15 @@ export interface IModelHostOptions {
 
   /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   authorizationClient?: AuthorizationClient;
+
+  /**
+   * Automatically enable shared channel when opening iModels for read/write (see [Working With Channels]($docs/learning/backend/Channel.md)).
+   * If not present, defaults to `true` for backwards compatibility. This means that the shared channel may be edited by default. Generally
+   * that is undesirable because it allows applications to "accidentally" modify data it shouldn't be allowed to modify. Unfortunately the
+   * previous versions of iTwin.js allowed it so this is necessary so they won't break.
+   * Will be changed to default to `false` in 5.0.
+   */
+  allowSharedChannel?: boolean;
 }
 
 /** Configuration of core-backend.
@@ -358,11 +367,6 @@ export class IModelHost {
     }
   }
 
-  /** @internal */
-  public static flushLog() {
-    return IModelHost.platform.flushLog();
-  }
-
   private static syncNativeLogLevels() {
     this.platform.clearLogLevelCache();
   }
@@ -423,7 +427,7 @@ export class IModelHost {
   private static initializeWorkspace(configuration: IModelHostOptions) {
     const settingAssets = join(KnownLocations.packageAssetsDir, "Settings");
     SettingsSchemas.addDirectory(join(settingAssets, "Schemas"));
-    this._appWorkspace = new ITwinWorkspace(new ApplicationSettings(), configuration.workspace);
+    this._appWorkspace = Workspace.construct(new ApplicationSettings(), configuration.workspace);
 
     // Create the CloudCache for Workspaces. This will fail if another process is already using the same profile.
     try {

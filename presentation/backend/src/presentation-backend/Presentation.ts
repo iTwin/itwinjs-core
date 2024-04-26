@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Core
  */
@@ -89,7 +89,6 @@ interface ClientStoreItem {
  * @public
  */
 export class Presentation {
-
   private static _initProps: PresentationProps | undefined;
   private static _clientsStorage: FactoryBasedTemporaryStorage<ClientStoreItem> | undefined;
   private static _disposeIpcHandler: DisposeFunc | undefined;
@@ -99,10 +98,12 @@ export class Presentation {
   private static _rpcImpl: PresentationRpcImpl | undefined;
 
   /* istanbul ignore next */
-  private constructor() { }
+  private constructor() {}
 
   /** Properties used to initialize the presentation framework */
-  public static get initProps() { return this._initProps; }
+  public static get initProps() {
+    return this._initProps;
+  }
 
   /**
    * Initializes Presentation library for the backend.
@@ -138,13 +139,19 @@ export class Presentation {
         // by default, manager is disposed after 1 hour of being unused
         unusedValueLifetime: this._initProps.unusedClientLifetime ?? 60 * 60 * 1000,
         // add some logging
-        onDisposedSingle: /* istanbul ignore next */(id: string) => Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Disposed PresentationManager instance with ID: ${id}. Total instances: ${this._clientsStorage!.values.length}.`),
-        onDisposedAll: /* istanbul ignore next */() => Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Disposed all PresentationManager instances.`),
+        onDisposedSingle: /* istanbul ignore next */ (id: string) =>
+          Logger.logInfo(
+            PresentationBackendLoggerCategory.PresentationManager,
+            `Disposed PresentationManager instance with ID: ${id}. Total instances: ${this._clientsStorage!.values.length}.`,
+          ),
+        onDisposedAll: /* istanbul ignore next */ () =>
+          Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Disposed all PresentationManager instances.`),
       });
     }
 
-    if (this._initProps.enableSchemasPreload)
+    if (this._initProps.enableSchemasPreload) {
       this._disposeIModelOpenedListener = BriefcaseDb.onOpened.addListener(this.onIModelOpened);
+    }
   }
 
   /**
@@ -180,11 +187,15 @@ export class Presentation {
   }
 
   private static createClientManager(clientId: string, onManagerUsed: () => void): ClientStoreItem {
-    const manager = (Presentation._initProps && !isSingleManagerProps(Presentation._initProps) && Presentation._initProps.clientManagerFactory)
-      ? Presentation._initProps.clientManagerFactory(clientId, Presentation._initProps)
-      : new PresentationManager({ ...Presentation._initProps, id: clientId });
+    const manager =
+      Presentation._initProps && !isSingleManagerProps(Presentation._initProps) && Presentation._initProps.clientManagerFactory
+        ? Presentation._initProps.clientManagerFactory(clientId, Presentation._initProps)
+        : new PresentationManager({ ...Presentation._initProps, id: clientId });
     manager.setOnManagerUsedHandler(onManagerUsed);
-    Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Created a PresentationManager instance with ID: ${clientId}. Total instances: ${this._clientsStorage!.values.length}.`);
+    Logger.logInfo(
+      PresentationBackendLoggerCategory.PresentationManager,
+      `Created a PresentationManager instance with ID: ${clientId}. Total instances: ${this._clientsStorage!.values.length}.`,
+    );
     return { manager };
   }
 
@@ -198,10 +209,12 @@ export class Presentation {
    *        ID is provided, the default [[PresentationManager]] is returned.
    */
   public static getManager(clientId?: string): PresentationManager {
-    if (this._initProps && isSingleManagerProps(this._initProps) && this._manager)
+    if (this._initProps && isSingleManagerProps(this._initProps) && this._manager) {
       return this._manager;
-    if (this._clientsStorage)
+    }
+    if (this._clientsStorage) {
       return this._clientsStorage.getValue(clientId || "").manager;
+    }
 
     throw new PresentationError(PresentationStatus.NotInitialized, "Presentation must be first initialized by calling Presentation.initialize");
   }
@@ -210,8 +223,9 @@ export class Presentation {
    * Get the time in milliseconds that backend should respond in .
    */
   public static getRequestTimeout(): number {
-    if (this._rpcImpl === undefined)
+    if (this._rpcImpl === undefined) {
       throw new PresentationError(PresentationStatus.NotInitialized, "Presentation must be first initialized by calling Presentation.initialize");
+    }
     return this._rpcImpl.requestTimeout;
   }
 

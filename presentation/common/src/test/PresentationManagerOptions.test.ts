@@ -1,10 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  ComputeSelectionRequestOptions, isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, SelectionScopeRequestOptions,
+  ComputeSelectionRequestOptions,
+  isComputeSelectionRequestOptions,
+  isSingleElementPropertiesRequestOptions,
+  SelectionScopeRequestOptions,
 } from "../presentation-common";
 import { createRandomId } from "./_helpers";
 
@@ -16,7 +19,6 @@ describe("isSingleElementPropertiesRequestOptions", () => {
 });
 
 describe("isComputeSelectionRequestOptions ", () => {
-
   it("returns `false` for `SelectionScopeRequestOptions`", () => {
     const opts: SelectionScopeRequestOptions<any> = {
       imodel: undefined,
@@ -32,5 +34,4 @@ describe("isComputeSelectionRequestOptions ", () => {
     };
     expect(isComputeSelectionRequestOptions(opts)).to.be.true;
   });
-
 });

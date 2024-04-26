@@ -58,8 +58,18 @@ export class Logger {
   protected static _logTrace: LogFunction | undefined;
   /** @internal */
   public static logLevelChangedFn?: VoidFunction;
-  private static _categoryFilter = new Map<string, LogLevel>(); // do not change the name of this member, it is referenced directly from node addon
-  private static _minLevel: LogLevel | undefined = undefined; // do not change the name of this member, it is referenced directly from node addon
+
+  private static _categoryFilter: {[categoryName: string]: LogLevel} = {};
+  /** @internal */
+  public static get categoryFilter() {
+    return { ...Logger._categoryFilter };
+  }
+
+  private static _minLevel: LogLevel | undefined;
+  /** @internal */
+  public static get minLevel() {
+    return Logger._minLevel;
+  }
 
   /** Should the call stack be included when an exception is logged?  */
   public static logExceptionCallstacks = false;
@@ -116,7 +126,7 @@ export class Logger {
    * specified category should be displayed.
    */
   public static setLevel(category: string, minLevel: LogLevel) {
-    Logger._categoryFilter.set(category, minLevel);
+    Logger._categoryFilter[category] = minLevel;
     this.logLevelChangedFn?.();
   }
 
@@ -177,7 +187,7 @@ export class Logger {
   /** Get the minimum logging level for the specified category. */
   public static getLevel(category: string): LogLevel | undefined {
     // Prefer the level set for this category specifically
-    const minLevelForThisCategory = Logger._categoryFilter.get(category);
+    const minLevelForThisCategory = Logger._categoryFilter[category];
     if (minLevelForThisCategory !== undefined)
       return minLevelForThisCategory;
 
@@ -200,7 +210,7 @@ export class Logger {
   /** Turns off all category level filters previously defined with [[Logger.setLevel]].
    */
   public static turnOffCategories(): void {
-    Logger._categoryFilter.clear();
+    Logger._categoryFilter = {};
   }
 
   /** Check if messages in the specified category should be displayed at this level of severity. */

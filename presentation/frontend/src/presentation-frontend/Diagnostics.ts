@@ -1,13 +1,18 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Core
  */
 
 import {
-  ClientDiagnostics, ClientDiagnosticsHandler, DiagnosticsLogEntry, DiagnosticsLoggerSeverity, DiagnosticsLogMessage, DiagnosticsScopeLogs,
+  ClientDiagnostics,
+  ClientDiagnosticsHandler,
+  DiagnosticsLogEntry,
+  DiagnosticsLoggerSeverity,
+  DiagnosticsLogMessage,
+  DiagnosticsScopeLogs,
 } from "@itwin/presentation-common";
 
 /**
@@ -17,14 +22,17 @@ import {
 export function consoleDiagnosticsHandler(diagnostics: ClientDiagnostics) {
   // eslint-disable-next-line no-console
   diagnostics.backendVersion && console.log(`Backend version: ${diagnostics.backendVersion}`);
-  diagnostics.logs && handleDiagnosticLogs(diagnostics.logs, (msg: DiagnosticsLogMessage, stack: DiagnosticsScopeLogs[]) => {
-    /* note: we're duplicating the message if it's logged at both editor and dev severity levels */
-    const str = buildLogMessageString(msg, stack);
-    if (msg.severity.editor)
-      getConsoleLogFunc(msg.severity.editor)(str);
-    if (msg.severity.dev)
-      getConsoleLogFunc(msg.severity.dev)(str);
-  });
+  diagnostics.logs &&
+    handleDiagnosticLogs(diagnostics.logs, (msg: DiagnosticsLogMessage, stack: DiagnosticsScopeLogs[]) => {
+      /* note: we're duplicating the message if it's logged at both editor and dev severity levels */
+      const str = buildLogMessageString(msg, stack);
+      if (msg.severity.editor) {
+        getConsoleLogFunc(msg.severity.editor)(str);
+      }
+      if (msg.severity.dev) {
+        getConsoleLogFunc(msg.severity.dev)(str);
+      }
+    });
 }
 
 /**
@@ -55,8 +63,10 @@ function buildLogMessageString(msg: DiagnosticsLogMessage, _stack: DiagnosticsSc
 
 function getConsoleLogFunc(severity: DiagnosticsLoggerSeverity) {
   switch (severity) {
-    case "error": return console.error; // eslint-disable-line no-console
-    case "warning": return console.warn; // eslint-disable-line no-console
+    case "error":
+      return console.error; // eslint-disable-line no-console
+    case "warning":
+      return console.warn; // eslint-disable-line no-console
     case "info":
     case "debug":
     case "trace":

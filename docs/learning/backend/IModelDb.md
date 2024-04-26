@@ -35,10 +35,13 @@ The iTwin.js API provides for a way to validate (check compatibility) and upgrad
 
 - Download a local copy of the iModel as a briefcase with [BriefcaseManager.downloadBriefcase]($backend)
 - Call [BriefcaseDb.validateSchemas]($backend) to validate the schemas in the iModel.
-- Call [BriefcaseDb.upgradeSchemas]($backend) to upgrade schemas - the upgrade process involves the following steps first for the profile upgrade, and then for the domain schema upgrade:
-  - acquiring a schema lock to avoid concurrent schema changes by different users
-  - opening the local briefcase
-  - making the necessary schema changes to the briefcase
-  - capturing these schema changes (if any) as a Changeset and pushing it to iModel Hub
-  - releasing the schema lock
-  - closing the local briefcase
+- Call [BriefcaseDb.upgradeSchemas]($backend) to upgrade schemas - the upgrade process involves the following steps:
+  - Open the local briefcase.
+  - Check if the profile/domain schema upgrade changes require a data transform.
+  - If a data transform is required, acquire a schema lock to avoid concurrent schema changes by different users.
+  - Make the necessary schema changes for a profile upgrade to the briefcase.
+  - Capture profile upgrade schema changes (if any) as a Changeset and push it to iModel Hub.
+  - Then, make the necessary schema changes for a domain schema upgrade to the briefcase.
+  - Capture domain schema upgrade changes (if any) as a Changeset and push it to iModel Hub.
+  - If schema lock was acquired earlier due to a data transform, release the schema lock.
+  - Close the briefcase.
