@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { esriPBuffer } from "../ArcGisFeature/esriPBuffer.gen";
-import { ArcGisAttributeDrivenSymbology, ArcGisGeometryRenderer, ArcGisGraphicsRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
+import { FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, GraphicsGeometryRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { ArcGisBaseFeatureReader } from "./ArcGisFeatureReader";
@@ -134,7 +134,7 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
     return {value: propertyValue, property: { name: fieldInfo.name, displayLabel: fieldInfo.name, typename } };
   }
 
-  public async readAndRender(response: ArcGisResponseData, renderer: ArcGisGeometryRenderer) {
+  public async readAndRender(response: ArcGisResponseData, renderer: FeatureGeometryRenderer) {
     if (!(response.data instanceof esriPBuffer.FeatureCollectionPBuffer)) {
       const msg = "Response was not in PBF format";
       Logger.logError(loggerCategory, msg);
@@ -145,14 +145,13 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
     if (!collection.has_queryResult || !collection.queryResult.has_featureResult || collection?.queryResult?.featureResult?.features === undefined)
       return;
 
-    const attrSymbology = renderer.attributeSymbology;
-
     // Fields metadata is stored outside feature results, create dedicated array first
     const fields: PbfFieldInfo[] = [];
     for (const field of collection.queryResult.featureResult.fields)
       fields.push({name: field.name, type:field.fieldType});
 
     const geomType = collection.queryResult.featureResult.geometryType;
+
     const stride = (collection.queryResult.featureResult.hasM || collection.queryResult.featureResult.hasZ) ? 3 : 2;
     const relativeCoords = renderer.transform === undefined;
     for (const feature of collection.queryResult.featureResult.features) {
@@ -160,9 +159,9 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
       // Render geometries
       if (renderer && feature?.has_geometry) {
 
-        if (attrSymbology) {
+        if (renderer.hasSymbologyRenderer() && renderer.symbolRenderer.isAttributeDriven()) {
           // Read attributes if needed (attribute driven symbology)
-          this.applySymbologyAttributes(attrSymbology, feature, fields);
+          this.applySymbologyAttributes(renderer.symbolRenderer, feature, fields);
         }
 
         if (geomType === esriGeometryType.esriGeometryTypePoint || geomType === esriGeometryType.esriGeometryTypeMultipoint) {
@@ -176,7 +175,7 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
     }
   }
 
-  private applySymbologyAttributes(attrSymbology: ArcGisAttributeDrivenSymbology, feature: esriPBuffer.FeatureCollectionPBuffer.Feature, fields: PbfFieldInfo[]) {
+  private applySymbologyAttributes(attrSymbology: FeatureAttributeDrivenSymbology, feature: esriPBuffer.FeatureCollectionPBuffer.Feature, fields: PbfFieldInfo[]) {
     if (attrSymbology) {
       const symbolFields = attrSymbology.rendererFields;
       if (symbolFields && symbolFields.length > 0 && feature.attributes) {
@@ -202,7 +201,7 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
     }
   }
 
-  public async readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer?: ArcGisGraphicsRenderer) {
+  public async readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer?: GraphicsGeometryRenderer) {
     if (!(response.data instanceof esriPBuffer.FeatureCollectionPBuffer)) {
 
       Logger.logError(loggerCategory, "Response was not in PBF format");

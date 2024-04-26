@@ -7,7 +7,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.6.21
+      '@bentley/imodeljs-native': 4.6.23
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.1.0
       '@itwin/core-bentley': workspace:*
@@ -57,7 +57,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
-      '@bentley/imodeljs-native': 4.6.21
+      '@bentley/imodeljs-native': 4.6.23
       '@itwin/cloud-agnostic-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.2.2_scz6qrwecfbbxg4vskopkl3a7u
@@ -1487,6 +1487,7 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
+      '@types/geojson': ~7946.0.14
       '@types/google-protobuf': ~3.15.6
       '@types/mocha': ^10.0.6
       '@types/sinon': ^17.0.2
@@ -1496,6 +1497,7 @@ importers:
       cpx2: ^3.0.0
       eslint: ^8.44.0
       fetch-mock: ~9.11.0
+      flatbush: ~4.4.0
       google-protobuf: ~3.20.1
       ignore-styles: ^5.0.1
       jsdom: ^19.0.0
@@ -1509,6 +1511,7 @@ importers:
       typemoq: ^2.1.0
       typescript: ~5.0.2
     dependencies:
+      flatbush: 4.4.0
       google-protobuf: 3.20.1
     devDependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
@@ -1520,6 +1523,7 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
+      '@types/geojson': 7946.0.14
       '@types/google-protobuf': 3.15.6
       '@types/mocha': 10.0.6
       '@types/sinon': 17.0.2
@@ -3783,8 +3787,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.6.21:
-    resolution: {integrity: sha512-ZU/qdNSaPeI0CAdivIGN58rZ/ijih4zUZwnmPl+eSvr8yZXP/9nuE9MWp3UTFhpnjLW6RQtbBM+1nMyxXB7VnQ==}
+  /@bentley/imodeljs-native/4.6.23:
+    resolution: {integrity: sha512-nQ8TOhCyklE+GyFMsDZlwP/FDVHS1GnhcIo8l5fXakkdRj3xDnqYJA2221rDq40tJ3UFdy4JDxwEath+55QkVA==}
     requiresBuild: true
     dev: false
 
@@ -4989,7 +4993,6 @@ packages:
 
   /@types/geojson/7946.0.14:
     resolution: {integrity: sha512-WCfD5Ht3ZesJUsONdhvm84dmzWOiOzOAqOncN0++w0lBw1o8OuDNJF2McvvCef/yBqb/HYRahp1BYtODFQ8bRg==}
-    dev: false
 
   /@types/glob/5.0.35:
     resolution: {integrity: sha512-wc+VveszMLyMWFvXLkloixT4n0harUIVZjnpzztaZ0nKLuul7Z32iMt2fUFGAaZ4y1XWjFRMtCI5ewvyh4aIeg==}
@@ -8280,6 +8283,17 @@ packages:
 
   /flatbuffers/1.12.0:
     resolution: {integrity: sha512-c7CZADjRcl6j0PlvFy0ZqXQ67qSEZfrVPynmnL+2zPc+NtMvrF8Y0QceMo7QqnSPc7+uWjUIAbvCQ5WIKlMVdQ==}
+    dev: false
+
+  /flatbush/4.4.0:
+    resolution: {integrity: sha512-cf6G+sfy/+/FLH7Ls1URQ5GCRlXgwgqUZiEsMNrMZqb3Us3EkKmzUlKbnyoBy/4wI4oLJ+8cyCQoKJIVm92Fmg==}
+    dependencies:
+      flatqueue: 2.0.3
+    dev: false
+
+  /flatqueue/2.0.3:
+    resolution: {integrity: sha512-RZCWZNkmxzUOh8jqEcEGZCycb3B8KAfpPwg3H//cURasunYxsg1eIvE+QDSjX+ZPHTIVfINfK1aLTrVKKO0i4g==}
+    engines: {node: '>= 12.17.0'}
     dev: false
 
   /flatted/3.3.1:

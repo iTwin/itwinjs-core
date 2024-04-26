@@ -11,6 +11,7 @@ import { MutableProperty } from "../Editing/Mutable/MutableProperty";
 import { MutableArrayProperty } from "../Editing/Mutable/MutableArrayProperty";
 import { MutablePrimitiveOrEnumPropertyBase } from "../Editing/Mutable/MutablePrimitiveOrEnumProperty";
 import { applyCustomAttributes } from "./CustomAttributeMerger";
+import { ECClasses } from "../Editing/ECClasses";
 
 type PartialEditable<T> = {
   -readonly [P in keyof T]: T[P];
@@ -114,17 +115,19 @@ async function modifyClassProperty(context: SchemaMergeContext, itemKey: SchemaI
     return { errorMessage: `Changing the property '${property.fullName}' kind of quantity is not supported.` };
   }
 
+  const classEditor = getClassEditor(context, ecClass);
+
   if (propertyProps.description !== undefined) {
-    property.setDescription(propertyProps.description);
+    await classEditor.properties.setDescription(itemKey, propertyProps.name, propertyProps.description);
   }
   if (propertyProps.label !== undefined) {
-    property.setLabel(propertyProps.label);
+    await classEditor.properties.setLabel(itemKey, propertyProps.name, propertyProps.label);
   }
   if (propertyProps.isReadOnly !== undefined) {
-    property.setIsReadOnly(propertyProps.isReadOnly);
+    await classEditor.properties.setIsReadOnly(itemKey, propertyProps.name, propertyProps.isReadOnly);
   }
   if (propertyProps.priority !== undefined) {
-    property.setPriority(propertyProps.priority);
+    await classEditor.properties.setPriority(itemKey, propertyProps.name, propertyProps.priority);
   }
 
   if (property.isArray()) {
@@ -133,7 +136,7 @@ async function modifyClassProperty(context: SchemaMergeContext, itemKey: SchemaI
 
   if (propertyProps.category !== undefined) {
     const categoryKey = await updateSchemaItemKey(context, propertyProps.category);
-    await context.editor.entities.properties.setCategory(itemKey, property.name, categoryKey);
+    await classEditor.properties.setCategory(itemKey, property.name, categoryKey);
   }
 
   if (property.isEnumeration()) {
@@ -150,6 +153,23 @@ async function modifyClassProperty(context: SchemaMergeContext, itemKey: SchemaI
   }
 
   return {};
+}
+
+function getClassEditor(context: SchemaMergeContext, ecClass: ECClass): ECClasses {
+  switch(ecClass.schemaItemType) {
+    case SchemaItemType.EntityClass:
+      return context.editor.entities;
+    case SchemaItemType.Mixin:
+      return context.editor.mixins;
+    case SchemaItemType.StructClass:
+      return context.editor.structs;
+    case SchemaItemType.CustomAttributeClass:
+      return context.editor.customAttributes;
+    case SchemaItemType.RelationshipClass:
+      return context.editor.relationships;
+    default:
+      throw new Error("SchemaItemType not supported");
+  }
 }
 
 const arrayProperty = {

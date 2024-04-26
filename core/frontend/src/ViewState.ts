@@ -759,8 +759,7 @@ export abstract class ViewState extends ElementState {
 
   /** Get or set the largest and smallest values allowed for the extents for this ViewState
    * The default limits vary based on the type of view:
-   *   - Spatial view extents cannot exceed the diameter of the earth.
-   *   - Drawing view extents cannot exceed twice the longest axis of the drawing model's range.
+   *   - Spatial and drawing view extents cannot exceed the diameter of the earth.
    *   - Sheet view extents cannot exceed ten times the paper size of the sheet.
    * Explicitly setting the extent limits overrides the default limits.
    * @see [[resetExtentLimits]] to restore the default limits.

@@ -186,6 +186,11 @@ class SectionAttachment {
     return this._drawingExtents.z;
   }
 
+  public get drawingRange() {
+    const frustum3d = this._originalFrustum.transformBy(this._toDrawing);
+    return frustum3d.toRange();
+  }
+
   public constructor(view: ViewState3d, toDrawing: Transform, fromDrawing: Transform, toSheet: Transform | undefined) {
     // Save the input for clone(). Attach a copy to the viewport.
     this._toDrawing = toDrawing;
@@ -213,13 +218,15 @@ class SectionAttachment {
     };
 
     this._viewFlagOverrides = { ...view.viewFlags, lighting: false, shadows: false };
-    this._drawingExtents = this.viewport.viewingSpace.viewDelta.clone();
-    this._toDrawing.multiplyVector(this._drawingExtents, this._drawingExtents);
-    this._drawingExtents.z = Math.abs(this._drawingExtents.z);
 
     // Save off the original frustum (potentially adjusted by viewport).
     this.viewport.setupFromView();
     this.viewport.viewingSpace.getFrustum(CoordSystem.World, true, this._originalFrustum);
+
+    const drawingFrustum = this._originalFrustum.transformBy(this._toDrawing);
+    const drawingRange = drawingFrustum.toRange();
+    this._drawingExtents = drawingRange.diagonal();
+    this._drawingExtents.z = Math.abs(this._drawingExtents.z);
   }
 
   public dispose(): void {
@@ -314,7 +321,6 @@ export class DrawingViewState extends ViewState2d {
    */
   public static hideDrawingGraphics = false;
 
-  private readonly _modelLimits: ExtentLimits;
   private readonly _viewedExtents: AxisAlignedBox3d;
   private _attachmentInfo: SectionAttachmentInfo;
   private _attachment?: SectionAttachment;
@@ -343,11 +349,9 @@ export class DrawingViewState extends ViewState2d {
     super(props, iModel, categories, displayStyle);
     if (categories instanceof DrawingViewState) {
       this._viewedExtents = categories._viewedExtents.clone();
-      this._modelLimits = { ...categories._modelLimits };
       this._attachmentInfo = categories._attachmentInfo.clone(iModel);
     } else {
       this._viewedExtents = extents;
-      this._modelLimits = { min: Constant.oneMillimeter, max: 10 * extents.maxLength() };
       this._attachmentInfo = SectionAttachmentInfo.fromJSON(sectionDrawing);
     }
   }
@@ -437,11 +441,19 @@ export class DrawingViewState extends ViewState2d {
   }
 
   public getViewedExtents(): AxisAlignedBox3d {
-    return this._viewedExtents;
+    const extents = this._viewedExtents.clone();
+    if (this._attachment) {
+      extents.extendRange(this._attachment.drawingRange);
+    }
+
+    return extents;
   }
 
-  public get defaultExtentLimits() {
-    return this._modelLimits;
+  public get defaultExtentLimits(): ExtentLimits {
+    return {
+      min: Constant.oneMillimeter,
+      max: 3 * Constant.diameterOfEarth,
+    };
   }
 
   /** @internal */

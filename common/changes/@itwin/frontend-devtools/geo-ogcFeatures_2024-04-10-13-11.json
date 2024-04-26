@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/frontend-devtools",
+      "comment": "Added support for OGC Features map layers.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/frontend-devtools"
+}
