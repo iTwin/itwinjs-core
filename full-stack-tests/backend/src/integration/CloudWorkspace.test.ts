@@ -14,6 +14,8 @@ import {
 import { assert, Guid } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 
+// cspell:ignore premajor
+
 describe.only("Cloud workspace containers", () => {
   const iTwin1Id = Guid.createValue();
   const iTwin2Id = Guid.createValue();
@@ -32,14 +34,7 @@ describe.only("Cloud workspace containers", () => {
   const itwin2WsName = "all settings for itwin2";
   const iModelWsName = "all settings for imodel";
 
-  const restartSession = async () => {
-    await IModelHost.shutdown();
-    await IModelHost.startup();
-  };
-
   before(async () => {
-    await restartSession();
-
     SettingsSchemas.addGroup({
       description: "settings for test app 1",
       schemaPrefix: "app1/styles",
@@ -78,7 +73,6 @@ describe.only("Cloud workspace containers", () => {
   after(async () => {
     editor.close();
     IModelHost.authorizationClient = undefined;
-    await restartSession();
   });
 
   it("edit cloud workspace", async () => {

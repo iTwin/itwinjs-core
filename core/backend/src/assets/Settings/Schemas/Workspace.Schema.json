@@ -4,6 +4,7 @@
   "schemaPrefix": "itwin/core/workspace",
   "settingDefs": {
     "settingsWorkspaces": {
+      "description": "An array of resourceName, WorkspaceDb properties, each of which holds a Settings.Dictionary. Each entry also holds the settings priority for loading the dictionary.",
       "type": "array",
       "items": {
         "type": "object",
