@@ -275,7 +275,7 @@ describe("Checkpoints", () => {
       IModelHost.appWorkspace.settings.dropDictionary("prefetch");
     });
 
-    it.only("should start prefetch in IPC", async () => {
+    it("should start prefetch in IPC", async () => {
       // simulate user being logged in
       sinon.stub(IModelHost, "getAccessToken").callsFake(async () => accessToken);
 
