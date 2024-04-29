@@ -136,9 +136,8 @@ export class EntityClassesMetadata implements Iterable<EntityClassMetadata> {
       return this._loaded.get(classIdOrName);
     }
 
-    classIdOrName = classIdOrName.toLowerCase();
     for (const entry of this._loaded.values()) {
-      if (entry.name.localeCompare(classIdOrName) === 0) {
+      if (entry.name === classIdOrName) {
         return entry;
       }
     }

@@ -59,21 +59,5 @@ describe.only("EntityClassMetadata", () => {
       expect(a.is("c")).to.be.false;
       expect(a.is("0xc")).to.be.false;
     });
-
-    it("treats class names case-insensitively", () => {
-      const classes = makeClasses();
-      const baad = classes.add({ name: "baad", id: "0xbaad" });
-      const feed = classes.add({ name: "feed", id: "0xfeed" });
-
-      feed.addBaseClass(baad);
-
-      expect(feed.is("baad")).to.be.true;
-      expect(feed.is("BAAD")).to.be.true;
-      expect(feed.is("BaaD")).to.be.true;
-      expect(feed.is("bAaD")).to.be.true;
-
-      expect(feed.is("0xbaad")).to.be.true;
-      expect(feed.is("0xBAAD")).to.be.false;
-    });
   });
 });
