@@ -6,8 +6,8 @@
  * @module IModelConnection
  */
 
-import { Id64, Id64Array, Id64String, Logger } from "@itwin/core-bentley";
-import { EntityClassMetadataProps } from "@itwin/core-common";
+import { Id64, Id64String, Logger } from "@itwin/core-bentley";
+import { EntityClassMetadataProps, QueryEntityClassMetadataArgs } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./core-frontend";
 
 export class EntityClassMetadata {
@@ -60,12 +60,7 @@ export class EntityClassMetadata {
   }
 }
 
-export interface LoadEntityClassMetadataArgs {
-  classIdsToLoad: Id64Array;
-  knownClassIds: Id64Array;
-}
-
-export type LoadEntityClassesMetadata = (args: LoadEntityClassMetadataArgs) => Promise<EntityClassMetadataProps[]>;
+export type QueryEntityClassesMetadata = (args: QueryEntityClassMetadataArgs) => Promise<EntityClassMetadataProps[]>;
 
 export interface LoadedEntityClassesMetadata {
   get(classNameOrId: string | Id64String): EntityClassMetadata;
@@ -73,10 +68,10 @@ export interface LoadedEntityClassesMetadata {
 
 export class EntityClassesMetadata implements Iterable<EntityClassMetadata> {
   private readonly _loaded = new Map<Id64String, EntityClassMetadata>();
-  private readonly _load: LoadEntityClassesMetadata;
+  private readonly _query: QueryEntityClassesMetadata;
 
-  public constructor(load: LoadEntityClassesMetadata) {
-    this._load = load;
+  public constructor(query: QueryEntityClassesMetadata) {
+    this._query = query;
   }
 
   public async load(classIds: Iterable<Id64String>): Promise<LoadedEntityClassesMetadata> {
@@ -94,7 +89,7 @@ export class EntityClassesMetadata implements Iterable<EntityClassMetadata> {
     let props: EntityClassMetadataProps[] = [];
     try {
       const knownClassIds = Array.from(this._loaded.keys());
-      props = await this._load({ classIdsToLoad, knownClassIds });
+      props = await this._query({ classIdsToLoad, knownClassIds });
     } catch (e) {
       Logger.logException(FrontendLoggerCategory.NativeApp, e);
     }

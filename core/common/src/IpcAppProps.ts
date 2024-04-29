@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { GuidString, Id64String, IModelStatus, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { GuidString, Id64Array, Id64String, IModelStatus, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { Range3dProps, XYZProps } from "@itwin/core-geometry";
 import { OpenBriefcaseProps, OpenCheckpointArgs } from "./BriefcaseTypes";
 import { ChangedEntities } from "./ChangedEntities";
@@ -126,6 +126,11 @@ export interface EntityClassMetadataProps {
   baseClasses: Id64String[];
 }
 
+export interface QueryEntityClassMetadataArgs {
+  classIdsToLoad: Id64Array;
+  knownClassIds: Id64Array;
+}
+
 /**
  * The methods that may be invoked via Ipc from the frontend of an IpcApp and are implemented on its backend.
  * @internal
@@ -184,5 +189,7 @@ export interface IpcAppFunctions {
 
   /** Query the number of concurrent threads supported by the host's IO or CPU thread pool. */
   queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
+
+  queryEntityClassMetadata: (args: QueryEntityClassMetadataArgs) => Promise<EntityClassMetadataProps[]>;
 }
 
