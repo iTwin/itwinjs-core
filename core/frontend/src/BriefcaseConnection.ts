@@ -19,6 +19,7 @@ import { IpcApp } from "./IpcApp";
 import { ProgressCallback } from "./request/Request";
 import { disposeTileTreesForGeometricModels } from "./tile/internal";
 import { Viewport } from "./Viewport";
+import { EntityClassesMetadata } from "./EntityClassMetadata";
 
 /**
  * Download progress information.
@@ -263,6 +264,8 @@ export class BriefcaseConnection extends IModelConnection {
   /** Manages local changes to the briefcase via [Txns]($docs/learning/InteractiveEditing.md). */
   public readonly txns: BriefcaseTxns;
 
+  public readonly entityMetadata: EntityClassesMetadata;
+  
   /** @internal */
   public override isBriefcaseConnection(): this is BriefcaseConnection { return true; }
 
@@ -277,6 +280,7 @@ export class BriefcaseConnection extends IModelConnection {
     this._openMode = openMode;
     this.txns = new BriefcaseTxns(this);
     this._modelsMonitor = new ModelChangeMonitor(this);
+    this.entityMetadata = new EntityClassesMetadata(async (args) => IpcApp.appFunctionIpc.queryEntityClassMetadata(this.key, args));
   }
 
   /** Open a BriefcaseConnection to a [BriefcaseDb]($backend). */

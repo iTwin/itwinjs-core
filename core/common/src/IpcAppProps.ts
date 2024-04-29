@@ -190,6 +190,6 @@ export interface IpcAppFunctions {
   /** Query the number of concurrent threads supported by the host's IO or CPU thread pool. */
   queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
 
-  queryEntityClassMetadata: (args: QueryEntityClassMetadataArgs) => Promise<EntityClassMetadataProps[]>;
+  queryEntityClassMetadata: (briefcaseKey: string, args: QueryEntityClassMetadataArgs) => Promise<EntityClassMetadataProps[]>;
 }
 

@@ -9,9 +9,9 @@
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { assert, BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelRpcProps,
+  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, EntityClassMetadataProps, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
-  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
+  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, QueryEntityClassMetadataArgs, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
 import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb, StandaloneDb } from "./IModelDb";
@@ -306,6 +306,11 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
 
   public async queryConcurrency(pool: "io" | "cpu"): Promise<number> {
     return IModelHost.platform.queryConcurrency(pool);
+  }
+
+  public async queryEntityClassMetadata(_key: string, _args: QueryEntityClassMetadataArgs): Promise<EntityClassMetadataProps[]> {
+    // const db = BriefcaseDb.findByKey(key);
+    return []; // ###TODO
   }
 }
 
