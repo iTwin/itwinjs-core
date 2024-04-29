@@ -11,6 +11,7 @@ Table of contents:
   - [Compressed 3D assets](#compressed-3d-assets)
 - [Electron 30 support](#electron-30-support)
 - [API deprecations](#api-deprecations)
+- [Schemas](#schemas)
 
 ## Text APIs
 
@@ -34,3 +35,15 @@ In addition to [already supported Electron versions](../learning/SupportedPlatfo
 
 The enumeration `SchemaItemType` has changed it's underlying type from numbers to strings which match the names of the schema item classes.
 The method `schemaItemToString` has been marked deprecated as a translation between the enumeration value and the type names isn't longer necessary.
+
+## Schemas
+
+### QueryView support
+
+See our [ECViews page](../learning/ECSqlReference/Views.md) for reference.
+Introduces new custom attributes which allow classes that are backed by a query instead of physical data.
+
+### CustomAttribute in ECDbMeta
+
+[See our MetaQueries page for details](../learning/ECSqlReference/MetaQueries.md#examples-on-how-to-query-for-custom-attributes)
+Allows querying for custom attributes on a schema, class or property.
