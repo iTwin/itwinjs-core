@@ -35,11 +35,11 @@ This means that there must be some way to initialize the process. That is accomp
 
 ## Settings
 
-Settings are named parameters defined by applications but supplied at runtime so that their values may vary according to circumstances across and even within sessions. At runtime Settings are just JavaScript primitives and may be accessed via [Settings.getSetting]($backend), [Settings.resolveSetting]($backend), and the other type-specific functions, by supplying a `SettingName`. Setting lookup is generally very efficient, so settings should *not* be cached in application code and should instead be retrieved as needed. That way they do not get out of sync as they change.
+Settings are named parameters defined by applications but supplied at runtime so that their values may be supplied by administrators and may vary according to circumstances across and even within sessions. At runtime Settings are just JavaScript primitives and may be accessed via [Settings.getSetting]($backend), [Settings.resolveSetting]($backend), and the other type-specific functions, by supplying a `SettingName`. Setting lookup is generally very efficient, so settings should *not* be cached in application code and should instead be retrieved as needed. That way they do not get out of sync as they change.
 
 ### SettingSchema
 
-A single `Setting` is defined according to the rules of [JSON Schema](https://json-schema.org/) via a [SettingSchema]($backend). The primary objective of creating a [SettingSchema]($backend) is to advertise the existence, meaning, and "form" of a Setting. Users supply values for setting using a settings editor, and are presented with the information from `SettingsSchema`s to guide their choices. Also, `SettingSchema`s may also supply a default value so users can understand what happens if they don't provide a value for a Setting.
+A single `Setting` is defined according to the rules of the iTwin Setting meta-schema [JSON Schema](https://json-schema.org/) via a [SettingSchema]($backend). The primary objective of creating a [SettingSchema]($backend) is to advertise the existence, meaning, and "form" of a Setting. Users supply values for setting using a settings editor, and are presented with the information from `SettingsSchema`s to guide their choices. Also, `SettingSchema`s may also supply a default value so users can understand what happens if they don't provide a value for a Setting.
 
 ### SettingNames
 

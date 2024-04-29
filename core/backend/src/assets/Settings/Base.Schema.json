@@ -2,6 +2,10 @@
   "$comment": "This schema describes the meta-structure of an iTwin Settings Schema file. It is used to provide a guide for the schema files themselves.",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": false,
+  "required": [
+    "schemaPrefix",
+    "description"
+  ],
   "properties": {
     "settingDefs": {
       "type": "object",
