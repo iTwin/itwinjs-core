@@ -26,16 +26,20 @@ In the list above, later entries tend to change more frequently and, in the case
   1. [Settings](#settings)
   2. [WorkspaceDb](#workspaceDbs)
 
-`Settings` are *named parameters* that an application defines and whose values are supplied at runtime. `WorkspaceDb`s hold *named resources* (i.e. data) that the application uses. `Settings` and `WorkspaceDb`s are often related in application logic, e.g.:
+`Settings` are *named parameters* that an application defines via `SettingSchema`s and whose values are determined via a "Settings Editor" and supplied at runtime via one or more [Settings.Dictionary]($backend). `WorkspaceDb`s hold *named resources* (i.e. data) that the application uses. `Settings` and `WorkspaceDb`s are often related in application logic, e.g.:
 
-- a Setting may contain the "formula" to find a resource
-- a `WorkspaceDb`s may hold a resource that defines a group of `Settings`
+- Settings may contain the properties necessary to find a resource, including a list of `WorkspaceDb` to search
+- `WorkspaceDb`s may hold a [Settings.Dictionary]($backend) resource that defines a group of `Settings`
 
-This means that there must be some way to initialize the process. That can either be in the form of [Settings stored inside an iModel](#imodel-settings) and automatically loaded when it opens, or some external file (e.g. outside of a WorkspaceDb) or service that supplies the initial Settings values.
+This means that there must be some way to initialize the process. That is accomplished by [Settings stored inside an iModel](#imodel-based-settings) that are automatically loaded whenever it opens.
 
 ## Settings
 
-Settings are named parameters defined by applications but supplied at runtime so that their values may vary according to circumstances across and even within sessions. At runtime Settings are just JavaScript primitives and may be accessed via [Settings.getSetting]($backend) by supplying a `SettingName`. Setting lookup is generally very efficient, so settings should *not* be cached in application code and should instead be retrieved as needed. That way they do not get out of sync as they change.
+Settings are named parameters defined by applications but supplied at runtime so that their values may vary according to circumstances across and even within sessions. At runtime Settings are just JavaScript primitives and may be accessed via [Settings.getSetting]($backend), [Settings.resolveSetting]($backend), and the other type-specific functions, by supplying a `SettingName`. Setting lookup is generally very efficient, so settings should *not* be cached in application code and should instead be retrieved as needed. That way they do not get out of sync as they change.
+
+### SettingSchema
+
+A single `Setting` is defined according to the rules of [JSON Schema](https://json-schema.org/) via a [SettingSchema]($backend). The primary objective of creating a [SettingSchema]($backend) is to advertise the existence, meaning, and "form" of a Setting. Users supply values for setting using a settings editor, and are presented with the information from `SettingsSchema`s to guide their choices. Also, `SettingSchema`s may also supply a default value so users can understand what happens if they don't provide a value for a Setting.
 
 ### SettingNames
 
@@ -55,10 +59,6 @@ For example:
 ```
 
 `SettingName`s must be valid [JavaScript property names](https://developer.mozilla.org/en-US/docs/Glossary/property/JavaScript), but should not contain periods or spaces.
-
-### SettingSchema
-
-A single `Setting` is defined according to the rules of [JSON Schema](https://json-schema.org/) via a [SettingSchema]($backend). The primary objective of creating a [SettingSchema]($backend) is to advertise the existence, meaning, and "form" of a Setting. Users supply values for setting using a settings editor, and are presented with the information from `SettingsSchema`s to guide their choices. Also, `SettingSchema`s may also supply a default value so users can understand what happens if they don't provide a value for a Setting.
 
 ### SettingTypes
 
@@ -177,7 +177,7 @@ Applications can define groups of related `SettingSchema`s in the form of [Setti
 }
 ```
 
-### SettingDictionaries
+### Setting.Dictionary
 
 The *values* for one or more Settings may be established by creating a JavaScript object with properties matching [SettingName]($backend)s.
 

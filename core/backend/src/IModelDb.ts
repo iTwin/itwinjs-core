@@ -61,6 +61,7 @@ import { BaseSettings, SettingName, SettingObject, Settings, SettingType } from 
 import { OwnedWorkspace, Workspace, WorkspaceDb, WorkspaceSettings } from "./workspace/Workspace";
 
 import type { BlobContainer } from "./BlobContainerService";
+import { SettingsSchemas } from "./workspace/SettingsSchemas";
 
 /** @internal */
 export interface ChangesetConflictArgs {
@@ -1441,13 +1442,25 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   protected async loadWorkspaceSettings() {
     try {
-      const settingsDbs = this.workspace.settings.getArray<WorkspaceSettings.Props>(Workspace.settingName.settingsWorkspaces);
-      if (settingsDbs) {
-        const problems: WorkspaceDb.LoadError[] = [];
-        await this.workspace.loadSettingsDictionary(settingsDbs, problems);
-        if (problems.length > 0)
-          WorkspaceDb.throwLoadErrors(`attempting to load workspace settings for iModel '${this.name}':`, problems);
+      const problems: WorkspaceDb.LoadError[] = [];
+      const settingProps: WorkspaceSettings.Props[] = [];
+      // Note: we can't use `getArray` here because we only look at dictionaries in the iModel's workspace, not appWorkspace.
+      // Also, we must concatenate all entries in all of the dictionaries stored in the iModel into a single array *before*
+      // calling `loadSettingsDictionary` since that function will add new dictionaries to the workspace.
+      for (const dict of this.workspace.settings.dictionaries) {
+        try {
+          const props = dict.getSetting<WorkspaceSettings.Props[]>(Workspace.settingName.settingsWorkspaces);
+          if (props)
+            settingProps.push(...SettingsSchemas.validateSetting(settingProps, Workspace.settingName.settingsWorkspaces));
+        } catch (e) {
+          problems.push(e as WorkspaceDb.LoadError); // something wrong with the setting stored in the iModel
+        }
       }
+      if (settingProps.length > 0)
+        await this.workspace.loadSettingsDictionary(settingProps, problems);
+
+      if (problems.length > 0)
+        WorkspaceDb.throwLoadErrors(`attempting to load workspace settings for iModel '${this.name}':`, problems);
     } catch (e) {
       // we don't want to throw exceptions when attempting to load Dictionaries. Call the diagnostics function instead.
       Workspace.exceptionDiagnosticFn(e as WorkspaceDb.LoadErrors);
@@ -1455,7 +1468,9 @@ export abstract class IModelDb extends IModel {
   }
 
   /**
-   * Controls how [Code]($common)s are copied from this iModel into another iModel, to work around problems with iModels created by older connectors. The [imodel-transformer](https://github.com/iTwin/imodel-transformer) sets this appropriately on your behalf - you should never need to set or interrogate this property yourself.
+   * Controls how [Code]($common)s are copied from this iModel into another iModel, to work around problems with iModels
+   * created by older connectors. The [imodel-transformer](https://github.com/iTwin/imodel-transformer) sets this appropriately
+   * on your behalf - you should never need to set or interrogate this property yourself.
    * @public
    */
   public get codeValueBehavior(): "exact" | "trim-unicode-whitespace" {

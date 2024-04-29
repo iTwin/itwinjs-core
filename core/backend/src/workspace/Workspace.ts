@@ -209,7 +209,7 @@ export namespace WorkspaceDb {
 export namespace WorkspaceSettings {
   /**
    * An entry in an `itwin/core/workspace/settingsWorkspaces` setting. This interface specifies a resource within
-   * a WorkspaceDb that holds a Settings.Dictionary to be loaded. It also specifies the Settings.Priority for the Dictionary.
+   * a WorkspaceDb that holds a `Settings.Dictionary` to be loaded. It also specifies the `Settings.Priority` for the Dictionary.
    */
   export interface Props extends WorkspaceDb.CloudProps {
     /** The name of the resource holding the stringified JSON of the `Settings.Dictionary`. The default resourceName is "settingsDictionary" */
@@ -240,7 +240,7 @@ export namespace WorkspaceResource {
 
   /** The value passed to callback function  from `Workspace.queryStringResource` and `Workspace.queryBlobResource` for every resource that
    * satisfies the search criteria. It includes both the name of the resource and the WorkspaceDb from which it was found.
-   * @note results are returned in random order (i.e. unordered).
+   * @note results are returned in random order (i.e. unordered) within a single WorkspaceDb.
    */
   export interface SearchResult extends Props {
     /** the WorkspaceDb holding this resource. */
@@ -387,7 +387,7 @@ export interface Workspace {
    * @param props the properties of the `WorkspaceContainer`. If `props.containerId` was already opened, its WorkspaceContainer is returned.
    * Otherwise it is created.
    * @note this function allows a `WorkspaceContainer.Props` without its AccessToken. It will attempt to obtain one from the BlobContainer service,
-   * hence this function must be async.
+   * hence this function is async.
    * @see [[getContainer]]
   */
   getContainerAsync(props: WorkspaceContainer.Props): Promise<WorkspaceContainer>;
@@ -417,7 +417,7 @@ export interface Workspace {
 
   /**
    * Resolve the value of all Settings from this Workspace with the supplied settingName into an array of WorkspaceDb.CloudProps
-   * that can be used to query or load workspace resource. The settings must each be of type `itwin/core/workspace/workspaceDbList`.
+   * that can be used to query or load workspace resources. The settings must each be of type `itwin/core/workspace/workspaceDbList`.
    * The returned array will be sorted according to user's priority-based wishes, with the first entry being the highest priority WorkspaceDb.
    * @note The list is built by combining, in order, all of the settings with the supplied SettingName. It may therefore include the
    * properties of same WorkspaceDb multiple times. This list is automatically de-duped by [[getWorkspaceDb]].
@@ -494,7 +494,7 @@ export interface WorkspaceContainer {
 
 /** @beta */
 export namespace Workspace {
-  /** applications may supply a different implementation to diagnose (rather than merely log) errors loading workspace data */
+  /** IModelHost applications may supply a different implementation to diagnose (rather than merely log) errors loading workspace data */
   export let exceptionDiagnosticFn = (e: WorkspaceDb.LoadErrors) => {  // eslint-disable-line prefer-const
     if (e instanceof Error)
       Logger.logException(loggerCategory, e);
@@ -656,9 +656,13 @@ export namespace Workspace {
 
   export namespace Editor {
 
+    /** define the properties needed to create a new container from the BlobContainer service */
     export interface CreateNewContainerProps {
+      /** The scope of the container. This determines the ownership of the container, how RBAC rights are assigned, and the location of the datacenter */
       scope: BlobContainer.Scope;
+      /** The manifest to be stored in the default WorkspaceDb in the new container. */
       manifest: WorkspaceDb.Manifest;
+      /** Metadata stored by the BlobContainer service */
       metadata: Omit<BlobContainer.Metadata, "containerType">;
       dbName?: string;
     }
