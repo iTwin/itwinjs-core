@@ -54,17 +54,15 @@ export class CheckpointConnection extends IModelConnection {
     const accessToken = await IModelApp.getAccessToken();
     const changeset = await IModelApp.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version });
 
-    let connection: CheckpointConnection;
     const iModelProps = { iTwinId, iModelId, changeset };
-    if (IpcApp.isValid) {
-      connection = new this(await IpcApp.appFunctionIpc.openCheckpoint(iModelProps), true);
-    } else {
-      const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
-      connection = new this(await this.callOpen(iModelProps, routingContext), false);
-      RpcManager.setIModel(connection);
-      connection.routingContext = routingContext;
-      RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
-    }
+    if (IpcApp.isValid) // when called from Ipc, use the Ipc implementation
+      return this.openFromIpc(iModelProps);
+
+    const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
+    const connection = new this(await this.callOpen(iModelProps, routingContext), false);
+    RpcManager.setIModel(connection);
+    connection.routingContext = routingContext;
+    RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
 
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
@@ -72,33 +70,11 @@ export class CheckpointConnection extends IModelConnection {
 
   /**
    * Open a readonly IModelConnection to a Checkpoint of an iModel from Ipc.
+   * @note this function is equivalent to [[openRemote]] but allows more flexibility specifying the changeset version,
+   * and also optionally starting a prefetch operation.
    */
   public static async openFromIpc(args: OpenCheckpointArgs): Promise<CheckpointConnection> {
-    if (undefined === IModelApp.hubAccess)
-      throw new Error("Missing an implementation of IModelApp.hubAccess");
-
-    // IModelRpcOpenProps.changeset requires id to be present
-    if (undefined === args.changeset?.id)
-      throw new Error("Missing changeset id");
-
-    let connection: CheckpointConnection;
-    if (IpcApp.isValid) {
-      connection = new this(await IpcApp.appFunctionIpc.openCheckpoint(args), true);
-    } else {
-      const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
-      connection = new this(await this.callOpen({
-        iModelId: args.iModelId,
-        iTwinId: args.iTwinId,
-        changeset: {
-          id: args.changeset.id,
-          index: args.changeset?.index,
-        },
-      }, routingContext), false);
-      RpcManager.setIModel(connection);
-      connection.routingContext = routingContext;
-      RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
-    }
-
+    const connection = new this(await IpcApp.appFunctionIpc.openCheckpoint(args), true);
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }
