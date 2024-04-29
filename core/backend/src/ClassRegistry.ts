@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { DbResult, Id64, IModelStatus, Logger } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import { EntityMetaData, EntityReferenceSet, IModelError, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -268,17 +268,22 @@ export class ClassRegistry {
   }
 }
 
+/** @internal */
+export type EntityMetaDataWithClassId = EntityMetaData & { classId: Id64String };
+
 /**
  * A cache that records the mapping between class names and class metadata.
  * @see [[IModelDb.classMetaDataRegistry]] to access the registry for a specific iModel.
  * @internal
  */
 export class MetaDataRegistry {
-  private _registry: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();
+  private _registry = new Map<string, EntityMetaDataWithClassId>();
 
   /** Get the specified Entity metadata */
-  public find(classFullName: string): EntityMetaData | undefined { return this._registry.get(classFullName.toLowerCase()); }
+  public find(classFullName: string): EntityMetaDataWithClassId | undefined { return this._registry.get(classFullName.toLowerCase()); }
 
   /** Add metadata to the cache */
-  public add(classFullName: string, metaData: EntityMetaData): void { this._registry.set(classFullName.toLowerCase(), metaData); }
+  public add(classFullName: string, metaData: EntityMetaData, classId: Id64String): void {
+    this._registry.set(classFullName.toLowerCase(), { ...metaData, classId });
+  }
 }
