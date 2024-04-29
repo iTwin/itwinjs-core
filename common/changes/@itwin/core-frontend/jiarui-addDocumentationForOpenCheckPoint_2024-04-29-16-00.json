@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "add openFromIpc to allow flexibility specifying the changeset version, and optinal prefetching",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
