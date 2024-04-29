@@ -8,7 +8,7 @@
 
 import { BentleyError, BentleyStatus, GuidString, Logger } from "@itwin/core-bentley";
 import {
-  IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelVersion, RpcManager, RpcNotFoundResponse, RpcOperation,
+  IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelVersion, OpenCheckpointArgs, RpcManager, RpcNotFoundResponse, RpcOperation,
   RpcRequest, RpcRequestEvent,
 } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
@@ -61,6 +61,39 @@ export class CheckpointConnection extends IModelConnection {
     } else {
       const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
       connection = new this(await this.callOpen(iModelProps, routingContext), false);
+      RpcManager.setIModel(connection);
+      connection.routingContext = routingContext;
+      RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
+    }
+
+    IModelConnection.onOpen.raiseEvent(connection);
+    return connection;
+  }
+
+  /**
+   * Open a readonly IModelConnection to a Checkpoint of an iModel from Ipc.
+   */
+  public static async openFromIpc(args: OpenCheckpointArgs): Promise<CheckpointConnection> {
+    if (undefined === IModelApp.hubAccess)
+      throw new Error("Missing an implementation of IModelApp.hubAccess");
+
+    // IModelRpcOpenProps.changeset requires id to be present
+    if (undefined === args.changeset?.id)
+      throw new Error("Missing changeset id");
+
+    let connection: CheckpointConnection;
+    if (IpcApp.isValid) {
+      connection = new this(await IpcApp.appFunctionIpc.openCheckpoint(args), true);
+    } else {
+      const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
+      connection = new this(await this.callOpen({
+        iModelId: args.iModelId,
+        iTwinId: args.iTwinId,
+        changeset: {
+          id: args.changeset.id,
+          index: args.changeset?.index,
+        },
+      }, routingContext), false);
       RpcManager.setIModel(connection);
       connection.routingContext = routingContext;
       RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
