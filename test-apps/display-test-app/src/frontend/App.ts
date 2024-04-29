@@ -380,8 +380,6 @@ export class DisplayTestApp {
     await HyperModeling.initialize();
     await EditTools.initialize();
     await MapLayersFormats.initialize();
-
-    EditTools.registerProjectLocationTools();
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {

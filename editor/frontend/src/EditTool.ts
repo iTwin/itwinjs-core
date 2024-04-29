@@ -11,8 +11,14 @@ import { IModelApp, IpcApp } from "@itwin/core-frontend";
 import { editorIpcStrings } from "@itwin/editor-common";
 
 import * as UndoRedoTools from "./UndoRedoTool";
+import * as DeleteElementsTool from "./DeleteElementsTool";
+import * as ModifyCurveTools from "./ModifyCurveTools";
 import * as ProjectLocation from "./ProjectLocation/ProjectExtentsDecoration";
 import * as ProjectGeoLocation from "./ProjectLocation/ProjectGeolocation";
+import * as SketchTools from "./SketchTools";
+import * as SolidModelingTools from "./SolidModelingTools";
+import * as SolidPrimitiveTools from "./SolidPrimitiveTools";
+import * as TransformTools from "./TransformElementsTool";
 
 /** @beta */
 export namespace EditTools {
@@ -63,7 +69,6 @@ export class EditTools {
    *   IModelApp.startup();
    *   await EditorTools.initialize();
    * ```
-   * @note This registers tools for element undo and redo.
    */
   public static async initialize(): Promise<void> {
     if (this._initialized)
@@ -79,18 +84,17 @@ export class EditTools {
     const tools = IModelApp.tools;
     tools.registerModule(UndoRedoTools, this.namespace);
 
-    return namespacePromise;
-  }
-
-  /** Can be called after initialize to register tools for changing project extents and geolocation.
-   * @note Requires backend to register BasicManipulationCommand with EditCommandAdmin.
-   */
-  public static registerProjectLocationTools(): void {
-    if (!this._initialized)
-      return;
-    const tools = IModelApp.tools;
+    // TODO: TEMPORARY - Register tools for testing. To be moved into apps.
     tools.registerModule(ProjectLocation, this.namespace);
     tools.registerModule(ProjectGeoLocation, this.namespace);
+    tools.registerModule(SketchTools, this.namespace);
+    tools.registerModule(SolidModelingTools, this.namespace);
+    tools.registerModule(SolidPrimitiveTools, this.namespace);
+    tools.registerModule(TransformTools, this.namespace);
+    tools.registerModule(DeleteElementsTool, this.namespace);
+    tools.registerModule(ModifyCurveTools, this.namespace);
+
+    return namespacePromise;
   }
 
   private static shutdown() {
