@@ -118,6 +118,15 @@ export interface EditingScopeNotifications {
 }
 
 /**
+ * @internal
+ */
+export interface EntityClassMetadataProps {
+  id: Id64String;
+  name: string;
+  baseClasses: Id64String[];
+}
+
+/**
  * The methods that may be invoked via Ipc from the frontend of an IpcApp and are implemented on its backend.
  * @internal
  */
