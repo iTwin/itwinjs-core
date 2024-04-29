@@ -17,9 +17,9 @@ export class EntityClassMetadata {
   private readonly _classes: EntityClassesMetadata;
 
   /** @internal */
-  public constructor(name: string, id: string, classes: EntityClassesMetadata) {
-    this.name = name;
-    this.id = id;
+  public constructor(props: { name: string, id: Id64String }, classes: EntityClassesMetadata) {
+    this.name = props.name;
+    this.id = props.id;
     this._classes = classes;
   }
 
@@ -73,7 +73,7 @@ export interface LoadedEntityClassesMetadata {
 
 export class EntityClassesMetadata implements Iterable<EntityClassMetadata> {
   private readonly _loaded = new Map<Id64String, EntityClassMetadata>();
-  public readonly _load: LoadEntityClassesMetadata;
+  private readonly _load: LoadEntityClassesMetadata;
 
   public constructor(load: LoadEntityClassesMetadata) {
     this._load = load;
@@ -104,7 +104,7 @@ export class EntityClassesMetadata implements Iterable<EntityClassMetadata> {
     for (const prop of props) {
       if (!this._loaded.get(prop.id)) {
         added.push(prop);
-        this._loaded.set(prop.id, new EntityClassMetadata(prop.name, prop.id, this));
+        this.add(prop);
       }
     }
 
@@ -117,9 +117,9 @@ export class EntityClassesMetadata implements Iterable<EntityClassMetadata> {
     }
 
     // Handle any requested class Ids that were not included in the response.
-    for (const classId of classIdsToLoad) {
-      if (!this.find(classId)) {
-        this._loaded.set(classId, new EntityClassMetadata("", classId, this));
+    for (const id of classIdsToLoad) {
+      if (!this.find(id)) {
+        this.add({ id, name: "" });
       }
     }
     
@@ -143,7 +143,7 @@ export class EntityClassesMetadata implements Iterable<EntityClassMetadata> {
 
     classIdOrName = classIdOrName.toLowerCase();
     for (const entry of this._loaded.values()) {
-      if (entry.name === classIdOrName) {
+      if (entry.name.localeCompare(classIdOrName) === 0) {
         return entry;
       }
     }
@@ -152,4 +152,11 @@ export class EntityClassesMetadata implements Iterable<EntityClassMetadata> {
   }
 
   public [Symbol.iterator](): Iterator<EntityClassMetadata> { return this._loaded.values(); }
+
+  /** @internal Exposed strictly for tests. */
+  public add(props: { id: Id64String, name: string }): EntityClassMetadata {
+    const meta = new EntityClassMetadata(props, this);
+    this._loaded.set(props.id, meta);
+    return meta;
+  }
 }
