@@ -7,14 +7,14 @@ import { assert } from "chai";
 import * as fs from "fs";
 import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
-  Code, ColorDef, DbResult, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
+  Code, ColorDef, DbResult, ElementGeometryInfo, ElementGeometryOpcode, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
   ImageSourceFormat, IModel, LineStyle, PhysicalElementProps, Point2dProps, TextureMapProps, TextureMapUnits,
 } from "@itwin/core-common";
 import {
   Angle, Box, GeometryQuery, GrowableXYArray, GrowableXYZArray, LineSegment3d, LineString3d, Loop, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Vector3d,
 } from "@itwin/core-geometry";
 import {
-  ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, LineStyleDefinition, PhysicalObject,
+  ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, IModelJsFs, LineStyleDefinition, PhysicalObject,
   RenderMaterialElement, SnapshotDb, Texture,
 } from "../../core-backend";
 import { GeometryPart } from "../../Element";
@@ -358,12 +358,26 @@ describe("exportGraphics", () => {
   it("export elements from local bim file", () => {
     // edit these values to run
     const outBimFileName: string = "out.bim"; // will be written to core\backend\lib\cjs\test\output\ExportGraphics
-    const inBimFilePathName: string = "";     // e.g., 'd:\\foo.bim'
+    const outFBFileName: string = "";         // e.g., "c:\\tmp\\foo.fb"
+    const inBimFilePathName: string = "";     // e.g., "c:\\tmp\\foo.bim"
     const elementIds: Id64Array = [];         // e.g., ["0x2000000000c", "0x2000000000a"]
 
     if (outBimFileName !== "" && inBimFilePathName !== "" && elementIds.length > 0) {
       const testFileName = IModelTestUtils.prepareOutputFile("ExportGraphics", outBimFileName);
       const myIModel = IModelTestUtils.createSnapshotFromSeed(testFileName, inBimFilePathName);
+
+      if (outFBFileName !== "") {
+        for (const elementId of elementIds) {
+          myIModel.elementGeometryRequest({elementId, onGeometry: (info: ElementGeometryInfo) => {
+            for (const entry of info.entryArray) {
+              // examine entry here, e.g.:
+              if (entry.opcode === ElementGeometryOpcode.BsplineSurface)
+                IModelJsFs.writeFileSync(outFBFileName, entry.data);
+            }
+          }});
+        }
+      }
+
       const infos: ExportGraphicsInfo[] = [];
       const exportGraphicsOptions: ExportGraphicsOptions = {
         elementIdArray: elementIds,
