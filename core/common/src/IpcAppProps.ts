@@ -120,7 +120,7 @@ export interface IpcAppFunctions {
 
   /** see BriefcaseConnection.openFile */
   openBriefcase: (args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
-  /** see BriefcaseConnection.openStandalone */
+  /** see SnapshotDb.openCheckpoint */
   openCheckpoint: (args: OpenCheckpointArgs) => Promise<IModelConnectionProps>;
   /** see BriefcaseConnection.openStandalone */
   openStandalone: (filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
