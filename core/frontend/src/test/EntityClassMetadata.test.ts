@@ -4,25 +4,23 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { EntityClassesMetadata, EntityClassMetadata } from "../EntityClassMetadata";
+import { EntityClassesMetadata } from "../EntityClassMetadata";
 
 describe.only("EntityClassMetadata", () => {
-  class Classes extends EntityClassesMetadata {
-    public constructor() {
-      super(() => Promise.resolve([]));
-    }
+  function makeClasses(): EntityClassesMetadata {
+    return new EntityClassesMetadata(async () => Promise.resolve([]));
   }
 
   describe("is", () => {
     it("returns false for unknown base class", () => {
-      const classes = new Classes();
+      const classes = makeClasses();
       const a = classes.add({ name: "a", id: "0xa" });
       expect(a.is("b")).to.be.false;
       expect(a.is("0xb")).to.be.false;
     });
 
     it("returns true for exact match", () => {
-      const classes = new Classes();
+      const classes = makeClasses();
       const a = classes.add({ name: "a", id: "0xa" });
       expect(a.is(a)).to.be.true;
       expect(a.is("a")).to.be.true;
@@ -30,7 +28,7 @@ describe.only("EntityClassMetadata", () => {
     });
 
     it("returns true for direct base class", () => {
-      const classes = new Classes();
+      const classes = makeClasses();
       const a = classes.add({ id: "0xa", name: "a" });
       const b = classes.add({ id: "0xb", name: "b" });
       b.addBaseClass(a);
@@ -45,7 +43,7 @@ describe.only("EntityClassMetadata", () => {
     });
 
     it("returns true for indirect base class", () => {
-      const classes = new Classes();
+      const classes = makeClasses();
       const a = classes.add({ name: "a", id: "0xa" });
       const b = classes.add({ name: "b", id: "0xb" });
       const c = classes.add({ name: "c", id: "0xc" });
@@ -63,7 +61,7 @@ describe.only("EntityClassMetadata", () => {
     });
 
     it("treats class names case-insensitively", () => {
-      const classes = new Classes();
+      const classes = makeClasses();
       const baad = classes.add({ name: "baad", id: "0xbaad" });
       const feed = classes.add({ name: "feed", id: "0xfeed" });
 
@@ -78,8 +76,4 @@ describe.only("EntityClassMetadata", () => {
       expect(feed.is("0xBAAD")).to.be.false;
     });
   });
-});
-
-describe.only("EntityClassesMetadata", () => {
-  
 });
