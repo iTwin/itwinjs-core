@@ -874,6 +874,7 @@ export class CheckpointManager {
 export interface CheckpointProps extends TokenArg {
     readonly allowPreceding?: boolean;
     readonly changeset: ChangesetIdWithIndex;
+    readonly doPrefetch?: boolean;
     // (undocumented)
     readonly expectV2?: boolean;
     readonly iModelId: GuidString;
