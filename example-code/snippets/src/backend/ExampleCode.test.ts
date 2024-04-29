@@ -99,7 +99,6 @@ describe("Example Code", () => {
   it("Settings", async () => {
     // __PUBLISH_EXTRACT_START__ Settings.addDictionaryDefine
     interface TemplateRsc {
-      container: string;
       template: {
         name: string;
         loadByDefault?: boolean;
@@ -108,14 +107,12 @@ describe("Example Code", () => {
 
     const templates: TemplateRsc[] = [
       {
-        container: "default-app1",
         template: {
           name: "vertical 1",
           loadByDefault: false,
         },
       },
       {
-        container: "default-app1",
         template: {
           name: "horizontal 4",
         },
@@ -123,8 +120,8 @@ describe("Example Code", () => {
     ];
 
     const defaultsDict: SettingObject = {
-      "core/default-tool": "select",
-      "samples/start/leftPane": true,
+      "itwin/core/default-tool": "select",
+      "itwin/samples/start/leftPane": true,
       "myApp/tree/label": "distribution of work",
       "myApp/tree/indent": 4,
       "myApp/categories": ["category1", "lowest", "upper"],
@@ -137,37 +134,37 @@ describe("Example Code", () => {
     let workspace = IModelHost.appWorkspace;
     let settings = workspace.settings;
     settings.addDictionary({ name: "initial values", priority: Settings.Priority.defaults }, defaultsDict);
-    let defaultTool = settings.getString("core/default-tool"); // returns "select"
-    const leftPane = settings.getBoolean("samples/start/leftPane"); // returns true
+    let defaultTool = settings.getString("itwin/core/default-tool"); // returns "select"
+    const leftPane = settings.getBoolean("itwin/samples/start/leftPane"); // returns true
     const categories = settings.getArray<string>("myApp/categories"); // returns ["category1", "lowest", "upper"]
     const t1 = settings.getArray<TemplateRsc>("myApp/templateResources"); // returns copy of `templates`
     // __PUBLISH_EXTRACT_END__
 
-    expect(defaultTool).eq(defaultsDict["core/default-tool"]);
-    expect(leftPane).eq(defaultsDict["samples/start/leftPane"]);
+    expect(defaultTool).eq(defaultsDict["itwin/core/default-tool"]);
+    expect(leftPane).eq(defaultsDict["itwin/samples/start/leftPane"]);
     expect(categories).deep.equal(defaultsDict["myApp/categories"]);
     expect(t1).deep.equal(templates);
 
     // __PUBLISH_EXTRACT_START__ Settings.addITwinDictionary
     const iTwin555: SettingObject = {
-      "core/default-tool": "measure",
+      "itiwn/core/default-tool": "measure",
       "app5/markerName": "arrows",
       "app5/markerIcon": "arrows.ico",
     };
     workspace = iModel.workspace;
     settings = workspace.settings;
     settings.addDictionary({ name: "for iTwin 555", priority: Settings.Priority.iTwin }, iTwin555);
-    defaultTool = settings.getString("core/default-tool"); // returns "measure"
+    defaultTool = settings.getString("itwin/core/default-tool"); // returns "measure"
     // __PUBLISH_EXTRACT_END__
-    expect(defaultTool).eq(iTwin555["core/default-tool"]);
+    expect(defaultTool).eq(iTwin555["itwin/core/default-tool"]);
 
     // __PUBLISH_EXTRACT_START__ Settings.dropITwinDictionary
     workspace = iModel.workspace;
     settings = workspace.settings;
     settings.dropDictionary({ name: "for iTwin 555" });
-    defaultTool = settings.getString("core/default-tool"); // returns "select" again
+    defaultTool = settings.getString("itwin/core/default-tool"); // returns "select" again
     // __PUBLISH_EXTRACT_END__
-    expect(defaultTool).eq(defaultsDict["core/default-tool"]);
+    expect(defaultTool).eq(defaultsDict["itwin/core/default-tool"]);
   });
 
   it("CodeService", async () => {

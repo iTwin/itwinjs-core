@@ -35,15 +35,59 @@ This means that there must be some way to initialize the process. That is accomp
 
 ## Settings
 
-Settings are named parameters defined by applications but supplied at runtime so that their values may be supplied by administrators and may vary according to circumstances across and even within sessions. At runtime Settings are just JavaScript primitives and may be accessed via [Settings.getSetting]($backend), [Settings.resolveSetting]($backend), and the other type-specific functions, by supplying a `SettingName`. Setting lookup is generally very efficient, so settings should *not* be cached in application code and should instead be retrieved as needed. That way they do not get out of sync as they change.
+Settings are named parameters defined by applications but supplied at runtime. Their values may be supplied by administrators and may vary according to circumstances across and even within sessions. At runtime, Settings are just JavaScript primitives and may be accessed via [Settings.getSetting]($backend), [Settings.resolveSetting]($backend) (and the related type-specific functions), by supplying a `SettingName`. Setting lookup is generally very efficient, so settings should *not* be cached in application code and should instead be retrieved as needed. That way they do not get out of sync as they change.
 
 ### SettingSchema
 
-A single `Setting` is defined according to the rules of the iTwin Setting meta-schema [JSON Schema](https://json-schema.org/) via a [SettingSchema]($backend). The primary objective of creating a [SettingSchema]($backend) is to advertise the existence, meaning, and "form" of a Setting. Users supply values for setting using a settings editor, and are presented with the information from `SettingsSchema`s to guide their choices. Also, `SettingSchema`s may also supply a default value so users can understand what happens if they don't provide a value for a Setting.
+Groups of related `Setting`s are defined by [SettingSchema]($backend)s according to the rules of the iTwin Setting meta-schema (see `Base.Schema.json`). The iTwin Setting meta-schema follows [JSON Schema](https://json-schema.org/), with the following additions:
+
+ - `schemaPrefix` is a required property that gives a name to a set of related settings. The names of all settings in a schema inherit the schemaPrefix.
+ - `description` is a required property that gives a human-readable description of the schema.
+ - `settingDefs` defines a group of settings.
+ - `typeDefs` provides a group of types definitions. `typeDefs` may be used to define complex types that are used in multiple settings.
+
+`settingDefs` may use `typeDefs` via the "extends" keyword.
+
+For example:
+
+```json
+{
+  "schemaPrefix": "myApp",
+  "description": "the settings for myApplication",
+  "settingDefs": {
+    "placementCategories": {
+      "type": "array",
+      "description": "possible categories for placement",
+      "extends": "myApp/categories"
+    },
+    "searchCategories": {
+      "type": "array",
+      "description": "possible categories to search",
+      "extends": "myApp/categories"
+    }
+  },
+  "typeDefs": {
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "category names"
+      }
+    }
+  }
+}
+```
+
+This schema defines two settings, `myApp/placementCategories` and `myApp/searchCategories`, both of which are arrays of strings. The schema also defines a type, `myApp/categories`, which is an array of category names. Both settings extend the `myApp/categories` type. The value of the "extends" keyword is the full name of a typeDef (including schemaPrefix) defined in a SettingSchema. In this manner, `SettingsSchema` may reference typeDefs defined in other SettingsSchemas.
+
+
+A primary objective of creating a [SettingSchema]($backend) is to advertise the existence, meaning, and "form" of a Setting. Users supply values for Setting using a Settings Editor, and are presented with the information from `SettingsSchema`s to guide their choices. Also, `SettingSchema`s add validation rules at runtime and may also supply a default value so users can understand what happens if they don't provide a value for a Setting.
+
+Applications should register their SettingSchemas in every session with the `Settings` subsystem by calling [SettingsSchemas.addGroup]($backend).
 
 ### SettingNames
 
-A [SettingName]($backend) is used to retrieve the current value of a Setting. `SettingName`s must be unique across all applications, so they should be formed as a "path", with the parts separated by a "/". By convention the first entry in the path is the "application id" and all Settings for an application should start with the same value. Groups of related settings for an application should have the same path prefix. The settings editor will split the path parts of a `SettingName` (using the "/" delimiter) as "tabs" for editing.
+A [SettingName]($backend) is used to retrieve the current value of a Setting. `SettingName`s must be unique across all applications, so they should be formed as a "path", with the parts separated by a "/". The first entry in the path is the schemaPrefix and all Settings from a `SettingSchema` inherit it. The settings editor may split the path parts of a `SettingName` (using the "/" delimiter) as "tabs" for editing.
 
 For example:
 
@@ -58,11 +102,13 @@ For example:
 "vibration-map/filters/prefabricated"
 ```
 
-`SettingName`s must be valid [JavaScript property names](https://developer.mozilla.org/en-US/docs/Glossary/property/JavaScript), but should not contain periods or spaces.
+Are SettingNames from the `energyAnalysis`, `iot-scan-visualization`, and `vibration-map` SettingSchemas.
+
+`SettingName`s must be valid [JavaScript property names](https://developer.mozilla.org/en-US/docs/Glossary/property/JavaScript), but may not contain periods or spaces.
 
 ### SettingTypes
 
-A `SettingSchema` defines the *type* of a Setting as one of:
+A `SettingSchema` defines the *type* of a `settingDef` as one of:
 
 - `string`
 - `number`
@@ -72,110 +118,6 @@ A `SettingSchema` defines the *type* of a Setting as one of:
 - an array of one the above.
 
 The Settings Editor will enforce that the values supplied for a Setting is the correct type.
-
-### SettingSchemas
-
-Applications can define groups of related `SettingSchema`s in the form of [SettingSchemaGroup]($backend)s, registered at runtime with the [SettingSchema]($backend) class. A settings editor can present the settings for each group together, or each individually as appropriate.
-
-#### Example SettingSchemaGroup
-
-```ts
-{
-  "$id": "myApp schema",
-  "$schema": "http://itwinjs.org./schema-json/Settings.schema.json",
-  "title": "MyApp settings",
-  "description": "the settings for myApplication",
-  "type": "object",
-  "groupName": "myApp",
-  "order": 3,
-  "properties": {
-    "myApp/list/clickMode": {
-      "type": "string",
-      "enum": [
-        "singleClick",
-        "doubleClick"
-      ],
-      "default": "singleClick",
-      "description": "click mode for the list"
-    },
-    "myApp/tree/indent": {
-      "type": "number",
-      "default": 8,
-      "minimum": 0,
-      "maximum": 40,
-      "description": "tree indent setting"
-    },
-    "myApp/tree/label": {
-      "type": "string",
-      "default": "default label",
-      "description": "label at top of tree"
-    },
-    "myApp/categories": {
-      "type": "array",
-      "description": "possible categories for placement",
-      "items": {
-        "type": "string",
-        "description": "category names"
-      }
-    },
-    "myApp/lastCheck/items": {
-      "type": "array",
-      "description": "array of items",
-      "items": {
-        "type": "object",
-        "required": [
-          "name",
-          "volume"
-        ],
-        "properties": {
-          "volume": {
-            "type": "number",
-            "description": "the volume of held by this item"
-          },
-          "name": {
-            "type": "string",
-            "description": "the name of the item"
-          }
-        }
-      },
-      "myApp/templateResources": {
-        "type": "array",
-        "description": "array of templates to load",
-        "items": {
-          "type": "object",
-          "required": [
-            "container",
-            "templateName"
-          ],
-          "properties": {
-            "container": {
-              "type": "string",
-              "description": "resource container name"
-            },
-            "template": {
-              "type": "object",
-              "description": "name of template file in container",
-              "required": [
-                "name"
-              ]
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "description": "template file name",
-                },
-                "loadByDefault: {
-                  "type": "boolean",
-                  "default": "true"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-```
 
 ### Setting.Dictionary
 
@@ -187,9 +129,9 @@ E.g.:
 [[include:Settings.addDictionaryDefine]]
 ```
 
-> Note: The types of the properties should match the `SettingType` declared in the SettingGroupSec.
+> Note: The types of the properties should match the types in the SettingSchema.
 
-Then, the dictionary can be given a [DictionaryName]($backend), and a [SettingsPriority]($backend) and be added to the current [Settings]($backend):
+Then, the dictionary can be given a [Settings.Dictionary.Name]($backend), and a [Settings.Priority]($backend) and be added to the current [Settings]($backend):
 
 ```ts
 [[include:Settings.addDictionary]]
@@ -221,15 +163,13 @@ When [IModelhost.startup](#backend) is called, all files with the extension ".js
 
 ### iModel Based Settings
 
-Every iModel can hold a set of `SettingDictionary`s that are automatically loaded when the iModel is opened. This can be used to supply values that should be present every session, for example a list of required `WorkspaceDb`s.
+Every iModel can hold a set of `SettingDictionary`s that are automatically loaded when the iModel is opened. This can be used to supply Setting values that should be present every session, for example, lists of required `WorkspaceDb`s.
 
 To save a `SettingDictionary` in an iModel, use [IModelDb.saveSettingDictionary]($backend).
 
 ## WorkspaceDbs
 
-[WorkspaceDb]($backend)s are SQLite databases that hold [workspace resources](#workspace-resources). They can either be local files managed externally or they can be SQLite databases accessed directly from cloud storage.
-
-### Cloud-based WorkspacesDbs
+[WorkspaceDb]($backend)s are cloud-based SQLite databases that hold [workspace resources](#workspace-resources). They can accessed directly from cloud storage and are cached locally.
 
 Cloud storage systems (aka *blob storage*) provide access to data through a top-level concept called a *storage account*. A storage account is assigned a unique name (the "account name") by the cloud provider, and is registered to a single organization who pays for its use. Within a storage account, data is stored in named groups called *containers*. Containers names must be unique within a storage account, and generally have strict rules on format and length. It is common that container names are not human-readable, but are instead identifiers like GUIDs, perhaps with a prefix or suffix.
 
@@ -257,7 +197,7 @@ Conceptually, you can picture the hierarchy like this:
     - `WorkspaceDb`
       - `WorkspaceResource`
 
-Each `WorkspaceContainer` may hold many `WorkspaceDb`s, though it is common for `WorkspaceContainer`s to hold (versions of) a single `WorkspaceDb`. There is no limit on the number of `WorkspaceDbs` within a `WorkspaceContainer` or accessed during a session, nor is there a limit on the number of resources held within a `WorkspaceDb`.
+Each `WorkspaceContainer` may hold many `WorkspaceDb`s, though ordinarily a `WorkspaceContainer`s holds (versions of) a single `WorkspaceDb`. There is no limit on the number of `WorkspaceDbs` within a `WorkspaceContainer` or accessed during a session, nor is there a limit on the number of resources held within a `WorkspaceDb`.
 
 However, when deciding how to organize workspace data, keep in mind:
 
@@ -269,91 +209,8 @@ However, when deciding how to organize workspace data, keep in mind:
 
 The Workspace subsystem uses 2 Setting values:
 
-1. `cloud/containers`
-2. `workspace/databases`
 
 defined by the following `SettingSchema`s:
-
-```ts
-    "cloud/containers": {
-      "type": "array",
-      "description": "array of cloud containers",
-      "cumulative": true,
-      "items": {
-        "type": "object",
-        "required": [
-          "name",
-          "containerId"
-        ],
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "the alias name of this cloud container"
-          },
-          "baseUri": {
-            "type": "string",
-            "description": "the baseUri for the container, without trailing slash (e.g., https://myAcct.blob.core.windows.net)"
-          },
-          "containerId": {
-            "type": "string",
-            "description": "the containerId of this cloud container"
-          },
-          "storageType": {
-            "type": "string",
-            "description": "one of: 'azure', 'aws', 'google'"
-          },
-          "isPublic": {
-            "type": "boolean",
-            "description": "whether the cloud container is public (doesn't require authentication)",
-            "default": false
-          }
-        }
-      }
-    },
-    "workspace/databases": {
-      "type": "array",
-      "cumulative": true,
-      "description": "array of workspace databases",
-      "items": {
-        "type": "object",
-        "required": [
-          "name",
-          "dbName",
-          "containerName"
-        ],
-        "name": {
-          "type": "string",
-          "description": "the alias name of the workspace database"
-        },
-        "properties": {
-          "dbName": {
-            "type": "string",
-            "description": "the name of the database within its cloud container"
-          },
-          "containerName": {
-            "type": "string",
-            "description": "the cloud container name"
-          },
-          "version": {
-            "type": "string",
-            "description": "the (semver) range of acceptable versions"
-          },
-          "includePrerelease": {
-            "type": "boolean",
-            "description": "include prerelease version as acceptable versions"
-          },
-          "priority": {
-            "type": "number",
-            "description": "for sorted databases, higher values are searched first"
-          },
-          "prefetch": {
-            "type": "boolean",
-            "description": "if true, pre-fetch all of the data from the cloud in the background"
-          }
-        }
-      }
-    },
-```
 
 For example:
 
@@ -363,34 +220,6 @@ For example:
 
 To load a [workspace resource](#workspace-resources), you must first obtain a `WorkspaceDb` by calling [Workspace.getWorkspaceDb]($backend) and supplying a [WorkspaceDb.Name]($backend). That value must be an entry in a `workspace/databases` Setting. The `workspace/databases` Setting will supply the `containerName` and `dbName`. The value of `containerName` must be an entry in a `cloud/containers` Setting. The `cloud/containers` Setting will supply the `containerId` and `baseUri`.
 
-For example, consider the following `ace-inc.settings.json` setting file:
-
-```json
-{
-  "cloud/containers": [
-    {
-      "name": "ace-inc/all-company",
-      "baseUri": "https://containers.itwinjs.org",
-      "containerId": "16e7f4ca-f08b-4778-9882-5bfb2ac7b160"
-    }
-  ],
-  "workspace/databases": [
-    {
-      "name": "ace-inc/ws-structural",
-      "dbName": "struct",
-      "containerName": "ace-inc/all-company",
-      "version": "^1"
-    },
-    {
-      "name": "ace-inc/ws-civil-site",
-      "dbName": "req",
-      "containerName": "ace-inc/all-company",
-      "version": "^2.0"
-    },
-  ]
-}
-
-```
 
 then, calling
 
@@ -404,20 +233,11 @@ Will attempt to load a `WorkspaceDb` with:
 
 Workspace settings may also be stored [in an iModel](#imodel-based-settings) so `WorkspaceDb`s may be iModel specific. So if this:
 
-```json
-  "workspace/databases": [
-    {
-      "name": "ace-inc/ws-structural",
-      "dbName": "struct",
-      "containerName": "ace-inc/all-company",
-      "version": "~1.4.3"
-    },
-```
 
 were stored in a `SettingDictionary` in an iModel, then
 
 ```ts
-  const wsdb = await iModel.workspace.getWorkspaceDb("ace-inc/ws-structural");
+  const wsdb = await iModel.workspace.getWorkspaceDbs(
 ```
 
 Will attempt to load a `WorkspaceDb` with:
@@ -444,7 +264,7 @@ Possible resource types are:
 - `blob` resources that hold `Uint8Array`s. They may be loaded with [WorkspaceDb.getBlob]($backend).
 - `file` resources that hold arbitrary files. They may be extracted to local files with [WorkspaceDb.getFile]($backend)
 
-> Note: files may be compressed as they are stored in `WorkspaceContainer`s.
+> Note: files may be compressed as they are stored in `WorkspaceContainer`s. In general, files should only be used for backwards compatibility with code that reads files from disk. They should be avoided if possible.
 
 ### WorkspaceResource.Names
 
@@ -468,8 +288,10 @@ All changes to `WorkspaceDb`s are performed locally and are not visible to users
 
 > Note the write-lock is per-WorkspaceContainer, not per-WorkspaceDb. Locking a WorkspaceContainer implicitly locks all `WorkspaceDb`s within it.
 
+## Workspace Editor
+
 #### WorkspaceDb Versions
 
-The WorkspaceEditor enforces that `WorkspaceDb`s always have a version number associated with them within a `WorkspaceContainer` (by default, the initial version is marked "1.0.0"). WorkspaceDb version numbers follow the [semver versioning](https://semver.org/) rules. To modify an existing WorkspaceDb within a `WorkspaceContainer`, administrators must (with the write-lock held) make a new version using the `versionDb` command. New versions may be of type "patch", "minor", or "major", depending on its impact to users. When the write-lock is released, the newly edited version of the WorkspaceDb becomes immutable and may never be changed again. This way old or archived projects may continue to refer to consistent workspace data without risk.
+The [Workspace.Editor]($backend) enforces that `WorkspaceDb`s always have a version number associated with them within a `WorkspaceContainer` (by default, the initial version is marked "1.0.0"). WorkspaceDb version numbers follow the [semver versioning](https://semver.org/) rules. To modify an existing WorkspaceDb within a `WorkspaceContainer`, administrators must (with the write-lock held) make a new version using the `versionDb` command. New versions may be of type "patch", "minor", or "major", depending on its impact to users. When the write-lock is released, the newly edited version of the WorkspaceDb becomes immutable and may never be changed again. This way old or archived projects may continue to refer to consistent workspace data without risk.
 
 By specifying acceptable [version ranges](https://docs.npmjs.com/cli/v6/using-npm/semver#ranges) in `workspace/databases` Settings, administrators can control when, how, and if users see updates to workspace resources.
