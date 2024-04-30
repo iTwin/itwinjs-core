@@ -4,19 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Transform } from "@itwin/core-geometry";
-import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
-import { ArcGisAttributeDrivenSymbology, ArcGisGeometryBaseRenderer } from "@itwin/core-frontend";
+import { FeatureGeometryBaseRenderer, FeatureSymbolizedRenderer, FeatureSymbologyRenderer } from "@itwin/core-frontend";
+import { ArcGisSymbologyCanvasRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer";
 
 /** @internal */
-export class ArcGisCanvasRenderer extends ArcGisGeometryBaseRenderer {
+export class FeatureCanvasRenderer extends FeatureGeometryBaseRenderer implements FeatureSymbolizedRenderer {
   private _context: CanvasRenderingContext2D;
-  private _symbol: ArcGisSymbologyRenderer;
+  private _symbol: ArcGisSymbologyCanvasRenderer;
 
-  public override get attributeSymbology(): ArcGisAttributeDrivenSymbology | undefined {
-    return this._symbol.isAttributeDriven() ? this._symbol : undefined;
+  public  get symbolRenderer(): FeatureSymbologyRenderer {
+    return this._symbol;
   }
+  public override hasSymbologyRenderer(): this is FeatureSymbolizedRenderer {return true;}
 
-  constructor(context: CanvasRenderingContext2D, symbol: ArcGisSymbologyRenderer, world2PixelTransform?: Transform) {
+  constructor(context: CanvasRenderingContext2D, symbol: ArcGisSymbologyCanvasRenderer, world2PixelTransform?: Transform) {
     super(world2PixelTransform);
     this._symbol = symbol;
     this._context = context;

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "add test logic to extract fb from iModel",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
