@@ -12,7 +12,7 @@ import {
   Schemas, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import {
-  CategoryProps, Code, ColorDef, GeometricElement3dProps, IModel, InformationPartitionElementProps, ModelProps, PropertyMetaData, RelatedElement,
+  CategoryProps, Code, ColorDef, GeometricElement3dProps, IModel, InformationPartitionElementProps, ModelProps, RelatedElement,
   TypeDefinitionElementProps,
 } from "@itwin/core-common";
 import { AnalyticalElement, AnalyticalModel, AnalyticalPartition, AnalyticalSchema } from "../analytical-backend";
@@ -121,24 +121,24 @@ describe("AnalyticalSchema", () => {
       typeDefinition: { id: typeDefinitionId, relClassName: "Analytical:AnalyticalElementIsOfType" },
     };
     const elementId: Id64String = iModelDb.elements.insertElement(elementProps);
-    // test forEachProperty and PropertyMetaData.isNavigation
+    // test forEachProperty and navigation properties (`direction` is defined for navigation properties).
     const element: GeometricElement3d = iModelDb.elements.getElement(elementId);
-    element.forEachProperty((propertyName: string, meta: PropertyMetaData) => {
+    element.forEachProperty((propertyName, meta) => {
       switch (propertyName) {
         case "model":
-          assert.isTrue(meta.isNavigation);
+          assert.isTrue(undefined !== meta.direction);
           break;
         case "category":
-          assert.isTrue(meta.isNavigation);
+          assert.isTrue(undefined !== meta.direction);
           break;
         case "typeDefinition":
-          assert.isTrue(meta.isNavigation);
+          assert.isTrue(undefined !== meta.direction);
           break;
         case "codeValue":
-          assert.isFalse(meta.isNavigation);
+          assert.isFalse(undefined !== meta.direction);
           break;
         case "userLabel":
-          assert.isFalse(meta.isNavigation);
+          assert.isFalse(undefined !== meta.direction);
           break;
       }
     });

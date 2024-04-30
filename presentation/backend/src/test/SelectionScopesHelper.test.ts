@@ -7,7 +7,7 @@ import * as faker from "faker";
 import * as moq from "typemoq";
 import { DrawingGraphic, ECSqlStatement, ECSqlValue, Element, IModelDb, IModelHost } from "@itwin/core-backend";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { ElementProps, EntityMetaData, GeometricElement2dProps, IModelError, ModelProps } from "@itwin/core-common";
+import { ElementProps, GeometricElement2dProps, IModelError, ModelProps } from "@itwin/core-common";
 import { InstanceKey } from "@itwin/presentation-common";
 import { createRandomECInstanceKey, createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
@@ -170,12 +170,14 @@ describe("SelectionScopesHelper", () => {
       imodelMock
         .setup((x) => x.getMetaData(moq.It.isAnyString()))
         .returns(
-          (className: string) =>
-            new EntityMetaData({
+          (className: string) => {
+            return {
               baseClasses: [],
               properties: {},
               ecclass: className,
-            }),
+              classId: "0x123",
+            };
+          },
         );
     });
 
