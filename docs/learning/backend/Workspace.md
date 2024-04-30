@@ -119,7 +119,7 @@ A `SettingSchema` defines the *type* of a `settingDef` as one of:
 
 The Settings Editor will enforce that the values supplied for a Setting is the correct type.
 
-### Setting.Dictionary
+### Settings.Dictionary
 
 The *values* for one or more Settings may be established by creating a JavaScript object with properties matching [SettingName]($backend)s.
 
@@ -137,7 +137,7 @@ Then, the dictionary can be given a [Settings.Dictionary.Name]($backend), and a 
 [[include:Settings.addDictionary]]
 ```
 
-Values in `SettingDictionary`s with a higher `SettingsPriority` override values in dictionaries with a lower priority.
+Values in `Settings.Dictionary`s with a higher `SettingsPriority` override values in dictionaries with a lower priority.
 
 E.g.:
 
@@ -163,15 +163,13 @@ When [IModelhost.startup](#backend) is called, all files with the extension ".js
 
 ### iModel Based Settings
 
-Every iModel can hold a set of `SettingDictionary`s that are automatically loaded when the iModel is opened. This can be used to supply Setting values that should be present every session, for example, lists of required `WorkspaceDb`s.
+Every iModel can hold a set of `Settings.Dictionary`(ies) that are automatically loaded when the iModel is opened. This can be used to supply Setting values that are present every session, for example, lists of `WorkspaceDb`s to search.
 
-To save a `SettingDictionary` in an iModel, use [IModelDb.saveSettingDictionary]($backend).
+To save a `Settings.Dictionary` in an iModel, use [IModelDb.saveSettingDictionary]($backend).
 
 ## WorkspaceDbs
 
-[WorkspaceDb]($backend)s are cloud-based SQLite databases that hold [workspace resources](#workspace-resources). They can accessed directly from cloud storage and are cached locally.
-
-Cloud storage systems (aka *blob storage*) provide access to data through a top-level concept called a *storage account*. A storage account is assigned a unique name (the "account name") by the cloud provider, and is registered to a single organization who pays for its use. Within a storage account, data is stored in named groups called *containers*. Containers names must be unique within a storage account, and generally have strict rules on format and length. It is common that container names are not human-readable, but are instead identifiers like GUIDs, perhaps with a prefix or suffix.
+[WorkspaceDb]($backend)s are SQLite databases that hold [workspace resources](#workspace-resources). They can be accessed directly from cloud storage and are cached locally.
 
 Containers can each have independent access rights, and users and applications are granted permissions to read, write, create, etc. by authenticating their identity and then obtaining a container-specific (usually expiring) *shared access signature* token (a `sasToken`) from the storage authority.
 
@@ -180,19 +178,18 @@ Cloud-based `WorkspaceContainer`s provide a mechanism for storing and retrieving
 Data stored in cloud-based `WorkspaceDb`s:
 
 - can be versioned
-- can have fine-grained access permissions, or may be publicly accessible
+- can have fine-grained access permissions, or may be publicly accessible for read-only access
 - can be accessed directly from cloud storage without pre-downloading
 - is automatically *cached* locally for fast access
 - can be fully downloaded for offline use
 - is automatically synched when changes are made
 
-The `WorkspaceContainer` apis abstract the cloud storage implementation, so the may be configured to use any cloud storage system (e.g. Azure, AWS, Google, etc.)
+The `WorkspaceContainer` apis abstract the cloud storage implementation, so it may be configured to use many cloud storage system (e.g. Azure, AWS, Google, etc.)
 
 A [WorkspaceContainer]($backend) is a special type of cloud container that (only) holds [WorkspaceDb]($backend)s. [WorkspaceDb]($backend)s are databases that hold [workspace resources](#workspace-resources).
 
 Conceptually, you can picture the hierarchy like this:
 
-- Cloud Storage Account  (usually provided by service provider, e.g. Bentley)
   - `WorkspaceContainer`
     - `WorkspaceDb`
       - `WorkspaceResource`
@@ -205,27 +202,23 @@ However, when deciding how to organize workspace data, keep in mind:
 - For offline access, `WorkspaceDb`s are saved as files on local computers, and must be downloaded before going offline and then updated whenever new versions are created. Large downloads can be time consuming, so breaking large sets of resources into multiple `WorkspaceDb`s can be helpful.
 - `WorkspaceDb`s are versioned. There is no versioning of individual resources within a `WorkspaceDb`.
 
+
 #### Workspace related Settings
 
-The Workspace subsystem uses 2 Setting values:
+The `SettingsSchema` for workspaces (`Workspace.Schema.json`) defines the following `typeDefs`:
+
+`itwin/core/workspace/WorkspaceDb` - the properties to open a `WorkspaceDb`, including the `containerId` and `baseUri` of the `WorkspaceContainer`.
+`itwin/core/workspace/WorkspaceDbList` - a (sorted) array of `itwin/core/workspace/WorkspaceDb`s.
+
+It also defines the following `settingDef`:
+
+`itwin/core/workspace/settingsWorkspaces` - an array of `WorkspaceDb`s from which to load settings dictionaries. Each entry in the list "extends" the `itwin/core/workspace/WorkspaceDb` typeDef and also includes the `resourceName` of the settings dictionary resource and a `Settings.Priority` to load the settings dictionary.
 
 
-defined by the following `SettingSchema`s:
-
-For example:
-
-```ts
-[[include:Settings.containerAlias]]
-```
 
 To load a [workspace resource](#workspace-resources), you must first obtain a `WorkspaceDb` by calling [Workspace.getWorkspaceDb]($backend) and supplying a [WorkspaceDb.Name]($backend). That value must be an entry in a `workspace/databases` Setting. The `workspace/databases` Setting will supply the `containerName` and `dbName`. The value of `containerName` must be an entry in a `cloud/containers` Setting. The `cloud/containers` Setting will supply the `containerId` and `baseUri`.
 
 
-then, calling
-
-```ts
-  const wsdb = await IModelHost.appWorkspace.getWorkspaceDb("ace-inc/ws-structural");
-```
 
 Will attempt to load a `WorkspaceDb` with:
 - the most recent version greater than or equal to 1.0.0 but less than 2.0.0 of the database `struct` (e.g. `struct:1.5.2`)
@@ -234,7 +227,7 @@ Will attempt to load a `WorkspaceDb` with:
 Workspace settings may also be stored [in an iModel](#imodel-based-settings) so `WorkspaceDb`s may be iModel specific. So if this:
 
 
-were stored in a `SettingDictionary` in an iModel, then
+were stored in a `Settings.Dictionary` in an iModel, then
 
 ```ts
   const wsdb = await iModel.workspace.getWorkspaceDbs(
@@ -272,17 +265,17 @@ Possible resource types are:
 
 > Note: `WorkspaceResource.Name`s must be unique for each resource type. But, it is possible to have a `string`, a `blob`, and a `file` resource in the same `WorkspaceDb` with the same `WorkspaceResource.Name`.
 
-### SettingDictionary Resources
+### Settings.Dictionary Resources
 
-It is often useful to store `SettingDictionary`s in a `WorkspaceContainer`, so they may be distributed, versioned, aliased, and access controlled. This can be easily accomplished by storing the stringified JSON representation of the `SettingDictionary` as a `string` resource and using [Workspace.loadSettingsDictionary]($backend) to load it.
+It is often useful to store `Settings.Dictionary`s in a `WorkspaceContainer`, so they may be distributed, versioned, aliased, and access controlled. This can be accomplished by storing the stringified JSON representation of the `Settings.Dictionary` as a `string` resource and using [Workspace.loadSettingsDictionary]($backend) to load it.
 
-## Creating and Editing WorkspaceDbs with WorkspaceEditor
+## Creating and Editing WorkspaceDbs with Workspace.Editor
 
-`WorkspaceDb`s are always created and modified by administrators rather than users, using the `WorkspaceEditor` utility (see its `README.md` for details.)
+`WorkspaceDb`s are always created and modified by administrators, not users, using the `Workspace.Editor` api.
 
 #### WorkspaceContainer Locks
 
-To edit a WorkspaceDb, administrators must first obtain authorization in the form of a writeable `sasToken` from the container authority. Additionally, there may only be one editor *per container* at the same time. This is enforced via the *write-lock* for WorkspaceContainers. The `WorkspaceEditor` utility has a command `acquireLock` that acquires the write-lock for a WorkspaceContainer. The `acquireLock` command must be executed before any other editing commands may be performed, and will fail if another user has already obtained the write-lock.
+To edit a WorkspaceDb, administrators must first obtain authorization in the form of a writeable `sasToken` from the container authority. Additionally, there may only be one editor *per container* at the same time. This is enforced via the *write-lock* for WorkspaceContainers. The `Workspace.Editor` utility has a command `acquireLock` that acquires the write-lock for a WorkspaceContainer. The `acquireLock` command must be executed before any other editing commands may be performed, and will fail if another user has already obtained the write-lock.
 
 All changes to `WorkspaceDb`s are performed locally and are not visible to users until the `releaseLock` command is executed. The `releaseLock` command pushes all changes to the cloud before it releases the write-lock.
 
