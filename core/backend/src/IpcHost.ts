@@ -308,9 +308,8 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return IModelHost.platform.queryConcurrency(pool);
   }
 
-  public async queryEntityClassMetadata(_key: string, _args: QueryEntityClassMetadataArgs): Promise<EntityClassMetadataProps[]> {
-    // const db = BriefcaseDb.findByKey(key);
-    return []; // ###TODO
+  public async queryEntityClassMetadata(key: string, args: QueryEntityClassMetadataArgs): Promise<EntityClassMetadataProps[]> {
+    return IModelDb.findByKey(key).getEntityClassMetadata(args);
   }
 }
 

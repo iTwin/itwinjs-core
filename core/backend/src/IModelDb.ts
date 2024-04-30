@@ -61,6 +61,8 @@ import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotati
 import { EntityMetadata, entityMetadataFromStringifiedJSON, EntityMetadataRegistry, PropertyCallback } from "./EntityMetadata";
 
 import type { BlobContainer } from "./BlobContainerService";
+import { QueryEntityClassMetadataArgs } from "@itwin/core-common";
+import { EntityClassMetadataProps } from "@itwin/core-common";
 /** @internal */
 export interface ChangesetConflictArgs {
   cause: DbConflictCause;
@@ -1127,6 +1129,52 @@ export abstract class IModelDb extends IModel {
     return metadata;
   }
 
+  private collectEntityMetadata(result: EntityClassMetadataProps[], className: string, knownClassIds: Id64Set): Id64String | undefined {
+    try {
+      const meta = this.getMetaData(className);
+      if (knownClassIds.has(meta.classId)) {
+        return meta.classId;
+      }
+
+      knownClassIds.add(meta.classId);
+      const baseClasses: Id64String[] = [];
+      result.push({
+        name: className,
+        id: meta.classId,
+        baseClasses,
+      });
+
+      for (const baseClassName of meta.baseClasses) {
+        const baseClassId = this.collectEntityMetadata(result, baseClassName, knownClassIds);
+        if (undefined !== baseClassId) {
+          baseClasses.push(baseClassId);
+        }
+      }
+
+      return meta.classId;
+    } catch (e) {
+      Logger.logException(BackendLoggerCategory.IModelDb, e);
+      return undefined;
+    }
+  }
+
+  /** @internal */
+  public getEntityClassMetadata(args: QueryEntityClassMetadataArgs): EntityClassMetadataProps[] {
+    const result: EntityClassMetadataProps[] = [];
+
+    const knownClassIds = new Set<Id64String>(args.knownClassIds);
+    const classIdsStr = args.classIdsToLoad.join(",");
+    const sql = `SELECT ec_class.Name, ec_class.Id, ec_schema.Name FROM ec_class JOIN ec_schema WHERE ec_schema.Id = ec_class.SchemaId AND ec_class.Id IN (${classIdsStr})`;
+    this.withPreparedSqliteStatement(sql, (stmt) => {
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        const classFullName = `${stmt.getValueString(2)}:${stmt.getValueString(0)}`;
+        this.collectEntityMetadata(result, classFullName, knownClassIds);
+      }
+    });
+
+    return result;
+  }
+  
   /** Invoke a callback on each property of the specified class, optionally including superclass properties.
    * @param iModel  The IModel that contains the schema
    * @param classFullName The full class name to load the metadata, if necessary
