@@ -57,7 +57,7 @@ export class CreateDrawingTool extends Tool {
     // Switch to the drawing view, using the same logic as the view dropdown
     const displayTestAppViewer = DisplayTestApp.surface.firstViewer;
     if (displayTestAppViewer) {
-      displayTestAppViewer.changeView(drawingViewId);
+      await displayTestAppViewer.changeView(drawingViewId);
     }
     return true;
   }

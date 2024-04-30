@@ -17,7 +17,7 @@ async function insertDrawing(db: BriefcaseDb, baseName: string): Promise<Id64Str
   return drawingId;
 }
 
-/**Insert a DrawingViewDefinition */
+/** Insert a DrawingViewDefinition */
 export async function insertDrawingView(args: CreateDrawingViewArgs): Promise<any> {
   const db = BriefcaseDb.findByKey(args.iModelKey);
   const dictionary = BriefcaseDb.dictionaryId;
