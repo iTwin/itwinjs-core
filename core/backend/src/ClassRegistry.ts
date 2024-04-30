@@ -278,12 +278,26 @@ export type EntityMetaDataWithClassId = EntityMetaData & { classId: Id64String }
  */
 export class MetaDataRegistry {
   private _registry = new Map<string, EntityMetaDataWithClassId>();
+  private _idToName = new Map<Id64String, string>();
 
   /** Get the specified Entity metadata */
-  public find(classFullName: string): EntityMetaDataWithClassId | undefined { return this._registry.get(classFullName.toLowerCase()); }
+  public find(classFullName: string): EntityMetaDataWithClassId | undefined {
+    return this._registry.get(classFullName.toLowerCase());
+  }
+
+  public findById(classId: Id64String): EntityMetaDataWithClassId | undefined {
+    const name = this._idToName.get(classId);
+    return undefined !== name ? this.find(name) : undefined;
+  }
+
+  public findClassId(classFullName: string): Id64String | undefined {
+    return this.find(classFullName)?.classId;
+  }
 
   /** Add metadata to the cache */
   public add(classFullName: string, metaData: EntityMetaData, classId: Id64String): void {
-    this._registry.set(classFullName.toLowerCase(), { ...metaData, classId });
+    const name = classFullName.toLowerCase();
+    this._registry.set(name, { ...metaData, classId });
+    this._idToName.set(classId, name);
   }
 }

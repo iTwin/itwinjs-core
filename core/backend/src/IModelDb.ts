@@ -31,7 +31,7 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
 import { ChannelAdmin, ChannelControl } from "./ChannelControl";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
-import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
+import { ClassRegistry, EntityMetaDataWithClassId, MetaDataRegistry } from "./ClassRegistry";
 import { CloudSqlite } from "./CloudSqlite";
 import { CodeService } from "./CodeService";
 import { CodeSpecs } from "./CodeSpecs";
@@ -1115,7 +1115,7 @@ export abstract class IModelDb extends IModel {
   /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
    * @throws [[IModelError]] if the metadata cannot be found nor loaded.
    */
-  public getMetaData(classFullName: string): EntityMetaData {
+  public getMetaData(classFullName: string): EntityMetaDataWithClassId {
     let metadata = this.classMetaDataRegistry.find(classFullName);
     if (metadata === undefined) {
       this.loadMetaData(classFullName);
