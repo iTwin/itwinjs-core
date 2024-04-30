@@ -2141,7 +2141,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
             UNION ALL
           SELECT ECInstanceId, ECClassId FROM Bis.ElementUniqueAspect WHERE Element.Id = :elementId) OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB`, elementId, excludedClassFullNames);
         if (allAspects.length === 0)
-          Logger.logError(BackendLoggerCategory.ECDb, `No aspects found for class ${aspectClassFullName} and element ${elementId}`);
+          Logger.logInfo(BackendLoggerCategory.ECDb, `No aspects found for class ${aspectClassFullName} and element ${elementId}`);
         return allAspects;
       }
 
@@ -2178,7 +2178,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         SELECT ECInstanceId, ECClassId FROM Bis.ElementUniqueAspect WHERE Element.Id = :elementId AND ECClassId IN (${classIdList})
         ) OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB`, elementId, excludedClassFullNames);
       if (aspects.length === 0)
-        Logger.logError(BackendLoggerCategory.ECDb, `No aspects found for class ${aspectClassFullName} and element ${elementId}`);
+        Logger.logInfo(BackendLoggerCategory.ECDb, `No aspects found for class ${aspectClassFullName} and element ${elementId}`);
       return aspects;
     }
 
