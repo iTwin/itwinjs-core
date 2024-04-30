@@ -16,7 +16,7 @@ import { AzuriteTest } from "./AzuriteTest";
 
 // cspell:ignore premajor
 
-describe.only("Cloud workspace containers", () => {
+describe("Cloud workspace containers", () => {
   const iTwin1Id = Guid.createValue();
   const iTwin2Id = Guid.createValue();
   const iModel1 = Guid.createValue();
