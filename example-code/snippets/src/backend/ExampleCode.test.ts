@@ -119,15 +119,15 @@ describe("Example Code", () => {
       },
     ];
 
-    const defaultsDict: SettingObject = {
-      "itwin/core/default-tool": "select",
-      "itwin/samples/start/leftPane": true,
-      "myApp/tree/label": "distribution of work",
-      "myApp/tree/indent": 4,
-      "myApp/categories": ["category1", "lowest", "upper"],
-      "myApp/list/clickMode": "doubleClick",
-      "myApp/templateResources": templates,
-    };
+    const defaultsDict: SettingObject = {};
+    defaultsDict["itwin/core/default-tool"] = "select";
+    defaultsDict["itwin/samples/start/leftPane"] = true;
+    defaultsDict["myApp/tree/label"] = "distribution of work";
+    defaultsDict["myApp/tree/indent"] = 4;
+    defaultsDict["myApp/categories"] = ["category1", "lowest", "upper"];
+    defaultsDict["myApp/list/clickMode"] = "doubleClick";
+    defaultsDict["myApp/templateResources"] = templates;
+
     // __PUBLISH_EXTRACT_END__
 
     // __PUBLISH_EXTRACT_START__ Settings.addDictionary
@@ -146,11 +146,11 @@ describe("Example Code", () => {
     expect(t1).deep.equal(templates);
 
     // __PUBLISH_EXTRACT_START__ Settings.addITwinDictionary
-    const iTwin555: SettingObject = {
-      "itiwn/core/default-tool": "measure",
-      "app5/markerName": "arrows",
-      "app5/markerIcon": "arrows.ico",
-    };
+    const iTwin555: SettingObject = {};
+    iTwin555["itwin/core/default-tool"] = "measure";
+    iTwin555["app5/markerName"] = "arrows";
+    iTwin555["app5/markerIcon"] = "arrows.ico";
+
     workspace = iModel.workspace;
     settings = workspace.settings;
     settings.addDictionary({ name: "for iTwin 555", priority: Settings.Priority.iTwin }, iTwin555);

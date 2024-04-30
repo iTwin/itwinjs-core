@@ -1186,7 +1186,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
   public readonly container: WorkspaceContainer;
   public readonly onClose = new BeEvent<() => void>();
   public readonly dbFileName: string;
-  private _manifest?: WorkspaceDb.Manifest;
+  protected _manifest?: WorkspaceDb.Manifest;
 
   /** true if this WorkspaceDb is currently open */
   public get isOpen() { return this.sqliteDb.isOpen; }
@@ -1501,6 +1501,7 @@ class EditableDbImpl extends WorkspaceDbImpl implements Workspace.Editor.Editabl
 
   public updateManifest(manifest: WorkspaceDb.Manifest) {
     this.sqliteDb.nativeDb.saveFileProperty(WorkspaceDbImpl.manifestProperty, JSON.stringify(manifest));
+    this._manifest = undefined;
   }
   public updateSettingsResource(settings: SettingObject, rscName?: string) {
     this.updateString(rscName ?? "settingsDictionary", JSON.stringify(settings));
