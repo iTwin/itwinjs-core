@@ -13,7 +13,7 @@ import { Id64, Id64String } from "@itwin/core-bentley";
 import { CreateSectionDrawingViewArgs, CreateSectionDrawingViewResult } from "../common/DtaIpcInterface";
 
 /** Find or create a document partition named" DrawingProductionDrawing" to contain all our section drawings. */
-async function getDrawingProductionListModel(db: BriefcaseDb): Promise<Id64String> {
+export async function getDrawingProductionListModel(db: BriefcaseDb): Promise<Id64String> {
   const documentListName = "DrawingProductionDrawings";
   let documentListModelId: Id64String | undefined;
 

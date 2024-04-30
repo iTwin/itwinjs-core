@@ -65,6 +65,8 @@ import { OpenRealityModelSettingsTool } from "./RealityModelDisplaySettingsWidge
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { getConfigurationString } from "./DisplayTestApp";
+import { CreateDrawingTool } from "./CreateDrawingTool";
+import { ToggleOriginAndExtentsTool } from "./ToggleOriginAndExtentsTool";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -318,6 +320,7 @@ export class DisplayTestApp {
       CloneViewportTool,
       CloseIModelTool,
       CloseWindowTool,
+      CreateDrawingTool,
       CreateSectionDrawingTool,
       CreateWindowTool,
       DisableModelTransformsTool,
@@ -362,6 +365,7 @@ export class DisplayTestApp {
       TerrainDrapeTool,
       TextDecorationTool,
       ToggleAspectRatioSkewDecoratorTool,
+      ToggleOriginAndExtentsTool,
       TimePointComparisonTool,
       ToggleShadowMapTilesTool,
       ViewClipByElementGeometryTool,

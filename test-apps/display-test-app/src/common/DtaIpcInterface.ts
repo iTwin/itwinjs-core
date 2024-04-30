@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String } from "@itwin/core-bentley";
-import { DisplayStyle3dProps, SpatialViewDefinitionProps } from "@itwin/core-common";
+import { DisplayStyle3dProps, DisplayStyleProps, SpatialViewDefinitionProps, ViewDefinition2dProps } from "@itwin/core-common";
 import { TransformProps } from "@itwin/core-geometry";
 
 export const dtaChannel = "display-test-app/dta";
@@ -27,6 +27,24 @@ export interface CreateSectionDrawingViewArgs {
   drawingToSpatialTransform: TransformProps;
 }
 
+/** Arguments for DtaIpcInterface.createDrawing. */
+export interface CreateDrawingArgs {
+  /** Identifies the writable briefcase in which to create the drawing. */
+  iModelKey: string;
+  /** Name used to produce the names of the drawing element and drawing model */
+  baseName: string;
+}
+
+/** Arguments for DtaIpcInterface.insertDrawingView. */
+export interface CreateDrawingViewArgs extends CreateDrawingArgs {
+  /** Describes the drawing view to be referenced by the drawing. */
+  drawingView: ViewDefinition2dProps;
+  /** The set of categories enabled in the drawing view's category selector. */
+  categories: Id64String[];
+  /** The display style applied to the drawing view. */
+  displayStyle: DisplayStyleProps;
+}
+
 export interface CreateSectionDrawingViewResult {
   sectionDrawingId: Id64String;
   spatialViewId: Id64String;
@@ -39,4 +57,14 @@ export interface DtaIpcInterface {
    * Returns the Id of the section drawing view.
    */
   createSectionDrawing(args: CreateSectionDrawingViewArgs): Promise<CreateSectionDrawingViewResult>;
+
+  /**
+   * Creates and inserts a drawing element/model. Returns the id of the drawing element/model.
+   */
+  createDrawing(args: CreateDrawingArgs): Promise<string>;
+
+  /**
+   * Creates and inserts a DrawingViewDefinition element.
+   */
+  insertDrawingView(args: CreateDrawingViewArgs): Promise<any>;
 }

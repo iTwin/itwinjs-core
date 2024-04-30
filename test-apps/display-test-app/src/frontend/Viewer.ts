@@ -410,7 +410,7 @@ export class Viewer extends Window {
     this.updateActiveSettings();
   }
 
-  private updateTitle(): void {
+  public updateTitle(): void {
     let viewName = this.viewport.view.code.value;
     if (undefined === viewName || 0 === viewName.length)
       viewName = "UNNAMED";
@@ -420,7 +420,7 @@ export class Viewer extends Window {
     this.title = `[ ${this.viewport.viewportId} ] ${viewName} <${id}> (${dim})`;
   }
 
-  private updateActiveSettings(): void {
+  public updateActiveSettings(): void {
     // NOTE: First category/model is fine for testing purposes...
     const view = this.viewport.view;
     if (!view.iModel.isBriefcaseConnection())
@@ -449,7 +449,7 @@ export class Viewer extends Window {
     }
   }
 
-  private async changeView(id: Id64String): Promise<void> {
+  public async changeView(id: Id64String): Promise<void> {
     const view = await this.views.getView(id, this._imodel);
     await this.setView(view.clone());
     for (const control of this._3dOnly)

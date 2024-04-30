@@ -6,7 +6,7 @@
 import { DrawingViewState, IModelApp, Tool } from "@itwin/core-frontend";
 import { Id64 } from "@itwin/core-bentley";
 import { CreateSectionDrawingViewArgs } from "../common/DtaIpcInterface";
-import { dtaIpc } from "./App";
+import { DisplayTestApp, dtaIpc } from "./App";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { CategorySelectorProps, Code, ColorDef, DisplayStyleProps, IModel, Npc, QueryRowFormat, SectionDrawingViewProps, ViewDefinition2dProps, ViewStateProps } from "@itwin/core-common";
 
@@ -119,8 +119,14 @@ export class CreateSectionDrawingTool extends Tool {
 
     const drawingView = DrawingViewState.createFromProps(viewStateProps, vp.iModel);
     await drawingView.load();
-
     vp.changeView(drawingView);
+    const displayTestAppViewer = DisplayTestApp.surface.firstViewer;
+    if (displayTestAppViewer) {
+      // This updates the editor tool settings, such that the editor tools know which category/model to reference.
+      displayTestAppViewer.updateActiveSettings();
+      // Updates the view UI. Purely a convenience so we can see the view is a 2d vs 3d view.
+      displayTestAppViewer.updateTitle();
+    }
     return true;
   }
 }

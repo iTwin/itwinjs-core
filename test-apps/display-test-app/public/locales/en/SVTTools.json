@@ -190,6 +190,12 @@
     },
     "CreateSectionDrawing": {
       "keyin": "dta create section drawing"
+    },
+    "CreateDrawing": {
+      "keyin": "dta create drawing"
+    },
+    "ToggleOriginAndExtents": {
+      "keyin": "dta toggle origin and extents"
     }
   }
 }
