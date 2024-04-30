@@ -177,19 +177,8 @@ class ChangedEntitiesProc {
       insertedClass: [],
       deletedClass: [],
       updatedClass: [],
-      classNames: [],
+      classIds,
     };
-
-    const selectClassId = "SELECT Name FROM ec_class WHERE Id = ?";
-    iModel.withPreparedSqliteStatement(selectClassId, (stmt) => {
-      args.classNames = classIds.map((classId) => {
-        stmt.bindId(1, classId);
-        // Potentially processing a class that was removed/undone by a schema change?
-        const className = DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValueString(0) : classId;
-        stmt.reset();
-        return className;
-      });
-    })
     
     this._inserted.addToChangedEntities(args, "inserted");
     this._deleted.addToChangedEntities(args, "deleted");

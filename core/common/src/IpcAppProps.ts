@@ -79,7 +79,7 @@ export interface NotifyEntitiesChangedArgs extends ChangedEntities {
   insertedClass: number[];
   deletedClass: number[];
   updatedClass: number[];
-  classNames: string[];
+  classIds: Id64String[];
 }
 
 /** Interface implemented by the frontend [NotificationHandler]($common) to be notified of changes to an iModel.
