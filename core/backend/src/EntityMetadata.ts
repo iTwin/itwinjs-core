@@ -115,3 +115,13 @@ export class EntityMetadataRegistry {
     this._classIdToName.set(metadata.classId, name);
   }
 }
+
+/* @internal */
+export function entityMetadataFromStringifiedJSON(jsonStr: string): EntityMetadata {
+  const meta = JSON.parse(jsonStr) as EntityMetadata;
+  if (undefined === meta.properties) {
+    meta.properties = { };
+  }
+
+  return meta;
+}

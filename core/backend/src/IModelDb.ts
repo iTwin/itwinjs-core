@@ -58,7 +58,7 @@ import { ViewStore } from "./ViewStore";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { Workspace } from "./workspace/Workspace";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotationLayout";
-import { EntityMetadata, EntityMetadataRegistry, PropertyCallback } from "./EntityMetadata";
+import { EntityMetadata, entityMetadataFromStringifiedJSON, EntityMetadataRegistry, PropertyCallback } from "./EntityMetadata";
 
 import type { BlobContainer } from "./BlobContainerService";
 /** @internal */
@@ -1174,7 +1174,7 @@ export abstract class IModelDb extends IModel {
 
     assert(undefined !== val.result);
 
-    const metadata = JSON.parse(val.result) as EntityMetadata;
+    const metadata = entityMetadataFromStringifiedJSON(val.result);
     this.entityMetadataRegistry.add(classFullName, metadata);
 
     // Recursive, to make sure that base classes are cached.
@@ -2147,7 +2147,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const fullClassName = aspectClassFullName.replace(".", ":").split(":");
       const val = this._iModel.nativeDb.getECClassMetaData(fullClassName[0], fullClassName[1]);
       if (val.result !== undefined) {
-        const metaData = JSON.parse(val.result) as EntityMetadata;
+        const metaData = entityMetadataFromStringifiedJSON(val.result);
         if (metaData.modifier !== "Abstract") // Class is not abstract, use normal query to retrieve aspects
           return this._queryAspects(elementId, aspectClassFullName, excludedClassFullNames);
       }
