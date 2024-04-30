@@ -25,7 +25,7 @@ class OriginAndExtentsDecoration implements Decorator {
     builder.setSymbology(ColorDef.green, ColorDef.green, 2);
     builder.addRangeBox(Range3d.createXYZXYZ(0, 0, 0, this._originScale, this._originScale, this._originScale), true);
     // Show the project extents in blue
-    builder.setSymbology(ColorDef.blue, ColorDef.blue, 2);
+    builder.setSymbology(ColorDef.blue, ColorDef.blue, 10);
     const projectExtents = context.viewport.iModel.projectExtents.clone();
     builder.addRangeBox(projectExtents.clone(), false);
     context.addDecoration(GraphicType.WorldOverlay, builder.finish());
