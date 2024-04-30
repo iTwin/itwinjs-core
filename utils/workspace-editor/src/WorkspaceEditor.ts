@@ -57,9 +57,9 @@ interface WorkspaceDbOpt extends EditorOpts {
   glob?: string;
 }
 
-interface CreateWorkspaceDbOpt extends WorkspaceDbOpt {
-  workspaceName: string;
-}
+// interface CreateWorkspaceDbOpt extends WorkspaceDbOpt {
+//   workspaceName: string;
+// }
 
 /** options for copying a WorkspaceDb to a new name */
 interface CopyWorkspaceDbOpt extends WorkspaceDbOpt {
