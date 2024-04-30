@@ -84,7 +84,6 @@ internal;DevToolsProcessStats
 internal;DevToolsStats
 internal;DevToolsStatsFormatter
 public;DictionaryModel 
-beta;DictionaryName = string
 public;class DisplayStyle 
 public;DisplayStyle2d 
 public;DisplayStyle3d 
@@ -115,8 +114,6 @@ public;ECSqlInsertResult
 public;ECSqlStatement 
 public;ECSqlValue
 public;ECSqlValueIterator 
-beta;EditableWorkspaceDb 
-beta;EditableWorkspaceDb
 public;ElementAspect 
 beta;ElementDrivesElement 
 beta;ElementDrivesElementProps 
@@ -181,6 +178,7 @@ public;FunctionalModel
 public;FunctionalPartition 
 public;FunctionalSchema 
 public;class FunctionalType 
+internal;GcsDbProps 
 internal;generateElementGraphics(request: ElementGraphicsRequestProps, iModel: IModelDb): Promise
 public;GenericDocument 
 public;GenericGraphicalModel3d 
@@ -285,6 +283,7 @@ beta;OnSubModelIdArg
 beta;OnSubModelPropsArg 
 public;OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs & OpenSqliteArgs
 public;OrthographicViewDefinition 
+internal;OwnedWorkspace 
 beta;PartialECChangeUnifier
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 
@@ -333,15 +332,12 @@ public;SectionDrawing
 public;SectionDrawingLocation 
 public;SectionDrawingModel 
 internal;setMaxEntitiesPerEvent(max: number): number
-beta;SettingDictionary = SettingObject
-beta;SettingInspector
 beta;SettingName = string
 beta;SettingObject
-beta;SettingResolver
+beta;Settings
 beta;Settings
 beta;SettingSchema 
 beta;SettingSchemaGroup
-beta;SettingsPriority
 beta;SettingsSchemas
 beta;SettingType = JSONSchemaType
 public;Sheet 
@@ -419,13 +415,19 @@ public;VolumeElement
 public;WebMercatorModel 
 beta;Workspace
 beta;Workspace
-internal;construct(settings: Settings, opts?: WorkspaceOpts): Workspace
-beta;WorkspaceCloudCacheProps 
+internal;construct(settings: Settings, opts?: WorkspaceOpts): OwnedWorkspace
 beta;WorkspaceContainer
+internal;makeDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName
+internal;parseDbFileName(dbFileName: WorkspaceDb.DbFullName):
+internal;validateContainerId(id: WorkspaceContainer.Id): void
+internal;validateDbName(dbName: WorkspaceDb.DbName): void
 internal;validateVersion(version?: WorkspaceDb.Version): string
 beta;WorkspaceContainer
 beta;WorkspaceDb
+internal;construct(props: WorkspaceDb.Props, container: WorkspaceContainer): WorkspaceDb
+internal;throwLoadError(msg: string, wsDbProps: WorkspaceDb.Props | WorkspaceDb.CloudProps, db?: WorkspaceDb): never
+internal;throwLoadErrors(msg: string, errors: WorkspaceDb.LoadError[]): never
 beta;WorkspaceDb
 beta;WorkspaceOpts
 beta;WorkspaceResource
-beta;WorkspaceSetting:
+beta;WorkspaceSettings

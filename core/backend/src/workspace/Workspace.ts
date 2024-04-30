@@ -205,7 +205,10 @@ export namespace WorkspaceDb {
   }
 }
 
-/** Types for loading `Settings.Dictionary`s from WorkspaceDbs. */
+/**
+ * Types for loading `Settings.Dictionary`s from WorkspaceDbs.
+ * @beta
+ */
 export namespace WorkspaceSettings {
   /**
    * An entry in an `itwin/core/workspace/settingsWorkspaces` setting. This interface specifies a resource within
@@ -346,7 +349,7 @@ export interface WorkspaceDb {
 
 /**
  * Options for constructing a [[Workspace]].
- * @internal
+ * @beta
  */
 export interface WorkspaceOpts {
   /** The local directory for non-cloud-based WorkspaceDb files. The workspace api will look in this directory
