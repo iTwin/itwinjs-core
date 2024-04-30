@@ -33,6 +33,7 @@ export * from "./ElementAspect";
 export * from "./ElementGraphics";
 export * from "./ElementTreeWalker";
 export * from "./Entity";
+export * from "./EntityMetadata";
 export * from "./EntityReferences";
 export * from "./ExportGraphics";
 export * from "./ExternalSource";
