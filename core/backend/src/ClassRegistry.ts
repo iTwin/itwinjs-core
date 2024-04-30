@@ -6,8 +6,9 @@
  * @module Schema
  */
 
-import { DbResult, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
-import { EntityMetaData, EntityReferenceSet, IModelError, RelatedElement } from "@itwin/core-common";
+import { DbResult, Id64, IModelStatus, Logger } from "@itwin/core-bentley";
+import { EntityReferenceSet, IModelError, RelatedElement } from "@itwin/core-common";
+import { EntityMetadata } from "./EntityMetadata";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
@@ -93,7 +94,7 @@ export class ClassRegistry {
   /** Generate a JavaScript class from Entity metadata.
    * @param entityMetaData The Entity metadata that defines the class
    */
-  private static generateClassForEntity(entityMetaData: EntityMetaData, iModel: IModelDb): typeof Entity {
+  private static generateClassForEntity(entityMetaData: EntityMetadata, iModel: IModelDb): typeof Entity {
     const name = entityMetaData.ecclass.split(":");
     const domainName = name[0];
     const className = name[1];
@@ -123,7 +124,7 @@ export class ClassRegistry {
         generatedClassHasNonGeneratedNonCoreAncestor = true;
         break;
       }
-      const superclassMetaData = iModel.classMetaDataRegistry.find(currentSuperclass.classFullName);
+      const superclassMetaData = iModel.entityMetadataRegistry.find(currentSuperclass.classFullName);
       if (superclassMetaData === undefined)
         throw new IModelError(IModelStatus.BadSchema, `could not find the metadata for class '${currentSuperclass.name}', class metadata should be loaded by now`);
       const maybeNextSuperclass = this.getClass(superclassMetaData.baseClasses[0], iModel);
@@ -146,10 +147,11 @@ export class ClassRegistry {
     // - there are no ancestors with manually registered JS implementations, (excluding BisCore base classes)
     if (!generatedClassHasNonGeneratedNonCoreAncestor) {
       const navigationProps = Object.entries(entityMetaData.properties)
-        .filter(([_name, prop]) => prop.isNavigation)
+        .filter(([_name, prop]) => undefined !== prop!.direction) // navigation property
         // eslint-disable-next-line @typescript-eslint/no-shadow
         .map(([name, prop]) => {
-          assert(prop.relationshipClass);
+          assert(undefined !== prop);
+          assert(undefined !== prop.relationshipClass);
           const maybeMetaData = iModel.nativeDb.getSchemaItem(...prop.relationshipClass.split(":") as [string, string]);
           assert(maybeMetaData.result !== undefined, "The nav props relationship metadata was not found");
           const relMetaData = JSON.parse(maybeMetaData.result);
@@ -216,7 +218,7 @@ export class ClassRegistry {
    * class. This function also ensures that all of the base classes of the Entity exist and are registered.
    */
   private static generateClass(classFullName: string, iModel: IModelDb): typeof Entity {
-    const metadata: EntityMetaData | undefined = iModel.classMetaDataRegistry.find(classFullName);
+    const metadata: EntityMetadata | undefined = iModel.entityMetadataRegistry.find(classFullName);
     if (metadata === undefined || metadata.ecclass === undefined)
       throw this.makeMetaDataNotFoundError(classFullName);
 
@@ -265,39 +267,5 @@ export class ClassRegistry {
       if (entry[1].schema === schema)
         this.unregisterCLass(entry[0]);
     }
-  }
-}
-
-/** @internal */
-export type EntityMetaDataWithClassId = EntityMetaData & { classId: Id64String };
-
-/**
- * A cache that records the mapping between class names and class metadata.
- * @see [[IModelDb.classMetaDataRegistry]] to access the registry for a specific iModel.
- * @internal
- */
-export class MetaDataRegistry {
-  private _registry = new Map<string, EntityMetaDataWithClassId>();
-  private _idToName = new Map<Id64String, string>();
-
-  /** Get the specified Entity metadata */
-  public find(classFullName: string): EntityMetaDataWithClassId | undefined {
-    return this._registry.get(classFullName.toLowerCase());
-  }
-
-  public findById(classId: Id64String): EntityMetaDataWithClassId | undefined {
-    const name = this._idToName.get(classId);
-    return undefined !== name ? this.find(name) : undefined;
-  }
-
-  public findClassId(classFullName: string): Id64String | undefined {
-    return this.find(classFullName)?.classId;
-  }
-
-  /** Add metadata to the cache */
-  public add(classFullName: string, metaData: EntityMetaData, classId: Id64String): void {
-    const name = classFullName.toLowerCase();
-    this._registry.set(name, { ...metaData, classId });
-    this._idToName.set(classId, name);
   }
 }

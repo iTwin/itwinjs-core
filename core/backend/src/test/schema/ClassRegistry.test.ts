@@ -6,7 +6,7 @@ import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import * as path from "path";
 import {
-  BisCodeSpec, Code, ConcreteEntityTypes, DefinitionElementProps, ElementAspectProps, ElementProps, EntityMetaData, EntityReferenceSet, ModelProps,
+  BisCodeSpec, Code, ConcreteEntityTypes, DefinitionElementProps, ElementAspectProps, ElementProps, EntityReferenceSet, ModelProps,
   RelatedElement, RelatedElementProps, RelationshipProps, SchemaState,
 } from "@itwin/core-common";
 import {
@@ -39,7 +39,7 @@ describe("Class Registry", () => {
     const el = imodel.elements.getElement(code1);
     assert.exists(el);
     if (el) {
-      const metaData: EntityMetaData | undefined = el.getClassMetaData();
+      const metaData = el.getClassMetaData();
       assert.exists(metaData);
       if (undefined === metaData)
         return;
@@ -54,8 +54,8 @@ describe("Class Registry", () => {
       assert.exists(metaData.properties);
       assert.isDefined(metaData.properties.repositoryGuid);
       const p = metaData.properties.repositoryGuid;
-      assert.equal(p.extendedType, "BeGuid");
-      assert.equal(p.customAttributes![1].ecclass, "CoreCustomAttributes:HiddenProperty");
+      assert.equal(p!.extendedType, "BeGuid");
+      assert.equal(p!.customAttributes![1].ecclass, "CoreCustomAttributes:HiddenProperty");
     }
     const el2 = imodel.elements.getElement("0x34");
     assert.exists(el2);
@@ -72,7 +72,7 @@ describe("Class Registry", () => {
       assert.exists(metaData.properties);
       assert.isDefined(metaData.properties.modelSelector);
       const n = metaData.properties.modelSelector;
-      assert.equal(n.relationshipClass, "BisCore:SpatialViewDefinitionUsesModelSelector");
+      assert.equal(n!.relationshipClass, "BisCore:SpatialViewDefinitionUsesModelSelector");
     }
   });
 
@@ -87,7 +87,7 @@ describe("Class Registry", () => {
     assert.equal(testDomainClass.baseClasses[1], "TestDomain:IMixin");
 
     // Ensures the IMixin has been loaded as part of getMetadata call above.
-    assert.isDefined(imodel.classMetaDataRegistry.find("TestDomain:IMixin"));
+    assert.isDefined(imodel.entityMetadataRegistry.find("TestDomain:IMixin"));
 
     // Verify that the forEach method which is called when constructing an entity
     // is picking up all expected properties.

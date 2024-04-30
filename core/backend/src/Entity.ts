@@ -7,9 +7,10 @@
  */
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { EntityProps, EntityReferenceSet, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
+import { EntityProps, EntityReferenceSet } from "@itwin/core-common";
 import type { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
+import { PropertyCallback, PropertyMetadata, createPropertyFromMetadata } from "./EntityMetadata";
 
 /** Represents one of the fundamental building block in an [[IModelDb]]: as an [[Element]], [[Model]], or [[Relationship]].
  * Every subclass of Entity represents one BIS [ECClass]($ecschema-metadata).
@@ -55,7 +56,7 @@ export class Entity {
     this.iModel = iModel;
     this.id = Id64.fromJSON(props.id);
     // copy all auto-handled properties from input to the object being constructed
-    this.forEachProperty((propName: string, meta: PropertyMetaData) => (this as any)[propName] = meta.createProperty((props as any)[propName]), false);
+    this.forEachProperty((propName, meta) => (this as any)[propName] = createPropertyFromMetadata(meta, (props as any)[propName]), false);
   }
 
   /** Invoke the constructor of the specified `Entity` subclass.

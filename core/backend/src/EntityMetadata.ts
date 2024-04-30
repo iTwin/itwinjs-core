@@ -38,6 +38,8 @@ export interface PropertyMetadata {
   customAttributes?: CustomAttribute[];
 }
 
+export type PropertyCallback = (name: string, meta: PropertyMetadata) => void;
+
 function createValueOrArray(meta: PropertyMetadata, func: (json: any) => any, json: any): any {
   if (undefined === meta.minOccurs) {
     return func(json); // not an array
@@ -88,4 +90,28 @@ export interface EntityMetadata {
   customAttributes?: CustomAttribute[];
   /** An object whose properties correspond by name to the properties of this class. */
   properties: { [propName: string]: PropertyMetadata | undefined };
+}
+
+export class EntityMetadataRegistry {
+  private _registry = new Map<string, EntityMetadata>();
+  private _classIdToName = new Map<Id64String, string>();
+
+  public find(classFullName: string): EntityMetadata | undefined {
+    return this._registry.get(classFullName.toLowerCase());
+  }
+
+  public findClassId(classFullName: string): Id64String | undefined {
+    return this.find(classFullName)?.classId;
+  }
+
+  public findById(classId: Id64String): EntityMetadata | undefined {
+    const name = this._classIdToName.get(classId);
+    return undefined !== name ? this.find(name) : undefined;
+  }
+
+  public add(classFullName: string, metadata: EntityMetadata): void {
+    const name = classFullName.toLowerCase();
+    this._registry.set(name, metadata);
+    this._classIdToName.set(metadata.classId, name);
+  }
 }

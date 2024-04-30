@@ -9,7 +9,7 @@
 import { CompressedId64Set, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, ElementAlignedBox3d, ElementGeometryBuilderParams,
-  ElementGeometryBuilderParamsForPart, ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
+  ElementGeometryBuilderParamsForPart, ElementProps, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
   GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps,
   ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps,
   RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps,
@@ -21,6 +21,7 @@ import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
+import { EntityMetadata } from "./EntityMetadata";
 
 /** Argument for the `Element.onXxx` static methods
  * @beta
@@ -397,7 +398,7 @@ export class Element extends Entity {
   };
 
   /** Get the class metadata for this element. */
-  public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
+  public getClassMetaData(): EntityMetadata | undefined { return this.iModel.entityMetadataRegistry.find(this.classFullName); }
 
   private getAllUserProperties(): any {
     if (!this.jsonProperties.UserProps)

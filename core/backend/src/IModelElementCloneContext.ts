@@ -6,7 +6,7 @@
  * @module iModels
  */
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { Code, CodeScopeSpec, CodeSpec, ElementProps, IModel, PropertyMetaData, RelatedElement } from "@itwin/core-common";
+import { Code, CodeScopeSpec, CodeSpec, ElementProps, IModel, RelatedElement } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { SubCategory } from "./Category";
 import { Element } from "./Element";
@@ -145,8 +145,8 @@ export class IModelElementCloneContext {
   public cloneElement(sourceElement: Element, cloneOptions?: IModelJsNative.CloneElementOptions): ElementProps {
     const targetElementProps: ElementProps = this._nativeContext.cloneElement(sourceElement.id, cloneOptions);
     // Ensure that all NavigationProperties in targetElementProps have a defined value so "clearing" changes will be part of the JSON used for update
-    sourceElement.forEachProperty((propertyName: string, meta: PropertyMetaData) => {
-      if ((meta.isNavigation) && (undefined === (sourceElement as any)[propertyName])) {
+    sourceElement.forEachProperty((propertyName, meta) => {
+      if ((undefined !== meta.direction) && (undefined === (sourceElement as any)[propertyName])) {
         (targetElementProps as any)[propertyName] = RelatedElement.none;
       }
     }, false); // exclude custom because C++ has already handled them

@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, ProcessDetector, using } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
-  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps,
+  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityProps, FilePropertyProps,
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, IModelStatus, LightLocationProps, MapImageryProps, PhysicalElementProps,
   PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
@@ -20,6 +20,7 @@ import {
 } from "@itwin/core-geometry";
 import { V2CheckpointAccessProps } from "../../BackendHubAccess";
 import { V2CheckpointManager } from "../../CheckpointManager";
+import { EntityMetadata } from "../../EntityMetadata";
 import {
   BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
   DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
@@ -103,10 +104,10 @@ describe("iModel", () => {
     assert(!extents.isNull);
 
     // make sure we can construct a new element even if we haven't loaded its metadata (will be loaded in ctor)
-    assert.isUndefined(imodel1.classMetaDataRegistry.find("biscore:lightlocation"));
+    assert.isUndefined(imodel1.entityMetadataRegistry.find("biscore:lightlocation"));
     const e1 = imodel1.constructEntity<LightLocation, LightLocationProps>({ category: "0x11", classFullName: "BisCore:LightLocation", model: "0x01", code: Code.createEmpty() });
     assert.isDefined(e1);
-    assert.isDefined(imodel1.classMetaDataRegistry.find("biscore:lightlocation")); // should have been loaded in ctor
+    assert.isDefined(imodel1.entityMetadataRegistry.find("biscore:lightlocation")); // should have been loaded in ctor
   });
 
   it("should use schema to look up classes by name", () => {
@@ -1011,7 +1012,7 @@ describe("iModel", () => {
     assert.throws(() => imodel4.elements.getElement(childId2), IModelError);
   });
 
-  function checkElementMetaData(obj: EntityMetaData) {
+  function checkElementMetaData(obj: EntityMetadata) {
     assert.isNotNull(obj);
     assert.equal(obj.ecclass, Element.classFullName);
     assert.isArray(obj.baseClasses);
@@ -1031,12 +1032,12 @@ describe("iModel", () => {
     assert.isTrue(foundClassHasHandler);
     assert.isTrue(foundClassHasCurrentTimeStampProperty);
     assert.isDefined(obj.properties.federationGuid);
-    assert.equal(obj.properties.federationGuid.primitiveType, 257);
-    assert.equal(obj.properties.federationGuid.extendedType, "BeGuid");
+    assert.equal(obj.properties.federationGuid?.primitiveType, 257);
+    assert.equal(obj.properties.federationGuid?.extendedType, "BeGuid");
   }
 
   it("should get metadata for class", () => {
-    const metaData: EntityMetaData = imodel1.getMetaData(Element.classFullName);
+    const metaData = imodel1.getMetaData(Element.classFullName);
     assert.exists(metaData);
     checkElementMetaData(metaData);
   });
@@ -1117,14 +1118,14 @@ describe("iModel", () => {
     assert.isTrue(imodel5.geographicCoordinateSystem!.verticalCRS!.id === "ELLIPSOID");
   });
 
-  function checkClassHasHandlerMetaData(obj: EntityMetaData) {
+  function checkClassHasHandlerMetaData(obj: EntityMetadata) {
     assert.isDefined(obj.properties.restrictions);
-    assert.equal(obj.properties.restrictions.primitiveType, 2305);
-    assert.equal(obj.properties.restrictions.minOccurs, 0);
+    assert.equal(obj.properties.restrictions!.primitiveType, 2305);
+    assert.equal(obj.properties.restrictions!.minOccurs, 0);
   }
 
   it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
-    const metaData: EntityMetaData = imodel1.getMetaData("BisCore:ClassHasHandler");
+    const metaData = imodel1.getMetaData("BisCore:ClassHasHandler");
     assert.exists(metaData);
     checkClassHasHandlerMetaData(metaData);
   });
@@ -1337,7 +1338,7 @@ describe("iModel", () => {
   it("should import schemas", async () => {
     const classMetaData = imodel1.getMetaData("TestBim:TestDocument"); // will throw on failure
     assert.isDefined(classMetaData.properties.testDocumentProperty);
-    assert.isTrue(classMetaData.properties.testDocumentProperty.primitiveType === PrimitiveTypeCode.Integer);
+    assert.isTrue(classMetaData.properties.testDocumentProperty!.primitiveType === PrimitiveTypeCode.Integer);
   });
 
   it("should do CRUD on models", () => {

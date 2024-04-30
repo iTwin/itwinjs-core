@@ -11,7 +11,7 @@ import {
 } from "@itwin/core-bentley";
 import {
   Code, CodeProps, CustomViewState3dCreatorOptions, CustomViewState3dProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse,
-  ElementLoadOptions, ElementLoadProps, ElementMeshRequestProps, ElementProps, EntityMetaData, EntityQueryParams, FontMapProps,
+  ElementLoadOptions, ElementLoadProps, ElementMeshRequestProps, ElementProps, EntityQueryParams, FontMapProps,
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
   GeometrySummaryRequestProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ImageSourceFormat, IModel, IModelConnectionProps,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps,
@@ -227,7 +227,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     const iModelDb = await getIModelForRpc(tokenProps);
     const classArray: string[] = [];
     while (true) {
-      const classMetaData: EntityMetaData = iModelDb.getMetaData(classFullName);
+      const classMetaData = iModelDb.getMetaData(classFullName);
       classArray.push(classFullName);
       if (!classMetaData.baseClasses || classMetaData.baseClasses.length === 0)
         break;

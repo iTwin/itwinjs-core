@@ -18,11 +18,11 @@ import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
   DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps,
-  ElementProps, EntityMetaData, EntityMetaDataProps, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
+  ElementProps, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
   MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, OpenCheckpointArgs, OpenSqliteArgs,
-  ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps,
+  ProfileOptions, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps,
   SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps,
   UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
@@ -31,7 +31,7 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
 import { ChannelAdmin, ChannelControl } from "./ChannelControl";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
-import { ClassRegistry, EntityMetaDataWithClassId, MetaDataRegistry } from "./ClassRegistry";
+import { ClassRegistry } from "./ClassRegistry";
 import { CloudSqlite } from "./CloudSqlite";
 import { CodeService } from "./CodeService";
 import { CodeSpecs } from "./CodeSpecs";
@@ -58,6 +58,7 @@ import { ViewStore } from "./ViewStore";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { Workspace } from "./workspace/Workspace";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotationLayout";
+import { EntityMetadata, EntityMetadataRegistry, PropertyCallback } from "./EntityMetadata";
 
 import type { BlobContainer } from "./BlobContainerService";
 /** @internal */
@@ -258,7 +259,7 @@ export abstract class IModelDb extends IModel {
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
   private _codeSpecs?: CodeSpecs;
-  private _classMetaDataRegistry?: MetaDataRegistry;
+  private _entityMetadataRegistry?: EntityMetadataRegistry;
   protected _fontMap?: FontMap;
   /** @internal */
   private _workspace?: Workspace;
@@ -765,7 +766,7 @@ export abstract class IModelDb extends IModel {
   public clearCaches() {
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
-    this._classMetaDataRegistry = undefined;
+    this._entityMetadataRegistry = undefined;
   }
 
   /** Update the project extents for this iModel.
@@ -1053,11 +1054,11 @@ export abstract class IModelDb extends IModel {
   /** The registry of entity metadata for this iModel.
    * @internal
    */
-  public get classMetaDataRegistry(): MetaDataRegistry {
-    if (this._classMetaDataRegistry === undefined)
-      this._classMetaDataRegistry = new MetaDataRegistry();
+  public get entityMetadataRegistry(): EntityMetadataRegistry {
+    if (this._entityMetadataRegistry === undefined)
+      this._entityMetadataRegistry = new EntityMetadataRegistry();
 
-    return this._classMetaDataRegistry;
+    return this._entityMetadataRegistry;
   }
 
   /** Get the linkTableRelationships for this IModel */
@@ -1115,11 +1116,11 @@ export abstract class IModelDb extends IModel {
   /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
    * @throws [[IModelError]] if the metadata cannot be found nor loaded.
    */
-  public getMetaData(classFullName: string): EntityMetaDataWithClassId {
-    let metadata = this.classMetaDataRegistry.find(classFullName);
+  public getMetaData(classFullName: string): EntityMetadata {
+    let metadata = this.entityMetadataRegistry.find(classFullName);
     if (metadata === undefined) {
       this.loadMetaData(classFullName);
-      metadata = this.classMetaDataRegistry.find(classFullName);
+      metadata = this.entityMetadataRegistry.find(classFullName);
       if (metadata === undefined)
         throw ClassRegistry.makeMetaDataNotFoundError(classFullName); // do not log
     }
@@ -1149,6 +1150,7 @@ export abstract class IModelDb extends IModel {
     const meta = this.getMetaData(classFullName); // will load if necessary
     for (const propName in meta.properties) { // eslint-disable-line guard-for-in
       const propMeta = meta.properties[propName];
+      assert(undefined !== propMeta);
       if (includeCustom || !propMeta.isCustomHandled || propMeta.isCustomHandledOrphan)
         func(propName, propMeta);
     }
@@ -1159,7 +1161,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   private loadMetaData(classFullName: string) {
-    if (this.classMetaDataRegistry.find(classFullName))
+    if (this.entityMetadataRegistry.find(classFullName))
       return;
 
     const className = classFullName.split(":");
@@ -1172,13 +1174,12 @@ export abstract class IModelDb extends IModel {
 
     assert(undefined !== val.result);
 
-    const json: EntityMetaDataProps & { classId: Id64String } = JSON.parse(val.result);
-    const metaData = new EntityMetaData(json);
-    this.classMetaDataRegistry.add(classFullName, metaData, json.classId);
+    const metadata = JSON.parse(val.result) as EntityMetadata;
+    this.entityMetadataRegistry.add(classFullName, metadata);
 
     // Recursive, to make sure that base classes are cached.
-    if (metaData.baseClasses !== undefined && metaData.baseClasses.length > 0)
-      metaData.baseClasses.forEach((baseClassName: string) => this.loadMetaData(baseClassName));
+    if (metadata.baseClasses !== undefined && metadata.baseClasses.length > 0)
+      metadata.baseClasses.forEach((baseClassName: string) => this.loadMetaData(baseClassName));
   }
 
   /** Returns the full schema for the input name.
@@ -2146,7 +2147,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const fullClassName = aspectClassFullName.replace(".", ":").split(":");
       const val = this._iModel.nativeDb.getECClassMetaData(fullClassName[0], fullClassName[1]);
       if (val.result !== undefined) {
-        const metaData = new EntityMetaData(JSON.parse(val.result));
+        const metaData = JSON.parse(val.result) as EntityMetadata;
         if (metaData.modifier !== "Abstract") // Class is not abstract, use normal query to retrieve aspects
           return this._queryAspects(elementId, aspectClassFullName, excludedClassFullNames);
       }
