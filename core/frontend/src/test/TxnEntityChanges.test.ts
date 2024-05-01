@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { EntityChanges, Metadata } from "../TxnEntityChanges";
+import { EntityChanges, Metadata, TxnEntityChangeIterable, TxnEntityChangeType } from "../TxnEntityChanges";
 import { NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
 
 describe.only("TxnEntityMetadata", () => {
@@ -41,10 +41,10 @@ describe.only("TxnEntityMetadata", () => {
 
 describe.only("TxnEntityChanges", () => {
   it("populates metadata from args", () => {
-    function populate(meta: NotifyEntitiesChangedMetadata[]): Metadata[] {
+    function populate(met: NotifyEntitiesChangedMetadata[]): Metadata[] {
       const args: NotifyEntitiesChangedArgs = {
         insertedMeta: [], updatedMeta: [], deletedMeta: [],
-        meta,
+        meta: met,
       };
 
       const changes = new EntityChanges(args);
@@ -88,7 +88,7 @@ describe.only("TxnEntityChanges", () => {
       { name: "plant", bases: [] },
       { name: "green", bases: [] },
       { name: "ivy", bases: [8, 7] },
-      { name: "iguana", bases: [0, 8] }
+      { name: "iguana", bases: [0, 8] },
     ]);
 
     expect(meta.length).to.equal(11);
@@ -121,11 +121,39 @@ describe.only("TxnEntityChanges", () => {
     expectMeta(10, "iguana", ["reptile", "green", "animal"]);
   });
 
+  function expectEntities(iter: TxnEntityChangeIterable, expected: Array<[id: number, ecclass: string, type: TxnEntityChangeType]>): void {
+    const actual = Array.from(iter).map((x) => [x.id, x.metadata.classFullName, x.type]);
+    expect(actual).to.deep.equal(expected.map((x) => [`0x${x[0]}`, x[1], x[2]]));
+  }
+
   it("iterates", () => {
-    
+    let changes = new EntityChanges({
+      insertedMeta: [], updatedMeta: [], deletedMeta: [], meta: [],
+    });
+
+    expectEntities(changes, []);
+
+    changes = new EntityChanges({
+      inserted: "+1",
+      deleted: "+2",
+      updated: "+3",
+      insertedMeta: [0],
+      deletedMeta: [1],
+      updatedMeta: [0],
+      meta: [
+        { name: "a", bases: [] },
+        { name: "b", bases: [0] },
+      ],
+    });
+
+    expectEntities(changes, [
+      [1, "a", "inserted"],
+      [2, "b", "deleted"],
+      [3, "a", "updated"],
+    ]);
   });
 
   it("provides filtered iteration", () => {
-    
+
   });
 });
