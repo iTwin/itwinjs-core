@@ -7,7 +7,7 @@
  */
 
 import { CompressedId64Set, Id64String } from "@itwin/core-bentley";
-import { ChangedEntities, NotifyEntitiesChangedArgs } from "@itwin/core-common";
+import { ChangedEntities, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
 
 export interface TxnEntityMetadata {
   readonly classFullName: string;
@@ -38,18 +38,40 @@ export interface TxnEntityChanges extends ChangedEntities, TxnEntityChangeIterab
 
 /** @internal */
 export function createTxnEntityChanges(args: NotifyEntitiesChangedArgs): TxnEntityChanges {
-  return new TxnEntityChangesImpl(args);
+  return new EntityChanges(args);
 }
 
-class TxnEntityChangesImpl implements TxnEntityChanges {
+class Metadata implements TxnEntityMetadata {
+  public readonly classFullName: string;
+  public readonly baseClasses: Metadata[] = [];
+
+  public constructor(name: string) {
+    this.classFullName = name;
+  }
+
+  public is(baseName: string): boolean {
+    return baseName === this.classFullName || this.baseClasses.some((base) => base.is(baseName));
+  }
+}
+
+class EntityChanges implements TxnEntityChanges {
   public inserted: CompressedId64Set;
   public deleted: CompressedId64Set;
   public updated: CompressedId64Set;
+  private readonly _metadata: Metadata[];
 
   public constructor(args: NotifyEntitiesChangedArgs) {
     this.inserted = args.inserted ?? "";
     this.deleted = args.deleted ?? "";
     this.updated = args.updated ?? "";
+
+    this._metadata = args.meta.map((x) => new Metadata(x.name));
+    for (let i = 0; i < this._metadata.length; i++) {
+      const meta = this._metadata[i];
+      for (const baseIndex of args.meta[i].bases) {
+        meta.baseClasses.push(this._metadata[baseIndex]);
+      }
+    }
   }
 
   public [Symbol.iterator](): Iterator<Readonly<TxnEntityChange>> {
