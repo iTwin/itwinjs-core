@@ -1131,6 +1131,7 @@ export abstract class IModelDb extends IModel {
     return metadata;
   }
 
+  /** Identical to [[getMetaData]], except it returns `undefined` instead of throwing an error if the metadata cannot be found nor loaded. */
   public tryGetMetaData(classFullName: string): EntityMetaData | undefined {
     try {
       return this.getMetaData(classFullName);

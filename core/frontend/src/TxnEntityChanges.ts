@@ -9,17 +9,36 @@
 import { CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import { NotifyEntitiesChangedArgs } from "@itwin/core-common";
 
+/** Describes the BIS class of a [[TxnEntityChange]].
+ * @public
+ * @extensions
+ */
 export interface TxnEntityMetadata {
+  /** The class's name in "Schema:Class" format. */
   readonly classFullName: string;
 
+  /** Returns true if this class is or is derived from the specified class.
+   * @note Class names are compared case-sensitively.
+   */
   is(baseClassFullName: string): boolean;
 }
 
+/** The type of operation that produced a [[TxnEntityChange]].
+ * @public
+ * @extensions
+ */
 export type TxnEntityChangeType = "inserted" | "deleted" | "updated";
 
+/** Represents a single change to a single [Entity]($backend), as part of a collection of [[TxnEntityChanges]].
+ * @public
+ * @extensions
+ */
 export interface TxnEntityChange {
+  /** The operation that produced the change. */
   type: TxnEntityChangeType;
+  /** The Id of the affected entity. */
   id: Id64String;
+  /** A representation of the BIS class of the affected entity. */
   metadata: TxnEntityMetadata;
 }
 
@@ -27,11 +46,31 @@ export type TxnEntityChangeIterable = Iterable<Readonly<TxnEntityChange>>;
 
 export type TxnEntityMetadataCriterion = (metadata: TxnEntityMetadata) => boolean;
 
+/** Options defining criteria by which to filter the contents of a [[TxnEntityChanges]].
+ * @public
+ * @extensions
+ */
 export interface TxnEntityChangesFilterOptions {
+  /** Permits filtering based on metadata. For example, you may wish to include only elements deriving from "BisCore:GeometricElement",
+   * which you can determine by using [[TxnEntityMetadata.is]].
+   * Only entities with metadata for which this function returns `true` will be included in the iteration.
+   */
   includeMetadata?: TxnEntityMetadataCriterion;
+
+  /** Permits filtering based on the type of change. For example, you may only care about newly-inserted entities, in which case you would specify `["inserted"]`.
+   * Only changes of the specified type(s) will be included in the iteration.
+   */
   includeTypes?: TxnEntityChangeType[];
 }
 
+/** Describes a set of elements or models that were modified as part of a transaction in a [[BriefcaseConnection]],
+ * serving as the payload for the [[BriefcaseTxns.onElementsChanged]] and [[BriefcaseTxns.onModelsChanged]] events.
+ * The [[inserted]], [[deleted]], and [[updated]] compressed Id sets can be awkward to work with.
+ * It can be more convenient to iterate over the individual [[TxnEntityChange]]s, especially if you with to [[filter]] out some
+ * changes.
+ * @public
+ * @extensions
+ */
 export interface TxnEntityChanges extends TxnEntityChangeIterable {
   /** The ids of entities that were inserted during the Txn. */
   readonly inserted?: CompressedId64Set;
@@ -40,6 +79,7 @@ export interface TxnEntityChanges extends TxnEntityChangeIterable {
   /** The ids of entities that were modified during the Txn, including any [Element]($backend)s for which one of their [ElementAspect]($backend)s was changed. */
   readonly updated?: CompressedId64Set;
 
+  /** Obtain an iterator over changes meeting the criteria specified by `options`. */
   filter(options: TxnEntityChangesFilterOptions): TxnEntityChangeIterable;
 }
 

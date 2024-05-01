@@ -70,16 +70,28 @@ export interface IpcAppNotifications {
   notifyApp: () => void;
 }
 
+/** @internal See NotifyEntitiesChangedArgs.meta. */
 export interface NotifyEntitiesChangedMetadata {
+  /** Class full name ("Schema:Class") */
   name: string;
+  /** The indices in [[NotifyEntitiesChangedArgs.meta]] of each of this class's **direct** base classes. */
   bases: number[];
 }
 
+/** Arguments supplied to [[TxnNotifications.notifyElementsChanged]] and [[TxnNotifications.notifyModelsChanged]].
+ * @internal
+ */
 export interface NotifyEntitiesChangedArgs extends ChangedEntities {
+  /** An array of the same length as [[ChangedEntities.inserted]] (or empty if that array is undefined), containing the index in the [[meta]] array at which the
+   * metadata for each entity's class is located.
+   */
   insertedMeta: number[];
+  /** See insertedMeta. */
   updatedMeta: number[];
+  /** See insertedMeta. */
   deletedMeta: number[];
 
+  /** Metadata describing each unique class of entity in this set of changes, followed by each unique direct or indirect base class of those classes. */
   meta: NotifyEntitiesChangedMetadata[];
 }
 

@@ -236,6 +236,7 @@ export interface EntityMetaDataProps {
  * @beta
  */
 export class EntityMetaData implements EntityMetaDataProps {
+  /** The Id of the class in the [[IModelDb]] from which the metadata was obtained. */
   public readonly classId: Id64String;
   /** The Entity name */
   public readonly ecclass: string;
