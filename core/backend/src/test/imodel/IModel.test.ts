@@ -2177,12 +2177,11 @@ describe("iModel", () => {
     const iTwinId = "fakeIModelId";
     const iModelId = "fakeIModelId";
     const cloudContainer = { accessToken: "sas" };
-    let isOpen = false;
     const fakeSnapshotDb: any =
     {
       cloudContainer,
       isReadonly: () => true,
-      isOpen: () => isOpen,
+      isOpen: () => true,
       getIModelId: () => iModelId,
       getITwinId: () => iTwinId,
       getCurrentChangeset: () => changeset,
@@ -2210,10 +2209,10 @@ describe("iModel", () => {
 
     const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
+    sinon.stub(IModelDb.prototype, "loadSettingDictionaries" as any);
 
     const accessToken = "token";
     const checkpoint = await SnapshotDb.openCheckpointFromRpc({ accessToken, iTwinId, iModelId, changeset });
-    isOpen = true;
     expect(openDgnDbStub.calledOnce).to.be.true;
     expect(openDgnDbStub.firstCall.firstArg.path).to.equal("fakeDb");
 

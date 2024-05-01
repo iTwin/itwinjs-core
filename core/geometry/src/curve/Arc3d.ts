@@ -236,7 +236,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     if (z === undefined)
       z = this._center.z;
     return Arc3d.createXYZXYZXYZ(
-      this._center.x, this._center.y, this._center.z,
+      this._center.x, this._center.y, z,
       this._matrix.coffs[0], this._matrix.coffs[3], 0,
       this._matrix.coffs[1], this._matrix.coffs[4], 0,
       this._sweep,

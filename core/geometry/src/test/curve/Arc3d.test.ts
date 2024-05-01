@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import { Plane3dByOriginAndUnitNormal } from "../../core-geometry";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
@@ -56,6 +57,18 @@ function exerciseArcSet(ck: Checker, arcA: Arc3d) {
   ck.testTrue(arcD.isAlmostEqual(arcB));
   transform.multiplyPoint3d(myPoint, myPoint); // this indirectly modifies arcB, but not arcD
   ck.testFalse(arcD.isAlmostEqual(arcB));
+
+  const arcXY = Arc3d.createXY(Point3d.create(2,7,1), 8, AngleSweep.createStartEndRadians(2,8));
+  const arcE = arcXY.cloneAtZ();
+  ck.testTrue(arcE.isAlmostEqual(arcXY), "cloneAtZ of xy-arc with undefined param is just clone");
+  ck.testFalse(arcC.isInPlane(Plane3dByOriginAndUnitNormal.createXYPlane(arcC.center)), "arcC is a non-xy-arc");
+  const arcF = arcC.cloneAtZ();
+  ck.testFalse(arcF.isAlmostEqual(arcC), "cloneAtZ of non-xy-arc is not the same arc");
+  ck.testPoint3d(arcF.center, arcC.center, "cloneAtZ of non-xy-arc with undefined param doesn't change center");
+  ck.testTrue(arcF.isInPlane(Plane3dByOriginAndUnitNormal.createXYPlane(arcF.center)), "cloneAtZ of non-xy-arc with undefined param is in the horizontal plane at its center");
+  const arcG = arcC.cloneAtZ(100);
+  ck.testExactNumber(arcG.center.z, 100, "cloneAtZ sets new center to param");
+  ck.testTrue(arcG.isInPlane(Plane3dByOriginAndUnitNormal.createXYPlane(Point3d.create(arcC.center.x, arcC.center.y, 100))), "cloneAtZ of non-xy-arc is in the horizontal plane at the new center");
 }
 function exerciseArc3d(ck: Checker, arc: Arc3d) {
   const vector0 = arc.vector0;

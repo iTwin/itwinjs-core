@@ -14,15 +14,21 @@ import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from 
 import { ECClasses } from "./ECClasses";
 import { MutableMixin } from "./Mutable/MutableMixin";
 import { MutableEntityClass } from "./Mutable/MutableEntityClass";
+import { NavigationProperties } from "./Properties";
 
 /**
  * @alpha
  * A class extending ECClasses allowing you to create schema items of type Mixin.
  */
 export class Mixins extends ECClasses {
-  public constructor(_schemaEditor: SchemaContextEditor) {
-    super(_schemaEditor);
+  public constructor(schemaEditor: SchemaContextEditor) {
+    super(SchemaItemType.Mixin, schemaEditor);
   }
+
+  /**
+   * Allows access for editing of NavigationProperty attributes.
+   */
+  public readonly navigationProperties = new NavigationProperties(this.schemaItemType, this._schemaEditor);
 
   public async create(schemaKey: SchemaKey, name: string, appliesTo: SchemaItemKey, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
@@ -126,32 +132,5 @@ export class Mixins extends ECClasses {
     await navigationProperty.fromJSON(navigationProps);
 
     return { itemKey: classKey, propertyName: navigationProps.name };
-  }
-
-  public async setMixinBaseClass(mixinKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<SchemaItemEditResults>{
-    const mixin = (await this._schemaEditor.schemaContext.getSchemaItem<MutableMixin>(mixinKey));
-
-    if (mixin === undefined)
-      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Mixin Class ${mixinKey.fullName} not found in schema context.`);
-
-    if (baseClassKey === undefined) {
-      mixin.baseClass = undefined;
-      return { itemKey: mixinKey };
-    }
-
-    const baseClassSchema = !baseClassKey.schemaKey.matches(mixinKey.schemaKey) ? await this._schemaEditor.getSchema(baseClassKey.schemaKey) : mixin.schema;
-    if (baseClassSchema === undefined) {
-      return { errorMessage: `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context` };
-    }
-
-    const baseClassItem = await baseClassSchema.lookupItem<Mixin>(baseClassKey);
-    if (baseClassItem === undefined)
-      return { errorMessage: `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.` };
-
-    if (baseClassItem.schemaItemType !== SchemaItemType.Mixin)
-      return { errorMessage: `${baseClassItem.fullName} is not of type Mixin Class.` };
-
-    mixin.baseClass = new DelayedPromiseWithProps<SchemaItemKey, Mixin>(baseClassKey, async () => baseClassItem);
-    return { itemKey: mixinKey };
   }
 }

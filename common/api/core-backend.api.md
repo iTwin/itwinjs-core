@@ -514,6 +514,8 @@ export class BriefcaseDb extends IModelDb {
     static findByKey(key: string): BriefcaseDb;
     get isBriefcase(): boolean;
     get iTwinId(): GuidString;
+    // (undocumented)
+    protected makeLockControl(): void;
     readonly onClosed: BeEvent<() => void>;
     // @alpha (undocumented)
     static readonly onCodeServiceCreated: BeEvent<(briefcase: BriefcaseDb) => void>;
@@ -4848,8 +4850,6 @@ export class SettingsSchemas {
     static readonly allSchemas: Map<string, SettingSchema>;
     static readonly onSchemaChanged: BeEvent<() => void>;
     static removeGroup(groupName: string): void;
-    // @internal
-    static reset(): void;
     // @internal (undocumented)
     static validateArrayObject<T>(val: T, schemaName: string, msg: string): T;
 }

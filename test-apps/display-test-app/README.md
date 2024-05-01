@@ -325,6 +325,7 @@ display-test-app has access to all key-ins defined in the `@itwin/editor-fronten
 * `dta place line string` - start placing a line string. Each data point defines another point in the string; a reset (right mouse button) finishes. The element is placed into the first spatial model and spatial category in the viewport's model and category selectors.
 * `dta push` - push local changes to iModelHub. A description of the changes must be supplied. It should be enclosed in double quotes if it contains whitespace characters.
 * `dta pull` - pull and merge changes from iModelHub into the local briefcase. You must be signed in.
+* `dta create section drawing *drawingName*` - insert a spatial view matching the active viewport's current view and a section drawing referencing that view, then switch to a non-persistent drawing view to visualize the spatial view in a 2d context. Requires the camera to be turned off.
 
 ## Running in iOS
 

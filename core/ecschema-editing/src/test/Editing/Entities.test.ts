@@ -190,18 +190,25 @@ describe("Entities tests", () => {
       name: "RefSchema",
       version: "1.0.0",
       alias: "rs",
+      references: [
+        {
+          name: "testSchema",
+          version: "01.00.00",
+        },
+      ],
       items: {
         testEntityBase: {
           schemaItemType: "EntityClass",
           label: "ExampleEntity",
           description: "An example entity class.",
+          baseClass: "testSchema.testEntityBase",
         },
       },
     };
 
+    const firstEntityBaseRes = await testEditor.entities.create(testKey, "testEntityBase", ECClassModifier.None);
     const refSchema = await Schema.fromJson(refSchemaJson, context);
     await testEditor.addSchemaReference(testKey, refSchema);
-    const firstEntityBaseRes = await testEditor.entities.create(testKey, "testEntityBase", ECClassModifier.None);
     const result = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", firstEntityBaseRes.itemKey);
 
     const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result.itemKey!);
@@ -254,6 +261,29 @@ describe("Entities tests", () => {
 
     expect(result).to.not.be.undefined;
     expect(result.errorMessage).to.not.be.undefined;
-    expect(result.errorMessage).to.equal(`${unitResult.itemKey?.fullName} is not of type Entity Class.`);
+    expect(result.errorMessage).to.equal(`${unitResult.itemKey?.fullName} is not of type EntityClass.`);
+  });
+
+  it("try adding base class with unknown schema to existing entity class, returns error", async () => {
+    const schemaKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
+    const baseClassKey = new SchemaItemKey("testBaseClass", schemaKey);
+    const entityRes = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
+
+    const result = await testEditor.entities.setBaseClass(entityRes.itemKey!, baseClassKey);
+    expect(result.errorMessage).to.not.be.undefined;
+    expect(result.errorMessage).to.equal(`Schema Key ${schemaKey.toString(true)} not found in context`);
+  });
+
+  it("try changing the entity base class to one that doesn't derive from, returns error", async () => {
+    const baseClassRes = await testEditor.entities.create(testKey, "testBaseClass", ECClassModifier.None, "testLabel");
+    const entityRes = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", baseClassRes.itemKey);
+
+    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(entityRes.itemKey!);
+    expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes.itemKey!));
+
+    const newBaseClassRes = await testEditor.entities.create(testKey, "newBaseClass", ECClassModifier.None, "testLabel");
+    const result = await testEditor.entities.setBaseClass(entityRes.itemKey!, newBaseClassRes.itemKey);
+    expect(result.errorMessage).to.be.not.undefined;
+    expect(result.errorMessage).to.equal(`Baseclass ${newBaseClassRes.itemKey!.fullName} must derive from ${baseClassRes.itemKey!.fullName}.`);
   });
 });

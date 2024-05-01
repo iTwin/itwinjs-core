@@ -6,12 +6,24 @@
 import { expect } from "chai";
 import { SettingsSchemas } from "../../workspace/SettingsSchemas";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelHost } from "../../IModelHost";
 
 describe("SettingsSchemas", () => {
 
-  it("add groups", () => {
-    SettingsSchemas.reset();
+  // SettingsSchema tests change the state of the IModelHost object. They should always clear
+  // the current state before and after they run so they're not affected by, nor influence, other tests running in the same process.
+  const restartSession = async () => {
+    await IModelHost.shutdown();
+    await IModelHost.startup();
+  };
+  before(async () => {
+    await restartSession();
+  });
+  after(async () => {
+    await restartSession();
+  });
 
+  it("add groups", async () => {
     // can't add a group with no name
     expect(() => SettingsSchemas.addGroup({} as any)).throws(`has no "groupName" member`);
     // can't add a group with no properties
