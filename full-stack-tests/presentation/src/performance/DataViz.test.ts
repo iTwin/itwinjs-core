@@ -209,6 +209,7 @@ describe("#performance DataViz requests", () => {
               });
 
               for await (const dv of items) {
+                // eslint-disable-next-line @typescript-eslint/no-base-to-string
                 const displayValue = dv.displayValue ? dv.displayValue.toString() : "";
                 pushValues(distinctValues, displayValue, dv.groupedRawValues);
               }
@@ -277,6 +278,7 @@ describe("#performance DataViz requests", () => {
           });
 
           for await (const dv of items) {
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
             const displayValue = dv.displayValue ? dv.displayValue.toString() : "";
             pushValues(distinctValues, displayValue, dv.groupedRawValues);
           }
