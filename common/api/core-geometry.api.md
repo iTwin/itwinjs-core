@@ -5686,7 +5686,7 @@ export enum StandardViewIndex {
     Iso = 7,
     Left = 3,
     Right = 4,
-    RightIso = 8,//
+    RightIso = 8,
     Top = 1
 }
 
