@@ -139,7 +139,7 @@ function * entityChangesIterator(changes: EntityChanges, options?: TxnEntityChan
       yield { type, id, metadata };
     }
   }
-  
+
   yield* process("inserted");
   yield* process("deleted");
   yield* process("updated");
@@ -148,10 +148,10 @@ function * entityChangesIterator(changes: EntityChanges, options?: TxnEntityChan
 export class EntityChanges implements TxnEntityChanges {
   public readonly args: NotifyEntitiesChangedArgs;
   public readonly metadata: Metadata[];
-  
+
   public constructor(args: NotifyEntitiesChangedArgs) {
     this.args = args;
-    
+
     this.metadata = args.meta.map((x) => new Metadata(x.name));
     for (let i = 0; i < this.metadata.length; i++) {
       const meta = this.metadata[i];

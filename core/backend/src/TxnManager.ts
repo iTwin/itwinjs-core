@@ -10,7 +10,7 @@ import * as touch from "touch";
 import {
   assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
 } from "@itwin/core-bentley";
-import { EntityIdAndClassIdIterable, ModelGeometryChangesProps, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, ModelIdAndGeometryGuid, EntityMetaData } from "@itwin/core-common";
+import { EntityIdAndClassIdIterable, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
@@ -173,7 +173,7 @@ class ChangedEntitiesProc {
     }
 
     const result: NotifyEntitiesChangedMetadata[] = [];
-    
+
     function addMetadata(name: string, index: number): void {
       const bases: number[] = [];
       result[index] = { name, bases };
@@ -234,7 +234,7 @@ class ChangedEntitiesProc {
     this._updated.addToChangedEntities(entities, "updated");
 
     this.populateMetadata(iModel, classIds);
-    
+
     IpcHost.notifyTxns(iModel, evtName, entities);
 
     // Reset state.

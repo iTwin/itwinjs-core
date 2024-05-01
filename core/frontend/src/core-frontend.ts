@@ -147,7 +147,7 @@ export * from "./render/webgl/IModelFrameLifecycle";
 export * from "./render/webgl/PerformanceMetrics";
 export * from "./render/webgl/Target";
 export type {
- TxnEntityMetadata, TxnEntityChangeType, TxnEntityChangeIterable, TxnEntityMetadataCriterion, TxnEntityChangesFilterOptions, TxnEntityChanges,
+  TxnEntityMetadata, TxnEntityChangeType, TxnEntityChangeIterable, TxnEntityMetadataCriterion, TxnEntityChangesFilterOptions, TxnEntityChanges,
 } from "./TxnEntityChanges";
 export * from "./tile/internal";
 export * from "./tools/AccuDrawTool";
