@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { CompressedId64Set, Id64String } from "@itwin/core-bentley";
+import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { ChangedEntities, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
 
 export interface TxnEntityMetadata {
@@ -54,31 +54,66 @@ class Metadata implements TxnEntityMetadata {
   }
 }
 
-class EntityChanges implements TxnEntityChanges {
-  public inserted: CompressedId64Set;
-  public deleted: CompressedId64Set;
-  public updated: CompressedId64Set;
-  private readonly _metadata: Metadata[];
-
-  public constructor(args: NotifyEntitiesChangedArgs) {
-    this.inserted = args.inserted ?? "";
-    this.deleted = args.deleted ?? "";
-    this.updated = args.updated ?? "";
-
-    this._metadata = args.meta.map((x) => new Metadata(x.name));
-    for (let i = 0; i < this._metadata.length; i++) {
-      const meta = this._metadata[i];
-      for (const baseIndex of args.meta[i].bases) {
-        meta.baseClasses.push(this._metadata[baseIndex]);
+function * entityChangesIterator(changes: EntityChanges, options?: TxnEntityChangesFilterOptions) {
+  let excludedMetaIndices: Set<number> | undefined;
+  if (options?.includeMetadata) {
+    for (let i = 0; i < changes.metadata.length; i++) {
+      if (!options.includeMetadata(changes.metadata[i])) {
+        excludedMetaIndices = excludedMetaIndices ?? new Set<number>();
+        excludedMetaIndices.add(i);
       }
     }
   }
 
-  public [Symbol.iterator](): Iterator<Readonly<TxnEntityChange>> {
-    throw new Error("###TODO)");
+  function * process(type: TxnEntityChangeType) {
+    if (options?.includeTypes && !options.includeTypes.includes(type)) {
+      return;
+    }
+
+    const ids = changes[type];
+    if (undefined === ids) {
+      return;
+    }
+
+    const metaIndices = changes.args[`${type}Meta`];
+    let index = 0;
+    for (const id of CompressedId64Set.iterable(ids)) {
+      const metaIndex = metaIndices[index++];
+      const metadata = changes.metadata[metaIndex];
+      yield { type, id, metadata };
+    }
+  }
+  
+  process("inserted");
+  process("deleted");
+  process("updated");
+}
+
+class EntityChanges implements TxnEntityChanges {
+  public readonly args: NotifyEntitiesChangedArgs;
+  public readonly metadata: Metadata[];
+  
+  public constructor(args: NotifyEntitiesChangedArgs) {
+    this.args = args;
+    
+    this.metadata = args.meta.map((x) => new Metadata(x.name));
+    for (let i = 0; i < this.metadata.length; i++) {
+      const meta = this.metadata[i];
+      for (const baseIndex of args.meta[i].bases) {
+        meta.baseClasses.push(this.metadata[baseIndex]);
+      }
+    }
   }
 
-  public filter(_options: TxnEntityChangesFilterOptions): TxnEntityChangeIterable {
-    throw new Error("###TODO");
+  public get inserted(): CompressedId64Set | undefined { return this.args.inserted; }
+  public get deleted(): CompressedId64Set | undefined { return this.args.deleted; }
+  public get updated(): CompressedId64Set | undefined { return this.args.updated; }
+
+  public [Symbol.iterator](): Iterator<Readonly<TxnEntityChange>> {
+    return entityChangesIterator(this);
+  }
+
+  public filter(options: TxnEntityChangesFilterOptions): TxnEntityChangeIterable {
+    return entityChangesIterator(this, options);
   }
 }
