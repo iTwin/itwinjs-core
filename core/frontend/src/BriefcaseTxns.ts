@@ -14,7 +14,7 @@ import {
 import { Point3d, Range3d, Range3dProps, XYZProps } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { IpcApp, NotificationHandler } from "./IpcApp";
-import { createTxnEntityChanges, TxnEntityChanges } from "./TxnEntityChanges";
+import { EntityChanges, TxnEntityChanges } from "./TxnEntityChanges";
 
 /**
  * Base class for notification handlers for events from the backend that are specific to a [[BriefcaseConnection]].
@@ -219,12 +219,12 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
 
   /** @internal */
   public notifyElementsChanged(changed: NotifyEntitiesChangedArgs): void {
-    this.onElementsChanged.raiseEvent(createTxnEntityChanges(changed));
+    this.onElementsChanged.raiseEvent(new EntityChanges(changed));
   }
 
   /** @internal */
   public notifyModelsChanged(changed: NotifyEntitiesChangedArgs): void {
-    this.onModelsChanged.raiseEvent(createTxnEntityChanges(changed));
+    this.onModelsChanged.raiseEvent(new EntityChanges(changed));
   }
 
   /** @internal */

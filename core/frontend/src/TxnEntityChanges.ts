@@ -7,7 +7,7 @@
  */
 
 import { CompressedId64Set, Id64String } from "@itwin/core-bentley";
-import { NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
+import { NotifyEntitiesChangedArgs } from "@itwin/core-common";
 
 export interface TxnEntityMetadata {
   readonly classFullName: string;
@@ -43,12 +43,7 @@ export interface TxnEntityChanges extends TxnEntityChangeIterable {
   filter(options: TxnEntityChangesFilterOptions): TxnEntityChangeIterable;
 }
 
-/** @internal */
-export function createTxnEntityChanges(args: NotifyEntitiesChangedArgs): TxnEntityChanges {
-  return new EntityChanges(args);
-}
-
-class Metadata implements TxnEntityMetadata {
+export class Metadata implements TxnEntityMetadata {
   public readonly classFullName: string;
   public readonly baseClasses: Metadata[] = [];
 
@@ -96,7 +91,7 @@ function * entityChangesIterator(changes: EntityChanges, options?: TxnEntityChan
   process("updated");
 }
 
-class EntityChanges implements TxnEntityChanges {
+export class EntityChanges implements TxnEntityChanges {
   public readonly args: NotifyEntitiesChangedArgs;
   public readonly metadata: Metadata[];
   
