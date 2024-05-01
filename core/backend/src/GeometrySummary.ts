@@ -303,13 +303,13 @@ class ResponseGenerator {
       case "linearSweep":
         const linearSweep: LinearSweep = solid as LinearSweep;
         return `${summary}'
-        ' vector: ${linearSweep.cloneSweepVector().toJSON()}'
+        ' vector: ${JSON.stringify(linearSweep.cloneSweepVector().toJSON())}'
         ' curves${this.summarizeCurveCollection(linearSweep.getCurvesRef())}`;
       case "rotationalSweep":
         const rotationalSweep: RotationalSweep = solid as RotationalSweep;
         const axis = rotationalSweep.cloneAxisRay();
         return `${summary}'
-        ' center: ${axis.origin.toJSON()}'
+        ' center: ${JSON.stringify(axis.origin.toJSON())}'
         ' axis: ${JSON.stringify(axis.direction.toJSON())}'
         ' sweepAngle: ${rotationalSweep.getSweep().degrees}`;
       case "ruledSweep":
@@ -328,7 +328,7 @@ class ResponseGenerator {
           sweep.setRadians(-sweep.radians);
         }
         return `${summary}'
-        ' center: ${torusPipe.cloneCenter().toJSON()}'
+        ' center: ${JSON.stringify(torusPipe.cloneCenter().toJSON())}'
         ' xyVectors: ${JSON.stringify([vectorX.toJSON(), vectorY.toJSON()])}'
         ' majorRadius: ${torusPipe.getMajorRadius()}'
         ' minorRadius: ${torusPipe.getMinorRadius()}'
@@ -346,8 +346,8 @@ class ResponseGenerator {
         if (undefined !== arc.circularRadius)
           summary = `${summary} radius: ${arc.circularRadius()}`;
         summary = `${summary}'
-        ' vectorX:${arc.vector0.toJSON()}'
-        ' vectorY:${arc.vector90.toJSON()}'
+        ' vectorX:${JSON.stringify(arc.vector0.toJSON())}'
+        ' vectorY:${JSON.stringify(arc.vector90.toJSON())}'
         ' sweepStartEnd [${arc.sweep.startDegrees}, ${arc.sweep.endDegrees}]`
           + ` curveLength: ${curve.curveLength()}`;
         return summary;

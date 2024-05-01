@@ -77,7 +77,7 @@ describe("Texture tests", () => {
     }
 
     // create texture with default parameters
-    const imageBuffer = ImageBuffer.create(bitmapData, ImageBufferFormat.Rgb, 4)!;
+    const imageBuffer = ImageBuffer.create(bitmapData, ImageBufferFormat.Rgb, 4);
     assert(undefined !== imageBuffer);
     const texture = TextureHandle.createForImageBuffer(imageBuffer, RenderTexture.Type.Normal)!;
     assert(undefined !== texture);
@@ -115,7 +115,7 @@ async function testImageBufferUrl(buffer: ImageBuffer, expectedPixels: number[])
   expect(image).not.to.be.undefined;
 
   // Draw the image onto a canvas
-  const canvas = document.createElement("canvas")!;
+  const canvas = document.createElement("canvas");
   assert(null !== canvas);
   canvas.width = buffer.width;
   canvas.height = buffer.height;
@@ -155,7 +155,7 @@ describe("ImageUtil", () => {
 
   it("should produce a data URL from an alpha ImageBuffer", async () => {
     const alphaBitmap = new Uint8Array([0x00, 0x10, 0x20, 0xdf, 0xef, 0xff]);
-    const alphaBuffer = ImageBuffer.create(alphaBitmap, ImageBufferFormat.Alpha, 3)!;
+    const alphaBuffer = ImageBuffer.create(alphaBitmap, ImageBufferFormat.Alpha, 3);
 
     const expectedPixels = [
       0x00, 0x00, 0x00, 0x00, 0x10, 0x10, 0x10, 0x10, 0x20, 0x20, 0x20, 0x20,
@@ -169,7 +169,7 @@ describe("ImageUtil", () => {
       0xff, 0x00, 0x00, 0x00, 0xff, 0x00,
       0x00, 0x00, 0xff, 0x7f, 0x7f, 0x7f,
     ]);
-    const rgbBuffer = ImageBuffer.create(rgbBitmap, ImageBufferFormat.Rgb, 2)!;
+    const rgbBuffer = ImageBuffer.create(rgbBitmap, ImageBufferFormat.Rgb, 2);
 
     const expectedPixels = [
       0xff, 0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff,
@@ -183,7 +183,7 @@ describe("ImageUtil", () => {
       0xff, 0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00,
       0x00, 0x00, 0xff, 0xdf, 0xef, 0xef, 0xef, 0xef,
     ];
-    const rgbaBuffer = ImageBuffer.create(new Uint8Array(rgbaBitmap), ImageBufferFormat.Rgba, 2)!;
+    const rgbaBuffer = ImageBuffer.create(new Uint8Array(rgbaBitmap), ImageBufferFormat.Rgba, 2);
 
     const rgbaResult = [
       0xff, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, // NB: premultiplied alpha: 0xff*0x00 => 0x00
