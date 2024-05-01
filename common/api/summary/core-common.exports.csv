@@ -511,6 +511,8 @@ public;NonUniformColor
 public;NormalMapFlags
 beta;NormalMapParams
 public;NormalMapProps 
+internal;NotifyEntitiesChangedArgs 
+internal;NotifyEntitiesChangedMetadata
 public;Npc
 public;NpcCenter: Point3d
 public;NpcCorners: Point3d[]

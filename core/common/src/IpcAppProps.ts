@@ -70,7 +70,7 @@ export interface IpcAppNotifications {
   notifyApp: () => void;
 }
 
-/** @internal See NotifyEntitiesChangedArgs.meta. */
+/** @internal */
 export interface NotifyEntitiesChangedMetadata {
   /** Class full name ("Schema:Class") */
   name: string;

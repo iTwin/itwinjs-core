@@ -41,7 +41,6 @@ import { Camera } from '@itwin/core-common';
 import { Capabilities } from '@itwin/webgl-compatibility';
 import { Cartographic } from '@itwin/core-common';
 import { CategorySelectorProps } from '@itwin/core-common';
-import { ChangedEntities } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
 import { ChangesetIndexAndId } from '@itwin/core-common';
 import { ClipIntersectionStyle } from '@itwin/core-common';
@@ -204,6 +203,7 @@ import { Mutable } from '@itwin/core-bentley';
 import { NativeAppFunctions } from '@itwin/core-common';
 import { NonFunctionPropertiesOf } from '@itwin/core-bentley';
 import { NormalMapParams } from '@itwin/core-common';
+import { NotifyEntitiesChangedArgs } from '@itwin/core-common';
 import { ObservableSet } from '@itwin/core-bentley';
 import { OctEncodedNormal } from '@itwin/core-common';
 import { OpenBriefcaseProps } from '@itwin/core-common';
@@ -1948,7 +1948,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @internal (undocumented)
     notifyEcefLocationChanged(ecef: EcefLocationProps | undefined): void;
     // @internal (undocumented)
-    notifyElementsChanged(changed: ChangedEntities): void;
+    notifyElementsChanged(changed: NotifyEntitiesChangedArgs): void;
     // @internal (undocumented)
     notifyGeographicCoordinateSystemChanged(gcs: GeographicCRSProps | undefined): void;
     // @internal (undocumented)
@@ -1958,7 +1958,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @internal (undocumented)
     notifyIModelNameChanged(name: string): void;
     // @internal (undocumented)
-    notifyModelsChanged(changed: ChangedEntities): void;
+    notifyModelsChanged(changed: NotifyEntitiesChangedArgs): void;
     // @internal (undocumented)
     notifyProjectExtentsChanged(range: Range3dProps): void;
     // @internal (undocumented)
@@ -1978,9 +1978,9 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     readonly onChangesPushed: BeEvent<(parentChangeset: ChangesetIndexAndId) => void>;
     readonly onCommit: BeEvent<() => void>;
     readonly onCommitted: BeEvent<(hasPendingTxns: boolean, time: number) => void>;
-    readonly onElementsChanged: BeEvent<(changes: Readonly<ChangedEntities>) => void>;
+    readonly onElementsChanged: BeEvent<(changes: TxnEntityChanges) => void>;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
-    readonly onModelsChanged: BeEvent<(changes: Readonly<ChangedEntities>) => void>;
+    readonly onModelsChanged: BeEvent<(changes: TxnEntityChanges) => void>;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     readonly onReplayExternalTxns: BeEvent<() => void>;
     reinstateTxn(): Promise<IModelStatus>;
@@ -15505,6 +15505,35 @@ export class TwoWayViewportSync {
     protected readonly _disconnect: VoidFunction[];
     protected syncViewports(source: Viewport, target: Viewport): void;
 }
+
+// @public
+export type TxnEntityChangeIterable = Iterable<Readonly<TxnEntityChange>>;
+
+// @public
+export interface TxnEntityChanges extends TxnEntityChangeIterable {
+    readonly deleted?: CompressedId64Set;
+    filter(options: TxnEntityChangesFilterOptions): TxnEntityChangeIterable;
+    readonly inserted?: CompressedId64Set;
+    readonly updated?: CompressedId64Set;
+}
+
+// @public
+export interface TxnEntityChangesFilterOptions {
+    includeMetadata?: TxnEntityMetadataCriterion;
+    includeTypes?: TxnEntityChangeType[];
+}
+
+// @public
+export type TxnEntityChangeType = "inserted" | "deleted" | "updated";
+
+// @public
+export interface TxnEntityMetadata {
+    readonly classFullName: string;
+    is(baseClassFullName: string): boolean;
+}
+
+// @public
+export type TxnEntityMetadataCriterion = (metadata: TxnEntityMetadata) => boolean;
 
 // @public
 export interface Uniform {
