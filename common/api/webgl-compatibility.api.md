@@ -93,9 +93,9 @@ export type ContextCreator = (canvas: HTMLCanvasElement, useWebGL2: boolean, inp
 // @internal
 export enum DepthType {
     // (undocumented)
-    RenderBufferUnsignedShort16 = 0,
+    RenderBufferUnsignedShort16 = 0,// core to WebGL1
     // (undocumented)
-    TextureUnsignedInt24Stencil8 = 1,
+    TextureUnsignedInt24Stencil8 = 1,// core to WebGL2; available to WebGL1 via WEBGL_depth_texture
     // (undocumented)
     TextureUnsignedInt32 = 2
 }

@@ -459,9 +459,9 @@ describe("PipeConnections", () => {
     const ySurface = 200;
     const yMesh = 400;
     // quirky order for making the rectangle with intended edge on y=ay edge axis ... createRectangleXY starts at upper right arc
-    const path = CurveFactory.createRectangleXY(-ax, 0, ax, ay, 0, 30)!;
+    const path = CurveFactory.createRectangleXY(-ax, 0, ax, ay, 0, 30);
     const arc = path.children.shift()!;
-    path.children.push(arc)!;
+    path.children.push(arc);
 
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y2);
     // stoke it ..
