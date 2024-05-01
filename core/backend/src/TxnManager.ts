@@ -10,7 +10,7 @@ import * as touch from "touch";
 import {
   assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
 } from "@itwin/core-bentley";
-import { ChangedEntities, EntityIdAndClassIdIterable, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@itwin/core-common";
+import { EntityIdAndClassIdIterable, ModelGeometryChangesProps, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, ModelIdAndGeometryGuid, EntityMetaData } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
@@ -111,7 +111,7 @@ class ChangedEntitiesArray {
     this._classIndices.length = 0;
   }
 
-  public addToChangedEntities(entities: ChangedEntities, type: "deleted" | "inserted" | "updated"): void {
+  public addToChangedEntities(entities: NotifyEntitiesChangedArgs, type: "deleted" | "inserted" | "updated"): void {
     if (this.entityIds.length > 0)
       entities[type] = CompressedId64Set.compressIds(this.entityIds);
   }
@@ -151,6 +151,62 @@ class ChangedEntitiesProc {
     this.processChanges(iModel, mgr.onModelsChanged, "notifyModelsChanged");
   }
 
+  private populateMetadata(db: BriefcaseDb | StandaloneDb, classIds: Id64Array): NotifyEntitiesChangedMetadata[] {
+    // Ensure metadata for all class Ids is loaded. Loading metadata for a derived class loads metadata for all of its superclasses.
+    const classIdsToLoad = classIds.filter((x) => undefined === db.classMetaDataRegistry.findByClassId(x));
+    if (classIdsToLoad.length > 0) {
+      const classIdsStr = classIdsToLoad.join(",");
+      const sql = `SELECT ec_class.Name, ec_class.Id, ec_schema.Name FROM ec_class JOIN ec_schema WHERE ec_schema.Id = ec_class.SchemaId AND ec_class.Id IN (${classIdsStr})`;
+      db.withPreparedSqliteStatement(sql, (stmt) => {
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          const classFullName = `${stmt.getValueString(2)}:${stmt.getValueString(0)}`;
+          db.tryGetMetaData(classFullName);
+        }
+      });
+    }
+
+    // Define array indices for the metadata array entries correlating to the class Ids in the input list.
+    const nameToIndex = new Map<string, number>();
+    for (const classId of classIds) {
+      const meta = db.classMetaDataRegistry.findByClassId(classId);
+      nameToIndex.set(meta?.ecclass ?? "", nameToIndex.size);
+    }
+
+    const result: NotifyEntitiesChangedMetadata[] = [];
+    
+    function addMetadata(name: string, index: number): void {
+      const bases: number[] = [];
+      result[index] = { name, bases };
+
+      const meta = db.tryGetMetaData(name);
+      if (!meta) {
+        return;
+      }
+
+      for (const baseClassName of meta.baseClasses) {
+        let baseClassIndex = nameToIndex.get(baseClassName);
+        if (undefined === baseClassIndex) {
+          baseClassIndex = nameToIndex.size;
+          nameToIndex.set(baseClassName, baseClassIndex);
+          addMetadata(baseClassName, baseClassIndex);
+        }
+
+        bases.push(baseClassIndex);
+      }
+    }
+
+    for (const [name, index] of nameToIndex) {
+      if (index >= classIds.length) {
+        // Entries beyond this are base classes for the classes in `classIds` - don't reprocess them.
+        break;
+      }
+
+      addMetadata(name, index);
+    }
+
+    return result;
+  }
+
   private sendEvent(iModel: BriefcaseDb | StandaloneDb, evt: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
     if (this._currSize === 0)
       return;
@@ -166,10 +222,19 @@ class ChangedEntitiesProc {
     evt.raiseEvent(txnEntities);
 
     // Notify frontend listeners.
-    const entities: ChangedEntities = {};
+    const entities: NotifyEntitiesChangedArgs = {
+      insertedMeta: [],
+      updatedMeta: [],
+      deletedMeta: [],
+      meta: [],
+    };
+
     this._inserted.addToChangedEntities(entities, "inserted");
     this._deleted.addToChangedEntities(entities, "deleted");
     this._updated.addToChangedEntities(entities, "updated");
+
+    this.populateMetadata(iModel, classIds);
+    
     IpcHost.notifyTxns(iModel, evtName, entities);
 
     // Reset state.

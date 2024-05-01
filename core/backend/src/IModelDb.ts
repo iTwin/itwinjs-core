@@ -1131,6 +1131,14 @@ export abstract class IModelDb extends IModel {
     return metadata;
   }
 
+  public tryGetMetaData(classFullName: string): EntityMetaData | undefined {
+    try {
+      return this.getMetaData(classFullName);
+    } catch (_) {
+      return undefined;
+    }
+  }
+
   /** Invoke a callback on each property of the specified class, optionally including superclass properties.
    * @param iModel  The IModel that contains the schema
    * @param classFullName The full class name to load the metadata, if necessary

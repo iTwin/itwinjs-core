@@ -70,14 +70,27 @@ export interface IpcAppNotifications {
   notifyApp: () => void;
 }
 
+export interface NotifyEntitiesChangedMetadata {
+  name: string;
+  bases: number[];
+}
+
+export interface NotifyEntitiesChangedArgs extends ChangedEntities {
+  insertedMeta: number[];
+  updatedMeta: number[];
+  deletedMeta: number[];
+
+  meta: NotifyEntitiesChangedMetadata[];
+}
+
 /** Interface implemented by the frontend [NotificationHandler]($common) to be notified of changes to an iModel.
  * @see [TxnManager]($backend) for the source of these events.
  * @see [BriefcaseTxns]($frontend) for the frontend implementation.
  * @internal
  */
 export interface TxnNotifications {
-  notifyElementsChanged: (changes: ChangedEntities) => void;
-  notifyModelsChanged: (changes: ChangedEntities) => void;
+  notifyElementsChanged: (changes: NotifyEntitiesChangedArgs) => void;
+  notifyModelsChanged: (changes: NotifyEntitiesChangedArgs) => void;
   notifyGeometryGuidsChanged: (changes: ModelIdAndGeometryGuid[]) => void;
   notifyCommit: () => void;
   notifyCommitted: (hasPendingTxns: boolean, time: number) => void;

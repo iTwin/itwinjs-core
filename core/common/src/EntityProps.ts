@@ -219,6 +219,7 @@ export class PropertyMetaData implements PropertyMetaDataProps {
 
 /** @beta */
 export interface EntityMetaDataProps {
+  classId: Id64String;
   ecclass: string;
   description?: string;
   modifier?: string;
@@ -235,6 +236,7 @@ export interface EntityMetaDataProps {
  * @beta
  */
 export class EntityMetaData implements EntityMetaDataProps {
+  public readonly classId: Id64String;
   /** The Entity name */
   public readonly ecclass: string;
   public readonly description?: string;
@@ -248,6 +250,7 @@ export class EntityMetaData implements EntityMetaDataProps {
   public readonly properties: { [propName: string]: PropertyMetaData };
 
   public constructor(jsonObj: EntityMetaDataProps) {
+    this.classId = jsonObj.classId;
     this.ecclass = jsonObj.ecclass;
     this.description = jsonObj.description;
     this.modifier = jsonObj.modifier;
