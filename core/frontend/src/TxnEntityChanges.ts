@@ -42,8 +42,18 @@ export interface TxnEntityChange {
   metadata: TxnEntityMetadata;
 }
 
+/** A collection of [[TxnEntityChange]]s.
+ * @public
+ * @extensions
+ */
 export type TxnEntityChangeIterable = Iterable<Readonly<TxnEntityChange>>;
 
+/** A function that returns `true` if a particular BIS [Entity]($backend) class should be included when iterating a [[TxnEntityChangeIterable]].
+ * For example, you may wish to include only elements deriving from "BisCore:GeometricElement", which you can determine by using [[TxnEntityMetadata.is]].
+ * @see [[TxnEntityChangesFilterOptions.includeMetadata]] to supply such a criterion to [[TxnEntityChanges.filter]].
+ * @public
+ * @extensions
+ */
 export type TxnEntityMetadataCriterion = (metadata: TxnEntityMetadata) => boolean;
 
 /** Options defining criteria by which to filter the contents of a [[TxnEntityChanges]].
