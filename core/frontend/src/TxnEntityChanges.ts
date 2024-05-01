@@ -6,8 +6,8 @@
  * @module IModelConnection
  */
 
-import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
-import { ChangedEntities, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
+import { CompressedId64Set, Id64String } from "@itwin/core-bentley";
+import { NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
 
 export interface TxnEntityMetadata {
   readonly classFullName: string;
@@ -32,7 +32,14 @@ export interface TxnEntityChangesFilterOptions {
   includeTypes?: TxnEntityChangeType[];
 }
 
-export interface TxnEntityChanges extends ChangedEntities, TxnEntityChangeIterable {
+export interface TxnEntityChanges extends TxnEntityChangeIterable {
+  /** The ids of entities that were inserted during the Txn. */
+  readonly inserted?: CompressedId64Set;
+  /** The ids of entities that were deleted during the Txn. */
+  readonly deleted?: CompressedId64Set;
+  /** The ids of entities that were modified during the Txn, including any [Element]($backend)s for which one of their [ElementAspect]($backend)s was changed. */
+  readonly updated?: CompressedId64Set;
+
   filter(options: TxnEntityChangesFilterOptions): TxnEntityChangeIterable;
 }
 
