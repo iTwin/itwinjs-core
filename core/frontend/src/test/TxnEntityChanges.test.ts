@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { EntityChanges, Metadata, TxnEntityChangeIterable, TxnEntityChangeType } from "../TxnEntityChanges";
 import { NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
 
-describe.only("TxnEntityMetadata", () => {
+describe("TxnEntityMetadata", () => {
   describe("is", () => {
     it("returns false for unknown base class", () => {
       const a = new Metadata("a");
@@ -39,7 +39,7 @@ describe.only("TxnEntityMetadata", () => {
   });
 });
 
-describe.only("TxnEntityChanges", () => {
+describe("TxnEntityChanges", () => {
   it("populates metadata from args", () => {
     function populate(met: NotifyEntitiesChangedMetadata[]): Metadata[] {
       const args: NotifyEntitiesChangedArgs = {
@@ -151,9 +151,93 @@ describe.only("TxnEntityChanges", () => {
       [2, "b", "deleted"],
       [3, "a", "updated"],
     ]);
+
+    changes = new EntityChanges({
+      inserted: "+1+5",
+      updated: "+3+2+3",
+      insertedMeta: [0, 1],
+      deletedMeta: [],
+      updatedMeta: [1, 1, 0],
+      meta: [
+        { name: "a", bases: [] },
+        { name: "b", bases: [0] },
+      ],
+    });
+
+    expectEntities(changes, [
+      [1, "a", "inserted"],
+      [6, "b", "inserted"],
+      [3, "b", "updated"],
+      [5, "b", "updated"],
+      [8, "a", "updated"],
+    ]);
   });
 
   it("provides filtered iteration", () => {
+    const changes = new EntityChanges({
+      inserted: "+1+1+1+1",
+      insertedMeta: [0, 1, 2, 3],
+      deleted: "+5+1",
+      deletedMeta: [3, 2],
+      updated: "+7+1+1",
+      updatedMeta: [1, 2, 1],
+      meta: [
+        { name: "a", bases: [] },
+        { name: "b", bases: [0] },
+        { name: "c", bases: [1] },
+        { name: "d", bases: [] },
+      ],
+    });
 
+    expectEntities(changes.filter({ }), [
+      [1, "a", "inserted"],
+      [2, "b", "inserted"],
+      [3, "c", "inserted"],
+      [4, "d", "inserted"],
+      [5, "d", "deleted"],
+      [6, "c", "deleted"],
+      [7, "b", "updated"],
+      [8, "c", "updated"],
+      [9, "b", "updated"],
+    ]);
+
+    expectEntities(changes.filter({ includeTypes: [] }), []);
+
+    expectEntities(changes.filter({ includeTypes: ["deleted"] }), [
+      [5, "d", "deleted"],
+      [6, "c", "deleted"],
+    ]);
+
+    expectEntities(changes.filter({ includeTypes: ["inserted", "updated"] }), [
+      [1, "a", "inserted"],
+      [2, "b", "inserted"],
+      [3, "c", "inserted"],
+      [4, "d", "inserted"],
+      [7, "b", "updated"],
+      [8, "c", "updated"],
+      [9, "b", "updated"],
+    ]);
+
+    expectEntities(changes.filter({ includeMetadata: (meta) => meta.classFullName === "b" }), [
+      [2, "b", "inserted"],
+      [7, "b", "updated"],
+      [9, "b", "updated"],
+    ]);
+
+    expectEntities(changes.filter({ includeMetadata: (meta) => meta.is("b") }), [
+      [2, "b", "inserted"],
+      [3, "c", "inserted"],
+      [6, "c", "deleted"],
+      [7, "b", "updated"],
+      [8, "c", "updated"],
+      [9, "b", "updated"],
+    ]);
+
+    expectEntities(changes.filter({ includeMetadata: (meta) => meta.is("a"), includeTypes: ["inserted", "deleted" ]}), [
+      [1, "a", "inserted"],
+      [2, "b", "inserted"],
+      [3, "c", "inserted"],
+      [6, "c", "deleted"],
+    ]);
   });
 });

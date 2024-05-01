@@ -81,6 +81,10 @@ function * entityChangesIterator(changes: EntityChanges, options?: TxnEntityChan
     let index = 0;
     for (const id of CompressedId64Set.iterable(ids)) {
       const metaIndex = metaIndices[index++];
+      if (excludedMetaIndices && excludedMetaIndices.has(metaIndex)) {
+        continue;
+      }
+
       const metadata = changes.metadata[metaIndex];
       yield { type, id, metadata };
     }
