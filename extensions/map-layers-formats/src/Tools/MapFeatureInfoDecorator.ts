@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* eslint-disable no-console */
 import { Base64EncodedString, ColorDef } from "@itwin/core-common";
 import {
   BeButtonEvent, Cluster, CollectTileStatus, DecorateContext, Decorator, DisclosedTileTreeSet,
@@ -10,20 +9,32 @@ import {
   Tile, TileGeometryCollector, TileTreeReference, TileUser, Viewport } from "@itwin/core-frontend";
 import { ConvexClipPlaneSet, CurvePrimitive, GrowableXYZArray, LineString3d, Loop, Point2d, Point3d, Polyface, PolyfaceClip, PolyfaceQuery, Range3d, SweepLineStringToFacetsOptions, Transform, Vector3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { MapFeatureInfoToolData } from "./MapFeatureInfoTool";
+import { Logger } from "@itwin/core-bentley";
+
+const loggerCategory = "MapLayersFormats.MapFeatureInfoDecorator";
 
 /** A TileGeometryCollector that restricts collection to tiles that overlap a line string.
 /* @internal
 */
 class DrapeLineStringCollector extends TileGeometryCollector {
+  private _logCount = 0;
   constructor(user: TileUser, chordTolerance: number, range: Range3d, transform: Transform, private _points: GrowableXYZArray) {
     super({ user, chordTolerance, range, transform });
   }
 
+  public override addMissingTile(tile: Tile): void {
+    Logger.logTrace(loggerCategory, `CollectorAdd missing tile: ${tile.contentId}`);
+    super.addMissingTile(tile);
+  }
+
   public override collectTile(tile: Tile): CollectTileStatus {
     let status = super.collectTile(tile);
-    if ("reject" !== status && !this.rangeOverlapsLineString(tile.range))
-      status = "reject";
 
+    if ("reject" !== status && !this.rangeOverlapsLineString(tile.range)) {
+      status = "reject";
+    }
+
+    Logger.logTrace(loggerCategory, `collectTile - tile: ${tile.contentId} status: ${status } isReady: ${tile.isReady} status:${tile.loadStatus}`);
     return status;
   }
 
@@ -79,8 +90,10 @@ class TerrainDraper implements TileUser {
 
     if (collector.isAllGeometryLoaded && collector.polyfaces.length > 0) {
       for (const polyface of collector.polyfaces)
-        outStrings.push(...PolyfaceQuery.sweepLineStringToFacets(inPoints, polyface,
-          SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), undefined, true, true, false, false)));
+        outStrings.push(...PolyfaceQuery.sweepLineStringToFacets(
+          inPoints,
+          polyface,
+          SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), undefined,true, true, false, false)));
       return "complete";
     }
 
@@ -107,8 +120,10 @@ class TerrainDraper implements TileUser {
     if (collector.isAllGeometryLoaded && collector.polyfaces.length > 0) {
       for (const polyface of collector.polyfaces) {
         const mesh = PolyfaceClip.drapeRegion(polyface, loop);
-        if (mesh?.tryTranslateInPlace(0, 0, 1 * tolerance)) // shift up to see it better
+        if (mesh)
           outMeshes.push(mesh);
+        // if (mesh?.tryTranslateInPlace(0, 0, 1 * tolerance)) // shift up to see it better
+        //   outMeshes.push(mesh);
       }
       return "complete";
     }
@@ -242,6 +257,7 @@ export class MapFeatureInfoDecorator implements Decorator {
   public setState = (state: MapFeatureInfoToolData) => {
 
     this._drapedStrings = undefined;
+    this._drapedMeshes = undefined;
     this._allGeomDraped = false;
     this.hidden = false;
 
@@ -284,7 +300,6 @@ export class MapFeatureInfoDecorator implements Decorator {
   }
 
   protected renderGraphics(context: DecorateContext) {
-    console.log("renderGraphics called");
     this._markerSet.markers.clear();
 
     if (this._state?.mapInfo?.layerInfos === undefined || this.hidden) {
@@ -299,7 +314,6 @@ export class MapFeatureInfoDecorator implements Decorator {
     const builder = context.createGraphicBuilder(this._graphicType, transform);
 
     if (this._draper) {
-      // if (this._drapePoints.length === 0 && this._state.mapInfo.layerInfos) {
       if (this._drapeGraphicsStates.length === 0 && this._state.mapInfo.layerInfos) {
 
         for (const layerInfo of this._state.mapInfo.layerInfos) {
@@ -323,9 +337,7 @@ export class MapFeatureInfoDecorator implements Decorator {
       }
 
       if (!this._allGeomDraped) {
-
-        let hasMissingLineStrings = false;
-        // for (const state of this._drapePointsStates) {
+        let hasMissingDrapeGeoms = false;
         for (const state of this._drapeGraphicsStates) {
 
           if (state.collectorState === "loading") {
@@ -337,9 +349,10 @@ export class MapFeatureInfoDecorator implements Decorator {
               const drapeRange = Range3d.createNull();
               drapeRange.extendArray(this._scratchPoints);
               const drapedStrings: LineString3d[] = [];
-              const tolerance = this._computeChordTolerance(context.viewport, true, () => drapeRange) * 10;  // 10 pixels
+              const tolerance = this._computeChordTolerance(context.viewport, true, () => drapeRange) * 20;  // 10 pixels
               if ("loading" === this._draper.drapeLineString(drapedStrings, this._scratchPoints, tolerance)) {
-                hasMissingLineStrings = true;
+                hasMissingDrapeGeoms = true;
+                break;
               } else {
                 this.addDrapedStrings(drapedStrings);
                 state.collectorState = "complete";
@@ -347,20 +360,19 @@ export class MapFeatureInfoDecorator implements Decorator {
             } else if (state.graphic.type === "loop") {
               const loop =  state.graphic.loop;
               const outMeshes: Polyface[] = [];
-              const tolerance = this._computeChordTolerance(context.viewport, true, () => loop.range()) * 5;  // 10 pixels
+              const tolerance = this._computeChordTolerance(context.viewport, true, () => loop.range()) * 20;  // 10 pixels
               if ("loading" === this._draper.drapeLoop(outMeshes, loop, tolerance)) {
-                console.log("loop still loading mesh...");
-                hasMissingLineStrings = true;
+                hasMissingDrapeGeoms = true;
+                break; // We drape each graphic sequentially,  otherwise collector get messed up.
               } else {
-                console.log("loop draped complete");
                 this.addDrapedMeshes(outMeshes);
                 state.collectorState = "complete";
               }
             }
-            // drapePointsOffset += state.graphic;
           }
         }
-        this._allGeomDraped = !hasMissingLineStrings;
+
+        this._allGeomDraped = !hasMissingDrapeGeoms;
       }
 
       if (!this._allGeomDraped)
@@ -375,7 +387,6 @@ export class MapFeatureInfoDecorator implements Decorator {
         builder.setSymbology(this.highlightColor, this.highlightColor, this.lineWidth);
         this._drapedMeshes.forEach((polyface) => builder.addPolyface(polyface, true));
       }
-
     } else {
       builder.setSymbology(this.highlightColor, this.highlightColor, this.lineWidth);
       for (const layerInfo of this._state.mapInfo.layerInfos) {
@@ -427,10 +438,11 @@ export class MapFeatureInfoDecorator implements Decorator {
   }
 
   public decorate(context: DecorateContext): void {
-    console.log("decorate");
     const graphics = this.renderGraphics(context);
-    if (graphics)
+    if (graphics) {
       context.addDecoration(this._graphicType, graphics);
+      IModelApp.toolAdmin.setCursor(undefined);
+    }
 
     this._markerSet.addDecoration(context);
     return;

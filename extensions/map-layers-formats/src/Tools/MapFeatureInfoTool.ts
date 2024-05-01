@@ -274,8 +274,10 @@ export class MapFeatureInfoTool extends PrimitiveTool {
           mapInfo = await hit.viewport.getMapFeatureInfo(hit, {tolerance: pixelRadius});
           if (mapInfo) {
             this._decorator.setState({ hit, mapInfo });
+          } else {
+            IModelApp.toolAdmin.setCursor(undefined);
           }
-        } finally {
+        } catch {
           IModelApp.toolAdmin.setCursor(undefined);
         }
       }
