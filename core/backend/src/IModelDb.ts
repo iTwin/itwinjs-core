@@ -20,7 +20,7 @@ import {
   DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps,
   ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
-  IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, mapNativeProps, MassPropertiesRequestProps,
+  IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, mapNativeElementProps, MassPropertiesRequestProps,
   MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, NativeInterfaceMap, OpenBriefcaseProps, OpenCheckpointArgs, OpenSqliteArgs,
   ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps,
   SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps,
@@ -1730,12 +1730,38 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see getElementJson
      */
     private tryGetElementJson<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
-      try {
-        const nativeElement = this._iModel.nativeDb.getElement(loadProps) as NativeInterfaceMap<T>;
-        return mapNativeProps<T>(nativeElement);
-      } catch (err: any) {
-        return undefined;
+      const { id, code, federationGuid } = loadProps;
+      let filterClause: string | undefined;
+      let bindCallback: ((statement: ECSqlStatement) => void) | undefined;
+
+      if (id !== undefined) {
+        filterClause = "WHERE ECInstanceId=?";
+        bindCallback =  (statement: ECSqlStatement) => statement.bindId(1, id);
+      } else if (federationGuid !== undefined) {
+        filterClause = "WHERE FederationGuid=?";
+        bindCallback =  (statement: ECSqlStatement) => statement.bindId(1, federationGuid);
+      } else if (code !== undefined) {
+        filterClause = "WHERE CodeSpecId=? AND CodeScopeId=? AND CodeValue=? LIMIT 1";
+        bindCallback =  (statement: ECSqlStatement) => {
+          statement.bindId(1, code.spec);
+          statement.bindId(2, code.scope);
+          if (code.value !== undefined) {
+            statement.bindString(3, code.value);
+          } else {
+            statement.bindNull(3);
+          }
+        };
       }
+
+      return this._iModel.withPreparedStatement(`SELECT $ FROM Bis.Element ${filterClause} OPTIONS USE_JS_PROP_NAMES`, (statement: ECSqlStatement) => {
+        bindCallback?.(statement);
+
+        if (statement.step() !== DbResult.BE_SQLITE_ROW)
+          return undefined;
+
+        const nativeElementProps = JSON.parse(statement.getValue(0).getString()) as NativeInterfaceMap<T>;
+        return mapNativeElementProps(nativeElementProps);
+      });
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
@@ -1748,12 +1774,12 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       } else if (props instanceof Code) {
         props = { code: props };
       }
-      try {
-        const nativeElement =  this._iModel.nativeDb.getElement(props) as NativeInterfaceMap<T>;
-        return mapNativeProps<T>(nativeElement);
-      } catch (err: any) {
-        throw new IModelError(err.errorNumber, err.message);
-      }
+
+      const elementProps =  this.tryGetElementProps<T>(props);
+      if (elementProps === undefined)
+        throw new IModelError(IModelStatus.NotFound, `reading element={id: ${props.id} federationGuid: ${props.federationGuid}, code: ${props.code}}`);
+
+      return elementProps;
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
