@@ -70,7 +70,7 @@ describe("Ellipsoid", () => {
               const patch = EllipsoidPatch.createCapture(
                 ellipsoid.clone(),
                 AngleSweep.createStartEndRadians(theta0Radians, theta1Radians),
-                AngleSweep.createStartEndRadians(phi0Radians, phi1Radians))!;
+                AngleSweep.createStartEndRadians(phi0Radians, phi1Radians));
               const builder = PolyfaceBuilder.create();
               const numU = Geometry.stepCount(degreeStep, patch.longitudeSweep.sweepDegrees, 1, 16);
               const numV = Geometry.stepCount(degreeStep, patch.latitudeSweep.sweepDegrees, 1, 16);
@@ -168,7 +168,7 @@ describe("Ellipsoid", () => {
               const patch = EllipsoidPatch.createCapture(
                 ellipsoid.clone(),
                 AngleSweep.createStartEndRadians(theta0Radians, theta1Radians),
-                AngleSweep.createStartEndRadians(phi0Radians, phi1Radians))!;
+                AngleSweep.createStartEndRadians(phi0Radians, phi1Radians));
               const builder = PolyfaceBuilder.create();
               const numU = Geometry.stepCount(degreeStep, patch.longitudeSweep.sweepDegrees, 1, 16);
               const numV = Geometry.stepCount(degreeStep, patch.latitudeSweep.sweepDegrees, 1, 16);
@@ -548,7 +548,7 @@ describe("Ellipsoid", () => {
     const ck = new Checker();
     const ellipsoid = Ellipsoid.create(Transform.createOriginAndMatrix(undefined, tippedEarthEllipsoidMatrix()));
     for (const angles of [LongitudeLatitudeNumber.createDegrees(0, 0), LongitudeLatitudeNumber.createDegrees(20, 10)]) {
-      const xyz0 = ellipsoid.radiansToPoint(angles.longitudeRadians, angles.latitudeRadians)!;
+      const xyz0 = ellipsoid.radiansToPoint(angles.longitudeRadians, angles.latitudeRadians);
       const uvw0 = ellipsoid.worldToLocal(xyz0)!;
       const xyz1 = ellipsoid.localToWorld(uvw0);
       ck.testPoint3d(xyz0, xyz1, "world to local round trip", angles, xyz0, uvw0, xyz1);
@@ -910,7 +910,7 @@ describe("Ellipsoid", () => {
     const x0 = 0;
     const y0 = 0;
     const z0 = 0;
-    const ellipsoid = Ellipsoid.create(tippedEarthEllipsoidMatrix())!;
+    const ellipsoid = Ellipsoid.create(tippedEarthEllipsoidMatrix());
     GeometryCoreTestIO.captureGeometry(allGeometry, facetEllipsoid(ellipsoid), x0, y0, z0);
     const z1 = ellipsoid.transformRef.multiplyComponentXYZ(2, 0, 0, 1.5);
 
@@ -937,7 +937,7 @@ describe("Ellipsoid", () => {
 
   it("EarthPatchOffsetRange", () => {
     const ck = new Checker();
-    const ellipsoid = Ellipsoid.create(tippedEarthEllipsoidMatrix())!;
+    const ellipsoid = Ellipsoid.create(tippedEarthEllipsoidMatrix());
     // this shares the ellipsoid ... should work fine ...
     for (const patch of [
       EllipsoidPatch.createCapture(ellipsoid, AngleSweep.createStartEndDegrees(10, 62), AngleSweep.createStartEndDegrees(-20, 20)),
@@ -1041,8 +1041,8 @@ function testEllipsoidPaths(ck: Checker, allGeometry: GeometryQuery[], ellipsoid
       GeometryCoreTestIO.captureMesh(allGeometry, EllipsoidPatch.createCapture(ellipsoid1, fullCircle, tropic), 32, 4, x0, y1);
       const arcLength = arc.curveLength();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, x0, y1);
-      const arcA = ellipsoid.sectionArcWithIntermediateNormal(angleA, 0.0, angleB)!;
-      const arcB = ellipsoid.sectionArcWithIntermediateNormal(angleA, 1.0, angleB)!;
+      const arcA = ellipsoid.sectionArcWithIntermediateNormal(angleA, 0.0, angleB);
+      const arcB = ellipsoid.sectionArcWithIntermediateNormal(angleA, 1.0, angleB);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arcA, arcB], x0, y1);
 
       for (const angle of [/* Angle.createDegrees(10), Angle.createDegrees(5), */ Angle.createDegrees(2)]) {

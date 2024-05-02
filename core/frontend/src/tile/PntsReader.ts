@@ -287,8 +287,8 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
     features: features.toFeatureIndex(),
     voxelSize,
     colorFormat: "rgb",
-  }, iModel);
+  }, iModel) as RenderGraphic;
 
-  graphic = system.createBatch(graphic!, PackedFeatureTable.pack(featureTable), batchRange);
+  graphic = system.createBatch(graphic, PackedFeatureTable.pack(featureTable), batchRange);
   return { graphic, rtcCenter };
 }

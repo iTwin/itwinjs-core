@@ -232,7 +232,7 @@ export class KeySet {
       } else if (Key.isNodeKey(value)) {
         this._nodeKeys.add(JSON.stringify(value));
       } else {
-        throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
+        throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${JSON.stringify(value)}`);
       }
     }
     if (this.size !== sizeBefore) {
@@ -281,7 +281,7 @@ export class KeySet {
     } else if (Key.isNodeKey(value)) {
       this._nodeKeys.delete(JSON.stringify(value));
     } else {
-      throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
+      throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${JSON.stringify(value)}`);
     }
     if (this.size !== sizeBefore) {
       this.recalculateGuid();
@@ -307,7 +307,7 @@ export class KeySet {
     if (Key.isNodeKey(value)) {
       return this._nodeKeys.has(JSON.stringify(value));
     }
-    throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
+    throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${JSON.stringify(value)}`);
   }
 
   private hasKeySet(readonlyKeys: Readonly<KeySet>, checkType: "all" | "any"): boolean {

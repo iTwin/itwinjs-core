@@ -25,7 +25,7 @@ describe("ModelMapLayerSettings", () => {
       if ("input" === expected)
         expected = JSON.parse(JSON.stringify(input)) as ModelMapLayerProps;
 
-      const settings = ModelMapLayerSettings.fromJSON(input)!;
+      const settings = ModelMapLayerSettings.fromJSON(input);
       expect(settings).not.to.be.undefined;
       const output = settings.toJSON();
       expectMatches(output, expected);
