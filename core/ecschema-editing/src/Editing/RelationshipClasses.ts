@@ -16,15 +16,21 @@ import { ECClasses } from "./ECClasses";
 import { MutableRelationshipClass, MutableRelationshipConstraint } from "./Mutable/MutableRelationshipClass";
 import * as Rules from "../Validation/ECRules";
 import { RelationshipConstraintDiagnostic, SchemaItemDiagnostic } from "../Validation/Diagnostic";
+import { NavigationProperties } from "./Properties";
 
 /**
  * @alpha
  * A class extending ECClasses allowing you to create schema items of type RelationshipClass.
  */
 export class RelationshipClasses extends ECClasses {
-  public constructor(_schemaEditor: SchemaContextEditor) {
-    super(_schemaEditor);
+  public constructor(schemaEditor: SchemaContextEditor) {
+    super(SchemaItemType.RelationshipClass, schemaEditor);
   }
+
+  /**
+   * Allows access for editing of NavigationProperty attributes.
+   */
+  public readonly navigationProperties = new NavigationProperties(this.schemaItemType, this._schemaEditor);
 
   /**
    * Creates a RelationshipClass.

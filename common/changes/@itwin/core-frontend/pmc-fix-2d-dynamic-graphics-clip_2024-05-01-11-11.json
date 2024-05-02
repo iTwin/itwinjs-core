@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix dynamic element graphics being clipped to the project extents in 2d models.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -14,15 +14,21 @@ import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from 
 import { ECClasses } from "./ECClasses";
 import { MutableMixin } from "./Mutable/MutableMixin";
 import { MutableEntityClass } from "./Mutable/MutableEntityClass";
+import { NavigationProperties } from "./Properties";
 
 /**
  * @alpha
  * A class extending ECClasses allowing you to create schema items of type Mixin.
  */
 export class Mixins extends ECClasses {
-  public constructor(_schemaEditor: SchemaContextEditor) {
-    super(_schemaEditor);
+  public constructor(schemaEditor: SchemaContextEditor) {
+    super(SchemaItemType.Mixin, schemaEditor);
   }
+
+  /**
+   * Allows access for editing of NavigationProperty attributes.
+   */
+  public readonly navigationProperties = new NavigationProperties(this.schemaItemType, this._schemaEditor);
 
   public async create(schemaKey: SchemaKey, name: string, appliesTo: SchemaItemKey, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);

@@ -109,7 +109,7 @@ describe("Point2d", () => {
       const vectorI = origin.vectorTo(pointI);
       const vectorIES = Vector2d.createStartEnd(pointI, origin);
       const vectorIESNegated = vectorIES.negate();
-      const unitPerp = vectorI.unitPerpendicularXY()!;
+      const unitPerp = vectorI.unitPerpendicularXY();
       ck.testVector2d(vectorI, vectorIESNegated);
       ck.testPerpendicular2d(vectorI, unitPerp);
       ck.testCoordinate(1, unitPerp.magnitude());
