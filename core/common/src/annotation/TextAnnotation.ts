@@ -174,7 +174,7 @@ export class TextAnnotation {
         break;
     }
 
-    return Transform.createRefs(origin, matrix);
+    return Transform.createFixedPointAndMatrix(origin, matrix);
   }
 
   /** Returns true if this annotation is logically equivalent to `other`. */

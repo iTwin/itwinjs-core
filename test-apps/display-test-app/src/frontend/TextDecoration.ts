@@ -19,7 +19,7 @@ class TextEditor implements Decorator {
   // TextAnnotation properties
   public origin: Point3d = new Point3d(0, 0, 0);
   public rotation = 0;
-  public anchor: TextAnnotationAnchor = { horizontal: "center", vertical: "middle" };
+  public anchor: TextAnnotationAnchor = { horizontal: "left", vertical: "top" };
 
   // Properties applied to the entire document
   public get documentStyle(): Pick<TextStyleSettingsProps, "lineHeight" | "widthFactor" | "lineSpacingFactor"> {
@@ -104,7 +104,7 @@ class TextEditor implements Decorator {
 
     const annotation = TextAnnotation.fromJSON({
       textBlock: this._textBlock.toJSON(),
-      origin: this.origin,
+      // origin: this.origin,
       anchor: this.anchor,
       orientation: YawPitchRollAngles.createDegrees(this.rotation, 0, 0).toJSON(),
     });
@@ -119,7 +119,7 @@ class TextEditor implements Decorator {
       toleranceLog10: -5,
       type: "2d",
       placement: {
-        origin: Point3d.createZero(),
+        origin: this.origin.toJSON(), // Point3d.createZero(),
         angle: 0,
       },
       categoryId: this._categoryId,
