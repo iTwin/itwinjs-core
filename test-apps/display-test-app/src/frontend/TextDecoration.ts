@@ -7,7 +7,7 @@ import { BaselineShift, ColorDef, FractionRun, GeometryStreamBuilder, IModelTile
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { Point3d } from "@itwin/core-geometry";
+import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 
 class TextEditor implements Decorator {
   // Geometry properties
@@ -18,6 +18,7 @@ class TextEditor implements Decorator {
 
   // TextAnnotation properties
   public origin: Point3d = new Point3d(0, 0, 0);
+  public rotation = 0;
   public anchor: TextAnnotationAnchor = { horizontal: "center", vertical: "middle" };
 
   // Properties applied to the entire document
@@ -49,6 +50,7 @@ class TextEditor implements Decorator {
     this._graphic = undefined;
     this._textBlock = TextBlock.createEmpty();
     this.origin.setZero();
+    this.rotation = 0;
     this.anchor = { horizontal: "center", vertical: "middle" };
     this.runStyle = { fontName: "Arial" };
     this.baselineShift = "none";
@@ -102,7 +104,9 @@ class TextEditor implements Decorator {
 
     const annotation = TextAnnotation.fromJSON({
       textBlock: this._textBlock.toJSON(),
+      origin: this.origin,
       anchor: this.anchor,
+      orientation: YawPitchRollAngles.createDegrees(this.rotation, 0, 0).toJSON(),
     });
 
     const rpcProps = this._iModel.getRpcProps();
@@ -115,7 +119,7 @@ class TextEditor implements Decorator {
       toleranceLog10: -5,
       type: "2d",
       placement: {
-        origin: this.origin.toJSON(),
+        origin: Point3d.createZero(),
         angle: 0,
       },
       categoryId: this._categoryId,
@@ -154,6 +158,7 @@ export class TextDecorationTool extends Tool {
 
     const cmd = inArgs[0].toLowerCase();
     const arg = inArgs[1];
+    const arg2 = inArgs[2];
 
     switch (cmd) {
       case "clear":
@@ -164,6 +169,9 @@ export class TextDecorationTool extends Tool {
         break;
       case "center":
         editor.origin = vp.view.getCenter();
+        break;
+      case "rotation":
+        editor.rotation = Number(arg);
         break;
       case "font":
         editor.runStyle.fontName = arg;
@@ -249,6 +257,38 @@ export class TextDecorationTool extends Tool {
         }
         break;
       }
+      case "anchor": {
+        const direction = arg.toLowerCase();
+        const value = arg2.toLowerCase();
+        switch (direction) {
+          case "horizontal":
+            switch (value) {
+              case "left":
+              case "center":
+              case "right":
+                editor.anchor.horizontal = value;
+                break;
+              default:
+                throw new Error("Expected left, center, or right");
+            }
+            break;
+          case "vertical":
+            switch (value) {
+              case "top":
+              case "middle":
+              case "bottom":
+                editor.anchor.vertical = value;
+                break;
+              default:
+                throw new Error("Expected top, middle, or bottom");
+            }
+            break;
+          default:
+            throw new Error("Expected horizontal or vertical");
+        }
+        break;
+      }
+
       default:
         throw new Error(`unrecognized command ${cmd}`);
     }
