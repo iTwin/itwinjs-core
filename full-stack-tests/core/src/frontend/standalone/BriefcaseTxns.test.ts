@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as path from "path";
-import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import { Guid, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
-import { BriefcaseConnection, TxnEntityChange } from "@itwin/core-frontend";
+import { BriefcaseConnection, TxnEntityChangeType, TxnEntityChanges } from "@itwin/core-frontend";
 import { addAllowedChannel, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
@@ -149,13 +149,16 @@ describe("BriefcaseTxns", () => {
       });
 
       it.only("receives events including entity Id and class name", async () => {
-        type ExpectChangedEntities = (expected: TxnEntityChange[]) => Promise<void>;
+        interface Change { className: string, type: TxnEntityChangeType, id: Id64String }
 
-        async function expectChangedEntities(func: () => Promise<void>, terminalEvent: "onAfterUndoRedo" | "onCommitted", _expected: TxnEntityChange[]): Promise<void> {
-          const received: TxnEntityChange[] = [];
+        async function expectChangedEntities(func: () => Promise<void>, terminalEvent: "onAfterUndoRedo" | "onCommitted", _expected: Change[]): Promise<void> {
+          const received: Change[] = [];
+          function receive(changes: TxnEntityChanges): void {
+            received.push(...Array.from(changes).map((change) => { return { className: change.metadata.classFullName, id: change.id, type: change.type }; }));
+          }
 
-          const removeElementListener = rwConn.txns.onElementsChanged.addListener((changes) => received.push(...Array.from(changes)));
-          const removeModelListener = rwConn.txns.onModelsChanged.addListener((changes) => received.push(...Array.from(changes)));
+          const removeElementListener = rwConn.txns.onElementsChanged.addListener((changes) => receive(changes));
+          const removeModelListener = rwConn.txns.onModelsChanged.addListener((changes) => receive(changes));
 
           let receivedTerminationEvent = false;
           rwConn.txns[terminalEvent].addOnce(() => receivedTerminationEvent = true);

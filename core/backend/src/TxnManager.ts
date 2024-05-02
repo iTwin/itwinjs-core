@@ -114,6 +114,8 @@ class ChangedEntitiesArray {
   public addToChangedEntities(entities: NotifyEntitiesChangedArgs, type: "deleted" | "inserted" | "updated"): void {
     if (this.entityIds.length > 0)
       entities[type] = CompressedId64Set.compressIds(this.entityIds);
+
+    entities[`${type}Meta`] = this._classIndices;
   }
 
   public iterable(classIds: Id64Array): EntityIdAndClassIdIterable {
@@ -226,14 +228,12 @@ class ChangedEntitiesProc {
       insertedMeta: [],
       updatedMeta: [],
       deletedMeta: [],
-      meta: [],
+      meta: this.populateMetadata(iModel, classIds),
     };
 
     this._inserted.addToChangedEntities(entities, "inserted");
     this._deleted.addToChangedEntities(entities, "deleted");
     this._updated.addToChangedEntities(entities, "updated");
-
-    this.populateMetadata(iModel, classIds);
 
     IpcHost.notifyTxns(iModel, evtName, entities);
 
