@@ -148,13 +148,13 @@ describe("BriefcaseTxns", () => {
         ]);
       });
 
-      it.only("receives events including entity Id and class name", async () => {
-        interface Change { className: string, type: TxnEntityChangeType, id: Id64String }
+      it("receives events including entity Id and class name", async () => {
+        type Change = [className: string, type: TxnEntityChangeType];
 
-        async function expectChangedEntities(func: () => Promise<void>, terminalEvent: "onAfterUndoRedo" | "onCommitted", _expected: Change[]): Promise<void> {
+        async function expectChangedEntities(func: () => Promise<void>, terminalEvent: "onAfterUndoRedo" | "onCommitted", expectedChanges: Change[]): Promise<void> {
           const received: Change[] = [];
           function receive(changes: TxnEntityChanges): void {
-            received.push(...Array.from(changes).map((change) => { return { className: change.metadata.classFullName, id: change.id, type: change.type }; }));
+            received.push(...Array.from(changes).map((change) => [change.metadata.classFullName, change.type] as Change));
           }
 
           const removeElementListener = rwConn.txns.onElementsChanged.addListener((changes) => receive(changes));
@@ -176,7 +176,8 @@ describe("BriefcaseTxns", () => {
 
           await func();
           await wait();
-          console.log(JSON.stringify(received));
+
+          expect(received).to.deep.equal(expectedChanges);
         }
 
         const dictModelId = await rwConn.models.getDictionaryModel();
@@ -186,12 +187,23 @@ describe("BriefcaseTxns", () => {
         const code = await makeModelCode(rwConn, rwConn.models.repositoryModelId, Guid.createValue());
         const model = await coreFullStackTestIpc.createAndInsertPhysicalModel(rwConn.key, code);
 
-        const elem1 = await insertLineElement(rwConn, model, cat1);
-        const elem2 = await insertLineElement(rwConn, model, cat2);
+        await insertLineElement(rwConn, model, cat1);
+        await insertLineElement(rwConn, model, cat2);
 
-        await expectChangedEntities(() => rwConn.saveChanges(), "onCommitted", []);
-        await expectChangedEntities(async () => { rwConn.txns.reverseSingleTxn(); }, "onAfterUndoRedo", []);
-        await expectChangedEntities(async () => { rwConn.txns.reinstateTxn(); }, "onAfterUndoRedo", []);
+        const expected: Change[] = [
+          ["BisCore:SpatialCategory", "inserted"],
+          ["BisCore:SubCategory", "inserted"],
+          ["BisCore:SpatialCategory", "inserted"],
+          ["BisCore:SubCategory", "inserted"],
+          ["BisCore:PhysicalPartition", "inserted"],
+          ["Generic:PhysicalObject", "inserted"],
+          ["Generic:PhysicalObject", "inserted"],
+          ["BisCore:PhysicalModel", "inserted"],
+        ];
+        
+        await expectChangedEntities(() => rwConn.saveChanges(), "onCommitted", expected);
+        await expectChangedEntities(async () => { rwConn.txns.reverseSingleTxn(); }, "onAfterUndoRedo", expected.map((x) => [x[0], "deleted"]));
+        await expectChangedEntities(async () => { rwConn.txns.reinstateTxn(); }, "onAfterUndoRedo", expected);
       });
     });
 
