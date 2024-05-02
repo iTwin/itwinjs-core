@@ -1,7 +1,7 @@
 lockfileVersion: 5.4
 
 overrides:
-  mysql2: ^3.9.4
+  mysql2: ^3.9.7
 
 importers:
 
@@ -56,7 +56,7 @@ importers:
       source-map-loader: ^4.0.0
       touch: ^3.1.0
       ts-node: ^10.8.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
@@ -81,7 +81,7 @@ importers:
       '@itwin/core-geometry': link:../geometry
       '@itwin/core-webpack-tools': link:../../tools/webpack-core
       '@itwin/ecsql-common': link:../ecsql/common
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@opentelemetry/api': 1.0.4
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
@@ -107,8 +107,8 @@ importers:
       rimraf: 3.0.2
       sinon: 17.0.1
       source-map-loader: 4.0.0_webpack@5.76.0
-      ts-node: 10.8.2_zifzk4dbgzfq65cu6hdbkv4dfq
-      typescript: 5.3.3
+      ts-node: 10.8.2_s4jznzpar3xrucbavlx2rvciqu
+      typescript: 5.4.5
       webpack: 5.76.0
 
   ../../core/bentley:
@@ -126,10 +126,10 @@ importers:
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@opentelemetry/api': 1.0.4
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
@@ -141,7 +141,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../core/common:
     specifiers:
@@ -161,7 +161,7 @@ importers:
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     dependencies:
       flatbuffers: 1.12.0
       js-base64: 3.6.1
@@ -169,7 +169,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-geometry': link:../geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@itwin/object-storage-core': 2.2.2
       '@types/chai': 4.3.1
       '@types/flatbuffers': 1.10.0
@@ -180,7 +180,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../core/ecschema-editing:
     specifiers:
@@ -208,7 +208,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^17.0.1
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     devDependencies:
       '@bentley/units-schema': 1.0.8
       '@itwin/build-tools': link:../../tools/build
@@ -216,7 +216,7 @@ importers:
       '@itwin/core-common': link:../common
       '@itwin/core-quantity': link:../quantity
       '@itwin/ecschema-metadata': link:../ecschema-metadata
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/almost-equal': 1.1.0
       '@types/benchmark': 2.1.0
       '@types/chai': 4.3.1
@@ -234,7 +234,7 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 17.0.1
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../core/ecschema-locaters:
     specifiers:
@@ -275,7 +275,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^17.0.1
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     dependencies:
       '@xmldom/xmldom': 0.8.5
       fs-extra: 8.1.0
@@ -299,7 +299,7 @@ importers:
       '@bentley/units-schema': 1.0.8
       '@itwin/build-tools': link:../../tools/build
       '@itwin/ecschema-metadata': link:../ecschema-metadata
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/fs-extra': 4.0.7
@@ -315,7 +315,7 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 17.0.1
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../core/ecschema-metadata:
     specifiers:
@@ -342,7 +342,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^17.0.1
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     dependencies:
       almost-equal: 1.1.0
     devDependencies:
@@ -350,7 +350,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-quantity': link:../quantity
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/almost-equal': 1.1.0
       '@types/benchmark': 2.1.0
       '@types/chai': 4.3.1
@@ -368,7 +368,7 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 17.0.1
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../core/ecschema-rpc/common:
     specifiers:
@@ -380,17 +380,17 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.52
       eslint: ^8.44.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-bentley': link:../../bentley
       '@itwin/core-common': link:../../common
       '@itwin/core-geometry': link:../../geometry
       '@itwin/ecschema-metadata': link:../../ecschema-metadata
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       eslint: 8.44.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../core/ecschema-rpc/impl:
     specifiers:
@@ -404,7 +404,7 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.52
       eslint: ^8.44.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-backend': link:../../backend
@@ -413,10 +413,10 @@ importers:
       '@itwin/core-geometry': link:../../geometry
       '@itwin/ecschema-metadata': link:../../ecschema-metadata
       '@itwin/ecschema-rpcinterface-common': link:../common
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       eslint: 8.44.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../core/ecsql/common:
     specifiers:
@@ -430,12 +430,12 @@ importers:
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     dependencies:
       '@itwin/core-bentley': link:../../bentley
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       chai: 4.3.10
@@ -443,7 +443,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../core/electron:
     specifiers:
@@ -466,7 +466,7 @@ importers:
       open: ^7.0.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       username: ^5.1.0
       webpack: ^5.76.0
       webpack-cli: ^5.0.1
@@ -481,7 +481,7 @@ importers:
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
@@ -492,7 +492,7 @@ importers:
       mocha: 10.2.0
       rimraf: 3.0.2
       source-map-loader: 4.0.0_webpack@5.76.0
-      typescript: 5.3.3
+      typescript: 5.4.5
       webpack: 5.76.0_webpack-cli@5.0.1
       webpack-cli: 5.0.1_webpack@5.76.0
 
@@ -519,7 +519,7 @@ importers:
       rimraf: ^3.0.2
       sinon: ^17.0.1
       supertest: ^7.0.0
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     dependencies:
       express: 4.18.2
       express-ws: 5.0.2_express@4.18.2
@@ -527,7 +527,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-backend': link:../backend
       '@itwin/core-common': link:../common
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/body-parser': 1.17.0
       '@types/chai': 4.3.1
       '@types/express': 4.17.20
@@ -543,7 +543,7 @@ importers:
       rimraf: 3.0.2
       sinon: 17.0.1
       supertest: 7.0.0
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../core/extension:
     specifiers:
@@ -553,16 +553,16 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.52
       eslint: ^8.44.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     dependencies:
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       eslint: 8.44.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../core/frontend:
     specifiers:
@@ -601,7 +601,7 @@ importers:
       sinon: ^17.0.1
       source-map-loader: ^4.0.0
       typemoq: ^2.1.0
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       webpack: ^5.76.0
       wms-capabilities: 0.4.0
     dependencies:
@@ -624,7 +624,7 @@ importers:
       '@itwin/core-geometry': link:../geometry
       '@itwin/core-orbitgt': link:../orbitgt
       '@itwin/core-quantity': link:../quantity
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/mocha': 10.0.6
@@ -642,7 +642,7 @@ importers:
       sinon: 17.0.1
       source-map-loader: 4.0.0_webpack@5.76.0
       typemoq: 2.1.0
-      typescript: 5.3.3
+      typescript: 5.4.5
       webpack: 5.76.0
 
   ../../core/frontend-devtools:
@@ -658,7 +658,7 @@ importers:
       eslint: ^8.44.0
       file-saver: ^2.0.2
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     dependencies:
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
@@ -667,12 +667,12 @@ importers:
       file-saver: 2.0.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/file-saver': 2.0.1
       cpx2: 3.0.0
       eslint: 8.44.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../core/geometry:
     specifiers:
@@ -690,13 +690,13 @@ importers:
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     dependencies:
       '@itwin/core-bentley': link:../bentley
       flatbuffers: 1.12.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/flatbuffers': 1.10.0
       '@types/mocha': 10.0.6
@@ -707,7 +707,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../core/hypermodeling:
     specifiers:
@@ -731,7 +731,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       webpack: ^5.76.0
     dependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
@@ -742,7 +742,7 @@ importers:
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
       '@itwin/core-geometry': link:../geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       babel-loader: 8.2.5_webpack@5.76.0
@@ -755,7 +755,7 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       source-map-loader: 4.0.0_webpack@5.76.0
-      typescript: 5.3.3
+      typescript: 5.4.5
       webpack: 5.76.0
 
   ../../core/i18n:
@@ -779,7 +779,7 @@ importers:
       i18next-http-backend: ^1.4.4
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       webpack: ^5.76.0
       webpack-cli: ^5.0.1
     dependencies:
@@ -791,7 +791,7 @@ importers:
       '@itwin/certa': link:../../tools/certa
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/i18next': 8.4.2
       '@types/i18next-browser-languagedetector': 2.0.1
@@ -803,7 +803,7 @@ importers:
       glob: 10.3.12
       rimraf: 3.0.2
       source-map-loader: 4.0.0_webpack@5.76.0
-      typescript: 5.3.3
+      typescript: 5.4.5
       webpack: 5.76.0_webpack-cli@5.0.1
       webpack-cli: 5.0.1_webpack@5.76.0
 
@@ -829,7 +829,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       webpack: ^5.76.0
     dependencies:
       '@svgdotjs/svg.js': 3.0.13
@@ -840,7 +840,7 @@ importers:
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
       '@itwin/core-geometry': link:../geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       babel-loader: 8.2.5_webpack@5.76.0
@@ -853,7 +853,7 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       source-map-loader: 4.0.0_webpack@5.76.0
-      typescript: 5.3.3
+      typescript: 5.4.5
       webpack: 5.76.0
 
   ../../core/mobile:
@@ -880,7 +880,7 @@ importers:
       mocha: ^10.2.0
       rimraf: ^3.0.2
       superagent: ^9.0.1
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       ws: ^7.5.3
     dependencies:
       lodash: 4.17.21
@@ -892,7 +892,7 @@ importers:
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.7
       '@types/lodash': 4.14.202
@@ -907,7 +907,7 @@ importers:
       eslint: 8.44.0
       mocha: 10.2.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../core/orbitgt:
     specifiers:
@@ -924,11 +924,11 @@ importers:
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
@@ -939,7 +939,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../core/quantity:
     specifiers:
@@ -958,11 +958,11 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^17.0.1
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/glob': 5.0.35
@@ -975,7 +975,7 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 17.0.1
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../core/telemetry:
     specifiers:
@@ -991,7 +991,7 @@ importers:
       mocha: ^10.2.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       webpack: ^5.76.0
     dependencies:
       '@itwin/core-bentley': link:../bentley
@@ -999,7 +999,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       chai: 4.3.10
@@ -1007,7 +1007,7 @@ importers:
       mocha: 10.2.0
       rimraf: 3.0.2
       source-map-loader: 4.0.0_webpack@5.76.0
-      typescript: 5.3.3
+      typescript: 5.4.5
       webpack: 5.76.0
 
   ../../core/webgl-compatibility:
@@ -1026,14 +1026,14 @@ importers:
       mocha: ^10.2.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       webpack: ^5.76.0
     dependencies:
       '@itwin/core-bentley': link:../bentley
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       babel-loader: 8.2.5_webpack@5.76.0
@@ -1044,7 +1044,7 @@ importers:
       mocha: 10.2.0
       rimraf: 3.0.2
       source-map-loader: 4.0.0_webpack@5.76.0
-      typescript: 5.3.3
+      typescript: 5.4.5
       webpack: 5.76.0
 
   ../../domains/analytical/backend:
@@ -1066,13 +1066,13 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       semver: ^7.3.5
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-backend': link:../../../core/backend
       '@itwin/core-bentley': link:../../../core/bentley
       '@itwin/core-common': link:../../../core/common
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
@@ -1085,7 +1085,7 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       semver: 7.3.5
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../domains/linear-referencing/backend:
     specifiers:
@@ -1105,13 +1105,13 @@ importers:
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-backend': link:../../../core/backend
       '@itwin/core-bentley': link:../../../core/bentley
       '@itwin/core-common': link:../../../core/common
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@itwin/linear-referencing-common': link:../common
       '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.7
@@ -1123,7 +1123,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../domains/linear-referencing/common:
     specifiers:
@@ -1139,12 +1139,12 @@ importers:
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-bentley': link:../../../core/bentley
       '@itwin/core-common': link:../../../core/common
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
@@ -1153,7 +1153,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../domains/physical-material/backend:
     specifiers:
@@ -1171,13 +1171,13 @@ importers:
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-backend': link:../../../core/backend
       '@itwin/core-bentley': link:../../../core/bentley
       '@itwin/core-common': link:../../../core/common
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
@@ -1187,7 +1187,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../editor/backend:
     specifiers:
@@ -1200,7 +1200,7 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.52
       eslint: ^8.44.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     dependencies:
       '@itwin/editor-common': link:../common
     devDependencies:
@@ -1209,10 +1209,10 @@ importers:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       eslint: 8.44.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../editor/common:
     specifiers:
@@ -1227,20 +1227,20 @@ importers:
       eslint: ^8.44.0
       mocha: ^10.2.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       chai: 4.3.10
       eslint: 8.44.0
       mocha: 10.2.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../editor/frontend:
     specifiers:
@@ -1256,7 +1256,7 @@ importers:
       cpx2: ^3.0.0
       eslint: ^8.44.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     dependencies:
       '@itwin/editor-common': link:../common
     devDependencies:
@@ -1267,11 +1267,11 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       cpx2: 3.0.0
       eslint: 8.44.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../example-code/app:
     specifiers:
@@ -1293,7 +1293,7 @@ importers:
       eslint: ^8.44.0
       mocha: ^10.2.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -1304,7 +1304,7 @@ importers:
       electron: 30.0.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@itwin/oidc-signin-tool': 3.6.0_bplkyfia6fpabkwkmq6hai5lru
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
@@ -1314,7 +1314,7 @@ importers:
       eslint: 8.44.0
       mocha: 10.2.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../example-code/snippets:
     specifiers:
@@ -1346,7 +1346,7 @@ importers:
       fs-extra: ^8.1.0
       mocha: ^10.2.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -1364,7 +1364,7 @@ importers:
       fs-extra: 8.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@itwin/oidc-signin-tool': 3.6.0_mdtbcqczpmeuv6yjzfaigjndwi
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
@@ -1377,7 +1377,7 @@ importers:
       eslint: 8.44.0
       mocha: 10.2.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../extensions/frontend-tiles:
     specifiers:
@@ -1403,7 +1403,7 @@ importers:
       rimraf: ^3.0.2
       sinon: ^17.0.1
       source-map-loader: ^4.0.0
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       webpack: ^5.76.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -1412,7 +1412,7 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/mocha': 10.0.6
@@ -1428,7 +1428,7 @@ importers:
       rimraf: 3.0.2
       sinon: 17.0.1
       source-map-loader: 4.0.0_webpack@5.76.0
-      typescript: 5.3.3
+      typescript: 5.4.5
       webpack: 5.76.0
 
   ../../extensions/map-layers-auth:
@@ -1454,13 +1454,13 @@ importers:
       sinon: ^17.0.1
       sinon-chai: ^3.7.0
       source-map-support: ^0.5.6
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       '@types/sinon': 17.0.2
@@ -1477,7 +1477,7 @@ importers:
       sinon: 17.0.1
       sinon-chai: 3.7.0_chai@4.3.10+sinon@17.0.1
       source-map-support: 0.5.6
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../extensions/map-layers-formats:
     specifiers:
@@ -1512,7 +1512,7 @@ importers:
       sinon-chai: ^3.7.0
       source-map-support: ^0.5.6
       typemoq: ^2.1.0
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     dependencies:
       flatbush: 4.4.0
       google-protobuf: 3.20.1
@@ -1523,7 +1523,7 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/geojson': 7946.0.14
@@ -1546,7 +1546,7 @@ importers:
       sinon-chai: 3.7.0_chai@4.3.10+sinon@17.0.1
       source-map-support: 0.5.6
       typemoq: 2.1.0
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../extensions/test-extension:
     specifiers:
@@ -1557,7 +1557,7 @@ importers:
       esbuild: ^0.13.8
       eslint: ^8.44.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       url: ^0.11.0
     dependencies:
       '@itwin/core-extension': link:../../core/extension
@@ -1565,11 +1565,11 @@ importers:
       url: 0.11.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       esbuild: 0.13.8
       eslint: 8.44.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../full-stack-tests/backend:
     specifiers:
@@ -1623,7 +1623,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^17.0.1
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     dependencies:
       '@azure/storage-blob': 12.7.0
       '@bentley/aec-units-schema': 1.0.3
@@ -1667,7 +1667,7 @@ importers:
       sinon: 17.0.1
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/fs-extra': 4.0.7
@@ -1676,7 +1676,7 @@ importers:
       internal-tools: link:../../tools/internal
       mkdirp: 1.0.4
       npm-run-all: 4.1.5
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../full-stack-tests/core:
     specifiers:
@@ -1745,7 +1745,7 @@ importers:
       source-map-loader: ^4.0.0
       stream-browserify: ^3.0.0
       stream-http: ^3.2.0
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       webpack: ^5.76.0
       webpack-cli: ^5.0.1
     dependencies:
@@ -1783,7 +1783,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@itwin/itwins-client': 1.2.0
       '@itwin/object-storage-core': 2.2.2
       '@itwin/oidc-signin-tool': 3.6.0_bplkyfia6fpabkwkmq6hai5lru
@@ -1815,7 +1815,7 @@ importers:
       source-map-loader: 4.0.0_webpack@5.76.0
       stream-browserify: 3.0.0
       stream-http: 3.2.0
-      typescript: 5.3.3
+      typescript: 5.4.5
       webpack: 5.76.0_webpack-cli@5.0.1
       webpack-cli: 5.0.1_webpack@5.76.0
 
@@ -1864,7 +1864,7 @@ importers:
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
       stream-browserify: ^3.0.0
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       webpack: ^5.76.0
       webpack-cli: ^5.0.1
     dependencies:
@@ -1893,7 +1893,7 @@ importers:
       openid-client: 4.7.4
     devDependencies:
       '@itwin/core-backend': link:../../core/backend
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@itwin/express-server': link:../../core/express-server
       '@itwin/itwins-client': 1.2.0
       '@types/chai': 4.3.1
@@ -1912,7 +1912,7 @@ importers:
       rimraf: 3.0.2
       source-map-loader: 4.0.0_webpack@5.76.0
       stream-browserify: 3.0.0
-      typescript: 5.3.3
+      typescript: 5.4.5
       webpack: 5.76.0_webpack-cli@5.0.1
       webpack-cli: 5.0.1_webpack@5.76.0
 
@@ -1973,7 +1973,7 @@ importers:
       sinon-chai: ^3.7.0
       source-map-support: ^0.5.6
       typemoq: ^2.1.0
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -2018,7 +2018,7 @@ importers:
       typemoq: 2.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       cache-require-paths: 0.3.0
       cross-env: 5.1.4
       dotenv: 10.0.0
@@ -2031,7 +2031,7 @@ importers:
       jsdom-global: 3.0.2_jsdom@19.0.0
       prettier: 3.2.5
       sanitize-filename: 1.6.3
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../full-stack-tests/rpc:
     specifiers:
@@ -2065,7 +2065,7 @@ importers:
       source-map-loader: ^4.0.0
       spdy: ^4.0.1
       stream-browserify: ^3.0.0
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       webpack: ^5.76.0
       webpack-cli: ^5.0.1
     dependencies:
@@ -2083,7 +2083,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/express': 4.17.20
       '@types/mocha': 10.0.6
@@ -2100,7 +2100,7 @@ importers:
       rimraf: 3.0.2
       source-map-loader: 4.0.0_webpack@5.76.0
       stream-browserify: 3.0.0
-      typescript: 5.3.3
+      typescript: 5.4.5
       webpack: 5.76.0_webpack-cli@5.0.1
       webpack-cli: 5.0.1_webpack@5.76.0
 
@@ -2149,7 +2149,7 @@ importers:
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
       stream-browserify: ^3.0.0
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       webpack: ^5.76.0
       webpack-cli: ^5.0.1
     dependencies:
@@ -2160,7 +2160,7 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-quantity': link:../../core/quantity
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@itwin/imodels-access-backend': 5.0.1_wj555zckjupkhkzyssqqpl4sei
       '@itwin/imodels-access-frontend': 5.0.1_ueafa4slb6ohrhyf7kbp6egmha
       '@itwin/imodels-client-authoring': 5.1.0
@@ -2197,7 +2197,7 @@ importers:
       rimraf: 3.0.2
       source-map-loader: 4.0.0_webpack@5.76.0
       stream-browserify: 3.0.0
-      typescript: 5.3.3
+      typescript: 5.4.5
       webpack: 5.76.0_webpack-cli@5.0.1
       webpack-cli: 5.0.1_webpack@5.76.0
 
@@ -2248,7 +2248,7 @@ importers:
       sinon-chai: ^3.7.0
       source-map-support: ^0.5.6
       typemoq: ^2.1.0
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     dependencies:
       object-hash: 1.3.1
       rxjs: 7.8.1
@@ -2261,7 +2261,7 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@itwin/presentation-common': link:../common
       '@sinonjs/fake-timers': 11.2.2
       '@types/chai': 4.3.1
@@ -2296,7 +2296,7 @@ importers:
       sinon-chai: 3.7.0_chai@4.3.10+sinon@17.0.1
       source-map-support: 0.5.6
       typemoq: 2.1.0
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../presentation/common:
     specifiers:
@@ -2335,7 +2335,7 @@ importers:
       sinon-chai: ^3.7.0
       source-map-support: ^0.5.6
       typemoq: ^2.1.0
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       typescript-json-schema: ^0.55.0
       yargs: ^17.4.0
     devDependencies:
@@ -2344,7 +2344,7 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/chai-jest-snapshot': 1.3.8
@@ -2374,7 +2374,7 @@ importers:
       sinon-chai: 3.7.0_chai@4.3.10+sinon@17.0.1
       source-map-support: 0.5.6
       typemoq: 2.1.0
-      typescript: 5.3.3
+      typescript: 5.4.5
       typescript-json-schema: 0.55.0
       yargs: 17.4.0
 
@@ -2419,7 +2419,7 @@ importers:
       sinon-chai: ^3.7.0
       source-map-support: ^0.5.6
       typemoq: ^2.1.0
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     dependencies:
       '@itwin/unified-selection': 0.1.0
       rxjs: 7.8.1
@@ -2432,7 +2432,7 @@ importers:
       '@itwin/core-i18n': link:../../core/i18n
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@itwin/presentation-common': link:../common
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
@@ -2461,7 +2461,7 @@ importers:
       sinon-chai: 3.7.0_chai@4.3.10+sinon@17.0.1
       source-map-support: 0.5.6
       typemoq: 2.1.0
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../test-apps/display-performance-test-app:
     specifiers:
@@ -2512,7 +2512,7 @@ importers:
       rollup-plugin-ignore: ^1.0.10
       rollup-plugin-visualizer: ^5.9.2
       rollup-plugin-webpack-stats: ^0.2.0
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       vite: ^4.5.2
       vite-plugin-env-compatible: ^1.1.1
       vite-plugin-inspect: ^0.7.28
@@ -2540,12 +2540,12 @@ importers:
       body-parser: 1.20.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@itwin/perf-tools': link:../../tools/perf-tools
       '@types/body-parser': 1.17.0
       '@types/express': 4.17.20
       '@types/node': 18.16.20
-      '@typescript-eslint/parser': 6.21.0_r6fjndk6k4skjcbozishmsan5a
+      '@typescript-eslint/parser': 6.21.0_hwnj4pnw7jaaecaxtilufy5fim
       browserslist-to-esbuild: 1.2.0
       child_process: 1.0.2
       chrome-launcher: 0.15.2
@@ -2566,7 +2566,7 @@ importers:
       rollup-plugin-ignore: 1.0.10
       rollup-plugin-visualizer: 5.9.2
       rollup-plugin-webpack-stats: 0.2.0
-      typescript: 5.3.3
+      typescript: 5.4.5
       vite: 4.5.2_@types+node@18.16.20
       vite-plugin-env-compatible: 1.1.1
       vite-plugin-inspect: 0.7.28_vite@4.5.2
@@ -2635,7 +2635,7 @@ importers:
       rollup-plugin-visualizer: ^5.9.2
       rollup-plugin-webpack-stats: ^0.2.0
       ts-node: ^10.8.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       vhacd-js: ^0.0.1
       vite: ^4.5.2
       vite-plugin-env-compatible: ^1.1.1
@@ -2677,11 +2677,11 @@ importers:
       '@itwin/backend-webpack-tools': link:../../tools/backend-webpack
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-webpack-tools': link:../../tools/webpack-core
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/express': 4.17.20
       '@types/express-ws': 3.0.3
       '@types/fs-extra': 4.0.7
-      '@typescript-eslint/parser': 6.21.0_r6fjndk6k4skjcbozishmsan5a
+      '@typescript-eslint/parser': 6.21.0_hwnj4pnw7jaaecaxtilufy5fim
       browserslist-to-esbuild: 1.2.0
       child_process: 1.0.2
       cpx2: 3.0.0
@@ -2704,8 +2704,8 @@ importers:
       rollup-plugin-ignore: 1.0.10
       rollup-plugin-visualizer: 5.9.2
       rollup-plugin-webpack-stats: 0.2.0
-      ts-node: 10.8.2_typescript@5.3.3
-      typescript: 5.3.3
+      ts-node: 10.8.2_typescript@5.4.5
+      typescript: 5.4.5
       vite: 4.5.2
       vite-plugin-env-compatible: 1.1.1
       vite-plugin-inspect: 0.7.28_vite@4.5.2
@@ -2723,7 +2723,7 @@ importers:
       '@types/yargs': 17.0.19
       eslint: ^8.44.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
@@ -2733,12 +2733,12 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/node': 18.16.20
       '@types/yargs': 17.0.19
       eslint: 8.44.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../test-apps/imjs-importer:
     specifiers:
@@ -2756,7 +2756,7 @@ importers:
       eslint: ^8.44.0
       mocha: ^10.2.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
@@ -2767,7 +2767,7 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
@@ -2775,7 +2775,7 @@ importers:
       eslint: 8.44.0
       mocha: 10.2.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../test-apps/imodel-from-geojson:
     specifiers:
@@ -2792,7 +2792,7 @@ importers:
       eslint: ^8.44.0
       fs-extra: ^8.1.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
@@ -2803,14 +2803,14 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/fs-extra': 4.0.7
       '@types/lodash': 4.14.202
       '@types/node': 18.16.20
       '@types/yargs': 17.0.19
       eslint: 8.44.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../test-apps/imodel-from-orbitgt:
     specifiers:
@@ -2826,7 +2826,7 @@ importers:
       '@types/yargs': 17.0.19
       eslint: ^8.44.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
@@ -2837,13 +2837,13 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/fs-extra': 4.0.7
       '@types/node': 18.16.20
       '@types/yargs': 17.0.19
       eslint: 8.44.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../test-apps/imodel-from-reality-model:
     specifiers:
@@ -2860,7 +2860,7 @@ importers:
       eslint: ^8.44.0
       fs-extra: ^8.1.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
@@ -2871,14 +2871,14 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/fs-extra': 4.0.7
       '@types/lodash': 4.14.202
       '@types/node': 18.16.20
       '@types/yargs': 17.0.19
       eslint: 8.44.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../tools/backend-webpack:
     specifiers:
@@ -2926,7 +2926,7 @@ importers:
       tree-kill: ^1.2.2
       typedoc: ^0.25.8
       typedoc-plugin-merge-modules: ^4.0.1
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       wtfnode: ^0.9.1
       yargs: ^17.4.0
     dependencies:
@@ -2940,13 +2940,13 @@ importers:
       mocha-junit-reporter: 2.0.2_mocha@10.2.0
       rimraf: 3.0.2
       tree-kill: 1.2.2
-      typedoc: 0.25.8_typescript@5.3.3
+      typedoc: 0.25.8_typescript@5.4.5
       typedoc-plugin-merge-modules: 4.0.1_typedoc@0.25.8
-      typescript: 5.3.3
+      typescript: 5.4.5
       wtfnode: 0.9.1
       yargs: 17.4.0
     devDependencies:
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/node': 18.16.20
       eslint: 8.44.0
 
@@ -2973,7 +2973,7 @@ importers:
       playwright: ~1.35.1
       rimraf: ^3.0.2
       source-map-support: ^0.5.6
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       yargs: ^17.4.0
     dependencies:
       canonical-path: 1.0.0
@@ -2987,7 +2987,7 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/detect-port': 1.1.0
       '@types/express': 4.17.20
@@ -2999,7 +2999,7 @@ importers:
       eslint: 8.44.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../tools/ecschema2ts:
     specifiers:
@@ -3028,7 +3028,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       source-map-support: ^0.5.6
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -3043,7 +3043,7 @@ importers:
       fs-extra: 8.1.0
     devDependencies:
       '@itwin/build-tools': link:../build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/chai-string': 1.4.1
       '@types/fs-extra': 4.0.7
@@ -3056,7 +3056,7 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       source-map-support: 0.5.6
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../tools/internal:
     specifiers:
@@ -3079,16 +3079,16 @@ importers:
       eslint: ^8.44.0
       fs-extra: ^8.1.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
     dependencies:
       fs-extra: 8.1.0
     devDependencies:
       '@itwin/build-tools': link:../build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/fs-extra': 4.0.7
       eslint: 8.44.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   ../../tools/webpack-core:
     specifiers:
@@ -3119,7 +3119,7 @@ importers:
       resolve: 1.19.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       webpack: ^5.76.0
     dependencies:
       chalk: 3.0.0
@@ -3133,7 +3133,7 @@ importers:
       source-map-loader: 4.0.0_webpack@5.76.0
     devDependencies:
       '@itwin/build-tools': link:../build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/chai-jest-snapshot': 1.3.8
@@ -3150,7 +3150,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
       webpack: 5.76.0
 
   ../../ui/appui-abstract:
@@ -3176,13 +3176,13 @@ importers:
       sinon: ^17.0.1
       sinon-chai: ^3.7.0
       source-map-loader: ^4.0.0
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       webpack: ^5.76.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
       '@itwin/core-bentley': link:../../core/bentley
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       '@types/sinon': 17.0.2
@@ -3200,7 +3200,7 @@ importers:
       sinon: 17.0.1
       sinon-chai: 3.7.0_chai@4.3.10+sinon@17.0.1
       source-map-loader: 4.0.0_webpack@5.76.0
-      typescript: 5.3.3
+      typescript: 5.4.5
       webpack: 5.76.0
 
   ../../utils/workspace-editor:
@@ -3218,7 +3218,7 @@ importers:
       glob: ^10.3.12
       mocha: ^10.2.0
       rimraf: ^3.0.2
-      typescript: ~5.3.3
+      typescript: ~5.4.5
       yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
@@ -3228,7 +3228,7 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim
       '@types/chai': 4.3.1
       '@types/glob': 5.0.35
       '@types/mocha': 10.0.6
@@ -3236,7 +3236,7 @@ importers:
       eslint: 8.44.0
       mocha: 10.2.0
       rimraf: 3.0.2
-      typescript: 5.3.3
+      typescript: 5.4.5
 
 packages:
 
@@ -4258,7 +4258,7 @@ packages:
       - debug
     dev: false
 
-  /@itwin/eslint-plugin/4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a:
+  /@itwin/eslint-plugin/4.0.0-dev.52_hwnj4pnw7jaaecaxtilufy5fim:
     resolution: {integrity: sha512-y1X/+dRCxBJTZgJjQbKap/l7cAXx5MaRt1FWAsEzzJ48hEvUDBjLQfdtFXbjXRZWPyc1WQ2OyLnD4NnppsABOg==}
     engines: {node: ^18.18.0 || >=20.0.0}
     hasBin: true
@@ -4266,10 +4266,10 @@ packages:
       eslint: ^8.56.0
       typescript: ^3.7.0 || ^4.0.0 || ^5.0.0
     dependencies:
-      '@typescript-eslint/eslint-plugin': 7.0.2_tvt57mchvcm4v3ea52tuww4zha
-      '@typescript-eslint/parser': 7.0.2_r6fjndk6k4skjcbozishmsan5a
+      '@typescript-eslint/eslint-plugin': 7.0.2_uqi33sig5xvsb3phdfmh6dr3cq
+      '@typescript-eslint/parser': 7.0.2_hwnj4pnw7jaaecaxtilufy5fim
       eslint: 8.44.0
-      eslint-plugin-deprecation: 2.0.0_r6fjndk6k4skjcbozishmsan5a
+      eslint-plugin-deprecation: 2.0.0_hwnj4pnw7jaaecaxtilufy5fim
       eslint-plugin-import: 2.29.1_eslint@8.44.0
       eslint-plugin-jam3: 0.2.3
       eslint-plugin-jsdoc: 48.0.6_eslint@8.44.0
@@ -4277,7 +4277,7 @@ packages:
       eslint-plugin-prefer-arrow: 1.2.3_eslint@8.44.0
       eslint-plugin-react: 7.33.2_eslint@8.44.0
       eslint-plugin-react-hooks: 4.6.0_eslint@8.44.0
-      typescript: 5.3.3
+      typescript: 5.4.5
       workspace-tools: 0.36.4
     transitivePeerDependencies:
       - supports-color
@@ -5230,7 +5230,7 @@ packages:
       '@types/node': 18.16.20
     optional: true
 
-  /@typescript-eslint/eslint-plugin/7.0.2_tvt57mchvcm4v3ea52tuww4zha:
+  /@typescript-eslint/eslint-plugin/7.0.2_uqi33sig5xvsb3phdfmh6dr3cq:
     resolution: {integrity: sha512-/XtVZJtbaphtdrWjr+CJclaCVGPtOdBpFEnvtNf/jRV0IiEemRrL0qABex/nEt8isYcnFacm3nPHYQwL+Wb7qg==}
     engines: {node: ^16.0.0 || >=18.0.0}
     peerDependencies:
@@ -5244,10 +5244,10 @@ packages:
         optional: true
     dependencies:
       '@eslint-community/regexpp': 4.10.0
-      '@typescript-eslint/parser': 7.0.2_r6fjndk6k4skjcbozishmsan5a
+      '@typescript-eslint/parser': 7.0.2_hwnj4pnw7jaaecaxtilufy5fim
       '@typescript-eslint/scope-manager': 7.0.2
-      '@typescript-eslint/type-utils': 7.0.2_r6fjndk6k4skjcbozishmsan5a
-      '@typescript-eslint/utils': 7.0.2_r6fjndk6k4skjcbozishmsan5a
+      '@typescript-eslint/type-utils': 7.0.2_hwnj4pnw7jaaecaxtilufy5fim
+      '@typescript-eslint/utils': 7.0.2_hwnj4pnw7jaaecaxtilufy5fim
       '@typescript-eslint/visitor-keys': 7.0.2
       debug: 4.3.4
       eslint: 8.44.0
@@ -5255,12 +5255,12 @@ packages:
       ignore: 5.3.0
       natural-compare: 1.4.0
       semver: 7.6.0
-      ts-api-utils: 1.2.1_typescript@5.3.3
-      typescript: 5.3.3
+      ts-api-utils: 1.2.1_typescript@5.4.5
+      typescript: 5.4.5
     transitivePeerDependencies:
       - supports-color
 
-  /@typescript-eslint/parser/6.21.0_r6fjndk6k4skjcbozishmsan5a:
+  /@typescript-eslint/parser/6.21.0_hwnj4pnw7jaaecaxtilufy5fim:
     resolution: {integrity: sha512-tbsV1jPne5CkFQCgPBcDOt30ItF7aJoZL997JSF7MhGQqOeT3svWRYxiqlfA5RUdlHN6Fi+EI9bxqbdyAUZjYQ==}
     engines: {node: ^16.0.0 || >=18.0.0}
     peerDependencies:
@@ -5272,16 +5272,16 @@ packages:
     dependencies:
       '@typescript-eslint/scope-manager': 6.21.0
       '@typescript-eslint/types': 6.21.0
-      '@typescript-eslint/typescript-estree': 6.21.0_typescript@5.3.3
+      '@typescript-eslint/typescript-estree': 6.21.0_typescript@5.4.5
       '@typescript-eslint/visitor-keys': 6.21.0
       debug: 4.3.4
       eslint: 8.44.0
-      typescript: 5.3.3
+      typescript: 5.4.5
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /@typescript-eslint/parser/7.0.2_r6fjndk6k4skjcbozishmsan5a:
+  /@typescript-eslint/parser/7.0.2_hwnj4pnw7jaaecaxtilufy5fim:
     resolution: {integrity: sha512-GdwfDglCxSmU+QTS9vhz2Sop46ebNCXpPPvsByK7hu0rFGRHL+AusKQJ7SoN+LbLh6APFpQwHKmDSwN35Z700Q==}
     engines: {node: ^16.0.0 || >=18.0.0}
     peerDependencies:
@@ -5293,11 +5293,11 @@ packages:
     dependencies:
       '@typescript-eslint/scope-manager': 7.0.2
       '@typescript-eslint/types': 7.0.2
-      '@typescript-eslint/typescript-estree': 7.0.2_typescript@5.3.3
+      '@typescript-eslint/typescript-estree': 7.0.2_typescript@5.4.5
       '@typescript-eslint/visitor-keys': 7.0.2
       debug: 4.3.4
       eslint: 8.44.0
-      typescript: 5.3.3
+      typescript: 5.4.5
     transitivePeerDependencies:
       - supports-color
 
@@ -5315,7 +5315,7 @@ packages:
       '@typescript-eslint/types': 7.0.2
       '@typescript-eslint/visitor-keys': 7.0.2
 
-  /@typescript-eslint/type-utils/7.0.2_r6fjndk6k4skjcbozishmsan5a:
+  /@typescript-eslint/type-utils/7.0.2_hwnj4pnw7jaaecaxtilufy5fim:
     resolution: {integrity: sha512-IKKDcFsKAYlk8Rs4wiFfEwJTQlHcdn8CLwLaxwd6zb8HNiMcQIFX9sWax2k4Cjj7l7mGS5N1zl7RCHOVwHq2VQ==}
     engines: {node: ^16.0.0 || >=18.0.0}
     peerDependencies:
@@ -5325,12 +5325,12 @@ packages:
       typescript:
         optional: true
     dependencies:
-      '@typescript-eslint/typescript-estree': 7.0.2_typescript@5.3.3
-      '@typescript-eslint/utils': 7.0.2_r6fjndk6k4skjcbozishmsan5a
+      '@typescript-eslint/typescript-estree': 7.0.2_typescript@5.4.5
+      '@typescript-eslint/utils': 7.0.2_hwnj4pnw7jaaecaxtilufy5fim
       debug: 4.3.4
       eslint: 8.44.0
-      ts-api-utils: 1.2.1_typescript@5.3.3
-      typescript: 5.3.3
+      ts-api-utils: 1.2.1_typescript@5.4.5
+      typescript: 5.4.5
     transitivePeerDependencies:
       - supports-color
 
@@ -5342,7 +5342,7 @@ packages:
     resolution: {integrity: sha512-ZzcCQHj4JaXFjdOql6adYV4B/oFOFjPOC9XYwCaZFRvqN8Llfvv4gSxrkQkd2u4Ci62i2c6W6gkDwQJDaRc4nA==}
     engines: {node: ^16.0.0 || >=18.0.0}
 
-  /@typescript-eslint/typescript-estree/6.21.0_typescript@5.3.3:
+  /@typescript-eslint/typescript-estree/6.21.0_typescript@5.4.5:
     resolution: {integrity: sha512-6npJTkZcO+y2/kr+z0hc4HwNfrrP4kNYh57ek7yCNlrBjWQ1Y0OS7jiZTkgumrvkX5HkEKXFZkkdFNkaW2wmUQ==}
     engines: {node: ^16.0.0 || >=18.0.0}
     peerDependencies:
@@ -5358,12 +5358,12 @@ packages:
       is-glob: 4.0.3
       minimatch: 9.0.3
       semver: 7.6.0
-      ts-api-utils: 1.2.1_typescript@5.3.3
-      typescript: 5.3.3
+      ts-api-utils: 1.2.1_typescript@5.4.5
+      typescript: 5.4.5
     transitivePeerDependencies:
       - supports-color
 
-  /@typescript-eslint/typescript-estree/7.0.2_typescript@5.3.3:
+  /@typescript-eslint/typescript-estree/7.0.2_typescript@5.4.5:
     resolution: {integrity: sha512-3AMc8khTcELFWcKcPc0xiLviEvvfzATpdPj/DXuOGIdQIIFybf4DMT1vKRbuAEOFMwhWt7NFLXRkbjsvKZQyvw==}
     engines: {node: ^16.0.0 || >=18.0.0}
     peerDependencies:
@@ -5379,12 +5379,12 @@ packages:
       is-glob: 4.0.3
       minimatch: 9.0.3
       semver: 7.6.0
-      ts-api-utils: 1.2.1_typescript@5.3.3
-      typescript: 5.3.3
+      ts-api-utils: 1.2.1_typescript@5.4.5
+      typescript: 5.4.5
     transitivePeerDependencies:
       - supports-color
 
-  /@typescript-eslint/utils/6.21.0_r6fjndk6k4skjcbozishmsan5a:
+  /@typescript-eslint/utils/6.21.0_hwnj4pnw7jaaecaxtilufy5fim:
     resolution: {integrity: sha512-NfWVaC8HP9T8cbKQxHcsJBY5YE1O33+jpMwN45qzWWaPDZgLIbo12toGMWnmhvCpd3sIxkpDw3Wv1B3dYrbDQQ==}
     engines: {node: ^16.0.0 || >=18.0.0}
     peerDependencies:
@@ -5395,14 +5395,14 @@ packages:
       '@types/semver': 7.5.6
       '@typescript-eslint/scope-manager': 6.21.0
       '@typescript-eslint/types': 6.21.0
-      '@typescript-eslint/typescript-estree': 6.21.0_typescript@5.3.3
+      '@typescript-eslint/typescript-estree': 6.21.0_typescript@5.4.5
       eslint: 8.44.0
       semver: 7.6.0
     transitivePeerDependencies:
       - supports-color
       - typescript
 
-  /@typescript-eslint/utils/7.0.2_r6fjndk6k4skjcbozishmsan5a:
+  /@typescript-eslint/utils/7.0.2_hwnj4pnw7jaaecaxtilufy5fim:
     resolution: {integrity: sha512-PZPIONBIB/X684bhT1XlrkjNZJIEevwkKDsdwfiu1WeqBxYEEdIgVDgm8/bbKHVu+6YOpeRqcfImTdImx/4Bsw==}
     engines: {node: ^16.0.0 || >=18.0.0}
     peerDependencies:
@@ -5413,7 +5413,7 @@ packages:
       '@types/semver': 7.5.6
       '@typescript-eslint/scope-manager': 7.0.2
       '@typescript-eslint/types': 7.0.2
-      '@typescript-eslint/typescript-estree': 7.0.2_typescript@5.3.3
+      '@typescript-eslint/typescript-estree': 7.0.2_typescript@5.4.5
       eslint: 8.44.0
       semver: 7.6.0
     transitivePeerDependencies:
@@ -6000,9 +6000,9 @@ packages:
       lokijs: 1.5.12
       morgan: 1.10.0
       multistream: 2.1.1
-      mysql2: 3.9.6
+      mysql2: 3.9.7
       rimraf: 3.0.2
-      sequelize: 6.35.2_h5xd2ht7l23sq7kmzts5gomubi
+      sequelize: 6.35.2_4zqrv5z5fyqt6dbtv7myvumnze
       stoppable: 1.1.0
       tedious: 16.6.1
       to-readable-stream: 2.1.0
@@ -6037,7 +6037,7 @@ packages:
       loader-utils: 2.0.4
       make-dir: 3.1.0
       schema-utils: 2.7.1
-      webpack: 5.76.0
+      webpack: 5.76.0_webpack-cli@5.0.1
     dev: true
 
   /babel-plugin-istanbul/6.1.1:
@@ -7669,17 +7669,17 @@ packages:
       debug: 3.2.7
       eslint: 8.44.0
 
-  /eslint-plugin-deprecation/2.0.0_r6fjndk6k4skjcbozishmsan5a:
+  /eslint-plugin-deprecation/2.0.0_hwnj4pnw7jaaecaxtilufy5fim:
     resolution: {integrity: sha512-OAm9Ohzbj11/ZFyICyR5N6LbOIvQMp7ZU2zI7Ej0jIc8kiGUERXPNMfw2QqqHD1ZHtjMub3yPZILovYEYucgoQ==}
     peerDependencies:
       eslint: ^7.0.0 || ^8.0.0
       typescript: ^4.2.4 || ^5.0.0
     dependencies:
-      '@typescript-eslint/utils': 6.21.0_r6fjndk6k4skjcbozishmsan5a
+      '@typescript-eslint/utils': 6.21.0_hwnj4pnw7jaaecaxtilufy5fim
       eslint: 8.44.0
       tslib: 2.6.2
-      tsutils: 3.21.0_typescript@5.3.3
-      typescript: 5.3.3
+      tsutils: 3.21.0_typescript@5.4.5
+      typescript: 5.4.5
     transitivePeerDependencies:
       - supports-color
 
@@ -10167,8 +10167,8 @@ packages:
       readable-stream: 2.3.8
     dev: false
 
-  /mysql2/3.9.6:
-    resolution: {integrity: sha512-9NYUMLQv6yXnu+5hUh8PZ5CdKoG6VWDzXbojIdTyob8upNZXU3rBNQK9viaEqfgw+LMifhd+53VEZPxZk3bTWA==}
+  /mysql2/3.9.7:
+    resolution: {integrity: sha512-KnJT8vYRcNAZv73uf9zpXqNbvBG7DJrs+1nACsjZP1HMJ1TgXEy8wnNilXAn/5i57JizXKtrUtwDB7HxT9DDpw==}
     engines: {node: '>= 8.0'}
     dependencies:
       denque: 2.1.0
@@ -11643,7 +11643,7 @@ packages:
     engines: {node: '>= 10.0.0'}
     dev: false
 
-  /sequelize/6.35.2_h5xd2ht7l23sq7kmzts5gomubi:
+  /sequelize/6.35.2_4zqrv5z5fyqt6dbtv7myvumnze:
     resolution: {integrity: sha512-EdzLaw2kK4/aOnWQ7ed/qh3B6/g+1DvmeXr66RwbcqSm/+QRS9X0LDI5INBibsy4eNJHWIRPo3+QK0zL+IPBHg==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
@@ -11684,7 +11684,7 @@ packages:
       lodash: 4.17.21
       moment: 2.30.1
       moment-timezone: 0.5.44
-      mysql2: 3.9.6
+      mysql2: 3.9.7
       pg-connection-string: 2.6.2
       retry-as-promised: 7.0.4
       semver: 7.6.0
@@ -12454,47 +12454,15 @@ packages:
       utf8-byte-length: 1.0.4
     dev: true
 
-  /ts-api-utils/1.2.1_typescript@5.3.3:
+  /ts-api-utils/1.2.1_typescript@5.4.5:
     resolution: {integrity: sha512-RIYA36cJn2WiH9Hy77hdF9r7oEwxAtB/TS9/S4Qd90Ap4z5FSiin5zEiTL44OII1Y3IIlEvxwxFUVgrHSZ/UpA==}
     engines: {node: '>=16'}
     peerDependencies:
       typescript: '>=4.2.0'
     dependencies:
-      typescript: 5.3.3
+      typescript: 5.4.5
 
-  /ts-node/10.8.2_typescript@5.3.3:
-    resolution: {integrity: sha512-LYdGnoGddf1D6v8REPtIH+5iq/gTDuZqv2/UJUU7tKjuEU8xVZorBM+buCGNjj+pGEud+sOoM4CX3/YzINpENA==}
-    hasBin: true
-    peerDependencies:
-      '@swc/core': '>=1.2.50'
-      '@swc/wasm': '>=1.2.50'
-      '@types/node': '*'
-      typescript: '>=2.7'
-    peerDependenciesMeta:
-      '@swc/core':
-        optional: true
-      '@swc/wasm':
-        optional: true
-      '@types/node':
-        optional: true
-    dependencies:
-      '@cspotcode/source-map-support': 0.8.1
-      '@tsconfig/node10': 1.0.9
-      '@tsconfig/node12': 1.0.11
-      '@tsconfig/node14': 1.0.3
-      '@tsconfig/node16': 1.0.4
-      acorn: 8.11.3
-      acorn-walk: 8.3.2
-      arg: 4.1.3
-      create-require: 1.1.1
-      diff: 4.0.2
-      make-error: 1.3.6
-      typescript: 5.3.3
-      v8-compile-cache-lib: 3.0.1
-      yn: 3.1.1
-    dev: true
-
-  /ts-node/10.8.2_zifzk4dbgzfq65cu6hdbkv4dfq:
+  /ts-node/10.8.2_s4jznzpar3xrucbavlx2rvciqu:
     resolution: {integrity: sha512-LYdGnoGddf1D6v8REPtIH+5iq/gTDuZqv2/UJUU7tKjuEU8xVZorBM+buCGNjj+pGEud+sOoM4CX3/YzINpENA==}
     hasBin: true
     peerDependencies:
@@ -12522,7 +12490,39 @@ packages:
       create-require: 1.1.1
       diff: 4.0.2
       make-error: 1.3.6
-      typescript: 5.3.3
+      typescript: 5.4.5
+      v8-compile-cache-lib: 3.0.1
+      yn: 3.1.1
+    dev: true
+
+  /ts-node/10.8.2_typescript@5.4.5:
+    resolution: {integrity: sha512-LYdGnoGddf1D6v8REPtIH+5iq/gTDuZqv2/UJUU7tKjuEU8xVZorBM+buCGNjj+pGEud+sOoM4CX3/YzINpENA==}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': '>=1.2.50'
+      '@swc/wasm': '>=1.2.50'
+      '@types/node': '*'
+      typescript: '>=2.7'
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      '@swc/wasm':
+        optional: true
+      '@types/node':
+        optional: true
+    dependencies:
+      '@cspotcode/source-map-support': 0.8.1
+      '@tsconfig/node10': 1.0.9
+      '@tsconfig/node12': 1.0.11
+      '@tsconfig/node14': 1.0.3
+      '@tsconfig/node16': 1.0.4
+      acorn: 8.11.3
+      acorn-walk: 8.3.2
+      arg: 4.1.3
+      create-require: 1.1.1
+      diff: 4.0.2
+      make-error: 1.3.6
+      typescript: 5.4.5
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
     dev: true
@@ -12574,14 +12574,14 @@ packages:
   /tslib/2.6.2:
     resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
 
-  /tsutils/3.21.0_typescript@5.3.3:
+  /tsutils/3.21.0_typescript@5.4.5:
     resolution: {integrity: sha512-mHKK3iUXL+3UF6xL5k0PEhKRUBKPBCv/+RkEOpjRWxxx27KKRBmmA60A9pgOUvMi8GKhRMPEmjBRPzs2W7O1OA==}
     engines: {node: '>= 6'}
     peerDependencies:
       typescript: '>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta'
     dependencies:
       tslib: 1.14.1
-      typescript: 5.3.3
+      typescript: 5.4.5
 
   /tunnel-agent/0.6.0:
     resolution: {integrity: sha512-McnNiV1l8RYeY8tBgEpuodCC1mLUdbSN+CYBL7kJsJNInOP8UjDDEwdk6Mw60vdLLrr5NHKZhMAOSrR2NZuQ+w==}
@@ -12675,10 +12675,10 @@ packages:
     peerDependencies:
       typedoc: 0.23.x
     dependencies:
-      typedoc: 0.25.8_typescript@5.3.3
+      typedoc: 0.25.8_typescript@5.4.5
     dev: false
 
-  /typedoc/0.25.8_typescript@5.3.3:
+  /typedoc/0.25.8_typescript@5.4.5:
     resolution: {integrity: sha512-mh8oLW66nwmeB9uTa0Bdcjfis+48bAjSH3uqdzSuSawfduROQLlXw//WSNZLYDdhmMVB7YcYZicq6e8T0d271A==}
     engines: {node: '>= 16'}
     hasBin: true
@@ -12689,7 +12689,7 @@ packages:
       marked: 4.3.0
       minimatch: 9.0.3
       shiki: 0.14.7
-      typescript: 5.3.3
+      typescript: 5.4.5
     dev: false
 
   /typemoq/2.1.0:
@@ -12726,6 +12726,12 @@ packages:
 
   /typescript/5.3.3:
     resolution: {integrity: sha512-pXWcraxM0uxAS+tN0AG/BF2TyqmHO014Z070UsJ+pFvYuRSq8KH8DmWpnbXe0pEPDHXZV3FcAbJkijJ5oNEnWw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+    dev: false
+
+  /typescript/5.4.5:
+    resolution: {integrity: sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ==}
     engines: {node: '>=14.17'}
     hasBin: true
 
