@@ -20,7 +20,7 @@ iTwin.js now provides APIs for creating and manipulating blocks of formatted tex
 
 ## Transaction metadata
 
-Imagine you have written a UI control that lists the names of all of the [ViewDefinition]($backend)s in an iModel. When a view is created, deleted, or renamed, you'd like to automatically update the list presented to the user. You won't care about changes to any other types of elements. How can you efficiently solve this problem?
+Imagine you are implementing a UI control that lists the names of all of the [ViewDefinition]($backend)s in an iModel. When a view is created, deleted, or renamed, you'd like to automatically update the list presented to the user. You won't care about changes to any other types of elements. How can you efficiently solve this problem?
 
 When you make changes to the contents of a [BriefcaseConnection]($frontend), the front-end is notified about the entities modified by those transactions via the [BriefcaseTxns.onElementsChanged]($frontend) and [BriefcaseTxns.onModelsChanged]($frontend) events. Previously these events received as payload a [ChangedEntities]($common) object, providing only the Ids of each entity in the space-efficient but awkward-to-use form of a [CompressedId64Set]($bentley).
 
