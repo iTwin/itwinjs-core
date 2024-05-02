@@ -7,7 +7,7 @@ import {
   BeButtonEvent, Cluster, CollectTileStatus, DecorateContext, Decorator, DisclosedTileTreeSet,
   GeometryTileTreeReference, GraphicPrimitive, GraphicType, IModelApp, MapTileTreeReference, Marker, MarkerImage, MarkerSet,
   Tile, TileGeometryCollector, TileTreeReference, TileUser, Viewport } from "@itwin/core-frontend";
-import { ConvexClipPlaneSet, CurvePrimitive, GrowableXYZArray, LineString3d, Loop, Point2d, Point3d, Polyface, PolyfaceClip, PolyfaceQuery, Range3d, SweepLineStringToFacetsOptions, Transform, Vector3d, XAndY, XYAndZ } from "@itwin/core-geometry";
+import { ConvexClipPlaneSet, CurvePrimitive, GrowableXYZArray, IModelJson, LineString3d, Loop, Point2d, Point3d, Polyface, PolyfaceClip, PolyfaceQuery, Range3d, Ray3d, SweepLineStringToFacetsOptions, Transform, Vector3d, WritableXYAndZ, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { MapFeatureInfoToolData } from "./MapFeatureInfoTool";
 import { Logger } from "@itwin/core-bentley";
 
@@ -17,9 +17,11 @@ const loggerCategory = "MapLayersFormats.MapFeatureInfoDecorator";
 /* @internal
 */
 class DrapeLineStringCollector extends TileGeometryCollector {
-  private _logCount = 0;
-  constructor(user: TileUser, chordTolerance: number, range: Range3d, transform: Transform, private _points: GrowableXYZArray) {
+  private _points: GrowableXYZArray;
+
+  constructor(user: TileUser, chordTolerance: number, range: Range3d, transform: Transform, points: GrowableXYZArray) {
     super({ user, chordTolerance, range, transform });
+    this._points = points;
   }
 
   public override addMissingTile(tile: Tile): void {
@@ -129,6 +131,31 @@ class TerrainDraper implements TileUser {
     }
     return "loading";
   }
+  public drapePoint(outPoint: Point3d, point: Point3d, chordTolerance: number, maxDistance = 1.0E5): "loading" | "complete" {
+    const tree = this.treeRef.treeOwner.load();
+    if (!tree)
+      return "loading";
+
+    const range = Range3d.createXYZ(point.x, point.y, point.z);
+    range.extendZOnly(-maxDistance);  // Expand - but not so much that we get opposite side of globe.
+    range.extendZOnly(maxDistance);
+
+    const collector = new TileGeometryCollector({chordTolerance, range, user: this });
+    this.treeRef.collectTileGeometry(collector);
+    collector.requestMissingTiles();
+
+    if (collector.isAllGeometryLoaded && collector.polyfaces.length > 0) {
+      for (const polyface of collector.polyfaces) {
+        // Im assuming a single polyface here since we are draping a single point
+        const facetLocation = PolyfaceQuery.intersectRay3d(polyface, Ray3d.create(point, Vector3d.create(0,0,1) ));
+        if (!facetLocation)
+          continue;
+        outPoint.setFromPoint3d(facetLocation.point);
+      }
+      return "complete";
+    }
+    return "loading";
+  }
 }
 
 /** @internal */
@@ -215,6 +242,7 @@ export class MapFeatureInfoDecorator implements Decorator {
 
   private _drapedStrings?: LineString3d[];
   private _drapedMeshes?: Polyface[];
+  private _drapedPoints = new GrowableXYZArray();
   private _allGeomDraped = false;
   private _draper?: TerrainDraper;
   private _markerImage: HTMLImageElement;
@@ -258,6 +286,7 @@ export class MapFeatureInfoDecorator implements Decorator {
 
     this._drapedStrings = undefined;
     this._drapedMeshes = undefined;
+    this._drapedPoints.clear();
     this._allGeomDraped = false;
     this.hidden = false;
 
@@ -339,7 +368,7 @@ export class MapFeatureInfoDecorator implements Decorator {
       if (!this._allGeomDraped) {
         let hasMissingDrapeGeoms = false;
         for (const state of this._drapeGraphicsStates) {
-
+          const computeChordTolerance = (drapeRange: Range3d) => this._computeChordTolerance(context.viewport, true, () => drapeRange) * 20;
           if (state.collectorState === "loading") {
             this._scratchPoints.clear();
 
@@ -349,8 +378,7 @@ export class MapFeatureInfoDecorator implements Decorator {
               const drapeRange = Range3d.createNull();
               drapeRange.extendArray(this._scratchPoints);
               const drapedStrings: LineString3d[] = [];
-              const tolerance = this._computeChordTolerance(context.viewport, true, () => drapeRange) * 20;  // 10 pixels
-              if ("loading" === this._draper.drapeLineString(drapedStrings, this._scratchPoints, tolerance)) {
+              if ("loading" === this._draper.drapeLineString(drapedStrings, this._scratchPoints, computeChordTolerance(drapeRange))) {
                 hasMissingDrapeGeoms = true;
                 break;
               } else {
@@ -360,13 +388,22 @@ export class MapFeatureInfoDecorator implements Decorator {
             } else if (state.graphic.type === "loop") {
               const loop =  state.graphic.loop;
               const outMeshes: Polyface[] = [];
-              const tolerance = this._computeChordTolerance(context.viewport, true, () => loop.range()) * 20;  // 10 pixels
-              if ("loading" === this._draper.drapeLoop(outMeshes, loop, tolerance)) {
+              if ("loading" === this._draper.drapeLoop(outMeshes, loop, computeChordTolerance(loop.range()) )) {
                 hasMissingDrapeGeoms = true;
                 break; // We drape each graphic sequentially,  otherwise collector get messed up.
               } else {
                 this.addDrapedMeshes(outMeshes);
                 state.collectorState = "complete";
+              }
+            } else if (state.graphic.type === "pointstring") {
+              const outPoint = Point3d.createZero();
+              for (const point of state.graphic.points) {
+                if ("loading" === this._draper.drapePoint(outPoint, point, computeChordTolerance(Range3d.createXYZ(point.x, point.x, point.x)))) {
+                  this._allGeomDraped = false;
+                  return undefined;
+                } else if (!outPoint.isZero) {
+                  this._drapedPoints.push(outPoint);
+                }
               }
             }
           }
@@ -386,6 +423,12 @@ export class MapFeatureInfoDecorator implements Decorator {
       if (this._drapedMeshes) {
         builder.setSymbology(this.highlightColor, this.highlightColor, this.lineWidth);
         this._drapedMeshes.forEach((polyface) => builder.addPolyface(polyface, true));
+      }
+
+      if (this._drapedPoints.length > 0) {
+        for (let i = 0; i < this._drapedPoints.length; i++) {
+          this._markerSet.markers.add(new PinMarker(this._drapedPoints.getPoint3dAtUncheckedPointIndex(i), this.markerSize, this._markerImage));
+        }
       }
     } else {
       builder.setSymbology(this.highlightColor, this.highlightColor, this.lineWidth);
