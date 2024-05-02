@@ -1959,27 +1959,27 @@ export enum DbResponseKind {
 // @internal (undocumented)
 export enum DbResponseStatus {
     // (undocumented)
-    Cancel = 2,/* query ran to completion. */
+    Cancel = 2,
     // (undocumented)
-    Done = 1,/*  Requested by user.*/
+    Done = 1,
     // (undocumented)
-    Error = 100,/*  query was running but ran out of quota.*/
+    Error = 100,
     // (undocumented)
-    Error_BlobIO_OpenFailed = 105,/*  query time quota expired while it was in queue.*/
+    Error_BlobIO_OpenFailed = 105,
     // (undocumented)
-    Error_BlobIO_OutOfRange = 106,/*  could not submit the query as queue was full.*/
+    Error_BlobIO_OutOfRange = 106,
     // (undocumented)
-    Error_ECSql_BindingFailed = 104,/*  generic error*/
+    Error_ECSql_BindingFailed = 104,
     // (undocumented)
-    Error_ECSql_PreparedFailed = 101,/*  ecsql prepared failed*/
+    Error_ECSql_PreparedFailed = 101,
     // (undocumented)
-    Error_ECSql_RowToJsonFailed = 103,/*  ecsql step failed*/
+    Error_ECSql_RowToJsonFailed = 103,
     // (undocumented)
-    Error_ECSql_StepFailed = 102,/*  ecsql failed to serialized row to json.*/
+    Error_ECSql_StepFailed = 102,
     // (undocumented)
-    Partial = 3,/*  ecsql binding failed.*/
+    Partial = 3,
     // (undocumented)
-    QueueFull = 5,/*  class or property or instance specified was not found or property as not of type blob.*/
+    QueueFull = 5,
     // (undocumented)
     Timeout = 4
 }
@@ -2038,13 +2038,13 @@ export interface DecorationGeometryProps {
 // @beta
 export enum DefaultSupportedTypes {
     // (undocumented)
-    Cesium3dTiles = "Cesium3DTiles",// Web Ready 3D Scalable Mesh
+    Cesium3dTiles = "Cesium3DTiles",
     // (undocumented)
-    OMR = "OMR",// Web Ready Orbit Point Cloud
+    OMR = "OMR",
     // (undocumented)
-    OPC = "OPC",// Web Ready Terrain Scalable Mesh
+    OPC = "OPC",
     // (undocumented)
-    RealityMesh3dTiles = "RealityMesh3DTiles",// Orbit Mapping Resource
+    RealityMesh3dTiles = "RealityMesh3DTiles",
     // (undocumented)
     Terrain3dTiles = "Terrain3DTiles"
 }
@@ -6755,9 +6755,9 @@ export type PolylineIndices = number[];
 // @alpha
 export enum PolylineTypeFlags {
     // (undocumented)
-    Edge = 1,// Just an ordinary polyline
+    Edge = 1,
     // (undocumented)
-    Normal = 0,// A polyline used to define the edges of a planar region.
+    Normal = 0,
     // (undocumented)
     Outline = 2
 }
@@ -6806,9 +6806,9 @@ export enum PrimitiveTypeCode {
     // (undocumented)
     Long = 1537,
     // (undocumented)
-    Point2d = 1793,// eslint-disable-line @typescript-eslint/no-shadow
+    Point2d = 1793,
     // (undocumented)
-    Point3d = 2049,// eslint-disable-line @typescript-eslint/no-shadow
+    Point3d = 2049,
     // (undocumented)
     String = 2305,
     // (undocumented)
@@ -10066,17 +10066,17 @@ export enum TileFormat {
     // (undocumented)
     A3x = 5780289,
     // (undocumented)
-    B3dm = 1835283298,// "b3dm"
+    B3dm = 1835283298,
     // (undocumented)
-    Cmpt = 1953525091,// "glTF"
+    Cmpt = 1953525091,
     // (undocumented)
-    Gltf = 1179937895,// "pnts"
+    Gltf = 1179937895,
     // (undocumented)
-    I3dm = 1835283305,// "iMdl"
+    I3dm = 1835283305,
     // (undocumented)
-    IModel = 1818512745,// cmpt
+    IModel = 1818512745,
     // (undocumented)
-    Pnts = 1937010288,// i3dm
+    Pnts = 1937010288,
     // (undocumented)
     Unknown = 0
 }
@@ -10346,11 +10346,11 @@ export enum TreeFlags {
     // (undocumented)
     EnforceDisplayPriority = 2,
     // (undocumented)
-    None = 0,// Use project extents as the basis of the tile tree's range.
+    None = 0,
     // (undocumented)
-    OptimizeBRepProcessing = 4,// For 3d plan projection models, group graphics into layers based on subcategory.
+    OptimizeBRepProcessing = 4,
     // (undocumented)
-    UseLargerTiles = 8,// Use an optimized pipeline for producing facets from BRep entities.
+    UseLargerTiles = 8,
     // (undocumented)
     UseProjectExtents = 1
 }

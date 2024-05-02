@@ -1224,9 +1224,9 @@ export enum StandardTypeNames {
     // (undocumented)
     Bool = "bool",
     // (undocumented)
-    Boolean = "boolean",// locale specific
+    Boolean = "boolean",
     // (undocumented)
-    Composite = "composite",// locale specific
+    Composite = "composite",
     // (undocumented)
     DateTime = "dateTime",
     // (undocumented)
@@ -1299,11 +1299,11 @@ export enum StatusBarLabelSide {
 // @public @deprecated
 export enum StatusBarSection {
     Center = 1,
-    Context = 3,// eslint-disable-line @typescript-eslint/no-duplicate-enum-values
+    Context = 3,
     Left = 0,
-    Message = 0,// eslint-disable-line @typescript-eslint/no-duplicate-enum-values
+    Message = 0,
     Right = 2,
-    Selection = 2,// eslint-disable-line @typescript-eslint/no-duplicate-enum-values
+    Selection = 2,
     Stage = 1
 }
 

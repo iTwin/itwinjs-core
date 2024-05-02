@@ -947,6 +947,7 @@ internal;TriangleSet
 public;tryImageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
 public;TwoWayViewportFrustumSync 
 public;TwoWayViewportSync
+public;TxnEntityChange
 public;TxnEntityChangeIterable = Iterable
 public;TxnEntityChanges 
 public;TxnEntityChangesFilterOptions

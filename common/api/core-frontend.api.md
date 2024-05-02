@@ -1055,7 +1055,7 @@ export interface AcquireImdlParserArgs {
 // @public (undocumented)
 export enum ACSDisplayOptions {
     // (undocumented)
-    Active = 1,// used for testing individual bits.
+    Active = 1,
     // (undocumented)
     CheckVisible = 8,
     // (undocumented)
@@ -2082,7 +2082,7 @@ export enum ChangeFlag {
     NeverDrawn = 2,
     None = 0,
     Overrides = 268435319,
-    ViewedCategories = 4,// eslint-disable-line no-shadow
+    ViewedCategories = 4,
     ViewedCategoriesPerModel = 64,
     ViewedModels = 8,
     ViewState = 128
@@ -2353,7 +2353,7 @@ export enum CoordinateLockOverrides {
     // (undocumented)
     All = 65535,
     // (undocumented)
-    Grid = 4,// also overrides unit lock
+    Grid = 4,
     // (undocumented)
     None = 0
 }
@@ -2740,7 +2740,7 @@ export interface DepthPointOptions {
 
 // @public
 export enum DepthPointSource {
-    ACS = 5,// eslint-disable-line @typescript-eslint/no-shadow
+    ACS = 5,
     BackgroundMap = 2,
     Geometry = 0,
     Grid = 4,
@@ -2837,7 +2837,7 @@ export namespace DisplayParams {
     // (undocumented)
     export enum ComparePurpose {
         // (undocumented)
-        Merge = 0,// considers colors equivalent if both have or both lack transparency
+        Merge = 0,
         // (undocumented)
         Strict = 1
     }
@@ -9472,15 +9472,15 @@ export enum MeshPrimitiveType {
 // @public
 export enum MessageBoxIconType {
     // (undocumented)
-    Critical = 4,// Means Don't draw Symbol
+    Critical = 4,
     // (undocumented)
-    Information = 1,// Lower Case i
+    Information = 1,
     // (undocumented)
-    NoSymbol = 0,// Question Mark
+    NoSymbol = 0,
     // (undocumented)
-    Question = 2,// Exclamation Point
+    Question = 2,
     // (undocumented)
-    Success = 5,// Stop Sign
+    Success = 5,
     // (undocumented)
     Warning = 3
 }
@@ -9786,7 +9786,7 @@ export type ModelSubCategoryHiliteMode = "union" | "intersection";
 export enum ModifyElementSource {
     DragSelect = 3,
     Selected = 1,
-    SelectionSet = 2,// eslint-disable-line @typescript-eslint/no-shadow
+    SelectionSet = 2,
     Unknown = 0
 }
 
@@ -9869,9 +9869,9 @@ export class NoRenderApp {
 // @internal
 export enum NormalMode {
     // (undocumented)
-    Always = 1,// Never generate normals
+    Always = 1,
     // (undocumented)
-    CurvedSurfacesOnly = 2,// Always generate normals
+    CurvedSurfacesOnly = 2,
     // (undocumented)
     Never = 0
 }
@@ -10512,7 +10512,7 @@ export namespace Pixel {
         readonly viewAttachmentId?: Id64String;
     }
     export enum GeometryType {
-        Edge = 4,// Geometry was not selected, or type could not be determined
+        Edge = 4,
         Linear = 3,
         None = 1,
         Silhouette = 5,
@@ -10544,7 +10544,7 @@ export namespace Pixel {
     export type Receiver = (pixels: Buffer | undefined) => void;
     export enum Selector {
         All = 5,
-        Feature = 1,// eslint-disable-line @typescript-eslint/no-shadow
+        Feature = 1,
         GeometryAndDistance = 4,
         // (undocumented)
         None = 0
@@ -13049,7 +13049,7 @@ export enum SnapHeat {
     // (undocumented)
     InRange = 2,
     // (undocumented)
-    None = 0,// "of interest", but out of range
+    None = 0,
     // (undocumented)
     NotInRange = 1
 }
@@ -15504,6 +15504,13 @@ export class TwoWayViewportSync {
     // (undocumented)
     protected readonly _disconnect: VoidFunction[];
     protected syncViewports(source: Viewport, target: Viewport): void;
+}
+
+// @public
+export interface TxnEntityChange {
+    id: Id64String;
+    metadata: TxnEntityMetadata;
+    type: TxnEntityChangeType;
 }
 
 // @public
