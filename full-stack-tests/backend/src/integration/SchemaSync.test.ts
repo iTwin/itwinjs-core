@@ -8,10 +8,22 @@ import { Suite } from "mocha";
 import { BriefcaseDb, BriefcaseManager, CloudSqlite, HubMock, IModelDb, IModelHost, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { AccessToken, DbResult, Guid, OpenMode } from "@itwin/core-bentley";
+import { AccessToken, DbResult, Guid, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import * as path from "path";
-
+import { EOL } from "os";
 const storageType = "azure" as const;
+
+async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
+  try {
+    await test();
+  } catch (e) {
+    if (e instanceof Error && msg) {
+      assert.equal(e.message, msg);
+    }
+    return;
+  }
+  throw new Error(`Failed to throw error with message: "${msg}"`);
+}
 
 async function initializeContainer(containerProps: { containerId: string, isPublic?: boolean, baseUri: string }) {
   await AzuriteTest.Sqlite.createAzContainer(containerProps);
@@ -230,6 +242,8 @@ describe("Schema synchronization", function (this: Suite) {
   });
 
   it("test schema sync with profile and domain schema upgrade", async () => {
+    Logger.initializeToConsole();
+    Logger.setLevelDefault(LogLevel.Error);
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
 
     const iTwinId = Guid.createValue();
@@ -239,8 +253,8 @@ describe("Schema synchronization", function (this: Suite) {
 
     HubMock.startup("test", KnownTestLocations.outputDir);
 
-    // Setup seed file from exising 4.0.0.3 imodel
-    const testFile = SnapshotDb.openDgnDb({ path: path.join(imodelJsCoreDirname, "core/backend/lib/cjs/test/assets/test_ec_4003.bim")}, OpenMode.ReadWrite);
+    // Setup seed file from existing 4.0.0.3 imodel
+    const testFile = SnapshotDb.openDgnDb({ path: path.join(imodelJsCoreDirname, "core/backend/lib/cjs/test/assets/test_ec_4003.bim") }, OpenMode.ReadWrite);
     const version0 = testFile.getFilePath();
     testFile.closeFile();
 
@@ -259,12 +273,53 @@ describe("Schema synchronization", function (this: Suite) {
     SchemaSync.setTestCache(b1, "briefcase1");
     SchemaSync.setTestCache(b2, "briefcase2");
     SchemaSync.setTestCache(b3, "briefcase3");
+    const getPropNames = (b: BriefcaseDb, schemaName: string) => {
+      try {
+        return Object.getOwnPropertyNames(b.getMetaData(`${schemaName}:Pipe1`).properties);
+      } catch { return []; }
+    };
 
+    const props = new Map<string, number>();
+    const makeSchemaChanges = async (b: BriefcaseDb, schemaName: string) => {
+      // Import schema into b1 but do not push it.
+      if (!props.has(schemaName)) {
+        props.set(schemaName, 1);
+      }
+
+      const nProps = props.get(schemaName)!;
+      const propDefs = [];
+
+      for (let i = 0; i < nProps; ++i) {
+        propDefs.push(`<ECProperty propertyName="p${i}" typeName="int" />`);
+      }
+      await b.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+        <ECSchema schemaName="${schemaName}" alias="${schemaName}_t" version="01.00.${nProps}" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+            <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
+            <ECEntityClass typeName="Pipe1">
+                <BaseClass>bis:GeometricElement2d</BaseClass>
+                ${propDefs.join(EOL)}
+            </ECEntityClass>
+        </ECSchema>`]);
+      b.saveChanges(`schema change with properties ${nProps}`);
+      props.set(schemaName, nProps + 1);
+    };
+
+    await makeSchemaChanges(b1, "b1_schema");
+    assert.deepEqual(getPropNames(b1, "b1_schema"), ["p0"]);
+    // should fail as there are pending changeset.
+    await assertThrowsAsync(
+      async () => SchemaSync.initializeForIModel({ iModel: b1, containerProps }),
+      "Enabling SchemaSync for iModel failed. There are unsaved or un-pushed local changes.");
+
+    // push changes and then retry.
+    await b1.pushChanges({ description: "schema changes" });
+
+    // initialize also save and push changeset.
     await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
-    await b1.pushChanges({ accessToken: user1AccessToken, description: "enable shared schema channel" });
+    assert.isFalse(b1.txns.hasLocalChanges);
     assert.isTrue(b1.nativeDb.schemaSyncEnabled());
 
-    const getProfileVersion = async (db: BriefcaseDb): Promise<string> => {
+    const getProfileVersion = (db: BriefcaseDb) => {
       return db.withPreparedSqliteStatement("SELECT StrData FROM be_Prop WHERE Namespace='ec_Db' and Name='SchemaVersion'", (stmt: SqliteStatement) => {
         if (stmt.step() === DbResult.BE_SQLITE_ROW)
           return stmt.getValue(0).getString();
@@ -274,19 +329,19 @@ describe("Schema synchronization", function (this: Suite) {
 
     // Make sure all briefcases are on the same profile version 4.0.0.3
     const initialProfileVersion = JSON.parse(`{"major":4,"minor":0,"sub1":0,"sub2":3}`);
-    let b1ProfileVersion = JSON.parse(await getProfileVersion(b1));
+    let b1ProfileVersion = JSON.parse(getProfileVersion(b1));
     expect(b1ProfileVersion.major === initialProfileVersion.major).to.be.true;
     expect(b1ProfileVersion.minor === initialProfileVersion.minor).to.be.true;
     expect(b1ProfileVersion.sub1 === initialProfileVersion.sub1).to.be.true;
     expect(b1ProfileVersion.sub2 === initialProfileVersion.sub2).to.be.true;
 
-    let b2ProfileVersion = JSON.parse(await getProfileVersion(b2));
+    let b2ProfileVersion = JSON.parse(getProfileVersion(b2));
     expect(b2ProfileVersion.major === initialProfileVersion.major).to.be.true;
     expect(b2ProfileVersion.minor === initialProfileVersion.minor).to.be.true;
     expect(b2ProfileVersion.sub1 === initialProfileVersion.sub1).to.be.true;
     expect(b2ProfileVersion.sub2 === initialProfileVersion.sub2).to.be.true;
 
-    let b3ProfileVersion = JSON.parse(await getProfileVersion(b3));
+    let b3ProfileVersion = JSON.parse(getProfileVersion(b3));
     expect(b3ProfileVersion.major === initialProfileVersion.major).to.be.true;
     expect(b3ProfileVersion.minor === initialProfileVersion.minor).to.be.true;
     expect(b3ProfileVersion.sub1 === initialProfileVersion.sub1).to.be.true;
@@ -298,31 +353,50 @@ describe("Schema synchronization", function (this: Suite) {
     await BriefcaseDb.upgradeSchemas(b1Props);
     b1 = await BriefcaseDb.open(b1Props);
 
-    // Push the profile upgrade changes
-    await b1.pushChanges({ accessToken: user2AccessToken, description: "Push profile and domain schema upgrade changes" });
+    // upgradeSchema() also push changes.
+    assert.isFalse(b1.txns.hasLocalChanges);
     assert.isTrue(b1.nativeDb.schemaSyncEnabled());
 
-    // Pull the new changes into the other briefcases
-    await b2.pullChanges({ accessToken: user1AccessToken });
+    await makeSchemaChanges(b1, "b1_schema");
+    assert.deepEqual(getPropNames(b1, "b1_schema"), ["p0", "p1"]);
+    await assertThrowsAsync(async () => makeSchemaChanges(b2, "b2_schema"), "pull is required to obtain lock");
+    await assertThrowsAsync(async () => makeSchemaChanges(b3, "b3_schema"), "pull is required to obtain lock");
+
+    b2.abandonChanges();
+    b3.abandonChanges();
+
+    await b2.pullChanges();
     assert.isTrue(b2.nativeDb.schemaSyncEnabled());
-    await b3.pullChanges({ accessToken: user3AccessToken });
+    assert.deepEqual(getPropNames(b2, "b1_schema"), ["p0"]);
+    await makeSchemaChanges(b2, "b2_schema");
+    assert.deepEqual(getPropNames(b2, "b2_schema"), ["p0"]);
+    assert.deepEqual(getPropNames(b2, "b1_schema"), ["p0", "p1"]);
+    await makeSchemaChanges(b2, "b1_schema");
+    await makeSchemaChanges(b2, "b2_schema");
+    assert.deepEqual(getPropNames(b2, "b2_schema"), ["p0", "p1"]);
+    assert.deepEqual(getPropNames(b2, "b1_schema"), ["p0", "p1", "p2"]);
+
+    await b3.pullChanges();
     assert.isTrue(b3.nativeDb.schemaSyncEnabled());
+    assert.deepEqual(getPropNames(b3, "b1_schema"), ["p0"]);
+    await makeSchemaChanges(b3, "b3_schema");
+    assert.deepEqual(getPropNames(b3, "b3_schema"), ["p0"]);
 
     // Test all 3 briefcases for the upgraded profile version 4.0.0.X (where X is at least 4)
     const updatedProfileVersion = JSON.parse(`{"major":4,"minor":0,"sub1":0,"sub2":4}`);
-    b1ProfileVersion = JSON.parse(await getProfileVersion(b1));
+    b1ProfileVersion = JSON.parse(getProfileVersion(b1));
     expect(b1ProfileVersion.major).to.be.equal(updatedProfileVersion.major, "Profile version major should be 4");
     expect(b1ProfileVersion.minor).to.be.equal(updatedProfileVersion.minor, "Profile version minor should be 0");
     expect(b1ProfileVersion.sub1).to.be.equal(updatedProfileVersion.sub1, "Profile version sub1 should be 0");
     expect(b1ProfileVersion.sub2).to.be.greaterThanOrEqual(updatedProfileVersion.sub2, "Profile version sub2 should be at least 4");
 
-    b2ProfileVersion = JSON.parse(await getProfileVersion(b2));
+    b2ProfileVersion = JSON.parse(getProfileVersion(b2));
     expect(b2ProfileVersion.major).to.be.equal(updatedProfileVersion.major, "Profile version major should be 4");
     expect(b2ProfileVersion.minor).to.be.equal(updatedProfileVersion.minor, "Profile version minor should be 0");
     expect(b2ProfileVersion.sub1).to.be.equal(updatedProfileVersion.sub1, "Profile version sub1 should be 0");
     expect(b2ProfileVersion.sub2).to.be.greaterThanOrEqual(updatedProfileVersion.sub2, "Profile version sub2 should be at least 4");
 
-    b3ProfileVersion = JSON.parse(await getProfileVersion(b3));
+    b3ProfileVersion = JSON.parse(getProfileVersion(b3));
     expect(b3ProfileVersion.major).to.be.equal(updatedProfileVersion.major, "Profile version major should be 4");
     expect(b3ProfileVersion.minor).to.be.equal(updatedProfileVersion.minor, "Profile version minor should be 0");
     expect(b3ProfileVersion.sub1).to.be.equal(updatedProfileVersion.sub1, "Profile version sub1 should be 0");

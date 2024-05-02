@@ -9,8 +9,9 @@
 
 import { CloudSqlite } from "./CloudSqlite";
 import { VersionedSqliteDb } from "./SQLiteDb";
-import { IModelDb } from "./IModelDb";
-import { OpenMode } from "@itwin/core-bentley";
+import { BriefcaseDb, IModelDb } from "./IModelDb";
+import { DbResult, OpenMode } from "@itwin/core-bentley";
+import { IModelError } from "@itwin/core-common";
 
 type TestCacheIModel = IModelDb & { testSyncCache?: string };
 
@@ -47,16 +48,45 @@ export namespace SchemaSync {
     }
   };
 
-  export const initializeForIModel = async (arg: { iModel: IModelDb, containerProps: CloudSqlite.ContainerProps }) => {
+  /** Synchronize local briefcase schemas with cloud container */
+  export const pull = async (iModel: TestCacheIModel) => {
+    if (iModel.nativeDb.schemaSyncEnabled()) {
+      await SchemaSync.withLockedAccess(iModel, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
+        const schemaSyncDbUri = syncAccess.getUri();
+        syncAccess.synchronizeWithCloud();
+        iModel.nativeDb.schemaSyncPull(schemaSyncDbUri);
+        iModel.clearCaches();
+        iModel.saveChanges("schema synchronized with cloud container");
+      });
+    }
+  };
+
+  export const initializeForIModel = async (arg: { iModel: IModelDb, containerProps: CloudSqlite.ContainerProps, overrideContainer?: boolean }) => {
     const props = { baseUri: arg.containerProps.baseUri, containerId: arg.containerProps.containerId, storageType: arg.containerProps.storageType }; // sanitize to only known properties
     const iModel = arg.iModel;
+    const briefcase = iModel instanceof BriefcaseDb ? iModel : undefined;
+    await iModel.acquireSchemaLock();
+    if (briefcase) {
+      if (briefcase.txns.hasLocalChanges) {
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, "Enabling SchemaSync for iModel failed. There are unsaved or un-pushed local changes.");
+      }
+      await briefcase.pullChanges();
+    }
+
     iModel.saveFileProperty(syncProperty, JSON.stringify(props));
     iModel.saveChanges();
 
     await withLockedAccess(arg.iModel, { operationName: "initialize schemaSync", openMode: OpenMode.Readonly }, async (syncAccess) => {
-      iModel.nativeDb.schemaSyncInit(syncAccess.getUri());
-      iModel.saveChanges();
+      iModel.nativeDb.schemaSyncInit(syncAccess.getUri(), props.containerId, arg.overrideContainer ?? false);
+      iModel.saveChanges(`Enable SchemaSync  (container id: ${props.containerId})`);
     });
+
+    if (briefcase) {
+      if (arg.overrideContainer)
+        await briefcase.pushChanges({ description: `Enable SchemaSync for iModel with container-id: ${props.containerId}` });
+      else
+        await briefcase.pushChanges({ description: `Overriding SchemaSync for iModel with container-id: ${props.containerId}` });
+    }
   };
 
   /** Provides access to a cloud-based `SchemaSyncDb` to hold ECSchemas.  */

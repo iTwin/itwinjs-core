@@ -2645,9 +2645,26 @@ export class BriefcaseDb extends IModelDb {
 
   /** Upgrades the profile or domain schemas. File must be closed before this call and is always left closed. */
   private static async doUpgrade(briefcase: OpenBriefcaseArgs, upgradeOptions: UpgradeOptions, description: string): Promise<void> {
+    await withBriefcaseDb(briefcase, async (db) => {
+      await SchemaSync.pull(db);
+    });
+
     const nativeDb = this.openDgnDb({ path: briefcase.fileName }, OpenMode.ReadWrite, upgradeOptions); // performs the upgrade
-    const wasChanges = nativeDb.hasPendingTxns();
+    let wasChanges = nativeDb.hasPendingTxns();
     nativeDb.closeFile();
+    // upgrade connected schema container
+
+    await withBriefcaseDb(briefcase, async (db) => {
+      if (db.nativeDb.schemaSyncEnabled()) {
+        await SchemaSync.withLockedAccess(db, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
+          const schemaSyncDbUri = syncAccess.getUri();
+          db.nativeDb.schemaSyncPush(schemaSyncDbUri);
+          db.saveChanges();
+          syncAccess.synchronizeWithCloud();
+        });
+        wasChanges ||= db.nativeDb.hasPendingTxns();
+      }
+    });
 
     if (wasChanges)
       await withBriefcaseDb(briefcase, async (db) => db.pushChanges({ ...briefcase, description, retainLocks: true }));
@@ -2685,6 +2702,7 @@ export class BriefcaseDb extends IModelDb {
         }
         return;
       }
+      throw error;
     }
     try {
       await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade }, "Upgraded domain schemas");
@@ -2698,6 +2716,7 @@ export class BriefcaseDb extends IModelDb {
           await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
         }
       }
+      throw error;
     }
   }
 
