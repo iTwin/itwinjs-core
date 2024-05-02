@@ -383,7 +383,7 @@ export enum AxisIndex {
 
 // @public
 export enum AxisOrder {
-    XYZ = 0,
+    XYZ = 0,/* eslint-disable-line @typescript-eslint/no-shadow */
     XZY = 4,
     YXZ = 5,
     YZX = 1,
