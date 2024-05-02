@@ -34,7 +34,7 @@ Using the new API, your logic for determining whether the list of view definitio
   briefcase.txns.onElementsChanged.addListener((changes: TxnEntityChanges) => {
     const viewChanges = Array.from(changes.filter({
       // Include only view definitions.
-      includeMetadata: TxnEntityMetadataCriterion = (metadata: TxnEntityMetadata) => metadata.is("BisCore:ViewDefinition");
+      includeMetadata (metadata: TxnEntityMetadata) => metadata.is("BisCore:ViewDefinition"),
     }));
 
     if (viewChanges.length > 0) {
