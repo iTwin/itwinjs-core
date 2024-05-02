@@ -125,7 +125,7 @@ function processFractionRun(run: RunLayout, transform: Transform, context: Geome
   }
 }
 
-function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform, anchorPt: Point3d): TextBlockGeometryProps {
+function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform, debugAnchorPt?: Point3d): TextBlockGeometryProps {
   const context: GeometryContext = { entries: [] };
   for (const line of layout.lines) {
     const lineTrans = Transform.createTranslationXYZ(line.offsetFromDocument.x, line.offsetFromDocument.y, 0);
@@ -145,23 +145,25 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
     }
   }
 
-  context.entries.push({
-    color: ColorDef.red.toJSON(),
-  });
+  if (debugAnchorPt) {
+    context.entries.push({
+      color: ColorDef.red.toJSON(),
+    });
 
-  context.entries.push({
-    separator: {
-      startPoint: [layout.range.low.x, anchorPt.y, 0],
-      endPoint: [layout.range.high.x, anchorPt.y, 0],
-    },
-  });
-  context.entries.push({
-    separator: {
-      startPoint: [anchorPt.x, layout.range.low.y, 0],
-      endPoint: [anchorPt.x, layout.range.high.y, 0],
-    },
-  });
-
+    context.entries.push({
+      separator: {
+        startPoint: [layout.range.low.x, debugAnchorPt.y, 0],
+        endPoint: [layout.range.high.x, debugAnchorPt.y, 0],
+      },
+    });
+    context.entries.push({
+      separator: {
+        startPoint: [debugAnchorPt.x, layout.range.low.y, 0],
+        endPoint: [debugAnchorPt.x, layout.range.high.y, 0],
+      },
+    });
+  }
+  
   return { entries: context.entries };
 }
 
@@ -193,5 +195,5 @@ export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometr
   });
 
   const transform = args.annotation.computeDocumentTransform(layout.range);
-  return produceTextBlockGeometry(layout, transform, args.annotation.computeAnchorPoint(layout.range));
+  return produceTextBlockGeometry(layout, transform /*, args.annotation.computeAnchorPoint(layout.range) */);
 }

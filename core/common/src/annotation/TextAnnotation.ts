@@ -10,7 +10,11 @@ import { Point3d, Range2d, Transform, XYZProps, YawPitchRollAngles, YawPitchRoll
 import { TextBlock, TextBlockProps } from "./TextBlock";
 
 /**
- * Describes the horizontal and vertical alignment of a [[TextAnnotation]]'s text relative to [[TextAnnotation.origin]].
+ * Describes the horizontal and vertical alignment of a [[TextAnnotation]]'s text relative to the [Placement]($common) origin of
+ * the [TextAnnotation2d]($backend) or [TextAnnotation3d]($backend) host element, also referred to as the annotation's "anchor point".
+ * For example, if the anchor is specified as middle-center, the text will be centered on the element's origin.
+ * The anchor point also serves as the pivot point for [[TextAnnotation.rotation]], such that the text is rotated about the
+ * anchor point while the anchor point remains fixed.
  * @beta
  * @preview
  * @extensions
@@ -40,8 +44,6 @@ export interface TextAnnotationAnchor {
  * @extensions
  */
 export interface TextAnnotationProps {
-  /** See [[TextAnnotation.origin]]. Default: [0, 0, 0]*/
-  origin?: XYZProps;
   /** See [[TextAnnotation.orientation]]. Default: no rotation. */
   orientation?: YawPitchRollProps;
   /** See [[TextAnnotation.textBlock]]. Default: an empty text block. */
@@ -56,8 +58,6 @@ export interface TextAnnotationProps {
  * @extensions
  */
 export interface TextAnnotationCreateArgs {
-  /** See [[TextAnnotation.origin]]. Default: [0, 0, 0]*/
-  origin?: Point3d;
   /** See [[TextAnnotation.orientation]]. Default: no rotation. */
   orientation?: YawPitchRollAngles;
   /** See [[TextAnnotation.textBlock]]. Default: an empty text block. */
@@ -75,13 +75,6 @@ export interface TextAnnotationCreateArgs {
  */
 export class TextAnnotation {
   /**
-   * The point considered to be the origin of the annotation. The [[textBlock]]'s content is justified relative to this point as specified by [[anchor]].
-   * This point is also considered the origin by [AccuSnap]($frontend) when using [SnapMode.Origin]($frontend).
-   * Often, the origin is specified by a user clicking in a viewport when placing text annotations interactively.
-   * @note When defining an annotation for a [TextAnnotation2d]($backend), the `z` component should be zero.
-   */
-  public origin: Point3d;
-  /**
    * The rotation of the annotation.
    * @note When defining an annotation for a [TextAnnotation2d]($backend), only the `yaw` component (rotation around the Z axis) is used.
    */
@@ -91,12 +84,11 @@ export class TextAnnotation {
    */
   public textBlock: TextBlock;
   /**
-   * Describes how the [[textBlock]]'s content should be aligned relative to the [[origin]].
+   * Describes how the [[textBlock]]'s content should be aligned relative to the host element's origin.
    */
   public anchor: TextAnnotationAnchor;
 
-  private constructor(origin: Point3d, angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor) {
-    this.origin = origin;
+  private constructor(angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor) {
     this.orientation = angles;
     this.textBlock = textBlock;
     this.anchor = anchor;
@@ -104,12 +96,11 @@ export class TextAnnotation {
 
   /** Creates a new TextAnnotation. */
   public static create(args?: TextAnnotationCreateArgs): TextAnnotation {
-    const origin = args?.origin ?? new Point3d();
     const angles = args?.orientation ?? new YawPitchRollAngles();
     const textBlock = args?.textBlock ?? TextBlock.createEmpty();
     const anchor = args?.anchor ?? { vertical: "top", horizontal: "left" };
 
-    return new TextAnnotation(origin, angles, textBlock, anchor);
+    return new TextAnnotation(angles, textBlock, anchor);
   }
 
   /**
@@ -117,7 +108,6 @@ export class TextAnnotation {
    */
   public static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation {
     return TextAnnotation.create({
-      origin: props?.origin ? Point3d.fromJSON(props.origin) : undefined,
       orientation: props?.orientation ? YawPitchRollAngles.fromJSON(props.orientation) : undefined,
       textBlock: props?.textBlock ? TextBlock.create(props.textBlock) : undefined,
       anchor: props?.anchor ? { ...props.anchor } : undefined,
@@ -133,10 +123,6 @@ export class TextAnnotation {
     // Even if the text block is empty, we want to record its style name and overrides, e.g.,
     // so the user can pick up where they left off editing it next time.
     props.textBlock = this.textBlock.toJSON();
-
-    if (!this.origin.isZero) {
-      props.origin = this.origin.toJSON();
-    }
 
     if (!this.orientation.isIdentity()) {
       props.orientation = this.orientation.toJSON();
@@ -161,32 +147,33 @@ export class TextAnnotation {
 
   /** @internal */
   public computeAnchorPoint(layoutRange: Range2d): Point3d {
-    const anchorPt = this.origin.clone();
+    let x = 0;
+    let y = 0;
+    
     switch (this.anchor.horizontal) {
       case "center":
-        anchorPt.x += layoutRange.xLength() / 2;
+        x += layoutRange.xLength() / 2;
         break;
       case "right":
-        anchorPt.x += layoutRange.xLength();
+        x += layoutRange.xLength();
         break;
     }
 
     switch (this.anchor.vertical) {
       case "middle":
-        anchorPt.y -= layoutRange.yLength() / 2;
+        y -= layoutRange.yLength() / 2;
         break;
       case "bottom":
-        anchorPt.y -= layoutRange.yLength();
+        y -= layoutRange.yLength();
         break;
     }
     
-    return anchorPt;
+    return new Point3d(x, y, 0);
   }
 
   /** Returns true if this annotation is logically equivalent to `other`. */
   public equals(other: TextAnnotation): boolean {
     return this.anchor.horizontal === other.anchor.horizontal && this.anchor.vertical === other.anchor.vertical
-      && this.orientation.isAlmostEqual(other.orientation) && this.origin.isAlmostEqual(other.origin)
-      && this.textBlock.equals(other.textBlock);
+      && this.orientation.isAlmostEqual(other.orientation) && this.textBlock.equals(other.textBlock);
   }
 }
