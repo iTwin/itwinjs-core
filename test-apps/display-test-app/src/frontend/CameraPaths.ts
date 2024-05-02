@@ -509,7 +509,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
 
   private findPath(name: string): CameraPath | undefined {
     const index = this._paths.findIndex((path) => name === path.name);
-    return -1 !== index ? this._paths[index]! : undefined;
+    return -1 !== index ? this._paths[index] : undefined;
 
   }
 

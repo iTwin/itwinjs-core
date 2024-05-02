@@ -239,7 +239,7 @@ export async function createNavigationProperty(ecClass: ECClass, name: string, r
     resolvedRelationship = relationship;
 
   if (!resolvedRelationship)
-    throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);
+    throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);  // eslint-disable-line @typescript-eslint/no-base-to-string
 
   if (typeof (direction) === "string") {
     const tmpDirection = parseStrengthDirection(direction);
@@ -264,7 +264,7 @@ export function createNavigationPropertySync(ecClass: ECClass, name: string, rel
     resolvedRelationship = relationship;
 
   if (!resolvedRelationship)
-    throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);
+    throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);  // eslint-disable-line @typescript-eslint/no-base-to-string
 
   if (typeof (direction) === "string") {
     const tmpDirection = parseStrengthDirection(direction);

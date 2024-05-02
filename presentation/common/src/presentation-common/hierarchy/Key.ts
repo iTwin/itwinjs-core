@@ -93,7 +93,7 @@ export namespace NodeKey {
   export function isGroupingNodeKey(key: NodeKeyJSON): key is GroupingNodeKeyJSON;
   // eslint-disable-next-line deprecation/deprecation
   export function isGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
-    return isClassGroupingNodeKey(key) || isPropertyGroupingNodeKey(key) || isLabelGroupingNodeKey(key);
+    return isClassGroupingNodeKey(key) || isPropertyGroupingNodeKey(key) || isLabelGroupingNodeKey(key);  // eslint-disable-line deprecation/deprecation
   }
 
   /**
