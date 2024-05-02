@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as path from "path";
-import { Guid, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
-import { BriefcaseConnection, TxnEntityChangeType, TxnEntityChanges } from "@itwin/core-frontend";
+import { BriefcaseConnection, TxnEntityChanges, TxnEntityChangeType } from "@itwin/core-frontend";
 import { addAllowedChannel, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
@@ -200,10 +200,14 @@ describe("BriefcaseTxns", () => {
           ["Generic:PhysicalObject", "inserted"],
           ["BisCore:PhysicalModel", "inserted"],
         ];
-        
-        await expectChangedEntities(() => rwConn.saveChanges(), "onCommitted", expected);
-        await expectChangedEntities(async () => { rwConn.txns.reverseSingleTxn(); }, "onAfterUndoRedo", expected.map((x) => [x[0], "deleted"]));
-        await expectChangedEntities(async () => { rwConn.txns.reinstateTxn(); }, "onAfterUndoRedo", expected);
+
+        await expectChangedEntities(async () => rwConn.saveChanges(), "onCommitted", expected);
+        await expectChangedEntities(async () => {
+          await rwConn.txns.reverseSingleTxn();
+        }, "onAfterUndoRedo", expected.map((x) => [x[0], "deleted"]));
+        await expectChangedEntities(async () => {
+          await rwConn.txns.reinstateTxn();
+        }, "onAfterUndoRedo", expected);
       });
     });
 
