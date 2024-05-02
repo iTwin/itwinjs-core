@@ -297,7 +297,7 @@ export class SpatialClassifiers implements Iterable<SpatialClassifier> {
 
     let propsIndex = -1;
     if (active) {
-      propsIndex = array.findIndex((x) => active!.equalsProps(x));
+      propsIndex = array.findIndex((x) => active.equalsProps(x));
       if (-1 === propsIndex)
         return this.active;
     }

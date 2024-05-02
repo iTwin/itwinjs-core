@@ -582,7 +582,7 @@ export class PresentationManager implements IDisposable {
 
       let items = contentSet.items.map((x) => Item.fromJSON(x)).filter((x): x is Item => x !== undefined);
       if (contentFormatter) {
-        items = await contentFormatter.formatContentItems(items, descriptor!);
+        items = await contentFormatter.formatContentItems(items, descriptor);
       }
 
       items = this._localizationHelper.getLocalizedContentItems(items);

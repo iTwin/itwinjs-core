@@ -176,7 +176,7 @@ export class GriddedRaggedRange2dSet<T> implements Range2dSearchInterface<T> {
       result = Range2d.createNull();
     this.visitChildren(0, (_depth, child) => {
       const childRange = GriddedRaggedRange2dSet._workRange = child.totalRange(GriddedRaggedRange2dSet._workRange);
-      result!.extendRange(childRange);
+      result.extendRange(childRange);
     });
     return result;
   }

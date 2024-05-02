@@ -582,9 +582,9 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
         return false;
 
       for (const [className, customAttribute] of ecClass.customAttributes) {
-        if (customAttributes!.has(className))
+        if (customAttributes.has(className))
           continue;
-        customAttributes!.set(className, customAttribute);
+        customAttributes.set(className, customAttribute);
       }
 
       return false;
