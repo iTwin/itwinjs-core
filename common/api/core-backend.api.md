@@ -4688,10 +4688,12 @@ export namespace SchemaSync {
         openMode?: OpenMode;
         user?: string;
     }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
+    const pull: (iModel: TestCacheIModel) => Promise<void>;
     const // (undocumented)
     initializeForIModel: (arg: {
         iModel: IModelDb;
         containerProps: CloudSqlite.ContainerProps;
+        overrideContainer?: boolean;
     }) => Promise<void>;
     export class SchemaSyncDb extends VersionedSqliteDb {
         // (undocumented)
