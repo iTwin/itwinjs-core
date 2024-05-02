@@ -8,12 +8,13 @@
 
 import { BeEvent } from "@itwin/core-bentley";
 import {
-  ChangedEntities, ChangesetIndexAndId, EcefLocation, EcefLocationProps, GeographicCRS, GeographicCRSProps, IModelStatus, ipcAppChannels,
-  ModelIdAndGeometryGuid, RemoveFunction, RootSubjectProps, TxnNotifications,
+  ChangesetIndexAndId, EcefLocation, EcefLocationProps, GeographicCRS, GeographicCRSProps, IModelStatus, ipcAppChannels,
+  ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, RemoveFunction, RootSubjectProps, TxnNotifications,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, XYZProps } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { IpcApp, NotificationHandler } from "./IpcApp";
+import { EntityChanges, TxnEntityChanges } from "./TxnEntityChanges";
 
 /**
  * Base class for notification handlers for events from the backend that are specific to a [[BriefcaseConnection]].
@@ -43,12 +44,12 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   /** Event raised after Txn validation or changeset application to indicate the set of changed elements.
    * @note If there are many changed elements in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
-  public readonly onElementsChanged = new BeEvent<(changes: Readonly<ChangedEntities>) => void>();
+  public readonly onElementsChanged = new BeEvent<(changes: TxnEntityChanges) => void>();
 
   /** Event raised after Txn validation or changeset application to indicate the set of changed models.
    * @note If there are many changed models in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
-  public readonly onModelsChanged = new BeEvent<(changes: Readonly<ChangedEntities>) => void>();
+  public readonly onModelsChanged = new BeEvent<(changes: TxnEntityChanges) => void>();
 
   /** Event raised after the geometry within one or more [[GeometricModelState]]s is modified by applying a changeset or validation of a transaction.
    * A model's geometry can change as a result of:
@@ -217,13 +218,13 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   }
 
   /** @internal */
-  public notifyElementsChanged(changed: ChangedEntities): void {
-    this.onElementsChanged.raiseEvent(changed);
+  public notifyElementsChanged(changed: NotifyEntitiesChangedArgs): void {
+    this.onElementsChanged.raiseEvent(new EntityChanges(changed));
   }
 
   /** @internal */
-  public notifyModelsChanged(changed: ChangedEntities): void {
-    this.onModelsChanged.raiseEvent(changed);
+  public notifyModelsChanged(changed: NotifyEntitiesChangedArgs): void {
+    this.onModelsChanged.raiseEvent(new EntityChanges(changed));
   }
 
   /** @internal */
