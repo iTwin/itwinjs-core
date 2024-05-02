@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
+import { ColorDef, TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
 import { ComputeRangesForTextLayout, FindFontId, FindTextStyle, layoutTextBlock, RunLayout, TextBlockLayout } from "./TextAnnotationLayout";
 import { LineSegment3d, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
@@ -125,7 +125,7 @@ function processFractionRun(run: RunLayout, transform: Transform, context: Geome
   }
 }
 
-function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform): TextBlockGeometryProps {
+function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform, anchorPt: Point3d): TextBlockGeometryProps {
   const context: GeometryContext = { entries: [] };
   for (const line of layout.lines) {
     const lineTrans = Transform.createTranslationXYZ(line.offsetFromDocument.x, line.offsetFromDocument.y, 0);
@@ -144,6 +144,23 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
       }
     }
   }
+
+  context.entries.push({
+    color: ColorDef.red.toJSON(),
+  });
+
+  context.entries.push({
+    separator: {
+      startPoint: [layout.range.low.x, anchorPt.y, 0],
+      endPoint: [layout.range.high.x, anchorPt.y, 0],
+    },
+  });
+  context.entries.push({
+    separator: {
+      startPoint: [anchorPt.x, layout.range.low.y, 0],
+      endPoint: [anchorPt.x, layout.range.high.y, 0],
+    },
+  });
 
   return { entries: context.entries };
 }
@@ -176,5 +193,5 @@ export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometr
   });
 
   const transform = args.annotation.computeDocumentTransform(layout.range);
-  return produceTextBlockGeometry(layout, transform);
+  return produceTextBlockGeometry(layout, transform, args.annotation.computeAnchorPoint(layout.range));
 }

@@ -153,28 +153,34 @@ export class TextAnnotation {
    * @internal used by produceTextAnnotationGeometry; requires layoutRange computed by layoutTextBlock.
    */
   public computeDocumentTransform(layoutRange: Range2d): Transform {
-    const origin = this.origin.clone();
+    const origin = this.computeAnchorPoint(layoutRange);
     const matrix = this.orientation.toMatrix3d();
 
+    return Transform.createFixedPointAndMatrix(origin, matrix);
+  }
+
+  /** @internal */
+  public computeAnchorPoint(layoutRange: Range2d): Point3d {
+    const anchorPt = this.origin.clone();
     switch (this.anchor.horizontal) {
       case "center":
-        origin.x -= layoutRange.xLength() / 2;
+        anchorPt.x += layoutRange.xLength() / 2;
         break;
       case "right":
-        origin.x -= layoutRange.xLength();
+        anchorPt.x += layoutRange.xLength();
         break;
     }
 
     switch (this.anchor.vertical) {
       case "middle":
-        origin.y += layoutRange.yLength() / 2;
+        anchorPt.y -= layoutRange.yLength() / 2;
         break;
       case "bottom":
-        origin.y += layoutRange.yLength();
+        anchorPt.y -= layoutRange.yLength();
         break;
     }
-
-    return Transform.createFixedPointAndMatrix(origin, matrix);
+    
+    return anchorPt;
   }
 
   /** Returns true if this annotation is logically equivalent to `other`. */
