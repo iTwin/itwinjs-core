@@ -258,33 +258,20 @@ export class TextDecorationTool extends Tool {
         break;
       }
       case "anchor": {
-        const direction = arg.toLowerCase();
-        const value = arg2.toLowerCase();
-        switch (direction) {
-          case "horizontal":
-            switch (value) {
-              case "left":
-              case "center":
-              case "right":
-                editor.anchor.horizontal = value;
-                break;
-              default:
-                throw new Error("Expected left, center, or right");
-            }
+        const val = arg.toLowerCase();
+        switch (val) {
+          case "left":
+          case "center":
+          case "right":
+            editor.anchor.horizontal = val;
             break;
-          case "vertical":
-            switch (value) {
-              case "top":
-              case "middle":
-              case "bottom":
-                editor.anchor.vertical = value;
-                break;
-              default:
-                throw new Error("Expected top, middle, or bottom");
-            }
+          case "top":
+          case "middle":
+          case "bottom":
+            editor.anchor.vertical = val;
             break;
           default:
-            throw new Error("Expected horizontal or vertical");
+            throw new Error("Expected top, middle, bottom, left, center, or right");
         }
         break;
       }
