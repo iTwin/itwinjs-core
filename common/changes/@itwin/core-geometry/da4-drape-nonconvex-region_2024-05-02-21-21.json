@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "drapeRegion could sometimes create non-convex facets",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
