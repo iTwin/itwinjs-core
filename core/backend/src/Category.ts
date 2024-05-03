@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Categories
+ * @module iModels
  */
 
 import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";

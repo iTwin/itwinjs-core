@@ -20,6 +20,7 @@ import { Schema, Schemas } from "./Schema";
 import * as textureMod from "./Texture";
 import * as viewMod from "./ViewDefinition";
 import * as displayStyleMod from "./DisplayStyle";
+import * as annotationsMod from "./TextAnnotationElement";
 
 /**
  * The [BisCore]($docs/bis/guide/fundamentals/schemas-domains.md) schema is the lowest level Schema in an iModel.
@@ -56,6 +57,7 @@ export class BisCoreSchema extends Schema {
       materialMod,
       externalSourceMod,
       displayStyleMod,
+      annotationsMod,
     ].forEach((module) => ClassRegistry.registerModule(module, this));
   }
 }

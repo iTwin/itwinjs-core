@@ -206,7 +206,9 @@ describe("ArcGISMapLayerImageryProvider", () => {
 
     await (provider as any)._generateChildIds(QuadId.createFromContentId("1_0_0"), resolveChildren);
     chai.expect(fetchStub.calledOnce).to.be.true;
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
     chai.expect(fetchStub.getCall(0).args[0].toString()).to.contains(unsaved.toString());
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
     chai.expect(fetchStub.getCall(0).args[0].toString()).to.contains(saved.toString());
   });
 });

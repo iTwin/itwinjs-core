@@ -166,7 +166,9 @@ export class Element extends Entity {
    * @beta
    */
   protected static onInserted(arg: OnElementIdArg): void {
-    arg.iModel.locks.elementWasCreated(arg.id);
+    const locks = arg.iModel.locks;
+    if (locks && !locks.holdsExclusiveLock(arg.model))
+      locks.elementWasCreated(arg.id);
   }
 
   /** Called before an Element is updated.
@@ -608,24 +610,6 @@ export class DrawingGraphic extends GraphicalElement2d {
   /** @internal */
   public static override get className(): string { return "DrawingGraphic"; }
   protected constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
-}
-
-/** 2D Text Annotation
- * @public
- */
-export class TextAnnotation2d extends AnnotationElement2d {
-  /** @internal */
-  public static override get className(): string { return "TextAnnotation2d"; }
-  protected constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
-}
-
-/** 3D Text Annotation
- * @public
- */
-export class TextAnnotation3d extends GraphicalElement3d {
-  /** @internal */
-  public static override get className(): string { return "TextAnnotation3d"; }
-  protected constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** An Element that occupies real world space. Its coordinates are in the project space of its iModel.

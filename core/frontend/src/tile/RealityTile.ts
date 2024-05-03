@@ -104,6 +104,15 @@ export class RealityTile extends Tile {
   }
 
   /** @internal */
+  public override freeMemory(): void {
+    // Prevent freeing if AdditiveRefinementStepChildren are present, since they depend on the parent tile to draw.
+    // This assumes at least one of the step children is currently selected, which is not necessarily the case.  Eventually the
+    // normal periodic pruning of expired tiles will clean up that case, but it could be held them in memory longer than necessary.
+    if (!this.realityChildren?.some((child) => child.isStepChild))
+      super.freeMemory();
+  }
+
+  /** @internal */
   public get realityChildren(): RealityTile[] | undefined { return this.children as RealityTile[] | undefined; }
   /** @internal */
   public get realityParent(): RealityTile { return this.parent as RealityTile; }

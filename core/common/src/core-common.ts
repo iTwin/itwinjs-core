@@ -4,6 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./AmbientOcclusion";
 export * from "./AnalysisStyle";
+export * from "./annotation/TextAnnotation";
+export * from "./annotation/TextBlock";
+export * from "./annotation/TextBlockGeometryProps";
+export * from "./annotation/TextStyle";
 export * from "./Atmosphere";
 export * from "./AuthorizationClient";
 export * from "./BackgroundMapProvider";
@@ -247,4 +251,8 @@ export * from "./WhiteOnWhiteReversalSettings";
 /**
  * @docs-group-description MapLayers
  * Types for working with the MapLayers API.
+ */
+/**
+ * @docs-group-description Annotation
+ * APIs for producing and manipulating annotations like text, dimensions, and labels.
  */

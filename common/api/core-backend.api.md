@@ -14,6 +14,7 @@ import { AuxCoordSystem3dProps } from '@itwin/core-common';
 import { AuxCoordSystemProps } from '@itwin/core-common';
 import { AxisAlignedBox3d } from '@itwin/core-common';
 import { Base64EncodedString } from '@itwin/core-common';
+import { BaselineShift } from '@itwin/core-common';
 import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
@@ -212,6 +213,11 @@ import { SubCategoryProps } from '@itwin/core-common';
 import { SubCategoryResultRow } from '@itwin/core-common';
 import { SubjectProps } from '@itwin/core-common';
 import { SynchronizationConfigLinkProps } from '@itwin/core-common';
+import { TextAnnotation } from '@itwin/core-common';
+import { TextAnnotation2dProps } from '@itwin/core-common';
+import { TextAnnotation3dProps } from '@itwin/core-common';
+import { TextBlockGeometryProps } from '@itwin/core-common';
+import { TextStyleSettings } from '@itwin/core-common';
 import { TextureData } from '@itwin/core-common';
 import { TextureLoadProps } from '@itwin/core-common';
 import { TextureMapProps } from '@itwin/core-common';
@@ -508,6 +514,8 @@ export class BriefcaseDb extends IModelDb {
     static findByKey(key: string): BriefcaseDb;
     get isBriefcase(): boolean;
     get iTwinId(): GuidString;
+    // (undocumented)
+    protected makeLockControl(): void;
     readonly onClosed: BeEvent<() => void>;
     // @alpha (undocumented)
     static readonly onCodeServiceCreated: BeEvent<(briefcase: BriefcaseDb) => void>;
@@ -3051,6 +3059,8 @@ export abstract class IModelDb extends IModel {
     get codeValueBehavior(): "exact" | "trim-unicode-whitespace";
     set codeValueBehavior(newBehavior: "exact" | "trim-unicode-whitespace");
     computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents;
+    // @internal (undocumented)
+    computeRangesForText(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges;
     constructEntity<T extends Entity, P extends EntityProps = EntityProps>(props: P): T;
     containsClass(classFullName: string): boolean;
     // @alpha
@@ -3160,6 +3170,7 @@ export abstract class IModelDb extends IModel {
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
     static tryFindByKey(key: string): IModelDb | undefined;
+    tryGetMetaData(classFullName: string): EntityMetaData | undefined;
     tryPrepareStatement(sql: string): ECSqlStatement | undefined;
     updateEcefLocation(ecef: EcefLocation): void;
     updateIModelProps(): void;
@@ -3242,9 +3253,9 @@ export namespace IModelDb {
     // @internal
     export enum TileContentState {
         // (undocumented)
-        Loading = 2,
+        Loading = 2,// Request was just created and enqueued.
         // (undocumented)
-        New = 0,
+        New = 0,// Request is enqueued but not yet being processed.
         // (undocumented)
         Pending = 1
     }
@@ -4022,6 +4033,8 @@ export interface LockStatusShared {
 export class MetaDataRegistry {
     add(classFullName: string, metaData: EntityMetaData): void;
     find(classFullName: string): EntityMetaData | undefined;
+    // (undocumented)
+    findByClassId(classId: Id64String): EntityMetaData | undefined;
 }
 
 // @public
@@ -4384,6 +4397,21 @@ export interface ProcessChangesetOptions {
     wantPropertyChecksums?: boolean;
     // (undocumented)
     wantRelationshipCaching?: boolean;
+}
+
+// @beta
+export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometryArgs): TextBlockGeometryProps;
+
+// @beta
+export interface ProduceTextAnnotationGeometryArgs {
+    annotation: TextAnnotation;
+    // @internal
+    computeTextRange?: ComputeRangesForTextLayout;
+    // @internal
+    findFontId?: FindFontId;
+    // @internal
+    findTextStyle?: FindTextStyle;
+    iModel: IModelDb;
 }
 
 // @public
@@ -4825,8 +4853,6 @@ export class SettingsSchemas {
     static readonly allSchemas: Map<string, SettingSchema>;
     static readonly onSchemaChanged: BeEvent<() => void>;
     static removeGroup(groupName: string): void;
-    // @internal
-    static reset(): void;
     // @internal (undocumented)
     static validateArrayObject<T>(val: T, schemaName: string, msg: string): T;
 }
@@ -5414,16 +5440,28 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
 
 // @public
 export class TextAnnotation2d extends AnnotationElement2d {
-    protected constructor(props: GeometricElement2dProps, iModel: IModelDb);
+    protected constructor(props: TextAnnotation2dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    // (undocumented)
+    static fromJSON(props: TextAnnotation2dProps, iModel: IModelDb): TextAnnotation2d;
+    getAnnotation(): TextAnnotation | undefined;
+    setAnnotation(annotation: TextAnnotation, subCategory?: Id64String): boolean;
+    // (undocumented)
+    toJSON(): TextAnnotation2dProps;
 }
 
 // @public
 export class TextAnnotation3d extends GraphicalElement3d {
-    protected constructor(props: GeometricElement3dProps, iModel: IModelDb);
+    protected constructor(props: TextAnnotation3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    // (undocumented)
+    static fromJSON(props: TextAnnotation3dProps, iModel: IModelDb): TextAnnotation3d;
+    getAnnotation(): TextAnnotation | undefined;
+    setAnnotation(annotation: TextAnnotation, subCategory?: Id64String): boolean;
+    // (undocumented)
+    toJSON(): TextAnnotation3dProps;
 }
 
 // @public

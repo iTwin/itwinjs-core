@@ -5,6 +5,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
+import { FeatureSymbology } from "../Feature/FeatureSymbology";
 
 /** Convert a channel array [r, g, b, a] to ColorDef
  * @internal
@@ -29,7 +30,7 @@ export interface EsriSymbolCommonProps {
 export type EsriSymbolProps = EsriSLSProps | EsriPMSProps | EsriSFSProps | EsriSMSProps;
 
 /** @internal */
-export abstract class EsriSymbol implements EsriSymbolCommonProps {
+export abstract class EsriSymbol extends FeatureSymbology implements EsriSymbolCommonProps  {
   public readonly abstract type: EsriSymbolPropsType;
 
   public static fromJSON(props: EsriSymbolProps) {

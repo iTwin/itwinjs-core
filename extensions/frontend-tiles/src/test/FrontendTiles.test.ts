@@ -42,7 +42,7 @@ async function mockFetch(mock: typeof window.fetch, fn: () => Promise<void>): Pr
   }
 }
 
-function makeResponse(jsonMethod: () => Promise<MeshExports | never>): Response {
+function makeResponse(jsonMethod: () => Promise<MeshExports>): Response {
   return {
     json: async () => jsonMethod(),
   } as Response;

@@ -300,6 +300,8 @@ public;PhysicalTypeIsOfPhysicalMaterial
 public;PlanCallout 
 public;Platform
 internal;ProcessChangesetOptions
+beta;produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometryArgs): TextBlockGeometryProps
+beta;ProduceTextAnnotationGeometryArgs
 public;ProgressFunction = (loaded: number, total: number) => ProgressStatus
 public;ProgressStatus
 beta;PropertyStore

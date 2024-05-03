@@ -26,7 +26,6 @@ export default {
   items: {
     AreaPhenomenon: {
       schemaItemType: "Phenomenon",
-      name: "AREA",
       label: "Area",
       description: "Area description",
       definition: "Units.LENGTH(4)",
@@ -66,7 +65,7 @@ export default {
     },
     RelationshipEntity: {
       schemaItemType: "RelationshipClass",
-      name: "TestRelationship",
+      description: "TestRelationship",
       strength: "Embedding",
       strengthDirection: "Forward",
       source: {
