@@ -135,8 +135,8 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
       }
 
       const runTrans = Transform.createTranslationXYZ(run.offsetFromLine.x, run.offsetFromLine.y, 0);
-      documentTransform.multiplyTransformTransform(runTrans, runTrans);
       lineTrans.multiplyTransformTransform(runTrans, runTrans);
+      documentTransform.multiplyTransformTransform(runTrans, runTrans);
       if ("text" === run.source.type) {
         processTextRun(run, runTrans, context);
       } else {
@@ -195,5 +195,8 @@ export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometr
   });
 
   const transform = args.annotation.computeDocumentTransform(layout.range);
-  return produceTextBlockGeometry(layout, transform /*, args.annotation.computeAnchorPoint(layout.range) */);
+
+  const debugAnchorPointAndRange = false;
+  let anchorPoint = debugAnchorPointAndRange ? args.annotation.computeAnchorPoint(layout.range) : undefined;
+  return produceTextBlockGeometry(layout, transform, anchorPoint);
 }
