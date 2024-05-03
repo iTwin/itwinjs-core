@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fix text annotation rotation around anchor point.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

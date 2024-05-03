@@ -9458,13 +9458,14 @@ export class TestRpcManager {
 // @beta
 export class TextAnnotation {
     anchor: TextAnnotationAnchor;
+    // @internal (undocumented)
+    computeAnchorPoint(layoutRange: Range2d): Point3d;
     // @internal
     computeDocumentTransform(layoutRange: Range2d): Transform;
     static create(args?: TextAnnotationCreateArgs): TextAnnotation;
     equals(other: TextAnnotation): boolean;
     static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation;
     orientation: YawPitchRollAngles;
-    origin: Point3d;
     textBlock: TextBlock;
     toJSON(): TextAnnotationProps;
 }
@@ -9497,7 +9498,6 @@ export interface TextAnnotationAnchor {
 export interface TextAnnotationCreateArgs {
     anchor?: TextAnnotationAnchor;
     orientation?: YawPitchRollAngles;
-    origin?: Point3d;
     textBlock?: TextBlock;
 }
 
@@ -9505,7 +9505,6 @@ export interface TextAnnotationCreateArgs {
 export interface TextAnnotationProps {
     anchor?: TextAnnotationAnchor;
     orientation?: YawPitchRollProps;
-    origin?: XYZProps;
     textBlock?: TextBlockProps;
 }
 
