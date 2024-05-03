@@ -146,6 +146,7 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
   }
 
   if (debugAnchorPt) {
+    // Draw lines representing the horizontal and vertical ranges, intersecting at the anchor point.
     context.entries.push({
       color: ColorDef.red.toJSON(),
     });
@@ -163,7 +164,7 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
       },
     });
   }
-  
+
   return { entries: context.entries };
 }
 
@@ -197,6 +198,6 @@ export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometr
   const transform = args.annotation.computeDocumentTransform(layout.range);
 
   const debugAnchorPointAndRange = false;
-  let anchorPoint = debugAnchorPointAndRange ? args.annotation.computeAnchorPoint(layout.range) : undefined;
+  const anchorPoint = debugAnchorPointAndRange ? args.annotation.computeAnchorPoint(layout.range) : undefined;
   return produceTextBlockGeometry(layout, transform, anchorPoint);
 }

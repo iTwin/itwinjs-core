@@ -158,7 +158,6 @@ export class TextDecorationTool extends Tool {
 
     const cmd = inArgs[0].toLowerCase();
     const arg = inArgs[1];
-    const arg2 = inArgs[2];
 
     switch (cmd) {
       case "clear":

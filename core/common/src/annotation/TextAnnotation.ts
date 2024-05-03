@@ -6,7 +6,7 @@
  * @module Annotation
  */
 
-import { Point3d, Range2d, Transform, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
+import { Point3d, Range2d, Transform, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
 import { TextBlock, TextBlockProps } from "./TextBlock";
 
 /**
@@ -149,7 +149,7 @@ export class TextAnnotation {
   public computeAnchorPoint(layoutRange: Range2d): Point3d {
     let x = 0;
     let y = 0;
-    
+
     switch (this.anchor.horizontal) {
       case "center":
         x += layoutRange.xLength() / 2;
@@ -167,7 +167,7 @@ export class TextAnnotation {
         y -= layoutRange.yLength();
         break;
     }
-    
+
     return new Point3d(x, y, 0);
   }
 
