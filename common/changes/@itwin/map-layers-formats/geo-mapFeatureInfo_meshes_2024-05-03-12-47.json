@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/map-layers-formats",
-      "comment": "Improved MapFeatureInfo decorator to display properly highlight geometries when terrain enabled.",
+      "comment": "Improved MapFeatureInfo decorator to display properly highlight geometries when terrain is enabled.",
       "type": "none"
     }
   ],
