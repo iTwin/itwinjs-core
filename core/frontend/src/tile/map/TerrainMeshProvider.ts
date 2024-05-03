@@ -40,7 +40,7 @@ export interface TerrainMeshProviderOptions {
   dataSource?: string;
 
   /** If true, the provider is being used to collect tiles from the tile tree.
-   * @internal
+   * @beta
    */
   produceGeometry?: boolean;
 }
