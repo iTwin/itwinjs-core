@@ -679,7 +679,6 @@ describe("TextAnnotation element", () => {
           vertical: "middle",
           horizontal: "right",
         },
-        origin: [0, -5, 100],
         orientation: { yaw: 1, pitch: 0, roll: -1 },
       });
     }
@@ -713,7 +712,7 @@ describe("TextAnnotation element", () => {
         const elId = el0.insert();
         expect(Id64.isValidId64(elId)).to.be.true;
 
-        const el1 = imodel.elements.getElement<TextAnnotation3d>(elId)!;
+        const el1 = imodel.elements.getElement<TextAnnotation3d>(elId);
         expect(el1).not.to.be.undefined;
         expect(el1 instanceof TextAnnotation3d).to.be.true;
 
