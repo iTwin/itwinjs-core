@@ -321,7 +321,7 @@ export class BaseSettings implements Settings {
     const out = this.getSetting<T>(name);
     if (out === undefined || typeof out === expectedType)
       return out;
-    throw new Error(`setting "${name}" is not a ${expectedType}: ${out}`);
+    throw new Error(`setting "${name}" is not a ${expectedType}: ${typeof out}`);
   }
   public getString(name: SettingName, defaultValue: string): string;
   public getString(name: SettingName): string | undefined;

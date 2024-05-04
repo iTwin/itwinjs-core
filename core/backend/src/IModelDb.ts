@@ -1451,7 +1451,7 @@ export abstract class IModelDb extends IModel {
         try {
           const props = dict.getSetting<WorkspaceSettings.Props[]>(Workspace.settingName.settingsWorkspaces);
           if (props)
-            settingProps.push(...SettingsSchemas.validateSetting(settingProps, Workspace.settingName.settingsWorkspaces));
+            settingProps.push(...SettingsSchemas.validateSetting(props, Workspace.settingName.settingsWorkspaces));
         } catch (e) {
           problems.push(e as WorkspaceDb.LoadError); // something wrong with the setting stored in the iModel
         }

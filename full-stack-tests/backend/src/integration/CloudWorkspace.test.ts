@@ -273,7 +273,7 @@ describe("Cloud workspace containers", () => {
     problems.length = 0;
     let lineStyleDbs = await imodel2.workspace.getWorkspaceDbs({
       settingName: "app1/lineStyleDbs", problems, filter: (_dbProps, dict) => {
-        return (dict.props.priority === Settings.Priority.branch);
+        return (dict.props.priority === Settings.Priority.branch as number);
       },
     });
     expect(lineStyleDbs.length).equal(1);

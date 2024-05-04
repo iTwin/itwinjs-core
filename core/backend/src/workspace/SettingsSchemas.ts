@@ -99,7 +99,7 @@ export class SettingsSchemas {
       const typeDef = this.typeDefs.get(propDef.extends);
       if (undefined === typeDef)
         throw new Error(`typeDef ${propDef.extends} does not exist for ${scope}`);
-      const expanded = this.getObjectProperties(typeDef, `${scope}.${typeDef}`);
+      const expanded = this.getObjectProperties(typeDef, `${scope}.${propDef.extends}`);
       if (expanded.required)
         required = required ? [...required, ...expanded.required] : expanded.required;
       if (expanded.properties) {
