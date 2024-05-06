@@ -922,7 +922,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     // Verify inserted element aspect properties
     const actualAspectValue = await verifyElementAspect(expectedAspectValue, elId, expectedAspectValue.classFullName, imodel);
 
-    // Update all properties to null.
+    // Update all basic properties to null.
     {
       Object.assign(actualAspectValue[0], {
         i: null,
@@ -935,18 +935,6 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
         p2d: null,
         p3d: null,
         g: null,
-        st: null,
-        array_i: null,
-        array_l: null,
-        array_d: null,
-        array_b: null,
-        array_dt: null,
-        array_s: null,
-        array_bin: null,
-        array_p2d:null,
-        array_p3d: null,
-        array_g: null,
-        array_st: null,
       });
 
       // Update the element
@@ -960,18 +948,6 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     // Update composite fields (struct, array properties) to only include nulls.
     {
       Object.assign(actualAspectValue[0], {
-        ...actualAspectValue[0],
-        st: { i: null, d: null, b: null },
-        array_i: [null, null],
-        array_st: [null, { i: null, d: null, b: null} ],
-      });
-
-      // Update the element
-      imodel.elements.updateAspect(actualAspectValue[0]);
-      imodel.saveChanges();
-
-      // All composite elements' properties are null, thus the elements are also null.
-      Object.assign(actualAspectValue[0], {
         i: null,
         l: null,
         d: null,
@@ -982,19 +958,14 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
         p2d: null,
         p3d: null,
         g: null,
-        st: null,
-        array_i: null,
-        array_l: null,
-        array_d: null,
-        array_b: null,
-        array_dt: null,
-        array_s: null,
-        array_bin: null,
-        array_p2d:null,
-        array_p3d: null,
-        array_g: null,
-        array_st: null,
+        st: { i: null, d: null, b: null },
+        array_i: [null, null],
+        array_st: [null, { i: null, d: null, b: null} ],
       });
+
+      // Update the element
+      imodel.elements.updateAspect(actualAspectValue[0]);
+      imodel.saveChanges();
 
       // Verify updated element aspect properties
       await verifyElementAspect(actualAspectValue[0], elId, expectedAspectValue.classFullName, imodel);

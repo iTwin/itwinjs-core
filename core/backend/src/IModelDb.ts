@@ -1741,16 +1741,21 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         filterClause = "WHERE FederationGuid=?";
         bindCallback =  (statement: ECSqlStatement) => statement.bindId(1, federationGuid);
       } else if (code !== undefined) {
-        filterClause = "WHERE CodeSpecId=? AND CodeScopeId=? AND CodeValue=? LIMIT 1";
-        bindCallback =  (statement: ECSqlStatement) => {
-          statement.bindId(1, code.spec);
-          statement.bindId(2, code.scope);
+        const elementId = this._iModel.withPreparedSqliteStatement(`SELECT Id FROM bis_Element WHERE CodeSpecId=? AND CodeScopeId=? AND CodeValue=? LIMIT 1`, (stmt: SqliteStatement) => {
+          stmt.bindId(1, code.spec);
+          stmt.bindId(2, code.scope);
           if (code.value !== undefined) {
-            statement.bindString(3, code.value);
+            stmt.bindString(3, code.value);
           } else {
-            statement.bindNull(3);
+            stmt.bindNull(3);
           }
-        };
+
+          assert(stmt.nextRow() !== false);
+          return stmt.getValueId(0);
+        });
+
+        filterClause = "WHERE ECInstanceId=?";
+        bindCallback =  (statement: ECSqlStatement) => statement.bindId(1, elementId);
       }
 
       return this._iModel.withPreparedStatement(`SELECT $ FROM Bis.Element ${filterClause} OPTIONS USE_JS_PROP_NAMES`, (statement: ECSqlStatement) => {

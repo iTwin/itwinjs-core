@@ -12,7 +12,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 function removeUndefined(assetProps: RenderMaterialAssetProps): RenderMaterialAssetProps {
   const input = assetProps as any;
   for (const key of Object.keys(input))
-    if (input[key] === undefined)
+    if (input[key] === undefined || input[key] === null)
       delete input[key];
 
   const maps = assetProps.Map as any;
