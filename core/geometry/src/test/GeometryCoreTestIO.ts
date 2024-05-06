@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
-
 import { Arc3d } from "../curve/Arc3d";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 import { GeometryQuery } from "../curve/GeometryQuery";
@@ -19,7 +18,7 @@ import { PolygonOps } from "../geometry3d/PolygonOps";
 import { Range2d, Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { MomentData } from "../geometry4d/MomentData";
-import { Polyface } from "../polyface/Polyface";
+import { IndexedPolyface, Polyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import { prettyPrint } from "./testFunctions";
@@ -498,5 +497,19 @@ export class GeometryCoreTestIO {
       this.captureCurveLocationDetails(collection, data.detailA, markerSize, dx, dy, dz);
       this.captureCurveLocationDetails(collection, data.detailB, markerSize * 0.75, dx, dy, dz);
     }
+  }
+
+  /** Create IndexedPolyface from imjs file. Returns the first mesh found. */
+  public static createIndexedPolyface(imjsPath: string): IndexedPolyface | undefined {
+    const json = fs.readFileSync(imjsPath, "utf8");
+    const geometry = IModelJson.Reader.parse(JSON.parse(json)) as GeometryQuery[] | GeometryQuery;
+    if (geometry instanceof IndexedPolyface)
+      return geometry;
+    if (Array.isArray(geometry)) {
+      for (const mesh of geometry)
+        if (mesh instanceof IndexedPolyface)
+          return mesh;
+    }
+    return undefined;
   }
 }
