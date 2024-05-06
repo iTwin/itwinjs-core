@@ -2020,7 +2020,7 @@ export abstract class Viewport implements IDisposable, TileUser {
 
     const distXYZ = new Point3d(screenDist.x, screenDist.y, 0);
     if (view.is3d() && view.isCameraOn) {
-      const frust = this.getFrustum(CoordSystem.View, false)!;
+      const frust = this.getFrustum(CoordSystem.View, false);
       frust.translate(distXYZ);
       this.viewToWorldArray(frust.points);
       view.setupFromFrustum(frust);

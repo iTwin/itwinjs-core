@@ -250,6 +250,7 @@ export interface ISelectionProvider {
 // @public
 export type MultipleValuesRequestOptions = Paged<{
     maxParallelRequests?: number;
+    batchSize?: number;
 }>;
 
 // @internal (undocumented)

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix an issue preventing model map layer from being hidden",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

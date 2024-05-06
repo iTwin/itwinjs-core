@@ -65,10 +65,10 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
     let propertyB: AnyProperty | undefined;
 
     const classB = await this._schemaB.lookupItem<ECClass>(propertyA.class.name);
-    if (classB)
+    if (classB) {
       propertyB = await classB.getProperty(propertyA.name) as AnyProperty;
-
-    this._schemaComparer.compareProperties(propertyA, propertyB);
+      this._schemaComparer.compareProperties(propertyA, propertyB);
+    }
   }
 
   /**
@@ -145,7 +145,7 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
       containerB = parent ? await parent.getProperty(shortName) : undefined;
     } else if (RelationshipConstraint.isRelationshipConstraint(containerA)) {
       const parent = await this._schemaB.lookupItem<RelationshipClass>(containerA.relationshipClass.name);
-      containerB = parent ? await parent.getProperty(shortName) : undefined;
+      containerB = parent ? containerA.isSource ? parent.source : parent.target : undefined;
     }
 
     this._schemaComparer.compareCustomAttributeContainers(containerA, containerB);

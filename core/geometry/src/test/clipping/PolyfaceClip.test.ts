@@ -82,7 +82,7 @@ describe("PolyfaceClip", () => {
     const clipper = ClipPlane.createNormalAndPointXYZXYZ(1, 1, 0, 1, 1, 1)!;
 
     const leftClip = PolyfaceClip.clipPolyface(polyface, clipper)!;
-    const rightClip = PolyfaceClip.clipPolyfaceClipPlane(polyface, clipper, false)!;
+    const rightClip = PolyfaceClip.clipPolyfaceClipPlane(polyface, clipper, false);
     const area = PolyfaceQuery.sumFacetAreas(polyface);
     const areaLeft = PolyfaceQuery.sumFacetAreas(leftClip);
     const areaRight = PolyfaceQuery.sumFacetAreas(rightClip);
@@ -102,7 +102,7 @@ describe("PolyfaceClip", () => {
     const clipper = ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, 1, 0, 0)!;
 
     const leftClip = PolyfaceClip.clipPolyface(polyface, clipper)!;
-    const rightClip = PolyfaceClip.clipPolyfaceClipPlane(polyface, clipper, false)!;
+    const rightClip = PolyfaceClip.clipPolyfaceClipPlane(polyface, clipper, false);
     const area = PolyfaceQuery.sumFacetAreas(polyface);
     const areaLeft = PolyfaceQuery.sumFacetAreas(leftClip);
     const areaRight = PolyfaceQuery.sumFacetAreas(rightClip);
@@ -280,7 +280,7 @@ describe("PolyfaceClip", () => {
           });
       for (let q = 1; q <= multiplier + 1.5; q++) {
         const clipper = ClipPlane.createNormalAndPointXYZXYZ(q, 1, 0, q, q, 1)!;
-        const section = PolyfaceClip.sectionPolyfaceClipPlane(polyface, clipper)!;
+        const section = PolyfaceClip.sectionPolyfaceClipPlane(polyface, clipper);
         // save with zShift to separate cleanly from the background mesh . .
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, 0, zShift);
         GeometryCoreTestIO.captureGeometry(allGeometry, section, x0, 0, 0);
@@ -1315,6 +1315,32 @@ describe("PolyfaceClip", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "DrapeRegion");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("DrapeRegion2", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const geometry = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/clipping/drapeRegion/drapeRegion.imjs", "utf8")));
+    if (Array.isArray(geometry) && geometry) {
+      if (
+        ck.testExactNumber(2, geometry.length, "parse geometry") &&
+        ck.testType(geometry[0], IndexedPolyface, "input mesh") &&
+        ck.testType(geometry[1], Loop, "input region")
+      ) {
+        const dtm = geometry[0];
+        const region = geometry[1];
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, dtm);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, region);
+        const drapedMesh = PolyfaceClip.drapeRegion(dtm, region);
+        if (ck.testType(drapedMesh, IndexedPolyface, "drape succeeded")) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, drapedMesh);
+          ck.testTrue(PolyfaceQuery.areFacetsConvex(drapedMesh), "draped mesh has convex facets");
+        }
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "DrapeRegion2");
     expect(ck.getNumErrors()).equals(0);
   });
 

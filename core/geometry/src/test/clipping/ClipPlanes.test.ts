@@ -680,8 +680,8 @@ describe("CurveClips", () => {
       const clipGeometry = LineString3d.create(clipLine);
       clipGeometry.addClosurePoint();
       output.push(clipGeometry);
-      output.push(clipGeometry.cloneTransformed(transform0)!);
-      output.push(clipGeometry.cloneTransformed(transform1)!);
+      output.push(clipGeometry.cloneTransformed(transform0));
+      output.push(clipGeometry.cloneTransformed(transform1));
       clipMovingCurve(clipper, curve, traceCurve, 5,
         (group: number, _index: number, cp: CurvePrimitive) => {
           output.push(cp.cloneTransformed(group === 0 ? transform0 : transform1)!);
@@ -844,7 +844,7 @@ describe("CurveClips", () => {
     const bx = 4;
     const by = 5;
     const range = Range3d.createXYZXYZ(ax, ay, -1, bx + 1, by + 1, 4);
-    const convexA = ConvexClipPlaneSet.createRange3dPlanes(range, true, false, true, false, false)!;
+    const convexA = ConvexClipPlaneSet.createRange3dPlanes(range, true, false, true, false, false);
     const rectangle0 = [
       Point3d.create(-1, -1, 0),
       Point3d.create(bx, - 1, 0),

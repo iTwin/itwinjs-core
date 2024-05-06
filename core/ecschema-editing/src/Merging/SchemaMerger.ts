@@ -13,10 +13,11 @@ import { SchemaDifference, SchemaDifferences } from "../Differencing/SchemaDiffe
 import { mergeCustomAttribute } from "./CustomAttributeMerger";
 import { mergeSchemaItems } from "./SchemaItemMerger";
 import { mergeSchemaReferences } from "./SchemaReferenceMerger";
+import { SchemaConflictsError } from "../Differencing/SchemaConflicts";
 
 /**
  * Defines the context of a Schema merging run.
- * @beta
+ * @internal
  */
 export interface SchemaMergeContext {
   readonly targetSchema: Schema;
@@ -74,10 +75,6 @@ export class SchemaMerger {
       return this.merge(await SchemaDifference.fromSchemas(input, source));
     }
 
-    if(input.conflicts && input.conflicts.length > 0) {
-      throw new Error("Schema's can't be merged if there are unresolved conflicts.");
-    }
-
     return this.mergeSchemas(input);
   }
 
@@ -91,9 +88,22 @@ export class SchemaMerger {
     const targetSchemaKey = SchemaKey.parseString(differences.targetSchemaName);
     const sourceSchemaKey = SchemaKey.parseString(differences.sourceSchemaName);
 
+    if(differences.conflicts && differences.conflicts.length > 0) {
+      throw new SchemaConflictsError(
+        "Schema's can't be merged if there are unresolved conflicts.",
+        differences.conflicts,
+        sourceSchemaKey,
+        targetSchemaKey,
+      );
+    }
+
     const schema = await this._editor.getSchema(targetSchemaKey);
     if (schema === undefined) {
-      throw new Error();
+      throw new Error(`The target schema '${targetSchemaKey.name}' could not be found in the editing context.`);
+    }
+
+    if(differences.changes === undefined || differences.changes.length === 0) {
+      return schema;
     }
 
     const context: SchemaMergeContext = {
@@ -102,10 +112,6 @@ export class SchemaMerger {
       targetSchemaKey,
       sourceSchemaKey,
     };
-
-    if(differences.changes === undefined) {
-      return schema;
-    }
 
     for (const referenceChange of differences.changes.filter(SchemaDifference.isSchemaReferenceDifference)) {
       await mergeSchemaReferences(context, referenceChange);
@@ -127,7 +133,10 @@ export class SchemaMerger {
     // At last the custom attributes gets merged because it could be that the CustomAttributes
     // depend on classes that has to get merged in as items before.
     for (const customAttributeChange of differences.changes.filter(SchemaDifference.isCustomAttributeDifference)) {
-      await mergeCustomAttribute(context, customAttributeChange);
+      const mergeResult = await mergeCustomAttribute(context, customAttributeChange);
+      if(mergeResult.errorMessage) {
+        throw new Error(mergeResult.errorMessage);
+      }
     }
 
     return schema;

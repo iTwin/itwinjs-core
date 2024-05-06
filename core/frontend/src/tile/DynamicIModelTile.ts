@@ -362,7 +362,7 @@ class GraphicsTile extends Tile {
       omitEdges: !this.tree.edgeOptions,
       edgeType: this.tree.edgeOptions && "non-indexed" !== this.tree.edgeOptions.type ? 2 : 1,
       smoothPolyfaceEdges: this.tree.edgeOptions && this.tree.edgeOptions.smooth,
-      clipToProjectExtents: true,
+      clipToProjectExtents: this.tree.is3d,
       sectionCut: this.tree.stringifiedSectionClip,
     };
 

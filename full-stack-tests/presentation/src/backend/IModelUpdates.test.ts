@@ -85,8 +85,8 @@ describe("Reacting to IModel data changes", () => {
     };
 
     const contentBefore = await Presentation.getManager().getContent(contentRequestProps);
-    const codeValueField = getFieldByLabel(contentBefore!.descriptor.fields, "Code")!;
-    const userLabelField = getFieldByLabel(contentBefore!.descriptor.fields, "User Label")!;
+    const codeValueField = getFieldByLabel(contentBefore!.descriptor.fields, "Code");
+    const userLabelField = getFieldByLabel(contentBefore!.descriptor.fields, "User Label");
     expect(contentBefore!.contentSet[0].values[codeValueField.name]).to.eq("test");
     expect(contentBefore!.contentSet[0].values[userLabelField.name]).to.be.undefined;
 

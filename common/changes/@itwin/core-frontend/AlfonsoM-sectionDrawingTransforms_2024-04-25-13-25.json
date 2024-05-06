@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Increase default extent limits for drawing views and fix incorrect clipping of section drawing attachments.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

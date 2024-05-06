@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Add TextAnnotation APIs.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

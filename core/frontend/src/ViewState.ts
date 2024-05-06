@@ -688,7 +688,7 @@ export abstract class ViewState extends ElementState {
   }
 
   public calculateFocusCorners() {
-    const map = this.computeWorldToNpc()!.map!;
+    const map = this.computeWorldToNpc().map!;
     const focusNpcZ = Geometry.clamp(map.transform0.multiplyPoint3dQuietNormalize(this.getTargetPoint()).z, 0, 1.0);
     const pts = [new Point3d(0.0, 0.0, focusNpcZ), new Point3d(1.0, 0.0, focusNpcZ), new Point3d(0.0, 1.0, focusNpcZ), new Point3d(1.0, 1.0, focusNpcZ)];
     map.transform1.multiplyPoint3dArrayQuietNormalize(pts);
@@ -759,8 +759,7 @@ export abstract class ViewState extends ElementState {
 
   /** Get or set the largest and smallest values allowed for the extents for this ViewState
    * The default limits vary based on the type of view:
-   *   - Spatial view extents cannot exceed the diameter of the earth.
-   *   - Drawing view extents cannot exceed twice the longest axis of the drawing model's range.
+   *   - Spatial and drawing view extents cannot exceed the diameter of the earth.
    *   - Sheet view extents cannot exceed ten times the paper size of the sheet.
    * Explicitly setting the extent limits overrides the default limits.
    * @see [[resetExtentLimits]] to restore the default limits.

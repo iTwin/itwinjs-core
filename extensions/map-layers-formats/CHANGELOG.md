@@ -1,6 +1,13 @@
 # Change Log - @itwin/map-layers-formats
 
-This log was last generated on Wed, 03 Apr 2024 18:28:10 GMT and should not be manually modified.
+This log was last generated on Tue, 16 Apr 2024 14:47:36 GMT and should not be manually modified.
+
+## 4.5.2
+Tue, 16 Apr 2024 14:46:22 GMT
+
+### Updates
+
+- Added tool assistance instructions to `MapFeatureInfo` tool, also updated icons 
 
 ## 4.5.1
 Wed, 03 Apr 2024 18:26:59 GMT
@@ -14,6 +21,11 @@ Tue, 02 Apr 2024 19:06:00 GMT
 
 - Added support for ArcGIS class breaks symbology.
 - Fix an issue where the background map would become blank after adding a new map layer
+
+## 4.4.9
+Mon, 15 Apr 2024 20:29:22 GMT
+
+_Version update only_
 
 ## 4.4.8
 Mon, 25 Mar 2024 22:22:26 GMT

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-backend",
+      "comment": "Fix `PresentationRpcImpl.getPagedContentSet` returning `Success` status with empty result when underlying `getPagedContent` returns an error.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend"
+}

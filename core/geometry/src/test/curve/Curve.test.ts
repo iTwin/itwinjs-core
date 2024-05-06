@@ -223,7 +223,7 @@ class ExerciseCurve {
     if (curve instanceof BSplineCurve3d) return;  // TODO
     // if (curve instanceof TransitionSpiral3d) return;  // TODO
     for (const fractionA of [0.421, 0.421, 0.45, 0.45]) {
-      const tangentA = curve.fractionToPointAndDerivative(fractionA)!;
+      const tangentA = curve.fractionToPointAndDerivative(fractionA);
       if (ck.testPointer(tangentA)) {
         const plane = Plane3dByOriginAndUnitNormal.create(tangentA.origin, tangentA.direction)!;
         const intersections: CurveLocationDetail[] = [];
@@ -745,7 +745,7 @@ describe("Curves", () => {
     const dxGap = 1.0;
     const allGeometry: GeometryQuery[] = [];
     for (const p of paths) {
-      const q = p.clone()!;
+      const q = p.clone();
       ck.testTrue(p.isAlmostEqual(q), "clone is same curve");
       GeometryCoreTestIO.captureGeometry(allGeometry, q, dx, 0.0);
       ExerciseCurve.exerciseFractionToPoint(ck, p, true, false);
@@ -792,7 +792,7 @@ describe("Curves", () => {
           ck.testLT(p1.distance(c1x.point), proximityFactor * e, "small distance from curve");
         p.closestPoint(p1, CurveExtendMode.OnCurve);
       }
-      dx += p.range()!.xLength() + dxGap;
+      dx += p.range().xLength() + dxGap;
       if (ck.getNumErrors() > error0)
         GeometryCoreTestIO.consoleLog("  With this curve", prettyPrint(IModelJson.Writer.toIModelJson(p.path)));
     }
@@ -810,7 +810,7 @@ describe("Curves", () => {
     const pathD = Sample.createSquareWavePath(4, 1, 1, 0, 0, 2);    // 4 wave as 4 linestrings
     const emptyBag = BagOfCurves.create();
     const bag1 = BagOfCurves.create();
-    const bagWithPath = BagOfCurves.create(pathA.clone()!);
+    const bagWithPath = BagOfCurves.create(pathA.clone());
 
     const lineSegment = LineSegment3d.createXYXY(0, 0, 1, 1);
     bag1.tryAddChild(lineSegment.clone());
@@ -860,7 +860,7 @@ describe("Curves", () => {
         const path = Path.create();
         for (let i = primitive0; i < primitives.length && i < primitive0 + numPrimitive; i++)
           path.tryAddChild(primitives[i]);
-        const indexedPath = CurveChainWithDistanceIndex.createCapture(path)!;
+        const indexedPath = CurveChainWithDistanceIndex.createCapture(path);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0);
         const range = indexedPath.range();
 
@@ -1073,7 +1073,7 @@ describe("Linestring3dSpecials", () => {
       geometry.push(linestring);
       const df = 0.125 / (linestring.numPoints() - 1);
       for (let fraction = 0; fraction <= 1.0000001; fraction += df) {
-        const frame0 = linestring.fractionToFrenetFrame(fraction)!;
+        const frame0 = linestring.fractionToFrenetFrame(fraction);
         geometry.push(LineString3d.create(frame0.origin,
           frame0.multiplyXYZ(ax, 0, 0),
           frame0.multiplyXYZ(0, ay, 0),
@@ -1215,7 +1215,7 @@ describe("IsomorphicCurves", () => {
         for (let i = 0; i + 1 < currentPoints.length; i++) {
           path.tryAddChild(LineSegment3d.create(currentPoints[i], currentPoints[i + 1]));
         }
-        const chain = CurveChainWithDistanceIndex.createCapture(path, options)!;
+        const chain = CurveChainWithDistanceIndex.createCapture(path, options);
         compareIsomorphicCurves(ck, linestring, chain);
       }
     }

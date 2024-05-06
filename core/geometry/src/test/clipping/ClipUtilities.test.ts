@@ -359,7 +359,7 @@ describe("ClipUtilities", () => {
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
       // sanity tests
       expect(clippedCurve.length).equals(1);
-      const area = RegionOps.computeXYArea((clippedCurve[0] as AnyRegion)!)!;
+      const area = RegionOps.computeXYArea((clippedCurve[0] as AnyRegion))!;
       const expectedArea = (6 * 16) + (8 * 8 * Math.PI / 2);
       ck.testCoordinate(area, expectedArea);
       // save all geometries
@@ -421,7 +421,7 @@ describe("ClipUtilities", () => {
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
       // sanity tests
       expect(clippedCurve.length).equals(1);
-      const area = RegionOps.computeXYArea((clippedCurve[0] as AnyRegion)!)!;
+      const area = RegionOps.computeXYArea((clippedCurve[0] as AnyRegion))!;
       const expectedArea = (4 * 10) + (6 * 4) + (4 * 10);
       ck.testCoordinate(area, expectedArea);
       // save all geometries
@@ -480,7 +480,7 @@ describe("ClipUtilities", () => {
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
       // sanity tests
       expect(clippedCurve.length).equals(1);
-      const area = RegionOps.computeXYArea((clippedCurve[0] as AnyRegion)!)!;
+      const area = RegionOps.computeXYArea((clippedCurve[0] as AnyRegion))!;
       const expectedArea = (14 * 10) - 8;
       ck.testCoordinate(area, expectedArea);
       // save all geometries
@@ -546,7 +546,7 @@ describe("ClipUtilities", () => {
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
       // sanity tests
       expect(clippedCurve.length).equals(2);
-      const area = RegionOps.computeXYArea((clippedCurve[1] as AnyRegion)!)!;
+      const area = RegionOps.computeXYArea((clippedCurve[1] as AnyRegion))!;
       const expectedArea = (14 * 7 / 2);
       ck.testCoordinate(area, expectedArea);
       // save all geometries
@@ -609,7 +609,7 @@ describe("ClipUtilities", () => {
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
       // sanity tests
       expect(clippedCurve.length).equals(2);
-      const area = RegionOps.computeXYArea((clippedCurve[1] as AnyRegion)!)!;
+      const area = RegionOps.computeXYArea((clippedCurve[1] as AnyRegion))!;
       const expectedArea = 14 * 7;
       ck.testCoordinate(area, expectedArea);
       // save all geometries
@@ -752,7 +752,7 @@ describe("ClipUtilities", () => {
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range2, shift);
       // sanity tests
       expect(clippedCurve.length).equals(2);
-      const area = RegionOps.computeXYArea((clippedCurve[0] as AnyRegion)!)!;
+      const area = RegionOps.computeXYArea((clippedCurve[0] as AnyRegion))!;
       const expectedArea = (2 * 10) + (6 * 10);
       ck.testCoordinate(area, expectedArea);
       // save all geometries

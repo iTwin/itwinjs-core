@@ -232,7 +232,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
     if (this._requestTimeout === 0) {
       Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request timeout not configured, returning promise without a timeout.`);
-      resultPromise.finally(() => {
+      void resultPromise.finally(() => {
         this._pendingRequests.deleteValue(requestKey);
       });
       return resultPromise;
@@ -410,8 +410,17 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     token: IModelRpcProps,
     requestOptions: Paged<ContentRpcRequestOptions>,
   ): PresentationRpcResponse<PagedResponse<ItemJSON>> {
-    const content = await this.getPagedContent(token, requestOptions);
-    return this.successResponse(content.result ? content.result.contentSet : { total: 0, items: [] });
+    const response = await this.getPagedContent(token, requestOptions);
+    if (response.statusCode !== PresentationStatus.Success) {
+      return this.errorResponse(response.statusCode, response.errorMessage, response.diagnostics);
+    }
+    if (!response.result) {
+      return this.errorResponse(PresentationStatus.Error, `Failed to get content set (received a success response with empty result)`, response.diagnostics);
+    }
+    return {
+      ...response,
+      result: response.result.contentSet,
+    };
   }
 
   public override async getElementProperties(

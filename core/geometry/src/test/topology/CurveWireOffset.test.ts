@@ -186,7 +186,7 @@ describe("CurveOffset", () => {
     const path1 = Loop.create(LineString3d.create(pointA, pointB, [2, -e], pointA));
     const arcA = Arc3d.createCircularStartMiddleEnd(pointA, Point3d.create(2, 0.5), pointB) as Arc3d;
     const arcB = Arc3d.createCircularStartMiddleEnd(pointB, Point3d.create(2, 0.25), pointA) as Arc3d;
-    const arcC = arcA.clonePartialCurve(1.0, 0.0)!;
+    const arcC = arcA.clonePartialCurve(1.0, 0.0);
     arcC.tryTransformInPlace(Transform.createFixedPointAndMatrix(arcA.center, Matrix3d.createScale(sC, sC, sC)));
     const path2 = Loop.create(arcA, arcB);
     const path3 = Loop.create(LineString3d.create(pointA, pointB, pointA.interpolatePerpendicularXY(1.0, pointB, -f),

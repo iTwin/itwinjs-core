@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Add Point2d.scaleInPlace and Range2d.cloneTranslated.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

@@ -563,6 +563,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "fetch-mock",
+      "allowedCategories": [ "extensions" ]
+    },
+    {
       "name": "file-loader",
       "allowedCategories": [ "tools" ]
     },
@@ -577,6 +581,10 @@
     {
       "name": "flatbuffers",
       "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "flatbush",
+      "allowedCategories": [ "extensions" ]
     },
     {
       "name": "form-data",
@@ -677,6 +685,10 @@
     {
       "name": "multiparty",
       "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "mysql2",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "nock",
@@ -792,7 +804,7 @@
     },
     {
       "name": "source-map-support",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "spdy",
