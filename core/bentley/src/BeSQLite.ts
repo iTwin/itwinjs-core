@@ -201,8 +201,34 @@ export enum DbResult {
   BE_SQLITE_ERROR_CouldNotAcquireLocksOrCodes = (BE_SQLITE_IOERR | 21 << 24),
   /** Recommended that the schemas found in the database be upgraded */
   BE_SQLITE_ERROR_SchemaUpgradeRecommended = (BE_SQLITE_IOERR | 22 << 24),
-  /** schema update require data transform */
+  /** Schema update require data transform */
   BE_SQLITE_ERROR_DataTransformRequired = (BE_SQLITE_IOERR | (23 << 24)),
+  /** Schema is not found in the list of referenced schemas. */
+  BE_SQLITE_ERROR_SchemaNotFound = (BE_SQLITE_IOERR | (24<<24)),
+  /** Error reading schema. */
+  BE_SQLITE_ERROR_SchemaReadFailed = (BE_SQLITE_IOERR | (25<<24)),
+  /** Schema is dynamic. */
+  BE_SQLITE_ERROR_SchemaIsDynamic = (BE_SQLITE_IOERR | (26<<24)),
+  /** Schema name does not match the domain name. */
+  BE_SQLITE_ERROR_SchemaDomainNamesMismatched = (BE_SQLITE_IOERR | (27<<24)),
+  /** Cannot import schemas into the database because it is Readonly. */
+  BE_SQLITE_ERROR_DbIsReadonly = (BE_SQLITE_IOERR | (28<<24)),
+  /** Error reading ECSchema from XML. */
+  BE_SQLITE_ERROR_FailedToParseXml = (BE_SQLITE_IOERR | (29<<24)),
+  /** Invalid ECSchema XML. */
+  BE_SQLITE_ERROR_InvalidECSchemaXml = (BE_SQLITE_IOERR | (30<<24)),
+  /** Error locating referenced schema while deserializing XML. */
+  BE_SQLITE_ERROR_ReferencedSchemaNotFound = (BE_SQLITE_IOERR | (31<<24)),
+  /** Schema is already loaded in the cache. */
+  BE_SQLITE_ERROR_DuplicateSchema = (BE_SQLITE_IOERR | (32<<24)),
+  /** Duplicate class node is present in the schema. */
+  BE_SQLITE_ERROR_DuplicateTypeName = (BE_SQLITE_IOERR | (33<<24)),
+  /** Invalid type name on enumeration. */
+  BE_SQLITE_ERROR_InvalidPrimitiveType = (BE_SQLITE_IOERR | (34<<24)),
+  /** Schema has reference cycles. */
+  BE_SQLITE_ERROR_HasReferenceCycle = (BE_SQLITE_IOERR | (35<<24)),
+  /** Pruning schema item. */
+  BE_SQLITE_ERROR_PruneItem = (BE_SQLITE_IOERR | (36<<24)),
 
   BE_SQLITE_LOCKED_SHAREDCACHE = (BE_SQLITE_LOCKED | (1 << 8)),
   BE_SQLITE_BUSY_RECOVERY = (BE_SQLITE_BUSY | (1 << 8)),
