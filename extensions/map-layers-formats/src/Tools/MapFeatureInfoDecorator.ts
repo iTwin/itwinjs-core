@@ -11,6 +11,8 @@ import {
 import { GrowableXYZArray, LineString3d, Point2d, Point3d, Polyface, Range3d, Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { MapFeatureInfoToolData } from "./MapFeatureInfoTool";
 import { GeometryTerrainDraper } from "./GeometryTerrainDraper";
+import { Logger } from "@itwin/core-bentley";
+const loggerCategory = "MapLayersFormats.MapFeatureInfoDecorator";
 
 /** @internal */
 class PinMarker extends Marker {
@@ -63,6 +65,8 @@ class PinMarkerSet extends MarkerSet<PinMarker> {
 interface DrapeGraphicState {
   graphic: GraphicPrimitive;
   collectorState: string;
+  chordTolerance: number;
+  range: Range3d;
 }
 
 class DrapedPrimitives {
@@ -110,6 +114,8 @@ export class MapFeatureInfoDecorator implements Decorator {
   public readonly disableTerrainDraper = false;
   public markerSize = new Point2d(32, 32);
   public lineWidth =  3;
+  public readonly maxDrapeSizePixels = 50000;
+  public readonly chordTolerancePixels = 20;
   private _highlightColor = ColorDef.from(0, 255, 255, 127);
 
   public get highlightColor() { return this._highlightColor;}
@@ -132,7 +138,7 @@ export class MapFeatureInfoDecorator implements Decorator {
   // Extra markers can be added outside the normal state
   public extraMarkers: Point3d[]|undefined;
 
-  private _state: MapFeatureInfoToolData | undefined;
+  private _data: MapFeatureInfoToolData | undefined;
 
   private readonly _graphicType = GraphicType.WorldOverlay;
 
@@ -146,10 +152,10 @@ export class MapFeatureInfoDecorator implements Decorator {
     this._markerImage.src = `data:image/svg+xml;base64,${base64}`;
   }
 
-  private _computeChordTolerance(viewport: Viewport, applyAspectRatioSkew: boolean, computeRange: () => Range3d) {
+  private computePixelSize(viewport: Viewport, applyAspectRatioSkew: boolean, pointWorld: Point3d) {
     let pixelSize = 1;
     // Compute the horizontal distance in meters between two adjacent pixels at the center of the geometry.
-    pixelSize = viewport.getPixelSizeAtPoint(computeRange().center);
+    pixelSize = viewport.getPixelSizeAtPoint(pointWorld);
     pixelSize = viewport.target.adjustPixelSizeForLOD(pixelSize);
 
     // Aspect ratio skew > 1.0 stretches the view in Y. In that case use the smaller vertical pixel distance for our stroke tolerance.
@@ -159,27 +165,38 @@ export class MapFeatureInfoDecorator implements Decorator {
     return pixelSize * 0.25;
   }
 
-  public clearState = () => {
-    this._state = undefined;
+  private computeChordTolerance(viewport: Viewport, drapeRange: Range3d) {
+    const drapeSizeWorld = Math.max(drapeRange.xLength(),  drapeRange.yLength());
+    const pixelSize = this.computePixelSize(viewport, true, drapeRange.center);
+    const maxDrapeRangeSizeRatio = this.maxDrapeSizePixels /  (drapeSizeWorld / pixelSize);
+    if (maxDrapeRangeSizeRatio < 1) {
+      Logger.logWarning(loggerCategory, "Element too large; chord tolerance was adjusted");
+      return (pixelSize / maxDrapeRangeSizeRatio)*this.chordTolerancePixels;
+    }
+    return pixelSize*this.chordTolerancePixels;
   };
 
-  public setState = (state: MapFeatureInfoToolData) => {
+  public clearData = () => {
+    this._data = undefined;
+  };
+
+  public setData = (data: MapFeatureInfoToolData) => {
 
     this._drapedPrimitives.clear();
     this._allGeomDraped = false;
     this.hidden = false;
 
-    this._state = state;
+    this._data = data;
     IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
 
     this._drapeGraphicsStates = [];
 
-    if (!this.disableTerrainDraper && this._state.mapInfo?.layerInfos && state.hit.viewport.displayStyle.displayTerrain) {
+    if (!this.disableTerrainDraper && this._data.mapInfo?.layerInfos && data.hit.viewport.displayStyle.displayTerrain) {
 
-      if (state.hit?.modelId) {
-        const drapeTreeRef = this.getGeometryTreeRef(state.hit.viewport);
+      if (data.hit?.modelId) {
+        const drapeTreeRef = this.getGeometryTreeRef(data.hit.viewport);
         if (drapeTreeRef) {
-          this._draper = new GeometryTerrainDraper(state.hit.viewport, drapeTreeRef);
+          this._draper = new GeometryTerrainDraper(data.hit.viewport, drapeTreeRef);
           return;
         }
       }
@@ -208,7 +225,7 @@ export class MapFeatureInfoDecorator implements Decorator {
   protected renderGraphics(context: DecorateContext) {
     this._markerSet.markers.clear();
 
-    if (this._state?.mapInfo?.layerInfos === undefined || this.hidden) {
+    if (this._data?.mapInfo?.layerInfos === undefined || this.hidden) {
       return undefined;
     }
 
@@ -220,7 +237,7 @@ export class MapFeatureInfoDecorator implements Decorator {
     const builder = context.createGraphicBuilder(this._graphicType, transform);
 
     if (this._draper) {
-      this.initializeDrapeState();
+      this.initializeDrapeState(context.viewport);
 
       // We need to call drapeGeometries() until it returns true (i.e. fully complete)
       if (!this._allGeomDraped) {
@@ -245,12 +262,33 @@ export class MapFeatureInfoDecorator implements Decorator {
     return builder.finish();
   }
 
-  private initializeDrapeState() {
+  // Iterates the mapfeatureinfo data and build draping state for each entry
+  private initializeDrapeState(viewport: ScreenViewport) {
     if (this._drapeGraphicsStates.length === 0) {
-      for (const layerInfo of this._state?.mapInfo?.layerInfos??[]) {
+      const getGraphicRange = (graphic: GraphicPrimitive) => {
+        if (graphic.type === "linestring")
+          return Range3d.createArray(graphic.points);
+        else if (graphic.type === "loop")
+          return graphic.loop.range();
+        else if (graphic.type === "pointstring")
+          return Range3d.createArray(graphic.points);
+        else
+          return Range3d.createNull();
+      };
+
+      for (const layerInfo of this._data?.mapInfo?.layerInfos??[]) {
         for (const subLayerInfo of layerInfo?.subLayerInfos??[]) {
           for (const feature of subLayerInfo.features) {
-            feature.geometries?.forEach(((geom)=> this._drapeGraphicsStates.push({graphic: geom.graphic, collectorState: "loading" }) ));
+
+            feature.geometries?.forEach(((geom)=> {
+              const range = getGraphicRange(geom.graphic);
+              this._drapeGraphicsStates.push({
+                graphic: geom.graphic,
+                collectorState: "loading",
+                chordTolerance: this.computeChordTolerance(viewport, range),
+                range,
+              });
+            } ));
           }
         }
       }
@@ -258,22 +296,19 @@ export class MapFeatureInfoDecorator implements Decorator {
   }
 
   // returns true when all geometries are fully draped; otherwise false
-  private drapeGeometries(viewport: ScreenViewport): boolean {
+  private drapeGeometries(_viewport: ScreenViewport): boolean {
     if (!this._draper)
       return false;
 
     let hasMissingDrapeGeoms = false;
     for (const state of this._drapeGraphicsStates) {
-      const computeChordTolerance = (drapeRange: Range3d) => this._computeChordTolerance(viewport, true, () => drapeRange) * 20;
       if (state.collectorState === "loading") {
         this._scratchPoints.clear();
 
         if (state.graphic.type === "linestring") {
           this._scratchPoints.pushAll(state.graphic.points);
-          const drapeRange = Range3d.createNull();
-          drapeRange.extendArray(this._scratchPoints);
           const drapedStrings: LineString3d[] = [];
-          if ("loading" === this._draper.drapeLineString(drapedStrings, this._scratchPoints, computeChordTolerance(drapeRange))) {
+          if ("loading" === this._draper.drapeLineString(drapedStrings, this._scratchPoints, state.chordTolerance, state.range)) {
             hasMissingDrapeGeoms = true;
             break;
           } else {
@@ -283,7 +318,7 @@ export class MapFeatureInfoDecorator implements Decorator {
         } else if (state.graphic.type === "loop") {
           const loop =  state.graphic.loop;
           const outMeshes: Polyface[] = [];
-          if ("loading" === this._draper.drapeLoop(outMeshes, loop, computeChordTolerance(loop.range()) )) {
+          if ("loading" === this._draper.drapeLoop(outMeshes, loop, state.chordTolerance, state.range)) {
             hasMissingDrapeGeoms = true;
             break; // We drape each graphic sequentially,  otherwise collector get messed up.
           } else {
@@ -293,7 +328,7 @@ export class MapFeatureInfoDecorator implements Decorator {
         } else if (state.graphic.type === "pointstring") {
           const outPoint = Point3d.createZero();
           for (const point of state.graphic.points) {
-            if ("loading" === this._draper.drapePoint(outPoint, point, computeChordTolerance(Range3d.createXYZ(point.x, point.x, point.x)))) {
+            if ("loading" === this._draper.drapePoint(outPoint, point, state.chordTolerance, state.range)) {
               this._allGeomDraped = false;
               return false;
             } else if (!outPoint.isZero) {
@@ -327,11 +362,11 @@ export class MapFeatureInfoDecorator implements Decorator {
   }
 
   private appendGeometries(builder: GraphicBuilder) {
-    if (!this._state?.mapInfo?.layerInfos)
+    if (!this._data?.mapInfo?.layerInfos)
       return;
 
     builder.setSymbology(this.highlightColor, this.highlightColor, this.lineWidth);
-    for (const layerInfo of this._state.mapInfo.layerInfos) {
+    for (const layerInfo of this._data.mapInfo.layerInfos) {
       if (layerInfo.subLayerInfos && !(layerInfo.subLayerInfos instanceof HTMLElement)) {
         for (const subLayerInfo of layerInfo.subLayerInfos) {
           for (const feature of subLayerInfo.features) {

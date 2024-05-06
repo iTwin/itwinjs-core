@@ -144,7 +144,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
     } else {
       // Flush existing decorations until a new selection is made
       this.onInfoCleared.raiseEvent();
-      this._decorator.clearState();
+      this._decorator.clearData();
     }
     vp.invalidateDecorations();
   }
@@ -273,7 +273,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
           const pixelRadius = Math.floor(aperture + 0.5);
           mapInfo = await hit.viewport.getMapFeatureInfo(hit, {tolerance: pixelRadius});
           if (mapInfo) {
-            this._decorator.setState({ hit, mapInfo });
+            this._decorator.setData({ hit, mapInfo });
           } else {
             IModelApp.toolAdmin.setCursor(undefined);
           }

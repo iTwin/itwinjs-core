@@ -6,7 +6,7 @@ import {
   CollectTileStatus, DisclosedTileTreeSet,
   GeometryTileTreeReference, IModelApp,
   Tile, TileGeometryCollector, TileUser, Viewport } from "@itwin/core-frontend";
-import { ConvexClipPlaneSet, CurvePrimitive, GrowableXYZArray, Loop, Point3d, Polyface, PolyfaceClip, PolyfaceQuery, Range3d, Ray3d, SweepLineStringToFacetsOptions, Transform, Vector3d } from "@itwin/core-geometry";
+import { Angle, ConvexClipPlaneSet, CurvePrimitive, GrowableXYZArray, Loop, Point3d, Polyface, PolyfaceClip, PolyfaceQuery, Range3d, Ray3d, SweepLineStringToFacetsOptions, Transform, Vector3d } from "@itwin/core-geometry";
 import { Logger } from "@itwin/core-bentley";
 
 const loggerCategory = "MapLayersFormats.GeometryTerrainDraper";
@@ -53,6 +53,10 @@ class LineSegmentCollector extends TileGeometryCollector {
 
 /** @internal */
 export class GeometryTerrainDraper implements TileUser {
+  // This angle measures how close the sweep vector is from being parallel to a side face.
+  // The larger the angle, the more nearly vertical facets are ignored.
+  public readonly sideAngle = 0.06;
+  public readonly maxDistanceZ = 1.0E5; // Expand the Z Range, but not so much that we get opposite side of globe.
   public readonly tileUserId: number;
 
   public constructor(public readonly viewport: Viewport, public readonly treeRef: GeometryTileTreeReference) {
@@ -74,29 +78,29 @@ export class GeometryTerrainDraper implements TileUser {
     trees.disclose(this.treeRef);
   }
 
-  public drapeLineString(outStrings: CurvePrimitive[], inPoints: GrowableXYZArray, tolerance: number, maxDistance = 1.0E5): "loading" | "complete" {
+  public drapeLineString(outStrings: CurvePrimitive[], inPoints: GrowableXYZArray, tolerance: number, range: Range3d): "loading" | "complete" {
     const tree = this.treeRef.treeOwner.load();
     if (!tree)
       return "loading";
 
-    const range = Range3d.createNull();
-    range.extendArray(inPoints);
-    range.extendZOnly(-maxDistance);  // Expand - but not so much that we get opposite side of globe.
-    range.extendZOnly(maxDistance);
+    const expandedRange = Range3d.createFrom(range);
+    expandedRange.extendZOnly(-this.maxDistanceZ);
+    expandedRange.extendZOnly(this.maxDistanceZ);
 
-    const collector = new LineSegmentCollector(this, tolerance, range, tree.iModelTransform, inPoints);
+    const collector = new LineSegmentCollector(this, tolerance, expandedRange, tree.iModelTransform, inPoints);
     this.treeRef.collectTileGeometry(collector);
     collector.requestMissingTiles();
 
     if (collector.isAllGeometryLoaded && collector.polyfaces.length > 0) {
 
-      // console.log (`const points = ${JSON.stringify(inPoints.getPoint3dArray())}`);
       for (const polyface of collector.polyfaces) {
         // console.log (`const polyface = ${JSON.stringify(IModelJson.Writer.toIModelJson(polyface))}`);
         outStrings.push(...PolyfaceQuery.sweepLineStringToFacets(
           inPoints,
           polyface,
-          SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), undefined,true, true, false, false)));
+          SweepLineStringToFacetsOptions.create(Vector3d.unitZ(),
+            Angle.createDegrees(this.sideAngle),
+            true, true, false, false)));
       }
 
       return "complete";
@@ -105,20 +109,20 @@ export class GeometryTerrainDraper implements TileUser {
     return "loading";
   }
 
-  public drapeLoop(outMeshes: Polyface[], loop: Loop, tolerance: number, maxDistance = 1.0E5): "loading" | "complete" {
+  public drapeLoop(outMeshes: Polyface[], loop: Loop, tolerance: number, range: Range3d): "loading" | "complete" {
     const tree = this.treeRef.treeOwner.load();
     if (!tree)
       return "loading";
 
-    const range = loop.range();
-    range.extendZOnly(-maxDistance);  // Expand - but not so much that we get opposite side of globe.
-    range.extendZOnly(maxDistance);
+    const expandedRange = Range3d.createFrom(range);
+    expandedRange.extendZOnly(-this.maxDistanceZ);
+    expandedRange.extendZOnly(this.maxDistanceZ);
 
     const strokes = loop.getPackedStrokes();
     if (!strokes)
       return "complete";
 
-    const collector = new LineSegmentCollector(this, tolerance, range, tree.iModelTransform, strokes);
+    const collector = new LineSegmentCollector(this, tolerance, expandedRange, tree.iModelTransform, strokes);
     this.treeRef.collectTileGeometry(collector);
     collector.requestMissingTiles();
 
@@ -132,16 +136,16 @@ export class GeometryTerrainDraper implements TileUser {
     }
     return "loading";
   }
-  public drapePoint(outPoint: Point3d, point: Point3d, chordTolerance: number, maxDistance = 1.0E5): "loading" | "complete" {
+  public drapePoint(outPoint: Point3d, point: Point3d, chordTolerance: number, range: Range3d): "loading" | "complete" {
     const tree = this.treeRef.treeOwner.load();
     if (!tree)
       return "loading";
 
-    const range = Range3d.createXYZ(point.x, point.y, point.z);
-    range.extendZOnly(-maxDistance);  // Expand - but not so much that we get opposite side of globe.
-    range.extendZOnly(maxDistance);
+    const expandedRange = Range3d.createFrom(range);
+    expandedRange.extendZOnly(-this.maxDistanceZ);
+    expandedRange.extendZOnly(this.maxDistanceZ);
 
-    const collector = new TileGeometryCollector({chordTolerance, range, user: this });
+    const collector = new TileGeometryCollector({chordTolerance, range: expandedRange, user: this });
     this.treeRef.collectTileGeometry(collector);
     collector.requestMissingTiles();
 
