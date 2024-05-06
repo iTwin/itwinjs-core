@@ -1750,12 +1750,14 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
             stmt.bindNull(3);
           }
 
-          assert(stmt.nextRow() !== false);
-          return stmt.getValueId(0);
+          return stmt.nextRow() ? stmt.getValueId(0) : undefined;
         });
 
+        if (elementId === undefined)
+          return undefined;
+
         filterClause = "WHERE ECInstanceId=?";
-        bindCallback =  (statement: ECSqlStatement) => statement.bindId(1, elementId);
+        bindCallback = (statement: ECSqlStatement) => statement.bindId(1, elementId);
       }
 
       return this._iModel.withPreparedStatement(`SELECT $ FROM Bis.Element ${filterClause} OPTIONS USE_JS_PROP_NAMES`, (statement: ECSqlStatement) => {
