@@ -16,7 +16,7 @@ import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "../../topology/HalfEdgeGraphSearch";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { ImportedSample } from "../data/ImportedSamples";
+import { ImportedSample } from "../ImportedSamples";
 
 // cspell:word internaldocs
 

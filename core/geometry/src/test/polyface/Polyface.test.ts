@@ -45,8 +45,8 @@ import { TorusPipe } from "../../solid/TorusPipe";
 import { Triangulator } from "../../topology/Triangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { ImportedSample } from "../ImportedSamples";
 import { prettyPrint } from "../testFunctions";
-import { ImportedSample } from "../data/ImportedSamples";
 
 // pass "longEdgeIsHidden = true" if any edge longer than 1/3 of face perimeter is expected to be hidden
 function exercisePolyface(ck: Checker, polyface: Polyface, longEdgeIsHidden: boolean) {

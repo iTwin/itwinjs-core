@@ -44,7 +44,7 @@ import { ChainMergeContext } from "../../topology/ChainMerge";
 import { SpacePolygonTriangulation } from "../../topology/SpaceTriangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { ImportedSample } from "../data/ImportedSamples";
+import { ImportedSample } from "../ImportedSamples";
 
 it("ChainMergeVariants", () => {
   const ck = new Checker();
