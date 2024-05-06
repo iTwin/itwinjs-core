@@ -127,8 +127,8 @@ describe("HalfEdgeGraphSearch", () => {
     const allGeometry: GeometryQuery[] = [];
     const meshes: IndexedPolyface[] = [];
     meshes.push(getSampleMesh());
-    meshes.push(GeometryCoreTestIO.createIndexedPolyface("./src/test/data/polyface/mesh7K.imjs")!);
-    meshes.push(GeometryCoreTestIO.createIndexedPolyface("./src/test/data/polyface/mesh10K-2components.imjs")!);
+    meshes.push(GeometryCoreTestIO.jsonFileToIndexedPolyface("./src/test/data/polyface/mesh7K.imjs")!);
+    meshes.push(GeometryCoreTestIO.jsonFileToIndexedPolyface("./src/test/data/polyface/mesh10K-2components.imjs")!);
     let xShift = 0;
     let yShift = 0;
     for (const mesh of meshes) {

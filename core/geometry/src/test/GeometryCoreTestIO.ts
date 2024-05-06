@@ -97,7 +97,7 @@ export class GeometryCoreTestIO {
   public static writeBytesToFile(bytes: Uint8Array, fullFilePath: string) {
     if (!this.enableSave)
       return;
-    fs.writeFileSync(fullFilePath, bytes, {encoding: "binary"});
+    fs.writeFileSync(fullFilePath, bytes, { encoding: "binary" });
   }
 
   // read bytes from binary file
@@ -499,10 +499,20 @@ export class GeometryCoreTestIO {
     }
   }
 
-  /** Create IndexedPolyface from imjs file. Returns the first mesh found. */
-  public static createIndexedPolyface(imjsPath: string): IndexedPolyface | undefined {
-    const json = fs.readFileSync(imjsPath, "utf8");
-    const geometry = IModelJson.Reader.parse(JSON.parse(json)) as GeometryQuery[] | GeometryQuery;
+  /** Read an imjs file and interpret as GeometryQuery(s) */
+  public static jsonFileToGeometry(filePath: string): GeometryQuery | GeometryQuery[] | undefined {
+    const json = fs.readFileSync(filePath, "utf8");
+    const parsed = IModelJson.Reader.parse(JSON.parse(json));
+    if (parsed instanceof GeometryQuery)
+      return parsed as GeometryQuery;
+    if (Array.isArray(parsed) && parsed.length > 0)
+      return parsed as GeometryQuery[];
+    return undefined;
+  }
+
+  /** Read imjs file and return the first IndexedPolyface found. */
+  public static jsonFileToIndexedPolyface(filePath: string): IndexedPolyface | undefined {
+    const geometry = this.jsonFileToGeometry(filePath);
     if (geometry instanceof IndexedPolyface)
       return geometry;
     if (Array.isArray(geometry)) {
