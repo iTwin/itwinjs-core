@@ -17,6 +17,7 @@ import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "../../topology/HalfEdge
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { ImportedSample } from "../ImportedSamples";
+import { Geometry } from "../../Geometry";
 
 // cspell:word internaldocs
 
@@ -126,8 +127,8 @@ describe("HalfEdgeGraphSearch", () => {
     const allGeometry: GeometryQuery[] = [];
     const meshes: IndexedPolyface[] = [];
     meshes.push(getSampleMesh());
-    meshes.push(ImportedSample.createIndexedPolyface("./src/test/data/polyface/mesh7K.imjs")!);
-    meshes.push(ImportedSample.createIndexedPolyface("./src/test/data/polyface/mesh10K-2components.imjs")!);
+    meshes.push(GeometryCoreTestIO.createIndexedPolyface("./src/test/data/polyface/mesh7K.imjs")!);
+    meshes.push(GeometryCoreTestIO.createIndexedPolyface("./src/test/data/polyface/mesh10K-2components.imjs")!);
     let xShift = 0;
     let yShift = 0;
     for (const mesh of meshes) {
