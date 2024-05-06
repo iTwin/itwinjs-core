@@ -157,7 +157,7 @@ describe("CurveOffset", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const path = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/ChainCollector/gapAtSmallShift.imjs", "utf8")))!;
+      "./src/test/data/ChainCollector/gapAtSmallShift.imjs", "utf8")))!;
     if (ck.testType(path, CurveChain)) {
       const x0 = 0;
       const y0 = 0;

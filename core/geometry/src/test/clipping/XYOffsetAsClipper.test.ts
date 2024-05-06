@@ -159,11 +159,11 @@ describe("OffsetByClip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const shape1 = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/clipping/DiegoTrickyBuilding/case1.imjs", "utf8"))) as CurveCollection;
+      "./src/test/data/clipping/DiegoTrickyBuilding/case1.imjs", "utf8"))) as CurveCollection;
     const shape2 = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/clipping/DiegoTrickyBuilding/case2.imjs", "utf8"))) as CurveCollection;
+      "./src/test/data/clipping/DiegoTrickyBuilding/case2.imjs", "utf8"))) as CurveCollection;
     //    const shape3 = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-    //       "./src/test/testInputs/clipping/DiegoTrickyBuilding/case3.imjs", "utf8"))) as CurveCollection;
+    //       "./src/test/data/clipping/DiegoTrickyBuilding/case3.imjs", "utf8"))) as CurveCollection;
     let x00 = 0;
     const y00 = 0;
     const z00 = 0;
@@ -199,9 +199,9 @@ describe("OffsetByClip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const fullRoadMesh = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/clipping/arnoldasLaneClipper/fullRoadMesh.imjs", "utf8")));
+      "./src/test/data/clipping/arnoldasLaneClipper/fullRoadMesh.imjs", "utf8")));
     // const largeClipRegion = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-    //   "./src/test/testInputs/clipping/arnoldasLaneClipper/largeClipRegion.imjs", "utf8")));
+    //   "./src/test/data/clipping/arnoldasLaneClipper/largeClipRegion.imjs", "utf8")));
     if (fullRoadMesh instanceof IndexedPolyface) {
       const meshRangeA = fullRoadMesh.range();
       fullRoadMesh.tryTranslateInPlace(-meshRangeA.low.x, -meshRangeA.low.y, -meshRangeA.low.z);

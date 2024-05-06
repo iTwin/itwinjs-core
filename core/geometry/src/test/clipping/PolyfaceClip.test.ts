@@ -768,8 +768,8 @@ describe("PolyfaceClip", () => {
   it("CutFillJonas", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const meshA = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/CutFill/JonasJune2020A/existingPoly1.50.imjs", "utf8")));
-    const meshB = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/CutFill/JonasJune2020A/proposedPoly1.50.imjs", "utf8")));
+    const meshA = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/CutFill/JonasJune2020A/existingPoly1.50.imjs", "utf8")));
+    const meshB = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/CutFill/JonasJune2020A/proposedPoly1.50.imjs", "utf8")));
     if (meshA instanceof IndexedPolyface && meshB instanceof IndexedPolyface) {
       // meshA.triangulate();
       // meshB.triangulate();
@@ -863,7 +863,7 @@ describe("PolyfaceClip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const sideAngle = Angle.createDegrees(0.001);
-    const meshA = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/iModelJsonSamples/polyface/ArnoldasEarthWorks/meshA.imjs", "utf8")));
+    const meshA = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/iModelJsonSamples/polyface/ArnoldasEarthWorks/meshA.imjs", "utf8")));
     if (ck.testTrue(meshA instanceof IndexedPolyface, "Expected one indexed polyface in meshA") && meshA instanceof IndexedPolyface) {
       ck.testFalse(PolyfaceQuery.isPolyfaceClosedByEdgePairing(meshA), " expect this input to have boundary issue");
       const boundaries = PolyfaceQuery.boundaryEdges(meshA, true, true, true);
@@ -1104,8 +1104,8 @@ describe("PolyfaceClip", () => {
     const ck = new Checker();
     for (const caseDirectory of ["case1", "case2"]) {
       const allGeometry: GeometryQuery[] = [];
-      const meshFile = `./src/test/testInputs/clipping/arnoldasInOut/${caseDirectory}/source.json`;
-      const clipperFile = `./src/test/testInputs/clipping/arnoldasInOut/${caseDirectory}/clipper.json`;
+      const meshFile = `./src/test/data/clipping/arnoldasInOut/${caseDirectory}/source.json`;
+      const clipperFile = `./src/test/data/clipping/arnoldasInOut/${caseDirectory}/clipper.json`;
       const meshA = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(meshFile, "utf8")));
       const clipper = UnionOfConvexClipPlaneSets.fromJSON(JSON.parse(fs.readFileSync(clipperFile, "utf8")));
       if (ck.testType(meshA as IndexedPolyface, IndexedPolyface, "Expect mesh") && meshA instanceof IndexedPolyface && ck.testType(clipper, UnionOfConvexClipPlaneSets, "expect clipper")) {
@@ -1322,7 +1322,7 @@ describe("PolyfaceClip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
-    const geometry = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/clipping/drapeRegion/drapeRegion.imjs", "utf8")));
+    const geometry = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/clipping/drapeRegion/drapeRegion.imjs", "utf8")));
     if (Array.isArray(geometry) && geometry) {
       if (
         ck.testExactNumber(2, geometry.length, "parse geometry") &&

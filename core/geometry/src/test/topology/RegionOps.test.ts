@@ -993,7 +993,7 @@ describe("CloneSplitCurves", () => {
 
     // sample chains
     const inputs = IModelJson.Reader.parse(
-      JSON.parse(fs.readFileSync("./src/test/testInputs/curve/offsetCurve.imjs", "utf8")),
+      JSON.parse(fs.readFileSync("./src/test/data/curve/offsetCurve.imjs", "utf8")),
     ) as CurveChain[];
     for (const chain of inputs)
       if (chain instanceof Path || chain instanceof Loop)
@@ -1167,11 +1167,11 @@ describe("RectangleRecognizer", () => {
     // const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const road = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/intersections/WilsonShapes/roadShape.imjs", "utf8")));
+      "./src/test/data/intersections/WilsonShapes/roadShape.imjs", "utf8")));
     const badShape = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/intersections/WilsonShapes/3pointTurnShape_overlaps.imjs", "utf8")));
+      "./src/test/data/intersections/WilsonShapes/3pointTurnShape_overlaps.imjs", "utf8")));
     const goodShape = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/intersections/WilsonShapes/3pointTurnShape_fits.imjs", "utf8")));
+      "./src/test/data/intersections/WilsonShapes/3pointTurnShape_fits.imjs", "utf8")));
 
     if (road instanceof Loop) {
       const roadRange = road.range();
@@ -1218,10 +1218,10 @@ describe("RegionOps2", () => {
     let x = 0;
     let y = 0;
     const testCases = [
-      "./src/test/testInputs/curve/arcGisLoops.imjs",
-      "./src/test/testInputs/curve/loopWithHole.imjs", // aka, split washer polygon
-      "./src/test/testInputs/curve/michelLoops.imjs",  // has a small island in a hole
-      "./src/test/testInputs/curve/michelLoops2.imjs", // 339 loops
+      "./src/test/data/curve/arcGisLoops.imjs",
+      "./src/test/data/curve/loopWithHole.imjs", // aka, split washer polygon
+      "./src/test/data/curve/michelLoops.imjs",  // has a small island in a hole
+      "./src/test/data/curve/michelLoops2.imjs", // 339 loops
     ];
     const options = new StrokeOptions();
     options.maximizeConvexFacets = true;
@@ -1279,9 +1279,9 @@ describe("RegionOps2", () => {
     const allGeometry: GeometryQuery[] = [];
     let x = 0;
     const testCases: { filename: string, numTriangles: number, numFacets: number }[] = [
-      { filename: "./src/test/testInputs/curve/convexPentagon.imjs", numTriangles: 3, numFacets: 1 },
-      { filename: "./src/test/testInputs/curve/nonConvexPentagon.imjs", numTriangles: 3, numFacets: 2 },
-      { filename: "./src/test/testInputs/curve/adjacentQuads.imjs", numTriangles: 6, numFacets: 3 },
+      { filename: "./src/test/data/curve/convexPentagon.imjs", numTriangles: 3, numFacets: 1 },
+      { filename: "./src/test/data/curve/nonConvexPentagon.imjs", numTriangles: 3, numFacets: 2 },
+      { filename: "./src/test/data/curve/adjacentQuads.imjs", numTriangles: 6, numFacets: 3 },
     ];
     const options = new StrokeOptions();
     options.maximizeConvexFacets = true;

@@ -194,7 +194,7 @@ function markArcData(allGeometry: GeometryQuery[], arc: Arc3d, radialFraction: n
     LineSegment3d.create(center.interpolate(radialFraction, start), center.interpolate(radialFraction + tickFraction, start)),
     LineString3d.create(point0.origin, center, point90.origin)], x0, y0);
 }
-const ppePathInputDirector = "./src/test/testInputs/pipeConnections/";
+const ppePathInputDirector = "./src/test/data/pipeConnections/";
 describe("PipeConnections", () => {
   it("ChainCollector", () => {
     const ck = new Checker();

@@ -46,7 +46,7 @@ import { Triangulator } from "../../topology/Triangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
-import { ImportedSample } from "../testInputs/ImportedSamples";
+import { ImportedSample } from "../data/ImportedSamples";
 
 // pass "longEdgeIsHidden = true" if any edge longer than 1/3 of face perimeter is expected to be hidden
 function exercisePolyface(ck: Checker, polyface: Polyface, longEdgeIsHidden: boolean) {
@@ -1625,9 +1625,9 @@ it("Synchro", () => {
 it("SmallSynchroMesh", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
-  // const synchroMesh = JSON.parse(fs.readFileSync("./src/test/testInputs/synchro/082020/synchroMesh.json", "utf8"));
-  // const synchroMesh = JSON.parse(fs.readFileSync("./src/test/testInputs/synchro/082020A/synchroMesh.json", "utf8"));
-  const synchroMesh = JSON.parse(fs.readFileSync("./src/test/testInputs/synchro/082020B/synchromesh.json", "utf8"));
+  // const synchroMesh = JSON.parse(fs.readFileSync("./src/test/data/synchro/082020/synchroMesh.json", "utf8"));
+  // const synchroMesh = JSON.parse(fs.readFileSync("./src/test/data/synchro/082020A/synchroMesh.json", "utf8"));
+  const synchroMesh = JSON.parse(fs.readFileSync("./src/test/data/synchro/082020B/synchromesh.json", "utf8"));
   let x0 = 0;
   for (const polyfaceA of [createPolyfaceFromSynchro(synchroMesh), createPolyfaceFromSynchroA(synchroMesh)]) {
     if (polyfaceA)
@@ -1648,11 +1648,11 @@ it("SmallSynchroMesh", () => {
 });
 
 it("synchroPolyface", () => {
-  const synchroMesh = JSON.parse(fs.readFileSync("./src/test/testInputs/synchro/082020B/synchromesh.json", "utf8"));
+  const synchroMesh = JSON.parse(fs.readFileSync("./src/test/data/synchro/082020B/synchromesh.json", "utf8"));
 
   const ck = new Checker();
   for (const polyfaceA of [createPolyfaceFromSynchro(synchroMesh)]) {
-    const polyfaceJson = JSON.parse(fs.readFileSync("./src/test/testInputs/synchro/082020B/polyface.json", "utf8"));
+    const polyfaceJson = JSON.parse(fs.readFileSync("./src/test/data/synchro/082020B/polyface.json", "utf8"));
     const xyzArray = enumerateToNumberArray(polyfaceJson.data.point._data);
     xyzArray.length = 3 * polyfaceJson.data.point._xyzInUse;
     const paramArray = enumerateToNumberArray(polyfaceJson.data.param._data);

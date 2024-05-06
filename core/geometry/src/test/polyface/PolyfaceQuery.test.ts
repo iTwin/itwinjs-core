@@ -44,7 +44,7 @@ import { ChainMergeContext } from "../../topology/ChainMerge";
 import { SpacePolygonTriangulation } from "../../topology/SpaceTriangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { ImportedSample } from "../testInputs/ImportedSamples";
+import { ImportedSample } from "../data/ImportedSamples";
 
 it("ChainMergeVariants", () => {
   const ck = new Checker();
@@ -676,7 +676,7 @@ describe("ReorientFacets", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
-    const testCases = ["./src/test/testInputs/polyface/closedMesh.imjs", "./src/test/testInputs/polyface/almostClosedMesh.imjs"];
+    const testCases = ["./src/test/data/polyface/closedMesh.imjs", "./src/test/data/polyface/almostClosedMesh.imjs"];
     for (const testCase of testCases) {
       const mesh = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase, "utf8"))) as IndexedPolyface;
       if (ck.testType(mesh, IndexedPolyface, "input successfully parsed")) {

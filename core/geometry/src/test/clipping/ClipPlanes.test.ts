@@ -39,7 +39,7 @@ import { LinearSweep } from "../../solid/LinearSweep";
 import { Cone } from "../../solid/Cone";
 import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
 import { IndexedPolyface } from "../../polyface/Polyface";
-import { ImportedSample } from "../testInputs/ImportedSamples";
+import { ImportedSample } from "../data/ImportedSamples";
 
 Checker.noisy.clipPlane = false;
 /**

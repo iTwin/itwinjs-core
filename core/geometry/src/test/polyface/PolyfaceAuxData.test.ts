@@ -17,7 +17,7 @@ import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { BentleyGeometryFlatBuffer } from "../../serialization/BentleyGeometryFlatBuffer";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
-import { ImportedSample } from "../testInputs/ImportedSamples";
+import { ImportedSample } from "../data/ImportedSamples";
 import { NumberArray, Point3dArray } from "../../geometry3d/PointHelpers";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";
