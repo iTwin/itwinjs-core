@@ -679,6 +679,10 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "mysql2",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "nock",
       "allowedCategories": [ "internal" ]
     },

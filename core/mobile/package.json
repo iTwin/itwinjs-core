@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "lodash": "^4.17.21",
-    "superagent": "^7.1.5",
+    "superagent": "^9.0.1",
     "ws": "^7.5.3"
   },
   "devDependencies": {
@@ -54,7 +54,7 @@
     "@types/lodash": "^4.14.202",
     "@types/mocha": "^10.0.6",
     "@types/node": "~18.16.20",
-    "@types/superagent": "^4.1.14",
+    "@types/superagent": "^8.1.6",
     "@types/ws": "^7.0.0",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
