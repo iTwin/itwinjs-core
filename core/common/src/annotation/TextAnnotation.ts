@@ -6,7 +6,7 @@
  * @module Annotation
  */
 
-import { Point3d, Range2d, Transform, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
+import { Point3d, Range2d, Transform, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
 import { TextBlock, TextBlockProps } from "./TextBlock";
 
 /**
@@ -44,6 +44,8 @@ export interface TextAnnotationAnchor {
  * @extensions
  */
 export interface TextAnnotationProps {
+  /** See [[TextAnnotation.origin]]. Default: [0. 0. 0]. */
+  origin?: XYZProps;
   /** See [[TextAnnotation.orientation]]. Default: no rotation. */
   orientation?: YawPitchRollProps;
   /** See [[TextAnnotation.textBlock]]. Default: an empty text block. */
@@ -58,6 +60,8 @@ export interface TextAnnotationProps {
  * @extensions
  */
 export interface TextAnnotationCreateArgs {
+  /** See [[TextAnnotation.origin]]. Default: (0, 0, 0). */
+  origin?: Point3d;
   /** See [[TextAnnotation.orientation]]. Default: no rotation. */
   orientation?: YawPitchRollAngles;
   /** See [[TextAnnotation.textBlock]]. Default: an empty text block. */
@@ -65,6 +69,7 @@ export interface TextAnnotationCreateArgs {
   /** See [[TextAnnotation.anchor]]. Default: top-left. */
   anchor?: TextAnnotationAnchor;
 }
+
 /**
  * Represents a formatted block of text positioned in 2d or 3d space.
  * [TextAnnotation2d]($backend) and [TextAnnotation3d]($backend) elements store a TextAnnotation from which their geometric representation is generated.
@@ -74,21 +79,18 @@ export interface TextAnnotationCreateArgs {
  * @extensions
  */
 export class TextAnnotation {
-  /**
-   * The rotation of the annotation.
+  /** The rotation of the annotation.
    * @note When defining an annotation for a [TextAnnotation2d]($backend), only the `yaw` component (rotation around the Z axis) is used.
    */
   public orientation: YawPitchRollAngles;
-  /**
-   * The formatted document.
-   */
+  /** The formatted document. */
   public textBlock: TextBlock;
-  /**
-   * Describes how the [[textBlock]]'s content should be aligned relative to the host element's origin.
-   */
+  /** Describes how the [[textBlock]]'s content should be aligned relative to the host element's origin. */
   public anchor: TextAnnotationAnchor;
+  public origin: Point3d;
 
-  private constructor(angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor) {
+  private constructor(origin: Point3d, angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor) {
+    this.origin = origin;
     this.orientation = angles;
     this.textBlock = textBlock;
     this.anchor = anchor;
@@ -96,11 +98,12 @@ export class TextAnnotation {
 
   /** Creates a new TextAnnotation. */
   public static create(args?: TextAnnotationCreateArgs): TextAnnotation {
+    const origin = args?.origin ?? new Point3d();
     const angles = args?.orientation ?? new YawPitchRollAngles();
     const textBlock = args?.textBlock ?? TextBlock.createEmpty();
     const anchor = args?.anchor ?? { vertical: "top", horizontal: "left" };
 
-    return new TextAnnotation(angles, textBlock, anchor);
+    return new TextAnnotation(origin, angles, textBlock, anchor);
   }
 
   /**
@@ -108,6 +111,7 @@ export class TextAnnotation {
    */
   public static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation {
     return TextAnnotation.create({
+      origin: props?.origin ? Point3d.fromJSON(props.origin) : undefined,
       orientation: props?.orientation ? YawPitchRollAngles.fromJSON(props.orientation) : undefined,
       textBlock: props?.textBlock ? TextBlock.create(props.textBlock) : undefined,
       anchor: props?.anchor ? { ...props.anchor } : undefined,
@@ -124,6 +128,10 @@ export class TextAnnotation {
     // so the user can pick up where they left off editing it next time.
     props.textBlock = this.textBlock.toJSON();
 
+    if (!this.origin.isZero) {
+      props.origin = this.origin.toJSON();
+    }
+
     if (!this.orientation.isIdentity()) {
       props.orientation = this.orientation.toJSON();
     }
@@ -139,10 +147,11 @@ export class TextAnnotation {
    * @internal used by produceTextAnnotationGeometry; requires layoutRange computed by layoutTextBlock.
    */
   public computeDocumentTransform(layoutRange: Range2d): Transform {
-    const origin = this.computeAnchorPoint(layoutRange);
+    const anchorPt = this.computeAnchorPoint(layoutRange);
     const matrix = this.orientation.toMatrix3d();
 
-    return Transform.createFixedPointAndMatrix(origin, matrix);
+    const transform = Transform.createFixedPointAndMatrix(anchorPt, matrix);
+    return transform.multiplyTransformTransform(Transform.createTranslation(this.origin), transform);
   }
 
   /** @internal */
@@ -174,6 +183,7 @@ export class TextAnnotation {
   /** Returns true if this annotation is logically equivalent to `other`. */
   public equals(other: TextAnnotation): boolean {
     return this.anchor.horizontal === other.anchor.horizontal && this.anchor.vertical === other.anchor.vertical
-      && this.orientation.isAlmostEqual(other.orientation) && this.textBlock.equals(other.textBlock);
+      && this.orientation.isAlmostEqual(other.orientation) && this.origin.isAlmostEqual(other.origin)
+      && this.textBlock.equals(other.textBlock);
   }
 }
