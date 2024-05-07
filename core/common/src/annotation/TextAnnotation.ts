@@ -143,37 +143,44 @@ export class TextAnnotation {
     return props;
   }
 
-  /**
-   * @internal used by produceTextAnnotationGeometry; requires layoutRange computed by layoutTextBlock.
+  /** Compute the transform that positions and orients this annotation relative to its anchor point, based on the [[textBlock]]'s computed bounding box.
+   * The anchor point is computed as specified by this annotation's [[anchor]] setting. For example, if the text block is anchored
+   * at the bottom left, then the transform will be relative to the bottom-left corner of `textBlockExtents`.
+   * The text block will be rotated around the fixed anchor point according to [[orientation]], then the anchor point will be translated to coincide with [[origin]].
+   * @param textBlockExtents The bounding box containing the text block. You can compute this using [computeTextBlockExtents]($common).
+   * @see [[computeAnchorPoint]] to compute the transform's anchor point.
    */
-  public computeDocumentTransform(layoutRange: Range2d): Transform {
-    const anchorPt = this.computeAnchorPoint(layoutRange);
+  public computeTransform(textBlockExtents: Range2d): Transform {
+    const anchorPt = this.computeAnchorPoint(textBlockExtents);
     const matrix = this.orientation.toMatrix3d();
 
     const transform = Transform.createFixedPointAndMatrix(anchorPt, matrix);
     return transform.multiplyTransformTransform(Transform.createTranslation(this.origin), transform);
   }
 
-  /** @internal */
-  public computeAnchorPoint(layoutRange: Range2d): Point3d {
+  /** Compute the anchor point of this annotation as specified by [[anchor]].
+   * @param textBlockExtents The bounding box containing the [[textBlock]]. You can compute this using [computeTextBlockExtents]($common).
+   * @see [[computeTransform]] to compute the transform relative to the anchor point.
+   */
+  public computeAnchorPoint(textBlockExtents: Range2d): Point3d {
     let x = 0;
     let y = 0;
 
     switch (this.anchor.horizontal) {
       case "center":
-        x += layoutRange.xLength() / 2;
+        x += textBlockExtents.xLength() / 2;
         break;
       case "right":
-        x += layoutRange.xLength();
+        x += textBlockExtents.xLength();
         break;
     }
 
     switch (this.anchor.vertical) {
       case "middle":
-        y -= layoutRange.yLength() / 2;
+        y -= textBlockExtents.yLength() / 2;
         break;
       case "bottom":
-        y -= layoutRange.yLength();
+        y -= textBlockExtents.yLength();
         break;
     }
 

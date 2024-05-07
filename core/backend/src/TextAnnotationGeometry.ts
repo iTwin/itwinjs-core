@@ -195,7 +195,7 @@ export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometr
     textBlock: args.annotation.textBlock,
   });
 
-  const transform = args.annotation.computeDocumentTransform(layout.range);
+  const transform = args.annotation.computeTransform(layout.range);
 
   const debugAnchorPointAndRange = false;
   const anchorPoint = debugAnchorPointAndRange ? args.annotation.computeAnchorPoint(layout.range) : undefined;

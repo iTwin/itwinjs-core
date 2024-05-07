@@ -38,10 +38,18 @@ export type FindFontId = (name: string) => FontId;
 /** @internal */
 export type FindTextStyle = (name: string) => TextStyleSettings;
 
-/** @internal */
-export interface LayoutTextBlockArgs {
+/** Arguments supplied to [[computeTextBlockExtents]].
+ * @beta
+ */
+export interface ComputeTextBlockExtentsArgs {
+  /** The text block whose extents are to be computed. */
   textBlock: TextBlock;
+  /** The iModel from which to obtain fonts and [TextStyle]($common)s when laying out glyphs. */
   iModel: IModelDb;
+}
+
+/** @internal */
+export interface LayoutTextBlockArgs extends ComputeTextBlockExtentsArgs {
   /** @internal chiefly for tests, by default uses IModelJsNative.DgnDb.computeRangesForText. */
   computeTextRange?: ComputeRangesForTextLayout;
   /** @internal chiefly for tests, by default looks up styles from a workspace. */
@@ -66,6 +74,16 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
   const findTextStyle = args.findTextStyle ?? (() => TextStyleSettings.fromJSON());
 
   return new TextBlockLayout(args.textBlock, new LayoutContext(args.textBlock, computeTextRange, findTextStyle, findFontId));
+}
+
+/** Compute the bounding box containing the contents of a [TextBlock]($common).
+ * This process converts each [Paragraph]($common) into a set of lines of text, laying out the glyphs of individual
+ * [Run]($common)s based on their [TextStyle]($common)s and fonts, and applying work-wrapping based on [TextBlock.width]($common).
+ * The resultant extents can be supplied to [TextAnnotation.computeTransform]($common) and [TextAnnotation.computeAnchorPoint]($common).
+ * @beta
+ */
+export function computeTextBlockExtents(args: ComputeTextBlockExtentsArgs): Range2d {
+  return layoutTextBlock(args).range;
 }
 
 function scaleRange(range: Range2d, scale: number): void {
