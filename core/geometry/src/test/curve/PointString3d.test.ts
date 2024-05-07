@@ -19,7 +19,7 @@ function exercisePointString3d(ck: Checker, lsA: PointString3d) {
   const transform = Sample.createMessyRigidTransform();
   const lsB = lsA.clone();
   lsB.reverseInPlace();
-  const lsC = lsA.clone()!;
+  const lsC = lsA.clone();
   ck.testTrue(lsC.tryTransformInPlace(transform));
   const planeC = planeA.cloneTransformed(transform)!;
   ck.testBoolean(inXYPlane, lsC.isInPlane(planeC), "in plane preserved by transform");

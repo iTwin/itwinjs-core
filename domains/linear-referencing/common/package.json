@@ -1,6 +1,6 @@
 {
   "name": "@itwin/linear-referencing-common",
-  "version": "4.6.0-dev.22",
+  "version": "4.7.0-dev.0",
   "main": "lib/cjs/linear-referencing-common.js",
   "typings": "lib/cjs/linear-referencing-common",
   "license": "MIT",
@@ -29,8 +29,8 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.6.0-dev.22",
-    "@itwin/core-common": "workspace:^4.6.0-dev.22"
+    "@itwin/core-bentley": "workspace:^4.7.0-dev.0",
+    "@itwin/core-common": "workspace:^4.7.0-dev.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -38,7 +38,7 @@
   ],
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.44",
+    "@itwin/eslint-plugin": "4.0.0-dev.52",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@types/chai": "4.3.1",
@@ -49,7 +49,7 @@
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "typescript": "~5.0.2"
+    "typescript": "~5.3.3"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

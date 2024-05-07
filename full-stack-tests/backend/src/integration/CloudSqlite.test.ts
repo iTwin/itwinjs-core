@@ -66,12 +66,12 @@ describe("CloudSqlite", () => {
 
   it("should query bcvHttpLog", async () => {
     const c1Props = { containerId: testContainers[0].containerId, baseUri: AzuriteTest.baseUri, userToken: "" };
-    let metadata = await AzuriteTest.service.queryMetadata(c1Props)!;
+    let metadata = await AzuriteTest.service.queryMetadata(c1Props);
     let json = metadata.json!;
 
     expect(json.blockSize).equal("64K");
     await AzuriteTest.service.updateJson(c1Props, { blockSize: "128K", newProp: true });
-    metadata = await AzuriteTest.service.queryMetadata(c1Props)!;
+    metadata = await AzuriteTest.service.queryMetadata(c1Props);
     json = metadata.json!;
     expect(json.blockSize).equal("128K");
     expect(json.newProp).equal(true);

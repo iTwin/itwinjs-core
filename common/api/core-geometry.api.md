@@ -648,7 +648,7 @@ export type BlockComparisonFunction = (data: Float64Array, blockSize: number, in
 
 // @public
 export class BooleanClipFactory {
-    static anyClipperToJSON(clipper: any): any | undefined;
+    static anyClipperToJSON(clipper: any): any;
     static createCaptureClipOutside(primaryClipper: Clipper): Clipper;
     static createCaptureDifference(primaryClipper: Clipper, excludedClipper: Clipper, keepInside: boolean): Clipper;
     static createCaptureIntersection(clippers: Clipper | Clipper[], keepInside: boolean): Clipper;
@@ -4436,7 +4436,7 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
 // @public
 export abstract class Polyface extends GeometryQuery {
     protected constructor(data: PolyfaceData);
-    static areIndicesValid(indices: number[] | undefined, indexPositionA: number, indexPositionB: number, data: any | undefined, dataLength: number): boolean;
+    static areIndicesValid(indices: number[] | undefined, indexPositionA: number, indexPositionB: number, data: any, dataLength: number): boolean;
     abstract createVisitor(numWrap: number): PolyfaceVisitor;
     data: PolyfaceData;
     get expectedClosure(): number;
