@@ -548,7 +548,7 @@ export abstract class GltfReader {
 
   public readGltfAndCreateGeometry(transformToRoot?: Transform, needNormals = false, needParams = false): RealityTileGeometry {
     const transformStack = new TransformStack(this.getTileTransform(transformToRoot));
-    const polyfaces: Polyface[] = [];
+    const polyfaces: IndexedPolyface[] = [];
     for (const nodeKey of this._sceneNodes) {
       const node = this._nodes[nodeKey];
       if (node)
@@ -733,7 +733,7 @@ export abstract class GltfReader {
     return TileReadStatus.Success;
   }
 
-  private readNodeAndCreatePolyfaces(polyfaces: Polyface[], node: GltfNode, transformStack: TransformStack, needNormals: boolean, needParams: boolean): void {
+  private readNodeAndCreatePolyfaces(polyfaces: IndexedPolyface[], node: GltfNode, transformStack: TransformStack, needNormals: boolean, needParams: boolean): void {
     // IMPORTANT: Do not return without popping this node from the stack.
     transformStack.push(node);
     const meshes = this.readMeshPrimitives(node);
@@ -755,7 +755,7 @@ export abstract class GltfReader {
     }
   }
 
-  private polyfaceFromGltfMesh(mesh: GltfMeshData, transform: Transform | undefined , needNormals: boolean, needParams: boolean): Polyface | undefined {
+  private polyfaceFromGltfMesh(mesh: GltfMeshData, transform: Transform | undefined , needNormals: boolean, needParams: boolean): IndexedPolyface | undefined {
     if (!mesh.pointQParams || !mesh.points || !mesh.indices)
       return undefined;
 

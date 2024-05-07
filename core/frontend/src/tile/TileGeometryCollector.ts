@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { Polyface, Range3d, Transform } from "@itwin/core-geometry";
+import { IndexedPolyface, Polyface, Range3d, Transform } from "@itwin/core-geometry";
 import { IModelApp } from "../IModelApp";
 import {
   Tile, TileTreeReference, TileUser,
@@ -45,7 +45,7 @@ export class TileGeometryCollector {
    * The polyfaces belong to the [[Tile]]s - they should not be modified.
    * If [[isAllGeometryLoaded]] is `false`, then this list is incomplete - another geometry collection should be performed with a new collector on a subsequent frame.
    */
-  public readonly polyfaces: Polyface[] = [];
+  public readonly polyfaces: IndexedPolyface[] = [];
   private readonly _missing = new Set<Tile>();
   private _loading = false;
   /** The options used to construct this collector. */

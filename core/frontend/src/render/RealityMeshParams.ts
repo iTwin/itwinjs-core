@@ -73,7 +73,7 @@ export namespace RealityMeshParams {
   }
 
   /** @alpha */
-  export function toPolyface(params: RealityMeshParams, options?: { transform?: Transform, wantNormals?: boolean, wantParams?: boolean }): Polyface | undefined {
+  export function toPolyface(params: RealityMeshParams, options?: { transform?: Transform, wantNormals?: boolean, wantParams?: boolean }): IndexedPolyface | undefined {
     const { positions, normals, uvs, indices } = params;
     const includeNormals = options?.wantNormals && undefined !== normals;
     const includeParams = options?.wantParams;

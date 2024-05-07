@@ -114,10 +114,16 @@ export class MapFeatureInfoDecorator implements Decorator {
   public readonly disableTerrainDraper = false;
   public markerSize = new Point2d(32, 32);
   public lineWidth =  3;
-  public readonly maxDrapeSizePixels = 50000;
-  public readonly chordTolerancePixels = 20;
-  private _highlightColor = ColorDef.from(0, 255, 255, 127);
 
+  // This is the maximum allowed size of a geometry, in pixels, to be draped.
+  // If the value is too large, we will end up downloading tons of terrain tiles, and possibly hang for too long.
+  public maxDrapeSizePixels = 50000;
+
+  // This value controls the chord tolerance used to collect terrain tiles
+  // at the "right" resolution.  Higher values, will give coarser terrain tiles.
+  public chordTolerancePixels = 20;
+
+  private _highlightColor = ColorDef.from(0, 255, 255, 127);
   public get highlightColor() { return this._highlightColor;}
   public set highlightColor(color: ColorDef) {
     this.updateMarkerImage();
@@ -262,7 +268,7 @@ export class MapFeatureInfoDecorator implements Decorator {
     return builder.finish();
   }
 
-  // Iterates the mapfeatureinfo data and build draping state for each entry
+  // Iterates the mapfeatureinfo data and create a draping state for each entry
   private initializeDrapeState(viewport: ScreenViewport) {
     if (this._drapeGraphicsStates.length === 0) {
       const getGraphicRange = (graphic: GraphicPrimitive) => {
