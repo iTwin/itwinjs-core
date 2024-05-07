@@ -10,7 +10,7 @@ import {
   assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, JsonUtils, Logger, utf8ToString,
 } from "@itwin/core-bentley";
 import {
-  Angle, IndexedPolyface, Matrix3d, Point2d, Point3d, Point4d, Polyface, Range2d, Range3d, Transform, Vector3d,
+  Angle, IndexedPolyface, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
