@@ -132,7 +132,21 @@ describe("TextAnnotation", () => {
     });
 
     it("should apply translation after rotation about fixed anchor point", () => {
-
+      expectTransformedRange([0, -5, 10, 15], {
+        anchor: { horizontal: "center", vertical: "middle" },
+        rotation: 90,
+        origin: [-5, 10],
+      });
+      expectTransformedRange([-11, -8, -1, 12], {
+        anchor: { horizontal: "left", vertical: "bottom" },
+        rotation: 90,
+        origin: [-1, 2],
+      });
+      expectTransformedRange([20, 80, 30, 100], {
+        anchor: { horizontal: "right", vertical: "top" },
+        rotation: 90,
+        origin: [0, 100],
+      });
     });
   });
 });

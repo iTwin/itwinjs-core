@@ -154,8 +154,9 @@ export class TextAnnotation {
     const anchorPt = this.computeAnchorPoint(textBlockDimensions);
     const matrix = this.orientation.toMatrix3d();
 
-    const transform = Transform.createFixedPointAndMatrix(anchorPt, matrix);
-    return transform.multiplyTransformTransform(Transform.createTranslation(this.origin), transform);
+    const rotation = Transform.createFixedPointAndMatrix(anchorPt, matrix);
+    const translation = Transform.createTranslation(this.origin);
+    return translation.multiplyTransformTransform(rotation, rotation);
   }
 
   /** Compute the anchor point of this annotation as specified by [[anchor]].
