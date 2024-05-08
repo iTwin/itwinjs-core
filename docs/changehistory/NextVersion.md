@@ -13,6 +13,7 @@ Table of contents:
 - [Electron 30 support](#electron-30-support)
 - [API deprecations](#api-deprecations)
 - [Schemas](#schemas)
+- [Map Layers](#map-layers)
 
 ## Text APIs
 
@@ -73,3 +74,13 @@ Introduces new custom attributes which allow classes that are backed by a query 
 
 [See our MetaQueries page for details](../learning/ECSqlReference/MetaQueries.md#examples-on-how-to-query-for-custom-attributes)
 Allows querying for custom attributes on a schema, class or property.
+
+## Map Layers
+
+### Improved MapFeatureInfo tool
+The actual MapFeatureInfo tool has been improved to highlight map-layer geometries when the terrain is turned ON.  
+
+To achieve this, the appropriate resolution terrain tiles needs to be collected from the tile tree, then the `@itwin/core-geometry` functionalities are used to drape the map-layer geometries (which include point, lines and polygons) to be draped on the terrain mesh.  The resulting geometries are displayed as decorations.
+
+In the following screenshot, we can see sample highlighted : 
+[image](../assets/MapLayersInfoToolDrape.png)
