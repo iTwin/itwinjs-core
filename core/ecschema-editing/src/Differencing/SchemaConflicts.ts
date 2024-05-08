@@ -7,7 +7,8 @@
  */
 
 import type { SchemaKey } from "@itwin/ecschema-metadata";
-import type { SchemaType } from "./SchemaDifference";
+import type { SchemaDifferences, SchemaType } from "./SchemaDifference";
+import type { AnyConflictResolution } from "./ConflictResolution";
 
 /**
  * The unique conflicts codes for Schema differencing.
@@ -60,6 +61,10 @@ export enum ConflictCode {
   ConstraintClassesDeriveFromAbstractConstraint = "C-1502",
 }
 
+interface SchemaDifferencesWithConflicts extends SchemaDifferences {
+  readonly conflicts: SchemaDifferenceConflict[];
+}
+
 /**
  * Defines the interface for a conflict during Schema Differencing. Conflicts were discovered
  * while comparing the changed elements. Conflicts in the whole schema context are not found
@@ -92,6 +97,19 @@ export interface SchemaDifferenceConflict {
 
   /** The value in the target schema. */
   readonly target: unknown;
+
+  /** The resolution how this conflict shall be resolved. */
+  resolution?: AnyConflictResolution | AnyConflictResolution[];
+}
+
+export function hasUnresolvedConflicts(differences: SchemaDifferences): differences is SchemaDifferencesWithConflicts {
+  return getUnresolvedConflicts(differences).length > 0;
+}
+
+export function getUnresolvedConflicts(differences: SchemaDifferences): SchemaDifferenceConflict[] {
+  return differences.conflicts !== undefined
+    ? differences.conflicts.filter((conflict) => conflict.resolution === undefined)
+    : [];
 }
 
 /**

@@ -13,7 +13,7 @@ import { SchemaDifference, SchemaDifferences } from "../Differencing/SchemaDiffe
 import { mergeCustomAttribute } from "./CustomAttributeMerger";
 import { mergeSchemaItems } from "./SchemaItemMerger";
 import { mergeSchemaReferences } from "./SchemaReferenceMerger";
-import { SchemaConflictsError } from "../Differencing/SchemaConflicts";
+import { hasUnresolvedConflicts, SchemaConflictsError } from "../Differencing/SchemaConflicts";
 
 /**
  * Defines the context of a Schema merging run.
@@ -88,7 +88,7 @@ export class SchemaMerger {
     const targetSchemaKey = SchemaKey.parseString(differences.targetSchemaName);
     const sourceSchemaKey = SchemaKey.parseString(differences.sourceSchemaName);
 
-    if(differences.conflicts && differences.conflicts.length > 0) {
+    if(hasUnresolvedConflicts(differences)) {
       throw new SchemaConflictsError(
         "Schema's can't be merged if there are unresolved conflicts.",
         differences.conflicts,
