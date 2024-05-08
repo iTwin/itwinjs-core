@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
-import { BriefcaseConnection } from "@itwin/core-frontend";
+import { BriefcaseConnection, TxnEntityChanges, TxnEntityChangeType } from "@itwin/core-frontend";
 import { addAllowedChannel, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
@@ -146,6 +146,68 @@ describe("BriefcaseTxns", () => {
           "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
           "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
         ]);
+      });
+
+      it("receives events including entity Id and class name", async () => {
+        type Change = [className: string, type: TxnEntityChangeType];
+
+        async function expectChangedEntities(func: () => Promise<void>, terminalEvent: "onAfterUndoRedo" | "onCommitted", expectedChanges: Change[]): Promise<void> {
+          const received: Change[] = [];
+          function receive(changes: TxnEntityChanges): void {
+            received.push(...Array.from(changes).map((change) => [change.metadata.classFullName, change.type] as Change));
+          }
+
+          const removeElementListener = rwConn.txns.onElementsChanged.addListener((changes) => receive(changes));
+          const removeModelListener = rwConn.txns.onModelsChanged.addListener((changes) => receive(changes));
+
+          let receivedTerminationEvent = false;
+          rwConn.txns[terminalEvent].addOnce(() => receivedTerminationEvent = true);
+
+          async function wait(): Promise<void> {
+            if (receivedTerminationEvent) {
+              removeElementListener();
+              removeModelListener();
+              return;
+            }
+
+            await new Promise<void>((resolve: any) => setTimeout(resolve, 100));
+            return wait();
+          }
+
+          await func();
+          await wait();
+
+          expect(received).to.deep.equal(expectedChanges);
+        }
+
+        const dictModelId = await rwConn.models.getDictionaryModel();
+        const cat1 = await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
+        const cat2 = await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
+
+        const code = await makeModelCode(rwConn, rwConn.models.repositoryModelId, Guid.createValue());
+        const model = await coreFullStackTestIpc.createAndInsertPhysicalModel(rwConn.key, code);
+
+        await insertLineElement(rwConn, model, cat1);
+        await insertLineElement(rwConn, model, cat2);
+
+        const expected: Change[] = [
+          ["BisCore:SpatialCategory", "inserted"],
+          ["BisCore:SubCategory", "inserted"],
+          ["BisCore:SpatialCategory", "inserted"],
+          ["BisCore:SubCategory", "inserted"],
+          ["BisCore:PhysicalPartition", "inserted"],
+          ["Generic:PhysicalObject", "inserted"],
+          ["Generic:PhysicalObject", "inserted"],
+          ["BisCore:PhysicalModel", "inserted"],
+        ];
+
+        await expectChangedEntities(async () => rwConn.saveChanges(), "onCommitted", expected);
+        await expectChangedEntities(async () => {
+          await rwConn.txns.reverseSingleTxn();
+        }, "onAfterUndoRedo", expected.map((x) => [x[0], "deleted"]));
+        await expectChangedEntities(async () => {
+          await rwConn.txns.reinstateTxn();
+        }, "onAfterUndoRedo", expected);
       });
     });
 

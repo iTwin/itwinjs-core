@@ -172,6 +172,7 @@ describe("SelectionScopesHelper", () => {
         .returns(
           (className: string) =>
             new EntityMetaData({
+              classId: "0x123",
               baseClasses: [],
               properties: {},
               ecclass: className,
