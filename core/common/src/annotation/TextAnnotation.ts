@@ -9,25 +9,25 @@
 import { Point3d, Transform, XAndY, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
 import { TextBlock, TextBlockProps } from "./TextBlock";
 
-/**
- * Describes the horizontal and vertical alignment of a [[TextAnnotation]]'s text block, used to compute the annotation's "anchor point".
+/** Describes how to compute the "anchor point" for a [[TextAnnotation]].
+ * The anchor point is a point on or inside of the 2d bounding box enclosing the contents of the annotation's [[TextBlock]].
  * @see [[TextAnnotation]] for a description of how the anchor point is computed.
  * @beta
  */
 export interface TextAnnotationAnchor {
   /**
    * The vertical alignment of the anchor point.
-   * "top" aligns the anchor point with the top of the text.
-   * "middle" aligns the anchor point with the middle of the text.
-   * "bottom" aligns the anchor point with the bottom of the text.
+   * "top" aligns the anchor point with the top of the text's bounding box.
+   * "middle" aligns the anchor point with the middle of the text's bounding box.
+   * "bottom" aligns the anchor point with the bottom of the text's bounding box.
    */
   vertical: "top" | "middle" | "bottom";
 
   /**
    * The horizontal alignment of the anchor point.
-   * "left" aligns the anchor point with left side of the text.
-   * "center" aligns the anchor point with center of the text with.
-   * "right" aligns the anchor point with right side of the text.
+   * "left" aligns the anchor point with left side of the text's bounding box.
+   * "center" aligns the anchor point with center of the text with's bounding box.
+   * "right" aligns the anchor point with right side of the text's bounding box.
    */
   horizontal: "left" | "center" | "right";
 }
