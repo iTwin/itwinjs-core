@@ -1760,7 +1760,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         bindCallback = (statement: ECSqlStatement) => statement.bindId(1, elementId);
       }
 
-      return this._iModel.withPreparedStatement(`SELECT $ FROM Bis.Element ${filterClause} OPTIONS USE_JS_PROP_NAMES`, (statement: ECSqlStatement) => {
+      return this._iModel.withPreparedStatement(`SELECT $ FROM Bis.Element ${filterClause} OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB`, (statement: ECSqlStatement) => {
         bindCallback?.(statement);
 
         if (statement.step() !== DbResult.BE_SQLITE_ROW)
