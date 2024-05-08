@@ -33,6 +33,7 @@ export type EditCommandType = typeof EditCommand;
  * EditCommands have a *commandId* that uniquely identifies them, so they can be found via a lookup in the [[EditCommandAdmin]].
  * Each EditCommand must be registered in the [[EditCommandAdmin]] with [[EditCommandAdmin.register]] or [[EditCommandAdmin.registerModule]].
  * Every time an EditCommand runs, a new instance of (a subclass of) this class is created.
+ * @see [[BasicManipulationCommand]] for an example EditCommand.
  * @beta
  */
 export class EditCommand implements EditCommandIpc {
