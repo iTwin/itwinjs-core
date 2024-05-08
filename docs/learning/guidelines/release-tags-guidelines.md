@@ -8,8 +8,7 @@ API review files can then be placed under source code control and compared to fu
 
 The four primary release tags and the "deprecated" tag are described in the [API support policies](../api-support-policies.md). For [Extensions](../frontend/Extensions.md), two additional tags are supported:
 
-- The "extensions" tag indicates that an API is to be included in the `@itwin/core-extension` API. Currently this tag is only useful for APIs in `@itwin/core-frontend` and `@itwin/core-common`; all other packages' APIs can be used directly by extensions. It may become relevant for more packages in the future. A lint rule enforces that the "extensions" tag may only be applied to APIs tagged as "public" or "preview".
-- "The "preview" tag is supposed to be the equivalent of "beta" for extension APIs. It is currently unused, and may never be.
+- The "extensions" tag indicates that an API is to be included in the `@itwin/core-extension` API. Currently this tag is only useful for APIs in `@itwin/core-frontend` and `@itwin/core-common`; all other packages' APIs can be used directly by extensions. It may become relevant for more packages in the future. A lint rule enforces that the "extensions" tag may only be applied to APIs tagged as "public".
 
 ## API Items
 
@@ -62,15 +61,6 @@ If relevant and helpful, you can also include a description of why the API becam
 ```ts
 /** Sample description of an exported API item.
  * @public
- * @extensions
- */
-```
-
-*Preview* API tag should be on its own line before the @extensions tag:
-
-```ts
-/** Sample description of an exported API item.
- * @preview
  * @extensions
  */
 ```

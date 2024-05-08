@@ -42,7 +42,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.52",
+    "@itwin/eslint-plugin": "^4.0.2",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/geojson": "~7946.0.14",
