@@ -15,7 +15,21 @@ import { EditCommandIpc, EditorIpc, editorIpcStrings } from "@itwin/editor-commo
 export type EditCommandType = typeof EditCommand;
 
 /**
- * An EditCommand performs an editing action on the backend. EditCommands are usually paired with and driven by EditTools on the frontend.
+ * An EditCommand performs an editing action on the backend.
+ * Any writes to the iModel in an editing session should be done from an EditCommand:
+ * - All changes to an iModel are made within a transaction (Txn).
+ * - Calling SaveChanges ends the current Txn and starts a new one.
+ * - Using EditCommand ensures all of the changes in a Txn are from the same source, as only one EditCommand may be active at a time.
+ * - Because there is currently no way to enforce this, it is important that all applications follow this rule.
+ * EditCommands are usually paired with and driven by EditTools on the frontend that can either be interactive tools or immediate tools.
+ * Interactive EditTools:
+ * - Can be a [PrimitiveTool]($frontend).
+ * - Can be an [InputCollector]($frontend) in special cases such as [EditManipulator.HandleTool]($frontend).
+ * - Should not be a [ViewTool]($frontend), these should never write changes to the iModel.
+ * Immediate EditTools:
+ * - As direct subclasses of [Tool]($frontend) that perform their function without further input or becoming the active tool,
+ * they potentially leave the current [PrimitiveTool]($frontend) in an invalid state.
+ * - To avoid issues, immediate tools that start an EditCommand must call [ToolAdmin.restartPrimitiveTool]($frontend) when they complete.
  * EditCommands have a *commandId* that uniquely identifies them, so they can be found via a lookup in the [[EditCommandAdmin]].
  * Each EditCommand must be registered in the [[EditCommandAdmin]] with [[EditCommandAdmin.register]] or [[EditCommandAdmin.registerModule]].
  * Every time an EditCommand runs, a new instance of (a subclass of) this class is created.
