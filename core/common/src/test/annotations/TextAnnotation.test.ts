@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { TextAnnotation, TextAnnotationAnchor } from "../../annotation/TextAnnotation";
-import { Angle, AxisIndex, Matrix3d, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Angle, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
 
 describe("TextAnnotation", () => {
   describe("computeAnchorPoint", () => {
@@ -59,7 +59,6 @@ describe("TextAnnotation", () => {
       // const topLeft = new Point3d(0, 0, 0);
       // transform.multiplyPoint3d(topLeft, topLeft);
       // console.log(`topLeft ${JSON.stringify(topLeft)}`);
-      
 
       // expect(actual.low.x).to.equal(expected.low.x);
       // expect(actual.low.y).to.equal(expected.low.y);
