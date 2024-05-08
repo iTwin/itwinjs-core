@@ -44,8 +44,8 @@ export interface TextAnnotationAnchor {
  * @extensions
  */
 export interface TextAnnotationProps {
-  /** See [[TextAnnotation.origin]]. Default: [0. 0. 0]. */
-  origin?: XYZProps;
+  /** See [[TextAnnotation.offset]]. Default: [0, 0, 0]. */
+  offset?: XYZProps;
   /** See [[TextAnnotation.orientation]]. Default: no rotation. */
   orientation?: YawPitchRollProps;
   /** See [[TextAnnotation.textBlock]]. Default: an empty text block. */
@@ -60,8 +60,8 @@ export interface TextAnnotationProps {
  * @extensions
  */
 export interface TextAnnotationCreateArgs {
-  /** See [[TextAnnotation.origin]]. Default: (0, 0, 0). */
-  origin?: Point3d;
+  /** See [[TextAnnotation.offset]]. Default: (0, 0, 0). */
+  offset?: Point3d;
   /** See [[TextAnnotation.orientation]]. Default: no rotation. */
   orientation?: YawPitchRollAngles;
   /** See [[TextAnnotation.textBlock]]. Default: an empty text block. */
@@ -87,10 +87,10 @@ export class TextAnnotation {
   public textBlock: TextBlock;
   /** Describes how the [[textBlock]]'s content should be aligned relative to the host element's origin. */
   public anchor: TextAnnotationAnchor;
-  public origin: Point3d;
+  public offset: Point3d;
 
-  private constructor(origin: Point3d, angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor) {
-    this.origin = origin;
+  private constructor(offset: Point3d, angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor) {
+    this.offset = offset;
     this.orientation = angles;
     this.textBlock = textBlock;
     this.anchor = anchor;
@@ -98,12 +98,12 @@ export class TextAnnotation {
 
   /** Creates a new TextAnnotation. */
   public static create(args?: TextAnnotationCreateArgs): TextAnnotation {
-    const origin = args?.origin ?? new Point3d();
+    const offset = args?.offset ?? new Point3d();
     const angles = args?.orientation ?? new YawPitchRollAngles();
     const textBlock = args?.textBlock ?? TextBlock.createEmpty();
     const anchor = args?.anchor ?? { vertical: "top", horizontal: "left" };
 
-    return new TextAnnotation(origin, angles, textBlock, anchor);
+    return new TextAnnotation(offset, angles, textBlock, anchor);
   }
 
   /**
@@ -111,7 +111,7 @@ export class TextAnnotation {
    */
   public static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation {
     return TextAnnotation.create({
-      origin: props?.origin ? Point3d.fromJSON(props.origin) : undefined,
+      offset: props?.offset ? Point3d.fromJSON(props.offset) : undefined,
       orientation: props?.orientation ? YawPitchRollAngles.fromJSON(props.orientation) : undefined,
       textBlock: props?.textBlock ? TextBlock.create(props.textBlock) : undefined,
       anchor: props?.anchor ? { ...props.anchor } : undefined,
@@ -128,8 +128,8 @@ export class TextAnnotation {
     // so the user can pick up where they left off editing it next time.
     props.textBlock = this.textBlock.toJSON();
 
-    if (!this.origin.isZero) {
-      props.origin = this.origin.toJSON();
+    if (!this.offset.isZero) {
+      props.offset = this.offset.toJSON();
     }
 
     if (!this.orientation.isIdentity()) {
@@ -146,7 +146,7 @@ export class TextAnnotation {
   /** Compute the transform that positions and orients this annotation relative to its anchor point, based on the [[textBlock]]'s computed bounding box.
    * The anchor point is computed as specified by this annotation's [[anchor]] setting. For example, if the text block is anchored
    * at the bottom left, then the transform will be relative to the bottom-left corner of `textBlockExtents`.
-   * The text block will be rotated around the fixed anchor point according to [[orientation]], then the anchor point will be translated to coincide with [[origin]].
+   * The text block will be rotated around the fixed anchor point according to [[orientation]], then the anchor point will be translated by [[offset]].
    * @param textBlockDimensions The width and height of the bounding box containing the text block. You can compute this using [computeTextBlockExtents]($common).
    * @see [[computeAnchorPoint]] to compute the transform's anchor point.
    */
@@ -155,7 +155,7 @@ export class TextAnnotation {
     const matrix = this.orientation.toMatrix3d();
 
     const rotation = Transform.createFixedPointAndMatrix(anchorPt, matrix);
-    const translation = Transform.createTranslation(this.origin);
+    const translation = Transform.createTranslation(this.offset);
     return translation.multiplyTransformTransform(rotation, rotation);
   }
 
@@ -191,7 +191,7 @@ export class TextAnnotation {
   /** Returns true if this annotation is logically equivalent to `other`. */
   public equals(other: TextAnnotation): boolean {
     return this.anchor.horizontal === other.anchor.horizontal && this.anchor.vertical === other.anchor.vertical
-      && this.orientation.isAlmostEqual(other.orientation) && this.origin.isAlmostEqual(other.origin)
+      && this.orientation.isAlmostEqual(other.orientation) && this.offset.isAlmostEqual(other.offset)
       && this.textBlock.equals(other.textBlock);
   }
 }

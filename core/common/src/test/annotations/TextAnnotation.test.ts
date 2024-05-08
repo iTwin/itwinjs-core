@@ -36,7 +36,7 @@ describe("TextAnnotation", () => {
     }): void {
       const annotation = TextAnnotation.fromJSON({
         anchor: options?.anchor,
-        origin: options?.origin,
+        offset: options?.origin,
         orientation: options?.rotation ? new YawPitchRollAngles(Angle.createDegrees(options.rotation)) : undefined,
       });
 
