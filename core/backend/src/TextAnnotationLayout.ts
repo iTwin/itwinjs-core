@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BaselineShift, FontId, FractionRun, Paragraph, Run, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
-import { Range2d } from "@itwin/core-geometry";
+import { Range2d, XAndY } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 
@@ -82,8 +82,10 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
  * The resultant extents can be supplied to [TextAnnotation.computeTransform]($common) and [TextAnnotation.computeAnchorPoint]($common).
  * @beta
  */
-export function computeTextBlockExtents(args: ComputeTextBlockExtentsArgs): Range2d {
-  return layoutTextBlock(args).range;
+export function computeTextBlockExtents(args: ComputeTextBlockExtentsArgs): XAndY {
+  const range = layoutTextBlock(args).range;
+  assert(range.low.isZero);
+  return { x: range.high.x, y: range.high.y };
 }
 
 function scaleRange(range: Range2d, scale: number): void {
