@@ -257,9 +257,9 @@ export class Transform implements BeJSONFunctions {
   }
   /**
    * Create a Transform using the given `origin` and `matrix`.
-   * * This is a the appropriate construction when the columns of the matrix are coordinate axes of a
-   * local-to-world mapping.
-   * * This function is a closely related to `createFixedPointAndMatrix` whose point input is the fixed point
+   * * This is the appropriate construction when the columns of the matrix are coordinate axes of a
+   * local-to-world mapping, and the given point is the axes' origin in world coordinates.
+   * * This function is closely related to `createFixedPointAndMatrix` whose point input is the fixed point
    * of the world-to-world transformation.
    * * If origin is `undefined`, (0,0,0) is used. If matrix is `undefined` the identity matrix is used.
    */

@@ -154,37 +154,45 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
   }
   /** Clear the contents of all arrays. */
   public clearArrays(): void {
-    if (this.point !== undefined)
-      this.point.length = 0;
+    this.point.length = 0;
+    this.edgeVisible.length = 0;
     if (this.param !== undefined)
       this.param.length = 0;
     if (this.normal !== undefined)
       this.normal.length = 0;
     if (this.color !== undefined)
       this.color.length = 0;
+    // TODO: indices? auxData? taggedNumericData?
   }
   /** Transfer data from a specified `index` of the `other` visitor as new data in this visitor. */
   public pushDataFrom(other: PolyfaceVisitor, index: number): void {
     this.point.pushFromGrowableXYZArray(other.point, index);
+    this.edgeVisible.push(other.edgeVisible[index]);
     if (this.param && other.param && index < other.param.length)
       this.param.pushFromGrowableXYArray(other.param, index);
     if (this.normal && other.normal && index < other.normal.length)
       this.normal.pushFromGrowableXYZArray(other.normal, index);
     if (this.color && other.color && index < other.color.length)
       this.color.push(other.color[index]);
+    // TODO: indices? auxData? taggedNumericData?
   }
   /**
    * Transfer interpolated data from the other visitor.
    * * All data values are interpolated at `fraction` between `other` values at `index0` and `index1`.
    */
   public pushInterpolatedDataFrom(other: PolyfaceVisitor, index0: number, fraction: number, index1: number): void {
+    if (index0 > index1)
+      this.pushInterpolatedDataFrom(other, index1, 1.0 - fraction, index0);
     this.point.pushInterpolatedFromGrowableXYZArray(other.point, index0, fraction, index1);
+    const newVisibility = (((index0 + 1) % other.edgeVisible.length) === index1) ? other.edgeVisible[index0] : false;
+    this.edgeVisible.push(newVisibility); // interpolation along an edge preserves visibility of original edge
     if (this.param && other.param && index0 < other.param.length && index1 < other.param.length)
       this.param.pushInterpolatedFromGrowableXYArray(other.param, index0, fraction, index1);
     if (this.normal && other.normal && index0 < other.normal.length && index1 < other.normal.length)
       this.normal.pushInterpolatedFromGrowableXYZArray(other.normal, index0, fraction, index1);
     if (this.color && other.color && index0 < other.color.length && index1 < other.color.length)
       this.color.push(Geometry.interpolateColor(other.color[index0], fraction, other.color[index1]));
+    // TODO: auxData? taggedNumericData?
   }
 }
 /**

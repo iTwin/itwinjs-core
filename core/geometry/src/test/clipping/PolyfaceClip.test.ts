@@ -1318,6 +1318,32 @@ describe("PolyfaceClip", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("DrapeRegion2", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const geometry = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/clipping/drapeRegion/drapeRegion.imjs", "utf8")));
+    if (Array.isArray(geometry) && geometry) {
+      if (
+        ck.testExactNumber(2, geometry.length, "parse geometry") &&
+        ck.testType(geometry[0], IndexedPolyface, "input mesh") &&
+        ck.testType(geometry[1], Loop, "input region")
+      ) {
+        const dtm = geometry[0];
+        const region = geometry[1];
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, dtm);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, region);
+        const drapedMesh = PolyfaceClip.drapeRegion(dtm, region);
+        if (ck.testType(drapedMesh, IndexedPolyface, "drape succeeded")) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, drapedMesh);
+          ck.testTrue(PolyfaceQuery.areFacetsConvex(drapedMesh), "draped mesh has convex facets");
+        }
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "DrapeRegion2");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("DeckBuilder", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
