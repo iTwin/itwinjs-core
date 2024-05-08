@@ -481,41 +481,26 @@ return undefined;
             for (const c of intColorU32)
               polyface.data.color!.push(c);
           }
+
           // The flatbuffer data is one based.
           // If numPerFace is less than 2, facets are variable size and zero terminated
           // If numPerFace is 2 or more, indices are blocked
-          const numIndex = pointIndexI32.length;
-          const addIndicesInBlock = (k0: number, k1: number) => {
-            for (let k = k0; k < k1; k++) {
-              const q = pointIndexI32[k];
-              polyface.addPointIndex(Math.abs(q) - 1, q > 0);
-              if (normalF64 && normalIndexI32) {
-                polyface.addNormalIndex(Math.abs(normalIndexI32[k]) - 1);
-              }
-              if (paramF64 && paramIndexI32) {
-                polyface.addParamIndex(Math.abs(paramIndexI32[k]) - 1);
-              }
-              if (intColorU32 && colorIndexI32) {
-                polyface.addColorIndex(Math.abs(colorIndexI32[k]) - 1);
-              }
-            }
-          };
+          SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(pointIndexI32, numPerFace,
+            (i: number, v?: boolean) => { polyface.addPointIndex(i, v); },
+            () => { polyface.terminateFacet(true); });
 
-          if (numPerFace > 1) {
-            for (let i0 = 0; i0 + numPerFace <= numIndex; i0 += numPerFace){
-              addIndicesInBlock(i0, i0 + numPerFace);
-              polyface.terminateFacet(true);
-            }
-          } else {
-            let i0 = 0;
-            for (let i1 = i0; i1 < numIndex; i1++) {
-              if (pointIndexI32[i1] === 0) {
-                addIndicesInBlock(i0, i1);
-                polyface.terminateFacet(true);
-                i0 = i1 + 1;
-                }
-              }
-            }
+          if (normalF64 && normalIndexI32) {
+            SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(normalIndexI32, numPerFace,
+              (i: number) => { polyface.addNormalIndex(i); });
+          }
+          if (paramF64 && paramIndexI32) {
+            SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(paramIndexI32, numPerFace,
+              (i: number) => { polyface.addParamIndex(i); });
+          }
+          if (intColorU32 && colorIndexI32) {
+            SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(colorIndexI32, numPerFace,
+              (i: number) => { polyface.addColorIndex(i); });
+          }
 
           polyface.data.auxData = this.readPolyfaceAuxData(polyfaceHeader, polyfaceHeader.auxData());
 
