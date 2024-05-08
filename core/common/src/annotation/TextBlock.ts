@@ -10,8 +10,6 @@ import { TextStyleSettingsProps } from "./TextStyle";
 
 /** Options supplied to [[TextBlockComponent.applyStyle]] to control how the style is applied to the component and its child components.
  * @beta
- * @preview
- * @extensions
  */
 export interface ApplyTextStyleOptions {
   /** Controls whether any deviations from the style's settings stored in [[TextBlockComponent.styleOverrides]] are retained.
@@ -26,8 +24,6 @@ export interface ApplyTextStyleOptions {
 
 /** The JSON representation of a [[TextBlockComponent]].
  * @beta
- * @preview
- * @extensions
  */
 export interface TextBlockComponentProps {
   /** The name of a [[TextStyle]] stored in a [Workspace]($backend) from which the base [[TextStyleSettings]] applied to the component originates. */
@@ -40,8 +36,6 @@ export interface TextBlockComponentProps {
 
 /** Options supplied to [[TextBlockComponent.stringify]] to control how the content is formatted.
  * @beta
- * @preview
- * @extensions
  */
 export interface TextBlockStringifyOptions {
   /** A string to insert in between each [[Paragraph]].
@@ -61,8 +55,6 @@ export interface TextBlockStringifyOptions {
 /** Abstract representation of any of the building blocks that make up a [[TextBlock]] document - namely [[Run]]s, [[Paragraph]]s, and [[TextBlock]] itself.
  * Each component can specify a [[TextStyle]] that formats its contents and optional [[styleOverrides]] to customize that formatting.
  * @beta
- * @preview
- * @extensions
  */
 export abstract class TextBlockComponent {
   private _styleName: string;
@@ -152,16 +144,12 @@ export abstract class TextBlockComponent {
 
 /**
  * @beta
- * @preview
- * @extensions
  */
 export type Run = TextRun | FractionRun | LineBreakRun;
 
 /** The JSON representation of a [[Run]].
  * Use the `type` field to discriminate between the different kinds of runs.
  * @beta
- * @preview
- * @extensions
  */
 export type RunProps = TextRunProps | FractionRunProps | LineBreakRunProps;
 
@@ -169,8 +157,6 @@ export type RunProps = TextRunProps | FractionRunProps | LineBreakRunProps;
  * multiple lines, but it will never contain different styling.
  * Use the `type` field to discriminate between the different kinds of runs.
  * @beta
- * @preview
- * @extensions
  */
 export namespace Run { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Create a run from its JSON representation.
@@ -189,15 +175,11 @@ export namespace Run { // eslint-disable-line @typescript-eslint/no-redeclare
  * [[TextStyleSettings.superScriptScale]], [[TextStyleSettings.subScriptScale]], [[TextStyleSettings.superScriptOffsetFactor]], and [[TextStyleSettings.subScriptOffsetFactor]]
  * affect how the content is rendered.
  * @beta
- * @preview
- * @extensions
  */
 export type BaselineShift = "subscript" | "superscript" | "none";
 
 /** JSON representation of a [[TextRun]].
  * @beta
- * @preview
- * @extensions
  */
 export interface TextRunProps extends TextBlockComponentProps {
   /** Discriminator field for the [[RunProps]] union. */
@@ -214,8 +196,6 @@ export interface TextRunProps extends TextBlockComponentProps {
 
 /** The most common type of [[Run]], containing a sequence of characters to be displayed using a single style.
  * @beta
- * @preview
- * @extensions
  */
 export class TextRun extends TextBlockComponent {
   /** Discriminator field for the [[Run]] union. */
@@ -260,8 +240,6 @@ export class TextRun extends TextBlockComponent {
 
 /** JSON representation of a [[FractionRun]].
  * @beta
- * @preview
- * @extensions
  */
 export interface FractionRunProps extends TextBlockComponentProps {
   /** Discriminator field for the [[RunProps]] union. */
@@ -275,8 +253,6 @@ export interface FractionRunProps extends TextBlockComponentProps {
 /** A [[Run]] containing a numeric ratio to be displayed as a numerator and denominator separated by a horizontal or diagonal bar.
  * @note The [[numerator]] and [[denominator]] are stored as strings. They are not technically required to contain a numeric representation.
  * @beta
- * @preview
- * @extensions
  */
 export class FractionRun extends TextBlockComponent {
   /** Discriminator field for the [[Run]] union. */
@@ -322,8 +298,6 @@ export class FractionRun extends TextBlockComponent {
 
 /** JSON representation of a [[LineBreakRun]].
  * @beta
- * @preview
- * @extensions
  */
 export interface LineBreakRunProps extends TextBlockComponentProps {
   /** Discriminator field for the [[RunProps]] union. */
@@ -332,8 +306,6 @@ export interface LineBreakRunProps extends TextBlockComponentProps {
 
 /** A [[Run]] that represents the end of a line of text within a [[Paragraph]]. It contains no content of its own - it simply causes subsequent content to display on a new line.
  * @beta
- * @preview
- * @extensions
  */
 export class LineBreakRun extends TextBlockComponent {
   /** Discriminator field for the [[Run]] union. */
@@ -370,8 +342,6 @@ export class LineBreakRun extends TextBlockComponent {
 
 /** JSON representation of a [[Paragraph]].
  * @beta
- * @preview
- * @extensions
  */
 export interface ParagraphProps extends TextBlockComponentProps {
   /** The collection of [[Run]]s within the paragraph.
@@ -382,8 +352,6 @@ export interface ParagraphProps extends TextBlockComponentProps {
 
 /** A collection of [[Run]]s within a [[TextBlock]]. Each paragraph within a text block is laid out on a separate line.
  * @beta
- * @preview
- * @extensions
  */
 export class Paragraph extends TextBlockComponent {
   /** The runs within the paragraph. You can modify the contents of this array to change the content of the paragraph. */
@@ -440,15 +408,11 @@ export class Paragraph extends TextBlockComponent {
 
 /** Describes the relative alignment of the content of a [[TextBlock]].
  * @beta
- * @preview
- * @extensions
  */
 export type TextBlockJustification = "left" | "center" | "right";
 
 /** JSON representation of a [[TextBlock]].
  * @beta
- * @preview
- * @extensions
  */
 export interface TextBlockProps extends TextBlockComponentProps {
   /** The width of the document in meters. Lines that would exceed this width are instead wrapped around to the next line.
@@ -467,8 +431,6 @@ export interface TextBlockProps extends TextBlockComponentProps {
  * No word-wrapping is applied to the document unless a [[width]] greater than zero is specified.
  * @see [[TextAnnotation]] to position a text block as an annotation in 2d or 3d space.
  * @beta
- * @preview
- * @extensions
  */
 export class TextBlock extends TextBlockComponent {
   /** The width of the document in meters. Lines that would exceed this width are instead wrapped around to the next line.
