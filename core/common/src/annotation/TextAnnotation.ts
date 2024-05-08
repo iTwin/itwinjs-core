@@ -16,8 +16,6 @@ import { TextBlock, TextBlockProps } from "./TextBlock";
  * The anchor point also serves as the pivot point for [[TextAnnotation.rotation]], such that the text is rotated about the
  * anchor point while the anchor point remains fixed.
  * @beta
- * @preview
- * @extensions
  */
 export interface TextAnnotationAnchor {
   /**
@@ -40,8 +38,6 @@ export interface TextAnnotationAnchor {
 /**
  * JSON representation of a [[TextAnnotation]].
  * @beta
- * @preview
- * @extensions
  */
 export interface TextAnnotationProps {
   /** See [[TextAnnotation.orientation]]. Default: no rotation. */
@@ -54,8 +50,6 @@ export interface TextAnnotationProps {
 
 /** Arguments supplied to [[TextAnnotation.create]].
  * @beta
- * @preview
- * @extensions
  */
 export interface TextAnnotationCreateArgs {
   /** See [[TextAnnotation.orientation]]. Default: no rotation. */
@@ -70,8 +64,6 @@ export interface TextAnnotationCreateArgs {
  * [TextAnnotation2d]($backend) and [TextAnnotation3d]($backend) elements store a TextAnnotation from which their geometric representation is generated.
  * @see [produceTextAnnotationGeometry]($backend) to decompose the annotation into a set of geometric primitives suitable for use with [[GeometryStreamBuilder.appendTextBlock]].
  * @beta
- * @preview
- * @extensions
  */
 export class TextAnnotation {
   /**
