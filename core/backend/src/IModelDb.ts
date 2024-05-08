@@ -2645,26 +2645,31 @@ export class BriefcaseDb extends IModelDb {
 
   /** Upgrades the profile or domain schemas. File must be closed before this call and is always left closed. */
   private static async doUpgrade(briefcase: OpenBriefcaseArgs, upgradeOptions: UpgradeOptions, description: string): Promise<void> {
-    await withBriefcaseDb(briefcase, async (db) => {
+    let wasChanges = false;
+    const executeUpgrade = () => {
+      const nativeDb = this.openDgnDb({ path: briefcase.fileName }, OpenMode.ReadWrite, upgradeOptions); // performs the upgrade
+      wasChanges = nativeDb.hasPendingTxns();
+      nativeDb.closeFile();
+    };
+
+    const isSchemaSyncEnabled = await withBriefcaseDb(briefcase, async (db) => {
       await SchemaSync.pull(db);
-    });
+      return db.nativeDb.schemaSyncEnabled();
+    }) as boolean;
 
-    const nativeDb = this.openDgnDb({ path: briefcase.fileName }, OpenMode.ReadWrite, upgradeOptions); // performs the upgrade
-    let wasChanges = nativeDb.hasPendingTxns();
-    nativeDb.closeFile();
-    // upgrade connected schema container
-
-    await withBriefcaseDb(briefcase, async (db) => {
-      if (db.nativeDb.schemaSyncEnabled()) {
-        await SchemaSync.withLockedAccess(db, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
-          const schemaSyncDbUri = syncAccess.getUri();
+    if (isSchemaSyncEnabled) {
+      await SchemaSync.withLockedAccess(briefcase, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
+        const schemaSyncDbUri = syncAccess.getUri();
+        executeUpgrade();
+        await withBriefcaseDb(briefcase, async (db) => {
           db.nativeDb.schemaSyncPush(schemaSyncDbUri);
           db.saveChanges();
-          syncAccess.synchronizeWithCloud();
         });
-        wasChanges ||= db.nativeDb.hasPendingTxns();
-      }
-    });
+        syncAccess.synchronizeWithCloud();
+      });
+    } else {
+      executeUpgrade();
+    }
 
     if (wasChanges)
       await withBriefcaseDb(briefcase, async (db) => db.pushChanges({ ...briefcase, description, retainLocks: true }));
@@ -2804,6 +2809,14 @@ export class BriefcaseDb extends IModelDb {
         Logger.logWarning(category, "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.");
         args.dump();
       } else {
+        if (args.tableName === "be_Prop") {
+          if (args.getValueText(0, DbChangeStage.Old) === "ec_Db" && args.getValueText(1, DbChangeStage.Old) === "localDbInfo") {
+            return DbConflictResolution.Skip;
+          }
+        }
+        if (args.tableName.startsWith("ec_")) {
+          return DbConflictResolution.Skip;
+        }
         const msg = "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.";
         args.setLastError(msg);
         Logger.logError(category, msg);
@@ -2823,6 +2836,9 @@ export class BriefcaseDb extends IModelDb {
         Logger.logWarning(category, "PRIMARY KEY INSERT CONFLICT - resolved by replacing the existing row with the incoming row");
         args.dump();
       } else {
+        if (args.tableName.startsWith("ec_")) {
+          return DbConflictResolution.Skip;
+        }
         const msg = "PRIMARY KEY INSERT CONFLICT - rejecting this changeset";
         args.setLastError(msg);
         Logger.logError(category, msg);
@@ -2941,6 +2957,7 @@ export class BriefcaseDb extends IModelDb {
   public async pullChanges(arg?: PullChangesArgs): Promise<void> {
     await this.executeWritable(async () => {
       await BriefcaseManager.pullAndApplyChangesets(this, arg ?? {});
+      await SchemaSync.pull(this);
       this.initializeIModelDb();
     });
 
