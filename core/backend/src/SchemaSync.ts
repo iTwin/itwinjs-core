@@ -96,14 +96,17 @@ export namespace SchemaSync {
       }
       await briefcase.pullChanges();
     }
-
-    iModel.saveFileProperty(syncProperty, JSON.stringify(props));
-    iModel.saveChanges();
-
-    await withLockedAccess(arg.iModel, { operationName: "initialize schemaSync", openMode: OpenMode.Readonly }, async (syncAccess) => {
-      iModel.nativeDb.schemaSyncInit(syncAccess.getUri(), props.containerId, arg.overrideContainer ?? false);
-      iModel.saveChanges(`Enable SchemaSync  (container id: ${props.containerId})`);
-    });
+    try {
+      iModel.saveFileProperty(syncProperty, JSON.stringify(props));
+      await withLockedAccess(arg.iModel, { operationName: "initialize schemaSync", openMode: OpenMode.Readonly }, async (syncAccess) => {
+        iModel.nativeDb.schemaSyncInit(syncAccess.getUri(), props.containerId, arg.overrideContainer ?? false);
+        iModel.saveChanges(`Enable SchemaSync  (container id: ${props.containerId})`);
+      });
+    } catch (err) {
+      throw err;
+    } finally {
+      iModel.abandonChanges();
+    }
 
     if (briefcase) {
       if (arg.overrideContainer)

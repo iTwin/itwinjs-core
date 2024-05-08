@@ -2820,7 +2820,7 @@ export class BriefcaseDb extends IModelDb {
       } else {
         if (args.tableName === "be_Prop") {
           if (args.getValueText(0, DbChangeStage.Old) === "ec_Db" && args.getValueText(1, DbChangeStage.Old) === "localDbInfo") {
-            return DbConflictResolution.Skip;
+            return DbConflictResolution.Replace;
           }
         }
         if (args.tableName.startsWith("ec_")) {

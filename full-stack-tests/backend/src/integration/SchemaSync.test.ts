@@ -314,12 +314,186 @@ describe("Schema synchronization", function (this: Suite) {
 
     HubMock.shutdown();
   });
-  it.skip("override schema sync container", async () => {
-
-  });
-  it.only("test schema sync with profile and domain schema upgrade", async () => {
+  it.only("override schema sync container", async () => {
     Logger.initializeToConsole();
     Logger.setLevelDefault(LogLevel.Error);
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
+
+    const iTwinId = Guid.createValue();
+    const user1AccessToken = "token 1";
+    const user2AccessToken = "token 2";
+    const user3AccessToken = "token 3";
+
+    HubMock.startup("test", KnownTestLocations.outputDir);
+    const version0 = IModelTestUtils.prepareOutputFile("schemaSync", "imodel1.bim");
+    SnapshotDb.createEmpty(version0, { rootSubject: { name: "testSchemaSync" } }).close();
+
+    const iModelId = await HubMock.createNewIModel({ accessToken: user1AccessToken, iTwinId, version0, iModelName: "schemaSync" });
+
+    const openNewBriefcase = async (accessToken: AccessToken) => {
+      const bcProps = await BriefcaseManager.downloadBriefcase({ iModelId, iTwinId, accessToken });
+      return BriefcaseDb.open(bcProps);
+    };
+
+    const b1 = await openNewBriefcase(user1AccessToken);
+    const b2 = await openNewBriefcase(user2AccessToken);
+    const b3 = await openNewBriefcase(user3AccessToken);
+
+    SchemaSync.setTestCache(b1, "briefcase1");
+    SchemaSync.setTestCache(b2, "briefcase2");
+    SchemaSync.setTestCache(b3, "briefcase3");
+
+    await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
+    await importSchema(b1, {
+      name: "Test1",
+      alias: "ts1",
+      ver: "01.00.00",
+      refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+      classes: [{
+        name: "Pipe1",
+        baseClass: "bis:GeometricElement2d",
+        props: [
+          { name: "p0", type: "string" },
+        ],
+      },
+      ],
+    });
+    assert.deepEqual(queryPropNames(b1, "Test1:Pipe1"), ["p0"]);
+
+    // B2 pull changes will pull changeset that enable schema sync and followed by
+    // SchemaSync.pull() will get new schema that is not been pushed to hub yet.
+    await b2.pullChanges();
+    assert.equal(querySchemaSyncDataVer(b2), "0x2");
+    assert.deepEqual(queryPropNames(b2, "Test1:Pipe1"), ["p0"]);
+
+    await b2.pushChanges({ description: "Test1 schema push" });
+    // B2 switch container
+    const newContainerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-2" });
+    await assertThrowsAsync(
+      async () => SchemaSync.initializeForIModel({ iModel: b2, containerProps: newContainerProps }),
+      "Local db already initialized to schema sync (container-id: imodel-sync-itwin-1)");
+
+    await SchemaSync.initializeForIModel({ iModel: b2, containerProps: newContainerProps, overrideContainer: true });
+    assert.equal(querySchemaSyncDataVer(b2), "0x2");
+    await importSchema(b2, {
+      name: "Test1",
+      alias: "ts1",
+      ver: "01.00.01",
+      refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+      classes: [{
+        name: "Pipe1",
+        baseClass: "bis:GeometricElement2d",
+        props: [
+          { name: "p0", type: "string" },
+          { name: "p1", type: "string" }, /* New property added by B2 using new imodel-sync-itwin-2 */
+        ],
+      },
+      ],
+    });
+    assert.equal(querySchemaSyncDataVer(b2), "0x3");
+    assert.deepEqual(queryPropNames(b2, "Test1:Pipe1"), ["p0", "p1"]);
+
+    // B1 still point to old container and should not see p1
+    await SchemaSync.pull(b1);
+    assert.equal(querySchemaSyncDataVer(b1), "0x2");
+    assert.deepEqual(queryPropNames(b1, "Test1:Pipe1"), ["p0"]);
+    await importSchema(b1, {
+      name: "Test1",
+      alias: "ts1",
+      ver: "01.00.02",
+      refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+      classes: [{
+        name: "Pipe1",
+        baseClass: "bis:GeometricElement2d",
+        props: [
+          { name: "p0", type: "string" },
+          { name: "p2", type: "string" }, /* New property added by B2 using new imodel-sync-itwin-1 */
+        ],
+      },
+      ],
+    });
+    assert.equal(querySchemaSyncDataVer(b1), "0x3");
+    assert.deepEqual(queryPropNames(b1, "Test1:Pipe1"), ["p0", "p2"]);
+
+    // Pull will switch the container and changes done by b0 after it was switch on time line.
+    await b1.pullChanges();
+
+    assert.equal(querySchemaSyncDataVer(b1), "0x3");
+    assert.deepEqual(queryPropNames(b1, "Test1:Pipe1"), ["p0", "p1"]);
+
+    await importSchema(b1, {
+      name: "Test1",
+      alias: "ts1",
+      ver: "01.00.02",
+      refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+      classes: [{
+        name: "Pipe1",
+        baseClass: "bis:GeometricElement2d",
+        props: [
+          { name: "p0", type: "string" },
+          { name: "p1", type: "string" },
+          { name: "p2", type: "string" }, /* New property added by B2 using new imodel-sync-itwin-2 */
+        ],
+      },
+      ],
+    });
+    assert.equal(querySchemaSyncDataVer(b1), "0x4");
+    assert.deepEqual(queryPropNames(b1, "Test1:Pipe1"), ["p0", "p1", "p2"]);
+
+    assert.equal(querySchemaSyncDataVer(b2), "0x3");
+    assert.deepEqual(queryPropNames(b2, "Test1:Pipe1"), ["p0", "p1"]);
+    await SchemaSync.pull(b2);
+    assert.equal(querySchemaSyncDataVer(b2), "0x4");
+    assert.deepEqual(queryPropNames(b2, "Test1:Pipe1"), ["p0", "p1", "p2"]);
+
+    await b3.pullChanges();
+    assert.equal(querySchemaSyncDataVer(b3), "0x4");
+    assert.deepEqual(queryPropNames(b3, "Test1:Pipe1"), ["p0", "p1", "p2"]);
+
+    await b3.pushChanges({ description: "b3 push" });
+    await b2.pushChanges({ description: "b2 push" });
+    await b1.pushChanges({ description: "b1 push" });
+
+    // Expected history on master
+    const masterHistory = (await HubMock.queryChangesets({ iModelId })).map((x) => {
+      return { description: x.description, changesType: x.changesType, briefcaseId: x.briefcaseId };
+    });
+
+    const expectedHistory = [{
+      description: "Enable SchemaSync for iModel with container-id: imodel-sync-itwin-1",
+      changesType: 0,
+      briefcaseId: 2,
+    }, {
+      description: "Test1 schema push",
+      changesType: 0,
+      briefcaseId: 3,
+    }, {
+      description: "Overriding SchemaSync for iModel with container-id: imodel-sync-itwin-2",
+      changesType: 0,
+      briefcaseId: 3,
+    }, {
+      description: "b3 push",
+      changesType: 65,
+      briefcaseId: 4,
+    }, {
+      description: "b2 push",
+      changesType: 65,
+      briefcaseId: 3,
+    }, {
+      description: "b1 push",
+      changesType: 65,
+      briefcaseId: 2,
+    },
+    ];
+    assert.deepEqual(masterHistory, expectedHistory);
+
+    [b1, b2, b3].forEach((b) => {
+      b.saveChanges();
+      b.close();
+    });
+    HubMock.shutdown();
+  });
+  it.only("test schema sync with profile and domain schema upgrade", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
 
     const iTwinId = Guid.createValue();
@@ -436,7 +610,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.deepEqual(queryPropNames(b1, "Test1:Pipe1"), ["p0", "p1"]);
     assert.equal(querySchemaSyncDataVer(b1), "0x4", "Test1 schema update should change it from 0x3 -> 0x4");
 
-    // 6. B2 import new schema but should fail as when we enable schema sync container we acquired schema lock this forces any other briefcase to pull before
+    // 6. B2 import new schema but should fail as it does not see SchemaSync enable so it attempt acquire schema lock
     await assertThrowsAsync(async () => importSchema(b2, {
       name: "Test2",
       alias: "ts2",
