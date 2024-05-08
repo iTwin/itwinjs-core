@@ -11,6 +11,8 @@ import { TextBlock, TextBlockProps } from "./TextBlock";
 
 /** Describes how to compute the "anchor point" for a [[TextAnnotation]].
  * The anchor point is a point on or inside of the 2d bounding box enclosing the contents of the annotation's [[TextBlock]].
+ * The annotation can be rotated and translated relative to the anchor point. The anchor point also serves as the snap point
+ * when [AccuSnap]($frontend) is set to [SnapMode.Origin]($frontend).
  * @see [[TextAnnotation]] for a description of how the anchor point is computed.
  * @beta
  */
