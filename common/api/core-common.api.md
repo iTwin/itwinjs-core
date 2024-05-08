@@ -1162,7 +1162,8 @@ export { ChangeSetStatus }
 // @public
 export enum ChangesetType {
     Regular = 0,
-    Schema = 1
+    Schema = 1,
+    SchemaSync = 65
 }
 
 // @alpha
