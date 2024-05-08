@@ -6,7 +6,7 @@
  * @module Annotation
  */
 
-import { Point3d, Range2d, Transform, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
+import { Point3d, Transform, XYZProps, XAndY, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
 import { TextBlock, TextBlockProps } from "./TextBlock";
 
 /**
@@ -147,11 +147,11 @@ export class TextAnnotation {
    * The anchor point is computed as specified by this annotation's [[anchor]] setting. For example, if the text block is anchored
    * at the bottom left, then the transform will be relative to the bottom-left corner of `textBlockExtents`.
    * The text block will be rotated around the fixed anchor point according to [[orientation]], then the anchor point will be translated to coincide with [[origin]].
-   * @param textBlockExtents The bounding box containing the text block. You can compute this using [computeTextBlockExtents]($common).
+   * @param textBlockDimensions The width and height of the bounding box containing the text block. You can compute this using [computeTextBlockExtents]($common).
    * @see [[computeAnchorPoint]] to compute the transform's anchor point.
    */
-  public computeTransform(textBlockExtents: Range2d): Transform {
-    const anchorPt = this.computeAnchorPoint(textBlockExtents);
+  public computeTransform(textBlockDimensions: XAndY): Transform {
+    const anchorPt = this.computeAnchorPoint(textBlockDimensions);
     const matrix = this.orientation.toMatrix3d();
 
     const transform = Transform.createFixedPointAndMatrix(anchorPt, matrix);
@@ -159,28 +159,28 @@ export class TextAnnotation {
   }
 
   /** Compute the anchor point of this annotation as specified by [[anchor]].
-   * @param textBlockExtents The bounding box containing the [[textBlock]]. You can compute this using [computeTextBlockExtents]($common).
+   * @param textBlockDimensions The width and height of the bounding box containing the [[textBlock]]. You can compute this using [computeTextBlockExtents]($common).
    * @see [[computeTransform]] to compute the transform relative to the anchor point.
    */
-  public computeAnchorPoint(textBlockExtents: Range2d): Point3d {
+  public computeAnchorPoint(textBlockDimensions: XAndY): Point3d {
     let x = 0;
     let y = 0;
 
     switch (this.anchor.horizontal) {
       case "center":
-        x += textBlockExtents.xLength() / 2;
+        x += textBlockDimensions.x / 2;
         break;
       case "right":
-        x += textBlockExtents.xLength();
+        x += textBlockDimensions.x;
         break;
     }
 
     switch (this.anchor.vertical) {
       case "middle":
-        y -= textBlockExtents.yLength() / 2;
+        y -= textBlockDimensions.y / 2;
         break;
       case "bottom":
-        y -= textBlockExtents.yLength();
+        y -= textBlockDimensions.y;
         break;
     }
 

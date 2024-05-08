@@ -9,7 +9,7 @@ describe.only("TextAnnotation", () => {
         anchor: { horizontal, vertical },
       });
 
-      const extents = new Range2d(0, 0, 20, 10);
+      const extents = { x: 20, y: 10 };
       const actual = annotation.computeAnchorPoint(extents);
       expect(actual.x).to.equal(x);
       expect(actual.y).to.equal(y);
@@ -40,10 +40,12 @@ describe.only("TextAnnotation", () => {
         orientation: options?.rotation ? new YawPitchRollAngles(Angle.createDegrees(options.rotation)) : undefined,
       });
 
-      const extents = new Range2d(0, 0, 20, 10);
-      const transform = annotation.computeTransform(extents);
+      // NB: In TextBlock coordinates, the origin is at the top-left.
+      const dimensions = { x: 20, y: 10 };
+      const extents = new Range3d(0, -dimensions.y, 0, dimensions.x, 0, 0);
+      const transform = annotation.computeTransform(dimensions);
       const expected = Range3d.createRange2d(new Range2d(expectedRange[0], expectedRange[1], expectedRange[2], expectedRange[3]));
-      const actual = transform.multiplyRange(Range3d.createRange2d(extents));
+      const actual = transform.multiplyRange(extents);
 
       // console.log(`anchor ${JSON.stringify(annotation.computeAnchorPoint(extents))}`);
       // console.log(`transform ${JSON.stringify(transform)}`);
@@ -59,12 +61,14 @@ describe.only("TextAnnotation", () => {
       // console.log(`topLeft ${JSON.stringify(topLeft)}`);
       
 
-      expect(actual.low.x).to.equal(expected.low.x);
-      expect(actual.low.y).to.equal(expected.low.y);
-      expect(actual.low.z).to.equal(expected.low.z);
-      expect(actual.high.x).to.equal(expected.high.x);
-      expect(actual.high.y).to.equal(expected.high.y);
-      expect(actual.high.z).to.equal(expected.high.z);
+      // expect(actual.low.x).to.equal(expected.low.x);
+      // expect(actual.low.y).to.equal(expected.low.y);
+      // expect(actual.low.z).to.equal(expected.low.z);
+      // expect(actual.high.x).to.equal(expected.high.x);
+      // expect(actual.high.y).to.equal(expected.high.y);
+      // expect(actual.high.z).to.equal(expected.high.z);
+
+      expect(actual.isAlmostEqual(expected)).to.equal(true, `expected ${JSON.stringify(expected)} actual ${JSON.stringify(actual)}`);
     }
 
     const verticals = ["top", "middle", "bottom"] as const;
@@ -73,7 +77,7 @@ describe.only("TextAnnotation", () => {
     it("should produce identity transform for identity orientation and zero origin", () => {
       for (const vertical of verticals) {
         for (const horizontal of horizontals) {
-          expectTransformedRange([0, 0, 20, 10], { anchor: { vertical, horizontal } });
+          expectTransformedRange([0, -10, 20, 0], { anchor: { vertical, horizontal } });
         }
       }
     });
@@ -81,7 +85,7 @@ describe.only("TextAnnotation", () => {
     it("should translate relative to anchor point", () => {
       for (const vertical of verticals) {
         for (const horizontal of horizontals) {
-          expectTransformedRange([-5, 20, 15, 30], { origin: [-5, 20], anchor: { vertical, horizontal } });
+          expectTransformedRange([-5, 10, 15, 20], { origin: [-5, 20], anchor: { vertical, horizontal } });
         }
       }
     });
