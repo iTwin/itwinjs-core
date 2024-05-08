@@ -7,7 +7,7 @@
  */
 
 import { BeTimePoint, dispose } from "@itwin/core-bentley";
-import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Polyface, Transform } from "@itwin/core-geometry";
+import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, IndexedPolyface, Point3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, Frustum } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch, GraphicBranchOptions } from "../render/GraphicBranch";
@@ -37,7 +37,7 @@ export interface RealityTileParams extends TileParams {
  */
 export interface RealityTileGeometry {
   /** Polyfaces representing the tile's geometry. */
-  polyfaces?: Polyface[];
+  polyfaces?: IndexedPolyface[];
 }
 
 /** @internal */
