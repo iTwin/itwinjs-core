@@ -82,5 +82,5 @@ The actual MapFeatureInfo tool has been improved to highlight map-layer geometri
 
 To achieve this, the appropriate resolution terrain tiles needs to be collected from the tile tree, then the `@itwin/core-geometry` functionalities are used to drape the map-layer geometries (which include point, lines and polygons) to be draped on the terrain mesh.  The resulting geometries are displayed as decorations.
 
-In the following screenshot, we can see sample highlighted : 
-[image](../assets/MapLayersInfoToolDrape.png)
+In the following screenshot, we can see sample highlighted :
+![image](./assets/MapLayersInfoToolDrape.png)
