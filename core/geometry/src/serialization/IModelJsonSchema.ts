@@ -920,7 +920,7 @@ export namespace IModelJson {
 
         SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(data.pointIndex, numPerFace,
           (i: number, v?: boolean) => { polyface.addPointIndex(i, v); },
-          () => { polyface.terminateFacet(false); });
+          () => { polyface.terminateFacet(true); });
 
         if (data.hasOwnProperty("normalIndex")) {
           SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(data.normalIndex, numPerFace,
