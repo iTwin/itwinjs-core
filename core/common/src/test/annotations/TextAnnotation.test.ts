@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { TextAnnotation, TextAnnotationAnchor } from "../../annotation/TextAnnotation";
 import { Angle, AxisIndex, Matrix3d, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
 
-describe.only("TextAnnotation", () => {
+describe("TextAnnotation", () => {
   describe("computeAnchorPoint", () => {
     function expectAnchor(x: number, y: number, horizontal: "left" | "right" | "center", vertical: "top" | "bottom" | "middle"): void {
       const annotation = TextAnnotation.fromJSON({
@@ -91,8 +91,42 @@ describe.only("TextAnnotation", () => {
     });
 
     it("should rotate about fixed anchor point", () => {
+      expectTransformedRange([0, 0, 10, 20], {
+        anchor: { horizontal: "left", vertical: "top" },
+        rotation: 90,
+      });
       expectTransformedRange([-10, -10, 0, 10], {
         anchor: { horizontal: "left", vertical: "bottom" },
+        rotation: 90,
+      });
+      expectTransformedRange([-5, -5, 5, 15], {
+        anchor: { horizontal: "left", vertical: "middle" },
+        rotation: 90,
+      });
+
+      expectTransformedRange([5, -15, 15, 5], {
+        anchor: { horizontal: "center", vertical: "middle" },
+        rotation: 90,
+      });
+      expectTransformedRange([10, -10, 20, 10], {
+        anchor: { horizontal: "center", vertical: "top"},
+        rotation: 90,
+      });
+      expectTransformedRange([0, -20, 10, 0], {
+        anchor: { horizontal: "center", vertical: "bottom" },
+        rotation: 90,
+      });
+
+      expectTransformedRange([20, -20, 30, 0], {
+        anchor: { horizontal: "right", vertical: "top" },
+        rotation: 90,
+      });
+      expectTransformedRange([10, -30, 20, -10], {
+        anchor: { horizontal: "right", vertical: "bottom" },
+        rotation: 90,
+      });
+      expectTransformedRange([15, -25, 25, -5], {
+        anchor: { horizontal: "right", vertical: "middle" },
         rotation: 90,
       });
     });
