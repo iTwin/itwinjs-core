@@ -2903,6 +2903,7 @@ export type EntityIdAndClassIdIterable = Iterable<Readonly<EntityIdAndClassId>>;
 export class EntityMetaData implements EntityMetaDataProps {
     constructor(jsonObj: EntityMetaDataProps);
     readonly baseClasses: string[];
+    readonly classId: Id64String;
     readonly customAttributes?: CustomAttribute[];
     // (undocumented)
     readonly description?: string;
@@ -2919,6 +2920,8 @@ export class EntityMetaData implements EntityMetaDataProps {
 // @beta (undocumented)
 export interface EntityMetaDataProps {
     baseClasses: string[];
+    // (undocumented)
+    classId: Id64String;
     customAttributes?: CustomAttribute[];
     // (undocumented)
     description?: string;
@@ -6038,6 +6041,20 @@ export interface NormalMapParams {
 // @public
 export interface NormalMapProps extends TextureMapProps {
     NormalFlags?: NormalMapFlags;
+}
+
+// @internal
+export interface NotifyEntitiesChangedArgs extends ChangedEntities {
+    deletedMeta: number[];
+    insertedMeta: number[];
+    meta: NotifyEntitiesChangedMetadata[];
+    updatedMeta: number[];
+}
+
+// @internal (undocumented)
+export interface NotifyEntitiesChangedMetadata {
+    bases: number[];
+    name: string;
 }
 
 // @public
@@ -10447,7 +10464,7 @@ export interface TxnNotifications {
     // (undocumented)
     notifyEcefLocationChanged: (ecef: EcefLocationProps | undefined) => void;
     // (undocumented)
-    notifyElementsChanged: (changes: ChangedEntities) => void;
+    notifyElementsChanged: (changes: NotifyEntitiesChangedArgs) => void;
     // (undocumented)
     notifyGeographicCoordinateSystemChanged: (gcs: GeographicCRSProps | undefined) => void;
     // (undocumented)
@@ -10457,7 +10474,7 @@ export interface TxnNotifications {
     // (undocumented)
     notifyIModelNameChanged: (name: string) => void;
     // (undocumented)
-    notifyModelsChanged: (changes: ChangedEntities) => void;
+    notifyModelsChanged: (changes: NotifyEntitiesChangedArgs) => void;
     // (undocumented)
     notifyProjectExtentsChanged: (extents: Range3dProps) => void;
     // (undocumented)

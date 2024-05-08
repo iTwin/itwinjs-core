@@ -11,6 +11,7 @@
     "cover": "npm run -s test",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "azurite:setup": "mkdirp ./lib/cjs/test/azuriteStorage && azurite-blob --silent --loose --location ./lib/cjs/test/azuriteStorage",
     "test": "npm run -s test:chrome && npm run -s test:electron",
     "test:chrome": "run-p -r azurite:setup test:chrome:azurite",
