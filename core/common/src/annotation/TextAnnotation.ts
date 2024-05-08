@@ -10,29 +10,24 @@ import { Point3d, Transform, XYZProps, XAndY, YawPitchRollAngles, YawPitchRollPr
 import { TextBlock, TextBlockProps } from "./TextBlock";
 
 /**
- * Describes the horizontal and vertical alignment of a [[TextAnnotation]]'s text relative to the [Placement]($common) origin of
- * the [TextAnnotation2d]($backend) or [TextAnnotation3d]($backend) host element, also referred to as the annotation's "anchor point".
- * For example, if the anchor is specified as middle-center, the text will be centered on the element's origin.
- * The anchor point also serves as the pivot point for [[TextAnnotation.rotation]], such that the text is rotated about the
- * anchor point while the anchor point remains fixed.
+ * Describes the horizontal and vertical alignment of a [[TextAnnotation]]'s text block, used to compute the annotation's "anchor point".
+ * @see [[TextAnnotation]] for a description of how the anchor point is computed.
  * @beta
- * @preview
- * @extensions
  */
 export interface TextAnnotationAnchor {
   /**
    * The vertical alignment of the anchor point.
-   * "top" aligns the top of the text with the anchor point.
-   * "middle" aligns the middle of the text with the anchor point.
-   * "bottom" aligns the bottom of the text with the anchor point.
+   * "top" aligns the anchor point with the top of the text.
+   * "middle" aligns the anchor point with the middle of the text.
+   * "bottom" aligns the anchor point with the bottom of the text.
    */
   vertical: "top" | "middle" | "bottom";
 
   /**
    * The horizontal alignment of the anchor point.
-   * "left" aligns the left side of the text with the anchor point.
-   * "center" aligns the center of the text with the anchor point.
-   * "right" aligns the right side of the text with the anchor point.
+   * "left" aligns the anchor point with left side of the text.
+   * "center" aligns the anchor point with center of the text with.
+   * "right" aligns the anchor point with right side of the text.
    */
   horizontal: "left" | "center" | "right";
 }
@@ -40,8 +35,6 @@ export interface TextAnnotationAnchor {
 /**
  * JSON representation of a [[TextAnnotation]].
  * @beta
- * @preview
- * @extensions
  */
 export interface TextAnnotationProps {
   /** See [[TextAnnotation.offset]]. Default: [0, 0, 0]. */
@@ -56,8 +49,6 @@ export interface TextAnnotationProps {
 
 /** Arguments supplied to [[TextAnnotation.create]].
  * @beta
- * @preview
- * @extensions
  */
 export interface TextAnnotationCreateArgs {
   /** See [[TextAnnotation.offset]]. Default: (0, 0, 0). */
@@ -72,11 +63,16 @@ export interface TextAnnotationCreateArgs {
 
 /**
  * Represents a formatted block of text positioned in 2d or 3d space.
- * [TextAnnotation2d]($backend) and [TextAnnotation3d]($backend) elements store a TextAnnotation from which their geometric representation is generated.
+ * [TextAnnotation2d]($backend) and [TextAnnotation3d]($backend) elements store a single TextAnnotation from which their geometric representation is generated.
+ * Other types of elements may store multiple TextAnnotations, positioned relative to one another.
+ * The annotation's position and orientation relative to the host element's [Placement]($common) is determined as follows:
+ * - First, the width and height of a box enclosing the contents of the [[textBlock]] must be computed using [computeTextBlockExtents]($backend). This yields a box with the top-left
+ * corner at (0, 0) and the bottom-right corner at (width, -height).
+ * - Then, an "anchor point" is computed based on the text box and the [[anchor]] property. For example, if the annotation is anchored at the center-left, the anchor point will be (width/2, -height).
+ * - The [[orientation]] is applied to rotate the box around the anchor point.
+ * - Finally, the [[offset]] is added to the anchor point to apply translation.
  * @see [produceTextAnnotationGeometry]($backend) to decompose the annotation into a set of geometric primitives suitable for use with [[GeometryStreamBuilder.appendTextBlock]].
  * @beta
- * @preview
- * @extensions
  */
 export class TextAnnotation {
   /** The rotation of the annotation.
@@ -85,8 +81,9 @@ export class TextAnnotation {
   public orientation: YawPitchRollAngles;
   /** The formatted document. */
   public textBlock: TextBlock;
-  /** Describes how the [[textBlock]]'s content should be aligned relative to the host element's origin. */
+  /** Describes how to compute the [[textBlock]]'s anchor point. */
   public anchor: TextAnnotationAnchor;
+  /** An offset applied to the anchor point that can be used to position annotations within the same geometry stream relative to one another. */
   public offset: Point3d;
 
   private constructor(offset: Point3d, angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor) {
