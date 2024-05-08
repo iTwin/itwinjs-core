@@ -15108,6 +15108,7 @@ export class ToolAdmin {
     set reloadToolSettingsHandler(handler: (() => void) | undefined);
     // @beta
     reloadToolSettingsProperties(): void;
+    restartPrimitiveTool(): Promise<void>;
     // @internal (undocumented)
     sendButtonEvent(ev: BeButtonEvent): Promise<any>;
     // (undocumented)
