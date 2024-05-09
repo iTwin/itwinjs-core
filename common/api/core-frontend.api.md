@@ -11172,7 +11172,7 @@ export namespace RealityMeshParams {
         transform?: Transform;
         wantNormals?: boolean;
         wantParams?: boolean;
-    }): Polyface | undefined;
+    }): IndexedPolyface | undefined;
 }
 
 // @beta
@@ -11434,7 +11434,7 @@ export class RealityTileDrawArgs extends TileDrawArgs {
 
 // @beta
 export interface RealityTileGeometry {
-    polyfaces?: Polyface[];
+    polyfaces?: IndexedPolyface[];
 }
 
 // @internal
@@ -13879,6 +13879,8 @@ export abstract class TerrainMeshProvider {
 export interface TerrainMeshProviderOptions {
     dataSource?: string;
     exaggeration: number;
+    // @beta
+    produceGeometry?: boolean;
     wantNormals: boolean;
     wantSkirts: boolean;
 }
@@ -14514,7 +14516,7 @@ export class TileGeometryCollector {
     get isAllGeometryLoaded(): boolean;
     markLoading(): void;
     protected readonly _options: TileGeometryCollectorOptions;
-    readonly polyfaces: Polyface[];
+    readonly polyfaces: IndexedPolyface[];
     requestMissingTiles(): void;
 }
 
@@ -15106,6 +15108,7 @@ export class ToolAdmin {
     set reloadToolSettingsHandler(handler: (() => void) | undefined);
     // @beta
     reloadToolSettingsProperties(): void;
+    restartPrimitiveTool(): Promise<void>;
     // @internal (undocumented)
     sendButtonEvent(ev: BeButtonEvent): Promise<any>;
     // (undocumented)

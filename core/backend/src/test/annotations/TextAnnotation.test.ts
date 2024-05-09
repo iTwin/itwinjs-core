@@ -680,6 +680,7 @@ describe("TextAnnotation element", () => {
           horizontal: "right",
         },
         orientation: { yaw: 1, pitch: 0, roll: -1 },
+        offset: [0, -5, 100],
       });
     }
 

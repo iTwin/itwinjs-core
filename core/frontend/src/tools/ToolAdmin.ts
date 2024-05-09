@@ -1707,6 +1707,18 @@ export class ToolAdmin {
       return this.startPrimitiveTool(undefined);
   }
 
+  /**
+   * Call from external events or immediate tools that may have invalidated the current primitive tool's state.
+   * Examples are undo, which may invalidate any references to elements, or an immediate tool that uses an edit command to write to the iModel,
+   * since immediate tools do not replace the active tool.
+   * The current primitive tool is expected to call installTool with a new instance, or exitTool to start the default tool.
+   * @note Should be called even if the primitive tool is currently suspended by a view tool or input collector.
+   */
+  public async restartPrimitiveTool(): Promise<void> {
+    if (undefined !== this._primitiveTool)
+      await this._primitiveTool.onRestartTool();
+  }
+
   public setCursor(cursor: string | undefined): void {
     if (undefined === this._saveCursor)
       IModelApp.viewManager.setViewCursor(cursor);

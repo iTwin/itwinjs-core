@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "4.7.0-dev.0",
+  "version": "4.7.0-dev.2",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/cjs/presentation-frontend.js",
   "module": "lib/esm/presentation-frontend.js",
@@ -47,12 +47,12 @@
     "rxjs-for-await": "^1.0.0"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.7.0-dev.0",
-    "@itwin/core-common": "workspace:^4.7.0-dev.0",
-    "@itwin/core-frontend": "workspace:^4.7.0-dev.0",
-    "@itwin/core-quantity": "workspace:^4.7.0-dev.0",
-    "@itwin/ecschema-metadata": "workspace:^4.7.0-dev.0",
-    "@itwin/presentation-common": "workspace:^4.7.0-dev.0"
+    "@itwin/core-bentley": "workspace:^4.7.0-dev.2",
+    "@itwin/core-common": "workspace:^4.7.0-dev.2",
+    "@itwin/core-frontend": "workspace:^4.7.0-dev.2",
+    "@itwin/core-quantity": "workspace:^4.7.0-dev.2",
+    "@itwin/ecschema-metadata": "workspace:^4.7.0-dev.2",
+    "@itwin/presentation-common": "workspace:^4.7.0-dev.2"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -62,7 +62,7 @@
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.52",
+    "@itwin/eslint-plugin": "^4.0.2",
     "@itwin/presentation-common": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
