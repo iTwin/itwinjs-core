@@ -94,6 +94,12 @@ jobs:
         workingDirectory: ${{ parameters.workingDir }}
         condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
 
+      - script: ls ${{parameters.workingDir}}/generated-docs
+        displayName: List generated docs
+
+      - script: ls ${{parameters.stagingDir}}
+        displayName: List staging files before docs
+
 
       # if using the core artifact, download the Core Generated Docs artifact it to the workingDir using downloadPipelineArtifact task
       - task: DownloadPipelineArtifact@2
