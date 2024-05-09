@@ -314,7 +314,7 @@ describe("Schema synchronization", function (this: Suite) {
 
     HubMock.shutdown();
   });
-  it.only("override schema sync container", async () => {
+  it("override schema sync container", async () => {
     Logger.initializeToConsole();
     Logger.setLevelDefault(LogLevel.Error);
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
@@ -493,7 +493,7 @@ describe("Schema synchronization", function (this: Suite) {
     });
     HubMock.shutdown();
   });
-  it.only("test schema sync with profile and domain schema upgrade", async () => {
+  it("test schema sync with profile and domain schema upgrade", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
 
     const iTwinId = Guid.createValue();
