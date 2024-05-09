@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-rpcinterface-tests",
-  "version": "4.7.0-dev.1",
+  "version": "4.7.0-dev.2",
   "description": "Integration tests for the Schema RPC Interface",
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -52,7 +52,7 @@
   },
   "devDependencies": {
     "@itwin/core-backend": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.52",
+    "@itwin/eslint-plugin": "^4.0.2",
     "@itwin/express-server": "workspace:*",
     "@itwin/itwins-client": "^1.2.0",
     "@types/chai": "4.3.1",

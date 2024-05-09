@@ -8,7 +8,7 @@
 
 import { assert, Uint16ArrayBuilder, UintArray, UintArrayBuilder } from "@itwin/core-bentley";
 import {
-  IndexedPolyface, Point2d, Point3d, Polyface, Range2d, Range3d, Transform, Vector3d, XAndY, XYAndZ,
+  IndexedPolyface, Point2d, Point3d, Range2d, Range3d, Transform, Vector3d, XAndY, XYAndZ,
 } from "@itwin/core-geometry";
 import {
   OctEncodedNormal, QPoint2d, QPoint2dBuffer, QPoint2dBufferBuilder, QPoint3d, QPoint3dBuffer, QPoint3dBufferBuilder, RenderTexture,
@@ -73,7 +73,7 @@ export namespace RealityMeshParams {
   }
 
   /** @alpha */
-  export function toPolyface(params: RealityMeshParams, options?: { transform?: Transform, wantNormals?: boolean, wantParams?: boolean }): Polyface | undefined {
+  export function toPolyface(params: RealityMeshParams, options?: { transform?: Transform, wantNormals?: boolean, wantParams?: boolean }): IndexedPolyface | undefined {
     const { positions, normals, uvs, indices } = params;
     const includeNormals = options?.wantNormals && undefined !== normals;
     const includeParams = options?.wantParams;
