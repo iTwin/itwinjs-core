@@ -789,7 +789,6 @@ describe("ReorientFacets", () => {
     expect(ck.getNumErrors()).equals(0);
   });
   it("DuplicateFacetPurge", () => {
-
     const ck = new Checker();
     // 7,8,9
     // 4,5,6
@@ -807,6 +806,7 @@ describe("ReorientFacets", () => {
           [0, 2, 0],
           [1, 2, 0],
           [2, 2, 0],
+          [3, 0, 0],
         ],
         pointIndex: [
           1, 2, 5, 4, 0,
@@ -1132,20 +1132,22 @@ function exerciseMultiUnionDiff(ck: Checker, allGeometry: GeometryQuery[],
  * @param num3Cluster number of clusters with 3 facets
  */
 function testDuplicateFacetCounts(ck: Checker, title: string, meshData: object, numSingleton: number, numCluster: number, num2Cluster: number, num3Cluster: number) {
-  const mesh = IModelJson.Reader.parse(meshData) as IndexedPolyface;
-  const dupData0 = PolyfaceQuery.collectDuplicateFacetIndices(mesh, false);
-  const dupData1 = PolyfaceQuery.collectDuplicateFacetIndices(mesh, true);
-  ck.testExactNumber(numSingleton, dupData1.length - dupData0.length, `${title} Singletons`);
-  ck.testExactNumber(numCluster, dupData0.length, "Clusters");
-  ck.testExactNumber(num2Cluster, countArraysBySize(dupData0, 2), `${title} num2Cluster`);
-  ck.testExactNumber(num3Cluster, countArraysBySize(dupData0, 3), `${title} num3Cluster`);
+  const mesh = IModelJson.Reader.parse(meshData) as IndexedPolyface | undefined;
+  if (ck.testDefined(mesh, "mesh is valid")) {
+    const dupData0 = PolyfaceQuery.collectDuplicateFacetIndices(mesh, false);
+    const dupData1 = PolyfaceQuery.collectDuplicateFacetIndices(mesh, true);
+    ck.testExactNumber(numSingleton, dupData1.length - dupData0.length, `${title} Singletons`);
+    ck.testExactNumber(numCluster, dupData0.length, "Clusters");
+    ck.testExactNumber(num2Cluster, countArraysBySize(dupData0, 2), `${title} num2Cluster`);
+    ck.testExactNumber(num3Cluster, countArraysBySize(dupData0, 3), `${title} num3Cluster`);
 
-  const singletons = PolyfaceQuery.cloneByFacetDuplication(mesh, true, DuplicateFacetClusterSelector.SelectNone) as IndexedPolyface;
-  const oneOfEachCluster = PolyfaceQuery.cloneByFacetDuplication(mesh, false, DuplicateFacetClusterSelector.SelectAny) as IndexedPolyface;
-  const allOfEachCluster = PolyfaceQuery.cloneByFacetDuplication(mesh, false, DuplicateFacetClusterSelector.SelectAll) as IndexedPolyface;
-  ck.testExactNumber(numSingleton, singletons.facetCount, `${title} cloned singletons`);
-  ck.testExactNumber(numCluster, oneOfEachCluster.facetCount, `${title} cloned one per cluster`);
-  ck.testExactNumber(mesh.facetCount - numSingleton, allOfEachCluster.facetCount, `${title}  cloned all in clusters`);
+    const singletons = PolyfaceQuery.cloneByFacetDuplication(mesh, true, DuplicateFacetClusterSelector.SelectNone) as IndexedPolyface;
+    const oneOfEachCluster = PolyfaceQuery.cloneByFacetDuplication(mesh, false, DuplicateFacetClusterSelector.SelectAny) as IndexedPolyface;
+    const allOfEachCluster = PolyfaceQuery.cloneByFacetDuplication(mesh, false, DuplicateFacetClusterSelector.SelectAll) as IndexedPolyface;
+    ck.testExactNumber(numSingleton, singletons.facetCount, `${title} cloned singletons`);
+    ck.testExactNumber(numCluster, oneOfEachCluster.facetCount, `${title} cloned one per cluster`);
+    ck.testExactNumber(mesh.facetCount - numSingleton, allOfEachCluster.facetCount, `${title}  cloned all in clusters`);
+  }
 }
 // return the number of arrays with target size.
 function countArraysBySize(data: number[][], target: number): number {
