@@ -1740,37 +1740,34 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     private tryGetElementJson<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
       const { id, code, federationGuid } = loadProps;
-      let filterClause: string | undefined;
-      let bindCallback: ((statement: ECSqlStatement) => void) | undefined;
+
+      if (!this._iModel.isOpen)
+        return undefined;
+
+      let elementId: string | undefined;
 
       if (id !== undefined) {
-        filterClause = "WHERE ECInstanceId=?";
-        bindCallback =  (statement: ECSqlStatement) => statement.bindId(1, id);
+        elementId = id;
       } else if (federationGuid !== undefined) {
-        filterClause = "WHERE FederationGuid=?";
-        bindCallback =  (statement: ECSqlStatement) => statement.bindId(1, federationGuid);
-      } else if (code !== undefined) {
-        const elementId = this._iModel.withPreparedSqliteStatement(`SELECT Id FROM bis_Element WHERE CodeSpecId=? AND CodeScopeId=? AND CodeValue=? LIMIT 1`, (stmt: SqliteStatement) => {
-          stmt.bindId(1, code.spec);
-          stmt.bindId(2, code.scope);
-          if (code.value !== undefined) {
-            stmt.bindString(3, code.value);
-          } else {
-            stmt.bindNull(3);
-          }
-
+        elementId = this._iModel.withPreparedSqliteStatement("SELECT Id FROM bis_Element WHERE FederationGuid=?", (stmt: SqliteStatement) => {
+          stmt.bindGuid(1, federationGuid);
           return stmt.nextRow() ? stmt.getValueId(0) : undefined;
         });
-
-        if (elementId === undefined)
-          return undefined;
-
-        filterClause = "WHERE ECInstanceId=?";
-        bindCallback = (statement: ECSqlStatement) => statement.bindId(1, elementId);
+      } else if (code !== undefined) {
+        elementId = this._iModel.withPreparedSqliteStatement("SELECT Id FROM bis_Element WHERE CodeSpecId=? AND CodeScopeId=? AND CodeValue=? LIMIT 1", (stmt: SqliteStatement) => {
+          stmt.bindId(1, code.spec);
+          stmt.bindId(2, code.scope);
+          code.value !== undefined ? stmt.bindString(3, code.value) : stmt.bindNull(3);
+          return stmt.nextRow() ? stmt.getValueId(0) : undefined;
+        });
       }
 
-      return this._iModel.withPreparedStatement(`SELECT $ FROM Bis.Element ${filterClause} OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB`, (statement: ECSqlStatement) => {
-        bindCallback?.(statement);
+      if (elementId === undefined)
+        return undefined;
+
+      return this._iModel.withPreparedStatement("SELECT $ FROM Bis.Element WHERE ECInstanceId=? OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB", (statement: ECSqlStatement) => {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion. elementId can't be null here, but eslint recognizes it as an error.
+        statement.bindId(1, elementId!);
 
         if (statement.step() !== DbResult.BE_SQLITE_ROW)
           return undefined;

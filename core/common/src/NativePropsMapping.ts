@@ -51,52 +51,17 @@ type NativeSubCategoryProps = NativeElementProps & Pick<SubCategoryProps, "isPri
   properties?: string;
 };
 
-function mapAllProperties(props: { [key: string]: any }): { [key: string]: any } {
+function mapBinaryProperties(props: { [key: string]: any }): { [key: string]: any } {
   for (const key of Object.keys(props)) {
     const val = props[key];
 
-    // binary property mappings
     if (typeof val === "string") {
       if (Base64EncodedString.hasPrefix(val)) {
         props[key] = Base64EncodedString.toUint8Array(val);
       }
-      // coordinate property alignments
-    } else if (isCoordinateProps(val)) {
-      props[key] = mapCoordinatesProps(val);
     } else if (typeof val === "object" && val !== null) {
-      props[key] = mapAllProperties(val);
-    } else if (Array.isArray(val)) {
-      for (const [index, value] of val.entries()) {
-        if (Base64EncodedString.hasPrefix(value)) {
-          props[key][index] = Base64EncodedString.toUint8Array(value);
-        } else if (isCoordinateProps(val)) {
-          props[key][index] = mapCoordinatesProps(val);
-        } else if (typeof val === "object" && val !== null) {
-          props[key][index] = mapAllProperties(value);
-        }
-      }
+      props[key] = mapBinaryProperties(val);
     }
-  }
-  return props;
-}
-function isCoordinateProps(value: unknown): value is XYZProps | XYProps {
-  if (Array.isArray(value)) {
-    return value.length <= 3 && value.every(Number.isFinite);
-  } else if (typeof value === "object" && value !== null) {
-    const obj = value as { [key: string]: unknown };
-    return "x" in obj && "y" in obj && (typeof obj.x === "number" || obj.x === undefined) && (typeof obj.y === "number" || obj.y === undefined) && ("z" in obj ? (typeof obj.z === "number" || obj.z === undefined) : true);
-  }
-  return false;
-}
-function mapCoordinatesProps(props: XYZProps | XYProps): XYZProps | XYProps {
-  if (Array.isArray(props))
-    return props;
-
-  if (props.x !== undefined && props.y !== undefined) {
-    if ("z" in props && props.z !== undefined)
-      return [props.x, props.y, props.z];
-    else
-      return [props.x, props.y];
   }
   return props;
 }
@@ -112,7 +77,7 @@ function mapElementProps(props: NativeElementProps): ElementProps {
     parent: parent ? mapRelatedElementProps(parent) : undefined,
     classFullName: className.replace(".", ":"),
     jsonProperties: jsonProperties ? JSON.parse(jsonProperties) : undefined,
-    ...mapAllProperties(rest),
+    ...mapBinaryProperties(rest),
   };
 }
 
@@ -171,7 +136,7 @@ export function mapNativeElementProps<T extends ElementProps>(props: NativeInter
   }
 
   // SubCategoryProps
-  if ("properties" in props && props.properties !== undefined) {
+  if ("properties" in props && !!props.properties) {
     element.appearance = JSON.parse(props.properties);
     delete element.properties;
   }
