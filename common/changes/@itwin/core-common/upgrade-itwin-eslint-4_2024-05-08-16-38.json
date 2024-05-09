@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Promote QPoint2dBufferBuilderOptions and QPoint3dBufferBuilderOptions from beta to public",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

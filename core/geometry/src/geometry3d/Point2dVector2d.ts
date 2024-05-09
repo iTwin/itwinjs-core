@@ -129,6 +129,10 @@ export class XY implements XAndY {
   public get isAlmostZero(): boolean {
     return Geometry.isSmallMetricDistance(this.x) && Geometry.isSmallMetricDistance(this.y);
   }
+  /** Return true if the x and y components are all exactly zero */
+  public get isZero(): boolean {
+    return this.x === 0.0 && this.y === 0.0;
+  }
   /** Return the largest absolute value of any component */
   public maxAbs(): number {
     return Math.max(Math.abs(this.x), Math.abs(this.y));
