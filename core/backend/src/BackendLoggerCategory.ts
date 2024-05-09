@@ -92,8 +92,7 @@ export enum BackendLoggerCategory {
    */
   EventSink = "core-backend.EventSink",
 
-  /** The logger category used by the following classes:
-   * - [[iModels]]
+  /**
    * @alpha
    */
   Editing = "core-backend.Editing",
