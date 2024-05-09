@@ -99,6 +99,8 @@ export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterab
     Accept: "application/vnd.bentley.itwin-platform.v1+json",
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
     Prefer: "return=representation",
+    /* eslint-disable-next-line @typescript-eslint/naming-convention */
+    SessionId: IModelApp.sessionId,
   };
 
   let url: string | undefined = createMeshExportServiceQueryUrl(args);
