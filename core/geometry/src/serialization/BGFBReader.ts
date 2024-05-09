@@ -464,43 +464,42 @@ return undefined;
         const normalIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.normalIndexArray());
         const colorIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.colorIndexArray());
         const taggedNumericDataOffset = polyfaceHeader.taggedNumericData();
-        if (meshStyle === 1 && pointF64 && pointIndexI32) {
-          const polyface = IndexedPolyface.create(normalF64 !== undefined, paramF64 !== undefined, intColorU32 !== undefined, twoSided);
-          polyface.expectedClosure = expectedClosure;
-          for (let i = 0; i + 2 < pointF64?.length; i += 3)
-            polyface.data.point.pushXYZ(pointF64[i], pointF64[i + 1], pointF64[i + 2]);
-          if (paramF64) {
-            for (let i = 0; i + 1 < paramF64?.length; i += 2)
-              polyface.data.param!.pushXY(paramF64[i], paramF64[i + 1]);
-          }
-          if (normalF64) {
-            for (let i = 0; i + 2 < normalF64?.length; i += 3)
-              polyface.data.normal!.pushXYZ(normalF64[i], normalF64[i + 1], normalF64[i + 2]);
-          }
-          if (intColorU32) {
-            for (const c of intColorU32)
-              polyface.data.color!.push(c);
-          }
 
-          // The flatbuffer data is one based.
-          // If numPerFace is less than 2, facets are variable size and zero terminated
-          // If numPerFace is 2 or more, indices are blocked
-          SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(pointIndexI32, numPerFace,
-            (i: number, v?: boolean) => { polyface.addPointIndex(i, v); },
-            () => { polyface.terminateFacet(true); });
+        // The flatbuffer data is one based.
+        // If numPerFace is less than 2, facets are variable size and zero terminated
+        // If numPerFace is 2 or more, indices are blocked
+        if (meshStyle === 1 && pointF64 && pointIndexI32) {
+          const polyface = IndexedPolyface.create();
+          polyface.twoSided = twoSided;
+          polyface.expectedClosure = expectedClosure;
 
           if (normalF64 && normalIndexI32) {
+            for (let i = 0; i + 2 < normalF64.length; i += 3)
+              polyface.addNormalXYZ(normalF64[i], normalF64[i + 1], normalF64[i + 2]);
             SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(normalIndexI32, numPerFace,
               (i: number) => { polyface.addNormalIndex(i); });
           }
           if (paramF64 && paramIndexI32) {
+            for (let i = 0; i + 1 < paramF64.length; i += 2)
+              polyface.addParamUV(paramF64[i], paramF64[i + 1]);
             SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(paramIndexI32, numPerFace,
               (i: number) => { polyface.addParamIndex(i); });
           }
           if (intColorU32 && colorIndexI32) {
+            for (const c of intColorU32)
+              polyface.addColor(c);
             SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(colorIndexI32, numPerFace,
               (i: number) => { polyface.addColorIndex(i); });
           }
+
+          for (let i = 0; i + 2 < pointF64.length; i += 3)
+            polyface.addPointXYZ(pointF64[i], pointF64[i + 1], pointF64[i + 2]);
+          SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(pointIndexI32, numPerFace,
+            (i: number, v?: boolean) => { polyface.addPointIndex(i, v); },
+            () => { polyface.terminateFacet(false); });
+
+          if (!polyface.validateAllIndices())
+            return undefined;
 
           polyface.data.auxData = this.readPolyfaceAuxData(polyfaceHeader, polyfaceHeader.auxData());
 

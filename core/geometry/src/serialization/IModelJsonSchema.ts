@@ -881,66 +881,59 @@ export namespace IModelJson {
       if (data.hasOwnProperty("point") && Array.isArray(data.point)
         && data.hasOwnProperty("pointIndex") && Array.isArray(data.pointIndex)) {
         const polyface = IndexedPolyface.create();
-        if (data.hasOwnProperty("normal") && Array.isArray(data.normal)) {
-          // for normals, addNormal() is overeager to detect the (common) case of duplicate normals in sequence.
-          // use addNormalXYZ which always creates a new one.
-          // likewise for params
-          for (const uvw of data.normal) {
-            if (Geometry.isNumberArray(uvw, 3))
-              polyface.addNormalXYZ(uvw[0], uvw[1], uvw[2]);
-          }
-        }
+        const numPerFace = data.hasOwnProperty("numPerFace") ? data.numPerFace : 0;
         if (data.hasOwnProperty("twoSided")) {
           const q = data.twoSided;
           if (q === true || q === false) {
             polyface.twoSided = q;
           }
         }
-        const numPerFace = data.hasOwnProperty("numPerFace") ? data.numPerFace : 0;
         if (data.hasOwnProperty("expectedClosure")) {
           const q = data.expectedClosure;
           if (Number.isFinite(q)) {
             polyface.expectedClosure = q;
           }
         }
-        if (data.hasOwnProperty("param") && Array.isArray(data.param)) {
+
+        if (data.hasOwnProperty("normal") && Array.isArray(data.normal) && data.hasOwnProperty("normalIndex")) {
+          // For normals, addNormal() is overeager to detect the (common) case of duplicate normals in sequence.
+          // Use addNormalXYZ which always creates a new one. Likewise for params.
+          for (const uvw of data.normal) {
+            if (Geometry.isNumberArray(uvw, 3))
+              polyface.addNormalXYZ(uvw[0], uvw[1], uvw[2]);
+          }
+          SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(data.normalIndex, numPerFace,
+            (x: number) => { polyface.addNormalIndex(x); });
+        }
+        if (data.hasOwnProperty("param") && Array.isArray(data.param) && data.hasOwnProperty("paramIndex")) {
           for (const uv of data.param) {
             if (Geometry.isNumberArray(uv, 2))
               polyface.addParamUV(uv[0], uv[1]);
           }
-        }
-        if (data.hasOwnProperty("color") && Array.isArray(data.color)) {
-          for (const c of data.color) {
-            polyface.addColor(c);
-          }
-        }
-
-        for (const p of data.point)
-          polyface.addPointXYZ(p[0], p[1], p[2]);
-
-        SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(data.pointIndex, numPerFace,
-          (i: number, v?: boolean) => { polyface.addPointIndex(i, v); },
-          () => { polyface.terminateFacet(true); });
-
-        if (data.hasOwnProperty("normalIndex")) {
-          SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(data.normalIndex, numPerFace,
-            (x: number) => { polyface.addNormalIndex(x); });
-        }
-        if (data.hasOwnProperty("paramIndex")) {
           SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(data.paramIndex, numPerFace,
             (x: number) => { polyface.addParamIndex(x); });
         }
-        if (data.hasOwnProperty("colorIndex")) {
+        if (data.hasOwnProperty("color") && Array.isArray(data.color) && data.hasOwnProperty("colorIndex")) {
+          for (const c of data.color)
+            polyface.addColor(c);
           SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(data.colorIndex, numPerFace,
             (x: number) => { polyface.addColorIndex(x); });
         }
 
+        for (const p of data.point)
+          polyface.addPointXYZ(p[0], p[1], p[2]);
+        SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(data.pointIndex, numPerFace,
+          (i: number, v?: boolean) => { polyface.addPointIndex(i, v); },
+          () => { polyface.terminateFacet(false); });
+
+        if (!polyface.validateAllIndices())
+          return undefined;
+
         if (data.hasOwnProperty("auxData"))
           polyface.data.auxData = Reader.parsePolyfaceAuxData(data.auxData, numPerFace);
 
-        if (data.hasOwnProperty("tags")) {
+        if (data.hasOwnProperty("tags"))
           polyface.data.taggedNumericData = Reader.parseTaggedNumericProps(data.tags);
-        }
 
         return polyface;
       }
