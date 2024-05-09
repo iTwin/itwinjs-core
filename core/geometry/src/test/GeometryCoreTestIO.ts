@@ -20,6 +20,7 @@ import { Transform } from "../geometry3d/Transform";
 import { MomentData } from "../geometry4d/MomentData";
 import { IndexedPolyface, Polyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
+import { BentleyGeometryFlatBuffer } from "../serialization/BentleyGeometryFlatBuffer";
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import { prettyPrint } from "./testFunctions";
 
@@ -102,8 +103,6 @@ export class GeometryCoreTestIO {
 
   // read bytes from binary file
   public static readBytesFromFile(fullPathName: string): Uint8Array | undefined {
-    if (!this.enableSave)
-      return undefined;
     const buf = fs.readFileSync(fullPathName);
     return buf.length > 0 ? new Uint8Array(buf) : undefined;
   }
@@ -497,6 +496,14 @@ export class GeometryCoreTestIO {
       this.captureCurveLocationDetails(collection, data.detailA, markerSize, dx, dy, dz);
       this.captureCurveLocationDetails(collection, data.detailB, markerSize * 0.75, dx, dy, dz);
     }
+  }
+
+  /** Read a flatbuffer file and interpret as GeometryQuery(s) */
+  public static flatBufferFileToGeometry(filePath: string): GeometryQuery | GeometryQuery[] | undefined {
+    const bytes = GeometryCoreTestIO.readBytesFromFile(filePath);
+    if (bytes && bytes.length > 0)
+      return BentleyGeometryFlatBuffer.bytesToGeometry(bytes, true);
+  return undefined;
   }
 
   /** Read an imjs file and interpret as GeometryQuery(s) */
