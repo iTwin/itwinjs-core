@@ -86,7 +86,7 @@ jobs:
         workingDirectory: ${{ parameters.workingDir }}
         env:
           RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
-          RUSH_BUILD_CACHE_ENABLED: 1
+          # RUSH_BUILD_CACHE_ENABLED: 1
         condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
 
       - script: node common/scripts/install-run-rush.js docs
