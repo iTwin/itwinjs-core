@@ -122,10 +122,12 @@ jobs:
 
 
       # Download the artifact published in the previous job
-      - download: current
-        artifact: Core Generated Docs
-        displayName: Download Core Generated Docs Artifact
-        path: ${{ parameters.workingDir }}/generated-docs
+      - task: DownloadPipelineArtifact@2
+        displayName: get json artifacts from above
+        inputs:
+          artifact: Core Generated Docs
+          source: current
+          path: ${{ parameters.workingDir }}/generated-docs
 
       # if using the core artifact, download the Core Generated Docs artifact it to the workingDir using downloadPipelineArtifact task
       - task: DownloadPipelineArtifact@2
