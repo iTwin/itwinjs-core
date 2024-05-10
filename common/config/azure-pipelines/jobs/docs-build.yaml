@@ -67,6 +67,10 @@ jobs:
           git config --local user.email imodeljs-admin@users.noreply.github.com
           git config --local user.name imodeljs-admin
         displayName: Setup git config
+
+      - script: npm install @bentley/bemetalsmith@5.3.0-beta.0
+        displayName: Install BeMetalsmith
+        workingDirectory: ${{ parameters.workingDir }}
       # Only install, audit, and build the docs if not using the core artifact
       - script: node common/scripts/install-run-rush.js install
         displayName: rush install
