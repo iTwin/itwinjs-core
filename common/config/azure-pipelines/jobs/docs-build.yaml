@@ -53,7 +53,7 @@ jobs:
       clean: all
     pool:
       name: iModelTechCI
-      demands: Agent.OS -equals MacOS
+      demands: Agent.OS -equals Darwin
     steps:
       - checkout: ${{ parameters.checkout }}
         path: itwinjs-core
@@ -92,6 +92,7 @@ jobs:
         displayName: TEMP Publish Core Generated Docs Artifact
 
   - job: docsBuild
+    dependsOn: TypeDocJsonOutput
     workspace:
       clean: all
     pool:
