@@ -52,7 +52,7 @@ jobs:
       clean: all
     pool:
       name: iModelTechCI
-      demands: Agent.OS -equals Windows_NT
+      demands: Agent.OS -equals Linux
 
     steps:
       - checkout: ${{ parameters.checkout }}
@@ -153,14 +153,14 @@ jobs:
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
         # tag the build to trigger the release pipeline
-      - powershell: |
-          $commitMsg = "$(Build.SourceVersionMessage)"
-          if ($commitMsg -match '^(\d+.\d+.\d+)(-dev.\d+)?$') {
-            Write-Host `'$commitMsg`'` is a version bump
-            Write-Host '##vso[build.addbuildtag]iTwinJsDocsRelease'
-          } else {
-            Write-Host `'$commitMsg`'` is not a version bump
-          }
+      - bash: |
+          commitMsg=$(Build.SourceVersionMessage)
+          if [[ $commitMsg =~ ^(\d+.\d+.\d+)(-dev.\d+)?$ ]]; then
+          echo "$commitMsg is a version bump"
+          echo "##vso[build.addbuildtag]iTwinJsDocsRelease"
+            else
+          echo "$commitMsg is not a version bump"
+            fi
         displayName: Tag release if version bump
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true), eq('${{ parameters.isExternalBuild }}', false))
 
