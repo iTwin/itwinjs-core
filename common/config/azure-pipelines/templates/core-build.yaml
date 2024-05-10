@@ -74,7 +74,7 @@ steps:
   - script: node common/scripts/install-run-rush.js audit
     displayName: rush audit
     workingDirectory: ${{ parameters.workingDir }}
-    condition: and(succeeded(), ${{ parameters.runRushAudit }}, ne('${{ parameters.targetBranch }}', 'imodel02'))
+    condition: and(succeeded(), ${{ parameters.runRushAudit }}, ne('${{ parameters.targetBranch }}', 'master'))
 
   - script: node common/scripts/install-run-rush.js build -v -p max
     displayName: rush build
