@@ -46,13 +46,57 @@ parameters:
     default: false
 
 
+
 jobs:
+  - job: extract core docs
+    workspace:
+      clean: all
+    pool:
+      name: iModelTechCI
+      demands: Agent.OS -equals MacOS
+    steps:
+      - checkout: ${{ parameters.checkout }}
+        path: itwinjs-core
+        clean: true
+      - task: UseNode@1
+        displayName: Use Node 20
+        inputs:
+          version: 20.x
+          checkLatest: false
+      - script: |
+          git config --local user.email imodeljs-admin@users.noreply.github.com
+          git config --local user.name imodeljs-admin
+        displayName: Setup git config
+      # Only install, audit, and build the docs if not using the core artifact
+      - script: node common/scripts/install-run-rush.js install
+        displayName: rush install
+        workingDirectory: ${{ parameters.workingDir }}
+        condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
+      - script: node common/scripts/install-run-rush.js audit
+        displayName: rush audit
+        workingDirectory: ${{ parameters.workingDir }}
+        condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false), eq('${{ parameters.ignoreAudit }}', false))
+      - script: node common/scripts/install-run-rush.js build --to-version-policy prerelease-monorepo-lockStep
+        displayName: rush build
+        workingDirectory: ${{ parameters.workingDir }}
+        env:
+          RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
+          RUSH_BUILD_CACHE_ENABLED: 1
+        condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
+      - script: node common/scripts/install-run-rush.js docs
+        displayName: rush docs
+        workingDirectory: ${{ parameters.workingDir }}
+        condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
+      - publish: ${{ parameters.workingDir }}/generated-docs
+        artifact: Core Generated Docs
+        displayName: TEMP Publish Core Generated Docs Artifact
+
   - job: docsBuild
     workspace:
       clean: all
     pool:
       name: iModelTechCI
-      demands: Agent.OS -equals Linux
+      demands: Agent.OS -equals Windows_NT
 
     steps:
       - checkout: ${{ parameters.checkout }}
@@ -70,39 +114,18 @@ jobs:
           git config --local user.name imodeljs-admin
         displayName: Setup git config
 
-      # Only install, audit, and build the docs if not using the core artifact
-      - script: node common/scripts/install-run-rush.js install
-        displayName: rush install
-        workingDirectory: ${{ parameters.workingDir }}
-        condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
-
-      - script: node common/scripts/install-run-rush.js audit
-        displayName: rush audit
-        workingDirectory: ${{ parameters.workingDir }}
-        condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false), eq('${{ parameters.ignoreAudit }}', false))
-
-      - script: node common/scripts/install-run-rush.js build --to-version-policy prerelease-monorepo-lockStep
-        displayName: rush build
-        workingDirectory: ${{ parameters.workingDir }}
-        env:
-          RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
-          RUSH_BUILD_CACHE_ENABLED: 1
-        condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
-
-      - script: node common/scripts/install-run-rush.js docs
-        displayName: rush docs
-        workingDirectory: ${{ parameters.workingDir }}
-        condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
-
-      - publish: ${{ parameters.workingDir }}/generated-docs
-        artifact: Core Generated Docs
-        displayName: TEMP Publish Core Generated Docs Artifact
       # - script: ls ${{parameters.workingDir}}/generated-docs
       #   displayName: List generated docs
 
       # - script: ls ${{parameters.stagingDir}}
       #   displayName: List staging files before docs
 
+
+      # Download the artifact published in the previous job
+      - download: current
+        artifact: Core Generated Docs
+        displayName: Download Core Generated Docs Artifact
+        path: ${{ parameters.workingDir }}/generated-docs
 
       # if using the core artifact, download the Core Generated Docs artifact it to the workingDir using downloadPipelineArtifact task
       - task: DownloadPipelineArtifact@2
