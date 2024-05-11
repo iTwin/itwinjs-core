@@ -7,6 +7,7 @@
  * @module Serialization
  */
 
+import { assert } from "@itwin/core-bentley";
 import { AkimaCurve3d } from "../bspline/AkimaCurve3d";
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
@@ -485,6 +486,44 @@ export namespace IModelJson {
     /** optional capping flag. */
     capped?: boolean;
   }
+
+  /**
+   * Interface for the analytical data in a channel at a single input value.
+   * See `AuxChannelData` for further information.
+   * @public
+   */
+  export interface AuxChannelDataProps {
+  /** The input value for this data. */
+  input: number;
+  /** The vertex values for this data. A single value per vertex for scalar and distance types and 3 values (x,y,z) for normal or vector channels. */
+  values: number[];
+  }
+  /**
+   * Interface for a channel of analytical mesh data.
+   * See `AuxChannel` for further information.
+   * @public
+   */
+  export interface AuxChannelProps {
+  /** An array of analytical data at one or more input values. */
+  data: AuxChannelDataProps[];
+  /** The type of data stored in this channel. */
+  dataType: AuxChannelDataType;
+  /** Optional channel name. */
+  name?: string;
+  /** Optional input name. */
+  inputName?: string;
+  }
+  /**
+   * Interface for analytical mesh data.
+   * See `PolyfaceAuxData` for further information.
+   * @public
+  */
+  export interface AuxDataProps {
+  /** Array with one or more channels of auxiliary data. */
+  channels: AuxChannelProps[];
+  /** Indices mapping channel data to the mesh facets (must be parallel to mesh indices). */
+  indices: number[];
+  }
   /**
    * Interface for extra data attached to an indexed mesh.
    * See `TaggedNumericData` for further information (e.g. value `tagA` and `tagB` values)
@@ -528,8 +567,21 @@ export namespace IModelJson {
     normalIndex?: [number];
     /** ONE BASED ZERO TERMINATED array of color indices. ZERO is terminator for single facet. */
     colorIndex?: [number];
-    /** optional array of tagged geometry (such as to request subdivision surface) */
-    taggedNumericData?: TaggedNumericDataProps;
+
+    /**
+     * Optional fixed block size for indices.
+     * If defined, each facet is represented by `numPerFace` 1-based indices, with appended zeroes if the facet has fewer edges.
+     * If undefined, mesh indices are 1-based, 0-terminated, variable-sized face loops.
+     */
+    numPerFace?: number;
+    /** Indicates if mesh closure is unknown (0 | undefined), open sheet (1), or closed solid (2). */
+    expectedClosure?: number;
+    /** Optional flag indicating if mesh display must assume both sides are visible. */
+    twoSided?: boolean;
+    /** Optional analytical data at the vertices of the mesh */
+    auxData?: AuxDataProps;
+    /** Optional array of tagged geometry (such as to request subdivision surface) */
+    tags?: TaggedNumericDataProps;
   }
   /** parser services for "iModelJson" schema
    * * 1: create a reader with `new ImodelJsonReader`
@@ -1612,31 +1664,21 @@ export namespace IModelJson {
       return out;
     }
 
-    private handlePolyfaceAuxData(auxData: PolyfaceAuxData, pf: IndexedPolyface): any {
-      const contents: { [k: string]: any } = {};
-      contents.indices = [];
+    private handlePolyfaceAuxData(auxData: PolyfaceAuxData, pf: IndexedPolyface): AuxDataProps {
+      assert(auxData === pf.data.auxData);
+      const contents: AuxDataProps = { indices: [], channels: [] };
       const visitor = pf.createVisitor(0);
-      if (!visitor.auxData) return;
-
       while (visitor.moveToNextFacet()) {
         for (let i = 0; i < visitor.indexCount; i++)
-          contents.indices.push(visitor.auxData.indices[i] + 1);
+          contents.indices.push(visitor.auxData!.indices[i] + 1);
         contents.indices.push(0);  // facet terminator.
       }
-      contents.channels = [];
       for (const inChannel of auxData.channels) {
-        const outChannel: { [k: string]: any } = {};
-        outChannel.dataType = inChannel.dataType;
-        outChannel.name = inChannel.name;
-        outChannel.inputName = inChannel.inputName;
-        outChannel.data = [];
+        const outChannel: AuxChannelProps = { data: [], dataType: inChannel.dataType, name: inChannel.name, inputName: inChannel.inputName };
         for (const inData of inChannel.data) {
-          const outData: { [k: string]: any } = {};
-          outData.input = inData.input;
-          outData.values = inData.values.slice(0);
+          const outData: AuxChannelDataProps = { input: inData.input, values: inData.values.slice(0) };
           outChannel.data.push(outData);
         }
-
         contents.channels.push(outChannel);
       }
       return contents;
