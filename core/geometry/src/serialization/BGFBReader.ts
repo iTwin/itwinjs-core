@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { flatbuffers } from "flatbuffers";
+import { assert } from "@itwin/core-bentley";
 import { AkimaCurve3d, AkimaCurve3dOptions } from "../bspline/AkimaCurve3d";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
@@ -464,6 +465,8 @@ return undefined;
         const normalIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.normalIndexArray());
         const colorIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.colorIndexArray());
         const taggedNumericDataOffset = polyfaceHeader.taggedNumericData();
+
+        assert(meshStyle === 1, "Unrecognized flatbuffer mesh style");
 
         // The flatbuffer data is one based.
         // If numPerFace is less than 2, facets are variable size and zero terminated
