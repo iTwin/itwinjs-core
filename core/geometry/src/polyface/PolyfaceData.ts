@@ -43,20 +43,20 @@ export class PolyfaceData {
   /** Indices of points at facet vertices. */
   public pointIndex: number[];
   /** Coordinates of normal vectors (packed as numbers in a contiguous array). */
-  public normal: GrowableXYZArray | undefined;
+  public normal?: GrowableXYZArray;
   /** Indices of normals at facet vertices. */
-  public normalIndex: number[] | undefined;
+  public normalIndex?: number[];
   /** Coordinates of uv parameters (packed as numbers in a contiguous array). */
   public param?: GrowableXYArray;
   /** Indices of params at facet vertices. */
-  public paramIndex: number[] | undefined;
+  public paramIndex?: number[];
   /**
    * Color values. These are carried around as simple numbers, but are probably required (by display systems) to map
    * exactly to 32-bit integers.
    */
-  public color: number[] | undefined;
+  public color?: number[];
   /** Indices of colors at facet vertices. */
-  public colorIndex: number[] | undefined;
+  public colorIndex?: number[];
   /**
    * Map from facet index to face data.
    * * A "face" is a logical grouping of connected facets in the mesh, e.g., the facets that resulted from faceting
@@ -65,9 +65,9 @@ export class PolyfaceData {
    */
   public face: FacetFaceData[];
   /** Auxiliary data. */
-  public auxData: PolyfaceAuxData | undefined;
+  public auxData?: PolyfaceAuxData;
   /** Tagged geometry data. */
-  public taggedNumericData: TaggedNumericData | undefined;
+  public taggedNumericData?: TaggedNumericData;
   /**
    * Booleans indicating visibility of corresponding edges.
    * * The `edgeVisible` array is parallel to the `pointIndex` array.
