@@ -146,7 +146,7 @@ export class TextAnnotation {
    * The anchor point is computed as specified by this annotation's [[anchor]] setting. For example, if the text block is anchored
    * at the bottom left, then the transform will be relative to the bottom-left corner of `textBlockExtents`.
    * The text block will be rotated around the fixed anchor point according to [[orientation]], then the anchor point will be translated by [[offset]].
-   * @param textBlockDimensions The width and height of the bounding box containing the text block. You can compute this using [computeTextBlockExtents]($common).
+   * @param textBlockDimensions The width and height of the bounding box containing the text block. You can compute this using [computeTextBlockExtents]($backend).
    * @see [[computeAnchorPoint]] to compute the transform's anchor point.
    */
   public computeTransform(textBlockDimensions: XAndY): Transform {
@@ -159,7 +159,7 @@ export class TextAnnotation {
   }
 
   /** Compute the anchor point of this annotation as specified by [[anchor]].
-   * @param textBlockDimensions The width and height of the bounding box containing the [[textBlock]]. You can compute this using [computeTextBlockExtents]($common).
+   * @param textBlockDimensions The width and height of the bounding box containing the [[textBlock]]. You can compute this using [computeTextBlockExtents]($backend).
    * @see [[computeTransform]] to compute the transform relative to the anchor point.
    */
   public computeAnchorPoint(textBlockDimensions: XAndY): Point3d {

@@ -46,25 +46,23 @@ parameters:
     default: false
 
 
+
 jobs:
-  - job: docsBuild
+  - job: DocsBuild
     workspace:
       clean: all
     pool:
       name: iModelTechCI
-      demands: Agent.OS -equals Windows_NT
-
+      demands: Agent.OS -equals Darwin
     steps:
       - checkout: ${{ parameters.checkout }}
         path: itwinjs-core
         clean: true
-
       - task: UseNode@1
         displayName: Use Node 20
         inputs:
           version: 20.x
           checkLatest: false
-
       - script: |
           git config --local user.email imodeljs-admin@users.noreply.github.com
           git config --local user.name imodeljs-admin
@@ -94,7 +92,6 @@ jobs:
         workingDirectory: ${{ parameters.workingDir }}
         condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
 
-
       # if using the core artifact, download the Core Generated Docs artifact it to the workingDir using downloadPipelineArtifact task
       - task: DownloadPipelineArtifact@2
         displayName: Download Core Generated Docs Artifact
@@ -119,7 +116,7 @@ jobs:
           useCurrentConnectorFrameworkDocsArtifact: ${{ parameters.useCurrentConnectorFrameworkDocsArtifact }}
 
       # Currently BeMetalsmith is an internal only tool
-      - script: npm install @bentley/bemetalsmith@5.3.0-beta.0
+      - script: npm install @bentley/bemetalsmith@5.3.x
         displayName: Install BeMetalsmith
         workingDirectory: ${{ parameters.workingDir }}
 
@@ -141,17 +138,16 @@ jobs:
       - publish: ${{ parameters.outputDir }}
         artifact: DocsBuild
         displayName: Publish Pipeline Artifact - DocsBuild
-        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
         # tag the build to trigger the release pipeline
-      - powershell: |
-          $commitMsg = "$(Build.SourceVersionMessage)"
-          if ($commitMsg -match '^(\d+.\d+.\d+)(-dev.\d+)?$') {
-            Write-Host `'$commitMsg`'` is a version bump
-            Write-Host '##vso[build.addbuildtag]iTwinJsDocsRelease'
-          } else {
-            Write-Host `'$commitMsg`'` is not a version bump
-          }
+      - bash: |
+          commitMsg=$(Build.SourceVersionMessage)
+          if [[ $commitMsg =~ ^(\d+.\d+.\d+)(-dev.\d+)?$ ]]; then
+          echo "$commitMsg is a version bump"
+          echo "##vso[build.addbuildtag]iTwinJsDocsRelease"
+            else
+          echo "$commitMsg is not a version bump"
+            fi
         displayName: Tag release if version bump
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true), eq('${{ parameters.isExternalBuild }}', false))
 
