@@ -503,6 +503,7 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
     idStr = `${idStr + typeStr}:${treeId.expansion.toFixed(6)}_`;
 
     if (BatchType.VolumeClassifier === treeId.type) {
+      // Volume classifiers always use the exact project extents.
       flags |= TreeFlags.UseProjectExtents;
       flags &= ~TreeFlags.ExpandProjectExtents;
     }
