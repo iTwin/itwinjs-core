@@ -76,6 +76,7 @@ export const {
 	HitParentGeomType,
 	HitPriority,
 	HitSource,
+	IDBTileStorage,
 	IModelConnection,
 	IconSprites,
 	InputCollector,
