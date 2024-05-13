@@ -22,7 +22,7 @@ class StubResponse extends Writable implements HttpServerResponse {
   public set: SinonStub<[string, string], void> = stub();
 }
 
-describe.only("sendResponse", () => {
+describe("sendResponse", () => {
   let protocol: WebAppRpcProtocol;
   let request: SerializedRpcRequest;
   let fulfillment: RpcRequestFulfillment;
