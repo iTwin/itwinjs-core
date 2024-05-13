@@ -88,7 +88,7 @@ function configureStream(fulfillment: RpcRequestFulfillment) {
 }
 
 async function configureEncoding(req: HttpServerRequest, res: HttpServerResponse, responseBody: string | Buffer | Readable): Promise<string | Buffer | Readable> {
-  const acceptedEncodings = req.header("Accept-Encoding")?.split(" ");
+  const acceptedEncodings = req.header("Accept-Encoding")?.split(", ");
   if (!acceptedEncodings)
     return responseBody;
 

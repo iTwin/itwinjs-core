@@ -39,8 +39,7 @@ describe.only("sendResponse", () => {
         data: [],
       },
     } as any;
-    req = { header: () => "gzip deflate br" } as any;
-    // res = new StubResponse();
+    req = { header: () => "gzip, deflate, br" } as any;
     res = new StubResponse();
   });
 
@@ -65,7 +64,7 @@ describe.only("sendResponse", () => {
     // Arrange
     const originalData = generateJson();
     fulfillment.result.objects = originalData;
-    req.header = () => "gzip deflate";
+    req.header = () => "gzip, deflate";
 
     // Act
     await sendResponse(protocol, request, fulfillment, req, res);
