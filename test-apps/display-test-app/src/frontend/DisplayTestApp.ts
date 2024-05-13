@@ -8,7 +8,7 @@ import {
   GpuMemoryLimit,
   IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin,
 } from "@itwin/core-frontend";
-import { initializeFrontendTiles } from "@itwin/frontend-tiles";
+import { initializeFrontendTiles, obtainMeshExportTilesetUrl } from "@itwin/frontend-tiles";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { DtaBooleanConfiguration, DtaConfiguration, DtaNumberConfiguration, DtaStringConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -215,11 +215,27 @@ const dtaFrontendMain = async () => {
   if (configuration.frontendTilesUrlTemplate) {
     initializeFrontendTiles({
       enableEdges: true,
-      computeSpatialTilesetBaseUrl: async (iModel) => {
-        let urlStr = configuration.frontendTilesUrlTemplate!.replace("{iModel.key}", iModel.key);
-        urlStr = urlStr.replace("{iModel.filename}", getFileName(iModel.key));
-        urlStr = urlStr.replace("{iModel.extension}", getFileExt(iModel.key));
-        const url = new URL(urlStr);
+      // computeSpatialTilesetBaseUrl: async (iModel) => {
+      //   let urlStr = configuration.frontendTilesUrlTemplate!.replace("{iModel.key}", iModel.key);
+      //   urlStr = urlStr.replace("{iModel.filename}", getFileName(iModel.key));
+      //   urlStr = urlStr.replace("{iModel.extension}", getFileExt(iModel.key));
+      //   const url = new URL(urlStr);
+      //   try {
+      //     // See if a tileset has been published for this iModel.
+      //     const response = await fetch(`${url}tileset.json`);
+      //     await response.json();
+      //     return url;
+      //   } catch (_) {
+      //     // No tileset available.
+      //     return undefined;
+      //   }
+      // },
+      computeSpatialTilesetBaseUrl: async (iModel: IModelConnection) => obtainMeshExportTilesetUrl({
+        iModel,
+        accessToken: configuration.frontendTilesToken || "",
+        enableCDN: false,
+        urlPrefix: "qa-",
+      }),
         try {
           // See if a tileset has been published for this iModel.
           const response = await fetch(`${url}tileset.json`);

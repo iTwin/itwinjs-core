@@ -109,3 +109,4 @@ export * from "./ThreeDTileFormatInterpreter";
 export * from "./OPCFormatInterpreter";
 export * from "./FetchCloudStorage";
 export * from "./MeshoptCompression";
+export * from "./IDBTileStorage";
