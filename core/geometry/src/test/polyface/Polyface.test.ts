@@ -272,40 +272,35 @@ it("Polyface.Box", () => {
 
 it("Polyface.RaggedBoxVolume", () => {
   const ck = new Checker();
+  const builder = PolyfaceBuilder.create();
   const a = 2;
   const b = 3;
   const c = 4;
   const expectedVolume = a * b * c;
   const expectedAreaZX = a * c;
-  const planeZX = Plane3dByOriginAndUnitNormal.createZXPlane();
+  const xzPlane = Plane3dByOriginAndUnitNormal.createZXPlane();
   const openBox = Box.createRange(Range3d.createXYZXYZ(0, 0, 0, a, b, c), false);
-  const builder = PolyfaceBuilder.create();
   builder.addBox(openBox!);
-  const polyface = builder.claimPolyface(); // box with open top and bottom
-
-  const volumeZX = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(polyface, planeZX);
+  const polyface = builder.claimPolyface();
+  // the box is open top and bottom
+  const volumeZX = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(polyface, xzPlane);
   ck.testDefined(volumeZX.positiveProjectedFacetAreaMoments);
   ck.testDefined(volumeZX.negativeProjectedFacetAreaMoments);
   if (volumeZX.positiveProjectedFacetAreaMoments && volumeZX.negativeProjectedFacetAreaMoments) {
-    ck.testCoordinate(expectedVolume, volumeZX.volume);
     ck.testCoordinate(expectedAreaZX, volumeZX.positiveProjectedFacetAreaMoments.quantitySum);
     ck.testCoordinate(expectedAreaZX, volumeZX.negativeProjectedFacetAreaMoments.quantitySum);
+    ck.testCoordinate(expectedVolume, volumeZX.volume);
     ck.testCentroidAndRadii(
       volumeZX.positiveProjectedFacetAreaMoments,
       volumeZX.negativeProjectedFacetAreaMoments,
       "open box ragged moments",
     );
   }
-  // in other planes, the missing facets are NOT perpendicular and
-  // we expect to detect the mismatched projections in the moments
+  // In other planes, the missing facets are NOT perpendicular and
+  // we expect to detect the mismatched projections in the moments.
   const planeB = Plane3dByOriginAndUnitNormal.createXYZUVW(0, 0, 0, 1, 2, 3)!;
-  const volumeB = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(polyface, planeB)!;
-  ck.testFalse(
-    MomentData.areEquivalentPrincipalAxes(
-      volumeB.positiveProjectedFacetAreaMoments, volumeB.negativeProjectedFacetAreaMoments,
-    ),
-    "Expect mismatched moments",
-  );
+  const volumeB = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(polyface, planeB);
+  ck.testFalse(MomentData.areEquivalentPrincipalAxes(volumeB.positiveProjectedFacetAreaMoments, volumeB.negativeProjectedFacetAreaMoments), "Expect mismatched moments");
   expect(ck.getNumErrors()).equals(0);
 });
 
