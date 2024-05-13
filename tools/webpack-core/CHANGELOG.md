@@ -1,6 +1,11 @@
 # Change Log - @itwin/core-webpack-tools
 
-This log was last generated on Tue, 16 Apr 2024 14:47:36 GMT and should not be manually modified.
+This log was last generated on Mon, 13 May 2024 20:32:51 GMT and should not be manually modified.
+
+## 4.6.0
+Mon, 13 May 2024 20:32:51 GMT
+
+_Version update only_
 
 ## 4.5.2
 Tue, 16 Apr 2024 14:46:22 GMT

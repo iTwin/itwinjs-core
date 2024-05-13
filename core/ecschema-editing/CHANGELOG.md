@@ -1,6 +1,17 @@
 # Change Log - @itwin/ecschema-editing
 
-This log was last generated on Tue, 16 Apr 2024 14:47:36 GMT and should not be manually modified.
+This log was last generated on Mon, 13 May 2024 20:32:51 GMT and should not be manually modified.
+
+## 4.6.0
+Mon, 13 May 2024 20:32:51 GMT
+
+### Updates
+
+- Additional API added for the editing of Property attributes. 
+- PropertyMerger mutual calls replaced with editor calls
+- Replaced schema changes api with differencing api in SchemaMerger
+- Added setBaseClass method for Struct and RelationshipClass
+- Skip value change diagnotics if SchemaItem is missing 
 
 ## 4.5.2
 Tue, 16 Apr 2024 14:46:22 GMT
