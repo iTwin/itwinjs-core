@@ -127,7 +127,7 @@ export class BatchedTile extends Tile {
 
   public override get channel(): IDBTileRequestChannel {
     if (!channel) {
-      // create idb
+      // comment
       channel = new IDBTileRequestChannel("itwinjs-batched-models", 20, "MX-IDB");
       IModelApp.tileAdmin.channels.add(channel);
     }
