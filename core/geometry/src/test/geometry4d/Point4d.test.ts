@@ -117,7 +117,7 @@ describe("Point4d", () => {
     const ck = new Checker();
     const pointA = Point4d.create(3, 6, 9, 12);
     const pointB = Point4d.create(-1.1, 0.2, 5.3, 1.4);
-    const planeABZ = Point4d.createPlanePointPointZ(pointA, pointB)!;
+    const planeABZ = Point4d.createPlanePointPointZ(pointA, pointB);
     ck.testCoordinate(0.0, pointA.dotProduct(planeABZ));
     ck.testCoordinate(0.0, pointB.dotProduct(planeABZ));
     ck.testCoordinate(0.0, planeABZ.dotProductXYZW(0, 0, 1, 0));

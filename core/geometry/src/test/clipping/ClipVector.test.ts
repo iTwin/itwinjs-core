@@ -244,11 +244,11 @@ describe("ClipVector", () => {
         checkPointProximity(clipVectorSingleShape, pointOnEdge, pointAdjustments[0], pointAdjustments[1], ck);
         ck.testExactNumber(clipVectorSingleShape.classifyPointContainment([pointOnEdge]), 1, "Edge point should be classified as strongly inside for a single ClipShape");
         if (pointAdjustments[0])
-          ck.testExactNumber(clipVectorSingleShape.classifyPointContainment([pointAdjustments[0]!]), 1, "Inner point should be classified as strongly inside for a single ClipShape");
+          ck.testExactNumber(clipVectorSingleShape.classifyPointContainment([pointAdjustments[0]]), 1, "Inner point should be classified as strongly inside for a single ClipShape");
         if (pointAdjustments[1])
-          ck.testExactNumber(clipVectorSingleShape.classifyPointContainment([pointAdjustments[1]!]), 3, "Outer point should be strongly outside for single ClipShape, given it is the only point.");
+          ck.testExactNumber(clipVectorSingleShape.classifyPointContainment([pointAdjustments[1]]), 3, "Outer point should be strongly outside for single ClipShape, given it is the only point.");
         if (pointAdjustments[0] && pointAdjustments[1])
-          ck.testExactNumber(clipVectorSingleShape.classifyPointContainment([pointAdjustments[0]!, pointAdjustments[1]!]), 2, "Array of outer AND inner points should return ambiguous for single ClipShape");
+          ck.testExactNumber(clipVectorSingleShape.classifyPointContainment([pointAdjustments[0], pointAdjustments[1]]), 2, "Array of outer AND inner points should return ambiguous for single ClipShape");
       }
     }
     // Ensure that pointInside check only passes for points within intersecting ClipShapes

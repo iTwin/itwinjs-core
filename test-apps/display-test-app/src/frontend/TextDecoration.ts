@@ -7,7 +7,7 @@ import { BaselineShift, ColorDef, FractionRun, GeometryStreamBuilder, IModelTile
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { Point3d } from "@itwin/core-geometry";
+import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 
 class TextEditor implements Decorator {
   // Geometry properties
@@ -18,7 +18,9 @@ class TextEditor implements Decorator {
 
   // TextAnnotation properties
   public origin: Point3d = new Point3d(0, 0, 0);
-  public anchor: TextAnnotationAnchor = { horizontal: "center", vertical: "middle" };
+  public rotation = 0;
+  public offset = { x: 0, y: 0 };
+  public anchor: TextAnnotationAnchor = { horizontal: "left", vertical: "top" };
 
   // Properties applied to the entire document
   public get documentStyle(): Pick<TextStyleSettingsProps, "lineHeight" | "widthFactor" | "lineSpacingFactor"> {
@@ -49,6 +51,8 @@ class TextEditor implements Decorator {
     this._graphic = undefined;
     this._textBlock = TextBlock.createEmpty();
     this.origin.setZero();
+    this.rotation = 0;
+    this.offset.x = this.offset.y = 0;
     this.anchor = { horizontal: "center", vertical: "middle" };
     this.runStyle = { fontName: "Arial" };
     this.baselineShift = "none";
@@ -102,7 +106,10 @@ class TextEditor implements Decorator {
 
     const annotation = TextAnnotation.fromJSON({
       textBlock: this._textBlock.toJSON(),
+      // origin: this.origin,
       anchor: this.anchor,
+      orientation: YawPitchRollAngles.createDegrees(this.rotation, 0, 0).toJSON(),
+      offset: this.offset,
     });
 
     const rpcProps = this._iModel.getRpcProps();
@@ -115,7 +122,7 @@ class TextEditor implements Decorator {
       toleranceLog10: -5,
       type: "2d",
       placement: {
-        origin: this.origin.toJSON(),
+        origin: this.origin.toJSON(), // Point3d.createZero(),
         angle: 0,
       },
       categoryId: this._categoryId,
@@ -164,6 +171,17 @@ export class TextDecorationTool extends Tool {
         break;
       case "center":
         editor.origin = vp.view.getCenter();
+        break;
+      case "rotation":
+        editor.rotation = Number(arg);
+        break;
+      case "offset":
+        if (inArgs.length !== 3) {
+          throw new Error("Expected x and y");
+        }
+
+        editor.offset.x = Number(arg);
+        editor.offset.y = Number(inArgs[2]);
         break;
       case "font":
         editor.runStyle.fontName = arg;
@@ -249,6 +267,25 @@ export class TextDecorationTool extends Tool {
         }
         break;
       }
+      case "anchor": {
+        const val = arg.toLowerCase();
+        switch (val) {
+          case "left":
+          case "center":
+          case "right":
+            editor.anchor.horizontal = val;
+            break;
+          case "top":
+          case "middle":
+          case "bottom":
+            editor.anchor.vertical = val;
+            break;
+          default:
+            throw new Error("Expected top, middle, bottom, left, center, or right");
+        }
+        break;
+      }
+
       default:
         throw new Error(`unrecognized command ${cmd}`);
     }

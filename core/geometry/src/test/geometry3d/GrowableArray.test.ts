@@ -506,7 +506,7 @@ describe("GrowablePoint3dArray", () => {
       const vectorI0 = xyzPoints.vectorXYAndZIndex(spacePoint, i0);
       const vectorI1 = xyzPoints.vectorIndexXYAndZ(i0, spacePoint);
       if (ck.testPointer(vectorI0) && ck.testPointer(vectorI1) && distance0 !== undefined) {
-        ck.testCoordinate(vectorI0.magnitude(), distance0)!;
+        ck.testCoordinate(vectorI0.magnitude(), distance0);
         ck.testCoordinate(distance0, distance1);
         ck.testExactNumber(vectorI0.x, -vectorI1.x);
         ck.testExactNumber(vectorI0.y, -vectorI1.y);

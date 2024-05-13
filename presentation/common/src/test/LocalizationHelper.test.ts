@@ -159,7 +159,7 @@ describe("LocalizationHelper", () => {
       });
       const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
       const result = localizationHelper.getLocalizedContent(content);
-      expect(result.contentSet[0]!.label.rawValue).to.be.eq("LocalizedValue");
+      expect(result.contentSet[0].label.rawValue).to.be.eq("LocalizedValue");
     });
 
     it("translates content item direct value", () => {
@@ -173,8 +173,8 @@ describe("LocalizationHelper", () => {
       });
       const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
       const result = localizationHelper.getLocalizedContent(content);
-      expect(result.contentSet[0]!.values.property).to.be.eq("LocalizedRawValue");
-      expect(result.contentSet[0]!.displayValues.property).to.be.eq("LocalizedDisplayValue");
+      expect(result.contentSet[0].values.property).to.be.eq("LocalizedRawValue");
+      expect(result.contentSet[0].displayValues.property).to.be.eq("LocalizedDisplayValue");
     });
 
     it("translates content item direct array item values", () => {
@@ -188,8 +188,8 @@ describe("LocalizationHelper", () => {
       });
       const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
       const result = localizationHelper.getLocalizedContent(content);
-      expect(result.contentSet[0]!.values.property).to.deep.eq(["LocalizedRawValue1", "LocalizedRawValue2"]);
-      expect(result.contentSet[0]!.displayValues.property).to.deep.eq(["LocalizedDisplayValue1", "LocalizedDisplayValue2"]);
+      expect(result.contentSet[0].values.property).to.deep.eq(["LocalizedRawValue1", "LocalizedRawValue2"]);
+      expect(result.contentSet[0].displayValues.property).to.deep.eq(["LocalizedDisplayValue1", "LocalizedDisplayValue2"]);
     });
 
     it("translates content item direct struct member values", () => {
@@ -209,8 +209,8 @@ describe("LocalizationHelper", () => {
       });
       const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
       const result = localizationHelper.getLocalizedContent(content);
-      expect(result.contentSet[0]!.values.property).to.deep.eq({ prop1: "LocalizedRawValue1", prop2: "LocalizedRawValue2" });
-      expect(result.contentSet[0]!.displayValues.property).to.deep.eq({ prop1: "LocalizedDisplayValue1", prop2: "LocalizedDisplayValue2" });
+      expect(result.contentSet[0].values.property).to.deep.eq({ prop1: "LocalizedRawValue1", prop2: "LocalizedRawValue2" });
+      expect(result.contentSet[0].displayValues.property).to.deep.eq({ prop1: "LocalizedDisplayValue1", prop2: "LocalizedDisplayValue2" });
     });
 
     it("translates navigation property value", () => {
@@ -227,7 +227,7 @@ describe("LocalizationHelper", () => {
       });
       const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
       const result = localizationHelper.getLocalizedContent(content);
-      const localizedValue = result.contentSet[0]!.values.navigationProperty as NavigationPropertyValue;
+      const localizedValue = result.contentSet[0].values.navigationProperty as NavigationPropertyValue;
       expect(localizedValue.label.rawValue).to.be.eq("LocalizedValue");
     });
 
@@ -251,7 +251,7 @@ describe("LocalizationHelper", () => {
       });
       const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
       const result = localizationHelper.getLocalizedContent(content);
-      expect(result.contentSet[0]!.values.parent)
+      expect(result.contentSet[0].values.parent)
         .to.have.lengthOf(1)
         .and.to.containSubset([
           {
@@ -272,7 +272,7 @@ describe("LocalizationHelper", () => {
       contentItem.values.property = 10;
       const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
       const result = localizationHelper.getLocalizedContent(content);
-      expect(result.contentSet[0]!.values.property).to.be.eq(10);
+      expect(result.contentSet[0].values.property).to.be.eq(10);
     });
 
     it("translates content descriptor direct field label", () => {

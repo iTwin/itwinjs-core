@@ -41,7 +41,6 @@ import { Camera } from '@itwin/core-common';
 import { Capabilities } from '@itwin/webgl-compatibility';
 import { Cartographic } from '@itwin/core-common';
 import { CategorySelectorProps } from '@itwin/core-common';
-import { ChangedEntities } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
 import { ChangesetIndexAndId } from '@itwin/core-common';
 import { ClipIntersectionStyle } from '@itwin/core-common';
@@ -204,6 +203,7 @@ import { Mutable } from '@itwin/core-bentley';
 import { NativeAppFunctions } from '@itwin/core-common';
 import { NonFunctionPropertiesOf } from '@itwin/core-bentley';
 import { NormalMapParams } from '@itwin/core-common';
+import { NotifyEntitiesChangedArgs } from '@itwin/core-common';
 import { ObservableSet } from '@itwin/core-bentley';
 import { OctEncodedNormal } from '@itwin/core-common';
 import { OpenBriefcaseProps } from '@itwin/core-common';
@@ -1055,7 +1055,7 @@ export interface AcquireImdlParserArgs {
 // @public (undocumented)
 export enum ACSDisplayOptions {
     // (undocumented)
-    Active = 1,
+    Active = 1,// used for testing individual bits.
     // (undocumented)
     CheckVisible = 8,
     // (undocumented)
@@ -1948,7 +1948,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @internal (undocumented)
     notifyEcefLocationChanged(ecef: EcefLocationProps | undefined): void;
     // @internal (undocumented)
-    notifyElementsChanged(changed: ChangedEntities): void;
+    notifyElementsChanged(changed: NotifyEntitiesChangedArgs): void;
     // @internal (undocumented)
     notifyGeographicCoordinateSystemChanged(gcs: GeographicCRSProps | undefined): void;
     // @internal (undocumented)
@@ -1958,7 +1958,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @internal (undocumented)
     notifyIModelNameChanged(name: string): void;
     // @internal (undocumented)
-    notifyModelsChanged(changed: ChangedEntities): void;
+    notifyModelsChanged(changed: NotifyEntitiesChangedArgs): void;
     // @internal (undocumented)
     notifyProjectExtentsChanged(range: Range3dProps): void;
     // @internal (undocumented)
@@ -1978,9 +1978,9 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     readonly onChangesPushed: BeEvent<(parentChangeset: ChangesetIndexAndId) => void>;
     readonly onCommit: BeEvent<() => void>;
     readonly onCommitted: BeEvent<(hasPendingTxns: boolean, time: number) => void>;
-    readonly onElementsChanged: BeEvent<(changes: Readonly<ChangedEntities>) => void>;
+    readonly onElementsChanged: BeEvent<(changes: TxnEntityChanges) => void>;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
-    readonly onModelsChanged: BeEvent<(changes: Readonly<ChangedEntities>) => void>;
+    readonly onModelsChanged: BeEvent<(changes: TxnEntityChanges) => void>;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     readonly onReplayExternalTxns: BeEvent<() => void>;
     reinstateTxn(): Promise<IModelStatus>;
@@ -2082,7 +2082,7 @@ export enum ChangeFlag {
     NeverDrawn = 2,
     None = 0,
     Overrides = 268435319,
-    ViewedCategories = 4,
+    ViewedCategories = 4,// eslint-disable-line no-shadow
     ViewedCategoriesPerModel = 64,
     ViewedModels = 8,
     ViewState = 128
@@ -2353,7 +2353,7 @@ export enum CoordinateLockOverrides {
     // (undocumented)
     All = 65535,
     // (undocumented)
-    Grid = 4,
+    Grid = 4,// also overrides unit lock
     // (undocumented)
     None = 0
 }
@@ -2740,7 +2740,7 @@ export interface DepthPointOptions {
 
 // @public
 export enum DepthPointSource {
-    ACS = 5,
+    ACS = 5,// eslint-disable-line @typescript-eslint/no-shadow
     BackgroundMap = 2,
     Geometry = 0,
     Grid = 4,
@@ -2837,7 +2837,7 @@ export namespace DisplayParams {
     // (undocumented)
     export enum ComparePurpose {
         // (undocumented)
-        Merge = 0,
+        Merge = 0,// considers colors equivalent if both have or both lack transparency
         // (undocumented)
         Strict = 1
     }
@@ -4649,7 +4649,7 @@ export interface Gltf2Material extends GltfChildOfRootProperty {
                     index: number;
                     texCoord: number;
                 };
-                [k: string]: unknown | undefined;
+                [k: string]: unknown;
             };
         };
     };
@@ -9472,15 +9472,15 @@ export enum MeshPrimitiveType {
 // @public
 export enum MessageBoxIconType {
     // (undocumented)
-    Critical = 4,
+    Critical = 4,// Means Don't draw Symbol
     // (undocumented)
-    Information = 1,
+    Information = 1,// Lower Case i
     // (undocumented)
-    NoSymbol = 0,
+    NoSymbol = 0,// Question Mark
     // (undocumented)
-    Question = 2,
+    Question = 2,// Exclamation Point
     // (undocumented)
-    Success = 5,
+    Success = 5,// Stop Sign
     // (undocumented)
     Warning = 3
 }
@@ -9786,7 +9786,7 @@ export type ModelSubCategoryHiliteMode = "union" | "intersection";
 export enum ModifyElementSource {
     DragSelect = 3,
     Selected = 1,
-    SelectionSet = 2,
+    SelectionSet = 2,// eslint-disable-line @typescript-eslint/no-shadow
     Unknown = 0
 }
 
@@ -9869,9 +9869,9 @@ export class NoRenderApp {
 // @internal
 export enum NormalMode {
     // (undocumented)
-    Always = 1,
+    Always = 1,// Never generate normals
     // (undocumented)
-    CurvedSurfacesOnly = 2,
+    CurvedSurfacesOnly = 2,// Always generate normals
     // (undocumented)
     Never = 0
 }
@@ -10512,7 +10512,7 @@ export namespace Pixel {
         readonly viewAttachmentId?: Id64String;
     }
     export enum GeometryType {
-        Edge = 4,
+        Edge = 4,// Geometry was not selected, or type could not be determined
         Linear = 3,
         None = 1,
         Silhouette = 5,
@@ -10544,7 +10544,7 @@ export namespace Pixel {
     export type Receiver = (pixels: Buffer | undefined) => void;
     export enum Selector {
         All = 5,
-        Feature = 1,
+        Feature = 1,// eslint-disable-line @typescript-eslint/no-shadow
         GeometryAndDistance = 4,
         // (undocumented)
         None = 0
@@ -11172,7 +11172,7 @@ export namespace RealityMeshParams {
         transform?: Transform;
         wantNormals?: boolean;
         wantParams?: boolean;
-    }): Polyface | undefined;
+    }): IndexedPolyface | undefined;
 }
 
 // @beta
@@ -11434,7 +11434,7 @@ export class RealityTileDrawArgs extends TileDrawArgs {
 
 // @beta
 export interface RealityTileGeometry {
-    polyfaces?: Polyface[];
+    polyfaces?: IndexedPolyface[];
 }
 
 // @internal
@@ -13049,7 +13049,7 @@ export enum SnapHeat {
     // (undocumented)
     InRange = 2,
     // (undocumented)
-    None = 0,
+    None = 0,// "of interest", but out of range
     // (undocumented)
     NotInRange = 1
 }
@@ -13879,6 +13879,8 @@ export abstract class TerrainMeshProvider {
 export interface TerrainMeshProviderOptions {
     dataSource?: string;
     exaggeration: number;
+    // @beta
+    produceGeometry?: boolean;
     wantNormals: boolean;
     wantSkirts: boolean;
 }
@@ -14514,7 +14516,7 @@ export class TileGeometryCollector {
     get isAllGeometryLoaded(): boolean;
     markLoading(): void;
     protected readonly _options: TileGeometryCollectorOptions;
-    readonly polyfaces: Polyface[];
+    readonly polyfaces: IndexedPolyface[];
     requestMissingTiles(): void;
 }
 
@@ -15106,6 +15108,7 @@ export class ToolAdmin {
     set reloadToolSettingsHandler(handler: (() => void) | undefined);
     // @beta
     reloadToolSettingsProperties(): void;
+    restartPrimitiveTool(): Promise<void>;
     // @internal (undocumented)
     sendButtonEvent(ev: BeButtonEvent): Promise<any>;
     // (undocumented)
@@ -15505,6 +15508,42 @@ export class TwoWayViewportSync {
     protected readonly _disconnect: VoidFunction[];
     protected syncViewports(source: Viewport, target: Viewport): void;
 }
+
+// @public
+export interface TxnEntityChange {
+    id: Id64String;
+    metadata: TxnEntityMetadata;
+    type: TxnEntityChangeType;
+}
+
+// @public
+export type TxnEntityChangeIterable = Iterable<Readonly<TxnEntityChange>>;
+
+// @public
+export interface TxnEntityChanges extends TxnEntityChangeIterable {
+    readonly deleted?: CompressedId64Set;
+    filter(options: TxnEntityChangesFilterOptions): TxnEntityChangeIterable;
+    readonly inserted?: CompressedId64Set;
+    readonly updated?: CompressedId64Set;
+}
+
+// @public
+export interface TxnEntityChangesFilterOptions {
+    includeMetadata?: TxnEntityMetadataCriterion;
+    includeTypes?: TxnEntityChangeType[];
+}
+
+// @public
+export type TxnEntityChangeType = "inserted" | "deleted" | "updated";
+
+// @public
+export interface TxnEntityMetadata {
+    readonly classFullName: string;
+    is(baseClassFullName: string): boolean;
+}
+
+// @public
+export type TxnEntityMetadataCriterion = (metadata: TxnEntityMetadata) => boolean;
 
 // @public
 export interface Uniform {

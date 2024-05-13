@@ -41,6 +41,7 @@ export enum SpecialKey {
   ArrowUp = "ArrowUp",
   ArrowDown = "ArrowDown",
   Enter = "Enter",
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
   Return = "Enter",
   Space = " ",
   Backspace = "Backspace",
