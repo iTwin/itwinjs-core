@@ -142,6 +142,8 @@ export class TileAdmin {
   /** @internal */
   public readonly useProjectExtents: boolean;
   /** @internal */
+  public readonly expandProjectExtents: boolean;
+  /** @internal */
   public readonly optimizeBRepProcessing: boolean;
   /** @internal */
   public readonly useLargerTiles: boolean;
@@ -239,6 +241,7 @@ export class TileAdmin {
     this.alwaysSubdivideIncompleteTiles = options.alwaysSubdivideIncompleteTiles ?? defaultTileOptions.alwaysSubdivideIncompleteTiles;
     this.maximumMajorTileFormatVersion = options.maximumMajorTileFormatVersion ?? defaultTileOptions.maximumMajorTileFormatVersion;
     this.useProjectExtents = options.useProjectExtents ?? defaultTileOptions.useProjectExtents;
+    this.expandProjectExtents = options.expandProjectExtents ?? defaultTileOptions.expandProjectExtents;
     this.optimizeBRepProcessing = options.optimizeBRepProcessing ?? defaultTileOptions.optimizeBRepProcessing;
     this.useLargerTiles = options.useLargerTiles ?? defaultTileOptions.useLargerTiles;
     this.mobileRealityTileMinToleranceRatio = Math.max(options.mobileRealityTileMinToleranceRatio ?? 3.0, 1.0);
@@ -1097,6 +1100,9 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      */
     useProjectExtents?: boolean;
 
+    /** @internal See TreeFlags.ExpandProjectExtents. Default: true. */
+    expandProjectExtents?: boolean;
+    
     /** When producing facets from BRep entities, use an optimized pipeline to improve performance.
      * Default value: true
      * @internal
