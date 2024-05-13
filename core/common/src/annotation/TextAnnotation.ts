@@ -127,8 +127,17 @@ export class TextAnnotation {
     return props;
   }
 
+<<<<<<< HEAD
   /**
    * @internal used by produceTextAnnotationGeometry; requires layoutRange computed by layoutTextBlock.
+=======
+  /** Compute the transform that positions and orients this annotation relative to its anchor point, based on the [[textBlock]]'s computed bounding box.
+   * The anchor point is computed as specified by this annotation's [[anchor]] setting. For example, if the text block is anchored
+   * at the bottom left, then the transform will be relative to the bottom-left corner of `textBlockExtents`.
+   * The text block will be rotated around the fixed anchor point according to [[orientation]], then the anchor point will be translated by [[offset]].
+   * @param textBlockDimensions The width and height of the bounding box containing the text block. You can compute this using [computeTextBlockExtents]($backend).
+   * @see [[computeAnchorPoint]] to compute the transform's anchor point.
+>>>>>>> 1c2c71ee5c (Finalize TS5.3 and TypeDoc 0.25.x support. (#6716))
    */
   public computeDocumentTransform(layoutRange: Range2d): Transform {
     const origin = this.computeAnchorPoint(layoutRange);
@@ -137,8 +146,16 @@ export class TextAnnotation {
     return Transform.createFixedPointAndMatrix(origin, matrix);
   }
 
+<<<<<<< HEAD
   /** @internal */
   public computeAnchorPoint(layoutRange: Range2d): Point3d {
+=======
+  /** Compute the anchor point of this annotation as specified by [[anchor]].
+   * @param textBlockDimensions The width and height of the bounding box containing the [[textBlock]]. You can compute this using [computeTextBlockExtents]($backend).
+   * @see [[computeTransform]] to compute the transform relative to the anchor point.
+   */
+  public computeAnchorPoint(textBlockDimensions: XAndY): Point3d {
+>>>>>>> 1c2c71ee5c (Finalize TS5.3 and TypeDoc 0.25.x support. (#6716))
     let x = 0;
     let y = 0;
 
