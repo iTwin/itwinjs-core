@@ -48,7 +48,7 @@ parameters:
 
 
 jobs:
-  - job: TypeDocJsonOutput
+  - job: DocsBuild
     workspace:
       clean: all
     pool:
