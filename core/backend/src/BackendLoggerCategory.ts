@@ -92,11 +92,6 @@ export enum BackendLoggerCategory {
    */
   EventSink = "core-backend.EventSink",
 
-  /**
-   * @alpha
-   */
-  Editing = "core-backend.Editing",
-
   /** The logger category used by the following classes:
    * - [[NativeHost]], [[NativeAppStorage]]
    * @internal
