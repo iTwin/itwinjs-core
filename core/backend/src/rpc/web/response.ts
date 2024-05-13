@@ -102,17 +102,14 @@ async function configureEncoding(req: HttpServerRequest, res: HttpServerResponse
     params: {
       // Experimentation revealed that the default compression quality significantly increases the compression time for larger texts.
       // Reducing the quality improves speed substantially without a significant loss in the compression ratio.
-      [zlibConstants.BROTLI_PARAM_QUALITY]: zlibConstants.BROTLI_DEFAULT_QUALITY,
+      [zlibConstants.BROTLI_PARAM_QUALITY]: 3,
     },
   };
 
   if (responseBody instanceof Stream) {
-    const encodedStream = encoding === "br" ? createBrotliCompress(brotliOptions) : createGzip();
-    return responseBody.pipe(encodedStream);
+    const compressStream = encoding === "br" ? createBrotliCompress(brotliOptions) : createGzip();
+    return responseBody.pipe(compressStream);
   }
-
-  if (typeof responseBody === "string")
-    responseBody = Buffer.from(responseBody);
 
   return encoding === "br" ? promisify(brotliCompress)(responseBody, brotliOptions) : promisify(gzip)(responseBody);
 }
