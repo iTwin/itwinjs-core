@@ -8,7 +8,7 @@ import {
   GeographicCRSInterpretRequestProps, GeographicCRSProps,
 } from "@itwin/core-common";
 import { IModelHost } from "../../IModelHost";
-import { Geometry } from "@itwin/core-geometry";
+import { Geometry, Range2dProps } from "@itwin/core-geometry";
 import { GeoCoordConfig } from "../../GeoCoordConfig";
 
 // spell-checker: disable
@@ -801,6 +801,39 @@ describe("GeoServices", () => {
       };
 
       await interpretWKTTest('COMPD_CS["UTM84-18N",PROJCS["UTM84-18N",GEOGCS["LL84",DATUM["WGS84",SPHEROID["WGS84",6378137.000,298.25722293]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Universal Transverse Mercator System"],PARAMETER["UTM Zone Number (1 - 60)",18.0],PARAMETER["Hemisphere, North or South",1.0],UNIT["Meter",1.00000000000000]],VERT_CS["Geoid Height",VERT_DATUM["EGM96 geoid",2005],UNIT["METER",1.000000]]]', utm84Zone18NGeoid);
+    });
+  });
+
+  describe("Verify list of GCS", async () => {
+    const validationRange = 50;
+    const validationRangeSmall = 10;
+
+    const validateGcsList = async (expectedCount: number, allowedRange: number, ignoreLegacy: boolean, extent?: Range2dProps): Promise<void> => {
+      const listOfGCS = IModelHost.platform.GeoServices.getListOfGCS(ignoreLegacy, extent);
+      assert.isTrue(listOfGCS.length > expectedCount - allowedRange && listOfGCS.length < expectedCount + allowedRange);
+    };
+
+    it("should get all GCS", async () => {
+      await validateGcsList(11874, validationRange, false);
+    });
+
+    it("should get all GCS except legacy ones", async () => {
+      await validateGcsList(9025, validationRange, true);
+    });
+
+    it("should ignore legacy GCS", async () => {
+      const extent: Range2dProps = { low: { x: 60.1, y: 61.2 }, high: { x: 62.3, y: 63.4 } };
+      await validateGcsList(58, validationRangeSmall, true, extent);
+    });
+
+    it("should return GCS that are in the specified range", async () => {
+      const extent: Range2dProps = { low: { x: 0, y: 2 }, high: { x: 1, y: 3 } };
+      await validateGcsList(46, validationRangeSmall, true, extent);
+    });
+
+    it("should return GCS that include legacy and are in the specified range", async () => {
+      const extent: Range2dProps = { low: { x: 0, y: 2 }, high: { x: 1, y: 3 } };
+      await validateGcsList(57, validationRangeSmall, false, extent);
     });
   });
 
