@@ -236,16 +236,6 @@ const dtaFrontendMain = async () => {
         enableCDN: false,
         urlPrefix: "qa-",
       }),
-        try {
-          // See if a tileset has been published for this iModel.
-          const response = await fetch(`${url}tileset.json`);
-          await response.json();
-          return url;
-        } catch (_) {
-          // No tileset available.
-          return undefined;
-        }
-      },
     });
   }
 

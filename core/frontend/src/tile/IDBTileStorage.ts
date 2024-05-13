@@ -6,17 +6,21 @@
  * @module Tiles
  */
 
-import { TileContent, TileRequest, TileRequestChannel } from "./internal";
+import { TileRequestChannel } from "./internal";
 
-export class IDBTileStorage {
+export class IDBStorage {
   private _db: any;
   private _dbName: string = "IDB";
+  private _expirationTime?: number;
 
-  public constructor(dbName: string) {
+  public constructor(dbName: string, expirationTime?: number) {
     this._dbName = dbName;
+    if (expirationTime) {
+      this._expirationTime = expirationTime;
+    }
   }
 
-  public async init() {
+  public async open() {
 
     // set up IndexedDB
     const requestDB = window.indexedDB.open(this._dbName, 1);
@@ -44,64 +48,64 @@ export class IDBTileStorage {
       if (target)
         this._db = target.result;
 
-      const initialObjectStore = this._db.createObjectStore("tile-cache", { keyPath: "uniqueId" });
+      const initialObjectStore = this._db.createObjectStore("cache", { keyPath: "uniqueId" });
       console.log("create initial data store");
 
-      initialObjectStore.createIndex("hasGraphic", "hasGraphic", {unique: false});
-      initialObjectStore.createIndex("contentRange", "contentRange", {unique: false});
-      initialObjectStore.createIndex("isLeaf", "isLeaf", {unique: false});
-      initialObjectStore.createIndex("sizeMultiplier", "sizeMultiplier", {unique: false});
-      initialObjectStore.createIndex("emptySubRangeMask", "emptySubRangeMask", {unique: false});
+      initialObjectStore.createIndex("content", "content", {unique: false});
       initialObjectStore.createIndex("timeOfStorage", "timeOfStorage", {unique: false});
-
     };
   }
 
-  public async requestContent(uniqueId: string): Promise<TileRequest.Response> {
+  public async close() {
+    await this._db.close();
+  }
 
-    // if _db is not opened, return
-    if (!this._db) {
-      return undefined;
-    }
+  public async requestContent(uniqueId: string): Promise<ArrayBuffer | undefined> {
 
-    console.log("REQUESTING TILE FROM CACHE MX-IDB");
-    const getTransaction = await this._db.transaction("tile-cache", "readonly");
-    const storedResponse = await getTransaction.objectStore("tile-cache").get(uniqueId);
+    await this.open();
 
-    // If we found a result
+    console.log("Requesting content with this id:");
+    console.log(uniqueId);
+    const getTransaction = await this._db.transaction("cache", "readonly");
+    const storedResponse = await getTransaction.objectStore("cache").get(uniqueId);
+
+    // this is successful if the db was successfully searched - not only if a match was found
     storedResponse.onsuccess = async () => {
-      console.log("STORED RESPONSE SUCCESS");
+
       if (storedResponse.result !== undefined) {
-        console.log("THERES A RESULT");
-        // We want to know when the result was stored, and how long it's been since that point
-        const timeSince = Date.now() - storedResponse.result.timeOfStorage;
-        console.log("TIME SINCE STORAGE: ", timeSince / 1000, " secs" );
+        console.log("Stored Response found.");
 
-        // If this time since is within our time limit (for now, two minutes), pass the stored response along
-        if ( timeSince <= 120000) {
-          console.log("STORED RESPONSE STILL VALID");
+        // if the content has an expiration time
+        if (this._expirationTime) {
+          // We want to know when the result was stored, and how long it's been since that point
+          const timeSince = Date.now() - storedResponse.result.timeOfStorage;
+          console.log("Time Since Storage: ", timeSince / 1000, " secs" );
 
-          const content = storedResponse.result.content;
-
-          console.log("RETURNING THE FOLLOWING TILE");
-          console.log(content);
-          return content;
-
-        } else { // otherwise delete the tile and go on with the normal request route
-          await this.deleteContent(uniqueId);
+          // If it's been greater than our time limit, delete it and return undefined.
+          if (timeSince > this._expirationTime) {
+            console.log("Stored Response Expired, Deleting content");
+            await this.deleteContent(uniqueId);
+            return undefined;
+          }
         }
+        const content = storedResponse.result.content;
+        console.log("Returning the following content: ");
+        console.log(content);
+        await this.close();
+        return content;
 
       } else {
-        console.log("NO MATCHING RESULT FOUND");
+        console.log("No matching results found in db");
       }
+      await this.close();
       return undefined;
     };
     return undefined;
   }
 
   public async deleteContent(uniqueId: string) {
-    const deleteTransaction = await this._db.transaction("tile-cache", "readwrite");
-    const requestDelete = await deleteTransaction.objectStore("tile-cache").delete(uniqueId);
+    const deleteTransaction = await this._db.transaction("cache", "readwrite");
+    const requestDelete = await deleteTransaction.objectStore("cache").delete(uniqueId);
 
     requestDelete.onsuccess = () => {
       console.log("EXPIRED RESPONSE DELETED.");
@@ -116,19 +120,21 @@ export class IDBTileStorage {
     };
   }
 
-  public async addContent(uniqueId: string, tileContent: ArrayBuffer | TileContent) {
-    const addTransaction = await this._db.transaction("tile-cache", "readwrite");
-    const objectStore = await addTransaction.objectStore("tile-cache");
+  public async addContent(uniqueId: string, content: ArrayBuffer) {
+    await this.open();
+    const addTransaction = await this._db.transaction("cache", "readwrite");
+    const objectStore = await addTransaction.objectStore("cache");
 
-    const tileData = {
+    const data = {
       uniqueId,
-      tileContent,
+      content,
+      timeOfStorage: Date.now(),
     };
 
-    console.log("ADDING THIS TILE TO THE DB");
-    console.log(tileData);
+    console.log("ADDING THIS CONTENT TO THE DB");
+    console.log(data);
 
-    const requestAdd = await objectStore.add(tileData);
+    const requestAdd = await objectStore.add(data);
     requestAdd.onsuccess = () => {
       console.log("ADD REQUEST SUCCESS");
     };
@@ -137,24 +143,40 @@ export class IDBTileStorage {
       console.log("WRITE TRANSACTION SUCCESS");
     };
 
-    addTransaction.oncomplete = () => {
+    addTransaction.oncomplete = async () => {
       console.log("WRITE TRANSACTION COMPLETE");
+      await this.close();
     };
   }
 }
 
 export class IDBTileRequestChannel extends TileRequestChannel {
-  private _tileStorage: IDBTileStorage;
+  private _tileStorage: IDBStorage;
 
   public constructor(channelName: string, cacheConcurrency: number, dbName: string) {
 
     console.log("CREATING CHANNEL: ", channelName);
     super(channelName, cacheConcurrency);
 
-    this._tileStorage = new IDBTileStorage(dbName);
+    this._tileStorage = new IDBStorage(dbName);
   }
 
-  public get tileStorage(): IDBTileStorage {
+  public get tileStorage(): IDBStorage {
     return this._tileStorage;
+  }
+
+  public async fetch(url: string, callback: (url: string) => Promise<Response>): Promise<ArrayBuffer> {
+    let response: any;
+    response = await this._tileStorage.requestContent(url);
+
+    // If nothing was found in the db
+    if (response === undefined) {
+
+      // fetch normally, then add that content to the db
+      response = await callback(url);
+      await this._tileStorage.addContent(url, response.arrayBuffer());
+    }
+
+    return response.arrayBuffer();
   }
 }

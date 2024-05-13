@@ -7,7 +7,7 @@ import { assert, BeTimePoint, ByteStream, Logger } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { ColorDef, Tileset3dSchema } from "@itwin/core-common";
 import {
-  GraphicBranch, GraphicBuilder, IDBTileRequestChannel, IDBTileStorage, IModelApp, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
+  GraphicBranch, GraphicBuilder, IDBTileRequestChannel, IModelApp, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
   TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TileUser, TileVisibility, Viewport,
 } from "@itwin/core-frontend";
 import { loggerCategory } from "./LoggerCategory";
@@ -127,6 +127,9 @@ export class BatchedTile extends Tile {
 
   public override get channel(): IDBTileRequestChannel {
     if (!channel) {
+
+      // In the future, once a conditional is added to turn the cache on and off, this can be:
+      // channel = useIDB ? new IDBTileRequestChannel : new TileRequestChannel
       channel = new IDBTileRequestChannel("itwinjs-batched-models", 20, "MX-IDB");
       IModelApp.tileAdmin.channels.add(channel);
     }
@@ -135,22 +138,11 @@ export class BatchedTile extends Tile {
   }
 
   public override async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
-    // First check IDB to see if we can find the tile without fetching it
-    const cachedContent = await this.channel.tileStorage.requestContent(this.contentId + this.tree.id + this.iModel.iModelId);
-    if (cachedContent) {
-      console.log("Cached Content being returned");
-      return cachedContent;
-    }
-
-    // If we got here, there is no matching content in the cache, so fetch the content as usual
-    console.log("No cached content being returned");
     const url = new URL(this.contentId, this.batchedTree.reader.baseUrl);
     url.search = this.batchedTree.reader.baseUrl.search;
-    const response = await fetch(url.toString());
+    const response = await this.channel.fetch(url.toString(), fetch);
 
-    // Add the response to the cache for next time
-    await this.channel.tileStorage.addContent(this.contentId + this.tree.id + this.iModel.iModelId, await response.arrayBuffer());
-    return response.arrayBuffer();
+    return response;
   }
 
   public override async readContent(data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
