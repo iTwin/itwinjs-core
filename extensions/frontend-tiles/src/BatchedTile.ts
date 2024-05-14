@@ -29,7 +29,7 @@ export class BatchedTile extends Tile {
   private readonly _unskippable: boolean;
   /** Transform from the tile's local coordinate system to that of the tileset. */
   public readonly transformToRoot?: Transform;
-  private _localCache: any;
+  private _localCache: ILocalCache;
 
   public get batchedTree(): BatchedTileTree {
     return this.tree as BatchedTileTree;
