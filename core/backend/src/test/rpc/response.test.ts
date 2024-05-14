@@ -46,6 +46,7 @@ describe("sendResponse", () => {
   it("should compress response using Brotli", async () => {
     // Arrange
     const originalData = generateJson();
+    const originalDataSize = Buffer.byteLength(originalData);
     fulfillment.result.objects = originalData;
 
     // Act
@@ -56,13 +57,14 @@ describe("sendResponse", () => {
 
     const compressedData = res.send.getCall(0).args[0];
     expect(compressedData).to.not.be.undefined;
-    expect(compressedData.length).to.be.lessThan(originalData.length);
+    expect(compressedData.length).to.be.lessThan(originalDataSize);
     expect(brotliDecompressSync(compressedData).toString()).to.be.equal(originalData);
   });
 
   it("should compress response using Gzip if Brotli is not supported", async () => {
     // Arrange
     const originalData = generateJson();
+    const originalDataSize = Buffer.byteLength(originalData);
     fulfillment.result.objects = originalData;
     req.header = () => "gzip, deflate";
 
@@ -74,7 +76,7 @@ describe("sendResponse", () => {
 
     const compressedData = res.send.getCall(0).args[0];
     expect(compressedData).to.not.be.undefined;
-    expect(compressedData.length).to.be.lessThan(originalData.length);
+    expect(compressedData.length).to.be.lessThan(originalDataSize);
     expect(unzipSync(compressedData).toString()).to.be.equal(originalData);
   });
 
@@ -96,6 +98,7 @@ describe("sendResponse", () => {
   it("should compress stream", async () => {
     // Arrange
     const originalData = generateJson();
+    const originalDataSize = Buffer.byteLength(originalData);
     fulfillment.result.stream = Readable.from(originalData);
 
     // Act
@@ -105,7 +108,7 @@ describe("sendResponse", () => {
     // Assert
     const compressedData = res.buffer;
     expect(compressedData).to.not.be.undefined;
-    expect(compressedData.length).to.be.lessThan(originalData.length);
+    expect(compressedData.length).to.be.lessThan(originalDataSize);
     expect(brotliDecompressSync(compressedData).toString()).to.be.equal(originalData);
   });
 });
