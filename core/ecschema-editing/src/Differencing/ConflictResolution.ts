@@ -6,43 +6,35 @@
  * @module Differencing
  */
 
-import { getUnresolvedConflicts, SchemaDifferenceConflict } from "./SchemaConflicts";
-import { SchemaDifferences } from "./SchemaDifference";
+import type { SchemaDifferenceConflict } from "./SchemaConflicts";
+import type { SchemaDifferences } from "./SchemaDifference";
 
 interface RenameResolution {
   resolutionType: "rename";
   value: string;
+  conflict?: string;
 }
 
 export type AnyConflictResolution = RenameResolution;
 
-export function applyConflictResolutions(differences: SchemaDifferences, storedConflicts: Iterable<SchemaDifferenceConflict>): SchemaDifferences {
-  // If differences does not have any conflicts there is nothing to apply
-  const unresolvedConflicts = getUnresolvedConflicts(differences);
-  if(unresolvedConflicts.length === 0) {
-    return differences;
+export function applyConflictResolutions(differences: SchemaDifferences, resolutions: AnyConflictResolution[]): SchemaDifferences {
+  if(differences.resolutions === undefined) {
+    differences.resolutions = [];
   }
 
-  for(const conflict of storedConflicts) {
-    const foundConflict = unresolvedConflicts.find((entry) => {
-      return entry.code === conflict.code &&
-        entry.schemaType === conflict.schemaType &&
-        entry.itemName === conflict.itemName &&
-        entry.path === conflict.path;
-    });
-
-    if(foundConflict !== undefined) {
-      foundConflict.resolution = conflict.resolution;
-    }
-  }
-
+  differences.resolutions.push(...resolutions);
   return differences;
 }
 
-export function rename(conflict: SchemaDifferenceConflict, newName: string) {
-  return conflict.resolution = {
+export function rename(differences: SchemaDifferences, conflict: SchemaDifferenceConflict, newName: string) {
+  if(differences.resolutions === undefined) {
+    differences.resolutions = [];
+  }
+
+  differences.resolutions.push({
     resolutionType: "rename",
     value: newName,
-  };
+    conflict: conflict.id,
+  });
 }
 

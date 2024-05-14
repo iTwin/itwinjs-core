@@ -56,6 +56,7 @@ describe("Difference Conflict Reporting", () => {
     it("should find a conflict for schema items with different type", async () => {
       const differences = await runDifferences(sourceSchema, targetSchema);
       expect(findConflictItem(differences, "SameNameOtherItemType")).deep.equals({
+        id: "C-001-SameNameOtherItemType",
         code:    ConflictCode.ConflictingItemName,
         schemaType: "PropertyCategory",
         itemName:    "SameNameOtherItemType",
@@ -116,6 +117,7 @@ describe("Difference Conflict Reporting", () => {
     it("should find a conflict for changing base classes", async () => {
       const differences = await runDifferences(sourceSchema, targetSchema);
       expect(findConflictItem(differences, "ConflictingBaseClassEntity")).deep.equals({
+        id: "C-100-ConflictingBaseClassEntity",
         code:    ConflictCode.ConflictingBaseClass,
         schemaType: "EntityClass",
         itemName:    "ConflictingBaseClassEntity",
@@ -129,6 +131,7 @@ describe("Difference Conflict Reporting", () => {
     it("should find a conflict for invalid base class value", async () => {
       const differences = await runDifferences(sourceSchema, targetSchema);
       expect(findConflictItem(differences, "InvalidBaseClassEntity")).deep.equals({
+        id: "C-101-InvalidBaseClassEntity",
         code:    ConflictCode.RemovingBaseClass,
         schemaType: "EntityClass",
         itemName:    "InvalidBaseClassEntity",
@@ -142,6 +145,7 @@ describe("Difference Conflict Reporting", () => {
     it("should find a conflict if change tries to assign a sealed baseclass value", async () => {
       const differences = await runDifferences(sourceSchema, targetSchema);
       expect(findConflictItem(differences, "InvalidBaseClassEntityWithSealedBaseClass")).deep.equals({
+        id: "C-102-InvalidBaseClassEntityWithSealedBaseClass",
         code:    ConflictCode.SealedBaseClass,
         schemaType: "EntityClass",
         itemName:    "InvalidBaseClassEntityWithSealedBaseClass",
@@ -196,6 +200,7 @@ describe("Difference Conflict Reporting", () => {
 
       const differences = await runDifferences(sourceSchema, targetSchema);
       expect(findConflictItem(differences, "ConflictingMixinEntity")).deep.equals({
+        id: "C-1100-ConflictingMixinEntity-ConflictingMixin",
         code:    ConflictCode.MixinAppliedMustDeriveFromConstraint,
         schemaType: "EntityClass",
         itemName:    "ConflictingMixinEntity",
@@ -243,6 +248,7 @@ describe("Difference Conflict Reporting", () => {
     it("should find a conflict for properties with different type", async () => {
       const differences = await runDifferences(sourceSchema, targetSchema);
       expect(findConflictItem(differences, "ConflictingPropertyEntity")).deep.equals({
+        id: "C-1300-ConflictingPropertyEntity-MyProperty",
         code:    ConflictCode.ConflictingPropertyName,
         schemaType: "EntityClass",
         itemName:    "ConflictingPropertyEntity",
@@ -310,6 +316,7 @@ describe("Difference Conflict Reporting", () => {
     it("should find a conflict for conflicting enumerator value", async () => {
       const differences = await runDifferences(sourceSchema, targetSchema);
       expect(findConflictItem(differences,"ConflictEnumerators")).deep.equals({
+        id: "C-701-EnumeratorOne",
         code:    ConflictCode.ConflictingEnumeratorValue,
         schemaType: "Enumeration",
         itemName:    "ConflictEnumerators",
@@ -323,6 +330,7 @@ describe("Difference Conflict Reporting", () => {
     it("should find a conflict for enumerations with different primitive types", async () => {
       const differences = await runDifferences(sourceSchema, targetSchema);
       expect(findConflictItem(differences, "ConflictEnumerationType")).deep.equals({
+        id: "C-700-ConflictEnumerationType",
         code:    ConflictCode.ConflictingEnumerationType,
         schemaType: "Enumeration",
         itemName:    "ConflictEnumerationType",

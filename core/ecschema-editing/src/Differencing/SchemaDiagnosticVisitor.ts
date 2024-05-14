@@ -184,6 +184,7 @@ export class SchemaDiagnosticVisitor {
     const [propertyName, sourceValue, targetValue] = diagnostic.messageArgs as [string, unknown, unknown];
     if (propertyName === "schemaItemType") {
       return this.addConflict({
+        id: `${ConflictCode.ConflictingItemName}-${schemaItem.name}`,
         code: ConflictCode.ConflictingItemName,
         schemaType: schemaItem.schemaItemType,
         itemName: schemaItem.name,
@@ -226,6 +227,7 @@ export class SchemaDiagnosticVisitor {
     const [propertyName, sourceValue, targetValue] = diagnostic.messageArgs as [string, string, string];
     if (propertyName === "type") {
       return this.addConflict({
+        id: `${ConflictCode.ConflictingEnumerationType}-${enumeration.name}`,
         code: ConflictCode.ConflictingEnumerationType,
         schemaType: SchemaItemType.Enumeration,
         itemName: enumeration.name,
@@ -294,6 +296,7 @@ export class SchemaDiagnosticVisitor {
   private validateEnumerator(enumeration: Enumeration, enumerator: AnyEnumerator, propertyName: string, sourceValue: unknown, targetValue: unknown) {
     if (propertyName === "value") {
       this.addConflict({
+        id: `${ConflictCode.ConflictingEnumeratorValue}-${enumerator.name}`,
         code: ConflictCode.ConflictingEnumeratorValue,
         schemaType: SchemaItemType.Enumeration,
         itemName: enumeration.name,
@@ -349,6 +352,7 @@ export class SchemaDiagnosticVisitor {
   private validatePropertyChange(ecProperty: Property, propertyName: string, sourceValue: unknown, targetValue: unknown): boolean {
     if (propertyName === "primitiveType") {
       this.addConflict({
+        id: `${ConflictCode.ConflictingPropertyName}-${ecProperty.class.name}-${ecProperty.name}`,
         code: ConflictCode.ConflictingPropertyName,
         schemaType: ecProperty.class.schemaItemType,
         itemName: ecProperty.class.name,
@@ -389,6 +393,7 @@ export class SchemaDiagnosticVisitor {
   private validateBaseClassChange(targetClass: ECClass, sourceBaseClass?: ECClass, targetBaseClass?: ECClass): boolean {
     if (sourceBaseClass === undefined) {
       this.addConflict({
+        id: `${ConflictCode.RemovingBaseClass}-${targetClass.name}`,
         code: ConflictCode.RemovingBaseClass,
         schemaType: targetClass.schemaItemType,
         itemName: targetClass.name,
@@ -402,6 +407,7 @@ export class SchemaDiagnosticVisitor {
 
     if (sourceBaseClass.modifier === ECClassModifier.Sealed) {
       this.addConflict({
+        id: `${ConflictCode.SealedBaseClass}-${targetClass.name}`,
         code: ConflictCode.SealedBaseClass,
         schemaType: targetClass.schemaItemType,
         itemName: targetClass.name,
@@ -415,6 +421,7 @@ export class SchemaDiagnosticVisitor {
 
     if (targetBaseClass && !derivedFrom(sourceBaseClass, targetBaseClass.name)) {
       this.addConflict({
+        id: `${ConflictCode.ConflictingBaseClass}-${targetClass.name}`,
         code: ConflictCode.ConflictingBaseClass,
         schemaType: targetClass.schemaItemType,
         itemName: targetClass.name,
@@ -454,6 +461,7 @@ export class SchemaDiagnosticVisitor {
   private validateMixin(targetClass: ECClass, mixin: Mixin): boolean {
     if (mixin.appliesTo && !derivedFrom(targetClass, mixin.appliesTo.name)) {
       this.addConflict({
+        id: `${ConflictCode.MixinAppliedMustDeriveFromConstraint}-${targetClass.name}-${mixin.name}`,
         code: ConflictCode.MixinAppliedMustDeriveFromConstraint,
         schemaType: targetClass.schemaItemType,
         itemName: targetClass.name,

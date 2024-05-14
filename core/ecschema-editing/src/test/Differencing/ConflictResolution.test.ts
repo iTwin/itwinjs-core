@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ConflictCode, getUnresolvedConflicts, hasUnresolvedConflicts, SchemaDifferenceConflict } from "../../Differencing/SchemaConflicts";
-import { applyConflictResolutions, rename } from "../../Differencing/ConflictResolution";
+import { ConflictCode, getUnresolvedConflicts, hasUnresolvedConflicts } from "../../Differencing/SchemaConflicts";
+import { AnyConflictResolution, applyConflictResolutions, rename } from "../../Differencing/ConflictResolution";
 import { SchemaDifference } from "../../Differencing/SchemaDifference";
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -79,7 +79,7 @@ describe.only("Difference Conflict Resolving", () => {
       }, new SchemaContext()),
     ];
 
-    const storedConflictResolutions: SchemaDifferenceConflict[] = [];
+    let storedConflictResolutions: AnyConflictResolution[] = [];
 
     // Iterate over the different source schemas to simulate several merging runs
     for(const sourceSchema of sourceSchemas) {
@@ -94,17 +94,17 @@ describe.only("Difference Conflict Resolving", () => {
       for(const conflict of unresolvedConflicts) {
         switch(conflict.code) {
           case ConflictCode.ConflictingItemName:
-            rename(conflict, `${conflict.itemName}_1`);
+            rename(differences, conflict, `${conflict.itemName}_1`);
             break;
           case ConflictCode.ConflictingPropertyName:
-            rename(conflict, `${conflict.path}_1`);
+            rename(differences, conflict, `${conflict.path}_1`);
             break;
           default: expect.fail(`Unexpected conflict code: ${conflict.code}`);
         }
-        storedConflictResolutions.push(conflict);
       }
 
       expect(hasUnresolvedConflicts(differences), "differences is not supposed to have unresolved conflicts").is.false;
+      storedConflictResolutions = differences.resolutions!;
     }
   });
 });

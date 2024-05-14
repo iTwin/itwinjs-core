@@ -8,7 +8,6 @@
 
 import type { SchemaKey } from "@itwin/ecschema-metadata";
 import type { SchemaDifferences, SchemaType } from "./SchemaDifference";
-import type { AnyConflictResolution } from "./ConflictResolution";
 
 /**
  * The unique conflicts codes for Schema differencing.
@@ -73,6 +72,9 @@ interface SchemaDifferencesWithConflicts extends SchemaDifferences {
  * @alpha
  */
 export interface SchemaDifferenceConflict {
+  /** A unique identifier of this conflict */
+  readonly id: string;
+
   /**
    * The name of the schema type which is "Schema" for a conflict on the schema, on schema items
    * or objects that are related to schema items (properties, relationship constraints) it is the
@@ -97,9 +99,6 @@ export interface SchemaDifferenceConflict {
 
   /** The value in the target schema. */
   readonly target: unknown;
-
-  /** The resolution how this conflict shall be resolved. */
-  resolution?: AnyConflictResolution | AnyConflictResolution[];
 }
 
 export function hasUnresolvedConflicts(differences: SchemaDifferences): differences is SchemaDifferencesWithConflicts {
@@ -107,9 +106,26 @@ export function hasUnresolvedConflicts(differences: SchemaDifferences): differen
 }
 
 export function getUnresolvedConflicts(differences: SchemaDifferences): SchemaDifferenceConflict[] {
-  return differences.conflicts !== undefined
-    ? differences.conflicts.filter((conflict) => conflict.resolution === undefined)
-    : [];
+  if(differences.conflicts === undefined || differences.conflicts.length === 0) {
+    return [];
+  }
+
+  const conflictMap = new Map<string, SchemaDifferenceConflict>();
+  for(const conflict of differences.conflicts) {
+    conflictMap.set(conflict.id, conflict);
+  }
+
+  if(differences.resolutions === undefined || differences.resolutions.length === 0) {
+    return differences.conflicts;
+  }
+
+  for(const resolution of differences.resolutions) {
+    if(resolution.conflict && conflictMap.has(resolution.conflict)) {
+      conflictMap.delete(resolution.conflict);
+    }
+  }
+
+  return [...conflictMap.values()];
 }
 
 /**

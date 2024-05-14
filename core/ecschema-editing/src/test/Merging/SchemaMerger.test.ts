@@ -14,6 +14,7 @@ import "chai-as-promised";
 describe("Schema merge tests", () => {
   it("should throw an error if the differences has conflicts.", async () => {
     const conflict: SchemaDifferenceConflict = {
+      id: "C-1300-ConflictingPropertyEntity-MyProperty",
       code: ConflictCode.ConflictingPropertyName,
       schemaType: SchemaItemType.EntityClass,
       itemName: "ConflictingPropertyEntity",
