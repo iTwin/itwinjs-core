@@ -1,6 +1,6 @@
 {
   "name": "@itwin/editor-backend",
-  "version": "4.6.0-dev.26",
+  "version": "4.7.0-dev.4",
   "description": "iTwin.js editor backend",
   "main": "lib/cjs/editor-backend.js",
   "typings": "lib/cjs/editor-backend",
@@ -35,10 +35,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.6.0-dev.26",
-    "@itwin/core-bentley": "workspace:^4.6.0-dev.26",
-    "@itwin/core-common": "workspace:^4.6.0-dev.26",
-    "@itwin/core-geometry": "workspace:^4.6.0-dev.26"
+    "@itwin/core-backend": "workspace:^4.7.0-dev.4",
+    "@itwin/core-bentley": "workspace:^4.7.0-dev.4",
+    "@itwin/core-common": "workspace:^4.7.0-dev.4",
+    "@itwin/core-geometry": "workspace:^4.7.0-dev.4"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -50,7 +50,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.52",
+    "@itwin/eslint-plugin": "^4.0.2",
     "eslint": "^8.44.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.3.3"

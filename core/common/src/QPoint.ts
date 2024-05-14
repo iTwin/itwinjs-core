@@ -266,7 +266,8 @@ export interface QPoint2dBuffer {
   points: Uint16Array;
 }
 
-/** @public
+/**
+ * @public
  * @extensions
  */
 export namespace QPoint2dBuffer {
@@ -858,7 +859,7 @@ export class QPoint3dList {
 }
 
 /** Options used to construct a [[QPoint2dBufferBuilder]].
- * @beta
+ * @public
  * @extensions
  */
 interface QPoint2dBufferBuilderOptions {
@@ -944,7 +945,7 @@ export class QPoint2dBufferBuilder {
 }
 
 /** Options used to construct a [[QPoint3dBufferBuilder]].
- * @beta
+ * @public
  * @extensions
  */
 interface QPoint3dBufferBuilderOptions {

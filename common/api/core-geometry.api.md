@@ -6398,6 +6398,7 @@ export class XY implements XAndY {
     isAlmostEqualXY(x: number, y: number, tol?: number): boolean;
     get isAlmostZero(): boolean;
     isExactEqual(other: XAndY): boolean;
+    get isZero(): boolean;
     magnitude(): number;
     magnitudeSquared(): number;
     maxAbs(): number;
