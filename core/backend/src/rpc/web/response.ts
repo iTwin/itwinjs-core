@@ -24,9 +24,9 @@ import {
   WebAppRpcRequest,
 } from "@itwin/core-common";
 
-import { Readable, Stream } from "stream";
-import { promisify } from "util";
-import { brotliCompress, BrotliOptions, createBrotliCompress, createGzip, gzip, constants as zlibConstants } from "zlib";
+import { Readable, Stream } from "node:stream";
+import { promisify } from "node:util";
+import { brotliCompress, BrotliOptions, createBrotliCompress, createGzip, gzip, constants as zlibConstants } from "node:zlib";
 
 /* eslint-disable deprecation/deprecation */
 

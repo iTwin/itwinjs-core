@@ -3,7 +3,7 @@ import { SinonStub, stub } from "sinon";
 import { Readable, Writable } from "stream";
 import { HttpServerRequest, HttpServerResponse, RpcRequestFulfillment, RpcRequestStatus, SerializedRpcRequest, WebAppRpcProtocol } from "@itwin/core-common";
 import { sendResponse } from "../../rpc/web/response";
-import { brotliDecompressSync, unzipSync } from "zlib";
+import { brotliDecompressSync, unzipSync } from "node:zlib";
 
 /* eslint-disable deprecation/deprecation */
 
