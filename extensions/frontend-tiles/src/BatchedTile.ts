@@ -7,7 +7,7 @@ import { assert, BeTimePoint, ByteStream, Logger } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { ColorDef, Tileset3dSchema } from "@itwin/core-common";
 import {
-  GraphicBranch, GraphicBuilder, IModelApp, IndexedDBCacheManager, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
+  GraphicBranch, GraphicBuilder, IModelApp, IndexedDBCache, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
   TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TileUser, TileVisibility, Viewport,
 } from "@itwin/core-frontend";
 import { loggerCategory } from "./LoggerCategory";
@@ -51,8 +51,8 @@ export class BatchedTile extends Tile {
     }
 
     // Once there is a conditional for using the cache, this can be:
-    // this._localCache = useCache ? new IndexedDBCache("MX-IDB") : new IndexedDBCachePassThrough();
-    this._localCache = new IndexedDBCacheManager("MX-IDB");
+    // this._localCache = useCache ? new IndexedDBCache("MX-IDB") : new PassThroughCache();
+    this._localCache = new IndexedDBCache("MX-IDB");
 
     if (!params.transformToRoot)
       return;

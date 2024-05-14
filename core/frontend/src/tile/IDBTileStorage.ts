@@ -6,18 +6,18 @@
  * @module Tiles
  */
 
-interface IndexedDBCache {
+interface ILocalCache {
   fetch(url: string, callback: (url: string) => Promise<Response>): Promise<ArrayBuffer>;
 }
 
-export class IndexedDBCachePassThrough implements IndexedDBCache {
+export class PassThroughCache implements ILocalCache {
   public async fetch(url: string, callback: (url: string) => Promise<Response>): Promise<ArrayBuffer> {
     const response = await callback(url);
     return response.arrayBuffer();
   }
 }
 
-export class IndexedDBCacheManager implements IndexedDBCache{
+export class IndexedDBCache implements ILocalCache{
   private _db: any;
   private _dbName: string = "IDB";
   private _expirationTime?: number;
