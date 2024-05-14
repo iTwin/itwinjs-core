@@ -6,9 +6,18 @@
  * @module Tiles
  */
 
-import { TileRequestChannel } from "./internal";
+interface IndexedDBCache {
+  fetch(url: string, callback: (url: string) => Promise<Response>): Promise<ArrayBuffer>;
+}
 
-export class IDBStorage {
+export class IndexedDBCachePassThrough implements IndexedDBCache {
+  public async fetch(url: string, callback: (url: string) => Promise<Response>): Promise<ArrayBuffer> {
+    const response = await callback(url);
+    return response.arrayBuffer();
+  }
+}
+
+export class IndexedDBCacheManager implements IndexedDBCache{
   private _db: any;
   private _dbName: string = "IDB";
   private _expirationTime?: number;
@@ -20,7 +29,7 @@ export class IDBStorage {
     }
   }
 
-  public async open() {
+  private async open() {
 
     // set up IndexedDB
     const requestDB = window.indexedDB.open(this._dbName, 1);
@@ -56,15 +65,15 @@ export class IDBStorage {
     };
   }
 
-  public async close() {
+  private async close() {
     await this._db.close();
   }
 
-  public async requestContent(uniqueId: string): Promise<ArrayBuffer | undefined> {
+  private async searchCache(uniqueId: string): Promise<ArrayBuffer | undefined> {
 
     await this.open();
 
-    console.log("Requesting content with this id:");
+    console.log("Searching for content with this id:");
     console.log(uniqueId);
     const getTransaction = await this._db.transaction("cache", "readonly");
     const storedResponse = await getTransaction.objectStore("cache").get(uniqueId);
@@ -103,7 +112,7 @@ export class IDBStorage {
     return undefined;
   }
 
-  public async deleteContent(uniqueId: string) {
+  private async deleteContent(uniqueId: string) {
     const deleteTransaction = await this._db.transaction("cache", "readwrite");
     const requestDelete = await deleteTransaction.objectStore("cache").delete(uniqueId);
 
@@ -120,7 +129,7 @@ export class IDBStorage {
     };
   }
 
-  public async addContent(uniqueId: string, content: ArrayBuffer) {
+  private async addContent(uniqueId: string, content: ArrayBuffer) {
     await this.open();
     const addTransaction = await this._db.transaction("cache", "readwrite");
     const objectStore = await addTransaction.objectStore("cache");
@@ -148,33 +157,17 @@ export class IDBStorage {
       await this.close();
     };
   }
-}
-
-export class IDBTileRequestChannel extends TileRequestChannel {
-  private _tileStorage: IDBStorage;
-
-  public constructor(channelName: string, cacheConcurrency: number, dbName: string) {
-
-    console.log("CREATING CHANNEL: ", channelName);
-    super(channelName, cacheConcurrency);
-
-    this._tileStorage = new IDBStorage(dbName);
-  }
-
-  public get tileStorage(): IDBStorage {
-    return this._tileStorage;
-  }
 
   public async fetch(url: string, callback: (url: string) => Promise<Response>): Promise<ArrayBuffer> {
     let response: any;
-    response = await this._tileStorage.requestContent(url);
+    response = await this.searchCache(url);
 
     // If nothing was found in the db
     if (response === undefined) {
 
       // fetch normally, then add that content to the db
       response = await callback(url);
-      await this._tileStorage.addContent(url, response.arrayBuffer());
+      await this.addContent(url, response.arrayBuffer());
     }
 
     return response.arrayBuffer();

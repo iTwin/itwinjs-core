@@ -7,7 +7,7 @@ import { assert, BeTimePoint, ByteStream, Logger } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { ColorDef, Tileset3dSchema } from "@itwin/core-common";
 import {
-  GraphicBranch, GraphicBuilder, IDBTileRequestChannel, IModelApp, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
+  GraphicBranch, GraphicBuilder, IModelApp, IndexedDBCacheManager, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
   TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TileUser, TileVisibility, Viewport,
 } from "@itwin/core-frontend";
 import { loggerCategory } from "./LoggerCategory";
@@ -21,7 +21,7 @@ export interface BatchedTileParams extends TileParams {
   transformToRoot: Transform | undefined;
 }
 
-let channel: IDBTileRequestChannel | undefined;
+let channel: TileRequestChannel | undefined;
 
 /** @internal */
 export class BatchedTile extends Tile {
@@ -29,6 +29,7 @@ export class BatchedTile extends Tile {
   private readonly _unskippable: boolean;
   /** Transform from the tile's local coordinate system to that of the tileset. */
   public readonly transformToRoot?: Transform;
+  private _localCache: any;
 
   public get batchedTree(): BatchedTileTree {
     return this.tree as BatchedTileTree;
@@ -49,6 +50,10 @@ export class BatchedTile extends Tile {
       this._maximumSize = 0;
     }
 
+    // Once there is a conditional for using the cache, this can be:
+    // this._localCache = useCache ? new IndexedDBCache("MX-IDB") : new IndexedDBCachePassThrough();
+    this._localCache = new IndexedDBCacheManager("MX-IDB");
+
     if (!params.transformToRoot)
       return;
 
@@ -57,6 +62,7 @@ export class BatchedTile extends Tile {
     this.transformToRoot.multiplyRange(this.range, this.range);
     if (this._contentRange)
       this.transformToRoot.multiplyRange(this._contentRange, this._contentRange);
+
   }
 
   private get _batchedChildren(): BatchedTile[] | undefined {
@@ -125,12 +131,10 @@ export class BatchedTile extends Tile {
     resolve(children);
   }
 
-  public override get channel(): IDBTileRequestChannel {
+  public override get channel(): TileRequestChannel {
     if (!channel) {
 
-      // In the future, once a conditional is added to turn the cache on and off, this can be:
-      // channel = useIDB ? new IDBTileRequestChannel : new TileRequestChannel
-      channel = new IDBTileRequestChannel("itwinjs-batched-models", 20, "MX-IDB");
+      channel = new TileRequestChannel("itwinjs-batched-models", 20);
       IModelApp.tileAdmin.channels.add(channel);
     }
 
@@ -140,7 +144,7 @@ export class BatchedTile extends Tile {
   public override async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
     const url = new URL(this.contentId, this.batchedTree.reader.baseUrl);
     url.search = this.batchedTree.reader.baseUrl.search;
-    const response = await this.channel.fetch(url.toString(), fetch);
+    const response = await this._localCache.fetch(url.toString(), fetch);
 
     return response;
   }
