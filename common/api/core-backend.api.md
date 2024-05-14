@@ -360,8 +360,6 @@ export enum BackendLoggerCategory {
     // @internal
     DevTools = "core-backend.DevTools",
     ECDb = "core-backend.ECDb",
-    // @alpha
-    Editing = "core-backend.Editing",
     EventSink = "core-backend.EventSink",
     Functional = "core-backend.Functional",
     IModelDb = "core-backend.IModelDb",
