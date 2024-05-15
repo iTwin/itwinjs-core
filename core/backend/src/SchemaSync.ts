@@ -9,7 +9,7 @@
 
 import { CloudSqlite } from "./CloudSqlite";
 import { VersionedSqliteDb } from "./SQLiteDb";
-import { BriefcaseDb, IModelDb, OpenBriefcaseArgs } from "./IModelDb";
+import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { DbResult, OpenMode } from "@itwin/core-bentley";
 import { IModelError, LocalFileName } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
