@@ -19,7 +19,7 @@ import {
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
   DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps,
   ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
-  GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
+  GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometryStreamProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, mapNativeElementProps, MassPropertiesRequestProps,
   MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, NativeInterfaceMap, OpenBriefcaseProps, OpenCheckpointArgs, OpenSqliteArgs,
   ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps,
@@ -1765,16 +1765,49 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       if (elementId === undefined)
         return undefined;
 
-      return this._iModel.withPreparedStatement("SELECT $ FROM Bis.Element WHERE ECInstanceId=? OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB", (statement: ECSqlStatement) => {
+      const elementProps = this._iModel.withPreparedStatement("SELECT $ FROM Bis.Element WHERE ECInstanceId=? OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB", (statement: ECSqlStatement) => {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion. elementId can't be null here, but eslint recognizes it as an error.
         statement.bindId(1, elementId!);
 
         if (statement.step() !== DbResult.BE_SQLITE_ROW)
           return undefined;
 
-        const nativeElementProps = JSON.parse(statement.getValue(0).getString()) as NativeInterfaceMap<T>;
-        return mapNativeElementProps(nativeElementProps);
+        return mapNativeElementProps(JSON.parse(statement.getValue(0).getString())) as T;
       });
+
+      if (!elementProps)
+        return undefined;
+
+      if (elementProps.classFullName === "BisCore:CategorySelector") {
+        const categories = this._iModel.withPreparedStatement("SELECT TargetECInstanceId FROM Bis.CategorySelectorRefersToCategories WHERE SourceECInstanceId=?", (statement: ECSqlStatement) => {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion. elementId can't be null here, but eslint recognizes it as an error.
+          statement.bindId(1, elementId!);
+
+          const ids: Id64Array = [];
+          while (DbResult.BE_SQLITE_ROW === statement.step()) {
+            ids.push(statement.getValue(0).getId());
+          }
+          return ids;
+        });
+
+        return { ...elementProps, categories };
+      }
+
+      if (elementProps.classFullName === "BisCore:ModelSelector") {
+        const models = this._iModel.withPreparedStatement("SELECT TargetECInstanceId FROM Bis.ModelSelectorRefersToModels WHERE SourceECInstanceId=?", (statement: ECSqlStatement) => {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion. elementId can't be null here, but eslint recognizes it as an error.
+          statement.bindId(1, elementId!);
+
+          const ids: Id64Array = [];
+          while (DbResult.BE_SQLITE_ROW === statement.step()) {
+            ids.push(statement.getValue(0).getId());
+          }
+          return ids;
+        });
+        return { ...elementProps, models };
+      }
+
+      return elementProps;
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code

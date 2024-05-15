@@ -35,7 +35,10 @@ type NativeViewDefinitionProps = NativeElementProps & Pick<ViewDefinitionProps, 
 type NativeViewDefinition2dProps = NativeViewDefinitionProps & Pick<ViewDefinition2dProps, "origin" | "delta" | "angle"> & {
   baseModel: RelatedElementProps;
 };
-type NativeViewDefinition3dProps = NativeViewDefinitionProps & Pick<ViewDefinition3dProps, "jsonProperties" | "cameraOn" | "camera" | "angles" | "origin" | "extents">;
+type NativeViewDefinition3dProps = NativeViewDefinitionProps & Pick<ViewDefinition3dProps, "jsonProperties" | "origin" | "extents"> & {
+  isCameraOn: boolean; focusDistance: number; lensAngle: number; eyePoint: XYZProps;
+  yaw?: AngleProps; pitch?: AngleProps; roll?: AngleProps;
+};
 type NativeSpatialViewDefinitionProps = NativeViewDefinition3dProps & {
   modelSelector: RelatedElementProps;
 };
@@ -76,13 +79,16 @@ function mapElementProps(props: NativeElementProps): ElementProps {
     model: model.id,
     parent: parent ? mapRelatedElementProps(parent) : undefined,
     classFullName: className.replace(".", ":"),
-    jsonProperties: jsonProperties ? JSON.parse(jsonProperties) : undefined,
+    jsonProperties: jsonProperties
+      ? JSON.parse(jsonProperties, (key, value) => (key === "subCategory") ? `0x${(+value).toString(16)}` : value)
+      : undefined,
     ...mapBinaryProperties(rest),
   };
 }
 
 export function mapNativeElementProps<T extends ElementProps>(props: NativeInterfaceMap<T>): T {
   const element = mapElementProps(props) as any;
+  delete element.lastMod;
 
   // ViewDefinitionProps
   if ("categorySelector" in props && props.categorySelector !== undefined) {
@@ -99,6 +105,19 @@ export function mapNativeElementProps<T extends ElementProps>(props: NativeInter
   }
 
   // ViewDefinition3dProps
+  if ("isCameraOn" in props && props.isCameraOn !== undefined) {
+    element.cameraOn = props.isCameraOn;
+    element.camera = { eye: props.eyePoint, focusDist: props.focusDistance, lens: props.lensAngle };
+    element.angles = { yaw: props.yaw, roll: props.roll, pitch: props.pitch },
+
+    delete element.isCameraOn;
+    delete element.eyePoint;
+    delete element.focusDistance;
+    delete element.lensAngle;
+    delete element.yaw;
+    delete element.roll;
+    delete element.pitch;
+  }
 
   // SpatialViewDefinitionProps
   if ("modelSelector" in props && props.modelSelector !== undefined) {
@@ -109,7 +128,6 @@ export function mapNativeElementProps<T extends ElementProps>(props: NativeInter
   // GeometryPartProps and partially GeometricElementProps
   if ("bBoxHigh" in props && props.bBoxHigh !== undefined && "bBoxLow" in props && props.bBoxLow !== undefined) {
     element.bbox = { low: element.bBoxLow, high: element.bBoxHigh };
-    element.geom = element.geometryStream; // TODO: map UInt8Array to GeometryStreamProps
     delete element.bBoxLow;
     delete element.bBoxHigh;
     delete element.geometryStream;
