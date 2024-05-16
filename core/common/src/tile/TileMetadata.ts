@@ -488,7 +488,7 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
 
   if (options.expandProjectExtents)
     flags |= TreeFlags.ExpandProjectExtents;
-    
+
   if (BatchType.Primary === treeId.type) {
     if (undefined !== treeId.animationId)
       idStr = `${idStr}${animationIdToString(treeId.animationId)}`;
