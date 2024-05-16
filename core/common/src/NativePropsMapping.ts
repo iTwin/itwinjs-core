@@ -80,7 +80,13 @@ function mapElementProps(props: NativeElementProps): ElementProps {
     parent: parent ? mapRelatedElementProps(parent) : undefined,
     classFullName: className.replace(".", ":"),
     jsonProperties: jsonProperties
-      ? JSON.parse(jsonProperties, (key, value) => (key === "subCategory") ? `0x${(+value).toString(16)}` : value)
+      ? JSON.parse(jsonProperties, (key, value) => {
+        if (key === "subCategory")
+          return `0x${(+value).toString(16)}`;
+        if (value === null)
+          return undefined;
+        return value;
+      })
       : undefined,
     ...mapBinaryProperties(rest),
   };

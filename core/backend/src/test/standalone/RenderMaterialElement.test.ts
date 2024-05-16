@@ -9,10 +9,10 @@ import { ImageSourceFormat, IModel, NormalMapFlags, NormalMapProps, RenderMateri
 import { IModelElementCloneContext, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, Texture } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-function removeNull(assetProps: RenderMaterialAssetProps): RenderMaterialAssetProps {
+function removeUndefined(assetProps: RenderMaterialAssetProps): RenderMaterialAssetProps {
   const input = assetProps as any;
   for (const key of Object.keys(input))
-    if (input[key] === null)
+    if (input[key] === undefined)
       delete input[key];
 
   const maps = assetProps.Map as any;
@@ -20,11 +20,10 @@ function removeNull(assetProps: RenderMaterialAssetProps): RenderMaterialAssetPr
     for (const mapsKey of Object.keys(maps)) {
       const map = maps[mapsKey];
       for (const mapKey of Object.keys(map))
-        if (map[mapKey] === null)
+        if (map[mapKey] === undefined)
           delete map[mapKey];
     }
   }
-
   return assetProps;
 }
 
@@ -59,7 +58,7 @@ describe("RenderMaterialElement", () => {
     const mat = imodel.elements.getElement<RenderMaterialElement>(id);
     const json = mat.toJSON();
     expect(json.jsonProperties?.materialAssets?.renderMaterial).not.to.be.undefined;
-    const actual = removeNull(json.jsonProperties!.materialAssets!.renderMaterial!);
+    const actual = removeUndefined(json.jsonProperties!.materialAssets!.renderMaterial!);
 
     if (expected !== undefined) {
       expected = defaultBooleans(expected);
