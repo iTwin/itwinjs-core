@@ -14172,6 +14172,8 @@ export class TileAdmin {
     readonly enableImprovedElision: boolean;
     // @internal (undocumented)
     get enableInstancing(): boolean;
+    // @internal (undocumented)
+    readonly expandProjectExtents: boolean;
     forgetUser(user: TileUser): void;
     // @internal
     freeMemory(): void;
@@ -14303,6 +14305,8 @@ export namespace TileAdmin {
         enableImprovedElision?: boolean;
         enableIndexedEdges?: boolean;
         enableInstancing?: boolean;
+        // @internal
+        expandProjectExtents?: boolean;
         // @beta
         generateAllPolyfaceEdges?: boolean;
         gpuMemoryLimits?: GpuMemoryLimit | GpuMemoryLimits;
