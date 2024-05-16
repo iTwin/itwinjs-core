@@ -334,15 +334,22 @@ describe("Changeset conflict handler", () => {
     // third briefcase while pull will see a fk violation.
     await spyChangesetConflictHandler(
       b3,
-      async () => b3.pullChanges({ accessToken: accessToken1 }),
+      async () => assertThrowsAsync(
+        async () => b3.pullChanges({ accessToken: accessToken1 }),
+        "Detected 1 foreign key conflicts in ChangeSet. Aborting merge."),
       (spy) => {
-        expect(spy.callCount).eq(1);
-        expect(spy.alwaysReturned(DbConflictResolution.Skip)).true;
-        const arg = spy.args[0][0];
-        expect(arg.cause).eq(DbConflictCause.NotFound);
-        expect(arg.opcode).eq(DbOpcode.Delete);
-        expect(arg.indirect).true;
-        expect(arg.tableName).eq("bis_GeometricElement3d");
+        expect(spy.callCount).eq(2);
+        const arg0 = spy.args[0][0];
+        expect(arg0.cause).eq(DbConflictCause.NotFound);
+        expect(arg0.opcode).eq(DbOpcode.Update);
+        expect(arg0.indirect).false;
+        expect(arg0.tableName).eq("bis_Element");
+
+        const arg1 = spy.args[1][0];
+        expect(arg1.cause).eq(DbConflictCause.ForeignKey);
+        expect(arg1.opcode).eq(0);
+        expect(arg1.indirect).false;
+        expect(arg1.tableName).eq("");
       },
     );
   });
