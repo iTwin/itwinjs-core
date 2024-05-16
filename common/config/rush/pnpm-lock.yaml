@@ -10,7 +10,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.7.0
+      '@bentley/imodeljs-native': 4.7.2
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.1.0
       '@itwin/core-bentley': workspace:*
@@ -19,7 +19,7 @@ importers:
       '@itwin/core-telemetry': workspace:*
       '@itwin/core-webpack-tools': workspace:*
       '@itwin/ecsql-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/object-storage-azure': ^2.2.2
       '@itwin/object-storage-core': ^2.2.2
       '@opentelemetry/api': 1.0.4
@@ -60,7 +60,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
-      '@bentley/imodeljs-native': 4.7.0
+      '@bentley/imodeljs-native': 4.7.2
       '@itwin/cloud-agnostic-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.2.2_scz6qrwecfbbxg4vskopkl3a7u
@@ -81,7 +81,7 @@ importers:
       '@itwin/core-geometry': link:../geometry
       '@itwin/core-webpack-tools': link:../../tools/webpack-core
       '@itwin/ecsql-common': link:../ecsql/common
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@opentelemetry/api': 1.0.4
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
@@ -114,7 +114,7 @@ importers:
   ../../core/bentley:
     specifiers:
       '@itwin/build-tools': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@opentelemetry/api': 1.0.4
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
@@ -129,7 +129,7 @@ importers:
       typescript: ~5.3.3
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@opentelemetry/api': 1.0.4
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
@@ -148,7 +148,7 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/object-storage-core': ^2.2.2
       '@types/chai': 4.3.1
       '@types/flatbuffers': ~1.10.0
@@ -169,7 +169,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-geometry': link:../geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@itwin/object-storage-core': 2.2.2
       '@types/chai': 4.3.1
       '@types/flatbuffers': 1.10.0
@@ -190,7 +190,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-quantity': workspace:*
       '@itwin/ecschema-metadata': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/almost-equal': 1.1.0
       '@types/benchmark': ^2.1.0
       '@types/chai': 4.3.1
@@ -216,7 +216,7 @@ importers:
       '@itwin/core-common': link:../common
       '@itwin/core-quantity': link:../quantity
       '@itwin/ecschema-metadata': link:../ecschema-metadata
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/almost-equal': 1.1.0
       '@types/benchmark': 2.1.0
       '@types/chai': 4.3.1
@@ -256,7 +256,7 @@ importers:
       '@bentley/units-schema': ^1.0.8
       '@itwin/build-tools': workspace:*
       '@itwin/ecschema-metadata': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
@@ -299,7 +299,7 @@ importers:
       '@bentley/units-schema': 1.0.8
       '@itwin/build-tools': link:../../tools/build
       '@itwin/ecschema-metadata': link:../ecschema-metadata
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/fs-extra': 4.0.7
@@ -323,7 +323,7 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-quantity': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/almost-equal': 1.1.0
       '@types/benchmark': ^2.1.0
       '@types/chai': 4.3.1
@@ -350,7 +350,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-quantity': link:../quantity
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/almost-equal': 1.1.0
       '@types/benchmark': 2.1.0
       '@types/chai': 4.3.1
@@ -377,7 +377,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-metadata': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       eslint: ^8.44.0
       rimraf: ^3.0.2
       typescript: ~5.3.3
@@ -387,7 +387,7 @@ importers:
       '@itwin/core-common': link:../../common
       '@itwin/core-geometry': link:../../geometry
       '@itwin/ecschema-metadata': link:../../ecschema-metadata
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       eslint: 8.44.0
       rimraf: 3.0.2
       typescript: 5.3.3
@@ -401,7 +401,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/ecschema-rpcinterface-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       eslint: ^8.44.0
       rimraf: ^3.0.2
       typescript: ~5.3.3
@@ -413,7 +413,7 @@ importers:
       '@itwin/core-geometry': link:../../geometry
       '@itwin/ecschema-metadata': link:../../ecschema-metadata
       '@itwin/ecschema-rpcinterface-common': link:../common
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       eslint: 8.44.0
       rimraf: 3.0.2
       typescript: 5.3.3
@@ -422,7 +422,7 @@ importers:
     specifiers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       chai: ^4.3.10
@@ -435,7 +435,7 @@ importers:
       '@itwin/core-bentley': link:../../bentley
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       chai: 4.3.10
@@ -453,7 +453,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@openid/appauth': ^1.2.6
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
@@ -481,7 +481,7 @@ importers:
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
@@ -501,7 +501,7 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/body-parser': ^1.17.0
       '@types/chai': 4.3.1
       '@types/express': ^4.17.20
@@ -527,7 +527,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-backend': link:../backend
       '@itwin/core-common': link:../common
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/body-parser': 1.17.0
       '@types/chai': 4.3.1
       '@types/express': 4.17.20
@@ -550,7 +550,7 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       eslint: ^8.44.0
       rimraf: ^3.0.2
       typescript: ~5.3.3
@@ -559,7 +559,7 @@ importers:
       '@itwin/core-frontend': link:../frontend
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       eslint: 8.44.0
       rimraf: 3.0.2
       typescript: 5.3.3
@@ -577,7 +577,7 @@ importers:
       '@itwin/core-orbitgt': workspace:*
       '@itwin/core-quantity': workspace:*
       '@itwin/core-telemetry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/object-storage-core': ^2.2.2
       '@itwin/webgl-compatibility': workspace:*
       '@loaders.gl/core': ^3.1.6
@@ -624,7 +624,7 @@ importers:
       '@itwin/core-geometry': link:../geometry
       '@itwin/core-orbitgt': link:../orbitgt
       '@itwin/core-quantity': link:../quantity
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/mocha': 10.0.6
@@ -652,7 +652,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/file-saver': ^2.0.1
       cpx2: ^3.0.0
       eslint: ^8.44.0
@@ -667,7 +667,7 @@ importers:
       file-saver: 2.0.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/file-saver': 2.0.1
       cpx2: 3.0.0
       eslint: 8.44.0
@@ -678,7 +678,7 @@ importers:
     specifiers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/flatbuffers': ~1.10.0
       '@types/mocha': ^10.0.6
@@ -696,7 +696,7 @@ importers:
       flatbuffers: 1.12.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/flatbuffers': 1.10.0
       '@types/mocha': 10.0.6
@@ -718,7 +718,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       babel-loader: ~8.2.5
@@ -742,7 +742,7 @@ importers:
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
       '@itwin/core-geometry': link:../geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       babel-loader: 8.2.5_webpack@5.76.0
@@ -764,7 +764,7 @@ importers:
       '@itwin/certa': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/i18next': ^8.4.2
       '@types/i18next-browser-languagedetector': ^2.0.1
@@ -791,7 +791,7 @@ importers:
       '@itwin/certa': link:../../tools/certa
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/i18next': 8.4.2
       '@types/i18next-browser-languagedetector': 2.0.1
@@ -815,7 +815,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@svgdotjs/svg.js': 3.0.13
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
@@ -840,7 +840,7 @@ importers:
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
       '@itwin/core-geometry': link:../geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       babel-loader: 8.2.5_webpack@5.76.0
@@ -863,7 +863,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.202
@@ -892,7 +892,7 @@ importers:
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.7
       '@types/lodash': 4.14.202
@@ -913,7 +913,7 @@ importers:
     specifiers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
@@ -928,7 +928,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
@@ -945,7 +945,7 @@ importers:
     specifiers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/glob': ^5.0.35
@@ -962,7 +962,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/glob': 5.0.35
@@ -983,7 +983,7 @@ importers:
       '@itwin/certa': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       chai: ^4.3.10
@@ -999,7 +999,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       chai: 4.3.10
@@ -1015,7 +1015,7 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/certa': workspace:*
       '@itwin/core-bentley': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       babel-loader: ~8.2.5
@@ -1033,7 +1033,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       babel-loader: 8.2.5_webpack@5.76.0
@@ -1053,7 +1053,7 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
@@ -1072,7 +1072,7 @@ importers:
       '@itwin/core-backend': link:../../../core/backend
       '@itwin/core-bentley': link:../../../core/bentley
       '@itwin/core-common': link:../../../core/common
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
@@ -1093,7 +1093,7 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/linear-referencing-common': workspace:*
       '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
@@ -1111,7 +1111,7 @@ importers:
       '@itwin/core-backend': link:../../../core/backend
       '@itwin/core-bentley': link:../../../core/bentley
       '@itwin/core-common': link:../../../core/common
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@itwin/linear-referencing-common': link:../common
       '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.7
@@ -1130,7 +1130,7 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
@@ -1144,7 +1144,7 @@ importers:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-bentley': link:../../../core/bentley
       '@itwin/core-common': link:../../../core/common
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
@@ -1161,7 +1161,7 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
@@ -1177,7 +1177,7 @@ importers:
       '@itwin/core-backend': link:../../../core/backend
       '@itwin/core-bentley': link:../../../core/bentley
       '@itwin/core-common': link:../../../core/common
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
@@ -1197,7 +1197,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/editor-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       eslint: ^8.44.0
       rimraf: ^3.0.2
       typescript: ~5.3.3
@@ -1209,7 +1209,7 @@ importers:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       eslint: 8.44.0
       rimraf: 3.0.2
       typescript: 5.3.3
@@ -1220,7 +1220,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       chai: ^4.3.10
@@ -1233,7 +1233,7 @@ importers:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       chai: 4.3.10
@@ -1252,7 +1252,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/editor-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       cpx2: ^3.0.0
       eslint: ^8.44.0
       rimraf: ^3.0.2
@@ -1267,7 +1267,7 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       cpx2: 3.0.0
       eslint: 8.44.0
       rimraf: 3.0.2
@@ -1282,7 +1282,7 @@ importers:
       '@itwin/core-electron': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/oidc-signin-tool': ~3.6.0
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
@@ -1304,7 +1304,7 @@ importers:
       electron: 30.0.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@itwin/oidc-signin-tool': 3.6.0_bplkyfia6fpabkwkmq6hai5lru
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
@@ -1328,7 +1328,7 @@ importers:
       '@itwin/ecschema-editing': workspace:*
       '@itwin/ecschema-locaters': workspace:*
       '@itwin/ecschema-metadata': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/imodel-transformer': ^0.1.1
       '@itwin/itwins-client': ^1.2.0
       '@itwin/oidc-signin-tool': ~3.6.0
@@ -1364,7 +1364,7 @@ importers:
       fs-extra: 8.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@itwin/oidc-signin-tool': 3.6.0_mdtbcqczpmeuv6yjzfaigjndwi
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
@@ -1387,7 +1387,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^10.0.6
@@ -1412,7 +1412,7 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/mocha': 10.0.6
@@ -1437,7 +1437,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       '@types/sinon': ^17.0.2
@@ -1460,7 +1460,7 @@ importers:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       '@types/sinon': 17.0.2
@@ -1487,7 +1487,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/geojson': ~7946.0.14
@@ -1523,7 +1523,7 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/geojson': 7946.0.14
@@ -1552,7 +1552,7 @@ importers:
     specifiers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-extension': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       buffer: ^6.0.3
       esbuild: ^0.13.8
       eslint: ^8.44.0
@@ -1565,7 +1565,7 @@ importers:
       url: 0.11.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       esbuild: 0.13.8
       eslint: 8.44.0
       rimraf: 3.0.2
@@ -1597,7 +1597,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-metadata': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/imodels-access-backend': ^5.0.1
       '@itwin/imodels-client-authoring': ^5.1.0
       '@itwin/itwins-client': ^1.2.0
@@ -1667,7 +1667,7 @@ importers:
       sinon: 17.0.1
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/fs-extra': 4.0.7
@@ -1699,7 +1699,7 @@ importers:
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
       '@itwin/electron-authorization': ^0.14.1
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/express-server': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
       '@itwin/imodels-access-backend': ^5.0.1
@@ -1783,7 +1783,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@itwin/itwins-client': 1.2.0
       '@itwin/object-storage-core': 2.2.2
       '@itwin/oidc-signin-tool': 3.6.0_bplkyfia6fpabkwkmq6hai5lru
@@ -1832,7 +1832,7 @@ importers:
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/ecschema-rpcinterface-common': workspace:*
       '@itwin/ecschema-rpcinterface-impl': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/express-server': workspace:*
       '@itwin/imodels-access-backend': ^5.0.1
       '@itwin/imodels-access-frontend': ^5.0.1
@@ -1893,7 +1893,7 @@ importers:
       openid-client: 4.7.4
     devDependencies:
       '@itwin/core-backend': link:../../core/backend
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@itwin/express-server': link:../../core/express-server
       '@itwin/itwins-client': 1.2.0
       '@types/chai': 4.3.1
@@ -1929,7 +1929,7 @@ importers:
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/ecschema-rpcinterface-common': workspace:*
       '@itwin/ecschema-rpcinterface-impl': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
@@ -2018,7 +2018,7 @@ importers:
       typemoq: 2.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       cache-require-paths: 0.3.0
       cross-env: 5.1.4
       dotenv: 10.0.0
@@ -2043,7 +2043,7 @@ importers:
       '@itwin/core-electron': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-mobile': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/express-server': workspace:*
       '@types/chai': 4.3.1
       '@types/express': ^4.17.20
@@ -2083,7 +2083,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/express': 4.17.20
       '@types/mocha': 10.0.6
@@ -2114,7 +2114,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/core-quantity': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/express-server': workspace:*
       '@itwin/imodels-access-backend': ^5.0.1
       '@itwin/imodels-access-frontend': ^5.0.1
@@ -2160,7 +2160,7 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-quantity': link:../../core/quantity
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@itwin/imodels-access-backend': 5.0.1_wj555zckjupkhkzyssqqpl4sei
       '@itwin/imodels-access-frontend': 5.0.1_ueafa4slb6ohrhyf7kbp6egmha
       '@itwin/imodels-client-authoring': 5.1.0
@@ -2209,7 +2209,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-quantity': workspace:*
       '@itwin/ecschema-metadata': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/presentation-common': workspace:*
       '@sinonjs/fake-timers': ^11.2.2
       '@types/chai': 4.3.1
@@ -2261,7 +2261,7 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@itwin/presentation-common': link:../common
       '@sinonjs/fake-timers': 11.2.2
       '@types/chai': 4.3.1
@@ -2305,7 +2305,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-quantity': workspace:*
       '@itwin/ecschema-metadata': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.8
@@ -2344,7 +2344,7 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/chai-jest-snapshot': 1.3.8
@@ -2387,7 +2387,7 @@ importers:
       '@itwin/core-i18n': workspace:*
       '@itwin/core-quantity': workspace:*
       '@itwin/ecschema-metadata': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/presentation-common': workspace:*
       '@itwin/unified-selection': ^0.1.0
       '@types/chai': 4.3.1
@@ -2432,7 +2432,7 @@ importers:
       '@itwin/core-i18n': link:../../core/i18n
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@itwin/presentation-common': link:../common
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
@@ -2477,7 +2477,7 @@ importers:
       '@itwin/core-mobile': workspace:*
       '@itwin/core-quantity': workspace:*
       '@itwin/electron-authorization': ^0.14.1
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/frontend-tiles': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
       '@itwin/imodels-access-backend': ^5.0.1
@@ -2540,7 +2540,7 @@ importers:
       body-parser: 1.20.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@itwin/perf-tools': link:../../tools/perf-tools
       '@types/body-parser': 1.17.0
       '@types/express': 4.17.20
@@ -2595,7 +2595,7 @@ importers:
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
       '@itwin/electron-authorization': ^0.14.1
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/frontend-devtools': workspace:*
       '@itwin/frontend-tiles': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
@@ -2677,7 +2677,7 @@ importers:
       '@itwin/backend-webpack-tools': link:../../tools/backend-webpack
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-webpack-tools': link:../../tools/webpack-core
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/express': 4.17.20
       '@types/express-ws': 3.0.3
       '@types/fs-extra': 4.0.7
@@ -2718,7 +2718,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/node': ~18.16.20
       '@types/yargs': 17.0.19
       eslint: ^8.44.0
@@ -2733,7 +2733,7 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/node': 18.16.20
       '@types/yargs': 17.0.19
       eslint: 8.44.0
@@ -2747,7 +2747,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
@@ -2767,7 +2767,7 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
@@ -2784,7 +2784,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.202
       '@types/node': ~18.16.20
@@ -2803,7 +2803,7 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/fs-extra': 4.0.7
       '@types/lodash': 4.14.202
       '@types/node': 18.16.20
@@ -2820,7 +2820,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/core-orbitgt': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/fs-extra': ^4.0.7
       '@types/node': ~18.16.20
       '@types/yargs': 17.0.19
@@ -2837,7 +2837,7 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/fs-extra': 4.0.7
       '@types/node': 18.16.20
       '@types/yargs': 17.0.19
@@ -2852,7 +2852,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.202
       '@types/node': ~18.16.20
@@ -2871,7 +2871,7 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/fs-extra': 4.0.7
       '@types/lodash': 4.14.202
       '@types/node': 18.16.20
@@ -2911,7 +2911,7 @@ importers:
 
   ../../tools/build:
     specifiers:
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@microsoft/api-extractor': ~7.40.0
       '@types/node': ~18.16.20
       chalk: ^3.0.0
@@ -2946,14 +2946,14 @@ importers:
       wtfnode: 0.9.1
       yargs: 17.4.0
     devDependencies:
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/node': 18.16.20
       eslint: 8.44.0
 
   ../../tools/certa:
     specifiers:
       '@itwin/build-tools': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/detect-port': ~1.1.0
       '@types/express': ^4.17.20
@@ -2987,7 +2987,7 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/detect-port': 1.1.0
       '@types/express': 4.17.20
@@ -3010,7 +3010,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-locaters': workspace:*
       '@itwin/ecschema-metadata': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/chai-string': ^1.4.1
       '@types/fs-extra': ^4.0.7
@@ -3043,7 +3043,7 @@ importers:
       fs-extra: 8.1.0
     devDependencies:
       '@itwin/build-tools': link:../build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/chai-string': 1.4.1
       '@types/fs-extra': 4.0.7
@@ -3074,7 +3074,7 @@ importers:
   ../../tools/perf-tools:
     specifiers:
       '@itwin/build-tools': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/fs-extra': ^4.0.7
       eslint: ^8.44.0
       fs-extra: ^8.1.0
@@ -3084,7 +3084,7 @@ importers:
       fs-extra: 8.1.0
     devDependencies:
       '@itwin/build-tools': link:../build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/fs-extra': 4.0.7
       eslint: 8.44.0
       rimraf: 3.0.2
@@ -3093,7 +3093,7 @@ importers:
   ../../tools/webpack-core:
     specifiers:
       '@itwin/build-tools': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.8
@@ -3133,7 +3133,7 @@ importers:
       source-map-loader: 4.0.0_webpack@5.76.0
     devDependencies:
       '@itwin/build-tools': link:../build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/chai-jest-snapshot': 1.3.8
@@ -3158,7 +3158,7 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/certa': workspace:*
       '@itwin/core-bentley': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       '@types/sinon': ^17.0.2
@@ -3182,7 +3182,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
       '@itwin/core-bentley': link:../../core/bentley
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       '@types/sinon': 17.0.2
@@ -3209,7 +3209,7 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.52
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/glob': ^5.0.35
       '@types/mocha': ^10.0.6
@@ -3228,7 +3228,7 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a
+      '@itwin/eslint-plugin': 4.0.2_r6fjndk6k4skjcbozishmsan5a
       '@types/chai': 4.3.1
       '@types/glob': 5.0.35
       '@types/mocha': 10.0.6
@@ -3783,8 +3783,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.7.0:
-    resolution: {integrity: sha512-h6MieGw7GMqfqwLzViX+jBHUPm7GtBNjN1buT1W9qsBQsIW7IZvo0E+VNMX0OlSCoPCZTCIMphLTPoToo9e5YQ==}
+  /@bentley/imodeljs-native/4.7.2:
+    resolution: {integrity: sha512-jY2kerRWuvGtaKRXyZvT1/biBIONNbTVtPqo5ejxlpqjKMui+u0EkaN/saUCXYKKzHi7Fy8PDBsjCtGjsrmMCA==}
     requiresBuild: true
     dev: false
 
@@ -4258,8 +4258,8 @@ packages:
       - debug
     dev: false
 
-  /@itwin/eslint-plugin/4.0.0-dev.52_r6fjndk6k4skjcbozishmsan5a:
-    resolution: {integrity: sha512-y1X/+dRCxBJTZgJjQbKap/l7cAXx5MaRt1FWAsEzzJ48hEvUDBjLQfdtFXbjXRZWPyc1WQ2OyLnD4NnppsABOg==}
+  /@itwin/eslint-plugin/4.0.2_r6fjndk6k4skjcbozishmsan5a:
+    resolution: {integrity: sha512-UDwToOexhFRlS8XQSezvjoRHp8FH9KxfJSb6b1pN2a21g0uhsqxCQDKuOrGwSnJEERIvxMJB0ddH0aYg4dRvJw==}
     engines: {node: ^18.18.0 || >=20.0.0}
     hasBin: true
     peerDependencies:

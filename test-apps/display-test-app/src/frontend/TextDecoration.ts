@@ -19,6 +19,7 @@ class TextEditor implements Decorator {
   // TextAnnotation properties
   public origin: Point3d = new Point3d(0, 0, 0);
   public rotation = 0;
+  public offset = { x: 0, y: 0 };
   public anchor: TextAnnotationAnchor = { horizontal: "left", vertical: "top" };
 
   // Properties applied to the entire document
@@ -51,6 +52,7 @@ class TextEditor implements Decorator {
     this._textBlock = TextBlock.createEmpty();
     this.origin.setZero();
     this.rotation = 0;
+    this.offset.x = this.offset.y = 0;
     this.anchor = { horizontal: "center", vertical: "middle" };
     this.runStyle = { fontName: "Arial" };
     this.baselineShift = "none";
@@ -107,6 +109,7 @@ class TextEditor implements Decorator {
       // origin: this.origin,
       anchor: this.anchor,
       orientation: YawPitchRollAngles.createDegrees(this.rotation, 0, 0).toJSON(),
+      offset: this.offset,
     });
 
     const rpcProps = this._iModel.getRpcProps();
@@ -171,6 +174,14 @@ export class TextDecorationTool extends Tool {
         break;
       case "rotation":
         editor.rotation = Number(arg);
+        break;
+      case "offset":
+        if (inArgs.length !== 3) {
+          throw new Error("Expected x and y");
+        }
+
+        editor.offset.x = Number(arg);
+        editor.offset.y = Number(inArgs[2]);
         break;
       case "font":
         editor.runStyle.fontName = arg;
