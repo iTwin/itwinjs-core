@@ -763,6 +763,9 @@ describe("TileAdmin", () => {
     public static async start(props: TileAdmin.Props): Promise<IModelConnection> {
       await cleanup();
 
+      // The default is true which changes the expected tile tree Ids. Not relevant to these tests.
+      props.expandProjectExtents = false;
+
       if (ProcessDetector.isElectronAppFrontend) {
         // certa doesn't serve worker script.
         props.decodeImdlInWorker = false;

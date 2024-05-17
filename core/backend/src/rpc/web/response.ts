@@ -24,6 +24,10 @@ import {
   WebAppRpcRequest,
 } from "@itwin/core-common";
 
+import { Readable, Stream } from "node:stream";
+import { promisify } from "node:util";
+import { brotliCompress, BrotliOptions, createBrotliCompress, createGzip, gzip, constants as zlibConstants } from "node:zlib";
+
 /* eslint-disable deprecation/deprecation */
 
 function configureResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
@@ -83,6 +87,33 @@ function configureStream(fulfillment: RpcRequestFulfillment) {
   return fulfillment.result.stream!;
 }
 
+async function configureEncoding(req: HttpServerRequest, res: HttpServerResponse, responseBody: string | Buffer | Readable): Promise<string | Buffer | Readable> {
+  const acceptedEncodings = req.header("Accept-Encoding")?.split(", ");
+  if (!acceptedEncodings)
+    return responseBody;
+
+  const encoding = acceptedEncodings.includes("br") ? "br" : acceptedEncodings.includes("gzip") ? "gzip" : undefined;
+  if (!encoding)
+    return responseBody;
+
+  res.set("Content-Encoding", encoding);
+
+  const brotliOptions: BrotliOptions = {
+    params: {
+      // Experimentation revealed that the default compression quality significantly increases the compression time for larger texts.
+      // Reducing the quality improves speed substantially without a significant loss in the compression ratio.
+      [zlibConstants.BROTLI_PARAM_QUALITY]: 3,
+    },
+  };
+
+  if (responseBody instanceof Stream) {
+    const compressStream = encoding === "br" ? createBrotliCompress(brotliOptions) : createGzip();
+    return responseBody.pipe(compressStream);
+  }
+
+  return encoding === "br" ? promisify(brotliCompress)(responseBody, brotliOptions) : promisify(gzip)(responseBody);
+}
+
 /** @internal */
 export async function sendResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, req: HttpServerRequest, res: HttpServerResponse) {
   logResponse(request, fulfillment.status, fulfillment.rawResult);
@@ -91,9 +122,6 @@ export async function sendResponse(protocol: WebAppRpcProtocol, request: Seriali
   if (versionHeader && RpcProtocol.protocolVersion) {
     res.set(versionHeader, RpcProtocol.protocolVersion.toString());
   }
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  const { Readable, Stream } = await import(/* webpackIgnore: true */ "stream");
-  const { createGzip } = await import(/* webpackIgnore: true */ "zlib");
 
   const transportType = WebAppRpcRequest.computeTransportType(fulfillment.result, fulfillment.rawResult);
   let responseBody;
@@ -110,11 +138,8 @@ export async function sendResponse(protocol: WebAppRpcProtocol, request: Seriali
   configureResponse(protocol, request, fulfillment, res);
   res.status(fulfillment.status);
 
-  if (fulfillment.allowCompression && req.header("Accept-Encoding")?.includes("gzip")) {
-    res.set("Content-Encoding", "gzip");
-    const readableResponseBody = (responseBody instanceof Stream) ? responseBody : Readable.from(responseBody);
-    responseBody = readableResponseBody.pipe(createGzip());
-  }
+  if (fulfillment.allowCompression)
+    responseBody = await configureEncoding(req, res, responseBody);
 
   // This check should in theory look for instances of Readable, but that would break backend implementation at
   // core/backend/src/RpcBackend.ts
