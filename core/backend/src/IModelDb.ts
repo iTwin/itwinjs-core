@@ -1939,8 +1939,6 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const builder = new GeometryStreamBuilder();
 
       const onGeometry: ElementGeometryFunction = (info: ElementGeometryInfo): void => {
-        if (info.viewIndependent) builder.isViewIndependent = true;
-
         const it = new ElementGeometry.Iterator(info);
         for (const entry of it) {
           if (entry.localRange !== undefined && !entry.localRange.isNull)
@@ -1993,6 +1991,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
             }
           }
         }
+
+        if (builder.geometryStream)
+          builder.isViewIndependent = info.viewIndependent ?? false;
       };
 
       return IModelStatus.Success ===
