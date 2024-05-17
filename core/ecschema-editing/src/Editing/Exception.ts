@@ -36,6 +36,11 @@ export class ECEditingError extends BentleyError {
   private _ruleViolations?: AnyDiagnostic[];
 
   public constructor(public override readonly errorNumber: number, message?: string, ruleViolations?: AnyDiagnostic[]) {
+    if (!message && ruleViolations) {
+      for (const diagnostic of ruleViolations){
+        message += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
+      }
+    }
     super(errorNumber, message);
     this._ruleViolations = ruleViolations;
   }

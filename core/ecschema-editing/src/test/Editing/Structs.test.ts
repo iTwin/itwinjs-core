@@ -76,12 +76,6 @@ describe("Structs tests", () => {
       name: "RefSchema",
       version: "1.0.0",
       alias: "rs",
-      references: [
-        {
-          name: "testSchema",
-          version: "01.00.00",
-        },
-      ],
       items: {
         testStructBase1: {
           schemaItemType: "StructClass",
@@ -99,7 +93,7 @@ describe("Structs tests", () => {
 
     const refSchema = await Schema.fromJson(refSchemaJson, context);
     await testEditor.addSchemaReference(testKey, refSchema);
-    const firstBaseClassKey = new SchemaItemKey("testEntityBase1", refSchema.schemaKey);
+    const firstBaseClassKey = new SchemaItemKey("testStructBase1", refSchema.schemaKey);
     const structResult = await testEditor.structs.create(testKey, "testStruct", "testLabel", firstBaseClassKey);
 
     const testStruct = await testEditor.schemaContext.getSchemaItem<StructClass>(structResult.itemKey!);

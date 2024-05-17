@@ -425,7 +425,7 @@ describe("Relationship Class merger tests", () => {
     ]);
   });
 
-  it.only("should throw an error merging multiple constraint classes without abstract constraint defined", async () => {
+  it("should throw an error merging multiple constraint classes without abstract constraint defined", async () => {
     await Schema.fromJson(testJson, targetContext);
     const targetSchema = await Schema.fromJson({
       ...targetJson,

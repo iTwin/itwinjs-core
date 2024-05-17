@@ -141,11 +141,9 @@ export async function mergeRelationshipClassConstraint(context: SchemaMergeConte
 
     try {
       await context.editor.relationships.addConstraintClass(constraint, constraintClass);
-    } catch (e) {
-      const violations = e.ruleViolations as AnyDiagnostic[];
-    }
-    if(result.errorMessage) {
-      return result;
+    } catch (e: any) {
+      // Rule violations are temporarily parsed the the message variable the the error object.
+      return { errorMessage: e.message };
     }
   }
   return { itemKey: constraint.relationshipClass.key };
