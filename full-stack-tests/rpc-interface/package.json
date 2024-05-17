@@ -69,7 +69,7 @@
     "browserify-zlib": "^0.2.0",
     "buffer": "^6.0.3",
     "cpx2": "^3.0.0",
-    "eslint": "^8.44.0",
+    "eslint": "^8.56.0",
     "glob": "^10.3.12",
     "internal-tools": "workspace:*",
     "npm-run-all": "^4.1.5",
