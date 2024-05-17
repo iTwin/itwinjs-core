@@ -17,16 +17,16 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps,
-  ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
-  GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometryStreamProps, IModel, IModelCoordinatesRequestProps,
+  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode, ElementGeometryRequest,
+  ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
+  GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometryStreamBuilder, GeometryStreamProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, mapNativeElementProps, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, NativeInterfaceMap, OpenBriefcaseProps, OpenCheckpointArgs, OpenSqliteArgs,
+  MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, OpenCheckpointArgs, OpenSqliteArgs,
   ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps,
   SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps,
   UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
-import { Range2d, Range3d } from "@itwin/core-geometry";
+import { Range2d, Range3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
 import { ChannelAdmin, ChannelControl } from "./ChannelControl";
@@ -1778,6 +1778,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       if (!elementProps)
         return undefined;
 
+      let geom: GeometryStreamProps | undefined;
+      if (loadProps.wantGeometry || loadProps.wantBRepData) {
+        geom = this.getGeometryStreamProps(elementId, loadProps.wantBRepData)
+      }
+
       if (elementProps.classFullName === "BisCore:CategorySelector") {
         const categories = this._iModel.withPreparedStatement("SELECT TargetECInstanceId FROM Bis.CategorySelectorRefersToCategories WHERE SourceECInstanceId=?", (statement: ECSqlStatement) => {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion. elementId can't be null here, but eslint recognizes it as an error.
@@ -1790,7 +1795,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
           return ids;
         });
 
-        return { ...elementProps, categories };
+        return { ...elementProps, categories, geom };
       }
 
       if (elementProps.classFullName === "BisCore:ModelSelector") {
@@ -1804,10 +1809,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
           }
           return ids;
         });
-        return { ...elementProps, models };
+        return { ...elementProps, models, geom };
       }
 
-      return elementProps;
+      return { ...elementProps, geom };
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
@@ -1928,6 +1933,72 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
           return statement.getValue(0).getDateTime();
         throw new IModelError(IModelStatus.InvalidId, `Can't get lastMod time for Element ${elementId}`);
       });
+    }
+
+    private getGeometryStreamProps(elementId: Id64String, wantBRepData?: boolean): GeometryStreamProps | undefined {
+      const builder = new GeometryStreamBuilder();
+
+      const onGeometry: ElementGeometryFunction = (info: ElementGeometryInfo): void => {
+        if (info.viewIndependent) builder.isViewIndependent = true;
+
+        const it = new ElementGeometry.Iterator(info);
+        for (const entry of it) {
+          if (entry.localRange !== undefined && !entry.localRange.isNull)
+            builder.appendGeometryRanges();
+
+          builder.appendGeometryParamsChange(entry.geomParams);
+
+          if (ElementGeometry.isGeometryQueryEntry(entry.value)) {
+            const geom = entry.toGeometryQuery();
+            if (geom !== undefined) builder.appendGeometry(geom);
+          } else if (ElementGeometry.isGeometricEntry(entry.value)) {
+            switch (entry.value.opcode) {
+              case ElementGeometryOpcode.BRep:
+                const brep = entry.toBRepData(wantBRepData);
+
+                if (brep !== undefined) builder.appendBRepData(brep);
+                break;
+
+              case ElementGeometryOpcode.TextString:
+                const text = entry.toTextString();
+
+                if (text !== undefined) builder.appendTextString(text);
+                break;
+
+              case ElementGeometryOpcode.Image:
+                const image = entry.toImageGraphic();
+
+                if (image !== undefined) builder.appendImage(image);
+                break;
+            }
+          } else if (ElementGeometryOpcode.PartReference === entry.value.opcode) {
+            const partToElement = Transform.createIdentity();
+            const partId = entry.toGeometryPart(partToElement);
+
+            if (partId !== undefined) {
+              const scales = new Vector3d();
+              let instanceScale = 1.0;
+
+              if (partToElement.matrix.normalizeColumnsInPlace(scales))
+                instanceScale = scales.x;
+
+              const instanceTrans = YawPitchRollAngles.tryFromTransform(partToElement);
+
+              builder.appendGeometryPart3d(
+                partId,
+                instanceTrans.origin,
+                instanceTrans.angles,
+                instanceScale
+              );
+            }
+          }
+        }
+      };
+
+      return IModelStatus.Success ===
+        this._iModel.elementGeometryRequest({ onGeometry, elementId, skipBReps: !wantBRepData })
+        ? builder.geometryStream
+        : undefined;
     }
 
     /** Create a new instance of an element.

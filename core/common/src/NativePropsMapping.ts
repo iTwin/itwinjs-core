@@ -81,10 +81,10 @@ function mapElementProps(props: NativeElementProps): ElementProps {
     classFullName: className.replace(".", ":"),
     jsonProperties: jsonProperties
       ? JSON.parse(jsonProperties, (key, value) => {
-        if (key === "subCategory")
-          return `0x${(+value).toString(16)}`;
         if (value === null)
           return undefined;
+        if (key === "subCategory")
+          return `0x${(+value).toString(16)}`;
         return value;
       })
       : undefined,

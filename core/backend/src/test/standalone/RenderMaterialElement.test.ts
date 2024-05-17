@@ -24,6 +24,7 @@ function removeUndefined(assetProps: RenderMaterialAssetProps): RenderMaterialAs
           delete map[mapKey];
     }
   }
+
   return assetProps;
 }
 
