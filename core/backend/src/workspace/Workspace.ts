@@ -359,7 +359,7 @@ export interface WorkspaceOpts {
   containerDir?: LocalDirName;
 
   /** the local fileName(s) of one or more settings files to load after the Workspace is first created. */
-  settingsFiles?: LocalFileName | [LocalFileName];
+  settingsFiles?: LocalFileName | LocalFileName[];
 }
 
 /**
