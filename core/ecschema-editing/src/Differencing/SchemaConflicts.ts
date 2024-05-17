@@ -101,33 +101,6 @@ export interface SchemaDifferenceConflict {
   readonly target: unknown;
 }
 
-export function hasUnresolvedConflicts(differences: SchemaDifferences): differences is SchemaDifferencesWithConflicts {
-  return getUnresolvedConflicts(differences).length > 0;
-}
-
-export function getUnresolvedConflicts(differences: SchemaDifferences): SchemaDifferenceConflict[] {
-  if(differences.conflicts === undefined || differences.conflicts.length === 0) {
-    return [];
-  }
-
-  const conflictMap = new Map<string, SchemaDifferenceConflict>();
-  for(const conflict of differences.conflicts) {
-    conflictMap.set(conflict.id, conflict);
-  }
-
-  if(differences.resolutions === undefined || differences.resolutions.length === 0) {
-    return differences.conflicts;
-  }
-
-  for(const resolution of differences.resolutions) {
-    if(resolution.conflict && conflictMap.has(resolution.conflict)) {
-      conflictMap.delete(resolution.conflict);
-    }
-  }
-
-  return [...conflictMap.values()];
-}
-
 /**
  * Error class that contains conflicts when differencing two schemas.
  * @alpha
@@ -147,4 +120,35 @@ export class SchemaConflictsError extends Error {
     this.targetSchema = targetSchema;
     this.conflicts = conflicts;
   }
+}
+
+export function hasUnresolvedConflicts(differences: SchemaDifferences): differences is SchemaDifferencesWithConflicts {
+  return getUnresolvedConflicts(differences).length > 0;
+}
+
+export function getUnresolvedConflicts(differences: SchemaDifferences): SchemaDifferenceConflict[] {
+  if(differences.conflicts === undefined || differences.conflicts.length === 0) {
+    return [];
+  }
+
+  const conflictMap = new Map<string, SchemaDifferenceConflict>();
+  for(const conflict of differences.conflicts) {
+    conflictMap.set(conflict.id, conflict);
+  }
+
+  if(differences.fixes === undefined || differences.fixes.length === 0) {
+    return differences.conflicts;
+  }
+
+  for(const fix of differences.fixes) {
+    const foundConflict = differences.conflicts.find((entry) => {
+      return entry.itemName === fix.itemName && entry.path === fix.path;
+    });
+
+    if(foundConflict !== undefined) {
+      conflictMap.delete(foundConflict.id);
+    }
+  }
+
+  return [...conflictMap.values()];
 }
