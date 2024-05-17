@@ -1930,7 +1930,6 @@ importers:
       '@itwin/ecschema-rpcinterface-common': workspace:*
       '@itwin/ecschema-rpcinterface-impl': workspace:*
       '@itwin/eslint-plugin': ^4.0.2
-      '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -1985,7 +1984,6 @@ importers:
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
       '@itwin/ecschema-rpcinterface-impl': link:../../core/ecschema-rpc/impl
-      '@itwin/oidc-signin-tool': 3.6.0_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
