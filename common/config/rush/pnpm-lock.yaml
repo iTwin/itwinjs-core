@@ -2925,7 +2925,7 @@ importers:
       rimraf: ^3.0.2
       tree-kill: ^1.2.2
       typedoc: ^0.25.8
-      typedoc-plugin-merge-modules: ^4.0.1
+      typedoc-plugin-merge-modules: ^5.1.0
       typescript: ~5.3.3
       wtfnode: ^0.9.1
       yargs: ^17.4.0
@@ -2941,7 +2941,7 @@ importers:
       rimraf: 3.0.2
       tree-kill: 1.2.2
       typedoc: 0.25.8_typescript@5.3.3
-      typedoc-plugin-merge-modules: 4.0.1_typedoc@0.25.8
+      typedoc-plugin-merge-modules: 5.1.0_typedoc@0.25.8
       typescript: 5.3.3
       wtfnode: 0.9.1
       yargs: 17.4.0
@@ -12670,10 +12670,10 @@ packages:
     dependencies:
       is-typedarray: 1.0.0
 
-  /typedoc-plugin-merge-modules/4.0.1_typedoc@0.25.8:
-    resolution: {integrity: sha512-peuoWT/xcpEO71kNuaTBAS2IVwc8qm5tiIXnJc0vW/Cy9HHoVGkYecarkwtLBl5VmrhZjZN6LQNriqYfgHA1+A==}
+  /typedoc-plugin-merge-modules/5.1.0_typedoc@0.25.8:
+    resolution: {integrity: sha512-jXH27L/wlxFjErgBXleh3opVgjVTXFEuBo68Yfl18S9Oh/IqxK6NV94jlEJ9hl4TXc9Zm2l7Rfk41CEkcCyvFQ==}
     peerDependencies:
-      typedoc: 0.23.x
+      typedoc: 0.24.x || 0.25.x
     dependencies:
       typedoc: 0.25.8_typescript@5.3.3
     dev: false

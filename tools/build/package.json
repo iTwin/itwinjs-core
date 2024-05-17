@@ -40,7 +40,7 @@
     "rimraf": "^3.0.2",
     "tree-kill": "^1.2.2",
     "typedoc": "^0.25.8",
-    "typedoc-plugin-merge-modules": "^4.0.1",
+    "typedoc-plugin-merge-modules": "^5.1.0",
     "typescript": "~5.3.3",
     "wtfnode": "^0.9.1",
     "yargs": "^17.4.0"
