@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
+import { ColorDef, TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
 import { ComputeRangesForTextLayout, FindFontId, FindTextStyle, layoutTextBlock, RunLayout, TextBlockLayout } from "./TextAnnotationLayout";
 import { LineSegment3d, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
@@ -125,7 +125,7 @@ function processFractionRun(run: RunLayout, transform: Transform, context: Geome
   }
 }
 
-function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform): TextBlockGeometryProps {
+function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform, debugAnchorPt?: Point3d): TextBlockGeometryProps {
   const context: GeometryContext = { entries: [] };
   for (const line of layout.lines) {
     const lineTrans = Transform.createTranslationXYZ(line.offsetFromDocument.x, line.offsetFromDocument.y, 0);
@@ -135,14 +135,34 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
       }
 
       const runTrans = Transform.createTranslationXYZ(run.offsetFromLine.x, run.offsetFromLine.y, 0);
-      documentTransform.multiplyTransformTransform(runTrans, runTrans);
       lineTrans.multiplyTransformTransform(runTrans, runTrans);
+      documentTransform.multiplyTransformTransform(runTrans, runTrans);
       if ("text" === run.source.type) {
         processTextRun(run, runTrans, context);
       } else {
         processFractionRun(run, runTrans, context);
       }
     }
+  }
+
+  if (debugAnchorPt) {
+    // Draw lines representing the horizontal and vertical ranges, intersecting at the anchor point.
+    context.entries.push({
+      color: ColorDef.red.toJSON(),
+    });
+
+    context.entries.push({
+      separator: {
+        startPoint: [layout.range.low.x, debugAnchorPt.y, 0],
+        endPoint: [layout.range.high.x, debugAnchorPt.y, 0],
+      },
+    });
+    context.entries.push({
+      separator: {
+        startPoint: [debugAnchorPt.x, layout.range.low.y, 0],
+        endPoint: [debugAnchorPt.x, layout.range.high.y, 0],
+      },
+    });
   }
 
   return { entries: context.entries };
@@ -175,6 +195,10 @@ export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometr
     textBlock: args.annotation.textBlock,
   });
 
-  const transform = args.annotation.computeDocumentTransform(layout.range);
-  return produceTextBlockGeometry(layout, transform);
+  const dimensions = layout.range.diagonal();
+  const transform = args.annotation.computeTransform(dimensions);
+
+  const debugAnchorPointAndRange = false;
+  const anchorPoint = debugAnchorPointAndRange ? args.annotation.computeAnchorPoint(dimensions) : undefined;
+  return produceTextBlockGeometry(layout, transform, anchorPoint);
 }

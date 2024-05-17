@@ -39,8 +39,6 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     // (undocumented)
     get format(): ArcGisFeatureFormat | undefined;
     // (undocumented)
-    static getDefaultSymbology(geomType: ArcGisFeatureGeometryType): EsriSFS | EsriSLS | EsriPMS | undefined;
-    // (undocumented)
     getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail, options?: MapFeatureInfoOptions): Promise<void>;
     // (undocumented)
     protected getLayerMetadata(layerId: number): Promise<any>;
@@ -56,6 +54,22 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     serviceJson: any;
     // (undocumented)
     get tileSize(): number;
+}
+
+// @internal (undocumented)
+export class DefaultArcGiSymbology implements FeatureDefaultSymbology {
+    // (undocumented)
+    static readonly defaultPMS: EsriPMS;
+    // (undocumented)
+    static readonly defaultSFS: EsriSFS;
+    // (undocumented)
+    static readonly defaultSLS: EsriSLS;
+    // (undocumented)
+    static readonly defaultSLSProps: EsriSLSProps;
+    // (undocumented)
+    getSymbology(geomType: string): EsriSymbol;
+    // (undocumented)
+    initialize(): Promise<void>;
 }
 
 // @beta

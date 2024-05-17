@@ -7,7 +7,7 @@
  */
 
 import { BeTimePoint, dispose } from "@itwin/core-bentley";
-import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Polyface, Transform } from "@itwin/core-geometry";
+import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, IndexedPolyface, Point3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, Frustum } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch, GraphicBranchOptions } from "../render/GraphicBranch";
@@ -37,7 +37,7 @@ export interface RealityTileParams extends TileParams {
  */
 export interface RealityTileGeometry {
   /** Polyfaces representing the tile's geometry. */
-  polyfaces?: Polyface[];
+  polyfaces?: IndexedPolyface[];
 }
 
 /** @internal */
@@ -101,6 +101,15 @@ export class RealityTile extends Tile {
   public override setContent(content: RealityTileContent): void {
     super.setContent(content);
     this._geometry = content.geometry;
+  }
+
+  /** @internal */
+  public override freeMemory(): void {
+    // Prevent freeing if AdditiveRefinementStepChildren are present, since they depend on the parent tile to draw.
+    // This assumes at least one of the step children is currently selected, which is not necessarily the case.  Eventually the
+    // normal periodic pruning of expired tiles will clean up that case, but it could be held them in memory longer than necessary.
+    if (!this.realityChildren?.some((child) => child.isStepChild))
+      super.freeMemory();
   }
 
   /** @internal */

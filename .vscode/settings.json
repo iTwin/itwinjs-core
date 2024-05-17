@@ -104,4 +104,7 @@
     "NODE_ENV": "development"
   },
   "typescript.tsdk": "common/temp/node_modules/typescript/lib",
+  "cSpell.words": [
+    "queryables"
+  ],
 }

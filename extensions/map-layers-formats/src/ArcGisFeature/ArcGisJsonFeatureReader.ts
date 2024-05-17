@@ -5,7 +5,7 @@
 
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisAttributeDrivenSymbology, ArcGisGeometryReaderJSON, ArcGisGeometryRenderer, ArcGisGraphicsRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
+import { ArcGisGeometryReaderJSON, FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, GraphicsGeometryRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
 import { Transform } from "@itwin/core-geometry";
 import { ArcGisBaseFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisFieldType, ArcGisResponseData } from "./ArcGisFeatureResponse";
@@ -19,7 +19,7 @@ export class ArcGisJsonFeatureReader extends ArcGisBaseFeatureReader {
 
   }
 
-  private applySymbologyAttributes(attrSymbology: ArcGisAttributeDrivenSymbology, feature: any) {
+  private applySymbologyAttributes(attrSymbology: FeatureAttributeDrivenSymbology, feature: any) {
     if (attrSymbology && feature) {
       const symbolFields = attrSymbology.rendererFields;
       if (symbolFields && symbolFields.length > 0 && feature.attributes) {
@@ -33,17 +33,15 @@ export class ArcGisJsonFeatureReader extends ArcGisBaseFeatureReader {
     }
   }
 
-  public async readAndRender(response: ArcGisResponseData, renderer: ArcGisGeometryRenderer) {
+  public async readAndRender(response: ArcGisResponseData, renderer: FeatureGeometryRenderer) {
     const responseObj = response.data;
     if (responseObj.geometryType) {
-      const attrSymbology = renderer.attributeSymbology;
-
       const geomReader = new ArcGisGeometryReaderJSON(responseObj.geometryType, renderer, renderer.transform === undefined);
 
       for (const feature of responseObj.features) {
-        if (attrSymbology) {
+        if (renderer.hasSymbologyRenderer() && renderer.symbolRenderer.isAttributeDriven()) {
           // Read attributes if needed (attribute driven symbology)
-          this.applySymbologyAttributes(attrSymbology, feature);
+          this.applySymbologyAttributes(renderer.symbolRenderer, feature);
         }
 
         await geomReader.readGeometry(feature.geometry);
@@ -51,7 +49,7 @@ export class ArcGisJsonFeatureReader extends ArcGisBaseFeatureReader {
     }
   }
 
-  public async readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer?: ArcGisGraphicsRenderer) {
+  public async readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer?: GraphicsGeometryRenderer) {
     const responseObj = response.data;
     if (responseObj === undefined || !Array.isArray(responseObj.features))
       return;
@@ -135,9 +133,9 @@ export class ArcGisJsonFeatureReader extends ArcGisBaseFeatureReader {
       for (const [key, value] of Object.entries(responseFeature.attributes))
         feature.attributes?.push(getRecordInfo(key, value));
 
-      if (geomReader) {
+      if (geomReader && renderer) {
         await geomReader.readGeometry(responseFeature.geometry);
-        const graphics = renderer!.moveGraphics();
+        const graphics = renderer.moveGraphics();
         feature.geometries = graphics.map((graphic) => {
           return {graphic};
         });

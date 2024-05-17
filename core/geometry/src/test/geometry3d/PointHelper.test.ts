@@ -929,7 +929,7 @@ describe("PolygonAreas", () => {
     GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidA.origin, centroidA.direction, equivalentCircleRadius(centroidA)));
     GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(centroidA.origin, centroidA.origin.plus(centroidA.direction)));
     const a = 2.0;
-    const scaleTransform = Transform.createFixedPointAndMatrix(centroidA.origin, Matrix3d.createScale(a, a, a))!;
+    const scaleTransform = Transform.createFixedPointAndMatrix(centroidA.origin, Matrix3d.createScale(a, a, a));
     const pointB = scaleTransform.multiplyPoint3dArray(pointA);
     const centroidB = PolygonOps.centroidAreaNormal(pointB)!;
     GeometryCoreTestIO.captureGeometry(allGeometry, Loop.createPolygon(pointB));
@@ -938,7 +938,7 @@ describe("PolygonAreas", () => {
     ck.testVector3d(centroidA.direction, centroidB.direction, "origin is invariant after scale around origin");
     ck.testCoordinate(a * a * centroidA.a!, centroidB.a!, "area scales");
 
-    const rotationTransform = Transform.createFixedPointAndMatrix(Point3d.create(0, 1, 3), Matrix3d.createRotationAroundVector(Vector3d.create(2, 3, 1), Angle.createDegrees(45.0))!)!;
+    const rotationTransform = Transform.createFixedPointAndMatrix(Point3d.create(0, 1, 3), Matrix3d.createRotationAroundVector(Vector3d.create(2, 3, 1), Angle.createDegrees(45.0))!);
     const pointC = rotationTransform.multiplyPoint3dArray(pointA);
     const centroidC = PolygonOps.centroidAreaNormal(pointC)!;
     const centroidC1 = centroidA.cloneTransformed(rotationTransform);
