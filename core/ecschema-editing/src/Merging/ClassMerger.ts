@@ -7,13 +7,14 @@ import { AnySchemaDifference, AnySchemaItemDifference, AnySchemaItemPathDifferen
 import { locateSchemaItem, SchemaItemMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
 import { type MutableClass } from "../Editing/Mutable/MutableClass";
 import { CustomAttribute, ECClass, ECClassModifier, parseClassModifier, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
-import { SchemaEditResults } from "../Editing/Editor";
+import { SchemaEditResults, SchemaItemEditResults } from "../Editing/Editor";
 import { entityClassMerger, mergeClassMixins } from "./EntityClassMerger";
 import { customAttributeClassMerger } from "./CAClassMerger";
 import { mixinClassMerger } from "./MixinMerger";
 import { mergeRelationshipClassConstraint, mergeRelationshipConstraint, relationshipClassMerger } from "./RelationshipClassMerger";
 import { mergeClassProperties, mergePropertyDifference } from "./PropertyMerger";
 import { applyCustomAttributes } from "./CustomAttributeMerger";
+import { ECEditingError } from "../Editing/Exception";
 
 type ClassItemHandler = <T extends AnySchemaItemDifference | AnySchemaItemPathDifference>(change: T, merger: SchemaItemMergerHandler<T>) => Promise<void>;
 
@@ -134,7 +135,14 @@ export async function modifyClass(context: SchemaMergeContext, change: ClassItem
 
   if (change.difference.customAttributes !== undefined) {
     const result = await applyCustomAttributes(context, change.difference.customAttributes as CustomAttribute[], async (ca) => {
-      return context.editor.entities.addCustomAttribute(itemKey, ca);
+      try {
+        await context.editor.entities.addCustomAttribute(itemKey, ca);
+      } catch (e: any) {
+        // TODO: update error handling
+        const error = e as ECEditingError;
+        return { errorMessage: error.message };
+      }
+      return {};
     });
     if (result.errorMessage) {
       return result;
@@ -144,12 +152,20 @@ export async function modifyClass(context: SchemaMergeContext, change: ClassItem
   return mergeClassProperties(context, change, itemKey);
 }
 
-async function setBaseClass(context: SchemaMergeContext, item: ECClass, baseClass: string, isInitial: boolean): Promise<SchemaEditResults> {
+async function setBaseClass(context: SchemaMergeContext, item: ECClass, baseClass: string, isInitial: boolean): Promise<SchemaItemEditResults> {
   const baseClassKey = await updateSchemaItemKey(context, baseClass);
   const baseClassSetter = getBaseClassSetter(context, item);
   if (!isInitial && item.baseClass === undefined)
     return { errorMessage: `Changing the class '${item.key.name}' baseClass is not supported.` };
-  return baseClassSetter(item.key, baseClassKey);
+  try {
+    await baseClassSetter(item.key, baseClassKey);
+  } catch (e: any) {
+    // TODO: update error handling
+    const error = e as ECEditingError;
+    return { errorMessage: error.message };
+  }
+
+  return {};
 }
 
 async function setClassModifier(item: MutableClass, modifierValue: string): Promise<SchemaEditResults> {

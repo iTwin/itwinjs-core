@@ -7,6 +7,7 @@ import { type SchemaMergeContext } from "./SchemaMerger";
 import { type CustomAttributeDifference } from "../Differencing/SchemaDifference";
 import { type SchemaEditResults } from "../Editing/Editor";
 import { updateSchemaItemFullName, updateSchemaItemKey } from "./SchemaItemMerger";
+import { ECEditingError } from "../Editing/Exception";
 
 type CustomAttributeSetter = (customAttribute: CustomAttribute) => Promise<SchemaEditResults>;
 
@@ -36,11 +37,23 @@ export async function mergeCustomAttribute(context: SchemaMergeContext, change: 
     };
 
     if (change.appliedTo === "Schema") {
-      return context.editor.addCustomAttribute(context.targetSchemaKey, caInstance);
+      try {
+        await context.editor.addCustomAttribute(context.targetSchemaKey, caInstance);
+      } catch (e: any) {
+        // TODO: update error handling
+        const error = e as ECEditingError;
+        return { errorMessage: error.message };
+      }
     }
     if (change.appliedTo === "SchemaItem") {
       const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
-      return context.editor.entities.addCustomAttribute(itemKey, caInstance);
+      try {
+        await context.editor.entities.addCustomAttribute(itemKey, caInstance);
+      } catch (e: any) {
+        // TODO: update error handling
+        const error = e as ECEditingError;
+        return { errorMessage: error.message };
+      }
     }
     if (change.appliedTo === "Property") {
       const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
@@ -48,7 +61,9 @@ export async function mergeCustomAttribute(context: SchemaMergeContext, change: 
       try{
         await context.editor.entities.properties.addCustomAttribute(itemKey, propertyName, caInstance);
       } catch(e: any) {
-        return { errorMessage: e.message };
+        // TODO: update error handling
+        const error = e as ECEditingError;
+        return { errorMessage: error.message };
       }
     }
     if (change.appliedTo === "RelationshipConstraint") {

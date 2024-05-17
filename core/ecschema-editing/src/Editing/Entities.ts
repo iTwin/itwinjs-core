@@ -14,6 +14,7 @@ import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from 
 import { ECClasses } from "./ECClasses";
 import { MutableEntityClass } from "./Mutable/MutableEntityClass";
 import { NavigationProperties } from "./Properties";
+import { ECEditingError, ECEditingStatus } from "./Exception";
 
 /**
  * @alpha
@@ -77,25 +78,32 @@ export class Entities extends ECClasses {
   public async create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, displayLabel?: string, baseClassKey?: SchemaItemKey, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
-    const newClass = (await schema.createEntityClass(name, modifier)) as MutableEntityClass;
-    if (newClass === undefined)
-      return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
+    let newClass: MutableEntityClass;
+    try {
+      newClass = (await schema.createEntityClass(name, modifier)) as MutableEntityClass;
+    } catch (e) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
+        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Class ${name} already exists in the schema ${schema.fullName}.`);
+      } else {
+        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create class ${name} in schema ${schema.fullName}.`);
+      }
+    }
 
     // Add a deserializing method.
     if (baseClassKey !== undefined) {
       const baseClassSchema = !baseClassKey.schemaKey.matches(schema.schemaKey) ? await this._schemaEditor.getSchema(baseClassKey.schemaKey) : schema;
       if (baseClassSchema === undefined) {
-        return { errorMessage: `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context` };
+        throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context`);
       }
 
       const baseClassItem = await baseClassSchema.lookupItem<EntityClass>(baseClassKey);
       if (baseClassItem === undefined)
-        return { errorMessage: `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.` };
+        throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.`);
 
       if (baseClassItem.schemaItemType !== SchemaItemType.EntityClass)
-        return { errorMessage: `${baseClassItem.fullName} is not of type Entity Class.` };
+        throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `${baseClassItem.fullName} is not of type Entity Class.`);
 
       newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(baseClassKey, async () => baseClassItem);
     }
@@ -117,14 +125,21 @@ export class Entities extends ECClasses {
   public async createFromProps(schemaKey: SchemaKey, entityProps: EntityClassProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
     if (entityProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
+      throw new ECEditingError(ECEditingStatus.SchemaItemNameNotSpecified, `No name was supplied within props.`);
 
-    const newClass = (await schema.createEntityClass(entityProps.name)) as MutableEntityClass;
-    if (newClass === undefined)
-      return { errorMessage: `Failed to create class ${entityProps.name} in schema ${schemaKey.toString(true)}.` };
+    let newClass: MutableEntityClass;
+    try {
+      newClass = (await schema.createEntityClass(entityProps.name)) as MutableEntityClass;
+    } catch (e) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
+        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Class ${entityProps.name} already exists in the schema ${schema.fullName}.`);
+      } else {
+        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create class ${entityProps.name} in schema ${schema.fullName}.`);
+      }
+    }
 
     await newClass.fromJSON(entityProps);
 
@@ -134,18 +149,18 @@ export class Entities extends ECClasses {
   public async addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<SchemaItemEditResults> {
     const entity = (await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(entityKey));
     if (entity === undefined) {
-      return { errorMessage: `Entity Class ${entityKey.fullName} not found in schema context.` };
+      throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Entity Class ${entityKey.fullName} not found in schema context.`);
     }
     if (entity.schemaItemType !== SchemaItemType.EntityClass) {
-      return { errorMessage: `Expected ${entityKey.fullName} to be of type Entity Class.` };
+      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `Expected ${entityKey.fullName} to be of type Entity Class.`);
     }
 
     const mixin = (await this._schemaEditor.schemaContext.getSchemaItem<Mixin>(mixinKey));
     if (mixin === undefined) {
-      return { errorMessage: `Mixin Class ${mixinKey.fullName} not found in schema context.` };
+      throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Mixin Class ${mixinKey.fullName} not found in schema context.`);
     }
     if (mixin.schemaItemType !== SchemaItemType.Mixin) {
-      return { errorMessage: `Expected ${mixinKey.fullName} to be of type Mixin.`};
+      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `Expected ${mixinKey.fullName} to be of type Mixin.`);
     }
 
     entity.addMixin(mixin);
@@ -156,10 +171,10 @@ export class Entities extends ECClasses {
     const entity = await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(entityKey);
 
     if (entity === undefined)
-      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${entityKey.fullName} not found in schema context.`);
+      throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Entity Class ${entityKey.fullName} not found in schema context.`);
 
     if (entity.schemaItemType !== SchemaItemType.EntityClass)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${entityKey.fullName} to be of type Entity Class.`);
+      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `Expected ${entityKey.fullName} to be of type Entity Class.`);
 
     await entity.createNavigationProperty(name, relationship, direction);
     return { itemKey: entityKey, propertyName: name };
@@ -173,10 +188,10 @@ export class Entities extends ECClasses {
   public async createNavigationPropertyFromProps(classKey: SchemaItemKey, navigationProps: NavigationPropertyProps): Promise<PropertyEditResults> {
     const entity = await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(classKey);
     if (entity === undefined)
-      return { itemKey: classKey, propertyName: navigationProps.name, errorMessage: `Entity Class ${classKey.fullName} not found in schema context.`};
+      throw new ECEditingError(ECEditingStatus.SchemaItemNotFoundInContext, `Entity Class ${classKey.fullName} not found in schema context.`);
 
     if (entity.schemaItemType !== SchemaItemType.EntityClass)
-      return { itemKey: classKey, propertyName: navigationProps.name, errorMessage: `Expected ${classKey.fullName} to be of type EntityClass.` };
+      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `Expected ${classKey.fullName} to be of type EntityClass.`);
 
     const navigationProperty  = await entity.createNavigationProperty(navigationProps.name, navigationProps.relationshipName, navigationProps.direction);
     await navigationProperty.fromJSON(navigationProps);

@@ -9,6 +9,7 @@
 import { AnyEnumerator, ECObjectsError, ECObjectsStatus, Enumeration, EnumerationProps, PrimitiveType, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableEnumeration } from "./Mutable/MutableEnumeration";
+import { ECEditingError, ECEditingStatus } from "./Exception";
 
 type MutableEnumerator = {
   -readonly [P in keyof AnyEnumerator]: AnyEnumerator[P]
@@ -24,11 +25,18 @@ export class Enumerations {
   public async create(schemaKey: SchemaKey, name: string, type: PrimitiveType.Integer | PrimitiveType.String, displayLabel?: string, isStrict?: boolean, enumerators?: AnyEnumerator[]): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
-    const newEnum = (await schema.createEnumeration(name, type));
-    if (newEnum === undefined)
-      return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
+    let newEnum: Enumeration;
+    try {
+      newEnum = await schema.createEnumeration(name, type);
+    } catch (e) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
+        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Enumeration ${name} already exists in the schema ${schema.fullName}.`);
+      } else {
+        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create Enumeration ${name} in schema ${schema.fullName}.`);
+      }
+    }
 
     if (undefined !== isStrict)
       (newEnum as MutableEnumeration).setIsStrict(isStrict);
@@ -51,14 +59,21 @@ export class Enumerations {
   public async createFromProps(schemaKey: SchemaKey, enumProps: EnumerationProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
     if (enumProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
+      throw new ECEditingError(ECEditingStatus.SchemaItemNameNotSpecified, `No name was supplied within props.`);
 
-    const newEnum = (await schema.createEnumeration(enumProps.name));
-    if (newEnum === undefined)
-      return { errorMessage: `Failed to create class ${enumProps.name} in schema ${schemaKey.toString(true)}.` };
+    let newEnum: Enumeration;
+    try {
+      newEnum = await schema.createEnumeration(enumProps.name);
+    } catch (e) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
+        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Class ${enumProps.name} already exists in the schema ${schema.fullName}.`);
+      } else {
+        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create class ${enumProps.name} in schema ${schema.fullName}.`);
+      }
+    }
 
     await newEnum.fromJSON(enumProps);
     return { itemKey: newEnum.key };
@@ -68,16 +83,16 @@ export class Enumerations {
     const enumeration = (await this._schemaEditor.schemaContext.getSchemaItem<Enumeration>(enumerationKey));
 
     if (enumeration === undefined)
-      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Unable to locate Enumeration class ${enumerationKey.fullName}.`);
+      throw new ECEditingError(ECEditingStatus.SchemaItemNotFoundInContext, `Unable to locate Enumeration class ${enumerationKey.fullName}.`);
 
     if (enumeration.schemaItemType !== SchemaItemType.Enumeration)
-      throw new ECObjectsError(ECObjectsStatus.InvalidType, `${enumeration.fullName} is not of type Enumerator class.`);
+      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `${enumeration.fullName} is not of type Enumerator class.`);
 
     if (enumeration.isInt && typeof (enumerator.value) !== "number")
-      throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, `The Enumeration ${enumeration.name} has type integer, while ${enumerator.name} has type ${typeof (enumerator.value)}.`);
+      throw new ECEditingError(ECEditingStatus.InvalidEnumeratorType, `The Enumeration ${enumeration.name} has type integer, while ${enumerator.name} has type ${typeof (enumerator.value)}.`);
 
     if (enumeration.isString && typeof (enumerator.value) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, `The Enumeration ${enumeration.name} has type string, while ${enumerator.name} has type ${typeof (enumerator.value)}.`);
+      throw new ECEditingError(ECEditingStatus.InvalidEnumeratorType, `The Enumeration ${enumeration.name} has type string, while ${enumerator.name} has type ${typeof (enumerator.value)}.`);
 
     (enumeration as MutableEnumeration).addEnumerator(enumerator);
   }
@@ -86,14 +101,14 @@ export class Enumerations {
     const enumeration = (await this._schemaEditor.schemaContext.getSchemaItem<Enumeration>(enumerationKey));
 
     if (enumeration === undefined)
-      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Unable to locate Enumeration class ${enumerationKey.fullName}.`);
+      throw new ECEditingError(ECEditingStatus.SchemaItemNotFoundInContext, `Unable to locate Enumeration class ${enumerationKey.fullName}.`);
 
     if (enumeration.schemaItemType !== SchemaItemType.Enumeration)
-      throw new ECObjectsError(ECObjectsStatus.InvalidType, `${enumeration.fullName} is not of type Enumerator class.`);
+      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `${enumeration.fullName} is not of type Enumerator class.`);
 
     const enumerator = enumeration.getEnumeratorByName(enumeratorName);
     if (enumerator === undefined)
-      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Enumerator ${enumeratorName} does not exists in Enumeration ${enumeration.fullName}.`);
+      throw new ECEditingError(ECEditingStatus.EnumeratorDoesNotExist, `Enumerator ${enumeratorName} does not exists in Enumeration ${enumeration.fullName}.`);
 
     (enumerator as MutableEnumerator).label = label;
   }
@@ -102,14 +117,14 @@ export class Enumerations {
     const enumeration = (await this._schemaEditor.schemaContext.getSchemaItem<Enumeration>(enumerationKey));
 
     if (enumeration === undefined)
-      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Unable to locate Enumeration class ${enumerationKey.fullName}.`);
+      throw new ECEditingError(ECEditingStatus.SchemaItemNotFoundInContext, `Unable to locate Enumeration class ${enumerationKey.fullName}.`);
 
     if (enumeration.schemaItemType !== SchemaItemType.Enumeration)
-      throw new ECObjectsError(ECObjectsStatus.InvalidType, `${enumeration.fullName} is not of type Enumerator class.`);
+      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `${enumeration.fullName} is not of type Enumerator class.`);
 
     const enumerator = enumeration.getEnumeratorByName(enumeratorName);
     if (enumerator === undefined)
-      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Enumerator ${enumeratorName} does not exists in Enumeration ${enumeration.fullName}.`);
+      throw new ECEditingError(ECEditingStatus.EnumeratorDoesNotExist, `Enumerator ${enumeratorName} does not exists in Enumeration ${enumeration.fullName}.`);
 
     (enumerator as MutableEnumerator).description = description;
   }

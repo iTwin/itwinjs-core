@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { SchemaContext, SchemaItemKey, SchemaKey, Unit } from "@itwin/ecschema-metadata";
+import { ECVersion, SchemaContext, SchemaItemKey, SchemaKey, Unit } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
 describe("Units tests", () => {
@@ -47,5 +47,15 @@ describe("Units tests", () => {
     expect(unit.fullName).to.eql("testSchema.testUnit");
     expect(unit.numerator).to.eql(20.5);
     expect(await unit.phenomenon).to.eql(await testEditor.schemaContext.getSchemaItem(phenomenonKey));
+  });
+
+  it("try creating Unit to unknown schema, throws error", async () => {
+    const badKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
+    await expect(testEditor.units.create(badKey, "testUnit", "testDefinition", phenomenonKey, unitSystemKey)).to.be.rejectedWith(Error, `Schema Key ${badKey.toString(true)} not found in context`);;
+  });
+
+  it("try creating Unit with existing name, throws error", async () => {
+    await testEditor.units.create(testKey, "testUnit", "testDefinition", phenomenonKey, unitSystemKey);
+    await expect(testEditor.units.create(testKey, "testUnit", "testDefinition", phenomenonKey, unitSystemKey)).to.be.rejectedWith(Error, `Unit testUnit already exists in the schema ${testKey.name}.`);
   });
 });

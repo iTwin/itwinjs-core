@@ -6,10 +6,11 @@
  * @module Editing
  */
 
-import { InvertedUnit, SchemaItem, SchemaItemFormatProps, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
+import { ECObjectsError, ECObjectsStatus, InvertedUnit, SchemaItem, SchemaItemFormatProps, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
 import { FormatType } from "@itwin/core-quantity";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableFormat } from "./Mutable/MutableFormat";
+import { ECEditingError, ECEditingStatus } from "./Exception";
 
 /**
  * @alpha
@@ -20,22 +21,28 @@ export class Formats {
   public async create(schemaKey: SchemaKey, name: string, formatType: FormatType, displayLabel?: string, units?: SchemaItemKey[]): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
-    const newFormat = (await schema.createFormat(name)) as MutableFormat;
-    if (newFormat === undefined) {
-      return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
+    let newFormat: MutableFormat;
+    try {
+      newFormat = await schema.createFormat(name) as MutableFormat;
+    } catch (e) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
+        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Format ${name} already exists in the schema ${schema.fullName}.`);
+      } else {
+        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create Format ${name} in schema ${schema.fullName}.`);
+      }
     }
 
     if (units !== undefined) {
       for (const unit of units) {
         const unitItem = await this._schemaEditor.schemaContext.getSchemaItem<Unit | InvertedUnit>(unit);
         if (unitItem === undefined) {
-          return { errorMessage: `Failed to locate unit ${unit.name} in Schema Context.` };
+          throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Failed to locate unit ${unit.name} in Schema Context.`);
         }
 
         if (unitItem.schemaItemType !== SchemaItemType.Unit && unitItem.schemaItemType !== SchemaItemType.InvertedUnit)
-          return { errorMessage: `${(unitItem as SchemaItem).fullName} is not of type Unit or InvertedUnit.` };
+          throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `${(unitItem as SchemaItem).fullName} is not of type Unit or InvertedUnit.`);
         newFormat.addUnit(unitItem);
       }
     }
@@ -55,14 +62,21 @@ export class Formats {
   public async createFromProps(schemaKey: SchemaKey, formatProps: SchemaItemFormatProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
     if (formatProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
+      throw new ECEditingError(ECEditingStatus.SchemaItemNameNotSpecified, `No name was supplied within props.`);
 
-    const newFormat = (await schema.createFormat(formatProps.name)) as MutableFormat;
-    if (newFormat === undefined)
-      return { errorMessage: `Failed to create class ${formatProps.name} in schema ${schemaKey.toString(true)}.` };
+    let newFormat: MutableFormat;
+    try {
+      newFormat = await schema.createFormat(formatProps.name) as MutableFormat;
+    } catch (e) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
+        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Class ${formatProps.name} already exists in the schema ${schema.fullName}.`);
+      } else {
+        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create class ${formatProps.name} in schema ${schema.fullName}.`);
+      }
+    }
 
     await newFormat.fromJSON(formatProps);
     return { itemKey: newFormat.key };

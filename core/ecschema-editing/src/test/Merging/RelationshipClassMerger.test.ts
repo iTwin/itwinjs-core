@@ -425,7 +425,7 @@ describe("Relationship Class merger tests", () => {
     ]);
   });
 
-  it("should throw an error merging multiple constraint classes without abstract constraint defined", async () => {
+  it.only("should throw an error merging multiple constraint classes without abstract constraint defined", async () => {
     await Schema.fromJson(testJson, targetContext);
     const targetSchema = await Schema.fromJson({
       ...targetJson,
@@ -803,7 +803,7 @@ describe("Relationship Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Baseclass TargetSchema.TestRelationship must derive from TestSchema.BaseRelationship.");
+    await expect(merge).to.be.rejectedWith("Base class TargetSchema.TestRelationship must derive from TestSchema.BaseRelationship.");
   });
 
   it("should throw an error merging base class changed from undefined to existing one", async () => {

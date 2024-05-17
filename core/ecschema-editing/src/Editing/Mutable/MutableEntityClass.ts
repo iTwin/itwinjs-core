@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import {
-  DelayedPromiseWithProps, ECClass, ECObjectsError, ECObjectsStatus, EntityClass, Mixin, NavigationProperty,
+  DelayedPromiseWithProps, ECClass, EntityClass, Mixin, NavigationProperty,
   parseStrengthDirection, RelationshipClass, StrengthDirection,
 } from "@itwin/ecschema-metadata";
+import { ECEditingError, ECEditingStatus } from "../Exception";
 
 /**
  * Hackish approach that works like a "friend class" so we can access protected members without making them public.
@@ -21,7 +22,7 @@ export abstract class MutableEntityClass extends EntityClass {
 /** @internal */
 export async function createNavigationProperty(ecClass: ECClass, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
   if (await ecClass.getProperty(name))
-    throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);
+    throw new ECEditingError(ECEditingStatus.PropertyAlreadyExists, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);
 
   let resolvedRelationship: RelationshipClass | undefined;
   if (typeof (relationship) === "string") {
@@ -30,12 +31,12 @@ export async function createNavigationProperty(ecClass: ECClass, name: string, r
     resolvedRelationship = relationship;
 
   if (!resolvedRelationship)
-    throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`); // eslint-disable-line @typescript-eslint/no-base-to-string
+    throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Unable to locate RelationshipClass ${relationship} in schema ${ecClass.schema.fullName}.`); // eslint-disable-line @typescript-eslint/no-base-to-string
 
   if (typeof (direction) === "string") {
     const tmpDirection = parseStrengthDirection(direction);
     if (undefined === tmpDirection)
-      throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `The provided StrengthDirection, ${direction}, is not a valid StrengthDirection.`);
+      throw new ECEditingError(ECEditingStatus.InvalidStrengthDirection, `The provided StrengthDirection, ${direction}, is not a valid StrengthDirection.`);
     direction = tmpDirection;
   }
 
@@ -46,7 +47,7 @@ export async function createNavigationProperty(ecClass: ECClass, name: string, r
 /** @internal */
 export function createNavigationPropertySync(ecClass: ECClass, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
   if (ecClass.getPropertySync(name))
-    throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);
+    throw new ECEditingError(ECEditingStatus.PropertyAlreadyExists, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);
 
   let resolvedRelationship: RelationshipClass | undefined;
   if (typeof (relationship) === "string") {
@@ -55,12 +56,12 @@ export function createNavigationPropertySync(ecClass: ECClass, name: string, rel
     resolvedRelationship = relationship;
 
   if (!resolvedRelationship)
-    throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`); // eslint-disable-line @typescript-eslint/no-base-to-string
+    throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Unable to locate RelationshipClass ${relationship} in schema ${ecClass.schema.fullName}.`); // eslint-disable-line @typescript-eslint/no-base-to-string
 
   if (typeof (direction) === "string") {
     const tmpDirection = parseStrengthDirection(direction);
     if (undefined === tmpDirection)
-      throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `The provided StrengthDirection, ${direction}, is not a valid StrengthDirection.`);
+      throw new ECEditingError(ECEditingStatus.InvalidStrengthDirection, `The provided StrengthDirection, ${direction}, is not a valid StrengthDirection.`);
     direction = tmpDirection;
   }
 

@@ -25,6 +25,8 @@ import { Structs } from "./Structs";
 import { Units } from "./Units";
 import { UnitSystems } from "./UnitSystems";
 import { SchemaItems } from "./SchemaItems";
+import { ECEditingError, ECEditingStatus } from "./Exception";
+import { AnyDiagnostic } from "../Validation/Diagnostic";
 
 // We can either add validation in Editor, or in the protected methods of Schema.
 // TODO: Add an error code so we can do something programmatic with the error.
@@ -127,19 +129,19 @@ export class SchemaContextEditor {
   public async addSchemaReference(schemaKey: SchemaKey, refSchema: Schema): Promise<SchemaEditResults> {
     const schema = (await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Exact));
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
     await schema.addReference(refSchema);
-    const diagnostics = Rules.validateSchemaReferences(schema);
+    const diagnosticIterable = Rules.validateSchemaReferences(schema);
 
-    const result: SchemaEditResults = { errorMessage: "" };
-    for await (const diagnostic of diagnostics) {
-      result.errorMessage += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
+    const diagnostics: AnyDiagnostic[] = [];
+    for await (const diagnostic of diagnosticIterable) {
+      diagnostics.push(diagnostic);
     }
 
-    if (result.errorMessage) {
+    if (diagnostics.length > 0) {
       this.removeReference(schema, refSchema);
-      return result;
+      throw new ECEditingError(ECEditingStatus.RuleViolation, undefined, diagnostics);
     }
 
     if (!await this.schemaContext.getCachedSchema(refSchema.schemaKey)) {
@@ -154,26 +156,26 @@ export class SchemaContextEditor {
    * @param schemaKey The SchemaKey identifying the schema.
    * @param customAttribute The CustomAttribute instance to add.
    */
-  public async addCustomAttribute(schemaKey: SchemaKey, customAttribute: CustomAttribute): Promise<SchemaEditResults> {
+  public async addCustomAttribute(schemaKey: SchemaKey, customAttribute: CustomAttribute): Promise<void> {
     const schema = (await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Latest));
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
     schema.addCustomAttribute(customAttribute);
 
-    const diagnostics = Rules.validateCustomAttributeInstance(schema, customAttribute);
+    const diagnosticIterable = Rules.validateCustomAttributeInstance(schema, customAttribute);
 
-    const result: SchemaEditResults = { errorMessage: "" };
-    for await (const diagnostic of diagnostics) {
-      result.errorMessage += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
+    const diagnostics: AnyDiagnostic[] = [];
+    for await (const diagnostic of diagnosticIterable) {
+      diagnostics.push(diagnostic);
     }
 
-    if (result.errorMessage) {
+    if (diagnostics.length > 0) {
       this.removeCustomAttribute(schema, customAttribute);
-      return result;
+      throw new ECEditingError(ECEditingStatus.RuleViolation, undefined, diagnostics);
     }
 
-    return {};
+    return;
   }
 
   /**
@@ -186,7 +188,7 @@ export class SchemaContextEditor {
   public async setVersion(schemaKey: SchemaKey, readVersion?: number, writeVersion?: number, minorVersion?: number): Promise<SchemaEditResults> {
     const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest));
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
     schema.setVersion(readVersion || schema.readVersion, writeVersion || schema.writeVersion, minorVersion || schema.minorVersion);
     return {};
@@ -199,7 +201,7 @@ export class SchemaContextEditor {
   public async incrementMinorVersion(schemaKey: SchemaKey): Promise<SchemaEditResults> {
     const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest));
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
     schema.setVersion(schema.readVersion, schema.writeVersion, schema.minorVersion + 1);
     return {};

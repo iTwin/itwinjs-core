@@ -8,6 +8,9 @@ import {
   SchemaContext, SchemaItemKey, SchemaKey,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
+import { ECEditingError } from "../../Editing/Exception";
+import { AnyDiagnostic } from "../../Validation/Diagnostic";
+import { Diagnostics } from "../../Validation/ECRules";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -61,9 +64,7 @@ describe("Editor tests", () => {
         testEditor = new SchemaContextEditor(context);
         testKey = testSchema.schemaKey;
 
-        const result = await testEditor.addCustomAttribute(testKey, { className: "TestCustomAttribute" });
-
-        expect(result).to.eql({});
+        await testEditor.addCustomAttribute(testKey, { className: "TestCustomAttribute" });
         expect(testSchema.customAttributes && testSchema.customAttributes.has("TestCustomAttribute")).to.be.true;
       });
 
@@ -99,9 +100,7 @@ describe("Editor tests", () => {
         testEditor = new SchemaContextEditor(context);
         testKey = schemaA.schemaKey;
 
-        const result = await testEditor.addCustomAttribute(testKey, { className: "SchemaB.TestCustomAttribute" });
-
-        expect(result).to.eql({});
+        await testEditor.addCustomAttribute(testKey, { className: "SchemaB.TestCustomAttribute" });
         expect(schemaA.customAttributes && schemaA.customAttributes.has("SchemaB.TestCustomAttribute")).to.be.true;
       });
 
@@ -133,10 +132,13 @@ describe("Editor tests", () => {
         testEditor = new SchemaContextEditor(context);
         testKey = schemaA.schemaKey;
 
-        const result = await testEditor.addCustomAttribute(testKey, { className: "SchemaB.TestCustomAttribute" });
-
-        expect(result.errorMessage).to.eql("ECObjects-502: The CustomAttribute container 'SchemaA' has a CustomAttribute with the class 'SchemaB.TestCustomAttribute' which cannot be found.\r\n");
-        expect(schemaA.customAttributes && schemaA.customAttributes.has("SchemaB.TestCustomAttribute")).to.be.false;
+        try {
+          await testEditor.addCustomAttribute(testKey, { className: "SchemaB.TestCustomAttribute" });
+        } catch(e: any) {
+          const violations = e.ruleViolations as AnyDiagnostic[];
+          expect(violations[0]).to.deep.equal(new Diagnostics.CustomAttributeClassNotFound(schemaA, ["SchemaA", "SchemaB.TestCustomAttribute"]));
+          expect(schemaA.customAttributes && schemaA.customAttributes.has("SchemaB.TestCustomAttribute")).to.be.false;
+        }
       });
     });
 
@@ -208,11 +210,14 @@ describe("Editor tests", () => {
         testEditor = new SchemaContextEditor(context);
         testKey = schemaA.schemaKey;
 
-        const result = await testEditor.addSchemaReference(schemaA.schemaKey, schemaC);
-
-        expect(result.errorMessage).not.undefined;
-        expect(normalizeLineEnds(result.errorMessage!)).to.equal(normalizeLineEnds("ECObjects-2: Schema 'SchemaA' has multiple schema references (SchemaB, SchemaC) with the same alias 'b', which is not allowed.\r\nECObjects-3: Schema 'SchemaA' has reference cycles: SchemaC --> SchemaA, SchemaA --> SchemaC\r\n"));
-        expect(schemaA.getReferenceSync("SchemaC")).to.be.undefined;
+        try {
+          await testEditor.addSchemaReference(schemaA.schemaKey, schemaC);
+        } catch(e: any) {
+          const violations = e.ruleViolations as AnyDiagnostic[];
+          expect(violations[0]).to.deep.equal(new Diagnostics.SchemaRefAliasMustBeUnique(schemaA, [schemaA.name, "b", "SchemaB", "SchemaC"]));
+          expect(violations[1]).to.deep.equal(new Diagnostics.ReferenceCyclesNotAllowed(schemaA, [schemaA.name, `SchemaC --> SchemaA, SchemaA --> SchemaC`]));
+          expect(schemaA.getReferenceSync("SchemaC")).to.be.undefined;
+        }
       });
     });
 

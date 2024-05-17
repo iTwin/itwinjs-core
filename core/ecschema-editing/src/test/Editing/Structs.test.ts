@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import { ECClassModifier, ECVersion, Schema, SchemaContext, SchemaItemKey, SchemaKey, StructClass } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
+import { ECEditingError } from "../../Editing/Exception";
 
 describe("Structs tests", () => {
   let testEditor: SchemaContextEditor;
@@ -51,8 +52,7 @@ describe("Structs tests", () => {
     const baseClassRes = await testEditor.structs.create(testKey, "testBaseClass");
     const structRes = await testEditor.structs.create(testKey, "testStruct", "testLabel");
 
-    const result = await testEditor.structs.setBaseClass(structRes.itemKey!, baseClassRes.itemKey);
-    expect(result.errorMessage).to.be.undefined;
+    await testEditor.structs.setBaseClass(structRes.itemKey!, baseClassRes.itemKey);
 
     const testStruct = await testEditor.schemaContext.getSchemaItem<StructClass>(structRes.itemKey!);
     expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<StructClass>(baseClassRes.itemKey!));
@@ -66,8 +66,7 @@ describe("Structs tests", () => {
     const testStruct = await testEditor.schemaContext.getSchemaItem<StructClass>(structRes.itemKey!);
     expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<StructClass>(baseClassRes.itemKey!));
 
-    const result = await testEditor.structs.setBaseClass(structRes.itemKey!, newBaseClassRes.itemKey);
-    expect(result.errorMessage).to.be.undefined;
+    await testEditor.structs.setBaseClass(structRes.itemKey!, newBaseClassRes.itemKey);
     expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<StructClass>(newBaseClassRes.itemKey!));
   });
 
@@ -84,25 +83,30 @@ describe("Structs tests", () => {
         },
       ],
       items: {
-        testBaseClass: {
+        testStructBase1: {
           schemaItemType: "StructClass",
-          baseClass: "testSchema.testBaseClass",
+          label: "ExampleEntity",
+          description: "An example entity class.",
+        },
+        testStructBase2: {
+          schemaItemType: "StructClass",
+          label: "ExampleStruct",
+          description: "An example struct class.",
+          baseClass: "RefSchema.testStructBase1",
         },
       },
     };
 
-    const baseClassRes = await testEditor.structs.create(testKey, "testBaseClass");
-    const structRes = await testEditor.structs.create(testKey, "testStruct", "testLabel", baseClassRes.itemKey);
-
     const refSchema = await Schema.fromJson(refSchemaJson, context);
     await testEditor.addSchemaReference(testKey, refSchema);
+    const firstBaseClassKey = new SchemaItemKey("testEntityBase1", refSchema.schemaKey);
+    const structResult = await testEditor.structs.create(testKey, "testStruct", "testLabel", firstBaseClassKey);
 
-    const testStruct = await testEditor.schemaContext.getSchemaItem<StructClass>(structRes.itemKey!);
-    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<StructClass>(baseClassRes.itemKey!));
+    const testStruct = await testEditor.schemaContext.getSchemaItem<StructClass>(structResult.itemKey!);
+    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<StructClass>(firstBaseClassKey));
 
-    const newBaseClassKey = new SchemaItemKey("testBaseClass", refSchema.schemaKey);
-    const result = await testEditor.structs.setBaseClass(structRes.itemKey!, newBaseClassKey);
-    expect(result.errorMessage).to.be.undefined;
+    const newBaseClassKey = new SchemaItemKey("testStructBase2", refSchema.schemaKey);
+    await testEditor.structs.setBaseClass(structResult.itemKey!, newBaseClassKey);
     expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<StructClass>(newBaseClassKey));
   });
 
@@ -113,36 +117,27 @@ describe("Structs tests", () => {
     const testStruct = await testEditor.schemaContext.getSchemaItem<StructClass>(structRes.itemKey!);
     expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<StructClass>(baseClassRes.itemKey!));
 
-    const result = await testEditor.structs.setBaseClass(structRes.itemKey!, undefined);
-    expect(result.errorMessage).to.be.undefined;
+    await testEditor.structs.setBaseClass(structRes.itemKey!, undefined);
     expect(await testStruct?.baseClass).to.eql(undefined);
   });
 
   it("try adding base class to struct class with different SchemaItemType, returns error", async () => {
     const baseClassRes = await testEditor.entities.create(testKey, "testBaseClass", ECClassModifier.None);
     const structRes = await testEditor.structs.create(testKey, "testStruct", "testLabel");
-    const result = await testEditor.structs.setBaseClass(structRes.itemKey!, baseClassRes.itemKey);
-
-    expect(result.errorMessage).to.not.be.undefined;
-    expect(result.errorMessage).to.equal(`${baseClassRes.itemKey?.fullName} is not of type StructClass.`);
+    await expect(testEditor.structs.setBaseClass(structRes.itemKey!, baseClassRes.itemKey)).to.be.rejectedWith(ECEditingError, `${baseClassRes.itemKey?.fullName} is not of type StructClass.`);
   });
 
   it("try adding base class to a struct class where the base class cannot be located, returns error", async () => {
     const baseClassKey = new SchemaItemKey("testBaseClass", testKey);
     const structRes = await testEditor.structs.create(testKey, "testStruct", "testLabel");
-    const result = await testEditor.structs.setBaseClass(structRes.itemKey!, baseClassKey);
-
-    expect(result.errorMessage).to.not.be.undefined;
-    expect(result.errorMessage).to.equal(`Unable to locate base class ${baseClassKey.fullName} in schema ${testKey.name}.`);
+    await expect(testEditor.structs.setBaseClass(structRes.itemKey!, baseClassKey)).to.be.rejectedWith(`Unable to locate base class ${baseClassKey.fullName} in schema ${testKey.name}.`);
   });
 
   it("try adding base class to non-existing struct class, returns error", async () => {
     const baseClassRes = await testEditor.structs.create(testKey, "testBaseClass");
     const structKey =  new SchemaItemKey("testStruct", testKey);
 
-    const result = await testEditor.structs.setBaseClass(structKey, baseClassRes.itemKey);
-    expect(result.errorMessage).to.not.be.undefined;
-    expect(result.errorMessage).to.equal(`Class ${structKey.fullName} not found in schema context.`);
+    await expect(testEditor.structs.setBaseClass(structKey, baseClassRes.itemKey)).to.be.rejectedWith(ECEditingError, `Class ${structKey.fullName} not found in schema context.`);
   });
 
   it("try adding base class with unknown schema to existing struct class, returns error", async () => {
@@ -150,9 +145,7 @@ describe("Structs tests", () => {
     const baseClassKey = new SchemaItemKey("testBaseClass", schemaKey);
     const structRes = await testEditor.structs.create(testKey, "testStruct", "testLabel");
 
-    const result = await testEditor.structs.setBaseClass(structRes.itemKey!, baseClassKey);
-    expect(result.errorMessage).to.not.be.undefined;
-    expect(result.errorMessage).to.equal(`Schema Key ${schemaKey.toString(true)} not found in context`);
+    await expect(testEditor.structs.setBaseClass(structRes.itemKey!, baseClassKey)).to.be.rejectedWith(ECEditingError, `Schema Key ${schemaKey.toString(true)} not found in context`);
   });
 
   it("try changing the struct base class to one that doesn't derive from, returns error", async () => {
@@ -163,8 +156,21 @@ describe("Structs tests", () => {
     expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<StructClass>(baseClassRes.itemKey!));
 
     const newBaseClassRes = await testEditor.structs.create(testKey, "newBaseClass");
-    const result = await testEditor.structs.setBaseClass(structRes.itemKey!, newBaseClassRes.itemKey);
-    expect(result.errorMessage).to.be.not.undefined;
-    expect(result.errorMessage).to.equal(`Baseclass ${newBaseClassRes.itemKey!.fullName} must derive from ${baseClassRes.itemKey!.fullName}.`);
+    await expect(testEditor.structs.setBaseClass(structRes.itemKey!, newBaseClassRes.itemKey)).to.be.rejectedWith(ECEditingError, `Base class ${newBaseClassRes.itemKey!.fullName} must derive from ${baseClassRes.itemKey!.fullName}.`);
+  });
+
+  it("try creating Struct class to unknown schema, throws error", async () => {
+    const badKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
+    await expect(testEditor.structs.create(badKey, "testStruct", "testLabel")).to.be.rejectedWith(Error, `Schema Key ${badKey.toString(true)} not found in context`);;
+  });
+
+  it("try creating Struct class with unknown base class, throws error", async () => {
+    const baseClassKey = new SchemaItemKey("testBaseClass", testKey);
+    await expect(testEditor.structs.create(testKey, "testStruct", "testLabel", baseClassKey)).to.be.rejectedWith(Error, `Unable to locate base class ${baseClassKey.fullName} in schema ${testKey.name}.`);;
+  });
+
+  it("try creating Struct with existing name, throws error", async () => {
+    await testEditor.structs.create(testKey, "testStruct", "testLabel");
+    await expect(testEditor.structs.create(testKey, "testStruct", "testLabel")).to.be.rejectedWith(Error, `Class testStruct already exists in the schema ${testKey.name}.`);
   });
 });

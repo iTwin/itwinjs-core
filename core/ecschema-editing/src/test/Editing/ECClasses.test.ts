@@ -10,6 +10,7 @@ import {
   StructArrayProperty, StructClass, StructProperty, UnitSystem,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
+import { ECEditingError } from "../../Editing/Exception";
 
 describe("ECClass tests", () => {
   // Uses an entity class to create properties.
@@ -33,11 +34,10 @@ describe("ECClass tests", () => {
   it("should change name of class using SchemaEditor", async () => {
     const result1 = await testEditor.entities.create(testKey, "testEntity1", ECClassModifier.None);
     let testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result1.itemKey!);
-    const result2 = await testEditor.entities.setName(result1.itemKey!, "testEntity2");
+    await testEditor.entities.setName(result1.itemKey!, "testEntity2");
     const newItemKey = new SchemaItemKey("testEntity2", testKey);
     testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(newItemKey);
     expect(testEntity, "renamed EntityClass could not be found in schema").to.not.be.undefined;
-    expect(result2).to.eql({});
     expect(testEntity?.name).to.eql("testEntity2");
   });
 
@@ -49,8 +49,7 @@ describe("ECClass tests", () => {
   it("try changing class name to existing name in the schema, returns error", async () => {
     const result1 = await testEditor.entities.create(testKey, "testEntity1", ECClassModifier.None);
     await testEditor.entities.create(testKey, "testEntity2", ECClassModifier.None);
-    const result2 = await testEditor.entities.setName(result1.itemKey!, "testEntity2");
-    expect(result2.errorMessage).to.eql(`An EC Class with the name testEntity2 already exists within the schema ${testKey.name}`);
+    await expect(testEditor.entities.setName(result1.itemKey!, "testEntity2")).to.be.rejectedWith(ECEditingError, `An EC Class with the name testEntity2 already exists within the schema ${testKey.name}`);
   });
 
   describe("Property creation tests", () => {
@@ -450,9 +449,7 @@ describe("ECClass tests", () => {
       testEditor = new SchemaContextEditor(context);
       const testClass = await testSchema.getItem<EntityClass>("testEntity");
 
-      const result = await testEditor.entities.addCustomAttribute(testClass?.key as SchemaItemKey, { className: "testCustomAttribute" });
-
-      expect(result).to.eql({});
+      await testEditor.entities.addCustomAttribute(testClass?.key as SchemaItemKey, { className: "testCustomAttribute" });
       expect(testClass!.customAttributes && testClass!.customAttributes.has("testCustomAttribute")).to.be.true;
     });
 
@@ -494,9 +491,7 @@ describe("ECClass tests", () => {
       testEditor = new SchemaContextEditor(context);
       const testClass = await schemaA.getItem<EntityClass>("testEntity");
 
-      const result = await testEditor.entities.addCustomAttribute(testClass?.key as SchemaItemKey, { className: "SchemaB.testCustomAttribute" });
-
-      expect(result).to.eql({});
+      await testEditor.entities.addCustomAttribute(testClass?.key as SchemaItemKey, { className: "SchemaB.testCustomAttribute" });
       expect(testClass!.customAttributes && testClass!.customAttributes.has("SchemaB.testCustomAttribute")).to.be.true;
     });
 
@@ -522,8 +517,7 @@ describe("ECClass tests", () => {
       testEditor = new SchemaContextEditor(context);
       const badKey = new SchemaItemKey("BadClass", testSchema.schemaKey);
 
-      const result = await testEditor.entities.addCustomAttribute(badKey, { className: "testCustomAttribute" });
-      expect(result.errorMessage).to.eql(`Class ${badKey.name} was not found in schema ${testSchema.schemaKey.toString(true)}`);
+      await expect(testEditor.entities.addCustomAttribute(badKey, { className: "testCustomAttribute" })).to.be.rejectedWith(ECEditingError, `Class ${badKey.name} was not found in schema ${testSchema.schemaKey.toString(true)}`);
     });
 
     it("Adding a CustomAttribute to a class with an unsupported SchemaItemType fails as expected.", async () => {
@@ -548,8 +542,7 @@ describe("ECClass tests", () => {
       testEditor = new SchemaContextEditor(context);
       const testClass = await testSchema.getItem<UnitSystem>("testUnitSystem");
 
-      const result = await testEditor.entities.addCustomAttribute(testClass?.key as SchemaItemKey, { className: "testCustomAttribute" });
-      expect(result.errorMessage).to.eql("Schema item type not supported");
+      await expect(testEditor.entities.addCustomAttribute(testClass?.key as SchemaItemKey, { className: "testCustomAttribute" })).to.be.rejectedWith(ECEditingError, "Schema item type not supported");
     });
   });
 });

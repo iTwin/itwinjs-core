@@ -6,9 +6,10 @@
  * @module Editing
  */
 
-import { DelayedPromiseWithProps, Phenomenon, SchemaItemKey, SchemaItemType, SchemaItemUnitProps, SchemaKey, UnitSystem } from "@itwin/ecschema-metadata";
+import { DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, Phenomenon, SchemaItemKey, SchemaItemType, SchemaItemUnitProps, SchemaKey, UnitSystem } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableUnit } from "./Mutable/MutableUnit";
+import { ECEditingError, ECEditingStatus } from "./Exception";
 
 /**
  * @alpha
@@ -21,27 +22,34 @@ export class Units {
   public async create(schemaKey: SchemaKey, name: string, definition: string, phenomenon: SchemaItemKey, unitSystem: SchemaItemKey, displayLabel?: string): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
-    const newUnit = (await schema.createUnit(name)) as MutableUnit;
-    if (newUnit === undefined)
-      return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
+    let newUnit: MutableUnit;
+    try {
+      newUnit = (await schema.createUnit(name)) as MutableUnit;
+    } catch (e) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
+        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Unit ${name} already exists in the schema ${schema.fullName}.`);
+      } else {
+        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create Unit ${name} in schema ${schema.fullName}.`);
+      }
+    }
 
     const phenomenonItem = await schema.lookupItem<Phenomenon>(phenomenon);
     if (phenomenonItem === undefined)
-      return { errorMessage: `Unable to locate phenomenon ${phenomenon.fullName} in schema ${schema.fullName}.` };
+      throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Unable to locate phenomenon ${phenomenon.fullName} in schema ${schema.fullName}.`);
 
     if (phenomenonItem.schemaItemType !== SchemaItemType.Phenomenon)
-      return { errorMessage: `${phenomenon.fullName} is not of type Phenomenon.` };
+      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `${phenomenon.fullName} is not of type Phenomenon.`);
 
     await newUnit.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenon, async () => phenomenonItem));
 
     const unitSystemItem = await schema.lookupItem<UnitSystem>(unitSystem);
     if (unitSystemItem === undefined)
-      return { errorMessage: `Unable to locate unit system ${unitSystem.fullName} in schema ${schema.fullName}.` };
+      throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Unable to locate unit system ${unitSystem.fullName} in schema ${schema.fullName}.`);
 
     if (unitSystemItem.schemaItemType !== SchemaItemType.UnitSystem)
-      return { errorMessage: `${unitSystem.fullName} is not of type UnitSystem.` };
+      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `${unitSystem.fullName} is not of type UnitSystem.`);
 
     await newUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystem, async () => unitSystemItem));
 
@@ -56,14 +64,21 @@ export class Units {
   public async createFromProps(schemaKey: SchemaKey, unitProps: SchemaItemUnitProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
     if (unitProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
+      throw new ECEditingError(ECEditingStatus.SchemaItemNameNotSpecified, `No name was supplied within props.`);
 
-    const newUnit = (await schema.createUnit(unitProps.name));
-    if (newUnit === undefined)
-      return { errorMessage: `Failed to create class ${unitProps.name} in schema ${schemaKey.toString(true)}.` };
+    let newUnit: MutableUnit;
+    try {
+      newUnit = (await schema.createUnit(unitProps.name)) as MutableUnit;
+    } catch (e) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
+        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Unit ${unitProps.name} already exists in the schema ${schema.fullName}.`);
+      } else {
+        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create Unit ${unitProps.name} in schema ${schema.fullName}.`);
+      }
+    }
 
     await newUnit.fromJSON(unitProps);
     return { itemKey: newUnit.key };

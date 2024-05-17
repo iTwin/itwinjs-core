@@ -138,7 +138,12 @@ export async function mergeRelationshipClassConstraint(context: SchemaMergeConte
     if(constraintClass === undefined) {
       return { errorMessage: `Could not locate relationship constraint class ${constraintClassKey.name}` };
     }
-    const result = await context.editor.relationships.addConstraintClass(constraint, constraintClass);
+
+    try {
+      await context.editor.relationships.addConstraintClass(constraint, constraintClass);
+    } catch (e) {
+      const violations = e.ruleViolations as AnyDiagnostic[];
+    }
     if(result.errorMessage) {
       return result;
     }

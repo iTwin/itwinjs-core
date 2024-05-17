@@ -7,7 +7,7 @@
  */
 
 import {
-  CustomAttribute, DelayedPromiseWithProps, ECClassModifier, EntityClass, LazyLoadedRelationshipConstraintClass, Mixin, NavigationPropertyProps,
+  CustomAttribute, DelayedPromiseWithProps, ECClassModifier, ECObjectsError, ECObjectsStatus, EntityClass, LazyLoadedRelationshipConstraintClass, Mixin, NavigationPropertyProps,
   RelationshipClass, RelationshipClassProps, RelationshipConstraint, RelationshipEnd, RelationshipMultiplicity, SchemaItemKey, SchemaItemType,
   SchemaKey, StrengthDirection, StrengthType,
 } from "@itwin/ecschema-metadata";
@@ -15,8 +15,9 @@ import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from 
 import { ECClasses } from "./ECClasses";
 import { MutableRelationshipClass, MutableRelationshipConstraint } from "./Mutable/MutableRelationshipClass";
 import * as Rules from "../Validation/ECRules";
-import { RelationshipConstraintDiagnostic, SchemaItemDiagnostic } from "../Validation/Diagnostic";
+import { AnyDiagnostic, RelationshipConstraintDiagnostic, SchemaItemDiagnostic } from "../Validation/Diagnostic";
 import { NavigationProperties } from "./Properties";
+import { ECEditingError, ECEditingStatus } from "./Exception";
 
 /**
  * @alpha
@@ -44,22 +45,32 @@ export class RelationshipClasses extends ECClasses {
   public async create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, strength: StrengthType, direction: StrengthDirection, baseClassKey?: SchemaItemKey): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) {
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
     }
 
-    const newClass = (await schema.createRelationshipClass(name, modifier)) as MutableRelationshipClass;
+    let newClass: MutableRelationshipClass;
+    try {
+      newClass = (await schema.createRelationshipClass(name, modifier)) as MutableRelationshipClass;
+    } catch (e) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
+        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Class ${name} already exists in the schema ${schema.fullName}.`);
+      } else {
+        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create class ${name} in schema ${schema.fullName}.`);
+      }
+    }
+
     if (baseClassKey !== undefined) {
       const baseClassSchema = !baseClassKey.schemaKey.matches(schema.schemaKey) ? await this._schemaEditor.getSchema(baseClassKey.schemaKey) : schema;
       if (baseClassSchema === undefined) {
-        return { errorMessage: `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context` };
+        throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context`);
       }
 
       const baseClassItem = await baseClassSchema.lookupItem<RelationshipClass>(baseClassKey);
       if (baseClassItem === undefined)
-        return { errorMessage: `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.` };
+        throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.`);
 
       if (baseClassItem.schemaItemType !== SchemaItemType.RelationshipClass)
-        return { errorMessage: `${baseClassItem.fullName} is not of type Relationship Class.` };
+        throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `${baseClassItem.fullName} is not of type Relationship Class.`);
 
       newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, RelationshipClass>(baseClassKey, async () => baseClassItem);
     }
@@ -80,7 +91,7 @@ export class RelationshipClasses extends ECClasses {
     const relationship = (await this._schemaEditor.schemaContext.getSchemaItem<MutableRelationshipClass>(relationshipKey));
 
     if (relationship === undefined)
-      return { itemKey: relationshipKey, errorMessage: `Relationship Class ${relationshipKey.fullName} not found in schema context.` };
+      throw new ECEditingError(ECEditingStatus.SchemaItemNotFoundInContext, `Relationship Class ${relationshipKey.fullName} not found in schema context.`);
 
     relationship.setSourceConstraint(source);
     return { itemKey: relationshipKey };
@@ -96,7 +107,7 @@ export class RelationshipClasses extends ECClasses {
     const relationship = await this._schemaEditor.schemaContext.getSchemaItem<MutableRelationshipClass>(relationshipKey);
 
     if (relationship === undefined)
-      return { itemKey: relationshipKey, errorMessage: `Relationship Class ${relationshipKey.fullName} not found in schema context.` };
+      throw new ECEditingError(ECEditingStatus.SchemaItemNotFoundInContext, `Relationship Class ${relationshipKey.fullName} not found in schema context.`);
 
     relationship.setTargetConstraint(target);
     return { itemKey: relationshipKey };
@@ -110,12 +121,22 @@ export class RelationshipClasses extends ECClasses {
   public async createFromProps(schemaKey: SchemaKey, relationshipProps: RelationshipClassProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
     if (relationshipProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
+      throw new ECEditingError(ECEditingStatus.SchemaItemNameNotSpecified, `No name was supplied within props.`);
 
-    const newClass = (await schema.createRelationshipClass(relationshipProps.name)) as MutableRelationshipClass;
+    let newClass: MutableRelationshipClass;
+    try {
+      newClass = (await schema.createRelationshipClass(relationshipProps.name)) as MutableRelationshipClass;
+    } catch (e) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
+        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Class ${relationshipProps.name} already exists in the schema ${schema.fullName}.`);
+      } else {
+        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create class ${relationshipProps.name} in schema ${schema.fullName}.`);
+      }
+    }
+
     await newClass.fromJSON(relationshipProps);
     await newClass.source.fromJSON(relationshipProps.source);
     await newClass.target.fromJSON(relationshipProps.target);
@@ -128,29 +149,26 @@ export class RelationshipClasses extends ECClasses {
    * @param relationshipKey The SchemaItemKey of the RelationshipClass.
    * @param baseClassKey The SchemaItemKey of the base class. Specifying 'undefined' removes the base class.
    */
-  public override async setBaseClass(itemKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<SchemaItemEditResults> {
+  public override async setBaseClass(itemKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<void> {
     const relClass = await this._schemaEditor.schemaContext.getSchemaItem<RelationshipClass>(itemKey);
     const baseClass = relClass?.baseClass;
 
-    const setResult = await super.setBaseClass(itemKey, baseClassKey);
-    if (setResult.errorMessage === undefined) {
-      const result = await this.validate(relClass!);
-      if (result.errorMessage !== undefined) {
-        relClass!.baseClass = baseClass;
-        return { itemKey, errorMessage: result.errorMessage };
-      }
+    await super.setBaseClass(itemKey, baseClassKey);
+    const violations = await this.validate(relClass!);
+    if (violations) {
+      relClass!.baseClass = baseClass;
+      throw new ECEditingError(ECEditingStatus.RuleViolation, undefined, violations);
     }
-    return setResult;
   }
 
   public async createNavigationProperty(relationshipKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<PropertyEditResults> {
     const relationshipClass = (await this._schemaEditor.schemaContext.getSchemaItem<MutableRelationshipClass>(relationshipKey));
 
     if (relationshipClass === undefined)
-      return { itemKey: relationshipKey, propertyName: name, errorMessage: `Relationship Class ${relationshipKey.fullName} not found in schema context.` };
+      throw new ECEditingError(ECEditingStatus.SchemaItemNotFoundInContext, `Relationship Class ${relationshipKey.fullName} not found in schema context.`);
 
     if (relationshipClass.schemaItemType !== SchemaItemType.RelationshipClass)
-      return { itemKey: relationshipKey, propertyName: name, errorMessage: `Expected ${relationshipKey.fullName} to be of type Relationship Class.` };
+      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `Expected ${relationshipKey.fullName} to be of type Relationship Class.`);
 
     await relationshipClass.createNavigationProperty(name, relationship, direction);
     return { itemKey: relationshipKey, propertyName: name };
@@ -165,10 +183,10 @@ export class RelationshipClasses extends ECClasses {
     const relationshipClass = await this._schemaEditor.schemaContext.getSchemaItem<MutableRelationshipClass>(relationshipKey);
 
     if (relationshipClass === undefined)
-      return { itemKey: relationshipKey, propertyName: navigationProps.name, errorMessage: `Relationship Class ${relationshipKey.fullName} not found in schema context.` };
+      throw new ECEditingError(ECEditingStatus.SchemaItemNotFoundInContext, `Relationship Class ${relationshipKey.fullName} not found in schema context.`);
 
     if (relationshipClass.schemaItemType !== SchemaItemType.RelationshipClass)
-      return { itemKey: relationshipKey, propertyName: navigationProps.name, errorMessage: `Expected ${relationshipKey.fullName} to be of type Relationship Class.` };
+      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `Expected ${relationshipKey.fullName} to be of type Relationship Class.`);
 
     const property = await relationshipClass.createNavigationProperty(navigationProps.name, navigationProps.relationshipName, navigationProps.direction);
     await property.fromJSON(navigationProps);
@@ -203,16 +221,16 @@ export class RelationshipClasses extends ECClasses {
       mutableConstraint.abstractConstraint = new DelayedPromiseWithProps(abstractConstraint.key, async () => abstractConstraint);
     }
 
-    let result = await this.validate(constraint.relationshipClass);
-    if (result.errorMessage) {
+    const classViolations = await this.validate(constraint.relationshipClass);
+    if (classViolations) {
       mutableConstraint.abstractConstraint = existing;
-      return result;
+      throw new ECEditingError(ECEditingStatus.RuleViolation, undefined, classViolations);
     }
 
-    result = await this.validate(constraint);
-    if (result.errorMessage) {
+    const constraintViolations = await this.validate(constraint);
+    if (constraintViolations) {
       mutableConstraint.abstractConstraint = existing;
-      return result;
+      throw new ECEditingError(ECEditingStatus.RuleViolation, undefined, constraintViolations);
     }
 
     return { itemKey: constraint.relationshipClass.key };
@@ -222,16 +240,16 @@ export class RelationshipClasses extends ECClasses {
     const mutableConstraint = constraint as MutableRelationshipConstraint;
     mutableConstraint.addClass(ecClass);
 
-    let result = await this.validate(constraint.relationshipClass);
-    if (result.errorMessage) {
+    const classViolations = await this.validate(constraint.relationshipClass);
+    if (classViolations) {
       mutableConstraint.removeClass(ecClass);
-      return result;
+      throw new ECEditingError(ECEditingStatus.RuleViolation, undefined, classViolations);
     }
 
-    result = await this.validate(constraint);
-    if (result.errorMessage) {
+    const constraintViolations = await this.validate(constraint);
+    if (constraintViolations) {
       mutableConstraint.removeClass(ecClass);
-      return result;
+      throw new ECEditingError(ECEditingStatus.RuleViolation, undefined, constraintViolations);
     }
 
     return { itemKey: constraint.relationshipClass.key };
@@ -241,10 +259,10 @@ export class RelationshipClasses extends ECClasses {
     const mutableConstraint = constraint as MutableRelationshipConstraint;
     mutableConstraint.removeClass(ecClass);
 
-    const result = await this.validate(constraint);
-    if (result.errorMessage) {
+    const violations = await this.validate(constraint);
+    if (violations) {
       mutableConstraint.addClass(ecClass);
-      return result;
+      throw new ECEditingError(ECEditingStatus.RuleViolation, undefined, violations);
     }
 
     return { itemKey: constraint.relationshipClass.key };
@@ -254,38 +272,35 @@ export class RelationshipClasses extends ECClasses {
     const mutableConstraint = constraint as MutableRelationshipConstraint;
     mutableConstraint.addCustomAttribute(customAttribute);
 
-    const diagnostics = Rules.validateCustomAttributeInstance(constraint, customAttribute);
-    const result: SchemaItemEditResults = { errorMessage: "" };
-    for await (const diagnostic of diagnostics) {
-      result.errorMessage += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
+    const diagnosticIterable = Rules.validateCustomAttributeInstance(constraint, customAttribute);
+
+    const diagnostics: AnyDiagnostic[] = [];
+    for await (const diagnostic of diagnosticIterable) {
+      diagnostics.push(diagnostic);
     }
 
-    if (result.errorMessage) {
+    if (diagnostics.length > 0) {
       this.removeCustomAttribute(constraint, customAttribute);
-      return result;
+      throw new ECEditingError(ECEditingStatus.RuleViolation, undefined, diagnostics);
     }
 
     return { itemKey: constraint.relationshipClass.key };
   }
 
-  private async validate(relationshipOrConstraint: RelationshipClass | RelationshipConstraint): Promise<SchemaItemEditResults> {
-    let diagnostics: AsyncIterable<SchemaItemDiagnostic<RelationshipClass, any[]>> | AsyncIterable<RelationshipConstraintDiagnostic<any[]>>;
+  private async validate(relationshipOrConstraint: RelationshipClass | RelationshipConstraint): Promise<AnyDiagnostic[] | undefined> {
+    let diagnosticIterable: AsyncIterable<SchemaItemDiagnostic<RelationshipClass, any[]>> | AsyncIterable<RelationshipConstraintDiagnostic<any[]>>;
 
     if (relationshipOrConstraint instanceof RelationshipClass) {
-      diagnostics = Rules.validateRelationship(relationshipOrConstraint);
+      diagnosticIterable = Rules.validateRelationship(relationshipOrConstraint);
     } else {
-      diagnostics = Rules.validateRelationshipConstraint(relationshipOrConstraint);
+      diagnosticIterable = Rules.validateRelationshipConstraint(relationshipOrConstraint);
     }
 
-    const errorMessages = [];
-    for await (const diagnostic of diagnostics) {
-      errorMessages.push(`${diagnostic.code}: ${diagnostic.messageText}`);
+    const diagnostics: AnyDiagnostic[] = [];
+    for await (const diagnostic of diagnosticIterable) {
+      diagnostics.push(diagnostic);
     }
 
-    if (errorMessages.length > 0) {
-      return { errorMessage: errorMessages.join("\r\n") };
-    }
-
-    return {};
+    return diagnostics.length > 0 ? diagnostics : undefined;
   }
 }

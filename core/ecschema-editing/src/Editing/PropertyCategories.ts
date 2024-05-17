@@ -9,6 +9,7 @@
 import { ECObjectsError, ECObjectsStatus, PropertyCategoryProps, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutablePropertyCategory } from "./Mutable/MutablePropertyCategory";
+import { ECEditingError, ECEditingStatus } from "./Exception";
 
 /**
  * @alpha
@@ -16,12 +17,23 @@ import { MutablePropertyCategory } from "./Mutable/MutablePropertyCategory";
  */
 export class PropertyCategories {
   public constructor(protected _schemaEditor: SchemaContextEditor) { }
+
   public async create(schemaKey: SchemaKey, name: string, priority: number, displayLabel?: string): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
-    const newPropCategory = (await schema.createPropertyCategory(name)) as MutablePropertyCategory;
+    let newPropCategory: MutablePropertyCategory;
+    try {
+      newPropCategory = await schema.createPropertyCategory(name) as MutablePropertyCategory;
+    } catch (e) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
+        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `PropertyCategory ${name} already exists in the schema ${schema.fullName}.`);
+      } else {
+        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create PropertyCategory ${name} in schema ${schema.fullName}.`);
+      }
+    }
+
     newPropCategory.setPriority(priority);
     if (displayLabel)
       newPropCategory.setDisplayLabel(displayLabel);
@@ -32,14 +44,21 @@ export class PropertyCategories {
   public async createFromProps(schemaKey: SchemaKey, propertyCategoryProps: PropertyCategoryProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
     if (propertyCategoryProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
+      throw new ECEditingError(ECEditingStatus.SchemaItemNameNotSpecified, `No name was supplied within props.`);
 
-    const newPropCategory = (await schema.createPropertyCategory(propertyCategoryProps.name)) as MutablePropertyCategory;
-    if (newPropCategory === undefined)
-      return { errorMessage: `Failed to create class ${propertyCategoryProps.name} in schema ${schemaKey.toString(true)}.` };
+    let newPropCategory: MutablePropertyCategory;
+    try {
+      newPropCategory = await schema.createPropertyCategory(propertyCategoryProps.name) as MutablePropertyCategory;
+    } catch (e) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
+        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `PropertyCategory ${propertyCategoryProps.name} already exists in the schema ${schema.fullName}.`);
+      } else {
+        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create PropertyCategory ${propertyCategoryProps.name} in schema ${schema.fullName}.`);
+      }
+    }
 
     await newPropCategory.fromJSON(propertyCategoryProps);
     return { itemKey: newPropCategory.key };
@@ -49,10 +68,10 @@ export class PropertyCategories {
     const propertyCategory = (await this._schemaEditor.schemaContext.getSchemaItem<MutablePropertyCategory>(propCategoryKey));
 
     if (propertyCategory === undefined)
-      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Property Category ${propCategoryKey.fullName} not found in schema context.`);
+      throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Property Category ${propCategoryKey.fullName} not found in schema context.`);
 
     if (propertyCategory.schemaItemType !== SchemaItemType.PropertyCategory)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${propCategoryKey.fullName} to be of type Property Category.`);
+      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `Expected ${propCategoryKey.fullName} to be of type Property Category.`);
 
     propertyCategory.setPriority(priority);
   }

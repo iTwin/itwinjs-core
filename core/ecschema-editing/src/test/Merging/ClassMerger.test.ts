@@ -645,7 +645,7 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Baseclass TargetSchema.TestBase must derive from TargetSchema.TargetBase");
+    await expect(merge).to.be.rejectedWith("Base class TargetSchema.TestBase must derive from TargetSchema.TargetBase");
   });
 
   it.skip("should throw an error when merging entity base class changed from existing one to undefined", async () => {
@@ -919,7 +919,7 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Baseclass TargetSchema.TestBase must derive from TargetSchema.BaseMixin.");
+    await expect(merge).to.be.rejectedWith("Base class TargetSchema.TestBase must derive from TargetSchema.BaseMixin.");
   });
 
   it("should throw an error when merging custom attribute base class changed from undefined to existing one", async () => {
@@ -1009,6 +1009,6 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Baseclass TargetSchema.TestBase must derive from TargetSchema.TargetBase");
+    await expect(merge).to.be.rejectedWith("Base class TargetSchema.TestBase must derive from TargetSchema.TargetBase");
   });
 });

@@ -6,9 +6,10 @@
  * @module Editing
  */
 
-import { PhenomenonProps, SchemaKey } from "@itwin/ecschema-metadata";
+import { ECObjectsError, ECObjectsStatus, PhenomenonProps, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutablePhenomenon } from "./Mutable/MutablePhenomenon";
+import { ECEditingError, ECEditingStatus } from "./Exception";
 
 /**
  * @alpha
@@ -20,11 +21,18 @@ export class Phenomena {
   public async create(schemaKey: SchemaKey, name: string, definition: string, displayLabel?: string): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
-    const newPhenomenon = (await schema.createPhenomenon(name)) as MutablePhenomenon;
-    if (newPhenomenon === undefined)
-      return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
+    let newPhenomenon: MutablePhenomenon;
+    try {
+      newPhenomenon = await schema.createPhenomenon(name) as MutablePhenomenon;
+    } catch (e) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
+        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Phenomenon ${name} already exists in the schema ${schema.fullName}.`);
+      } else {
+        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create Phenomenon ${name} in schema ${schema.fullName}.`);
+      }
+    }
 
     if (displayLabel)
       newPhenomenon.setDisplayLabel(displayLabel);
@@ -37,14 +45,21 @@ export class Phenomena {
   public async createFromProps(schemaKey: SchemaKey, phenomenonProps: PhenomenonProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
     if (phenomenonProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
+      throw new ECEditingError(ECEditingStatus.SchemaItemNameNotSpecified, `No name was supplied within props.`);
 
-    const newPhenomenon = (await schema.createPhenomenon(phenomenonProps.name));
-    if (newPhenomenon === undefined)
-      return { errorMessage: `Failed to create class ${phenomenonProps.name} in schema ${schemaKey.toString(true)}.` };
+    let newPhenomenon: MutablePhenomenon;
+    try {
+      newPhenomenon = await schema.createPhenomenon(phenomenonProps.name) as MutablePhenomenon;
+    } catch (e) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
+        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Phenomenon ${phenomenonProps.name} already exists in the schema ${schema.fullName}.`);
+      } else {
+        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create Phenomenon ${phenomenonProps.name} in schema ${schema.fullName}.`);
+      }
+    }
 
     await newPhenomenon.fromJSON(phenomenonProps);
     return { itemKey: newPhenomenon.key };

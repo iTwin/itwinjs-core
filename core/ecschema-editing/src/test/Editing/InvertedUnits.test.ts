@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { InvertedUnit, SchemaContext, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
+import { ECVersion, InvertedUnit, SchemaContext, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
 describe("Inverted Units tests", () => {
@@ -44,5 +44,15 @@ describe("Inverted Units tests", () => {
 
     expect(await invertedUnit.invertsUnit).to.eql(await testEditor.schemaContext.getSchemaItem(invertsUnitKey));
     expect(invertedUnit.fullName).to.eql("testSchema.testInvertedUnit");
+  });
+
+  it("try creating InvertedUnit in unknown schema, throws error", async () => {
+    const badKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
+    await expect(testEditor.invertedUnits.create(badKey, "testInvertedUnit", invertsUnitKey, unitSystemKey)).to.be.rejectedWith(Error, `Schema Key ${badKey.toString(true)} not found in context`);;
+  });
+
+  it("try creating InvertedUnit with existing name, throws error", async () => {
+    await testEditor.invertedUnits.create(testKey, "testInvertedUnit", invertsUnitKey, unitSystemKey);
+    await expect(testEditor.invertedUnits.create(testKey, "testInvertedUnit", invertsUnitKey, unitSystemKey)).to.be.rejectedWith(Error, `InvertedUnit testInvertedUnit already exists in the schema ${testKey.name}.`);
   });
 });

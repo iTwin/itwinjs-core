@@ -8,11 +8,14 @@
 
 import {
   CustomAttributeClassProps, CustomAttributeContainerType, DelayedPromiseWithProps, ECClass,
+  ECObjectsError,
+  ECObjectsStatus,
   SchemaItemKey, SchemaItemType, SchemaKey,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
 import { MutableCAClass } from "./Mutable/MutableCAClass";
+import { ECEditingError, ECEditingStatus } from "./Exception";
 
 /**
  * @alpha
@@ -26,19 +29,26 @@ export class CustomAttributes extends ECClasses {
   public async create(schemaKey: SchemaKey, name: string, containerType: CustomAttributeContainerType, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context.`);
 
-    const newClass = (await schema.createCustomAttributeClass(name)) as MutableCAClass;
-    if (newClass === undefined)
-      return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
+    let newClass: MutableCAClass;
+    try {
+      newClass = (await schema.createCustomAttributeClass(name)) as MutableCAClass;
+    } catch (e) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
+        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Class ${name} already exists in the schema ${schema.fullName}.`);
+      } else {
+        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create class ${name} in schema ${schema.fullName}.`);
+      }
+    }
 
     if (baseClass !== undefined) {
       const baseClassItem = await schema.lookupItem<ECClass>(baseClass);
       if (baseClassItem === undefined)
-        return { errorMessage: `Unable to locate base class ${baseClass.fullName} in schema ${schema.fullName}.` };
+        throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Unable to locate base class ${baseClass.fullName} in schema ${schema.fullName}.`);
 
       if (baseClassItem.schemaItemType !== SchemaItemType.CustomAttributeClass)
-        return { errorMessage: `${baseClassItem.fullName} is not of type CustomAttribute Class.` };
+        throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `${baseClassItem.fullName} is not of type CustomAttribute Class.`);
 
       newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClass, async () => baseClassItem);
     }
@@ -59,14 +69,21 @@ export class CustomAttributes extends ECClasses {
   public async createFromProps(schemaKey: SchemaKey, caProps: CustomAttributeClassProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
     if (caProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
+      throw new ECEditingError(ECEditingStatus.SchemaItemNameNotSpecified, `No name was supplied within props.`);
 
-    const newClass = (await schema.createCustomAttributeClass(caProps.name)) as MutableCAClass;
-    if (newClass === undefined)
-      return { errorMessage: `Failed to create class ${caProps.name} in schema ${schemaKey.toString(true)}.` };
+    let newClass: MutableCAClass;
+    try {
+      newClass = (await schema.createCustomAttributeClass(caProps.name)) as MutableCAClass;
+    } catch (e) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
+        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Class ${caProps.name} already exists in the schema ${schema.fullName}.`);
+      } else {
+        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create class ${caProps.name} in schema ${schema.fullName}.`);
+      }
+    }
 
     await newClass.fromJSON(caProps);
 

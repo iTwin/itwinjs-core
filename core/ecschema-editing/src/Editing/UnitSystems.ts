@@ -6,9 +6,10 @@
  * @module Editing
  */
 
-import { SchemaKey, UnitSystemProps } from "@itwin/ecschema-metadata";
+import { ECObjectsError, ECObjectsStatus, SchemaKey, UnitSystemProps } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableUnitSystem } from "./Mutable/MutableUnitSystem";
+import { ECEditingError, ECEditingStatus } from "./Exception";
 
 /**
  * @alpha
@@ -19,9 +20,19 @@ export class UnitSystems {
   public async create(schemaKey: SchemaKey, name: string, displayLabel?: string): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
-    const newUnitSystem = (await schema.createUnitSystem(name)) as MutableUnitSystem;
+    let newUnitSystem: MutableUnitSystem;
+    try {
+      newUnitSystem = (await schema.createUnitSystem(name)) as MutableUnitSystem;
+    } catch (e) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
+        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `UnitSystem ${name} already exists in the schema ${schema.fullName}.`);
+      } else {
+        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create UnitSystem ${name} in schema ${schema.fullName}.`);
+      }
+    }
+
     if (displayLabel)
       newUnitSystem.setDisplayLabel(displayLabel);
 
@@ -31,14 +42,21 @@ export class UnitSystems {
   public async createFromProps(schemaKey: SchemaKey, unitSystemProps: UnitSystemProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
     if (unitSystemProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
+      throw new ECEditingError(ECEditingStatus.SchemaItemNameNotSpecified, `No name was supplied within props.`);
 
-    const newUnitSystem = (await schema.createUnitSystem(unitSystemProps.name)) as MutableUnitSystem;
-    if (newUnitSystem === undefined)
-      return { errorMessage: `Failed to create class ${unitSystemProps.name} in schema ${schemaKey.toString(true)}.` };
+    let newUnitSystem: MutableUnitSystem;
+    try {
+      newUnitSystem = (await schema.createUnitSystem(unitSystemProps.name)) as MutableUnitSystem;
+    } catch (e) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
+        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `UnitSystem ${unitSystemProps.name} already exists in the schema ${schema.fullName}.`);
+      } else {
+        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create UnitSystem ${unitSystemProps.name} in schema ${schema.fullName}.`);
+      }
+    }
 
     await newUnitSystem.fromJSON(unitSystemProps);
     return { itemKey: newUnitSystem.key };

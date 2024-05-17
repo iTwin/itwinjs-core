@@ -6,8 +6,9 @@
  * @module Editing
  */
 
-import { ECObjectsError, ECObjectsStatus, SchemaItemKey, SchemaItemProps } from "@itwin/ecschema-metadata";
+import { SchemaItemKey, SchemaItemProps } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
+import { ECEditingError, ECEditingStatus } from "./Exception";
 
 /**
  * @internal
@@ -19,7 +20,7 @@ export class SchemaItems {
     const schemaItem = await this._schemaEditor.schemaContext.getSchemaItem(schemaItemKey);
 
     if (schemaItem === undefined)
-      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Schema Item ${schemaItemKey.fullName} not found in schema context.`);
+      throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Schema Item ${schemaItemKey.fullName} not found in schema context.`);
 
     await schemaItem.fromJSON(schemItemProps);
   }

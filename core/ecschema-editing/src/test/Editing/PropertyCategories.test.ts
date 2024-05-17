@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { PropertyCategory, SchemaContext, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
+import { ECVersion, PropertyCategory, SchemaContext, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
 describe("Property Category tests", () => {
@@ -36,5 +36,15 @@ describe("Property Category tests", () => {
     expect(testPropCategory.priority).to.eql(9);
     expect(testPropCategory.label).to.eql("testLbl");
     expect(testPropCategory.schemaItemType).to.eql(SchemaItemType.PropertyCategory);
+  });
+
+  it("try creating PropertyCategory to unknown schema, throws error", async () => {
+    const badKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
+    await expect(testEditor.propertyCategories.create(badKey, "testPropCategory", 5)).to.be.rejectedWith(Error, `Schema Key ${badKey.toString(true)} not found in context`);;
+  });
+
+  it("try creating PropertyCategory with existing name, throws error", async () => {
+    await testEditor.propertyCategories.create(testKey, "testPropCategory", 5);
+    await expect(testEditor.propertyCategories.create(testKey, "testPropCategory", 5)).to.be.rejectedWith(Error, `PropertyCategory testPropCategory already exists in the schema ${testKey.name}.`);
   });
 });
