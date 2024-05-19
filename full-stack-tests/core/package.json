@@ -23,7 +23,7 @@
     "test:integration": "npm run -s test:integration:chrome && npm run -s test:integration:electron",
     "test:integration:chrome": "certa -r chrome --grep \"#integration\"",
     "test:integration:electron": "certa -r electron --grep \"#integration\"",
-    "webpack:test": "webpack --config webpack.config.js 1>&2"
+    "webpack:test": "webpack --config webpack.config.cjs 1>&2"
   },
   "repository": {},
   "dependencies": {
@@ -43,7 +43,7 @@
     "@itwin/editor-backend": "workspace:*",
     "@itwin/editor-common": "workspace:*",
     "@itwin/editor-frontend": "workspace:*",
-    "@itwin/electron-authorization": "^0.14.1",
+    "@itwin/electron-authorization": "^0.19.2",
     "@itwin/express-server": "workspace:*",
     "@itwin/hypermodeling-frontend": "workspace:*",
     "@itwin/imodels-access-backend": "^5.0.1",

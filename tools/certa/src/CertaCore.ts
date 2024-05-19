@@ -60,7 +60,9 @@ export async function certa(environment: string, config: CertaConfig): Promise<v
    */
   let cleanUpCallback: undefined | (() => Promise<void>) | {};
   if (config.backendInitModule)
-    cleanUpCallback = await require(config.backendInitModule);
+    // cleanUpCallback = await import(config.backendInitModule);
+    // Because tsc transpiles "await import" to "require" (when compiled to is CommonJS) so o use FunctionConstructor to avoid tsc
+    cleanUpCallback = await Function("x", "return import(x)")(config.backendInitModule);
 
   await runner.runTests(config);
 

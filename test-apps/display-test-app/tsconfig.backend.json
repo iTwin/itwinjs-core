@@ -1,7 +1,8 @@
 {
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
-    "module": "commonjs",
+    "moduleResolution": "NodeNext",
+    "module": "NodeNext",
     "outDir": "./lib"
   },
   "include": ["./src/backend/*.ts", "./src/common/*.ts"]
