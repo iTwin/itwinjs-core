@@ -1,6 +1,16 @@
 # Change Log - @itwin/core-geometry
 
-This log was last generated on Tue, 16 Apr 2024 14:47:36 GMT and should not be manually modified.
+This log was last generated on Wed, 15 May 2024 21:32:22 GMT and should not be manually modified.
+
+## 4.6.0
+Mon, 13 May 2024 20:32:51 GMT
+
+### Updates
+
+- Arc3d.cloneAtZ ignored z
+- drapeRegion could sometimes create non-convex facets
+- publish SerializationHelpers
+- Add Point2d.scaleInPlace and Range2d.cloneTranslated.
 
 ## 4.5.2
 Tue, 16 Apr 2024 14:46:22 GMT
