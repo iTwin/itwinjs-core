@@ -231,12 +231,12 @@ const withBriefcaseDb = async (briefcase: OpenBriefcaseArgs, fn: (_db: Briefcase
 class IModelSettings extends BaseSettings {
   protected override verifyPriority(priority: Settings.Priority) {
     if (priority <= Settings.Priority.application)
-      throw new Error("Use IModelHost.appSettings");
+      throw new Error("Use IModelHost.appSettings to access settings of priority 'application' or lower");
   }
 
-  // attempt to resolve a setting from this iModel's settings, otherwise optionally use appWorkspace's settings, otherwise defaultValue.
-  public override resolveSetting<T extends SettingType>(arg: { settingName: SettingName, resolver: Settings.Resolver<T>, skipAppWorkspace?: boolean }, defaultValue?: T): T | undefined {
-    return super.resolveSetting(arg) ?? (arg.skipAppWorkspace ? defaultValue : IModelHost.appWorkspace.settings.resolveSetting(arg, defaultValue));
+  // Attempt to resolve a setting from this iModel's settings, otherwise use appWorkspace's settings, otherwise defaultValue.
+  public override resolveSetting<T extends SettingType>(arg: { settingName: SettingName, resolver: Settings.Resolver<T> }, defaultValue?: T): T | undefined {
+    return super.resolveSetting(arg) ?? IModelHost.appWorkspace.settings.resolveSetting(arg, defaultValue);
   }
 }
 
