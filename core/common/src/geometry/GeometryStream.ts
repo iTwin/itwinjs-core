@@ -229,8 +229,8 @@ export class GeometryStreamBuilder {
    * containing more than one [[GeometryQuery]] differentiable by range. Not useful for a single [[GeometryQuery]] as its range and that of the [[GeometricElement]] are the same.
    * Ignored when defining a [[GeometryPart]] and not needed when only appending [[GeometryPart]] instances to a [[GeometricElement]] as these store their own range.
    */
-  public appendGeometryRanges() {
-    this.geometryStream.push({ subRange: Range3d.createNull() });
+  public appendGeometryRanges(subRange?: Range3d) {
+    this.geometryStream.push({ subRange: subRange ?? Range3d.createNull() });
   }
 
   /** Change [[SubCategory]] or reset to [[SubCategoryAppearance]] for subsequent geometry.

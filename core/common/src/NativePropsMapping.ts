@@ -19,7 +19,7 @@ type NativeInterfaceMapping =
 
 export type NativeInterfaceMap<T> = Extract<NativeInterfaceMapping, [unknown, T]>[0];
 
-type NativeElementProps = Omit<ElementProps, "model" | "code" | "classFullName" | "jsonProperties"> & {
+type NativeElementProps = Omit<ElementProps, "model" | "code" | "classFullName" | "jsonProperties" | "isInstanceOfEntity"> & {
   model: RelatedElementProps;
   className: string;
   codeValue?: string;
@@ -72,13 +72,16 @@ function mapRelatedElementProps(props: RelatedElementProps): RelatedElementProps
   const { id, relClassName } = props;
   return { id, relClassName: relClassName?.replace(".", ":")  };
 }
-function mapElementProps(props: NativeElementProps): ElementProps {
-  const { model, parent, codeValue, codeScope, codeSpec, className, jsonProperties, ...rest } = props;
+function mapElementProps(props: NativeElementProps, onlyBaseProperties: boolean): ElementProps {
+  const { model, parent, codeValue, codeScope, codeSpec, className, jsonProperties, federationGuid, id, userLabel, ...rest } = props;
   return {
     code: { scope: codeScope.id,  spec: codeSpec.id, value: codeValue },
     model: model.id,
     parent: parent ? mapRelatedElementProps(parent) : undefined,
     classFullName: className.replace(".", ":"),
+    id,
+    federationGuid,
+    userLabel,
     jsonProperties: jsonProperties
       ? JSON.parse(jsonProperties, (key, value) => {
         if (value === null)
@@ -88,12 +91,16 @@ function mapElementProps(props: NativeElementProps): ElementProps {
         return value;
       })
       : undefined,
-    ...mapBinaryProperties(rest),
+    ...(onlyBaseProperties ? {} : mapBinaryProperties(rest)),
   };
 }
 
-export function mapNativeElementProps<T extends ElementProps>(props: NativeInterfaceMap<T>): T {
-  const element = mapElementProps(props) as any;
+export function mapNativeElementProps<T extends ElementProps>(props: NativeInterfaceMap<T>, onlyBaseProperties = false): T {
+  const element = mapElementProps(props, onlyBaseProperties) as any;
+
+  if (onlyBaseProperties)
+    return element as T;
+
   delete element.lastMod;
 
   // ViewDefinitionProps

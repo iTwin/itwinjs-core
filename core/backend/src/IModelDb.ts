@@ -1772,15 +1772,15 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         if (statement.step() !== DbResult.BE_SQLITE_ROW)
           return undefined;
 
-        return mapNativeElementProps(JSON.parse(statement.getValue(0).getString())) as T;
+        return mapNativeElementProps(JSON.parse(statement.getValue(0).getString()), loadProps.onlyBaseProperties) as T;
       });
 
       if (!elementProps)
         return undefined;
 
-      let geom: GeometryStreamProps | undefined;
       if (loadProps.wantGeometry || loadProps.wantBRepData) {
-        geom = this.getGeometryStreamProps(elementId, loadProps.wantBRepData)
+        const geom = this.getGeometryStreamProps(elementId, loadProps.wantBRepData)
+        return { ...elementProps, geom };
       }
 
       if (elementProps.classFullName === "BisCore:CategorySelector") {
@@ -1795,7 +1795,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
           return ids;
         });
 
-        return { ...elementProps, categories, geom };
+        return { ...elementProps, categories };
       }
 
       if (elementProps.classFullName === "BisCore:ModelSelector") {
@@ -1809,10 +1809,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
           }
           return ids;
         });
-        return { ...elementProps, models, geom };
+        return { ...elementProps, models };
       }
 
-      return { ...elementProps, geom };
+      return elementProps;
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
@@ -1942,7 +1942,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         const it = new ElementGeometry.Iterator(info);
         for (const entry of it) {
           if (entry.localRange !== undefined && !entry.localRange.isNull)
-            builder.appendGeometryRanges();
+            builder.appendGeometryRanges(entry.localRange);
 
           builder.appendGeometryParamsChange(entry.geomParams);
 
@@ -1992,13 +1992,13 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
           }
         }
 
-        if (builder.geometryStream)
+        if (builder.geometryStream.length)
           builder.isViewIndependent = info.viewIndependent ?? false;
       };
 
       return IModelStatus.Success ===
         this._iModel.elementGeometryRequest({ onGeometry, elementId, skipBReps: !wantBRepData })
-        ? builder.geometryStream
+        ? (builder.geometryStream.length ? builder.geometryStream : undefined)
         : undefined;
     }
 
