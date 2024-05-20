@@ -30,25 +30,6 @@ class CloudStorageCacheChannel extends TileRequestChannel {
   }
 }
 
-class LocalStorageCacheChannel extends TileRequestChannel {
-
-  public constructor(cacheConcurrency: number) {
-    super("itwinjs-local-cache", cacheConcurrency);
-  }
-
-  public override async requestContent(tile: Tile): Promise<TileRequest.Response> {
-    assert(tile instanceof IModelTile);
-    return;
-  }
-
-  public override onNoContent(request: TileRequest): boolean {
-    assert(request.tile instanceof IModelTile);
-    request.tile.requestChannel = IModelApp.tileAdmin.channels.iModelChannels.rpc;
-    ++this._statistics.totalCacheMisses;
-    return true;
-  }
-};
-
 /** For an [[IpcApp]], allows backend tile generation requests in progress to be canceled. */
 class IModelTileChannel extends TileRequestChannel {
   private readonly _canceled = new Map<IModelConnection, Map<string, Set<string>>>();
@@ -109,11 +90,6 @@ class IModelTileMetadataCacheChannel extends TileRequestChannel {
     assert(request.tile instanceof IModelTile);
     const channels = IModelApp.tileAdmin.channels.iModelChannels;
     request.tile.requestChannel = channels.cloudStorage ?? channels.rpc;
-
-    // request.tile.requestChannel = channels.cloudStorage ?? channels.rpc;
-    // changing this for temporary testing purposes, for now skip cloud and go to local
-    // Eventually we will need to decide the order to request, local -> cloud -> rpc?
-    request.tile.requestChannel = channels.localStorage ?? channels.rpc;
     return true;
   }
 
@@ -142,17 +118,10 @@ class IModelTileMetadataCacheChannel extends TileRequestChannel {
   }
 
   public registerChannel(channel: TileRequestChannel): void {
-    channel.contentCallback = async (tile, content) => this.cache(tile, content, channel);
+    channel.contentCallback = (tile, content) => this.cache(tile, content);
   }
 
-  private async cache(tile: Tile, content: IModelTileContent, channel: TileRequestChannel): Promise<void> {
-    if (channel.name === "itwinjs-tile-rpc") {
-      return;
-    }
-    // if (channel instanceof LocalStorageCacheChannel) {
-    //   await channel.tileStorage.addContent(tile.contentId + tile.tree.id + tile.iModel.iModelId, content);
-    //   return;
-    // }
+  private cache(tile: Tile, content: IModelTileContent): void {
     assert(tile instanceof IModelTile);
     let trees = this._cacheByIModel.get(tile.iModel);
     if (!trees)
@@ -179,7 +148,6 @@ class IModelTileMetadataCacheChannel extends TileRequestChannel {
  */
 export class IModelTileRequestChannels {
   private _cloudStorage: TileRequestChannel;
-  private _localStorage: LocalStorageCacheChannel;
   private readonly _contentCache?: IModelTileMetadataCacheChannel;
   public readonly rpc: TileRequestChannel;
 
@@ -192,27 +160,17 @@ export class IModelTileRequestChannels {
     const channelName = "itwinjs-tile-rpc";
     this.rpc = args.usesHttp ? new TileRequestChannel(channelName, args.concurrency) : new IModelTileChannel(channelName, args.concurrency);
 
-    // There's might a better way to do this. If the rpc channel succesfully requests a tile, cache it in localStorage.
-    // This is the channel we go to after we have failed to find anything in the cache.
-    // this.rpc.contentCallback = async (tile, content) => this.localStorage.tileStorage.addContent(tile.contentId + tile.tree.id + tile.iModel.iModelId, content);
-
     if (args.cacheMetadata) {
       this._contentCache = new IModelTileMetadataCacheChannel();
       this._contentCache.registerChannel(this.rpc);
     }
 
     this._cloudStorage = new CloudStorageCacheChannel("itwinjs-cloud-cache", args.cacheConcurrency);
-    this._localStorage = new LocalStorageCacheChannel(args.cacheConcurrency);
     this._contentCache?.registerChannel(this._cloudStorage);
-    this._contentCache?.registerChannel(this._localStorage);
   }
 
   public get cloudStorage(): TileRequestChannel {
     return this._cloudStorage;
-  }
-
-  public get localStorage(): LocalStorageCacheChannel {
-    return this._localStorage;
   }
 
   public [Symbol.iterator](): Iterator<TileRequestChannel> {
@@ -231,7 +189,7 @@ export class IModelTileRequestChannels {
   }
 
   public getChannelForTile(tile: IModelTile): TileRequestChannel {
-    return tile.requestChannel || this._contentCache || this._localStorage || this._cloudStorage || this.rpc;
+    return tile.requestChannel || this._contentCache || this._cloudStorage || this.rpc;
   }
 
   /** Strictly for tests. */
