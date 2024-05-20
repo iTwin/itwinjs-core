@@ -5989,6 +5989,12 @@ export class IdleTool extends InteractiveTool {
     static toolId: string;
 }
 
+// @beta (undocumented)
+export interface ILocalCache {
+    // (undocumented)
+    fetch(url: string, callback: (url: string) => Promise<Response>): Promise<ArrayBuffer>;
+}
+
 // @public
 export function imageBitmapFromImageSource(source: ImageSource): Promise<ImageBitmap>;
 
@@ -7363,6 +7369,13 @@ export class IndexBuffer {
     push(index: number): void;
     // (undocumented)
     toVertexIndices(): VertexIndices;
+}
+
+// @beta (undocumented)
+export class IndexedDBCache implements ILocalCache {
+    constructor(dbName: string, expirationTime?: number);
+    // (undocumented)
+    fetch(url: string, callback: (url: string) => Promise<Response>): Promise<ArrayBuffer>;
 }
 
 // @internal
@@ -10360,6 +10373,12 @@ export interface ParticleProps extends XYAndZ {
     rotationMatrix?: Matrix3d;
     size?: XAndY | number;
     transparency?: number;
+}
+
+// @beta (undocumented)
+export class PassThroughCache implements ILocalCache {
+    // (undocumented)
+    fetch(url: string, callback: (url: string) => Promise<Response>): Promise<ArrayBuffer>;
 }
 
 // @internal

@@ -1,13 +1,22 @@
+
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+/** @beta */
 export interface ILocalCache {
   fetch(url: string, callback: (url: string) => Promise<Response>): Promise<ArrayBuffer>;
 }
 
+/** @beta */
 export class PassThroughCache implements ILocalCache {
   public async fetch(url: string, callback: (url: string) => Promise<Response>): Promise<ArrayBuffer> {
     return (await callback(url)).arrayBuffer();
   }
 }
 
+/** @beta */
 export class IndexedDBCache implements ILocalCache{
   private _db: any;
   private _dbName: string = "IDB";

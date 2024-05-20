@@ -385,6 +385,7 @@ public;HitSource
 internal;I3dmReader 
 public;IconSprites
 public;IdleTool 
+beta;ILocalCache
 public;imageBitmapFromImageSource(source: ImageSource): Promise
 public;imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
 public;imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha?: boolean): HTMLCanvasElement | undefined
@@ -455,6 +456,7 @@ internal;IModelTileTreeOptions
 internal;IModelTileTreeParams 
 internal;iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel: IModelConnection, modelId: Id64String, options: IModelTileTreeOptions): IModelTileTreeParams
 internal;IndexBuffer
+beta;IndexedDBCache 
 internal;IndexedEdgeParams
 public;class InputCollector 
 public;InputSource
@@ -636,6 +638,7 @@ public;ParticleCollectionBuilder
 public;ParticleCollectionBuilder
 public;ParticleCollectionBuilderParams
 public;ParticleProps 
+beta;PassThroughCache 
 internal;PatternGraphicParams
 internal;PerformanceMetrics
 public;PerModelCategoryVisibility
