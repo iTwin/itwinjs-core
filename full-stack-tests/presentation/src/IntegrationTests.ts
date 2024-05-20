@@ -25,7 +25,6 @@ import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
-import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import {
   HierarchyCacheMode,
   Presentation as PresentationBackend,
@@ -171,12 +170,6 @@ export const initialize = async (props?: { backendTimeout?: number; frontendTime
     backendTimeout: DEFAULT_BACKEND_TIMEOUT,
     ...props,
   });
-};
-
-export const initializeWithClientServices = async () => {
-  const authorizationClient = TestUtility.getAuthorizationClient(TestUsers.regular);
-  await authorizationClient.signIn();
-  await initializeCommon({ authorizationClient });
 };
 
 export const terminate = async () => {

@@ -15,7 +15,7 @@ import {
 // NB: These tests were written when defaultTileOptions specified indexed edges as the default. Now, compact edges are the default.
 // Adjust the defaults used by the tests to continue to use indexed; additional tests for compact have been added.
 const defaultEdgeOptions: EdgeOptions = { ...realDefaultTileOptions.edgeOptions, type: "indexed" };
-const defaultTileOptions: TileOptions = { ...realDefaultTileOptions, edgeOptions: defaultEdgeOptions };
+const defaultTileOptions: TileOptions = { ...realDefaultTileOptions, edgeOptions: defaultEdgeOptions, expandProjectExtents: false };
 
 describe("TileMetadata", () => {
   it("computes chord tolerance", () => {
@@ -295,6 +295,7 @@ describe("TileMetadata", () => {
           ignoreAreaPatterns: true === expected.noPatterns,
           enableExternalTextures: true === expected.externalTextures,
           useProjectExtents: true === expected.projectExtents,
+          expandProjectExtents: false,
           useLargerTiles: true === expected.useLargerTiles,
           optimizeBRepProcessing: true === expected.optimizeBReps,
           disableMagnification: false,
@@ -432,6 +433,7 @@ describe("TileMetadata", () => {
           ignoreAreaPatterns: true === expected.tileOptions.noPatterns,
           enableExternalTextures: true === expected.tileOptions.externalTextures,
           useProjectExtents: true === expected.tileOptions.projectExtents,
+          expandProjectExtents: false,
           disableMagnification: false,
           alwaysSubdivideIncompleteTiles: false,
           edgeOptions: edges ?? { type: "non-indexed", smooth: false },
