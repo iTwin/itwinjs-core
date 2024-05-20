@@ -27,12 +27,17 @@ export class SchemaJsonLocater implements ISchemaLocater {
 
   /** Get a schema by [SchemaKey]
    * @param schemaKey The [SchemaKey] that identifies the schema.
-   * @param matchType The [SchemaMatchType] to used for comparing schema versions.
+   * @param _matchType The [SchemaMatchType] to used for comparing schema versions.
    * @param context The [SchemaContext] used to facilitate schema location.
    * @throws [ECObjectsError]($ecschema-metadata) if the schema exists, but cannot be loaded.
    */
-  public async getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
-    return this.getSchemaSync(schemaKey, matchType, context) as T;
+  public async getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, _matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
+    const schemaProps = this._getSchema(schemaKey.name);
+    if (!schemaProps)
+      return undefined;
+
+    context = context ? context : new SchemaContext();
+    return await Schema.fromJson(schemaProps, context) as T;
   }
 
   /**
