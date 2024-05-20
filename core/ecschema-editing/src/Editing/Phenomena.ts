@@ -6,8 +6,8 @@
  * @module Editing
  */
 
-import { ECObjectsError, ECObjectsStatus, PhenomenonProps, SchemaKey } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import { ECObjectsError, ECObjectsStatus, PhenomenonProps, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
+import { SchemaContextEditor } from "./Editor";
 import { MutablePhenomenon } from "./Mutable/MutablePhenomenon";
 import { ECEditingError, ECEditingStatus } from "./Exception";
 
@@ -18,7 +18,7 @@ import { ECEditingError, ECEditingStatus } from "./Exception";
 export class Phenomena {
   public constructor(protected _schemaEditor: SchemaContextEditor) { }
 
-  public async create(schemaKey: SchemaKey, name: string, definition: string, displayLabel?: string): Promise<SchemaItemEditResults> {
+  public async create(schemaKey: SchemaKey, name: string, definition: string, displayLabel?: string): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -39,10 +39,10 @@ export class Phenomena {
 
     await newPhenomenon.setDefinition(definition);
 
-    return { itemKey: newPhenomenon.key };
+    return newPhenomenon.key;
   }
 
-  public async createFromProps(schemaKey: SchemaKey, phenomenonProps: PhenomenonProps): Promise<SchemaItemEditResults> {
+  public async createFromProps(schemaKey: SchemaKey, phenomenonProps: PhenomenonProps): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -62,6 +62,6 @@ export class Phenomena {
     }
 
     await newPhenomenon.fromJSON(phenomenonProps);
-    return { itemKey: newPhenomenon.key };
+    return newPhenomenon.key;
   }
 }

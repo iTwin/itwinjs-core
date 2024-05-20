@@ -28,33 +28,6 @@ import { SchemaItems } from "./SchemaItems";
 import { ECEditingError, ECEditingStatus } from "./Exception";
 import { AnyDiagnostic } from "../Validation/Diagnostic";
 
-// We can either add validation in Editor, or in the protected methods of Schema.
-// TODO: Add an error code so we can do something programmatic with the error.
-/**
- * @alpha
- */
-export interface SchemaEditResults {
-  schemaKey?: SchemaKey;
-  errorMessage?: string;
-}
-
-/**
- * @alpha
- */
-export interface SchemaItemEditResults {
-  itemKey?: SchemaItemKey;
-  errorMessage?: string;
-}
-
-/**
- * @alpha
- */
-export interface PropertyEditResults {
-  itemKey?: SchemaItemKey;
-  propertyName?: string;
-  errorMessage?: string;
-}
-
 /**
  * A class that allows you to edit and create schemas, classes, and items from the SchemaContext level.
  * @alpha
@@ -113,12 +86,12 @@ export class SchemaContextEditor {
    * @param readVersion The read version number of the schema.
    * @param writeVersion The write version number of the schema.
    * @param minorVersion The minor version number of the schema.
-   * @returns Resolves to a SchemaEditResults object.
+   * @returns Resolves to the SchemaKey of created schema.
    */
-  public async createSchema(name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number): Promise<SchemaEditResults> {
+  public async createSchema(name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number): Promise<SchemaKey> {
     const newSchema = new Schema(this._schemaContext, name, alias, readVersion, writeVersion, minorVersion);
     await this._schemaContext.addSchema(newSchema);
-    return { schemaKey: newSchema.schemaKey };
+    return newSchema.schemaKey;
   }
 
   /**
@@ -126,7 +99,7 @@ export class SchemaContextEditor {
    * @param schemaKey The SchemaKey identifying the schema.
    * @param refSchema The referenced schema to add.
    */
-  public async addSchemaReference(schemaKey: SchemaKey, refSchema: Schema): Promise<SchemaEditResults> {
+  public async addSchemaReference(schemaKey: SchemaKey, refSchema: Schema): Promise<void> {
     const schema = (await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Exact));
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -147,8 +120,6 @@ export class SchemaContextEditor {
     if (!await this.schemaContext.getCachedSchema(refSchema.schemaKey)) {
       await this.schemaContext.addSchema(refSchema);
     }
-
-    return {};
   }
 
   /**
@@ -174,8 +145,6 @@ export class SchemaContextEditor {
       this.removeCustomAttribute(schema, customAttribute);
       throw new ECEditingError(ECEditingStatus.RuleViolation, undefined, diagnostics);
     }
-
-    return;
   }
 
   /**
@@ -184,27 +153,29 @@ export class SchemaContextEditor {
    * @param readVersion The read version of the schema. If not specified, the existing read version will be maintained.
    * @param writeVersion The write version of the schema. If not specified, the existing write version will be maintained.
    * @param minorVersion The minor version of the schema. If not specified, the existing minor version will be maintained.
+   * @returns Resolves to the new SchemaKey containing version updates.
    */
-  public async setVersion(schemaKey: SchemaKey, readVersion?: number, writeVersion?: number, minorVersion?: number): Promise<SchemaEditResults> {
+  public async setVersion(schemaKey: SchemaKey, readVersion?: number, writeVersion?: number, minorVersion?: number): Promise<SchemaKey> {
     const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest));
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
     schema.setVersion(readVersion || schema.readVersion, writeVersion || schema.writeVersion, minorVersion || schema.minorVersion);
-    return {};
+    return schema.schemaKey;
   }
 
   /**
    * Increments the minor version of a schema.
    * @param schemaKey The SchemaKey identifying the schema.
+   * @returns Resolves to the new SchemaKey containing version updates.
    */
-  public async incrementMinorVersion(schemaKey: SchemaKey): Promise<SchemaEditResults> {
+  public async incrementMinorVersion(schemaKey: SchemaKey): Promise<SchemaKey> {
     const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest));
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
 
     schema.setVersion(schema.readVersion, schema.writeVersion, schema.minorVersion + 1);
-    return {};
+    return schema.schemaKey;
   }
 
   private removeReference(schema: Schema, refSchema: Schema) {

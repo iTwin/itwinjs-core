@@ -33,18 +33,15 @@ describe("SchemaEditor tests", () => {
 
   describe("Schema tests", () => {
     it("should create a new schema and return a SchemaEditResults", async () => {
-      const result = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
-      expect(result).to.not.be.undefined;
-      expect(result.schemaKey).to.not.be.undefined;
-      expect(result.schemaKey).to.deep.equal(new SchemaKey("testSchema", new ECVersion(1,0,0)));
+      const schemaKey = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
+      expect(schemaKey).to.not.be.undefined;
+      expect(schemaKey).to.deep.equal(new SchemaKey("testSchema", new ECVersion(1,0,0)));
     });
   });
 
   describe("Class tests", () => {
     beforeEach(async () => {
-      const result = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
-      expect(result).to.not.be.undefined;
-      testSchemaKey = result.schemaKey as SchemaKey;
+      testSchemaKey = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
       const result2 =  await testEditor.schemaContext.getCachedSchema(testSchemaKey);
       if (!result2)
         throw new Error("Could not retrieve cached schema!");
@@ -55,8 +52,7 @@ describe("SchemaEditor tests", () => {
       const elementKey = new SchemaItemKey("Element", bisSchemaKey);
       const result = await testEditor.entities.createElement(testSchemaKey, "testElement", ECClassModifier.None, elementKey, "test element");
       expect(result).to.not.be.undefined;
-      expect(result.itemKey).to.not.be.undefined;
-      expect(result.itemKey).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      expect(result).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
       const element = await testSchema!.getItem("testElement") as EntityClass;
       expect(element).to.not.be.undefined;
       const baseClass = await element.baseClass;
@@ -68,18 +64,16 @@ describe("SchemaEditor tests", () => {
       const elementKey = new SchemaItemKey("Element", bisSchemaKey);
       const result = await testEditor.entities.createElement(testSchemaKey, "testElement", ECClassModifier.None, elementKey, "test element");
       expect(result).to.not.be.undefined;
-      expect(result.itemKey).to.not.be.undefined;
-      expect(result.itemKey).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      expect(result).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
       const element = await testSchema!.getItem("testElement") as EntityClass;
       expect(element).to.not.be.undefined;
       const baseClass = await element.baseClass;
       expect(baseClass).to.not.be.undefined;
       expect(baseClass?.key).to.deep.equal(new SchemaItemKey("Element", bisSchemaKey));
 
-      const result2 = await testEditor.entities.createElement(testSchemaKey, "testElement2", ECClassModifier.None, result.itemKey!, "test element2");
+      const result2 = await testEditor.entities.createElement(testSchemaKey, "testElement2", ECClassModifier.None, result, "test element2");
       expect(result2).to.not.be.undefined;
-      expect(result2.itemKey).to.not.be.undefined;
-      expect(result2.itemKey).to.deep.equal(new SchemaItemKey("testElement2", testSchemaKey));
+      expect(result2).to.deep.equal(new SchemaItemKey("testElement2", testSchemaKey));
       const element2 = await testSchema!.getItem("testElement2") as EntityClass;
       expect(element2).to.not.be.undefined;
       const baseClass2 = await element2.baseClass;
@@ -91,8 +85,7 @@ describe("SchemaEditor tests", () => {
       const uniqueAspectKey = new SchemaItemKey("ElementUniqueAspect", bisSchemaKey);
       const result = await testEditor.entities.createElementUniqueAspect(testSchemaKey, "testElement", ECClassModifier.None, uniqueAspectKey, "test element");
       expect(result).to.not.be.undefined;
-      expect(result.itemKey).to.not.be.undefined;
-      expect(result.itemKey).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      expect(result).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
       const element = await testSchema!.getItem("testElement") as ECClass;
       expect(element).to.not.be.undefined;
       const baseClass = await element?.baseClass;
@@ -104,18 +97,16 @@ describe("SchemaEditor tests", () => {
       const elementKey = new SchemaItemKey("ElementUniqueAspect", bisSchemaKey);
       const result = await testEditor.entities.createElementUniqueAspect(testSchemaKey, "testElement", ECClassModifier.None, elementKey, "test element");
       expect(result).to.not.be.undefined;
-      expect(result.itemKey).to.not.be.undefined;
-      expect(result.itemKey).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      expect(result).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
       const element = await testSchema!.getItem("testElement") as EntityClass;
       expect(element).to.not.be.undefined;
       const baseClass = await element.baseClass;
       expect(baseClass).to.not.be.undefined;
       expect(baseClass?.key).to.deep.equal(new SchemaItemKey("ElementUniqueAspect", bisSchemaKey));
 
-      const result2 = await testEditor.entities.createElementUniqueAspect(testSchemaKey, "testElement2", ECClassModifier.None, result.itemKey!, "test element2");
+      const result2 = await testEditor.entities.createElementUniqueAspect(testSchemaKey, "testElement2", ECClassModifier.None, result, "test element2");
       expect(result2).to.not.be.undefined;
-      expect(result2.itemKey).to.not.be.undefined;
-      expect(result2.itemKey).to.deep.equal(new SchemaItemKey("testElement2", testSchemaKey));
+      expect(result2).to.deep.equal(new SchemaItemKey("testElement2", testSchemaKey));
       const element2 = await testSchema!.getItem("testElement2") as EntityClass;
       expect(element2).to.not.be.undefined;
       const baseClass2 = await element2.baseClass;
@@ -127,8 +118,7 @@ describe("SchemaEditor tests", () => {
       const multiAspectKey = new SchemaItemKey("ElementMultiAspect", bisSchemaKey);
       const result = await testEditor.entities.createElementMultiAspect(testSchemaKey, "testElement", ECClassModifier.None, multiAspectKey, "test element");
       expect(result).to.not.be.undefined;
-      expect(result.itemKey).to.not.be.undefined;
-      expect(result.itemKey).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      expect(result).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
       const element = await testSchema!.getItem("testElement") as ECClass;
       expect(element).to.not.be.undefined;
       const baseClass = await element?.baseClass;
@@ -140,18 +130,16 @@ describe("SchemaEditor tests", () => {
       const elementKey = new SchemaItemKey("ElementMultiAspect", bisSchemaKey);
       const result = await testEditor.entities.createElementMultiAspect(testSchemaKey, "testElement", ECClassModifier.None, elementKey, "test element");
       expect(result).to.not.be.undefined;
-      expect(result.itemKey).to.not.be.undefined;
-      expect(result.itemKey).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      expect(result).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
       const element = await testSchema!.getItem("testElement") as EntityClass;
       expect(element).to.not.be.undefined;
       const baseClass = await element.baseClass;
       expect(baseClass).to.not.be.undefined;
       expect(baseClass?.key).to.deep.equal(new SchemaItemKey("ElementMultiAspect", bisSchemaKey));
 
-      const result2 = await testEditor.entities.createElementMultiAspect(testSchemaKey, "testElement2", ECClassModifier.None, result.itemKey!, "test element2");
+      const result2 = await testEditor.entities.createElementMultiAspect(testSchemaKey, "testElement2", ECClassModifier.None, result, "test element2");
       expect(result2).to.not.be.undefined;
-      expect(result2.itemKey).to.not.be.undefined;
-      expect(result2.itemKey).to.deep.equal(new SchemaItemKey("testElement2", testSchemaKey));
+      expect(result2).to.deep.equal(new SchemaItemKey("testElement2", testSchemaKey));
       const element2 = await testSchema!.getItem("testElement2") as EntityClass;
       expect(element2).to.not.be.undefined;
       const baseClass2 = await element2.baseClass;
@@ -178,13 +166,10 @@ describe("SchemaEditor tests", () => {
       const multiAspectKey = new SchemaItemKey("ElementMultiAspect", bisSchemaKey);
       const result = await testEditor.entities.createElementMultiAspect(testSchemaKey, "testElement", ECClassModifier.None, multiAspectKey, "test element");
       expect(result).to.not.be.undefined;
-      expect(result.itemKey).to.not.be.undefined;
-      expect(result.itemKey).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      expect(result).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
       let element = await testSchema!.getItem("testElement");
       expect(element).to.not.be.undefined;
-      await testEditor.entities.delete(result.itemKey!);
-      expect(result.itemKey).to.not.be.undefined;
-      expect(result.itemKey).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      await testEditor.entities.delete(result);
       element = await testSchema!.getItem("testElements");
       expect(element).to.be.undefined;
       const classes = testSchema!.getClasses();
@@ -198,40 +183,31 @@ describe("SchemaEditor tests", () => {
       let entityKey: SchemaItemKey | undefined;
       beforeEach(async () => {
         const elementKey = new SchemaItemKey("Element", bisSchemaKey);
-        const result = await testEditor.entities.create(testSchemaKey, "testElement", ECClassModifier.None, "test element", elementKey);
-        entityKey = result.itemKey;
+        entityKey = await testEditor.entities.create(testSchemaKey, "testElement", ECClassModifier.None, "test element", elementKey);
         testEntity = await testSchema!.getItem("testElement");
       });
 
       it("should successfully create a PrimitiveProperty of type double", async () => {
-        const createResult = await testEditor.entities.createProperty(entityKey as SchemaItemKey, "TestProperty", PrimitiveType.Double, "p");
-        const property = await testEntity?.getProperty(createResult.propertyName!) as PrimitiveProperty;
-        expect(property.class.key).to.eql(createResult.itemKey);
-        expect(property.name).to.eql(createResult.propertyName);
+        await testEditor.entities.createProperty(entityKey as SchemaItemKey, "TestProperty", PrimitiveType.Double, "p");
+        const property = await testEntity?.getProperty("p_TestProperty") as PrimitiveProperty;
         expect(property.name).to.equal("p_TestProperty");
       });
 
       it("should successfully create a PrimitiveProperty of type String", async () => {
-        const createResult = await testEditor.entities.createProperty(entityKey as SchemaItemKey, "TestProperty", PrimitiveType.String, "p");
-        const property = await testEntity?.getProperty(createResult.propertyName!) as PrimitiveProperty;
-        expect(property.class.key).to.eql(createResult.itemKey);
-        expect(property.name).to.eql(createResult.propertyName);
+        await testEditor.entities.createProperty(entityKey as SchemaItemKey, "TestProperty", PrimitiveType.String, "p");
+        const property = await testEntity?.getProperty("p_TestProperty") as PrimitiveProperty;
         expect(property.name).to.equal("p_TestProperty");
       });
 
       it("should successfully create a PrimitiveProperty of type DateTime", async () => {
-        const createResult = await testEditor.entities.createProperty(entityKey as SchemaItemKey, "TestProperty", PrimitiveType.DateTime, "p");
-        const property = await testEntity?.getProperty(createResult.propertyName!) as PrimitiveProperty;
-        expect(property.class.key).to.eql(createResult.itemKey);
-        expect(property.name).to.eql(createResult.propertyName);
+        await testEditor.entities.createProperty(entityKey as SchemaItemKey, "TestProperty", PrimitiveType.DateTime, "p");
+        const property = await testEntity?.getProperty("p_TestProperty") as PrimitiveProperty;
         expect(property.name).to.equal("p_TestProperty");
       });
 
       it("should successfully create a PrimitiveProperty of type Integer", async () => {
-        const createResult = await testEditor.entities.createProperty(entityKey as SchemaItemKey, "TestProperty", PrimitiveType.Integer, "p");
-        const property = await testEntity?.getProperty(createResult.propertyName!) as PrimitiveProperty;
-        expect(property.class.key).to.eql(createResult.itemKey);
-        expect(property.name).to.eql(createResult.propertyName);
+        await testEditor.entities.createProperty(entityKey as SchemaItemKey, "TestProperty", PrimitiveType.Integer, "p");
+        const property = await testEntity?.getProperty("p_TestProperty") as PrimitiveProperty;
         expect(property.name).to.equal("p_TestProperty");
       });
 
@@ -240,17 +216,13 @@ describe("SchemaEditor tests", () => {
       });
 
       it("should successfully delete PrimitiveProperty.", async () => {
-        const createResult = await testEditor.entities.createProperty(entityKey as SchemaItemKey, "TestProperty", PrimitiveType.Double, "p");
-        let property = await testEntity?.getProperty(createResult.propertyName!) as PrimitiveProperty;
-        expect(property.class.key).to.eql(createResult.itemKey);
-        expect(property.name).to.eql(createResult.propertyName);
+        await testEditor.entities.createProperty(entityKey as SchemaItemKey, "TestProperty", PrimitiveType.Double, "p");
+        let property = await testEntity?.getProperty("TestProperty") as PrimitiveProperty;
 
-        const delResult = await testEditor.entities.deleteProperty(entityKey as SchemaItemKey, "p_TestProperty");
-        expect(delResult.itemKey).to.eql(entityKey);
-        expect(delResult.propertyName).to.eql("p_TestProperty");
+        await testEditor.entities.deleteProperty(entityKey as SchemaItemKey, "p_TestProperty");
 
         // Should get undefined since property has been deleted
-        property = await testEntity?.getProperty(createResult.propertyName!) as PrimitiveProperty;
+        property = await testEntity?.getProperty("p_TestProperty") as PrimitiveProperty;
         expect(property).to.be.undefined;
       });
     });

@@ -15,7 +15,7 @@ import {
   StructClass, StructPropertyProps,
 } from "@itwin/ecschema-metadata";
 import { assert } from "@itwin/core-bentley";
-import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import { SchemaContextEditor } from "./Editor";
 import { MutableClass } from "./Mutable/MutableClass";
 import * as Rules from "../Validation/ECRules";
 import { ArrayProperties, EnumerationProperties, PrimitiveProperties, Properties, StructProperties } from "./Properties";
@@ -60,7 +60,7 @@ export class ECClasses {
    * @param name The name of the new property.
    * @param type The PrimitiveType assigned to the new property.
    */
-  public async createProperty(classKey: SchemaItemKey, name: string, type: PrimitiveType, prefix: string): Promise<PropertyEditResults> {
+  public async createProperty(classKey: SchemaItemKey, name: string, type: PrimitiveType, prefix: string): Promise<void> {
     if (type !== PrimitiveType.Double && type !== PrimitiveType.String && type !== PrimitiveType.DateTime
       && type !== PrimitiveType.Integer)
       throw new Error ("Property creation is restricted to type Double, String, DateTime, and Integer.");
@@ -73,7 +73,6 @@ export class ECClasses {
     const mutableClass = await this.getClass(classKey);
 
     await mutableClass.createPrimitiveProperty(prefixedName, type);
-    return { itemKey: classKey, propertyName: prefixedName };
   }
 
   /**
@@ -82,106 +81,91 @@ export class ECClasses {
    * @param name The name of the new property.
    * @param type The PrimitiveType assigned to the new property.
    */
-  public async createPrimitiveProperty(classKey: SchemaItemKey, name: string, type: PrimitiveType): Promise<PropertyEditResults> {
+  public async createPrimitiveProperty(classKey: SchemaItemKey, name: string, type: PrimitiveType): Promise<void> {
     const mutableClass = await this.getClass(classKey);
     await mutableClass.createPrimitiveProperty(name, type);
-    return { itemKey: classKey, propertyName: name };
   }
 
-  public async createPrimitivePropertyFromProps(classKey: SchemaItemKey, name: string, type: PrimitiveType, primitiveProps: PrimitivePropertyProps): Promise<PropertyEditResults> {
+  public async createPrimitivePropertyFromProps(classKey: SchemaItemKey, name: string, type: PrimitiveType, primitiveProps: PrimitivePropertyProps): Promise<void> {
     const mutableClass = await this.getClass(classKey);
     const newProperty = await mutableClass.createPrimitiveProperty(name, type);
     await newProperty.fromJSON(primitiveProps);
-    return { itemKey: classKey, propertyName: name };
   }
 
-  public async createEnumerationProperty(classKey: SchemaItemKey, name: string, type: Enumeration): Promise<PropertyEditResults> {
+  public async createEnumerationProperty(classKey: SchemaItemKey, name: string, type: Enumeration): Promise<void> {
     const mutableClass = await this.getClass(classKey);
     const enumSchemaItemKey = mutableClass.schema.getSchemaItemKey(type.fullName);
     if (enumSchemaItemKey === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Unable to locate the enumeration ${type.fullName}.`);
 
     await mutableClass.createPrimitiveProperty(name, type);
-    return { itemKey: classKey, propertyName: name };
   }
 
-  public async createEnumerationPropertyFromProps(classKey: SchemaItemKey, name: string, type: Enumeration, enumProps: EnumerationPropertyProps): Promise<PropertyEditResults> {
+  public async createEnumerationPropertyFromProps(classKey: SchemaItemKey, name: string, type: Enumeration, enumProps: EnumerationPropertyProps): Promise<void> {
     const mutableClass = await this.getClass(classKey);
     const newProperty = await mutableClass.createPrimitiveProperty(name, type);
     await newProperty.fromJSON(enumProps);
-    return { itemKey: classKey, propertyName: name };
   }
 
-  public async createPrimitiveArrayProperty(classKey: SchemaItemKey, name: string, type: PrimitiveType): Promise<PropertyEditResults> {
+  public async createPrimitiveArrayProperty(classKey: SchemaItemKey, name: string, type: PrimitiveType): Promise<void> {
     const mutableClass = await this.getClass(classKey);
     await mutableClass.createPrimitiveArrayProperty(name, type);
-    return { itemKey: classKey, propertyName: name };
   }
 
-  public async createPrimitiveArrayPropertyFromProps(classKey: SchemaItemKey, name: string, type: PrimitiveType, primitiveProps: PrimitiveArrayPropertyProps): Promise<PropertyEditResults> {
+  public async createPrimitiveArrayPropertyFromProps(classKey: SchemaItemKey, name: string, type: PrimitiveType, primitiveProps: PrimitiveArrayPropertyProps): Promise<void> {
     const mutableClass = await this.getClass(classKey);
     const newProperty = await mutableClass.createPrimitiveArrayProperty(name, type);
     await newProperty.fromJSON(primitiveProps);
-    return { itemKey: classKey, propertyName: name };
   }
 
-  public async createEnumerationArrayProperty(classKey: SchemaItemKey, name: string, type: Enumeration): Promise<PropertyEditResults> {
+  public async createEnumerationArrayProperty(classKey: SchemaItemKey, name: string, type: Enumeration): Promise<void> {
     const mutableClass = await this.getClass(classKey);
     await mutableClass.createPrimitiveArrayProperty(name, type);
-    return { itemKey: classKey, propertyName: name };
   }
 
-  public async createEnumerationArrayPropertyFromProps(classKey: SchemaItemKey, name: string, type: Enumeration, props: PrimitiveArrayPropertyProps): Promise<PropertyEditResults> {
+  public async createEnumerationArrayPropertyFromProps(classKey: SchemaItemKey, name: string, type: Enumeration, props: PrimitiveArrayPropertyProps): Promise<void> {
     const mutableClass = await this.getClass(classKey);
     const newProperty = await mutableClass.createPrimitiveArrayProperty(name, type);
     await newProperty.fromJSON(props);
-    return { itemKey: classKey, propertyName: name };
   }
 
-  public async createStructProperty(classKey: SchemaItemKey, name: string, type: StructClass): Promise<PropertyEditResults> {
+  public async createStructProperty(classKey: SchemaItemKey, name: string, type: StructClass): Promise<void> {
     const mutableClass = await this.getClass(classKey);
     await mutableClass.createStructProperty(name, type);
-    return { itemKey: classKey, propertyName: name };
   }
 
-  public async createStructPropertyFromProps(classKey: SchemaItemKey, name: string, type: StructClass, structProps: StructPropertyProps): Promise<PropertyEditResults> {
+  public async createStructPropertyFromProps(classKey: SchemaItemKey, name: string, type: StructClass, structProps: StructPropertyProps): Promise<void> {
     const mutableClass = await this.getClass(classKey);
     const newProperty = await mutableClass.createStructProperty(name, type);
     await newProperty.fromJSON(structProps);
-    return { itemKey: classKey, propertyName: name };
   }
 
-  public async createStructArrayProperty(classKey: SchemaItemKey, name: string, type: StructClass): Promise<PropertyEditResults> {
+  public async createStructArrayProperty(classKey: SchemaItemKey, name: string, type: StructClass): Promise<void> {
     const mutableClass = await this.getClass(classKey);
     await mutableClass.createStructArrayProperty(name, type);
-    return { itemKey: classKey, propertyName: name };
   }
 
-  public async createStructArrayPropertyFromProps(classKey: SchemaItemKey, name: string, type: StructClass, structProps: StructArrayPropertyProps): Promise<PropertyEditResults> {
+  public async createStructArrayPropertyFromProps(classKey: SchemaItemKey, name: string, type: StructClass, structProps: StructArrayPropertyProps): Promise<void> {
     const mutableClass = await this.getClass(classKey);
     const newProperty = await mutableClass.createStructArrayProperty(name, type);
     await newProperty.fromJSON(structProps);
-    return { itemKey: classKey, propertyName: name };
   }
 
-  public async deleteProperty(classKey: SchemaItemKey, name: string): Promise<PropertyEditResults> {
+  public async deleteProperty(classKey: SchemaItemKey, name: string): Promise<void> {
     const mutableClass = await this.getClass(classKey);
     await mutableClass.deleteProperty(name);
-    return { itemKey: classKey, propertyName: name };
   }
 
-  public async delete(classKey: SchemaItemKey): Promise<SchemaItemEditResults> {
+  public async delete(classKey: SchemaItemKey): Promise<void> {
     const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${classKey.schemaKey.toString(true)} not found in context`);
 
     const ecClass = await schema.getItem<ECClass>(classKey.name);
     if (ecClass === undefined)
-      return {};
+      return;
 
     await schema.deleteClass(ecClass.name);
-
-    return { itemKey: classKey };
   }
 
   /**
@@ -212,7 +196,7 @@ export class ECClasses {
    * @param name The new name of the class.
    * @throws ECObjectsError if `name` does not meet the criteria for a valid EC name
    */
-  public async setName(classKey: SchemaItemKey, name: string): Promise<void> {
+  public async setName(classKey: SchemaItemKey, name: string): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
     if (schema === undefined) {
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${classKey.schemaKey.toString(true)} not found in context`);
@@ -230,6 +214,7 @@ export class ECClasses {
     // Must reset in schema item map
     await schema.deleteClass(existingName);
     schema.addItem(mutableClass);
+    return mutableClass.key;
   }
 
   /**

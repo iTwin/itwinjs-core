@@ -11,7 +11,7 @@ import {
   ECObjectsError, ECObjectsStatus, Format, InvertedUnit, KindOfQuantityProps, OverrideFormat,
   SchemaItemKey, SchemaItemType, SchemaKey, Unit,
 } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import { SchemaContextEditor } from "./Editor";
 import { MutableKindOfQuantity } from "./Mutable/MutableKindOfQuantity";
 import { ECEditingError, ECEditingStatus } from "./Exception";
 
@@ -22,7 +22,7 @@ import { ECEditingError, ECEditingStatus } from "./Exception";
 export class KindOfQuantities {
   public constructor(protected _schemaEditor: SchemaContextEditor) { }
 
-  public async create(schemaKey: SchemaKey, name: string, persistenceUnitKey: SchemaItemKey, displayLabel?: string): Promise<SchemaItemEditResults> {
+  public async create(schemaKey: SchemaKey, name: string, persistenceUnitKey: SchemaItemKey, displayLabel?: string): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -55,10 +55,10 @@ export class KindOfQuantities {
       koqItem.setDisplayLabel(displayLabel);
     }
 
-    return { itemKey: koqItem.key };
+    return koqItem.key;
   }
 
-  public async createFromProps(schemaKey: SchemaKey, koqProps: KindOfQuantityProps): Promise<SchemaItemEditResults> {
+  public async createFromProps(schemaKey: SchemaKey, koqProps: KindOfQuantityProps): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -78,7 +78,7 @@ export class KindOfQuantities {
     }
 
     await koqItem.fromJSON(koqProps);
-    return { itemKey: koqItem.key };
+    return koqItem.key;
   }
 
   /**

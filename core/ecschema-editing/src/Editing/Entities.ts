@@ -10,7 +10,7 @@ import {
   DelayedPromiseWithProps, ECClassModifier, ECObjectsError, ECObjectsStatus, EntityClass, EntityClassProps,
   Mixin, NavigationPropertyProps, RelationshipClass, SchemaItemKey, SchemaItemType, SchemaKey, StrengthDirection,
 } from "@itwin/ecschema-metadata";
-import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import { SchemaContextEditor } from "./Editor";
 import { ECClasses } from "./ECClasses";
 import { MutableEntityClass } from "./Mutable/MutableEntityClass";
 import { NavigationProperties } from "./Properties";
@@ -30,7 +30,7 @@ export class Entities extends ECClasses {
    */
   public readonly navigationProperties = new NavigationProperties(this.schemaItemType, this._schemaEditor);
 
-  public async createElement(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, baseClassKey: SchemaItemKey, displayLabel?: string, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
+  public async createElement(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, baseClassKey: SchemaItemKey, displayLabel?: string, mixins?: Mixin[]): Promise<SchemaItemKey> {
     const baseClass = await this._schemaEditor.schemaContext.getSchemaItem(baseClassKey);
     if (!baseClass)
       throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} could not be found.`);
@@ -45,7 +45,7 @@ export class Entities extends ECClasses {
     return this.create(schemaKey, name, modifier, displayLabel, baseClassKey, mixins);
   }
 
-  public async createElementUniqueAspect(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, baseClassKey: SchemaItemKey, displayLabel?: string, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
+  public async createElementUniqueAspect(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, baseClassKey: SchemaItemKey, displayLabel?: string, mixins?: Mixin[]): Promise<SchemaItemKey> {
     const baseClass = await this._schemaEditor.schemaContext.getSchemaItem(baseClassKey);
     if (!baseClass)
       throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} could not be found.`);
@@ -60,7 +60,7 @@ export class Entities extends ECClasses {
     return this.create(schemaKey, name, modifier, displayLabel, baseClassKey, mixins);
   }
 
-  public async createElementMultiAspect(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, baseClassKey: SchemaItemKey, displayLabel?: string, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
+  public async createElementMultiAspect(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, baseClassKey: SchemaItemKey, displayLabel?: string, mixins?: Mixin[]): Promise<SchemaItemKey> {
     const baseClass = await this._schemaEditor.schemaContext.getSchemaItem(baseClassKey);
     if (!baseClass)
       throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} could be found.`);
@@ -75,7 +75,7 @@ export class Entities extends ECClasses {
     return this.create(schemaKey, name, modifier, displayLabel, baseClassKey, mixins);
   }
 
-  public async create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, displayLabel?: string, baseClassKey?: SchemaItemKey, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
+  public async create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, displayLabel?: string, baseClassKey?: SchemaItemKey, mixins?: Mixin[]): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -114,7 +114,7 @@ export class Entities extends ECClasses {
     if (displayLabel)
       newClass.setDisplayLabel(displayLabel);
 
-    return { itemKey: newClass.key };
+    return newClass.key;
   }
 
   /**
@@ -122,7 +122,7 @@ export class Entities extends ECClasses {
    * @param schemaKey a SchemaKey of the Schema that will house the new object.
    * @param entityProps a json object that will be used to populate the new EntityClass. Needs a name value passed in.
    */
-  public async createFromProps(schemaKey: SchemaKey, entityProps: EntityClassProps): Promise<SchemaItemEditResults> {
+  public async createFromProps(schemaKey: SchemaKey, entityProps: EntityClassProps): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -143,10 +143,10 @@ export class Entities extends ECClasses {
 
     await newClass.fromJSON(entityProps);
 
-    return { itemKey: newClass.key };
+    return newClass.key;
   }
 
-  public async addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<SchemaItemEditResults> {
+  public async addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<void> {
     const entity = (await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(entityKey));
     if (entity === undefined) {
       throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Entity Class ${entityKey.fullName} not found in schema context.`);
@@ -164,10 +164,9 @@ export class Entities extends ECClasses {
     }
 
     entity.addMixin(mixin);
-    return { itemKey: entityKey };
   }
 
-  public async createNavigationProperty(entityKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<PropertyEditResults> {
+  public async createNavigationProperty(entityKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<void> {
     const entity = await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(entityKey);
 
     if (entity === undefined)
@@ -177,7 +176,6 @@ export class Entities extends ECClasses {
       throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `Expected ${entityKey.fullName} to be of type Entity Class.`);
 
     await entity.createNavigationProperty(name, relationship, direction);
-    return { itemKey: entityKey, propertyName: name };
   }
 
   /**
@@ -185,7 +183,7 @@ export class Entities extends ECClasses {
    * @param classKey a SchemaItemKey of the Entity Class that will house the new property.
    * @param navigationProps a json object that will be used to populate the new Navigation Property.
    */
-  public async createNavigationPropertyFromProps(classKey: SchemaItemKey, navigationProps: NavigationPropertyProps): Promise<PropertyEditResults> {
+  public async createNavigationPropertyFromProps(classKey: SchemaItemKey, navigationProps: NavigationPropertyProps): Promise<void> {
     const entity = await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(classKey);
     if (entity === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaItemNotFoundInContext, `Entity Class ${classKey.fullName} not found in schema context.`);
@@ -195,7 +193,5 @@ export class Entities extends ECClasses {
 
     const navigationProperty  = await entity.createNavigationProperty(navigationProps.name, navigationProps.relationshipName, navigationProps.direction);
     await navigationProperty.fromJSON(navigationProps);
-
-    return { itemKey: classKey, propertyName: navigationProps.name };
   }
 }

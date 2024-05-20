@@ -7,7 +7,7 @@
  */
 
 import { ConstantProps, DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, Phenomenon, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import { SchemaContextEditor } from "./Editor";
 import { MutableConstant } from "./Mutable/MutableConstant";
 import { ECEditingError, ECEditingStatus } from "./Exception";
 
@@ -18,7 +18,7 @@ import { ECEditingError, ECEditingStatus } from "./Exception";
 export class Constants {
   public constructor(protected _schemaEditor: SchemaContextEditor) { }
 
-  public async create(schemaKey: SchemaKey, name: string, phenomenon: SchemaItemKey, definition: string, displayLabel?: string, numerator?: number, denominator?: number): Promise<SchemaItemEditResults> {
+  public async create(schemaKey: SchemaKey, name: string, phenomenon: SchemaItemKey, definition: string, displayLabel?: string, numerator?: number, denominator?: number): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) {
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -52,7 +52,7 @@ export class Constants {
     if (displayLabel)
       newConstant.setDisplayLabel(displayLabel);
 
-    return { itemKey: newConstant.key };
+    return newConstant.key;
   }
 
   /**
@@ -60,7 +60,7 @@ export class Constants {
    * @param schemaKey a SchemaKey of the Schema that will house the new object.
    * @param relationshipProps a json object that will be used to populate the new RelationshipClass. Needs a name value passed in.
    */
-  public async createFromProps(schemaKey: SchemaKey, constantProps: ConstantProps): Promise<SchemaItemEditResults> {
+  public async createFromProps(schemaKey: SchemaKey, constantProps: ConstantProps): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -80,6 +80,6 @@ export class Constants {
     }
 
     await newConstant.fromJSON(constantProps);
-    return { itemKey: newConstant.key };
+    return newConstant.key;
   }
 }

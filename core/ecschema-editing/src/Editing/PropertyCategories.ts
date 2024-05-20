@@ -7,7 +7,7 @@
  */
 
 import { ECObjectsError, ECObjectsStatus, PropertyCategoryProps, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import { SchemaContextEditor } from "./Editor";
 import { MutablePropertyCategory } from "./Mutable/MutablePropertyCategory";
 import { ECEditingError, ECEditingStatus } from "./Exception";
 
@@ -18,7 +18,7 @@ import { ECEditingError, ECEditingStatus } from "./Exception";
 export class PropertyCategories {
   public constructor(protected _schemaEditor: SchemaContextEditor) { }
 
-  public async create(schemaKey: SchemaKey, name: string, priority: number, displayLabel?: string): Promise<SchemaItemEditResults> {
+  public async create(schemaKey: SchemaKey, name: string, priority: number, displayLabel?: string): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -38,10 +38,10 @@ export class PropertyCategories {
     if (displayLabel)
       newPropCategory.setDisplayLabel(displayLabel);
 
-    return { itemKey: newPropCategory.key };
+    return newPropCategory.key;
   }
 
-  public async createFromProps(schemaKey: SchemaKey, propertyCategoryProps: PropertyCategoryProps): Promise<SchemaItemEditResults> {
+  public async createFromProps(schemaKey: SchemaKey, propertyCategoryProps: PropertyCategoryProps): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -61,7 +61,7 @@ export class PropertyCategories {
     }
 
     await newPropCategory.fromJSON(propertyCategoryProps);
-    return { itemKey: newPropCategory.key };
+    return newPropCategory.key;
   }
 
   public async setPriority(propCategoryKey: SchemaItemKey, priority: number): Promise<void> {

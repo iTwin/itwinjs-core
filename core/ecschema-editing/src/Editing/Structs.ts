@@ -7,7 +7,7 @@
  */
 
 import { DelayedPromiseWithProps, ECClass, ECObjectsError, ECObjectsStatus, SchemaItemKey, SchemaItemType, SchemaKey, StructClass, StructClassProps } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import { SchemaContextEditor } from "./Editor";
 import { ECClasses } from "./ECClasses";
 import { MutableStructClass } from "./Mutable/MutableClass";
 import { ECEditingError, ECEditingStatus } from "./Exception";
@@ -20,7 +20,7 @@ export class Structs extends ECClasses {
     super(SchemaItemType.StructClass, schemaEditor);
   }
 
-  public async create(schemaKey: SchemaKey, name: string, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults> {
+  public async create(schemaKey: SchemaKey, name: string, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -50,7 +50,7 @@ export class Structs extends ECClasses {
     if (displayLabel)
       newClass.setDisplayLabel(displayLabel);
 
-    return { itemKey: newClass.key };
+    return newClass.key;
   }
 
   /**
@@ -58,7 +58,7 @@ export class Structs extends ECClasses {
    * @param schemaKey a SchemaKey of the Schema that will house the new object.
    * @param structProps a json object that will be used to populate the new StructClass. Needs a name value passed in.
    */
-  public async createFromProps(schemaKey: SchemaKey, structProps: StructClassProps): Promise<SchemaItemEditResults> {
+  public async createFromProps(schemaKey: SchemaKey, structProps: StructClassProps): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -78,6 +78,6 @@ export class Structs extends ECClasses {
     }
 
     await newClass.fromJSON(structProps);
-    return { itemKey: newClass.key };
+    return newClass.key;
   }
 }

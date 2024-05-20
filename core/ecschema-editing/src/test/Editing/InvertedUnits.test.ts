@@ -16,16 +16,15 @@ describe("Inverted Units tests", () => {
   beforeEach(async () => {
     context = new SchemaContext();
     testEditor = new SchemaContextEditor(context);
-    const result = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
-    testKey = result.schemaKey!;
-    unitSystemKey = (await testEditor.unitSystems.create(testKey, "testUnitSystem")).itemKey!;
-    const phenomenonKey = (await testEditor.phenomenons.create(testKey, "testPhenomenon", "testDefinition")).itemKey!;
-    invertsUnitKey = (await testEditor.units.create(testKey, "testUnit", "testDefinition", phenomenonKey, unitSystemKey)).itemKey!;
+    testKey = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
+    unitSystemKey = (await testEditor.unitSystems.create(testKey, "testUnitSystem"));
+    const phenomenonKey = (await testEditor.phenomenons.create(testKey, "testPhenomenon", "testDefinition"));
+    invertsUnitKey = (await testEditor.units.create(testKey, "testUnit", "testDefinition", phenomenonKey, unitSystemKey));
   });
 
   it("should create a valid Inverted Unit", async () => {
     const result = await testEditor.invertedUnits.create(testKey, "testInvertedUnit", invertsUnitKey, unitSystemKey);
-    const invertedUnit = await testEditor.schemaContext.getSchemaItem(result.itemKey!) as InvertedUnit;
+    const invertedUnit = await testEditor.schemaContext.getSchemaItem(result) as InvertedUnit;
 
     expect(await invertedUnit.invertsUnit).to.eql(await testEditor.schemaContext.getSchemaItem(invertsUnitKey));
     expect(invertedUnit.fullName).to.eql("testSchema.testInvertedUnit");
@@ -40,7 +39,7 @@ describe("Inverted Units tests", () => {
     };
 
     const result = await testEditor.invertedUnits.createFromProps(testKey, invertedUnitProps);
-    const invertedUnit = await testEditor.schemaContext.getSchemaItem(result.itemKey!) as InvertedUnit;
+    const invertedUnit = await testEditor.schemaContext.getSchemaItem(result) as InvertedUnit;
 
     expect(await invertedUnit.invertsUnit).to.eql(await testEditor.schemaContext.getSchemaItem(invertsUnitKey));
     expect(invertedUnit.fullName).to.eql("testSchema.testInvertedUnit");

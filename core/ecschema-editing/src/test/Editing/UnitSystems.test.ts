@@ -14,8 +14,7 @@ describe("UnitSystems tests", () => {
   beforeEach(async () => {
     context = new SchemaContext();
     testEditor = new SchemaContextEditor(context);
-    const result = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
-    testKey = result.schemaKey!;
+    testKey = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
   });
 
   it("should create a valid UnitSystem from UnitSystemProps", async () => {
@@ -25,7 +24,7 @@ describe("UnitSystems tests", () => {
       label: "testDec",
     };
     const result = await testEditor.unitSystems.createFromProps(testKey, unitSystemProps);
-    const testUnitSystem = await testEditor.schemaContext.getSchemaItem(result.itemKey!) as UnitSystem;
+    const testUnitSystem = await testEditor.schemaContext.getSchemaItem(result) as UnitSystem;
     expect(testUnitSystem.schemaItemType).to.eql(SchemaItemType.UnitSystem);
     expect(testUnitSystem.fullName).to.eql("testSchema.testUnitSystem");
     expect(testUnitSystem.label).to.eql("testDec");

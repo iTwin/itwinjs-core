@@ -8,7 +8,6 @@ import {
   SchemaContext, SchemaItemKey, SchemaKey,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
-import { ECEditingError } from "../../Editing/Exception";
 import { AnyDiagnostic } from "../../Validation/Diagnostic";
 import { Diagnostics } from "../../Validation/ECRules";
 
@@ -16,10 +15,6 @@ import { Diagnostics } from "../../Validation/ECRules";
 
 // TODO: Add tests for cases where invalid names are passed into props objects. (to test the error message)
 describe("Editor tests", () => {
-
-  function normalizeLineEnds(s: string): string {
-    return s.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-  }
 
   describe("SchemaEditor tests", () => {
     let testEditor: SchemaContextEditor;
@@ -38,9 +33,9 @@ describe("Editor tests", () => {
       });
 
       it("upon schema creation, return a defined SchemaKey from SchemaEditResults", async () => {
-        const result = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
-        expect(result.schemaKey?.name).to.eql("testSchema");
-        expect(result.schemaKey?.version).to.eql(new ECVersion(1, 0, 0));
+        const schemaKey = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
+        expect(schemaKey?.name).to.eql("testSchema");
+        expect(schemaKey?.version).to.eql(new ECVersion(1, 0, 0));
       });
     });
 
@@ -164,9 +159,8 @@ describe("Editor tests", () => {
         testKey = testSchema.schemaKey;
         const refSchema = await Schema.fromJson(refSchemaJson, context);
 
-        const result = await testEditor.addSchemaReference(testKey, refSchema);
+        await testEditor.addSchemaReference(testKey, refSchema);
 
-        expect(result).to.eql({});
         expect(testSchema.getReferenceNameByAlias("rs")).to.equal("RefSchema");
         expect(await testEditor.schemaContext.getCachedSchema(refSchema.schemaKey)).to.eql(refSchema);
       });
@@ -236,7 +230,7 @@ describe("Editor tests", () => {
 
         const result = await testEditor.setVersion(testSchema.schemaKey, 2, 3, 4);
 
-        expect(result).to.eql({});
+        expect(result).to.deep.equal(testSchema.schemaKey);
         expect(testSchema.readVersion).to.equal(2);
         expect(testSchema.writeVersion).to.equal(3);
         expect(testSchema.minorVersion).to.equal(4);
@@ -256,7 +250,7 @@ describe("Editor tests", () => {
 
         const result = await testEditor.setVersion(testSchema.schemaKey, undefined, 3, 4);
 
-        expect(result).to.eql({});
+        expect(result).to.deep.equal(testSchema.schemaKey);
         expect(testSchema.readVersion).to.equal(1);
         expect(testSchema.writeVersion).to.equal(3);
         expect(testSchema.minorVersion).to.equal(4);
@@ -276,7 +270,7 @@ describe("Editor tests", () => {
 
         const result = await testEditor.setVersion(testSchema.schemaKey, 2, undefined, 4);
 
-        expect(result).to.eql({});
+        expect(result).to.deep.equal(testSchema.schemaKey);
         expect(testSchema.readVersion).to.equal(2);
         expect(testSchema.writeVersion).to.equal(2);
         expect(testSchema.minorVersion).to.equal(4);
@@ -296,7 +290,7 @@ describe("Editor tests", () => {
 
         const result = await testEditor.setVersion(testSchema.schemaKey, 2, 3, undefined);
 
-        expect(result).to.eql({});
+        expect(result).to.deep.equal(testSchema.schemaKey);
         expect(testSchema.readVersion).to.equal(2);
         expect(testSchema.writeVersion).to.equal(3);
         expect(testSchema.minorVersion).to.equal(3);
@@ -316,7 +310,7 @@ describe("Editor tests", () => {
 
         const result = await testEditor.incrementMinorVersion(testSchema.schemaKey);
 
-        expect(result).to.eql({});
+        expect(result).to.deep.equal(testSchema.schemaKey);
         expect(testSchema.minorVersion).to.equal(4);
       });
     });

@@ -8,7 +8,7 @@
 
 import { ECObjectsError, ECObjectsStatus, InvertedUnit, SchemaItem, SchemaItemFormatProps, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
 import { FormatType } from "@itwin/core-quantity";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import { SchemaContextEditor } from "./Editor";
 import { MutableFormat } from "./Mutable/MutableFormat";
 import { ECEditingError, ECEditingStatus } from "./Exception";
 
@@ -18,7 +18,7 @@ import { ECEditingError, ECEditingStatus } from "./Exception";
  */
 export class Formats {
   public constructor(protected _schemaEditor: SchemaContextEditor) { }
-  public async create(schemaKey: SchemaKey, name: string, formatType: FormatType, displayLabel?: string, units?: SchemaItemKey[]): Promise<SchemaItemEditResults> {
+  public async create(schemaKey: SchemaKey, name: string, formatType: FormatType, displayLabel?: string, units?: SchemaItemKey[]): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -51,7 +51,7 @@ export class Formats {
 
     // TODO: Handle the setting of format traits, separators, etc....
     newFormat.setFormatType(formatType);
-    return { itemKey: newFormat.key };
+    return newFormat.key;
   }
 
   /**
@@ -59,7 +59,7 @@ export class Formats {
    * @param schemaKey a SchemaKey of the Schema that will house the new object.
    * @param relationshipProps a json object that will be used to populate the new RelationshipClass. Needs a name value passed in.
    */
-  public async createFromProps(schemaKey: SchemaKey, formatProps: SchemaItemFormatProps): Promise<SchemaItemEditResults> {
+  public async createFromProps(schemaKey: SchemaKey, formatProps: SchemaItemFormatProps): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -79,6 +79,6 @@ export class Formats {
     }
 
     await newFormat.fromJSON(formatProps);
-    return { itemKey: newFormat.key };
+    return newFormat.key;
   }
 }

@@ -11,10 +11,9 @@ describe("CustomAttribute tests", () => {
   beforeEach(async () => {
     context = new SchemaContext();
     testEditor = new SchemaContextEditor(context);
-    const result = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
-    testKey = result.schemaKey!;
+    testKey = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
     const phenomRes = await testEditor.phenomenons.create(testKey, "testPhenomenon", "testDefinition");
-    phenomenonKey = phenomRes.itemKey!;
+    phenomenonKey = phenomRes;
   });
 
   it("should create a valid Constant from ConstantProps", async () => {
@@ -25,7 +24,7 @@ describe("CustomAttribute tests", () => {
     };
 
     const result = await testEditor.constants.createFromProps(testKey, constantProps);
-    const constant = await testEditor.schemaContext.getSchemaItem(result.itemKey!) as Constant;
+    const constant = await testEditor.schemaContext.getSchemaItem(result) as Constant;
     expect(constant.fullName).to.eql("testSchema.testConstant");
     expect(await constant.phenomenon).to.eql(await testEditor.schemaContext.getSchemaItem(phenomenonKey));
     expect(constant.definition).to.eql("testDefinition");
@@ -33,7 +32,7 @@ describe("CustomAttribute tests", () => {
 
   it("should create a valid Constant", async () => {
     const result = await testEditor.constants.create(testKey, "testConstant", phenomenonKey, "testDefinition");
-    const constant = await testEditor.schemaContext.getSchemaItem(result.itemKey!) as Constant;
+    const constant = await testEditor.schemaContext.getSchemaItem(result) as Constant;
     expect(constant.fullName).to.eql("testSchema.testConstant");
     expect(await constant.phenomenon).to.eql(await testEditor.schemaContext.getSchemaItem(phenomenonKey));
     expect(constant.definition).to.eql("testDefinition");

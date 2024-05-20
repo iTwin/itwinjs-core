@@ -20,8 +20,7 @@ describe("Entities tests", () => {
   beforeEach(async () => {
     context = new SchemaContext();
     testEditor = new SchemaContextEditor(context);
-    const result = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
-    testKey = result.schemaKey!;
+    testKey = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
   });
 
   it("should create a new entity class using a SchemaEditor", async () => {
@@ -37,8 +36,7 @@ describe("Entities tests", () => {
     expect(entity?.schemaItemType).to.eql(SchemaItemType.EntityClass);
 
     const key = entity?.key as SchemaItemKey;
-    const delRes = await testEditor.entities.delete(key);
-    expect(delRes.itemKey).to.eql(entity?.key);
+    await testEditor.entities.delete(key);
 
     // Should get undefined since class is deleted
     entity = await schema?.getItem("testEntity");
@@ -53,16 +51,16 @@ describe("Entities tests", () => {
     const entity = await schema?.getItem(className);
     expect(entity).to.be.undefined;
 
-    const delRes = await testEditor.entities.delete(classKey);
-    expect(delRes).to.eql({});
+    await testEditor.entities.delete(classKey);
+    expect(testEditor.schemaContext.getSchemaItemSync(classKey)).to.be.undefined;
   });
 
   it("should create a new entity class with a base class", async () => {
     const testEntityBaseRes = await testEditor.entities.create(testKey, "testEntityBase", ECClassModifier.None);
-    const result = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", testEntityBaseRes.itemKey);
+    const result = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", testEntityBaseRes);
 
-    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result.itemKey!);
-    expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(testEntityBaseRes.itemKey!));
+    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result);
+    expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(testEntityBaseRes));
     expect(testEntity?.label).to.eql("testLabel");
   });
 
@@ -86,7 +84,7 @@ describe("Entities tests", () => {
     const baseClassKey = new SchemaItemKey("testEntityBase", refSchema.schemaKey);
     const result = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", baseClassKey);
 
-    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result.itemKey!);
+    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result);
     expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassKey));
     expect(testEntity?.label).to.eql("testLabel");
   });
@@ -109,7 +107,7 @@ describe("Entities tests", () => {
     };
 
     const result = await testEditor.entities.createFromProps(testKey, entityClassProps);
-    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result.itemKey!);
+    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result);
     expect(testEntity?.modifier).to.eql(ECClassModifier.Abstract);
   });
 
@@ -118,12 +116,12 @@ describe("Entities tests", () => {
     const entityClassProps: EntityClassProps = {
       name: "testEntity",
       modifier: "abstract",
-      baseClass: testEntityBaseRes.itemKey?.fullName, // Must be full name to reflect the key.
+      baseClass: testEntityBaseRes.fullName, // Must be full name to reflect the key.
     };
 
     const result = await testEditor.entities.createFromProps(testKey, entityClassProps);
-    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result.itemKey!);
-    expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(testEntityBaseRes.itemKey!));
+    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result);
+    expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(testEntityBaseRes));
   });
 
   it("should create a new navigation property from NavigationPropertyProps", async () => {
@@ -136,22 +134,22 @@ describe("Entities tests", () => {
       direction: "Forward",
     };
 
-    const entityClass = await testEditor.schemaContext.getSchemaItem(testEntityRes.itemKey!) as EntityClass;
-    const relClass = await testEditor.schemaContext.getSchemaItem(testRelRes.itemKey!) as RelationshipClass;
+    const entityClass = await testEditor.schemaContext.getSchemaItem(testEntityRes) as EntityClass;
+    const relClass = await testEditor.schemaContext.getSchemaItem(testRelRes) as RelationshipClass;
 
-    const result = await testEditor.entities.createNavigationPropertyFromProps(entityClass.key, navProps);
-    const navProperty = await entityClass.getProperty(result.propertyName!) as NavigationProperty;
+    await testEditor.entities.createNavigationPropertyFromProps(entityClass.key, navProps);
+    const navProperty = await entityClass.getProperty(navProps.name) as NavigationProperty;
     expect(await navProperty.relationshipClass).to.eql(relClass);
     expect(navProperty.direction).to.eql(StrengthDirection.Forward);
   });
 
   it("should add base class to entity class with undefined base class.", async () => {
     const testEntityBaseRes = await testEditor.entities.create(testKey, "testEntityBase", ECClassModifier.None);
-    const result = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", testEntityBaseRes.itemKey);
-    await testEditor.entities.setBaseClass(result.itemKey!, testEntityBaseRes.itemKey);
+    const result = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", testEntityBaseRes);
+    await testEditor.entities.setBaseClass(result, testEntityBaseRes);
 
-    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result.itemKey!);
-    expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(testEntityBaseRes.itemKey!));
+    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result);
+    expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(testEntityBaseRes));
   });
 
   it("should add base class to existing entity class where base class is from a different schema", async () => {
@@ -173,9 +171,9 @@ describe("Entities tests", () => {
     await testEditor.addSchemaReference(testKey, refSchema);
     const baseClassKey = new SchemaItemKey("testEntityBase", refSchema.schemaKey);
     const result = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
-    await testEditor.entities.setBaseClass(result.itemKey!, baseClassKey);
+    await testEditor.entities.setBaseClass(result, baseClassKey);
 
-    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result.itemKey!);
+    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result);
     expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassKey));
   });
 
@@ -205,22 +203,22 @@ describe("Entities tests", () => {
     const firstBaseClassKey = new SchemaItemKey("testEntityBase1", refSchema.schemaKey);
     const testEntityResult = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", firstBaseClassKey);
 
-    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(testEntityResult.itemKey!);
+    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(testEntityResult);
     expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(firstBaseClassKey));
 
     const secondBaseClassKey = new SchemaItemKey("testEntityBase2", refSchema.schemaKey);
-    await testEditor.entities.setBaseClass(testEntityResult.itemKey!, secondBaseClassKey);
+    await testEditor.entities.setBaseClass(testEntityResult, secondBaseClassKey);
     expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(secondBaseClassKey));
   });
 
   it("should remove base class from existing entity class.", async () => {
     const testEntityBaseRes = await testEditor.entities.create(testKey, "testEntityBase", ECClassModifier.None);
-    const result = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", testEntityBaseRes.itemKey);
+    const result = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", testEntityBaseRes);
 
-    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result.itemKey!);
-    expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(testEntityBaseRes.itemKey!));
+    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result);
+    expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(testEntityBaseRes));
 
-    await testEditor.entities.setBaseClass(result.itemKey!, undefined);
+    await testEditor.entities.setBaseClass(result, undefined);
     expect(await testEntity?.baseClass).to.eql(undefined);
   });
 
@@ -228,13 +226,13 @@ describe("Entities tests", () => {
     const badSchemaKey = new SchemaKey("badSchema", new ECVersion(1,0,0));
     const baseClassKey = new SchemaItemKey("testBaseClass", badSchemaKey);
     const entityResult = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
-    await expect(testEditor.entities.setBaseClass(entityResult.itemKey!, baseClassKey)).to.be.rejectedWith(ECEditingError, `Schema Key ${badSchemaKey.toString(true)} not found in context`);
+    await expect(testEditor.entities.setBaseClass(entityResult, baseClassKey)).to.be.rejectedWith(ECEditingError, `Schema Key ${badSchemaKey.toString(true)} not found in context`);
   });
 
   it("try adding base class to an existing entity class where the base class cannot be located, returns error", async () => {
     const baseClassKey = new SchemaItemKey("testBaseClass", testKey);
     const createResult = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
-    await expect(testEditor.entities.setBaseClass(createResult.itemKey!, baseClassKey)).to.be.rejectedWith(ECEditingError, `Unable to locate base class ${baseClassKey.fullName} in schema ${testKey.name}.`);
+    await expect(testEditor.entities.setBaseClass(createResult, baseClassKey)).to.be.rejectedWith(ECEditingError, `Unable to locate base class ${baseClassKey.fullName} in schema ${testKey.name}.`);
   });
 
   it("try adding base class to entity class with different SchemaItemType, return error", async () => {
@@ -245,7 +243,7 @@ describe("Entities tests", () => {
     };
     const unitResult = await testEditor.unitSystems.createFromProps(testKey, unitSystemProps);
     const entityResult = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
-    await expect(testEditor.entities.setBaseClass(entityResult.itemKey!, unitResult.itemKey)).to.be.rejectedWith(ECEditingError, `${unitResult.itemKey?.fullName} is not of type EntityClass.`);
+    await expect(testEditor.entities.setBaseClass(entityResult, unitResult)).to.be.rejectedWith(ECEditingError, `${unitResult.fullName} is not of type EntityClass.`);
   });
 
   it("try adding base class with unknown schema to existing entity class, returns error", async () => {
@@ -253,18 +251,18 @@ describe("Entities tests", () => {
     const baseClassKey = new SchemaItemKey("testBaseClass", schemaKey);
     const entityRes = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
 
-    await expect(testEditor.entities.setBaseClass(entityRes.itemKey!, baseClassKey)).to.be.rejectedWith(ECEditingError, `Schema Key ${schemaKey.toString(true)} not found in context`);
+    await expect(testEditor.entities.setBaseClass(entityRes, baseClassKey)).to.be.rejectedWith(ECEditingError, `Schema Key ${schemaKey.toString(true)} not found in context`);
   });
 
   it("try changing the entity base class to one that doesn't derive from, returns error", async () => {
     const baseClassRes = await testEditor.entities.create(testKey, "testBaseClass", ECClassModifier.None, "testLabel");
-    const entityRes = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", baseClassRes.itemKey);
+    const entityRes = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel",baseClassRes);
 
-    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(entityRes.itemKey!);
-    expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes.itemKey!));
+    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(entityRes);
+    expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes));
 
     const newBaseClassRes = await testEditor.entities.create(testKey, "newBaseClass", ECClassModifier.None, "testLabel");
-    await expect(testEditor.entities.setBaseClass(entityRes.itemKey!, newBaseClassRes.itemKey)).to.be.rejectedWith(ECEditingError, `Base class ${newBaseClassRes.itemKey!.fullName} must derive from ${baseClassRes.itemKey!.fullName}.`);
+    await expect(testEditor.entities.setBaseClass(entityRes, newBaseClassRes)).to.be.rejectedWith(ECEditingError, `Base class ${newBaseClassRes.fullName} must derive from ${baseClassRes.fullName}.`);
   });
 
   it("try creating entity class to unknown schema, throws error", async () => {

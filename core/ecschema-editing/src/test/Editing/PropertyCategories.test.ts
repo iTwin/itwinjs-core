@@ -14,13 +14,12 @@ describe("Property Category tests", () => {
   beforeEach(async () => {
     context = new SchemaContext();
     testEditor = new SchemaContextEditor(context);
-    const result = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
-    testKey = result.schemaKey!;
+    testKey = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
   });
 
   it("should create a valid PropertyCategory", async () => {
     const result = await testEditor.propertyCategories.create(testKey, "testPropCategory", 5);
-    const testPropCategory = await testEditor.schemaContext.getSchemaItem(result.itemKey!) as PropertyCategory;
+    const testPropCategory = await testEditor.schemaContext.getSchemaItem(result) as PropertyCategory;
     expect(testPropCategory.priority).to.eql(5);
     expect(testPropCategory.schemaItemType).to.eql(SchemaItemType.PropertyCategory);
   });
@@ -32,7 +31,7 @@ describe("Property Category tests", () => {
       priority: 9,
     };
     const result = await testEditor.propertyCategories.createFromProps(testKey, propCatProps);
-    const testPropCategory = await testEditor.schemaContext.getSchemaItem(result.itemKey!) as PropertyCategory;
+    const testPropCategory = await testEditor.schemaContext.getSchemaItem(result) as PropertyCategory;
     expect(testPropCategory.priority).to.eql(9);
     expect(testPropCategory.label).to.eql("testLbl");
     expect(testPropCategory.schemaItemType).to.eql(SchemaItemType.PropertyCategory);

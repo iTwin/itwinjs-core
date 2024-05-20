@@ -16,18 +16,15 @@ describe("Units tests", () => {
   beforeEach(async () => {
     context = new SchemaContext();
     testEditor = new SchemaContextEditor(context);
-    const result = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
-    testKey = result.schemaKey!;
+    testKey = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
 
-    const phenomRes = await testEditor.phenomenons.create(testKey, "testPhenomenon", "testDefinition");
-    const unitSystemRes = await testEditor.unitSystems.create(testKey, "testUnitSystem");
-    phenomenonKey = phenomRes.itemKey!;
-    unitSystemKey = unitSystemRes.itemKey!;
+    phenomenonKey = await testEditor.phenomenons.create(testKey, "testPhenomenon", "testDefinition");
+    unitSystemKey = await testEditor.unitSystems.create(testKey, "testUnitSystem");
   });
 
   it("should create a valid Unit given a unit system and a phenomenon", async () => {
     const unitRes = await testEditor.units.create(testKey, "testUnit", "testDefinition", phenomenonKey, unitSystemKey);
-    const unit = await testEditor.schemaContext.getSchemaItem(unitRes.itemKey!) as Unit;
+    const unit = await testEditor.schemaContext.getSchemaItem(unitRes) as Unit;
 
     expect(unit.fullName).to.eql("testSchema.testUnit");
     expect(await unit.phenomenon).to.eql(await testEditor.schemaContext.getSchemaItem(phenomenonKey));
@@ -42,7 +39,7 @@ describe("Units tests", () => {
       definition: "testDefinition",
     };
     const unitRes = await testEditor.units.createFromProps(testKey, unitProps);
-    const unit = await testEditor.schemaContext.getSchemaItem(unitRes.itemKey!) as Unit;
+    const unit = await testEditor.schemaContext.getSchemaItem(unitRes) as Unit;
 
     expect(unit.fullName).to.eql("testSchema.testUnit");
     expect(unit.numerator).to.eql(20.5);

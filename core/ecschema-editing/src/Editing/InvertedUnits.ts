@@ -10,7 +10,7 @@ import {
   DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, InvertedUnitProps, SchemaItemKey,
   SchemaItemType, SchemaKey, Unit, UnitSystem,
 } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import { SchemaContextEditor } from "./Editor";
 import { MutableInvertedUnit } from "./Mutable/MutableInvertedUnit";
 import { ECEditingError, ECEditingStatus } from "./Exception";
 
@@ -20,7 +20,7 @@ import { ECEditingError, ECEditingStatus } from "./Exception";
  */
 export class InvertedUnits {
   public constructor(protected _schemaEditor: SchemaContextEditor) { }
-  public async create(schemaKey: SchemaKey, name: string, invertsUnitKey: SchemaItemKey, unitSystemKey: SchemaItemKey, displayLabel?: string): Promise<SchemaItemEditResults> {
+  public async create(schemaKey: SchemaKey, name: string, invertsUnitKey: SchemaItemKey, unitSystemKey: SchemaItemKey, displayLabel?: string): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -57,10 +57,10 @@ export class InvertedUnits {
     if (displayLabel)
       newUnit.setDisplayLabel(displayLabel);
 
-    return { itemKey: newUnit.key };
+    return newUnit.key;
   }
 
-  public async createFromProps(schemaKey: SchemaKey, invertedUnitProps: InvertedUnitProps): Promise<SchemaItemEditResults> {
+  public async createFromProps(schemaKey: SchemaKey, invertedUnitProps: InvertedUnitProps): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -80,7 +80,7 @@ export class InvertedUnits {
     }
 
     await newUnit.fromJSON(invertedUnitProps);
-    return { itemKey: newUnit.key };
+    return newUnit.key;
   }
 
   public async setInvertsUnit(invertedUnitKey: SchemaItemKey, invertsUnitKey: SchemaItemKey): Promise<void> {

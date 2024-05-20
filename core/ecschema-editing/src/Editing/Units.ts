@@ -7,7 +7,7 @@
  */
 
 import { DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, Phenomenon, SchemaItemKey, SchemaItemType, SchemaItemUnitProps, SchemaKey, UnitSystem } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import { SchemaContextEditor } from "./Editor";
 import { MutableUnit } from "./Mutable/MutableUnit";
 import { ECEditingError, ECEditingStatus } from "./Exception";
 
@@ -19,7 +19,7 @@ export class Units {
   // TODO: Add more setters for all attributes.
   public constructor(protected _schemaEditor: SchemaContextEditor) { }
 
-  public async create(schemaKey: SchemaKey, name: string, definition: string, phenomenon: SchemaItemKey, unitSystem: SchemaItemKey, displayLabel?: string): Promise<SchemaItemEditResults> {
+  public async create(schemaKey: SchemaKey, name: string, definition: string, phenomenon: SchemaItemKey, unitSystem: SchemaItemKey, displayLabel?: string): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -58,10 +58,10 @@ export class Units {
     if (displayLabel)
       newUnit.setDisplayLabel(displayLabel);
 
-    return { itemKey: newUnit.key };
+    return newUnit.key;
   }
 
-  public async createFromProps(schemaKey: SchemaKey, unitProps: SchemaItemUnitProps): Promise<SchemaItemEditResults> {
+  public async createFromProps(schemaKey: SchemaKey, unitProps: SchemaItemUnitProps): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -81,6 +81,6 @@ export class Units {
     }
 
     await newUnit.fromJSON(unitProps);
-    return { itemKey: newUnit.key };
+    return newUnit.key;
   }
 }

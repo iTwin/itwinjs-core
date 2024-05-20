@@ -10,7 +10,7 @@ import {
   DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, EntityClass, Mixin, MixinProps, NavigationPropertyProps, RelationshipClass,
   SchemaItemKey, SchemaItemType, SchemaKey, StrengthDirection,
 } from "@itwin/ecschema-metadata";
-import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import { SchemaContextEditor } from "./Editor";
 import { ECClasses } from "./ECClasses";
 import { MutableMixin } from "./Mutable/MutableMixin";
 import { MutableEntityClass } from "./Mutable/MutableEntityClass";
@@ -31,7 +31,7 @@ export class Mixins extends ECClasses {
    */
   public readonly navigationProperties = new NavigationProperties(this.schemaItemType, this._schemaEditor);
 
-  public async create(schemaKey: SchemaKey, name: string, appliesTo: SchemaItemKey, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults> {
+  public async create(schemaKey: SchemaKey, name: string, appliesTo: SchemaItemKey, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -67,7 +67,7 @@ export class Mixins extends ECClasses {
     if (displayLabel)
       newClass.setDisplayLabel(displayLabel);
 
-    return { itemKey: newClass.key };
+    return newClass.key;
   }
 
   /**
@@ -75,7 +75,7 @@ export class Mixins extends ECClasses {
    * @param schemaKey a SchemaKey of the Schema that will house the new object.
    * @param mixinProps a json object that will be used to populate the new MixinClass. Needs a name value passed in.
    */
-  public async createFromProps(schemaKey: SchemaKey, mixinProps: MixinProps): Promise<SchemaItemEditResults> {
+  public async createFromProps(schemaKey: SchemaKey, mixinProps: MixinProps): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -95,7 +95,7 @@ export class Mixins extends ECClasses {
     }
 
     await newClass.fromJSON(mixinProps);
-    return { itemKey: newClass.key };
+    return newClass.key;
   }
 
   public async addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<void> {
@@ -117,7 +117,7 @@ export class Mixins extends ECClasses {
     entity.addMixin(mixin);
   }
 
-  public async createNavigationProperty(mixinKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<PropertyEditResults> {
+  public async createNavigationProperty(mixinKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<void> {
     const mixin = (await this._schemaEditor.schemaContext.getSchemaItem<MutableMixin>(mixinKey));
 
     if (mixin === undefined)
@@ -127,7 +127,6 @@ export class Mixins extends ECClasses {
       throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `Expected ${mixinKey.fullName} to be of type Mixin.`);
 
     await mixin.createNavigationProperty(name, relationship, direction);
-    return { itemKey: mixinKey, propertyName: name };
   }
 
   /**
@@ -135,7 +134,7 @@ export class Mixins extends ECClasses {
    * @param classKey a SchemaItemKey of the Mixin that will house the new property.
    * @param navigationProps a json object that will be used to populate the new Navigation Property.
    */
-  public async createNavigationPropertyFromProps(classKey: SchemaItemKey, navigationProps: NavigationPropertyProps): Promise<PropertyEditResults> {
+  public async createNavigationPropertyFromProps(classKey: SchemaItemKey, navigationProps: NavigationPropertyProps): Promise<void> {
     const mixin = await this._schemaEditor.schemaContext.getSchemaItem<MutableMixin>(classKey);
     if (mixin === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaItemNotFoundInContext, `Mixin ${classKey.fullName} not found in schema context.`);
@@ -145,7 +144,5 @@ export class Mixins extends ECClasses {
 
     const navigationProperty  = await mixin.createNavigationProperty(navigationProps.name, navigationProps.relationshipName, navigationProps.direction);
     await navigationProperty.fromJSON(navigationProps);
-
-    return { itemKey: classKey, propertyName: navigationProps.name };
   }
 }

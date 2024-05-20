@@ -12,7 +12,7 @@ import {
   ECObjectsStatus,
   SchemaItemKey, SchemaItemType, SchemaKey,
 } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import { SchemaContextEditor } from "./Editor";
 import { ECClasses } from "./ECClasses";
 import { MutableCAClass } from "./Mutable/MutableCAClass";
 import { ECEditingError, ECEditingStatus } from "./Exception";
@@ -26,7 +26,7 @@ export class CustomAttributes extends ECClasses {
     super(SchemaItemType.CustomAttributeClass, schemaEditor);
   }
 
-  public async create(schemaKey: SchemaKey, name: string, containerType: CustomAttributeContainerType, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults> {
+  public async create(schemaKey: SchemaKey, name: string, containerType: CustomAttributeContainerType, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context.`);
@@ -58,7 +58,7 @@ export class CustomAttributes extends ECClasses {
 
     newClass.setContainerType(containerType);
 
-    return { itemKey: newClass.key };
+    return newClass.key;
   }
 
   /**
@@ -66,7 +66,7 @@ export class CustomAttributes extends ECClasses {
    * @param schemaKey a SchemaKey of the Schema that will house the new object.
    * @param caProps a json object that will be used to populate the new CustomAttributeClass. Needs a name value passed in.
    */
-  public async createFromProps(schemaKey: SchemaKey, caProps: CustomAttributeClassProps): Promise<SchemaItemEditResults> {
+  public async createFromProps(schemaKey: SchemaKey, caProps: CustomAttributeClassProps): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -87,6 +87,6 @@ export class CustomAttributes extends ECClasses {
 
     await newClass.fromJSON(caProps);
 
-    return { itemKey: newClass.key };
+    return newClass.key;
   }
 }

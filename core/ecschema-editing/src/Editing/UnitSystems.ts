@@ -6,8 +6,8 @@
  * @module Editing
  */
 
-import { ECObjectsError, ECObjectsStatus, SchemaKey, UnitSystemProps } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import { ECObjectsError, ECObjectsStatus, SchemaItemKey, SchemaKey, UnitSystemProps } from "@itwin/ecschema-metadata";
+import { SchemaContextEditor } from "./Editor";
 import { MutableUnitSystem } from "./Mutable/MutableUnitSystem";
 import { ECEditingError, ECEditingStatus } from "./Exception";
 
@@ -17,7 +17,7 @@ import { ECEditingError, ECEditingStatus } from "./Exception";
  */
 export class UnitSystems {
   public constructor(protected _schemaEditor: SchemaContextEditor) { }
-  public async create(schemaKey: SchemaKey, name: string, displayLabel?: string): Promise<SchemaItemEditResults> {
+  public async create(schemaKey: SchemaKey, name: string, displayLabel?: string): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -36,10 +36,10 @@ export class UnitSystems {
     if (displayLabel)
       newUnitSystem.setDisplayLabel(displayLabel);
 
-    return { itemKey: newUnitSystem.key };
+    return newUnitSystem.key;
   }
 
-  public async createFromProps(schemaKey: SchemaKey, unitSystemProps: UnitSystemProps): Promise<SchemaItemEditResults> {
+  public async createFromProps(schemaKey: SchemaKey, unitSystemProps: UnitSystemProps): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -59,6 +59,6 @@ export class UnitSystems {
     }
 
     await newUnitSystem.fromJSON(unitSystemProps);
-    return { itemKey: newUnitSystem.key };
+    return newUnitSystem.key;
   }
 }

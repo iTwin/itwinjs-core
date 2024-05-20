@@ -7,7 +7,7 @@
  */
 
 import { AnyEnumerator, ECObjectsError, ECObjectsStatus, Enumeration, EnumerationProps, PrimitiveType, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import { SchemaContextEditor } from "./Editor";
 import { MutableEnumeration } from "./Mutable/MutableEnumeration";
 import { ECEditingError, ECEditingStatus } from "./Exception";
 
@@ -22,7 +22,7 @@ type MutableEnumerator = {
 export class Enumerations {
   public constructor(protected _schemaEditor: SchemaContextEditor) { }
 
-  public async create(schemaKey: SchemaKey, name: string, type: PrimitiveType.Integer | PrimitiveType.String, displayLabel?: string, isStrict?: boolean, enumerators?: AnyEnumerator[]): Promise<SchemaItemEditResults> {
+  public async create(schemaKey: SchemaKey, name: string, type: PrimitiveType.Integer | PrimitiveType.String, displayLabel?: string, isStrict?: boolean, enumerators?: AnyEnumerator[]): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -48,7 +48,7 @@ export class Enumerations {
     if (displayLabel)
       (newEnum as MutableEnumeration).setDisplayLabel(displayLabel);
 
-    return { itemKey: newEnum.key };
+    return newEnum.key;
   }
 
   /**
@@ -56,7 +56,7 @@ export class Enumerations {
    * @param schemaKey a SchemaKey of the Schema that will house the new object.
    * @param relationshipProps a json object that will be used to populate the new RelationshipClass. Needs a name value passed in.
    */
-  public async createFromProps(schemaKey: SchemaKey, enumProps: EnumerationProps): Promise<SchemaItemEditResults> {
+  public async createFromProps(schemaKey: SchemaKey, enumProps: EnumerationProps): Promise<SchemaItemKey> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
@@ -76,7 +76,7 @@ export class Enumerations {
     }
 
     await newEnum.fromJSON(enumProps);
-    return { itemKey: newEnum.key };
+    return newEnum.key;
   }
 
   public async addEnumerator(enumerationKey: SchemaItemKey, enumerator: AnyEnumerator): Promise<void> {

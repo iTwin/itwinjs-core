@@ -124,19 +124,13 @@ export class SchemaMerger {
 
     // Filter a list of possible schema item changes. This list gets filtered and order in the
     // mergeSchemaItems method.
-    for await (const mergeResult of mergeSchemaItems(context, differences.changes)) {
-      if(mergeResult.errorMessage) {
-        throw new Error(mergeResult.errorMessage);
-      }
+    for await (const _mergeResult of mergeSchemaItems(context, differences.changes)) {
     }
 
     // At last the custom attributes gets merged because it could be that the CustomAttributes
     // depend on classes that has to get merged in as items before.
     for (const customAttributeChange of differences.changes.filter(SchemaDifference.isCustomAttributeDifference)) {
-      const mergeResult = await mergeCustomAttribute(context, customAttributeChange);
-      if(mergeResult.errorMessage) {
-        throw new Error(mergeResult.errorMessage);
-      }
+      await mergeCustomAttribute(context, customAttributeChange);
     }
 
     return schema;
