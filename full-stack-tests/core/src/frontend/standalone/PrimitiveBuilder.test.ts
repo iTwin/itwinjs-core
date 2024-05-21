@@ -8,9 +8,9 @@ import {
   DisplayParams, Geometry, GeometryAccumulator, GraphicType, IModelApp, IModelConnection, PrimitiveBuilder, ScreenViewport, SnapshotConnection,
   SpatialViewState, StandardViewId, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists,
 } from "@itwin/core-frontend";
-import { Branch } from "@itwin/core-frontend/lib/cjs/webgl";
+import { Branch } from "@itwin/core-frontend/lib/cjs/webgl.js";
 import { Arc3d, IndexedPolyface, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform } from "@itwin/core-geometry";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 describe("PrimitiveBuilder", () => {
   let imodel: IModelConnection;

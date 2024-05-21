@@ -5,7 +5,7 @@
 import { assert, Assertion, util } from "chai";
 import { ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
-import { rpcInterfaces } from "../common/RpcInterfaces";
+import { rpcInterfaces } from "../common/RpcInterfaces.js";
 import { Geometry } from "@itwin/core-geometry";
 
 RpcConfiguration.developmentMode = true;

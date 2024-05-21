@@ -5,7 +5,7 @@
 
 import { IModelDb } from "@itwin/core-backend";
 import { EditCommand } from "@itwin/editor-backend";
-import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../common/TestEditCommandIpc";
+import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../common/TestEditCommandIpc.js";
 
 export abstract class TestCommand extends EditCommand implements TestCommandIpc {
   public count = 4;

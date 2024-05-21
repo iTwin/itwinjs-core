@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, BeEvent } from "@itwin/core-bentley";
-import { getAccessTokenFromBackend } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { getAccessTokenFromBackend } from "@itwin/oidc-signin-tool/lib/cjs/frontend.js";
 import { AuthorizationClient } from "@itwin/core-common";
 
 export class IModelHubUserMgr implements AuthorizationClient {

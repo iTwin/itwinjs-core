@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
-import { getTokenCallbackName } from "./certaCommon";
+import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils.js";
+import { getTokenCallbackName } from "./certaCommon.js";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { AccessToken } from "@itwin/core-bentley";
 import { IModelHost } from "@itwin/core-backend";
-import { TestUtility } from "../frontend/TestUtility";
+import { TestUtility } from "../frontend/TestUtility.js";
 
 // A backend to use within Certa's `backendInitModule` to setup OIDC sign-in
 

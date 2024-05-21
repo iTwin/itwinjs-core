@@ -10,7 +10,7 @@ import {
   TileRequest, TileRequestChannel, TileTree,
 } from "@itwin/core-frontend";
 import { Range3d, Transform } from "@itwin/core-geometry";
-import { TestUtility } from "../../TestUtility";
+import { TestUtility } from "../../TestUtility.js";
 
 class MockTile extends Tile {
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {

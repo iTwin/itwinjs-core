@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { CartographicRange } from "@itwin/core-common";
 import { SnapshotConnection } from "@itwin/core-frontend";
 import { Range2d } from "@itwin/core-geometry";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 describe("Cartographic range tests", () => {
   let imodel: SnapshotConnection;

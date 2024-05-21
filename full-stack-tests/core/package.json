@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "copy:config": "internal-tools copy-config",
     "build": "tsc 1>&2 && npm run -s webpack:test",

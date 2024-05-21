@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { BeDuration, Id64, Id64Arg, Id64Set, Id64String } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection, SubCategoriesCache } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 describe("SubCategoriesCache", () => {
   // test.bim:

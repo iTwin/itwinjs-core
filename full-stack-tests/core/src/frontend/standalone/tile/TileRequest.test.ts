@@ -12,9 +12,9 @@ import {
   TileRequestChannel, TileStorage, Viewport,
 } from "@itwin/core-frontend";
 import type { FrontendStorage, TransferConfig } from "@itwin/object-storage-core/lib/frontend";
-import { TestUtility } from "../../TestUtility";
-import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0";
-import { fakeViewState } from "./TileIO.test";
+import { TestUtility } from "../../TestUtility.js";
+import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0.js";
+import { fakeViewState } from "./TileIO.test.js";
 
 use(sinonChai);
 

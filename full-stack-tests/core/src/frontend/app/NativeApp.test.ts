@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend.js";
 import { NativeApp } from "@itwin/core-frontend";
-import { usingOfflineScope } from "../HttpRequestHook";
-import { TestRpcInterface } from "../../common/RpcInterfaces";
+import { usingOfflineScope } from "../HttpRequestHook.js";
+import { TestRpcInterface } from "../../common/RpcInterfaces.js";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 if (ProcessDetector.isElectronAppFrontend) {
 

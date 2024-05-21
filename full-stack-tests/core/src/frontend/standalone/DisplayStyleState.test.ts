@@ -10,8 +10,8 @@ import {
 } from "@itwin/core-common";
 import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Vector3d } from "@itwin/core-geometry";
-import { AzuriteUsers, TestRpcInterface } from "../../common/RpcInterfaces";
-import { TestUtility } from "../TestUtility";
+import { AzuriteUsers, TestRpcInterface } from "../../common/RpcInterfaces.js";
+import { TestUtility } from "../TestUtility.js";
 
 describe("DisplayStyle", () => {
   let imodel: IModelConnection;

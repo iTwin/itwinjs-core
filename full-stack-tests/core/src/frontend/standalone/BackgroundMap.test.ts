@@ -8,8 +8,8 @@ import {
   TerrainHeightOriginMode,
 } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
-import { testOnScreenViewport, TestViewport } from "../TestViewport";
+import { TestUtility } from "../TestUtility.js";
+import { testOnScreenViewport, TestViewport } from "../TestViewport.js";
 
 describe("Background map", () => {
   let imodel: IModelConnection;

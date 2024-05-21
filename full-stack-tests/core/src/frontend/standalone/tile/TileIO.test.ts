@@ -12,16 +12,16 @@ import {
   GeometricModelState, ImdlModel, ImdlReader, IModelApp, IModelConnection, IModelTileContent, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender,
   parseImdlDocument, RenderGraphic, SnapshotConnection, SurfaceType, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
 } from "@itwin/core-frontend";
-import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@itwin/core-frontend/lib/cjs/webgl";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { TestUtility } from "../../TestUtility";
-import { TileTestCase, TileTestData } from "./data/TileIO.data";
-import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
-import { TILE_DATA_1_2 } from "./data/TileIO.data.1.2";
-import { TILE_DATA_1_3 } from "./data/TileIO.data.1.3";
-import { TILE_DATA_1_4 } from "./data/TileIO.data.1.4";
-import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0";
-import { changeHeaderLength, changeMajorVersion, changeMinorVersion } from "./data/TileIO.data.fake";
+import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@itwin/core-frontend/lib/cjs/webgl.js";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend.js";
+import { TestUtility } from "../../TestUtility.js";
+import { TileTestCase, TileTestData } from "./data/TileIO.data.js";
+import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1.js";
+import { TILE_DATA_1_2 } from "./data/TileIO.data.1.2.js";
+import { TILE_DATA_1_3 } from "./data/TileIO.data.1.3.js";
+import { TILE_DATA_1_4 } from "./data/TileIO.data.1.4.js";
+import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0.js";
+import { changeHeaderLength, changeMajorVersion, changeMinorVersion } from "./data/TileIO.data.fake.js";
 
 /* eslint-disable @typescript-eslint/unbound-method */
 

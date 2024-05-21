@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import { ColorDef, FeatureAppearance, MonochromeMode, RenderMode } from "@itwin/core-common";
 import { FeatureSymbology, IModelConnection, SnapshotConnection, Viewport } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
-import { Color, testOnScreenViewport } from "../TestViewport";
+import { TestUtility } from "../TestUtility.js";
+import { Color, testOnScreenViewport } from "../TestViewport.js";
 
 describe("Monochrome", async () => {
   let imodel: IModelConnection;

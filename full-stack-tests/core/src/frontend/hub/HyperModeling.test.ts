@@ -10,9 +10,9 @@ import { Point3d } from "@itwin/core-geometry";
 import {
   HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerConfig, SectionMarkerHandler,
 } from "@itwin/hypermodeling-frontend";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
-import { testOnScreenViewport } from "../TestViewport";
-import { TestUtility } from "../TestUtility";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers.js";
+import { testOnScreenViewport } from "../TestViewport.js";
+import { TestUtility } from "../TestUtility.js";
 
 describe("HyperModeling (#integration)", () => {
   let imodel: IModelConnection; // An iModel containing no section drawing locations

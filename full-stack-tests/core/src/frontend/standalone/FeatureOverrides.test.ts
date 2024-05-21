@@ -6,8 +6,8 @@ import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@itwin/core-common";
 import { HiliteSet, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Target } from "@itwin/core-frontend";
-import { FeatureOverrides } from "@itwin/core-frontend/lib/cjs/webgl";
-import { TestUtility } from "../TestUtility";
+import { FeatureOverrides } from "@itwin/core-frontend/lib/cjs/webgl.js";
+import { TestUtility } from "../TestUtility.js";
 
 function waitUntilTimeHasPassed() {
   const ot = Date.now();
