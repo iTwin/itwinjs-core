@@ -8,7 +8,7 @@ import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
 import * as semver from "semver";
 import { AccessToken, BeEvent, DbResult, Mutable, OpenMode } from "@itwin/core-bentley";
-import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
+import { FilePropertyProps, IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { CloudSqlite } from "../../CloudSqlite";
 import { IModelHost, KnownLocations } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
@@ -17,9 +17,16 @@ import { SqliteStatement } from "../../SqliteStatement";
 import { BaseSettings, SettingName, SettingObject, Settings } from "../../workspace/Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { SettingsSchemas } from "../../workspace/SettingsSchemas";
-import { OwnedWorkspace, Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceOpts, WorkspaceResource, WorkspaceSettings } from "../../workspace/Workspace";
+import { Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceOpts, WorkspaceResource, WorkspaceSettings } from "../../workspace/Workspace";
 import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
+
+function workspaceDbNameWithDefault(dbName?: WorkspaceDb.DbName): WorkspaceDb.DbName {
+  return dbName ?? "workspace-db";
+}
+
+/** file extension for local WorkspaceDbs */
+const workspaceDbFileExt = "itwin-workspace";
 
 interface WorkspaceCloudContainer extends CloudSqlite.CloudContainer {
   connectCount: number;
@@ -110,9 +117,9 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
   public resolveDbFileName(props: WorkspaceDb.Props): WorkspaceDb.DbFullName {
     const cloudContainer = this.cloudContainer;
     if (undefined === cloudContainer)
-      return join(this.dirName, `${props.dbName}.${WorkspaceDb.fileExt}`); // local file, versions not allowed
+      return join(this.dirName, `${props.dbName}.${workspaceDbFileExt}`); // local file, versions not allowed
 
-    const dbName = WorkspaceDb.dbNameWithDefault(props.dbName);
+    const dbName = workspaceDbNameWithDefault(props.dbName);
     const dbs = cloudContainer.queryDatabases(`${dbName}*`); // get all databases that start with dbName
 
     const versions = [];
@@ -132,7 +139,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
         return `${dbName}:${version}`;
     } catch (e: unknown) {
     }
-    WorkspaceDb.throwLoadError(`No version of '${dbName}' available for "${range}"`, props);
+    throwWorkspaceDbLoadError(`No version of '${dbName}' available for "${range}"`, props);
   }
 
   public addWorkspaceDb(toAdd: WorkspaceDb) {
@@ -142,7 +149,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
   }
 
   public getWorkspaceDb(props?: WorkspaceDb.Props): WorkspaceDb {
-    return this._wsDbs.get(WorkspaceDb.dbNameWithDefault(props?.dbName)) ?? new WorkspaceDbImpl(props ?? {}, this);
+    return this._wsDbs.get(workspaceDbNameWithDefault(props?.dbName)) ?? new WorkspaceDbImpl(props ?? {}, this);
   }
 
   public closeWorkspaceDb(toDrop: WorkspaceDb) {
@@ -186,7 +193,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
   }
 
   public constructor(props: WorkspaceDb.Props, container: WorkspaceContainer) {
-    this.dbName = WorkspaceDb.dbNameWithDefault(props.dbName);
+    this.dbName = workspaceDbNameWithDefault(props.dbName);
     validateWorkspaceDbName(this.dbName);
     this.container = container;
     this.dbFileName = container.resolveDbFileName(props);
@@ -212,7 +219,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
 
   public get manifest(): WorkspaceDb.Manifest {
     return this._manifest ??= this.withOpenDb((db) => {
-      const manifestJson = db.nativeDb.queryFileProperty(WorkspaceDb.manifestProperty, true) as string | undefined;
+      const manifestJson = db.nativeDb.queryFileProperty(workspaceManifestProperty, true) as string | undefined;
       return manifestJson ? JSON.parse(manifestJson) : { workspaceName: this.dbName };
     });
   }
@@ -365,7 +372,7 @@ class WorkspaceImpl implements Workspace {
         if (undefined === this.settings.getDictionary(dictProps)) {
           const settingsJson = db.getString(prop.resourceName);
           if (undefined === settingsJson)
-            WorkspaceDb.throwLoadError(`could not load setting dictionary resource '${prop.resourceName}' from: '${manifest.workspaceName}'`, prop, db);
+            throwWorkspaceDbLoadError(`could not load setting dictionary resource '${prop.resourceName}' from: '${manifest.workspaceName}'`, prop, db);
 
           db.close(); // don't leave this db open in case we're going to find another dictionary in it recursively.
 
@@ -450,7 +457,7 @@ class EditorImpl implements WorkspaceEditor {
       protected static override _cacheName = workspaceEditorName;
       public static async initializeWorkspace(args: WorkspaceEditor.CreateNewContainerProps) {
         const props = await this.createBlobContainer({ scope: args.scope, metadata: { ...args.metadata, containerType: "workspace" } });
-        const dbFullName = makeWorkspaceDbFileName(WorkspaceDb.dbNameWithDefault(args.dbName), "1.0.0");
+        const dbFullName = makeWorkspaceDbFileName(workspaceDbNameWithDefault(args.dbName), "1.0.0");
         await super._initializeDb({ ...args, props, dbName: dbFullName, dbType: WorkspaceSqliteDb, blockSize: "4M" });
         return props;
       }
@@ -503,7 +510,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEdi
     const oldDb = parseWorkspaceDbFileName(oldName);
     const newVersion = semver.inc(oldDb.version, args.versionType, args.identifier);
     if (!newVersion)
-      WorkspaceDb.throwLoadError("invalid version", args.fromProps ?? {});
+      throwWorkspaceDbLoadError("invalid version", args.fromProps ?? {});
 
     const newName = makeWorkspaceDbFileName(oldDb.dbName, newVersion);
     await cloudContainer.copyDatabase(oldName, newName);
@@ -515,7 +522,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEdi
     return this.getEditableDb(props);
   }
   public getEditableDb(props: WorkspaceDb.Props): EditableWorkspaceDb {
-    const db = this._wsDbs.get(WorkspaceDb.dbNameWithDefault(props.dbName)) as EditableDbImpl | undefined ?? new EditableDbImpl(props, this);
+    const db = this._wsDbs.get(workspaceDbNameWithDefault(props.dbName)) as EditableDbImpl | undefined ?? new EditableDbImpl(props, this);
     if (this.cloudContainer && this.cloudContainer.queryDatabase(db.dbFileName)?.state !== "copied")
       throw new Error(`${db.dbFileName} has been published and is not editable. Make a new version first.`);
     return db;
@@ -547,11 +554,11 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEdi
       WorkspaceEditor.createEmptyDb({ localFileName: this.resolveDbFileName(args), manifest: args.manifest });
     } else {
       // currently the only way to create a workspaceDb in a cloud container is to create a temporary workspaceDb and upload it.
-      const tempDbFile = join(KnownLocations.tmpdir, `empty.${WorkspaceDb.fileExt}`);
+      const tempDbFile = join(KnownLocations.tmpdir, `empty.${workspaceDbFileExt}`);
       if (fs.existsSync(tempDbFile))
         IModelJsFs.removeSync(tempDbFile);
       WorkspaceEditor.createEmptyDb({ localFileName: tempDbFile, manifest: args.manifest });
-      await CloudSqlite.uploadDb(this.cloudContainer, { localFileName: tempDbFile, dbName: makeWorkspaceDbFileName(WorkspaceDb.dbNameWithDefault(args.dbName), args.version) });
+      await CloudSqlite.uploadDb(this.cloudContainer, { localFileName: tempDbFile, dbName: makeWorkspaceDbFileName(workspaceDbNameWithDefault(args.dbName), args.version) });
       IModelJsFs.removeSync(tempDbFile);
     }
     return this.getWorkspaceDb(args);
@@ -620,7 +627,7 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
   }
 
   public updateManifest(manifest: WorkspaceDb.Manifest) {
-    this.sqliteDb.nativeDb.saveFileProperty(WorkspaceDb.manifestProperty, JSON.stringify(manifest));
+    this.sqliteDb.nativeDb.saveFileProperty(workspaceManifestProperty, JSON.stringify(manifest));
     this._manifest = undefined;
   }
   public updateSettingsResource(settings: SettingObject, rscName?: string) {
@@ -742,4 +749,25 @@ export function parseWorkspaceDbFileName(dbFileName: WorkspaceDb.DbFullName): { 
 /** Create a dbName for a WorkspaceDb from its base name and version. This will be in the format "name:version" */
 export function makeWorkspaceDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName {
   return `${dbName}:${validateWorkspaceDbVersion(version)}`;
+}
+
+export const workspaceManifestProperty: FilePropertyProps = { namespace: "workspace", name: "manifest" };
+
+
+function throwWorkspaceDbLoadError(msg: string, wsDbProps: WorkspaceDb.Props | WorkspaceDb.CloudProps, db?: WorkspaceDb): never {
+  const error = new Error(msg) as WorkspaceDb.LoadError;
+  error.wsDbProps = wsDbProps;
+  error.wsDb = db;
+  throw error;
+}
+
+export function throwWorkspaceDbLoadErrors(msg: string, errors: WorkspaceDb.LoadError[]): never {
+  const error = new Error(msg) as WorkspaceDb.LoadErrors;
+  error.wsLoadErrors = errors;
+  throw error;
+}
+
+export interface OwnedWorkspace extends Workspace {
+  /** Only the owner of a Workspace may close it. */
+  close(): void;
 }

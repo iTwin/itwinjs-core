@@ -35,10 +35,10 @@ import { initializeRpcBackend } from "./RpcBackend";
 import { TileStorage } from "./TileStorage";
 import { BaseSettings, SettingObject, Settings } from "./workspace/Settings";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
-import { OwnedWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
+import { Workspace, WorkspaceOpts } from "./workspace/Workspace";
 import { Container } from "inversify";
 import { join, normalize as normalizeDir } from "path";
-import { constructWorkspace } from "./internal/workspace/WorkspaceImpl";
+import { constructWorkspace, OwnedWorkspace } from "./internal/workspace/WorkspaceImpl";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 

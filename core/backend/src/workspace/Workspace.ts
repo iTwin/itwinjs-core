@@ -43,14 +43,6 @@ export namespace WorkspaceContainer {
 
 /** @beta */
 export namespace WorkspaceDb {
-  /** complete a WorkspaceDb name, replacing undefined with the default value "workspace-db"
-   * @internal
-   */
-  export const dbNameWithDefault = (dbName?: WorkspaceDb.DbName) => dbName ?? "workspace-db";
-
-  /** @internal */
-  export const manifestProperty = { namespace: "workspace", name: "manifest" };
-
   /** The base name of a WorkspaceDb within a WorkspaceContainer (without any version identifier) */
   export type DbName = string;
 
@@ -100,11 +92,6 @@ export namespace WorkspaceDb {
     readonly lastEditedBy?: string;
   }
 
-  /** file extension for local WorkspaceDbs
-   * @internal
-   */
-  export const fileExt = "itwin-workspace";
-
   /**
    * An exception that happens attempting to load a WorkspaceDb or data from WorkspaceDb (e.g. the WorkspaceDb
    * can't be found or the user isn't authorized for access to the container.)
@@ -123,21 +110,6 @@ export namespace WorkspaceDb {
      * is that the user doesn't have read access to the container of the WorkspaceDb.
      */
     wsLoadErrors?: LoadError[];
-  }
-
-  /** @internal */
-  export function throwLoadError(msg: string, wsDbProps: WorkspaceDb.Props | WorkspaceDb.CloudProps, db?: WorkspaceDb): never {
-    const error = new Error(msg) as WorkspaceDb.LoadError;
-    error.wsDbProps = wsDbProps;
-    error.wsDb = db;
-    throw error;
-  }
-
-  /** @internal */
-  export function throwLoadErrors(msg: string, errors: WorkspaceDb.LoadError[]): never {
-    const error = new Error(msg) as WorkspaceDb.LoadErrors;
-    error.wsLoadErrors = errors;
-    throw error;
   }
 }
 
@@ -383,12 +355,6 @@ export interface Workspace {
       /** only valid when called with a settingName, if so passed as `filter` argument to [[resolveWorkspaceDbSetting]]  */
       filter?: Workspace.DbListFilter;
     }): Promise<WorkspaceDb[]>;
-}
-
-/** @internal */
-export interface OwnedWorkspace extends Workspace {
-  /** Only the owner of a Workspace may close it. */
-  close(): void;
 }
 
 /**

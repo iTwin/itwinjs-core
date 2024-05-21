@@ -58,8 +58,8 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { BaseSettings, SettingName, SettingObject, Settings, SettingType } from "./workspace/Settings";
-import { OwnedWorkspace, Workspace, WorkspaceDb, WorkspaceSettings } from "./workspace/Workspace";
-import { constructWorkspace } from "./internal/workspace/WorkspaceImpl";
+import { Workspace, WorkspaceDb, WorkspaceSettings } from "./workspace/Workspace";
+import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "./internal/workspace/WorkspaceImpl";
 
 import type { BlobContainer } from "./BlobContainerService";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
@@ -1471,7 +1471,7 @@ export abstract class IModelDb extends IModel {
         await this.workspace.loadSettingsDictionary(settingProps, problems);
 
       if (problems.length > 0)
-        WorkspaceDb.throwLoadErrors(`attempting to load workspace settings for iModel '${this.name}':`, problems);
+        throwWorkspaceDbLoadErrors(`attempting to load workspace settings for iModel '${this.name}':`, problems);
     } catch (e) {
       // we don't want to throw exceptions when attempting to load Dictionaries. Call the diagnostics function instead.
       Workspace.exceptionDiagnosticFn(e as WorkspaceDb.LoadErrors);
