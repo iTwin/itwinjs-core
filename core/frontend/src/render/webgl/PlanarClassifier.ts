@@ -297,6 +297,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
   }
 
+  public get renderCommands(): RenderCommands { return this._renderCommands; }
   public get hiliteTexture(): Texture | undefined { return undefined !== this._classifierBuffers ? this._classifierBuffers.textures.hilite : undefined; }
   public get projectionMatrix(): Matrix4d { return this._projectionMatrix; }
   // public get properties(): SpatialClassifier { return this._classifier; }

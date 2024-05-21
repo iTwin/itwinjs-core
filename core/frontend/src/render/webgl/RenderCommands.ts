@@ -54,6 +54,8 @@ export class RenderCommands implements Iterable<DrawCommands> {
     return this._commands[Symbol.iterator]();
   }
 
+  public get currentBranch(): BranchState { return this._stack.top; }
+
   public get isEmpty(): boolean {
     for (const commands of this._commands)
       if (0 < commands.length)
