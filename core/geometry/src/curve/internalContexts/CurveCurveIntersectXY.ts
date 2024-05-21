@@ -477,9 +477,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
   }
   /**
-   * We have 2 xy-arcs. 
+   * We have 2 xy-arcs.
    * 1- We pick the arc that is closest to circular (larger condition number is closer to circular).
-   * 2- Transform it to local coords, where it becomes the unit xy-circle. 
+   * 2- Transform it to local coords, where it becomes the unit xy-circle.
    * 3- Use the same map to transform the other arc.
    * 4- Find the intersection of arc and unit circle.
    * 5- Convert intersection angles to fractions and record intersections.
