@@ -11,22 +11,23 @@ import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { Settings } from "../../workspace/Settings";
 import { Workspace, WorkspaceContainer, WorkspaceDb } from "../../workspace/Workspace";
+import { WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("WorkspaceFile", () => {
 
-  let editor: Workspace.Editor;
+  let editor: WorkspaceEditor;
   let workspace: Workspace;
 
   before(() => {
-    editor = Workspace.constructEditor();
+    editor = WorkspaceEditor.construct();
     workspace = editor.workspace;
   });
   after(() => {
     editor.close();
   });
 
-  async function makeEditableDb(props: WorkspaceDb.Props & WorkspaceContainer.Props, manifest: WorkspaceDb.Manifest): Promise<Workspace.Editor.EditableDb> {
+  async function makeEditableDb(props: WorkspaceDb.Props & WorkspaceContainer.Props, manifest: WorkspaceDb.Manifest): Promise<WorkspaceEditor.EditableDb> {
     const container = editor.getContainer({ ...props, accessToken: "" });
     const wsFile = await container.createDb({ ...props, manifest });
     wsFile.open();
