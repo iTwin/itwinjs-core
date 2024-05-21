@@ -1,0 +1,691 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+import { createHash } from "crypto";
+import * as fs from "fs-extra";
+import { dirname, extname, join } from "path";
+import * as semver from "semver";
+import { AccessToken, BeEvent, DbResult, Mutable, OpenMode } from "@itwin/core-bentley";
+import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
+import { CloudSqlite } from "../../CloudSqlite";
+import { IModelHost, KnownLocations } from "../../IModelHost";
+import { IModelJsFs } from "../../IModelJsFs";
+import { SQLiteDb } from "../../SQLiteDb";
+import { SqliteStatement } from "../../SqliteStatement";
+import { BaseSettings, SettingName, SettingObject, Settings } from "../../workspace/Settings";
+import type { IModelJsNative } from "@bentley/imodeljs-native";
+import { SettingsSchemas } from "../../workspace/SettingsSchemas";
+import { OwnedWorkspace, Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceOpts, WorkspaceResource, WorkspaceSettings, WorkspaceSqliteDb } from "../../workspace/Workspace";
+
+interface WorkspaceCloudContainer extends CloudSqlite.CloudContainer {
+  connectCount: number;
+  sharedConnect(): boolean;
+  sharedDisconnect(): void;
+}
+
+interface WorkspaceCloudCache extends CloudSqlite.CloudCache {
+  workspaceContainers: Map<string, WorkspaceCloudContainer>;
+}
+
+function makeWorkspaceCloudCache(arg: CloudSqlite.CreateCloudCacheArg): WorkspaceCloudCache {
+  const cache = CloudSqlite.CloudCaches.getCache(arg) as WorkspaceCloudCache;
+  if (undefined === cache.workspaceContainers) // if we just created this container, add the map.
+    cache.workspaceContainers = new Map<string, WorkspaceCloudContainer>();
+  return cache;
+}
+
+function getContainerFullId(props: WorkspaceContainer.Props) {
+  return `${props.baseUri}/${props.containerId}`;
+}
+
+function getWorkspaceCloudContainer(props: CloudSqlite.ContainerAccessProps, cache: WorkspaceCloudCache) {
+  const id = getContainerFullId(props);
+  let cloudContainer = cache.workspaceContainers.get(id);
+  if (undefined !== cloudContainer)
+    return cloudContainer;
+
+  cloudContainer = CloudSqlite.createCloudContainer(props) as WorkspaceCloudContainer;
+  cache.workspaceContainers.set(id, cloudContainer);
+  cloudContainer.connectCount = 0;
+  cloudContainer.sharedConnect = function (this: WorkspaceCloudContainer) {
+    if (this.connectCount++ === 0) {
+      this.connect(cache);
+      return true;
+    }
+
+    return false;
+  };
+
+  cloudContainer.sharedDisconnect = function (this: WorkspaceCloudContainer) {
+    if (--this.connectCount <= 0) {
+      this.disconnect();
+      cache.workspaceContainers.delete(id);
+      this.connectCount = 0;
+    }
+  };
+
+  return cloudContainer;
+}
+
+class WorkspaceContainerImpl implements WorkspaceContainer {
+  public readonly workspace: WorkspaceImpl;
+  public readonly filesDir: LocalDirName;
+  public readonly id: WorkspaceContainer.Id;
+  public readonly fromProps: WorkspaceContainer.Props;
+
+  public readonly cloudContainer?: WorkspaceCloudContainer | undefined;
+  protected _wsDbs = new Map<WorkspaceDb.DbName, WorkspaceDb>();
+  public get dirName() { return join(this.workspace.containerDir, this.id); }
+
+  public constructor(workspace: WorkspaceImpl, props: WorkspaceContainer.Props & { accessToken: AccessToken }) {
+    WorkspaceContainer.validateContainerId(props.containerId);
+    this.workspace = workspace;
+    this.id = props.containerId;
+    this.fromProps = props;
+
+    if (props.baseUri !== "")
+      this.cloudContainer = getWorkspaceCloudContainer(props, this.workspace.getCloudCache());
+
+    workspace.addContainer(this);
+    this.filesDir = join(this.dirName, "Files");
+
+    const cloudContainer = this.cloudContainer;
+    if (undefined === cloudContainer)
+      return;
+
+    // sharedConnect returns true if we just connected (if the container is shared, it may have already been connected)
+    if (cloudContainer.sharedConnect() && false !== props.syncOnConnect) {
+      try {
+        cloudContainer.checkForChanges();
+      } catch (e: unknown) {
+        // must be offline
+      }
+    }
+  }
+
+  public resolveDbFileName(props: WorkspaceDb.Props): WorkspaceDb.DbFullName {
+    const cloudContainer = this.cloudContainer;
+    if (undefined === cloudContainer)
+      return join(this.dirName, `${props.dbName}.${WorkspaceDb.fileExt}`); // local file, versions not allowed
+
+    const dbName = WorkspaceDb.dbNameWithDefault(props.dbName);
+    const dbs = cloudContainer.queryDatabases(`${dbName}*`); // get all databases that start with dbName
+
+    const versions = [];
+    for (const db of dbs) {
+      const thisDb = WorkspaceContainer.parseDbFileName(db);
+      if (thisDb.dbName === dbName && "string" === typeof thisDb.version && thisDb.version.length > 0)
+        versions.push(thisDb.version);
+    }
+
+    if (versions.length === 0)
+      versions[0] = "1.0.0";
+
+    const range = props.version ?? "*";
+    try {
+      const version = semver.maxSatisfying(versions, range, { loose: true, includePrerelease: props.includePrerelease });
+      if (version)
+        return `${dbName}:${version}`;
+    } catch (e: unknown) {
+    }
+    WorkspaceDb.throwLoadError(`No version of '${dbName}' available for "${range}"`, props);
+  }
+
+  public addWorkspaceDb(toAdd: WorkspaceDb) {
+    if (undefined !== this._wsDbs.get(toAdd.dbName))
+      throw new Error(`workspaceDb '${toAdd.dbName}' already exists in workspace`);
+    this._wsDbs.set(toAdd.dbName, toAdd);
+  }
+
+  public getWorkspaceDb(props?: WorkspaceDb.Props): WorkspaceDb {
+    return this._wsDbs.get(WorkspaceDb.dbNameWithDefault(props?.dbName)) ?? new WorkspaceDbImpl(props ?? {}, this);
+  }
+
+  public closeWorkspaceDb(toDrop: WorkspaceDb) {
+    const name = toDrop.dbName;
+    const wsDb = this._wsDbs.get(name);
+    if (wsDb === toDrop) {
+      this._wsDbs.delete(name);
+      wsDb.close();
+    }
+  }
+
+  public close() {
+    for (const [_name, db] of this._wsDbs)
+      db.close();
+    this._wsDbs.clear();
+    this.cloudContainer?.sharedDisconnect();
+  }
+}
+
+/** Implementation of WorkspaceDb */
+class WorkspaceDbImpl implements WorkspaceDb {
+  public readonly sqliteDb = new WorkspaceSqliteDb();
+  public readonly dbName: WorkspaceDb.DbName;
+  public readonly container: WorkspaceContainer;
+  public readonly onClose = new BeEvent<() => void>();
+  public readonly dbFileName: string;
+  protected _manifest?: WorkspaceDb.Manifest;
+
+  /** true if this WorkspaceDb is currently open */
+  public get isOpen() { return this.sqliteDb.isOpen; }
+  public queryFileResource(rscName: WorkspaceResource.Name): { localFileName: LocalFileName, info: IModelJsNative.EmbedFileQuery } | undefined {
+    const info = this.sqliteDb.nativeDb.queryEmbeddedFile(rscName);
+    if (undefined === info)
+      return undefined;
+
+    // since resource names can contain illegal characters, path separators, etc., we make the local file name from its hash, in hex.
+    let localFileName = join(this.container.filesDir, createHash("sha1").update(this.dbFileName).update(rscName).digest("hex"));
+    if (info.fileExt !== "") // since some applications may expect to see the extension, append it here if it was supplied.
+      localFileName = `${localFileName}.${info.fileExt}`;
+    return { localFileName, info };
+  }
+
+  public constructor(props: WorkspaceDb.Props, container: WorkspaceContainer) {
+    this.dbName = WorkspaceDb.dbNameWithDefault(props.dbName);
+    WorkspaceContainer.validateDbName(this.dbName);
+    this.container = container;
+    this.dbFileName = container.resolveDbFileName(props);
+    container.addWorkspaceDb(this);
+    if (true === props.prefetch)
+      this.prefetch();
+  }
+
+  public open() {
+    this.sqliteDb.openDb(this.dbFileName, OpenMode.Readonly, this.container.cloudContainer);
+  }
+
+  public close() {
+    if (this.isOpen) {
+      this.onClose.raiseEvent();
+      this.sqliteDb.closeDb();
+      this.container.closeWorkspaceDb(this);
+    }
+  }
+  public get version() {
+    return WorkspaceContainer.parseDbFileName(this.dbFileName).version;
+  }
+
+  public get manifest(): WorkspaceDb.Manifest {
+    return this._manifest ??= this.withOpenDb((db) => {
+      const manifestJson = db.nativeDb.queryFileProperty(WorkspaceDb.manifestProperty, true) as string | undefined;
+      return manifestJson ? JSON.parse(manifestJson) : { workspaceName: this.dbName };
+    });
+  }
+
+  private withOpenDb<T>(operation: (db: WorkspaceSqliteDb) => T): T {
+    const done = this.isOpen ? () => { } : (this.open(), () => this.close());
+    try {
+      return operation(this.sqliteDb);
+    } finally {
+      done();
+    }
+  }
+
+  public getString(rscName: WorkspaceResource.Name): string | undefined {
+    return this.withOpenDb((db) => {
+      return db.withSqliteStatement("SELECT value from strings WHERE id=?", (stmt) => {
+        stmt.bindString(1, rscName);
+        return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValueString(0) : undefined;
+      });
+    });
+  }
+
+  public getBlobReader(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO {
+    return this.sqliteDb.withSqliteStatement("SELECT rowid from blobs WHERE id=?", (stmt) => {
+      stmt.bindString(1, rscName);
+      const blobReader = SQLiteDb.createBlobIO();
+      blobReader.open(this.sqliteDb.nativeDb, { tableName: "blobs", columnName: "value", row: stmt.getValueInteger(0) });
+      return blobReader;
+    });
+  }
+
+  public getBlob(rscName: WorkspaceResource.Name): Uint8Array | undefined {
+    return this.withOpenDb((db) => {
+      return db.withSqliteStatement("SELECT value from blobs WHERE id=?", (stmt) => {
+        stmt.bindString(1, rscName);
+        return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValueBlob(0) : undefined;
+      });
+    });
+  }
+
+  public getFile(rscName: WorkspaceResource.Name, targetFileName?: LocalFileName): LocalFileName | undefined {
+    return this.withOpenDb((db) => {
+      const file = this.queryFileResource(rscName);
+      if (!file)
+        return undefined;
+
+      const info = file.info;
+      const localFileName = targetFileName ?? file.localFileName;
+
+      // check whether the file is already up to date.
+      const stat = fs.existsSync(localFileName) && fs.statSync(localFileName);
+      if (stat && Math.round(stat.mtimeMs) === info.date && stat.size === info.size)
+        return localFileName; // yes, we're done
+
+      // extractEmbeddedFile fails if the file exists or if the directory does not exist
+      if (stat)
+        fs.removeSync(localFileName);
+      else
+        IModelJsFs.recursiveMkDirSync(dirname(localFileName));
+
+      db.nativeDb.extractEmbeddedFile({ name: rscName, localFileName });
+      const date = new Date(info.date);
+      fs.utimesSync(localFileName, date, date); // set the last-modified date of the file to match date in container
+      fs.chmodSync(localFileName, "0444"); // set file readonly
+      return localFileName;
+    });
+  }
+
+  public prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch {
+    const cloudContainer = this.container.cloudContainer;
+    if (cloudContainer === undefined)
+      throw new Error("no cloud container to prefetch");
+    return CloudSqlite.startCloudPrefetch(cloudContainer, this.dbFileName, opts);
+  }
+
+  public queryResource(search: WorkspaceResource.Search, resourceType: Workspace.SearchResourceType, callback: Workspace.ForEachResource): Workspace.IterationReturn {
+    return this.withOpenDb((db) => {
+      return db.withSqliteStatement(`SELECT id from ${resourceType}s WHERE id ${search.nameCompare ?? "="} ?`, (stmt) => {
+        stmt.bindString(1, search.nameSearch);
+        while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+          if (callback({ workspaceDb: this, rscName: stmt.getValueString(0) }) === "stop")
+            return "stop";
+        }
+        return;
+      });
+    });
+  }
+}
+
+/** Implementation of Workspace */
+class WorkspaceImpl implements Workspace {
+  private _containers = new Map<WorkspaceContainer.Id, WorkspaceContainerImpl>();
+  public readonly containerDir: LocalDirName;
+  public readonly settings: Settings;
+  protected _cloudCache?: WorkspaceCloudCache;
+  public getCloudCache(): WorkspaceCloudCache {
+    return this._cloudCache ??= makeWorkspaceCloudCache({ cacheName: "Workspace", cacheSize: "20G" });
+  }
+
+  public constructor(settings: Settings, opts?: WorkspaceOpts) {
+    this.settings = settings;
+    this.containerDir = opts?.containerDir ?? join(IModelHost.cacheDir, "Workspace");
+    let settingsFiles = opts?.settingsFiles;
+    if (settingsFiles) {
+      if (typeof settingsFiles === "string")
+        settingsFiles = [settingsFiles];
+      settingsFiles.forEach((file) => settings.addFile(file, Settings.Priority.application));
+    }
+  }
+
+  public addContainer(toAdd: WorkspaceContainerImpl) {
+    if (undefined !== this._containers.get(toAdd.id))
+      throw new Error("container already exists in workspace");
+    this._containers.set(toAdd.id, toAdd);
+  }
+
+  public findContainer(containerId: WorkspaceContainer.Id) {
+    return this._containers.get(containerId);
+  }
+
+  public getContainer(props: WorkspaceContainer.Props & Workspace.WithAccessToken): WorkspaceContainer {
+    return this.findContainer(props.containerId) ?? new WorkspaceContainerImpl(this, props);
+  }
+
+  public async getContainerAsync(props: WorkspaceContainer.Props): Promise<WorkspaceContainer> {
+    const accessToken = props.accessToken ?? ((props.baseUri === "") || props.isPublic) ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "read" });
+    return this.getContainer({ ...props, accessToken });
+  }
+
+  public async getWorkspaceDb(props: WorkspaceDb.CloudProps): Promise<WorkspaceDb> {
+    let container: WorkspaceContainer | undefined = this.findContainer(props.containerId);
+    if (undefined === container) {
+      const accessToken = props.isPublic ? "" : await CloudSqlite.requestToken({ accessLevel: "read", ...props });
+      container = new WorkspaceContainerImpl(this, { ...props, accessToken });
+    }
+    return container.getWorkspaceDb(props);
+  }
+
+  public async loadSettingsDictionary(props: WorkspaceSettings.Props | WorkspaceSettings.Props[], problems?: WorkspaceDb.LoadError[]) {
+    if (!Array.isArray(props))
+      props = [props];
+
+    for (const prop of props) {
+      const db = await this.getWorkspaceDb(prop);
+      db.open();
+      try {
+        const manifest = db.manifest;
+        const dictProps: Settings.Dictionary.Props = { name: prop.resourceName, workspaceDb: db, priority: prop.priority };
+        // don't load if we already have this dictionary. Happens if the same WorkspaceDb is in more than one list
+        if (undefined === this.settings.getDictionary(dictProps)) {
+          const settingsJson = db.getString(prop.resourceName);
+          if (undefined === settingsJson)
+            WorkspaceDb.throwLoadError(`could not load setting dictionary resource '${prop.resourceName}' from: '${manifest.workspaceName}'`, prop, db);
+
+          db.close(); // don't leave this db open in case we're going to find another dictionary in it recursively.
+
+          this.settings.addJson(dictProps, settingsJson);
+          const dict = this.settings.getDictionary(dictProps);
+          if (dict) {
+            Workspace.onSettingsDictionaryLoadedFn({ dict, from: db });
+            // if the dictionary we just loaded has a "settingsWorkspaces" entry, load them too, recursively
+            const nested = dict.getSetting<WorkspaceSettings.Props[]>(Workspace.settingName.settingsWorkspaces);
+            if (nested !== undefined) {
+              SettingsSchemas.validateSetting<WorkspaceSettings.Props[]>(nested, Workspace.settingName.settingsWorkspaces);
+              await this.loadSettingsDictionary(nested, problems);
+            }
+          }
+        }
+      } catch (e) {
+        db.close();
+        problems?.push(e as WorkspaceDb.LoadError);
+      }
+    }
+  }
+
+  public close() {
+    this.settings.close();
+    for (const [_id, container] of this._containers)
+      container.close();
+    this._containers.clear();
+  }
+
+  public resolveWorkspaceDbSetting(settingName: SettingName, filter?: Workspace.DbListFilter): WorkspaceDb.CloudProps[] {
+    const result: WorkspaceDb.CloudProps[] = [];
+    this.settings.resolveSetting<WorkspaceDb.CloudProps[]>({
+      settingName, resolver: (dbProps, dict) => {
+        for (const dbProp of dbProps) {
+          if (!filter || filter(dbProp, dict))
+            result.push(dbProp);
+        }
+        return undefined; // means keep going
+      },
+    });
+    return result;
+  }
+
+  public async getWorkspaceDbs(args: Workspace.DbListOrSettingName & { filter?: Workspace.DbListFilter, problems?: WorkspaceDb.LoadError[] }): Promise<WorkspaceDb[]> {
+    const dbList = (args.settingName !== undefined) ? this.resolveWorkspaceDbSetting(args.settingName, args.filter) : args.dbs;
+    const result: WorkspaceDb[] = [];
+    const pushUnique = (wsDb: WorkspaceDb) => {
+      for (const db of result) {
+        // if we already have this db, skip it. The test below also has to consider that we create a separate WorkspaceDb object for the same
+        // database from more than one Workspace (though then they must use a "shared" CloudContainer).
+        if (db === wsDb || ((db.container.cloudContainer === wsDb.container.cloudContainer) && (db.dbFileName === wsDb.dbFileName)))
+          return; // this db is redundant
+      }
+      result.push(wsDb);
+    };
+
+    for (const dbProps of dbList) {
+      try {
+        pushUnique(await this.getWorkspaceDb(dbProps));
+      } catch (e) {
+        const loadErr = e as WorkspaceDb.LoadError;
+        loadErr.wsDbProps = dbProps;
+        args.problems?.push(loadErr);
+      }
+    }
+    return result;
+  }
+}
+
+const workspaceEditorName = "WorkspaceEditor"; // name of the cache for the editor workspace
+class EditorWorkspaceImpl extends WorkspaceImpl {
+  public override getCloudCache(): WorkspaceCloudCache {
+    return this._cloudCache ??= makeWorkspaceCloudCache({ cacheName: workspaceEditorName, cacheSize: "20G" });
+  }
+}
+
+class EditorImpl implements Workspace.Editor {
+  public workspace = new EditorWorkspaceImpl(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, workspaceEditorName) });
+
+  public async initializeContainer(args: Workspace.Editor.CreateNewContainerProps) {
+    class CloudAccess extends CloudSqlite.DbAccess<WorkspaceSqliteDb> {
+      protected static override _cacheName = workspaceEditorName;
+      public static async initializeWorkspace(args: Workspace.Editor.CreateNewContainerProps) {
+        const props = await this.createBlobContainer({ scope: args.scope, metadata: { ...args.metadata, containerType: "workspace" } });
+        const dbFullName = WorkspaceContainer.makeDbFileName(WorkspaceDb.dbNameWithDefault(args.dbName), "1.0.0");
+        await super._initializeDb({ ...args, props, dbName: dbFullName, dbType: WorkspaceSqliteDb, blockSize: "4M" });
+        return props;
+      }
+    }
+    return CloudAccess.initializeWorkspace(args);
+  }
+
+  public async createNewCloudContainer(args: Workspace.Editor.CreateNewContainerProps): Promise<Workspace.Editor.Container> {
+    const cloudContainer = await this.initializeContainer(args);
+    const userToken = await IModelHost.authorizationClient?.getAccessToken();
+    const accessToken = await CloudSqlite.requestToken({ ...cloudContainer, accessLevel: "write", userToken });
+    return this.getContainer({ accessToken, ...cloudContainer, writeable: true, description: args.metadata.description });
+  }
+
+  public getContainer(props: WorkspaceContainer.Props & Workspace.WithAccessToken): Workspace.Editor.Container {
+    return this.workspace.findContainer(props.containerId) as Workspace.Editor.Container | undefined ?? new EditorContainerImpl(this.workspace, props);
+  }
+  public async getContainerAsync(props: WorkspaceContainer.Props): Promise<Workspace.Editor.Container> {
+    const accessToken = props.accessToken ?? (props.baseUri === "") ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "write" });
+    return this.getContainer({ ...props, accessToken });
+  }
+
+  public close() {
+    this.workspace.close();
+  }
+}
+
+interface EditCloudContainer extends CloudSqlite.CloudContainer {
+  writeLockHeldBy?: string;  // added by acquireWriteLock
+}
+
+class EditorContainerImpl extends WorkspaceContainerImpl implements Workspace.Editor.Container {
+  public get cloudProps(): WorkspaceContainer.Props | undefined {
+    const cloudContainer = this.cloudContainer;
+    if (undefined === cloudContainer)
+      return undefined;
+    return {
+      baseUri: cloudContainer.baseUri,
+      containerId: cloudContainer.containerId,
+      storageType: cloudContainer.storageType as "azure" | "google",
+      isPublic: cloudContainer.isPublic,
+    };
+  }
+  public async makeNewVersion(args: Workspace.Editor.Container.MakeNewVersionProps): Promise<{ oldDb: WorkspaceDb.NameAndVersion, newDb: WorkspaceDb.NameAndVersion }> {
+    const cloudContainer = this.cloudContainer;
+    if (undefined === cloudContainer)
+      throw new Error("versions require cloud containers");
+
+    const oldName = this.resolveDbFileName(args.fromProps ?? {});
+    const oldDb = WorkspaceContainer.parseDbFileName(oldName);
+    const newVersion = semver.inc(oldDb.version, args.versionType, args.identifier);
+    if (!newVersion)
+      WorkspaceDb.throwLoadError("invalid version", args.fromProps ?? {});
+
+    const newName = WorkspaceContainer.makeDbFileName(oldDb.dbName, newVersion);
+    await cloudContainer.copyDatabase(oldName, newName);
+    // return the old and new db names and versions
+    return { oldDb, newDb: { dbName: oldDb.dbName, version: newVersion } };
+  }
+
+  public override getWorkspaceDb(props: WorkspaceDb.Props): Workspace.Editor.EditableDb {
+    return this.getEditableDb(props);
+  }
+  public getEditableDb(props: WorkspaceDb.Props): Workspace.Editor.EditableDb {
+    const db = this._wsDbs.get(WorkspaceDb.dbNameWithDefault(props.dbName)) as EditableDbImpl | undefined ?? new EditableDbImpl(props, this);
+    if (this.cloudContainer && this.cloudContainer.queryDatabase(db.dbFileName)?.state !== "copied")
+      throw new Error(`${db.dbFileName} has been published and is not editable. Make a new version first.`);
+    return db;
+  }
+
+  public acquireWriteLock(user: string): void {
+    const cloudContainer = this.cloudContainer as EditCloudContainer | undefined;
+    if (cloudContainer) {
+      cloudContainer.acquireWriteLock(user);
+      cloudContainer.writeLockHeldBy = user;
+    }
+  }
+  public releaseWriteLock() {
+    const cloudContainer = this.cloudContainer as EditCloudContainer | undefined;
+    if (cloudContainer) {
+      cloudContainer.releaseWriteLock();
+      cloudContainer.writeLockHeldBy = undefined;
+    }
+  }
+  public abandonChanges() {
+    const cloudContainer = this.cloudContainer as EditCloudContainer | undefined;
+    if (cloudContainer) {
+      cloudContainer.abandonChanges();
+      cloudContainer.writeLockHeldBy = undefined;
+    }
+  }
+  public async createDb(args: { dbName?: string, version?: string, manifest: WorkspaceDb.Manifest }): Promise<Workspace.Editor.EditableDb> {
+    if (!this.cloudContainer) {
+      Workspace.Editor.createEmptyDb({ localFileName: this.resolveDbFileName(args), manifest: args.manifest });
+    } else {
+      // currently the only way to create a workspaceDb in a cloud container is to create a temporary workspaceDb and upload it.
+      const tempDbFile = join(KnownLocations.tmpdir, `empty.${WorkspaceDb.fileExt}`);
+      if (fs.existsSync(tempDbFile))
+        IModelJsFs.removeSync(tempDbFile);
+      Workspace.Editor.createEmptyDb({ localFileName: tempDbFile, manifest: args.manifest });
+      await CloudSqlite.uploadDb(this.cloudContainer, { localFileName: tempDbFile, dbName: WorkspaceContainer.makeDbFileName(WorkspaceDb.dbNameWithDefault(args.dbName), args.version) });
+      IModelJsFs.removeSync(tempDbFile);
+    }
+    return this.getWorkspaceDb(args);
+  }
+}
+
+class EditableDbImpl extends WorkspaceDbImpl implements Workspace.Editor.EditableDb {
+  private static validateResourceName(name: WorkspaceResource.Name) {
+    if (name.trim() !== name) {
+      throw new Error("resource name may not have leading or trailing spaces");
+    }
+
+    if (name.length > 1024) {
+      throw new Error("resource name too long");
+    }
+  }
+
+  private validateResourceSize(val: Uint8Array | string) {
+    const len = typeof val === "string" ? val.length : val.byteLength;
+    if (len > (1024 * 1024 * 1024)) // one gigabyte
+      throw new Error("value is too large");
+  }
+  public get cloudProps(): WorkspaceDb.CloudProps | undefined {
+    const props = (this.container as EditorContainerImpl).cloudProps as Mutable<WorkspaceDb.CloudProps>;
+    if (props === undefined)
+      return undefined;
+
+    const parsed = WorkspaceContainer.parseDbFileName(this.dbFileName);
+    return { ...props, dbName: parsed.dbName, version: parsed.version };
+  }
+
+  public override open() {
+    this.sqliteDb.openDb(this.dbFileName, OpenMode.ReadWrite, this.container.cloudContainer);
+  }
+
+  public override close() {
+    if (this.isOpen) {
+      // whenever we close an EditableDb, update the name of the last editor in the manifest
+      const lastEditedBy = (this.container.cloudContainer as any)?.writeLockHeldBy;
+      if (lastEditedBy !== undefined)
+        this.updateManifest({ ...this.manifest, lastEditedBy });
+
+      // make sure all changes were saved before we close
+      this.sqliteDb.saveChanges();
+    }
+    super.close();
+  }
+
+  private getFileModifiedTime(localFileName: LocalFileName): number {
+    return Math.round(fs.statSync(localFileName).mtimeMs);
+  }
+
+  private performWriteSql(rscName: WorkspaceResource.Name, sql: string, bind?: (stmt: SqliteStatement) => void) {
+    this.sqliteDb.withSqliteStatement(sql, (stmt) => {
+      stmt.bindString(1, rscName);
+      bind?.(stmt);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_DONE !== rc) {
+        if (DbResult.BE_SQLITE_CONSTRAINT_PRIMARYKEY === rc)
+          throw new IModelError(rc, `resource "${rscName}" already exists`);
+
+        throw new IModelError(rc, `workspace [${sql}]`);
+      }
+    });
+    this.sqliteDb.saveChanges();
+  }
+
+  public updateManifest(manifest: WorkspaceDb.Manifest) {
+    this.sqliteDb.nativeDb.saveFileProperty(WorkspaceDb.manifestProperty, JSON.stringify(manifest));
+    this._manifest = undefined;
+  }
+  public updateSettingsResource(settings: SettingObject, rscName?: string) {
+    this.updateString(rscName ?? "settingsDictionary", JSON.stringify(settings));
+  }
+  public addString(rscName: WorkspaceResource.Name, val: string): void {
+    EditableDbImpl.validateResourceName(rscName);
+    this.validateResourceSize(val);
+    this.performWriteSql(rscName, "INSERT INTO strings(id,value) VALUES(?,?)", (stmt) => stmt.bindString(2, val));
+  }
+  public updateString(rscName: WorkspaceResource.Name, val: string): void {
+    this.validateResourceSize(val);
+    this.performWriteSql(rscName, "INSERT INTO strings(id,value) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value WHERE value!=excluded.value", (stmt) => stmt.bindString(2, val));
+  }
+  public removeString(rscName: WorkspaceResource.Name): void {
+    this.performWriteSql(rscName, "DELETE FROM strings WHERE id=?");
+  }
+  public addBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void {
+    EditableDbImpl.validateResourceName(rscName);
+    this.validateResourceSize(val);
+    this.performWriteSql(rscName, "INSERT INTO blobs(id,value) VALUES(?,?)", (stmt) => stmt.bindBlob(2, val));
+  }
+  public updateBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void {
+    this.validateResourceSize(val);
+    this.performWriteSql(rscName, "INSERT INTO blobs(id,value) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value WHERE value!=excluded.value", (stmt) => stmt.bindBlob(2, val));
+  }
+  public getBlobWriter(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO {
+    return this.sqliteDb.withSqliteStatement("SELECT rowid from blobs WHERE id=?", (stmt) => {
+      stmt.bindString(1, rscName);
+      const blobWriter = SQLiteDb.createBlobIO();
+      blobWriter.open(this.sqliteDb.nativeDb, { tableName: "blobs", columnName: "value", row: stmt.getValueInteger(0), writeable: true });
+      return blobWriter;
+    });
+  }
+  public removeBlob(rscName: WorkspaceResource.Name): void {
+    this.performWriteSql(rscName, "DELETE FROM blobs WHERE id=?");
+  }
+  public addFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName, fileExt?: string): void {
+    EditableDbImpl.validateResourceName(rscName);
+    fileExt = fileExt ?? extname(localFileName);
+    if (fileExt?.[0] === ".")
+      fileExt = fileExt.slice(1);
+    this.sqliteDb.nativeDb.embedFile({ name: rscName, localFileName, date: this.getFileModifiedTime(localFileName), fileExt });
+  }
+  public updateFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName): void {
+    this.queryFileResource(rscName); // throws if not present
+    this.sqliteDb.nativeDb.replaceEmbeddedFile({ name: rscName, localFileName, date: this.getFileModifiedTime(localFileName) });
+  }
+  public removeFile(rscName: WorkspaceResource.Name): void {
+    const file = this.queryFileResource(rscName);
+    if (undefined === file)
+      throw new Error(`file resource "${rscName}" does not exist`);
+    if (file && fs.existsSync(file.localFileName))
+      fs.unlinkSync(file.localFileName);
+    this.sqliteDb.nativeDb.removeEmbeddedFile(rscName);
+  }
+}
+
+
+export function constructWorkspaceDb(props: WorkspaceDb.Props, container: WorkspaceContainer): WorkspaceDb {
+  return new WorkspaceDbImpl(props, container);
+}
+
+export function constructWorkspace(settings: Settings, opts?: WorkspaceOpts): OwnedWorkspace {
+  return new WorkspaceImpl(settings, opts);
+}
+
+export function constructWorkspaceEditor(): Workspace.Editor {
+  return new EditorImpl();
+}
