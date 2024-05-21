@@ -881,7 +881,7 @@ export abstract class IModelDb extends IModel {
         const schemaSyncDbUri = syncAccess.getUri();
         this.saveChanges();
         let stat = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
-        if (DbResult.BE_SQLITE_ERROR_SchemaLockFailed === stat) {
+        if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === stat) {
           this.abandonChanges();
           if (this.nativeDb.getITwinId() !== Guid.empty)
             await this.acquireSchemaLock();
@@ -924,7 +924,7 @@ export abstract class IModelDb extends IModel {
         const schemaSyncDbUri = syncAccess.getUri();
         this.saveChanges();
         let stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: false, schemaSyncDbUri });
-        if (DbResult.BE_SQLITE_ERROR_SchemaLockFailed === stat) {
+        if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === stat) {
           this.abandonChanges();
           if (this.nativeDb.getITwinId() !== Guid.empty)
             await this.acquireSchemaLock();
