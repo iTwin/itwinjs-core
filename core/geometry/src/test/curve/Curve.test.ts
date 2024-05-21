@@ -868,7 +868,7 @@ describe("Curves", () => {
           for (let y = range.low.y - 1.0; y <= range.high.y + 1.1; y += 0.5) {
             const spacePoint = Point3d.create(x, y);
             const detail = indexedPath.closestPoint(spacePoint, false);
-            if (ck.testDefined(detail) && detail) {
+            if (ck.testDefined(detail)) {
               const unitTangent = indexedPath.fractionToPointAndUnitTangent(detail.fraction);
               // strokes .. space point to new evaluation to short step on tangent back to nearby point on line from space point to detail point
               GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(spacePoint, unitTangent.origin,

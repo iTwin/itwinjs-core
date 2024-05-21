@@ -51,7 +51,7 @@ describe("XYPointBuckets", () => {
       const xIndexA = searcher.indexGrid.xIndex(xyzA.x);
       const yIndexA = searcher.indexGrid.xIndex(xyzA.y);
       const indexArrayA1 = searcher.indexGrid.getDataAtIndex(xIndexA, yIndexA);
-      if (ck.testDefined(indexArrayA) && ck.testDefined(indexArrayA1) && indexArrayA && indexArrayA1)
+      if (ck.testDefined(indexArrayA) && ck.testDefined(indexArrayA1))
         ck.testExactNumber(indexArrayA.length, indexArrayA1.length, "same index arrays");
       ck.testTrue(searcher.indexGrid.isValidIndex(xIndexA, yIndexA));
 

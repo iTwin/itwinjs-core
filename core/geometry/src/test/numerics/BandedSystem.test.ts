@@ -70,7 +70,7 @@ describe("BandedSystem", () => {
       if (Checker.noisy.bandedMatrix)
         GeometryCoreTestIO.consoleLog("rhs0", rhs0);
       const solution1 = BandedSystem.solveBandedSystemMultipleRHS(numRow, bw, bandedMatrix, numRHS, rhs0);
-      if (ck.testDefined(solution1) && solution1) {
+      if (ck.testDefined(solution1)) {
         const diff = maxDiff(solution0, solution1);
         ck.testLE(diff, 1.0e-10, " solution diff");
         if (Checker.noisy.bandedMatrix)
@@ -92,7 +92,7 @@ describe("BandedSystem", () => {
         ck.testExactNumber(solution0.length, numRHS * numRow);
         const rhs0 = BandedSystem.multiplyBandedTimesFull(numRow, bw, matrix, numRHS, solution0);
         const solution1 = BandedSystem.solveBandedSystemMultipleRHS(numRow, bw, matrix, numRHS, rhs0);
-        if (ck.testDefined(solution1) && solution1) {
+        if (ck.testDefined(solution1)) {
           const diff = maxDiff(solution0, solution1);
           ck.testLE(diff, 1.0e-10, " solution diff");
         }
@@ -113,7 +113,7 @@ describe("BandedSystem", () => {
         ck.testExactNumber(solution0.length, numRHS * numRow);
         const rhs0 = BandedSystem.multiplyBandedTimesFull(numRow, bw, matrix, numRHS, solution0);
         const solution1 = BandedSystem.solveBandedSystemMultipleRHS(numRow, bw, matrix, numRHS, rhs0);
-        if (ck.testDefined(solution1) && solution1) {
+        if (ck.testDefined(solution1)) {
           const diff = maxDiff(solution0, solution1);
           ck.testLE(diff, 1.0e-10, " solution diff");
         }
