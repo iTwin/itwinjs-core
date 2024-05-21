@@ -17,8 +17,9 @@ import { SqliteStatement } from "../../SqliteStatement";
 import { BaseSettings, SettingName, SettingObject, Settings } from "../../workspace/Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { SettingsSchemas } from "../../workspace/SettingsSchemas";
-import { OwnedWorkspace, Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceOpts, WorkspaceResource, WorkspaceSettings, WorkspaceSqliteDb } from "../../workspace/Workspace";
+import { OwnedWorkspace, Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceOpts, WorkspaceResource, WorkspaceSettings } from "../../workspace/Workspace";
 import { WorkspaceEditor } from "../../workspace/WorkspaceEditor";
+import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
 
 interface WorkspaceCloudContainer extends CloudSqlite.CloudContainer {
   connectCount: number;

@@ -10,7 +10,7 @@ import * as semver from "semver";
 import { AccessToken, BeEvent, Logger, Optional, UnexpectedErrors } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { CloudSqlite } from "../CloudSqlite";
-import { SQLiteDb, VersionedSqliteDb } from "../SQLiteDb";
+import { SQLiteDb } from "../SQLiteDb";
 import { SettingName, Settings } from "./Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { constructWorkspace, constructWorkspaceDb } from "../internal/workspace/WorkspaceImpl";
@@ -629,31 +629,3 @@ export namespace Workspace {
   /** type that requires an accessToken */
   export interface WithAccessToken { accessToken: AccessToken }
 }
-
-/** @internal */
-export class WorkspaceSqliteDb extends VersionedSqliteDb {
-  public override myVersion = "1.0.0";
-  public override getRequiredVersions(): SQLiteDb.RequiredVersionRanges {
-    try {
-      return super.getRequiredVersions();
-    } catch (e) {
-      // early versions didn't have a version range, but they're fine
-      return { readVersion: "^1", writeVersion: "^1" };
-    }
-  }
-
-  protected override createDDL(args: any): void {
-    const timeStampCol = "lastMod TIMESTAMP NOT NULL DEFAULT(julianday('now'))";
-    this.executeSQL(`CREATE TABLE strings(id TEXT PRIMARY KEY NOT NULL,value TEXT,${timeStampCol})`);
-    this.executeSQL(`CREATE TABLE blobs(id TEXT PRIMARY KEY NOT NULL,value BLOB,${timeStampCol})`);
-    const createTrigger = (tableName: string) => {
-      this.executeSQL(`CREATE TRIGGER ${tableName}_timeStamp AFTER UPDATE ON ${tableName} WHEN old.lastMod=new.lastMod AND old.lastMod != julianday('now') BEGIN UPDATE ${tableName} SET lastMod=julianday('now') WHERE id=new.id; END`);
-    };
-    createTrigger("strings");
-    createTrigger("blobs");
-    if (args?.manifest)
-      this.nativeDb.saveFileProperty(WorkspaceDb.manifestProperty, JSON.stringify(args.manifest));
-  }
-}
-
-

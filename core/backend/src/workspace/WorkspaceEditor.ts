@@ -10,7 +10,8 @@ import { LocalFileName } from "@itwin/core-common";
 import { SQLiteDb } from "../SQLiteDb";
 import { SettingObject } from "./Settings";
 import { BlobContainer } from "../BlobContainerService";
-import { Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceResource, WorkspaceSqliteDb } from "./Workspace";
+import { Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceResource } from "./Workspace";
+import { WorkspaceSqliteDb } from "../internal/workspace/WorkspaceSqliteDb";
 import { constructWorkspaceEditor } from "../internal/workspace/WorkspaceImpl";
 
 /** @beta */
