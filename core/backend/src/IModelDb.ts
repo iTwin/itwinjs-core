@@ -57,9 +57,10 @@ import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotati
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
-import { BaseSettings, SettingName, SettingObject, Settings, SettingType } from "./workspace/Settings";
+import { SettingName, SettingObject, Settings, SettingType } from "./workspace/Settings";
 import { Workspace, WorkspaceDb, WorkspaceSettings } from "./workspace/Workspace";
 import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "./internal/workspace/WorkspaceImpl";
+import { SettingsImpl } from "./internal/workspace/SettingsImpl";
 
 import type { BlobContainer } from "./BlobContainerService";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
@@ -229,7 +230,7 @@ const withBriefcaseDb = async (briefcase: OpenBriefcaseArgs, fn: (_db: Briefcase
  * Settings for an individual iModel. May only include settings priority for iModel, iTwin and organization.
  * @note if there is more than one iModel for an iTwin or organization, they will *each* hold an independent copy of the settings for those priorities.
  */
-class IModelSettings extends BaseSettings {
+class IModelSettings extends SettingsImpl {
   protected override verifyPriority(priority: Settings.Priority) {
     if (priority <= Settings.Priority.application)
       throw new Error("Use IModelHost.appSettings to access settings of priority 'application' or lower");

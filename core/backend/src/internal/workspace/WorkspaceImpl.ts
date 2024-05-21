@@ -14,12 +14,13 @@ import { IModelHost, KnownLocations } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
 import { SQLiteDb } from "../../SQLiteDb";
 import { SqliteStatement } from "../../SqliteStatement";
-import { BaseSettings, SettingName, SettingObject, Settings } from "../../workspace/Settings";
+import { SettingName, SettingObject, Settings } from "../../workspace/Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { SettingsSchemas } from "../../workspace/SettingsSchemas";
 import { Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceOpts, WorkspaceResource, WorkspaceSettings } from "../../workspace/Workspace";
 import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
+import { SettingsImpl } from "./SettingsImpl";
 
 function workspaceDbNameWithDefault(dbName?: WorkspaceDb.DbName): WorkspaceDb.DbName {
   return dbName ?? "workspace-db";
@@ -450,7 +451,7 @@ class EditorWorkspaceImpl extends WorkspaceImpl {
 }
 
 class EditorImpl implements WorkspaceEditor {
-  public workspace = new EditorWorkspaceImpl(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, workspaceEditorName) });
+  public workspace = new EditorWorkspaceImpl(new SettingsImpl(), { containerDir: join(IModelHost.cacheDir, workspaceEditorName) });
 
   public async initializeContainer(args: WorkspaceEditor.CreateNewContainerProps) {
     class CloudAccess extends CloudSqlite.DbAccess<WorkspaceSqliteDb> {

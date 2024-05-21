@@ -33,12 +33,13 @@ import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { TileStorage } from "./TileStorage";
-import { BaseSettings, SettingObject, Settings } from "./workspace/Settings";
+import { SettingObject, Settings } from "./workspace/Settings";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
 import { Workspace, WorkspaceOpts } from "./workspace/Workspace";
 import { Container } from "inversify";
 import { join, normalize as normalizeDir } from "path";
 import { constructWorkspace, OwnedWorkspace } from "./internal/workspace/WorkspaceImpl";
+import { SettingsImpl } from "./internal/workspace/SettingsImpl";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -235,7 +236,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
  * Settings for `IModelHost.appWorkspace`.
  * @note this includes the default dictionary from the SettingsSpecRegistry
  */
-class ApplicationSettings extends BaseSettings {
+class ApplicationSettings extends SettingsImpl {
   private _remove?: VoidFunction;
   protected override verifyPriority(priority: Settings.Priority) {
     if (priority > Settings.Priority.application) // only application or lower may appear in ApplicationSettings
