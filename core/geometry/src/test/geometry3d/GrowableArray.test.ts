@@ -582,7 +582,7 @@ describe("GrowablePoint3dArray", () => {
         const dotA = array0.dotProductIndexIndexIndex(k1, k2, k);
         const dotB = array0.dotProductIndexIndexXYAndZ(k1, k2, point0);
         if (ck.testDefined(dotA) && ck.testDefined(dotB))
-          ck.testExactNumber(dotA!, dotB!, "dot products to indexed points");
+          ck.testExactNumber(dotA, dotB, "dot products to indexed points");
       }
     }
     // bad transfers when the dest is not empty . . .

@@ -44,7 +44,7 @@ import { ChainMergeContext } from "../../topology/ChainMerge";
 import { SpacePolygonTriangulation } from "../../topology/SpaceTriangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { ImportedSample } from "../testInputs/ImportedSamples";
+import { ImportedSample } from "../ImportedSamples";
 
 it("ChainMergeVariants", () => {
   const ck = new Checker();
@@ -676,7 +676,7 @@ describe("ReorientFacets", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
-    const testCases = ["./src/test/testInputs/polyface/closedMesh.imjs", "./src/test/testInputs/polyface/almostClosedMesh.imjs"];
+    const testCases = ["./src/test/data/polyface/closedMesh.imjs", "./src/test/data/polyface/almostClosedMesh.imjs"];
     for (const testCase of testCases) {
       const mesh = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase, "utf8"))) as IndexedPolyface;
       if (ck.testType(mesh, IndexedPolyface, "input successfully parsed")) {
@@ -789,7 +789,6 @@ describe("ReorientFacets", () => {
     expect(ck.getNumErrors()).equals(0);
   });
   it("DuplicateFacetPurge", () => {
-
     const ck = new Checker();
     // 7,8,9
     // 4,5,6
@@ -807,6 +806,7 @@ describe("ReorientFacets", () => {
           [0, 2, 0],
           [1, 2, 0],
           [2, 2, 0],
+          [3, 0, 0],
         ],
         pointIndex: [
           1, 2, 5, 4, 0,
@@ -1036,7 +1036,7 @@ describe("ReorientFacets", () => {
         const boundary = PolyfaceQuery.collectBoundaryEdges(surfMesh);
         const silhouette = PolyfaceQuery.collectSilhouetteEdges(surfMesh, viewVector);
         const allEdges: AnyCurve[] = [];
-        if (ck.testDefined(boundary, "boundary found") && boundary) {
+        if (ck.testDefined(boundary, "boundary found")) {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundary, x0, 20, 0);
           allEdges.push(boundary);
         }
@@ -1067,7 +1067,7 @@ describe("ReorientFacets", () => {
         if (exteriorLoop) {
           const jointOptions = new JointOptions(Geometry.smallMetricDistance); // enlarge to catch boundary points
           const offsetChain = RegionOps.constructPolygonWireXYOffset(exteriorLoop.getPackedStrokes()!.getArray(), true, jointOptions);
-          if (ck.testDefined(offsetChain, "offset computed") && offsetChain) {
+          if (ck.testDefined(offsetChain, "offset computed")) {
             const offsetPolygon = offsetChain.getPackedStrokes()!;
             offsetPolygon.forceClosure();
             for (let i = 0; i < surfMesh.pointCount; ++i) {
@@ -1106,7 +1106,7 @@ function exerciseMultiUnionDiff(ck: Checker, allGeometry: GeometryQuery[],
   y0 += 3 * dyA;
   GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYXY(x0, y0, x0 + rangeA.xLength(), y0));
   const meshB = RegionOps.polygonBooleanXYToPolyface(data, RegionBinaryOpType.AMinusB, dataB, true);
-  if (ck.testDefined(meshB) && meshB) {
+  if (ck.testDefined(meshB)) {
     const yStep = dyA;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshB, x0, y0 += yStep);
     const boundaryB = PolyfaceQuery.boundaryEdges(meshB);
@@ -1132,20 +1132,22 @@ function exerciseMultiUnionDiff(ck: Checker, allGeometry: GeometryQuery[],
  * @param num3Cluster number of clusters with 3 facets
  */
 function testDuplicateFacetCounts(ck: Checker, title: string, meshData: object, numSingleton: number, numCluster: number, num2Cluster: number, num3Cluster: number) {
-  const mesh = IModelJson.Reader.parse(meshData) as IndexedPolyface;
-  const dupData0 = PolyfaceQuery.collectDuplicateFacetIndices(mesh, false);
-  const dupData1 = PolyfaceQuery.collectDuplicateFacetIndices(mesh, true);
-  ck.testExactNumber(numSingleton, dupData1.length - dupData0.length, `${title} Singletons`);
-  ck.testExactNumber(numCluster, dupData0.length, "Clusters");
-  ck.testExactNumber(num2Cluster, countArraysBySize(dupData0, 2), `${title} num2Cluster`);
-  ck.testExactNumber(num3Cluster, countArraysBySize(dupData0, 3), `${title} num3Cluster`);
+  const mesh = IModelJson.Reader.parse(meshData) as IndexedPolyface | undefined;
+  if (ck.testDefined(mesh, "mesh is valid")) {
+    const dupData0 = PolyfaceQuery.collectDuplicateFacetIndices(mesh, false);
+    const dupData1 = PolyfaceQuery.collectDuplicateFacetIndices(mesh, true);
+    ck.testExactNumber(numSingleton, dupData1.length - dupData0.length, `${title} Singletons`);
+    ck.testExactNumber(numCluster, dupData0.length, "Clusters");
+    ck.testExactNumber(num2Cluster, countArraysBySize(dupData0, 2), `${title} num2Cluster`);
+    ck.testExactNumber(num3Cluster, countArraysBySize(dupData0, 3), `${title} num3Cluster`);
 
-  const singletons = PolyfaceQuery.cloneByFacetDuplication(mesh, true, DuplicateFacetClusterSelector.SelectNone) as IndexedPolyface;
-  const oneOfEachCluster = PolyfaceQuery.cloneByFacetDuplication(mesh, false, DuplicateFacetClusterSelector.SelectAny) as IndexedPolyface;
-  const allOfEachCluster = PolyfaceQuery.cloneByFacetDuplication(mesh, false, DuplicateFacetClusterSelector.SelectAll) as IndexedPolyface;
-  ck.testExactNumber(numSingleton, singletons.facetCount, `${title} cloned singletons`);
-  ck.testExactNumber(numCluster, oneOfEachCluster.facetCount, `${title} cloned one per cluster`);
-  ck.testExactNumber(mesh.facetCount - numSingleton, allOfEachCluster.facetCount, `${title}  cloned all in clusters`);
+    const singletons = PolyfaceQuery.cloneByFacetDuplication(mesh, true, DuplicateFacetClusterSelector.SelectNone) as IndexedPolyface;
+    const oneOfEachCluster = PolyfaceQuery.cloneByFacetDuplication(mesh, false, DuplicateFacetClusterSelector.SelectAny) as IndexedPolyface;
+    const allOfEachCluster = PolyfaceQuery.cloneByFacetDuplication(mesh, false, DuplicateFacetClusterSelector.SelectAll) as IndexedPolyface;
+    ck.testExactNumber(numSingleton, singletons.facetCount, `${title} cloned singletons`);
+    ck.testExactNumber(numCluster, oneOfEachCluster.facetCount, `${title} cloned one per cluster`);
+    ck.testExactNumber(mesh.facetCount - numSingleton, allOfEachCluster.facetCount, `${title}  cloned all in clusters`);
+  }
 }
 // return the number of arrays with target size.
 function countArraysBySize(data: number[][], target: number): number {

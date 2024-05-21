@@ -338,7 +338,7 @@ describe("PolygonOps", () => {
         const approach = PolygonOps.closestApproach(polygonA, polygonB);  // this test assumes closest approaches at boundaries
         capturePolygonWithClosure(polygonA);
         capturePolygonWithClosure(polygonB);
-        if (ck.testDefined(approach, "result from polygon approach") && approach) {
+        if (ck.testDefined(approach, "result from polygon approach")) {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, [approach.detailA.point, approach.detailB.point], x0, y0);
           ck.testCoordinate(expectedDistance, approach.detailA.point.distance(approach.detailB.point));
           ck.testCoordinate(0.5, approach.detailA.closestEdgeParam, "fractionA");

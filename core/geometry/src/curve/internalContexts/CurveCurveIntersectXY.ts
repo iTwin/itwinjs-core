@@ -938,7 +938,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     if (!this._geometryB || !(this._geometryB instanceof CurveChainWithDistanceIndex))
       return;
     if (geomA instanceof CurveChainWithDistanceIndex) {
-      assert(!!"call handleCurveChainWithDistanceIndex(geomA) instead");
+      assert(!"call handleCurveChainWithDistanceIndex(geomA) instead");
       return;
     }
     const index0 = this._results.length;
