@@ -40,8 +40,8 @@ export interface SettingSchema extends Readonly<JSONSchema> {
  */
 export interface SettingSchemaGroup {
   readonly schemaPrefix: string;
-  readonly settingDefs?: { [name: string]: SettingSchema };
-  readonly typeDefs?: { [name: string]: SettingSchema };
+  readonly settingDefs?: { [name: string]: SettingSchema | undefined };
+  readonly typeDefs?: { [name: string]: SettingSchema | undefined };
   readonly order?: number;
   readonly description?: string;
 }
@@ -299,7 +299,7 @@ export class SettingsSchemas {
       for (const key of Object.keys(settingDefs)) {
         this.validateName(key);
         this.verifyPropertyDef(key, settingDefs[key]);
-        const property: Mutable<SettingSchema> = settingDefs[key];
+        const property: Mutable<SettingSchema> = settingDefs[key]!;
         property.default = property.default ?? this.getDefaultValue(property.type);
         this.settingDefs.set(makeSettingKey(group.schemaPrefix, key), property);
       }
@@ -308,7 +308,7 @@ export class SettingsSchemas {
     for (const key of Object.keys(typeDefs)) {
       this.validateName(key);
       this.verifyPropertyDef(key, typeDefs[key]);
-      this.typeDefs.set(makeSettingKey(group.schemaPrefix, key), typeDefs[key]);
+      this.typeDefs.set(makeSettingKey(group.schemaPrefix, key), typeDefs[key]!);
     }
   }
 

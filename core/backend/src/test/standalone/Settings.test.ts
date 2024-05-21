@@ -196,7 +196,7 @@ describe("Settings", () => {
     expect(settings.getBoolean("app1/boolVal")).equals(true);
     expect(settings.getBoolean("app1/not there", true)).equals(true);
     expect(settings.getBoolean("app1/not there", false)).equals(false);
-    expect(settings.getString("app1/strVal")).equals(app1.settingDefs!.strVal.default);
+    expect(settings.getString("app1/strVal")).equals(app1.settingDefs!.strVal!.default);
     expect(settings.getNumber("app1/intVal")).equals(22);
     expect(() => settings.getObject("app1/intVal")).throws("app1/intVal");
     expect(() => settings.getArray("app1/intVal")).throws("app1/intVal");
@@ -229,7 +229,7 @@ describe("Settings", () => {
     SettingsSchemas.addGroup(app1);
 
     // after re-registering, the new default should be updated
-    expect(settings.getString("app1/strVal")).equals(app1.settingDefs!.strVal.default);
+    expect(settings.getString("app1/strVal")).equals(app1.settingDefs!.strVal!.default);
 
     expect(settings.dictionaries.length).eq(3);
 
