@@ -109,4 +109,7 @@ export enum BackendLoggerCategory {
    * @internal
    */
   ViewStateHydrator = "core-backend.ViewStateHydrator",
+
+  /** @internal */
+  Workspace = "core-backend.Workspace",
 }

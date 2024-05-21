@@ -15,6 +15,7 @@ import { SettingName, SettingObject, Settings } from "./Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { BlobContainer } from "../BlobContainerService";
 import { constructWorkspace, constructWorkspaceDb, constructWorkspaceEditor } from "../internal/workspace/WorkspaceImpl";
+import { BackendLoggerCategory } from "../BackendLoggerCategory";
 
 // cspell:ignore rowid julianday primarykey premajor preminor prepatch
 
@@ -22,7 +23,7 @@ function noLeadingOrTrailingSpaces(name: string, msg: string) {
   if (name.trim() !== name)
     throw new Error(`${msg} [${name}] may not have leading or trailing spaces`);
 }
-const loggerCategory = "workspace";
+const loggerCategory = BackendLoggerCategory.Workspace;
 
 /** @beta */
 export namespace WorkspaceContainer {
