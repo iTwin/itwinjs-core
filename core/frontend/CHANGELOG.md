@@ -1,6 +1,21 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Tue, 16 Apr 2024 14:47:36 GMT and should not be manually modified.
+This log was last generated on Wed, 15 May 2024 21:32:22 GMT and should not be manually modified.
+
+## 4.6.0
+Mon, 13 May 2024 20:32:51 GMT
+
+### Updates
+
+- Increase default extent limits for drawing views and fix incorrect clipping of section drawing attachments.
+- Fixed problem cases freeing tile memory under memory pressure
+- Fix map layer WMTS validation process to correctly return authentication error
+- Fixed various issues related to terrain tile collecting.
+- Fix an issue preventing model map layer from being hidden
+- Added support for OGC Features map layers.
+- Include BIS class metadata with transaction events.
+- Fix dynamic element graphics being clipped to the project extents in 2d models.
+- Add support for EXT_meshopt_compression glTF extension.
 
 ## 4.5.2
 Tue, 16 Apr 2024 14:46:22 GMT

@@ -402,6 +402,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * Check different combination of fractions on curveA and curveB. If distance between points at 2 fractions
    * is less than maxDistance, record CurveLocationDetailPair which is the approach between the 2 points.
    * Optionally, record close approaches of one curve's points if they fall between the other curve's points.
+   * * If an input curve is a LineString3d, then the corresponding fractions must define a segment of the line string.
    * @param cpA curveA
    * @param fA0 fraction0 on curveA
    * @param fA1 fraction1 on curveA
@@ -447,7 +448,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    */
   private getPointCurveClosestApproachXYNewton(curveP: CurvePrimitive, pointQ: Point3d): CurveLocationDetail | undefined {
     if (!(curveP instanceof Arc3d) && !(curveP instanceof LineSegment3d)) {
-      assert(!!"getPointCurveClosestApproachXYNewton only supports Arc3d and LineSegment");
+      assert(!"getPointCurveClosestApproachXYNewton only supports Arc3d and LineSegment");
       return undefined;
     }
     const seeds = [0.2, 0.4, 0.6, 0.8]; // HEURISTIC: arcs have up to 4 perpendiculars; lines have only 1
@@ -475,11 +476,25 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       return CurveLocationDetail.createCurveFractionPoint(curveP, minCurvePFraction, minPointP);
     return undefined;
   }
-  /** Find the closest approach between pointA and cpB. Add the approach if it's within fB0 and fB1. */
+  /**
+   * Find the closest approach between `pointA` and `cpB`. Add the approach if it's within `fB0` and `fB1`.
+   * * Does not test the endpoints of `cpB`.
+   * * The only types supported for `cpB` are Arc3d, LineSegment3d, and LineString3d.
+   * * If `cpB` is a LineString3d, then the interval `[fB0, fB1]` must correspond to a segment of the line string.
+  */
   private testAndRecordProjection(
     cpA: CurvePrimitive, fA: number, pointA: Point3d, cpB: CurvePrimitive, fB0: number, fB1: number, reversed: boolean,
   ) {
-    const detail = this.getPointCurveClosestApproachXYNewton(cpB, pointA);
+    let detail: CurveLocationDetail | undefined;
+    if (cpB instanceof LineString3d) {
+      const segParamsB = cpB.globalFractionToSegmentIndexAndLocalFraction(fB0 <= fB1 ? fB0 : fB1);
+      const segIndexB = (segParamsB.fraction < 0.999999) ? segParamsB.index : segParamsB.index + 1;
+      const segmentB = cpB.getIndexedSegment(segIndexB);
+      if (segmentB && (detail = this.getPointCurveClosestApproachXYNewton(segmentB, pointA)))
+        LineString3d.convertLocalToGlobalDetail(detail, segIndexB, cpB.numEdges(), cpB);
+    } else {
+      detail = this.getPointCurveClosestApproachXYNewton(cpB, pointA);
+    }
     if (detail) {
       const fB = Geometry.restrictToInterval(detail.fraction, fB0, fB1);
       if (fB === detail.fraction) { // if fraction is within fB0 and fB1
@@ -742,7 +757,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     if (!this._geometryB || !(this._geometryB instanceof CurveChainWithDistanceIndex))
       return;
     if (geomA instanceof CurveChainWithDistanceIndex) {
-      assert(!!"call handleCurveChainWithDistanceIndex(geomA) instead");
+      assert(!"call handleCurveChainWithDistanceIndex(geomA) instead");
       return;
     }
     const index0 = this._results.length;

@@ -892,14 +892,14 @@ describe("TransitionSpiral3d", () => {
   it("AlexGStroking", () => {
     // const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const alignment = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/AlexGSpiral/AlexGSpiral.imjs", "utf8")));
+    const alignment = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/AlexGSpiral/AlexGSpiral.imjs", "utf8")));
     captureStroked(allGeometry, alignment);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, alignment);
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "AlexGStroking");
   });
   it("AlexGSamples", () => {
     const ck = new Checker();
-    const directoryPath = "./src/test/testInputs/curve/AlexGSpiral/AlexG0421";
+    const directoryPath = "./src/test/data/curve/AlexGSpiral/AlexG0421";
     const fileList = fs.readdirSync(directoryPath);
     // fileList = ["italian.imjs"];
     const yShift = 1.0;
@@ -1143,8 +1143,8 @@ function xyString(name: string, x: number, y: number): string {
 it("AlexGProjectPointToChain", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
-  //  const alignment = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/AlexGSpiral/AlexGSpiral.imjs", "utf8")));
-  const alignment = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/AlexGSpiral/pathWithSpirals.imjs", "utf8")));
+  //  const alignment = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/AlexGSpiral/AlexGSpiral.imjs", "utf8")));
+  const alignment = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/AlexGSpiral/pathWithSpirals.imjs", "utf8")));
   captureStroked(allGeometry, alignment);
   if (alignment instanceof Path) {
     const range = alignment.range();

@@ -25,9 +25,9 @@ import { testGeometryQueryRoundTrip } from "./FlatBuffer.test";
 // cspell:word BSIJSON
 
 // directory containing imjs files produced by native geomlibs tests:
-const iModelJsonNativeSamplesDirectory = "./src/test/iModelJsonSamples/fromNative/";
+const iModelJsonNativeSamplesDirectory = "./src/test/data/iModelJsonSamples/fromNative/";
 // directory containing imjs files produced by prior executions of this test file:
-const iModelJsonSamplesDirectory = "./src/test/iModelJsonSamples/fromGC/";
+const iModelJsonSamplesDirectory = "./src/test/data/iModelJsonSamples/fromGC/";
 // Output folder typically not tracked by git... make directory if not there
 const iModelJsonOutputSubFolder = "iModelJsonSamples";
 
@@ -364,8 +364,8 @@ describe("ParseCurveCollections", () => {
   it("BSplinePathRegression", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/pathWithBSplines.imjs", "utf8"))) as Path[];
-    if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
+    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/pathWithBSplines.imjs", "utf8"))) as Path[];
+    if (ck.testDefined(inputs, "inputs successfully parsed")) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs);
       for (const input of inputs) {
         ck.testExactNumber(7, input.children.length, "path has expected number of children");

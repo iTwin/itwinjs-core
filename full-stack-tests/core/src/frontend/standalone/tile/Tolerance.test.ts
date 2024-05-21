@@ -20,10 +20,10 @@ describe("Tile tolerance", () => {
   let imodel: IModelConnection;
   const minimumSpatialTolerance = 0.02;
   const modelId = "0x1c";
-  const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: false }, { ...defaultTileOptions, useLargerTiles: false });
+  const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: false }, { ...defaultTileOptions, expandProjectExtents: false, useLargerTiles: false });
 
   before(async () => {
-    await TestUtility.startFrontend({ tileAdmin: { minimumSpatialTolerance, useLargerTiles: false } });
+    await TestUtility.startFrontend({ tileAdmin: { expandProjectExtents: false, minimumSpatialTolerance, useLargerTiles: false } });
     imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim");
   });
 
