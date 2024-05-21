@@ -13,6 +13,7 @@ import { Settings } from "../../workspace/Settings";
 import { Workspace, WorkspaceContainer, WorkspaceDb } from "../../workspace/Workspace";
 import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { validateWorkspaceContainerId, validateWorkspaceDbName } from "../../internal/workspace/WorkspaceImpl";
 
 describe("WorkspaceFile", () => {
 
@@ -42,7 +43,7 @@ describe("WorkspaceFile", () => {
   it("WorkspaceContainer names", () => {
     const expectBadName = (names: string[]) => {
       names.forEach((containerId) => {
-        expect(() => WorkspaceContainer.validateContainerId(containerId), containerId).to.throw("containerId");
+        expect(() => validateWorkspaceContainerId(containerId), containerId).to.throw("containerId");
       });
     };
 
@@ -65,13 +66,13 @@ describe("WorkspaceFile", () => {
       "-leading-dash",
       "trailing-dash-"]);
 
-    WorkspaceContainer.validateContainerId(Guid.createValue()); // guids should be valid
+    validateWorkspaceContainerId(Guid.createValue()); // guids should be valid
   });
 
   it("WorkspaceDbNames", () => {
     const expectBadName = (names: string[]) => {
       names.forEach((dbName) => {
-        expect(() => WorkspaceContainer.validateDbName(dbName)).to.throw("dbName");
+        expect(() => validateWorkspaceDbName(dbName)).to.throw("dbName");
       });
     };
 
@@ -95,7 +96,7 @@ describe("WorkspaceFile", () => {
       " leading space",
       "trailing space "]);
 
-    WorkspaceContainer.validateDbName(Guid.createValue()); // guids should be valid
+    validateWorkspaceDbName(Guid.createValue()); // guids should be valid
   });
 
   it("create new WorkspaceDb", async () => {

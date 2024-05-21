@@ -82,7 +82,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
   public get dirName() { return join(this.workspace.containerDir, this.id); }
 
   public constructor(workspace: WorkspaceImpl, props: WorkspaceContainer.Props & { accessToken: AccessToken }) {
-    WorkspaceContainer.validateContainerId(props.containerId);
+    validateWorkspaceContainerId(props.containerId);
     this.workspace = workspace;
     this.id = props.containerId;
     this.fromProps = props;
@@ -117,7 +117,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
 
     const versions = [];
     for (const db of dbs) {
-      const thisDb = WorkspaceContainer.parseDbFileName(db);
+      const thisDb = parseWorkspaceDbFileName(db);
       if (thisDb.dbName === dbName && "string" === typeof thisDb.version && thisDb.version.length > 0)
         versions.push(thisDb.version);
     }
@@ -187,7 +187,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
 
   public constructor(props: WorkspaceDb.Props, container: WorkspaceContainer) {
     this.dbName = WorkspaceDb.dbNameWithDefault(props.dbName);
-    WorkspaceContainer.validateDbName(this.dbName);
+    validateWorkspaceDbName(this.dbName);
     this.container = container;
     this.dbFileName = container.resolveDbFileName(props);
     container.addWorkspaceDb(this);
@@ -207,7 +207,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
     }
   }
   public get version() {
-    return WorkspaceContainer.parseDbFileName(this.dbFileName).version;
+    return parseWorkspaceDbFileName(this.dbFileName).version;
   }
 
   public get manifest(): WorkspaceDb.Manifest {
@@ -450,7 +450,7 @@ class EditorImpl implements WorkspaceEditor {
       protected static override _cacheName = workspaceEditorName;
       public static async initializeWorkspace(args: WorkspaceEditor.CreateNewContainerProps) {
         const props = await this.createBlobContainer({ scope: args.scope, metadata: { ...args.metadata, containerType: "workspace" } });
-        const dbFullName = WorkspaceContainer.makeDbFileName(WorkspaceDb.dbNameWithDefault(args.dbName), "1.0.0");
+        const dbFullName = makeWorkspaceDbFileName(WorkspaceDb.dbNameWithDefault(args.dbName), "1.0.0");
         await super._initializeDb({ ...args, props, dbName: dbFullName, dbType: WorkspaceSqliteDb, blockSize: "4M" });
         return props;
       }
@@ -500,12 +500,12 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEdi
       throw new Error("versions require cloud containers");
 
     const oldName = this.resolveDbFileName(args.fromProps ?? {});
-    const oldDb = WorkspaceContainer.parseDbFileName(oldName);
+    const oldDb = parseWorkspaceDbFileName(oldName);
     const newVersion = semver.inc(oldDb.version, args.versionType, args.identifier);
     if (!newVersion)
       WorkspaceDb.throwLoadError("invalid version", args.fromProps ?? {});
 
-    const newName = WorkspaceContainer.makeDbFileName(oldDb.dbName, newVersion);
+    const newName = makeWorkspaceDbFileName(oldDb.dbName, newVersion);
     await cloudContainer.copyDatabase(oldName, newName);
     // return the old and new db names and versions
     return { oldDb, newDb: { dbName: oldDb.dbName, version: newVersion } };
@@ -551,7 +551,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEdi
       if (fs.existsSync(tempDbFile))
         IModelJsFs.removeSync(tempDbFile);
       WorkspaceEditor.createEmptyDb({ localFileName: tempDbFile, manifest: args.manifest });
-      await CloudSqlite.uploadDb(this.cloudContainer, { localFileName: tempDbFile, dbName: WorkspaceContainer.makeDbFileName(WorkspaceDb.dbNameWithDefault(args.dbName), args.version) });
+      await CloudSqlite.uploadDb(this.cloudContainer, { localFileName: tempDbFile, dbName: makeWorkspaceDbFileName(WorkspaceDb.dbNameWithDefault(args.dbName), args.version) });
       IModelJsFs.removeSync(tempDbFile);
     }
     return this.getWorkspaceDb(args);
@@ -579,7 +579,7 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
     if (props === undefined)
       return undefined;
 
-    const parsed = WorkspaceContainer.parseDbFileName(this.dbFileName);
+    const parsed = parseWorkspaceDbFileName(this.dbFileName);
     return { ...props, dbName: parsed.dbName, version: parsed.version };
   }
 
@@ -690,4 +690,56 @@ export function constructWorkspace(settings: Settings, opts?: WorkspaceOpts): Ow
 
 export function constructWorkspaceEditor(): WorkspaceEditor {
   return new EditorImpl();
+}
+
+export function noLeadingOrTrailingSpaces(name: string, msg: string) {
+  if (name.trim() !== name)
+    throw new Error(`${msg} [${name}] may not have leading or trailing spaces`);
+}
+
+export function validateWorkspaceDbName(dbName: WorkspaceDb.DbName) {
+  if (dbName === "" || dbName.length > 255 || /[#\.<>:"/\\"`'|?*\u0000-\u001F]/g.test(dbName) || /^(con|prn|aux|nul|com\d|lpt\d)$/i.test(dbName))
+    throw new Error(`invalid dbName: [${dbName}]`);
+
+  noLeadingOrTrailingSpaces(dbName, "dbName");
+}
+
+/**
+ * Validate that a WorkspaceContainer.Id is valid.
+ * The rules for ContainerIds (from Azure, see https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata):
+ *  - may only contain lower case letters, numbers or dashes
+ *  - may not start or end with with a dash nor have more than one dash in a row
+ *  - may not be shorter than 3 or longer than 63 characters
+ */
+export function validateWorkspaceContainerId(id: WorkspaceContainer.Id) {
+  if (!/^(?=.{3,63}$)[a-z0-9]+(-[a-z0-9]+)*$/g.test(id))
+    throw new Error(`invalid containerId: [${id}]`);
+}
+
+export function validateWorkspaceDbVersion(version?: WorkspaceDb.Version) {
+  version = version ?? "1.0.0";
+  if (version) {
+    const opts = { loose: true, includePrerelease: true };
+    // clean allows prerelease, so try it first. If that fails attempt to coerce it (coerce strips prerelease even if you say not to.)
+    const semVersion = semver.clean(version, opts) ?? semver.coerce(version, opts)?.version;
+    if (!semVersion)
+      throw new Error("invalid version specification");
+    version = semVersion;
+  }
+  return version;
+}
+
+/**
+ * Parse the name stored in a WorkspaceContainer into the dbName and version number. A single WorkspaceContainer may hold
+ * many versions of the same WorkspaceDb. The name of the Db in the WorkspaceContainer is in the format "name:version". This
+ * function splits them into separate strings.
+ */
+export function parseWorkspaceDbFileName(dbFileName: WorkspaceDb.DbFullName): { dbName: WorkspaceDb.DbName, version: WorkspaceDb.Version } {
+  const parts = dbFileName.split(":");
+  return { dbName: parts[0], version: parts[1] };
+}
+
+/** Create a dbName for a WorkspaceDb from its base name and version. This will be in the format "name:version" */
+export function makeWorkspaceDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName {
+  return `${dbName}:${validateWorkspaceDbVersion(version)}`;
 }

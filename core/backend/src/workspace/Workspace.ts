@@ -14,13 +14,9 @@ import { SQLiteDb } from "../SQLiteDb";
 import { SettingName, Settings } from "./Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
+import { noLeadingOrTrailingSpaces, validateWorkspaceDbName } from "../internal/workspace/WorkspaceImpl";
 
 // cspell:ignore rowid julianday primarykey premajor preminor prepatch
-
-function noLeadingOrTrailingSpaces(name: string, msg: string) {
-  if (name.trim() !== name)
-    throw new Error(`${msg} [${name}] may not have leading or trailing spaces`);
-}
 
 const loggerCategory = BackendLoggerCategory.Workspace;
 
@@ -42,58 +38,6 @@ export namespace WorkspaceContainer {
     readonly description?: string;
     /** in case of problems loading the container, display this message. */
     readonly loadingHelp?: string;
-  }
-
-  /** @internal */
-  export function validateDbName(dbName: WorkspaceDb.DbName) {
-    if (dbName === "" || dbName.length > 255 || /[#\.<>:"/\\"`'|?*\u0000-\u001F]/g.test(dbName) || /^(con|prn|aux|nul|com\d|lpt\d)$/i.test(dbName))
-      throw new Error(`invalid dbName: [${dbName}]`);
-    noLeadingOrTrailingSpaces(dbName, "dbName");
-  }
-
-  /**
-   * Validate that a WorkspaceContainer.Id is valid.
-   * The rules for ContainerIds (from Azure, see https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata):
-   *  - may only contain lower case letters, numbers or dashes
-   *  - may not start or end with with a dash nor have more than one dash in a row
-   *  - may not be shorter than 3 or longer than 63 characters
-   * @internal
-   */
-  export function validateContainerId(id: WorkspaceContainer.Id) {
-    if (!/^(?=.{3,63}$)[a-z0-9]+(-[a-z0-9]+)*$/g.test(id))
-      throw new Error(`invalid containerId: [${id}]`);
-  }
-
-  /** @internal */
-  export function validateVersion(version?: WorkspaceDb.Version) {
-    version = version ?? "1.0.0";
-    if (version) {
-      const opts = { loose: true, includePrerelease: true };
-      // clean allows prerelease, so try it first. If that fails attempt to coerce it (coerce strips prerelease even if you say not to.)
-      const semVersion = semver.clean(version, opts) ?? semver.coerce(version, opts)?.version;
-      if (!semVersion)
-        throw new Error("invalid version specification");
-      version = semVersion;
-    }
-    return version;
-  }
-
-  /**
-   * Parse the name stored in a WorkspaceContainer into the dbName and version number. A single WorkspaceContainer may hold
-   * many versions of the same WorkspaceDb. The name of the Db in the WorkspaceContainer is in the format "name:version". This
-   * function splits them into separate strings.
-   * @internal
-   */
-  export function parseDbFileName(dbFileName: WorkspaceDb.DbFullName): { dbName: WorkspaceDb.DbName, version: WorkspaceDb.Version } {
-    const parts = dbFileName.split(":");
-    return { dbName: parts[0], version: parts[1] };
-  }
-
-  /** Create a dbName for a WorkspaceDb from its base name and version. This will be in the format "name:version"
-   * @internal
-   */
-  export function makeDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName {
-    return `${dbName}:${WorkspaceContainer.validateVersion(version)}`;
   }
 }
 
