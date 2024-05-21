@@ -40,45 +40,10 @@ import { LinearSweep } from "../../solid/LinearSweep";
 import { RotationalSweep } from "../../solid/RotationalSweep";
 import { Sphere } from "../../solid/Sphere";
 import { TorusPipe } from "../../solid/TorusPipe";
-import { ChainMergeContext } from "../../topology/ChainMerge";
 import { SpacePolygonTriangulation } from "../../topology/SpaceTriangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { ImportedSample } from "../ImportedSamples";
-
-it("ChainMergeVariants", () => {
-  const ck = new Checker();
-  const allGeometry: GeometryQuery[] = [];
-  const e = 1;    // Really big blob tolerance !!!
-  // line segments of a unit square with gap "e" at the beginning of each edge.
-  const segments = [
-    LineSegment3d.createXYXY(e, 0, 10, 0),
-    LineSegment3d.createXYXY(10, e, 10, 10),
-    LineSegment3d.createXYXY(10 - e, 10, 0, 10),
-    LineSegment3d.createXYXY(0, 10 - e, 0, 0)];
-  let dy = 20.0;
-  for (const tol of [0.0001 * e, 2.0 * e]) {
-    // Create the context with the worst possible sort direction -- trigger N^2 search
-    const chainMergeContext = ChainMergeContext.create(
-      {
-        tolerance: tol,
-        primarySortDirection: Vector3d.create(0, 0, 1),
-      });
-    chainMergeContext.addLineSegment3dArray(segments);
-    chainMergeContext.clusterAndMergeVerticesXYZ();
-    const chains = chainMergeContext.collectMaximalChains();
-    let expectedChains = 4;
-    if (tol > e)
-      expectedChains = 1;
-    ck.testExactNumber(chains.length, expectedChains, "Chain count with variant tolerance");
-    GeometryCoreTestIO.captureGeometry(allGeometry, chains, 0, dy, 0);
-    dy += 20.0;
-  }
-  GeometryCoreTestIO.captureGeometry(allGeometry, segments, 0, 0, 0);
-
-  GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "ChainMergeVariants");
-  expect(ck.getNumErrors()).equals(0);
-});
 
 function addSquareFacet(builder: PolyfaceBuilder, x0: number, y0: number, a: number = 1) {
   const x1 = x0 + a;
@@ -173,7 +138,6 @@ it("ExpandToMaximalPlanarFacetsA", () => {
   builder.addGreedyTriangulationBetweenLineStrings(linestringA, linestringB);
   const polyface = builder.claimPolyface(true);
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, dx, dy, 0);
-
   const partitions1 = PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface, false);
   PolyfaceQuery.markPairedEdgesInvisible(polyface, Angle.createDegrees(1.0));
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, dx, dy += 3, 0);
@@ -193,12 +157,12 @@ it("ExpandToMaximalPlanarFacetsA", () => {
       dy += 2;
     }
   }
-
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "ExpandToMaximalPlanarFaces");
   expect(ck.getNumErrors()).equals(0);
 });
 
-/** Return whether all edges in the clusters are visible.
+/**
+ * Return whether all edges in the clusters are visible.
  * @param allHidden whether to return whether all edges in the clusters are hidden instead
  */
 function allEdgesAreVisible(mesh: IndexedPolyface, clusters: SortableEdgeCluster[], allHidden?: boolean): boolean {
@@ -218,7 +182,8 @@ function allEdgesAreVisible(mesh: IndexedPolyface, clusters: SortableEdgeCluster
   return true;
 }
 
-/** Flex dihedral edge filter, and verify various clustered edge counts and visibilities.
+/**
+ * Flex dihedral edge filter, and verify various clustered edge counts and visibilities.
  * @param expectedSmoothCount expected count of smooth manifold edge pairs
  * @param expectedSharpCount expected count of sharp manifold edge pairs
  * @param expectedOtherCount expected count of non-manifold edge clusters
@@ -273,7 +238,6 @@ it("ExpandToMaximalPlanarFacetsWithHole", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, maximalPolyface, dx, dy += yStep, 0);
     dx += 20;
   }
-
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "ExpandToMaximalPlanarFacesWithHoles");
   expect(ck.getNumErrors()).equals(0);
 });
@@ -362,7 +326,6 @@ it("FillHoles", () => {
       return true;
     },
   );
-
   const dx = 0;
   let dy = 0;
   const yStep = 10.0;
@@ -447,6 +410,7 @@ it("SimplestTriangulation", () => {
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "SimplestTriangulation");
   expect(ck.getNumErrors()).equals(0);
 });
+
 it("GreedyEarCutTriangulation", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
@@ -477,7 +441,6 @@ it("GreedyEarCutTriangulation", () => {
     dx += xStep;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsA, dx, dy, dz);
     if (ck.testBoolean(expected, SpacePolygonTriangulation.triangulateSimplestSpaceLoop(pointsA, announceTriangles), message)) {
-
     }
     pointsA.pop();
   };
@@ -584,16 +547,12 @@ describe("MarkVisibility", () => {
     const dy = 5.0;
     const pointA0 = Point3d.create(0, 0);
     const pointA1 = Point3d.create(0, 1);
-
     const pointB0 = Point3d.create(1, 0);
     const pointB1 = Point3d.create(1, 1);
-
     const pointC0 = Point3d.create(1, 0, 1);
     const pointC1 = Point3d.create(1, 1, 1);
-
     const pointD0 = Point3d.create(1, 0, 2);
     const pointD1 = Point3d.create(1, 1, 2);
-
     const pointE0 = Point3d.create(2, 0);
     const pointE1 = Point3d.create(2, 1);
 
@@ -612,6 +571,7 @@ describe("MarkVisibility", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 });
+
 describe("ReorientFacets", () => {
   it("TwoFacets", () => {
     const ck = new Checker();
@@ -621,10 +581,8 @@ describe("ReorientFacets", () => {
     const dy = 5.0;
     const pointA0 = Point3d.create(0, 0);
     const pointA1 = Point3d.create(0, 1);
-
     const pointB0 = Point3d.create(1, 0);
     const pointB1 = Point3d.create(1, 1);
-
     const pointC0 = Point3d.create(2, 0);
     const pointC1 = Point3d.create(2, 1);
 
@@ -651,7 +609,6 @@ describe("ReorientFacets", () => {
   it("ManyFlips", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-
     let x0 = 0;
     const y0 = 0;
     const dy = 5.0;
@@ -855,7 +812,6 @@ describe("ReorientFacets", () => {
     expect(ck.getNumErrors()).equals(0);
   });
   it("ComputeNormals", () => {
-
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -904,7 +860,6 @@ describe("ReorientFacets", () => {
   });
 
   it("isConvex", () => {
-
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -920,32 +875,36 @@ describe("ReorientFacets", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshA, x0, y0);
       const dihedralA = PolyfaceQuery.dihedralAngleSummary(meshA);
       // We don't really know what solids are in the sampler, but ....
-      // These types are always convex ...
-      if (solid instanceof Box
-        || solid instanceof Cone
-        || solid instanceof Sphere) {
-        ck.testExactNumber(1, dihedralA);
+      // These types are always convex
+      if (solid instanceof Box || solid instanceof Cone || solid instanceof Sphere) {
+        ck.testExactNumber(1, dihedralA, "dihedralA should be 1");
       }
       // These types are always mixed
-      if (solid instanceof TorusPipe
-        || solid instanceof RotationalSweep)
-        ck.testExactNumber(0, dihedralA);
+      if (solid instanceof TorusPipe || solid instanceof RotationalSweep)
+        ck.testExactNumber(-2, dihedralA, "dihedralA should be -2");
       ck.testBoolean(dihedralA > 0, PolyfaceQuery.isConvexByDihedralAngleCount(meshA), "Dihedral angle counts match closure");
       if (dihedralA !== 0)
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-          [Point3d.create(0, 0, 0), Point3d.create(0, dihedralA * strokeLength, 0)], x0, y0);
+        GeometryCoreTestIO.captureCloneGeometry(
+          allGeometry, [Point3d.create(0, 0, 0), Point3d.create(0, dihedralA * strokeLength, 0)], x0, y0,
+        );
       else
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-          [Point3d.create(0, dxB, 0), Point3d.create(strokeLength, dxB, 0)], x0, y0);
+        GeometryCoreTestIO.captureCloneGeometry(
+          allGeometry, [Point3d.create(0, dxB, 0), Point3d.create(strokeLength, dxB, 0)], x0, y0,
+        );
       meshA.reverseIndices();
       const dihedralB = PolyfaceQuery.dihedralAngleSummary(meshA);
       if (dihedralB !== 0)
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-          [Point3d.create(dxB, 0, 0), Point3d.create(dxB, dihedralB * strokeLength, 0)], x0, y0);
+        GeometryCoreTestIO.captureCloneGeometry(
+          allGeometry, [Point3d.create(dxB, 0, 0), Point3d.create(dxB, dihedralB * strokeLength, 0)], x0, y0,
+        );
       else
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-          [Point3d.create(0, -dxB, 0), Point3d.create(strokeLength, -dxB, 0)], x0, y0);
-      ck.testExactNumber(dihedralA, -dihedralB);
+        GeometryCoreTestIO.captureCloneGeometry(
+          allGeometry, [Point3d.create(0, -dxB, 0), Point3d.create(strokeLength, -dxB, 0)], x0, y0,
+        );
+      if (dihedralA === -2)
+        ck.testExactNumber(dihedralA, dihedralB, "both dihedralA and dihedralB should be -2");
+      else
+        ck.testExactNumber(dihedralA, -dihedralB, "dihedralA should be equal to -dihedralB");
       ck.testBoolean(dihedralB > 0, PolyfaceQuery.isConvexByDihedralAngleCount(meshA), "Dihedral angle counts match closure in reversed mesh");
       x0 += 20;
     }
@@ -955,7 +914,6 @@ describe("ReorientFacets", () => {
   });
 
   it("isConvexWithBoundary", () => {
-
     const ck = new Checker();
     const options = StrokeOptions.createForFacets();
     const builder = PolyfaceBuilder.create(options);
@@ -974,7 +932,6 @@ describe("ReorientFacets", () => {
   });
 
   it("isConvexWithAllPlanar", () => {
-
     const ck = new Checker();
     const options = StrokeOptions.createForFacets();
     const builder = PolyfaceBuilder.create(options);
@@ -985,10 +942,42 @@ describe("ReorientFacets", () => {
     builder.addPolygon([point00, point10, point01]);
     builder.addPolygon([point01, point10, point111]);
     const polyface = builder.claimPolyface();
-    ck.testExactNumber(1, PolyfaceQuery.dihedralAngleSummary(polyface, true), "dihedral with boundary and planar");
-    ck.testTrue(PolyfaceQuery.isConvexByDihedralAngleCount(polyface, true), "isConvexByDihedralPairing with boundary and planar");
+    ck.testExactNumber(0, PolyfaceQuery.dihedralAngleSummary(polyface, true), "dihedral with boundary and planar");
+    ck.testFalse(PolyfaceQuery.isConvexByDihedralAngleCount(polyface, true), "isConvexByDihedralPairing with boundary and planar");
 
     expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("dihedralAngleSummary", () => {
+    const ck = new Checker();
+    const polyface = IndexedPolyface.create(true);
+    // facet1
+    polyface.addPoint(Point3d.create(0, 0, 0));
+    polyface.addPoint(Point3d.create(1, -1, 0));
+    polyface.addPoint(Point3d.create(0, 2, 0));
+    polyface.addPoint(Point3d.create(-1, -1, 0));
+    // facet2
+    polyface.addPoint(Point3d.create(0, 0, 0));
+    polyface.addPoint(Point3d.create(-1, -1, 0));
+    polyface.addPoint(Point3d.create(1, -1, 0));
+    for (let i = 0; i < 7; ++i)
+      polyface.addNormalXYZ(0, 0, 1);
+    const addIndex = (idx: number) => {
+      polyface.addPointIndex(idx);
+      polyface.addNormalIndex(idx);
+    };
+    addIndex(0);
+    addIndex(1);
+    addIndex(2);
+    addIndex(3);
+    polyface.terminateFacet();
+    addIndex(4);
+    addIndex(5);
+    addIndex(6);
+    polyface.terminateFacet();
+    polyface.data.compress();
+    ck.testExactNumber(PolyfaceQuery.dihedralAngleSummary(polyface, false), -2);
+    ck.testExactNumber(PolyfaceQuery.dihedralAngleSummary(polyface, true), 0);
   });
 
   it("ComputeSilhouettes", () => {

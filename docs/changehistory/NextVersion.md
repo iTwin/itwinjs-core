@@ -3,3 +3,16 @@ publish: false
 ---
 # NextVersion
 
+Table of contents:
+- [Geometry](#geometry)
+  - [Convex check using dihedral angles](#convex-check-using-dihedral-angles)
+
+## Geometry
+
+### Convex check using dihedral angles
+
+The old behavior of [PolyfaceQuery.dihedralAngleSummary]($core-geometry) was to return `1` with planar input mesh and `ignoreBoundaries===true`. Its wrapper [PolyfaceQuery.isConvexByDihedralAngleCount]($core-geometry) used to return `true` in this case, but callers generally don't expect to classify a planar mesh as enclosing a convex volume.
+
+To address this error, we changed the behavior of the underlying method `PolyfaceQuery.dihedralAngleSummary` so that it now returns `0` for the aforementioned input. As such, `PolyfaceQuery.isConvexByDihedralAngleCount` now correctly returns `false` for planar input mesh and `ignoreBoundaries===true`; callers that pass `undefined` or `false` for `ignoreBoundaries` are unaffected.
+
+Full changes to the iTwinjs 4.0 method `PolyfaceQuery.dihedralAngleSummary` are as follows. When all dihedral angles are zero (and `ignoreBoundaries===true`), this method used to return 1 but now returns 0. When the signs of the dihedral angles are mixed, or a non-manifold condition or undefined normal is detected, this method used to return 0 but now returns -2.

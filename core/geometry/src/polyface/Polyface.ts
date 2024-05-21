@@ -674,7 +674,8 @@ export interface PolyfaceVisitor extends PolyfaceData {
    * * Example: suppose `[6,7,8]` is the pointIndex array representing a triangle. First edge would be `6,7`. Second
    * edge is `7,8`. Third edge is `8,6`. To access `6` for the third edge, we have to go back to the start of array.
    * Therefore, it is useful to store `6` at the end of pointIndex array, i.e., `[6,7,8,6]` meaning `numWrap = 1`.
-   * * `numWrap = 2` is useful when vertex visit requires two adjacent vectors, e.g. for cross products.
+   * * Continuing this example, `numWrap = 2` (i.e., `[6,7,8,6,7]`) is useful when each vertex visit requires
+   * the next two points, e.g., to form two adjacent vectors for a cross product.
    */
   setNumWrap(numWrap: number): void;
   /** Clear the contents of all arrays. Use this along with `pushDataFrom` to build up new facets. */

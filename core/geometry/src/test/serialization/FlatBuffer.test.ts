@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { flatbuffers } from "flatbuffers";
+import { AkimaCurve3d } from "../../bspline/AkimaCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -85,6 +86,20 @@ it("HelloCurveVector", () => {
   for (const cv of cvs) {
     testGeometryQueryRoundTrip(ck, cv);
   }
+  expect(ck.getNumErrors()).equals(0);
+});
+
+it("HelloAkimaCurve", () => {
+  const ck = new Checker();
+  const circlePoints8 = Sample.createUnitCircle(8);
+  const circlePoints4 = Sample.createUnitCircle(4);
+  const circlePoints6 = Sample.createUnitCircle(6);
+  const curve: AkimaCurve3d[] = [
+    AkimaCurve3d.create({ fitPoints: circlePoints8 })!,
+    AkimaCurve3d.create({ fitPoints: circlePoints4 })!,
+    AkimaCurve3d.create({ fitPoints: circlePoints6 })!,
+  ];
+  testGeometryQueryRoundTrip(ck, curve);
   expect(ck.getNumErrors()).equals(0);
 });
 

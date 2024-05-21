@@ -4709,8 +4709,8 @@ export class PolyfaceQuery {
     static sweepLineStringToFacetsXYReturnSweptFacets(lineStringPoints: GrowableXYZArray, polyface: Polyface): Polyface;
     // @deprecated (undocumented)
     static sweepLinestringToFacetsXYreturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface;
-    static visitorClientFacetCount(visitor: Polyface | PolyfaceVisitor): number;
-    static visitorClientPointCount(visitor: Polyface | PolyfaceVisitor): number;
+    static visitorClientFacetCount(source: Polyface | PolyfaceVisitor): number;
+    static visitorClientPointCount(source: Polyface | PolyfaceVisitor): number;
     static visitorToLoop(visitor: PolyfaceVisitor): Loop;
 }
 
