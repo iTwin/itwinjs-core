@@ -498,22 +498,22 @@ export class PolyfaceQuery {
     return true;
   }
   /**
-  * Compute a number summarizing the dihedral angles in the mesh.
-  * * A dihedral angle is the signed angle between adjacent facets' normals. This angle is positive when the cross
-  * product `normalA x normalB` has the same direction as facetA's traversal of the facets' shared edge.
-  * @param source mesh.
-  * @param ignoreBoundaries if `true` ignore simple boundary edges, i.e., allow unclosed meshes. Default is `false`.
-  * See [[isConvexByDihedralAngleCount]] for comments about passing true when there are multiple
-  * connected components.
-  * * Return `0` if all dihedral angles are zero (and `ignoreBoundaries === true`). The mesh is planar.
-  * * Otherwise, return `1` if all dihedral angles are non-negative. The mesh probably encloses a convex volume and
-  * has outward normals.
-  * * Otherwise, return `-1` if all dihedral angles are non-positive. The mesh probably encloses a convex volume and
-  * has inward normals.
-  * * Otherwise, return `-2`. Also return `-2` if a non-manifold condition was detected, or a facet normal could not
-  * be computed. A non-manifold condition is a positive-length edge adjacent to more than 2 facets or (if
-  * `ignoreBoundaries` is false) adjacent to exactly one facet.
-  */
+   * Compute a number summarizing the dihedral angles in the mesh.
+   * * A dihedral angle is the signed angle between adjacent facets' normals. This angle is positive when the cross
+   * product `normalA x normalB` has the same direction as facetA's traversal of the facets' shared edge.
+   * @param source mesh.
+   * @param ignoreBoundaries if `true` ignore simple boundary edges, i.e., allow unclosed meshes. Default is `false`.
+   * See [[isConvexByDihedralAngleCount]] for comments about passing true when there are multiple
+   * connected components.
+   * * Return `0` if all dihedral angles are zero (and `ignoreBoundaries === true`). The mesh is planar.
+   * * Otherwise, return `1` if all dihedral angles are non-negative. The mesh probably encloses a convex volume and
+   * has outward normals.
+   * * Otherwise, return `-1` if all dihedral angles are non-positive. The mesh probably encloses a convex volume and
+   * has inward normals.
+   * * Otherwise, return `-2`. Also return `-2` if a non-manifold condition was detected, or a facet normal could not
+   * be computed. A non-manifold condition is a positive-length edge adjacent to more than 2 facets or (if
+   * `ignoreBoundaries` is false) adjacent to exactly one facet.
+   */
   public static dihedralAngleSummary(source: Polyface, ignoreBoundaries: boolean = false): number {
     // more info can be found at geometry/internaldocs/Polyface.md
     const edges = new IndexedEdgeMatcher();
@@ -618,15 +618,15 @@ export class PolyfaceQuery {
     return this.isPolyfaceManifold(source, false);
   }
   /**
- * Test if the facets in `source` occur in perfectly mated pairs, as is required for a closed manifold volume.
- * If not, extract the boundary edges as lines.
- * @param source polyface or visitor.
- * @param announceEdge function to be called with each boundary edge. The announcement is start and end points,
- * start and end indices, and facet index.
- * @param includeTypical true to announce typical boundary edges with a single adjacent facet.
- * @param includeMismatch true to announce edges with more than 2 adjacent facets.
- * @param includeNull true to announce edges with identical start and end vertex indices.
- */
+   * Test if the facets in `source` occur in perfectly mated pairs, as is required for a closed manifold volume.
+   * If not, extract the boundary edges as lines.
+   * @param source polyface or visitor.
+   * @param announceEdge function to be called with each boundary edge. The announcement is start and end points,
+   * start and end indices, and facet index.
+   * @param includeTypical true to announce typical boundary edges with a single adjacent facet.
+   * @param includeMismatch true to announce edges with more than 2 adjacent facets.
+   * @param includeNull true to announce edges with identical start and end vertex indices.
+   */
   public static announceBoundaryEdges(
     source: Polyface | PolyfaceVisitor | undefined,
     announceEdge: (pointA: Point3d, pointB: Point3d, indexA: number, indexB: number, facetIndex: number) => void,
@@ -816,7 +816,6 @@ export class PolyfaceQuery {
     );
     return collector.grabResult(true);
   }
-
   /**
    * Find segments (within the linestring) which project to facets.
    * * Announce each pair of linestring segment and on-facet segment through a callback.
@@ -1645,12 +1644,12 @@ export class PolyfaceQuery {
     }
   }
   /**
- * Collect facet duplicates.
- * @param polyface the polyface.
- * @param includeSingletons if true, non-duplicated facets are included in the output.
- * @returns an array of arrays describing facet duplication. Each array `entry` in the output contains read
- * indices of a cluster of facets with the same vertex indices.
- */
+   * Collect facet duplicates.
+   * @param polyface the polyface.
+   * @param includeSingletons if true, non-duplicated facets are included in the output.
+   * @returns an array of arrays describing facet duplication. Each array `entry` in the output contains read
+   * indices of a cluster of facets with the same vertex indices.
+   */
   public static collectDuplicateFacetIndices(polyface: Polyface, includeSingletons: boolean = false): number[][] {
     const result: number[][] = [];
     this.announceDuplicateFacetIndices(
