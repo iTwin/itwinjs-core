@@ -129,9 +129,9 @@ export class SweepLineStringToFacetsOptions {
       this.collectOnRearFacets === true;
   }
   /**
-   * Decide if the instance flags (collectOn/SideFacets) accept this facet.
-   * * Facets whose facet normal have positive, zero, or negative dot product with the `vectorToEye` are forward,
-   * side, and rear.
+   * Decide if the instance collector flags accept a facet with the given normal.
+   * * A facet whose facet normal has a positive, zero, or negative dot product with `vectorToEye` is classified
+   * as forward, side, or rear, respectively.
    * * `undefined` facet normal returns `false`.
   */
   public collectFromThisFacetNormal(facetNormal: Vector3d | undefined): boolean {
@@ -483,33 +483,38 @@ export class PolyfaceQuery {
   }
   /**
    * Test for convex volume by dihedral angle tests on all edges.
-   * * This tests if all dihedral angles are positive. This means the mesh is probably convex with outward normals.
-   * * In a closed solid, this is a strong test for overall convexity.
+   * * This tests if all dihedral angles of the mesh are positive.
+   * * In a closed solid, this is a strong test for overall mesh convexity with outward facing normals.
+   * * See [[dihedralAngleSummary]] for the definition of "dihedral angle".
    * * With `ignoreBoundaries` true, this may be a useful test when all the facets are in a single edge-connected
    * component, such as a pyramid with no underside.
    * * It is not a correct test if there are multiple, disjoint components.
-   *   * Take the above-mentioned pyramid with no underside.
-   *   * Within the same mesh, have a second pyramid placed to the side, still facing upward.
-   *   * The angles will pass the dihedral convexity test, but the composite thing surely is not convex.
+   * * Take the above-mentioned pyramid with no underside.
+   * * Within the same mesh, have a second pyramid placed to the side, still facing upward.
+   * * The angles will pass the dihedral convexity test, but the composite thing surely is not convex.
    * @param source mesh.
    * @param ignoreBoundaries if `true` ignore simple boundary edges, i.e., allow unclosed meshes. Default is `false`.
-   * @returns true if all dihedral angles (angle across facets) of the mesh are positive. The mesh is probably convex
-   * with outward normals.
+   * @returns true if all dihedral angles of the mesh are positive.
    */
   public static isConvexByDihedralAngleCount(source: Polyface, ignoreBoundaries: boolean = false): boolean {
     return this.dihedralAngleSummary(source, ignoreBoundaries) > 0;
   }
   /**
   * Compute a number summarizing the dihedral angles in the mesh.
+  * * A dihedral angle is the signed angle between adjacent facets' normals. This angle is positive when the cross
+  * product `normalA x normalB` has the same direction as facetA's traversal of the facets' shared edge.
   * @param source mesh.
   * @param ignoreBoundaries if `true` ignore simple boundary edges, i.e., allow unclosed meshes. Default is `false`.
-  * @returns a number summarizing the dihedral angles in the mesh.
-  *  * Return `1` if all angles are positive. The mesh is probably convex with outward normals.
-  *  * Return `0` if all angles are zero. The mesh is planar.
-  *  * Return `-1` if all angles are negative. The mesh is probably convex with inward normals.
-  *  * Return `-2` otherwise.
-  * @see [[PolyfaceQuery.isConvexByDihedralAngleCount]] for comments about `ignoreBoundaries === true` when there
-  * are multiple connected components.
+  * See [[isConvexByDihedralAngleCount]] for comments about passing true when there are multiple
+  * connected components.
+  * * Return `0` if all dihedral angles are zero (and `ignoreBoundaries === true`). The mesh is planar.
+  * * Otherwise, return `1` if all dihedral angles are non-negative. The mesh probably encloses a convex volume and
+  * has outward normals.
+  * * Otherwise, return `-1` if all dihedral angles are non-positive. The mesh probably encloses a convex volume and
+  * has inward normals.
+  * * Otherwise, return `-2`. Also return `-2` if a non-manifold condition was detected, or a facet normal could not
+  * be computed. A non-manifold condition is a positive-length edge adjacent to more than 2 facets or (if
+  * `ignoreBoundaries` is false) adjacent to exactly one facet.
   */
   public static dihedralAngleSummary(source: Polyface, ignoreBoundaries: boolean = false): number {
     // more info can be found at geometry/internaldocs/Polyface.md
@@ -672,17 +677,17 @@ export class PolyfaceQuery {
         edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), visitor.currentReadIndex());
       }
     }
-    const bad0: SortableEdgeCluster[] = [];
-    const bad1: SortableEdgeCluster[] = [];
-    const bad2: SortableEdgeCluster[] = [];
-    edges.sortAndCollectClusters(undefined, bad0, bad2, bad1);
+    const boundaryEdges: SortableEdgeCluster[] = [];
+    const nullEdges: SortableEdgeCluster[] = [];
+    const allOtherEdges: SortableEdgeCluster[] = [];
+    edges.sortAndCollectClusters(undefined, boundaryEdges, allOtherEdges, nullEdges);
     const badList = [];
-    if (includeTypical && bad0.length > 0)
-      badList.push(bad0);
-    if (includeMismatch && bad1.length > 0)
-      badList.push(bad1);
-    if (includeNull && bad2.length > 0)
-      badList.push(bad2);
+    if (includeTypical && boundaryEdges.length > 0)
+      badList.push(boundaryEdges);
+    if (includeMismatch && nullEdges.length > 0)
+      badList.push(nullEdges);
+    if (includeNull && allOtherEdges.length > 0)
+      badList.push(allOtherEdges);
     if (badList.length === 0)
       return undefined;
     const sourcePolyface = visitor.clientPolyface()!;
@@ -1315,7 +1320,7 @@ export class PolyfaceQuery {
     );
     return builder.claimPolyface(true);
   }
-  /** @deprecated in 4.x. Use [[PolyfaceQuery.sweepLineStringToFacetsXYReturnSweptFacets]] instead. */
+  /** @deprecated in 4.x. Use [[sweepLineStringToFacetsXYReturnSweptFacets]] instead. */
   public static sweepLinestringToFacetsXYreturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface {
     return this.sweepLineStringToFacetsXYReturnSweptFacets(linestringPoints, polyface);
   }
@@ -1556,7 +1561,7 @@ export class PolyfaceQuery {
     return builder.claimPolyface();
   }
   /**
-   * Compare facet index and vertex indexes of 2 arrays. Returns 0 if arrays are the same.
+   * Compare index arrays formatted as follows. Return 0 if arrays are the same.
    * * Each array input structure is: [facetIndex, vertexIndex0, vertexIndex1, ....]
    * * Vertex indices assumed reversed so:
    *   * vertexIndex0 is the lowest index on the facet.
@@ -1674,7 +1679,7 @@ export class PolyfaceQuery {
     );
     return builder.claimPolyface();
   }
-  /** Clone the facets, inserting removing points that are simply within colinear edges. */
+  /** Clone the facets, removing points that are simply within colinear edges. */
   public static cloneWithColinearEdgeFixup(polyface: Polyface): Polyface {
     const oldFacetVisitor = polyface.createVisitor(2); // this is to visit the existing facets
     const newFacetVisitor = polyface.createVisitor(0); // this is to build the new facets
@@ -1919,17 +1924,17 @@ export class PolyfaceQuery {
   }
   /**
    * Offset the faces of the mesh.
-   * @param polyface original mesh.
+   * @param source original mesh.
    * @param signedOffsetDistance distance to offset
    * @param offsetOptions angle options. The default options are recommended.
    * @returns shifted mesh.
    */
   public static cloneOffset(
-    polyface: IndexedPolyface, signedOffsetDistance: number, offsetOptions: OffsetMeshOptions = OffsetMeshOptions.create(),
+    source: IndexedPolyface, signedOffsetDistance: number, offsetOptions: OffsetMeshOptions = OffsetMeshOptions.create(),
   ): IndexedPolyface {
     const strokeOptions = StrokeOptions.createForFacets();
     const offsetBuilder = PolyfaceBuilder.create(strokeOptions);
-    OffsetMeshContext.buildOffsetMeshWithEdgeChamfers(polyface, offsetBuilder, signedOffsetDistance, offsetOptions);
+    OffsetMeshContext.buildOffsetMeshWithEdgeChamfers(source, offsetBuilder, signedOffsetDistance, offsetOptions);
     return offsetBuilder.claimPolyface();
   }
   private static _workTriangle?: BarycentricTriangle;

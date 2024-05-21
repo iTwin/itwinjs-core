@@ -947,6 +947,38 @@ describe("ReorientFacets", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("dihedralAngleSummary", () => {
+    const ck = new Checker();
+    const polyface = IndexedPolyface.create(true);
+    // facet1
+    polyface.addPoint(Point3d.create(0, 0, 0));
+    polyface.addPoint(Point3d.create(1, -1, 0));
+    polyface.addPoint(Point3d.create(0, 2, 0));
+    polyface.addPoint(Point3d.create(-1, -1, 0));
+    // facet2
+    polyface.addPoint(Point3d.create(0, 0, 0));
+    polyface.addPoint(Point3d.create(-1, -1, 0));
+    polyface.addPoint(Point3d.create(1, -1, 0));
+    for (let i = 0; i < 7; ++i)
+      polyface.addNormalXYZ(0, 0, 1);
+    const addIndex = (idx: number) => {
+      polyface.addPointIndex(idx);
+      polyface.addNormalIndex(idx);
+    };
+    addIndex(0);
+    addIndex(1);
+    addIndex(2);
+    addIndex(3);
+    polyface.terminateFacet();
+    addIndex(4);
+    addIndex(5);
+    addIndex(6);
+    polyface.terminateFacet();
+    polyface.data.compress();
+    ck.testExactNumber(PolyfaceQuery.dihedralAngleSummary(polyface, false), -2);
+    ck.testExactNumber(PolyfaceQuery.dihedralAngleSummary(polyface, true), 0);
+  });
+
   it("ComputeSilhouettes", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];

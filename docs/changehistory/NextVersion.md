@@ -11,13 +11,8 @@ Table of contents:
 
 ### Convex check using dihedral angles
 
-`PolyfaceQuery.dihedralAngleSummary` old behavior was to return `1` if the mesh was planar (i.e., all dihedral angles between facet normals were zero). Therefore, `PolyfaceQuery.isConvexByDihedralAngleCount` old behavior was to return `true` for planar meshes (i.e., the check would say a planar mesh is convex which is not correct).
+The old behavior of [PolyfaceQuery.dihedralAngleSummary]($core-geometry) was to return `1` with planar input mesh and `ignoreBoundaries===true`. Its wrapper [PolyfaceQuery.isConvexByDihedralAngleCount]($core-geometry) used to return `true` in this case, but callers generally don't expect to classify a planar mesh as enclosing a convex volume.
 
-We changed the behavior so now `PolyfaceQuery.dihedralAngleSummary` returns `0` for planar meshes and therefore, `PolyfaceQuery.isConvexByDihedralAngleCount` returns `false`.
+To address this error, we changed the behavior of the underlying method `PolyfaceQuery.dihedralAngleSummary` so that it now returns `0` for the aforementioned input. As such, `PolyfaceQuery.isConvexByDihedralAngleCount` now correctly returns `false` for planar input mesh and `ignoreBoundaries===true`; callers that pass `undefined` or `false` for `ignoreBoundaries` are unaffected.
 
-Please note that `PolyfaceQuery.dihedralAngleSummary` old behavior was to return `0` if
-- mesh had mixed dihedral angles.
-- mesh had edge(s) with more than 2 adjacent facets.
-- `ignoreBoundaries = false` and mesh had edge(s) with 1 adjacent facet (boundary edges).
-
-The new behavior returns `-2` for such cases.
+Full changes to the iTwinjs 4.0 method `PolyfaceQuery.dihedralAngleSummary` are as follows. When all dihedral angles are zero (and `ignoreBoundaries===true`), this method used to return 1 but now returns 0. When the signs of the dihedral angles are mixed, or a non-manifold condition or undefined normal is detected, this method used to return 0 but now returns -2.

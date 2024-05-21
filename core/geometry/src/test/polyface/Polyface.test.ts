@@ -356,38 +356,6 @@ it("Polyface.RaggedBoxMisMatch", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
-it("Polyface.dihedralAngleSummary", () => {
-  const ck = new Checker();
-  const polyface = IndexedPolyface.create(true);
-  // facet1
-  polyface.addPoint(Point3d.create(0, 0, 0));
-  polyface.addPoint(Point3d.create(1, -1, 0));
-  polyface.addPoint(Point3d.create(0, 2, 0));
-  polyface.addPoint(Point3d.create(-1, -1, 0));
-  // facet2
-  polyface.addPoint(Point3d.create(0, 0, 0));
-  polyface.addPoint(Point3d.create(-1, -1, 0));
-  polyface.addPoint(Point3d.create(1, -1, 0));
-  for (let i = 0; i < 7; ++i)
-    polyface.addNormalXYZ(0, 0, 1);
-  const addIndex = (idx: number) => {
-    polyface.addPointIndex(idx);
-    polyface.addNormalIndex(idx);
-  };
-  addIndex(0);
-  addIndex(1);
-  addIndex(2);
-  addIndex(3);
-  polyface.terminateFacet();
-  addIndex(4);
-  addIndex(5);
-  addIndex(6);
-  polyface.terminateFacet();
-  polyface.data.compress();
-  const ret = PolyfaceQuery.dihedralAngleSummary(polyface, false);
-  ck.testExactNumber(ret, -2);
-});
-
 function writeMeshes(
   ck: Checker,
   geometry: GeometryQuery[],
@@ -552,193 +520,195 @@ function flattenGeometry(...data: GeometryData[]): GeometryQuery[] {
   return result;
 }
 
-const options0 = new StrokeOptions();
-const optionsE = new StrokeOptions();
-const optionsN = new StrokeOptions();
-const optionsP = new StrokeOptions();
-const optionsPN = new StrokeOptions();
-const optionsPNE = new StrokeOptions();
+describe("Polyface.Facets", () => {
+  const options0 = new StrokeOptions();
+  const optionsE = new StrokeOptions();
+  const optionsN = new StrokeOptions();
+  const optionsP = new StrokeOptions();
+  const optionsPN = new StrokeOptions();
+  const optionsPNE = new StrokeOptions();
 
-optionsE.maxEdgeLength = 0.5;
-optionsN.needNormals = true;
-optionsP.needParams = true;
-optionsPN.needNormals = true;
-optionsPN.needParams = true;
-optionsPNE.maxEdgeLength = 0.5;
-optionsPNE.needNormals = true;
-optionsPNE.needParams = true;
-const allOptions = [options0, optionsN, optionsP, optionsE, optionsPNE];
+  optionsE.maxEdgeLength = 0.5;
+  optionsN.needNormals = true;
+  optionsP.needParams = true;
+  optionsPN.needNormals = true;
+  optionsPN.needParams = true;
+  optionsPNE.maxEdgeLength = 0.5;
+  optionsPNE.needNormals = true;
+  optionsPNE.needParams = true;
+  const allOptions = [options0, optionsN, optionsP, optionsE, optionsPNE];
 
-const bigYStep = 800.0; // step between starts for different solid types
-const optionYStep = 100.0; // steps between starts for option variants of same solid type
-const y0OpenSweeps = 0.0;
-const y0ClosedSampler = y0OpenSweeps + bigYStep;
-const y0Box = y0ClosedSampler + bigYStep;
-const y0Cone = y0Box + bigYStep;
-const y0Sphere = y0Cone + bigYStep;
-const y0TorusPipe = y0Sphere + bigYStep;
-const y0LinearSweep = y0TorusPipe + bigYStep;
-const y0RotationalSweep = y0LinearSweep + bigYStep;
-const y0RuledSweep = y0RotationalSweep + bigYStep;
+  const bigYStep = 800.0; // step between starts for different solid types
+  const optionYStep = 100.0; // steps between starts for option variants of same solid type
+  const y0OpenSweeps = 0.0;
+  const y0ClosedSampler = y0OpenSweeps + bigYStep;
+  const y0Box = y0ClosedSampler + bigYStep;
+  const y0Cone = y0Box + bigYStep;
+  const y0Sphere = y0Cone + bigYStep;
+  const y0TorusPipe = y0Sphere + bigYStep;
+  const y0LinearSweep = y0TorusPipe + bigYStep;
+  const y0RotationalSweep = y0LinearSweep + bigYStep;
+  const y0RuledSweep = y0RotationalSweep + bigYStep;
 
-it("Cones", () => {
-  const all = Sample.createCones();
-  writeAllMeshes(all, "Cone", true, allOptions, y0Cone, optionYStep);
-});
-it("Spheres", () => {
-  const all = Sample.createSpheres();
-  writeAllMeshes(all, "Sphere", true, allOptions, y0Sphere, optionYStep);
-});
-it("Boxes", () => {
-  const allBox = flattenGeometry(Sample.createBoxes(false), Sample.createBoxes(true));
-  writeAllMeshes(allBox, "Box", true, allOptions, y0Box, optionYStep);
-});
-it("TorusPipes", () => {
-  const allBox = Sample.createTorusPipes();
-  writeAllMeshes(allBox, "TorusPipe", true, allOptions, y0TorusPipe, optionYStep);
-});
-it("LinearSweeps", () => {
-  writeAllMeshes(Sample.createSimpleLinearSweeps(), "LinearSweep", true, allOptions, y0LinearSweep, optionYStep);
-});
+  it("Cones", () => {
+    const all = Sample.createCones();
+    writeAllMeshes(all, "Cone", true, allOptions, y0Cone, optionYStep);
+  });
+  it("Spheres", () => {
+    const all = Sample.createSpheres();
+    writeAllMeshes(all, "Sphere", true, allOptions, y0Sphere, optionYStep);
+  });
+  it("Boxes", () => {
+    const allBox = flattenGeometry(Sample.createBoxes(false), Sample.createBoxes(true));
+    writeAllMeshes(allBox, "Box", true, allOptions, y0Box, optionYStep);
+  });
+  it("TorusPipes", () => {
+    const allBox = Sample.createTorusPipes();
+    writeAllMeshes(allBox, "TorusPipe", true, allOptions, y0TorusPipe, optionYStep);
+  });
+  it("LinearSweeps", () => {
+    writeAllMeshes(Sample.createSimpleLinearSweeps(), "LinearSweep", true, allOptions, y0LinearSweep, optionYStep);
+  });
 
-it("RotationalSweeps", () => {
-  writeAllMeshes(
-    Sample.createSimpleRotationalSweeps(), "RotationalSweep", true, allOptions, y0RotationalSweep, optionYStep,
-  );
-});
-it("RuledSweeps", () => {
-  const sweepP = Sample.createRuledSweeps(true);
-  writeAllMeshes(sweepP, "RuledSweep", true, allOptions, y0RuledSweep, optionYStep);
-});
-it("Samplers", () => {
-  const openSweeps = Sample.createClosedSolidSampler(false);
-  writeAllMeshes([openSweeps[4]], "Work", true, [optionsPNE, optionsPNE], y0OpenSweeps, optionYStep);
-  writeAllMeshes(openSweeps, "OpenSweeps", true, allOptions, y0OpenSweeps, optionYStep);
-  const closedSolids = Sample.createClosedSolidSampler(true);
-  writeAllMeshes(closedSolids, "ClosedSweeps", false, allOptions, y0ClosedSampler, optionYStep);
-});
+  it("RotationalSweeps", () => {
+    writeAllMeshes(
+      Sample.createSimpleRotationalSweeps(), "RotationalSweep", true, allOptions, y0RotationalSweep, optionYStep,
+    );
+  });
+  it("RuledSweeps", () => {
+    const sweepP = Sample.createRuledSweeps(true);
+    writeAllMeshes(sweepP, "RuledSweep", true, allOptions, y0RuledSweep, optionYStep);
+  });
+  it("Samplers", () => {
+    const openSweeps = Sample.createClosedSolidSampler(false);
+    writeAllMeshes([openSweeps[4]], "Work", true, [optionsPNE, optionsPNE], y0OpenSweeps, optionYStep);
+    writeAllMeshes(openSweeps, "OpenSweeps", true, allOptions, y0OpenSweeps, optionYStep);
+    const closedSolids = Sample.createClosedSolidSampler(true);
+    writeAllMeshes(closedSolids, "ClosedSweeps", false, allOptions, y0ClosedSampler, optionYStep);
+  });
 
-it("SpheresDensity", () => {
-  const ck = new Checker();
-  const allGeometry: GeometryQuery[] = [];
-  const allCountsA = [];
-  const allCountsB = [];
-  const allCountsC = [];
-  let y0 = 0;
-  for (const a of [10, 22, 45]) {
-    const countsA = [];
-    const countsB = [];
-    const countsC = [];
-    // use a as both angle in degrees and multiplier of chordTol
-    const optionsA = StrokeOptions.createForFacets();
-    const optionsB = StrokeOptions.createForFacets();
-    const optionsC = StrokeOptions.createForFacets();
-    optionsA.angleTol = undefined;
-    optionsB.angleTol = undefined;
-    optionsC.angleTol = undefined;
-    optionsA.angleTol = Angle.createDegrees(a);
-    optionsA.chordTol = undefined;
-    optionsB.chordTol = a * 0.1;
-    optionsB.angleTol = undefined;
-    let xA = 0;
-    let xB = 400;
-    let xC = 800;
-    for (const radius of [1, 64, 4096]) {
-      optionsC.maxEdgeLength = radius / 4.0;
-      xA += 2 * radius;
-      xB += 2 * radius;
-      xC += 2 * radius;
-      const sphere = Sphere.createCenterRadius(Point3d.create(1, 23), radius);
-      const builderA = PolyfaceBuilder.create(optionsA);
-      builderA.addSphere(sphere);
-      const facetsA = builderA.claimPolyface();
-      ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(facetsA), "closure of sphere mesh with angle tol");
-      if (radius < 80)
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, facetsA, xA, y0);
-      countsA.push(facetsA.facetCount);
+  it("SpheresDensity", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const allCountsA = [];
+    const allCountsB = [];
+    const allCountsC = [];
+    let y0 = 0;
+    for (const a of [10, 22, 45]) {
+      const countsA = [];
+      const countsB = [];
+      const countsC = [];
+      // use a as both angle in degrees and multiplier of chordTol
+      const optionsA = StrokeOptions.createForFacets();
+      const optionsB = StrokeOptions.createForFacets();
+      const optionsC = StrokeOptions.createForFacets();
+      optionsA.angleTol = undefined;
+      optionsB.angleTol = undefined;
+      optionsC.angleTol = undefined;
+      optionsA.angleTol = Angle.createDegrees(a);
+      optionsA.chordTol = undefined;
+      optionsB.chordTol = a * 0.1;
+      optionsB.angleTol = undefined;
+      let xA = 0;
+      let xB = 400;
+      let xC = 800;
+      for (const radius of [1, 64, 4096]) {
+        optionsC.maxEdgeLength = radius / 4.0;
+        xA += 2 * radius;
+        xB += 2 * radius;
+        xC += 2 * radius;
+        const sphere = Sphere.createCenterRadius(Point3d.create(1, 23), radius);
+        const builderA = PolyfaceBuilder.create(optionsA);
+        builderA.addSphere(sphere);
+        const facetsA = builderA.claimPolyface();
+        ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(facetsA), "closure of sphere mesh with angle tol");
+        if (radius < 80)
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, facetsA, xA, y0);
+        countsA.push(facetsA.facetCount);
 
-      const builderB = PolyfaceBuilder.create(optionsB);
-      builderB.addSphere(sphere);
-      const facetsB = builderB.claimPolyface();
-      ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(facetsB), "closure of sphere mesh with chord tol");
-      countsB.push(facetsB.facetCount);
-      if (radius < 80)
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, facetsB, xB, y0);
-      const builderC = PolyfaceBuilder.create(optionsC);
-      builderC.addSphere(sphere);
-      const facetsC = builderC.claimPolyface();
-      ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(facetsC), "closure of sphere mesh with maxEdgeLength");
-      countsC.push(facetsC.facetCount);
-      if (radius < 80)
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, facetsC, xC, y0);
+        const builderB = PolyfaceBuilder.create(optionsB);
+        builderB.addSphere(sphere);
+        const facetsB = builderB.claimPolyface();
+        ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(facetsB), "closure of sphere mesh with chord tol");
+        countsB.push(facetsB.facetCount);
+        if (radius < 80)
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, facetsB, xB, y0);
+        const builderC = PolyfaceBuilder.create(optionsC);
+        builderC.addSphere(sphere);
+        const facetsC = builderC.claimPolyface();
+        ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(facetsC), "closure of sphere mesh with maxEdgeLength");
+        countsC.push(facetsC.facetCount);
+        if (radius < 80)
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, facetsC, xC, y0);
 
+      }
+      ck.testExactNumber(countsA[0], countsA[1], "angleTol counts not affected by radius");
+      ck.testExactNumber(countsA[1], countsA[2], "angleTol counts not affected by radius");
+      ck.testLT(countsB[0], countsB[1], "radiusTol count increases with radius");
+      ck.testLT(countsB[1], countsB[2], "radiusTol count increases with radius");
+
+      ck.testExactNumber(countsC[0], countsC[1], "fractional maxEdgeLength counts no affected by radius");
+      ck.testExactNumber(countsC[1], countsC[2], "fractional maxEdgeLength counts no affected by radius");
+
+      y0 += 200.0;
+      allCountsA.push(countsA);
+      allCountsB.push(countsB);
+      allCountsC.push(countsC);
     }
-    ck.testExactNumber(countsA[0], countsA[1], "angleTol counts not affected by radius");
-    ck.testExactNumber(countsA[1], countsA[2], "angleTol counts not affected by radius");
-    ck.testLT(countsB[0], countsB[1], "radiusTol count increases with radius");
-    ck.testLT(countsB[1], countsB[2], "radiusTol count increases with radius");
+    GeometryCoreTestIO.consoleLog({ angleCounts: allCountsA, chordCounts: allCountsB, maxEdgeLengthCounts: allCountsC });
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "SphereDensity");
+    expect(ck.getNumErrors()).equals(0);
+  });
 
-    ck.testExactNumber(countsC[0], countsC[1], "fractional maxEdgeLength counts no affected by radius");
-    ck.testExactNumber(countsC[1], countsC[2], "fractional maxEdgeLength counts no affected by radius");
+  it("Moments", () => {
+    const allGeometry: GeometryQuery[] = [];
+    const closedSweeps = Sample.createClosedSolidSampler(true);
+    const dx = 20.0;
+    const dy = 20.0;
+    let x0 = 0;
+    const y0 = 0;
+    for (const s of closedSweeps) {
+      const builder = PolyfaceBuilder.create();
+      builder.addGeometryQuery(s);
+      const mesh = builder.claimPolyface();
+      const areaMoments = PolyfaceQuery.computePrincipalAreaMoments(mesh);
+      const volumeMoments = PolyfaceQuery.computePrincipalVolumeMoments(mesh);
+      GeometryCoreTestIO.captureGeometry(allGeometry, s, x0, y0);
+      GeometryCoreTestIO.showMomentData(allGeometry, areaMoments, false, x0, y0 + dy);
+      GeometryCoreTestIO.showMomentData(allGeometry, volumeMoments, false, x0, y0 + 2 * dy);
+      x0 += dx;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "Moments");
+  });
 
-    y0 += 200.0;
-    allCountsA.push(countsA);
-    allCountsB.push(countsB);
-    allCountsC.push(countsC);
-  }
-  GeometryCoreTestIO.consoleLog({ angleCounts: allCountsA, chordCounts: allCountsB, maxEdgeLengthCounts: allCountsC });
-  GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "SphereDensity");
-  expect(ck.getNumErrors()).equals(0);
-});
-
-it("Moments", () => {
-  const allGeometry: GeometryQuery[] = [];
-  const closedSweeps = Sample.createClosedSolidSampler(true);
-  const dx = 20.0;
-  const dy = 20.0;
-  let x0 = 0;
-  const y0 = 0;
-  for (const s of closedSweeps) {
+  it("ExactMoments", () => {
+    const ck = new Checker();
+    // const allGeometry: GeometryQuery[] = [];
     const builder = PolyfaceBuilder.create();
+    const a = 5;
+    const b = 3;
+    const c = 2;
+    const volume = a * b * c;
+    const iX = volume * (b * b + c * c) / 12.0;
+    const iY = volume * (a * a + c * c) / 12.0;
+    const iZ = volume * (b * b + a * a) / 12.0;
+    const s = Box.createRange(Range3d.createXYZXYZ(0, 0, 0, a, b, c), true)!;
     builder.addGeometryQuery(s);
     const mesh = builder.claimPolyface();
-    const areaMoments = PolyfaceQuery.computePrincipalAreaMoments(mesh);
-    const volumeMoments = PolyfaceQuery.computePrincipalVolumeMoments(mesh);
-    GeometryCoreTestIO.captureGeometry(allGeometry, s, x0, y0);
-    GeometryCoreTestIO.showMomentData(allGeometry, areaMoments, false, x0, y0 + dy);
-    GeometryCoreTestIO.showMomentData(allGeometry, volumeMoments, false, x0, y0 + 2 * dy);
-    x0 += dx;
-  }
-  GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "Moments");
-});
+    const areaMoments = PolyfaceQuery.computePrincipalAreaMoments(mesh)!;
+    const volumeMoments = PolyfaceQuery.computePrincipalVolumeMoments(mesh)!;
+    ck.testCoordinate(2.0 * (a * b + b * c + c * a), areaMoments.quantitySum, "Known box area");
+    ck.testCoordinate(volume, volumeMoments.quantitySum, "Known box volume");
+    const volumeB = volumeMoments.quantitySum;
+    const rxB = volumeMoments.radiusOfGyration.x;
+    const ryB = volumeMoments.radiusOfGyration.y;
+    const rzB = volumeMoments.radiusOfGyration.z;
+    ck.testCoordinate(iX, rxB * rxB * volumeB, "box X moment");
+    ck.testCoordinate(iY, ryB * ryB * volumeB, "box Y moment");
+    ck.testCoordinate(iZ, rzB * rzB * volumeB, "box Z moment");
 
-it("ExactMoments", () => {
-  const ck = new Checker();
-  // const allGeometry: GeometryQuery[] = [];
-  const builder = PolyfaceBuilder.create();
-  const a = 5;
-  const b = 3;
-  const c = 2;
-  const volume = a * b * c;
-  const iX = volume * (b * b + c * c) / 12.0;
-  const iY = volume * (a * a + c * c) / 12.0;
-  const iZ = volume * (b * b + a * a) / 12.0;
-  const s = Box.createRange(Range3d.createXYZXYZ(0, 0, 0, a, b, c), true)!;
-  builder.addGeometryQuery(s);
-  const mesh = builder.claimPolyface();
-  const areaMoments = PolyfaceQuery.computePrincipalAreaMoments(mesh)!;
-  const volumeMoments = PolyfaceQuery.computePrincipalVolumeMoments(mesh)!;
-  ck.testCoordinate(2.0 * (a * b + b * c + c * a), areaMoments.quantitySum, "Known box area");
-  ck.testCoordinate(volume, volumeMoments.quantitySum, "Known box volume");
-  const volumeB = volumeMoments.quantitySum;
-  const rxB = volumeMoments.radiusOfGyration.x;
-  const ryB = volumeMoments.radiusOfGyration.y;
-  const rzB = volumeMoments.radiusOfGyration.z;
-  ck.testCoordinate(iX, rxB * rxB * volumeB, "box X moment");
-  ck.testCoordinate(iY, ryB * ryB * volumeB, "box Y moment");
-  ck.testCoordinate(iZ, rzB * rzB * volumeB, "box Z moment");
-
-  expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
 
 /**
@@ -770,144 +740,146 @@ function verifyFaceData(ck: Checker, polyface: IndexedPolyface, shouldCheckParam
   }
 }
 
-it("Verify FacetFaceData Exists", () => {
-  const ck = new Checker();
-  // For the sake of testing, we will let each GeometryQuery object be a 'face',
-  // and we will obtain a mesh to which we add new IndexedPolyfaces to and keep declaring new faces
-  const builder = PolyfaceBuilder.create();
-  let polyface: IndexedPolyface;
+describe("Polyface.Faces", () => {
+  it("Verify FacetFaceData Exists", () => {
+    const ck = new Checker();
+    // For the sake of testing, we will let each GeometryQuery object be a 'face',
+    // and we will obtain a mesh to which we add new IndexedPolyfaces to and keep declaring new faces
+    const builder = PolyfaceBuilder.create();
+    let polyface: IndexedPolyface;
 
-  let totalFacets = 0;
-  let totalPoints = 0;
-  const numFacets: number[] = []; // Number of facets for each added part of the mesh
-  const numPoints: number[] = []; // Number of points for each added part of the mesh
+    let totalFacets = 0;
+    let totalPoints = 0;
+    const numFacets: number[] = []; // Number of facets for each added part of the mesh
+    const numPoints: number[] = []; // Number of points for each added part of the mesh
 
-  const sampleMeshes = Sample.createSimpleIndexedPolyfaces(1);
-  builder.addIndexedPolyface(sampleMeshes[0], false);
-  polyface = builder.claimPolyface(false);
-  numFacets.push(polyface.facetCount - totalFacets);
-  numPoints.push(polyface.pointCount - totalPoints);
-  totalFacets += polyface.facetCount;
-  totalPoints += polyface.pointCount;
-  ck.testTrue(builder.endFace());
+    const sampleMeshes = Sample.createSimpleIndexedPolyfaces(1);
+    builder.addIndexedPolyface(sampleMeshes[0], false);
+    polyface = builder.claimPolyface(false);
+    numFacets.push(polyface.facetCount - totalFacets);
+    numPoints.push(polyface.pointCount - totalPoints);
+    totalFacets += polyface.facetCount;
+    totalPoints += polyface.pointCount;
+    ck.testTrue(builder.endFace());
 
-  builder.addIndexedPolyface(sampleMeshes[2], false);
-  polyface = builder.claimPolyface(false);
-  numFacets.push(polyface.facetCount - totalFacets);
-  numPoints.push(polyface.pointCount - totalPoints);
-  totalFacets += polyface.facetCount;
-  totalPoints += polyface.pointCount;
-  ck.testTrue(builder.endFace());
+    builder.addIndexedPolyface(sampleMeshes[2], false);
+    polyface = builder.claimPolyface(false);
+    numFacets.push(polyface.facetCount - totalFacets);
+    numPoints.push(polyface.pointCount - totalPoints);
+    totalFacets += polyface.facetCount;
+    totalPoints += polyface.pointCount;
+    ck.testTrue(builder.endFace());
 
-  const sampleCones = Sample.createCones();
-  builder.addCone(sampleCones[0]);
-  polyface = builder.claimPolyface(false);
-  numFacets.push(polyface.facetCount - totalFacets);
-  numPoints.push(polyface.pointCount - totalPoints);
-  totalFacets += polyface.facetCount;
-  totalPoints += polyface.pointCount;
-  //   (cone handles faces itself !!)  ck.testTrue(builder.endFace());
+    const sampleCones = Sample.createCones();
+    builder.addCone(sampleCones[0]);
+    polyface = builder.claimPolyface(false);
+    numFacets.push(polyface.facetCount - totalFacets);
+    numPoints.push(polyface.pointCount - totalPoints);
+    totalFacets += polyface.facetCount;
+    totalPoints += polyface.pointCount;
+    //   (cone handles faces itself !!)  ck.testTrue(builder.endFace());
 
-  ck.testExactNumber(3, polyface.faceCount);
-  verifyFaceData(ck, polyface, false);
+    ck.testExactNumber(3, polyface.faceCount);
+    verifyFaceData(ck, polyface, false);
 
-  expect(ck.getNumErrors()).equals(0);
-});
+    expect(ck.getNumErrors()).equals(0);
+  });
 
-it("Add grid w/ params, normals", () => {
-  const allGeometry: GeometryQuery[] = [];
-  const ck = new Checker();
-  const facetWidth = 5;
-  const facetHeight = 6;
-  const y0 = 0;
-  const y1 = facetHeight;
-  const y2 = 2 * facetHeight;
-  const y3 = 3 * facetHeight;
-  const x0 = 0.0;
-  const x1 = facetWidth;
-  const x2 = 2.0 * facetWidth;
-  const x3 = 3.0 * facetWidth;
-  const grid4: Point3d[][] = [
-    [Point3d.create(x0, y0, 1), Point3d.create(x1, y0, 2), Point3d.create(x1, y1, 3), Point3d.create(x0, y1, 4)],
-    [Point3d.create(x1, y0, 5), Point3d.create(x2, y0, 6), Point3d.create(x2, y1, 7), Point3d.create(x1, y1, 8)],
-    [Point3d.create(x2, y0, 9), Point3d.create(x3, y0, 10), Point3d.create(x3, y1, 11), Point3d.create(x2, y1, 12)],
-    [Point3d.create(x0, y1, 13), Point3d.create(x1, y1, 14), Point3d.create(x1, y2, 15), Point3d.create(x0, y2, 16)],
-    [Point3d.create(x1, y1, 17), Point3d.create(x2, y1, 18), Point3d.create(x2, y2, 19), Point3d.create(x1, y2, 20)],
-    [Point3d.create(x2, y1, 21), Point3d.create(x3, y1, 22), Point3d.create(x3, y2, 23), Point3d.create(x2, y2, 24)],
-    [Point3d.create(x0, y2, 25), Point3d.create(x1, y2, 26), Point3d.create(x1, y3, 27), Point3d.create(x0, y3, 28)],
-    [Point3d.create(x1, y2, 29), Point3d.create(x2, y2, 30), Point3d.create(x2, y3, 31), Point3d.create(x1, y3, 32)],
-    [Point3d.create(x2, y2, 33), Point3d.create(x3, y2, 34), Point3d.create(x3, y3, 35), Point3d.create(x2, y3, 36)],
-  ];
-  const params4: Point2d[][] = [
-    [Point2d.create(x0, y0), Point2d.create(x1, y0), Point2d.create(x1, y1), Point2d.create(x0, y1)],
-    [Point2d.create(x1, y0), Point2d.create(x2, y0), Point2d.create(x2, y1), Point2d.create(x1, y1)],
-    [Point2d.create(x2, y0), Point2d.create(x3, y0), Point2d.create(x3, y1), Point2d.create(x2, y1)],
-    [Point2d.create(x0, y1), Point2d.create(x1, y1), Point2d.create(x1, y2), Point2d.create(x0, y2)],
-    [Point2d.create(x1, y1), Point2d.create(x2, y1), Point2d.create(x2, y2), Point2d.create(x1, y2)],
-    [Point2d.create(x2, y1), Point2d.create(x3, y1), Point2d.create(x3, y2), Point2d.create(x2, y2)],
-    [Point2d.create(x0, y2), Point2d.create(x1, y2), Point2d.create(x1, y3), Point2d.create(x0, y3)],
-    [Point2d.create(x1, y2), Point2d.create(x2, y2), Point2d.create(x2, y3), Point2d.create(x1, y3)],
-    [Point2d.create(x2, y2), Point2d.create(x3, y2), Point2d.create(x3, y3), Point2d.create(x2, y3)],
-  ];
-  let xOut = 0;
-  for (const compress of [true, false]) {
-    for (const numPerFacet of [3, 4]) {
-      let grid: Point3d[][];
-      let params: Point2d[][];
-      if (numPerFacet === 4) {
-        grid = grid4;
-        params = params4;
-      } else {
-        grid = [];
-        params = [];
-        for (const xyz of grid4) {
-          grid.push([xyz[0], xyz[1], xyz[2]]);
-          grid.push([xyz[2], xyz[3], xyz[0]]);
-        }
-        for (const uv of params4) {
-          params.push([uv[0], uv[1], uv[2]]);
-          params.push([uv[2], uv[3], uv[0]]);
-        }
-      }
-      for (const useParams of [true, false]) {
-        const options = new StrokeOptions();
-        options.needParams = true;
-        options.needNormals = true;
-        options.shouldTriangulate = false;
-        options.maxEdgeLength = 4;
-
-        const builder = PolyfaceBuilder.create(options);
-        builder.addCoordinateFacets(grid, useParams ? params : undefined, undefined, true);
-        const polyface = builder.claimPolyface(compress);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, xOut, 0);
-        // ck.testExactNumber(polyface.pointCount, polyface.normalCount, "Number of normals match point count");
-        if (!compress)
-          ck.testExactNumber(polyface.pointCount, polyface.paramCount, "Number of params matches point count");
-        if (useParams) {
-
+  it("Add grid w/ params, normals", () => {
+    const allGeometry: GeometryQuery[] = [];
+    const ck = new Checker();
+    const facetWidth = 5;
+    const facetHeight = 6;
+    const y0 = 0;
+    const y1 = facetHeight;
+    const y2 = 2 * facetHeight;
+    const y3 = 3 * facetHeight;
+    const x0 = 0.0;
+    const x1 = facetWidth;
+    const x2 = 2.0 * facetWidth;
+    const x3 = 3.0 * facetWidth;
+    const grid4: Point3d[][] = [
+      [Point3d.create(x0, y0, 1), Point3d.create(x1, y0, 2), Point3d.create(x1, y1, 3), Point3d.create(x0, y1, 4)],
+      [Point3d.create(x1, y0, 5), Point3d.create(x2, y0, 6), Point3d.create(x2, y1, 7), Point3d.create(x1, y1, 8)],
+      [Point3d.create(x2, y0, 9), Point3d.create(x3, y0, 10), Point3d.create(x3, y1, 11), Point3d.create(x2, y1, 12)],
+      [Point3d.create(x0, y1, 13), Point3d.create(x1, y1, 14), Point3d.create(x1, y2, 15), Point3d.create(x0, y2, 16)],
+      [Point3d.create(x1, y1, 17), Point3d.create(x2, y1, 18), Point3d.create(x2, y2, 19), Point3d.create(x1, y2, 20)],
+      [Point3d.create(x2, y1, 21), Point3d.create(x3, y1, 22), Point3d.create(x3, y2, 23), Point3d.create(x2, y2, 24)],
+      [Point3d.create(x0, y2, 25), Point3d.create(x1, y2, 26), Point3d.create(x1, y3, 27), Point3d.create(x0, y3, 28)],
+      [Point3d.create(x1, y2, 29), Point3d.create(x2, y2, 30), Point3d.create(x2, y3, 31), Point3d.create(x1, y3, 32)],
+      [Point3d.create(x2, y2, 33), Point3d.create(x3, y2, 34), Point3d.create(x3, y3, 35), Point3d.create(x2, y3, 36)],
+    ];
+    const params4: Point2d[][] = [
+      [Point2d.create(x0, y0), Point2d.create(x1, y0), Point2d.create(x1, y1), Point2d.create(x0, y1)],
+      [Point2d.create(x1, y0), Point2d.create(x2, y0), Point2d.create(x2, y1), Point2d.create(x1, y1)],
+      [Point2d.create(x2, y0), Point2d.create(x3, y0), Point2d.create(x3, y1), Point2d.create(x2, y1)],
+      [Point2d.create(x0, y1), Point2d.create(x1, y1), Point2d.create(x1, y2), Point2d.create(x0, y2)],
+      [Point2d.create(x1, y1), Point2d.create(x2, y1), Point2d.create(x2, y2), Point2d.create(x1, y2)],
+      [Point2d.create(x2, y1), Point2d.create(x3, y1), Point2d.create(x3, y2), Point2d.create(x2, y2)],
+      [Point2d.create(x0, y2), Point2d.create(x1, y2), Point2d.create(x1, y3), Point2d.create(x0, y3)],
+      [Point2d.create(x1, y2), Point2d.create(x2, y2), Point2d.create(x2, y3), Point2d.create(x1, y3)],
+      [Point2d.create(x2, y2), Point2d.create(x3, y2), Point2d.create(x3, y3), Point2d.create(x2, y3)],
+    ];
+    let xOut = 0;
+    for (const compress of [true, false]) {
+      for (const numPerFacet of [3, 4]) {
+        let grid: Point3d[][];
+        let params: Point2d[][];
+        if (numPerFacet === 4) {
+          grid = grid4;
+          params = params4;
         } else {
-          if (numPerFacet === 4 && !compress) {
-            // Check params
-            for (let idx = 0; idx < polyface.data.paramIndex!.length; idx++) {
-              const currentPoint = polyface.data.point.getPoint3dAtUncheckedPointIndex(idx);
-              const currentParam = polyface.data.param!.getPoint2dAtCheckedPointIndex(idx)!;
-              if (idx % 4 === 0) {
-                ck.testCoordinate(currentParam.x, 0);
-                ck.testCoordinate(currentParam.y, 0);
-              } else if (idx % 4 === 1) {
-                const oldPoint = polyface.data.point.getPoint3dAtUncheckedPointIndex(idx - 1);
-                ck.testCoordinate(currentParam.x, Geometry.hypotenuseXYZ(currentPoint.x - oldPoint.x, currentPoint.y - oldPoint.y, currentPoint.z - oldPoint.z));
-                ck.testCoordinate(polyface.data.param!.getYAtUncheckedPointIndex(idx), 0);
+          grid = [];
+          params = [];
+          for (const xyz of grid4) {
+            grid.push([xyz[0], xyz[1], xyz[2]]);
+            grid.push([xyz[2], xyz[3], xyz[0]]);
+          }
+          for (const uv of params4) {
+            params.push([uv[0], uv[1], uv[2]]);
+            params.push([uv[2], uv[3], uv[0]]);
+          }
+        }
+        for (const useParams of [true, false]) {
+          const options = new StrokeOptions();
+          options.needParams = true;
+          options.needNormals = true;
+          options.shouldTriangulate = false;
+          options.maxEdgeLength = 4;
+
+          const builder = PolyfaceBuilder.create(options);
+          builder.addCoordinateFacets(grid, useParams ? params : undefined, undefined, true);
+          const polyface = builder.claimPolyface(compress);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, xOut, 0);
+          // ck.testExactNumber(polyface.pointCount, polyface.normalCount, "Number of normals match point count");
+          if (!compress)
+            ck.testExactNumber(polyface.pointCount, polyface.paramCount, "Number of params matches point count");
+          if (useParams) {
+
+          } else {
+            if (numPerFacet === 4 && !compress) {
+              // Check params
+              for (let idx = 0; idx < polyface.data.paramIndex!.length; idx++) {
+                const currentPoint = polyface.data.point.getPoint3dAtUncheckedPointIndex(idx);
+                const currentParam = polyface.data.param!.getPoint2dAtCheckedPointIndex(idx)!;
+                if (idx % 4 === 0) {
+                  ck.testCoordinate(currentParam.x, 0);
+                  ck.testCoordinate(currentParam.y, 0);
+                } else if (idx % 4 === 1) {
+                  const oldPoint = polyface.data.point.getPoint3dAtUncheckedPointIndex(idx - 1);
+                  ck.testCoordinate(currentParam.x, Geometry.hypotenuseXYZ(currentPoint.x - oldPoint.x, currentPoint.y - oldPoint.y, currentPoint.z - oldPoint.z));
+                  ck.testCoordinate(polyface.data.param!.getYAtUncheckedPointIndex(idx), 0);
+                }
               }
             }
           }
+          xOut += 40;
         }
-        xOut += 40;
       }
     }
-  }
-  expect(ck.getNumErrors()).equals(0);
-  GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddCoordinateFacets");
+    expect(ck.getNumErrors()).equals(0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddCoordinateFacets");
+  });
 });
 
 it("PartialSawToothTriangulation", () => {
