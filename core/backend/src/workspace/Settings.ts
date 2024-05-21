@@ -31,7 +31,7 @@ export type SettingName = string;
  * @beta
  */
 export interface SettingObject {
-  [name: string]: SettingType;
+  [name: SettingName]: SettingType | undefined;
 }
 
 /** @beta */
