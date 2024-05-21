@@ -59,6 +59,7 @@ import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./Vi
 import { ViewStore } from "./ViewStore";
 import { BaseSettings, SettingName, SettingObject, Settings, SettingType } from "./workspace/Settings";
 import { OwnedWorkspace, Workspace, WorkspaceDb, WorkspaceSettings } from "./workspace/Workspace";
+import { constructWorkspace } from "./internal/workspace/WorkspaceImpl";
 
 import type { BlobContainer } from "./BlobContainerService";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
@@ -287,7 +288,8 @@ export abstract class IModelDb extends IModel {
    */
   public get workspace(): Workspace {
     if (undefined === this._workspace)
-      this._workspace = Workspace.construct(new IModelSettings());
+      this._workspace = constructWorkspace(new IModelSettings());
+
     return this._workspace;
   }
 

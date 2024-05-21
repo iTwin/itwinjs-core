@@ -38,6 +38,7 @@ import { SettingsSchemas } from "./workspace/SettingsSchemas";
 import { OwnedWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
 import { Container } from "inversify";
 import { join, normalize as normalizeDir } from "path";
+import { constructWorkspace } from "./internal/workspace/WorkspaceImpl";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -429,7 +430,7 @@ export class IModelHost {
   private static initializeWorkspace(configuration: IModelHostOptions) {
     const settingAssets = join(KnownLocations.packageAssetsDir, "Settings");
     SettingsSchemas.addDirectory(join(settingAssets, "Schemas"));
-    this._appWorkspace = Workspace.construct(new ApplicationSettings(), configuration.workspace);
+    this._appWorkspace = constructWorkspace(new ApplicationSettings(), configuration.workspace);
 
     // Create the CloudCache for Workspaces. This will fail if another process is already using the same profile.
     try {

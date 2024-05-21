@@ -13,7 +13,6 @@ import { CloudSqlite } from "../CloudSqlite";
 import { SQLiteDb } from "../SQLiteDb";
 import { SettingName, Settings } from "./Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
-import { constructWorkspace, constructWorkspaceDb } from "../internal/workspace/WorkspaceImpl";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 
 // cspell:ignore rowid julianday primarykey premajor preminor prepatch
@@ -22,6 +21,7 @@ function noLeadingOrTrailingSpaces(name: string, msg: string) {
   if (name.trim() !== name)
     throw new Error(`${msg} [${name}] may not have leading or trailing spaces`);
 }
+
 const loggerCategory = BackendLoggerCategory.Workspace;
 
 /** @beta */
@@ -179,13 +179,6 @@ export namespace WorkspaceDb {
      * is that the user doesn't have read access to the container of the WorkspaceDb.
      */
     wsLoadErrors?: LoadError[];
-  }
-
-  /** construct a new instance of a WorkspaceDb
-   * @internal
-   */
-  export function construct(props: WorkspaceDb.Props, container: WorkspaceContainer): WorkspaceDb {
-    return constructWorkspaceDb(props, container);
   }
 
   /** @internal */
@@ -620,11 +613,6 @@ export namespace Workspace {
     /** The name of the blob resource to load */
     rscName: WorkspaceResource.Name,
   ): Uint8Array | undefined => loadResource(dbList, "blob", rscName);
-
-  /** @internal */
-  export function construct(settings: Settings, opts?: WorkspaceOpts): OwnedWorkspace {
-    return constructWorkspace(settings, opts);
-  }
 
   /** type that requires an accessToken */
   export interface WithAccessToken { accessToken: AccessToken }
