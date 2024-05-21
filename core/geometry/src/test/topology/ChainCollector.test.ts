@@ -24,7 +24,7 @@ import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-const chainCollectorInputDirectory = "./src/test/testInputs/ChainCollector/";
+const chainCollectorInputDirectory = "./src/test/data/ChainCollector/";
 const noOffset0 = "aecc_alignment";
 describe("ChainCollector", () => {
 

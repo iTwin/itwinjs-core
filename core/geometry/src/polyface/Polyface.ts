@@ -485,11 +485,40 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   public cleanupOpenFacet(): void {
     this.data.trimAllIndexArrays(this.data.pointIndex.length);
   }
+
+  /**
+   * Validate (the tail of) the active index arrays: point, normal, param, color.
+   * @param index0 optional offset into the index arrays at which to start validating indices. Default 0.
+   * @param errors optional array appended with error message(s) if invalid indices are encountered
+   * @return whether the indices are valid
+   */
+  public validateAllIndices(index0: number = 0, errors?: String[]): boolean {
+    const numPointIndices = this.data.pointIndex.length;
+    const messages = errors ?? [];
+    if (this.data.normalIndex && this.data.normalIndex.length !== numPointIndices)
+      messages.push("normalIndex count must match pointIndex count");
+    if (this.data.paramIndex && this.data.paramIndex.length !== numPointIndices)
+      messages.push("paramIndex count must equal pointIndex count");
+    if (this.data.colorIndex && this.data.colorIndex.length !== numPointIndices)
+      messages.push("colorIndex count must equal pointIndex count");
+    if (this.data.edgeVisible.length !== numPointIndices)
+      messages.push("visibleIndex count must equal pointIndex count");
+    if (!Polyface.areIndicesValid(this.data.pointIndex, index0, numPointIndices, this.data.point, this.data.point ? this.data.point.length : 0))
+      messages.push("invalid point indices in the last facet");
+    if (!Polyface.areIndicesValid(this.data.normalIndex, index0, numPointIndices, this.data.normal, this.data.normal ? this.data.normal.length : 0))
+      messages.push("invalid normal indices in the last facet");
+    if (!Polyface.areIndicesValid(this.data.paramIndex, index0, numPointIndices, this.data.param, this.data.param ? this.data.param.length : 0))
+      messages.push("invalid param indices in the last facet");
+    if (!Polyface.areIndicesValid(this.data.colorIndex, index0, numPointIndices, this.data.color, this.data.color ? this.data.color.length : 0))
+      messages.push("invalid color indices in the last facet");
+    return 0 === messages.length;
+  }
+
   /**
    * Announce the end of construction of a facet.
    * * Optionally check for:
    *   * Same number of indices among all active index arrays -- point, normal, param, color
-   *   * All indices are within bounds of the respective data arrays.
+   *   * All indices for the latest facet are within bounds of the respective data arrays.
    * * In error cases, all index arrays are trimmed back to the size when previous facet was terminated.
    * * A return value of `undefined` is normal. Otherwise, a string array of error messages is returned.
    */
@@ -503,30 +532,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
       const messages: String[] = [];
       if (lengthB < lengthA + 2)
         messages.push("Less than 3 indices in the last facet");
-      if (this.data.normalIndex && this.data.normalIndex.length !== lengthB)
-        messages.push("normalIndex count must match pointIndex count");
-      if (this.data.paramIndex && this.data.paramIndex.length !== lengthB)
-        messages.push("paramIndex count must equal pointIndex count");
-      if (this.data.colorIndex && this.data.colorIndex.length !== lengthB)
-        messages.push("colorIndex count must equal pointIndex count");
-      if (this.data.edgeVisible.length !== lengthB)
-        messages.push("visibleIndex count must equal pointIndex count");
-      if (!Polyface.areIndicesValid(
-        this.data.pointIndex, lengthA, lengthB, this.data.point, this.data.point ? this.data.point.length : 0,
-      ))
-        messages.push("invalid point indices in the last facet");
-      if (!Polyface.areIndicesValid(
-        this.data.normalIndex, lengthA, lengthB, this.data.normal, this.data.normal ? this.data.normal.length : 0,
-      ))
-        messages.push("invalid normal indices in the last facet");
-      if (!Polyface.areIndicesValid(
-        this.data.paramIndex, lengthA, lengthB, this.data.param, this.data.param ? this.data.param.length : 0,
-      ))
-        messages.push("invalid param indices in the last facet");
-      if (!Polyface.areIndicesValid(
-        this.data.colorIndex, lengthA, lengthB, this.data.color, this.data.color ? this.data.color.length : 0,
-      ))
-        messages.push("invalid color indices in the last facet");
+      this.validateAllIndices(lengthA, messages);
       if (messages.length > 0) {
         this.data.trimAllIndexArrays(lengthA);
         return messages;
