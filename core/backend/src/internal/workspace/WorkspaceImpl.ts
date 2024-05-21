@@ -18,7 +18,7 @@ import { BaseSettings, SettingName, SettingObject, Settings } from "../../worksp
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { SettingsSchemas } from "../../workspace/SettingsSchemas";
 import { OwnedWorkspace, Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceOpts, WorkspaceResource, WorkspaceSettings } from "../../workspace/Workspace";
-import { WorkspaceEditor } from "../../workspace/WorkspaceEditor";
+import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
 
 interface WorkspaceCloudContainer extends CloudSqlite.CloudContainer {
@@ -511,10 +511,10 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEdi
     return { oldDb, newDb: { dbName: oldDb.dbName, version: newVersion } };
   }
 
-  public override getWorkspaceDb(props: WorkspaceDb.Props): WorkspaceEditor.EditableDb {
+  public override getWorkspaceDb(props: WorkspaceDb.Props): EditableWorkspaceDb {
     return this.getEditableDb(props);
   }
-  public getEditableDb(props: WorkspaceDb.Props): WorkspaceEditor.EditableDb {
+  public getEditableDb(props: WorkspaceDb.Props): EditableWorkspaceDb {
     const db = this._wsDbs.get(WorkspaceDb.dbNameWithDefault(props.dbName)) as EditableDbImpl | undefined ?? new EditableDbImpl(props, this);
     if (this.cloudContainer && this.cloudContainer.queryDatabase(db.dbFileName)?.state !== "copied")
       throw new Error(`${db.dbFileName} has been published and is not editable. Make a new version first.`);
@@ -542,7 +542,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEdi
       cloudContainer.writeLockHeldBy = undefined;
     }
   }
-  public async createDb(args: { dbName?: string, version?: string, manifest: WorkspaceDb.Manifest }): Promise<WorkspaceEditor.EditableDb> {
+  public async createDb(args: { dbName?: string, version?: string, manifest: WorkspaceDb.Manifest }): Promise<EditableWorkspaceDb> {
     if (!this.cloudContainer) {
       WorkspaceEditor.createEmptyDb({ localFileName: this.resolveDbFileName(args), manifest: args.manifest });
     } else {
@@ -558,7 +558,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEdi
   }
 }
 
-class EditableDbImpl extends WorkspaceDbImpl implements WorkspaceEditor.EditableDb {
+class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
   private static validateResourceName(name: WorkspaceResource.Name) {
     if (name.trim() !== name) {
       throw new Error("resource name may not have leading or trailing spaces");

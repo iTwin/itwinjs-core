@@ -25,7 +25,6 @@ export namespace WorkspaceEditor {
     return constructWorkspaceEditor();
   }
 
-
   /**
    * The properties needed to create a new container from the BlobContainer service
    */
@@ -61,9 +60,9 @@ export namespace WorkspaceEditor {
     /**
      * Create a new empty WorkspaceDb.
      * @param args - The arguments for creating the new WorkspaceDb.
-     * @returns A promise that resolves to an EditableDb.
+     * @returns A promise that resolves to an EditableWorkspaceDb.
      */
-    createDb(args: { dbName?: string, version?: string, manifest: WorkspaceDb.Manifest }): Promise<WorkspaceEditor.EditableDb>;
+    createDb(args: { dbName?: string, version?: string, manifest: WorkspaceDb.Manifest }): Promise<EditableWorkspaceDb>;
 
     /**
      * Get the cloud properties of this Container.
@@ -71,16 +70,16 @@ export namespace WorkspaceEditor {
     get cloudProps(): WorkspaceContainer.Props | undefined;
 
     /**
-     * Get an Editor.EditableDb to add, delete, or update resources *within a newly created version* of a WorkspaceDb.
+     * Get an EditableWorkspaceDb to add, delete, or update resources *within a newly created version* of a WorkspaceDb.
      * @param props - The properties of the WorkspaceDb.
      */
-    getEditableDb(props: WorkspaceDb.Props): WorkspaceEditor.EditableDb;
+    getEditableDb(props: WorkspaceDb.Props): EditableWorkspaceDb;
 
     /**
      * Get an Editor.EditableDb to add, delete, or update resources *within a newly created version* of a WorkspaceDb.
      * @param props - The properties of the WorkspaceDb.
      */
-    getWorkspaceDb(props: WorkspaceDb.Props): WorkspaceEditor.EditableDb;
+    getWorkspaceDb(props: WorkspaceDb.Props): EditableWorkspaceDb;
 
     /**
      * Acquire the write lock on the container.
@@ -129,104 +128,104 @@ export namespace WorkspaceEditor {
   export function createEmptyDb(args: { localFileName: LocalFileName, manifest: WorkspaceDb.Manifest }) {
     WorkspaceSqliteDb.createNewDb(args.localFileName, args);
   }
+}
+
+/**
+ * An editable WorkspaceDb. This is used only by tools to allow administrators to create and modify WorkspaceDbs.
+ * For cloud-based WorkspaceDbs, the write token must be obtained before the methods in this interface may be used.
+ * Normally, only admins will have write access to Workspaces.
+ * Only one admin at a time may be editing a Workspace.
+ */
+export interface EditableWorkspaceDb extends WorkspaceDb {
+  /**
+   * Get the cloud properties of the WorkspaceDb.
+   * @returns The cloud properties of the WorkspaceDb, or undefined if not available.
+   */
+  get cloudProps(): WorkspaceDb.CloudProps | undefined;
 
   /**
-   * An editable WorkspaceDb. This is used only by tools to allow administrators to create and modify WorkspaceDbs.
-   * For cloud-based WorkspaceDbs, the write token must be obtained before the methods in this interface may be used.
-   * Normally, only admins will have write access to Workspaces.
-   * Only one admin at a time may be editing a Workspace.
+   * Update the contents of the manifest in this WorkspaceDb.
+   * @param manifest - The updated manifest.
    */
-  export interface EditableDb extends WorkspaceDb {
-    /**
-     * Get the cloud properties of the WorkspaceDb.
-     * @returns The cloud properties of the WorkspaceDb, or undefined if not available.
-     */
-    get cloudProps(): WorkspaceDb.CloudProps | undefined;
+  updateManifest(manifest: WorkspaceDb.Manifest): void;
 
-    /**
-     * Update the contents of the manifest in this WorkspaceDb.
-     * @param manifest - The updated manifest.
-     */
-    updateManifest(manifest: WorkspaceDb.Manifest): void;
+  /**
+   * Add or update a Settings resource to this WorkspaceDb.
+   * @param settings - The settings object to add or update.
+   * @param rscName - The name of the settings resource.
+   */
+  updateSettingsResource(settings: SettingObject, rscName?: string): void;
 
-    /**
-     * Add or update a Settings resource to this WorkspaceDb.
-     * @param settings - The settings object to add or update.
-     * @param rscName - The name of the settings resource.
-     */
-    updateSettingsResource(settings: SettingObject, rscName?: string): void;
+  /**
+   * Add a new string resource to this WorkspaceDb.
+   * @param rscName - The name of the string resource.
+   * @param val - The string to save.
+   */
+  addString(rscName: WorkspaceResource.Name, val: string): void;
 
-    /**
-     * Add a new string resource to this WorkspaceDb.
-     * @param rscName - The name of the string resource.
-     * @param val - The string to save.
-     */
-    addString(rscName: WorkspaceResource.Name, val: string): void;
+  /**
+   * Update an existing string resource with a new value, or add it if it does not exist.
+   * @param rscName - The name of the string resource.
+   * @param val - The new value.
+   */
+  updateString(rscName: WorkspaceResource.Name, val: string): void;
 
-    /**
-     * Update an existing string resource with a new value, or add it if it does not exist.
-     * @param rscName - The name of the string resource.
-     * @param val - The new value.
-     */
-    updateString(rscName: WorkspaceResource.Name, val: string): void;
+  /**
+   * Remove a string resource.
+   * @param rscName - The name of the string resource to remove.
+   */
+  removeString(rscName: WorkspaceResource.Name): void;
 
-    /**
-     * Remove a string resource.
-     * @param rscName - The name of the string resource to remove.
-     */
-    removeString(rscName: WorkspaceResource.Name): void;
+  /**
+   * Add a new blob resource to this WorkspaceDb.
+   * @param rscName - The name of the blob resource.
+   * @param val - The blob to save.
+   */
+  addBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
 
-    /**
-     * Add a new blob resource to this WorkspaceDb.
-     * @param rscName - The name of the blob resource.
-     * @param val - The blob to save.
-     */
-    addBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
+  /**
+   * Update an existing blob resource with a new value, or add it if it does not exist.
+   * @param rscName - The name of the blob resource.
+   * @param val - The new value.
+   */
+  updateBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
 
-    /**
-     * Update an existing blob resource with a new value, or add it if it does not exist.
-     * @param rscName - The name of the blob resource.
-     * @param val - The new value.
-     */
-    updateBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
+  /**
+   * Get a BlobIO writer for a previously-added blob WorkspaceResource.
+   * @param rscName - The name of the blob resource.
+   * @returns A BlobIO writer.
+   * @note After writing is complete, the caller must call `close` on the BlobIO and must call `saveChanges` on the `db`.
+   */
+  getBlobWriter(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO;
 
-    /**
-     * Get a BlobIO writer for a previously-added blob WorkspaceResource.
-     * @param rscName - The name of the blob resource.
-     * @returns A BlobIO writer.
-     * @note After writing is complete, the caller must call `close` on the BlobIO and must call `saveChanges` on the `db`.
-     */
-    getBlobWriter(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO;
+  /**
+   * Remove a blob resource.
+   * @param rscName - The name of the blob resource to remove.
+   */
+  removeBlob(rscName: WorkspaceResource.Name): void;
 
-    /**
-     * Remove a blob resource.
-     * @param rscName - The name of the blob resource to remove.
-     */
-    removeBlob(rscName: WorkspaceResource.Name): void;
+  /**
+   * Copy the contents of an existing local file into this WorkspaceDb as a file resource.
+   * @param rscName - The name of the file resource.
+   * @param localFileName - The name of a local file to be read.
+   * @param fileExt - The extension to be appended to the generated fileName when this WorkspaceDb is extracted from the WorkspaceDb.
+   * By default, the characters after the last "." in `localFileName` are used. Pass this argument to override that.
+   */
+  addFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName, fileExt?: string): void;
 
-    /**
-     * Copy the contents of an existing local file into this WorkspaceDb as a file resource.
-     * @param rscName - The name of the file resource.
-     * @param localFileName - The name of a local file to be read.
-     * @param fileExt - The extension to be appended to the generated fileName when this WorkspaceDb is extracted from the WorkspaceDb.
-     * By default, the characters after the last "." in `localFileName` are used. Pass this argument to override that.
-     */
-    addFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName, fileExt?: string): void;
+  /**
+   * Replace an existing file resource with the contents of another local file.
+   * @param rscName - The name of the file resource.
+   * @param localFileName - The name of a local file to be read.
+   * @throws If the file resource does not exist.
+   */
+  updateFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName): void;
 
-    /**
-     * Replace an existing file resource with the contents of another local file.
-     * @param rscName - The name of the file resource.
-     * @param localFileName - The name of a local file to be read.
-     * @throws If the file resource does not exist.
-     */
-    updateFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName): void;
-
-    /**
-     * Remove a file resource.
-     * @param rscName - The name of the file resource to remove.
-     */
-    removeFile(rscName: WorkspaceResource.Name): void;
-  }
+  /**
+   * Remove a file resource.
+   * @param rscName - The name of the file resource to remove.
+   */
+  removeFile(rscName: WorkspaceResource.Name): void;
 }
 
 /** An editor used to supply workspace administrators tools for creating or editing WorkspaceDbs. */
