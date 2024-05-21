@@ -680,13 +680,13 @@ export class PolyfaceQuery {
     const boundaryEdges: SortableEdgeCluster[] = [];
     const nullEdges: SortableEdgeCluster[] = [];
     const allOtherEdges: SortableEdgeCluster[] = [];
-    edges.sortAndCollectClusters(undefined, boundaryEdges, allOtherEdges, nullEdges);
+    edges.sortAndCollectClusters(undefined, boundaryEdges, nullEdges, allOtherEdges);
     const badList = [];
     if (includeTypical && boundaryEdges.length > 0)
       badList.push(boundaryEdges);
-    if (includeMismatch && nullEdges.length > 0)
+    if (includeNull && nullEdges.length > 0)
       badList.push(nullEdges);
-    if (includeNull && allOtherEdges.length > 0)
+    if (includeMismatch && allOtherEdges.length > 0)
       badList.push(allOtherEdges);
     if (badList.length === 0)
       return undefined;
@@ -1647,17 +1647,17 @@ export class PolyfaceQuery {
   }
   /**
    * Return a new facet set with a subset of facets in polyface.
-   * @param polyface the polyface.
+   * @param source the polyface.
    * @param includeSingletons true to copy facets that only appear once
    * @param clusterSelector indicates whether duplicate clusters are to have 0, 1, or all facets included.
    */
   public static cloneByFacetDuplication(
-    polyface: Polyface, includeSingletons: boolean, clusterSelector: DuplicateFacetClusterSelector,
+    source: Polyface, includeSingletons: boolean, clusterSelector: DuplicateFacetClusterSelector,
   ): Polyface {
     const builder = PolyfaceBuilder.create();
-    const visitor = polyface.createVisitor(0);
+    const visitor = source.createVisitor(0);
     this.announceDuplicateFacetIndices(
-      polyface,
+      source,
       (clusterFacetIndices: number[]) => {
         let numToSelect = 0;
         if (clusterFacetIndices.length === 1) {
