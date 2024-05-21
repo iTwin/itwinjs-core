@@ -8,8 +8,9 @@ import {
   GeographicCRSInterpretRequestProps, GeographicCRSProps,
 } from "@itwin/core-common";
 import { IModelHost } from "../../IModelHost";
-import { Geometry, Range2dProps } from "@itwin/core-geometry";
+import { Geometry, LowAndHighXYProps, Range2d, Range2dProps } from "@itwin/core-geometry";
 import { GeoCoordConfig } from "../../GeoCoordConfig";
+import { GeographicCRSServices } from "../../GeographicCRSServices";
 
 // spell-checker: disable
 
@@ -804,36 +805,43 @@ describe("GeoServices", () => {
     });
   });
 
-  describe("Verify list of GCS", async () => {
+  describe("Verify list of CRS", async () => {
     const validationRange = 50;
     const validationRangeSmall = 10;
 
-    const validateGcsList = async (expectedCount: number, allowedRange: number, ignoreLegacy: boolean, extent?: Range2dProps): Promise<void> => {
-      const listOfGCS = IModelHost.platform.GeoServices.getListOfGCS(ignoreLegacy, extent);
-      assert.isTrue(listOfGCS.length > expectedCount - allowedRange && listOfGCS.length < expectedCount + allowedRange);
+    const validateCRSList = async (expectedCount: number, allowedRange: number, extent?: Range2dProps): Promise<void> => {
+      const options: GeographicCRSServices.CRSListRequestOptions = { extent };
+      const listOfCRS = await GeographicCRSServices.getListOfCRS(options);
+
+      if (extent !== undefined) {
+        const extentRange: Range2d = Range2d.fromJSON(extent);
+        for (const crs of listOfCRS) {
+          const crsExtentRange: Range2d = Range2d.fromJSON(crs.crsExtent);
+          const intersects = extentRange.intersectsRange(crsExtentRange);
+          assert.isTrue(intersects);
+        }
+      }
+
+      assert.isTrue(listOfCRS.length > expectedCount - allowedRange && listOfCRS.length < expectedCount + allowedRange);
     };
 
-    it("should get all GCS", async () => {
-      await validateGcsList(11874, validationRange, false);
+    it("should get all CRS", async () => {
+      await validateCRSList(11874, validationRange);
     });
 
-    it("should get all GCS except legacy ones", async () => {
-      await validateGcsList(9025, validationRange, true);
-    });
-
-    it("should ignore legacy GCS", async () => {
+    it("should ignore legacy CRS", async () => {
       const extent: Range2dProps = { low: { x: 60.1, y: 61.2 }, high: { x: 62.3, y: 63.4 } };
-      await validateGcsList(58, validationRangeSmall, true, extent);
+      await validateCRSList(82, validationRangeSmall, extent);
     });
 
-    it("should return GCS that are in the specified range", async () => {
+    it("should return CRS that are in the specified range", async () => {
       const extent: Range2dProps = { low: { x: 0, y: 2 }, high: { x: 1, y: 3 } };
-      await validateGcsList(46, validationRangeSmall, true, extent);
+      await validateCRSList(67, validationRangeSmall, extent);
     });
 
-    it("should return GCS that include legacy and are in the specified range", async () => {
-      const extent: Range2dProps = { low: { x: 0, y: 2 }, high: { x: 1, y: 3 } };
-      await validateGcsList(57, validationRangeSmall, false, extent);
+    it("should return CRS that include legacy and are in the specified range", async () => {
+      const extent: Range2dProps = { low: { x: 0.3, y: 2.4 }, high: { x: 1.6, y: 3.77 } };
+      await validateCRSList(62, validationRangeSmall, extent);
     });
   });
 
