@@ -114,20 +114,15 @@ export namespace WorkspaceDb {
 }
 
 /**
- * Types for loading `Settings.Dictionary`s from WorkspaceDbs.
+ * An entry in an `itwin/core/workspace/settingsWorkspaces` setting. This interface specifies a resource within
+ * a WorkspaceDb that holds a `Settings.Dictionary` to be loaded. It also specifies the `Settings.Priority` for the Dictionary.
  * @beta
  */
-export namespace WorkspaceSettings {
-  /**
-   * An entry in an `itwin/core/workspace/settingsWorkspaces` setting. This interface specifies a resource within
-   * a WorkspaceDb that holds a `Settings.Dictionary` to be loaded. It also specifies the `Settings.Priority` for the Dictionary.
-   */
-  export interface Props extends WorkspaceDb.CloudProps {
-    /** The name of the resource holding the stringified JSON of the `Settings.Dictionary`. The default resourceName is "settingsDictionary" */
-    resourceName: string;
-    /** The priority for loading the Settings.Dictionary. Higher values override lower values. */
-    priority: Settings.Priority | number;
-  }
+export interface WorkspaceSettingsProps extends WorkspaceDb.CloudProps {
+  /** The name of the resource holding the stringified JSON of the `Settings.Dictionary`. The default resourceName is "settingsDictionary" */
+  resourceName: string;
+  /** The priority for loading the Settings.Dictionary. Higher values override lower values. */
+  priority: Settings.Priority | number;
 }
 
 /** Types used to identify Workspace resources
@@ -318,7 +313,7 @@ export interface Workspace {
    */
   loadSettingsDictionary(
     /** The properties of the WorkspaceDb, plus the resourceName and Settings.priority. May be either a single value or an array of them */
-    props: WorkspaceSettings.Props | WorkspaceSettings.Props[],
+    props: WorkspaceSettingsProps | WorkspaceSettingsProps[],
     /** if present, an array that is populated with a list of problems while attempting to load the Settings.Dictionary(s).   */
     problems?: WorkspaceDb.LoadError[]
   ): Promise<void>;

@@ -58,7 +58,7 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { SettingName, SettingObject, Settings, SettingType } from "./workspace/Settings";
-import { Workspace, WorkspaceDb, WorkspaceSettings } from "./workspace/Workspace";
+import { Workspace, WorkspaceDb, WorkspaceSettingsProps } from "./workspace/Workspace";
 import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "./internal/workspace/WorkspaceImpl";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
 
@@ -1455,13 +1455,13 @@ export abstract class IModelDb extends IModel {
   protected async loadWorkspaceSettings() {
     try {
       const problems: WorkspaceDb.LoadError[] = [];
-      const settingProps: WorkspaceSettings.Props[] = [];
+      const settingProps: WorkspaceSettingsProps[] = [];
       // Note: we can't use `getArray` here because we only look at dictionaries in the iModel's workspace, not appWorkspace.
       // Also, we must concatenate all entries in all of the dictionaries stored in the iModel into a single array *before*
       // calling `loadSettingsDictionary` since that function will add new dictionaries to the workspace.
       for (const dict of this.workspace.settings.dictionaries) {
         try {
-          const props = dict.getSetting<WorkspaceSettings.Props[]>(Workspace.settingName.settingsWorkspaces);
+          const props = dict.getSetting<WorkspaceSettingsProps[]>(Workspace.settingName.settingsWorkspaces);
           if (props)
             settingProps.push(...SettingsSchemas.validateSetting(props, Workspace.settingName.settingsWorkspaces));
         } catch (e) {

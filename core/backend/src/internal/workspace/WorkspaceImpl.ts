@@ -17,7 +17,7 @@ import { SqliteStatement } from "../../SqliteStatement";
 import { SettingName, SettingObject, Settings } from "../../workspace/Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { SettingsSchemas } from "../../workspace/SettingsSchemas";
-import { Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceOpts, WorkspaceResource, WorkspaceSettings } from "../../workspace/Workspace";
+import { Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceOpts, WorkspaceResource, WorkspaceSettingsProps } from "../../workspace/Workspace";
 import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
 import { SettingsImpl } from "./SettingsImpl";
@@ -359,7 +359,7 @@ class WorkspaceImpl implements Workspace {
     return container.getWorkspaceDb(props);
   }
 
-  public async loadSettingsDictionary(props: WorkspaceSettings.Props | WorkspaceSettings.Props[], problems?: WorkspaceDb.LoadError[]) {
+  public async loadSettingsDictionary(props: WorkspaceSettingsProps | WorkspaceSettingsProps[], problems?: WorkspaceDb.LoadError[]) {
     if (!Array.isArray(props))
       props = [props];
 
@@ -382,9 +382,9 @@ class WorkspaceImpl implements Workspace {
           if (dict) {
             Workspace.onSettingsDictionaryLoadedFn({ dict, from: db });
             // if the dictionary we just loaded has a "settingsWorkspaces" entry, load them too, recursively
-            const nested = dict.getSetting<WorkspaceSettings.Props[]>(Workspace.settingName.settingsWorkspaces);
+            const nested = dict.getSetting<WorkspaceSettingsProps[]>(Workspace.settingName.settingsWorkspaces);
             if (nested !== undefined) {
-              SettingsSchemas.validateSetting<WorkspaceSettings.Props[]>(nested, Workspace.settingName.settingsWorkspaces);
+              SettingsSchemas.validateSetting<WorkspaceSettingsProps[]>(nested, Workspace.settingName.settingsWorkspaces);
               await this.loadSettingsDictionary(nested, problems);
             }
           }
