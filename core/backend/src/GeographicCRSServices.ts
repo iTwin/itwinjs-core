@@ -13,10 +13,20 @@ import { IModelHost } from "./IModelHost";
  * @beta
  */
 export interface AvailableCoordinateReferenceSystemProps {
-  /** TODO: Document the fields. */
+  /** The name of the coordinate reference system. It can be presented to the user in the UI as an identifier for the coordinate reference system. */
   name: string;
+  /** The description of the coordinate reference system. It can be presented to the user in the UI as extra information for the coordinate reference system. */
   description: string;
+  /** Indicate if the coordinate reference system is deprecated. A coordinate reference system is deprecated if it is no longer recommended for use.
+   *  A deprecated coordinate reference system can usually be substituted by a more accurate one. It is possible that an existing project uses a deprecated coordinate reference system.
+   *  However, for new projects, it is recommended to use a non-deprecated coordinate reference system.
+   */
   deprecated: boolean;
+  /** Extent of the coordinate reference system. This is the area where the coordinate reference system can be used.
+   *  Outside of this area, the coordinate reference system may not be accurate. The extent is defined by a range of longitude and latitude values.
+   *  Minimum longitude and latitude correspond to crsExtent.low.x and crsExtent.low.y, respectively.
+   *  Maximum longitude and latitude correspond to crsExtent.high.x and crsExtent.high.y, respectively.
+   */
   crsExtent: Range2dProps;
 }
 
