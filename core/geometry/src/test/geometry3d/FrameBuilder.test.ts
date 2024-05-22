@@ -115,7 +115,7 @@ describe("FrameBuilder", () => {
       builder.clear();
       builder.announce(bcurve);
       const frameB = builder.getValidatedFrame();
-      if (ck.testDefined(frameA) && frameA && ck.testDefined(frameB) && frameB) {
+      if (ck.testDefined(frameA) && ck.testDefined(frameB)) {
         ck.testTransform(frameA, frameB, "Frame from linestring versus bspline");
       }
     }
@@ -147,7 +147,7 @@ describe("FrameBuilder", () => {
       builder.clear();
       builder.announce(curve);
       const frameB = builder.getValidatedFrame();
-      if (ck.testDefined(frameA) && frameA && ck.testDefined(frameB) && frameB)
+      if (ck.testDefined(frameA) && ck.testDefined(frameB))
         ck.testTransform(frameA, frameB, "Frame from linestring versus interpolation curve");
     }
     expect(ck.getNumErrors()).equals(0);
@@ -162,7 +162,7 @@ describe("FrameBuilder", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral);
     builder.announce(spiral);
     const frame = builder.getValidatedFrame();
-    if (ck.testDefined(frame) && frame)
+    if (ck.testDefined(frame))
       ck.testTransform(localToWorld, frame, "Frame from spiral ctor versus frenet");
     GeometryCoreTestIO.saveGeometry(allGeometry, "FrameBuilder", "GenericCurve");
     expect(ck.getNumErrors()).equals(0);

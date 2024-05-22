@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
-
 import { Arc3d } from "../curve/Arc3d";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 import { GeometryQuery } from "../curve/GeometryQuery";
@@ -19,8 +18,9 @@ import { PolygonOps } from "../geometry3d/PolygonOps";
 import { Range2d, Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { MomentData } from "../geometry4d/MomentData";
-import { Polyface } from "../polyface/Polyface";
+import { IndexedPolyface, Polyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
+import { BentleyGeometryFlatBuffer } from "../serialization/BentleyGeometryFlatBuffer";
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import { prettyPrint } from "./testFunctions";
 
@@ -55,7 +55,7 @@ export class GeometryCoreTestIO {
       return;
     console.timeEnd(label); // eslint-disable-line no-console
   }
-  private static makeOutputDir(subDirectoryName?: string): string {
+  public static makeOutputDir(subDirectoryName?: string): string {
     let path = GeometryCoreTestIO.outputRootDirectory;
     if (!fs.existsSync(path))
       fs.mkdirSync(path);
@@ -93,6 +93,54 @@ export class GeometryCoreTestIO {
       }
     }
   }
+
+  // write bytes to binary file
+  public static writeBytesToFile(bytes: Uint8Array, fullFilePath: string) {
+    if (!this.enableSave)
+      return;
+    fs.writeFileSync(fullFilePath, bytes, { encoding: "binary" });
+  }
+
+  // read bytes from binary file
+  public static readBytesFromFile(fullPathName: string): Uint8Array | undefined {
+    const buf = fs.readFileSync(fullPathName);
+    return buf.length > 0 ? new Uint8Array(buf) : undefined;
+  }
+
+  // write bytes to text file (like native GTestFileOps::WriteByteArrayToTextFile)
+  public static writeByteArrayToTextFile(bytes: Uint8Array, directoryName?: string, nameB?: string, nameC?: string, extension?: string) {
+    if (!this.enableSave)
+      return;
+    let filename = this.makeOutputDir(directoryName);
+    if (nameB)
+      filename = filename.concat(`/${nameB}`);
+    if (nameC)
+      filename = filename.concat(`/${nameC}`);
+    if (extension)
+      filename = filename.concat(`.${extension}`);
+
+    const maxBytesOnLine = 120;
+    let bytesOnLine = 0;
+
+    let text: string = "";
+    text = text.concat("[\n");
+    for (let i = 0; i < bytes.length; ++i) {
+      const byte = bytes[i];
+      const byteStr = `${byte}`;
+      const newBytes = byteStr.length;
+      if (newBytes + 1 + bytesOnLine > maxBytesOnLine) {
+        text = text.concat("\n");
+        bytesOnLine = 0;
+      }
+      text = text.concat(byteStr);
+      if (i + 1 !== bytes.length)
+        text = text.concat(",");
+      bytesOnLine += newBytes + 1;
+    }
+    text = text.concat("]\n");
+    fs.writeFileSync(filename, text);
+  }
+
   /**
    * Append the geometry to the collection, e.g., for output by saveGeometry.
    * Also try to move the geometry by dx,dy,dz.
@@ -448,5 +496,37 @@ export class GeometryCoreTestIO {
       this.captureCurveLocationDetails(collection, data.detailA, markerSize, dx, dy, dz);
       this.captureCurveLocationDetails(collection, data.detailB, markerSize * 0.75, dx, dy, dz);
     }
+  }
+
+  /** Read a flatbuffer file and interpret as GeometryQuery(s) */
+  public static flatBufferFileToGeometry(filePath: string): GeometryQuery | GeometryQuery[] | undefined {
+    const bytes = GeometryCoreTestIO.readBytesFromFile(filePath);
+    if (bytes && bytes.length > 0)
+      return BentleyGeometryFlatBuffer.bytesToGeometry(bytes, true);
+  return undefined;
+  }
+
+  /** Read an imjs file and interpret as GeometryQuery(s) */
+  public static jsonFileToGeometry(filePath: string): GeometryQuery | GeometryQuery[] | undefined {
+    const json = fs.readFileSync(filePath, "utf8");
+    const parsed = IModelJson.Reader.parse(JSON.parse(json));
+    if (parsed instanceof GeometryQuery)
+      return parsed as GeometryQuery;
+    if (Array.isArray(parsed) && parsed.length > 0)
+      return parsed as GeometryQuery[];
+    return undefined;
+  }
+
+  /** Read imjs file and return the first IndexedPolyface found. */
+  public static jsonFileToIndexedPolyface(filePath: string): IndexedPolyface | undefined {
+    const geometry = this.jsonFileToGeometry(filePath);
+    if (geometry instanceof IndexedPolyface)
+      return geometry;
+    if (Array.isArray(geometry)) {
+      for (const mesh of geometry)
+        if (mesh instanceof IndexedPolyface)
+          return mesh;
+    }
+    return undefined;
   }
 }
