@@ -188,7 +188,8 @@ export class FeatureOverrides implements WebGLDisposable {
         isModelHilited = allowHilite && hilites.models.hasPair(feature.modelId);
       }
 
-      const app = (this.target.currentlyDrawingClassifier ? this.target.currentlyDrawingClassifier.renderCommands.currentBranch : this.target.currentBranch).getFeatureAppearance(
+      // const app = (this.target.currentlyDrawingClassifier ? this.target.currentlyDrawingClassifier.renderCommands.currentBranch : this.target.currentBranch).getFeatureAppearance(
+      const app = this.target.currentBranch.getFeatureAppearance(
         ovr,
         feature.elementId.lower, feature.elementId.upper,
         feature.subCategoryId.lower, feature.subCategoryId.upper,
