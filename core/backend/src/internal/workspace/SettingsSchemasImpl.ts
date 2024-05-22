@@ -14,6 +14,8 @@ import { SettingSchema, SettingSchemaGroup, SettingsSchemas } from "../../worksp
 const makeSettingKey = (prefix: string, key: string) => `${prefix}/${key}`;
 
 class SettingsSchemasImpl implements SettingsSchemas {
+  public readonly doNotInstantiateThisInterface = undefined;
+  
   private readonly _allGroups = new Map<string, SettingSchemaGroup>();
   /** a map of all registered Setting Definitions  */
   public readonly settingDefs = new Map<string, SettingSchema>();

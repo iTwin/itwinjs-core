@@ -46,12 +46,17 @@ export interface SettingSchemaGroup {
   readonly description?: string;
 }
 
+export interface OutputInterface {
+  /** @internal */
+  readonly doNotInstantiateThisInterface: unknown;
+}
+
 /**
  * The registry of available [[SettingSchemaGroup]]s.
  * The registry is used for editing Settings files and for finding default values for settings.
  * @beta
  */
-export interface SettingsSchemas {
+export interface SettingsSchemas extends OutputInterface {
   readonly settingDefs: Map<string, SettingSchema>;
   readonly typeDefs: Map<string, SettingSchema>;
   readonly onSchemaChanged: BeEvent<() => void>;
