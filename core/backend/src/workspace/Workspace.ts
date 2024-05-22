@@ -6,7 +6,6 @@
  * @module Workspace
  */
 
-import * as semver from "semver";
 import { AccessToken, BeEvent, Logger, Optional, UnexpectedErrors } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { CloudSqlite } from "../CloudSqlite";
@@ -14,7 +13,6 @@ import { SQLiteDb } from "../SQLiteDb";
 import { SettingName, Settings } from "./Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { noLeadingOrTrailingSpaces, validateWorkspaceDbName } from "../internal/workspace/WorkspaceImpl";
 
 // cspell:ignore rowid julianday primarykey premajor preminor prepatch
 
@@ -146,29 +144,6 @@ export namespace WorkspaceResource {
    * @note a single WorkspaceDb may hold WorkspaceResources of type 'blob', 'string' and 'file', all with the same WorkspaceResource.Name.
    */
   export type Name = string;
-
-  /** Properties that specify an individual WorkspaceResource within a [[WorkspaceDb]]. */
-  export interface Props {
-    /** the name of the resource within the WorkspaceDb */
-    rscName: Name;
-  }
-
-  /** The value passed to callback function  from `Workspace.queryStringResource` and `Workspace.queryBlobResource` for every resource that
-   * satisfies the search criteria. It includes both the name of the resource and the WorkspaceDb from which it was found.
-   * @note results are returned in random order (i.e. unordered) within a single WorkspaceDb.
-   */
-  export interface SearchResult extends Props {
-    /** the WorkspaceDb holding this resource. */
-    workspaceDb: WorkspaceDb;
-  }
-
-  /** Search criteria for `Workspace.queryStringResource` and `Workspace.queryBlobResource`. */
-  export interface Search {
-    /** The resource name to compare for searching. May include wildcards for GLOB and LIKE. */
-    readonly nameSearch: string;
-    /** The comparison operator for `nameSearch`. Default is `=` */
-    readonly nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
-  }
 }
 
 /**
@@ -241,19 +216,6 @@ export interface WorkspaceDb {
    * @throws if this WorkspaceDb is not from a `CloudContainer`.
    */
   prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch;
-
-  /** Query this WorkspaceDb for resources that match a search criteria.
-   * @returns "stop" if the query was aborted by the `found` function
-   * @see [[Workspace.queryStringResource]], [[Workspace.queryBlobResource]]
-   */
-  queryResource(
-    /** the search criteria */
-    search: WorkspaceResource.Search,
-    /** the type of resource to find. */
-    resourceType: Workspace.SearchResourceType,
-    /** function to be called for each resource in this WorkspaceDb  */
-    found: Workspace.ForEachResource
-  ): Workspace.IterationReturn;
 
   queryResources(args: WorkspaceDb.QueryResourcesArgs): void;
   
@@ -437,10 +399,6 @@ export namespace Workspace {
     settingsWorkspaces: makeSettingName("settingsWorkspaces"),
   };
 
-  export type SearchResourceType = "string" | "blob";
-  export type IterationReturn = void | "stop";
-  export type ForEachResource = (result: WorkspaceResource.SearchResult) => IterationReturn;
-
   /** either an array of [[WorkspaceDb.CloudProps]], or a settingName of a `itwin/core/workspace/workspaceDbList` from which the array can be resolved. */
   export type DbListOrSettingName = { readonly dbs: WorkspaceDb.CloudProps[], readonly settingName?: never } | { readonly settingName: string, readonly dbs?: never };
 
@@ -456,16 +414,7 @@ export namespace Workspace {
     dict: Settings.Dictionary
   ) => boolean;
 
-  const queryResource = (dbList: WorkspaceDb[] | WorkspaceDb, search: WorkspaceResource.Search, resourceType: SearchResourceType, found: ForEachResource): IterationReturn => {
-    if (!Array.isArray(dbList))
-      dbList = [dbList];
-
-    for (const db of dbList) {
-      if ("stop" === db.queryResource(search, resourceType, found))
-        return "stop";
-    }
-  };
-  const loadResource = <T>(dbList: WorkspaceDb[] | WorkspaceDb, resourceType: SearchResourceType, rscName: WorkspaceResource.Name): T | undefined => {
+  const loadResource = <T>(dbList: WorkspaceDb[] | WorkspaceDb, resourceType: "string" | "blob", rscName: WorkspaceResource.Name): T | undefined => {
     if (!Array.isArray(dbList))
       dbList = [dbList];
     for (const db of dbList) {
@@ -475,40 +424,6 @@ export namespace Workspace {
     }
     return undefined;
   };
-
-  /**
-   * Query one or more WorkspaceDbs for string resources whose names satisfy a search criteria. This may be used, for example, to create a list of available string resources
-   * for UI.
-   * @returns "stop" if the `found` function aborted the query
-   */
-  export const queryStringResource = (
-    /** Either a single WorkspaceDb or a list of WorkspaceDbs in priority sorted order. */
-    dbList: WorkspaceDb[] | WorkspaceDb,
-    /** the query criteria for the search */
-    search: WorkspaceResource.Search,
-    /** function called for each resource that satisfies the search criteria.
-     * @note Each WorkspaceDb is queried in order, so the `found` function may be called with the same resourceName multiple times. However, within a
-     * single WorkspaceDb, it is called in unsorted order (i.e. resourceNames are *not* necessarily sorted alphabetically.)
-     */
-    found: ForEachResource,
-  ): IterationReturn => queryResource(dbList, search, "string", found);
-
-  /**
-   * Query one or more WorkspaceDbs for blob resources whose names satisfy a search criteria. This may be used, for example, to create a list of available blob resources
-   * for UI.
-   * @returns "stop" if the `found` function aborted the query
-   */
-  export const queryBlobResource = (
-    /** Either a single WorkspaceDb or a list of WorkspaceDbs in priority sorted order. */
-    dbList: WorkspaceDb[] | WorkspaceDb,
-    /** the query criteria for the search */
-    search: WorkspaceResource.Search,
-    /** function called for each resource that satisfies the search criteria.
-     * @note Each WorkspaceDb is queried in order, so the `found` function may be called with the same resourceName multiple times. However, within a
-     * single WorkspaceDb, it is called in unsorted order (i.e. resourceNames are *not* necessarily sorted alphabetically.)
-     */
-    found: ForEachResource,
-  ): IterationReturn => queryResource(dbList, search, "blob", found);
 
   /** Load a string resource from the highest priority WorkspaceDb in a list.
    * @returns the value of the string resource or `undefined` if the resourceName is not present in any WorkspaceDb in the list.

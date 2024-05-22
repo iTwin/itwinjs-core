@@ -295,19 +295,6 @@ class WorkspaceDbImpl implements WorkspaceDb {
     return CloudSqlite.startCloudPrefetch(cloudContainer, this.dbFileName, opts);
   }
 
-  public queryResource(search: WorkspaceResource.Search, resourceType: Workspace.SearchResourceType, callback: Workspace.ForEachResource): Workspace.IterationReturn {
-    return this.withOpenDb((db) => {
-      return db.withSqliteStatement(`SELECT id from ${resourceType}s WHERE id ${search.nameCompare ?? "="} ?`, (stmt) => {
-        stmt.bindString(1, search.nameSearch);
-        while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-          if (callback({ workspaceDb: this, rscName: stmt.getValueString(0) }) === "stop")
-            return "stop";
-        }
-        return;
-      });
-    });
-  }
-
   public queryResources(args: WorkspaceDb.QueryResourcesArgs): void {
     const table = "blob" !== args.type ? "strings" : "blobs";
     this.withOpenDb((db) => {
