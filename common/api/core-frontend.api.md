@@ -5992,7 +5992,7 @@ export class IdleTool extends InteractiveTool {
 // @beta (undocumented)
 export interface ILocalCache {
     // (undocumented)
-    fetch(url: string, callback: (url: string) => Promise<Response>): Promise<ArrayBuffer>;
+    fetch(url: string, callback: (uniqueId: string) => Promise<Response>, callBackUrl?: string): Promise<ArrayBuffer>;
 }
 
 // @public
@@ -7375,7 +7375,17 @@ export class IndexBuffer {
 export class IndexedDBCache implements ILocalCache {
     constructor(dbName: string, expirationTime?: number);
     // (undocumented)
-    fetch(url: string, callback: (url: string) => Promise<Response>): Promise<ArrayBuffer>;
+    protected addContent(uniqueId: string, content: ArrayBuffer): Promise<unknown>;
+    // (undocumented)
+    protected close(): Promise<void>;
+    // (undocumented)
+    protected deleteContent(uniqueId: string): Promise<unknown>;
+    // (undocumented)
+    fetch(uniqueId: string, callback: (url: string) => Promise<Response>, callBackUrl?: string): Promise<ArrayBuffer>;
+    // (undocumented)
+    protected open(dbCache: IndexedDBCache): Promise<unknown>;
+    // (undocumented)
+    protected retrieveContent(uniqueId: string): Promise<ArrayBuffer | undefined>;
 }
 
 // @internal
@@ -10378,7 +10388,7 @@ export interface ParticleProps extends XYAndZ {
 // @beta (undocumented)
 export class PassThroughCache implements ILocalCache {
     // (undocumented)
-    fetch(url: string, callback: (url: string) => Promise<Response>): Promise<ArrayBuffer>;
+    fetch(uniqueId: string, callback: (url: string) => Promise<Response>, callBackUrl?: string): Promise<ArrayBuffer>;
 }
 
 // @internal
