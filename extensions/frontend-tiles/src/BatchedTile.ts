@@ -7,7 +7,7 @@ import { assert, BeTimePoint, ByteStream, Logger } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { ColorDef, Tileset3dSchema } from "@itwin/core-common";
 import {
-  GraphicBranch, GraphicBuilder, ILocalCache, IModelApp, IndexedDBCache, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
+  GraphicBranch, GraphicBuilder, ILocalCache, IModelApp, IndexedDBCache, PassThroughCache, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
   TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TileUser, TileVisibility, Viewport,
 } from "@itwin/core-frontend";
 import { loggerCategory } from "./LoggerCategory";
@@ -50,9 +50,7 @@ export class BatchedTile extends Tile {
       this._maximumSize = 0;
     }
 
-    // Once there is a conditional for using the cache, this can be:
-    // this._localCache = useCache ? new IndexedDBCache("MX-IDB") : new PassThroughCache();
-    this._localCache = new IndexedDBCache("MX-IDB", 600_000);
+    this._localCache = IModelApp.tileAdmin.useIndexedDBCache ? new IndexedDBCache("BatchedTileCache") : new PassThroughCache();
 
     if (!params.transformToRoot)
       return;
@@ -143,11 +141,7 @@ export class BatchedTile extends Tile {
   public override async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
     const url = new URL(this.contentId, this.batchedTree.reader.baseUrl);
     url.search = this.batchedTree.reader.baseUrl.search;
-    // await (async () => {
-    //   response = await this._localCache.fetch(url.toString(), fetch);
-    // })();
-
-    const response = await this._localCache.fetch(url.toString(), fetch);
+    const response = await this._localCache.fetch(url.pathname.toString(), fetch, url.toString());
     return response;
   }
 

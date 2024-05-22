@@ -161,6 +161,8 @@ export class TileAdmin {
   public readonly contextPreloadParentSkip: number;
   /** @beta */
   public readonly cesiumIonKey?: string;
+  /** @beta */
+  public readonly useIndexedDBCache?: boolean;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _totalElided = 0;
   private _rpcInitialized = false;

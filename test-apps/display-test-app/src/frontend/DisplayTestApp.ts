@@ -234,7 +234,7 @@ const dtaFrontendMain = async () => {
         iModel,
         accessToken: configuration.frontendTilesToken || "",
         enableCDN: false,
-        urlPrefix: "qa-",
+        urlPrefix: "dev-",
       }),
     });
   }

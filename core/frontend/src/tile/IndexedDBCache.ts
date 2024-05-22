@@ -6,13 +6,16 @@
 
 /** @beta */
 export interface ILocalCache {
-  fetch(url: string, callback: (url: string) => Promise<Response>): Promise<ArrayBuffer>;
+  fetch(url: string, callback: (uniqueId: string) => Promise<Response>, callBackUrl?: string): Promise<ArrayBuffer>;
 }
 
 /** @beta */
 export class PassThroughCache implements ILocalCache {
-  public async fetch(url: string, callback: (url: string) => Promise<Response>): Promise<ArrayBuffer> {
-    return (await callback(url)).arrayBuffer();
+  public async fetch(uniqueId: string, callback: (url: string) => Promise<Response>, callBackUrl?: string): Promise<ArrayBuffer> {
+    if (callBackUrl) {
+      return (await callback(callBackUrl)).arrayBuffer();
+    }
+    return (await callback(uniqueId)).arrayBuffer();
   }
 }
 
@@ -29,7 +32,7 @@ export class IndexedDBCache implements ILocalCache{
     }
   }
 
-  private async open(dbCache: IndexedDBCache){
+  protected async open(dbCache: IndexedDBCache){
 
     // need to return a promise so that we can wait for the db to open before using it
     return new Promise(function (resolve) {
@@ -72,12 +75,12 @@ export class IndexedDBCache implements ILocalCache{
     });
   }
 
-  private async close() {
+  protected async close() {
     console.log("Closing DB");
     await this._db.close();
   }
 
-  private async retrieveContent(uniqueId: string): Promise<ArrayBuffer | undefined> {
+  protected async retrieveContent(uniqueId: string): Promise<ArrayBuffer | undefined> {
     return new Promise(async (resolve) => {
       await this.open(this);
       console.log("Searching for content with this id:");
@@ -124,78 +127,86 @@ export class IndexedDBCache implements ILocalCache{
     });
   }
 
-  private async deleteContent(uniqueId: string) {
+  protected async deleteContent(uniqueId: string) {
+    return new Promise(async (resolve) => {
+      await this.open(this);
+      const deleteTransaction = await this._db.transaction("cache", "readwrite");
+      const requestDelete = await deleteTransaction.objectStore("cache").delete(uniqueId);
 
-    await this.open(this);
-    const deleteTransaction = await this._db.transaction("cache", "readwrite");
-    const requestDelete = await deleteTransaction.objectStore("cache").delete(uniqueId);
+      requestDelete.onsuccess = () => {
+        console.log("Content Deleted.");
+      };
 
-    requestDelete.onsuccess = () => {
-      console.log("Content Deleted.");
-    };
+      deleteTransaction.onsuccess = () => {
+        console.log("Delete Transaction Success.");
+      };
 
-    deleteTransaction.onsuccess = () => {
-      console.log("Delete Transaction Success.");
-    };
+      deleteTransaction.oncomplete = async () => {
+        console.log("Delete Transaction Completed.");
+        await this.close();
+        return resolve(undefined);
+      };
 
-    deleteTransaction.oncomplete = async () => {
-      console.log("Delete Transaction Completed.");
-      await this.close();
-      return;
-    };
-
-    deleteTransaction.onerror = async () => {
-      console.log("Error deleting content");
-      await this.close();
-      return;
-    };
+      deleteTransaction.onerror = async () => {
+        console.log("Error deleting content");
+        await this.close();
+        return resolve(undefined);
+      };
+    });
   }
 
-  private async addContent(uniqueId: string, content: ArrayBuffer) {
-    await this.open(this);
-    const addTransaction = await this._db.transaction("cache", "readwrite");
-    const objectStore = await addTransaction.objectStore("cache");
+  protected async addContent(uniqueId: string, content: ArrayBuffer) {
+    return new Promise(async (resolve) => {
+      await this.open(this);
+      const addTransaction = await this._db.transaction("cache", "readwrite");
+      const objectStore = await addTransaction.objectStore("cache");
 
-    const data = {
-      uniqueId,
-      content,
-      timeOfStorage: Date.now(),
-    };
+      const data = {
+        uniqueId,
+        content,
+        timeOfStorage: Date.now(),
+      };
 
-    console.log("Adding this content to the db:");
-    console.log(data);
+      console.log("Adding this content to the db:");
+      console.log(data);
 
-    const requestAdd = await objectStore.add(data);
+      const requestAdd = await objectStore.add(data);
 
-    requestAdd.onsuccess = () => {
-      console.log("Content added to db.");
-    };
+      requestAdd.onsuccess = () => {
+        console.log("Content added to db.");
+      };
 
-    addTransaction.oncomplete = async () => {
-      console.log("Write Transaction Completed.");
-      await this.close();
-      return;
-    };
+      addTransaction.oncomplete = async () => {
+        console.log("Write Transaction Completed.");
+        await this.close();
+        return resolve(undefined);
+      };
 
-    addTransaction.onerror = async () => {
-      console.log("Error adding content");
-      await this.close();
-      return;
-    };
-
+      addTransaction.onerror = async () => {
+        console.log("Error adding content");
+        await this.close();
+        return resolve(undefined);
+      };
+    });
   }
 
-  public async fetch(url: string, callback: (url: string) => Promise<Response>): Promise<ArrayBuffer> {
-    let response = await this.retrieveContent(url);
+  public async fetch(uniqueId: string, callback: (url: string) => Promise<Response>, callBackUrl?: string): Promise<ArrayBuffer> {
+    let response = await this.retrieveContent(uniqueId);
     console.log("Response: ", response);
 
     // If nothing was found in the db
     if (response === undefined) {
 
+      // In some cases, the uniqueId used to store the content in the db is not the same as what is used to fetch the content from the callback.
+      // This is the case for tiles from the Mesh Export Service, which are stored in the db with only part of the url used to fetch them.
+      // In this case, we need to pass a different callBackUrl to the callBack function.
+      if (callBackUrl) {
+        uniqueId = callBackUrl;
+      }
       // fetch normally, then add that content to the db
       console.log("Fetching using callback");
-      response = await (await callback(url)).arrayBuffer();
-      await this.addContent(url, response);
+      response = await (await callback(uniqueId)).arrayBuffer();
+      await this.addContent(uniqueId, response);
     }
 
     return response;
