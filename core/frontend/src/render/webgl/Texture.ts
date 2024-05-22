@@ -424,7 +424,7 @@ export abstract class TextureHandle implements WebGLDisposable {
       const pixels = new Uint8Array(w * h * 4);
       gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
 
-      const buffer = ImageBuffer.create(pixels, ImageBufferFormat.Rgba, w)!;
+      const buffer = ImageBuffer.create(pixels, ImageBufferFormat.Rgba, w);
       const url = imageBufferToPngDataUrl(buffer, false);
       openImageDataUrlInNewWindow(url!, "Classifiers");
     }

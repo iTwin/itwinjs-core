@@ -181,7 +181,7 @@ export class BooleanClipFactory {
     return undefined;
   }
   /** Choose a `toJSON` method appropriate to the clipper */
-  public static anyClipperToJSON(clipper: any): any | undefined {
+  public static anyClipperToJSON(clipper: any): any {
     if (ClipUtilities.isClipper(clipper)) {
       if (clipper.toJSON)
         return clipper.toJSON();

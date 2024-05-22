@@ -1265,6 +1265,8 @@ export class Code implements CodeProps {
     spec: Id64String;
     // (undocumented)
     toJSON(): CodeProps;
+    // (undocumented)
+    toString(): string;
     get value(): string;
     set value(val: string);
 }
@@ -1797,8 +1799,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 2162688,
-    Major = 33,
+    Combined = 2228224,
+    Major = 34,
     Minor = 0
 }
 
@@ -1957,27 +1959,27 @@ export enum DbResponseKind {
 // @internal (undocumented)
 export enum DbResponseStatus {
     // (undocumented)
-    Cancel = 2,
+    Cancel = 2,/* query ran to completion. */
     // (undocumented)
-    Done = 1,
+    Done = 1,/*  Requested by user.*/
     // (undocumented)
-    Error = 100,
+    Error = 100,/*  query was running but ran out of quota.*/
     // (undocumented)
-    Error_BlobIO_OpenFailed = 105,
+    Error_BlobIO_OpenFailed = 105,/*  query time quota expired while it was in queue.*/
     // (undocumented)
-    Error_BlobIO_OutOfRange = 106,
+    Error_BlobIO_OutOfRange = 106,/*  could not submit the query as queue was full.*/
     // (undocumented)
-    Error_ECSql_BindingFailed = 104,
+    Error_ECSql_BindingFailed = 104,/*  generic error*/
     // (undocumented)
-    Error_ECSql_PreparedFailed = 101,
+    Error_ECSql_PreparedFailed = 101,/*  ecsql prepared failed*/
     // (undocumented)
-    Error_ECSql_RowToJsonFailed = 103,
+    Error_ECSql_RowToJsonFailed = 103,/*  ecsql step failed*/
     // (undocumented)
-    Error_ECSql_StepFailed = 102,
+    Error_ECSql_StepFailed = 102,/*  ecsql failed to serialized row to json.*/
     // (undocumented)
-    Partial = 3,
+    Partial = 3,/*  ecsql binding failed.*/
     // (undocumented)
-    QueueFull = 5,
+    QueueFull = 5,/*  class or property or instance specified was not found or property as not of type blob.*/
     // (undocumented)
     Timeout = 4
 }
@@ -2036,13 +2038,13 @@ export interface DecorationGeometryProps {
 // @beta
 export enum DefaultSupportedTypes {
     // (undocumented)
-    Cesium3dTiles = "Cesium3DTiles",
+    Cesium3dTiles = "Cesium3DTiles",// Web Ready 3D Scalable Mesh
     // (undocumented)
-    OMR = "OMR",
+    OMR = "OMR",// Web Ready Orbit Point Cloud
     // (undocumented)
-    OPC = "OPC",
+    OPC = "OPC",// Web Ready Terrain Scalable Mesh
     // (undocumented)
-    RealityMesh3dTiles = "RealityMesh3DTiles",
+    RealityMesh3dTiles = "RealityMesh3DTiles",// Orbit Mapping Resource
     // (undocumented)
     Terrain3dTiles = "Terrain3DTiles"
 }
@@ -2901,6 +2903,7 @@ export type EntityIdAndClassIdIterable = Iterable<Readonly<EntityIdAndClassId>>;
 export class EntityMetaData implements EntityMetaDataProps {
     constructor(jsonObj: EntityMetaDataProps);
     readonly baseClasses: string[];
+    readonly classId: Id64String;
     readonly customAttributes?: CustomAttribute[];
     // (undocumented)
     readonly description?: string;
@@ -2917,6 +2920,8 @@ export class EntityMetaData implements EntityMetaDataProps {
 // @beta (undocumented)
 export interface EntityMetaDataProps {
     baseClasses: string[];
+    // (undocumented)
+    classId: Id64String;
     customAttributes?: CustomAttribute[];
     // (undocumented)
     description?: string;
@@ -6038,6 +6043,20 @@ export interface NormalMapProps extends TextureMapProps {
     NormalFlags?: NormalMapFlags;
 }
 
+// @internal
+export interface NotifyEntitiesChangedArgs extends ChangedEntities {
+    deletedMeta: number[];
+    insertedMeta: number[];
+    meta: NotifyEntitiesChangedMetadata[];
+    updatedMeta: number[];
+}
+
+// @internal (undocumented)
+export interface NotifyEntitiesChangedMetadata {
+    bases: number[];
+    name: string;
+}
+
 // @public
 export enum Npc {
     _000 = 0,
@@ -6736,9 +6755,9 @@ export type PolylineIndices = number[];
 // @alpha
 export enum PolylineTypeFlags {
     // (undocumented)
-    Edge = 1,
+    Edge = 1,// Just an ordinary polyline
     // (undocumented)
-    Normal = 0,
+    Normal = 0,// A polyline used to define the edges of a planar region.
     // (undocumented)
     Outline = 2
 }
@@ -6787,9 +6806,9 @@ export enum PrimitiveTypeCode {
     // (undocumented)
     Long = 1537,
     // (undocumented)
-    Point2d = 1793,
+    Point2d = 1793,// eslint-disable-line @typescript-eslint/no-shadow
     // (undocumented)
-    Point3d = 2049,
+    Point3d = 2049,// eslint-disable-line @typescript-eslint/no-shadow
     // (undocumented)
     String = 2305,
     // (undocumented)
@@ -9439,13 +9458,13 @@ export class TestRpcManager {
 // @beta
 export class TextAnnotation {
     anchor: TextAnnotationAnchor;
-    // @internal
-    computeDocumentTransform(layoutRange: Range2d): Transform;
+    computeAnchorPoint(textBlockDimensions: XAndY): Point3d;
+    computeTransform(textBlockDimensions: XAndY): Transform;
     static create(args?: TextAnnotationCreateArgs): TextAnnotation;
     equals(other: TextAnnotation): boolean;
     static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation;
+    offset: Point3d;
     orientation: YawPitchRollAngles;
-    origin: Point3d;
     textBlock: TextBlock;
     toJSON(): TextAnnotationProps;
 }
@@ -9477,16 +9496,16 @@ export interface TextAnnotationAnchor {
 // @beta
 export interface TextAnnotationCreateArgs {
     anchor?: TextAnnotationAnchor;
+    offset?: Point3d;
     orientation?: YawPitchRollAngles;
-    origin?: Point3d;
     textBlock?: TextBlock;
 }
 
 // @beta
 export interface TextAnnotationProps {
     anchor?: TextAnnotationAnchor;
+    offset?: XYZProps;
     orientation?: YawPitchRollProps;
-    origin?: XYZProps;
     textBlock?: TextBlockProps;
 }
 
@@ -10047,17 +10066,17 @@ export enum TileFormat {
     // (undocumented)
     A3x = 5780289,
     // (undocumented)
-    B3dm = 1835283298,
+    B3dm = 1835283298,// "b3dm"
     // (undocumented)
-    Cmpt = 1953525091,
+    Cmpt = 1953525091,// "glTF"
     // (undocumented)
-    Gltf = 1179937895,
+    Gltf = 1179937895,// "pnts"
     // (undocumented)
-    I3dm = 1835283305,
+    I3dm = 1835283305,// "iMdl"
     // (undocumented)
-    IModel = 1818512745,
+    IModel = 1818512745,// cmpt
     // (undocumented)
-    Pnts = 1937010288,
+    Pnts = 1937010288,// i3dm
     // (undocumented)
     Unknown = 0
 }
@@ -10104,6 +10123,8 @@ export interface TileOptions {
     readonly enableImprovedElision: boolean;
     // (undocumented)
     readonly enableInstancing: boolean;
+    // (undocumented)
+    readonly expandProjectExtents: boolean;
     // (undocumented)
     readonly ignoreAreaPatterns: boolean;
     // (undocumented)
@@ -10327,11 +10348,13 @@ export enum TreeFlags {
     // (undocumented)
     EnforceDisplayPriority = 2,
     // (undocumented)
-    None = 0,
+    ExpandProjectExtents = 16,// Use project extents as the basis of the tile tree's range.
     // (undocumented)
-    OptimizeBRepProcessing = 4,
+    None = 0,// For 3d plan projection models, group graphics into layers based on subcategory.
     // (undocumented)
-    UseLargerTiles = 8,
+    OptimizeBRepProcessing = 4,// Use an optimized pipeline for producing facets from BRep entities.
+    // (undocumented)
+    UseLargerTiles = 8,// Produce tiles of larger size in screen pixels.
     // (undocumented)
     UseProjectExtents = 1
 }
@@ -10445,7 +10468,7 @@ export interface TxnNotifications {
     // (undocumented)
     notifyEcefLocationChanged: (ecef: EcefLocationProps | undefined) => void;
     // (undocumented)
-    notifyElementsChanged: (changes: ChangedEntities) => void;
+    notifyElementsChanged: (changes: NotifyEntitiesChangedArgs) => void;
     // (undocumented)
     notifyGeographicCoordinateSystemChanged: (gcs: GeographicCRSProps | undefined) => void;
     // (undocumented)
@@ -10455,7 +10478,7 @@ export interface TxnNotifications {
     // (undocumented)
     notifyIModelNameChanged: (name: string) => void;
     // (undocumented)
-    notifyModelsChanged: (changes: ChangedEntities) => void;
+    notifyModelsChanged: (changes: NotifyEntitiesChangedArgs) => void;
     // (undocumented)
     notifyProjectExtentsChanged: (extents: Range3dProps) => void;
     // (undocumented)

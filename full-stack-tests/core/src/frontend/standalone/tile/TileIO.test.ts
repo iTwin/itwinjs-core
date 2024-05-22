@@ -556,7 +556,7 @@ async function waitUntil(condition: () => boolean): Promise<void> {
 }
 
 async function getGeometricModel(imodel: IModelConnection, modelId: Id64String): Promise<GeometricModelState> {
-  await imodel.models.load(modelId)!;
+  await imodel.models.load(modelId);
   const baseModel = imodel.models.getLoaded(modelId)!;
   expect(baseModel).not.to.be.undefined;
   const model = baseModel.asGeometricModel!;
@@ -674,7 +674,7 @@ describe("mirukuru TileTree", () => {
   });
 
   it("should load model's tile tree asynchronously", async () => {
-    const tree = getTileTree(imodel, "0x1c")!;
+    const tree = getTileTree(imodel, "0x1c");
     expect(tree).not.to.be.undefined;
   });
 
@@ -762,6 +762,9 @@ describe("TileAdmin", () => {
   class TileAdminApp extends MockRender.App {
     public static async start(props: TileAdmin.Props): Promise<IModelConnection> {
       await cleanup();
+
+      // The default is true which changes the expected tile tree Ids. Not relevant to these tests.
+      props.expandProjectExtents = false;
 
       if (ProcessDetector.isElectronAppFrontend) {
         // certa doesn't serve worker script.

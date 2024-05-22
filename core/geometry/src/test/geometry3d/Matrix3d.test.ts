@@ -1060,7 +1060,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   it("StandardTopRigidHeadsUp", () => {
     const ck = new bsiChecker.Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Top, true);
-    const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitZ())!;
+    const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitZ());
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -1080,7 +1080,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   it("StandardFrontRigidHeadsUp", () => {
     const ck = new bsiChecker.Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Front, true);
-    const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitY(-1))!;
+    const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitY(-1));
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -1088,7 +1088,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   it("StandardBackRigidHeadsUp", () => {
     const ck = new bsiChecker.Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Back, true);
-    const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitY())!;
+    const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitY());
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -1096,7 +1096,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   it("StandardRightRigidHeadsUp", () => {
     const ck = new bsiChecker.Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Right, true);
-    const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitX())!;
+    const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitX());
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -1104,7 +1104,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   it("StandardLeftRigidHeadsUp", () => {
     const ck = new bsiChecker.Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Left, true);
-    const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitX(-1))!;
+    const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitX(-1));
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -1112,7 +1112,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   it("StandardIsoRigidHeadsUp", () => {
     const ck = new bsiChecker.Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Iso, true);
-    const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.create(-1 / Math.sqrt(3), -1 / Math.sqrt(3), 1 / Math.sqrt(3)))!;
+    const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.create(-1 / Math.sqrt(3), -1 / Math.sqrt(3), 1 / Math.sqrt(3)));
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -1120,7 +1120,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   it("StandardRightIsoRigidHeadsUp", () => {
     const ck = new bsiChecker.Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.RightIso, true);
-    const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.create(1 / Math.sqrt(3), -1 / Math.sqrt(3), 1 / Math.sqrt(3)))!;
+    const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.create(1 / Math.sqrt(3), -1 / Math.sqrt(3), 1 / Math.sqrt(3)));
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
     expect(ck.getNumErrors()).equals(0);
   });
