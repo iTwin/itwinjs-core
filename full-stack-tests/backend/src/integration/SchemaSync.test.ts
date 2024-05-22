@@ -8,7 +8,7 @@ import { Suite } from "mocha";
 import { BriefcaseDb, BriefcaseManager, CloudSqlite, HubMock, IModelDb, IModelHost, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { AccessToken, DbResult, Guid, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { AccessToken, DbResult, Guid, OpenMode } from "@itwin/core-bentley";
 import * as path from "path";
 import { EOL } from "os";
 import { ChangesetType } from "@itwin/core-common";
@@ -20,21 +20,29 @@ interface TinySchemaRef {
   comment?: string;
 }
 interface TinyProp {
+  kind: "primitive" | "struct";
   name: string;
-  type: "string" | "int" | "double" | "long";
   comment?: string;
 }
+interface TinyPrimitiveProp extends TinyProp {
+  kind: "primitive";
+  type: "string" | "int" | "double" | "long";
+}
+interface TinyStructProp extends TinyProp {
+  kind: "struct";
+  type: string;
+}
 interface TinyClass {
+  type: "entity" | "struct";
   name: string;
   baseClass?: string;
-  props?: TinyProp[];
+  props?: (TinyPrimitiveProp | TinyStructProp)[];
   comment?: string;
 }
 interface TinySchema extends TinySchemaRef {
   refs?: TinySchemaRef[];
   classes?: TinyClass[];
 }
-
 const tinySchemaToXml = (s: TinySchema) => {
   const xml: string[] = [];
   const pad = (i: number) => "".padEnd(i * 4, " ");
@@ -42,36 +50,39 @@ const tinySchemaToXml = (s: TinySchema) => {
   xml.push(`<ECSchema schemaName="${s.name}" alias="${s.alias}" version="${s.ver}" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">`);
   xml.push(...s.refs ? s.refs.map((v) => `${pad(1)}<ECSchemaReference name="${v.name}" version="${v.ver}" alias="${v.alias}"/>`) : []);
   for (const c of s.classes ?? []) {
-    xml.push(`${pad(1)}<ECEntityClass typeName="${c.name}">`);
+    const classType = c.type === "entity" ? "ECEntityClass" : "ECStructClass";
+    xml.push(`${pad(1)}<${classType} typeName="${c.name}">`);
     if (c.baseClass) {
       xml.push(`${pad(2)}<BaseClass>${c.baseClass}</BaseClass>`);
     }
     for (const p of c.props ?? []) {
-      xml.push(`${pad(3)}<ECProperty propertyName="${p.name}" typeName="${p.type}" />`);
+      if (p.kind === "primitive") {
+        const prop = p;
+        xml.push(`${pad(2)}<ECProperty propertyName="${prop.name}" typeName="${prop.type}" />`);
+      } else {
+        const prop = p;
+        xml.push(`${pad(2)}<ECStructProperty propertyName="${prop.name}" typeName="${prop.type}" />`);
+      }
     }
+    xml.push(`${pad(1)}</${classType}>`);
   }
-  xml.push(`${pad(1)}</ECEntityClass>`);
   xml.push(`</ECSchema>`);
   return xml.join(EOL);
 };
-
 const queryPropNames = (b: BriefcaseDb, className: string) => {
   try {
     return Object.getOwnPropertyNames(b.getMetaData(className).properties);
   } catch { return []; }
 };
-
 const assertChangesetTypeAndDescr = async (b: BriefcaseDb, changesetType: ChangesetType, description: string) => {
   const cs = await HubMock.getLatestChangeset({ iModelId: b.iModelId });
   expect(cs.changesType).is.eq(changesetType);
   expect(cs.description).is.eq(description);
 };
-
 const importSchema = async (b: BriefcaseDb, s: TinySchema) => {
   await b.importSchemaStrings([tinySchemaToXml(s)]);
   b.saveChanges();
 };
-
 const queryProfileVer = (db: BriefcaseDb) => {
   return db.withPreparedSqliteStatement("SELECT StrData FROM be_Prop WHERE Namespace='ec_Db' and Name='SchemaVersion'", (stmt: SqliteStatement) => {
     if (stmt.step() === DbResult.BE_SQLITE_ROW)
@@ -79,14 +90,12 @@ const queryProfileVer = (db: BriefcaseDb) => {
     return "";
   });
 };
-
 const querySchemaSyncDataVer = (b: BriefcaseDb) => {
   const js = b.queryFilePropertyString({ namespace: "ec_Db", name: "localDbInfo" });
   if (js) {
     return JSON.parse(js).dataVer;
   }
 };
-
 async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
   try {
     await test();
@@ -97,14 +106,13 @@ async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
     return;
   }
   throw new Error(`Failed to throw error with message: "${msg}"`);
-}
-
+};
 async function initializeContainer(containerProps: { containerId: string, isPublic?: boolean, baseUri: string }) {
   await AzuriteTest.Sqlite.createAzContainer(containerProps);
   const accessToken = await CloudSqlite.requestToken({ ...containerProps });
   await SchemaSync.CloudAccess.initializeDb({ ...containerProps, accessToken, storageType });
   return { ...containerProps, accessToken, storageType };
-}
+};
 
 describe("Schema synchronization", function (this: Suite) {
   this.timeout(0);
@@ -315,8 +323,6 @@ describe("Schema synchronization", function (this: Suite) {
     HubMock.shutdown();
   });
   it("override schema sync container", async () => {
-    Logger.initializeToConsole();
-    Logger.setLevelDefault(LogLevel.Error);
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
 
     const iTwinId = Guid.createValue();
@@ -350,10 +356,11 @@ describe("Schema synchronization", function (this: Suite) {
       ver: "01.00.00",
       refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
       classes: [{
+        type: "entity",
         name: "Pipe1",
         baseClass: "bis:GeometricElement2d",
         props: [
-          { name: "p0", type: "string" },
+          { kind: "primitive", name: "p0", type: "string" },
         ],
       },
       ],
@@ -381,11 +388,12 @@ describe("Schema synchronization", function (this: Suite) {
       ver: "01.00.01",
       refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
       classes: [{
+        type: "entity",
         name: "Pipe1",
         baseClass: "bis:GeometricElement2d",
         props: [
-          { name: "p0", type: "string" },
-          { name: "p1", type: "string" }, /* New property added by B2 using new imodel-sync-itwin-2 */
+          { kind: "primitive", name: "p0", type: "string" },
+          { kind: "primitive", name: "p1", type: "string" }, /* New property added by B2 using new imodel-sync-itwin-2 */
         ],
       },
       ],
@@ -403,11 +411,12 @@ describe("Schema synchronization", function (this: Suite) {
       ver: "01.00.02",
       refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
       classes: [{
+        type: "entity",
         name: "Pipe1",
         baseClass: "bis:GeometricElement2d",
         props: [
-          { name: "p0", type: "string" },
-          { name: "p2", type: "string" }, /* New property added by B2 using new imodel-sync-itwin-1 */
+          { kind: "primitive", name: "p0", type: "string" },
+          { kind: "primitive", name: "p2", type: "string" }, /* New property added by B2 using new imodel-sync-itwin-1 */
         ],
       },
       ],
@@ -427,12 +436,13 @@ describe("Schema synchronization", function (this: Suite) {
       ver: "01.00.02",
       refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
       classes: [{
+        type: "entity",
         name: "Pipe1",
         baseClass: "bis:GeometricElement2d",
         props: [
-          { name: "p0", type: "string" },
-          { name: "p1", type: "string" },
-          { name: "p2", type: "string" }, /* New property added by B2 using new imodel-sync-itwin-2 */
+          { kind: "primitive", name: "p0", type: "string" },
+          { kind: "primitive", name: "p1", type: "string" },
+          { kind: "primitive", name: "p2", type: "string" }, /* New property added by B2 using new imodel-sync-itwin-2 */
         ],
       },
       ],
@@ -465,7 +475,7 @@ describe("Schema synchronization", function (this: Suite) {
       briefcaseId: 2,
     }, {
       description: "Test1 schema push",
-      changesType: 0,
+      changesType: 65,
       briefcaseId: 3,
     }, {
       description: "Overriding SchemaSync for iModel with container-id: imodel-sync-itwin-2",
@@ -533,10 +543,11 @@ describe("Schema synchronization", function (this: Suite) {
       ver: "01.00.00",
       refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
       classes: [{
+        type: "entity",
         name: "Pipe1",
         baseClass: "bis:GeometricElement2d",
         props: [
-          { name: "p0", type: "string" },
+          { kind: "primitive", name: "p0", type: "string" },
         ],
       },
       ],
@@ -599,11 +610,12 @@ describe("Schema synchronization", function (this: Suite) {
       ver: "01.00.01",
       refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
       classes: [{
+        type: "entity",
         name: "Pipe1",
         baseClass: "bis:GeometricElement2d",
         props: [
-          { name: "p0", type: "string" },
-          { name: "p1", type: "string" },
+          { kind: "primitive", name: "p0", type: "string" },
+          { kind: "primitive", name: "p1", type: "string" },
         ],
       }],
     });
@@ -617,10 +629,11 @@ describe("Schema synchronization", function (this: Suite) {
       ver: "01.00.00",
       refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
       classes: [{
+        type: "entity",
         name: "Pipe1",
         baseClass: "bis:GeometricElement2d",
         props: [
-          { name: "p0", type: "string" },
+          { kind: "primitive", name: "p0", type: "string" },
         ],
       }],
     }), "pull is required to obtain lock");
@@ -639,10 +652,11 @@ describe("Schema synchronization", function (this: Suite) {
       ver: "01.00.00",
       refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
       classes: [{
+        type: "entity",
         name: "Pipe1",
         baseClass: "bis:GeometricElement2d",
         props: [
-          { name: "p0", type: "string" },
+          { kind: "primitive", name: "p0", type: "string" },
         ],
       }],
     });
@@ -659,12 +673,13 @@ describe("Schema synchronization", function (this: Suite) {
       ver: "01.00.02",
       refs: [{ name: "BisCore", ver: "01.00.02", alias: "bis" }],
       classes: [{
+        type: "entity",
         name: "Pipe1",
         baseClass: "bis:GeometricElement2d",
         props: [
-          { name: "p0", type: "string" },
-          { name: "p1", type: "string" },
-          { name: "p2", type: "string" }, /* New property added by B2*/
+          { kind: "primitive", name: "p0", type: "string" },
+          { kind: "primitive", name: "p1", type: "string" },
+          { kind: "primitive", name: "p2", type: "string" }, /* New property added by B2*/
         ],
       }],
     });
@@ -711,13 +726,14 @@ describe("Schema synchronization", function (this: Suite) {
       ver: "01.00.03",
       refs: [{ name: "BisCore", ver: "01.00.02", alias: "bis" }],
       classes: [{
+        type: "entity",
         name: "Pipe1",
         baseClass: "bis:GeometricElement2d",
         props: [
-          { name: "p0", type: "string" }, /* Was added by B1 */
-          { name: "p1", type: "string" }, /* Was added by B1 */
-          { name: "p2", type: "string" }, /* Was added by B2 */
-          { name: "p3", type: "string" }, /* New property added by B3*/
+          { kind: "primitive", name: "p0", type: "string" }, /* Was added by B1 */
+          { kind: "primitive", name: "p1", type: "string" }, /* Was added by B1 */
+          { kind: "primitive", name: "p2", type: "string" }, /* Was added by B2 */
+          { kind: "primitive", name: "p3", type: "string" }, /* New property added by B3*/
         ],
       }],
     });
@@ -728,13 +744,14 @@ describe("Schema synchronization", function (this: Suite) {
       ver: "01.00.01",
       refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
       classes: [{
+        type: "entity",
         name: "Pipe1",
         baseClass: "bis:GeometricElement2d",
         props: [
-          { name: "p0", type: "string" }, /* Was added by B2 */
-          { name: "p1", type: "string" }, /* New property added by B3 */
-          { name: "p2", type: "string" }, /* New property added by B3  */
-          { name: "p3", type: "string" }, /* New property added by B3  */
+          { kind: "primitive", name: "p0", type: "string" }, /* Was added by B2 */
+          { kind: "primitive", name: "p1", type: "string" }, /* New property added by B3 */
+          { kind: "primitive", name: "p2", type: "string" }, /* New property added by B3  */
+          { kind: "primitive", name: "p3", type: "string" }, /* New property added by B3  */
         ],
       }],
     });
@@ -829,6 +846,193 @@ describe("Schema synchronization", function (this: Suite) {
       b.close();
     });
     HubMock.shutdown();
+  });
+  it("import schema acquire schema lock when need to transform data", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-2" });
+    const iTwinId = Guid.createValue();
+    const user1AccessToken = "token 1";
+    const user2AccessToken = "token 2";
+    const user3AccessToken = "token 3";
+    const user4AccessToken = "token 4";
 
+    HubMock.startup("test", KnownTestLocations.outputDir);
+    const version0 = IModelTestUtils.prepareOutputFile("schemaSync", "imodel1.bim");
+    SnapshotDb.createEmpty(version0, { rootSubject: { name: "testSchemaSync" } }).close();
+
+    const iModelId = await HubMock.createNewIModel({ accessToken: user1AccessToken, iTwinId, version0, iModelName: "schemaSync" });
+
+    const openNewBriefcase = async (accessToken: AccessToken) => {
+      const bcProps = await BriefcaseManager.downloadBriefcase({ iModelId, iTwinId, accessToken });
+      return BriefcaseDb.open(bcProps);
+    };
+
+    const b1 = await openNewBriefcase(user1AccessToken);
+    const b2 = await openNewBriefcase(user2AccessToken);
+    const b3 = await openNewBriefcase(user3AccessToken);
+    const b4 = await openNewBriefcase(user4AccessToken);
+
+    SchemaSync.setTestCache(b1, "briefcase1a");
+    SchemaSync.setTestCache(b2, "briefcase2a");
+    SchemaSync.setTestCache(b3, "briefcase3a");
+    SchemaSync.setTestCache(b4, "briefcase4a");
+
+    await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
+    await b1.pushChanges({ accessToken: user1AccessToken, description: "enable shared schema channel" });
+    assert.isTrue(b1.nativeDb.schemaSyncEnabled());
+    const sequence = (start: number, stop: number, step: number = 1) => Array.from({ length: (stop - start) / step + 1 }, (_, i) => start + (i * step));
+
+    await importSchema(b1, {
+      name: "Test1",
+      alias: "ts1",
+      ver: "01.00.00",
+      refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+      classes: [{
+        type: "struct",
+        name: "Struct1",
+        props: [
+          ...sequence(0, 10).map<TinyPrimitiveProp>((i) => { return { kind: "primitive", name: `p${i}`, type: "string" }; }),
+        ],
+      }, {
+        type: "entity",
+        name: "Pipe1",
+        baseClass: "bis:GeometricElement2d",
+        props: [
+          ...sequence(0, 1).map<TinyStructProp>((i) => { return { kind: "struct", name: `s${i}`, type: "Struct1" }; }),
+        ],
+      }],
+    });
+    await b1.pushChanges({ description: "schema with 5 props" });
+
+    await b2.pullChanges();
+    assert.isTrue(b2.nativeDb.schemaSyncEnabled());
+
+    await importSchema(b1, {
+      name: "Test1",
+      alias: "ts1",
+      ver: "01.00.01",
+      refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+      classes: [{
+        type: "struct",
+        name: "Struct1",
+        props: [
+          ...sequence(0, 30).map<TinyPrimitiveProp>((i) => { return { kind: "primitive", name: `p${i}`, type: "string" }; }),
+        ],
+      }, {
+        type: "entity",
+        name: "Pipe1",
+        baseClass: "bis:GeometricElement2d",
+        props: [
+          ...sequence(0, 1).map<TinyStructProp>((i) => { return { kind: "struct", name: `s${i}`, type: "Struct1" }; }),
+        ],
+      }],
+    });
+
+    await assertThrowsAsync(async () => b2.acquireSchemaLock(), "exclusive lock is already held");
+    await assertThrowsAsync(async () => b3.acquireSchemaLock(), "exclusive lock is already held");
+
+    await importSchema(b2, {
+      name: "Test2",
+      alias: "ts2",
+      ver: "01.00.00",
+      refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+      classes: [{
+        type: "struct",
+        name: "Struct1",
+        props: [
+          ...sequence(0, 10).map<TinyPrimitiveProp>((i) => { return { kind: "primitive", name: `p${i}`, type: "string" }; }),
+        ],
+      }, {
+        type: "entity",
+        name: "Pipe1",
+        baseClass: "bis:GeometricElement2d",
+        props: [
+          ...sequence(0, 1).map<TinyStructProp>((i) => { return { kind: "struct", name: `s${i}`, type: "Struct1" }; }),
+        ],
+      }],
+    });
+
+    await b3.pullChanges();
+    await assertThrowsAsync(async () => importSchema(b3, {
+      name: "Test2",
+      alias: "ts2",
+      ver: "01.00.01",
+      refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+      classes: [{
+        type: "struct",
+        name: "Struct1",
+        props: [
+          ...sequence(0, 30).map<TinyPrimitiveProp>((i) => { return { kind: "primitive", name: `p${i}`, type: "string" }; }),
+        ],
+      }, {
+        type: "entity",
+        name: "Pipe1",
+        baseClass: "bis:GeometricElement2d",
+        props: [
+          ...sequence(0, 1).map<TinyStructProp>((i) => { return { kind: "struct", name: `s${i}`, type: "Struct1" }; }),
+        ],
+      }],
+    }), "exclusive lock is already held");
+
+    await b1.pushChanges({ description: "schema with 30 props in test1:Pipe1" });
+    await b3.pullChanges();
+    // now b3 should be able to import schema as b1 has pushed changes to hub.
+    await importSchema(b3, {
+      name: "Test2",
+      alias: "ts2",
+      ver: "01.00.01",
+      refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+      classes: [{
+        type: "struct",
+        name: "Struct1",
+        props: [
+          ...sequence(0, 30).map<TinyPrimitiveProp>((i) => { return { kind: "primitive", name: `p${i}`, type: "string" }; }),
+        ],
+      }, {
+        type: "entity",
+        name: "Pipe1",
+        baseClass: "bis:GeometricElement2d",
+        props: [
+          ...sequence(0, 1).map<TinyStructProp>((i) => { return { kind: "struct", name: `s${i}`, type: "Struct1" }; }),
+        ],
+      }],
+    });
+
+    await b2.pushChanges({ description: "schema with 10 props in test2:Pipe1" });
+    await b3.pushChanges({ description: "schema with 30 props in test2:Pipe1" });
+
+    await b4.pullChanges();
+
+    const masterHistory = (await HubMock.queryChangesets({ iModelId })).map((x) => {
+      return { description: x.description, changesType: x.changesType, briefcaseId: x.briefcaseId };
+    });
+
+    const expectedHistory = [{
+      description: "Enable SchemaSync for iModel with container-id: imodel-sync-itwin-2",
+      changesType: 0,
+      briefcaseId: 2,
+    }, {
+      description: "schema with 5 props",
+      changesType: 65,
+      briefcaseId: 2,
+    }, {
+      description: "schema with 30 props in test1:Pipe1",
+      changesType: 65,
+      briefcaseId: 2,
+    }, {
+      description: "schema with 10 props in test2:Pipe1",
+      changesType: 65,
+      briefcaseId: 3,
+    }, {
+      description: "schema with 30 props in test2:Pipe1",
+      changesType: 65,
+      briefcaseId: 4,
+    }];
+
+    assert.deepEqual(masterHistory, expectedHistory);
+    [b1, b2, b3, b4].forEach((b) => {
+      b.saveChanges();
+      b.close();
+    });
+    HubMock.shutdown();
   });
 });
