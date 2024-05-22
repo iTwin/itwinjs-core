@@ -34,12 +34,13 @@ import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { TileStorage } from "./TileStorage";
 import { SettingObject, Settings } from "./workspace/Settings";
-import { SettingsSchemas } from "./workspace/SettingsSchemas";
+import { ISettingsSchemas } from "./workspace/SettingsSchemas";
 import { Workspace, WorkspaceOpts } from "./workspace/Workspace";
 import { Container } from "inversify";
 import { join, normalize as normalizeDir } from "path";
 import { constructWorkspace, OwnedWorkspace } from "./internal/workspace/WorkspaceImpl";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
+import { constructSettingsSchemas } from "./internal/workspace/SettingsSchemasImpl";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -244,7 +245,7 @@ class ApplicationSettings extends SettingsImpl {
   }
   private updateDefaults() {
     const defaults: SettingObject = {};
-    for (const [schemaName, val] of SettingsSchemas.settingDefs) {
+    for (const [schemaName, val] of IModelHost.settingsSchemas.settingDefs) {
       if (val.default)
         defaults[schemaName] = val.default;
     }
@@ -253,7 +254,7 @@ class ApplicationSettings extends SettingsImpl {
 
   public constructor() {
     super();
-    this._remove = SettingsSchemas.onSchemaChanged.addListener(() => this.updateDefaults());
+    this._remove = IModelHost.settingsSchemas.onSchemaChanged.addListener(() => this.updateDefaults());
     this.updateDefaults();
   }
 
@@ -284,6 +285,7 @@ export class IModelHost {
   public static backendVersion = "";
   private static _profileName: string;
   private static _cacheDir = "";
+  private static _settingsSchemas?: ISettingsSchemas;
   private static _appWorkspace?: OwnedWorkspace;
 
   private static _platform?: typeof IModelJsNative;
@@ -352,6 +354,8 @@ export class IModelHost {
    * @beta
    */
   public static get appWorkspace(): Workspace { return definedInStartup(this._appWorkspace); }
+
+  public static get settingsSchemas(): ISettingsSchemas { return definedInStartup(this._settingsSchemas); }
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
   public static snapshotFileNameResolver?: FileNameResolver;
@@ -430,7 +434,8 @@ export class IModelHost {
 
   private static initializeWorkspace(configuration: IModelHostOptions) {
     const settingAssets = join(KnownLocations.packageAssetsDir, "Settings");
-    SettingsSchemas.addDirectory(join(settingAssets, "Schemas"));
+    this._settingsSchemas = constructSettingsSchemas();
+    this._settingsSchemas.addDirectory(join(settingAssets, "Schemas"));
     this._appWorkspace = constructWorkspace(new ApplicationSettings(), configuration.workspace);
 
     // Create the CloudCache for Workspaces. This will fail if another process is already using the same profile.
@@ -524,10 +529,13 @@ export class IModelHost {
 
     this._isValid = false;
     this.onBeforeShutdown.raiseEvent();
+
     this.configuration = undefined;
     this.tileStorage = undefined;
+
     this._appWorkspace?.close();
     this._appWorkspace = undefined;
+    this._settingsSchemas = undefined;
 
     CloudSqlite.CloudCaches.destroy();
     process.removeListener("beforeExit", IModelHost.shutdown);
