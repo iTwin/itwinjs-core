@@ -49,6 +49,7 @@ export interface SettingSchemaGroup {
  * @beta
  */
 export interface SettingsSchemas {
+  /** @internal */
   readonly [SettingsSchemaSymbol]: unknown;
   readonly settingDefs: Map<string, SettingSchema>;
   readonly typeDefs: Map<string, SettingSchema>;
