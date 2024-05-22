@@ -42,11 +42,6 @@ export namespace Settings {
  */
   export type Resolver<T> = (val: T, dict: Dictionary) => T | undefined;
 
-  /** An entry in the array returned by [[Settings.inspectSetting]]
- * @beta
- *
- */
-  export interface Inspector<T> { value: T, dictionary: Dictionary }
   /**
  * Values for Settings.Priority determine the sort order for Settings. Higher values take precedence over lower values.
  * @beta
@@ -194,9 +189,4 @@ export interface Settings {
   */
   getArray<T extends SettingType>(settingName: SettingName, defaultValue: Array<T>): Array<T>;
   getArray<T extends SettingType>(settingName: SettingName): Array<T> | undefined;
-
-  /** Get an array of [[Settings.Inspector] objects, sorted in priority order, for all Settings that match a SettingName.
-   * @note this method is mainly for debugging and diagnostics.
-   */
-  inspectSetting<T extends SettingType>(name: SettingName): Settings.Inspector<T>[];
 }

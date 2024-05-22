@@ -239,6 +239,11 @@ class IModelSettings extends SettingsImpl {
   public override resolveSetting<T extends SettingType>(arg: { settingName: SettingName, resolver: Settings.Resolver<T> }, defaultValue?: T): T | undefined {
     return super.resolveSetting(arg) ?? IModelHost.appWorkspace.settings.resolveSetting(arg, defaultValue);
   }
+
+  public override * iterateSetting<T extends SettingType>(name: string): Iterable<{ value: T, dictionary: Settings.Dictionary}> {
+    yield * super.iterateSetting(name);
+    yield * IModelHost.appWorkspace.settings.iterateSetting(name);
+  }
 }
 
 /** An iModel database file. The database file can either be a briefcase or a snapshot.

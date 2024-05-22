@@ -233,7 +233,7 @@ describe("Settings", () => {
 
     expect(settings.dictionaries.length).eq(3);
 
-    const inspect = settings.inspectSetting("app1/sub1");
+    const inspect = Array.from(settings.iterateSetting("app1/sub1"));
     expect(inspect.length).equals(5);
     expect(inspect[0].dictionary.props).to.deep.equal({ name: "iModel2.setting.json", priority: Settings.Priority.iModel });
     expect(inspect[0].value).equal("imodel2 value");

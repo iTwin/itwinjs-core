@@ -122,21 +122,6 @@ export class SettingsImpl implements Settings {
     return this.resolveSetting({ settingName, resolver: (val) => deepClone<T>(val) }) ?? defaultValue;
   }
 
-  /** for debugging. Returns an array of all values for a setting, sorted by priority.
-   * @note values are not cloned. Do not modify objects or arrays.
-   */
-  public inspectSetting<T extends SettingType>(settingName: SettingName): Settings.Inspector<T>[] {
-    const all: Settings.Inspector<T>[] = [];
-    this.resolveSetting<T>({
-      settingName, resolver: (value, dictionary) => {
-        all.push({ value, dictionary });
-        return undefined;
-      },
-    });
-
-    return all;
-  }
-
   // get the setting and verify the result is either undefined or the correct type. If so, return it. Otherwise throw an exception.
   private getResult<T extends SettingType>(name: SettingName, expectedType: string) {
     const out = this.getSetting<T>(name);
