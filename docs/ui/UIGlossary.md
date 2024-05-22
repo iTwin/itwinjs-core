@@ -3,13 +3,6 @@ tableRowAnchors: true
 jotform: true
 ---
 
-<!--
-This need to be put below "tableRowAnchors: true" to work.
-I had to remove it because it was breaking the build as the handlebars is not set in this branch.
-Add back when merging to master.
-layout: custom-ui-feedback.handlebars
--->
-
 # Glossary of terms in iTwin.js UI
 
 ## Backstage
