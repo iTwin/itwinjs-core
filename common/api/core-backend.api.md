@@ -178,6 +178,7 @@ import { PropertyCallback } from '@itwin/core-common';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
 import { Range2d } from '@itwin/core-geometry';
+import { Range2dProps } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Rank } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
@@ -309,6 +310,17 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
     // @internal (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
+}
+
+// @beta
+export interface AvailableCoordinateReferenceSystemProps {
+    // (undocumented)
+    crsExtent: Range2dProps;
+    // (undocumented)
+    deprecated: boolean;
+    // (undocumented)
+    description: string;
+    name: string;
 }
 
 // @beta (undocumented)
@@ -2863,6 +2875,14 @@ export class GeometryPart extends DefinitionElement {
     geom?: GeometryStreamProps;
     // (undocumented)
     toJSON(): GeometryPartProps;
+}
+
+// @beta
+export function getAvailableCoordinateReferenceSystems(args: GetAvailableCoordinateReferenceSystemsArgs): Promise<AvailableCoordinateReferenceSystemProps[]>;
+
+// @beta
+export interface GetAvailableCoordinateReferenceSystemsArgs {
+    extent?: Range2dProps;
 }
 
 // @public

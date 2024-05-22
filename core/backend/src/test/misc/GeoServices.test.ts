@@ -8,7 +8,7 @@ import {
   GeographicCRSInterpretRequestProps, GeographicCRSProps,
 } from "@itwin/core-common";
 import { IModelHost } from "../../IModelHost";
-import { Geometry, LowAndHighXYProps, Range2d, Range2dProps } from "@itwin/core-geometry";
+import { Geometry, Range2d, Range2dProps } from "@itwin/core-geometry";
 import { GeoCoordConfig } from "../../GeoCoordConfig";
 import { getAvailableCoordinateReferenceSystems } from "../../GeographicCRSServices";
 
