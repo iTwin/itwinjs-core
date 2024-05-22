@@ -112,10 +112,11 @@ rush.json       @iTwin/itwinjs-core-admins
 /core/webgl-compatibility       @iTwin/itwinjs-core-display @Ellord207
 
 /docs   @iTwin/itwinjs-core
-/docs/getting-started @iTwin/itwinjs-core-admins @williamkbentley
-/docs/config          @iTwin/itwinjs-core-admins @williamkbentley
+/docs/getting-started @iTwin/itwinjs-core-admins @anmolshres98 @hl662 @DanRod1999
+/docs/config          @iTwin/itwinjs-core-admins @anmolshres98 @hl662 @DanRod1999
 /docs/presentation    @iTwin/itwinjs-core-presentation
 /docs/bis             @diegoalexdiaz @ColinKerr
+/docs/ui              @iTwin/itwinjs-core-ui @GerardasB
 
 # These domains should be split up a bit more
 /domains                      @iTwin/itwinjs-core-admins
