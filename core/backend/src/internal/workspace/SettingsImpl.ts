@@ -109,6 +109,15 @@ export class SettingsImpl implements Settings {
     return defaultValue;
   }
 
+  public * iterateSetting<T extends SettingType>(settingName: SettingName): Iterable<{ value: T, dictionary: Settings.Dictionary}> {
+    for (const dictionary of this.dictionaries) {
+      const value = dictionary.getSetting<T>(settingName);
+      if (undefined !== value) {
+        yield { value, dictionary };
+      }
+    }
+  }
+
   public getSetting<T extends SettingType>(settingName: SettingName, defaultValue?: T): T | undefined {
     return this.resolveSetting({ settingName, resolver: (val) => deepClone<T>(val) }) ?? defaultValue;
   }

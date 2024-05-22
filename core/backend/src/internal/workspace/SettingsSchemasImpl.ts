@@ -13,10 +13,10 @@ import { SettingSchema, SettingSchemaGroup, SettingsSchemas } from "../../worksp
 
 const makeSettingKey = (prefix: string, key: string) => `${prefix}/${key}`;
 
-export const SettingsSchemaSymbol = Symbol("SettingsSchema");
+export const SettingsSchemasSymbol = Symbol("SettingsSchema");
 
 class SettingsSchemasImpl implements SettingsSchemas {
-  public readonly [SettingsSchemaSymbol] = undefined;
+  public readonly [SettingsSchemasSymbol] = undefined;
   private readonly _allGroups = new Map<string, SettingSchemaGroup>();
   /** a map of all registered Setting Definitions  */
   public readonly settingDefs = new Map<string, SettingSchema>();

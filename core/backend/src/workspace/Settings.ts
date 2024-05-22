@@ -158,6 +158,8 @@ export interface Settings {
    */
   getSetting<T extends SettingType>(settingName: SettingName, defaultValue?: T): T | undefined;
 
+  iterateSetting<T extends SettingType>(settingName: SettingName): Iterable<{ value: T, dictionary: Settings.Dictionary}>;
+  
   /** Get a string setting by SettingName.
    * @param settingName The name of the setting
    * @param defaultValue value returned if settingName is not present in any Settings.Dictionary, or if the highest priority setting is not a string.
