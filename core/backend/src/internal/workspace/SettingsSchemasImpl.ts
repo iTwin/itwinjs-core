@@ -2,67 +2,27 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module Workspace
- */
 
 import * as fs from "fs-extra";
 import { parse } from "json5";
 import { extname, join } from "path";
-import { BeEvent, JSONSchema, JSONSchemaType, JSONSchemaTypeName, Mutable } from "@itwin/core-bentley";
+import { BeEvent, JSONSchemaType, JSONSchemaTypeName, Mutable } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
-import { IModelJsFs } from "../IModelJsFs";
-
-/**
- * The properties of a single Setting, used by the settings editor. This interface also includes the
- * default value if it is not specified in any Settings file.
- * This interface includes all members of [JSONSchema]($bentley) with the extensions added by VSCode.
- * @note the `type` member is marked optional in JSONSchema but is required for Settings.
- * @beta
- */
-export interface SettingSchema extends Readonly<JSONSchema> {
-  /** entries for an array. Must be single object, not array */
-  readonly items?: SettingSchema;
-  /** type is required for settings */
-  readonly type: JSONSchemaTypeName;
-  /** name of typeDef for objects or arrays to inherit */
-  readonly extends?: string;
-  /** for objects, a list of named properties and their definitions */
-  readonly properties?: { [name: string]: SettingSchema };
-  /** whether the setting replaces lower priority entries with the same name or combines with them. */
-  readonly cumulative?: true;
-}
-
-/**
- * The properties of a group of [[SettingSchema]]s for an application. Groups can be added and removed from [[SettingsSchemas]]
- * and are identified by their (required) `schemaPrefix` member
- * @beta
- */
-export interface SettingSchemaGroup {
-  readonly schemaPrefix: string;
-  readonly settingDefs?: { [name: string]: SettingSchema | undefined };
-  readonly typeDefs?: { [name: string]: SettingSchema | undefined };
-  readonly order?: number;
-  readonly description?: string;
-}
+import { IModelJsFs } from "../../IModelJsFs";
+import { SettingSchema, SettingSchemaGroup, ISettingsSchemas } from "../../workspace/SettingsSchemas";
 
 const makeSettingKey = (prefix: string, key: string) => `${prefix}/${key}`;
-/**
- * The registry of available [[SettingSchemaGroup]]s.
- * The registry is used for editing Settings files and for finding default values for settings.
- * @beta
- */
-export class SettingsSchemas {
-  private constructor() { } // singleton
-  private static readonly _allGroups = new Map<string, SettingSchemaGroup>();
-  /** a map of all registered Setting Definitions  */
-  public static readonly settingDefs = new Map<string, SettingSchema>();
-  /** a map of all registered TypeDefs  */
-  public static readonly typeDefs = new Map<string, SettingSchema>();
-  /** event that signals that the values in [[allSchemas]] have changed in some way. */
-  public static readonly onSchemaChanged = new BeEvent<() => void>();
 
-  private static verifyType<T>(val: T, expectedType: JSONSchemaTypeName, path: string) {
+class SettingsSchemasImpl implements ISettingsSchemas {
+  private readonly _allGroups = new Map<string, SettingSchemaGroup>();
+  /** a map of all registered Setting Definitions  */
+  public readonly settingDefs = new Map<string, SettingSchema>();
+  /** a map of all registered TypeDefs  */
+  public readonly typeDefs = new Map<string, SettingSchema>();
+  /** event that signals that the values in [[allSchemas]] have changed in some way. */
+  public readonly onSchemaChanged = new BeEvent<() => void>();
+
+  private verifyType<T>(val: T, expectedType: JSONSchemaTypeName, path: string) {
     if (expectedType === "integer") {
       if (Number.isInteger(val))
         return;
@@ -82,7 +42,7 @@ export class SettingsSchemas {
    * @returns [[value]] if no problems exist.
    * @throws if [[value]] is invalid according to the SettingSchema with an explanation of the problem.
    */
-  public static validateSetting<T>(value: T, settingName: string): T {
+  public validateSetting<T>(value: T, settingName: string): T {
     const settingDef = this.settingDefs.get(settingName);
     if (undefined !== settingDef) // if there's no setting definition, there's no rules so just return ok
       this.validateProperty(value, settingDef, settingName);
@@ -90,7 +50,7 @@ export class SettingsSchemas {
   }
 
   /** @internal */
-  public static getObjectProperties(propDef: Readonly<SettingSchema>, scope: string): { required?: string[], properties: { [name: string]: SettingSchema } } {
+  public getObjectProperties(propDef: Readonly<SettingSchema>, scope: string): { required?: string[], properties: { [name: string]: SettingSchema } } {
     let required = propDef.required;
     let properties = propDef.properties;
 
@@ -111,7 +71,7 @@ export class SettingsSchemas {
   }
 
   /** @internal */
-  public static getArrayItems(propDef: Readonly<SettingSchema>, scope: string): SettingSchema {
+  public getArrayItems(propDef: Readonly<SettingSchema>, scope: string): SettingSchema {
     let items = propDef.items;
     if (undefined === items && propDef.extends) {
       const typeDef = this.typeDefs.get(propDef.extends);
@@ -124,7 +84,7 @@ export class SettingsSchemas {
     return items;
   }
 
-  private static validateProperty<T>(val: T, propDef: Readonly<SettingSchema>, path: string) {
+  private validateProperty<T>(val: T, propDef: Readonly<SettingSchema>, path: string) {
     switch (propDef.type) {
       case "boolean":
       case "number":
@@ -176,7 +136,7 @@ export class SettingsSchemas {
    * Add one or more [[SettingSchemaGroup]]s. `SettingSchemaGroup`s must include a `schemaPrefix` member that is used
    * to identify the group. If a group with the same name is already registered, the old values are first removed and then the new group is added.
    */
-  public static addGroup(settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]): void {
+  public addGroup(settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]): void {
     if (!Array.isArray(settingsGroup))
       settingsGroup = [settingsGroup];
 
@@ -185,12 +145,12 @@ export class SettingsSchemas {
   }
 
   /** Add a [[SettingSchemaGroup]] from stringified json5. */
-  public static addJson(settingSchema: string): void {
+  public addJson(settingSchema: string): void {
     this.addGroup(parse(settingSchema));
   }
 
   /** Add a [[SettingSchemaGroup]] from a json5 file. */
-  public static addFile(fileName: LocalFileName): void {
+  public addFile(fileName: LocalFileName): void {
     try {
       this.addJson(fs.readFileSync(fileName, "utf-8"));
     } catch (e: any) {
@@ -199,7 +159,7 @@ export class SettingsSchemas {
   }
 
   /** Add all files with a either ".json" or ".json5" extension from a supplied directory. */
-  public static addDirectory(dirName: LocalDirName) {
+  public addDirectory(dirName: LocalDirName) {
     for (const fileName of IModelJsFs.readdirSync(dirName)) {
       const ext = extname(fileName);
       if (ext === ".json5" || ext === ".json")
@@ -208,12 +168,12 @@ export class SettingsSchemas {
   }
 
   /** Remove a previously added [[SettingSchemaGroup]] by schemaPrefix */
-  public static removeGroup(schemaPrefix: string): void {
+  public removeGroup(schemaPrefix: string): void {
     this.doRemove(schemaPrefix);
     this.onSchemaChanged.raiseEvent();
   }
 
-  private static doAdd(settingsGroup: SettingSchemaGroup[]) {
+  private doAdd(settingsGroup: SettingSchemaGroup[]) {
     settingsGroup.forEach((group) => {
       if (undefined === group.schemaPrefix)
         throw new Error(`settings group has no "schemaPrefix" member`);
@@ -224,7 +184,7 @@ export class SettingsSchemas {
     });
   }
 
-  private static doRemove(schemaPrefix: string) {
+  private doRemove(schemaPrefix: string) {
     const group = this._allGroups.get(schemaPrefix);
     if (undefined !== group?.settingDefs) {
       for (const key of Object.keys(group.settingDefs))
@@ -237,12 +197,12 @@ export class SettingsSchemas {
     this._allGroups.delete(schemaPrefix);
   }
 
-  private static validateName(name: string) {
+  private validateName(name: string) {
     if (!name.trim())
       throw new Error(`empty property name`);
   }
 
-  private static verifyPropertyDef(name: string, property: SettingSchema | undefined) {
+  private verifyPropertyDef(name: string, property: SettingSchema | undefined) {
     if (!property)
       throw new Error(`missing required property ${name}`);
 
@@ -293,7 +253,7 @@ export class SettingsSchemas {
     }
   }
 
-  private static validateAndAdd(group: SettingSchemaGroup) {
+  private validateAndAdd(group: SettingSchemaGroup) {
     const settingDefs = group.settingDefs;
     if (undefined !== settingDefs) {
       for (const key of Object.keys(settingDefs)) {
@@ -312,7 +272,7 @@ export class SettingsSchemas {
     }
   }
 
-  private static getDefaultValue(type: JSONSchemaTypeName | JSONSchemaTypeName[]): JSONSchemaType | undefined {
+  private getDefaultValue(type: JSONSchemaTypeName | JSONSchemaTypeName[]): JSONSchemaType | undefined {
     type = Array.isArray(type) ? type[0] : type;
     switch (type) {
       case "boolean":
@@ -332,17 +292,6 @@ export class SettingsSchemas {
   }
 }
 
-export interface ISettingsSchemas {
-  readonly settingDefs: Map<string, SettingSchema>;
-  readonly typeDefs: Map<string, SettingSchema>;
-  readonly onSchemaChanged: BeEvent<() => void>;
-
-  validateSetting<T>(value: T, settingName: string): T;
-  // getObjectProperties(propDef: Readonly<SettingSchema>, scope: string): { required?: string[], properties: { [name: string]: SettingSchema } };
-  // getArrayItems(propDef: Readonly<SettingSchema>, scope: string): SettingSchema;
-  addGroup(settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]): void;
-  addJson(settingSchema: string): void;
-  addFile(fileName: LocalFileName): void;
-  addDirectory(dirName: LocalDirName): void;
-  removeGroup(schemaPrefix: string): void;
+export function constructSettingsSchemas(): ISettingsSchemas {
+  return new SettingsSchemasImpl();
 }
