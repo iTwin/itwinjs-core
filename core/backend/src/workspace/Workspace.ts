@@ -414,37 +414,6 @@ export namespace Workspace {
     dict: Settings.Dictionary
   ) => boolean;
 
-  const loadResource = <T>(dbList: WorkspaceDb[] | WorkspaceDb, resourceType: "string" | "blob", rscName: WorkspaceResource.Name): T | undefined => {
-    if (!Array.isArray(dbList))
-      dbList = [dbList];
-    for (const db of dbList) {
-      const val = (resourceType === "string" ? db.getString(rscName) : db.getBlob(rscName)) as T | undefined;
-      if (undefined !== val)
-        return val; // first one wins
-    }
-    return undefined;
-  };
-
-  /** Load a string resource from the highest priority WorkspaceDb in a list.
-   * @returns the value of the string resource or `undefined` if the resourceName is not present in any WorkspaceDb in the list.
-   */
-  export const loadStringResource = (
-    /** Either a single WorkspaceDb or a list of WorkspaceDbs in priority sorted order. */
-    dbList: WorkspaceDb[] | WorkspaceDb,
-    /** The name of the string resource to load */
-    rscName: WorkspaceResource.Name,
-  ): string | undefined => loadResource(dbList, "string", rscName);
-
-  /** Load a blob resource from the highest priority WorkspaceDb in a list.
-   * @returns the value of the blob resource or `undefined` if the resourceName is not present in any WorkspaceDb in the list.
-   */
-  export const loadBlobResource = (
-    /** Either a single WorkspaceDb or a list of WorkspaceDbs in priority sorted order. */
-    dbList: WorkspaceDb[] | WorkspaceDb,
-    /** The name of the blob resource to load */
-    rscName: WorkspaceResource.Name,
-  ): Uint8Array | undefined => loadResource(dbList, "blob", rscName);
-
   /** type that requires an accessToken */
   export interface WithAccessToken { accessToken: AccessToken }
 }
@@ -474,4 +443,28 @@ export function queryWorkspaceResources(args: QueryWorkspaceResourcesArgs): void
       callback: (names) => args.callback(dbCallback(db, names)),
     });
   }
+}
+
+function getWorkspaceResource(dbs: WorkspaceDb[], name: string, type: "string" | "blob"): string | Uint8Array | undefined {
+  for (const db of dbs) {
+    const val = type === "blob" ? db.getBlob(name) : db.getString(name);
+    if (undefined !== val) {
+      return val;
+    }
+  }
+
+  return undefined;
+}
+
+export interface GetWorkspaceResourceArgs {
+  dbs: WorkspaceDb[];
+  name: WorkspaceResource.Name;
+}
+
+export function getWorkspaceString(args: GetWorkspaceResourceArgs): string | undefined {
+  return getWorkspaceResource(args.dbs, args.name, "string") as string | undefined;
+}
+
+export function getWorkspaceBlob(args: GetWorkspaceResourceArgs): Uint8Array | undefined {
+  return getWorkspaceResource(args.dbs, args.name, "blob") as Uint8Array | undefined;
 }
