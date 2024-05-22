@@ -295,7 +295,3 @@ class SettingsSchemasImpl implements SettingsSchemas {
 export function constructSettingsSchemas(): SettingsSchemas {
   return new SettingsSchemasImpl();
 }
-
-Object.defineProperty(SettingsSchemas, Symbol.hasInstance, {
-  value: function(x: any) { return x instanceof SettingsSchemasImpl; },
-});

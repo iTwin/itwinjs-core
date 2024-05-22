@@ -51,17 +51,17 @@ export interface SettingSchemaGroup {
  * The registry is used for editing Settings files and for finding default values for settings.
  * @beta
  */
-export class SettingsSchemas {
-  private constructor() { }
+export interface SettingsSchemas {
+  readonly settingDefs: Map<string, SettingSchema>;
+  readonly typeDefs: Map<string, SettingSchema>;
+  readonly onSchemaChanged: BeEvent<() => void>;
 
-  declare public readonly settingDefs: Map<string, SettingSchema>;
-  declare public readonly typeDefs: Map<string, SettingSchema>;
-  declare public readonly onSchemaChanged: BeEvent<() => void>;
-
-  declare public readonly validateSetting: <T>(value: T, settingName: string) => T;
-  declare public readonly addGroup: (settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]) => void;
-  declare public readonly addJson: (settingSchema: string) => void;
-  declare public readonly addFile: (fileName: LocalFileName) => void;
-  declare public readonly addDirectory: (dirName: LocalDirName) => void;
-  declare public readonly removeGroup: (schemaPrefix: string) => void;
+  validateSetting<T>(value: T, settingName: string): T;
+  // getObjectProperties(propDef: Readonly<SettingSchema>, scope: string): { required?: string[], properties: { [name: string]: SettingSchema } };
+  // getArrayItems(propDef: Readonly<SettingSchema>, scope: string): SettingSchema;
+  addGroup(settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]): void;
+  addJson(settingSchema: string): void;
+  addFile(fileName: LocalFileName): void;
+  addDirectory(dirName: LocalDirName): void;
+  removeGroup(schemaPrefix: string): void;
 }
