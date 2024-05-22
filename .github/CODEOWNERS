@@ -146,7 +146,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /test-apps/display-test-app                 @bbastings @iTwin/itwinjs-core-display
 /test-apps/display-test-app/ios             @iTwin/mobilesdkadmins
 /test-apps/display-test-app/android         @iTwin/mobilesdkadmins
-/test-apps/export-gltf                      @MichaelBelousov @iTwin/itwinjs-core-display
+/test-apps/export-gltf                      @iTwin/itwinjs-core-display
 /test-apps/imjs-importer                    @bbastings @dassaf4 @saeeedtorabi
 /test-apps/imodel-from-geojson              @iTwin/itwinjs-core-display
 /test-apps/imodel-from-orbitgt              @iTwin/itwinjs-core-display
