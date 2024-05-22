@@ -1715,8 +1715,8 @@ export interface SchemaDifferenceConflict {
 
 // @alpha
 export interface SchemaDifferences {
-    readonly changes: AnySchemaDifference[];
     readonly conflicts?: SchemaDifferenceConflict[];
+    readonly differences: AnySchemaDifference[];
     readonly sourceSchemaName: string;
     readonly targetSchemaName: string;
 }

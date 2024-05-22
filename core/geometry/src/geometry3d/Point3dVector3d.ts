@@ -1488,10 +1488,10 @@ export class Vector3d extends XYZ {
     return Angle.createAtan2(this.crossProductXY(vectorB), this.dotProductXY(vectorB));
   }
   /**
-   * Return the angle in radians (not as strongly-typed Angle) from this vector to vectorB, measured
-   * in their containing plane whose normal lies in the same half-space as vectorW.
+   * Return the angle in radians (not as strongly-typed Angle) from `this` vector to `vectorB`, measured
+   * in their containing plane whose normal lies in the same half-space as `vectorW`.
    * * The returned angle is between `-Math.PI` and `Math.PI`.
-   * * If the cross product of this vector and vectorB lies on the same side of the plane as vectorW,
+   * * If the cross product of `this` vector and `vectorB` lies on the same side of the plane as `vectorW`,
    * this function returns `radiansTo(vectorB)`; otherwise, it returns `-radiansTo(vectorB)`.
    * * `vectorW` does not have to be perpendicular to the plane.
    * * Use `planarRadiansTo` to measure the angle between vectors that are projected to another plane.
@@ -1499,6 +1499,7 @@ export class Vector3d extends XYZ {
    * @param vectorW determines the side of the plane in which the returned angle is measured
    */
   public signedRadiansTo(vectorB: Vector3d, vectorW: Vector3d): number {
+    // A.B = |A||B|cos(theta) and |AxB| = |A||B|sin(theta) so theta = arctan(|AxB|/A.B)
     const p = this.crossProduct(vectorB);
     const theta = Math.atan2(p.magnitude(), this.dotProduct(vectorB));
     if (vectorW.dotProduct(p) < 0.0)

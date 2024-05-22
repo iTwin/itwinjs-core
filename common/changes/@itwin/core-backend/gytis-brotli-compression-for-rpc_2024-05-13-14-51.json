@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Brotli compression enabled for RPC requests.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
