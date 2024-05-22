@@ -6,12 +6,9 @@
  * @module Workspace
  */
 
-import * as fs from "fs-extra";
-import { parse } from "json5";
-import { extname, join } from "path";
-import { BeEvent, JSONSchema, JSONSchemaType, JSONSchemaTypeName, Mutable } from "@itwin/core-bentley";
+import { BeEvent, JSONSchema, JSONSchemaTypeName } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
-import { IModelJsFs } from "../IModelJsFs";
+import { SettingsSchemaSymbol } from "../internal/workspace/SettingsSchemasImpl";
 
 /**
  * The properties of a single Setting, used by the settings editor. This interface also includes the
@@ -46,17 +43,13 @@ export interface SettingSchemaGroup {
   readonly description?: string;
 }
 
-export interface OutputInterface {
-  /** @internal */
-  readonly doNotInstantiateThisInterface: unknown;
-}
-
 /**
  * The registry of available [[SettingSchemaGroup]]s.
  * The registry is used for editing Settings files and for finding default values for settings.
  * @beta
  */
-export interface SettingsSchemas extends OutputInterface {
+export interface SettingsSchemas {
+  readonly [SettingsSchemaSymbol]: unknown;
   readonly settingDefs: Map<string, SettingSchema>;
   readonly typeDefs: Map<string, SettingSchema>;
   readonly onSchemaChanged: BeEvent<() => void>;
