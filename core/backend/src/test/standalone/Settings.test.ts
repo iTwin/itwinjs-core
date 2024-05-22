@@ -8,7 +8,7 @@ import { assert, Mutable, OpenMode } from "@itwin/core-bentley";
 import { SnapshotDb, StandaloneDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { SettingObject, Settings } from "../../workspace/Settings";
-import { SettingSchema, SettingSchemaGroup, SettingsSchemas } from "../../workspace/SettingsSchemas";
+import { SettingSchema, SettingSchemaGroup } from "../../workspace/SettingsSchemas";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { GcsDbProps, GeoCoordConfig } from "../../GeoCoordConfig";
 
@@ -16,7 +16,7 @@ describe("Settings", () => {
   let iModel: SnapshotDb;
 
   before(() => {
-    SettingsSchemas.addFile(IModelTestUtils.resolveAssetFile("TestSettings.schema.json"));
+    IModelHost.settingsSchemas.addFile(IModelTestUtils.resolveAssetFile("TestSettings.schema.json"));
     const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("SettingsTest", "SettingsTest.bim");
     iModel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
@@ -167,7 +167,7 @@ describe("Settings", () => {
 
   it("settings priorities", () => {
     const settings = iModel.workspace.settings;
-    SettingsSchemas.addGroup(app1);
+    IModelHost.settingsSchemas.addGroup(app1);
     IModelHost.appWorkspace.settings.addDictionary({ name: "app1", priority: Settings.Priority.application }, app1Settings);
 
     let settingsChanged = 0;
@@ -226,7 +226,7 @@ describe("Settings", () => {
     expect(settingsChanged).eq(4);
 
     (app1.settingDefs!.strVal as Mutable<SettingSchema>).default = "new default";
-    SettingsSchemas.addGroup(app1);
+    IModelHost.settingsSchemas.addGroup(app1);
 
     // after re-registering, the new default should be updated
     expect(settings.getString("app1/strVal")).equals(app1.settingDefs!.strVal!.default);
@@ -253,11 +253,11 @@ describe("Settings", () => {
     // test validation of values vs. setting schemas
     const workspace: any = { dbName: "abc", containerId: "123", baseUri: "aab.com" };
     const fontListVal: any = [{ workspace, fontName: "arial" }, { workspace, fontName: "helvetica", fontType: 3 }];
-    expect(() => SettingsSchemas.validateSetting(fontListVal, "testApp/fontList")).throws("required value for \"workspaceLimit\" is missing");
+    expect(() => IModelHost.settingsSchemas.validateSetting(fontListVal, "testApp/fontList")).throws("required value for \"workspaceLimit\" is missing");
     workspace.workspaceLimit = 4; // add missing value
-    expect(() => SettingsSchemas.validateSetting(fontListVal, "testApp/fontList")).throws("value for testApp/fontList[1].fontType");
+    expect(() => IModelHost.settingsSchemas.validateSetting(fontListVal, "testApp/fontList")).throws("value for testApp/fontList[1].fontType");
     fontListVal[1].fontType = "ttf"; // correct font type to string
-    expect(SettingsSchemas.validateSetting(fontListVal, "testApp/fontList")).equal(fontListVal); // should now pass
+    expect(IModelHost.settingsSchemas.validateSetting(fontListVal, "testApp/fontList")).equal(fontListVal); // should now pass
   });
 
   it("read settings file", () => {

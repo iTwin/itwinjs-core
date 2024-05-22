@@ -9,11 +9,11 @@ import { extname, join } from "path";
 import { BeEvent, JSONSchemaType, JSONSchemaTypeName, Mutable } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../../IModelJsFs";
-import { SettingSchema, SettingSchemaGroup, ISettingsSchemas } from "../../workspace/SettingsSchemas";
+import { SettingSchema, SettingSchemaGroup, SettingsSchemas } from "../../workspace/SettingsSchemas";
 
 const makeSettingKey = (prefix: string, key: string) => `${prefix}/${key}`;
 
-class SettingsSchemasImpl implements ISettingsSchemas {
+class SettingsSchemasImpl implements SettingsSchemas {
   private readonly _allGroups = new Map<string, SettingSchemaGroup>();
   /** a map of all registered Setting Definitions  */
   public readonly settingDefs = new Map<string, SettingSchema>();
@@ -292,6 +292,6 @@ class SettingsSchemasImpl implements ISettingsSchemas {
   }
 }
 
-export function constructSettingsSchemas(): ISettingsSchemas {
+export function constructSettingsSchemas(): SettingsSchemas {
   return new SettingsSchemasImpl();
 }

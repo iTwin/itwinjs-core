@@ -34,7 +34,7 @@ import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { TileStorage } from "./TileStorage";
 import { SettingObject, Settings } from "./workspace/Settings";
-import { ISettingsSchemas } from "./workspace/SettingsSchemas";
+import { SettingsSchemas } from "./workspace/SettingsSchemas";
 import { Workspace, WorkspaceOpts } from "./workspace/Workspace";
 import { Container } from "inversify";
 import { join, normalize as normalizeDir } from "path";
@@ -285,7 +285,7 @@ export class IModelHost {
   public static backendVersion = "";
   private static _profileName: string;
   private static _cacheDir = "";
-  private static _settingsSchemas?: ISettingsSchemas;
+  private static _settingsSchemas?: SettingsSchemas;
   private static _appWorkspace?: OwnedWorkspace;
 
   private static _platform?: typeof IModelJsNative;
@@ -355,7 +355,7 @@ export class IModelHost {
    */
   public static get appWorkspace(): Workspace { return definedInStartup(this._appWorkspace); }
 
-  public static get settingsSchemas(): ISettingsSchemas { return definedInStartup(this._settingsSchemas); }
+  public static get settingsSchemas(): SettingsSchemas { return definedInStartup(this._settingsSchemas); }
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
   public static snapshotFileNameResolver?: FileNameResolver;

@@ -16,7 +16,6 @@ import { SQLiteDb } from "../../SQLiteDb";
 import { SqliteStatement } from "../../SqliteStatement";
 import { SettingName, SettingObject, Settings } from "../../workspace/Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
-import { SettingsSchemas } from "../../workspace/SettingsSchemas";
 import { Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceOpts, WorkspaceResource, WorkspaceSettingsProps } from "../../workspace/Workspace";
 import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
@@ -384,7 +383,7 @@ class WorkspaceImpl implements Workspace {
             // if the dictionary we just loaded has a "settingsWorkspaces" entry, load them too, recursively
             const nested = dict.getSetting<WorkspaceSettingsProps[]>(Workspace.settingName.settingsWorkspaces);
             if (nested !== undefined) {
-              SettingsSchemas.validateSetting<WorkspaceSettingsProps[]>(nested, Workspace.settingName.settingsWorkspaces);
+              IModelHost.settingsSchemas.validateSetting<WorkspaceSettingsProps[]>(nested, Workspace.settingName.settingsWorkspaces);
               await this.loadSettingsDictionary(nested, problems);
             }
           }

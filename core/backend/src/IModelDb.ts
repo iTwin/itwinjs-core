@@ -63,7 +63,6 @@ import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
 
 import type { BlobContainer } from "./BlobContainerService";
-import { SettingsSchemas } from "./workspace/SettingsSchemas";
 
 /** @internal */
 export interface ChangesetConflictArgs {
@@ -1463,7 +1462,7 @@ export abstract class IModelDb extends IModel {
         try {
           const props = dict.getSetting<WorkspaceSettingsProps[]>(Workspace.settingName.settingsWorkspaces);
           if (props)
-            settingProps.push(...SettingsSchemas.validateSetting(props, Workspace.settingName.settingsWorkspaces));
+            settingProps.push(...IModelHost.settingsSchemas.validateSetting(props, Workspace.settingName.settingsWorkspaces));
         } catch (e) {
           problems.push(e as WorkspaceDb.LoadError); // something wrong with the setting stored in the iModel
         }

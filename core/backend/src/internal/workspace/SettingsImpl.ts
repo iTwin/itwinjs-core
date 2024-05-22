@@ -12,8 +12,8 @@ import { extname, join } from "path";
 import { BeEvent } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../../IModelJsFs";
-import { SettingsSchemas } from "../../workspace/SettingsSchemas";
 import { SettingName, SettingObject, SettingType, Settings } from "../../workspace/Settings";
+import { IModelHost } from "../../IModelHost";
 
 function deepClone<T extends SettingType>(obj: any): T {
   if (!obj || typeof obj !== "object")
@@ -154,7 +154,7 @@ export class SettingsImpl implements Settings {
   public getObject<T extends object>(name: SettingName): T | undefined;
   public getObject<T extends object>(name: SettingName, defaultValue?: T): T | undefined {
     const out = this.getResult<T>(name, "object");
-    return out ? SettingsSchemas.validateSetting(out, name) : defaultValue;
+    return out ? IModelHost.settingsSchemas.validateSetting(out, name) : defaultValue;
   }
   public getArray<T extends SettingType>(name: SettingName, defaultValue: Array<T>): Array<T>;
   public getArray<T extends SettingType>(name: SettingName): Array<T> | undefined;
@@ -164,6 +164,6 @@ export class SettingsImpl implements Settings {
       return defaultValue;
     if (!Array.isArray(out))
       throw new Error(`setting ${name} is not an array: ${out}`);
-    return SettingsSchemas.validateSetting(out, name);
+    return IModelHost.settingsSchemas.validateSetting(out, name);
   }
 }

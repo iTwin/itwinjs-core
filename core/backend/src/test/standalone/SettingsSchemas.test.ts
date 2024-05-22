@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { SettingsSchemas } from "../../workspace/SettingsSchemas";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelHost } from "../../IModelHost";
 
@@ -24,13 +23,14 @@ describe("SettingsSchemas", () => {
   });
 
   it("add groups", async () => {
+    const schemas = IModelHost.settingsSchemas;
     // can't add a group with no name
-    expect(() => SettingsSchemas.addGroup({} as any)).throws(`has no "schemaPrefix" member`);
+    expect(() => schemas.addGroup({} as any)).throws(`has no "schemaPrefix" member`);
 
-    SettingsSchemas.addFile(IModelTestUtils.resolveAssetFile("TestSettings.schema.json"));
-    expect(SettingsSchemas.settingDefs.get("testApp/list/openMode")!.type).equals("string");
-    expect(SettingsSchemas.settingDefs.get("testApp/list/openMode")!.default).equals("singleClick");
-    expect(SettingsSchemas.settingDefs.get("testApp/tree/blah")!.default).equals(true);
+    schemas.addFile(IModelTestUtils.resolveAssetFile("TestSettings.schema.json"));
+    expect(schemas.settingDefs.get("testApp/list/openMode")!.type).equals("string");
+    expect(schemas.settingDefs.get("testApp/list/openMode")!.default).equals("singleClick");
+    expect(schemas.settingDefs.get("testApp/tree/blah")!.default).equals(true);
   });
 
 });
