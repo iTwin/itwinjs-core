@@ -71,6 +71,15 @@ export namespace WorkspaceDb {
 
   export type CloudProps = Props & WorkspaceContainer.Props;
 
+  export type QueryResourcesCallback = (resourceNames: Iterable<string>) => void;
+
+  export interface QueryResourcesArgs {
+    type?: "string" | "blob";
+    namePattern: string;
+    nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+    callback: QueryResourcesCallback;
+  }
+
   /**
    * A Manifests is stored *inside* every WorkspaceDb. IT describes the meaning, content, and context of what's in a WorkspaceDb. This can be used to
    * help users understand when to use the WorkspaceDb, as well as who to contact with questions, etc.
@@ -246,6 +255,8 @@ export interface WorkspaceDb {
     found: Workspace.ForEachResource
   ): Workspace.IterationReturn;
 
+  queryResources(args: WorkspaceDb.QueryResourcesArgs): void;
+  
   /** @internal */
   queryFileResource(rscName: WorkspaceResource.Name): { localFileName: LocalFileName, info: IModelJsNative.EmbedFileQuery } | undefined;
 }
@@ -521,4 +532,31 @@ export namespace Workspace {
 
   /** type that requires an accessToken */
   export interface WithAccessToken { accessToken: AccessToken }
+}
+
+export type QueryWorkspaceResourcesCallback = (resources: Iterable<{ name: string, db: WorkspaceDb }>) => void;
+
+export interface QueryWorkspaceResourcesArgs {
+  dbs: WorkspaceDb[];
+  type?: "string" | "blob";
+  namePattern: string;
+  nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+  callback: QueryWorkspaceResourcesCallback;
+}
+
+export function queryWorkspaceResources(args: QueryWorkspaceResourcesArgs): void {
+  function * dbCallback(db: WorkspaceDb, names: Iterable<string>) {
+    for (const name of names) {
+      yield { name, db };
+    }
+  }
+
+  for (const db of args.dbs) {
+    db.queryResources({
+      type: args.type,
+      namePattern: args.namePattern,
+      nameCompare: args.nameCompare,
+      callback: (names) => args.callback(dbCallback(db, names)),
+    });
+  }
 }
