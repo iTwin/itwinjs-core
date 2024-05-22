@@ -111,6 +111,18 @@ describe("sendResponse", () => {
     expect(compressedData.length).to.be.lessThan(originalDataSize);
     expect(brotliDecompressSync(compressedData).toString()).to.be.equal(originalData);
   });
+
+  it("should support Accept-Encoding header value format without spaces between values", async () => {
+    // Arrange
+    fulfillment.result.objects = generateJson();
+    req.header = () => "gzip,deflate,br,zstd";
+
+    // Act
+    await sendResponse(protocol, request, fulfillment, req, res);
+
+    // Assert
+    expect(res.set.calledWithExactly("Content-Encoding", "br")).to.be.true;
+  });
 });
 
 function generateJson(minimumSize = 2000): string {
