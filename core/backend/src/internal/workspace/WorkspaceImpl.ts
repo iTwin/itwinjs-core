@@ -16,7 +16,7 @@ import { SQLiteDb } from "../../SQLiteDb";
 import { SqliteStatement } from "../../SqliteStatement";
 import { SettingName, SettingObject, Settings } from "../../workspace/Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
-import { Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceOpts, WorkspaceResource, WorkspaceSettingsProps } from "../../workspace/Workspace";
+import { Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceOpts, WorkspaceResourceName, WorkspaceSettingsProps } from "../../workspace/Workspace";
 import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
 import { SettingsImpl } from "./SettingsImpl";
@@ -180,7 +180,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
 
   /** true if this WorkspaceDb is currently open */
   public get isOpen() { return this.sqliteDb.isOpen; }
-  public queryFileResource(rscName: WorkspaceResource.Name): { localFileName: LocalFileName, info: IModelJsNative.EmbedFileQuery } | undefined {
+  public queryFileResource(rscName: WorkspaceResourceName): { localFileName: LocalFileName, info: IModelJsNative.EmbedFileQuery } | undefined {
     const info = this.sqliteDb.nativeDb.queryEmbeddedFile(rscName);
     if (undefined === info)
       return undefined;
@@ -233,7 +233,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
     }
   }
 
-  public getString(rscName: WorkspaceResource.Name): string | undefined {
+  public getString(rscName: WorkspaceResourceName): string | undefined {
     return this.withOpenDb((db) => {
       return db.withSqliteStatement("SELECT value from strings WHERE id=?", (stmt) => {
         stmt.bindString(1, rscName);
@@ -242,7 +242,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
     });
   }
 
-  public getBlobReader(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO {
+  public getBlobReader(rscName: WorkspaceResourceName): SQLiteDb.BlobIO {
     return this.sqliteDb.withSqliteStatement("SELECT rowid from blobs WHERE id=?", (stmt) => {
       stmt.bindString(1, rscName);
       const blobReader = SQLiteDb.createBlobIO();
@@ -251,7 +251,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
     });
   }
 
-  public getBlob(rscName: WorkspaceResource.Name): Uint8Array | undefined {
+  public getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined {
     return this.withOpenDb((db) => {
       return db.withSqliteStatement("SELECT value from blobs WHERE id=?", (stmt) => {
         stmt.bindString(1, rscName);
@@ -260,7 +260,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
     });
   }
 
-  public getFile(rscName: WorkspaceResource.Name, targetFileName?: LocalFileName): LocalFileName | undefined {
+  public getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined {
     return this.withOpenDb((db) => {
       const file = this.queryFileResource(rscName);
       if (!file)
@@ -569,7 +569,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEdi
 }
 
 class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
-  private static validateResourceName(name: WorkspaceResource.Name) {
+  private static validateResourceName(name: WorkspaceResourceName) {
     if (name.trim() !== name) {
       throw new Error("resource name may not have leading or trailing spaces");
     }
@@ -614,7 +614,7 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
     return Math.round(fs.statSync(localFileName).mtimeMs);
   }
 
-  private performWriteSql(rscName: WorkspaceResource.Name, sql: string, bind?: (stmt: SqliteStatement) => void) {
+  private performWriteSql(rscName: WorkspaceResourceName, sql: string, bind?: (stmt: SqliteStatement) => void) {
     this.sqliteDb.withSqliteStatement(sql, (stmt) => {
       stmt.bindString(1, rscName);
       bind?.(stmt);
@@ -636,28 +636,28 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
   public updateSettingsResource(settings: SettingObject, rscName?: string) {
     this.updateString(rscName ?? "settingsDictionary", JSON.stringify(settings));
   }
-  public addString(rscName: WorkspaceResource.Name, val: string): void {
+  public addString(rscName: WorkspaceResourceName, val: string): void {
     EditableDbImpl.validateResourceName(rscName);
     this.validateResourceSize(val);
     this.performWriteSql(rscName, "INSERT INTO strings(id,value) VALUES(?,?)", (stmt) => stmt.bindString(2, val));
   }
-  public updateString(rscName: WorkspaceResource.Name, val: string): void {
+  public updateString(rscName: WorkspaceResourceName, val: string): void {
     this.validateResourceSize(val);
     this.performWriteSql(rscName, "INSERT INTO strings(id,value) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value WHERE value!=excluded.value", (stmt) => stmt.bindString(2, val));
   }
-  public removeString(rscName: WorkspaceResource.Name): void {
+  public removeString(rscName: WorkspaceResourceName): void {
     this.performWriteSql(rscName, "DELETE FROM strings WHERE id=?");
   }
-  public addBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void {
+  public addBlob(rscName: WorkspaceResourceName, val: Uint8Array): void {
     EditableDbImpl.validateResourceName(rscName);
     this.validateResourceSize(val);
     this.performWriteSql(rscName, "INSERT INTO blobs(id,value) VALUES(?,?)", (stmt) => stmt.bindBlob(2, val));
   }
-  public updateBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void {
+  public updateBlob(rscName: WorkspaceResourceName, val: Uint8Array): void {
     this.validateResourceSize(val);
     this.performWriteSql(rscName, "INSERT INTO blobs(id,value) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value WHERE value!=excluded.value", (stmt) => stmt.bindBlob(2, val));
   }
-  public getBlobWriter(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO {
+  public getBlobWriter(rscName: WorkspaceResourceName): SQLiteDb.BlobIO {
     return this.sqliteDb.withSqliteStatement("SELECT rowid from blobs WHERE id=?", (stmt) => {
       stmt.bindString(1, rscName);
       const blobWriter = SQLiteDb.createBlobIO();
@@ -665,21 +665,21 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
       return blobWriter;
     });
   }
-  public removeBlob(rscName: WorkspaceResource.Name): void {
+  public removeBlob(rscName: WorkspaceResourceName): void {
     this.performWriteSql(rscName, "DELETE FROM blobs WHERE id=?");
   }
-  public addFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName, fileExt?: string): void {
+  public addFile(rscName: WorkspaceResourceName, localFileName: LocalFileName, fileExt?: string): void {
     EditableDbImpl.validateResourceName(rscName);
     fileExt = fileExt ?? extname(localFileName);
     if (fileExt?.[0] === ".")
       fileExt = fileExt.slice(1);
     this.sqliteDb.nativeDb.embedFile({ name: rscName, localFileName, date: this.getFileModifiedTime(localFileName), fileExt });
   }
-  public updateFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName): void {
+  public updateFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void {
     this.queryFileResource(rscName); // throws if not present
     this.sqliteDb.nativeDb.replaceEmbeddedFile({ name: rscName, localFileName, date: this.getFileModifiedTime(localFileName) });
   }
-  public removeFile(rscName: WorkspaceResource.Name): void {
+  public removeFile(rscName: WorkspaceResourceName): void {
     const file = this.queryFileResource(rscName);
     if (undefined === file)
       throw new Error(`file resource "${rscName}" does not exist`);

@@ -10,7 +10,7 @@ import { LocalFileName } from "@itwin/core-common";
 import { SQLiteDb } from "../SQLiteDb";
 import { SettingObject } from "./Settings";
 import { BlobContainer } from "../BlobContainerService";
-import { Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceResource } from "./Workspace";
+import { Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceResourceName } from "./Workspace";
 import { WorkspaceSqliteDb } from "../internal/workspace/WorkspaceSqliteDb";
 import { constructWorkspaceEditor } from "../internal/workspace/WorkspaceImpl";
 
@@ -161,34 +161,34 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
    * @param rscName - The name of the string resource.
    * @param val - The string to save.
    */
-  addString(rscName: WorkspaceResource.Name, val: string): void;
+  addString(rscName: WorkspaceResourceName, val: string): void;
 
   /**
    * Update an existing string resource with a new value, or add it if it does not exist.
    * @param rscName - The name of the string resource.
    * @param val - The new value.
    */
-  updateString(rscName: WorkspaceResource.Name, val: string): void;
+  updateString(rscName: WorkspaceResourceName, val: string): void;
 
   /**
    * Remove a string resource.
    * @param rscName - The name of the string resource to remove.
    */
-  removeString(rscName: WorkspaceResource.Name): void;
+  removeString(rscName: WorkspaceResourceName): void;
 
   /**
    * Add a new blob resource to this WorkspaceDb.
    * @param rscName - The name of the blob resource.
    * @param val - The blob to save.
    */
-  addBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
+  addBlob(rscName: WorkspaceResourceName, val: Uint8Array): void;
 
   /**
    * Update an existing blob resource with a new value, or add it if it does not exist.
    * @param rscName - The name of the blob resource.
    * @param val - The new value.
    */
-  updateBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
+  updateBlob(rscName: WorkspaceResourceName, val: Uint8Array): void;
 
   /**
    * Get a BlobIO writer for a previously-added blob WorkspaceResource.
@@ -196,13 +196,13 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
    * @returns A BlobIO writer.
    * @note After writing is complete, the caller must call `close` on the BlobIO and must call `saveChanges` on the `db`.
    */
-  getBlobWriter(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO;
+  getBlobWriter(rscName: WorkspaceResourceName): SQLiteDb.BlobIO;
 
   /**
    * Remove a blob resource.
    * @param rscName - The name of the blob resource to remove.
    */
-  removeBlob(rscName: WorkspaceResource.Name): void;
+  removeBlob(rscName: WorkspaceResourceName): void;
 
   /**
    * Copy the contents of an existing local file into this WorkspaceDb as a file resource.
@@ -211,7 +211,7 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
    * @param fileExt - The extension to be appended to the generated fileName when this WorkspaceDb is extracted from the WorkspaceDb.
    * By default, the characters after the last "." in `localFileName` are used. Pass this argument to override that.
    */
-  addFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName, fileExt?: string): void;
+  addFile(rscName: WorkspaceResourceName, localFileName: LocalFileName, fileExt?: string): void;
 
   /**
    * Replace an existing file resource with the contents of another local file.
@@ -219,13 +219,13 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
    * @param localFileName - The name of a local file to be read.
    * @throws If the file resource does not exist.
    */
-  updateFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName): void;
+  updateFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void;
 
   /**
    * Remove a file resource.
    * @param rscName - The name of the file resource to remove.
    */
-  removeFile(rscName: WorkspaceResource.Name): void;
+  removeFile(rscName: WorkspaceResourceName): void;
 }
 
 /** An editor used to supply workspace administrators tools for creating or editing WorkspaceDbs. */

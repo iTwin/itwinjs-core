@@ -132,23 +132,19 @@ export interface WorkspaceSettingsProps extends WorkspaceDb.CloudProps {
   priority: Settings.Priority | number;
 }
 
-/** Types used to identify Workspace resources
- *  @beta
+/**
+ * The name for identifying WorkspaceResources in a [[WorkspaceDb]].
+ * * `WorkspaceResourceName`s may not:
+ *  - be blank or start or end with a space
+ *  - be longer than 1024 characters
+ * @note a single WorkspaceDb may hold WorkspaceResources of type 'blob', 'string' and 'file', all with the same WorkspaceResourceName.
+ * @beta
  */
-export namespace WorkspaceResource {
-  /**
-   * The name for identifying WorkspaceResources in a [[WorkspaceDb]].
-   * * `WorkspaceResource.Name`s may not:
-   *  - be blank or start or end with a space
-   *  - be longer than 1024 characters
-   * @note a single WorkspaceDb may hold WorkspaceResources of type 'blob', 'string' and 'file', all with the same WorkspaceResource.Name.
-   */
-  export type Name = string;
-}
+export type WorkspaceResourceName = string;
 
 /**
  * A WorkspaceDb holds workspace resources. `WorkspaceDb`s are stored in in cloud WorkspaceContainers.
- * Each `WorkspaceResource` in a WorkspaceDb is identified by a [[WorkspaceResource.Name]].
+ * Each `WorkspaceResource` in a WorkspaceDb is identified by a [[WorkspaceResourceName]].
  * Resources of type `string` and `blob` may be loaded directly from the `WorkspaceDb`. Resources of type `file` are
  * copied from the WorkspaceDb into a temporary local file so they can be accessed by programs directly from disk.
  * @beta
@@ -180,16 +176,16 @@ export interface WorkspaceDb {
   close(): void;
 
   /** Get a string resource from this WorkspaceDb, if present. */
-  getString(rscName: WorkspaceResource.Name): string | undefined;
+  getString(rscName: WorkspaceResourceName): string | undefined;
 
   /** Get a blob resource from this WorkspaceDb, if present. */
-  getBlob(rscName: WorkspaceResource.Name): Uint8Array | undefined;
+  getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
 
   /** Get a BlobIO reader for a blob WorkspaceResource.
    * @note when finished, caller *must* call `close` on the BlobIO.
    * @internal
    */
-  getBlobReader(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO;
+  getBlobReader(rscName: WorkspaceResourceName): SQLiteDb.BlobIO;
 
   /**
    * Extract a local copy of a file resource from this WorkspaceDb, if present.
@@ -206,7 +202,7 @@ export interface WorkspaceDb {
    * @note Workspace resource files are set readonly as they are copied from the file.
    * To edit them, you must first copy them to another location.
    */
-  getFile(rscName: WorkspaceResource.Name, targetFileName?: LocalFileName): LocalFileName | undefined;
+  getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
 
   /**
    * Ensure that the contents of a `WorkspaceDb` are downloaded into the local cache so that it may be accessed offline.
@@ -220,7 +216,7 @@ export interface WorkspaceDb {
   queryResources(args: WorkspaceDb.QueryResourcesArgs): void;
   
   /** @internal */
-  queryFileResource(rscName: WorkspaceResource.Name): { localFileName: LocalFileName, info: IModelJsNative.EmbedFileQuery } | undefined;
+  queryFileResource(rscName: WorkspaceResourceName): { localFileName: LocalFileName, info: IModelJsNative.EmbedFileQuery } | undefined;
 }
 
 /**
@@ -458,7 +454,7 @@ function getWorkspaceResource(dbs: WorkspaceDb[], name: string, type: "string" |
 
 export interface GetWorkspaceResourceArgs {
   dbs: WorkspaceDb[];
-  name: WorkspaceResource.Name;
+  name: WorkspaceResourceName;
 }
 
 export function getWorkspaceString(args: GetWorkspaceResourceArgs): string | undefined {
