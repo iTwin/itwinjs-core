@@ -10,7 +10,7 @@ import {
 import { IModelHost } from "../../IModelHost";
 import { Geometry, LowAndHighXYProps, Range2d, Range2dProps } from "@itwin/core-geometry";
 import { GeoCoordConfig } from "../../GeoCoordConfig";
-import { GeographicCRSServices } from "../../GeographicCRSServices";
+import { getAvailableCoordinateReferenceSystems } from "../../GeographicCRSServices";
 
 // spell-checker: disable
 
@@ -810,8 +810,7 @@ describe("GeoServices", () => {
     const validationRangeSmall = 10;
 
     const validateCRSList = async (expectedCount: number, allowedRange: number, extent?: Range2dProps): Promise<void> => {
-      const options: GeographicCRSServices.CRSListRequestOptions = { extent };
-      const listOfCRS = await GeographicCRSServices.getListOfCRS(options);
+      const listOfCRS = await getAvailableCoordinateReferenceSystems({ extent });
 
       if (extent !== undefined) {
         const extentRange: Range2d = Range2d.fromJSON(extent);
