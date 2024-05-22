@@ -495,7 +495,7 @@ describe("BsplineCurve", () => {
     if (
       ck.testType(bcurveC, BSplineCurve3d, "createPeriodicUniformKnots with Float64Array input returns valid curve") &&
       ck.testType(bcurveD, BSplineCurve3d, "createPeriodicUniformKnots with GrowableXYZArray input returns valid curve")
-      ) {
+    ) {
       ck.testTrue(bcurveC.isAlmostEqual(bcurveD), "createPeriodicUniformKnots returns same output on different input type");
     }
     ck.testUndefined(BSplineCurve3d.createPeriodicUniformKnots(poleBuffer, 10), "createPeriodicUniformKnots with invalid numPoles returns undefined");
@@ -727,8 +727,8 @@ describe("BsplineCurve", () => {
   it("LegacyClosureRoundTrip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    for (const filename of ["./src/test/testInputs/curve/openAndClosedCurves.imjs",
-      "./src/test/testInputs/curve/openAndClosedCurves2.imjs"]) {
+    for (const filename of ["./src/test/data/curve/openAndClosedCurves.imjs",
+      "./src/test/data/curve/openAndClosedCurves2.imjs"]) {
       const json = fs.readFileSync(filename, "utf8");
       const inputs = IModelJson.Reader.parse(JSON.parse(json));
       if (ck.testDefined(inputs)) {

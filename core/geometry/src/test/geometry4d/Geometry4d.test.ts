@@ -901,7 +901,7 @@ function verifyInverse(ck: bsiChecker.Checker, matrixA: Matrix4d, name: string):
 export function exerciseNearInverse(ck: bsiChecker.Checker, matrixA: Matrix4d, i: number, j: number, name: string) {
   const inverse = matrixA.createInverse();
   const aMax = matrixA.maxAbs();
-  if (ck.testDefined(inverse) && inverse !== undefined) {
+  if (ck.testDefined(inverse)) {
     let e;
     let ok = false;
     // copying row i to row j makes it singular.
