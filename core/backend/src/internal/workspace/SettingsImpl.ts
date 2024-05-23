@@ -148,14 +148,35 @@ export class SettingsImpl implements Settings {
     const out = this.getResult<T>(name, "object");
     return out ? IModelHost.settingsSchemas.validateSetting(out, name) : defaultValue;
   }
-  public getArray<T extends SettingType>(name: SettingName, defaultValue: Array<T>): Array<T>;
-  public getArray<T extends SettingType>(name: SettingName): Array<T> | undefined;
-  public getArray<T extends SettingType>(name: SettingName, defaultValue?: Array<T>): Array<T> | undefined {
-    const out = this.getSetting<Array<T>>(name);
+  public getArray<T extends SettingType>(name: SettingName, defaultValue: T[]): T[];
+  public getArray<T extends SettingType>(name: SettingName): T[] | undefined;
+  public getArray<T extends SettingType>(name: SettingName, defaultValue?: T[]): T[] | undefined {
+    if (IModelHost.settingsSchemas.settingDefs.get(name)?.combineArray) {
+      return this.getCombinedArray<T>(name, defaultValue);
+    }
+    
+    const out = this.getSetting<T[]>(name);
     if (out === undefined)
       return defaultValue;
     if (!Array.isArray(out))
       throw new Error(`setting ${name} is not an array: ${out}`);
     return IModelHost.settingsSchemas.validateSetting(out, name);
+  }
+
+  private getCombinedArray<T extends SettingType>(name: SettingName, defaultValue?: T[]): T[] | undefined {
+    let foundSetting = false;
+    const out: T[] = [];
+    for (const array of this.getSettingValues<T[]>(name)) {
+      foundSetting = true;
+
+      IModelHost.settingsSchemas.validateSetting(array, name);
+      for (const value of array) {
+        if (!out.includes(value)) {
+          out.push(value);
+        }
+      }
+    }
+
+    return foundSetting ? out : defaultValue;
   }
 }

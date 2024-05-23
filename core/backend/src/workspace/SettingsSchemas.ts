@@ -18,16 +18,20 @@ import { SettingsSchemasSymbol } from "../internal/workspace/SettingsSchemasImpl
  * @beta
  */
 export interface SettingSchema extends Readonly<JSONSchema> {
-  /** entries for an array. Must be single object, not array */
+  /** Entries for an array. Must be single object, not array */
   readonly items?: SettingSchema;
-  /** type is required for settings */
+  /** Type is required for settings */
   readonly type: JSONSchemaTypeName;
-  /** name of typeDef for objects or arrays to inherit */
+  /** Name of typeDef for objects or arrays to inherit */
   readonly extends?: string;
-  /** for objects, a list of named properties and their definitions */
+  /** For objects, a list of named properties and their definitions */
   readonly properties?: { [name: string]: SettingSchema };
-  /** whether the setting replaces lower priority entries with the same name or combines with them. */
-  readonly cumulative?: true;
+  /** Specifies how to treat lower-priority entries with the same name for arrays.
+   * By default, like other types of settings, the setting uses the highest-priority entry.
+   * If `combineArray` is `true`, then the setting combines all of the arrays into one array, ordered by priority and eliminating duplicate values.
+   * Duplicate values are determined by the `===` operator - objects and nested arrays are not compared for deep equality.
+   */
+  readonly combineArray?: boolean;
 }
 
 /**
