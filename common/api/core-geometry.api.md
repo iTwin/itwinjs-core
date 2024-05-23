@@ -2858,6 +2858,7 @@ export class IndexedPolyface extends Polyface {
 
 // @public
 export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
+    createNormalComparison(mesh: IndexedPolyface | IndexedPolyfaceVisitor, compareVector: Vector3d, sideAngle?: Angle, numWrap?: number): IndexedPolyfaceSubsetVisitor;
     static createSubsetVisitor(polyface: IndexedPolyface, activeFacetIndices: number[], numWrap: number): IndexedPolyfaceSubsetVisitor;
     moveToNextFacet(): boolean;
     moveToReadIndex(activeIndex: number): boolean;
@@ -2874,7 +2875,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     clientNormalIndex(i: number): number;
     clientParamIndex(i: number): number;
     clientPointIndex(i: number): number;
-    clientPolyface(): Polyface;
+    clientPolyface(): IndexedPolyface;
     static create(polyface: IndexedPolyface, numWrap: number): IndexedPolyfaceVisitor;
     currentReadIndex(): number;
     moveToNextFacet(): boolean;

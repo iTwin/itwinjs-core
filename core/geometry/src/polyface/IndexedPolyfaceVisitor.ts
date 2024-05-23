@@ -8,8 +8,11 @@
  */
 
 import { Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
 import { Point2d } from "../geometry3d/Point2dVector2d";
-import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
+import { Vector3d } from "../geometry3d/Point3dVector3d";
+import { PolygonOps } from "../geometry3d/PolygonOps";
+import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceData } from "./PolyfaceData";
 
 /* eslint-disable @itwin/prefer-get */
@@ -39,7 +42,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
 
   }
   /** Return the client polyface object. */
-  public clientPolyface(): Polyface {
+  public clientPolyface(): IndexedPolyface {
     return this._polyface;
   }
   /**
@@ -250,5 +253,32 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
       return this._parentFacetIndices[activeIndex];
     }
     return undefined;
+  }
+  /**
+   * Create a visitor for those mesh facets with normal in the same half-space as the given vector.
+   * * For example, to visit top facets of the mesh but skip those that are somewhat close to vertical, pass
+   * `vectorToEye = Vector3d.unitZ()` and a loose angle tolerance, e.g., `sideAngle = Angle.createDegrees(0.01)`.
+   * @param mesh the mesh from which to select facets
+   * @param compareVector vector to which to compare facet normals. The visitor will visit only those facets with normals in the same half-space as this vector.
+   * @param sideAngle optional angular tolerance to further restrict the facets near the border between half-spaces. The visitor will *not* visit facets whose normals
+   * are nearly perpendicular to `compareVector`. Default is [[Geometry.smallAngleRadians]].
+   * @param numWrap optional number of entries replicated in visitor arrays. Default is 0.
+  */
+  public createNormalComparison(mesh: IndexedPolyface | IndexedPolyfaceVisitor, compareVector: Vector3d, sideAngle: Angle = Angle.createSmallAngle(), numWrap: number = 0): IndexedPolyfaceSubsetVisitor {
+    if (mesh instanceof IndexedPolyface)
+      return this.createNormalComparison(mesh.createVisitor(), compareVector, sideAngle, numWrap);
+    const visitor = mesh;
+    const facets: number[] = [];
+    const facetNormal = Vector3d.createZero();
+    for (visitor.reset(); visitor.moveToNextFacet(); ) {
+      if (PolygonOps.unitNormal(visitor.point, facetNormal))
+        continue; // degenerate facet
+      if (facetNormal.dotProduct(compareVector) < 0.0)
+        continue; // ignore facet facing other half-space
+      if (facetNormal.angleFromPerpendicular(compareVector).isMagnitudeLessThanOrEqual(sideAngle))
+        continue; // ignore side facet
+      facets.push(visitor.currentReadIndex());
+    }
+    return IndexedPolyfaceSubsetVisitor.createSubsetVisitor(visitor.clientPolyface(), facets, numWrap);
   }
 }
