@@ -406,16 +406,16 @@ class WorkspaceImpl implements Workspace {
   }
 
   public resolveWorkspaceDbSetting(settingName: SettingName, filter?: Workspace.DbListFilter): WorkspaceDb.CloudProps[] {
+    filter = filter ?? (() => true);
     const result: WorkspaceDb.CloudProps[] = [];
-    this.settings.resolveSetting<WorkspaceDb.CloudProps[]>({
-      settingName, resolver: (dbProps, dict) => {
-        for (const dbProp of dbProps) {
-          if (!filter || filter(dbProp, dict))
-            result.push(dbProp);
+    for (const entry of this.settings.getSettingEntries<WorkspaceDb.CloudProps[]>(settingName)) {
+      for (const dbProp of entry.value) {
+        if (filter(dbProp, entry.dictionary)) {
+          result.push(dbProp);
         }
-        return undefined; // means keep going
-      },
-    });
+      }
+    }
+
     return result;
   }
 

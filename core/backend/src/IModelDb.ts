@@ -235,14 +235,9 @@ class IModelSettings extends SettingsImpl {
       throw new Error("Use IModelHost.appSettings to access settings of priority 'application' or lower");
   }
 
-  // Attempt to resolve a setting from this iModel's settings, otherwise use appWorkspace's settings, otherwise defaultValue.
-  public override resolveSetting<T extends SettingType>(arg: { settingName: SettingName, resolver: Settings.Resolver<T> }, defaultValue?: T): T | undefined {
-    return super.resolveSetting(arg) ?? IModelHost.appWorkspace.settings.resolveSetting(arg, defaultValue);
-  }
-
-  public override * getSettingValues<T extends SettingType>(name: string): Iterable<{ value: T, dictionary: Settings.Dictionary}> {
-    yield * super.getSettingValues(name);
-    yield * IModelHost.appWorkspace.settings.getSettingValues(name);
+  public override * getSettingEntries<T extends SettingType>(name: string): Iterable<{ value: T, dictionary: Settings.Dictionary}> {
+    yield * super.getSettingEntries(name);
+    yield * IModelHost.appWorkspace.settings.getSettingEntries(name);
   }
 }
 

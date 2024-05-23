@@ -21,10 +21,17 @@ const dictionaryMatches = (d1: Settings.Dictionary.Source, d2: Settings.Dictiona
 
 class SettingsDictionaryImpl implements Settings.Dictionary {
   public readonly props: Settings.Dictionary.Props;
-  public constructor(props: Settings.Dictionary.Props, public readonly settings: SettingObject) {
+  public readonly settings: SettingObject;
+  
+  public constructor(props: Settings.Dictionary.Props, settings: SettingObject) {
     this.props = { ...props }; // make a copy so it can't be changed by caller
+    this.settings = settings;
   }
-  public getSetting<T extends SettingType>(settingName: string): T | undefined { return this.settings[settingName] as T | undefined; }
+
+  public getSetting<T extends SettingType>(settingName: string): T | undefined {
+    const value = this.settings[settingName] as T | undefined;
+    return undefined !== value ? SettingType.clone(value) : undefined;
+  }
 }
 
 /**
@@ -90,17 +97,7 @@ export class SettingsImpl implements Settings {
     return false;
   }
 
-  public resolveSetting<T extends SettingType>(arg: { settingName: SettingName, resolver: Settings.Resolver<T> }, defaultValue?: T): T | undefined {
-    for (const dict of this.dictionaries) {
-      const val = dict.getSetting<T>(arg.settingName);
-      const resolved = val && arg.resolver(val, dict);
-      if (undefined !== resolved)
-        return resolved;
-    }
-    return defaultValue;
-  }
-
-  public * getSettingValues<T extends SettingType>(settingName: SettingName): Iterable<{ value: T, dictionary: Settings.Dictionary}> {
+  public * getSettingEntries<T extends SettingType>(settingName: SettingName): Iterable<{ value: T, dictionary: Settings.Dictionary}> {
     for (const dictionary of this.dictionaries) {
       const value = dictionary.getSetting<T>(settingName);
       if (undefined !== value) {
@@ -109,8 +106,18 @@ export class SettingsImpl implements Settings {
     }
   }
 
+  public * getSettingValues<T extends SettingType>(settingName: SettingName): Iterable<T> {
+    for (const entry of this.getSettingEntries<T>(settingName)) {
+      yield entry.value;
+    }
+  }
+
   public getSetting<T extends SettingType>(settingName: SettingName, defaultValue?: T): T | undefined {
-    return this.resolveSetting({ settingName, resolver: (val) => SettingType.clone<T>(val) }) ?? defaultValue;
+    for (const value of this.getSettingValues<T>(settingName)) {
+      return value;
+    }
+
+    return defaultValue;
   }
 
   // get the setting and verify the result is either undefined or the correct type. If so, return it. Otherwise throw an exception.

@@ -44,20 +44,9 @@ export interface SettingObject {
 /** @beta */
 export namespace Settings {
   /**
- * A function called by [[Settings.resolveSetting]] for every Settings.Dictionary with a Setting that matches a name. The
- * SettingDictionaries are sorted by priority and this function is called in priority order with the highest priority first.
- * When this function returns a non-undefined value, the iteration is stopped and that value is returned. In this way,
- * applications can "combine" the prioritized Setting values as appropriate. The default implementation of this function
- * used by [[Settings.getSetting]] merely returns a clone of the value the first time it is called, so the highest priority
- * value is returned.
- * @beta
- */
-  export type Resolver<T> = (val: T, dict: Dictionary) => T | undefined;
-
-  /**
- * Values for Settings.Priority determine the sort order for Settings. Higher values take precedence over lower values.
- * @beta
-*/
+   * Values for Settings.Priority determine the sort order for Settings. Higher values take precedence over lower values.
+   * @beta
+   */
   export enum Priority {
     /** values supplied default-settings files */
     defaults = 100,
@@ -79,6 +68,8 @@ export namespace Settings {
    */
   export interface Dictionary {
     readonly props: Dictionary.Props;
+
+    // Value always cloned.
     getSetting<T extends SettingType>(settingName: string): T | undefined;
   }
 
@@ -145,16 +136,6 @@ export interface Settings {
   /** Remove a Settings.Dictionary by name. */
   dropDictionary(props: Settings.Dictionary.Source): void;
 
-  /**
-   * Resolve a setting, by name, using a Settings.Resolver.
-   * @param settingName The name of the setting to resolve
-   * @param resolver function to be called for each Settings.Dictionary with a matching Setting. Iteration stops when it returns a non-undefined value.
-   * @param defaultValue value returned if settingName is not present in any Settings.Dictionary or resolver never returned a value.
-   * @returns the resolved setting value.
-   */
-  resolveSetting<T extends SettingType>(arg: { settingName: SettingName, resolver: Settings.Resolver<T> }, defaultValue: T): T;
-  resolveSetting<T extends SettingType>(arg: { settingName: SettingName, resolver: Settings.Resolver<T> }, defaultValue?: T): T | undefined;
-
   /** Get the highest priority setting for a SettingName.
    * @param settingName The name of the setting
    * @param defaultValue value returned if settingName is not present in any Settings.Dictionary.
@@ -165,7 +146,9 @@ export interface Settings {
    */
   getSetting<T extends SettingType>(settingName: SettingName, defaultValue?: T): T | undefined;
 
-  getSettingValues<T extends SettingType>(settingName: SettingName): Iterable<{ value: T, dictionary: Settings.Dictionary}>;
+  getSettingEntries<T extends SettingType>(settingName: SettingName): Iterable<{ value: T, dictionary: Settings.Dictionary}>;
+
+  getSettingValues<T extends SettingType>(settingName: SettingName): Iterable<T>;
   
   /** Get a string setting by SettingName.
    * @param settingName The name of the setting
