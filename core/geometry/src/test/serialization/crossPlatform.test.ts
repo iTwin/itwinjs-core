@@ -16,9 +16,9 @@ describe("CrossPlatform", () => {
     const ck = new Checker();
 
     // fileNames[Platform][FileType] are names of files of given type written by the given platform
-    interface TestCase { fileNames: string[][][] };
-    enum Platform { Native = 0, TypeScript = 1 };
-    enum FileType { FlatBuffer = 0, JSON = 1 };
+    interface TestCase { fileNames: string[][][] }
+    enum Platform { Native = 0, TypeScript = 1 }
+    enum FileType { FlatBuffer = 0, JSON = 1 }
 
     const root = "./src/test/data/crossPlatform/";
     const nativeRoot = `${root}native/`;
