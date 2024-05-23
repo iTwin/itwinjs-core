@@ -385,7 +385,6 @@ public;HitSource
 internal;I3dmReader 
 public;IconSprites
 public;IdleTool 
-beta;ILocalCache
 public;imageBitmapFromImageSource(source: ImageSource): Promise
 public;imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
 public;imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha?: boolean): HTMLCanvasElement | undefined
@@ -456,7 +455,7 @@ internal;IModelTileTreeOptions
 internal;IModelTileTreeParams 
 internal;iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel: IModelConnection, modelId: Id64String, options: IModelTileTreeOptions): IModelTileTreeParams
 internal;IndexBuffer
-beta;IndexedDBCache 
+internal;IndexedDBCache 
 internal;IndexedEdgeParams
 public;class InputCollector 
 public;InputSource
@@ -479,6 +478,7 @@ public;KeyinParseError
 internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
+internal;LocalCache
 alpha;LocalExtensionProvider 
 alpha;LocalExtensionProviderProps
 internal;LocalhostIpcApp
@@ -638,7 +638,7 @@ public;ParticleCollectionBuilder
 public;ParticleCollectionBuilder
 public;ParticleCollectionBuilderParams
 public;ParticleProps 
-beta;PassThroughCache 
+internal;PassThroughCache 
 internal;PatternGraphicParams
 internal;PerformanceMetrics
 public;PerModelCategoryVisibility

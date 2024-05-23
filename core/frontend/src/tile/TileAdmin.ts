@@ -161,7 +161,7 @@ export class TileAdmin {
   public readonly contextPreloadParentSkip: number;
   /** @beta */
   public readonly cesiumIonKey?: string;
-  /** @beta */
+  /** @internal */
   public readonly useIndexedDBCache?: boolean;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _totalElided = 0;
@@ -248,6 +248,7 @@ export class TileAdmin {
     this.useLargerTiles = options.useLargerTiles ?? defaultTileOptions.useLargerTiles;
     this.mobileRealityTileMinToleranceRatio = Math.max(options.mobileRealityTileMinToleranceRatio ?? 3.0, 1.0);
     this.cesiumIonKey = options.cesiumIonKey;
+    this.useIndexedDBCache = options.useIndexedDBCache ?? false;
     this._cloudStorage = options.tileStorage;
 
     const gpuMemoryLimits = options.gpuMemoryLimits;
@@ -1276,6 +1277,13 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * @alpha This was primarily introduced because the electron version of certa does not serve local assets, so the tests can't locate the worker script.
      */
     decodeImdlInWorker?: boolean;
+
+    /** If true, an indexedDB database will be added to the itwinjs-batched-models tile request channel for use as a local cache.
+     * Tiles requested through this channel will first be searched for in the database, and if not found, will be requested from the backend, then stored for later requests.
+     * Default value: false
+     * @alpha
+     */
+    useIndexedDBCache?: boolean;
   }
 
   /** The number of bytes of GPU memory associated with the various [[GpuMemoryLimit]]s for non-mobile devices.

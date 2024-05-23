@@ -5989,12 +5989,6 @@ export class IdleTool extends InteractiveTool {
     static toolId: string;
 }
 
-// @beta (undocumented)
-export interface ILocalCache {
-    // (undocumented)
-    fetch(url: string, callback: (uniqueId: string) => Promise<Response>, callBackUrl?: string): Promise<ArrayBuffer>;
-}
-
 // @public
 export function imageBitmapFromImageSource(source: ImageSource): Promise<ImageBitmap>;
 
@@ -7371,8 +7365,8 @@ export class IndexBuffer {
     toVertexIndices(): VertexIndices;
 }
 
-// @beta (undocumented)
-export class IndexedDBCache implements ILocalCache {
+// @internal (undocumented)
+export class IndexedDBCache implements LocalCache {
     constructor(dbName: string, expirationTime?: number);
     // (undocumented)
     protected addContent(uniqueId: string, content: ArrayBuffer): Promise<unknown>;
@@ -7383,7 +7377,7 @@ export class IndexedDBCache implements ILocalCache {
     // (undocumented)
     fetch(uniqueId: string, callback: (url: string) => Promise<Response>, callBackUrl?: string): Promise<ArrayBuffer>;
     // (undocumented)
-    protected open(dbCache: IndexedDBCache): Promise<unknown>;
+    protected open(): Promise<unknown>;
     // (undocumented)
     protected retrieveContent(uniqueId: string): Promise<ArrayBuffer | undefined>;
 }
@@ -7597,6 +7591,12 @@ export class LengthDescription extends FormattedQuantityDescription {
 
 // @internal (undocumented)
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
+
+// @internal (undocumented)
+export interface LocalCache {
+    // (undocumented)
+    fetch(url: string, callback: (uniqueId: string) => Promise<Response>, callBackUrl?: string): Promise<ArrayBuffer>;
+}
 
 // @alpha
 export class LocalExtensionProvider implements ExtensionProvider {
@@ -10385,8 +10385,8 @@ export interface ParticleProps extends XYAndZ {
     transparency?: number;
 }
 
-// @beta (undocumented)
-export class PassThroughCache implements ILocalCache {
+// @internal (undocumented)
+export class PassThroughCache implements LocalCache {
     // (undocumented)
     fetch(uniqueId: string, callback: (url: string) => Promise<Response>, callBackUrl?: string): Promise<ArrayBuffer>;
 }
@@ -14305,7 +14305,7 @@ export class TileAdmin {
     get totalTileContentBytes(): number;
     // @alpha
     get unselectedLoadedTiles(): Iterable<Tile>;
-    // @beta (undocumented)
+    // @internal (undocumented)
     readonly useIndexedDBCache?: boolean;
     // @internal (undocumented)
     readonly useLargerTiles: boolean;
@@ -14361,6 +14361,8 @@ export namespace TileAdmin {
         // @beta
         tileStorage?: FrontendStorage;
         tileTreeExpirationTime?: number;
+        // @alpha
+        useIndexedDBCache?: boolean;
         useLargerTiles?: boolean;
         // @internal
         useProjectExtents?: boolean;

@@ -7,7 +7,7 @@ import { assert, BeTimePoint, ByteStream, Logger } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { ColorDef, Tileset3dSchema } from "@itwin/core-common";
 import {
-  GraphicBranch, GraphicBuilder, ILocalCache, IModelApp, IndexedDBCache, PassThroughCache, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
+  GraphicBranch, GraphicBuilder,  IModelApp, IndexedDBCache, LocalCache, PassThroughCache, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
   TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TileUser, TileVisibility, Viewport,
 } from "@itwin/core-frontend";
 import { loggerCategory } from "./LoggerCategory";
@@ -29,7 +29,7 @@ export class BatchedTile extends Tile {
   private readonly _unskippable: boolean;
   /** Transform from the tile's local coordinate system to that of the tileset. */
   public readonly transformToRoot?: Transform;
-  private _localCache: ILocalCache;
+  private _localCache: LocalCache;
 
   public get batchedTree(): BatchedTileTree {
     return this.tree as BatchedTileTree;

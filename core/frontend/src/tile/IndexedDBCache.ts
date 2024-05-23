@@ -1,16 +1,17 @@
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Logger } from "@itwin/core-bentley";
+const loggerCategory = "IndexedDBCache";
 
-/** @beta */
-export interface ILocalCache {
+/** @internal */
+export interface LocalCache {
   fetch(url: string, callback: (uniqueId: string) => Promise<Response>, callBackUrl?: string): Promise<ArrayBuffer>;
 }
 
-/** @beta */
-export class PassThroughCache implements ILocalCache {
+/** @internal */
+export class PassThroughCache implements LocalCache {
   public async fetch(uniqueId: string, callback: (url: string) => Promise<Response>, callBackUrl?: string): Promise<ArrayBuffer> {
     if (callBackUrl) {
       return (await callback(callBackUrl)).arrayBuffer();
@@ -19,8 +20,8 @@ export class PassThroughCache implements ILocalCache {
   }
 }
 
-/** @beta */
-export class IndexedDBCache implements ILocalCache{
+/** @internal */
+export class IndexedDBCache implements LocalCache{
   private _db: any;
   private _dbName: string = "IDB";
   private _expirationTime?: number;
@@ -32,16 +33,16 @@ export class IndexedDBCache implements ILocalCache{
     }
   }
 
-  protected async open(dbCache: IndexedDBCache){
+  protected async open(){
 
     // need to return a promise so that we can wait for the db to open before using it
-    return new Promise(function (resolve) {
+    return new Promise(function (this: IndexedDBCache, resolve) {
 
       // open the db
-      const openDB = window.indexedDB.open(dbCache._dbName, 1);
+      const openDB = window.indexedDB.open(this._dbName, 1);
 
-      openDB.onerror = (event) => {
-        return resolve(event);
+      openDB.onerror = () => {
+        Logger.logError(loggerCategory, "Error opening IndexedDB");
       };
 
       // this is the success callback for opening the db, it is called after onupgradeneeded
@@ -49,7 +50,7 @@ export class IndexedDBCache implements ILocalCache{
 
         const target: any = event.target;
         if (target) {
-          dbCache._db = target.result;
+          this._db = target.result;
           return resolve(target.result);
         }
       };
@@ -60,9 +61,9 @@ export class IndexedDBCache implements ILocalCache{
         const target: any = event.target;
 
         if (target)
-          dbCache._db = target.result;
+          this._db = target.result;
 
-        const initialObjectStore = dbCache._db.createObjectStore("cache", { keyPath: "uniqueId" });
+        const initialObjectStore = this._db.createObjectStore("cache", { keyPath: "uniqueId" });
         initialObjectStore.createIndex("content", "content", {unique: false});
         initialObjectStore.createIndex("timeOfStorage", "timeOfStorage", {unique: false});
       };
@@ -75,7 +76,7 @@ export class IndexedDBCache implements ILocalCache{
 
   protected async retrieveContent(uniqueId: string): Promise<ArrayBuffer | undefined> {
     return new Promise(async (resolve) => {
-      await this.open(this);
+      await this.open();
       const getTransaction = await this._db.transaction("cache", "readonly");
       const storedResponse = await getTransaction.objectStore("cache").get(uniqueId);
 
@@ -105,20 +106,19 @@ export class IndexedDBCache implements ILocalCache{
       };
 
       storedResponse.onerror = async () => {
-        await this.close();
-        return resolve(undefined);
+        Logger.logError(loggerCategory, "Error retrieving content from IndexedDB");
       };
     });
   }
 
   protected async deleteContent(uniqueId: string) {
     return new Promise(async (resolve) => {
-      await this.open(this);
+      await this.open();
       const deleteTransaction = await this._db.transaction("cache", "readwrite");
       const requestDelete = await deleteTransaction.objectStore("cache").delete(uniqueId);
 
       requestDelete.onerror = () => {
-        throw new Error("Error deleting content from IndexedDB");
+        Logger.logError(loggerCategory, "Error deleting content from IndexedDB");
       };
 
       deleteTransaction.oncomplete = async () => {
@@ -127,15 +127,14 @@ export class IndexedDBCache implements ILocalCache{
       };
 
       deleteTransaction.onerror = async () => {
-        await this.close();
-        return resolve(undefined);
+        Logger.logError(loggerCategory, "Error deleting content from IndexedDB");
       };
     });
   }
 
   protected async addContent(uniqueId: string, content: ArrayBuffer) {
     return new Promise(async (resolve) => {
-      await this.open(this);
+      await this.open();
       const addTransaction = await this._db.transaction("cache", "readwrite");
       const objectStore = await addTransaction.objectStore("cache");
 
@@ -148,16 +147,16 @@ export class IndexedDBCache implements ILocalCache{
       const requestAdd = await objectStore.add(data);
 
       requestAdd.onerror = () => {
-        throw new Error("Error adding content to IndexedDB");
+        Logger.logError(loggerCategory, "Error adding content to IndexedDB");
       };
 
       addTransaction.oncomplete = async () => {
-        console.log("Content added to IndexedDB");
         await this.close();
         return resolve(undefined);
       };
 
       addTransaction.onerror = async () => {
+        Logger.logError(loggerCategory, "Error adding content to IndexedDB in add transaction");
         await this.close();
         return resolve(undefined);
       };
