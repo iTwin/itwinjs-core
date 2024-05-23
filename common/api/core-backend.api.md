@@ -314,11 +314,8 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
 
 // @beta
 export interface AvailableCoordinateReferenceSystemProps {
-    // (undocumented)
     crsExtent: Range2dProps;
-    // (undocumented)
     deprecated: boolean;
-    // (undocumented)
     description: string;
     name: string;
 }
