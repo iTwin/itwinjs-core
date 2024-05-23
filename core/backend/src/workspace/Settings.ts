@@ -15,6 +15,18 @@ import { WorkspaceDb } from "./Workspace";
  */
 export type SettingType = JSONSchemaType;
 
+/** @beta */
+export namespace SettingType {
+  export function clone<T extends SettingType>(object: T): T {
+    if (!object || typeof object !== "object")
+      return object;
+
+    const result = Array.isArray(object) ? [] : {} as any;
+    Object.keys(object).forEach((key: string) => result[key] = clone((object as any)[key]));
+    return result;
+  }
+}
+
 /**
  * The name of a Setting. SettingNames must be valid JavaScript property names, defined in a [[SettingSchema]].
  * @see [SettingName]($docs/learning/backend/Workspace#settingnames)

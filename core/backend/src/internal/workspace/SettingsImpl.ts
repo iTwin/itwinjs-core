@@ -15,15 +15,6 @@ import { IModelJsFs } from "../../IModelJsFs";
 import { SettingName, SettingObject, SettingType, Settings } from "../../workspace/Settings";
 import { IModelHost } from "../../IModelHost";
 
-function deepClone<T extends SettingType>(obj: any): T {
-  if (!obj || typeof obj !== "object")
-    return obj;
-
-  const result = Array.isArray(obj) ? [] : {} as any;
-  Object.keys(obj).forEach((key: string) => result[key] = deepClone(obj[key]));
-  return result;
-};
-
 const dictionaryMatches = (d1: Settings.Dictionary.Source, d2: Settings.Dictionary.Source): boolean => {
   return (d1.workspaceDb === d2.workspaceDb) && (d1.name === d2.name);
 };
@@ -119,7 +110,7 @@ export class SettingsImpl implements Settings {
   }
 
   public getSetting<T extends SettingType>(settingName: SettingName, defaultValue?: T): T | undefined {
-    return this.resolveSetting({ settingName, resolver: (val) => deepClone<T>(val) }) ?? defaultValue;
+    return this.resolveSetting({ settingName, resolver: (val) => SettingType.clone<T>(val) }) ?? defaultValue;
   }
 
   // get the setting and verify the result is either undefined or the correct type. If so, return it. Otherwise throw an exception.
