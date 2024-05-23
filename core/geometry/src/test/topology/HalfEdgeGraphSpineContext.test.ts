@@ -119,17 +119,17 @@ describe("HalfEdgeGraphSpineContext", () => {
     let x0 = 0.0;
     const allGeometry: GeometryQuery[] = [];
     const inner = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/intersections/MBContainmentBoolean/inner.imjs", "utf8")));
+      "./src/test/data/intersections/MBContainmentBoolean/inner.imjs", "utf8")));
     const innerA = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/intersections/MBContainmentBoolean/innerSimplifiedA.imjs", "utf8")));
+      "./src/test/data/intersections/MBContainmentBoolean/innerSimplifiedA.imjs", "utf8")));
     const innerB = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/intersections/MBContainmentBoolean/innerSimplifiedB.imjs", "utf8")));
+      "./src/test/data/intersections/MBContainmentBoolean/innerSimplifiedB.imjs", "utf8")));
     const innerC = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/intersections/MBContainmentBoolean/innerSimplifiedC.imjs", "utf8")));
+      "./src/test/data/intersections/MBContainmentBoolean/innerSimplifiedC.imjs", "utf8")));
     const innerD = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/intersections/MBContainmentBoolean/innerSimplifiedD.imjs", "utf8")));
+      "./src/test/data/intersections/MBContainmentBoolean/innerSimplifiedD.imjs", "utf8")));
     const outer = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/intersections/MBContainmentBoolean/outer.imjs", "utf8")));
+      "./src/test/data/intersections/MBContainmentBoolean/outer.imjs", "utf8")));
     for (const data of [innerD, innerC, innerB, inner, outer, innerA, innerB]) {
       // testSpineLoop(allGeometry, data, x0, 0);
       const flatData = flattenRegions(data as any[]);

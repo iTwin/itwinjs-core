@@ -2,6 +2,12 @@
   "name": "@itwin/presentation-common",
   "entries": [
     {
+      "version": "4.6.0",
+      "tag": "@itwin/presentation-common_v4.6.0",
+      "date": "Mon, 13 May 2024 20:32:51 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.5.2",
       "tag": "@itwin/presentation-common_v4.5.2",
       "date": "Tue, 16 Apr 2024 14:46:22 GMT",

@@ -2,6 +2,42 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "4.6.0",
+      "tag": "@itwin/core-frontend_v4.6.0",
+      "date": "Mon, 13 May 2024 20:32:51 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Increase default extent limits for drawing views and fix incorrect clipping of section drawing attachments."
+          },
+          {
+            "comment": "Fixed problem cases freeing tile memory under memory pressure"
+          },
+          {
+            "comment": "Fix map layer WMTS validation process to correctly return authentication error"
+          },
+          {
+            "comment": "Fixed various issues related to terrain tile collecting."
+          },
+          {
+            "comment": "Fix an issue preventing model map layer from being hidden"
+          },
+          {
+            "comment": "Added support for OGC Features map layers."
+          },
+          {
+            "comment": "Include BIS class metadata with transaction events."
+          },
+          {
+            "comment": "Fix dynamic element graphics being clipped to the project extents in 2d models."
+          },
+          {
+            "comment": "Add support for EXT_meshopt_compression glTF extension."
+          }
+        ]
+      }
+    },
+    {
       "version": "4.5.2",
       "tag": "@itwin/core-frontend_v4.5.2",
       "date": "Tue, 16 Apr 2024 14:46:22 GMT",

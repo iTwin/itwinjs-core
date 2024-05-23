@@ -102,7 +102,13 @@ export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions)
 
   const tilingScheme = new GeographicTilingScheme();
   let tileAvailability;
-  if (undefined !== layers.available) {
+  // When collecting tiles, only the highest resolution tiles are downloaded.
+  // Because of that, the tile availability is often only populated by the
+  // "layer" metadata. (i.e. not from higher resolution tiles metadata).
+  // Unfortunately the "layer" metadata only cover the first 16 levels,
+  // preventing the geometry collector from accessing to higher resolution tiles.
+  // For now, the solution is to turn off tile availability check when collecting geometries.
+  if (undefined !== layers.available && !opts.produceGeometry) {
     const availableTiles = layers.available;
     tileAvailability = new TileAvailability(tilingScheme, availableTiles.length);
     for (let level = 0; level < layers.available.length; level++) {

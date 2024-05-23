@@ -384,10 +384,8 @@ export namespace ElementGeometry {
     }
 
     /** Append a series of entries representing a [[TextBlock]] to the [[ElementGeometryDataEntry]] array.
-   * @beta
-   * @extensions
-   * @preview
-   */
+     * @beta
+     */
     public appendTextBlock(block: TextBlockGeometryProps): boolean {
       for (const entry of block.entries) {
         let result: boolean;
