@@ -149,7 +149,7 @@ describe("AnalyticRoots.SolveQuadric", () => {
     const pointB = Point3d.create(3, 2, -1);
     const pointC = Point3d.create(2, 1, 0.4);
     const r = SmallSystem.lineSegment3dClosestPointUnbounded(pointA, pointB, pointC);
-    if (ck.testDefined(r) && r !== undefined) {
+    if (ck.testDefined(r)) {
       const pointD = pointA.interpolate(r, pointB);
       ck.testPerpendicular(Vector3d.createStartEnd(pointA, pointB), Vector3d.createStartEnd(pointC, pointD), "Closest approach vector is perpendicular");
     }
@@ -177,7 +177,7 @@ describe("AnalyticRoots.SolveQuadric", () => {
           // Although we have set up function values at uv0 as a known point,
           // it is still possible for some degenerate cases to return undefined.
           // What are these cases? overlapping asymptotes?
-          if (uvArray && ck.testDefined(uvArray, uv0, [pValue, qValue], p, q)) {
+          if (ck.testDefined(uvArray, uv0, [pValue, qValue], p, q)) {
             let numMatch = 0;
             for (const uv1 of uvArray) {
               ck.testCoordinate(pValue, p.evaluate(uv1.x, uv1.y));
@@ -186,7 +186,7 @@ describe("AnalyticRoots.SolveQuadric", () => {
             }
             ck.testLE(1, numMatch, "evaluate point appears in roots.");
             const uvArrayB = BilinearPolynomial.solvePair(q, qValue, p, pValue);
-            if (ck.testDefined(uvArrayB) && uvArrayB !== undefined)
+            if (ck.testDefined(uvArrayB))
               ck.testExactNumber(uvArray.length, uvArrayB.length);
           }
         }

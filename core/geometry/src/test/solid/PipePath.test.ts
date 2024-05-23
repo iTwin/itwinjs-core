@@ -83,7 +83,7 @@ describe("PipePath", () => {
     const mirrorAcrossX: Transform = Transform.createIdentity();
     mirrorAcrossX.matrix.setAt(1, 1, -1);
     const pipeM = pipe0.cloneTransformed(mirrorAcrossX);
-    if (ck.testDefined(pipeM) && pipeM !== undefined) {
+    if (ck.testDefined(pipeM)) {
       ck.testTrue(pipeM.getConstructiveFrame()!.matrix.isRigid(false), "getConstructiveFrame removes mirror");
       const builderM = PolyfaceBuilder.create(options);
       builderM.addTorusPipe(pipeM, 20, 20);
@@ -103,7 +103,7 @@ describe("PipePath", () => {
         for (const scale of [Point2d.create(10, 10), Point2d.create(5, 10), Point2d.create(10, 5)]) {
           // Create radii-scaled TorusPipe
           const pipeScaledRadii = TorusPipe.createDgnTorusPipe(center, xAxis, yAxis, majorRadius * scale.x, minorRadius * scale.y, sweep, capped);
-          if (!ck.testDefined(pipeScaledRadii) || pipeScaledRadii === undefined)
+          if (!ck.testDefined(pipeScaledRadii))
             continue;
           if (!ck.testCoordinate(1, pipeScaledRadii.cloneVectorX().magnitude(), "TorusPipe.cloneVectorX returns unit vector") ||
               !ck.testCoordinate(1, pipeScaledRadii.cloneVectorY().magnitude(), "TorusPipe.cloneVectorY returns unit vector") ||
@@ -121,7 +121,7 @@ describe("PipePath", () => {
           const scaleInLocalCoords = Transform.createOriginAndMatrix(Point3d.createZero(), Matrix3d.createScale(scale.x, scale.x, scale.y));
           const scaleInWorldCoords = pipe0.cloneLocalToWorld().multiplyTransformTransform(scaleInLocalCoords.multiplyTransformTransform(pipe0.cloneLocalToWorld().inverse()!));
           const pipeCloneScaled = pipe0.cloneTransformed(scaleInWorldCoords);
-          if (!ck.testDefined(pipeCloneScaled) || pipeCloneScaled === undefined)
+          if (!ck.testDefined(pipeCloneScaled))
             continue;
           builder = PolyfaceBuilder.create(options);
           builder.addTorusPipe(pipeCloneScaled, 20, 20);
@@ -131,7 +131,7 @@ describe("PipePath", () => {
           // Clone radii-scaled TorusPipe with inverse of scale transform, and compare with original.
           const unScaleInWorldCoords = scaleInWorldCoords.inverse()!;
           const pipeCloneUnScaled0 = pipeScaledRadii.cloneTransformed(unScaleInWorldCoords);
-          if (!ck.testDefined(pipeCloneUnScaled0) || pipeCloneUnScaled0 === undefined)
+          if (!ck.testDefined(pipeCloneUnScaled0))
             continue;
           builder = PolyfaceBuilder.create(options);
           builder.addTorusPipe(pipeCloneUnScaled0, 20, 20);
@@ -140,7 +140,7 @@ describe("PipePath", () => {
 
           // Clone scale-transformed TorusPipe with inverse of scale transform, and compare with original.
           const pipeCloneUnScaled1 = pipeCloneScaled.cloneTransformed(unScaleInWorldCoords);
-          if (!ck.testDefined(pipeCloneUnScaled1) || pipeCloneUnScaled1 === undefined)
+          if (!ck.testDefined(pipeCloneUnScaled1))
             continue;
           builder = PolyfaceBuilder.create(options);
           builder.addTorusPipe(pipeCloneUnScaled1, 20, 20);

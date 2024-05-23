@@ -31,11 +31,11 @@ describe("ParityRegionSweep", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const regionC = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/curve/parityRegionSweep/ParityRegionC.imjs", "utf8")));
+      "./src/test/data/curve/parityRegionSweep/ParityRegionC.imjs", "utf8")));
     const regionA = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/curve/parityRegionSweep/ParityRegionA.imjs", "utf8")));
+      "./src/test/data/curve/parityRegionSweep/ParityRegionA.imjs", "utf8")));
     let regionB = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/curve/parityRegionSweep/ParityRegionB.imjs", "utf8")));
+      "./src/test/data/curve/parityRegionSweep/ParityRegionB.imjs", "utf8")));
     if (Array.isArray(regionB)) {
       const regionB1 = ParityRegion.create();
       for (const loop of regionB) {
@@ -194,7 +194,7 @@ describe("ParityRegionSweep", () => {
     const dy = 50;
     let shiftX = 0;
     let shiftY = 0;
-    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/parityRegionSweep/karolisParityRegionSweep.imjs", "utf8"))) as GeometryQuery[];
+    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/parityRegionSweep/karolisParityRegionSweep.imjs", "utf8"))) as GeometryQuery[];
     ck.testDefined(inputs, "linearSweep imported");
 
     const boundaryEdges: SortableEdgeCluster[] = [];

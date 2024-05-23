@@ -106,7 +106,7 @@ describe("FrameBuilder", () => {
     triangle1.reverse();
     const frame0 = FrameBuilder.createFrameWithCCWPolygon(triangle0);
     const frame1 = FrameBuilder.createFrameWithCCWPolygon(triangle1);
-    if (ck.testDefined(frame0) && ck.testDefined(frame1) && frame0 && frame1) {
+    if (ck.testDefined(frame0) && ck.testDefined(frame1)) {
       const unitZ0 = frame0.matrix.columnZ();
       const unitZ1 = frame1.matrix.columnZ();
       ck.testCoordinate(-1, unitZ0.dotProduct(unitZ1), "opposing unit Z vectors");
@@ -431,7 +431,7 @@ describe("PolygonOps", () => {
     const rotate = <T,>(arr: Array<T>, n = 1) => [...arr.slice(n, arr.length), ...arr.slice(0, n)];
     const testVertexHit = (testPt: XAndY, pts: Point3d[]) => {
       const result = PolygonOps.classifyPointInPolygon(testPt.x, testPt.y, pts);
-      if (ck.testDefined(result, "classification successful") && result !== undefined)
+      if (ck.testDefined(result, "classification successful"))
         ck.testExactNumber(0, result, "vertex hit");
     };
     testVertexHit(testPoint, points);
@@ -1021,7 +1021,7 @@ describe("PolygonAreas", () => {
     const ck = new Checker();
     const pointA = Sample.createStar(1, 2, 3, 4, 6, 5, true);
     const minMaxPoints = Point3dArray.minMaxPoints(pointA);
-    if (ck.testDefined(minMaxPoints) && minMaxPoints) {
+    if (ck.testDefined(minMaxPoints)) {
       const range = Range3d.createArray(pointA);
       ck.testCoordinate(minMaxPoints.minXPoint.x, range.low.x);
       ck.testCoordinate(minMaxPoints.minYPoint.y, range.low.y);

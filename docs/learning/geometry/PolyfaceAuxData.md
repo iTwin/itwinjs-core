@@ -1,6 +1,6 @@
 # Polyface Analytical Data Visualization
 
-The [PolyfaceAuxData]($geometry) structure contains one or more analytical data channels for each vertex of a [Polyface]($geometry).  Typically a [Polyface]($geometry) will contain only vertex data required for its basic display, the vertex position, normal and possibly texture parameter.  The [PolyfaceAuxData]($geometry) structure contains supplemental data that is generally computed in an analysis program or extracted from an external data source.  This can be scalar data used to overide the vertex colors through *Thematic Colorization* or XYZ data used to deform the mesh by adjusting the vertex postions. The figure below represents a cantilever beam under a single point load.  The stress is represented through thematic colorization and the deflection is also displayed (exaggerated 100X by applying [AnalysisStyle]($common) with displacementScale: 100.
+The [PolyfaceAuxData]($geometry) structure contains one or more analytical data channels for each vertex of a [Polyface]($geometry).  Typically a [Polyface]($geometry) will contain only vertex data required for its basic display, the vertex position, normal and possibly texture parameter.  The [PolyfaceAuxData]($geometry) structure contains supplemental data that is generally computed in an analysis program or extracted from an external data source.  This can be scalar data used to override the vertex colors through *Thematic Colorization* or XYZ data used to deform the mesh by adjusting the vertex positions. The figure below represents a cantilever beam under a single point load.  The stress is represented through thematic colorization and the deflection is also displayed (exaggerated 100X by applying [AnalysisStyle]($common) with displacementScale: 100.
 
 ![>](./figs/PolyfaceAuxData/Cantilever.gif)
 
@@ -80,7 +80,7 @@ for (let i = 0; i < polyface.data.point.length; i++) {
 }
 ```
 
-Next we take the channel data and create an array [AuxChannelData]($geometry) entries for aach channel.   The first argument of the [AuxChannelData]($geometry) constructor is the "input" value.  This represents the external input value that produces this data.  This may be a quantity such as force in a stress analysis application or time in a simple animation.
+Next we take the channel data and create an array [AuxChannelData]($geometry) entries for each channel.   The first argument of the [AuxChannelData]($geometry) constructor is the "input" value.  This represents the external input value that produces this data.  This may be a quantity such as force in a stress analysis application or time in a simple animation.
 
 ```ts
 const radialDisplacementDataVector =
@@ -97,7 +97,7 @@ const radialSlopeDataVector =
     new AuxChannelData(2.0, zeroScalarData)];
 ```
 
-We next create the AuxChannels.  The channel names provideed in the [AuxChannel]($geometry) constructor are used to present the channel to the user as well as keys to select the channel from [AnalysisStyle]($common)s.
+We next create the AuxChannels.  The channel names provided in the [AuxChannel]($geometry) constructor are used to present the channel to the user as well as keys to select the channel from [AnalysisStyle]($common)s.
 
 ```ts
 auxChannels.push(new AuxChannel(radialDisplacementDataVector, AuxChannelDataType.Vector, "Radial Displacement", "Radial: Time"));
@@ -105,7 +105,7 @@ auxChannels.push(new AuxChannel(radialHeightDataVector, AuxChannelDataType.Dista
 auxChannels.push(new AuxChannel(radialSlopeDataVector, AuxChannelDataType.Scalar, "Radial Slope", "Radial: Time"));
 ```
 
-The final step is to create [PolyfaceAuxData]($geometry) and associate it to our base `Polyface'.  A set of indices is required to map the channel data values into the facets.  In our case, we have produced the channel data in parallel with the mesh points so that we can simply use point indices "polyface.data.pointIndex", but this is not required and alternate indexing could also be used.  Not e that only a single index structure is supplied and shared by all channels and their data, therefore all channels data arrays must have same number of values and indexing.
+The final step is to create [PolyfaceAuxData]($geometry) and associate it to our base [Polyface]($geometry).  A set of indices is required to map the channel data values into the facets.  In our case, we have produced the channel data in parallel with the mesh points so that we can simply use the point indices `polyface.data.pointIndex`, but this is not required and alternate indexing could also be used. Note that only a single index structure is supplied and shared by all channels and their data, therefore all channels' data arrays must have same number of values.  Also note that the [PolyfaceAuxData]($geometry) index array has the same length and structure as the other index arrays of the [Polyface]($geometry).
 
 ```ts
 polyface.data.auxData = new PolyfaceAuxData(auxChannels, polyface.data.pointIndex);
