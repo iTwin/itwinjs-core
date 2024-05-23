@@ -1,17 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-
+import * as chai from "chai";
 import { IModelConnection } from "@itwin/core-frontend";
+import { SchemaKey, SchemaKeyProps, SchemaProps } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 import { TestContext } from "./setup/TestContext";
-import { SchemaKey, SchemaKeyProps, SchemaProps } from "@itwin/ecschema-metadata";
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+chai.use(require("chai-as-promised"));
+const { expect } = chai;
 
 describe("Schema RPC Interface", () => {
-
   let iModel: IModelConnection;
   let testContext: TestContext;
 
@@ -33,5 +35,11 @@ describe("Schema RPC Interface", () => {
     props.forEach((prop: SchemaKeyProps) => schemaKeys.push(SchemaKey.fromJSON(prop)));
     const schemaJSON: SchemaProps = await ECSchemaRpcInterface.getClient().getSchemaJSON(iModel.getRpcProps(), schemaKeys[0].name);
     expect(schemaJSON).to.not.be.undefined;
+  });
+
+  it.only("should throw when requesting non-existing schema JSON", async () => {
+    // this is setting an internal protocol flag to simulate CORS blocking the X-Protocol-Version response header:
+    ECSchemaRpcInterface.getClient().configuration.protocol.supportsStatusCategory = false;
+    await expect(ECSchemaRpcInterface.getClient().getSchemaJSON(iModel.getRpcProps(), "DoesNotExist")).to.eventually.be.rejected;
   });
 });
