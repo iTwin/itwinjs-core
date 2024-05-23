@@ -721,7 +721,7 @@ internal;RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) =
 internal;RpcRequestFulfillment
 internal;RpcRequestFulfillment
 internal;RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number
-internal;RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void
+internal;RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason?: any) => void) => void
 public;RpcRequestStatus
 deprecated;RpcRequestStatus
 public;RpcRequestStatus
