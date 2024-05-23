@@ -117,13 +117,13 @@ export class CheckpointConnection extends IModelConnection {
     return openResponse;
   }
 
-  private _reopenConnectionHandler = async (request: RpcRequest<RpcNotFoundResponse>, response: any, resubmit: () => void, reject: (reason: any) => void) => { // eslint-disable-line deprecation/deprecation
+  private _reopenConnectionHandler = async (request: RpcRequest<RpcNotFoundResponse>, response: any, resubmit: () => void, reject: (reason?: any) => void) => {
     if (!response.hasOwnProperty("isIModelNotFoundResponse"))
-      return;
+      reject();
 
     const iModelRpcProps = request.parameters[0];
     if (this._fileKey !== iModelRpcProps.key)
-      return; // The handler is called for a different connection than this
+      reject(); // The handler is called for a different connection than this
 
     Logger.logTrace(loggerCategory, "Attempting to reopen connection", () => iModelRpcProps);
 
