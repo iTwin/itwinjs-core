@@ -313,11 +313,11 @@ describe("Solids", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  // cspell: word Dovydas
-  it.only("TorusPipeDovydas", () => {
+  it.only("TorusPipeNonCircular", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     const arc = Arc3d.create(Point3d.create(-0.003571875), Vector3d.create(-0.001190625, 0.127), Vector3d.create(0.001190625, 0, 0.127), AngleSweep.createStartEndDegrees(0, 90));
+    ck.testFalse(arc.isCircular, "expect slightly non-circular arc");
     const seg0 = LineSegment3d.create(arc.center, Point3d.createAdd2Scaled(arc.center, 1, arc.vector0, 1));
     const seg1 = LineSegment3d.create(arc.center, Point3d.createAdd2Scaled(arc.center, 1, arc.vector90, 1));
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arc, seg0, seg1]);
@@ -325,12 +325,10 @@ describe("Solids", () => {
     const solid = TorusPipe.createAlongArc(arc, diam / 2, true);
     if (ck.testDefined(solid, "created torus pipe")) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, solid);
-      // const builder = PolyfaceBuilder.create();
-      // builder.addTorusPipe(solid!);
-      // const mesh = builder.claimPolyface();
-      // GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
-    }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "TorusPipeDovydas");
+      // TODO: verify solid._localToWorld._matrix.columnY().scale(solid._radiusA) is "near" arc.vector90
+      // TODO: verify torus matrix x and y are perpendicular
+   }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "TorusPipeNonCircular");
     expect(ck.getNumErrors()).equals(0);
   });
 

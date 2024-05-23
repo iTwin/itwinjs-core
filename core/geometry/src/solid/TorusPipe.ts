@@ -24,30 +24,34 @@ import { Transform } from "../geometry3d/Transform";
 import { SolidPrimitive } from "./SolidPrimitive";
 
 /**
- * A torus pipe is a partial torus (donut).  In a local coordinate system
- * * The z axis passes through the hole.
- * * The "major hoop" arc has
- *   * vectorTheta0 = (radiusA, 0, 0)
- *   * vectorTheta90 = (0, radiusA, 0)
- *   * The major arc point at angle theta is `C(theta) = vectorTheta0 * cos(theta) + vectorTheta90 * sin(theta)
- * * The minor hoop at theta various with phi "around the minor hoop"
- *    * (x,y,z) = C(theta) + (radiusB * cos(theta), radiusB * sin(theta), 0) * cos(phi) + (0, 0, radiusB) * sin(phi)
+ * A torus pipe is a partial torus (donut).
+ * * In its local coordinate system, the z-axis passes through the donut hole.
+ * * The "major hoop" circular arc is defined for theta in the angular sweep. Its formula in local coordinates:
+ *   * `vectorTheta0 = (radiusA, 0, 0)`
+ *   * `vectorTheta90 = (0, radiusA, 0)`
+ *   * `M(theta) = vectorTheta0 * cos(theta) + vectorTheta90 * sin(theta)`
+ * * The "minor hoop" circular arc is defined for phi in [0,2pi]. Its formula, centered at the origin:
+ *   * `vectorPhi0 = (radiusB * cos(theta), radiusB * sin(theta), 0)`
+ *   * `vectorPhi90 = (0, 0, radiusB)`
+ *   * `m(phi) = vectorPhi0 * cos(phi) + vectorPhi90 * sin(phi)`
+ * * Thus the torus pipe in local coordinates has the formula:
+ *   * `T(theta, phi) = M(theta) + m(phi)`
  * * The stored form of the torus pipe is oriented for positive volume:
  *   * Both radii are positive, with radiusA >= radiusB > 0
  *   * The sweep is positive
  *   * The coordinate system has positive determinant.
  * * For uv parameterization,
- *   * u is around the minor hoop, with (0..1) mapping to phi of (0 degrees ..360 degrees)
- *   * v is along the major hoop with (0..1) mapping to theta of (0 .. sweep)
+ *   * u is around the minor hoop, with u in [0,1] mapping to phi in [0, 2pi]
+ *   * v is along the major hoop, with v in [0,1] mapping to theta in the angular sweep
  *   * a constant v section is a full circle
- *   * a constant u section is an arc with sweep angle matching the torusPipe sweep angle.
+ *   * a constant u section is an arc with the same angular sweep as the torusPipe
  * @public
  */
 export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIsoParametricDistance {
   /** String name for schema properties */
   public readonly solidPrimitiveType = "torusPipe";
 
-  private _localToWorld: Transform;
+  private _localToWorld: Transform; // nominally rigid, but x,z column scales contribute to radiusA,radiusB
   private _radiusA: number;  // radius of (large) circle in xy plane
   private _radiusB: number;  // radius of (small) circle in xz plane.
   private _sweep: Angle;
@@ -129,14 +133,22 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     const frame = Transform.createOriginAndMatrixColumns(center, vectorX, vectorY, vectorZ);
     return TorusPipe.createInFrame(frame, majorRadius, minorRadius, sweep, capped);
   }
-  /** Create a TorusPipe from its primary arc and minor radius */
-  public static createAlongArc(arc: Arc3d, minorRadius: number, capped: boolean) {
+  /**
+   * Create a TorusPipe from major arc and minor radius.
+   * For best results, `arc` should be circular; otherwise, circularity is coerced.
+   */
+  public static createAlongArc(arc: Arc3d, minorRadius: number, capped: boolean): TorusPipe | undefined {
     if (!Angle.isAlmostEqualRadiansAllowPeriodShift(0.0, arc.sweep.startRadians))
       arc = arc.cloneInRotatedBasis(arc.sweep.startAngle);
-    const sweepRadians = arc.sweep.sweepRadians;
+    if (!arc.isCircular) { // force vector90 to be perpendicular and same length as vector0
+      const perpVector90 = arc.perpendicularVector.sizedCrossProduct(arc.vector0, arc.matrixRef.columnXMagnitude());
+      if (!perpVector90)
+        return undefined;
+      arc = Arc3d.create(arc.center, arc.vector0, perpVector90, arc.sweep);
+    }
     const data = arc.toScaledMatrix3d();
-    const frame = Transform.createOriginAndMatrix(data.center, data.axes);
-    return TorusPipe.createInFrame(frame, data.r0, minorRadius, Angle.createRadians(sweepRadians), capped);
+    const rigidFrame = Transform.createOriginAndMatrix(arc.center, data.axes);
+    return TorusPipe.createInFrame(rigidFrame, data.r0, minorRadius, Angle.createRadians(arc.sweep.sweepRadians), capped);
   }
 
   /** Return a coordinate frame (right handed, unit axes)
