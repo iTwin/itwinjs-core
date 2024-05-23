@@ -360,7 +360,7 @@ describe("Transform.createFlattenAlongVectorToPlane", () => {
       for (const planeNormal of [Vector3d.create(0, 0, 1), Vector3d.create(2, 3, -1)]) {
         for (const sweepDirection of ([Vector3d.create(0, 0, 1), Vector3d.create(-2, 3, 1)])) {
           const transform = Transform.createFlattenAlongVectorToPlane(sweepDirection, planeOrigin, planeNormal);
-          if (ck.testDefined(transform, "expect good transform") && transform !== undefined) {
+          if (ck.testDefined(transform, "expect good transform")) {
             for (const pointA of spacePoints) {
               const pointB = transform.multiplyPoint3d(pointA);
               const dotB = planeNormal.dotProductStartEnd(planeOrigin, pointB);
