@@ -86,7 +86,7 @@ export type RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest
 /** Resolves "not found" responses for RPC requests.
  * @internal
  */
-export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void;
+export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason?: any) => void) => void;
 
 class Cancellable<T> {
   public promise: Promise<T | undefined>;
@@ -480,8 +480,8 @@ export abstract class RpcRequest<TResponse = any> {
         throw new IModelError(BentleyStatus.ERROR, `Already resubmitted using this handler.`);
 
       resubmitted = true;
-      this.submit(); // eslint-disable-line @typescript-eslint/no-floating-promises
-    }, (reason: any) => this.reject(reason));
+      void this.submit();
+    }, (reason: any) => reason ? this.reject(reason) : this.handleRejected(value));
     return;
   }
 
