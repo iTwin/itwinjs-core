@@ -325,9 +325,9 @@ describe("Solids", () => {
     const solid = TorusPipe.createAlongArc(nonCircularArc, diam / 2, true);
     if (ck.testDefined(solid, "created torus pipe")) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, solid);
-      ck.testTrue(solid!.cloneLocalToWorld().matrix.isRigid(false), "TorusPipe.createAlongArc forced arc circularity by squaring its axes and equating their lengths");
-      const vec0Near = solid!.cloneVectorX().scale(solid!.getMajorRadius()).isAlmostEqual(nonCircularArc.vector0);
-      const vec90Near = solid!.cloneVectorY().scale(solid!.getMajorRadius()).isAlmostEqual(nonCircularArc.vector90, 0.000012);
+      ck.testTrue(solid.cloneLocalToWorld().matrix.isRigid(false), "TorusPipe.createAlongArc forced arc circularity by squaring its axes and equating their lengths");
+      const vec0Near = solid.cloneVectorX().scale(solid.getMajorRadius()).isAlmostEqual(nonCircularArc.vector0);
+      const vec90Near = solid.cloneVectorY().scale(solid.getMajorRadius()).isAlmostEqual(nonCircularArc.vector90, 0.000012);
       ck.testTrue(vec0Near && vec90Near, "TorusPipe frame is near the original arc's frame");
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "TorusPipeNonCircular");
