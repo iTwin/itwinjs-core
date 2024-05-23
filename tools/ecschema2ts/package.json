@@ -2,7 +2,7 @@
   "name": "@itwin/ecschema2ts",
   "description": "Command line tools that takes an ECSchema xml file and outputs a typescript module",
   "license": "MIT",
-  "version": "4.7.0-dev.6",
+  "version": "4.7.0-dev.9",
   "bin": {
     "ecschema2ts": "./bin/index.js"
   },
@@ -46,7 +46,7 @@
     "chai": "^4.3.10",
     "chai-string": "^1.5.0",
     "cpx2": "^3.0.0",
-    "eslint": "^8.44.0",
+    "eslint": "^8.56.0",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",

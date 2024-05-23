@@ -1,6 +1,6 @@
 {
   "name": "@itwin/express-server",
-  "version": "4.7.0-dev.6",
+  "version": "4.7.0-dev.9",
   "description": "iTwin.js express utilities",
   "main": "lib/cjs/ExpressServer.js",
   "typings": "lib/cjs/ExpressServer",
@@ -48,7 +48,7 @@
     "@types/supertest": "^6.0.2",
     "@types/express-ws": "^3.0.3",
     "chai": "^4.3.10",
-    "eslint": "^8.44.0",
+    "eslint": "^8.56.0",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",

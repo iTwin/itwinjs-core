@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-backend",
-  "version": "4.7.0-dev.6",
+  "version": "4.7.0-dev.9",
   "description": "Backend of iTwin.js Presentation library",
   "license": "MIT",
   "repository": {
@@ -39,12 +39,12 @@
     "prettier:fix": "prettier --write ."
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.7.0-dev.6",
-    "@itwin/core-bentley": "workspace:^4.7.0-dev.6",
-    "@itwin/core-common": "workspace:^4.7.0-dev.6",
-    "@itwin/core-quantity": "workspace:^4.7.0-dev.6",
-    "@itwin/ecschema-metadata": "workspace:^4.7.0-dev.6",
-    "@itwin/presentation-common": "workspace:^4.7.0-dev.6"
+    "@itwin/core-backend": "workspace:^4.7.0-dev.9",
+    "@itwin/core-bentley": "workspace:^4.7.0-dev.9",
+    "@itwin/core-common": "workspace:^4.7.0-dev.9",
+    "@itwin/core-quantity": "workspace:^4.7.0-dev.9",
+    "@itwin/ecschema-metadata": "workspace:^4.7.0-dev.9",
+    "@itwin/presentation-common": "workspace:^4.7.0-dev.9"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -77,7 +77,7 @@
     "cpx2": "^3.0.0",
     "cross-env": "^5.1.4",
     "deep-equal": "^1",
-    "eslint": "^8.44.0",
+    "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "faker": "^4.1.0",
     "mocha": "^10.2.0",

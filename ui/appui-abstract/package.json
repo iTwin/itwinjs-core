@@ -1,6 +1,6 @@
 {
   "name": "@itwin/appui-abstract",
-  "version": "4.7.0-dev.6",
+  "version": "4.7.0-dev.9",
   "description": "iTwin.js UI abstractions",
   "main": "lib/cjs/appui-abstract.js",
   "module": "lib/esm/appui-abstract.js",
@@ -37,7 +37,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.7.0-dev.6"
+    "@itwin/core-bentley": "workspace:^4.7.0-dev.9"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -56,7 +56,7 @@
     "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.3.10",
     "cpx2": "^3.0.0",
-    "eslint": "^8.44.0",
+    "eslint": "^8.56.0",
     "glob": "^10.3.12",
     "ignore-styles": "^5.0.1",
     "mocha": "^10.2.0",
