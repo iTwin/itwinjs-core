@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AngleProps, XYProps, XYZProps } from "@itwin/core-geometry";
-import { ElementProps, GeometricElementProps, GeometryPartProps, RelatedElementProps, SubCategoryProps } from "./ElementProps";
+import { ElementLoadOptions, ElementProps, GeometricElementProps, GeometryPartProps, RelatedElementProps, RenderTimelineProps, SubCategoryProps } from "./ElementProps";
 import { SpatialViewDefinitionProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps } from "./ViewProps";
 import { Base64EncodedString } from "./Base64EncodedString";
+import { CompressedId64Set } from "@itwin/core-bentley";
 
 type NativeInterfaceMapping =
 | [NativeElementProps, ElementProps]
@@ -15,7 +16,8 @@ type NativeInterfaceMapping =
 | [NativeSpatialViewDefinitionProps, SpatialViewDefinitionProps]
 | [NativeGeometricElementProps, GeometricElementProps]
 | [NativeSubCategoryProps, SubCategoryProps]
-| [NativeGeometryPartProps, GeometryPartProps];
+| [NativeGeometryPartProps, GeometryPartProps]
+| [NativeRenderTimelineProps, RenderTimelineProps];
 
 export type NativeInterfaceMap<T> = Extract<NativeInterfaceMapping, [unknown, T]>[0];
 
@@ -44,15 +46,16 @@ type NativeSpatialViewDefinitionProps = NativeViewDefinition3dProps & {
 };
 type NativeGeometricElementProps = NativeElementProps & {
   category: RelatedElementProps;
-  geometryStream: Base64EncodedString;
+  geometryStream?: Base64EncodedString;
 } & (
   { origin: XYProps, bBoxLow: XYProps, bBoxHigh?: XYProps, rotation: AngleProps } |
   { origin: XYZProps, bBoxLow: XYZProps, bBoxHigh?: XYZProps, yaw?: AngleProps, pitch?: AngleProps, roll?: AngleProps }
 );
-type NativeGeometryPartProps = NativeElementProps & { bBoxLow: XYZProps, bBoxHigh?: XYZProps, geometryStream: Base64EncodedString } ;
+type NativeGeometryPartProps = NativeElementProps & { bBoxLow: XYZProps, bBoxHigh?: XYZProps, geometryStream?: Base64EncodedString } ;
 type NativeSubCategoryProps = NativeElementProps & Pick<SubCategoryProps, "isPrivate" | "description"> & {
   properties?: string;
 };
+type NativeRenderTimelineProps = NativeElementProps & Pick<RenderTimelineProps, "script">;
 
 function mapBinaryProperties(props: { [key: string]: any }): { [key: string]: any } {
   for (const key of Object.keys(props)) {
@@ -72,7 +75,7 @@ function mapRelatedElementProps(props: RelatedElementProps): RelatedElementProps
   const { id, relClassName } = props;
   return { id, relClassName: relClassName?.replace(".", ":")  };
 }
-function mapElementProps(props: NativeElementProps, onlyBaseProperties: boolean): ElementProps {
+function mapElementProps(props: NativeElementProps, loadProps?: ElementLoadOptions): ElementProps {
   const { model, parent, codeValue, codeScope, codeSpec, className, jsonProperties, federationGuid, id, userLabel, ...rest } = props;
   return {
     code: { scope: codeScope.id,  spec: codeSpec.id, value: codeValue },
@@ -88,17 +91,24 @@ function mapElementProps(props: NativeElementProps, onlyBaseProperties: boolean)
           return undefined;
         if (key === "subCategory")
           return `0x${(+value).toString(16)}`;
+        if (key === "excludedElements" && loadProps?.displayStyle?.compressExcludedElementIds !== true)
+          return CompressedId64Set.decompressArray(value);
+        if (key === "elementIds" && loadProps?.displayStyle?.omitScheduleScriptElementIds === true)
+          return "";
         return value;
       })
       : undefined,
-    ...(onlyBaseProperties ? {} : mapBinaryProperties(rest)),
+    ...(loadProps?.onlyBaseProperties ? {} : mapBinaryProperties(rest)),
   };
 }
 
-export function mapNativeElementProps<T extends ElementProps>(props: NativeInterfaceMap<T>, onlyBaseProperties = false): T {
-  const element = mapElementProps(props, onlyBaseProperties) as any;
+export function mapNativeElementProps<T extends ElementProps>(props: NativeInterfaceMap<T>, loadProps?: ElementLoadOptions): T {
+  if ((!loadProps?.wantGeometry || !loadProps?.wantBRepData) && "geometryStream" in props)
+    delete props.geometryStream; // Removing it here to remove excessive binary property mapping
 
-  if (onlyBaseProperties)
+  const element = mapElementProps(props, loadProps) as any;
+
+  if (loadProps?.onlyBaseProperties)
     return element as T;
 
   delete element.lastMod;
@@ -170,6 +180,16 @@ export function mapNativeElementProps<T extends ElementProps>(props: NativeInter
   if ("properties" in props && !!props.properties) {
     element.appearance = JSON.parse(props.properties);
     delete element.properties;
+  }
+
+  // RenderTimelineProps
+  if ("script" in props && !!props.script) {
+    element.script = loadProps?.renderTimeline?.omitScriptElementIds !== true ? props.script :
+      JSON.stringify(JSON.parse(props.script, (key, value) => {
+        if (key === "elementIds")
+          return "";
+        return value;
+      }));
   }
 
   return element as T;

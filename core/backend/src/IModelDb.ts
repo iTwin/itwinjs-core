@@ -1772,7 +1772,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         if (statement.step() !== DbResult.BE_SQLITE_ROW)
           return undefined;
 
-        return mapNativeElementProps(JSON.parse(statement.getValue(0).getString()), loadProps.onlyBaseProperties) as T;
+        return mapNativeElementProps(JSON.parse(statement.getValue(0).getString()), loadProps) as T;
       });
 
       if (!elementProps)

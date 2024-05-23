@@ -78,4 +78,35 @@ describe("RenderTimeline", () => {
 
     imodel.close();
   });
+
+  it("excludes element ids from script depending on load options", async () => {
+    const imodel = createIModel("CRUD");
+    const timelineId = insertTimeline(imodel);
+
+    const timelineHasNonEmptyElementIds = (props: RenderTimelineProps) => {
+      expect(props).not.to.be.undefined;
+
+      const script = JSON.parse(props.script);
+
+      expect(script.length).least(1);
+      let numElementIdProps = 0;
+      let numNonEmptyElementIdProps = 0;
+      for (const modelTimeline of script) {
+        expect(modelTimeline.elementTimelines.length).least(1);
+        for (const elementTimeline of modelTimeline.elementTimelines) {
+          expect(elementTimeline.elementIds).not.to.be.undefined;
+          ++numElementIdProps;
+          if (0 < elementTimeline.elementIds.length)
+            ++numNonEmptyElementIdProps;
+        }
+      }
+
+      expect(numElementIdProps).least(1);
+      return numNonEmptyElementIdProps > 0;
+    };
+
+    expect(timelineHasNonEmptyElementIds(imodel.elements.getElementProps<RenderTimelineProps>(timelineId))).to.be.true;
+    expect(timelineHasNonEmptyElementIds(imodel.elements.getElementProps<RenderTimelineProps>({ id: timelineId, renderTimeline: { omitScriptElementIds: false } }))).to.be.true;
+    expect(timelineHasNonEmptyElementIds(imodel.elements.getElementProps<RenderTimelineProps>({ id: timelineId, renderTimeline: { omitScriptElementIds: true } }))).to.be.false;
+  });
 });
