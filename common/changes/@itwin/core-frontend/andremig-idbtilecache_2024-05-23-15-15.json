@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add IndexedDBCache Tests",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

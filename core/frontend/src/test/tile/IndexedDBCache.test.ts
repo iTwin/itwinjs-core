@@ -7,7 +7,6 @@ import { IndexedDBCache } from "../../tile/internal";
 
 // For Testing Only
 export class TestCache extends IndexedDBCache{
-  public searchResult: any;
 
   public constructor(dbName: string, expirationTime?: number) {
     super(dbName, expirationTime);
@@ -89,21 +88,30 @@ describe.only("IndexedDBCache", () => {
   });
 
   it("should fetch content from the network if expired in the cache", async () => {
-    const expiringCache = new TestCache("ExpiringTestDB", 0);
+    const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    const expiringCache = new TestCache("ExpiringTestDB", 1);
     const uniqueId = "test-expiring";
     const content = await cache.convertStringToBuffer(uniqueId);
 
     await expiringCache.testAddContent(uniqueId, content);
+    await pause(1000);
 
-    const fetchedContent = await expiringCache.fetch(uniqueId, async () => {
+    // The content should have expired, and therefore, fetchedContent should be undefined
+    let fetchedContent = await expiringCache.testRetrieveContent(uniqueId);
+    expect(fetchedContent).equal(undefined);
+
+    // But now fetching from the network, the content should not be undefined
+    fetchedContent = await expiringCache.fetch(uniqueId, async () => {
       return new Response(content);
     });
+
     const strFetchedContent = await expiringCache.convertBufferToString(fetchedContent);
     expect(strFetchedContent).equal(uniqueId);
   });
 
   it("should not fetch content from the network if not expired in the cache", async () => {
-    const expiringCache = new TestCache("NotExpiringTestDB", 1_000_000);
+    const expiringCache = new TestCache("NotExpiringTestDB", 10_000);
     const uniqueId = "test-not-expiring";
     const content = await cache.convertStringToBuffer(uniqueId);
 

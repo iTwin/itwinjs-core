@@ -14305,6 +14305,8 @@ export class TileAdmin {
     get totalTileContentBytes(): number;
     // @alpha
     get unselectedLoadedTiles(): Iterable<Tile>;
+    // @beta (undocumented)
+    readonly useIndexedDBCache?: boolean;
     // @internal (undocumented)
     readonly useLargerTiles: boolean;
     // @internal (undocumented)
