@@ -23,20 +23,18 @@ export class PassThroughCache implements LocalCache {
 /** @internal */
 export class IndexedDBCache implements LocalCache{
   private _db: any;
-  private _dbName: string = "IDB";
+  private _dbName: string;
   private _expirationTime?: number;
 
   public constructor(dbName: string, expirationTime?: number) {
     this._dbName = dbName;
-    if (expirationTime) {
-      this._expirationTime = expirationTime;
-    }
+    this._expirationTime = expirationTime ?? undefined;
   }
 
   protected async open(){
 
     // need to return a promise so that we can wait for the db to open before using it
-    return new Promise(function (this: IndexedDBCache, resolve) {
+    return new Promise(function (this: IndexedDBCache, resolve: any) {
 
       // open the db
       const openDB = window.indexedDB.open(this._dbName, 1);
@@ -67,7 +65,7 @@ export class IndexedDBCache implements LocalCache{
         initialObjectStore.createIndex("content", "content", {unique: false});
         initialObjectStore.createIndex("timeOfStorage", "timeOfStorage", {unique: false});
       };
-    });
+    }.bind(this));
   }
 
   protected async close() {
@@ -166,15 +164,15 @@ export class IndexedDBCache implements LocalCache{
   public async fetch(uniqueId: string, callback: (url: string) => Promise<Response>, callBackUrl?: string): Promise<ArrayBuffer> {
     let response = await this.retrieveContent(uniqueId);
 
-    // If nothing was found in the db
+    // If nothing was found in the db, fetch normally, then add that content to the db
     if (response === undefined) {
 
       // If necessary, use the callback url
       if (callBackUrl)
-        uniqueId = callBackUrl;
+        response = await (await callback(callBackUrl)).arrayBuffer();
+      else
+        response = await (await callback(uniqueId)).arrayBuffer();
 
-      // fetch normally, then add that content to the db
-      response = await (await callback(uniqueId)).arrayBuffer();
       await this.addContent(uniqueId, response);
     }
 
