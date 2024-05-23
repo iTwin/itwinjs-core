@@ -471,6 +471,9 @@ export abstract class RpcRequest<TResponse = any> {
   }
 
   private handleNotFound(status: RpcRequestStatus, value: RpcSerializedValue) {
+    if (RpcRequest.notFoundHandlers.numberOfListeners === 0)
+      this.handleRejected(value);
+
     const response = RpcMarshaling.deserialize(this.protocol, value);
     this.setStatus(status);
 
