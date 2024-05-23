@@ -153,7 +153,7 @@ export interface Settings {
    */
   getSetting<T extends SettingType>(settingName: SettingName, defaultValue?: T): T | undefined;
 
-  iterateSetting<T extends SettingType>(settingName: SettingName): Iterable<{ value: T, dictionary: Settings.Dictionary}>;
+  getSettingValues<T extends SettingType>(settingName: SettingName): Iterable<{ value: T, dictionary: Settings.Dictionary}>;
   
   /** Get a string setting by SettingName.
    * @param settingName The name of the setting

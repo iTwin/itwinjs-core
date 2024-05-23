@@ -109,7 +109,7 @@ export class SettingsImpl implements Settings {
     return defaultValue;
   }
 
-  public * iterateSetting<T extends SettingType>(settingName: SettingName): Iterable<{ value: T, dictionary: Settings.Dictionary}> {
+  public * getSettingValues<T extends SettingType>(settingName: SettingName): Iterable<{ value: T, dictionary: Settings.Dictionary}> {
     for (const dictionary of this.dictionaries) {
       const value = dictionary.getSetting<T>(settingName);
       if (undefined !== value) {

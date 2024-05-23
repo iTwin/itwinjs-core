@@ -240,9 +240,9 @@ class IModelSettings extends SettingsImpl {
     return super.resolveSetting(arg) ?? IModelHost.appWorkspace.settings.resolveSetting(arg, defaultValue);
   }
 
-  public override * iterateSetting<T extends SettingType>(name: string): Iterable<{ value: T, dictionary: Settings.Dictionary}> {
-    yield * super.iterateSetting(name);
-    yield * IModelHost.appWorkspace.settings.iterateSetting(name);
+  public override * getSettingValues<T extends SettingType>(name: string): Iterable<{ value: T, dictionary: Settings.Dictionary}> {
+    yield * super.getSettingValues(name);
+    yield * IModelHost.appWorkspace.settings.getSettingValues(name);
   }
 }
 
