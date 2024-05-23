@@ -140,7 +140,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
   public static createAlongArc(arc: Arc3d, minorRadius: number, capped: boolean): TorusPipe | undefined {
     if (!Angle.isAlmostEqualRadiansAllowPeriodShift(0.0, arc.sweep.startRadians))
       arc = arc.cloneInRotatedBasis(arc.sweep.startAngle);
-    if (!arc.isCircular) { // force vector90 to be perpendicular and same length as vector0
+    if (!arc.isCircular) { // ensure circularity by squaring the axes and equating their lengths
       const perpVector90 = arc.perpendicularVector.sizedCrossProduct(arc.vector0, arc.matrixRef.columnXMagnitude());
       if (!perpVector90)
         return undefined;

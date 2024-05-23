@@ -313,21 +313,23 @@ describe("Solids", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("TorusPipeNonCircular", () => {
-    const ck = new Checker(true, true);
+  it("TorusPipeNonCircular", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const arc = Arc3d.create(Point3d.create(-0.003571875), Vector3d.create(-0.001190625, 0.127), Vector3d.create(0.001190625, 0, 0.127), AngleSweep.createStartEndDegrees(0, 90));
-    ck.testFalse(arc.isCircular, "expect slightly non-circular arc");
-    const seg0 = LineSegment3d.create(arc.center, Point3d.createAdd2Scaled(arc.center, 1, arc.vector0, 1));
-    const seg1 = LineSegment3d.create(arc.center, Point3d.createAdd2Scaled(arc.center, 1, arc.vector90, 1));
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arc, seg0, seg1]);
+    const nonCircularArc = Arc3d.create(Point3d.create(-0.003571875), Vector3d.create(-0.001190625, 0.127), Vector3d.create(0.001190625, 0, 0.127), AngleSweep.createStartEndDegrees(0, 90));
+    ck.testFalse(nonCircularArc.isCircular, "expect slightly non-circular arc");
+    const seg0 = LineSegment3d.create(nonCircularArc.center, Point3d.createAdd2Scaled(nonCircularArc.center, 1, nonCircularArc.vector0, 1));
+    const seg1 = LineSegment3d.create(nonCircularArc.center, Point3d.createAdd2Scaled(nonCircularArc.center, 1, nonCircularArc.vector90, 1));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [nonCircularArc, seg0, seg1]);
     const diam = 0.009525;
-    const solid = TorusPipe.createAlongArc(arc, diam / 2, true);
+    const solid = TorusPipe.createAlongArc(nonCircularArc, diam / 2, true);
     if (ck.testDefined(solid, "created torus pipe")) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, solid);
-      // TODO: verify solid._localToWorld._matrix.columnY().scale(solid._radiusA) is "near" arc.vector90
-      // TODO: verify torus matrix x and y are perpendicular
-   }
+      ck.testTrue(solid!.cloneLocalToWorld().matrix.isRigid(false), "TorusPipe.createAlongArc forced arc circularity by squaring its axes and equating their lengths");
+      const vec0Near = solid!.cloneVectorX().scale(solid!.getMajorRadius()).isAlmostEqual(nonCircularArc.vector0);
+      const vec90Near = solid!.cloneVectorY().scale(solid!.getMajorRadius()).isAlmostEqual(nonCircularArc.vector90, 0.000012);
+      ck.testTrue(vec0Near && vec90Near, "TorusPipe frame is near the original arc's frame");
+    }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "TorusPipeNonCircular");
     expect(ck.getNumErrors()).equals(0);
   });
