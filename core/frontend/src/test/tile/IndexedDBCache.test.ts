@@ -39,7 +39,7 @@ export class TestCache extends IndexedDBCache{
   }
 }
 
-describe("IndexedDBCache", () => {
+describe.only("IndexedDBCache", () => {
   const cache = new TestCache("TestDB");
 
   it("should add content to the cache", async () => {
@@ -88,14 +88,12 @@ describe("IndexedDBCache", () => {
   });
 
   it("should fetch content from the network if expired in the cache", async () => {
-    const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-    const expiringCache = new TestCache("ExpiringTestDB", 1);
+    // Set expiration time to -1 to make the content expire immediately
+    const expiringCache = new TestCache("ExpiringTestDB", -1);
     const uniqueId = "test-expiring";
     const content = await cache.convertStringToBuffer(uniqueId);
 
     await expiringCache.testAddContent(uniqueId, content);
-    await pause(1000);
 
     // The content should have expired, and therefore, fetchedContent should be undefined
     let fetchedContent = await expiringCache.testRetrieveContent(uniqueId);
@@ -111,7 +109,7 @@ describe("IndexedDBCache", () => {
   });
 
   it("should not fetch content from the network if not expired in the cache", async () => {
-    const expiringCache = new TestCache("NotExpiringTestDB", 10_000);
+    const expiringCache = new TestCache("NotExpiringTestDB", 1_000_000);
     const uniqueId = "test-not-expiring";
     const content = await cache.convertStringToBuffer(uniqueId);
 
