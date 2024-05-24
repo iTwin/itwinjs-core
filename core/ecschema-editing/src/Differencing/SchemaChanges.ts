@@ -21,15 +21,15 @@ export interface Skip {
   path?: string;
 }
 
-export type AnySchemaFix = Rename | Skip;
+export type AnySchemaChange = Rename | Skip;
 
-export namespace SchemaFixes {
-  export function apply(differences: SchemaDifferences, fixes: AnySchemaFix[]): SchemaDifferences {
-    if(differences.fixes === undefined) {
-      differences.fixes = [];
+export namespace SchemaChange {
+  export function apply(differences: SchemaDifferences, changes: AnySchemaChange[]): SchemaDifferences {
+    if(differences.changes === undefined) {
+      differences.changes = [];
     }
 
-    differences.fixes.push(...fixes);
+    differences.changes.push(...changes);
     return differences;
   }
 

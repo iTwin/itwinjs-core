@@ -114,13 +114,13 @@ export function getUnresolvedConflicts(differences: SchemaDifferences): SchemaDi
     conflictMap.set(conflict.id, conflict);
   }
 
-  if(differences.fixes === undefined || differences.fixes.length === 0) {
+  if(differences.changes === undefined || differences.changes.length === 0) {
     return differences.conflicts;
   }
 
-  for(const fix of differences.fixes) {
+  for(const change of differences.changes) {
     const foundConflict = differences.conflicts.find((entry) => {
-      return entry.itemName === fix.itemName && entry.path === fix.path;
+      return entry.itemName === change.itemName && entry.path === change.path;
     });
 
     if(foundConflict !== undefined) {

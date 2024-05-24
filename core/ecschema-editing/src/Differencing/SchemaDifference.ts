@@ -6,7 +6,7 @@
  * @module Differencing
  */
 
-import { AnySchemaFix } from "././SchemaFixes";
+import { AnySchemaChange } from "././SchemaChanges";
 import { SchemaChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
 import { SchemaDifferenceConflict } from "./SchemaConflicts";
@@ -275,7 +275,7 @@ export interface SchemaDifferences {
   /** List of conflicts found while comparing the schemas. */
   readonly conflicts?: SchemaDifferenceConflict[];
 
-  fixes?: AnySchemaFix[];
+  changes?: AnySchemaChange[];
 }
 
 /**

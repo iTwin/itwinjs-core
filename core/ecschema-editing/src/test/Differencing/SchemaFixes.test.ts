@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ConflictCode, getUnresolvedConflicts, hasUnresolvedConflicts } from "../../Differencing/SchemaConflicts";
-import { AnySchemaFix, SchemaFixes } from "../../Differencing/SchemaFixes";
+import { AnySchemaChange, SchemaChange } from "../../Differencing/SchemaChanges";
 import { SchemaDifference } from "../../Differencing/SchemaDifference";
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -83,7 +83,7 @@ describe.only("Difference Conflict Resolving", () => {
     ];
 
     // For all runs the class ClassToBeSkipped shall be skipped.
-    let storedSchemaFixes: AnySchemaFix[] = [{
+    let storedSchemaChanges: AnySchemaChange[] = [{
       type: "skip",
       itemName: "ClassToBeSkipped",
     }];
@@ -94,28 +94,28 @@ describe.only("Difference Conflict Resolving", () => {
       expect(hasUnresolvedConflicts(differences), `differences between ${differences.targetSchemaName} and ${differences.sourceSchemaName} are supposed to have unresolved conflicts`).is.true;
 
       // Apply previous stored fixes that shall be applied to the differences.
-      SchemaFixes.apply(differences, storedSchemaFixes);
+      SchemaChange.apply(differences, storedSchemaChanges);
 
       // Resolve remaining conflicts. In this test only naming collisions, which shall get renamed.
       const unresolvedConflicts = getUnresolvedConflicts(differences);
       for(const conflict of unresolvedConflicts) {
         switch(conflict.code) {
           case ConflictCode.ConflictingItemName:
-            SchemaFixes.renameSchemaItem(differences, conflict.itemName!, `${conflict.itemName}_1`);
+            SchemaChange.renameSchemaItem(differences, conflict.itemName!, `${conflict.itemName}_1`);
             break;
           case ConflictCode.ConflictingPropertyName:
-            SchemaFixes.renameProperty(differences, conflict.itemName!, conflict.path!, `${conflict.path}_1`);
+            SchemaChange.renameProperty(differences, conflict.itemName!, conflict.path!, `${conflict.path}_1`);
             break;
           default: expect.fail(`Unexpected conflict code: ${conflict.code}`);
         }
       }
 
       expect(hasUnresolvedConflicts(differences), "differences is not supposed to have unresolved conflicts").is.false;
-      storedSchemaFixes = differences.fixes!;
+      storedSchemaChanges = differences.changes!;
     }
 
-    expect(storedSchemaFixes).has.a.lengthOf(3);
-    expect(storedSchemaFixes).deep.includes({
+    expect(storedSchemaChanges).has.a.lengthOf(3);
+    expect(storedSchemaChanges).deep.includes({
       type: "skip",
       itemName: "ClassToBeSkipped",
     });
