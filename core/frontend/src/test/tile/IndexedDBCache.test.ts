@@ -39,7 +39,7 @@ export class TestCache extends IndexedDBCache{
   }
 }
 
-describe.only("IndexedDBCache", () => {
+describe("IndexedDBCache", () => {
   const cache = new TestCache("TestDB");
 
   it("should add content to the cache", async () => {
