@@ -228,6 +228,7 @@ export class GeometryStreamBuilder {
   /** Store local ranges in GeometryStream for all subsequent geometry appended. Can improve performance of range testing for elements with a GeometryStream
    * containing more than one [[GeometryQuery]] differentiable by range. Not useful for a single [[GeometryQuery]] as its range and that of the [[GeometricElement]] are the same.
    * Ignored when defining a [[GeometryPart]] and not needed when only appending [[GeometryPart]] instances to a [[GeometricElement]] as these store their own range.
+   * @note subRange should not be supplied and will be ignored with element insert/update workflows, as the subRange is calculated.
    */
   public appendGeometryRanges(subRange?: Range3d) {
     this.geometryStream.push({ subRange: subRange ?? Range3d.createNull() });

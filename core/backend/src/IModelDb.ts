@@ -1779,7 +1779,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       if (!elementProps)
         return undefined;
 
-      if (loadProps.wantGeometry || loadProps.wantBRepData) {
+      if (loadProps.wantGeometry) {
         const geom = this.getGeometryStreamProps(elementId, loadProps.wantBRepData);
         return { ...elementProps, geom };
       }
@@ -1936,7 +1936,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       });
     }
 
-    /** Get GometryStreamProps of an Element by Id.
+    /** Get GeometryStreamProps of an Element by Id.
      * @returns The geometry stream JSON of the element or `undefined` if the element itself or geometry information is not found.
      * @note Useful for cases when fetching Bis.Element with $ syntax, but geometry stream is also needed.
      * @see getElementProps
