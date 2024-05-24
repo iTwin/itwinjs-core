@@ -19,6 +19,8 @@ type NativeInterfaceMapping =
 | [NativeGeometryPartProps, GeometryPartProps]
 | [NativeRenderTimelineProps, RenderTimelineProps];
 
+/** Type that maps a native interface to its corresponding props interface. This helps ensure type safety when mapping native elements to their props.
+ * @internal */
 export type NativeInterfaceMap<T> = Extract<NativeInterfaceMapping, [unknown, T]>[0];
 
 type NativeElementProps = Omit<ElementProps, "model" | "code" | "classFullName" | "jsonProperties" | "isInstanceOfEntity"> & {
@@ -89,11 +91,11 @@ function mapElementProps(props: NativeElementProps, loadProps?: ElementLoadOptio
       ? JSON.parse(jsonProperties, (key, value) => {
         if (value === null)
           return undefined;
-        if (key === "subCategory")
+        if (key === "subCategory") // we would ideally make this more specific. should only apply for jsonProperties.styles.subCategoryOvr[i].subCategory
           return `0x${(+value).toString(16)}`;
-        if (key === "excludedElements" && loadProps?.displayStyle?.compressExcludedElementIds !== true)
+        if (key === "excludedElements" && loadProps?.displayStyle?.compressExcludedElementIds !== true)  // we would ideally make this more specific. should only apply for jsonProperties.styles.excludedElements
           return CompressedId64Set.decompressArray(value);
-        if (key === "elementIds" && loadProps?.displayStyle?.omitScheduleScriptElementIds === true)
+        if (key === "elementIds" && loadProps?.displayStyle?.omitScheduleScriptElementIds === true) // we would ideally make this more specific. should only apply for jsonProperties.styles.scheduleScript[i].elementTimelines[i].elementIds
           return "";
         return value;
       })
@@ -102,6 +104,12 @@ function mapElementProps(props: NativeElementProps, loadProps?: ElementLoadOptio
   };
 }
 
+/** Function to map native Bis.Element properties to ElementProps.
+     * @param props A JSON representation of the native element properties.
+     * @param loadProps Load options to match the expected element representation.
+     * @returns The JSON representation of the mapped element properties.
+     * @internal
+     */
 export function mapNativeElementProps<T extends ElementProps>(props: NativeInterfaceMap<T>, loadProps?: ElementLoadOptions): T {
   if ((!loadProps?.wantGeometry || !loadProps?.wantBRepData) && "geometryStream" in props)
     delete props.geometryStream; // Removing it here to remove excessive binary property mapping
@@ -186,7 +194,7 @@ export function mapNativeElementProps<T extends ElementProps>(props: NativeInter
   if ("script" in props && !!props.script) {
     element.script = loadProps?.renderTimeline?.omitScriptElementIds !== true ? props.script :
       JSON.stringify(JSON.parse(props.script, (key, value) => {
-        if (key === "elementIds")
+        if (key === "elementIds") // we need to make this more specific. should only apply for script[i].elementTimelines[i].elementIds
           return "";
         return value;
       }));

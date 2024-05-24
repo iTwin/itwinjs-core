@@ -86,7 +86,7 @@ describe("RenderTimeline", () => {
     const timelineHasNonEmptyElementIds = (props: RenderTimelineProps) => {
       expect(props).not.to.be.undefined;
 
-      const script = JSON.parse(props.script);
+      const script = JSON.parse(props.script) as RenderSchedule.ScriptProps;
 
       expect(script.length).least(1);
       let numElementIdProps = 0;

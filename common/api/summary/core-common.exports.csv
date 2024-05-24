@@ -464,6 +464,7 @@ public;MapImagerySettings
 public;MapLayerKey
 public;MapLayerProps = ImageMapLayerProps | ModelMapLayerProps
 public;class MapLayerSettings
+internal;mapNativeElementProps
 public;MapSubLayerProps
 public;MapSubLayerSettings
 public;mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus
@@ -502,6 +503,7 @@ internal;MultiModelPackedFeatureTable
 internal;NativeAppFunctions
 internal;nativeAppIpcStrings:
 internal;NativeAppNotifications
+internal;NativeInterfaceMap
 public;NavigationBindingValue
 public;NavigationValue
 public;nextHighestPowerOfTwo(num: number): number

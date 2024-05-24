@@ -1766,12 +1766,13 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         return undefined;
 
       const elementProps = this._iModel.withPreparedStatement("SELECT $ FROM Bis.Element WHERE ECInstanceId=? OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB", (statement: ECSqlStatement) => {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion. elementId can't be null here, but eslint recognizes it as an error.
-        statement.bindId(1, elementId!);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        statement.bindId(1, elementId!); // elementId can't be null here, but eslint recognizes it as an error.
 
         if (statement.step() !== DbResult.BE_SQLITE_ROW)
           return undefined;
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         return mapNativeElementProps(JSON.parse(statement.getValue(0).getString()), loadProps) as T;
       });
 
@@ -1779,14 +1780,14 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         return undefined;
 
       if (loadProps.wantGeometry || loadProps.wantBRepData) {
-        const geom = this.getGeometryStreamProps(elementId, loadProps.wantBRepData)
+        const geom = this.getGeometryStreamProps(elementId, loadProps.wantBRepData);
         return { ...elementProps, geom };
       }
 
       if (elementProps.classFullName === "BisCore:CategorySelector") {
         const categories = this._iModel.withPreparedStatement("SELECT TargetECInstanceId FROM Bis.CategorySelectorRefersToCategories WHERE SourceECInstanceId=?", (statement: ECSqlStatement) => {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion. elementId can't be null here, but eslint recognizes it as an error.
-          statement.bindId(1, elementId!);
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          statement.bindId(1, elementId!); // elementId can't be null here, but eslint recognizes it as an error.
 
           const ids: Id64Array = [];
           while (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -1800,8 +1801,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
       if (elementProps.classFullName === "BisCore:ModelSelector") {
         const models = this._iModel.withPreparedStatement("SELECT TargetECInstanceId FROM Bis.ModelSelectorRefersToModels WHERE SourceECInstanceId=?", (statement: ECSqlStatement) => {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion. elementId can't be null here, but eslint recognizes it as an error.
-          statement.bindId(1, elementId!);
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          statement.bindId(1, elementId!); // elementId can't be null here, but eslint recognizes it as an error.
 
           const ids: Id64Array = [];
           while (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -1935,6 +1936,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       });
     }
 
+    /** Get GometryStreamProps of an Element by Id.
+     * @returns The geometry stream JSON of the element or `undefined` if the element itself or geometry information is not found.
+     * @note Useful for cases when fetching Bis.Element with $ syntax, but geometry stream is also needed.
+     * @see getElementProps
+     */
     private getGeometryStreamProps(elementId: Id64String, wantBRepData?: boolean): GeometryStreamProps | undefined {
       const builder = new GeometryStreamBuilder();
 
@@ -1948,25 +1954,29 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
           if (ElementGeometry.isGeometryQueryEntry(entry.value)) {
             const geom = entry.toGeometryQuery();
-            if (geom !== undefined) builder.appendGeometry(geom);
+            if (geom !== undefined)
+              builder.appendGeometry(geom);
           } else if (ElementGeometry.isGeometricEntry(entry.value)) {
             switch (entry.value.opcode) {
               case ElementGeometryOpcode.BRep:
                 const brep = entry.toBRepData(wantBRepData);
 
-                if (brep !== undefined) builder.appendBRepData(brep);
+                if (brep !== undefined)
+                  builder.appendBRepData(brep);
                 break;
 
               case ElementGeometryOpcode.TextString:
                 const text = entry.toTextString();
 
-                if (text !== undefined) builder.appendTextString(text);
+                if (text !== undefined)
+                  builder.appendTextString(text);
                 break;
 
               case ElementGeometryOpcode.Image:
                 const image = entry.toImageGraphic();
 
-                if (image !== undefined) builder.appendImage(image);
+                if (image !== undefined)
+                  builder.appendImage(image);
                 break;
             }
           } else if (ElementGeometryOpcode.PartReference === entry.value.opcode) {
@@ -1986,7 +1996,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
                 partId,
                 instanceTrans.origin,
                 instanceTrans.angles,
-                instanceScale
+                instanceScale,
               );
             }
           }
