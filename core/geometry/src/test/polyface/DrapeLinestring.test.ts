@@ -11,6 +11,7 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
@@ -226,7 +227,7 @@ it("sweepLinestringToFacetsXYZingers", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
 
-  const data = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/polyface/sweepLinestringToFacetsXY/inputs.imjs", "utf8")));
+  const data = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/polyface/sweepLinestringToFacetsXY/inputs.imjs", "utf8")));
   let x0 = 0;
   const y0 = 0;
   const z0 = 0;
@@ -331,5 +332,34 @@ it("sweepLinestringToFacetsXYZVerticalMesh", () => {
   }
 
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "sweepLinestringToFacetsXYZVerticalMesh");
+  expect(ck.getNumErrors()).equals(0);
+});
+
+it("drapeLineStringAsLines2", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/polyface/sweepLinestringToFacetsXY/drape-linestring-to-meshes.imjs", "utf8")));
+  if (Array.isArray(inputs) && 2 === inputs.length && inputs[0] instanceof LineString3d && inputs[1] instanceof IndexedPolyface) {
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs);
+    const lineString = inputs[0];
+    const mesh = inputs[1];
+    for (const angle of [undefined, Angle.createDegrees(0.06)]) {
+      const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), angle, true, true, false, false);
+      const drapedLineString = PolyfaceQuery.sweepLineStringToFacets(lineString.packedPoints, mesh, options);
+      ck.testTrue(drapedLineString.length > 0, "computed draped linestring");
+      const range = Range3d.createNull();
+      for (const linear of drapedLineString) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, linear);
+        range.extendRange(linear.range());
+      }
+      if (angle)
+        ck.testLT(range.zLength(), 3, "draped linestring with large sideAngle ignores nearly vertical side facets");
+      else
+        ck.testLT(10, range.zLength(), "draped linestring with default sideAngle drapes over nearly vertical side facets");
+    }
+  } else {
+    ck.announceError("invalid inputs");
+  }
+  GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "drapeLineStringAsLines2");
   expect(ck.getNumErrors()).equals(0);
 });

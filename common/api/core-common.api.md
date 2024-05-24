@@ -1799,8 +1799,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 2162688,
-    Major = 33,
+    Combined = 2228224,
+    Major = 34,
     Minor = 0
 }
 
@@ -8658,7 +8658,7 @@ export namespace RpcRequestFulfillment {
 export type RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number;
 
 // @internal
-export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void;
+export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason?: any) => void) => void;
 
 // @public @deprecated
 export enum RpcRequestStatus {
@@ -9458,13 +9458,13 @@ export class TestRpcManager {
 // @beta
 export class TextAnnotation {
     anchor: TextAnnotationAnchor;
-    // @internal
-    computeDocumentTransform(layoutRange: Range2d): Transform;
+    computeAnchorPoint(textBlockDimensions: XAndY): Point3d;
+    computeTransform(textBlockDimensions: XAndY): Transform;
     static create(args?: TextAnnotationCreateArgs): TextAnnotation;
     equals(other: TextAnnotation): boolean;
     static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation;
+    offset: Point3d;
     orientation: YawPitchRollAngles;
-    origin: Point3d;
     textBlock: TextBlock;
     toJSON(): TextAnnotationProps;
 }
@@ -9496,16 +9496,16 @@ export interface TextAnnotationAnchor {
 // @beta
 export interface TextAnnotationCreateArgs {
     anchor?: TextAnnotationAnchor;
+    offset?: Point3d;
     orientation?: YawPitchRollAngles;
-    origin?: Point3d;
     textBlock?: TextBlock;
 }
 
 // @beta
 export interface TextAnnotationProps {
     anchor?: TextAnnotationAnchor;
+    offset?: XYZProps;
     orientation?: YawPitchRollProps;
-    origin?: XYZProps;
     textBlock?: TextBlockProps;
 }
 
@@ -10124,6 +10124,8 @@ export interface TileOptions {
     // (undocumented)
     readonly enableInstancing: boolean;
     // (undocumented)
+    readonly expandProjectExtents: boolean;
+    // (undocumented)
     readonly ignoreAreaPatterns: boolean;
     // (undocumented)
     readonly maximumMajorTileFormatVersion: number;
@@ -10346,11 +10348,13 @@ export enum TreeFlags {
     // (undocumented)
     EnforceDisplayPriority = 2,
     // (undocumented)
-    None = 0,// Use project extents as the basis of the tile tree's range.
+    ExpandProjectExtents = 16,// Use project extents as the basis of the tile tree's range.
     // (undocumented)
-    OptimizeBRepProcessing = 4,// For 3d plan projection models, group graphics into layers based on subcategory.
+    None = 0,// For 3d plan projection models, group graphics into layers based on subcategory.
     // (undocumented)
-    UseLargerTiles = 8,// Use an optimized pipeline for producing facets from BRep entities.
+    OptimizeBRepProcessing = 4,// Use an optimized pipeline for producing facets from BRep entities.
+    // (undocumented)
+    UseLargerTiles = 8,// Produce tiles of larger size in screen pixels.
     // (undocumented)
     UseProjectExtents = 1
 }

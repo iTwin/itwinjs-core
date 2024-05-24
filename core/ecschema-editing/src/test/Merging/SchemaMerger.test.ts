@@ -5,9 +5,10 @@
 import { Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
-import { ConflictCode, SchemaConflictsError, SchemaDifferenceConflict } from "../../Differencing/SchemaConflicts";
+import { ConflictCode, SchemaDifferenceConflict } from "../../Differencing/SchemaConflicts";
 import { expect } from "chai";
 import "chai-as-promised";
+import { SchemaConflictsError } from "../../Differencing/Errors";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -29,7 +30,7 @@ describe("Schema merge tests", () => {
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       conflicts: [conflict],
-      changes: [],
+      differences: [],
     });
 
     await expect(merge).to.be.rejectedWith(SchemaConflictsError, "Schema's can't be merged if there are unresolved conflicts.")
@@ -56,7 +57,7 @@ describe("Schema merge tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes:[{
+      differences:[{
         changeType: "modify",
         schemaType: SchemaOtherTypes.Schema,
         difference: {
@@ -88,7 +89,7 @@ describe("Schema merge tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes:[{
+      differences:[{
         changeType: "add",
         schemaType: SchemaOtherTypes.CustomAttributeInstance,
         appliedTo: "Schema",

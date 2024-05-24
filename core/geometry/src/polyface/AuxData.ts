@@ -48,7 +48,7 @@ export class AuxChannelData {
   /** The vertex values for this data. A single value per vertex for scalar and distance types and 3 values (x,y,z) for normal or vector channels. */
   public values: number[];
 
-  /** Construct a new [[AuxChannelData]] from input value and vertex values. */
+  /** Constructor. If `values` is a number array, it is captured.  */
   constructor(input: number, values: number[] | Float64Array) {
     this.input = input;
     if (values instanceof Float64Array) {
@@ -91,7 +91,7 @@ export class AuxChannel {
   /** The input name. */
   public inputName?: string;
 
-  /** Create a [[AuxChannel]] */
+  /** Constructor with CAPTURED inputs. */
   public constructor(data: AuxChannelData[], dataType: AuxChannelDataType, name?: string, inputName?: string) {
     this.data = data;
     this.dataType = dataType;
@@ -121,17 +121,27 @@ export class AuxChannel {
     return true;
   }
 
-  /** True if [[entriesPerValue]] is `1`. */
+  /** True if the data type is 1-dimensional. */
+  public static isScalar(dataType: AuxChannelDataType): boolean {
+    return dataType === AuxChannelDataType.Distance || dataType === AuxChannelDataType.Scalar;
+  }
+
+  /** True if the data stored in this AuxChannel is 1-dimensional. */
   public get isScalar(): boolean {
-    return this.dataType === AuxChannelDataType.Distance || this.dataType === AuxChannelDataType.Scalar;
+    return AuxChannel.isScalar(this.dataType);
   }
 
-  /** The number of values in `data.values` per entry - 1 for scalar and distance types, 3 for normal and vector types. */
+  /** The dimension (1D or 3D) of each datum of an AuxChannel of the given type. */
+  public static entriesPerValue(dataType: AuxChannelDataType): number {
+    return this.isScalar(dataType) ? 1 : 3;
+  }
+
+  /** The dimension (1D or 3D) of each datum in the data arrays of this AuxChannel. */
   public get entriesPerValue(): number {
-    return this.isScalar ? 1 : 3;
+    return AuxChannel.entriesPerValue(this.dataType);
   }
 
-  /** The number of entries in `data.values`. */
+  /** The number of data stored in each data array of this AuxChannel, equal to the length of the array divided by `entriesPerValue`. */
   public get valueCount(): number {
     return 0 === this.data.length ? 0 : this.data[0].values.length / this.entriesPerValue;
   }
@@ -168,12 +178,15 @@ export class AuxChannel {
   }
 }
 
-/**  The `PolyfaceAuxData` structure contains one or more analytical data channels for each vertex of a [[Polyface]], allowing the polyface to be styled
+/**
+ * The `PolyfaceAuxData` structure contains one or more analytical data channels for each vertex of a [[Polyface]], allowing the polyface to be styled
  * using an [AnalysisStyle]($common).
- * Typically a polyface will contain only vertex data required for its basic display: the vertex position, normal
- * and possibly texture parameter. `PolyfaceAuxData` provides supplemental data that is generally computed
- * in an analysis program or other external data source. This can be scalar data used to either override the vertex colors through, or
- * XYZ data used to deform the mesh by adjusting the vertex positions and/or normals.
+ * Typically a polyface will contain only vertex data required for its basic display: vertex position, normal, texture parameter, color.
+ * `PolyfaceAuxData` provides supplemental per-vertex data that is generally computed in an analysis program or other external data source.
+ * This supplemental data can be either 1D (e.g., height, override color) or 3D (e.g., displacement vector, override normal); see [[AuxChannel.entriesPerValue]], [[AuxChannel.dataType]].
+ * All data channels are indexed by the same indices, which must have the same length and structure as the other Polyface indices.
+ * This means that if a facet's face loop is found at index range [i0,i1] in the Polyface vertex index array, then the same index range [i0,i1]
+ * locates the data for this facet in all the other Polyface index arrays, including the `PolyfaceAuxData` indices.
  * @see [[PolyfaceData.auxData]] to associate auxiliary data with a polyface.
  * @public
  */
@@ -183,6 +196,7 @@ export class PolyfaceAuxData {
   /** The indices (shared by all data in all channels) mapping the data to the mesh facets. */
   public indices: number[];
 
+  /** Constructor with CAPTURED inputs. */
   public constructor(channels: AuxChannel[], indices: number[]) {
     this.channels = channels;
     this.indices = indices;

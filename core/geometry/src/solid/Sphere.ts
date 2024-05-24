@@ -47,10 +47,12 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     return u * Math.PI * 2.0;
   }
 
+  /** Constructor CAPTURES inputs */
   private constructor(localToWorld: Transform, latitudeSweep: AngleSweep, capped: boolean) {
     super(capped);
     this._localToWorld = localToWorld;
     this._latitudeSweep = latitudeSweep ? latitudeSweep : AngleSweep.createFullLatitude();
+    this._latitudeSweep.capLatitudeInPlace();
   }
   /** return a deep clone */
   public clone(): Sphere {
@@ -89,12 +91,11 @@ export class Sphere extends SolidPrimitive implements UVSurface {
   /** Create from center and radius, with optional restricted latitudes. */
   public static createCenterRadius(center: Point3d, radius: number, latitudeSweep?: AngleSweep): Sphere {
     const localToWorld = Transform.createOriginAndMatrix(center, Matrix3d.createUniformScale(radius));
-    return new Sphere(localToWorld,
-      latitudeSweep ? latitudeSweep : AngleSweep.createFullLatitude(), false);
+    return new Sphere(localToWorld, latitudeSweep ? latitudeSweep.clone() : AngleSweep.createFullLatitude(), false);
   }
   /** Create an ellipsoid which is a unit sphere mapped to position by an (arbitrary, possibly skewed and scaled) transform. */
   public static createEllipsoid(localToWorld: Transform, latitudeSweep: AngleSweep, capped: boolean): Sphere | undefined {
-    return new Sphere(localToWorld, latitudeSweep, capped);
+    return new Sphere(localToWorld.clone(), latitudeSweep.clone(), capped);
   }
 
   /** Create a sphere from the typical parameters of the Dgn file */

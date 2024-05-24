@@ -58,9 +58,8 @@ export class RpcMarshaling {
   public static serialize(protocol: RpcProtocol | undefined, value: any): RpcSerializedValue {
     const serialized = RpcSerializedValue.create();
 
-    if (typeof (value) === "undefined") {
+    if (value === undefined)
       return serialized;
-    }
 
     marshalingTarget = serialized;
     chunkThreshold = protocol ? protocol.transferChunkThreshold : 0;
@@ -119,7 +118,7 @@ class WireFormat {
     return value;
   }
 
-  private static marshalBinary(value: any): any {
+  private static marshalBinary(value: Uint8Array): MarshalingBinaryMarker | undefined {
     if (value instanceof Uint8Array || isBuffer(value)) {
       const marker: MarshalingBinaryMarker = { isBinary: true, index: -1, size: value.byteLength, chunks: 1 };
 
@@ -154,7 +153,7 @@ class WireFormat {
     }
   }
 
-  private static unmarshalBinary(value: MarshalingBinaryMarker): any {
+  private static unmarshalBinary(value: MarshalingBinaryMarker): Uint8Array {
     if (value.index >= marshalingTarget.data.length) {
       throw new IModelError(BentleyStatus.ERROR, `Cannot unmarshal missing binary value.`);
     }
@@ -178,7 +177,7 @@ class WireFormat {
     }
   }
 
-  private static marshalError(value: any) {
+  private static marshalError(value: unknown) {
     if (value instanceof Error) {
       const props = Object.getOwnPropertyDescriptors(value);
       props.isError = { configurable: true, enumerable: true, writable: true, value: true };

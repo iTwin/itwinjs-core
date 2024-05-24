@@ -29,8 +29,7 @@ jobs:
           git config --local user.name imodeljs-admin
       - name: Run update-changelogs.mjs
         run: |
-          npm i -g zx
-          npm install -g @microsoft/rush
-          zx --install ./.github/workflows/automation-scripts/update-changelogs.mjs
+          sudo npm install -g @microsoft/rush
+          npx zx@latest --install ./.github/workflows/automation-scripts/update-changelogs.mjs
         # turn off the default behavior to fail fast. The script has its own error handling
         shell: bash {0}
