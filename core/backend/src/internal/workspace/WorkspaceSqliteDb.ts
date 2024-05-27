@@ -35,4 +35,3 @@ export class WorkspaceSqliteDb extends VersionedSqliteDb {
   }
 }
 
-

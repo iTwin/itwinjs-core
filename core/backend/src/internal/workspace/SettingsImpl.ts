@@ -12,7 +12,7 @@ import { extname, join } from "path";
 import { BeEvent } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../../IModelJsFs";
-import { SettingName, SettingObject, SettingType, Settings } from "../../workspace/Settings";
+import { SettingName, SettingObject, Settings, SettingType } from "../../workspace/Settings";
 import { IModelHost } from "../../IModelHost";
 
 const dictionaryMatches = (d1: Settings.Dictionary.Source, d2: Settings.Dictionary.Source): boolean => {
@@ -22,7 +22,7 @@ const dictionaryMatches = (d1: Settings.Dictionary.Source, d2: Settings.Dictiona
 class SettingsDictionaryImpl implements Settings.Dictionary {
   public readonly props: Settings.Dictionary.Props;
   public readonly settings: SettingObject;
-  
+
   public constructor(props: Settings.Dictionary.Props, settings: SettingObject) {
     this.props = { ...props }; // make a copy so it can't be changed by caller
     this.settings = settings;
@@ -154,7 +154,7 @@ export class SettingsImpl implements Settings {
     if (IModelHost.settingsSchemas.settingDefs.get(name)?.combineArray) {
       return this.getCombinedArray<T>(name, defaultValue);
     }
-    
+
     const out = this.getSetting<T[]>(name);
     if (out === undefined)
       return defaultValue;

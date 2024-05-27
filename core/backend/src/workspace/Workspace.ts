@@ -214,7 +214,7 @@ export interface WorkspaceDb {
   prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch;
 
   queryResources(args: WorkspaceDb.QueryResourcesArgs): void;
-  
+
   /** @internal */
   queryFileResource(rscName: WorkspaceResourceName): { localFileName: LocalFileName, info: IModelJsNative.EmbedFileQuery } | undefined;
 }

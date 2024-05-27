@@ -689,7 +689,6 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
   }
 }
 
-
 export function constructWorkspaceDb(props: WorkspaceDb.Props, container: WorkspaceContainer): WorkspaceDb {
   return new WorkspaceDbImpl(props, container);
 }
@@ -755,7 +754,6 @@ export function makeWorkspaceDbFileName(dbName: WorkspaceDb.DbName, version?: Wo
 }
 
 export const workspaceManifestProperty: FilePropertyProps = { namespace: "workspace", name: "manifest" };
-
 
 function throwWorkspaceDbLoadError(msg: string, wsDbProps: WorkspaceDb.Props | WorkspaceDb.CloudProps, db?: WorkspaceDb): never {
   const error = new Error(msg) as WorkspaceDb.LoadError;
