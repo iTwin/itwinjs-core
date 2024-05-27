@@ -1466,7 +1466,7 @@ describe("GeometryStream", () => {
     roundTrip();
 
     builder.isViewIndependent = false;
-    expect(builder.getHeader()).not.to.be.undefined;
+    expect(builder.getHeader()).to.be.undefined;
     expect(builder.isViewIndependent).to.be.false;
     roundTrip();
 
