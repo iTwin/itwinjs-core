@@ -53,6 +53,8 @@ export enum ChangesetType {
   Regular = 0,
   /** changeset *does* contain schema changes. */
   Schema = 1,
+  /** Schema changeset pushed by iModel with SchemaSync enabled */
+  SchemaSync = Schema | 64,
 }
 
 /** Properties of a changeset
