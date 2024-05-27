@@ -10,7 +10,6 @@ public;AuxCoordSystemSpatial
 beta;AzureBlobStorageCredentials
 internal;BackendHubAccess
 public;BackendLoggerCategory
-internal;BaseSettings 
 public;BindParameter = number | string
 public;BisCoreSchema 
 beta;BlobContainer
@@ -116,6 +115,7 @@ public;ECSqlInsertResult
 public;ECSqlStatement 
 public;ECSqlValue
 public;ECSqlValueIterator 
+beta;EditableWorkspaceDb 
 public;ElementAspect 
 beta;ElementDrivesElement 
 beta;ElementDrivesElementProps 
@@ -198,6 +198,9 @@ public;GeometricModel
 public;class GeometricModel2d 
 public;class GeometricModel3d 
 public;GeometryPart 
+beta;getWorkspaceBlob(args: GetWorkspaceResourceArgs): Uint8Array | undefined
+beta;GetWorkspaceResourceArgs
+beta;getWorkspaceString(args: GetWorkspaceResourceArgs): string | undefined
 public;Graphic3d 
 public;class GraphicalElement2d 
 public;GraphicalElement2dIsOfType 
@@ -285,7 +288,6 @@ beta;OnSubModelIdArg
 beta;OnSubModelPropsArg 
 public;OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs & OpenSqliteArgs
 public;OrthographicViewDefinition 
-internal;OwnedWorkspace 
 beta;PartialECChangeUnifier
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 
@@ -309,6 +311,8 @@ beta;PropertyStore
 public;PullChangesArgs = ToChangesetArgs &
 public;PushChangesArgs 
 beta;QueryLocalChangesArgs
+beta;queryWorkspaceResources(args: QueryWorkspaceResourcesArgs): void
+beta;QueryWorkspaceResourcesArgs
 beta;class RecipeDefinitionElement 
 public;Relationship 
 public;Relationships
@@ -342,6 +346,7 @@ beta;SettingSchema
 beta;SettingSchemaGroup
 beta;SettingsSchemas
 beta;SettingType = JSONSchemaType
+beta;SettingType
 public;Sheet 
 public;SheetBorderTemplate 
 public;SheetModel 
@@ -417,19 +422,12 @@ public;VolumeElement
 public;WebMercatorModel 
 beta;Workspace
 beta;Workspace
-internal;construct(settings: Settings, opts?: WorkspaceOpts): OwnedWorkspace
 beta;WorkspaceContainer
-internal;makeDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName
-internal;parseDbFileName(dbFileName: WorkspaceDb.DbFullName):
-internal;validateContainerId(id: WorkspaceContainer.Id): void
-internal;validateDbName(dbName: WorkspaceDb.DbName): void
-internal;validateVersion(version?: WorkspaceDb.Version): string
 beta;WorkspaceContainer
 beta;WorkspaceDb
-internal;construct(props: WorkspaceDb.Props, container: WorkspaceContainer): WorkspaceDb
-internal;throwLoadError(msg: string, wsDbProps: WorkspaceDb.Props | WorkspaceDb.CloudProps, db?: WorkspaceDb): never
-internal;throwLoadErrors(msg: string, errors: WorkspaceDb.LoadError[]): never
 beta;WorkspaceDb
+beta;WorkspaceEditor
+beta;WorkspaceEditor
 beta;WorkspaceOpts
-beta;WorkspaceResource
-beta;WorkspaceSettings
+beta;WorkspaceResourceName = string
+beta;WorkspaceSettingsProps 

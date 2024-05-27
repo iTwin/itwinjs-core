@@ -377,59 +377,9 @@ export enum BackendLoggerCategory {
     Relationship = "core-backend.Relationship",
     Schemas = "core-backend.Schemas",
     // @internal
-    ViewStateHydrator = "core-backend.ViewStateHydrator"
-}
-
-// @internal
-export class BaseSettings implements Settings {
-    // (undocumented)
-    addDictionary(props: Settings.Dictionary.Props, settings: SettingObject): void;
-    // (undocumented)
-    addDirectory(dirName: LocalDirName, priority: Settings.Priority): void;
-    // (undocumented)
-    addFile(fileName: LocalFileName, priority: Settings.Priority): void;
-    // (undocumented)
-    addJson(props: Settings.Dictionary.Props, settingsJson: string): void;
-    // (undocumented)
-    close(): void;
-    // (undocumented)
-    dictionaries: Settings.Dictionary[];
-    // (undocumented)
-    dropDictionary(source: Settings.Dictionary.Source, raiseEvent?: boolean): boolean;
-    // (undocumented)
-    getArray<T extends SettingType>(name: SettingName, defaultValue: Array<T>): Array<T>;
-    // (undocumented)
-    getArray<T extends SettingType>(name: SettingName): Array<T> | undefined;
-    // (undocumented)
-    getBoolean(name: SettingName, defaultValue: boolean): boolean;
-    // (undocumented)
-    getBoolean(name: SettingName): boolean | undefined;
-    // (undocumented)
-    getDictionary(source: Settings.Dictionary.Source): Settings.Dictionary | undefined;
-    // (undocumented)
-    getNumber(name: SettingName, defaultValue: number): number;
-    // (undocumented)
-    getNumber(name: SettingName): number | undefined;
-    // (undocumented)
-    getObject<T extends object>(name: SettingName, defaultValue: T): T;
-    // (undocumented)
-    getObject<T extends object>(name: SettingName): T | undefined;
-    // (undocumented)
-    getSetting<T extends SettingType>(settingName: SettingName, defaultValue?: T): T | undefined;
-    // (undocumented)
-    getString(name: SettingName, defaultValue: string): string;
-    // (undocumented)
-    getString(name: SettingName): string | undefined;
-    inspectSetting<T extends SettingType>(settingName: SettingName): Settings.Inspector<T>[];
-    // (undocumented)
-    readonly onSettingsChanged: BeEvent<() => void>;
-    // (undocumented)
-    resolveSetting<T extends SettingType>(arg: {
-        settingName: SettingName;
-        resolver: Settings.Resolver<T>;
-    }, defaultValue?: T): T | undefined;
-    // (undocumented)
-    protected verifyPriority(_priority: Settings.Priority): void;
+    ViewStateHydrator = "core-backend.ViewStateHydrator",
+    // @internal (undocumented)
+    Workspace = "core-backend.Workspace"
 }
 
 // @public
@@ -1992,6 +1942,23 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
     next(): IteratorResult<ECSqlValue>;
 }
 
+// @beta
+export interface EditableWorkspaceDb extends WorkspaceDb {
+    addBlob(rscName: WorkspaceResourceName, val: Uint8Array): void;
+    addFile(rscName: WorkspaceResourceName, localFileName: LocalFileName, fileExt?: string): void;
+    addString(rscName: WorkspaceResourceName, val: string): void;
+    get cloudProps(): WorkspaceDb.CloudProps | undefined;
+    getBlobWriter(rscName: WorkspaceResourceName): SQLiteDb.BlobIO;
+    removeBlob(rscName: WorkspaceResourceName): void;
+    removeFile(rscName: WorkspaceResourceName): void;
+    removeString(rscName: WorkspaceResourceName): void;
+    updateBlob(rscName: WorkspaceResourceName, val: Uint8Array): void;
+    updateFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void;
+    updateManifest(manifest: WorkspaceDb.Manifest): void;
+    updateSettingsResource(settings: SettingObject, rscName?: string): void;
+    updateString(rscName: WorkspaceResourceName, val: string): void;
+}
+
 // @public
 class Element_2 extends Entity {
     protected constructor(props: ElementProps, iModel: IModelDb);
@@ -2874,6 +2841,18 @@ export class GeometryPart extends DefinitionElement {
     toJSON(): GeometryPartProps;
 }
 
+// @beta
+export function getWorkspaceBlob(args: GetWorkspaceResourceArgs): Uint8Array | undefined;
+
+// @beta
+export interface GetWorkspaceResourceArgs {
+    dbs: WorkspaceDb[];
+    name: WorkspaceResourceName;
+}
+
+// @beta
+export function getWorkspaceString(args: GetWorkspaceResourceArgs): string | undefined;
+
 // @public
 export class Graphic3d extends GraphicalElement3d {
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
@@ -3394,6 +3373,8 @@ export class IModelHost {
     static setCrashReportProperty(name: string, value: string): void;
     // @internal (undocumented)
     static setHubAccess(hubAccess: BackendHubAccess | undefined): void;
+    // @beta
+    static get settingsSchemas(): SettingsSchemas;
     static shutdown(this: void): Promise<void>;
     static snapshotFileNameResolver?: FileNameResolver;
     static startup(options?: IModelHostOptions): Promise<void>;
@@ -4281,11 +4262,6 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
     setRange(range: Range3d): void;
 }
 
-// @internal (undocumented)
-export interface OwnedWorkspace extends Workspace {
-    close(): void;
-}
-
 // @beta
 export class PartialECChangeUnifier {
     appendFrom(adaptor: ChangesetECAdaptor): void;
@@ -4513,6 +4489,24 @@ export interface QueryLocalChangesArgs {
     readonly includedClasses?: string[];
     readonly includeUnsavedChanges?: boolean;
 }
+
+// @beta
+export function queryWorkspaceResources(args: QueryWorkspaceResourcesArgs): void;
+
+// @beta
+export interface QueryWorkspaceResourcesArgs {
+    callback: QueryWorkspaceResourcesCallback;
+    dbs: WorkspaceDb[];
+    nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+    namePattern: string;
+    type?: "string" | "blob";
+}
+
+// @beta
+export type QueryWorkspaceResourcesCallback = (resources: Iterable<{
+    name: string;
+    db: WorkspaceDb;
+}>) => void;
 
 // @beta
 export abstract class RecipeDefinitionElement extends DefinitionElement {
@@ -4777,7 +4771,7 @@ export type SettingName = string;
 // @beta
 export interface SettingObject {
     // (undocumented)
-    [name: string]: SettingType;
+    [name: SettingName]: SettingType | undefined;
 }
 
 // @beta (undocumented)
@@ -4802,12 +4796,6 @@ export namespace Settings {
             readonly workspaceDb?: WorkspaceDb;
         }
     }
-    export interface Inspector<T> {
-        // (undocumented)
-        dictionary: Dictionary;
-        // (undocumented)
-        value: T;
-    }
     export enum Priority {
         application = 200,
         branch = 500,
@@ -4816,7 +4804,6 @@ export namespace Settings {
         iTwin = 400,
         organization = 300
     }
-    export type Resolver<T> = (val: T, dict: Dictionary) => T | undefined;
 }
 
 // @beta
@@ -4843,25 +4830,22 @@ export interface Settings {
     // (undocumented)
     getObject<T extends object>(settingName: SettingName): T | undefined;
     getSetting<T extends SettingType>(settingName: SettingName, defaultValue?: T): T | undefined;
+    // (undocumented)
+    getSettingEntries<T extends SettingType>(settingName: SettingName): Iterable<{
+        value: T;
+        dictionary: Settings.Dictionary;
+    }>;
+    // (undocumented)
+    getSettingValues<T extends SettingType>(settingName: SettingName): Iterable<T>;
     getString(settingName: SettingName, defaultValue: string): string;
     // (undocumented)
     getString(settingName: SettingName, defaultValue?: string): string | undefined;
-    inspectSetting<T extends SettingType>(name: SettingName): Settings.Inspector<T>[];
     readonly onSettingsChanged: BeEvent<() => void>;
-    resolveSetting<T extends SettingType>(arg: {
-        settingName: SettingName;
-        resolver: Settings.Resolver<T>;
-    }, defaultValue: T): T;
-    // (undocumented)
-    resolveSetting<T extends SettingType>(arg: {
-        settingName: SettingName;
-        resolver: Settings.Resolver<T>;
-    }, defaultValue?: T): T | undefined;
 }
 
 // @beta
 export interface SettingSchema extends Readonly<JSONSchema> {
-    readonly cumulative?: true;
+    readonly combineArray?: boolean;
     readonly extends?: string;
     readonly items?: SettingSchema;
     readonly properties?: {
@@ -4880,38 +4864,46 @@ export interface SettingSchemaGroup {
     readonly schemaPrefix: string;
     // (undocumented)
     readonly settingDefs?: {
-        [name: string]: SettingSchema;
+        [name: string]: SettingSchema | undefined;
     };
     // (undocumented)
     readonly typeDefs?: {
-        [name: string]: SettingSchema;
+        [name: string]: SettingSchema | undefined;
     };
 }
 
 // @beta
-export class SettingsSchemas {
-    static addDirectory(dirName: LocalDirName): void;
-    static addFile(fileName: LocalFileName): void;
-    static addGroup(settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]): void;
-    static addJson(settingSchema: string): void;
-    // @internal (undocumented)
-    static getArrayItems(propDef: Readonly<SettingSchema>, scope: string): SettingSchema;
-    // @internal (undocumented)
-    static getObjectProperties(propDef: Readonly<SettingSchema>, scope: string): {
-        required?: string[];
-        properties: {
-            [name: string]: SettingSchema;
-        };
-    };
-    static readonly onSchemaChanged: BeEvent<() => void>;
-    static removeGroup(schemaPrefix: string): void;
-    static readonly settingDefs: Map<string, SettingSchema>;
-    static readonly typeDefs: Map<string, SettingSchema>;
-    static validateSetting<T>(value: T, settingName: string): T;
+export interface SettingsSchemas {
+    // @internal
+    readonly [SettingsSchemasSymbol]: unknown;
+    // (undocumented)
+    addDirectory(dirName: LocalDirName): void;
+    // (undocumented)
+    addFile(fileName: LocalFileName): void;
+    // (undocumented)
+    addGroup(settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]): void;
+    // (undocumented)
+    addJson(settingSchema: string): void;
+    // (undocumented)
+    readonly onSchemaChanged: BeEvent<() => void>;
+    // (undocumented)
+    removeGroup(schemaPrefix: string): void;
+    // (undocumented)
+    readonly settingDefs: Map<string, SettingSchema>;
+    // (undocumented)
+    readonly typeDefs: Map<string, SettingSchema>;
+    // (undocumented)
+    validateSetting<T>(value: T, settingName: string): T;
 }
 
 // @beta
 export type SettingType = JSONSchemaType;
+
+// @beta (undocumented)
+export namespace SettingType {
+    // (undocumented)
+    export function clone<T extends SettingType>(object: T): T;
+}
 
 // @public
 export class Sheet extends Document_2 {
@@ -6349,7 +6341,7 @@ export interface Workspace {
         filter?: Workspace.DbListFilter;
     }): Promise<WorkspaceDb[]>;
     loadSettingsDictionary(
-    props: WorkspaceSettings.Props | WorkspaceSettings.Props[],
+    props: WorkspaceSettingsProps | WorkspaceSettingsProps[],
     problems?: WorkspaceDb.LoadError[]): Promise<void>;
     resolveWorkspaceDbSetting(
     settingName: SettingName,
@@ -6360,16 +6352,13 @@ export interface Workspace {
 // @beta (undocumented)
 export namespace Workspace {
     let exceptionDiagnosticFn: (e: WorkspaceDb.LoadErrors) => void;
-    // @internal (undocumented)
-    export function construct(settings: Settings, opts?: WorkspaceOpts): OwnedWorkspace;
+    export type DbListFilter = (
+    dbProp: WorkspaceDb.CloudProps,
+    dict: Settings.Dictionary) => boolean;
     let onSettingsDictionaryLoadedFn: (loaded: SettingsDictionaryLoaded) => void;
     const settingName: {
         settingsWorkspaces: string;
     };
-    export function constructEditor(): Workspace.Editor;
-    export type DbListFilter = (
-    dbProp: WorkspaceDb.CloudProps,
-    dict: Settings.Dictionary) => boolean;
     export type DbListOrSettingName = {
         readonly dbs: WorkspaceDb.CloudProps[];
         readonly settingName?: never;
@@ -6377,78 +6366,6 @@ export namespace Workspace {
         readonly settingName: string;
         readonly dbs?: never;
     };
-    export interface Editor {
-        close(): void;
-        createNewCloudContainer(props: Editor.CreateNewContainerProps): Promise<Editor.Container>;
-        getContainer(props: WorkspaceContainer.Props & WithAccessToken): Editor.Container;
-        getContainerAsync(props: WorkspaceContainer.Props): Promise<Editor.Container>;
-        readonly workspace: Workspace;
-    }
-    // (undocumented)
-    export namespace Editor {
-        export interface Container extends WorkspaceContainer {
-            abandonChanges(): void;
-            acquireWriteLock(user: string): void;
-            get cloudProps(): WorkspaceContainer.Props | undefined;
-            createDb(args: {
-                dbName?: string;
-                version?: string;
-                manifest: WorkspaceDb.Manifest;
-            }): Promise<Editor.EditableDb>;
-            getEditableDb(props: WorkspaceDb.Props): Editor.EditableDb;
-            getWorkspaceDb(props: WorkspaceDb.Props): Editor.EditableDb;
-            makeNewVersion(props: Container.MakeNewVersionProps): Promise<{
-                oldDb: WorkspaceDb.NameAndVersion;
-                newDb: WorkspaceDb.NameAndVersion;
-            }>;
-            releaseWriteLock(): void;
-        }
-        // (undocumented)
-        export namespace Container {
-            export interface MakeNewVersionProps {
-                fromProps?: WorkspaceDb.Props;
-                identifier?: string;
-                versionType: Container.VersionIncrement;
-            }
-            export type VersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
-        }
-        export function createEmptyDb(args: {
-            localFileName: LocalFileName;
-            manifest: WorkspaceDb.Manifest;
-        }): void;
-        export interface CreateNewContainerProps {
-            // (undocumented)
-            dbName?: string;
-            manifest: WorkspaceDb.Manifest;
-            metadata: Omit<BlobContainer.Metadata, "containerType">;
-            scope: BlobContainer.Scope;
-        }
-        export interface EditableDb extends WorkspaceDb {
-            addBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
-            addFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName, fileExt?: string): void;
-            addString(rscName: WorkspaceResource.Name, val: string): void;
-            get cloudProps(): WorkspaceDb.CloudProps | undefined;
-            getBlobWriter(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO;
-            removeBlob(rscName: WorkspaceResource.Name): void;
-            removeFile(rscName: WorkspaceResource.Name): void;
-            removeString(rscName: WorkspaceResource.Name): void;
-            updateBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
-            updateFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName): void;
-            updateManifest(manifest: WorkspaceDb.Manifest): void;
-            updateSettingsResource(settings: SettingObject, rscName?: string): void;
-            updateString(rscName: WorkspaceResource.Name, val: string): void;
-        }
-    }
-    const queryStringResource: (dbList: WorkspaceDb[] | WorkspaceDb, search: WorkspaceResource.Search, found: ForEachResource) => IterationReturn;
-    const queryBlobResource: (dbList: WorkspaceDb[] | WorkspaceDb, search: WorkspaceResource.Search, found: ForEachResource) => IterationReturn;
-    const loadStringResource: (dbList: WorkspaceDb[] | WorkspaceDb, rscName: WorkspaceResource.Name) => string | undefined;
-    const loadBlobResource: (dbList: WorkspaceDb[] | WorkspaceDb, rscName: WorkspaceResource.Name) => Uint8Array | undefined;
-    // (undocumented)
-    export type ForEachResource = (result: WorkspaceResource.SearchResult) => IterationReturn;
-    // (undocumented)
-    export type IterationReturn = void | "stop";
-    // (undocumented)
-    export type SearchResourceType = "string" | "blob";
     export interface SettingsDictionaryLoaded {
         dict: Settings.Dictionary;
         from: WorkspaceDb;
@@ -6462,24 +6379,11 @@ export namespace Workspace {
 // @beta (undocumented)
 export namespace WorkspaceContainer {
     export type Id = string;
-    // @internal
-    export function makeDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName;
-    // @internal
-    export function parseDbFileName(dbFileName: WorkspaceDb.DbFullName): {
-        dbName: WorkspaceDb.DbName;
-        version: WorkspaceDb.Version;
-    };
     export interface Props extends Optional<CloudSqlite.ContainerAccessProps, "accessToken"> {
         readonly description?: string;
         readonly loadingHelp?: string;
         readonly syncOnConnect?: boolean;
     }
-    // @internal
-    export function validateContainerId(id: WorkspaceContainer.Id): void;
-    // @internal (undocumented)
-    export function validateDbName(dbName: WorkspaceDb.DbName): void;
-    // @internal (undocumented)
-    export function validateVersion(version?: WorkspaceDb.Version): string;
 }
 
 // @beta
@@ -6499,12 +6403,8 @@ export interface WorkspaceContainer {
 
 // @beta (undocumented)
 export namespace WorkspaceDb {
-    const // @internal
-    dbNameWithDefault: (dbName?: WorkspaceDb.DbName) => string;
     // (undocumented)
     export type CloudProps = Props & WorkspaceContainer.Props;
-    // @internal
-    export function construct(props: WorkspaceDb.Props, container: WorkspaceContainer): WorkspaceDb;
     export type DbFullName = string;
     export type DbName = string;
     export interface LoadError extends Error {
@@ -6525,16 +6425,23 @@ export namespace WorkspaceDb {
         readonly dbName?: string;
         readonly version?: VersionRange;
     }
-    const // @internal
-    fileExt = "itwin-workspace";
     export interface Props extends NameAndVersion {
         readonly includePrerelease?: boolean;
         readonly prefetch?: boolean;
     }
-    // @internal (undocumented)
-    export function throwLoadError(msg: string, wsDbProps: WorkspaceDb.Props | WorkspaceDb.CloudProps, db?: WorkspaceDb): never;
-    // @internal (undocumented)
-    export function throwLoadErrors(msg: string, errors: WorkspaceDb.LoadError[]): never;
+    // (undocumented)
+    export interface QueryResourcesArgs {
+        // (undocumented)
+        callback: QueryResourcesCallback;
+        // (undocumented)
+        nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+        // (undocumented)
+        namePattern: string;
+        // (undocumented)
+        type?: "string" | "blob";
+    }
+    // (undocumented)
+    export type QueryResourcesCallback = (resourceNames: Iterable<string>) => void;
     export type Version = string;
     export type VersionRange = string;
 }
@@ -6545,56 +6452,91 @@ export interface WorkspaceDb {
     readonly container: WorkspaceContainer;
     readonly dbFileName: string;
     readonly dbName: WorkspaceDb.DbName;
-    getBlob(rscName: WorkspaceResource.Name): Uint8Array | undefined;
+    getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
     // @internal
-    getBlobReader(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO;
-    getFile(rscName: WorkspaceResource.Name, targetFileName?: LocalFileName): LocalFileName | undefined;
-    getString(rscName: WorkspaceResource.Name): string | undefined;
+    getBlobReader(rscName: WorkspaceResourceName): SQLiteDb.BlobIO;
+    getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
+    getString(rscName: WorkspaceResourceName): string | undefined;
     readonly isOpen: boolean;
     get manifest(): WorkspaceDb.Manifest;
     readonly onClose: BeEvent<() => void>;
     open(): void;
     prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch;
     // @internal (undocumented)
-    queryFileResource(rscName: WorkspaceResource.Name): {
+    queryFileResource(rscName: WorkspaceResourceName): {
         localFileName: LocalFileName;
         info: IModelJsNative.EmbedFileQuery;
     } | undefined;
-    queryResource(
-    search: WorkspaceResource.Search,
-    resourceType: Workspace.SearchResourceType,
-    found: Workspace.ForEachResource): Workspace.IterationReturn;
+    // (undocumented)
+    queryResources(args: WorkspaceDb.QueryResourcesArgs): void;
     readonly sqliteDb: SQLiteDb;
     get version(): WorkspaceDb.Version;
+}
+
+// @beta (undocumented)
+export namespace WorkspaceEditor {
+    export function construct(): WorkspaceEditor;
+    export interface Container extends WorkspaceContainer {
+        abandonChanges(): void;
+        acquireWriteLock(user: string): void;
+        get cloudProps(): WorkspaceContainer.Props | undefined;
+        createDb(args: {
+            dbName?: string;
+            version?: string;
+            manifest: WorkspaceDb.Manifest;
+        }): Promise<EditableWorkspaceDb>;
+        getEditableDb(props: WorkspaceDb.Props): EditableWorkspaceDb;
+        getWorkspaceDb(props: WorkspaceDb.Props): EditableWorkspaceDb;
+        makeNewVersion(props: Container.MakeNewVersionProps): Promise<{
+            oldDb: WorkspaceDb.NameAndVersion;
+            newDb: WorkspaceDb.NameAndVersion;
+        }>;
+        releaseWriteLock(): void;
+    }
+    // (undocumented)
+    export namespace Container {
+        export interface MakeNewVersionProps {
+            fromProps?: WorkspaceDb.Props;
+            identifier?: string;
+            versionType: Container.VersionIncrement;
+        }
+        export type VersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
+    }
+    export function createEmptyDb(args: {
+        localFileName: LocalFileName;
+        manifest: WorkspaceDb.Manifest;
+    }): void;
+    export interface CreateNewContainerProps {
+        // (undocumented)
+        dbName?: string;
+        manifest: WorkspaceDb.Manifest;
+        metadata: Omit<BlobContainer.Metadata, "containerType">;
+        scope: BlobContainer.Scope;
+    }
+}
+
+// @beta
+export interface WorkspaceEditor {
+    close(): void;
+    createNewCloudContainer(props: WorkspaceEditor.CreateNewContainerProps): Promise<WorkspaceEditor.Container>;
+    getContainer(props: WorkspaceContainer.Props & Workspace.WithAccessToken): WorkspaceEditor.Container;
+    getContainerAsync(props: WorkspaceContainer.Props): Promise<WorkspaceEditor.Container>;
+    readonly workspace: Workspace;
 }
 
 // @beta
 export interface WorkspaceOpts {
     containerDir?: LocalDirName;
-    settingsFiles?: LocalFileName | [LocalFileName];
+    settingsFiles?: LocalFileName | LocalFileName[];
 }
 
 // @beta
-export namespace WorkspaceResource {
-    export type Name = string;
-    export interface Props {
-        rscName: Name;
-    }
-    export interface Search {
-        readonly nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
-        readonly nameSearch: string;
-    }
-    export interface SearchResult extends Props {
-        workspaceDb: WorkspaceDb;
-    }
-}
+export type WorkspaceResourceName = string;
 
 // @beta
-export namespace WorkspaceSettings {
-    export interface Props extends WorkspaceDb.CloudProps {
-        priority: Settings.Priority | number;
-        resourceName: string;
-    }
+export interface WorkspaceSettingsProps extends WorkspaceDb.CloudProps {
+    priority: Settings.Priority | number;
+    resourceName: string;
 }
 
 // (No @packageDocumentation comment for this package)

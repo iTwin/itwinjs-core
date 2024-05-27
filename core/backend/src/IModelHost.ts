@@ -355,6 +355,10 @@ export class IModelHost {
    */
   public static get appWorkspace(): Workspace { return definedInStartup(this._appWorkspace); }
 
+  /** The registry of schemas describing the [[Setting]]s for the application session.
+   * Applications should register their schemas via methods like [[SettingsSchemas.addGroup]].
+   * @beta
+   */
   public static get settingsSchemas(): SettingsSchemas { return definedInStartup(this._settingsSchemas); }
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */

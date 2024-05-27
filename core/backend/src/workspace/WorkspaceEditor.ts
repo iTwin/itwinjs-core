@@ -131,10 +131,11 @@ export namespace WorkspaceEditor {
 }
 
 /**
- * An editable WorkspaceDb. This is used only by tools to allow administrators to create and modify WorkspaceDbs.
+ * An editable [[WorkspaceDb]]. This is used only by tools to allow administrators to create and modify WorkspaceDbs.
  * For cloud-based WorkspaceDbs, the write token must be obtained before the methods in this interface may be used.
  * Normally, only admins will have write access to Workspaces.
  * Only one admin at a time may be editing a Workspace.
+ * @beta
  */
 export interface EditableWorkspaceDb extends WorkspaceDb {
   /**

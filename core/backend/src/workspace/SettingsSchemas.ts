@@ -61,8 +61,6 @@ export interface SettingsSchemas {
   readonly onSchemaChanged: BeEvent<() => void>;
 
   validateSetting<T>(value: T, settingName: string): T;
-  // getObjectProperties(propDef: Readonly<SettingSchema>, scope: string): { required?: string[], properties: { [name: string]: SettingSchema } };
-  // getArrayItems(propDef: Readonly<SettingSchema>, scope: string): SettingSchema;
   addGroup(settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]): void;
   addJson(settingSchema: string): void;
   addFile(fileName: LocalFileName): void;
