@@ -436,7 +436,7 @@ export class GeometryStreamBuilder {
     return undefined !== hdr && GeometryStreamFlags.None !== (hdr.flags & GeometryStreamFlags.ViewIndependent);
   }
   public set isViewIndependent(viewIndependent: boolean) {
-    if (viewIndependent === this.isViewIndependent && this.getHeader() !== undefined)
+    if (viewIndependent === this.isViewIndependent)
       return;
 
     const hdr = this.obtainHeader();

@@ -2002,8 +2002,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
           }
         }
 
-        if (builder.geometryStream.length)
+        if (builder.geometryStream.length) {
+          builder.obtainHeader();
           builder.isViewIndependent = info.viewIndependent ?? false;
+        }
       };
 
       return IModelStatus.Success ===
