@@ -60,7 +60,7 @@ describe("Custom Attribute merge", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaOtherTypes.SchemaReference,
@@ -173,7 +173,7 @@ describe("Custom Attribute merge", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaOtherTypes.SchemaReference,
@@ -256,7 +256,7 @@ describe("Custom Attribute merge", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaOtherTypes.SchemaReference,
@@ -350,7 +350,7 @@ describe("Custom Attribute merge", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaOtherTypes.SchemaReference,
@@ -466,7 +466,7 @@ describe("Custom Attribute merge", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaOtherTypes.Property,

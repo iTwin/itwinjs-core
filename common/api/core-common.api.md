@@ -1162,7 +1162,8 @@ export { ChangeSetStatus }
 // @public
 export enum ChangesetType {
     Regular = 0,
-    Schema = 1
+    Schema = 1,
+    SchemaSync = 65
 }
 
 // @alpha
@@ -8658,7 +8659,7 @@ export namespace RpcRequestFulfillment {
 export type RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number;
 
 // @internal
-export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void;
+export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason?: any) => void) => void;
 
 // @public @deprecated
 export enum RpcRequestStatus {
