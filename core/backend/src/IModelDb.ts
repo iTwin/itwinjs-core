@@ -57,7 +57,7 @@ import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotati
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
-import { SettingName, SettingObject, Settings, SettingType } from "./workspace/Settings";
+import { SettingObject, Settings, SettingType } from "./workspace/Settings";
 import { Workspace, WorkspaceDb, WorkspaceSettingsProps } from "./workspace/Workspace";
 import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "./internal/workspace/WorkspaceImpl";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";

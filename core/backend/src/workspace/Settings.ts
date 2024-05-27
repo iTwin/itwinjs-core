@@ -16,7 +16,7 @@ import { WorkspaceDb } from "./Workspace";
 export type SettingType = JSONSchemaType;
 
 /** @beta */
-export namespace SettingType {
+export namespace SettingType { // eslint-disable-line @typescript-eslint/no-redeclare
   export function clone<T extends SettingType>(object: T): T {
     if (!object || typeof object !== "object")
       return object;

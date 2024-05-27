@@ -8,7 +8,7 @@
 
 import { BeEvent, JSONSchema, JSONSchemaTypeName } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
-import { SettingsSchemasSymbol } from "../internal/workspace/SettingsSchemasImpl";
+import { settingsSchemasSymbol } from "../internal/workspace/SettingsSchemasImpl";
 
 /**
  * The properties of a single Setting, used by the settings editor. This interface also includes the
@@ -54,7 +54,7 @@ export interface SettingSchemaGroup {
  */
 export interface SettingsSchemas {
   /** Prevents people from implementing this interface @internal */
-  readonly [SettingsSchemasSymbol]: unknown;
+  readonly [settingsSchemasSymbol]: unknown;
 
   readonly settingDefs: Map<string, SettingSchema>;
   readonly typeDefs: Map<string, SettingSchema>;

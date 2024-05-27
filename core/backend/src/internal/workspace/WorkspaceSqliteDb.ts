@@ -7,7 +7,6 @@
  */
 
 import { SQLiteDb, VersionedSqliteDb } from "../../SQLiteDb";
-import { WorkspaceDb } from "../../workspace/Workspace";
 import { workspaceManifestProperty } from "./WorkspaceImpl";
 
 export class WorkspaceSqliteDb extends VersionedSqliteDb {

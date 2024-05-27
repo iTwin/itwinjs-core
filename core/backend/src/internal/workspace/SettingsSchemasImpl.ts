@@ -6,17 +6,17 @@
 import * as fs from "fs-extra";
 import { parse } from "json5";
 import { extname, join } from "path";
-import { BeEvent, JSONSchemaType, JSONSchemaTypeName, Mutable } from "@itwin/core-bentley";
+import { assert, BeEvent, JSONSchemaType, JSONSchemaTypeName, Mutable } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../../IModelJsFs";
 import { SettingSchema, SettingSchemaGroup, SettingsSchemas } from "../../workspace/SettingsSchemas";
 
 const makeSettingKey = (prefix: string, key: string) => `${prefix}/${key}`;
 
-export const SettingsSchemasSymbol = Symbol("SettingsSchema");
+export const settingsSchemasSymbol = Symbol("SettingsSchema");
 
 class SettingsSchemasImpl implements SettingsSchemas {
-  public readonly [SettingsSchemasSymbol] = undefined;
+  public readonly [settingsSchemasSymbol] = undefined;
   private readonly _allGroups = new Map<string, SettingSchemaGroup>();
   /** a map of all registered Setting Definitions  */
   public readonly settingDefs = new Map<string, SettingSchema>();
@@ -262,7 +262,8 @@ class SettingsSchemasImpl implements SettingsSchemas {
       for (const key of Object.keys(settingDefs)) {
         this.validateName(key);
         this.verifyPropertyDef(key, settingDefs[key]);
-        const property: Mutable<SettingSchema> = settingDefs[key]!;
+        const property: Mutable<SettingSchema> | undefined = settingDefs[key];
+        assert(undefined !== property);
         property.default = property.default ?? this.getDefaultValue(property.type);
         this.settingDefs.set(makeSettingKey(group.schemaPrefix, key), property);
       }
@@ -271,7 +272,9 @@ class SettingsSchemasImpl implements SettingsSchemas {
     for (const key of Object.keys(typeDefs)) {
       this.validateName(key);
       this.verifyPropertyDef(key, typeDefs[key]);
-      this.typeDefs.set(makeSettingKey(group.schemaPrefix, key), typeDefs[key]!);
+      const typeDef = typeDefs[key];
+      assert(undefined !== typeDef);
+      this.typeDefs.set(makeSettingKey(group.schemaPrefix, key), typeDef);
     }
   }
 
