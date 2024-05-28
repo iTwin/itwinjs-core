@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/frontend-tiles",
-      "comment": "Added ability to use IndexedDBCache",
+      "comment": "Added IndexedDBCache",
       "type": "none"
     }
   ],

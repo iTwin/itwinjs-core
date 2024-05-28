@@ -7365,23 +7365,6 @@ export class IndexBuffer {
     toVertexIndices(): VertexIndices;
 }
 
-// @internal (undocumented)
-export class IndexedDBCache implements LocalCache {
-    constructor(dbName: string, expirationTime?: number);
-    // (undocumented)
-    protected addContent(uniqueId: string, content: ArrayBuffer): Promise<unknown>;
-    // (undocumented)
-    protected close(): Promise<void>;
-    // (undocumented)
-    protected deleteContent(uniqueId: string): Promise<unknown>;
-    // (undocumented)
-    fetch(uniqueId: string, callback: (url: string) => Promise<Response>, callBackUrl?: string): Promise<ArrayBuffer>;
-    // (undocumented)
-    protected open(): Promise<unknown>;
-    // (undocumented)
-    protected retrieveContent(uniqueId: string): Promise<ArrayBuffer | undefined>;
-}
-
 // @internal
 export interface IndexedEdgeParams {
     readonly edges: EdgeTable;
@@ -7591,12 +7574,6 @@ export class LengthDescription extends FormattedQuantityDescription {
 
 // @internal (undocumented)
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
-
-// @internal (undocumented)
-export interface LocalCache {
-    // (undocumented)
-    fetch(url: string, callback: (uniqueId: string) => Promise<Response>, callBackUrl?: string): Promise<ArrayBuffer>;
-}
 
 // @alpha
 export class LocalExtensionProvider implements ExtensionProvider {
@@ -10383,12 +10360,6 @@ export interface ParticleProps extends XYAndZ {
     rotationMatrix?: Matrix3d;
     size?: XAndY | number;
     transparency?: number;
-}
-
-// @internal (undocumented)
-export class PassThroughCache implements LocalCache {
-    // (undocumented)
-    fetch(uniqueId: string, callback: (url: string) => Promise<Response>, callBackUrl?: string): Promise<ArrayBuffer>;
 }
 
 // @internal
