@@ -9,8 +9,6 @@ jotform: true
 To create a new provider implement the interface.
 
 ```tsx
-[[include:AppUI.UiItemsProvider.Imports]]
-
 [[include:AppUI.UiItemsProvider.Provider]]
 ```
 
