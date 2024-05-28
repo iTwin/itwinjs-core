@@ -119,7 +119,7 @@ export namespace WorkspaceEditor {
   /**
    * Create a new, empty, EditableDb file on the local filesystem for importing Workspace resources.
    */
-  export function createEmptyDb(args: { localFileName: LocalFileName, manifest: WorkspaceDb.Manifest }) {
+  export function createEmptyDb(args: { localFileName: LocalFileName, manifest: WorkspaceDb.Manifest }): void {
     WorkspaceSqliteDb.createNewDb(args.localFileName, args);
   }
 }
