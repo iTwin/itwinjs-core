@@ -21,7 +21,7 @@
     "test:chrome:azurite": "certa -r chrome --grep \"#integration\" --invert",
     "test:electron:azurite": "certa -r electron --grep \"#integration\" --invert",
     "test:integration": "npm run -s test:integration:chrome && npm run -s test:integration:electron",
-    "test:integration:chrome": "certa -r chrome --grep \"#integration\"",
+    "test:integration:chrome": "certa -r chrome --grep \"#integration\" ",
     "test:integration:electron": "certa -r electron --grep \"#integration\"",
     "webpack:test": "webpack --config webpack.config.js 1>&2"
   },
@@ -50,7 +50,7 @@
     "@itwin/imodels-access-frontend": "^5.0.1",
     "@itwin/imodels-client-authoring": "^5.1.0",
     "@itwin/imodels-client-management": "^5.1.0",
-    "@itwin/reality-data-client": "1.1.0",
+    "@itwin/reality-data-client": "^1.2.1",
     "azurite": "^3.29.0",
     "chai-as-promised": "^7.1.1",
     "chai": "^4.3.10",
