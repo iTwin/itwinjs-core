@@ -406,6 +406,7 @@ class WorkspaceImpl implements Workspace {
   }
 
   public resolveWorkspaceDbSetting(settingName: SettingName, filter?: Workspace.DbListFilter): WorkspaceDb.CloudProps[] {
+    const combine = IModelHost.settingsSchemas.settingDefs.get(settingName)?.combineArray === true;
     filter = filter ?? (() => true);
     const result: WorkspaceDb.CloudProps[] = [];
     for (const entry of this.settings.getSettingEntries<WorkspaceDb.CloudProps[]>(settingName)) {
@@ -413,6 +414,10 @@ class WorkspaceImpl implements Workspace {
         if (filter(dbProp, entry.dictionary)) {
           result.push(dbProp);
         }
+      }
+
+      if (!combine) {
+        break;
       }
     }
 
