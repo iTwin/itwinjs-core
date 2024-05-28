@@ -83,8 +83,12 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
   public readonly filesDir: LocalDirName;
   public readonly id: WorkspaceContainer.Id;
   public readonly fromProps: WorkspaceContainer.Props;
+  private readonly _cloudContainer?: WorkspaceCloudContainer | undefined;
 
-  public readonly cloudContainer?: WorkspaceCloudContainer | undefined;
+  public get cloudContainer(): WorkspaceCloudContainer | undefined {
+    return this._cloudContainer;
+  }
+
   protected _wsDbs = new Map<WorkspaceDb.DbName, WorkspaceDb>();
   public get dirName() { return join(this.workspace.containerDir, this.id); }
 
@@ -95,7 +99,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     this.fromProps = props;
 
     if (props.baseUri !== "")
-      this.cloudContainer = getWorkspaceCloudContainer(props, this.workspace.getCloudCache());
+      this._cloudContainer = getWorkspaceCloudContainer(props, this.workspace.getCloudCache());
 
     workspace.addContainer(this);
     this.filesDir = join(this.dirName, "Files");
@@ -493,11 +497,15 @@ class EditorImpl implements WorkspaceEditor {
   }
 }
 
-interface EditCloudContainer extends CloudSqlite.CloudContainer {
+interface EditCloudContainer extends WorkspaceCloudContainer {
   writeLockHeldBy?: string;  // added by acquireWriteLock
 }
 
 class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEditor.Container {
+  public override get cloudContainer(): EditCloudContainer | undefined {
+    return super.cloudContainer as EditCloudContainer | undefined;
+  }
+
   public get cloudProps(): WorkspaceContainer.Props | undefined {
     const cloudContainer = this.cloudContainer;
     if (undefined === cloudContainer)
@@ -537,26 +545,25 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEdi
   }
 
   public acquireWriteLock(user: string): void {
-    const cloudContainer = this.cloudContainer as EditCloudContainer | undefined;
-    if (cloudContainer) {
-      cloudContainer.acquireWriteLock(user);
-      cloudContainer.writeLockHeldBy = user;
+    if (this.cloudContainer) {
+      this.cloudContainer.acquireWriteLock(user);
+      this.cloudContainer.writeLockHeldBy = user;
     }
   }
   public releaseWriteLock() {
-    const cloudContainer = this.cloudContainer as EditCloudContainer | undefined;
-    if (cloudContainer) {
-      cloudContainer.releaseWriteLock();
-      cloudContainer.writeLockHeldBy = undefined;
+    if (this.cloudContainer) {
+      this.cloudContainer.releaseWriteLock();
+      this.cloudContainer.writeLockHeldBy = undefined;
     }
   }
+
   public abandonChanges() {
-    const cloudContainer = this.cloudContainer as EditCloudContainer | undefined;
-    if (cloudContainer) {
-      cloudContainer.abandonChanges();
-      cloudContainer.writeLockHeldBy = undefined;
+    if (this.cloudContainer) {
+      this.cloudContainer.abandonChanges();
+      this.cloudContainer.writeLockHeldBy = undefined;
     }
   }
+
   public async createDb(args: { dbName?: string, version?: string, manifest: WorkspaceDb.Manifest }): Promise<EditableWorkspaceDb> {
     if (!this.cloudContainer) {
       WorkspaceEditor.createEmptyDb({ localFileName: this.resolveDbFileName(args), manifest: args.manifest });
