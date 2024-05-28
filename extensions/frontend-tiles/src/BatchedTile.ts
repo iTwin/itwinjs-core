@@ -51,7 +51,7 @@ export class BatchedTile extends Tile {
       this._maximumSize = 0;
     }
 
-    this._localCache = IModelApp.tileAdmin.useIndexedDBCache ? new IndexedDBCache("BatchedTileCache") : new PassThroughCache();
+    this._localCache = frontendTilesOptions.useIndexedDBCache ? new IndexedDBCache("BatchedTileCache") : new PassThroughCache();
 
     if (!params.transformToRoot)
       return;

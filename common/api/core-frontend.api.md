@@ -14277,8 +14277,6 @@ export class TileAdmin {
     // @alpha
     get unselectedLoadedTiles(): Iterable<Tile>;
     // @internal (undocumented)
-    readonly useIndexedDBCache?: boolean;
-    // @internal (undocumented)
     readonly useLargerTiles: boolean;
     // @internal (undocumented)
     readonly useProjectExtents: boolean;
@@ -14332,8 +14330,6 @@ export namespace TileAdmin {
         // @beta
         tileStorage?: FrontendStorage;
         tileTreeExpirationTime?: number;
-        // @alpha
-        useIndexedDBCache?: boolean;
         useLargerTiles?: boolean;
         // @internal
         useProjectExtents?: boolean;

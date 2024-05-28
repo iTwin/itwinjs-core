@@ -16,7 +16,7 @@ import { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTree
  */
 export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
 
-function createMeshExportServiceQueryUrl(args: { iModelId: string, urlPrefix?: string, changesetId?: string, enableCDN?: boolean }): string {
+function createMeshExportServiceQueryUrl(args: { iModelId: string, urlPrefix?: string, changesetId?: string, enableCDN?: boolean, useIndexedDBCache?: boolean }): string {
   const prefix = args.urlPrefix ?? "";
   let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.iModelId}&$orderBy=date:desc`;
   if (args.changesetId)
@@ -24,6 +24,9 @@ function createMeshExportServiceQueryUrl(args: { iModelId: string, urlPrefix?: s
 
   if (args.enableCDN)
     url = `${url}&cdn=1`;
+
+  if (args.useIndexedDBCache)
+    url = `${url}&idb=1`;
 
   url = `${url}&tileVersion=1&exportType=IMODEL`;
 
@@ -84,6 +87,8 @@ export interface QueryMeshExportsArgs {
   includeIncomplete?: boolean;
   /** If true, enables a CDN (content delivery network) to access tiles faster. */
   enableCDN?: boolean;
+  /** If true, enables an IndexedDB database to be used as a local tile cache to access tiles faster. */
+  useIndexedDBCache?: boolean;
 }
 
 /** Query the [mesh export service](https://developer.bentley.com/apis/mesh-export/operations/get-exports/) for exports of type "IMODEL" matching
@@ -139,6 +144,8 @@ export interface ObtainMeshExportTilesetUrlArgs {
   requireExactChangeset?: boolean;
   /** If true, enables a CDN (content delivery network) to access tiles faster. */
   enableCDN?: boolean;
+  /** If true, enables an IndexedDB database to be used as a local tile cache to access tiles faster. */
+  useIndexedDBCache?: boolean;
 }
 
 /** Obtains a URL pointing to a tileset appropriate for visualizing a specific iModel.
@@ -159,6 +166,7 @@ export async function obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUr
     changesetId: args.iModel.changeset.id,
     urlPrefix: args.urlPrefix,
     enableCDN: args.enableCDN,
+    useIndexedDBCache: args.useIndexedDBCache,
   };
 
   let selectedExport;
@@ -215,6 +223,11 @@ export interface FrontendTilesOptions {
    * @beta
    */
   enableCDN?: boolean;
+  /** Specifies whether to enable an IndexedDB database for use as a local cache.
+  * Requested tiles will then first be search for in the database, and if not found, fetched as normal.
+  * @internal
+  */
+  useIndexedDBCache?: boolean;
 }
 
 /** Global configuration initialized by [[initializeFrontendTiles]].
@@ -223,6 +236,7 @@ export interface FrontendTilesOptions {
 export const frontendTilesOptions = {
   maxLevelsToSkip: 4,
   enableEdges: false,
+  useIndexedDBCache: false,
 };
 
 /** Initialize the frontend-tiles package to obtain tiles for spatial views.
@@ -235,8 +249,11 @@ export function initializeFrontendTiles(options: FrontendTilesOptions): void {
   if (options.enableEdges)
     frontendTilesOptions.enableEdges = true;
 
+  if (options.useIndexedDBCache)
+    frontendTilesOptions.useIndexedDBCache = true;
+
   const computeUrl = options.computeSpatialTilesetBaseUrl ?? (
-    async (iModel: IModelConnection) => obtainMeshExportTilesetUrl({ iModel, accessToken: await IModelApp.getAccessToken(), enableCDN: options.enableCDN })
+    async (iModel: IModelConnection) => obtainMeshExportTilesetUrl({ iModel, accessToken: await IModelApp.getAccessToken(), enableCDN: options.enableCDN, useIndexedDBCache: options.useIndexedDBCache})
   );
 
   SpatialTileTreeReferences.create = (view: SpatialViewState) => createBatchedSpatialTileTreeReferences(view, computeUrl);
