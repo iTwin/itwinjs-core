@@ -76,12 +76,6 @@ export namespace WorkspaceEditor {
     getEditableDb(props: WorkspaceDb.Props): EditableWorkspaceDb;
 
     /**
-     * Get an Editor.EditableDb to add, delete, or update resources *within a newly created version* of a WorkspaceDb.
-     * @param props - The properties of the WorkspaceDb.
-     */
-    getWorkspaceDb(props: WorkspaceDb.Props): EditableWorkspaceDb;
-
-    /**
      * Acquire the write lock on the container.
      * @param user - The user acquiring the write lock.
      */
