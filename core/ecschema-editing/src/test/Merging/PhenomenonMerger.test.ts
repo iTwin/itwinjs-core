@@ -21,7 +21,7 @@ describe("Phenomenon merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.Phenomenon,
@@ -62,7 +62,7 @@ describe("Phenomenon merger tests", () => {
     await expect(merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "modify",
           schemaType: SchemaItemType.Phenomenon,

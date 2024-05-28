@@ -77,7 +77,7 @@ checkfail
 if [ "$AddonBranch" = "" ]; then
   yes "" | rush change
 else
-  yes "" | rush change -b "$AddonBranch"
+  yes "" | rush change -b "origin/$AddonBranch"
 fi
 checkfail
 

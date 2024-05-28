@@ -90,6 +90,7 @@ export interface TileOptions {
   readonly ignoreAreaPatterns: boolean;
   readonly enableExternalTextures: boolean;
   readonly useProjectExtents: boolean;
+  readonly expandProjectExtents: boolean;
   readonly optimizeBRepProcessing: boolean;
   readonly useLargerTiles: boolean;
   readonly disableMagnification: boolean;
@@ -117,6 +118,7 @@ export namespace TileOptions {
       ignoreAreaPatterns: 0 !== (contentFlags & ContentFlags.IgnoreAreaPatterns),
       enableExternalTextures: 0 !== (contentFlags & ContentFlags.ExternalTextures),
       useProjectExtents: 0 !== (tree.flags & TreeFlags.UseProjectExtents),
+      expandProjectExtents: 0 !== (tree.flags & TreeFlags.ExpandProjectExtents),
       optimizeBRepProcessing: 0 !== (tree.flags & TreeFlags.OptimizeBRepProcessing),
       useLargerTiles: 0 !== (tree.flags & TreeFlags.UseLargerTiles),
       disableMagnification: false,
@@ -313,6 +315,7 @@ export const defaultTileOptions: TileOptions = Object.freeze({
   ignoreAreaPatterns: false,
   enableExternalTextures: true,
   useProjectExtents: true,
+  expandProjectExtents: true,
   optimizeBRepProcessing: true,
   useLargerTiles: true,
   disableMagnification: false,
@@ -429,6 +432,7 @@ export enum TreeFlags {
   EnforceDisplayPriority = 1 << 1, // For 3d plan projection models, group graphics into layers based on subcategory.
   OptimizeBRepProcessing = 1 << 2, // Use an optimized pipeline for producing facets from BRep entities.
   UseLargerTiles = 1 << 3, // Produce tiles of larger size in screen pixels.
+  ExpandProjectExtents = 1 << 4 // If UseProjectExtents, round them up/down to nearest powers of ten.
 }
 
 /** Describes a tile tree used to draw the contents of a model, possibly with embedded animation.
@@ -482,6 +486,9 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
   if (options.useLargerTiles)
     flags |= TreeFlags.UseLargerTiles;
 
+  if (options.expandProjectExtents)
+    flags |= TreeFlags.ExpandProjectExtents;
+
   if (BatchType.Primary === treeId.type) {
     if (undefined !== treeId.animationId)
       idStr = `${idStr}${animationIdToString(treeId.animationId)}`;
@@ -495,8 +502,11 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
     const typeStr = BatchType.PlanarClassifier === treeId.type ? "CP" : "C";
     idStr = `${idStr + typeStr}:${treeId.expansion.toFixed(6)}_`;
 
-    if (BatchType.VolumeClassifier === treeId.type)
+    if (BatchType.VolumeClassifier === treeId.type) {
+      // Volume classifiers always use the exact project extents.
       flags |= TreeFlags.UseProjectExtents;
+      flags &= ~TreeFlags.ExpandProjectExtents;
+    }
 
     if (undefined !== treeId.animationId)
       idStr = `${idStr}${animationIdToString(treeId.animationId)}`;

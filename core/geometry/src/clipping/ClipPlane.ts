@@ -165,7 +165,7 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
    * @param origin any point on the plane.
    * @param vectorA any vector in the plane
    * @param vectorB any vector in the plane
-   * Returns undefined if the vectors are not independent.
+   * @return undefined if the vectors are not independent.
    * * The stored inward normal is vectorB.crossProduct(vectorA).
    * * That is, the vectors are considered as a right-handed pair when viewed from the outside.
    */

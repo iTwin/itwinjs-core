@@ -106,7 +106,7 @@ describe("FrameBuilder", () => {
     triangle1.reverse();
     const frame0 = FrameBuilder.createFrameWithCCWPolygon(triangle0);
     const frame1 = FrameBuilder.createFrameWithCCWPolygon(triangle1);
-    if (ck.testDefined(frame0) && ck.testDefined(frame1) && frame0 && frame1) {
+    if (ck.testDefined(frame0) && ck.testDefined(frame1)) {
       const unitZ0 = frame0.matrix.columnZ();
       const unitZ1 = frame1.matrix.columnZ();
       ck.testCoordinate(-1, unitZ0.dotProduct(unitZ1), "opposing unit Z vectors");
@@ -431,7 +431,7 @@ describe("PolygonOps", () => {
     const rotate = <T,>(arr: Array<T>, n = 1) => [...arr.slice(n, arr.length), ...arr.slice(0, n)];
     const testVertexHit = (testPt: XAndY, pts: Point3d[]) => {
       const result = PolygonOps.classifyPointInPolygon(testPt.x, testPt.y, pts);
-      if (ck.testDefined(result, "classification successful") && result !== undefined)
+      if (ck.testDefined(result, "classification successful"))
         ck.testExactNumber(0, result, "vertex hit");
     };
     testVertexHit(testPoint, points);
@@ -929,7 +929,7 @@ describe("PolygonAreas", () => {
     GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidA.origin, centroidA.direction, equivalentCircleRadius(centroidA)));
     GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(centroidA.origin, centroidA.origin.plus(centroidA.direction)));
     const a = 2.0;
-    const scaleTransform = Transform.createFixedPointAndMatrix(centroidA.origin, Matrix3d.createScale(a, a, a))!;
+    const scaleTransform = Transform.createFixedPointAndMatrix(centroidA.origin, Matrix3d.createScale(a, a, a));
     const pointB = scaleTransform.multiplyPoint3dArray(pointA);
     const centroidB = PolygonOps.centroidAreaNormal(pointB)!;
     GeometryCoreTestIO.captureGeometry(allGeometry, Loop.createPolygon(pointB));
@@ -938,7 +938,7 @@ describe("PolygonAreas", () => {
     ck.testVector3d(centroidA.direction, centroidB.direction, "origin is invariant after scale around origin");
     ck.testCoordinate(a * a * centroidA.a!, centroidB.a!, "area scales");
 
-    const rotationTransform = Transform.createFixedPointAndMatrix(Point3d.create(0, 1, 3), Matrix3d.createRotationAroundVector(Vector3d.create(2, 3, 1), Angle.createDegrees(45.0))!)!;
+    const rotationTransform = Transform.createFixedPointAndMatrix(Point3d.create(0, 1, 3), Matrix3d.createRotationAroundVector(Vector3d.create(2, 3, 1), Angle.createDegrees(45.0))!);
     const pointC = rotationTransform.multiplyPoint3dArray(pointA);
     const centroidC = PolygonOps.centroidAreaNormal(pointC)!;
     const centroidC1 = centroidA.cloneTransformed(rotationTransform);
@@ -1021,7 +1021,7 @@ describe("PolygonAreas", () => {
     const ck = new Checker();
     const pointA = Sample.createStar(1, 2, 3, 4, 6, 5, true);
     const minMaxPoints = Point3dArray.minMaxPoints(pointA);
-    if (ck.testDefined(minMaxPoints) && minMaxPoints) {
+    if (ck.testDefined(minMaxPoints)) {
       const range = Range3d.createArray(pointA);
       ck.testCoordinate(minMaxPoints.minXPoint.x, range.low.x);
       ck.testCoordinate(minMaxPoints.minYPoint.y, range.low.y);

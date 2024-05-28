@@ -5,7 +5,7 @@ The class is flagged with a custom attribute that is declared in the `ECDbMap` s
 
 The following rules apply to views:
 
-- The custom attribute `ECDbMap.View` must be applied to a standalone abstract entity class.
+- The custom attribute `ECDbMap.QueryView` must be applied to a standalone abstract entity class.
 - View cannot be derived from another class
 - View class definition cannot have derived classes.
 - All columns selected in the ECSQL query except for ECInstanceId and ECClassId must have corresponding ECProperties defined on the class.
@@ -13,20 +13,20 @@ The following rules apply to views:
 - The query has to return an ECInstanceId and an ECClassId column
 - All types of properties and computed expressions can be returned by view query if the class definition defines those properties and their types correctly.
 - Views can be applied only an ECEntityClass.
-- For relationship classes, a different custom attribute `ECDbMap.ForeignKeyBasedView` can be used instead, which will make the runtime check both sides for a navigation property matching the relationship. If one is found, a view for the relationship is automatically generated.
+- For relationship classes, a different custom attribute `ECDbMap.ForeignKeyView` can be used instead, which will make the runtime check both sides for a navigation property matching the relationship. If one is found, a view for the relationship is automatically generated.
 - Any metadata like property category or kind of quantity is taken from the property definitions. Metadata that may come from the view query is overridden by these.
 
 Example of a schema using a view:
 
 ```xml
 <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
-    <ECSchemaReference name='ECDbMap' version='02.00.03' alias='ecdbmap' />
+    <ECSchemaReference name='ECDbMap' version='02.00.04' alias='ecdbmap' />
     <ECEntityClass typeName="JsonObject">
         <ECProperty propertyName="json" typeName="string" extendedTypeName="Json" />
     </ECEntityClass>
     <ECEntityClass typeName="Pipe" modifier="Abstract">
         <ECCustomAttributes>
-            <View xmlns="ECDbMap.02.00.03">
+            <QueryView xmlns="ECDbMap.02.00.04">
                 <Query>
                     SELECT
                         jo.ECInstanceId,
@@ -37,7 +37,7 @@ Example of a schema using a view:
                     FROM ts.JsonObject jo
                     WHERE json_extract(jo.json, '$.type') = 'pipe'
                 </Query>
-            </View>
+            </QueryView>
         </ECCustomAttributes>
         <ECProperty propertyName="Diameter" typeName="int" />
         <ECProperty propertyName="Length"  typeName="int"/>
@@ -80,7 +80,7 @@ One example utilizing the View concepts including navigation properties is `Clas
 ```xml
     <ECEntityClass typeName="ClassCustomAttribute" modifier="Abstract">
         <ECCustomAttributes>
-            <View xmlns="ECDbMap.02.00.03">
+            <QueryView xmlns="ECDbMap.02.00.04">
                 <Query>
                     SELECT
                         [ca].[ECInstanceId],
@@ -92,7 +92,7 @@ One example utilizing the View concepts including navigation properties is `Clas
                     WHERE [ca].[ContainerType] = [meta].[CAContainerType].[Class]
                     ORDER BY [ca].[Ordinal]
                 </Query>
-            </View>
+            </QueryView>
         </ECCustomAttributes>
         <ECNavigationProperty propertyName="Class" relationshipName="ClassHasCustomAttribute" direction="backward"/>
         <ECNavigationProperty propertyName="CustomAttributeClass" relationshipName="CustomAttributeClassHasInstanceOnClass" direction="backward"/>
@@ -100,7 +100,7 @@ One example utilizing the View concepts including navigation properties is `Clas
     </ECEntityClass>
     <ECRelationshipClass typeName="ClassHasCustomAttribute" modifier="Abstract" strength="referencing">
         <ECCustomAttributes>
-            <ForeignKeyBasedView xmlns="ECDbMap.02.00.03" />
+            <ForeignKeyView xmlns="ECDbMap.02.00.04" />
         </ECCustomAttributes>
         <Source multiplicity="(1..1)" roleLabel="has custom attribute" polymorphic="false">
             <Class class="ECClassDef"/>
@@ -111,7 +111,7 @@ One example utilizing the View concepts including navigation properties is `Clas
     </ECRelationshipClass>
     <ECRelationshipClass typeName="CustomAttributeClassHasInstanceOnClass" modifier="Abstract" strength="referencing">
         <ECCustomAttributes>
-            <ForeignKeyBasedView xmlns="ECDbMap.02.00.03" />
+            <ForeignKeyView xmlns="ECDbMap.02.00.04" />
         </ECCustomAttributes>
         <Source multiplicity="(1..1)" roleLabel="has instance on" polymorphic="false">
             <Class class="ECClassDef"/>

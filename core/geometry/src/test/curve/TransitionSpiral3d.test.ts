@@ -892,14 +892,14 @@ describe("TransitionSpiral3d", () => {
   it("AlexGStroking", () => {
     // const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const alignment = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/AlexGSpiral/AlexGSpiral.imjs", "utf8")));
+    const alignment = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/AlexGSpiral/AlexGSpiral.imjs", "utf8")));
     captureStroked(allGeometry, alignment);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, alignment);
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "AlexGStroking");
   });
   it("AlexGSamples", () => {
     const ck = new Checker();
-    const directoryPath = "./src/test/testInputs/curve/AlexGSpiral/AlexG0421";
+    const directoryPath = "./src/test/data/curve/AlexGSpiral/AlexG0421";
     const fileList = fs.readdirSync(directoryPath);
     // fileList = ["italian.imjs"];
     const yShift = 1.0;
@@ -1004,20 +1004,20 @@ describe("TransitionSpiral3d", () => {
     integratedSpiralReversed.reverseInPlace();
 
     // Full clone
-    const cloneA = simpleCubic.clonePartialCurve(0.0, 1.0)!;
-    const cloneB = simpleCubic.clonePartialCurve(1.0, 0.0)!;
+    const cloneA = simpleCubic.clonePartialCurve(0.0, 1.0);
+    const cloneB = simpleCubic.clonePartialCurve(1.0, 0.0);
     ck.testTrue(cloneA.isAlmostEqual(simpleCubic));
     ck.testTrue(cloneB.isAlmostEqual(simpleCubicReversed));
 
-    const cloneC = integratedSpiral.clonePartialCurve(0.0, 1.0)!;
-    const cloneD = integratedSpiral.clonePartialCurve(1.0, 0.0)!;
+    const cloneC = integratedSpiral.clonePartialCurve(0.0, 1.0);
+    const cloneD = integratedSpiral.clonePartialCurve(1.0, 0.0);
     ck.testTrue(cloneC.isAlmostEqual(integratedSpiral));
     ck.testTrue(cloneD.isAlmostEqual(integratedSpiralReversed));
 
     // For each input spiral, clone partial and validate points/tangents and lengths are the same
     for (const spiral of [simpleCubic, simpleCubicReversed, integratedSpiral, integratedSpiralReversed]) {
       // GeometryCoreTestIO.consoleLog(spiral.spiralType);
-      const partial = spiral.clonePartialCurve(0.2, 0.8)!;
+      const partial = spiral.clonePartialCurve(0.2, 0.8);
       ck.testTrue(spiral.spiralType === partial.spiralType);
       ck.testType(partial, TransitionSpiral3d);
       ck.testLT(partial.curveLength(), spiral.curveLength());
@@ -1143,8 +1143,8 @@ function xyString(name: string, x: number, y: number): string {
 it("AlexGProjectPointToChain", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
-  //  const alignment = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/AlexGSpiral/AlexGSpiral.imjs", "utf8")));
-  const alignment = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/AlexGSpiral/pathWithSpirals.imjs", "utf8")));
+  //  const alignment = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/AlexGSpiral/AlexGSpiral.imjs", "utf8")));
+  const alignment = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/AlexGSpiral/pathWithSpirals.imjs", "utf8")));
   captureStroked(allGeometry, alignment);
   if (alignment instanceof Path) {
     const range = alignment.range();

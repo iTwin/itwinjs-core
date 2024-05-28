@@ -68,7 +68,7 @@ describe("Schema Difference Reporting", () => {
   }
 
   function findEntries(args: LookupArgs) {
-    return schemaDifferences.changes && schemaDifferences.changes.filter((change: any) => {
+    return schemaDifferences.differences && schemaDifferences.differences.filter((change: any) => {
       return (!args.changeType || change.changeType === args.changeType)
         && (!args.schemaType || change.schemaType === args.schemaType)
         && (!args.itemName || change.itemName === args.itemName)
@@ -95,7 +95,7 @@ describe("Schema Difference Reporting", () => {
 
     schemaDifferences = await SchemaDifference.fromSchemas(targetSchema, sourceSchema);
     expect(schemaDifferences.conflicts).equals(undefined, "This test suite should not have conflicts.");
-    expect(schemaDifferences.changes).has.a.lengthOf(27, "Unexpected count of changes.");
+    expect(schemaDifferences.differences).has.a.lengthOf(27, "Unexpected count of differences.");
   });
 
   it("should have the expected source and target schema names in differences", () => {
@@ -129,8 +129,8 @@ describe("Schema Difference Reporting", () => {
     }, new SchemaContext());
 
     const differences = await SchemaDifference.fromSchemas(targetSchema, sourceSchema);
-    expect(differences.conflicts).equals(undefined, `This test should not have conflicts.`);
-    expect(differences.changes).equals(undefined, `This test should not have changes.`);
+    expect(differences.differences).has.lengthOf(0, "This test should not have differences.");
+    expect(differences.conflicts).equals(undefined, "This test should not have conflicts.");
   });
 
   it("should not return items that exists in both or in target schema", () => {

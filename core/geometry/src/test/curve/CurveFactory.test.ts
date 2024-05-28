@@ -194,7 +194,7 @@ function markArcData(allGeometry: GeometryQuery[], arc: Arc3d, radialFraction: n
     LineSegment3d.create(center.interpolate(radialFraction, start), center.interpolate(radialFraction + tickFraction, start)),
     LineString3d.create(point0.origin, center, point90.origin)], x0, y0);
 }
-const ppePathInputDirector = "./src/test/testInputs/pipeConnections/";
+const ppePathInputDirector = "./src/test/data/pipeConnections/";
 describe("PipeConnections", () => {
   it("ChainCollector", () => {
     const ck = new Checker();
@@ -422,9 +422,7 @@ describe("PipeConnections", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, centerline, x0Out, y0Out);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, rectangleA, x0Out, y0Out, z0Out);
         if (sweeps !== undefined) {
-          if (ck.testDefined(sweeps.sections) && sweeps.sections !== undefined
-            && ck.testDefined(sweeps.planes) && sweeps.planes !== undefined
-            && ck.testExactNumber(sweeps.planes.length, sweeps.sections.length, "Same number of planes and sections")) {
+          if (ck.testDefined(sweeps.sections) && ck.testDefined(sweeps.planes) && ck.testExactNumber(sweeps.planes.length, sweeps.sections.length, "Same number of planes and sections")) {
 
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweeps.sections, x0Out, y0Out);
             ck.testExactNumber(centerline.length - numDuplicates[centerlineIndex], sweeps.sections.length, "confirm section count");
@@ -459,9 +457,9 @@ describe("PipeConnections", () => {
     const ySurface = 200;
     const yMesh = 400;
     // quirky order for making the rectangle with intended edge on y=ay edge axis ... createRectangleXY starts at upper right arc
-    const path = CurveFactory.createRectangleXY(-ax, 0, ax, ay, 0, 30)!;
+    const path = CurveFactory.createRectangleXY(-ax, 0, ax, ay, 0, 30);
     const arc = path.children.shift()!;
-    path.children.push(arc)!;
+    path.children.push(arc);
 
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y2);
     // stoke it ..

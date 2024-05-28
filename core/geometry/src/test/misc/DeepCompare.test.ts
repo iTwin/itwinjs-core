@@ -8,7 +8,7 @@ import { DeepCompare } from "../../serialization/DeepCompare";
 import { Checker } from "../Checker";
 
 // Variables used for testing
-const deepComparisonFolderPath = "./src/test/deepComparisonTestFiles/";
+const deepComparisonFolderPath = "./src/test/data/deepComparisonTestFiles/";
 
 describe("DeepCompare", () => {
   const ck = new Checker();

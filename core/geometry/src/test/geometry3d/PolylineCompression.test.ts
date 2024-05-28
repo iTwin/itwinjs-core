@@ -156,16 +156,16 @@ describe("GlobalCompression", () => {
   it("ColinearThroughStart", () => {
     const context = new PolylineCompressionChecker();
     const pointsWithColinearThroughStart = [
-      Point3d.createFrom({ x: 0, y: 0, z: -3538.3128322623243 })!,
-      Point3d.createFrom({ x: 0, y: 0, z: -3538.3128322623243 })!,
-      Point3d.createFrom({ x: 1746.2903617595616, y: 0, z: -3538.3128322623243 })!,
-      Point3d.createFrom({ x: 1746.2903617595616, y: -1151.9060537233227, z: -3538.3128322623243 })!,
-      Point3d.createFrom({ x: 4102.778912210693, y: -1151.9060537233227, z: -3538.3128322623243 })!,
-      Point3d.createFrom({ x: 4196.968933325803, y: -1151.9060537233227, z: -3538.3128322623243 })!,
-      Point3d.createFrom({ x: 4196.968933325803, y: -2189.4980628055105, z: -3538.3128322623243 })!,
-      Point3d.createFrom({ x: -611.3604034049928, y: -2189.4980628055105, z: -3538.3128322623243 })!,
-      Point3d.createFrom({ x: -611.3604034049928, y: 0, z: -3538.3128322623243 })!,
-      Point3d.createFrom({ x: 0, y: 0, z: -3538.3128322623243 })!,
+      Point3d.createFrom({ x: 0, y: 0, z: -3538.3128322623243 }),
+      Point3d.createFrom({ x: 0, y: 0, z: -3538.3128322623243 }),
+      Point3d.createFrom({ x: 1746.2903617595616, y: 0, z: -3538.3128322623243 }),
+      Point3d.createFrom({ x: 1746.2903617595616, y: -1151.9060537233227, z: -3538.3128322623243 }),
+      Point3d.createFrom({ x: 4102.778912210693, y: -1151.9060537233227, z: -3538.3128322623243 }),
+      Point3d.createFrom({ x: 4196.968933325803, y: -1151.9060537233227, z: -3538.3128322623243 }),
+      Point3d.createFrom({ x: 4196.968933325803, y: -2189.4980628055105, z: -3538.3128322623243 }),
+      Point3d.createFrom({ x: -611.3604034049928, y: -2189.4980628055105, z: -3538.3128322623243 }),
+      Point3d.createFrom({ x: -611.3604034049928, y: 0, z: -3538.3128322623243 }),
+      Point3d.createFrom({ x: 0, y: 0, z: -3538.3128322623243 }),
     ];
     context.verifyGlobalChordErrorCompression(0, pointsWithColinearThroughStart, 0.001);
     context.close("ColinearThroughStart");

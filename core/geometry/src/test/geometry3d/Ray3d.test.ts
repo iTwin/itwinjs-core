@@ -133,13 +133,13 @@ describe("Ray3d", () => {
       const frame = Matrix3d.createRigidHeadsUp(rayA.direction, AxisOrder.ZXY);
       for (let indexB = 0; indexB < raySample.length; indexB++) {
         const rayB = raySample[indexB];
-        const approach = Ray3d.closestApproachRay3dRay3d(rayA, rayB)!;
+        const approach = Ray3d.closestApproachRay3dRay3d(rayA, rayB);
         if (indexA === indexB) {
           ck.testExactNumber(approach.approachType!, CurveCurveApproachType.CoincidentGeometry, indexA);
           const rayC = rayA.clone();
           const shiftDistance = 34.2 + indexA;
           rayC.origin.addScaledInPlace(frame.columnY(), shiftDistance);
-          const approachC = Ray3d.closestApproachRay3dRay3d(rayA, rayC)!;
+          const approachC = Ray3d.closestApproachRay3dRay3d(rayA, rayC);
           ck.testExactNumber(approachC.approachType!, CurveCurveApproachType.ParallelGeometry, indexA);
           ck.testCoordinate(shiftDistance, approachC.detailA.point.distance(approachC.detailB.point));
 
@@ -385,7 +385,7 @@ describe("Ray3d.IntersectionWithTriangle", () => {
     if (ck.testDefined(rotatedIntersectionPoint)) {
       ck.testPoint3d(
         rotatedOriginalIntersectionPoint,
-        rotatedIntersectionPoint!,
+        rotatedIntersectionPoint,
         "rotating original intersection points gives rotated intersection points",
       );
     }
@@ -409,7 +409,7 @@ describe("Ray3d.IntersectionWithTriangle", () => {
     if (ck.testDefined(rotatedIntersectionPoint)) {
       ck.testPoint3d(
         rotatedOriginalIntersectionPoint,
-        rotatedIntersectionPoint!,
+        rotatedIntersectionPoint,
         "rotating original intersection points gives rotated intersection points",
       );
     }
@@ -435,7 +435,7 @@ describe("Ray3d.IntersectionWithTriangle", () => {
     if (ck.testDefined(rotatedIntersectionPoint)) {
       ck.testPoint3d(
         rotatedOriginalIntersectionPoint,
-        rotatedIntersectionPoint!,
+        rotatedIntersectionPoint,
         "rotating original intersection points gives rotated intersection points",
       );
     }

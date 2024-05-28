@@ -33,7 +33,7 @@ export class MapTileLoader extends RealityTileLoader {
     this.featureTable.insert(new Feature(this._modelId));
   }
   public getFeatureIndex(layerModelId: Id64String): number {
-    return this.featureTable.insert(new Feature(layerModelId))!;
+    return this.featureTable.insert(new Feature(layerModelId));
   }
 
   public get maxDepth(): number { return this._terrainProvider.maxDepth; }

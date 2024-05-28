@@ -16,8 +16,6 @@ import { TextStyleColor } from "./TextStyle";
  * - A fraction separator described by a [LineSegment3d]($geometry), or
  * - A change in color, to be applied to all subsequent primitives.
  * @beta
- * @extensions
- * @preview
  */
 export type TextBlockGeometryPropsEntry = {
   text: TextStringProps;
@@ -41,8 +39,6 @@ export type TextBlockGeometryPropsEntry = {
  * @see [produceTextAnnotationGeometry]($backend) to convert an annotation to its geometric representation.
  * @see [[GeometryStreamBuilder.appendTextBlock]] to add a block of text to a [GeometryStream]($docs/learning/common/GeometryStream.md).
  * @beta
- * @extensions
- * @preview
  */
 export interface TextBlockGeometryProps {
   /** The set of geometric primitives representing the contents of the [[TextBlock]]. */

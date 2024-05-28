@@ -160,7 +160,7 @@ describe("LineSegment3d", () => {
       for (const s of segments) {
         const sRange = s.range();
         const approachAB = LineSegment3d.closestApproach(xSegment, false, s, false);
-        if (ck.testDefined(approachAB) && approachAB) {
+        if (ck.testDefined(approachAB)) {
           const fA = approachAB.detailA.fraction;
           const fB = approachAB.detailB.fraction;
           if (ck.testType(approachAB.detailA.curve, CurvePrimitive, "closestApproach set detail.curveA"))
@@ -177,7 +177,7 @@ describe("LineSegment3d", () => {
           }
           // test with call in reverse order.
           const approachBA = LineSegment3d.closestApproach(s, false, xSegment, false);
-          if (ck.testDefined(approachBA) && approachBA) {
+          if (ck.testDefined(approachBA)) {
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, [approachBA.detailA.point, approachBA.detailB.point], x0, 4, z0);
             // Skip these tests - the reversal flips some cases around because of order inspected.
             // ck.testPoint3d(approachAB.detailA.point, approachBA.detailB.point);
@@ -233,7 +233,7 @@ describe("LineSegment3d", () => {
         verifyAVectorsAtA(ck, approach.detailA, approach.detailB);
         verifyAVectorsAtA(ck, approach.detailB, approach.detailA);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, [approach.detailA.point, approach.detailB.point], x0, y0);
-        if (ck.testDefined(reversedApproach) && reversedApproach !== undefined) {
+        if (ck.testDefined(reversedApproach)) {
           ck.testPoint3d(approach.detailA.point, reversedApproach.detailB.point);
           ck.testPoint3d(approach.detailB.point, reversedApproach.detailA.point);
         }
@@ -273,8 +273,7 @@ function verifyAVectorsAtA(ck: Checker, detailA: CurveLocationDetail, detailB: C
   const vectorAB = Vector3d.createStartEnd(detailA.point, detailB.point);
   const curveA = detailA.curve;
   const curveB = detailB.curve;
-  if (ck.testDefined(curveA, "Expect curve in detailA") && curveA !== undefined
-    && ck.testDefined(curveB, "Expect curve in detailB") && curveB !== undefined) {
+  if (ck.testDefined(curveA, "Expect curve in detailA") && ck.testDefined(curveB, "Expect curve in detailB")) {
     const rayA = curveA.fractionToPointAndDerivative(0.0);
     const dot = vectorAB.dotProduct(rayA?.direction);
     if (detailA.fraction <= 0.0)

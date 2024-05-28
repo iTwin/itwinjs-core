@@ -178,6 +178,7 @@ import { PropertyCallback } from '@itwin/core-common';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
 import { Range2d } from '@itwin/core-geometry';
+import { Range2dProps } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Rank } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
@@ -216,6 +217,7 @@ import { SynchronizationConfigLinkProps } from '@itwin/core-common';
 import { TextAnnotation } from '@itwin/core-common';
 import { TextAnnotation2dProps } from '@itwin/core-common';
 import { TextAnnotation3dProps } from '@itwin/core-common';
+import { TextBlock } from '@itwin/core-common';
 import { TextBlockGeometryProps } from '@itwin/core-common';
 import { TextStyleSettings } from '@itwin/core-common';
 import { TextureData } from '@itwin/core-common';
@@ -311,6 +313,14 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
 }
 
+// @beta
+export interface AvailableCoordinateReferenceSystemProps {
+    crsExtent: Range2dProps;
+    deprecated: boolean;
+    description: string;
+    name: string;
+}
+
 // @beta (undocumented)
 export interface AzureBlobStorageCredentials {
     // (undocumented)
@@ -359,8 +369,6 @@ export enum BackendLoggerCategory {
     // @internal
     DevTools = "core-backend.DevTools",
     ECDb = "core-backend.ECDb",
-    // @alpha
-    Editing = "core-backend.Editing",
     EventSink = "core-backend.EventSink",
     Functional = "core-backend.Functional",
     IModelDb = "core-backend.IModelDb",
@@ -514,6 +522,8 @@ export class BriefcaseDb extends IModelDb {
     static findByKey(key: string): BriefcaseDb;
     get isBriefcase(): boolean;
     get iTwinId(): GuidString;
+    // (undocumented)
+    protected makeLockControl(): void;
     readonly onClosed: BeEvent<() => void>;
     // @alpha (undocumented)
     static readonly onCodeServiceCreated: BeEvent<(briefcase: BriefcaseDb) => void>;
@@ -1415,6 +1425,15 @@ export interface ComputedProjectExtents {
 export interface ComputeProjectExtentsOptions {
     reportExtentsWithOutliers?: boolean;
     reportOutliers?: boolean;
+}
+
+// @beta
+export function computeTextBlockExtents(args: ComputeTextBlockExtentsArgs): XAndY;
+
+// @beta
+export interface ComputeTextBlockExtentsArgs {
+    iModel: IModelDb;
+    textBlock: TextBlock;
 }
 
 // @alpha
@@ -2863,6 +2882,14 @@ export class GeometryPart extends DefinitionElement {
     toJSON(): GeometryPartProps;
 }
 
+// @beta
+export function getAvailableCoordinateReferenceSystems(args: GetAvailableCoordinateReferenceSystemsArgs): Promise<AvailableCoordinateReferenceSystemProps[]>;
+
+// @beta
+export interface GetAvailableCoordinateReferenceSystemsArgs {
+    extent?: Range2dProps;
+}
+
 // @public
 export class Graphic3d extends GraphicalElement3d {
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
@@ -3168,6 +3195,7 @@ export abstract class IModelDb extends IModel {
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
     static tryFindByKey(key: string): IModelDb | undefined;
+    tryGetMetaData(classFullName: string): EntityMetaData | undefined;
     tryPrepareStatement(sql: string): ECSqlStatement | undefined;
     updateEcefLocation(ecef: EcefLocation): void;
     updateIModelProps(): void;
@@ -3250,9 +3278,9 @@ export namespace IModelDb {
     // @internal
     export enum TileContentState {
         // (undocumented)
-        Loading = 2,
+        Loading = 2,// Request was just created and enqueued.
         // (undocumented)
-        New = 0,
+        New = 0,// Request is enqueued but not yet being processed.
         // (undocumented)
         Pending = 1
     }
@@ -4030,6 +4058,8 @@ export interface LockStatusShared {
 export class MetaDataRegistry {
     add(classFullName: string, metaData: EntityMetaData): void;
     find(classFullName: string): EntityMetaData | undefined;
+    // (undocumented)
+    findByClassId(classId: Id64String): EntityMetaData | undefined;
 }
 
 // @public
@@ -4679,17 +4709,21 @@ export namespace SchemaSync {
         static initializeDb(props: CloudSqlite.ContainerAccessProps): Promise<void>;
     }
     const // (undocumented)
-    setTestCache: (iModel: IModelDb, cacheName: string) => void;
+    setTestCache: (iModel: IModelDb, cacheName?: string) => void;
     const // (undocumented)
-    withLockedAccess: (iModel: TestCacheIModel, args: {
+    withLockedAccess: (iModel: IModelDb | {
+        readonly fileName: LocalFileName;
+    }, args: {
         operationName: string;
         openMode?: OpenMode;
         user?: string;
     }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
+    const pull: (iModel: IModelDb) => Promise<void>;
     const // (undocumented)
     initializeForIModel: (arg: {
         iModel: IModelDb;
         containerProps: CloudSqlite.ContainerProps;
+        overrideContainer?: boolean;
     }) => Promise<void>;
     export class SchemaSyncDb extends VersionedSqliteDb {
         // (undocumented)
@@ -4848,8 +4882,6 @@ export class SettingsSchemas {
     static readonly allSchemas: Map<string, SettingSchema>;
     static readonly onSchemaChanged: BeEvent<() => void>;
     static removeGroup(groupName: string): void;
-    // @internal
-    static reset(): void;
     // @internal (undocumented)
     static validateArrayObject<T>(val: T, schemaName: string, msg: string): T;
 }

@@ -24,7 +24,7 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 // cspell:word XYAB, XYBA
 
-const closestPointProblemFileFile = "./src/test/testInputs/CurveChainWithDistanceIndex/ClosestPointProblem.imjs";
+const closestPointProblemFileFile = "./src/test/data/CurveChainWithDistanceIndex/ClosestPointProblem.imjs";
 
 describe("CurveChainWithDistanceIndex", () => {
   it("ClosestPointProblem", () => {
@@ -36,7 +36,7 @@ describe("CurveChainWithDistanceIndex", () => {
       const pathObject = IModelJson.Reader.parse(JSON.parse(stringData));
       if (pathObject) {
         if (ck.testType(pathObject, Path, "Expect a single path in input file")) {
-          const pathAsPrimitive = CurveChainWithDistanceIndex.createCapture(pathObject)!;
+          const pathAsPrimitive = CurveChainWithDistanceIndex.createCapture(pathObject);
           const origin = pathAsPrimitive.fractionToPoint(0);
           const x0 = -origin.x;
           const y0 = -origin.y;
@@ -57,12 +57,12 @@ describe("CurveChainWithDistanceIndex", () => {
   it("PathWithBsplineLength", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const stringData = fs.readFileSync("./src/test/testInputs/CurveChainWithDistanceIndex/WoodfieldPath/pathWithBsplines.imjs", "utf8");
+    const stringData = fs.readFileSync("./src/test/data/CurveChainWithDistanceIndex/WoodfieldPath/pathWithBsplines.imjs", "utf8");
     if (ck.testDefined(stringData, "read file to json")) {
       const pathObject = IModelJson.Reader.parse(JSON.parse(stringData));
       if (ck.testDefined(pathObject, "parse json string")) {
         if (ck.testType(pathObject, Path, "Expect a single path in input file")) {
-          const hzAlignment = CurveChainWithDistanceIndex.createCapture(pathObject)!;
+          const hzAlignment = CurveChainWithDistanceIndex.createCapture(pathObject);
           // const hzAlignment = pathObject.children [1];
           const origin = pathObject.children[0].fractionToPoint(0);
           const x0 = -origin.x;

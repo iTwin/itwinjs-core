@@ -6,13 +6,10 @@
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
-
 import pkgJson from "../package.json" assert { type: "json" };
 
 const declarationFilePath = "index.d.ts";
-const declarationFilePathPreview = "preview.d.ts";
 const jsFilePath = "index.js";
-const jsFilePathPreview = "preview.js";
 const runtimeFilePath = "../frontend/src/extension/ExtensionRuntime.ts";
 const generatedCsvFileName = "GeneratedExtensionApi.csv";
 
@@ -33,12 +30,6 @@ function interpretCsv(csvString) {
       type: new Set(),
       real: new Set(),
     },
-    previewApi: {
-      enum: new Set(),
-      interface: new Set(),
-      type: new Set(),
-      real: new Set(),
-    },
   };
 
   // csv order must be exportName,exportType,releaseTag
@@ -48,7 +39,9 @@ function interpretCsv(csvString) {
         return;
       }
       const [exportName, exportType, releaseTag] = line.split(",");
-      apiByType[`${releaseTag}Api`][exportType].add(exportName);
+      apiByType[`${releaseTag.toLocaleLowerCase()}Api`][exportType].add(
+        exportName
+      );
     });
   } catch (error) {
     console.log("Provided csv with Extension API was malformed.", error);
@@ -111,7 +104,7 @@ function generateJsCode(exportList) {
 }
 
 // Create the export code for the .ts file
-function generateRuntimeCode(exportListPreview, exportList) {
+function generateRuntimeCode(exportList) {
   const tab = "  "; // two space tab
   let importCode = "";
   let exportsApi = `const extensionExports = {\n${tab}`;
@@ -126,24 +119,6 @@ function generateRuntimeCode(exportListPreview, exportList) {
     // since ExtensionRuntime.ts is also in core-frontend we have to add this exception
     if (packageName === "@itwin/core-frontend")
       importTrailer = `} from "../core-frontend";\n\n`;
-
-    imports +=
-      exportListPreview[packageName].enum.size > 0
-        ? addComment(packageName, "preview", "enum")
-        : "";
-    [...exportListPreview[packageName].enum].sort().forEach((enumExport) => {
-      imports += `${tab}${enumExport},\n`;
-      _exports.push(enumExport);
-    });
-
-    imports +=
-      exportListPreview[packageName].real.size > 0
-        ? addComment(packageName, "preview", "real")
-        : "";
-    [...exportListPreview[packageName].real].sort().forEach((realExport) => {
-      imports += `${tab}${realExport},\n`;
-      _exports.push(realExport);
-    });
 
     imports +=
       exportList[packageName].enum.size > 0
@@ -214,12 +189,10 @@ function addToFile(filePath, generatedCode) {
 // Use the extension linter's output file to add export statements to .d.ts and .js files
 function addGeneratedExports(packages) {
   let exportList = {};
-  let exportListPreview = {};
 
   packages.forEach((pkg) => {
-    const { publicApi, previewApi } = collectExports(pkg.path);
+    const { publicApi } = collectExports(pkg.path);
     exportList[pkg.name] = publicApi;
-    exportListPreview[pkg.name] = previewApi;
   });
 
   // Generate declaration code
@@ -230,16 +203,8 @@ function addGeneratedExports(packages) {
   const jsCode = generateJsCode(exportList);
   addToFile(jsFilePath, jsCode);
 
-  // Generate declaration code for preview.d.ts
-  const declarationCodePreview = generateDeclarationCode(exportListPreview);
-  addToFile(declarationFilePathPreview, declarationCodePreview);
-
-  // Generate js code for preview.js
-  const jsCodePreview = generateJsCode(exportListPreview);
-  addToFile(jsFilePathPreview, jsCodePreview);
-
   // Generate ts code for ExtensionRuntime.ts
-  const runtimeCode = generateRuntimeCode(exportListPreview, exportList);
+  const runtimeCode = generateRuntimeCode(exportList);
   addToFile(runtimeFilePath, runtimeCode);
 }
 

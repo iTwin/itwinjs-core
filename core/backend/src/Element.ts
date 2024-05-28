@@ -166,7 +166,9 @@ export class Element extends Entity {
    * @beta
    */
   protected static onInserted(arg: OnElementIdArg): void {
-    arg.iModel.locks.elementWasCreated(arg.id);
+    const locks = arg.iModel.locks;
+    if (locks && !locks.holdsExclusiveLock(arg.model))
+      locks.elementWasCreated(arg.id);
   }
 
   /** Called before an Element is updated.
