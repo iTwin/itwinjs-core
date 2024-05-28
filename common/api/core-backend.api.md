@@ -178,6 +178,7 @@ import { PropertyCallback } from '@itwin/core-common';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
 import { Range2d } from '@itwin/core-geometry';
+import { Range2dProps } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Rank } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
@@ -310,6 +311,14 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
     // @internal (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
+}
+
+// @beta
+export interface AvailableCoordinateReferenceSystemProps {
+    crsExtent: Range2dProps;
+    deprecated: boolean;
+    description: string;
+    name: string;
 }
 
 // @beta (undocumented)
@@ -2873,6 +2882,14 @@ export class GeometryPart extends DefinitionElement {
     toJSON(): GeometryPartProps;
 }
 
+// @beta
+export function getAvailableCoordinateReferenceSystems(args: GetAvailableCoordinateReferenceSystemsArgs): Promise<AvailableCoordinateReferenceSystemProps[]>;
+
+// @beta
+export interface GetAvailableCoordinateReferenceSystemsArgs {
+    extent?: Range2dProps;
+}
+
 // @public
 export class Graphic3d extends GraphicalElement3d {
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
@@ -4692,17 +4709,21 @@ export namespace SchemaSync {
         static initializeDb(props: CloudSqlite.ContainerAccessProps): Promise<void>;
     }
     const // (undocumented)
-    setTestCache: (iModel: IModelDb, cacheName: string) => void;
+    setTestCache: (iModel: IModelDb, cacheName?: string) => void;
     const // (undocumented)
-    withLockedAccess: (iModel: TestCacheIModel, args: {
+    withLockedAccess: (iModel: IModelDb | {
+        readonly fileName: LocalFileName;
+    }, args: {
         operationName: string;
         openMode?: OpenMode;
         user?: string;
     }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
+    const pull: (iModel: IModelDb) => Promise<void>;
     const // (undocumented)
     initializeForIModel: (arg: {
         iModel: IModelDb;
         containerProps: CloudSqlite.ContainerProps;
+        overrideContainer?: boolean;
     }) => Promise<void>;
     export class SchemaSyncDb extends VersionedSqliteDb {
         // (undocumented)
