@@ -21,7 +21,7 @@
     "test:chrome:azurite": "certa -r chrome --grep \"#integration\" --invert",
     "test:electron:azurite": "certa -r electron --grep \"#integration\" --invert",
     "test:integration": "npm run -s test:integration:chrome && npm run -s test:integration:electron",
-    "test:integration:chrome": "certa -r chrome --grep \"#integration\" ",
+    "test:integration:chrome": "certa -r chrome --grep \"#integration\"",
     "test:integration:electron": "certa -r electron --grep \"#integration\"",
     "webpack:test": "webpack --config webpack.config.js 1>&2"
   },
