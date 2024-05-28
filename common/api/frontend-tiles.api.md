@@ -77,7 +77,6 @@ export interface ObtainMeshExportTilesetUrlArgs {
     iModel: IModelConnection;
     requireExactChangeset?: boolean;
     urlPrefix?: string;
-    useIndexedDBCache?: boolean;
 }
 
 // @beta
@@ -91,7 +90,6 @@ export interface QueryMeshExportsArgs {
     iModelId: string;
     includeIncomplete?: boolean;
     urlPrefix?: string;
-    useIndexedDBCache?: boolean;
 }
 
 // (No @packageDocumentation comment for this package)
