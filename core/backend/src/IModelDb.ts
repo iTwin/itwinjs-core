@@ -230,12 +230,12 @@ const withBriefcaseDb = async (briefcase: OpenBriefcaseArgs, fn: (_db: Briefcase
  * @note if there is more than one iModel for an iTwin or organization, they will *each* hold an independent copy of the settings for those priorities.
  */
 class IModelSettings extends SettingsImpl {
-  protected override verifyPriority(priority: Settings.Priority) {
-    if (priority <= Settings.Priority.application)
+  protected override verifyPriority(priority: Settings.SettingsPriority) {
+    if (priority <= Settings.SettingsPriority.application)
       throw new Error("Use IModelHost.appSettings to access settings of priority 'application' or lower");
   }
 
-  public override * getSettingEntries<T extends Setting>(name: string): Iterable<{ value: T, dictionary: Settings.Dictionary}> {
+  public override * getSettingEntries<T extends Setting>(name: string): Iterable<{ value: T, dictionary: Settings.SettingsDictionary}> {
     yield * super.getSettingEntries(name);
     yield * IModelHost.appWorkspace.settings.getSettingEntries(name);
   }
@@ -1442,7 +1442,7 @@ export abstract class IModelDb extends IModel {
       while (stmt.nextRow()) {
         try {
           const settings = JSON.parse(stmt.getValueString(1));
-          this.workspace.settings.addDictionary({ name: stmt.getValueString(0), priority: Settings.Priority.iModel }, settings);
+          this.workspace.settings.addDictionary({ name: stmt.getValueString(0), priority: Settings.SettingsPriority.iModel }, settings);
         } catch (e) {
           Workspace.exceptionDiagnosticFn(e as WorkspaceDb.LoadError);
         }

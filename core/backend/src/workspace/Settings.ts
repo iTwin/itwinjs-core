@@ -47,7 +47,7 @@ export namespace Settings {
    * Values for Settings.Priority determine the sort order for Settings. Higher values take precedence over lower values.
    * @beta
    */
-  export enum Priority {
+  export enum SettingsPriority {
     /** values supplied default-settings files */
     defaults = 100,
     /** values supplied by applications at runtime */
@@ -66,15 +66,15 @@ export namespace Settings {
    * A dictionary of SettingObjects with a source and priority.
    * @beta
    */
-  export interface Dictionary {
-    readonly props: Dictionary.Props;
+  export interface SettingsDictionary {
+    readonly props: SettingsDictionary.Props;
 
     // Value always cloned.
     getSetting<T extends Setting>(settingName: string): T | undefined;
   }
 
   /** @beta */
-  export namespace Dictionary {
+  export namespace SettingsDictionary {
     /** The source for a Settings.Dictionary. Used to uniquely identify a Settings.Dictionary. */
     export interface Source {
       readonly workspaceDb?: WorkspaceDb;
@@ -82,7 +82,7 @@ export namespace Settings {
     }
     /** The properties required for adding a new Settings.Dictionary. */
     export interface Props extends Source {
-      readonly priority: Priority | number;
+      readonly priority: SettingsPriority | number;
     }
   }
 }
@@ -95,7 +95,7 @@ export interface Settings {
   close(): void;
 
   /** the array of `Settings.Dictionary` entries for this `Settings`, sorted by priority. */
-  readonly dictionaries: readonly Settings.Dictionary[];
+  readonly dictionaries: readonly Settings.SettingsDictionary[];
 
   /** Event raised whenever a Settings.Dictionary is added or removed. */
   readonly onSettingsChanged: BeEvent<() => void>;
@@ -106,32 +106,32 @@ export interface Settings {
    * @param priority the Settings.Priority for the Settings.Dictionary
    * @note If the Settings.Dictionary was previously added, the new content overrides the old content.
    */
-  addFile(fileName: LocalFileName, priority: Settings.Priority | number): void;
+  addFile(fileName: LocalFileName, priority: Settings.SettingsPriority | number): void;
 
   /** Add all files in the supplied directory with the extension ".json" or ".json5"
    * @param dirName the name of a local settings directory
    */
-  addDirectory(dirName: LocalDirName, priority: Settings.Priority | number): void;
+  addDirectory(dirName: LocalDirName, priority: Settings.SettingsPriority | number): void;
 
   /** Add a Settings.Dictionary from a JSON5 stringified string. The string is parsed and the resultant object is added as a Settings.Dictionary.
    * @param props properties of the Settings.Dictionary
    * @param settingsJson the JSON5 stringified string to be parsed.
    * @note If the Settings.Dictionary was previously added, the new content overrides the old content.
    */
-  addJson(props: Settings.Dictionary.Props, settingsJson: string): void;
+  addJson(props: Settings.SettingsDictionary.Props, settingsJson: string): void;
 
   /** get a Settings.Dictionary from this Settings that matches a source. */
-  getDictionary(source: Settings.Dictionary.Source): Settings.Dictionary | undefined;
+  getDictionary(source: Settings.SettingsDictionary.Source): Settings.SettingsDictionary | undefined;
 
   /** Add a new Settings.Dictionary to this Settings.
    * @param props properties of the Settings.Dictionary
    * @param settings the Settings in the dictionary.
    * @note If the Settings.Dictionary was previously added, the new content replaces the old content.
    */
-  addDictionary(props: Settings.Dictionary.Props, settings: SettingObject): void;
+  addDictionary(props: Settings.SettingsDictionary.Props, settings: SettingObject): void;
 
   /** Remove a Settings.Dictionary by name. */
-  dropDictionary(props: Settings.Dictionary.Source): void;
+  dropDictionary(props: Settings.SettingsDictionary.Source): void;
 
   /** Get the highest priority setting for a SettingName.
    * @param settingName The name of the setting
@@ -143,7 +143,7 @@ export interface Settings {
    */
   getSetting<T extends Setting>(settingName: SettingName, defaultValue?: T): T | undefined;
 
-  getSettingEntries<T extends Setting>(settingName: SettingName): Iterable<{ value: T, dictionary: Settings.Dictionary}>;
+  getSettingEntries<T extends Setting>(settingName: SettingName): Iterable<{ value: T, dictionary: Settings.SettingsDictionary}>;
 
   getSettingValues<T extends Setting>(settingName: SettingName): Iterable<T>;
 

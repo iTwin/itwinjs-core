@@ -239,8 +239,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
  */
 class ApplicationSettings extends SettingsImpl {
   private _remove?: VoidFunction;
-  protected override verifyPriority(priority: Settings.Priority) {
-    if (priority > Settings.Priority.application) // only application or lower may appear in ApplicationSettings
+  protected override verifyPriority(priority: Settings.SettingsPriority) {
+    if (priority > Settings.SettingsPriority.application) // only application or lower may appear in ApplicationSettings
       throw new Error("Use IModelSettings");
   }
   private updateDefaults() {
@@ -449,7 +449,7 @@ export class IModelHost {
       throw (e.errorNumber === DbResult.BE_SQLITE_BUSY) ? new IModelError(DbResult.BE_SQLITE_BUSY, `Profile [${this.profileDir}] is already in use by another process`) : e;
     }
 
-    this.appWorkspace.settings.addDirectory(settingAssets, Settings.Priority.defaults);
+    this.appWorkspace.settings.addDirectory(settingAssets, Settings.SettingsPriority.defaults);
 
     GeoCoordConfig.onStartup();
     // allow applications to load their default settings

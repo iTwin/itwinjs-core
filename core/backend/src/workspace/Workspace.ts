@@ -129,7 +129,7 @@ export interface WorkspaceSettingsProps extends WorkspaceDb.CloudProps {
   /** The name of the resource holding the stringified JSON of the `Settings.Dictionary`. The default resourceName is "settingsDictionary" */
   resourceName: string;
   /** The priority for loading the Settings.Dictionary. Higher values override lower values. */
-  priority: Settings.Priority | number;
+  priority: Settings.SettingsPriority | number;
 }
 
 /**
@@ -373,7 +373,7 @@ export namespace Workspace {
   /** passed to [[onSettingsDictionaryLoadedFn]] for every Setting.Dictionary that is loaded from a WorkspaceDb. */
   export interface SettingsDictionaryLoaded {
     /** The dictionary loaded */
-    dict: Settings.Dictionary;
+    dict: Settings.SettingsDictionary;
     /** The WorkspaceDb from which the dictionary was found. */
     from: WorkspaceDb;
   }
@@ -407,7 +407,7 @@ export namespace Workspace {
     /** the Settings.Dictionary holding the `itwin/core/workspace/workspaceDbList` setting. May be used, for example, to determine the
      * Settings.Priority of the dictionary.
      */
-    dict: Settings.Dictionary
+    dict: Settings.SettingsDictionary
   ) => boolean;
 
   /** type that requires an accessToken */

@@ -167,7 +167,7 @@ describe("WorkspaceFile", () => {
 
     const settings = workspace.settings;
     await workspace.loadSettingsDictionary(
-      { dbName: "db1", containerId: "default", baseUri: "", storageType: "azure", resourceName: "default-settings", priority: Settings.Priority.defaults });
+      { dbName: "db1", containerId: "default", baseUri: "", storageType: "azure", resourceName: "default-settings", priority: Settings.SettingsPriority.defaults });
     expect(settings.getSetting("editor/renderWhitespace")).equals("selection");
 
     const workspaceName = "all fonts workspace";
