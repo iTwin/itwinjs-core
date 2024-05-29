@@ -75,13 +75,10 @@ export namespace Settings {
 
   /** @beta */
   export namespace Dictionary {
-    /** The name for a Settings.Dictionary.. */
-    export type Name = string;
-
     /** The source for a Settings.Dictionary. Used to uniquely identify a Settings.Dictionary. */
     export interface Source {
       readonly workspaceDb?: WorkspaceDb;
-      readonly name: Name;
+      readonly name: string;
     }
     /** The properties required for adding a new Settings.Dictionary. */
     export interface Props extends Source {
