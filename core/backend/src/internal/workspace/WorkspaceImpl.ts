@@ -17,7 +17,7 @@ import { SqliteStatement } from "../../SqliteStatement";
 import { SettingName, SettingsContainer, SettingsDictionaryProps, Settings, SettingsPriority } from "../../workspace/Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { Workspace, WorkspaceContainer, WorkspaceContainerId, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps, WorkspaceDbFullName, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbManifest, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbProps, WorkspaceDbQueryResourcesArgs, WorkspaceDbVersion, WorkspaceOpts, WorkspaceResourceName, WorkspaceSettingsProps } from "../../workspace/Workspace";
-import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
+import { CreateNewWorkspaceContainerProps, CreateNewWorkspaceDbVersionProps, EditableWorkspaceContainer, EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
 import { SettingsImpl } from "./SettingsImpl";
 
@@ -464,10 +464,10 @@ class EditorWorkspaceImpl extends WorkspaceImpl {
 class EditorImpl implements WorkspaceEditor {
   public workspace = new EditorWorkspaceImpl(new SettingsImpl(), { containerDir: join(IModelHost.cacheDir, workspaceEditorName) });
 
-  public async initializeContainer(args: WorkspaceEditor.CreateNewWorkspaceContainerProps) {
+  public async initializeContainer(args: CreateNewWorkspaceContainerProps) {
     class CloudAccess extends CloudSqlite.DbAccess<WorkspaceSqliteDb> {
       protected static override _cacheName = workspaceEditorName;
-      public static async initializeWorkspace(args: WorkspaceEditor.CreateNewWorkspaceContainerProps) {
+      public static async initializeWorkspace(args: CreateNewWorkspaceContainerProps) {
         const props = await this.createBlobContainer({ scope: args.scope, metadata: { ...args.metadata, containerType: "workspace" } });
         const dbFullName = makeWorkspaceDbFileName(workspaceDbNameWithDefault(args.dbName), "1.0.0");
         await super._initializeDb({ ...args, props, dbName: dbFullName, dbType: WorkspaceSqliteDb, blockSize: "4M" });
@@ -477,17 +477,17 @@ class EditorImpl implements WorkspaceEditor {
     return CloudAccess.initializeWorkspace(args);
   }
 
-  public async createNewCloudContainer(args: WorkspaceEditor.CreateNewWorkspaceContainerProps): Promise<WorkspaceEditor.EditableWorkspaceContainer> {
+  public async createNewCloudContainer(args: CreateNewWorkspaceContainerProps): Promise<EditableWorkspaceContainer> {
     const cloudContainer = await this.initializeContainer(args);
     const userToken = await IModelHost.authorizationClient?.getAccessToken();
     const accessToken = await CloudSqlite.requestToken({ ...cloudContainer, accessLevel: "write", userToken });
     return this.getContainer({ accessToken, ...cloudContainer, writeable: true, description: args.metadata.description });
   }
 
-  public getContainer(props: WorkspaceContainerProps & Workspace.WithAccessToken): WorkspaceEditor.EditableWorkspaceContainer {
-    return this.workspace.findContainer(props.containerId) as WorkspaceEditor.EditableWorkspaceContainer | undefined ?? new EditorContainerImpl(this.workspace, props);
+  public getContainer(props: WorkspaceContainerProps & Workspace.WithAccessToken): EditableWorkspaceContainer {
+    return this.workspace.findContainer(props.containerId) as EditableWorkspaceContainer | undefined ?? new EditorContainerImpl(this.workspace, props);
   }
-  public async getContainerAsync(props: WorkspaceContainerProps): Promise<WorkspaceEditor.EditableWorkspaceContainer> {
+  public async getContainerAsync(props: WorkspaceContainerProps): Promise<EditableWorkspaceContainer> {
     const accessToken = props.accessToken ?? (props.baseUri === "") ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "write" });
     return this.getContainer({ ...props, accessToken });
   }
@@ -501,7 +501,7 @@ interface EditCloudContainer extends WorkspaceCloudContainer {
   writeLockHeldBy?: string;  // added by acquireWriteLock
 }
 
-class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEditor.EditableWorkspaceContainer {
+class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWorkspaceContainer {
   public override get cloudContainer(): EditCloudContainer | undefined {
     return super.cloudContainer as EditCloudContainer | undefined;
   }
@@ -517,7 +517,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEdi
       isPublic: cloudContainer.isPublic,
     };
   }
-  public async createNewWorkspaceDbVersion(args: WorkspaceEditor.CreateNewWorkspaceDbVersionProps): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }> {
+  public async createNewWorkspaceDbVersion(args: CreateNewWorkspaceDbVersionProps): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }> {
     const cloudContainer = this.cloudContainer;
     if (undefined === cloudContainer)
       throw new Error("versions require cloud containers");
@@ -572,10 +572,12 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEdi
       const tempDbFile = join(KnownLocations.tmpdir, `empty.${workspaceDbFileExt}`);
       if (fs.existsSync(tempDbFile))
         IModelJsFs.removeSync(tempDbFile);
+
       WorkspaceEditor.createEmptyDb({ localFileName: tempDbFile, manifest: args.manifest });
       await CloudSqlite.uploadDb(this.cloudContainer, { localFileName: tempDbFile, dbName: makeWorkspaceDbFileName(workspaceDbNameWithDefault(args.dbName), args.version) });
       IModelJsFs.removeSync(tempDbFile);
     }
+
     return this.getWorkspaceDb(args);
   }
 }

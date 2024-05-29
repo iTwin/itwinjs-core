@@ -26,72 +26,80 @@ export namespace WorkspaceEditor {
   }
 
   /**
-   * The properties needed to create a new container from the BlobContainer service
+   * Create a new, empty, EditableDb file on the local filesystem for importing Workspace resources.
    */
-  export interface CreateNewWorkspaceContainerProps {
-    /**
-     * The scope of the container. This determines the ownership of the container, how RBAC rights are assigned,
-     * and the location of the datacenter
-     */
-    scope: BlobContainer.Scope;
-    /** The manifest to be stored in the default WorkspaceDb in the new container. */
-    manifest: WorkspaceDbManifest;
-    /** Metadata stored by the BlobContainer service */
-    metadata: Omit<BlobContainer.Metadata, "containerType">;
-    dbName?: string;
+  export function createEmptyDb(args: { localFileName: LocalFileName, manifest: WorkspaceDbManifest }): void {
+    WorkspaceSqliteDb.createNewDb(args.localFileName, args);
   }
+}
+
+/**
+ * The properties needed to create a new container from the BlobContainer service
+ */
+export interface CreateNewWorkspaceContainerProps {
+  /**
+   * The scope of the container. This determines the ownership of the container, how RBAC rights are assigned,
+   * and the location of the datacenter
+   */
+  scope: BlobContainer.Scope;
+  /** The manifest to be stored in the default WorkspaceDb in the new container. */
+  manifest: WorkspaceDbManifest;
+  /** Metadata stored by the BlobContainer service */
+  metadata: Omit<BlobContainer.Metadata, "containerType">;
+  dbName?: string;
+}
+
+/**
+ * A Workspace.Editor.Container supplies methods for creating and modifying versions of a WorkspaceDb.
+ */
+export interface EditableWorkspaceContainer extends WorkspaceContainer {
+  /**
+   * Create a copy of an existing WorkspaceDb in this Workspace.Editor.Container with a new version number.
+   * This function is used by administrator tools that modify Workspaces.
+   * This requires that the *write lock on the container be held*.
+   * The copy should be modified with new content before the write lock is released,
+   * and thereafter may never be modified again.
+   * @note The copy actually shares all of the data with the original, but with copy-on-write if/when data in the new WorkspaceDb is modified.
+   * @param props - The properties that determine the source WorkspaceDb for the new version.
+   * @returns A promise that resolves to an object containing the old and new WorkspaceDb names and versions.
+   */
+  createNewWorkspaceDbVersion(props: CreateNewWorkspaceDbVersionProps): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }>;
 
   /**
-   * A Workspace.Editor.Container supplies methods for creating and modifying versions of a WorkspaceDb.
+   * Create a new empty WorkspaceDb.
+   * @param args - The arguments for creating the new WorkspaceDb.
+   * @returns A promise that resolves to an EditableWorkspaceDb.
    */
-  export interface EditableWorkspaceContainer extends WorkspaceContainer {
-    /**
-     * Create a copy of an existing WorkspaceDb in this Workspace.Editor.Container with a new version number.
-     * This function is used by administrator tools that modify Workspaces.
-     * This requires that the *write lock on the container be held*.
-     * The copy should be modified with new content before the write lock is released,
-     * and thereafter may never be modified again.
-     * @note The copy actually shares all of the data with the original, but with copy-on-write if/when data in the new WorkspaceDb is modified.
-     * @param props - The properties that determine the source WorkspaceDb for the new version.
-     * @returns A promise that resolves to an object containing the old and new WorkspaceDb names and versions.
-     */
-    createNewWorkspaceDbVersion(props: CreateNewWorkspaceDbVersionProps): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }>;
+  createDb(args: { dbName?: string, version?: string, manifest: WorkspaceDbManifest }): Promise<EditableWorkspaceDb>;
 
-    /**
-     * Create a new empty WorkspaceDb.
-     * @param args - The arguments for creating the new WorkspaceDb.
-     * @returns A promise that resolves to an EditableWorkspaceDb.
-     */
-    createDb(args: { dbName?: string, version?: string, manifest: WorkspaceDbManifest }): Promise<EditableWorkspaceDb>;
+  /**
+   * Get the cloud properties of this Container.
+   */
+  get cloudProps(): WorkspaceContainerProps | undefined;
 
-    /**
-     * Get the cloud properties of this Container.
-     */
-    get cloudProps(): WorkspaceContainerProps | undefined;
+  /**
+   * Get an EditableWorkspaceDb to add, delete, or update resources *within a newly created version* of a WorkspaceDb.
+   * @param props - The properties of the WorkspaceDb.
+   */
+  getEditableDb(props: WorkspaceDbProps): EditableWorkspaceDb;
 
-    /**
-     * Get an EditableWorkspaceDb to add, delete, or update resources *within a newly created version* of a WorkspaceDb.
-     * @param props - The properties of the WorkspaceDb.
-     */
-    getEditableDb(props: WorkspaceDbProps): EditableWorkspaceDb;
+  /**
+   * Acquire the write lock on the container.
+   * @param user - The user acquiring the write lock.
+   */
+  acquireWriteLock(user: string): void;
 
-    /**
-     * Acquire the write lock on the container.
-     * @param user - The user acquiring the write lock.
-     */
-    acquireWriteLock(user: string): void;
+  /**
+   * Release the write lock on the container. This should be called after all changes to the EditableDb are complete. It
+   * "publishes" and uploads the changes to the new version of the EditableDb and it is thereafter immutable.
+   */
+  releaseWriteLock(): void;
 
-    /**
-     * Release the write lock on the container. This should be called after all changes to the EditableDb are complete. It
-     * "publishes" and uploads the changes to the new version of the EditableDb and it is thereafter immutable.
-     */
-    releaseWriteLock(): void;
-
-    /**
-     * Abandon any changes made to the container and release the write lock. Any newly created versions of WorkspaceDbs are discarded.
-     */
-    abandonChanges(): void;
-  }
+  /**
+   * Abandon any changes made to the container and release the write lock. Any newly created versions of WorkspaceDbs are discarded.
+   */
+  abandonChanges(): void;
+}
 
 /**
  * The release increment for a version number.
@@ -112,14 +120,6 @@ export interface CreateNewWorkspaceDbVersionProps {
   versionType: WorkspaceDbVersionIncrement;
   /** For prerelease versions, a string that becomes part of the version name. */
   identifier?: string;
-}
-
-  /**
-   * Create a new, empty, EditableDb file on the local filesystem for importing Workspace resources.
-   */
-  export function createEmptyDb(args: { localFileName: LocalFileName, manifest: WorkspaceDbManifest }): void {
-    WorkspaceSqliteDb.createNewDb(args.localFileName, args);
-  }
 }
 
 /**
@@ -239,14 +239,14 @@ export interface WorkspaceEditor {
    * @param props - The properties of the workspace container.
    * @returns A container for editing WorkspaceDbs.
    */
-  getContainer(props: WorkspaceContainerProps & Workspace.WithAccessToken): WorkspaceEditor.EditableWorkspaceContainer;
+  getContainer(props: WorkspaceContainerProps & Workspace.WithAccessToken): EditableWorkspaceContainer;
 
   /**
    * Asynchronously retrieves a container for the editor with the specified properties.
    * @param props - The properties of the workspace container.
    * @returns A promise that resolves to a container for editing WorkspaceDbs.
    */
-  getContainerAsync(props: WorkspaceContainerProps): Promise<WorkspaceEditor.EditableWorkspaceContainer>;
+  getContainerAsync(props: WorkspaceContainerProps): Promise<EditableWorkspaceContainer>;
 
   /**
    * Creates a new cloud container, for holding WorkspaceDbs, from the BlobContainer service.
@@ -254,7 +254,7 @@ export interface WorkspaceEditor {
    * @returns A promise that resolves to a container for editing WorkspaceDbs.
    * @note The current user must have administrator rights for the iTwin for the container.
    */
-  createNewCloudContainer(props: WorkspaceEditor.CreateNewWorkspaceContainerProps): Promise<WorkspaceEditor.EditableWorkspaceContainer>;
+  createNewCloudContainer(props: CreateNewWorkspaceContainerProps): Promise<EditableWorkspaceContainer>;
 
   /**
    * Closes this editor. All workspace containers are dropped.
