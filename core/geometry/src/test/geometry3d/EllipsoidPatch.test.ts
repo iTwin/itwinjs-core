@@ -525,7 +525,7 @@ describe("Ellipsoid", () => {
               const anglesA = patch.uvFractionToAngles(thetaFraction, phiFraction, distanceFromSurface);
               const rayA = patch.anglesToUnitNormalRay(anglesA)!;
               const anglesB = patch.projectPointToSurface(rayA.origin);
-              if (ck.testDefined(anglesB) && anglesB) {
+              if (ck.testDefined(anglesB)) {
                 const planeB = patch.ellipsoid.radiansToPointAndDerivatives(anglesB.longitudeRadians, anglesB.latitudeRadians, false);
                 GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(rayA.origin, planeB.origin), x0);
                 const vectorAB = Vector3d.createStartEnd(planeB.origin, rayA.origin);
@@ -593,12 +593,12 @@ describe("Ellipsoid", () => {
             const disk = Loop.create(arc);
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, disk, x0, y0 + xShift);
           }
-          if (ck.testDefined(arc, "Expect good section arc", prettyPrint(plane), prettyPrint(ellipsoid)) && arc) {
+          if (ck.testDefined(arc, "Expect good section arc", prettyPrint(plane), prettyPrint(ellipsoid))) {
             for (const fraction of [0, 0.25, 0.6, 0.8, 0.95]) {
               const pointOnArc = arc.fractionToPoint(fraction);
               ck.testTrue(plane.isPointInPlane(pointOnArc));
               const angles = ellipsoid.projectPointToSurface(pointOnArc);
-              if (ck.testDefined(angles) && angles) {
+              if (ck.testDefined(angles)) {
                 const pointOnEllipsoid = ellipsoid.radiansToPoint(angles.longitudeRadians, angles.latitudeRadians);
                 ck.testPoint3d(pointOnArc, pointOnEllipsoid, "section point is on the ellipsoid");
               }
@@ -782,7 +782,7 @@ describe("Ellipsoid", () => {
           for (const arcFraction of [0, 0.25, 0.4, 0.8]) {
             const q = arc.fractionToPoint(arcFraction);
             const angles = ellipsoid.projectPointToSurface(q);
-            if (ck.testDefined(angles) && angles) {
+            if (ck.testDefined(angles)) {
               ck.testCoordinate(0.0, angles.altitude, "silhouette arc points are on ellipsoid");
               const surfaceNormal = ellipsoid.radiansToUnitNormalRay(angles.longitudeRadians, angles.latitudeRadians)!;
               const vectorToEye = eyePoint.crossWeightedMinusPoint3d(q);
@@ -1025,7 +1025,7 @@ function testEllipsoidPaths(ck: Checker, allGeometry: GeometryQuery[], ellipsoid
       angleB.longitudeRadians, angleB.latitudeRadians);
     GeometryCoreTestIO.captureGeometry(allGeometry,
       LineString3d.create(center.interpolate(1.4, startPoint), center, center.interpolate(1.4, endPoint)), x0, y0);
-    if (ck.testDefined(arc) && arc) {
+    if (ck.testDefined(arc)) {
       const arc1 = arc.clone();
       arc1.scaleAboutCenterInPlace(1.4);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc1, x0, y0);

@@ -23,8 +23,10 @@ import { Sample, SteppedIndexFunctionFactory } from "../../serialization/Geometr
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { ChainMergeContext } from "../../topology/ChainMerge";
+import { Vector3d } from "../../geometry3d/Point3dVector3d";
 
-const chainCollectorInputDirectory = "./src/test/testInputs/ChainCollector/";
+const chainCollectorInputDirectory = "./src/test/data/ChainCollector/";
 const noOffset0 = "aecc_alignment";
 describe("ChainCollector", () => {
 
@@ -237,6 +239,42 @@ describe("ChainCollector", () => {
       x0 += xShift;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ChainCollector", "SmallInputs");
+    expect(ck.getNumErrors()).equals(0);
+  });
+});
+
+describe("ChainMerge", () => {
+  it("ChainMergeVariants", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const e = 1;    // Really big blob tolerance !!!
+    // line segments of a unit square with gap "e" at the beginning of each edge.
+    const segments = [
+      LineSegment3d.createXYXY(e, 0, 10, 0),
+      LineSegment3d.createXYXY(10, e, 10, 10),
+      LineSegment3d.createXYXY(10 - e, 10, 0, 10),
+      LineSegment3d.createXYXY(0, 10 - e, 0, 0)];
+    let dy = 20.0;
+    for (const tol of [0.0001 * e, 2.0 * e]) {
+      // Create the context with the worst possible sort direction -- trigger N^2 search
+      const chainMergeContext = ChainMergeContext.create(
+        {
+          tolerance: tol,
+          primarySortDirection: Vector3d.create(0, 0, 1),
+        });
+      chainMergeContext.addLineSegment3dArray(segments);
+      chainMergeContext.clusterAndMergeVerticesXYZ();
+      const chains = chainMergeContext.collectMaximalChains();
+      let expectedChains = 4;
+      if (tol > e)
+        expectedChains = 1;
+      ck.testExactNumber(chains.length, expectedChains, "Chain count with variant tolerance");
+      GeometryCoreTestIO.captureGeometry(allGeometry, chains, 0, dy, 0);
+      dy += 20.0;
+    }
+    GeometryCoreTestIO.captureGeometry(allGeometry, segments, 0, 0, 0);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "ChainMergeVariants");
     expect(ck.getNumErrors()).equals(0);
   });
 });

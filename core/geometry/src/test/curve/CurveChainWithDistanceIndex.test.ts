@@ -24,7 +24,7 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 // cspell:word XYAB, XYBA
 
-const closestPointProblemFileFile = "./src/test/testInputs/CurveChainWithDistanceIndex/ClosestPointProblem.imjs";
+const closestPointProblemFileFile = "./src/test/data/CurveChainWithDistanceIndex/ClosestPointProblem.imjs";
 
 describe("CurveChainWithDistanceIndex", () => {
   it("ClosestPointProblem", () => {
@@ -57,7 +57,7 @@ describe("CurveChainWithDistanceIndex", () => {
   it("PathWithBsplineLength", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const stringData = fs.readFileSync("./src/test/testInputs/CurveChainWithDistanceIndex/WoodfieldPath/pathWithBsplines.imjs", "utf8");
+    const stringData = fs.readFileSync("./src/test/data/CurveChainWithDistanceIndex/WoodfieldPath/pathWithBsplines.imjs", "utf8");
     if (ck.testDefined(stringData, "read file to json")) {
       const pathObject = IModelJson.Reader.parse(JSON.parse(stringData));
       if (ck.testDefined(pathObject, "parse json string")) {
