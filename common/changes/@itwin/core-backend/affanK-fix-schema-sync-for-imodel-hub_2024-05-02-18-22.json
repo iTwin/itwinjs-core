@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "schemaUpgrade() now push change to schema sync",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
