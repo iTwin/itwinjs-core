@@ -10,13 +10,13 @@
 import { BlobContainer } from "./BlobContainerService";
 import { CloudSqlite } from "./CloudSqlite";
 import { VersionedSqliteDb } from "./SQLiteDb";
-import { SettingObject } from "./workspace/Settings";
+import { SettingsContainer } from "./workspace/Settings";
 
 /** @beta */
 export namespace PropertyStore {
 
   /** The set of valid types for properties in a PropertyStore. */
-  export type PropertyType = string | number | boolean | Uint8Array | SettingObject;
+  export type PropertyType = string | number | boolean | Uint8Array | SettingsContainer;
   /** The case-sensitive name of a Property. May not have leading or trailing spaces, and must be between 3 and 2048 characters long. */
   export type PropertyName = string;
   /** An array of PropertyName/PropertyType pairs to be stored in a PropertyStore. */
@@ -66,7 +66,7 @@ export namespace PropertyStore {
           case "number":
             return stmt.getValueDouble(1);
           case "object":
-            return JSON.parse(stmt.getValueString(1)) as SettingObject;
+            return JSON.parse(stmt.getValueString(1)) as SettingsContainer;
         }
         return undefined;
       });
@@ -122,14 +122,14 @@ export namespace PropertyStore {
     /** Get the value of an object property by name.
     * @returns the property's value if it exists and is an object, `undefined` otherwise.
     */
-    public getObject(name: PropertyName): SettingObject | undefined;
+    public getObject(name: PropertyName): SettingsContainer | undefined;
     /** Get the value of an object property by name.
     * @returns the property's value if it exists and is an object, otherwise the supplied default value.
     */
-    public getObject(name: PropertyName, defaultValue: SettingObject): SettingObject;
-    public getObject(name: PropertyName, defaultValue?: SettingObject): SettingObject | undefined {
+    public getObject(name: PropertyName, defaultValue: SettingsContainer): SettingsContainer;
+    public getObject(name: PropertyName, defaultValue?: SettingsContainer): SettingsContainer | undefined {
       const out = this.getProperty(name);
-      return typeof out === "object" ? out as SettingObject : defaultValue;
+      return typeof out === "object" ? out as SettingsContainer : defaultValue;
     }
 
     /** call an iteration function for each property, optionally applying a filter */

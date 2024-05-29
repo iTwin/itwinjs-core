@@ -14,7 +14,7 @@ import { IModelHost, KnownLocations } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
 import { SQLiteDb } from "../../SQLiteDb";
 import { SqliteStatement } from "../../SqliteStatement";
-import { SettingName, SettingObject, Settings } from "../../workspace/Settings";
+import { SettingName, SettingsContainer, SettingsDictionaryProps, Settings, SettingsPriority } from "../../workspace/Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceOpts, WorkspaceResourceName, WorkspaceSettingsProps } from "../../workspace/Workspace";
 import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
@@ -333,7 +333,7 @@ class WorkspaceImpl implements Workspace {
     if (settingsFiles) {
       if (typeof settingsFiles === "string")
         settingsFiles = [settingsFiles];
-      settingsFiles.forEach((file) => settings.addFile(file, Settings.SettingsPriority.application));
+      settingsFiles.forEach((file) => settings.addFile(file, SettingsPriority.application));
     }
   }
 
@@ -374,7 +374,7 @@ class WorkspaceImpl implements Workspace {
       db.open();
       try {
         const manifest = db.manifest;
-        const dictProps: Settings.SettingsDictionary.SettingsDictionaryProps = { name: prop.resourceName, workspaceDb: db, priority: prop.priority };
+        const dictProps: SettingsDictionaryProps = { name: prop.resourceName, workspaceDb: db, priority: prop.priority };
         // don't load if we already have this dictionary. Happens if the same WorkspaceDb is in more than one list
         if (undefined === this.settings.getDictionary(dictProps)) {
           const settingsJson = db.getString(prop.resourceName);
@@ -645,7 +645,7 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
     this.sqliteDb.nativeDb.saveFileProperty(workspaceManifestProperty, JSON.stringify(manifest));
     this._manifest = undefined;
   }
-  public updateSettingsResource(settings: SettingObject, rscName?: string) {
+  public updateSettingsResource(settings: SettingsContainer, rscName?: string) {
     this.updateString(rscName ?? "settingsDictionary", JSON.stringify(settings));
   }
   public addString(rscName: WorkspaceResourceName, val: string): void {

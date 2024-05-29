@@ -57,7 +57,7 @@ import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotati
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
-import { SettingObject, Settings, Setting } from "./workspace/Settings";
+import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from "./workspace/Settings";
 import { Workspace, WorkspaceDb, WorkspaceSettingsProps } from "./workspace/Workspace";
 import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "./internal/workspace/WorkspaceImpl";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
@@ -230,12 +230,12 @@ const withBriefcaseDb = async (briefcase: OpenBriefcaseArgs, fn: (_db: Briefcase
  * @note if there is more than one iModel for an iTwin or organization, they will *each* hold an independent copy of the settings for those priorities.
  */
 class IModelSettings extends SettingsImpl {
-  protected override verifyPriority(priority: Settings.SettingsPriority) {
-    if (priority <= Settings.SettingsPriority.application)
+  protected override verifyPriority(priority: SettingsPriority) {
+    if (priority <= SettingsPriority.application)
       throw new Error("Use IModelHost.appSettings to access settings of priority 'application' or lower");
   }
 
-  public override * getSettingEntries<T extends Setting>(name: string): Iterable<{ value: T, dictionary: Settings.SettingsDictionary}> {
+  public override * getSettingEntries<T extends Setting>(name: string): Iterable<{ value: T, dictionary: SettingsDictionary}> {
     yield * super.getSettingEntries(name);
     yield * IModelHost.appWorkspace.settings.getSettingEntries(name);
   }
@@ -1409,7 +1409,7 @@ export abstract class IModelDb extends IModel {
    * @note All saved `SettingDictionary`s are loaded into [[workspace.settings]] every time an iModel is opened.
    * @beta
    */
-  public saveSettingDictionary(name: string, dict: SettingObject) {
+  public saveSettingDictionary(name: string, dict: SettingsContainer) {
     this.withSqliteStatement("REPLACE INTO be_Prop(id,SubId,TxnMode,Namespace,Name,strData) VALUES(0,0,0,?,?,?)", (stmt) => {
       stmt.bindString(1, IModelDb._settingPropNamespace);
       stmt.bindString(2, name);
@@ -1442,7 +1442,7 @@ export abstract class IModelDb extends IModel {
       while (stmt.nextRow()) {
         try {
           const settings = JSON.parse(stmt.getValueString(1));
-          this.workspace.settings.addDictionary({ name: stmt.getValueString(0), priority: Settings.SettingsPriority.iModel }, settings);
+          this.workspace.settings.addDictionary({ name: stmt.getValueString(0), priority: SettingsPriority.iModel }, settings);
         } catch (e) {
           Workspace.exceptionDiagnosticFn(e as WorkspaceDb.LoadError);
         }

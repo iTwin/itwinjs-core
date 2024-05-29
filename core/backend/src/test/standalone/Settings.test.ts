@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { assert, Mutable, OpenMode } from "@itwin/core-bentley";
 import { SnapshotDb, StandaloneDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
-import { SettingObject, Settings } from "../../workspace/Settings";
+import { SettingsContainer, SettingsPriority } from "../../workspace/Settings";
 import { SettingSchema, SettingSchemaGroup } from "../../workspace/SettingsSchemas";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { GcsDbProps, GeoCoordConfig } from "../../GeoCoordConfig";
@@ -168,19 +168,19 @@ describe("Settings", () => {
   it("settings priorities", () => {
     const settings = iModel.workspace.settings;
     IModelHost.settingsSchemas.addGroup(app1);
-    IModelHost.appWorkspace.settings.addDictionary({ name: "app1", priority: Settings.SettingsPriority.application }, app1Settings);
+    IModelHost.appWorkspace.settings.addDictionary({ name: "app1", priority: SettingsPriority.application }, app1Settings);
 
     let settingsChanged = 0;
     settings.onSettingsChanged.addListener(() => settingsChanged++);
 
-    settings.addDictionary({ name: "iModel1.setting.json", priority: Settings.SettingsPriority.iModel }, imodel1Settings);
+    settings.addDictionary({ name: "iModel1.setting.json", priority: SettingsPriority.iModel }, imodel1Settings);
     expect(settingsChanged).eq(1);
-    settings.addDictionary({ name: "iModel2.setting.json", priority: Settings.SettingsPriority.iModel }, imodel2Settings);
+    settings.addDictionary({ name: "iModel2.setting.json", priority: SettingsPriority.iModel }, imodel2Settings);
     expect(settingsChanged).eq(2);
-    settings.addDictionary({ name: "iTwin.setting.json", priority: Settings.SettingsPriority.iTwin }, iTwinSettings);
+    settings.addDictionary({ name: "iTwin.setting.json", priority: SettingsPriority.iTwin }, iTwinSettings);
     expect(settingsChanged).eq(3);
 
-    expect(() => IModelHost.appWorkspace.settings.addDictionary({ name: "iModel", priority: Settings.SettingsPriority.iModel }, imodel1Settings)).to.throw("Use IModelSettings");
+    expect(() => IModelHost.appWorkspace.settings.addDictionary({ name: "iModel", priority: SettingsPriority.iModel }, imodel1Settings)).to.throw("Use IModelSettings");
 
     expect(settings.getString("app1/sub1")).equals(imodel2Settings["app1/sub1"]);
     expect(settings.getString("app2/setting6")).equals(iTwinSettings["app2/setting6"]);
@@ -221,7 +221,7 @@ describe("Settings", () => {
     expect(defaultGcs[1].storageType).equals("azure");
 
     iTwinSettings["app2/setting6"] = "new value for 6";
-    settings.addDictionary({ name: "iTwin.setting.json", priority: Settings.SettingsPriority.iTwin }, iTwinSettings);
+    settings.addDictionary({ name: "iTwin.setting.json", priority: SettingsPriority.iTwin }, iTwinSettings);
     expect(settings.getString("app2/setting6")).equals(iTwinSettings["app2/setting6"]);
     expect(settingsChanged).eq(4);
 
@@ -235,13 +235,13 @@ describe("Settings", () => {
 
     const inspect = Array.from(settings.getSettingEntries("app1/sub1"));
     expect(inspect.length).equals(5);
-    expect(inspect[0].dictionary.props).to.deep.equal({ name: "iModel2.setting.json", priority: Settings.SettingsPriority.iModel });
+    expect(inspect[0].dictionary.props).to.deep.equal({ name: "iModel2.setting.json", priority: SettingsPriority.iModel });
     expect(inspect[0].value).equal("imodel2 value");
-    expect(inspect[1].dictionary.props).to.deep.equal({ name: "iModel1.setting.json", priority: Settings.SettingsPriority.iModel });
+    expect(inspect[1].dictionary.props).to.deep.equal({ name: "iModel1.setting.json", priority: SettingsPriority.iModel });
     expect(inspect[1].value).equal("imodel1 value");
-    expect(inspect[2].dictionary.props).to.deep.equal({ name: "iTwin.setting.json", priority: Settings.SettingsPriority.iTwin });
+    expect(inspect[2].dictionary.props).to.deep.equal({ name: "iTwin.setting.json", priority: SettingsPriority.iTwin });
     expect(inspect[2].value).equal("val3");
-    expect(inspect[3].dictionary.props).to.deep.equal({ name: "app1", priority: Settings.SettingsPriority.application });
+    expect(inspect[3].dictionary.props).to.deep.equal({ name: "app1", priority: SettingsPriority.application });
     expect(inspect[3].value).equal("app1 value");
     expect(inspect[4].dictionary.props).to.deep.equal({ name: "_default_", priority: 0 });
     expect(inspect[4].value).equal("val1");
@@ -264,9 +264,9 @@ describe("Settings", () => {
     const appSettings = IModelHost.appWorkspace.settings;
     const iModelSettings = iModel.workspace.settings;
     const settingFileName = IModelTestUtils.resolveAssetFile("test.setting.json5");
-    expect(() => appSettings.addFile(settingFileName, Settings.SettingsPriority.iTwin)).throws("Use IModelSettings");
-    appSettings.addFile(settingFileName, Settings.SettingsPriority.application);
-    expect(() => iModelSettings.addFile(settingFileName, Settings.SettingsPriority.application)).to.throw("Use IModelHost.appSettings");
+    expect(() => appSettings.addFile(settingFileName, SettingsPriority.iTwin)).throws("Use IModelSettings");
+    appSettings.addFile(settingFileName, SettingsPriority.application);
+    expect(() => iModelSettings.addFile(settingFileName, SettingsPriority.application)).to.throw("Use IModelHost.appSettings");
     expect(appSettings.getString("app1/colorTheme")).equals("Light Theme");
     expect(iModelSettings.getString("app1/colorTheme")).equals("Light Theme");
     const token = appSettings.getSetting<any>("editor/tokenColorCustomizations")!;
@@ -280,13 +280,13 @@ describe("Settings", () => {
     const iModelName = IModelTestUtils.prepareOutputFile("IModelSetting", "test.bim");
     const iModel2 = IModelTestUtils.createSnapshotFromSeed(iModelName, IModelTestUtils.resolveAssetFile("test.bim"));
 
-    const setting1: SettingObject = {
+    const setting1: SettingsContainer = {
       "imodel/setting1": "this is from setting1",
     };
-    const setting1changed: SettingObject = {
+    const setting1changed: SettingsContainer = {
       "imodel/setting1": "this is changed setting1",
     };
-    const gcsDbDict: SettingObject = {
+    const gcsDbDict: SettingsContainer = {
       "gcs/databases": ["gcs/Usa", "gcs/Canada"],
     };
     iModel2.saveSettingDictionary("gcs-dbs", gcsDbDict);

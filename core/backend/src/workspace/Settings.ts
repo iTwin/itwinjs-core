@@ -37,54 +37,48 @@ export type SettingName = string;
 /** An object with only string-named members.
  * @beta
  */
-export interface SettingObject {
+export interface SettingsContainer {
   [name: SettingName]: Setting | undefined;
 }
 
-/** @beta */
-export namespace Settings {
-  /**
-   * Values for Settings.Priority determine the sort order for Settings. Higher values take precedence over lower values.
-   * @beta
-   */
-  export enum SettingsPriority {
-    /** values supplied default-settings files */
-    defaults = 100,
-    /** values supplied by applications at runtime */
-    application = 200,
-    /** values that apply to all iTwins for an organization. */
-    organization = 300,
-    /** values that apply to all iModels in an iTwin. */
-    iTwin = 400,
-    /** values that apply to all branches of an iModel. */
-    branch = 500,
-    /** values stored in an iModel. */
-    iModel = 600,
-  }
+/**
+ * Values for Settings.Priority determine the sort order for Settings. Higher values take precedence over lower values.
+ * @beta
+ */
+export enum SettingsPriority {
+  /** values supplied default-settings files */
+  defaults = 100,
+  /** values supplied by applications at runtime */
+  application = 200,
+  /** values that apply to all iTwins for an organization. */
+  organization = 300,
+  /** values that apply to all iModels in an iTwin. */
+  iTwin = 400,
+  /** values that apply to all branches of an iModel. */
+  branch = 500,
+  /** values stored in an iModel. */
+  iModel = 600,
+}
 
-  /**
-   * A dictionary of SettingObjects with a source and priority.
-   * @beta
-   */
-  export interface SettingsDictionary {
-    readonly props: SettingsDictionary.SettingsDictionaryProps;
+/**
+ * A dictionary of SettingObjects with a source and priority.
+ * @beta
+ */
+export interface SettingsDictionary {
+  readonly props: SettingsDictionaryProps;
 
-    // Value always cloned.
-    getSetting<T extends Setting>(settingName: string): T | undefined;
-  }
+  // Value always cloned.
+  getSetting<T extends Setting>(settingName: string): T | undefined;
+}
 
-  /** @beta */
-  export namespace SettingsDictionary {
-    /** The source for a Settings.Dictionary. Used to uniquely identify a Settings.Dictionary. */
-    export interface SettingsDictionarySource {
-      readonly workspaceDb?: WorkspaceDb;
-      readonly name: string;
-    }
-    /** The properties required for adding a new Settings.Dictionary. */
-    export interface SettingsDictionaryProps extends SettingsDictionarySource {
-      readonly priority: SettingsPriority | number;
-    }
-  }
+/** The source for a Settings.Dictionary. Used to uniquely identify a Settings.Dictionary. */
+export interface SettingsDictionarySource {
+  readonly workspaceDb?: WorkspaceDb;
+  readonly name: string;
+}
+/** The properties required for adding a new Settings.Dictionary. */
+export interface SettingsDictionaryProps extends SettingsDictionarySource {
+  readonly priority: SettingsPriority | number;
 }
 
 /** The current set of Settings for a Workspace.
@@ -95,7 +89,7 @@ export interface Settings {
   close(): void;
 
   /** the array of `Settings.Dictionary` entries for this `Settings`, sorted by priority. */
-  readonly dictionaries: readonly Settings.SettingsDictionary[];
+  readonly dictionaries: readonly SettingsDictionary[];
 
   /** Event raised whenever a Settings.Dictionary is added or removed. */
   readonly onSettingsChanged: BeEvent<() => void>;
@@ -106,32 +100,32 @@ export interface Settings {
    * @param priority the Settings.Priority for the Settings.Dictionary
    * @note If the Settings.Dictionary was previously added, the new content overrides the old content.
    */
-  addFile(fileName: LocalFileName, priority: Settings.SettingsPriority | number): void;
+  addFile(fileName: LocalFileName, priority: SettingsPriority | number): void;
 
   /** Add all files in the supplied directory with the extension ".json" or ".json5"
    * @param dirName the name of a local settings directory
    */
-  addDirectory(dirName: LocalDirName, priority: Settings.SettingsPriority | number): void;
+  addDirectory(dirName: LocalDirName, priority: SettingsPriority | number): void;
 
   /** Add a Settings.Dictionary from a JSON5 stringified string. The string is parsed and the resultant object is added as a Settings.Dictionary.
    * @param props properties of the Settings.Dictionary
    * @param settingsJson the JSON5 stringified string to be parsed.
    * @note If the Settings.Dictionary was previously added, the new content overrides the old content.
    */
-  addJson(props: Settings.SettingsDictionary.SettingsDictionaryProps, settingsJson: string): void;
+  addJson(props: SettingsDictionaryProps, settingsJson: string): void;
 
   /** get a Settings.Dictionary from this Settings that matches a source. */
-  getDictionary(source: Settings.SettingsDictionary.SettingsDictionarySource): Settings.SettingsDictionary | undefined;
+  getDictionary(source: SettingsDictionarySource): SettingsDictionary | undefined;
 
   /** Add a new Settings.Dictionary to this Settings.
    * @param props properties of the Settings.Dictionary
    * @param settings the Settings in the dictionary.
    * @note If the Settings.Dictionary was previously added, the new content replaces the old content.
    */
-  addDictionary(props: Settings.SettingsDictionary.SettingsDictionaryProps, settings: SettingObject): void;
+  addDictionary(props: SettingsDictionaryProps, settings: SettingsContainer): void;
 
   /** Remove a Settings.Dictionary by name. */
-  dropDictionary(props: Settings.SettingsDictionary.SettingsDictionarySource): void;
+  dropDictionary(props: SettingsDictionarySource): void;
 
   /** Get the highest priority setting for a SettingName.
    * @param settingName The name of the setting
@@ -143,7 +137,7 @@ export interface Settings {
    */
   getSetting<T extends Setting>(settingName: SettingName, defaultValue?: T): T | undefined;
 
-  getSettingEntries<T extends Setting>(settingName: SettingName): Iterable<{ value: T, dictionary: Settings.SettingsDictionary}>;
+  getSettingEntries<T extends Setting>(settingName: SettingName): Iterable<{ value: T, dictionary: SettingsDictionary}>;
 
   getSettingValues<T extends Setting>(settingName: SettingName): Iterable<T>;
 

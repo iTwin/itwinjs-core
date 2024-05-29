@@ -8,7 +8,7 @@
 
 import { LocalFileName } from "@itwin/core-common";
 import { SQLiteDb } from "../SQLiteDb";
-import { SettingObject } from "./Settings";
+import { SettingsContainer } from "./Settings";
 import { BlobContainer } from "../BlobContainerService";
 import { Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceResourceName } from "./Workspace";
 import { WorkspaceSqliteDb } from "../internal/workspace/WorkspaceSqliteDb";
@@ -149,7 +149,7 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
    * @param settings - The settings object to add or update.
    * @param rscName - The name of the settings resource.
    */
-  updateSettingsResource(settings: SettingObject, rscName?: string): void;
+  updateSettingsResource(settings: SettingsContainer, rscName?: string): void;
 
   /**
    * Add a new string resource to this WorkspaceDb.

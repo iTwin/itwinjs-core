@@ -12,18 +12,18 @@ import { extname, join } from "path";
 import { BeEvent } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../../IModelJsFs";
-import { SettingName, SettingObject, Settings, Setting } from "../../workspace/Settings";
+import { SettingName, SettingsContainer, SettingsDictionarySource, Settings, Setting, SettingsPriority, SettingsDictionary, SettingsDictionaryProps } from "../../workspace/Settings";
 import { IModelHost } from "../../IModelHost";
 
-const dictionaryMatches = (d1: Settings.SettingsDictionary.SettingsDictionarySource, d2: Settings.SettingsDictionary.SettingsDictionarySource): boolean => {
+const dictionaryMatches = (d1: SettingsDictionarySource, d2: SettingsDictionarySource): boolean => {
   return (d1.workspaceDb === d2.workspaceDb) && (d1.name === d2.name);
 };
 
-class SettingsDictionaryImpl implements Settings.SettingsDictionary {
-  public readonly props: Settings.SettingsDictionary.SettingsDictionaryProps;
-  public readonly settings: SettingObject;
+class SettingsDictionaryImpl implements SettingsDictionary {
+  public readonly props: SettingsDictionaryProps;
+  public readonly settings: SettingsContainer;
 
-  public constructor(props: Settings.SettingsDictionary.SettingsDictionaryProps, settings: SettingObject) {
+  public constructor(props: SettingsDictionaryProps, settings: SettingsContainer) {
     this.props = { ...props }; // make a copy so it can't be changed by caller
     this.settings = settings;
   }
@@ -39,16 +39,16 @@ class SettingsDictionaryImpl implements Settings.SettingsDictionary {
  * @internal
  */
 export class SettingsImpl implements Settings {
-  public dictionaries: Settings.SettingsDictionary[] = [];
-  protected verifyPriority(_priority: Settings.SettingsPriority) { }
+  public dictionaries: SettingsDictionary[] = [];
+  protected verifyPriority(_priority: SettingsPriority) { }
   public close() { }
   public readonly onSettingsChanged = new BeEvent<() => void>();
 
-  public addFile(fileName: LocalFileName, priority: Settings.SettingsPriority) {
+  public addFile(fileName: LocalFileName, priority: SettingsPriority) {
     this.addJson({ name: fileName, priority }, fs.readFileSync(fileName, "utf-8"));
   }
 
-  public addDirectory(dirName: LocalDirName, priority: Settings.SettingsPriority) {
+  public addDirectory(dirName: LocalDirName, priority: SettingsPriority) {
     for (const fileName of IModelJsFs.readdirSync(dirName)) {
       const ext = extname(fileName);
       if (ext === ".json5" || ext === ".json")
@@ -56,11 +56,11 @@ export class SettingsImpl implements Settings {
     }
   }
 
-  public addJson(props: Settings.SettingsDictionary.SettingsDictionaryProps, settingsJson: string) {
+  public addJson(props: SettingsDictionaryProps, settingsJson: string) {
     this.addDictionary(props, parse(settingsJson));
   }
 
-  public addDictionary(props: Settings.SettingsDictionary.SettingsDictionaryProps, settings: SettingObject) {
+  public addDictionary(props: SettingsDictionaryProps, settings: SettingsContainer) {
     this.verifyPriority(props.priority);
     this.dropDictionary(props, false); // make sure we don't have the same dictionary twice
     const dict = new SettingsDictionaryImpl(props, settings);
@@ -77,7 +77,7 @@ export class SettingsImpl implements Settings {
     this.onSettingsChanged.raiseEvent();
   }
 
-  public getDictionary(source: Settings.SettingsDictionary.SettingsDictionarySource): Settings.SettingsDictionary | undefined {
+  public getDictionary(source: SettingsDictionarySource): SettingsDictionary | undefined {
     for (const dictionary of this.dictionaries) {
       if (dictionaryMatches(dictionary.props, source))
         return dictionary;
@@ -85,7 +85,7 @@ export class SettingsImpl implements Settings {
     return undefined;
   }
 
-  public dropDictionary(source: Settings.SettingsDictionary.SettingsDictionarySource, raiseEvent = true) {
+  public dropDictionary(source: SettingsDictionarySource, raiseEvent = true) {
     for (let i = 0; i < this.dictionaries.length; ++i) {
       if (dictionaryMatches(this.dictionaries[i].props, source)) {
         this.dictionaries.splice(i, 1);
@@ -97,7 +97,7 @@ export class SettingsImpl implements Settings {
     return false;
   }
 
-  public * getSettingEntries<T extends Setting>(settingName: SettingName): Iterable<{ value: T, dictionary: Settings.SettingsDictionary}> {
+  public * getSettingEntries<T extends Setting>(settingName: SettingName): Iterable<{ value: T, dictionary: SettingsDictionary}> {
     for (const dictionary of this.dictionaries) {
       const value = dictionary.getSetting<T>(settingName);
       if (undefined !== value) {
