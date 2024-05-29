@@ -992,6 +992,11 @@ export namespace CloudSqlite {
         name: string;
         rootDir: string;
     }
+    // (undocumented)
+    export interface CleanDeletedBlocksOptions {
+        debugLogging?: boolean;
+        nSeconds?: number;
+    }
     export interface CloudCache {
         // @internal
         destroy(): void;
@@ -1020,7 +1025,7 @@ export namespace CloudSqlite {
         // (undocumented)
         readonly cache?: CloudCache;
         checkForChanges(): void;
-        cleanDeletedBlocks(nSeconds?: number): Promise<void>;
+        cleanDeletedBlocks(options?: CleanDeletedBlocksOptions): Promise<void>;
         clearWriteLock(): void;
         connect(cache: CloudCache): void;
         get containerId(): string;
