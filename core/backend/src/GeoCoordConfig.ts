@@ -10,12 +10,12 @@ import { BentleyError, Logger } from "@itwin/core-bentley";
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelHost } from "./IModelHost";
 import { Settings } from "./workspace/Settings";
-import { WorkspaceDb } from "./workspace/Workspace";
+import { WorkspaceDbCloudProps } from "./workspace/Workspace";
 
 const loggerCat = "GeoCoord";
 
 /** @internal */
-export interface GcsDbProps extends WorkspaceDb.WorkspaceDbCloudProps {
+export interface GcsDbProps extends WorkspaceDbCloudProps {
   priority?: number;
 }
 const makeSettingName = (name: string) => `${"itwin/core/gcs"}/${name}`;

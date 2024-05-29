@@ -10,7 +10,7 @@ import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { SettingsPriority } from "../../workspace/Settings";
-import { Workspace, WorkspaceContainerProps, WorkspaceDb } from "../../workspace/Workspace";
+import { Workspace, WorkspaceContainerProps, WorkspaceDbManifest, WorkspaceDbProps } from "../../workspace/Workspace";
 import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { validateWorkspaceContainerId, validateWorkspaceDbName } from "../../internal/workspace/WorkspaceImpl";
@@ -28,7 +28,7 @@ describe("WorkspaceFile", () => {
     editor.close();
   });
 
-  async function makeEditableDb(props: WorkspaceDb.WorkspaceDbProps & WorkspaceContainerProps, manifest: WorkspaceDb.WorkspaceDbManifest): Promise<EditableWorkspaceDb> {
+  async function makeEditableDb(props: WorkspaceDbProps & WorkspaceContainerProps, manifest: WorkspaceDbManifest): Promise<EditableWorkspaceDb> {
     const container = editor.getContainer({ ...props, accessToken: "" });
     const wsFile = await container.createDb({ ...props, manifest });
     wsFile.open();
@@ -100,7 +100,7 @@ describe("WorkspaceFile", () => {
   });
 
   it("create new WorkspaceDb", async () => {
-    const manifest: WorkspaceDb.WorkspaceDbManifest = { workspaceName: "resources for acme users", contactName: "contact me" };
+    const manifest: WorkspaceDbManifest = { workspaceName: "resources for acme users", contactName: "contact me" };
     const wsFile = await makeEditableDb({ containerId: "acme-engineering-inc-2", dbName: "db1", baseUri: "", storageType: "azure" }, manifest);
     const inFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
     const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);

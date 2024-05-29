@@ -58,7 +58,7 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from "./workspace/Settings";
-import { Workspace, WorkspaceDb, WorkspaceSettingsProps } from "./workspace/Workspace";
+import { Workspace, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceSettingsProps } from "./workspace/Workspace";
 import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "./internal/workspace/WorkspaceImpl";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
 
@@ -1444,7 +1444,7 @@ export abstract class IModelDb extends IModel {
           const settings = JSON.parse(stmt.getValueString(1));
           this.workspace.settings.addDictionary({ name: stmt.getValueString(0), priority: SettingsPriority.iModel }, settings);
         } catch (e) {
-          Workspace.exceptionDiagnosticFn(e as WorkspaceDb.WorkspaceDbLoadError);
+          Workspace.exceptionDiagnosticFn(e as WorkspaceDbLoadError);
         }
       }
     });
@@ -1453,7 +1453,7 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   protected async loadWorkspaceSettings() {
     try {
-      const problems: WorkspaceDb.WorkspaceDbLoadError[] = [];
+      const problems: WorkspaceDbLoadError[] = [];
       const settingProps: WorkspaceSettingsProps[] = [];
       // Note: we can't use `getArray` here because we only look at dictionaries in the iModel's workspace, not appWorkspace.
       // Also, we must concatenate all entries in all of the dictionaries stored in the iModel into a single array *before*
@@ -1464,7 +1464,7 @@ export abstract class IModelDb extends IModel {
           if (props)
             settingProps.push(...IModelHost.settingsSchemas.validateSetting(props, Workspace.settingName.settingsWorkspaces));
         } catch (e) {
-          problems.push(e as WorkspaceDb.WorkspaceDbLoadError); // something wrong with the setting stored in the iModel
+          problems.push(e as WorkspaceDbLoadError); // something wrong with the setting stored in the iModel
         }
       }
       if (settingProps.length > 0)
@@ -1474,7 +1474,7 @@ export abstract class IModelDb extends IModel {
         throwWorkspaceDbLoadErrors(`attempting to load workspace settings for iModel '${this.name}':`, problems);
     } catch (e) {
       // we don't want to throw exceptions when attempting to load Dictionaries. Call the diagnostics function instead.
-      Workspace.exceptionDiagnosticFn(e as WorkspaceDb.WorkspaceDbLoadErrors);
+      Workspace.exceptionDiagnosticFn(e as WorkspaceDbLoadErrors);
     }
   }
 
