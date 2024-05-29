@@ -55,7 +55,7 @@ export namespace WorkspaceEditor {
      * @param props - The properties that determine the source WorkspaceDb for the new version.
      * @returns A promise that resolves to an object containing the old and new WorkspaceDb names and versions.
      */
-    createNewWorkspaceDbVersion(props: EditableWorkspaceContainer.MakeNewWorkspaceDbVersionProps): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }>;
+    createNewWorkspaceDbVersion(props: CreateNewWorkspaceDbVersionProps): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }>;
 
     /**
      * Create a new empty WorkspaceDb.
@@ -93,28 +93,26 @@ export namespace WorkspaceEditor {
     abandonChanges(): void;
   }
 
-  export namespace EditableWorkspaceContainer {
-    /**
-     * The release increment for a version number.
-     * @see [semver.ReleaseType](https://www.npmjs.com/package/semver)
-     */
-    export type WorkspaceDbVersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
+/**
+ * The release increment for a version number.
+ * @see [semver.ReleaseType](https://www.npmjs.com/package/semver)
+ */
+export type WorkspaceDbVersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
 
-    /**
-     * The properties for creating a new version of a WorkspaceDb.
-     */
-    export interface MakeNewWorkspaceDbVersionProps {
-      /**
-       * The properties that determine the source WorkspaceDb for the new version.
-       * This is usually the latest version, but it is possible to create patches to older versions.
-       */
-      fromProps?: WorkspaceDbProps;
-      /** The type of version increment to apply to the source version. */
-      versionType: EditableWorkspaceContainer.WorkspaceDbVersionIncrement;
-      /** For prerelease versions, a string that becomes part of the version name. */
-      identifier?: string;
-    }
-  }
+/**
+ * The properties for creating a new version of a WorkspaceDb.
+ */
+export interface CreateNewWorkspaceDbVersionProps {
+  /**
+   * The properties that determine the source WorkspaceDb for the new version.
+   * This is usually the latest version, but it is possible to create patches to older versions.
+   */
+  fromProps?: WorkspaceDbProps;
+  /** The type of version increment to apply to the source version. */
+  versionType: WorkspaceDbVersionIncrement;
+  /** For prerelease versions, a string that becomes part of the version name. */
+  identifier?: string;
+}
 
   /**
    * Create a new, empty, EditableDb file on the local filesystem for importing Workspace resources.

@@ -517,7 +517,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEdi
       isPublic: cloudContainer.isPublic,
     };
   }
-  public async createNewWorkspaceDbVersion(args: WorkspaceEditor.EditableWorkspaceContainer.MakeNewWorkspaceDbVersionProps): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }> {
+  public async createNewWorkspaceDbVersion(args: WorkspaceEditor.CreateNewWorkspaceDbVersionProps): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }> {
     const cloudContainer = this.cloudContainer;
     if (undefined === cloudContainer)
       throw new Error("versions require cloud containers");
