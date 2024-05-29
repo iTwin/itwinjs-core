@@ -176,6 +176,10 @@ export interface ProduceTextAnnotationGeometryArgs {
   annotation: TextAnnotation;
   /** The iModel from which to obtain fonts and text styles. */
   iModel: IModelDb;
+  /** For debugging purposes only, whether to include geometry representing the bounding box and anchor point of the annotation.
+   * If true, two red lines indicating the horizontal and vertical extents of the bounding box will be included, intersecting at the anchor point.
+   */
+  debugAnchorPointAndRange?: boolean;
   /** @internal chiefly for tests */
   computeTextRange?: ComputeRangesForTextLayout;
   /** @internal chiefly for tests */
@@ -198,7 +202,6 @@ export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometr
   const dimensions = layout.range.diagonal();
   const transform = args.annotation.computeTransform(dimensions);
 
-  const debugAnchorPointAndRange = false;
-  const anchorPoint = debugAnchorPointAndRange ? args.annotation.computeAnchorPoint(dimensions) : undefined;
+  const anchorPoint = args.debugAnchorPointAndRange ? args.annotation.computeAnchorPoint(dimensions) : undefined;
   return produceTextBlockGeometry(layout, transform, anchorPoint);
 }
