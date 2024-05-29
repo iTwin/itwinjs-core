@@ -16,7 +16,7 @@ import { SQLiteDb } from "../../SQLiteDb";
 import { SqliteStatement } from "../../SqliteStatement";
 import { SettingName, SettingsContainer, SettingsDictionaryProps, Settings, SettingsPriority } from "../../workspace/Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
-import { Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceOpts, WorkspaceResourceName, WorkspaceSettingsProps } from "../../workspace/Workspace";
+import { Workspace, WorkspaceContainer, WorkspaceContainerId, WorkspaceContainerProps, WorkspaceDb, WorkspaceOpts, WorkspaceResourceName, WorkspaceSettingsProps } from "../../workspace/Workspace";
 import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
 import { SettingsImpl } from "./SettingsImpl";
@@ -45,7 +45,7 @@ function makeWorkspaceCloudCache(arg: CloudSqlite.CreateCloudCacheArg): Workspac
   return cache;
 }
 
-function getContainerFullId(props: WorkspaceContainer.Props) {
+function getContainerFullId(props: WorkspaceContainerProps) {
   return `${props.baseUri}/${props.containerId}`;
 }
 
@@ -81,8 +81,8 @@ function getWorkspaceCloudContainer(props: CloudSqlite.ContainerAccessProps, cac
 class WorkspaceContainerImpl implements WorkspaceContainer {
   public readonly workspace: WorkspaceImpl;
   public readonly filesDir: LocalDirName;
-  public readonly id: WorkspaceContainer.Id;
-  public readonly fromProps: WorkspaceContainer.Props;
+  public readonly id: WorkspaceContainerId;
+  public readonly fromProps: WorkspaceContainerProps;
   private readonly _cloudContainer?: WorkspaceCloudContainer | undefined;
 
   public get cloudContainer(): WorkspaceCloudContainer | undefined {
@@ -92,7 +92,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
   protected _wsDbs = new Map<WorkspaceDb.DbName, WorkspaceDb>();
   public get dirName() { return join(this.workspace.containerDir, this.id); }
 
-  public constructor(workspace: WorkspaceImpl, props: WorkspaceContainer.Props & { accessToken: AccessToken }) {
+  public constructor(workspace: WorkspaceImpl, props: WorkspaceContainerProps & { accessToken: AccessToken }) {
     validateWorkspaceContainerId(props.containerId);
     this.workspace = workspace;
     this.id = props.containerId;
@@ -318,7 +318,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
 
 /** Implementation of Workspace */
 class WorkspaceImpl implements Workspace {
-  private _containers = new Map<WorkspaceContainer.Id, WorkspaceContainerImpl>();
+  private _containers = new Map<WorkspaceContainerId, WorkspaceContainerImpl>();
   public readonly containerDir: LocalDirName;
   public readonly settings: Settings;
   protected _cloudCache?: WorkspaceCloudCache;
@@ -343,15 +343,15 @@ class WorkspaceImpl implements Workspace {
     this._containers.set(toAdd.id, toAdd);
   }
 
-  public findContainer(containerId: WorkspaceContainer.Id) {
+  public findContainer(containerId: WorkspaceContainerId) {
     return this._containers.get(containerId);
   }
 
-  public getContainer(props: WorkspaceContainer.Props & Workspace.WithAccessToken): WorkspaceContainer {
+  public getContainer(props: WorkspaceContainerProps & Workspace.WithAccessToken): WorkspaceContainer {
     return this.findContainer(props.containerId) ?? new WorkspaceContainerImpl(this, props);
   }
 
-  public async getContainerAsync(props: WorkspaceContainer.Props): Promise<WorkspaceContainer> {
+  public async getContainerAsync(props: WorkspaceContainerProps): Promise<WorkspaceContainer> {
     const accessToken = props.accessToken ?? ((props.baseUri === "") || props.isPublic) ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "read" });
     return this.getContainer({ ...props, accessToken });
   }
@@ -484,10 +484,10 @@ class EditorImpl implements WorkspaceEditor {
     return this.getContainer({ accessToken, ...cloudContainer, writeable: true, description: args.metadata.description });
   }
 
-  public getContainer(props: WorkspaceContainer.Props & Workspace.WithAccessToken): WorkspaceEditor.Container {
+  public getContainer(props: WorkspaceContainerProps & Workspace.WithAccessToken): WorkspaceEditor.Container {
     return this.workspace.findContainer(props.containerId) as WorkspaceEditor.Container | undefined ?? new EditorContainerImpl(this.workspace, props);
   }
-  public async getContainerAsync(props: WorkspaceContainer.Props): Promise<WorkspaceEditor.Container> {
+  public async getContainerAsync(props: WorkspaceContainerProps): Promise<WorkspaceEditor.Container> {
     const accessToken = props.accessToken ?? (props.baseUri === "") ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "write" });
     return this.getContainer({ ...props, accessToken });
   }
@@ -506,7 +506,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEdi
     return super.cloudContainer as EditCloudContainer | undefined;
   }
 
-  public get cloudProps(): WorkspaceContainer.Props | undefined {
+  public get cloudProps(): WorkspaceContainerProps | undefined {
     const cloudContainer = this.cloudContainer;
     if (undefined === cloudContainer)
       return undefined;
@@ -732,7 +732,7 @@ export function validateWorkspaceDbName(dbName: WorkspaceDb.DbName) {
  *  - may not start or end with with a dash nor have more than one dash in a row
  *  - may not be shorter than 3 or longer than 63 characters
  */
-export function validateWorkspaceContainerId(id: WorkspaceContainer.Id) {
+export function validateWorkspaceContainerId(id: WorkspaceContainerId) {
   if (!/^(?=.{3,63}$)[a-z0-9]+(-[a-z0-9]+)*$/g.test(id))
     throw new Error(`invalid containerId: [${id}]`);
 }

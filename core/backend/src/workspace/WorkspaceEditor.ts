@@ -10,7 +10,7 @@ import { LocalFileName } from "@itwin/core-common";
 import { SQLiteDb } from "../SQLiteDb";
 import { SettingsContainer } from "./Settings";
 import { BlobContainer } from "../BlobContainerService";
-import { Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceResourceName } from "./Workspace";
+import { Workspace, WorkspaceContainer, WorkspaceContainerProps, WorkspaceDb, WorkspaceResourceName } from "./Workspace";
 import { WorkspaceSqliteDb } from "../internal/workspace/WorkspaceSqliteDb";
 import { constructWorkspaceEditor } from "../internal/workspace/WorkspaceImpl";
 
@@ -67,7 +67,7 @@ export namespace WorkspaceEditor {
     /**
      * Get the cloud properties of this Container.
      */
-    get cloudProps(): WorkspaceContainer.Props | undefined;
+    get cloudProps(): WorkspaceContainerProps | undefined;
 
     /**
      * Get an EditableWorkspaceDb to add, delete, or update resources *within a newly created version* of a WorkspaceDb.
@@ -241,14 +241,14 @@ export interface WorkspaceEditor {
    * @param props - The properties of the workspace container.
    * @returns A container for editing WorkspaceDbs.
    */
-  getContainer(props: WorkspaceContainer.Props & Workspace.WithAccessToken): WorkspaceEditor.Container;
+  getContainer(props: WorkspaceContainerProps & Workspace.WithAccessToken): WorkspaceEditor.Container;
 
   /**
    * Asynchronously retrieves a container for the editor with the specified properties.
    * @param props - The properties of the workspace container.
    * @returns A promise that resolves to a container for editing WorkspaceDbs.
    */
-  getContainerAsync(props: WorkspaceContainer.Props): Promise<WorkspaceEditor.Container>;
+  getContainerAsync(props: WorkspaceContainerProps): Promise<WorkspaceEditor.Container>;
 
   /**
    * Creates a new cloud container, for holding WorkspaceDbs, from the BlobContainer service.

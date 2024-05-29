@@ -18,25 +18,22 @@ import { BackendLoggerCategory } from "../BackendLoggerCategory";
 
 const loggerCategory = BackendLoggerCategory.Workspace;
 
-/** @beta */
-export namespace WorkspaceContainer {
-  /** The unique identifier of a WorkspaceContainer. This becomes the base name for the local directory holding the WorkspaceDbs from a WorkspaceContainer.
-   * `WorkspaceContainer.Id`s may:
-   *  - only contain lower case letters, numbers or dashes
-   *  - not start or end with a dash
-   *  - not be shorter than 3 or longer than 63 characters
-   */
-  export type Id = string;
+/** The unique identifier of a WorkspaceContainer. This becomes the base name for the local directory holding the WorkspaceDbs from a WorkspaceContainer.
+ * `WorkspaceContainer.Id`s may:
+ *  - only contain lower case letters, numbers or dashes
+ *  - not start or end with a dash
+ *  - not be shorter than 3 or longer than 63 characters
+ */
+export type WorkspaceContainerId = string;
 
-  /** Properties that specify a WorkspaceContainer. */
-  export interface Props extends Optional<CloudSqlite.ContainerAccessProps, "accessToken"> {
-    /** attempt to synchronize (i.e. call `checkForChanges`) this cloud container whenever it is connected to a cloud cache. Default=true */
-    readonly syncOnConnect?: boolean;
-    /** description of what's in this container */
-    readonly description?: string;
-    /** in case of problems loading the container, display this message. */
-    readonly loadingHelp?: string;
-  }
+/** Properties that specify a WorkspaceContainer. */
+export interface WorkspaceContainerProps extends Optional<CloudSqlite.ContainerAccessProps, "accessToken"> {
+  /** attempt to synchronize (i.e. call `checkForChanges`) this cloud container whenever it is connected to a cloud cache. Default=true */
+  readonly syncOnConnect?: boolean;
+  /** description of what's in this container */
+  readonly description?: string;
+  /** in case of problems loading the container, display this message. */
+  readonly loadingHelp?: string;
 }
 
 /** @beta */
@@ -67,7 +64,7 @@ export namespace WorkspaceDb {
     readonly prefetch?: boolean;
   }
 
-  export type CloudProps = Props & WorkspaceContainer.Props;
+  export type CloudProps = Props & WorkspaceContainerProps;
 
   export type QueryResourcesCallback = (resourceNames: Iterable<string>) => void;
 
@@ -256,7 +253,7 @@ export interface Workspace {
    * @returns the [[WorkspaceContainer]] for `containerId` if it was not previously opened with [[getContainer]]
    * @internal
    */
-  findContainer(containerId: WorkspaceContainer.Id): WorkspaceContainer | undefined;
+  findContainer(containerId: WorkspaceContainerId): WorkspaceContainer | undefined;
 
   /** Get a [[WorkspaceContainer]] by [[WorkspaceContainer.Props]]
    * @param props the properties of the `WorkspaceContainer`. If `props.containerId` was already opened, its WorkspaceContainer is returned.
@@ -265,7 +262,7 @@ export interface Workspace {
    * hence this function is async.
    * @see [[getContainer]]
   */
-  getContainerAsync(props: WorkspaceContainer.Props): Promise<WorkspaceContainer>;
+  getContainerAsync(props: WorkspaceContainerProps): Promise<WorkspaceContainer>;
 
   /** Get a WorkspaceContainer with a supplied access token. This function is synchronous and may be used if:
    * - a valid accessToken is al is already available
@@ -273,7 +270,7 @@ export interface Workspace {
    * - the container is public and doesn't require an accessToken
    * @see [[getContainerAsync]]
    */
-  getContainer(props: WorkspaceContainer.Props & Workspace.WithAccessToken): WorkspaceContainer;
+  getContainer(props: WorkspaceContainerProps & Workspace.WithAccessToken): WorkspaceContainer;
 
   /** Load a settings dictionary from the specified WorkspaceDb, and add it to the current Settings for this Workspace.
    * @note this function will load the dictionaries from the supplied list, and it will also call itself recursively for any entries in
@@ -340,7 +337,7 @@ export interface WorkspaceContainer {
   /** CloudContainer for this WorkspaceContainer (`undefined` if this is a local WorkspaceContainer.) */
   readonly cloudContainer?: CloudSqlite.CloudContainer;
   /** properties supplied when this container was loaded */
-  readonly fromProps: WorkspaceContainer.Props;
+  readonly fromProps: WorkspaceContainerProps;
 
   /** @internal */
   addWorkspaceDb(toAdd: WorkspaceDb): void;

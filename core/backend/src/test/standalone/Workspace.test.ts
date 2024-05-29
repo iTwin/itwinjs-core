@@ -10,7 +10,7 @@ import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { SettingsPriority } from "../../workspace/Settings";
-import { Workspace, WorkspaceContainer, WorkspaceDb } from "../../workspace/Workspace";
+import { Workspace, WorkspaceContainerProps, WorkspaceDb } from "../../workspace/Workspace";
 import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { validateWorkspaceContainerId, validateWorkspaceDbName } from "../../internal/workspace/WorkspaceImpl";
@@ -28,7 +28,7 @@ describe("WorkspaceFile", () => {
     editor.close();
   });
 
-  async function makeEditableDb(props: WorkspaceDb.Props & WorkspaceContainer.Props, manifest: WorkspaceDb.Manifest): Promise<EditableWorkspaceDb> {
+  async function makeEditableDb(props: WorkspaceDb.Props & WorkspaceContainerProps, manifest: WorkspaceDb.Manifest): Promise<EditableWorkspaceDb> {
     const container = editor.getContainer({ ...props, accessToken: "" });
     const wsFile = await container.createDb({ ...props, manifest });
     wsFile.open();
