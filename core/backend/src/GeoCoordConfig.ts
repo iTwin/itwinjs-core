@@ -15,7 +15,7 @@ import { WorkspaceDb } from "./workspace/Workspace";
 const loggerCat = "GeoCoord";
 
 /** @internal */
-export interface GcsDbProps extends WorkspaceDb.CloudProps {
+export interface GcsDbProps extends WorkspaceDb.WorkspaceDbCloudProps {
   priority?: number;
 }
 const makeSettingName = (name: string) => `${"itwin/core/gcs"}/${name}`;

@@ -35,7 +35,7 @@ export namespace WorkspaceEditor {
      */
     scope: BlobContainer.Scope;
     /** The manifest to be stored in the default WorkspaceDb in the new container. */
-    manifest: WorkspaceDb.Manifest;
+    manifest: WorkspaceDb.WorkspaceDbManifest;
     /** Metadata stored by the BlobContainer service */
     metadata: Omit<BlobContainer.Metadata, "containerType">;
     dbName?: string;
@@ -55,14 +55,14 @@ export namespace WorkspaceEditor {
      * @param props - The properties that determine the source WorkspaceDb for the new version.
      * @returns A promise that resolves to an object containing the old and new WorkspaceDb names and versions.
      */
-    makeNewVersion(props: Container.MakeNewVersionProps): Promise<{ oldDb: WorkspaceDb.NameAndVersion, newDb: WorkspaceDb.NameAndVersion }>;
+    makeNewVersion(props: Container.MakeNewVersionProps): Promise<{ oldDb: WorkspaceDb.WorkspaceDbNameAndVersion, newDb: WorkspaceDb.WorkspaceDbNameAndVersion }>;
 
     /**
      * Create a new empty WorkspaceDb.
      * @param args - The arguments for creating the new WorkspaceDb.
      * @returns A promise that resolves to an EditableWorkspaceDb.
      */
-    createDb(args: { dbName?: string, version?: string, manifest: WorkspaceDb.Manifest }): Promise<EditableWorkspaceDb>;
+    createDb(args: { dbName?: string, version?: string, manifest: WorkspaceDb.WorkspaceDbManifest }): Promise<EditableWorkspaceDb>;
 
     /**
      * Get the cloud properties of this Container.
@@ -73,7 +73,7 @@ export namespace WorkspaceEditor {
      * Get an EditableWorkspaceDb to add, delete, or update resources *within a newly created version* of a WorkspaceDb.
      * @param props - The properties of the WorkspaceDb.
      */
-    getEditableDb(props: WorkspaceDb.Props): EditableWorkspaceDb;
+    getEditableDb(props: WorkspaceDb.WorkspaceDbProps): EditableWorkspaceDb;
 
     /**
      * Acquire the write lock on the container.
@@ -108,7 +108,7 @@ export namespace WorkspaceEditor {
        * The properties that determine the source WorkspaceDb for the new version.
        * This is usually the latest version, but it is possible to create patches to older versions.
        */
-      fromProps?: WorkspaceDb.Props;
+      fromProps?: WorkspaceDb.WorkspaceDbProps;
       /** The type of version increment to apply to the source version. */
       versionType: Container.VersionIncrement;
       /** For prerelease versions, a string that becomes part of the version name. */
@@ -119,7 +119,7 @@ export namespace WorkspaceEditor {
   /**
    * Create a new, empty, EditableDb file on the local filesystem for importing Workspace resources.
    */
-  export function createEmptyDb(args: { localFileName: LocalFileName, manifest: WorkspaceDb.Manifest }): void {
+  export function createEmptyDb(args: { localFileName: LocalFileName, manifest: WorkspaceDb.WorkspaceDbManifest }): void {
     WorkspaceSqliteDb.createNewDb(args.localFileName, args);
   }
 }
@@ -136,13 +136,13 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
    * Get the cloud properties of the WorkspaceDb.
    * @returns The cloud properties of the WorkspaceDb, or undefined if not available.
    */
-  get cloudProps(): WorkspaceDb.CloudProps | undefined;
+  get cloudProps(): WorkspaceDb.WorkspaceDbCloudProps | undefined;
 
   /**
    * Update the contents of the manifest in this WorkspaceDb.
    * @param manifest - The updated manifest.
    */
-  updateManifest(manifest: WorkspaceDb.Manifest): void;
+  updateManifest(manifest: WorkspaceDb.WorkspaceDbManifest): void;
 
   /**
    * Add or update a Settings resource to this WorkspaceDb.

@@ -39,40 +39,40 @@ export interface WorkspaceContainerProps extends Optional<CloudSqlite.ContainerA
 /** @beta */
 export namespace WorkspaceDb {
   /** The base name of a WorkspaceDb within a WorkspaceContainer (without any version identifier) */
-  export type DbName = string;
+  export type WorkspaceDbName = string;
 
   /** The  name of a WorkspaceDb within a WorkspaceContainer, including the version identifier */
-  export type DbFullName = string;
+  export type WorkspaceDbFullName = string;
 
   /** The semver-format version identifier for a WorkspaceDb. */
-  export type Version = string;
+  export type WorkspaceDbVersion = string;
 
   /** The [semver range format](https://github.com/npm/node-semver) identifier for a range of acceptable versions. */
-  export type VersionRange = string;
+  export type WorkspaceDbVersionRange = string;
 
-  export interface NameAndVersion {
+  export interface WorkspaceDbNameAndVersion {
     /** name of database within WorkspaceContainer. If not present, defaults to "workspace-db" */
     readonly dbName?: string;
     /** a semver version range specifier that determines the acceptable range of versions to load. If not present, use the newest version. */
-    readonly version?: VersionRange;
+    readonly version?: WorkspaceDbVersionRange;
   }
   /** Properties that specify how to load a WorkspaceDb within a [[WorkspaceContainer]]. */
-  export interface Props extends NameAndVersion {
+  export interface WorkspaceDbProps extends WorkspaceDbNameAndVersion {
     /** if true, allow semver *prerelease* versions. By default only released version are allowed. */
     readonly includePrerelease?: boolean;
     /** start a prefetch operation whenever this WorkspaceDb is opened. */
     readonly prefetch?: boolean;
   }
 
-  export type CloudProps = Props & WorkspaceContainerProps;
+  export type WorkspaceDbCloudProps = WorkspaceDbProps & WorkspaceContainerProps;
 
-  export type QueryResourcesCallback = (resourceNames: Iterable<string>) => void;
+  export type WorkspaceDbQueryResourcesCallback = (resourceNames: Iterable<string>) => void;
 
-  export interface QueryResourcesArgs {
+  export interface WorkspaceDbQueryResourcesArgs {
     type?: "string" | "blob";
     namePattern: string;
     nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
-    callback: QueryResourcesCallback;
+    callback: WorkspaceDbQueryResourcesCallback;
   }
 
   /**
@@ -81,7 +81,7 @@ export namespace WorkspaceDb {
    * @note Only the `workspaceName` field is required. Users may add additional fields for their own purposes.
    * @note Since this information is stored within the WorkspaceDb itself, it is versioned along with the rest of the contents.
    */
-  export interface Manifest {
+  export interface WorkspaceDbManifest {
     /** The name of this WorkspaceDb to be shown in user interfaces. Organizations should attempt to make this name informative enough
      * so that uses may refer to this name in conversations. It should also be unique enough that there's no confusion when it appears in
      * lists of WorkspaceDbs.
@@ -100,20 +100,20 @@ export namespace WorkspaceDb {
    * An exception that happens attempting to load a WorkspaceDb or data from WorkspaceDb (e.g. the WorkspaceDb
    * can't be found or the user isn't authorized for access to the container.)
    */
-  export interface LoadError extends Error {
+  export interface WorkspaceDbLoadError extends Error {
     /** the properties of the workspace attempting to load, including the identity of the container. */
-    wsDbProps?: WorkspaceDb.Props & Partial<WorkspaceDb.CloudProps>;
+    wsDbProps?: WorkspaceDb.WorkspaceDbProps & Partial<WorkspaceDb.WorkspaceDbCloudProps>;
     /** the WorkspaceDb, if available */
     wsDb?: WorkspaceDb;
   }
 
   /** An exception that happened during [[IModelDb.loadWorkspaceSettings]]. The `LoadErrors` exception is passed
    * to [[Workspace.exceptionDiagnostic]] and contains the name of the iModel being loaded. */
-  export interface LoadErrors extends Error {
+  export interface WorkspaceDbLoadErrors extends Error {
     /** An array of problems that were encountered attempting to load WorkspaceDbs for an iModel. The most common problem
      * is that the user doesn't have read access to the container of the WorkspaceDb.
      */
-    wsLoadErrors?: LoadError[];
+    wsLoadErrors?: WorkspaceDbLoadError[];
   }
 }
 
@@ -122,7 +122,7 @@ export namespace WorkspaceDb {
  * a WorkspaceDb that holds a `Settings.Dictionary` to be loaded. It also specifies the `Settings.Priority` for the Dictionary.
  * @beta
  */
-export interface WorkspaceSettingsProps extends WorkspaceDb.CloudProps {
+export interface WorkspaceSettingsProps extends WorkspaceDb.WorkspaceDbCloudProps {
   /** The name of the resource holding the stringified JSON of the `Settings.Dictionary`. The default resourceName is "settingsDictionary" */
   resourceName: string;
   /** The priority for loading the Settings.Dictionary. Higher values override lower values. */
@@ -150,7 +150,7 @@ export interface WorkspaceDb {
   /** The WorkspaceContainer holding this WorkspaceDb. */
   readonly container: WorkspaceContainer;
   /** The base name of this WorkspaceDb, without version */
-  readonly dbName: WorkspaceDb.DbName;
+  readonly dbName: WorkspaceDb.WorkspaceDbName;
   /** event raised before this WorkspaceDb is closed. */
   readonly onClose: BeEvent<() => void>;
   /** Name by which a WorkspaceDb may be opened. This will be either a local file name or the name of a database in a cloud container */
@@ -160,9 +160,9 @@ export interface WorkspaceDb {
   /** determine whether this WorkspaceDb is currently open */
   readonly isOpen: boolean;
   /** The manifest that describes the content of this WorkspaceDb. */
-  get manifest(): WorkspaceDb.Manifest;
+  get manifest(): WorkspaceDb.WorkspaceDbManifest;
   /** Get the version of this WorkspaceDb */
-  get version(): WorkspaceDb.Version;
+  get version(): WorkspaceDb.WorkspaceDbVersion;
 
   /** Open the SQLiteDb of this WorkspaceDb. Generally WorkspaceDbs are left closed and opened/closed as they're used. However,
    * when there will be significant activity against a WorkspaceDb, it may be useful to open it before the operations and close it afterwards.
@@ -210,7 +210,7 @@ export interface WorkspaceDb {
    */
   prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch;
 
-  queryResources(args: WorkspaceDb.QueryResourcesArgs): void;
+  queryResources(args: WorkspaceDb.WorkspaceDbQueryResourcesArgs): void;
 
   /** @internal */
   queryFileResource(rscName: WorkspaceResourceName): { localFileName: LocalFileName, info: IModelJsNative.EmbedFileQuery } | undefined;
@@ -281,11 +281,11 @@ export interface Workspace {
     /** The properties of the WorkspaceDb, plus the resourceName and Settings.priority. May be either a single value or an array of them */
     props: WorkspaceSettingsProps | WorkspaceSettingsProps[],
     /** if present, an array that is populated with a list of problems while attempting to load the Settings.Dictionary(s).   */
-    problems?: WorkspaceDb.LoadError[]
+    problems?: WorkspaceDb.WorkspaceDbLoadError[]
   ): Promise<void>;
 
   /** Get a single [[WorkspaceDb]] from a WorkspaceDb.CloudProps.  */
-  getWorkspaceDb(props: WorkspaceDb.CloudProps): Promise<WorkspaceDb>;
+  getWorkspaceDb(props: WorkspaceDb.WorkspaceDbCloudProps): Promise<WorkspaceDb>;
 
   /**
    * Resolve the value of all Settings from this Workspace with the supplied settingName into an array of WorkspaceDb.CloudProps
@@ -300,7 +300,7 @@ export interface Workspace {
     /** the name of the */
     settingName: SettingName,
     /** optional filter to choose specific WorkspaceDbs from the settings values. If present, only  */
-    filter?: Workspace.DbListFilter): WorkspaceDb.CloudProps[];
+    filter?: Workspace.DbListFilter): WorkspaceDb.WorkspaceDbCloudProps[];
 
   /**
    * Get a sorted array of WorkspaceDbs that can be used to query or load resources. If the arguments supply a `settingName`, this function will
@@ -312,7 +312,7 @@ export interface Workspace {
   getWorkspaceDbs(
     args: Workspace.DbListOrSettingName & {
       /** if supplied, this array is populated with a list of problems (e.g. no read permission) attempting to load WorkspacesDbs. */
-      problems?: WorkspaceDb.LoadError[];
+      problems?: WorkspaceDb.WorkspaceDbLoadError[];
       /** only valid when called with a settingName, if so passed as `filter` argument to [[resolveWorkspaceDbSetting]]  */
       filter?: Workspace.DbListFilter;
     }): Promise<WorkspaceDb[]>;
@@ -347,10 +347,10 @@ export interface WorkspaceContainer {
    * in the `WorkspaceDb.Props`.
    * If no version satisfying the WorkspaceDb.Props rules exists, throws an exception.
    */
-  resolveDbFileName(props: WorkspaceDb.Props): WorkspaceDb.DbFullName;
+  resolveDbFileName(props: WorkspaceDb.WorkspaceDbProps): WorkspaceDb.WorkspaceDbFullName;
 
   /** get a WorkspaceDb from this WorkspaceContainer. */
-  getWorkspaceDb(props?: WorkspaceDb.Props): WorkspaceDb;
+  getWorkspaceDb(props?: WorkspaceDb.WorkspaceDbProps): WorkspaceDb;
 
   /** Close and remove a currently opened [[WorkspaceDb]] from this Workspace.
    * @internal
@@ -361,7 +361,7 @@ export interface WorkspaceContainer {
 /** @beta */
 export namespace Workspace {
   /** IModelHost applications may supply a different implementation to diagnose (rather than merely log) errors loading workspace data */
-  export let exceptionDiagnosticFn = (e: WorkspaceDb.LoadErrors) => {  // eslint-disable-line prefer-const
+  export let exceptionDiagnosticFn = (e: WorkspaceDb.WorkspaceDbLoadErrors) => {  // eslint-disable-line prefer-const
     if (e instanceof Error)
       Logger.logException(loggerCategory, e);
     else
@@ -393,14 +393,14 @@ export namespace Workspace {
   };
 
   /** either an array of [[WorkspaceDb.CloudProps]], or a settingName of a `itwin/core/workspace/workspaceDbList` from which the array can be resolved. */
-  export type DbListOrSettingName = { readonly dbs: WorkspaceDb.CloudProps[], readonly settingName?: never } | { readonly settingName: string, readonly dbs?: never };
+  export type DbListOrSettingName = { readonly dbs: WorkspaceDb.WorkspaceDbCloudProps[], readonly settingName?: never } | { readonly settingName: string, readonly dbs?: never };
 
   /** called for each entry in a `itwin/core/workspace/workspaceDbList` setting by [[Workspace.resolveWorkspaceDbSetting]].
    * If this function returns `false` the value is skipped and the corresponding WorkspaceDb will not be returned.
    */
   export type DbListFilter = (
     /** The properties of the WorkspaceDb to be returned */
-    dbProp: WorkspaceDb.CloudProps,
+    dbProp: WorkspaceDb.WorkspaceDbCloudProps,
     /** the Settings.Dictionary holding the `itwin/core/workspace/workspaceDbList` setting. May be used, for example, to determine the
      * Settings.Priority of the dictionary.
      */

@@ -21,7 +21,7 @@ import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceE
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
 import { SettingsImpl } from "./SettingsImpl";
 
-function workspaceDbNameWithDefault(dbName?: WorkspaceDb.DbName): WorkspaceDb.DbName {
+function workspaceDbNameWithDefault(dbName?: WorkspaceDb.WorkspaceDbName): WorkspaceDb.WorkspaceDbName {
   return dbName ?? "workspace-db";
 }
 
@@ -89,7 +89,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     return this._cloudContainer;
   }
 
-  protected _wsDbs = new Map<WorkspaceDb.DbName, WorkspaceDb>();
+  protected _wsDbs = new Map<WorkspaceDb.WorkspaceDbName, WorkspaceDb>();
   public get dirName() { return join(this.workspace.containerDir, this.id); }
 
   public constructor(workspace: WorkspaceImpl, props: WorkspaceContainerProps & { accessToken: AccessToken }) {
@@ -118,7 +118,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     }
   }
 
-  public resolveDbFileName(props: WorkspaceDb.Props): WorkspaceDb.DbFullName {
+  public resolveDbFileName(props: WorkspaceDb.WorkspaceDbProps): WorkspaceDb.WorkspaceDbFullName {
     const cloudContainer = this.cloudContainer;
     if (undefined === cloudContainer)
       return join(this.dirName, `${props.dbName}.${workspaceDbFileExt}`); // local file, versions not allowed
@@ -152,7 +152,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     this._wsDbs.set(toAdd.dbName, toAdd);
   }
 
-  public getWorkspaceDb(props?: WorkspaceDb.Props): WorkspaceDb {
+  public getWorkspaceDb(props?: WorkspaceDb.WorkspaceDbProps): WorkspaceDb {
     return this._wsDbs.get(workspaceDbNameWithDefault(props?.dbName)) ?? new WorkspaceDbImpl(props ?? {}, this);
   }
 
@@ -176,11 +176,11 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
 /** Implementation of WorkspaceDb */
 class WorkspaceDbImpl implements WorkspaceDb {
   public readonly sqliteDb = new WorkspaceSqliteDb();
-  public readonly dbName: WorkspaceDb.DbName;
+  public readonly dbName: WorkspaceDb.WorkspaceDbName;
   public readonly container: WorkspaceContainer;
   public readonly onClose = new BeEvent<() => void>();
   public readonly dbFileName: string;
-  protected _manifest?: WorkspaceDb.Manifest;
+  protected _manifest?: WorkspaceDb.WorkspaceDbManifest;
 
   /** true if this WorkspaceDb is currently open */
   public get isOpen() { return this.sqliteDb.isOpen; }
@@ -196,7 +196,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
     return { localFileName, info };
   }
 
-  public constructor(props: WorkspaceDb.Props, container: WorkspaceContainer) {
+  public constructor(props: WorkspaceDb.WorkspaceDbProps, container: WorkspaceContainer) {
     this.dbName = workspaceDbNameWithDefault(props.dbName);
     validateWorkspaceDbName(this.dbName);
     this.container = container;
@@ -221,7 +221,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
     return parseWorkspaceDbFileName(this.dbFileName).version;
   }
 
-  public get manifest(): WorkspaceDb.Manifest {
+  public get manifest(): WorkspaceDb.WorkspaceDbManifest {
     return this._manifest ??= this.withOpenDb((db) => {
       const manifestJson = db.nativeDb.queryFileProperty(workspaceManifestProperty, true) as string | undefined;
       return manifestJson ? JSON.parse(manifestJson) : { workspaceName: this.dbName };
@@ -299,7 +299,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
     return CloudSqlite.startCloudPrefetch(cloudContainer, this.dbFileName, opts);
   }
 
-  public queryResources(args: WorkspaceDb.QueryResourcesArgs): void {
+  public queryResources(args: WorkspaceDb.WorkspaceDbQueryResourcesArgs): void {
     const table = "blob" !== args.type ? "strings" : "blobs";
     this.withOpenDb((db) => {
       db.withSqliteStatement(`SELECT id from ${table} WHERE id ${args.nameCompare ?? "="} ?`, (stmt) => {
@@ -356,7 +356,7 @@ class WorkspaceImpl implements Workspace {
     return this.getContainer({ ...props, accessToken });
   }
 
-  public async getWorkspaceDb(props: WorkspaceDb.CloudProps): Promise<WorkspaceDb> {
+  public async getWorkspaceDb(props: WorkspaceDb.WorkspaceDbCloudProps): Promise<WorkspaceDb> {
     let container: WorkspaceContainer | undefined = this.findContainer(props.containerId);
     if (undefined === container) {
       const accessToken = props.isPublic ? "" : await CloudSqlite.requestToken({ accessLevel: "read", ...props });
@@ -365,7 +365,7 @@ class WorkspaceImpl implements Workspace {
     return container.getWorkspaceDb(props);
   }
 
-  public async loadSettingsDictionary(props: WorkspaceSettingsProps | WorkspaceSettingsProps[], problems?: WorkspaceDb.LoadError[]) {
+  public async loadSettingsDictionary(props: WorkspaceSettingsProps | WorkspaceSettingsProps[], problems?: WorkspaceDb.WorkspaceDbLoadError[]) {
     if (!Array.isArray(props))
       props = [props];
 
@@ -397,7 +397,7 @@ class WorkspaceImpl implements Workspace {
         }
       } catch (e) {
         db.close();
-        problems?.push(e as WorkspaceDb.LoadError);
+        problems?.push(e as WorkspaceDb.WorkspaceDbLoadError);
       }
     }
   }
@@ -409,11 +409,11 @@ class WorkspaceImpl implements Workspace {
     this._containers.clear();
   }
 
-  public resolveWorkspaceDbSetting(settingName: SettingName, filter?: Workspace.DbListFilter): WorkspaceDb.CloudProps[] {
+  public resolveWorkspaceDbSetting(settingName: SettingName, filter?: Workspace.DbListFilter): WorkspaceDb.WorkspaceDbCloudProps[] {
     const combine = IModelHost.settingsSchemas.settingDefs.get(settingName)?.combineArray === true;
     filter = filter ?? (() => true);
-    const result: WorkspaceDb.CloudProps[] = [];
-    for (const entry of this.settings.getSettingEntries<WorkspaceDb.CloudProps[]>(settingName)) {
+    const result: WorkspaceDb.WorkspaceDbCloudProps[] = [];
+    for (const entry of this.settings.getSettingEntries<WorkspaceDb.WorkspaceDbCloudProps[]>(settingName)) {
       for (const dbProp of entry.value) {
         if (filter(dbProp, entry.dictionary)) {
           result.push(dbProp);
@@ -428,7 +428,7 @@ class WorkspaceImpl implements Workspace {
     return result;
   }
 
-  public async getWorkspaceDbs(args: Workspace.DbListOrSettingName & { filter?: Workspace.DbListFilter, problems?: WorkspaceDb.LoadError[] }): Promise<WorkspaceDb[]> {
+  public async getWorkspaceDbs(args: Workspace.DbListOrSettingName & { filter?: Workspace.DbListFilter, problems?: WorkspaceDb.WorkspaceDbLoadError[] }): Promise<WorkspaceDb[]> {
     const dbList = (args.settingName !== undefined) ? this.resolveWorkspaceDbSetting(args.settingName, args.filter) : args.dbs;
     const result: WorkspaceDb[] = [];
     const pushUnique = (wsDb: WorkspaceDb) => {
@@ -445,7 +445,7 @@ class WorkspaceImpl implements Workspace {
       try {
         pushUnique(await this.getWorkspaceDb(dbProps));
       } catch (e) {
-        const loadErr = e as WorkspaceDb.LoadError;
+        const loadErr = e as WorkspaceDb.WorkspaceDbLoadError;
         loadErr.wsDbProps = dbProps;
         args.problems?.push(loadErr);
       }
@@ -517,7 +517,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEdi
       isPublic: cloudContainer.isPublic,
     };
   }
-  public async makeNewVersion(args: WorkspaceEditor.Container.MakeNewVersionProps): Promise<{ oldDb: WorkspaceDb.NameAndVersion, newDb: WorkspaceDb.NameAndVersion }> {
+  public async makeNewVersion(args: WorkspaceEditor.Container.MakeNewVersionProps): Promise<{ oldDb: WorkspaceDb.WorkspaceDbNameAndVersion, newDb: WorkspaceDb.WorkspaceDbNameAndVersion }> {
     const cloudContainer = this.cloudContainer;
     if (undefined === cloudContainer)
       throw new Error("versions require cloud containers");
@@ -534,10 +534,10 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEdi
     return { oldDb, newDb: { dbName: oldDb.dbName, version: newVersion } };
   }
 
-  public override getWorkspaceDb(props: WorkspaceDb.Props): EditableWorkspaceDb {
+  public override getWorkspaceDb(props: WorkspaceDb.WorkspaceDbProps): EditableWorkspaceDb {
     return this.getEditableDb(props);
   }
-  public getEditableDb(props: WorkspaceDb.Props): EditableWorkspaceDb {
+  public getEditableDb(props: WorkspaceDb.WorkspaceDbProps): EditableWorkspaceDb {
     const db = this._wsDbs.get(workspaceDbNameWithDefault(props.dbName)) as EditableDbImpl | undefined ?? new EditableDbImpl(props, this);
     if (this.cloudContainer && this.cloudContainer.queryDatabase(db.dbFileName)?.state !== "copied")
       throw new Error(`${db.dbFileName} has been published and is not editable. Make a new version first.`);
@@ -564,7 +564,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEdi
     }
   }
 
-  public async createDb(args: { dbName?: string, version?: string, manifest: WorkspaceDb.Manifest }): Promise<EditableWorkspaceDb> {
+  public async createDb(args: { dbName?: string, version?: string, manifest: WorkspaceDb.WorkspaceDbManifest }): Promise<EditableWorkspaceDb> {
     if (!this.cloudContainer) {
       WorkspaceEditor.createEmptyDb({ localFileName: this.resolveDbFileName(args), manifest: args.manifest });
     } else {
@@ -596,8 +596,8 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
     if (len > (1024 * 1024 * 1024)) // one gigabyte
       throw new Error("value is too large");
   }
-  public get cloudProps(): WorkspaceDb.CloudProps | undefined {
-    const props = (this.container as EditorContainerImpl).cloudProps as Mutable<WorkspaceDb.CloudProps>;
+  public get cloudProps(): WorkspaceDb.WorkspaceDbCloudProps | undefined {
+    const props = (this.container as EditorContainerImpl).cloudProps as Mutable<WorkspaceDb.WorkspaceDbCloudProps>;
     if (props === undefined)
       return undefined;
 
@@ -641,7 +641,7 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
     this.sqliteDb.saveChanges();
   }
 
-  public updateManifest(manifest: WorkspaceDb.Manifest) {
+  public updateManifest(manifest: WorkspaceDb.WorkspaceDbManifest) {
     this.sqliteDb.nativeDb.saveFileProperty(workspaceManifestProperty, JSON.stringify(manifest));
     this._manifest = undefined;
   }
@@ -701,7 +701,7 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
   }
 }
 
-export function constructWorkspaceDb(props: WorkspaceDb.Props, container: WorkspaceContainer): WorkspaceDb {
+export function constructWorkspaceDb(props: WorkspaceDb.WorkspaceDbProps, container: WorkspaceContainer): WorkspaceDb {
   return new WorkspaceDbImpl(props, container);
 }
 
@@ -718,7 +718,7 @@ export function noLeadingOrTrailingSpaces(name: string, msg: string) {
     throw new Error(`${msg} [${name}] may not have leading or trailing spaces`);
 }
 
-export function validateWorkspaceDbName(dbName: WorkspaceDb.DbName) {
+export function validateWorkspaceDbName(dbName: WorkspaceDb.WorkspaceDbName) {
   if (dbName === "" || dbName.length > 255 || /[#\.<>:"/\\"`'|?*\u0000-\u001F]/g.test(dbName) || /^(con|prn|aux|nul|com\d|lpt\d)$/i.test(dbName))
     throw new Error(`invalid dbName: [${dbName}]`);
 
@@ -737,7 +737,7 @@ export function validateWorkspaceContainerId(id: WorkspaceContainerId) {
     throw new Error(`invalid containerId: [${id}]`);
 }
 
-export function validateWorkspaceDbVersion(version?: WorkspaceDb.Version) {
+export function validateWorkspaceDbVersion(version?: WorkspaceDb.WorkspaceDbVersion) {
   version = version ?? "1.0.0";
   if (version) {
     const opts = { loose: true, includePrerelease: true };
@@ -755,27 +755,27 @@ export function validateWorkspaceDbVersion(version?: WorkspaceDb.Version) {
  * many versions of the same WorkspaceDb. The name of the Db in the WorkspaceContainer is in the format "name:version". This
  * function splits them into separate strings.
  */
-export function parseWorkspaceDbFileName(dbFileName: WorkspaceDb.DbFullName): { dbName: WorkspaceDb.DbName, version: WorkspaceDb.Version } {
+export function parseWorkspaceDbFileName(dbFileName: WorkspaceDb.WorkspaceDbFullName): { dbName: WorkspaceDb.WorkspaceDbName, version: WorkspaceDb.WorkspaceDbVersion } {
   const parts = dbFileName.split(":");
   return { dbName: parts[0], version: parts[1] };
 }
 
 /** Create a dbName for a WorkspaceDb from its base name and version. This will be in the format "name:version" */
-export function makeWorkspaceDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName {
+export function makeWorkspaceDbFileName(dbName: WorkspaceDb.WorkspaceDbName, version?: WorkspaceDb.WorkspaceDbVersion): WorkspaceDb.WorkspaceDbName {
   return `${dbName}:${validateWorkspaceDbVersion(version)}`;
 }
 
 export const workspaceManifestProperty: FilePropertyProps = { namespace: "workspace", name: "manifest" };
 
-function throwWorkspaceDbLoadError(msg: string, wsDbProps: WorkspaceDb.Props | WorkspaceDb.CloudProps, db?: WorkspaceDb): never {
-  const error = new Error(msg) as WorkspaceDb.LoadError;
+function throwWorkspaceDbLoadError(msg: string, wsDbProps: WorkspaceDb.WorkspaceDbProps | WorkspaceDb.WorkspaceDbCloudProps, db?: WorkspaceDb): never {
+  const error = new Error(msg) as WorkspaceDb.WorkspaceDbLoadError;
   error.wsDbProps = wsDbProps;
   error.wsDb = db;
   throw error;
 }
 
-export function throwWorkspaceDbLoadErrors(msg: string, errors: WorkspaceDb.LoadError[]): never {
-  const error = new Error(msg) as WorkspaceDb.LoadErrors;
+export function throwWorkspaceDbLoadErrors(msg: string, errors: WorkspaceDb.WorkspaceDbLoadError[]): never {
+  const error = new Error(msg) as WorkspaceDb.WorkspaceDbLoadErrors;
   error.wsLoadErrors = errors;
   throw error;
 }
