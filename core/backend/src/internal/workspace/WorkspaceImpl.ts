@@ -464,10 +464,10 @@ class EditorWorkspaceImpl extends WorkspaceImpl {
 class EditorImpl implements WorkspaceEditor {
   public workspace = new EditorWorkspaceImpl(new SettingsImpl(), { containerDir: join(IModelHost.cacheDir, workspaceEditorName) });
 
-  public async initializeContainer(args: WorkspaceEditor.CreateNewContainerProps) {
+  public async initializeContainer(args: WorkspaceEditor.CreateNewWorkspaceContainerProps) {
     class CloudAccess extends CloudSqlite.DbAccess<WorkspaceSqliteDb> {
       protected static override _cacheName = workspaceEditorName;
-      public static async initializeWorkspace(args: WorkspaceEditor.CreateNewContainerProps) {
+      public static async initializeWorkspace(args: WorkspaceEditor.CreateNewWorkspaceContainerProps) {
         const props = await this.createBlobContainer({ scope: args.scope, metadata: { ...args.metadata, containerType: "workspace" } });
         const dbFullName = makeWorkspaceDbFileName(workspaceDbNameWithDefault(args.dbName), "1.0.0");
         await super._initializeDb({ ...args, props, dbName: dbFullName, dbType: WorkspaceSqliteDb, blockSize: "4M" });
@@ -477,17 +477,17 @@ class EditorImpl implements WorkspaceEditor {
     return CloudAccess.initializeWorkspace(args);
   }
 
-  public async createNewCloudContainer(args: WorkspaceEditor.CreateNewContainerProps): Promise<WorkspaceEditor.Container> {
+  public async createNewCloudContainer(args: WorkspaceEditor.CreateNewWorkspaceContainerProps): Promise<WorkspaceEditor.EditableWorkspaceContainer> {
     const cloudContainer = await this.initializeContainer(args);
     const userToken = await IModelHost.authorizationClient?.getAccessToken();
     const accessToken = await CloudSqlite.requestToken({ ...cloudContainer, accessLevel: "write", userToken });
     return this.getContainer({ accessToken, ...cloudContainer, writeable: true, description: args.metadata.description });
   }
 
-  public getContainer(props: WorkspaceContainerProps & Workspace.WithAccessToken): WorkspaceEditor.Container {
-    return this.workspace.findContainer(props.containerId) as WorkspaceEditor.Container | undefined ?? new EditorContainerImpl(this.workspace, props);
+  public getContainer(props: WorkspaceContainerProps & Workspace.WithAccessToken): WorkspaceEditor.EditableWorkspaceContainer {
+    return this.workspace.findContainer(props.containerId) as WorkspaceEditor.EditableWorkspaceContainer | undefined ?? new EditorContainerImpl(this.workspace, props);
   }
-  public async getContainerAsync(props: WorkspaceContainerProps): Promise<WorkspaceEditor.Container> {
+  public async getContainerAsync(props: WorkspaceContainerProps): Promise<WorkspaceEditor.EditableWorkspaceContainer> {
     const accessToken = props.accessToken ?? (props.baseUri === "") ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "write" });
     return this.getContainer({ ...props, accessToken });
   }
@@ -501,7 +501,7 @@ interface EditCloudContainer extends WorkspaceCloudContainer {
   writeLockHeldBy?: string;  // added by acquireWriteLock
 }
 
-class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEditor.Container {
+class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEditor.EditableWorkspaceContainer {
   public override get cloudContainer(): EditCloudContainer | undefined {
     return super.cloudContainer as EditCloudContainer | undefined;
   }
@@ -517,7 +517,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements WorkspaceEdi
       isPublic: cloudContainer.isPublic,
     };
   }
-  public async makeNewVersion(args: WorkspaceEditor.Container.MakeNewVersionProps): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }> {
+  public async createNewWorkspaceDbVersion(args: WorkspaceEditor.EditableWorkspaceContainer.MakeNewWorkspaceDbVersionProps): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }> {
     const cloudContainer = this.cloudContainer;
     if (undefined === cloudContainer)
       throw new Error("versions require cloud containers");

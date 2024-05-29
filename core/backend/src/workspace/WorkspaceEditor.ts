@@ -28,7 +28,7 @@ export namespace WorkspaceEditor {
   /**
    * The properties needed to create a new container from the BlobContainer service
    */
-  export interface CreateNewContainerProps {
+  export interface CreateNewWorkspaceContainerProps {
     /**
      * The scope of the container. This determines the ownership of the container, how RBAC rights are assigned,
      * and the location of the datacenter
@@ -44,7 +44,7 @@ export namespace WorkspaceEditor {
   /**
    * A Workspace.Editor.Container supplies methods for creating and modifying versions of a WorkspaceDb.
    */
-  export interface Container extends WorkspaceContainer {
+  export interface EditableWorkspaceContainer extends WorkspaceContainer {
     /**
      * Create a copy of an existing WorkspaceDb in this Workspace.Editor.Container with a new version number.
      * This function is used by administrator tools that modify Workspaces.
@@ -55,7 +55,7 @@ export namespace WorkspaceEditor {
      * @param props - The properties that determine the source WorkspaceDb for the new version.
      * @returns A promise that resolves to an object containing the old and new WorkspaceDb names and versions.
      */
-    makeNewVersion(props: Container.MakeNewVersionProps): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }>;
+    createNewWorkspaceDbVersion(props: EditableWorkspaceContainer.MakeNewWorkspaceDbVersionProps): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }>;
 
     /**
      * Create a new empty WorkspaceDb.
@@ -93,24 +93,24 @@ export namespace WorkspaceEditor {
     abandonChanges(): void;
   }
 
-  export namespace Container {
+  export namespace EditableWorkspaceContainer {
     /**
      * The release increment for a version number.
      * @see [semver.ReleaseType](https://www.npmjs.com/package/semver)
      */
-    export type VersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
+    export type WorkspaceDbVersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
 
     /**
      * The properties for creating a new version of a WorkspaceDb.
      */
-    export interface MakeNewVersionProps {
+    export interface MakeNewWorkspaceDbVersionProps {
       /**
        * The properties that determine the source WorkspaceDb for the new version.
        * This is usually the latest version, but it is possible to create patches to older versions.
        */
       fromProps?: WorkspaceDbProps;
       /** The type of version increment to apply to the source version. */
-      versionType: Container.VersionIncrement;
+      versionType: EditableWorkspaceContainer.WorkspaceDbVersionIncrement;
       /** For prerelease versions, a string that becomes part of the version name. */
       identifier?: string;
     }
@@ -241,14 +241,14 @@ export interface WorkspaceEditor {
    * @param props - The properties of the workspace container.
    * @returns A container for editing WorkspaceDbs.
    */
-  getContainer(props: WorkspaceContainerProps & Workspace.WithAccessToken): WorkspaceEditor.Container;
+  getContainer(props: WorkspaceContainerProps & Workspace.WithAccessToken): WorkspaceEditor.EditableWorkspaceContainer;
 
   /**
    * Asynchronously retrieves a container for the editor with the specified properties.
    * @param props - The properties of the workspace container.
    * @returns A promise that resolves to a container for editing WorkspaceDbs.
    */
-  getContainerAsync(props: WorkspaceContainerProps): Promise<WorkspaceEditor.Container>;
+  getContainerAsync(props: WorkspaceContainerProps): Promise<WorkspaceEditor.EditableWorkspaceContainer>;
 
   /**
    * Creates a new cloud container, for holding WorkspaceDbs, from the BlobContainer service.
@@ -256,7 +256,7 @@ export interface WorkspaceEditor {
    * @returns A promise that resolves to a container for editing WorkspaceDbs.
    * @note The current user must have administrator rights for the iTwin for the container.
    */
-  createNewCloudContainer(props: WorkspaceEditor.CreateNewContainerProps): Promise<WorkspaceEditor.Container>;
+  createNewCloudContainer(props: WorkspaceEditor.CreateNewWorkspaceContainerProps): Promise<WorkspaceEditor.EditableWorkspaceContainer>;
 
   /**
    * Closes this editor. All workspace containers are dropped.
