@@ -67,7 +67,7 @@ export namespace Settings {
    * @beta
    */
   export interface SettingsDictionary {
-    readonly props: SettingsDictionary.Props;
+    readonly props: SettingsDictionary.SettingsDictionaryProps;
 
     // Value always cloned.
     getSetting<T extends Setting>(settingName: string): T | undefined;
@@ -76,12 +76,12 @@ export namespace Settings {
   /** @beta */
   export namespace SettingsDictionary {
     /** The source for a Settings.Dictionary. Used to uniquely identify a Settings.Dictionary. */
-    export interface Source {
+    export interface SettingsDictionarySource {
       readonly workspaceDb?: WorkspaceDb;
       readonly name: string;
     }
     /** The properties required for adding a new Settings.Dictionary. */
-    export interface Props extends Source {
+    export interface SettingsDictionaryProps extends SettingsDictionarySource {
       readonly priority: SettingsPriority | number;
     }
   }
@@ -118,20 +118,20 @@ export interface Settings {
    * @param settingsJson the JSON5 stringified string to be parsed.
    * @note If the Settings.Dictionary was previously added, the new content overrides the old content.
    */
-  addJson(props: Settings.SettingsDictionary.Props, settingsJson: string): void;
+  addJson(props: Settings.SettingsDictionary.SettingsDictionaryProps, settingsJson: string): void;
 
   /** get a Settings.Dictionary from this Settings that matches a source. */
-  getDictionary(source: Settings.SettingsDictionary.Source): Settings.SettingsDictionary | undefined;
+  getDictionary(source: Settings.SettingsDictionary.SettingsDictionarySource): Settings.SettingsDictionary | undefined;
 
   /** Add a new Settings.Dictionary to this Settings.
    * @param props properties of the Settings.Dictionary
    * @param settings the Settings in the dictionary.
    * @note If the Settings.Dictionary was previously added, the new content replaces the old content.
    */
-  addDictionary(props: Settings.SettingsDictionary.Props, settings: SettingObject): void;
+  addDictionary(props: Settings.SettingsDictionary.SettingsDictionaryProps, settings: SettingObject): void;
 
   /** Remove a Settings.Dictionary by name. */
-  dropDictionary(props: Settings.SettingsDictionary.Source): void;
+  dropDictionary(props: Settings.SettingsDictionary.SettingsDictionarySource): void;
 
   /** Get the highest priority setting for a SettingName.
    * @param settingName The name of the setting

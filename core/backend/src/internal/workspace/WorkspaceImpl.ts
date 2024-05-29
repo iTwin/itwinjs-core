@@ -374,7 +374,7 @@ class WorkspaceImpl implements Workspace {
       db.open();
       try {
         const manifest = db.manifest;
-        const dictProps: Settings.SettingsDictionary.Props = { name: prop.resourceName, workspaceDb: db, priority: prop.priority };
+        const dictProps: Settings.SettingsDictionary.SettingsDictionaryProps = { name: prop.resourceName, workspaceDb: db, priority: prop.priority };
         // don't load if we already have this dictionary. Happens if the same WorkspaceDb is in more than one list
         if (undefined === this.settings.getDictionary(dictProps)) {
           const settingsJson = db.getString(prop.resourceName);

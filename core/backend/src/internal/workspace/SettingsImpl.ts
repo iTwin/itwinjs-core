@@ -15,15 +15,15 @@ import { IModelJsFs } from "../../IModelJsFs";
 import { SettingName, SettingObject, Settings, Setting } from "../../workspace/Settings";
 import { IModelHost } from "../../IModelHost";
 
-const dictionaryMatches = (d1: Settings.SettingsDictionary.Source, d2: Settings.SettingsDictionary.Source): boolean => {
+const dictionaryMatches = (d1: Settings.SettingsDictionary.SettingsDictionarySource, d2: Settings.SettingsDictionary.SettingsDictionarySource): boolean => {
   return (d1.workspaceDb === d2.workspaceDb) && (d1.name === d2.name);
 };
 
 class SettingsDictionaryImpl implements Settings.SettingsDictionary {
-  public readonly props: Settings.SettingsDictionary.Props;
+  public readonly props: Settings.SettingsDictionary.SettingsDictionaryProps;
   public readonly settings: SettingObject;
 
-  public constructor(props: Settings.SettingsDictionary.Props, settings: SettingObject) {
+  public constructor(props: Settings.SettingsDictionary.SettingsDictionaryProps, settings: SettingObject) {
     this.props = { ...props }; // make a copy so it can't be changed by caller
     this.settings = settings;
   }
@@ -56,11 +56,11 @@ export class SettingsImpl implements Settings {
     }
   }
 
-  public addJson(props: Settings.SettingsDictionary.Props, settingsJson: string) {
+  public addJson(props: Settings.SettingsDictionary.SettingsDictionaryProps, settingsJson: string) {
     this.addDictionary(props, parse(settingsJson));
   }
 
-  public addDictionary(props: Settings.SettingsDictionary.Props, settings: SettingObject) {
+  public addDictionary(props: Settings.SettingsDictionary.SettingsDictionaryProps, settings: SettingObject) {
     this.verifyPriority(props.priority);
     this.dropDictionary(props, false); // make sure we don't have the same dictionary twice
     const dict = new SettingsDictionaryImpl(props, settings);
@@ -77,7 +77,7 @@ export class SettingsImpl implements Settings {
     this.onSettingsChanged.raiseEvent();
   }
 
-  public getDictionary(source: Settings.SettingsDictionary.Source): Settings.SettingsDictionary | undefined {
+  public getDictionary(source: Settings.SettingsDictionary.SettingsDictionarySource): Settings.SettingsDictionary | undefined {
     for (const dictionary of this.dictionaries) {
       if (dictionaryMatches(dictionary.props, source))
         return dictionary;
@@ -85,7 +85,7 @@ export class SettingsImpl implements Settings {
     return undefined;
   }
 
-  public dropDictionary(source: Settings.SettingsDictionary.Source, raiseEvent = true) {
+  public dropDictionary(source: Settings.SettingsDictionary.SettingsDictionarySource, raiseEvent = true) {
     for (let i = 0; i < this.dictionaries.length; ++i) {
       if (dictionaryMatches(this.dictionaries[i].props, source)) {
         this.dictionaries.splice(i, 1);
