@@ -57,7 +57,7 @@ import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotati
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
-import { SettingObject, Settings, SettingType } from "./workspace/Settings";
+import { SettingObject, Settings, Setting } from "./workspace/Settings";
 import { Workspace, WorkspaceDb, WorkspaceSettingsProps } from "./workspace/Workspace";
 import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "./internal/workspace/WorkspaceImpl";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
@@ -235,7 +235,7 @@ class IModelSettings extends SettingsImpl {
       throw new Error("Use IModelHost.appSettings to access settings of priority 'application' or lower");
   }
 
-  public override * getSettingEntries<T extends SettingType>(name: string): Iterable<{ value: T, dictionary: Settings.Dictionary}> {
+  public override * getSettingEntries<T extends Setting>(name: string): Iterable<{ value: T, dictionary: Settings.Dictionary}> {
     yield * super.getSettingEntries(name);
     yield * IModelHost.appWorkspace.settings.getSettingEntries(name);
   }

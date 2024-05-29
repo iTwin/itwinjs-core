@@ -12,7 +12,7 @@ import { extname, join } from "path";
 import { BeEvent } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../../IModelJsFs";
-import { SettingName, SettingObject, Settings, SettingType } from "../../workspace/Settings";
+import { SettingName, SettingObject, Settings, Setting } from "../../workspace/Settings";
 import { IModelHost } from "../../IModelHost";
 
 const dictionaryMatches = (d1: Settings.Dictionary.Source, d2: Settings.Dictionary.Source): boolean => {
@@ -28,9 +28,9 @@ class SettingsDictionaryImpl implements Settings.Dictionary {
     this.settings = settings;
   }
 
-  public getSetting<T extends SettingType>(settingName: string): T | undefined {
+  public getSetting<T extends Setting>(settingName: string): T | undefined {
     const value = this.settings[settingName] as T | undefined;
-    return undefined !== value ? SettingType.clone(value) : undefined;
+    return undefined !== value ? Setting.clone(value) : undefined;
   }
 }
 
@@ -97,7 +97,7 @@ export class SettingsImpl implements Settings {
     return false;
   }
 
-  public * getSettingEntries<T extends SettingType>(settingName: SettingName): Iterable<{ value: T, dictionary: Settings.Dictionary}> {
+  public * getSettingEntries<T extends Setting>(settingName: SettingName): Iterable<{ value: T, dictionary: Settings.Dictionary}> {
     for (const dictionary of this.dictionaries) {
       const value = dictionary.getSetting<T>(settingName);
       if (undefined !== value) {
@@ -106,13 +106,13 @@ export class SettingsImpl implements Settings {
     }
   }
 
-  public * getSettingValues<T extends SettingType>(settingName: SettingName): Iterable<T> {
+  public * getSettingValues<T extends Setting>(settingName: SettingName): Iterable<T> {
     for (const entry of this.getSettingEntries<T>(settingName)) {
       yield entry.value;
     }
   }
 
-  public getSetting<T extends SettingType>(settingName: SettingName, defaultValue?: T): T | undefined {
+  public getSetting<T extends Setting>(settingName: SettingName, defaultValue?: T): T | undefined {
     for (const value of this.getSettingValues<T>(settingName)) {
       return value;
     }
@@ -121,7 +121,7 @@ export class SettingsImpl implements Settings {
   }
 
   // get the setting and verify the result is either undefined or the correct type. If so, return it. Otherwise throw an exception.
-  private getResult<T extends SettingType>(name: SettingName, expectedType: string) {
+  private getResult<T extends Setting>(name: SettingName, expectedType: string) {
     const out = this.getSetting<T>(name);
     if (out === undefined || typeof out === expectedType)
       return out;
@@ -148,9 +148,9 @@ export class SettingsImpl implements Settings {
     const out = this.getResult<T>(name, "object");
     return out ? IModelHost.settingsSchemas.validateSetting(out, name) : defaultValue;
   }
-  public getArray<T extends SettingType>(name: SettingName, defaultValue: T[]): T[];
-  public getArray<T extends SettingType>(name: SettingName): T[] | undefined;
-  public getArray<T extends SettingType>(name: SettingName, defaultValue?: T[]): T[] | undefined {
+  public getArray<T extends Setting>(name: SettingName, defaultValue: T[]): T[];
+  public getArray<T extends Setting>(name: SettingName): T[] | undefined;
+  public getArray<T extends Setting>(name: SettingName, defaultValue?: T[]): T[] | undefined {
     if (IModelHost.settingsSchemas.settingDefs.get(name)?.combineArray) {
       return this.getCombinedArray<T>(name, defaultValue);
     }
@@ -163,7 +163,7 @@ export class SettingsImpl implements Settings {
     return IModelHost.settingsSchemas.validateSetting(out, name);
   }
 
-  private getCombinedArray<T extends SettingType>(name: SettingName, defaultValue?: T[]): T[] | undefined {
+  private getCombinedArray<T extends Setting>(name: SettingName, defaultValue?: T[]): T[] | undefined {
     let foundSetting = false;
     const out: T[] = [];
     for (const array of this.getSettingValues<T[]>(name)) {

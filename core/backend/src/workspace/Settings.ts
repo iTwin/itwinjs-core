@@ -13,11 +13,11 @@ import { WorkspaceDb } from "./Workspace";
 /** The type of a Setting, according to its schema
  * @beta
  */
-export type SettingType = JSONSchemaType;
+export type Setting = JSONSchemaType;
 
 /** @beta */
-export namespace SettingType { // eslint-disable-line @typescript-eslint/no-redeclare
-  export function clone<T extends SettingType>(object: T): T {
+export namespace Setting { // eslint-disable-line @typescript-eslint/no-redeclare
+  export function clone<T extends Setting>(object: T): T {
     if (!object || typeof object !== "object")
       return object;
 
@@ -38,7 +38,7 @@ export type SettingName = string;
  * @beta
  */
 export interface SettingObject {
-  [name: SettingName]: SettingType | undefined;
+  [name: SettingName]: Setting | undefined;
 }
 
 /** @beta */
@@ -70,7 +70,7 @@ export namespace Settings {
     readonly props: Dictionary.Props;
 
     // Value always cloned.
-    getSetting<T extends SettingType>(settingName: string): T | undefined;
+    getSetting<T extends Setting>(settingName: string): T | undefined;
   }
 
   /** @beta */
@@ -141,11 +141,11 @@ export interface Settings {
    * You must always type check the result. Use the non-generic "get" methods (e.g. [[getString]]) if you only want the value
    * if its type is correct.
    */
-  getSetting<T extends SettingType>(settingName: SettingName, defaultValue?: T): T | undefined;
+  getSetting<T extends Setting>(settingName: SettingName, defaultValue?: T): T | undefined;
 
-  getSettingEntries<T extends SettingType>(settingName: SettingName): Iterable<{ value: T, dictionary: Settings.Dictionary}>;
+  getSettingEntries<T extends Setting>(settingName: SettingName): Iterable<{ value: T, dictionary: Settings.Dictionary}>;
 
-  getSettingValues<T extends SettingType>(settingName: SettingName): Iterable<T>;
+  getSettingValues<T extends Setting>(settingName: SettingName): Iterable<T>;
 
   /** Get a string setting by SettingName.
    * @param settingName The name of the setting
@@ -179,6 +179,6 @@ export interface Settings {
   * @param settingName The name of the setting
   * @param defaultValue value returned if settingName is not present in any Settings.Dictionary, or if the highest priority setting is not an array.
   */
-  getArray<T extends SettingType>(settingName: SettingName, defaultValue: Array<T>): Array<T>;
-  getArray<T extends SettingType>(settingName: SettingName): Array<T> | undefined;
+  getArray<T extends Setting>(settingName: SettingName, defaultValue: Array<T>): Array<T>;
+  getArray<T extends Setting>(settingName: SettingName): Array<T> | undefined;
 }
