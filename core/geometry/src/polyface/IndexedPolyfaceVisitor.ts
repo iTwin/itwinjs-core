@@ -47,7 +47,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
   }
   /** Return the number of facets this visitor is able to visit. */
   public getVisitableFacetCount(): number {
-    return this._polyface.faceCount;
+    return this._polyface.facetCount;
   }
   /**
    * Set the number of vertices replicated in visitor arrays (both data and index arrays).
