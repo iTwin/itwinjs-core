@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { assert, Mutable, OpenMode } from "@itwin/core-bentley";
 import { SnapshotDb, StandaloneDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
-import { SettingsContainer, SettingsPriority } from "../../workspace/Settings";
+import { Setting, SettingsContainer, SettingsPriority } from "../../workspace/Settings";
 import { SettingSchema, SettingSchemaGroup } from "../../workspace/SettingsSchemas";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { GcsDbProps, GeoCoordConfig } from "../../GeoCoordConfig";
@@ -309,5 +309,59 @@ describe("Settings", () => {
     expect(iModel3.workspace.settings.getObject("gcs/databases")).to.deep.equal(gcsDbDict["gcs/databases"]);
     expect(iModel3.workspace.settings.getString("imodel/setting1")).to.be.undefined;
     iModel3.close();
+  });
+
+  describe.only("combineArray", () => {
+    function addGroup(schemaPrefix: string, type: "number" | "object", combineArray: boolean | undefined): void {
+      const group: SettingSchemaGroup = {
+        schemaPrefix,
+        settingDefs: {
+          array: {
+            type: "array",
+            items: { type, combineArray },
+          },
+        },
+      };
+
+      IModelHost.settingsSchemas.addGroup(group);
+    }
+    
+    function addArray(schemaPrefix: string, name: string, value: Setting[], priority: SettingsPriority): void {
+      const settings: SettingsContainer = { };
+      settings[`${schemaPrefix}/array`] = value;
+      
+      IModelHost.appWorkspace.settings.addDictionary({
+        name: name,
+        priority: priority,
+      }, settings);
+    }
+
+    it("combines arrays only if the `combineArray` flag is explicitly set to `true`", () => {
+      addGroup("false", "number", false);
+      addGroup("true", "number", true);
+      addGroup("default", "number", undefined);
+
+      const prefixes = ["false", "true", "default"];
+      for (const schemaPrefix of prefixes) {
+        addArray(schemaPrefix, "app", [1, 2], SettingsPriority.application);
+        addArray(schemaPrefix, "def", [3, 4], SettingsPriority.defaults);
+      }
+
+      for (const prefix of prefixes) {
+        const settingName = `${prefix}/array`;
+        expect(IModelHost.appWorkspace.settings.getSetting<number[]>(settingName)).to.deep.equal([1, 2]);
+
+        const expected = ("true" === prefix ? [1, 2, 3, 4] : [1, 2]);
+        expect(IModelHost.appWorkspace.settings.getArray<number>(settingName)).to.deep.equal(expected);
+      }
+    });
+
+    it("orders elements by priority", () => {
+      
+    });
+
+    it("ignores duplicates", () => {
+      
+    });
   });
 });

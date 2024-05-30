@@ -180,6 +180,7 @@ export interface Settings {
    * use this method to get a setting with an expected type, but its value is a different type, the return type of this method will be wrong.
    * You must always type check the result. Use the non-generic "get" methods (e.g. [[getString]]) if you only want the value
    * if its type is correct.
+   * @note Unlike [[getArray]], this method does not combine arrays - it ignores [[SettingsSchema.combineArrays]].
    */
   getSetting<T extends Setting>(settingName: SettingName, defaultValue?: T): T | undefined;
 
