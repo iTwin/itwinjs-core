@@ -359,7 +359,18 @@ describe("Settings", () => {
     });
 
     it("orders elements by priority", () => {
-      
+      addGroup("combine", "number", true);
+      function addDictionary(priority: number) {
+        addArray("combine", priority.toString(), [priority], priority);
+      }
+
+      addDictionary(100);
+      addDictionary(120);
+      addDictionary(80);
+      addDictionary(150);
+      addDictionary(30);
+
+      expect(IModelHost.appWorkspace.settings.getArray<number>("combine/array")).to.deep.equal([150, 120, 100, 80, 30]);
     });
 
     it("ignores duplicates", () => {
