@@ -439,20 +439,21 @@ export interface QueryWorkspaceResourcesArgs {
  * @beta
  */
 export function queryWorkspaceResources(args: QueryWorkspaceResourcesArgs): void {
-  function * dbCallback(db: WorkspaceDb, names: Iterable<string>) {
-    for (const name of names) {
-      yield { name, db };
-    }
-  }
-
+  const resources: Array<{ name: string, db: WorkspaceDb }> = [];
   for (const db of args.dbs) {
     db.queryResources({
       type: args.type,
       namePattern: args.namePattern,
       nameCompare: args.nameCompare,
-      callback: (names) => args.callback(dbCallback(db, names)),
+      callback: (names) => {
+        for (const name of names) {
+          resources.push({ db, name });
+        }
+      },
     });
   }
+
+  args.callback(resources);
 }
 
 function getWorkspaceResource(dbs: WorkspaceDb[], name: string, type: "string" | "blob"): string | Uint8Array | undefined {
