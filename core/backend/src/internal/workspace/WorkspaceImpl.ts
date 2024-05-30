@@ -20,6 +20,7 @@ import { Workspace, WorkspaceContainer, WorkspaceContainerId, WorkspaceContainer
 import { CreateNewWorkspaceContainerProps, CreateNewWorkspaceDbVersionProps, EditableWorkspaceContainer, EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
 import { SettingsImpl } from "./SettingsImpl";
+import { implementationProhibited } from "../ImplementationProhibited";
 
 function workspaceDbNameWithDefault(dbName?: WorkspaceDbName): WorkspaceDbName {
   return dbName ?? "workspace-db";
@@ -79,6 +80,7 @@ function getWorkspaceCloudContainer(props: CloudSqlite.ContainerAccessProps, cac
 }
 
 class WorkspaceContainerImpl implements WorkspaceContainer {
+  public readonly [implementationProhibited] = undefined;
   public readonly workspace: WorkspaceImpl;
   public readonly filesDir: LocalDirName;
   public readonly id: WorkspaceContainerId;
@@ -175,6 +177,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
 
 /** Implementation of WorkspaceDb */
 class WorkspaceDbImpl implements WorkspaceDb {
+  public readonly [implementationProhibited] = undefined;
   public readonly sqliteDb = new WorkspaceSqliteDb();
   public readonly dbName: WorkspaceDbName;
   public readonly container: WorkspaceContainer;
@@ -318,6 +321,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
 
 /** Implementation of Workspace */
 class WorkspaceImpl implements Workspace {
+  public readonly [implementationProhibited] = undefined;
   private _containers = new Map<WorkspaceContainerId, WorkspaceContainerImpl>();
   public readonly containerDir: LocalDirName;
   public readonly settings: Settings;
@@ -463,6 +467,7 @@ class EditorWorkspaceImpl extends WorkspaceImpl {
 }
 
 class EditorImpl implements WorkspaceEditor {
+  public readonly [implementationProhibited] = undefined;
   public workspace = new EditorWorkspaceImpl(new SettingsImpl(), { containerDir: join(IModelHost.cacheDir, workspaceEditorName) });
 
   public async initializeContainer(args: CreateNewWorkspaceContainerProps) {

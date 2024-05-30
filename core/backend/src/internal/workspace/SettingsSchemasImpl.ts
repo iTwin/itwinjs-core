@@ -10,13 +10,12 @@ import { assert, BeEvent, JSONSchemaType, JSONSchemaTypeName, Mutable } from "@i
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../../IModelJsFs";
 import { SettingSchema, SettingSchemaGroup, SettingsSchemas } from "../../workspace/SettingsSchemas";
+import { implementationProhibited } from "../ImplementationProhibited";
 
 const makeSettingKey = (prefix: string, key: string) => `${prefix}/${key}`;
 
-export const settingsSchemasSymbol = Symbol("SettingsSchema");
-
 class SettingsSchemasImpl implements SettingsSchemas {
-  public readonly [settingsSchemasSymbol] = undefined;
+  public readonly [implementationProhibited] = undefined;
   private readonly _allGroups = new Map<string, SettingSchemaGroup>();
   /** a map of all registered Setting Definitions  */
   public readonly settingDefs = new Map<string, SettingSchema>();

@@ -14,12 +14,14 @@ import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../../IModelJsFs";
 import { SettingName, SettingsContainer, SettingsDictionarySource, Settings, Setting, SettingsPriority, SettingsDictionary, SettingsDictionaryProps } from "../../workspace/Settings";
 import { IModelHost } from "../../IModelHost";
+import { implementationProhibited } from "../ImplementationProhibited";
 
 const dictionaryMatches = (d1: SettingsDictionarySource, d2: SettingsDictionarySource): boolean => {
   return (d1.workspaceDb === d2.workspaceDb) && (d1.name === d2.name);
 };
 
 class SettingsDictionaryImpl implements SettingsDictionary {
+  public readonly [implementationProhibited] = undefined;
   public readonly props: SettingsDictionaryProps;
   public readonly settings: SettingsContainer;
 
@@ -39,6 +41,7 @@ class SettingsDictionaryImpl implements SettingsDictionary {
  * @internal
  */
 export class SettingsImpl implements Settings {
+  public readonly [implementationProhibited] = undefined;
   public dictionaries: SettingsDictionary[] = [];
   protected verifyPriority(_priority: SettingsPriority) { }
   public close() { }

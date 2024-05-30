@@ -13,6 +13,7 @@ import { BlobContainer } from "../BlobContainerService";
 import { Workspace, WorkspaceContainer, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps, WorkspaceDbManifest, WorkspaceDbNameAndVersion, WorkspaceDbProps, WorkspaceResourceName } from "./Workspace";
 import { WorkspaceSqliteDb } from "../internal/workspace/WorkspaceSqliteDb";
 import { constructWorkspaceEditor } from "../internal/workspace/WorkspaceImpl";
+import { implementationProhibited } from "../internal/ImplementationProhibited";
 
 /** @beta */
 export namespace WorkspaceEditor {
@@ -227,6 +228,9 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
  * @beta
  */
 export interface WorkspaceEditor {
+  /** @internal */
+  [implementationProhibited]: unknown;
+
   /**
    * The workspace dedicated to this editor.
    * @note This workspace is independent of all iModel or IModelHost workspaces.

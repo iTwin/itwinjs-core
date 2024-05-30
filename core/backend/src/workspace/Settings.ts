@@ -9,6 +9,7 @@
 import { BeEvent, JSONSchemaType } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { WorkspaceDb } from "./Workspace";
+import { implementationProhibited } from "../internal/ImplementationProhibited";
 
 /** The type of a Setting, according to its schema
  * @beta
@@ -111,6 +112,9 @@ export enum SettingsPriority {
  * @beta
  */
 export interface SettingsDictionary {
+  /** @internal */
+  [implementationProhibited]: unknown;
+
   readonly props: SettingsDictionaryProps;
 
   // Value always cloned.
@@ -122,6 +126,7 @@ export interface SettingsDictionarySource {
   readonly workspaceDb?: WorkspaceDb;
   readonly name: string;
 }
+
 /** The properties required for adding a new Settings.Dictionary. */
 export interface SettingsDictionaryProps extends SettingsDictionarySource {
   readonly priority: SettingsPriority | number;
@@ -131,6 +136,9 @@ export interface SettingsDictionaryProps extends SettingsDictionarySource {
  * @beta
  */
 export interface Settings {
+  /** @internal */
+  [implementationProhibited]: unknown;
+
   /** @internal */
   close(): void;
 

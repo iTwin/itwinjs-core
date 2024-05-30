@@ -13,6 +13,7 @@ import { SQLiteDb } from "../SQLiteDb";
 import { SettingName, Settings, SettingsDictionary, SettingsPriority } from "./Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
+import { implementationProhibited } from "../internal/ImplementationProhibited";
 
 // cspell:ignore rowid julianday primarykey premajor preminor prepatch
 
@@ -54,6 +55,7 @@ export interface WorkspaceDbNameAndVersion {
   /** a semver version range specifier that determines the acceptable range of versions to load. If not present, use the newest version. */
   readonly version?: WorkspaceDbVersionRange;
 }
+
 /** Properties that specify how to load a WorkspaceDb within a [[WorkspaceContainer]]. */
 export interface WorkspaceDbProps extends WorkspaceDbNameAndVersion {
   /** if true, allow semver *prerelease* versions. By default only released version are allowed. */
@@ -144,6 +146,8 @@ export type WorkspaceResourceName = string;
  * @beta
  */
 export interface WorkspaceDb {
+  /** @internal */
+  [implementationProhibited]: unknown;
   /** The WorkspaceContainer holding this WorkspaceDb. */
   readonly container: WorkspaceContainer;
   /** The base name of this WorkspaceDb, without version */
@@ -234,6 +238,9 @@ export interface WorkspaceOpts {
  * @beta
  */
 export interface Workspace {
+  /** @internal */
+  [implementationProhibited]: unknown;
+
   /** The directory for local WorkspaceDb files with the name `${containerId}/${dbId}.itwin-workspace`.
    * @internal
    */
@@ -325,6 +332,8 @@ export interface Workspace {
  * @beta
  */
 export interface WorkspaceContainer {
+  /** @internal */
+  [implementationProhibited]: unknown;
   /** the local directory where this WorkspaceContainer will store temporary files extracted for file-resources.
    * @internal
    */
