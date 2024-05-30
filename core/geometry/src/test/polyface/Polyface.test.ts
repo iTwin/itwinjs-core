@@ -29,6 +29,7 @@ import { Transform } from "../../geometry3d/Transform";
 import { XAndY, XYAndZ } from "../../geometry3d/XYZProps";
 import { MomentData } from "../../geometry4d/MomentData";
 import { FacetFaceData } from "../../polyface/FacetFaceData";
+import { IndexedPolyfaceSubsetVisitor } from "../../polyface/IndexedPolyfaceVisitor";
 import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceData } from "../../polyface/PolyfaceData";
@@ -1728,64 +1729,64 @@ function createPolyfaceFromSynchroA(geom: any): Polyface {
   return polyface;
 }
 
-// lexicographical order, with slop for equality
-const compareNormals: OrderedComparator<Vector3d> = (v0: Vector3d, v1: Vector3d) => { // lexicographical order, with slop for equality
-  if (v0.isAlmostEqual(v1))
+describe("SphericalMeshData", () => {
+  // lexicographical order, with slop for equality
+  const compareNormals: OrderedComparator<Vector3d> = (v0: Vector3d, v1: Vector3d) => { // lexicographical order, with slop for equality
+    if (v0.isAlmostEqual(v1))
+      return 0;
+    if (!Geometry.isAlmostEqualNumber(v0.x, v1.x)) {
+      if (v0.x < v1.x)
+        return -1;
+      if (v0.x > v1.x)
+        return 1;
+    }
+    if (!Geometry.isAlmostEqualNumber(v0.y, v1.y)) {
+      if (v0.y < v1.y)
+        return -1;
+      if (v0.y > v1.y)
+        return 1;
+    }
+    if (!Geometry.isAlmostEqualNumber(v0.z, v1.z)) {
+      if (v0.z < v1.z)
+        return -1;
+      if (v0.z > v1.z)
+        return 1;
+    }
     return 0;
-  if (!Geometry.isAlmostEqualNumber(v0.x, v1.x)) {
-    if (v0.x < v1.x)
-      return -1;
-    if (v0.x > v1.x)
-      return 1;
-  }
-  if (!Geometry.isAlmostEqualNumber(v0.y, v1.y)) {
-    if (v0.y < v1.y)
-      return -1;
-    if (v0.y > v1.y)
-      return 1;
-  }
-  if (!Geometry.isAlmostEqualNumber(v0.z, v1.z)) {
-    if (v0.z < v1.z)
-      return -1;
-    if (v0.z > v1.z)
-      return 1;
-  }
-  return 0;
-};
+  };
 
-const cloneNormal: CloneFunction<Vector3d> = (v: Vector3d) => {
-  return v.clone();
-};
+  const cloneNormal: CloneFunction<Vector3d> = (v: Vector3d) => {
+    return v.clone();
+  };
 
-function sectorsWithSameNormalAtVertexShareUVParamAndColor(ck: Checker, data: PolyfaceData): void {
-  if (data.normal && data.normalIndex && ((data.param && data.paramIndex) || (data.color && data.colorIndex))) {
-    const normal = Vector3d.createZero();
-    for (let vi = 0; vi < data.pointCount; ++vi) {
-      const sectors: number[] = [];
-      for (let readIndex = 0; readIndex < data.pointIndex.length; ++readIndex) {
-        if (data.pointIndex[readIndex] === vi)
-          sectors.push(readIndex);
-      }
-      const normalToAuxIndex = new Dictionary<Vector3d, number>(compareNormals, cloneNormal);
-      for (const auxIndices of [data.paramIndex, data.colorIndex]) {
-        if (!auxIndices)
-          continue;
-        normalToAuxIndex.clear();
-        for (const readIndex of sectors) {
-          const iNormal: number = data.normalIndex[readIndex];
-          ck.testPointer(data.getNormal(iNormal, normal));
-          const iAuxData = auxIndices[readIndex];
-          const inserted = normalToAuxIndex.insert(normal, iAuxData);
-          if (!inserted)
-            ck.testExactNumber(normalToAuxIndex.get(normal)!, iAuxData, "at a vertex, sectors with same normal have same uv/color");
+  function sectorsWithSameNormalAtVertexShareUVParamAndColor(ck: Checker, data: PolyfaceData): void {
+    if (data.normal && data.normalIndex && ((data.param && data.paramIndex) || (data.color && data.colorIndex))) {
+      const normal = Vector3d.createZero();
+      for (let vi = 0; vi < data.pointCount; ++vi) {
+        const sectors: number[] = [];
+        for (let readIndex = 0; readIndex < data.pointIndex.length; ++readIndex) {
+          if (data.pointIndex[readIndex] === vi)
+            sectors.push(readIndex);
+        }
+        const normalToAuxIndex = new Dictionary<Vector3d, number>(compareNormals, cloneNormal);
+        for (const auxIndices of [data.paramIndex, data.colorIndex]) {
+          if (!auxIndices)
+            continue;
+          normalToAuxIndex.clear();
+          for (const readIndex of sectors) {
+            const iNormal: number = data.normalIndex[readIndex];
+            ck.testPointer(data.getNormal(iNormal, normal));
+            const iAuxData = auxIndices[readIndex];
+            const inserted = normalToAuxIndex.insert(normal, iAuxData);
+            if (!inserted)
+              ck.testExactNumber(normalToAuxIndex.get(normal)!, iAuxData, "at a vertex, sectors with same normal have same uv/color");
+          }
         }
       }
     }
   }
-}
 
-describe("Polyface", () => {
-  it("SphericalAuxiliaryData", () => {
+  it("Create", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
@@ -1825,11 +1826,11 @@ describe("Polyface", () => {
     mesh.data.compress();
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "SphericalAuxiliaryData");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "SphericalMeshData", "Create");
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("TriangulateAuxiliaryData", () => {
+  it("Triangulate", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
@@ -1926,7 +1927,99 @@ describe("Polyface", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh1, 10);
     sectorsWithSameNormalAtVertexShareUVParamAndColor(ck, mesh1.data);
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "TriangulateAuxiliaryData");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "SphericalMeshData", "Triangulate");
+    expect(ck.getNumErrors()).equals(0);
+  });
+});
+
+describe("PolyfaceVisitor", () => {
+  it("SubsetConstructor", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0, y0 = 0;
+    const cubeSize = 10;
+    const delta = 2 * cubeSize;
+
+    const meshes: (IndexedPolyface | undefined)[] = [];
+    meshes.push(Sample.createMeshFromFrankeSurface(20)); // quads!
+    meshes.push(GeometryCoreTestIO.jsonFileToIndexedPolyface("./src/test/data/clipping/drapeRegion/drapeRegion.imjs"));
+    meshes.push(ImportedSample.createPolyhedron62());
+    for (const mesh of meshes) {
+      if (ck.testDefined(mesh, "imported mesh")) {
+        // transform disparately sourced mesh into scaled cube
+        const toWorld = mesh.range().getLocalToWorldTransform().multiplyTransformMatrix3d(Matrix3d.createScale(1/cubeSize, 1/cubeSize, 1/cubeSize));
+        mesh.tryTransformInPlace(toWorld.inverse()!);
+      }
+    }
+
+    const testMesh = (mesh: IndexedPolyface, expectedFacetCount: number, compare?: Vector3d, sideAngle?: Angle, numWrap?: number): void => {
+      y0 += delta;
+      const visitor = IndexedPolyfaceSubsetVisitor.createNormalComparison(mesh, compare, sideAngle, numWrap);
+      if (ck.testExactNumber(visitor.getVisitableFacetCount(), expectedFacetCount, "visitor has expected subset size") && expectedFacetCount > 0) {
+        const currReadIndex = visitor.currentReadIndex();
+        ck.testLE(visitor.getVisitableFacetCount(), mesh.facetCount, "visitor does not increase mesh facet count");
+        ck.testExactNumber(visitor.getVisitableFacetCount(), PolyfaceQuery.visitorClientFacetCount(visitor), "visitor facet count agrees with general facet count query");
+        ck.testExactNumber(visitor.currentReadIndex(), currReadIndex, "visitorClientFacetCount does not change the read index");
+
+        visitor.reset();  // visit first facet
+        ck.testExactNumber(visitor.point.length - visitor.numEdgesThisFacet, numWrap ?? 0, "visitor has expected numWrap");
+
+        const builder = PolyfaceBuilder.create();
+        builder.addFacetsFromVisitor(visitor);
+        const subsetMesh = builder.claimPolyface();
+        ck.testExactNumber(subsetMesh.facetCount, visitor.getVisitableFacetCount(), "visitor sends all of its facets to the builder");
+
+        if (numWrap === undefined)
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, subsetMesh, x0, y0);
+      }
+    };
+
+    const toBottom = Vector3d.create(0, 0, -1);
+    const toFront = Vector3d.create(0, -1, 0);
+    const toIso = Vector3d.create(-1, -1, 1);
+
+    let myMesh = meshes[0]!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, myMesh, x0, y0);
+    testMesh(myMesh, 400, undefined, undefined, undefined);
+    testMesh(myMesh, 400, undefined, undefined, 1);
+    testMesh(myMesh, 400, undefined, Angle.createDegrees(0.01), undefined);
+    testMesh(myMesh, 0, toBottom, undefined, undefined);
+    y0 += delta;  // skip
+    testMesh(myMesh, 126, toFront, undefined, undefined);
+    testMesh(myMesh, 126, toFront, Angle.createDegrees(0.1), undefined);
+    testMesh(myMesh, 278, toIso, undefined, undefined);
+    testMesh(myMesh, 278, toIso, Angle.createDegrees(0.1), undefined);
+
+    x0 += delta;
+    y0 = 0;
+
+    myMesh = meshes[1]!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, myMesh, x0, y0);
+    testMesh(myMesh, 375, undefined, undefined, undefined);
+    testMesh(myMesh, 375, undefined, undefined, 1);
+    testMesh(myMesh, 369, undefined, Angle.createDegrees(0.06), undefined);
+    testMesh(myMesh, 14, toBottom, undefined, undefined);
+    testMesh(myMesh, 0, toBottom, Angle.createDegrees(0.06), undefined);
+    testMesh(myMesh, 250, toFront, undefined, undefined);
+    testMesh(myMesh, 244, toFront, Angle.createDegrees(0.06), undefined);
+    testMesh(myMesh, 230, toIso, undefined, undefined);
+    testMesh(myMesh, 230, toIso, Angle.createDegrees(0.06), undefined);
+
+    x0 += delta;
+    y0 = 0;
+    myMesh = meshes[2]!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, myMesh, x0, y0);
+    testMesh(myMesh, 25, undefined, undefined, undefined);
+    testMesh(myMesh, 25, undefined, undefined, 1);
+    testMesh(myMesh, 25, undefined, Angle.createDegrees(0.01), undefined);
+    testMesh(myMesh, 25, toBottom, undefined, undefined);
+    testMesh(myMesh, 25, toBottom, Angle.createDegrees(0.01), undefined);
+    testMesh(myMesh, 25, toFront, undefined, undefined);
+    testMesh(myMesh, 25, toFront, Angle.createDegrees(0.01), undefined);
+    testMesh(myMesh, 28, toIso, undefined, undefined);
+    testMesh(myMesh, 28, toIso, Angle.createDegrees(0.01), undefined);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceVisitor", "SubsetConstructor");
     expect(ck.getNumErrors()).equals(0);
   });
 });

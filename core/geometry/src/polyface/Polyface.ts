@@ -687,4 +687,9 @@ export interface PolyfaceVisitor extends PolyfaceData {
    * * All data values are interpolated at `fraction` between `other` values at `index0` and `index1`.
    */
   pushInterpolatedDataFrom(other: PolyfaceVisitor, index0: number, fraction: number, index1: number): void;
+  /**
+   * Return the number of facets this visitor is able to visit.
+   * * Allows implementers to improve the efficiency of e.g., [[PolyfaceQuery.visitorClientFacetCount]].
+   */
+  getVisitableFacetCount?(): number;
 }
