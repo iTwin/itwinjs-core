@@ -20,7 +20,7 @@ import { AzuriteTest } from "./AzuriteTest";
 
 // cspell:ignore premajor
 
-describe("Cloud workspace containers", () => {
+describe.only("Cloud workspace containers", () => {
   const iTwin1Id = Guid.createValue();
   const iTwin2Id = Guid.createValue();
   const iModel1 = Guid.createValue();
@@ -47,11 +47,13 @@ describe("Cloud workspace containers", () => {
           type: "array",
           description: "array of app1 text styles",
           extends: "itwin/core/workspaces/workspaceDbList",
+          combineArray: true,
         },
         lineStyleDbs: {
           type: "array",
           description: "array of app1 line styles",
           extends: "itwin/core/workspaces/workspaceDbList",
+          combineArray: true,
         },
       },
     });
@@ -182,7 +184,7 @@ describe("Cloud workspace containers", () => {
     Workspace.onSettingsDictionaryLoadedFn = (dict: Workspace.SettingsDictionaryLoaded) => loadedDictionaries.push(dict);
 
     const appSettings: SettingsContainer = {};
-    appSettings["app1/lineStyleDbs"] = [{ ...orgContainerProps!, loadingHelp: "see org admin for access to org ws", description: "org workspace", version: "^1" }];
+    appSettings["app1/styles/lineStyleDbs"] = [{ ...orgContainerProps!, loadingHelp: "see org admin for access to org ws", description: "org workspace", version: "^1" }];
     IModelHost.appWorkspace.settings.addDictionary({ name: "app settings", priority: SettingsPriority.application }, appSettings);
 
     let imodel2 = await StandaloneDb.open({ fileName });
@@ -201,8 +203,8 @@ describe("Cloud workspace containers", () => {
       const branchSettings: SettingsContainer = {};
       branchSettings["app1/max1"] = 10;
       branchSettings["app1/max2"] = 20;
-      branchSettings["app1/lineStyleDbs"] = [style1Props, style3Props]; // style3 purposely causes a load error
-      branchSettings["app1/textStyleDbs"] = [style2Props];
+      branchSettings["app1/styles/lineStyleDbs"] = [style1Props, style3Props]; // style3 purposely causes a load error
+      branchSettings["app1/styles/textStyleDbs"] = [style2Props];
       branchSettings[Workspace.settingName.settingsWorkspaces] = [{ ...itwin2ContainerProps, priority: SettingsPriority.iTwin }];
 
       editDb.updateSettingsResource(branchSettings);
@@ -233,8 +235,8 @@ describe("Cloud workspace containers", () => {
       iTwin2WsSettings["app1/max1"] = 1;
       iTwin2WsSettings["app1/max2"] = 2;
       iTwin2WsSettings["app1/max3"] = 3;
-      iTwin2WsSettings["app1/lineStyleDbs"] = [style2Props];
-      iTwin2WsSettings["app1/textStyleDbs"] = [style1Props, style2Props]; // style2 is redundant with branch
+      iTwin2WsSettings["app1/styles/lineStyleDbs"] = [style2Props];
+      iTwin2WsSettings["app1/styles/textStyleDbs"] = [style1Props, style2Props]; // style2 is redundant with branch
       editDb.updateSettingsResource(iTwin2WsSettings);
     });
     resetErrors();
@@ -261,13 +263,13 @@ describe("Cloud workspace containers", () => {
     await withPatchVersion(styles1, (editDb) => defineStyles(editDb, "batch1", 100));
     await withPatchVersion(styles2, (editDb) => defineStyles(editDb, "batch2", 200));
 
-    const textDbProps = imodel2.workspace.resolveWorkspaceDbSetting("app1/textStyleDbs");
+    const textDbProps = imodel2.workspace.resolveWorkspaceDbSetting("app1/styles/textStyleDbs");
     expect(textDbProps.length).equal(3);
-    const lineStyleDbProps = imodel2.workspace.resolveWorkspaceDbSetting("app1/lineStyleDbs");
+    const lineStyleDbProps = imodel2.workspace.resolveWorkspaceDbSetting("app1/styles/lineStyleDbs");
     expect(lineStyleDbProps.length).equal(4);
 
     const problems: WorkspaceDbLoadError[] = [];
-    let textDbs = await imodel2.workspace.getWorkspaceDbs({ settingName: "app1/textStyleDbs", problems });
+    let textDbs = await imodel2.workspace.getWorkspaceDbs({ settingName: "app1/styles/textStyleDbs", problems });
     expect(textDbs.length).equal(2);
     expect(problems.length).equal(0);
     textDbs = await imodel2.workspace.getWorkspaceDbs({ dbs: textDbProps, problems });
@@ -276,7 +278,7 @@ describe("Cloud workspace containers", () => {
 
     problems.length = 0;
     let lineStyleDbs = await imodel2.workspace.getWorkspaceDbs({
-      settingName: "app1/lineStyleDbs", problems, filter: (_dbProps, dict) => {
+      settingName: "app1/styles/lineStyleDbs", problems, filter: (_dbProps, dict) => {
         return (dict.props.priority === SettingsPriority.branch as number);
       },
     });
@@ -285,7 +287,7 @@ describe("Cloud workspace containers", () => {
 
     problems.length = 0;
 
-    lineStyleDbs = await imodel2.workspace.getWorkspaceDbs({ settingName: "app1/lineStyleDbs", problems });
+    lineStyleDbs = await imodel2.workspace.getWorkspaceDbs({ settingName: "app1/styles/lineStyleDbs", problems });
     expect(lineStyleDbs.length).equal(3);
     expect(problems.length).equal(1);
     expect(problems[0].wsDbProps?.loadingHelp).contains("for access to style3");
@@ -322,7 +324,7 @@ describe("Cloud workspace containers", () => {
     expect(getWorkspaceBlob({ dbs: lineStyleDbs, name: styleName })).deep.equal(new Uint8Array([100]));
     expect(getWorkspaceBlob({ dbs: textDbs, name: styleName })).deep.equal(new Uint8Array([200]));
 
-    // get a value from org workspace specified at "app priority" (lowest) in appSetting for "app1/linestyleDbs"
+    // get a value from org workspace specified at "app priority" (lowest) in appSetting for "app1/styles/linestyleDbs"
     expect(getWorkspaceString({ dbs: lineStyleDbs, name: "string 1" })).equal("value of string 1");
 
     found.length = 0;

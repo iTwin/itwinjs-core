@@ -410,7 +410,8 @@ class WorkspaceImpl implements Workspace {
   }
 
   public resolveWorkspaceDbSetting(settingName: SettingName, filter?: Workspace.DbListFilter): WorkspaceDbCloudProps[] {
-    const combine = IModelHost.settingsSchemas.settingDefs.get(settingName)?.combineArray === true;
+    const settingDef = IModelHost.settingsSchemas.settingDefs.get(settingName);
+    const combine = settingDef?.combineArray === true;
     filter = filter ?? (() => true);
     const result: WorkspaceDbCloudProps[] = [];
     for (const entry of this.settings.getSettingEntries<WorkspaceDbCloudProps[]>(settingName)) {
