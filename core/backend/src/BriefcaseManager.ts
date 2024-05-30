@@ -442,7 +442,8 @@ export class BriefcaseManager {
     if (reverse)
       changesets.reverse();
 
-    db.nativeDb.beginPullMerge("Rebase");
+    const pullMergeMethod = db instanceof BriefcaseDb ? db.pullMergeMethod : IModelHost.pullMergeMethod;
+    db.nativeDb.beginPullMerge(pullMergeMethod);
     for (const changeset of changesets) {
       const stopwatch = new StopWatch(`[${changeset.id}]`, true);
       Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);

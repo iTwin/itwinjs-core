@@ -464,7 +464,7 @@ export class TxnManager {
       args.setLastError(msg);
       Logger.logError(category, msg);
       args.dump();
-      return DbConflictResolution.Abort;
+      return DbConflictResolution.Replace;
     }
 
     if (args.cause === DbConflictCause.Conflict) {
