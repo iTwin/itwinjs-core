@@ -23,6 +23,7 @@ import {
   BriefcaseDb,
   BriefcaseManager,
   ChannelControl,
+  CodeService,
   DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, LockState, OpenBriefcaseArgs, SpatialCategory, Subject,
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
@@ -327,6 +328,24 @@ describe("IModelWriteTest", () => {
     assert.equal(0, rwIModel.nativeDb.getChangesetSize());
     await rwIModel.pushChanges({ description: "schema changeset", accessToken: adminToken });
     rwIModel.close();
+  });
+
+  it("should close briefcase db before throwing an error if failed to open codeService", async () => {
+    const iModelProps = {
+      iModelName: "ReadWriteTest",
+      iTwinId,
+    };
+    const iModelId = await HubMock.createNewIModel(iModelProps);
+    const briefcaseProps = await BriefcaseManager.downloadBriefcase({ accessToken: "test token", iTwinId, iModelId });
+    const originalCreateForIModel = CodeService.createForIModel;
+    CodeService.createForIModel = async () => {
+      throw new CodeService.Error("NotAuthorized", 0x10000 + 1, " ");
+    };
+    const closeSpy = sinon.spy(BriefcaseDb.prototype, "close");
+    await expect(BriefcaseDb.open({ fileName: briefcaseProps.fileName, watchForChanges: false })).to.be.rejectedWith(CodeService.Error);
+    assert(closeSpy.calledOnce, "briefcaseDb.close() should be called once");
+    CodeService.createForIModel = originalCreateForIModel;
+    sinon.restore();
   });
 
   it("clear cache on schema changes", async () => {

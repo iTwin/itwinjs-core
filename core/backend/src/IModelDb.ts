@@ -2768,8 +2768,11 @@ export class BriefcaseDb extends IModelDb {
         briefcaseDb._codeService = await CodeService.createForIModel(briefcaseDb);
         this.onCodeServiceCreated.raiseEvent(briefcaseDb);
       } catch (e: any) {
-        if ((e as CodeService.Error).errorId !== "NoCodeIndex") // no code index means iModel isn't enforcing codes.
+        if ((e as CodeService.Error).errorId !== "NoCodeIndex") { // no code index means iModel isn't enforcing codes.
+          // close db if failed to open codeService
+          briefcaseDb.close();
           throw e;
+        }
       }
     }
 
