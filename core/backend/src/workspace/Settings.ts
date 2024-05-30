@@ -25,6 +25,52 @@ export namespace Setting { // eslint-disable-line @typescript-eslint/no-redeclar
     Object.keys(object).forEach((key: string) => result[key] = clone((object as any)[key]));
     return result;
   }
+
+  export function equal(a: Setting | undefined, b: Setting | undefined): boolean {
+    if (a === b) {
+      return true;
+    }
+
+    // For primitive types, === suffices.
+    if (typeof a !== "object" || typeof b !== "object") {
+      return false;
+    }
+
+    if (Array.isArray(a) || Array.isArray(b)) {
+      if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) {
+        return false;
+      }
+
+      for (let i = 0; i < a.length; i++) {
+        if (!equal(a[i], b[i])) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    const aKeys = Object.keys(a);
+    const bKeys = Object.keys(b);
+    if (aKeys.length !== bKeys.length) {
+      return false;
+    }
+
+    aKeys.sort();
+    bKeys.sort();
+    for (let i = 0; i < aKeys.length; i++) {
+      const key = aKeys[i];
+      if (key !== bKeys[i]) {
+        return false;
+      }
+
+      if (!equal((a as SettingsContainer)[key], (b as SettingsContainer)[key])) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 }
 
 /**

@@ -171,7 +171,7 @@ export class SettingsImpl implements Settings {
 
       IModelHost.settingsSchemas.validateSetting(array, name);
       for (const value of array) {
-        if (!out.includes(value)) {
+        if (undefined === out.find((x) => Setting.equal(x, value))) {
           out.push(value);
         }
       }
