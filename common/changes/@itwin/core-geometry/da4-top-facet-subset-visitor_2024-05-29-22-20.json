@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "IndexedPolyfaceSubsetVisitor.createNormalComparison",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
