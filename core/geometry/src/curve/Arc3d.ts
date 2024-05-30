@@ -36,35 +36,34 @@ import { StrokeOptions } from "./StrokeOptions";
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 
 /**
- * Compact vector form of an elliptic arc defined by center, vectors for angle coordinates 0 and 90 degrees, and sweep.
+ * Compact vector form of an elliptic arc defined by center, vectors at 0 and 90 degrees, and angular sweep.
  * * @see [Curve Collections]($docs/learning/geometry/CurvePrimitive.md) learning article for further details of the
  * parameterization and meaning of the vectors.
  * @public
  */
 export interface ArcVectors {
-  /** Center point of arc */
+  /** Center point of arc. */
   center: Point3d;
-  /** Vector to point at angle 0 in parameter space */
+  /** Vector from the arc center to the arc point at parameter 0 degrees. */
   vector0: Vector3d;
-  /** Vector to point at angle 90 degrees in parameter space */
+  /** Vector from the arc center to the arc point at parameter 90 degrees. */
   vector90: Vector3d;
-  /** Angle swept by the subset of the complete arc */
+  /** Angular range swept by the arc, of length less than 2*pi if not a full ellipse. */
   sweep: AngleSweep;
 }
 /**
  * Circular or elliptic arc.
  * * The angle to point equation is:
- * * `X = center + cos(theta) * vector0 + sin(theta) * vector90`
+ *   * `X = center + cos(theta) * vector0 + sin(theta) * vector90`
  * * When the two vectors are perpendicular and have equal length, it is a true circle.
  * * Non-perpendicular vectors are always elliptic.
  * * Vectors of unequal length are always elliptic.
  * * To create an ellipse in the common "major and minor axis" form of an ellipse:
- * ** vector0 is the vector from the center to the major axis extreme.
- * ** vector90 is the vector from the center to the minor axis extreme.
- * ** note that constructing the vectors to the extreme points makes them perpendicular.
- * * The method toScaledMatrix3d() can be called to convert the unrestricted vector0,vector90 to perpendicular form.
- * * The unrestricted form is much easier to work with for common calculations -- stroking, projection to 2d,
- * intersection with plane.
+ *   * vector0 is the vector from the center to the major axis extreme.
+ *   * vector90 is the vector from the center to the minor axis extreme.
+ *   * Note that constructing these vectors to the extreme points makes them perpendicular.
+ * * The method toScaledMatrix3d() can be called to convert the unrestricted vector0, vector90 to perpendicular form.
+ * * The unrestricted form is much easier to work with for common calculations: stroking, projection to 2d, intersection with plane.
  * @public
  */
 export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
@@ -450,14 +449,14 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     return result;
   }
   /**
-   * Return the start point tof the arc.
+   * Return the start point of the arc.
    * @param result optional preallocated result
    */
   public override startPoint(result?: Point3d): Point3d {
     return this.fractionToPoint(0.0, result);
   }
   /**
-   * Return the end point tof the arc.
+   * Return the end point of the arc.
    * @param result optional preallocated result
    */
   public override endPoint(result?: Point3d): Point3d {

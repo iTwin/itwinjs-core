@@ -18,7 +18,7 @@ import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Range1d } from "../../geometry3d/Range";
+import { Range1d, Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
@@ -646,4 +646,137 @@ describe("Arc3d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it.only("ParameterizationSpeed", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+
+    // Return theta in first quadrant
+    const curvatureToRadians = (ellipticalArc: Arc3d, curvature: number): number | undefined => {
+      if (ellipticalArc.isCircular)
+        return undefined;
+      if (curvature <= 0)
+        return undefined;
+      if (!ellipticalArc.vector0.isPerpendicularTo(ellipticalArc.vector90))
+        return undefined;
+      const uLengthSquared = ellipticalArc.vector0.magnitudeSquared();
+      const vLengthSquared = ellipticalArc.vector90.magnitudeSquared();
+      const scaledNormalLengthSquared = (uLengthSquared * vLengthSquared) / (curvature * curvature);
+      const numerator = Math.cbrt(scaledNormalLengthSquared) - uLengthSquared;
+      const denominator = vLengthSquared - uLengthSquared;
+      const cosTheta = Math.sqrt(Math.abs(numerator / denominator));
+      return Math.acos(cosTheta);
+    };
+
+    const curvatureToFractions = (ellipticalArc: Arc3d, curvature: number): number[] => {
+      const fractions: number[] = [];
+      const angle0 = curvatureToRadians(ellipticalArc, curvature);
+      if (angle0 !== undefined) {
+        for (const theta of [angle0 /* 1Q */, Math.PI - angle0  /* 2Q */, Math.PI + angle0  /* 3Q */, -angle0 /* 4Q */]) {
+          const fraction = ellipticalArc.sweep.angleToSignedPeriodicFraction(Angle.createRadians(theta));
+          if (Geometry.isIn01WithTolerance(fraction, Geometry.smallFraction)) {
+            fractions.push(fraction);
+          }
+        }
+      }
+      return fractions;
+    };
+
+    const a = 10;
+    const b = 3;
+    let x0 = 0;
+    const xDelta = 2 * a + 1;
+    let y0 = 0;
+    const yDelta = 2 * b + 1;
+    let z0 = 0;
+    const zDelta = 2 * Math.max(a, b) + 1;
+
+    // lambda f [0,1]->[0,1] is bijective
+    const testArc = (ellipticalArc: Arc3d, numPointsInQuadrant: number, f: (x: number) => number): void => {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, ellipticalArc, x0, y0, z0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [ellipticalArc.center.plus(ellipticalArc.vector0), ellipticalArc.center, ellipticalArc.center.plus(ellipticalArc.vector90)], x0, y0, z0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [ellipticalArc.center, ellipticalArc.startPoint()], x0, y0, z0);
+      const fractions = new Set<number>();
+      // add quadrant points
+      for (const quadrantAngle of [0, Angle.piOver2Radians, Math.PI, Math.PI + Angle.piOver2Radians])
+        if (ellipticalArc.sweep.isRadiansInSweep(quadrantAngle))
+          fractions.add(ellipticalArc.sweep.angleToSignedPeriodicFraction(Angle.createRadians(quadrantAngle)));
+      // add end points
+      fractions.add(0);
+      fractions.add(1);
+      // find the points in 1st quadrant, then use symmetry to populate
+      const curvature0 = ellipticalArc.matrixRef.columnXMagnitude() / ellipticalArc.matrixRef.columnYMagnitudeSquared();
+      const curvature1 = ellipticalArc.matrixRef.columnYMagnitude() / ellipticalArc.matrixRef.columnXMagnitudeSquared();
+      const tDelta = 1.0 / (numPointsInQuadrant - 1);
+      for (let i = 1; i < numPointsInQuadrant; ++i) {
+        const j = f(i * tDelta);
+        const curvature = (1 - j) * curvature0 + j * curvature1;
+        for (const fraction of curvatureToFractions(ellipticalArc, curvature))
+          fractions.add(fraction);
+      }
+      for (const fraction of [...fractions].sort())
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, ellipticalArc.fractionToPoint(fraction), 0.1, x0, y0, z0);
+    };
+
+    const arcs: Arc3d[] = [];
+
+    // xy-plane, perp-axis arcs
+    arcs.push(Arc3d.createXYEllipse(Point3d.createZero(), a, b));
+    arcs.push(Arc3d.createXYEllipse(Point3d.createZero(), a, b, AngleSweep.createStartEndDegrees(0, 90)));
+    arcs.push(Arc3d.createXYEllipse(Point3d.createZero(), a, b, AngleSweep.createStartEndDegrees(-100, 32)));
+    arcs.push(Arc3d.createXYEllipse(Point3d.createZero(), a, b, AngleSweep.createStartEndDegrees(147, -100)));
+
+    // general arcs need their axes squared first
+    const scaleData = Arc3d.create(Point3d.create(1, 3, 2), Vector3d.create(2, 4, -1), Vector3d.create(3, 2, -3)).toScaledMatrix3d();
+    arcs.push(Arc3d.createScaledXYColumns(scaleData.center, scaleData.axes, scaleData.r0, scaleData.r90, scaleData.sweep));
+    arcs.push(Arc3d.createScaledXYColumns(scaleData.center, scaleData.axes, scaleData.r0, scaleData.r90));
+    arcs.push(Arc3d.createScaledXYColumns(scaleData.center, scaleData.axes, scaleData.r0, scaleData.r90, AngleSweep.createStartEndDegrees(100, 120)));
+
+    const fLinear = (x: number): number => { return x; };
+    const fQuadratic = (x: number): number => { return x * x; };
+    const fSqrt = (x: number): number => { return Math.sqrt(x); };
+    const fLinearWave = (x: number): number => {
+      if (x === 0) return 0;
+      if (x === 1) return 1;
+      const scale = (b < a) ? b / a : a / b;
+      return 0.5 + 1 / Math.PI * Math.atan(scale * Math.tan(Math.PI * (x - 0.5)));
+    };
+    const fLinearWaveInverse = (x: number): number => {
+      if (x === 0) return 0;
+      if (x === 1) return 1;
+      const scale = ((a < b) ? b / a : a / b) * 100;
+      return 0.5 + 1 / Math.PI * Math.atan(scale * Math.tan(Math.PI * (x - 0.5)));
+    };
+
+    // plot the fraction->curvature graph for the first quadrant of the ellipse, normalized into unit square
+    const plotNormalizedFractionToCurvature = (arc: Arc3d, f: (x: number) => number): void => {
+      const fullArc = arc.clone();
+      fullArc.sweep = AngleSweep.create360();
+      const pts: Point3d[] = [];
+      for (let angle = 0; angle <= Angle.piOver2Radians + 0.0001; angle += 0.01) {
+        const fraction = fullArc.sweep.radiansToSignedPeriodicFraction(angle);
+        const mappedFraction = f(fraction);
+        pts.push(Point3d.create(fraction, fullArc.fractionToCurvature(mappedFraction)));
+      }
+      Range3d.createArray(pts).getNpcToWorldRangeTransform().inverse()?.multiplyPoint3dArrayInPlace(pts);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, pts, x0, y0, z0);
+    };
+
+    for (const arc of arcs) {
+      for (const f of [fLinear, fQuadratic, fSqrt, fLinearWave, fLinearWaveInverse]) {
+        plotNormalizedFractionToCurvature(arc, f);
+        y0 += yDelta;
+        for (const numQuadrantPoints of [3, 4, 5, 10, 20]) {
+          testArc(arc, numQuadrantPoints, f);
+          z0 += zDelta;
+        }
+        x0 += xDelta;
+        z0 = y0 = 0;
+      }
+      x0 += 3 * xDelta;
+      z0 = 0;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "ParameterizationSpeed");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
