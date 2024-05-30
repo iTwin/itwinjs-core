@@ -243,7 +243,7 @@ describe("RealityDataAccess (#integration)", () => {
     }
   });
 
-  it.skip("should get RealityDataSource for reality data attachment in iModel", async () => {
+  it("should get RealityDataSource for reality data attachment in iModel", async () => {
     assert.isTrue(imodel !== undefined);
     const modelRealityDataInfos = await getAttachedRealityDataModelInfoSet(imodel);
     expect(modelRealityDataInfos.size).to.equal(3);
