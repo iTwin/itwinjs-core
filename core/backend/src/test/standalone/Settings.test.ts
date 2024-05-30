@@ -318,7 +318,8 @@ describe("Settings", () => {
         settingDefs: {
           array: {
             type: "array",
-            items: { type, combineArray },
+            items: { type },
+            combineArray,
           },
         },
       };
@@ -336,15 +337,16 @@ describe("Settings", () => {
       }, settings);
     }
 
-    it("combines arrays only if the `combineArray` flag is explicitly set to `true`", () => {
+    it("combines arrays only if the combineArray flag is explicitly set to true", () => {
       addGroup("false", "number", false);
       addGroup("true", "number", true);
       addGroup("default", "number", undefined);
 
+      let dictNum = 0;
       const prefixes = ["false", "true", "default"];
       for (const schemaPrefix of prefixes) {
-        addArray(schemaPrefix, "app", [1, 2], SettingsPriority.application);
-        addArray(schemaPrefix, "def", [3, 4], SettingsPriority.defaults);
+        addArray(schemaPrefix, `app${dictNum++}`, [1, 2], SettingsPriority.application);
+        addArray(schemaPrefix, `def${dictNum++}`, [3, 4], SettingsPriority.defaults);
       }
 
       for (const prefix of prefixes) {
