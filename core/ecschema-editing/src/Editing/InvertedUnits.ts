@@ -7,117 +7,76 @@
  */
 
 import {
-  DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, InvertedUnitProps, SchemaItemKey,
+  DelayedPromiseWithProps, InvertedUnit, InvertedUnitProps, SchemaItemKey,
   SchemaItemType, SchemaKey, Unit, UnitSystem,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
 import { MutableInvertedUnit } from "./Mutable/MutableInvertedUnit";
-import { ECEditingError, ECEditingStatus } from "./Exception";
+import { ECEditingStatus, SchemaEditingError, schemaItemIdentifier, schemaItemIdentifierFromName } from "./Exception";
+import { SchemaItems } from "./SchemaItems";
 
 /**
  * @alpha
  * A class allowing you to create schema items of type Inverted Unit.
  */
-export class InvertedUnits {
-  public constructor(protected _schemaEditor: SchemaContextEditor) { }
+export class InvertedUnits extends SchemaItems {
+  public constructor(schemaEditor: SchemaContextEditor) {
+    super(SchemaItemType.InvertedUnit, schemaEditor);
+  }
   public async create(schemaKey: SchemaKey, name: string, invertsUnitKey: SchemaItemKey, unitSystemKey: SchemaItemKey, displayLabel?: string): Promise<SchemaItemKey> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
-
     let newUnit: MutableInvertedUnit;
+
     try {
-      newUnit = await schema.createInvertedUnit(name) as MutableInvertedUnit;
-    } catch (e) {
-      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
-        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `InvertedUnit ${name} already exists in the schema ${schema.fullName}.`);
-      } else {
-        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create InvertedUnit ${name} in schema ${schema.fullName}.`);
-      }
+      const schema = await this.getSchema(schemaKey);
+      const boundCreate = schema.createInvertedUnit.bind(schema);
+      newUnit = (await this.createSchemaItem<InvertedUnit>(schemaKey, this.schemaItemType, boundCreate, name)) as MutableInvertedUnit;
+
+      const invertsUnit = await this.lookUpSchemaItem<Unit>(schemaKey, invertsUnitKey, SchemaItemType.Unit);
+      newUnit.setInvertsUnit(new DelayedPromiseWithProps<SchemaItemKey, Unit>(invertsUnitKey, async () => invertsUnit));
+
+      const unitSystem = await this.lookUpSchemaItem<UnitSystem>(schemaKey, unitSystemKey, SchemaItemType.UnitSystem);
+      newUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemKey, async () => unitSystem));
+
+      if (displayLabel)
+        newUnit.setDisplayLabel(displayLabel);
+
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, name), e);
     }
-
-    const invertsUnit = await schema.lookupItem<Unit>(invertsUnitKey);
-    if (invertsUnit === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Unable to locate unit ${invertsUnitKey.fullName} in schema ${schema.fullName}.`);
-
-    if (invertsUnit.schemaItemType !== SchemaItemType.Unit)
-      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `${invertsUnit.fullName} is not of type Unit.`);
-
-    newUnit.setInvertsUnit(new DelayedPromiseWithProps<SchemaItemKey, Unit>(invertsUnitKey, async () => invertsUnit));
-
-    const unitSystem = await schema.lookupItem<UnitSystem>(unitSystemKey);
-    if (unitSystem === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Unable to locate unit system ${unitSystemKey.fullName} in schema ${schema.fullName}.`);
-
-    if (unitSystem.schemaItemType !== SchemaItemType.UnitSystem)
-      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `${unitSystemKey.fullName} is not of type Unit System.`);
-
-    newUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemKey, async () => unitSystem));
-
-    if (displayLabel)
-      newUnit.setDisplayLabel(displayLabel);
 
     return newUnit.key;
   }
 
   public async createFromProps(schemaKey: SchemaKey, invertedUnitProps: InvertedUnitProps): Promise<SchemaItemKey> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
-
-    if (invertedUnitProps.name === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNameNotSpecified, `No name was supplied within props.`);
-
     let newUnit: MutableInvertedUnit;
     try {
-      newUnit = await schema.createInvertedUnit(invertedUnitProps.name) as MutableInvertedUnit;
-    } catch (e) {
-      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
-        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Inverted unit ${invertedUnitProps.name} already exists in the schema ${schema.fullName}.`);
-      } else {
-        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create inverted unit ${invertedUnitProps.name} in schema ${schema.fullName}.`);
-      }
+      const schema = await this.getSchema(schemaKey);
+      const boundCreate = schema.createInvertedUnit.bind(schema);
+      newUnit = (await this.createSchemaItemFromProps<InvertedUnit>(schemaKey, this.schemaItemType, boundCreate, invertedUnitProps)) as MutableInvertedUnit;
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromPropsFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, invertedUnitProps.name!), e);
     }
 
-    await newUnit.fromJSON(invertedUnitProps);
     return newUnit.key;
   }
 
   public async setInvertsUnit(invertedUnitKey: SchemaItemKey, invertsUnitKey: SchemaItemKey): Promise<void> {
-    const invertedUnit = await this._schemaEditor.schemaContext.getSchemaItem<MutableInvertedUnit>(invertedUnitKey);
-
-    if (invertedUnit === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Inverted Unit ${invertedUnitKey.fullName} not found in schema context.`);
-
-    if (invertedUnit.schemaItemType !== SchemaItemType.InvertedUnit)
-      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `Expected ${invertedUnitKey.fullName} to be of type Inverted Unit.`);
-
-    const invertsUnit = await this._schemaEditor.schemaContext.getSchemaItem<Unit>(invertsUnitKey);
-    if (invertsUnit === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Unit ${invertsUnitKey.fullName} not found in schema context.`);
-
-    if (invertsUnit.schemaItemType !== SchemaItemType.Unit)
-      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `Expected ${invertsUnitKey.fullName} to be of type Unit.`);
-
-    invertedUnit.setInvertsUnit(new DelayedPromiseWithProps<SchemaItemKey, Unit>(invertsUnitKey, async () => invertsUnit));
+    try {
+      const invertedUnit = await this.getSchemaItem<MutableInvertedUnit>(invertedUnitKey);
+      const invertsUnit = await this.getSchemaItem<Unit>(invertedUnitKey, SchemaItemType.Unit);
+      invertedUnit.setInvertsUnit(new DelayedPromiseWithProps<SchemaItemKey, Unit>(invertsUnitKey, async () => invertsUnit));
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.SetInvertsUnitFailed, schemaItemIdentifier(this.schemaItemType, invertedUnitKey), e);
+    }
   }
 
   public async setUnitSystem(invertedUnitKey: SchemaItemKey, unitSystemKey: SchemaItemKey): Promise<void> {
-    const invertedUnit = await this._schemaEditor.schemaContext.getSchemaItem<MutableInvertedUnit>(invertedUnitKey);
-
-    if (invertedUnit === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Inverted Unit ${invertedUnitKey.fullName} not found in schema context.`);
-
-    if (invertedUnit.schemaItemType !== SchemaItemType.InvertedUnit)
-      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `Expected ${invertedUnitKey.fullName} to be of type Inverted Unit.`);
-
-    const unitSystem = await this._schemaEditor.schemaContext.getSchemaItem<UnitSystem>(unitSystemKey);
-    if (unitSystem === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Unit ${unitSystemKey.fullName} not found in schema context.`);
-
-    if (unitSystem.schemaItemType !== SchemaItemType.UnitSystem)
-      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `Expected ${unitSystemKey.fullName} to be of type Unit System.`);
-
-    invertedUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemKey, async () => unitSystem));
+    try {
+      const invertedUnit = await this.getSchemaItem<MutableInvertedUnit>(invertedUnitKey);
+      const unitSystem = await this.getSchemaItem<UnitSystem>(unitSystemKey, SchemaItemType.UnitSystem);
+      invertedUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemKey, async () => unitSystem));
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.SetUnitSystemFailed, schemaItemIdentifier(this.schemaItemType, invertedUnitKey), e);
+    }
   }
 }

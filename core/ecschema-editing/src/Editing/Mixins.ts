@@ -7,7 +7,7 @@
  */
 
 import {
-  DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, EntityClass, Mixin, MixinProps, NavigationPropertyProps, RelationshipClass,
+  DelayedPromiseWithProps, EntityClass, Mixin, MixinProps, NavigationPropertyProps, RelationshipClass,
   SchemaItemKey, SchemaItemType, SchemaKey, StrengthDirection,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
@@ -15,7 +15,7 @@ import { ECClasses } from "./ECClasses";
 import { MutableMixin } from "./Mutable/MutableMixin";
 import { MutableEntityClass } from "./Mutable/MutableEntityClass";
 import { NavigationProperties } from "./Properties";
-import { ECEditingError, ECEditingStatus } from "./Exception";
+import { ECEditingStatus, SchemaEditingError, schemaItemIdentifier, schemaItemIdentifierFromName } from "./Exception";
 
 /**
  * @alpha
@@ -29,40 +29,21 @@ export class Mixins extends ECClasses {
   /**
    * Allows access for editing of NavigationProperty attributes.
    */
-  public readonly navigationProperties = new NavigationProperties(this.schemaItemType, this._schemaEditor);
+  public readonly navigationProperties = new NavigationProperties(SchemaItemType.Mixin, this._schemaEditor);
 
-  public async create(schemaKey: SchemaKey, name: string, appliesTo: SchemaItemKey, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemKey> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
-
+  public async create(schemaKey: SchemaKey, name: string, appliesTo: SchemaItemKey, displayLabel?: string, baseClassKey?: SchemaItemKey): Promise<SchemaItemKey> {
     let newClass: MutableMixin;
+
     try {
-      newClass = (await schema.createMixinClass(name)) as MutableMixin;
-    } catch (e) {
-      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
-        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Class ${name} already exists in the schema ${schema.fullName}.`);
-      } else {
-        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create class ${name} in schema ${schema.fullName}.`);
-      }
+      const schema = await this.getSchema(schemaKey);
+      const boundCreate = schema.createMixinClass.bind(schema);
+      newClass = (await this.createClass<Mixin>(schemaKey, this.schemaItemType, boundCreate, name, baseClassKey)) as MutableMixin;
+      const newAppliesTo = await this.getSchemaItem<EntityClass>(appliesTo, SchemaItemType.EntityClass);
+      newClass.setAppliesTo(new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(newAppliesTo.key, async () => newAppliesTo));
+
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, name), e);
     }
-
-    if (baseClass !== undefined) {
-      const baseClassItem = await schema.lookupItem<Mixin>(baseClass);
-      if (baseClassItem === undefined)
-        throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Unable to locate base class ${baseClass.fullName} in schema ${schema.fullName}.`);
-
-      if (baseClassItem.schemaItemType !== SchemaItemType.Mixin)
-        throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `${baseClassItem.fullName} is not of type Mixin.`);
-
-      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, Mixin>(baseClass, async () => baseClassItem);
-    }
-
-    const newAppliesTo = (await this._schemaEditor.schemaContext.getSchemaItem<EntityClass>(appliesTo));
-    if (newAppliesTo === undefined || newAppliesTo.schemaItemType !== SchemaItemType.EntityClass)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Failed to locate the appliedTo entity class ${appliesTo.name}.`);
-
-    newClass.setAppliesTo(new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(newAppliesTo.key, async () => newAppliesTo));
 
     if (displayLabel)
       newClass.setDisplayLabel(displayLabel);
@@ -76,57 +57,35 @@ export class Mixins extends ECClasses {
    * @param mixinProps a json object that will be used to populate the new MixinClass. Needs a name value passed in.
    */
   public async createFromProps(schemaKey: SchemaKey, mixinProps: MixinProps): Promise<SchemaItemKey> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
-
-    if (mixinProps.name === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNameNotSpecified, `No name was supplied within props.`);
-
     let newClass: MutableMixin;
     try {
-      newClass = (await schema.createMixinClass(mixinProps.name)) as MutableMixin;
-    } catch (e) {
-      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
-        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Class ${mixinProps.name} already exists in the schema ${schema.fullName}.`);
-      } else {
-        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create class ${mixinProps.name} in schema ${schema.fullName}.`);
-      }
+      const schema = await this.getSchema(schemaKey);
+      const boundCreate = schema.createMixinClass.bind(schema);
+      newClass = (await this.createSchemaItemFromProps<Mixin>(schemaKey, this.schemaItemType, boundCreate, mixinProps)) as MutableMixin;
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromPropsFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, mixinProps.name!), e);
     }
 
-    await newClass.fromJSON(mixinProps);
     return newClass.key;
   }
 
   public async addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<void> {
-    const entity = (await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(entityKey));
-    const mixin = (await this._schemaEditor.schemaContext.getSchemaItem<Mixin>(mixinKey));
-
-    if (entity === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNotFoundInContext, `Entity Class ${entityKey.fullName} not found in schema context.`);
-
-    if (mixin === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNotFoundInContext, `Mixin Class ${mixinKey.fullName} not found in schema context.`);
-
-    if (entity.schemaItemType !== SchemaItemType.EntityClass)
-      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `Expected ${entityKey.fullName} to be of type Entity Class.`);
-
-    if (mixin.schemaItemType !== SchemaItemType.Mixin)
-      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `Expected ${mixinKey.fullName} to be of type Mixin.`);
-
-    entity.addMixin(mixin);
+    try {
+      const entity = await this.getSchemaItem<MutableEntityClass>(entityKey, SchemaItemType.EntityClass);
+      const mixin = await this.getSchemaItem<Mixin>(mixinKey);
+      entity.addMixin(mixin);
+    } catch(e: any){
+      throw new SchemaEditingError(ECEditingStatus.AddMixinFailed, schemaItemIdentifier(SchemaItemType.EntityClass, entityKey), e);
+    }
   }
 
   public async createNavigationProperty(mixinKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<void> {
-    const mixin = (await this._schemaEditor.schemaContext.getSchemaItem<MutableMixin>(mixinKey));
-
-    if (mixin === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNotFoundInContext, `Mixin Class ${mixinKey.fullName} not found in schema context.`);
-
-    if (mixin.schemaItemType !== SchemaItemType.Mixin)
-      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `Expected ${mixinKey.fullName} to be of type Mixin.`);
-
-    await mixin.createNavigationProperty(name, relationship, direction);
+    try {
+      const mixin = await this.getSchemaItem<MutableMixin>(mixinKey);
+      await mixin.createNavigationProperty(name, relationship, direction);
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateNavigationPropertyFailed, schemaItemIdentifier(SchemaItemType.Mixin, mixinKey), e);
+    }
   }
 
   /**
@@ -135,14 +94,12 @@ export class Mixins extends ECClasses {
    * @param navigationProps a json object that will be used to populate the new Navigation Property.
    */
   public async createNavigationPropertyFromProps(classKey: SchemaItemKey, navigationProps: NavigationPropertyProps): Promise<void> {
-    const mixin = await this._schemaEditor.schemaContext.getSchemaItem<MutableMixin>(classKey);
-    if (mixin === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNotFoundInContext, `Mixin ${classKey.fullName} not found in schema context.`);
-
-    if (mixin.schemaItemType !== SchemaItemType.Mixin)
-      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `Expected ${classKey.fullName} to be of type Mixin.`);
-
-    const navigationProperty  = await mixin.createNavigationProperty(navigationProps.name, navigationProps.relationshipName, navigationProps.direction);
-    await navigationProperty.fromJSON(navigationProps);
+    try {
+      const mixin = await this.getSchemaItem<MutableMixin>(classKey);
+      const property = await mixin.createNavigationProperty(navigationProps.name, navigationProps.relationshipName, navigationProps.direction);
+      await property.fromJSON(navigationProps);
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateNavigationPropertyFromPropsFailed, schemaItemIdentifier(SchemaItemType.RelationshipClass, classKey), e);
+    }
   }
 }

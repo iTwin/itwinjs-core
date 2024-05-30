@@ -11,7 +11,7 @@ import {
   CustomAttributeContainerProps,
   DelayedPromiseWithProps,
   ECClass, Enumeration, EnumerationPropertyProps, PrimitiveArrayPropertyProps,
-  PrimitivePropertyProps, PrimitiveType, SchemaItemKey, SchemaItemType, StructArrayPropertyProps,
+  PrimitivePropertyProps, PrimitiveType, Schema, SchemaItemKey, SchemaItemType, SchemaKey, StructArrayPropertyProps,
   StructClass, StructPropertyProps,
 } from "@itwin/ecschema-metadata";
 import { assert } from "@itwin/core-bentley";
@@ -19,8 +19,10 @@ import { SchemaContextEditor } from "./Editor";
 import { MutableClass } from "./Mutable/MutableClass";
 import * as Rules from "../Validation/ECRules";
 import { ArrayProperties, EnumerationProperties, PrimitiveProperties, Properties, StructProperties } from "./Properties";
-import { ECEditingError, ECEditingStatus } from "./Exception";
+import { ECEditingError, ECEditingStatus, SchemaEditingError, schemaItemIdentifier } from "./Exception";
 import { AnyDiagnostic } from "../Validation/Diagnostic";
+import { CreateSchemaItem, SchemaItems } from "./SchemaItems";
+import { MutableSchema } from "./Mutable/MutableSchema";
 
 export type ECClassSchemaItems = SchemaItemType.EntityClass | SchemaItemType.StructClass | SchemaItemType.RelationshipClass | SchemaItemType.Mixin | SchemaItemType.CustomAttributeClass;
 
@@ -28,30 +30,54 @@ export type ECClassSchemaItems = SchemaItemType.EntityClass | SchemaItemType.Str
  * @alpha
  * Acts as a base class for schema class creation. Enables property creation.
  */
-export class ECClasses {
+export class ECClasses extends SchemaItems{
 
-  protected constructor(protected schemaItemType: ECClassSchemaItems, protected _schemaEditor: SchemaContextEditor) { }
+  protected constructor(schemaItemType: ECClassSchemaItems, schemaEditor: SchemaContextEditor) {
+    super(schemaItemType, schemaEditor);
+  }
 
   /**
    * Allows access for editing of base Property attributes.
    */
-  public readonly properties = new Properties(this.schemaItemType, this._schemaEditor);
+  public readonly properties = new Properties(this.schemaItemType as ECClassSchemaItems, this._schemaEditor);
   /**
    * Allows access for editing of ArrayProperty attributes.
    */
-  public readonly arrayProperties = new ArrayProperties(this.schemaItemType, this._schemaEditor);
+  public readonly arrayProperties = new ArrayProperties(this.schemaItemType as ECClassSchemaItems, this._schemaEditor);
   /**
    * Allows access for editing of PrimitiveProperty attributes.
    */
-  public readonly primitiveProperties = new PrimitiveProperties(this.schemaItemType, this._schemaEditor);
+  public readonly primitiveProperties = new PrimitiveProperties(this.schemaItemType as ECClassSchemaItems, this._schemaEditor);
   /**
    * Allows access for editing of EnumerationProperty attributes.
    */
-  public readonly enumerationProperties = new EnumerationProperties(this.schemaItemType, this._schemaEditor);
+  public readonly enumerationProperties = new EnumerationProperties(this.schemaItemType as ECClassSchemaItems, this._schemaEditor);
   /**
    * Allows access for editing of StructProperty attributes.
    */
-  public readonly structProperties = new StructProperties(this.schemaItemType, this._schemaEditor);
+  public readonly structProperties = new StructProperties(this.schemaItemType as ECClassSchemaItems, this._schemaEditor);
+
+  public async createClass<T extends ECClass>(schemaOrKey: Schema | SchemaKey, type: SchemaItemType, create: CreateSchemaItem<T>, name: string, baseClassKey?: SchemaItemKey, ...args: any[]): Promise<T> {
+    const newClass = await this.createSchemaItem(schemaOrKey, type, create, name, ...args);
+
+    if (baseClassKey !== undefined) {
+      const baseClassSchema = !baseClassKey.schemaKey.matches(newClass.schema.schemaKey) ? await this._schemaEditor.getSchema(baseClassKey.schemaKey) : newClass.schema;
+      if (baseClassSchema === undefined) {
+        throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, {schemaKey: baseClassKey.schemaKey});
+      }
+
+      const baseClassItem = await baseClassSchema.lookupItem<T>(baseClassKey);
+      if (baseClassItem === undefined)
+        throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, schemaItemIdentifier(type, baseClassKey));
+
+      if (baseClassItem.schemaItemType !== this.schemaItemType)
+        throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, schemaItemIdentifier(type, baseClassKey));
+
+      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, T>(baseClassKey, async () => baseClassItem);
+    }
+
+    return newClass;
+  }
 
   /**
    * Creates a property on class identified by the given SchemaItemKey. This method restricts the
@@ -223,32 +249,22 @@ export class ECClasses {
    * @param baseClassKey The SchemaItemKey of the base class. Specifying 'undefined' removes the base class.
    */
   public async setBaseClass(itemKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<void> {
-    const classItem = await this._schemaEditor.schemaContext.getSchemaItem<MutableClass>(itemKey);
+    try {
+      const classItem = await this.getSchemaItem<ECClass>(itemKey);
+      if (!baseClassKey) {
+        classItem.baseClass = undefined;
+        return;
+      }
 
-    if (classItem === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Class ${itemKey.fullName} not found in schema context.`);
+      const baseClassSchema = !baseClassKey.schemaKey.matches(itemKey.schemaKey) ? await this.getSchema(baseClassKey.schemaKey) : classItem.schema as MutableSchema;
+      const baseClassItem = await this.lookUpSchemaItem<ECClass>(baseClassSchema, baseClassKey);
+      if (classItem.baseClass !== undefined && !await baseClassItem.is(await classItem.baseClass))
+        throw new SchemaEditingError(ECEditingStatus.InvalidBaseClass, schemaItemIdentifier(this.schemaItemType, baseClassKey), undefined, undefined, `Base class ${baseClassKey.fullName} must derive from ${(await classItem.baseClass).fullName}.`);
 
-    if (baseClassKey === undefined) {
-      classItem.baseClass = undefined;
-      return;
+      classItem.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClassKey, async () => baseClassItem);
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.SetBaseClassFailed, schemaItemIdentifier(this.schemaItemType, itemKey), e);
     }
-
-    const baseClassSchema = !baseClassKey.schemaKey.matches(itemKey.schemaKey) ? await this._schemaEditor.getSchema(baseClassKey.schemaKey) : classItem.schema;
-    if (baseClassSchema === undefined) {
-      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context`);
-    }
-
-    const baseClassItem = await baseClassSchema.lookupItem<ECClass>(baseClassKey);
-    if (baseClassItem === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.`);
-
-    if (baseClassItem.schemaItemType !== classItem.schemaItemType)
-      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `${baseClassItem.fullName} is not of type ${classItem.schemaItemType}.` );
-
-    if (classItem.baseClass !== undefined && !await baseClassItem.is(await classItem.baseClass))
-      throw new ECEditingError(ECEditingStatus.InvalidBaseClass, `Base class ${baseClassItem.fullName} must derive from ${classItem.baseClass.fullName}.`);
-
-    classItem.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClassKey, async () => baseClassItem);
   }
 
   private async getClass(classKey: SchemaItemKey): Promise<MutableClass> {

@@ -7,7 +7,7 @@
  */
 
 import * as Rules from "../Validation/ECRules";
-import { CustomAttribute, Schema, SchemaContext, SchemaItemKey, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import { CustomAttribute, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { MutableSchema } from "./Mutable/MutableSchema";
 import { assert } from "@itwin/core-bentley";
 import { Constants } from "./Constants";
@@ -24,7 +24,6 @@ import { RelationshipClasses } from "./RelationshipClasses";
 import { Structs } from "./Structs";
 import { Units } from "./Units";
 import { UnitSystems } from "./UnitSystems";
-import { SchemaItems } from "./SchemaItems";
 import { ECEditingError, ECEditingStatus } from "./Exception";
 import { AnyDiagnostic } from "../Validation/Diagnostic";
 
@@ -50,7 +49,7 @@ export class SchemaContextEditor {
   public readonly invertedUnits = new InvertedUnits(this);
 
   /** @internal */
-  public readonly schemaItems = new SchemaItems(this);
+  // public readonly schemaItems = new SchemaItems(this);
 
   /**
    * Creates a new SchemaContextEditor instance.
