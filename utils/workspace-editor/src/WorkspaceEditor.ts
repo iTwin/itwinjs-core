@@ -11,8 +11,16 @@ import { extname, join } from "path";
 import * as readline from "readline";
 import * as Yargs from "yargs";
 import {
-  CloudSqlite, IModelHost, IModelJsFs, SQLiteDb, SqliteStatement, Workspace, WorkspaceContainer, WorkspaceDb, WorkspaceResource,
+  CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, SQLiteDb, SqliteStatement, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbFullName, WorkspaceDbVersionIncrement, WorkspaceEditor, WorkspaceResourceName,
 } from "@itwin/core-backend";
+import {
+    constructWorkspaceDb,
+    makeWorkspaceDbFileName,
+  parseWorkspaceDbFileName,
+  validateWorkspaceDbName,
+  validateWorkspaceDbVersion,
+  workspaceDbFileExt,
+} from "@itwin/core-backend/lib/cjs/internal/workspace/WorkspaceImpl";
 import { AccessToken, BentleyError, DbResult, Logger, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 
@@ -21,7 +29,7 @@ import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 
 /** Currently executing an "@" script? */
 let inScript = false;
-let wsEditor: Workspace.Editor;
+let wsEditor: WorkspaceEditor;
 
 interface EditorProps {
   /** Allows overriding the location of WorkspaceDbs. If not present, defaults to `${homedir}/iTwin/Workspace` */
@@ -38,7 +46,7 @@ interface EditorProps {
   forReadOnly?: boolean;
 }
 
-interface EditorOpts extends EditorProps, WorkspaceContainer.Props {
+interface EditorOpts extends EditorProps, WorkspaceContainerProps {
   accessToken: AccessToken;
   /** user name for write lock */
   user: string;
@@ -51,7 +59,7 @@ interface InitializeOpts extends EditorOpts {
 
 /** options for performing an operation on a WorkspaceDb */
 interface WorkspaceDbOpt extends EditorOpts {
-  dbName: WorkspaceDb.DbFullName;
+  dbName: WorkspaceDbFullName;
   dbFileName: string;
   version?: string;
   glob?: string;
@@ -63,12 +71,12 @@ interface WorkspaceDbOpt extends EditorOpts {
 
 /** options for copying a WorkspaceDb to a new name */
 interface CopyWorkspaceDbOpt extends WorkspaceDbOpt {
-  newDbName: WorkspaceDb.DbFullName;
+  newDbName: WorkspaceDbFullName;
 }
 
 /** options for creating a new version of a WorkspaceDb */
 interface MakeVersionOpt extends WorkspaceDbOpt {
-  versionType: Workspace.Editor.Container.VersionIncrement;
+  versionType: WorkspaceDbVersionIncrement;
 }
 
 /** Resource type names */
@@ -76,18 +84,18 @@ type RscType = "blob" | "string" | "file";
 
 /** Options for adding, updating, extracting, or deleting resources from a WorkspaceDb */
 interface ResourceOption extends WorkspaceDbOpt {
-  rscName?: WorkspaceResource.Name;
+  rscName?: WorkspaceResourceName;
   type: RscType;
 }
 
 /** Options for deleting resources from a WorkspaceDb */
 interface RemoveResourceOpts extends ResourceOption {
-  rscName: WorkspaceResource.Name;
+  rscName: WorkspaceResourceName;
 }
 
 /** Options for extracting resources from a WorkspaceDb */
 interface ExtractResourceOpts extends ResourceOption {
-  rscName: WorkspaceResource.Name;
+  rscName: WorkspaceResourceName;
   fileName: LocalFileName;
 }
 
@@ -147,14 +155,14 @@ function friendlyFileSize(size: number) {
 
 // /** Create a new empty WorkspaceDb  */
 // async function createWorkspaceDb(args: CreateWorkspaceDbOpt) {
-//   const wsFile = Workspace.Editor.createEmptyDb(args);, IModelHost.appWorkspace.getContainer(args));
+//   const wsFile = WorkspaceEditor.createEmptyDb(args);, IModelHost.appWorkspace.getContainer(args));
 //   await wsFile.createDb({ manifest: { workspaceName: args.workspaceName } });
 //   showMessage(`created WorkspaceDb ${wsFile.sqliteDb.nativeDb.getFilePath()}`);
 //   wsFile.close();
 // }
 
 /** open, call a function to process, then close a WorkspaceDb */
-async function processWorkspace<W extends Workspace.Editor.EditableDb | WorkspaceDb, T extends WorkspaceDbOpt>(args: T, ws: W, fn: (ws: W, args: T) => Promise<void>) {
+async function processWorkspace<W extends EditableWorkspaceDb | WorkspaceDb, T extends WorkspaceDbOpt>(args: T, ws: W, fn: (ws: W, args: T) => Promise<void>) {
   ws.open();
   showMessage(`WorkspaceDb [${ws.sqliteDb.nativeDb.getFilePath()}]`);
   try {
@@ -185,14 +193,14 @@ function getCloudContainer(args: EditorOpts): CloudSqlite.CloudContainer {
 }
 
 function fixVersionArg(args: WorkspaceDbOpt) {
-  const dbParts = WorkspaceContainer.parseDbFileName(args.dbName);
+  const dbParts = parseWorkspaceDbFileName(args.dbName);
   args.dbName = dbParts.dbName;
   args.version = args.version ?? dbParts.version;
-  args.dbFileName = WorkspaceContainer.makeDbFileName(dbParts.dbName, dbParts.version);
+  args.dbFileName = makeWorkspaceDbFileName(dbParts.dbName, dbParts.version);
 }
 
 /** Open for write, call a function to process, then close a WorkspaceDb */
-async function editWorkspace<T extends WorkspaceDbOpt>(args: T, fn: (ws: Workspace.Editor.EditableDb, args: T) => Promise<void>) {
+async function editWorkspace<T extends WorkspaceDbOpt>(args: T, fn: (ws: EditableWorkspaceDb, args: T) => Promise<void>) {
   fixVersionArg(args);
   const db = getWriteContainer(args).getEditableDb(args);
   await processWorkspace(args, db, fn);
@@ -359,7 +367,7 @@ async function removeResource(args: RemoveResourceOpts) {
 async function vacuumWorkspaceDb(args: WorkspaceDbOpt) {
   const container = getContainer(args);
   fixVersionArg(args);
-  const localFile = WorkspaceDb.construct(args, container).dbFileName;
+  const localFile = constructWorkspaceDb(args, container).dbFileName;
   doVacuum(localFile, container.cloudContainer);
 }
 
@@ -396,7 +404,7 @@ async function performTransfer(container: CloudSqlite.CloudContainer, direction:
 async function importWorkspaceDb(args: UploadOptions) {
   const container = getCloudContainer(args);
   if ("" === extname(args.localFileName))
-    args.localFileName = `${args.localFileName}.${WorkspaceDb.fileExt}`;
+    args.localFileName = `${args.localFileName}.${workspaceDbFileExt}`;
   if (!IModelJsFs.existsSync(args.localFileName))
     args.localFileName = join(args.directory ?? IModelHost.appWorkspace.containerDir, args.localFileName);
 
@@ -409,9 +417,9 @@ async function importWorkspaceDb(args: UploadOptions) {
 /** export a WorkspaceDb from a cloud WorkspaceContainer. */
 async function exportWorkspaceDb(args: TransferOptions) {
   if (!extname(args.localFileName))
-    args.localFileName = `${args.localFileName}.${WorkspaceDb.fileExt}`;
+    args.localFileName = `${args.localFileName}.${workspaceDbFileExt}`;
 
-  const dbParts = WorkspaceContainer.parseDbFileName(args.dbName);
+  const dbParts = parseWorkspaceDbFileName(args.dbName);
   if (!dbParts.version)
     throw new Error("exportDb requires a version");
 
@@ -466,9 +474,9 @@ async function detachWorkspace(args: EditorOpts) {
 async function copyWorkspaceDb(args: CopyWorkspaceDbOpt) {
   const container = getContainer(args);
   const oldName = container.resolveDbFileName(args);
-  const newVersion = WorkspaceContainer.parseDbFileName(args.newDbName);
-  WorkspaceContainer.validateDbName(newVersion.dbName);
-  const newName = WorkspaceContainer.makeDbFileName(newVersion.dbName, WorkspaceContainer.validateVersion(newVersion.version));
+  const newVersion = parseWorkspaceDbFileName(args.newDbName);
+  validateWorkspaceDbName(newVersion.dbName);
+  const newName = makeWorkspaceDbFileName(newVersion.dbName, validateWorkspaceDbVersion(newVersion.version));
 
   const cloudContainer = getCloudContainer(args);
   await CloudSqlite.withWriteLock({ ...args, container: cloudContainer }, async () => cloudContainer.copyDatabase(oldName, newName));
@@ -479,7 +487,7 @@ async function copyWorkspaceDb(args: CopyWorkspaceDbOpt) {
 async function versionWorkspaceDb(args: MakeVersionOpt) {
   fixVersionArg(args);
   const container = getWriteContainer(args);
-  const result = await container.makeNewVersion({ fromProps: args, versionType: args.versionType });
+  const result = await container.createNewWorkspaceDbVersion({ fromProps: args, versionType: args.versionType });
   showMessage(`created new version: [${result.newDb.dbName}] from [${result.oldDb.dbName}] in ${sayContainer(args)}`);
 }
 
@@ -564,7 +572,7 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>, read
         IModelHost.appWorkspace.getCloudCache().setLogMask(CloudSqlite.LoggingMask.All);
       }
 
-      wsEditor = Workspace.constructEditor();
+      wsEditor = WorkspaceEditor.construct();
 
       await cmd(args);
     } catch (e: any) {

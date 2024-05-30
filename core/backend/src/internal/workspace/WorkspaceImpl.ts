@@ -26,7 +26,7 @@ function workspaceDbNameWithDefault(dbName?: WorkspaceDbName): WorkspaceDbName {
 }
 
 /** file extension for local WorkspaceDbs */
-const workspaceDbFileExt = "itwin-workspace";
+export const workspaceDbFileExt = "itwin-workspace";
 
 interface WorkspaceCloudContainer extends CloudSqlite.CloudContainer {
   connectCount: number;
