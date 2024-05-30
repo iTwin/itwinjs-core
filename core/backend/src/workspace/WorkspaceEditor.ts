@@ -10,7 +10,7 @@ import { LocalFileName } from "@itwin/core-common";
 import { SQLiteDb } from "../SQLiteDb";
 import { SettingsContainer } from "./Settings";
 import { BlobContainer } from "../BlobContainerService";
-import { Workspace, WorkspaceContainer, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps, WorkspaceDbManifest, WorkspaceDbNameAndVersion, WorkspaceDbProps, WorkspaceResourceName } from "./Workspace";
+import { GetWorkspaceContainerArgs, Workspace, WorkspaceContainer, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps, WorkspaceDbManifest, WorkspaceDbNameAndVersion, WorkspaceDbProps, WorkspaceResourceName } from "./Workspace";
 import { WorkspaceSqliteDb } from "../internal/workspace/WorkspaceSqliteDb";
 import { constructWorkspaceEditor } from "../internal/workspace/WorkspaceImpl";
 import { implementationProhibited } from "../internal/ImplementationProhibited";
@@ -243,7 +243,7 @@ export interface WorkspaceEditor {
    * @param props - The properties of the workspace container.
    * @returns A container for editing WorkspaceDbs.
    */
-  getContainer(props: WorkspaceContainerProps & Workspace.WithAccessToken): EditableWorkspaceContainer;
+  getContainer(props: GetWorkspaceContainerArgs): EditableWorkspaceContainer;
 
   /**
    * Asynchronously retrieves a container for the editor with the specified properties.

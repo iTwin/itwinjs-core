@@ -232,6 +232,14 @@ export interface WorkspaceOpts {
   settingsFiles?: LocalFileName | LocalFileName[];
 }
 
+/** Arguments supplied to [[Workspace.getContainer]] and [[WorkspaceEditor.getContainer]].
+ * @beta
+ */
+export interface GetWorkspaceContainerArgs extends WorkspaceContainerProps {
+  /** Token required to access the container. */
+  accessToken: AccessToken;
+}
+
 /**
  * Settings and resources that customize an application for the current session.
  * See [Workspaces]($docs/learning/backend/Workspace)
@@ -274,7 +282,7 @@ export interface Workspace {
    * - the container is public and doesn't require an accessToken
    * @see [[getContainerAsync]]
    */
-  getContainer(props: WorkspaceContainerProps & Workspace.WithAccessToken): WorkspaceContainer;
+  getContainer(props: GetWorkspaceContainerArgs): WorkspaceContainer;
 
   /** Load a settings dictionary from the specified WorkspaceDb, and add it to the current Settings for this Workspace.
    * @note this function will load the dictionaries from the supplied list, and it will also call itself recursively for any entries in
@@ -412,9 +420,6 @@ export namespace Workspace {
      */
     dict: SettingsDictionary
   ) => boolean;
-
-  /** type that requires an accessToken */
-  export interface WithAccessToken { accessToken: AccessToken }
 }
 
 /** A function supplied as part of a [[QueryWorkspaceResourcesArgs]] to iterate the resources retrieved by [[queryWorkspaceResources]].

@@ -16,7 +16,7 @@ import { SQLiteDb } from "../../SQLiteDb";
 import { SqliteStatement } from "../../SqliteStatement";
 import { SettingName, SettingsContainer, SettingsDictionaryProps, Settings, SettingsPriority } from "../../workspace/Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
-import { Workspace, WorkspaceContainer, WorkspaceContainerId, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps, WorkspaceDbFullName, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbManifest, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbProps, WorkspaceDbQueryResourcesArgs, WorkspaceDbVersion, WorkspaceOpts, WorkspaceResourceName, WorkspaceSettingsProps } from "../../workspace/Workspace";
+import { GetWorkspaceContainerArgs, Workspace, WorkspaceContainer, WorkspaceContainerId, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps, WorkspaceDbFullName, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbManifest, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbProps, WorkspaceDbQueryResourcesArgs, WorkspaceDbVersion, WorkspaceOpts, WorkspaceResourceName, WorkspaceSettingsProps } from "../../workspace/Workspace";
 import { CreateNewWorkspaceContainerProps, CreateNewWorkspaceDbVersionProps, EditableWorkspaceContainer, EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
 import { SettingsImpl } from "./SettingsImpl";
@@ -351,7 +351,7 @@ class WorkspaceImpl implements Workspace {
     return this._containers.get(containerId);
   }
 
-  public getContainer(props: WorkspaceContainerProps & Workspace.WithAccessToken): WorkspaceContainer {
+  public getContainer(props: GetWorkspaceContainerArgs): WorkspaceContainer {
     return this.findContainer(props.containerId) ?? new WorkspaceContainerImpl(this, props);
   }
 
@@ -490,7 +490,7 @@ class EditorImpl implements WorkspaceEditor {
     return this.getContainer({ accessToken, ...cloudContainer, writeable: true, description: args.metadata.description });
   }
 
-  public getContainer(props: WorkspaceContainerProps & Workspace.WithAccessToken): EditableWorkspaceContainer {
+  public getContainer(props: GetWorkspaceContainerArgs): EditableWorkspaceContainer {
     return this.workspace.findContainer(props.containerId) as EditableWorkspaceContainer | undefined ?? new EditorContainerImpl(this.workspace, props);
   }
   public async getContainerAsync(props: WorkspaceContainerProps): Promise<EditableWorkspaceContainer> {
