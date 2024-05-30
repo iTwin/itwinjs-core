@@ -68,7 +68,17 @@ export interface MeshExports {
 }
 
 // @beta
-export function obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise<URL | undefined>;
+export class MeshExportServiceProvider {
+    // (undocumented)
+    protected createMeshExportServiceQueryUrl(args: {
+        iModelId: string;
+        urlPrefix?: string;
+        changesetId?: string;
+        enableCDN?: boolean;
+    }): string;
+    obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise<URL | undefined>;
+    protected queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator<MeshExport>;
+}
 
 // @beta
 export interface ObtainMeshExportTilesetUrlArgs {
@@ -78,9 +88,6 @@ export interface ObtainMeshExportTilesetUrlArgs {
     requireExactChangeset?: boolean;
     urlPrefix?: string;
 }
-
-// @beta
-export function queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator<MeshExport>;
 
 // @beta
 export interface QueryMeshExportsArgs {

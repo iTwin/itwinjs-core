@@ -89,6 +89,9 @@ export interface ObtainMeshExportTilesetUrlArgs {
   enableCDN?: boolean;
 }
 
+/** Provides access to the Mesh Export Service
+* @beta
+*/
 export class MeshExportServiceProvider {
 
   protected createMeshExportServiceQueryUrl(args: { iModelId: string, urlPrefix?: string, changesetId?: string, enableCDN?: boolean }): string {

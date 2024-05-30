@@ -4,3 +4,4 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./FrontendTiles";
+export * from "./MeshExportServiceProvider";
