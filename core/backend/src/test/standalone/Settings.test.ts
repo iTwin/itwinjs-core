@@ -310,5 +310,4 @@ describe("Settings", () => {
     expect(iModel3.workspace.settings.getString("imodel/setting1")).to.be.undefined;
     iModel3.close();
   });
-
 });
