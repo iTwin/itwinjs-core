@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { Setting } from "../../workspace/Settings";
 
-describe.only("Setting", () => {
+describe("Setting", () => {
   describe("areEqual", () => {
     it("should return true for two identical primitive values", () => {
       expect(Setting.areEqual(5, 5)).to.be.true;

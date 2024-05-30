@@ -311,7 +311,7 @@ describe("Settings", () => {
     iModel3.close();
   });
 
-  describe.only("combineArray", () => {
+  describe("combineArray", () => {
     function addGroup(schemaPrefix: string, type: "number" | "object", combineArray: boolean | undefined): void {
       const group: SettingSchemaGroup = {
         schemaPrefix,
