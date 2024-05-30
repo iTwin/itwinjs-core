@@ -8,7 +8,7 @@ import { ChildProcess } from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
-import { CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeCloudSqlite, Settings, SnapshotDb, V2CheckpointAccessProps, V2CheckpointManager } from "@itwin/core-backend";
+import { CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeCloudSqlite, SettingsPriority, SnapshotDb, V2CheckpointAccessProps, V2CheckpointManager } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLocations";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ChangesetProps, IModelVersion } from "@itwin/core-common";
@@ -144,7 +144,7 @@ describe("Checkpoints", () => {
   });
 
   it("should start prefetch", async () => {
-    IModelHost.appWorkspace.settings.addDictionary({ name: "prefetch", priority: Settings.Priority.application }, {
+    IModelHost.appWorkspace.settings.addDictionary({ name: "prefetch", priority: SettingsPriority.application }, {
       "Checkpoints/prefetch": true,
       "Checkpoints/prefetch/maxBlocks": 5000,
       "Checkpoints/prefetch/minRequests": 1,
@@ -248,7 +248,7 @@ describe("Checkpoints", () => {
     });
 
     it("should start prefetch", async () => {
-      IModelHost.appWorkspace.settings.addDictionary({ name: "prefetch", priority: Settings.Priority.application }, {
+      IModelHost.appWorkspace.settings.addDictionary({ name: "prefetch", priority: SettingsPriority.application }, {
         "Checkpoints/prefetch": true,
         "Checkpoints/prefetch/maxBlocks": 5000,
         "Checkpoints/prefetch/minRequests": 1,
