@@ -108,7 +108,92 @@ describe("Relationship Class merger tests", () => {
     targetContext = new SchemaContext();
   });
 
-  it("should merge missing relationship class", async () => {
+  it("should merge missing relationship class with added constraint classes", async () => {
+    await Schema.fromJson(testJson, targetContext);
+    const targetSchema = await Schema.fromJson(targetJson, targetContext);
+
+    const merger = new SchemaMerger(targetSchema.context);
+    const mergedSchema = await merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      differences: [
+        {
+          changeType: "add",
+          schemaType: SchemaItemType.EntityClass,
+          itemName: "AbstractConstraintEntity",
+          difference: {
+            modifier: "Abstract",
+          },
+        },
+        {
+          changeType: "add",
+          schemaType: SchemaItemType.EntityClass,
+          itemName: "ConstraintEntity",
+          difference: {
+            baseClass: "SourceSchema.AbstractConstraintEntity",
+          },
+        },
+        {
+          changeType: "add",
+          schemaType: SchemaItemType.RelationshipClass,
+          itemName: "TestRelationship",
+          difference: {
+            description: "Description of TestRelationship",
+            modifier: "None",
+            strength: "Referencing",
+            strengthDirection: "Forward",
+            source: {
+              multiplicity: "(0..*)",
+              roleLabel: "refers to",
+              polymorphic: true,
+              abstractConstraint: "SourceSchema.AbstractConstraintEntity",
+              constraintClasses: [
+                "SourceSchema.ConstraintEntity",
+              ],
+            },
+            target: {
+              multiplicity: "(0..*)",
+              roleLabel: "is referenced by",
+              polymorphic: true,
+              abstractConstraint: "SourceSchema.AbstractConstraintEntity",
+              constraintClasses: [
+                "SourceSchema.ConstraintEntity",
+              ],
+            },
+          },
+        },
+      ],
+    });
+
+    const mergedEntity = await mergedSchema.getItem<RelationshipClass>("TestRelationship");
+    expect(mergedEntity!.toJSON()).deep.equals({
+      description: "Description of TestRelationship",
+      modifier: "None",
+      schemaItemType: "RelationshipClass",
+      source: {
+        abstractConstraint: "TargetSchema.AbstractConstraintEntity",
+        constraintClasses: [
+          "TargetSchema.ConstraintEntity",
+        ],
+        multiplicity: "(0..*)",
+        polymorphic: true,
+        roleLabel: "refers to",
+      },
+      strength: "Referencing",
+      strengthDirection: "Forward",
+      target: {
+        abstractConstraint: "TargetSchema.AbstractConstraintEntity",
+        constraintClasses: [
+          "TargetSchema.ConstraintEntity",
+        ],
+        multiplicity: "(0..*)",
+        polymorphic: true,
+        roleLabel: "is referenced by",
+      },
+    });
+  });
+
+  it("should merge missing relationship class with referenced constraint classes", async () => {
     await Schema.fromJson(testJson, targetContext);
     const targetSchema = await Schema.fromJson(targetJson, targetContext);
 
@@ -360,7 +445,88 @@ describe("Relationship Class merger tests", () => {
     });
   });
 
-  it("should merge missing constraint class", async () => {
+  it("should merge missing added constraint classes", async () => {
+    await Schema.fromJson(testJson, targetContext);
+    const targetSchema = await Schema.fromJson({
+      ...targetJson,
+      references: [
+        {
+          name: "TestSchema",
+          version: "01.00.15",
+        },
+      ],
+      items: {
+        ...createBaseRelationship(
+          {
+            abstractConstraint: "TestSchema.SourceBaseEntity",
+            constraintClasses: [
+              "TestSchema.SourceEntity",
+            ],
+          },
+          {
+            abstractConstraint: "TestSchema.TargetBaseEntity",
+            constraintClasses: [
+              "TestSchema.TargetChildEntity",
+            ],
+          },
+        ),
+      },
+    }, targetContext);
+
+    const merger = new SchemaMerger(targetSchema.context);
+    const mergedSchema = await merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      differences: [
+        {
+          changeType: "add",
+          schemaType: SchemaItemType.EntityClass,
+          itemName: "SourceEntity",
+          difference: {
+            baseClass: "TestSchema.SourceBaseEntity",
+          },
+        },
+        {
+          changeType: "add",
+          schemaType: SchemaItemType.EntityClass,
+          itemName: "TargetEntity",
+          difference: {
+            baseClass: "TestSchema.TargetBaseEntity",
+          },
+        },
+        {
+          changeType: "add",
+          schemaType: SchemaOtherTypes.RelationshipConstraintClass,
+          itemName: "BaseRelationship",
+          path: "$source",
+          difference: [
+            "SourceSchema.SourceEntity",
+          ],
+        },
+        {
+          changeType: "add",
+          schemaType: SchemaOtherTypes.RelationshipConstraintClass,
+          itemName: "BaseRelationship",
+          path: "$target",
+          difference: [
+            "SourceSchema.TargetEntity",
+          ],
+        },
+      ],
+    });
+
+    const mergedEntity = await mergedSchema.getItem<RelationshipClass>("BaseRelationship");
+    expect(mergedEntity!.toJSON().source.constraintClasses).deep.equals([
+      "TestSchema.SourceEntity",
+      "TargetSchema.SourceEntity",
+    ]);
+    expect(mergedEntity!.toJSON().target.constraintClasses).deep.equals([
+      "TestSchema.TargetChildEntity",
+      "TargetSchema.TargetEntity",
+    ]);
+  });
+
+  it("should merge missing referenced constraint class", async () => {
     await Schema.fromJson(testJson, targetContext);
     const targetSchema = await Schema.fromJson({
       ...targetJson,

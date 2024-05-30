@@ -390,11 +390,12 @@ export class Angle implements BeJSONFunctions {
       && dotUV * dotUV <= Geometry.smallAngleRadiansSquared * dotUU * dotVV;
   }
   /**
-   * Return cosine, sine, and radians for the half angle of a "cosine,sine" pair.
-   * * This function assumes the input arguments are related to an angle between -PI and PI
-   * * This function returns an angle between -PI and PI
-   * @param rCos2A cosine value (scaled by radius) for initial angle.
-   * @param rSin2A sine value (scaled by radius) for final angle.
+   * Compute the angle A given r*cos(2A) and r*sin(2A) for some nonnegative scalar r.
+   * * This function assumes the input arguments are related to an angle between -PI and PI.
+   * * This function returns an angle between -PI and PI.
+   * @param rCos2A scaled cosine value of twice the angle A.
+   * @param rSin2A scaled sine value of twice the angle A.
+   * @return cos(A), sin(A) and A in radians
    */
   public static trigValuesToHalfAngleTrigValues(rCos2A: number, rSin2A: number): TrigValues {
     const r = Geometry.hypotenuseXY(rCos2A, rSin2A);
@@ -403,39 +404,23 @@ export class Angle implements BeJSONFunctions {
     } else {
       /* If the caller really gave you sine and cosine values, r should be 1.  However,
        * to allow scaled values -- e.g. the x and y components of any vector -- we normalize
-       * right here. This adds an extra sqrt and 2 divides to the whole process, but improves
+       * right here. This adds an extra sqrt and two divisions, but improves
        * both the usefulness and robustness of the computation.
        */
       let cosA;
       let sinA = 0.0;
       const cos2A = rCos2A / r;
       const sin2A = rSin2A / r;
-      // Original angle in NE and SE quadrants. Half angle in same quadrant
-      if (cos2A >= 0.0) {
-        /*
-         * We know cos2A = (cosA)^2 - (sinA)^2 and 1 = (cosA)^2 + (sinA)^2
-         * so 1 + cos2A = 2(cosA)^2 and therefore, cosA = sqrt((1+cos2A)/2)
-         * cosine is positive in NE and SE quadrants so we use +sqrt
-         */
-        cosA = Math.sqrt(0.5 * (1.0 + cos2A));
-        // We know sin2A = 2 sinA cosA so sinA = sin2A/(2*cosA)
-        sinA = sin2A / (2.0 * cosA);
+      if (cos2A >= 0.0) { // 2A is in NE and SE quadrants, A in same quadrant
+        cosA = Math.sqrt(0.5 * (1.0 + cos2A)); // half angle formula. Use +root since cosA >= 0
+        sinA = sin2A / (2.0 * cosA); // double angle formula
       } else {
-        // Original angle in NW quadrant. Half angle in NE quadrant
-        if (sin2A > 0.0) {
-          /*
-           * We know cos2A = (cosA)^2 - (sinA)^2 and 1 = (cosA)^2 + (sinA)^2
-           * so 1 - cos2A = 2(sinA)^2 and therefore, sinA = sqrt((1-cos2A)/2)
-           * sine is positive in NE quadrant so we use +sqrt
-           */
-          sinA = Math.sqrt(0.5 * (1.0 - cos2A));
-          // Original angle in SW quadrant. Half angle in SE quadrant
-        } else {
-          // sine is negative in SE quadrant so we use -sqrt
-          sinA = -Math.sqrt(0.5 * (1.0 - cos2A));
+        if (sin2A > 0.0) { // 2A in NW quadrant. A in NE quadrant
+          sinA = Math.sqrt(0.5 * (1.0 - cos2A)); // half angle formula. Use +root since sinA > 0
+        } else { // 2A in SW quadrant. A in SE quadrant
+          sinA = -Math.sqrt(0.5 * (1.0 - cos2A)); // half angle formula. Use -root since sinA <= 0
         }
-        // We know sin2A = 2 sinA cosA so cosA = sin2A/(2*sinA)
-        cosA = sin2A / (2.0 * sinA); // always positive
+        cosA = sin2A / (2.0 * sinA); // double angle formula
       }
       return { c: cosA, s: sinA, radians: Math.atan2(sinA, cosA) };
     }
@@ -454,23 +439,23 @@ export class Angle implements BeJSONFunctions {
     return value;
   }
   /**
-   * Return the half angle cosine, sine, and radians for given dot products between vectors. The vectors define
-   * an ellipse using x(t) = c + U cos(t) + V sin(t) so U and V are at angle t=0 degree and t=90 degree. The
-   * half angle t0 is an angle such that x(t0) is one of the ellipse semi-axis.
-   * * This construction arises e.g. in `Arc3d.toScaledMatrix3d`.
-   * * Given ellipse x(t) = c + U cos(t) + V sin(t), find t0 such that radial vector W(t0) = x(t0) - c is
-   * perpendicular to the ellipse.
+   * Return the half angle cosine, sine, and radians for the given vector dot products.
+   * * These values arise e.g. in the computation performed in `Arc3d.toScaledMatrix3d`.
+   * * Let vectors U and V define the ellipse x(t) = c + U cos(t) + V sin(t). We seek an angle t0
+   * such that the radial vector W(t0) := x(t0) - c is perpendicular to the ellipse.
    * * Then 0 = W(t0).x'(t0) = (U cos(t0) + V sin(t0)).(V cos(t0) - U sin(t0)) = U.V cos(2t0) + 0.5 (V.V - U.U) sin(2t0)
-   * implies sin(2t0) / cos(2t0) = 2 U.V / (U.U - V.V), i.e., t0 can be computed given the three dot products on the RHS.
-   * math details can be found at docs/learning/geometry/Angle.md
+   * implies tan(2t0) = sin(2t0) / cos(2t0) = 2 U.V / (U.U - V.V), i.e., t0 can be computed given the input dot products.
+   * Math details can be found at docs/learning/geometry/Angle.md
    * @param dotUU dot product of vectorU with itself
    * @param dotVV dot product of vectorV with itself
    * @param dotUV dot product of vectorU with vectorV
+   * @param favorZero whether to allow a tight tolerance for returning t0 = 0 (default true).
+   * When dotUV is near zero, U and V are nearly perpendicular, and the returned angle is near zero.
+   * @return the angle t0 and its cosine and sine.
    */
   public static dotProductsToHalfAngleTrigValues(
     dotUU: number, dotVV: number, dotUV: number, favorZero: boolean = true,
   ): TrigValues {
-
     const cos2t0 = dotUU - dotVV;
     const sin2t0 = 2.0 * dotUV;
     if (favorZero && Math.abs(sin2t0) < Geometry.smallAngleRadians * (Math.abs(dotUU) + Math.abs(dotVV)))
