@@ -22,6 +22,7 @@ import { CheckpointManager, CheckpointProps, ProgressFunction } from "./Checkpoi
 import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
+import { SchemaSync } from "./SchemaSync";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -405,7 +406,7 @@ export class BriefcaseManager {
   }
 
   private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps) {
-    if (changesetFile.changesType === ChangesetType.Schema)
+    if (changesetFile.changesType === ChangesetType.Schema || changesetFile.changesType === ChangesetType.SchemaSync)
       db.clearCaches(); // for schema changesets, statement caches may become invalid. Do this *before* applying, in case db needs to be closed (open statements hold db open.)
 
     db.nativeDb.applyChangeset(changesetFile);
@@ -504,6 +505,7 @@ export class BriefcaseManager {
     while (true) {
       try {
         await BriefcaseManager.pullAndApplyChangesets(db, arg);
+        await SchemaSync.pull(db);
         return await BriefcaseManager.pushChanges(db, arg);
       } catch (err: any) {
         if (retryCount-- <= 0 || err.errorNumber !== IModelHubStatus.PullIsRequired)
