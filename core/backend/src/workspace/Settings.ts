@@ -26,7 +26,7 @@ export namespace Setting { // eslint-disable-line @typescript-eslint/no-redeclar
     return result;
   }
 
-  export function equal(a: Setting | undefined, b: Setting | undefined): boolean {
+  export function areEqual(a: Setting | undefined, b: Setting | undefined): boolean {
     if (a === b) {
       return true;
     }
@@ -42,7 +42,7 @@ export namespace Setting { // eslint-disable-line @typescript-eslint/no-redeclar
       }
 
       for (let i = 0; i < a.length; i++) {
-        if (!equal(a[i], b[i])) {
+        if (!areEqual(a[i], b[i])) {
           return false;
         }
       }
@@ -64,7 +64,7 @@ export namespace Setting { // eslint-disable-line @typescript-eslint/no-redeclar
         return false;
       }
 
-      if (!equal((a as SettingsContainer)[key], (b as SettingsContainer)[key])) {
+      if (!areEqual((a as SettingsContainer)[key], (b as SettingsContainer)[key])) {
         return false;
       }
     }
