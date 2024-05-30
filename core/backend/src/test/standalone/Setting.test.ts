@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { Setting } from "../../workspace/Settings";
 
-describe("Setting", () => {
+describe.only("Setting", () => {
   describe("areEqual", () => {
     it("should return true for two identical primitive values", () => {
       expect(Setting.areEqual(5, 5)).to.be.true;
@@ -76,6 +76,14 @@ describe("Setting", () => {
       const b: Setting = { y: 10, x: 5 };
       expect(JSON.stringify(a)).not.to.equal(JSON.stringify(b));
       expect(Setting.areEqual(a, b)).to.be.true;
+      expect(Setting.areEqual(b, a)).to.be.true;
+    });
+
+    it("should return false for objects with different numbers of properties", () => {
+      const a: Setting = { x: 5, y: 10 };
+      const b: Setting = { x: 5, y: 10, z: 0 };
+      expect(Setting.areEqual(a, b)).to.be.false;
+      expect(Setting.areEqual(b, a)).to.be.false;
     });
   });
 });

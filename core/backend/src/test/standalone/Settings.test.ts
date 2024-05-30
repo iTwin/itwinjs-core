@@ -327,7 +327,7 @@ describe("Settings", () => {
       IModelHost.settingsSchemas.addGroup(group);
     }
     
-    function addArray(schemaPrefix: string, name: string, value: Setting[], priority: SettingsPriority): void {
+    function addArray(schemaPrefix: string, name: string, value: Setting[], priority: SettingsPriority | number): void {
       const settings: SettingsContainer = { };
       settings[`${schemaPrefix}/array`] = value;
       
@@ -373,8 +373,23 @@ describe("Settings", () => {
       expect(IModelHost.appWorkspace.settings.getArray<number>("combine/array")).to.deep.equal([150, 120, 100, 80, 30]);
     });
 
-    it("ignores duplicates", () => {
-      
+    it("ignores duplicates with lower priority", () => {
+      addGroup("numbers", "number", true);
+
+      addArray("numbers", "a", [4, 8], 101);
+      addArray("numbers", "c", [3, 6, 9, 12], 99)
+      addArray("numbers", "b", [2, 4, 6, 8, 10, 12], 100);
+
+      expect(IModelHost.appWorkspace.settings.getArray<number>("numbers/array")).to.deep.equal([4, 8, 2, 6, 10, 12, 3, 9]);
+
+      interface Point { x: number, y: number };
+      addGroup("points", "object", true);
+
+      addArray("points", "a", [{ x: 1, y: 1 }, { x: 1, y: 2 }], 101);
+      addArray("points", "b", [{ x: 2, y: 1 }, { x: 1, y: 2 }], 100);
+      addArray("points", "c", [{ y: 1, x: 1 }, { y: 2, x: 1 }, { x: 3, y: 3 }], 99);
+
+      expect(IModelHost.appWorkspace.settings.getArray<Point>("points/array")).to.deep.equal([{ x: 1, y: 1 }, { x: 1, y: 2 }, { x: 2, y: 1 }, { x: 3, y: 3 }]);
     });
   });
 });
