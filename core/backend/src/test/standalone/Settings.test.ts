@@ -27,6 +27,7 @@ describe("Settings", () => {
   });
 
   const app1: SettingGroupSchema = {
+    description: "",
     schemaPrefix: "app1",
     settingDefs: {
       sub1: {
@@ -314,6 +315,7 @@ describe("Settings", () => {
   describe("combineArray", () => {
     function addGroup(schemaPrefix: string, type: "number" | "object", combineArray: boolean | undefined): void {
       const group: SettingGroupSchema = {
+        description: "",
         schemaPrefix,
         settingDefs: {
           array: {

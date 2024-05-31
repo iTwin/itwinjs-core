@@ -76,12 +76,10 @@ export interface SettingGroupSchema {
   readonly settingDefs?: { [name: string]: SettingSchema | undefined };
   /** Metadata for types that can be extended by other [[Setting]]s via [[SettingSchema.extends]]. */
   readonly typeDefs?: { [name: string]: SettingSchema | undefined };
-  /** ###TODO not in Base.Schema.json. UI ordering, lower values before higher values? */
+  /** An integer used when displaying a list of schemas in a user interface, to sort schemas with a lower `order` before those with a `higher` order. */
   readonly order?: number;
-  /** A description of this group suitable for displaying to a user.
-   * ###TODO required in Base.Schema.json, optional here - which is it?
-   */
-  readonly description?: string;
+  /** A description of this group suitable for displaying to a user. */
+  readonly description: string;
 }
 
 /**
@@ -128,9 +126,21 @@ export interface SettingsSchemas {
    */
   validateSetting<T>(value: T, settingName: string): T;
 
+  /** Register one or more [[SettingGroupSchema]]s.
+   * If a group with the same [[SettingGroupSchema.prefix]] was previously registered, it will be replaced.
+   * Each [[SettingSchema]] in the group will be added to [[settingDefs]] or [[typeDefs]].
+   */
   addGroup(settingsGroup: SettingGroupSchema | SettingGroupSchema[]): void;
+
+  /** Invokes [[addGroup]] for a [[SettingGroupSchema]] supplied as stringified json5. */
   addJson(settingSchema: string): void;
+
+  /** Invokes [[addGroup]] for a json5 file containiner a [[SettingGroupSchema]]. */
   addFile(fileName: LocalFileName): void;
+
+  /** Invokes [[addFile]] for every json and json5 file in the specified directory. */
   addDirectory(dirName: LocalDirName): void;
+
+  /** Unregisters all [[settingDefs]] and [[typeDefs]] with the specified [[SettingGroupSchema.schemaPrefix]]. */
   removeGroup(schemaPrefix: string): void;
 }
