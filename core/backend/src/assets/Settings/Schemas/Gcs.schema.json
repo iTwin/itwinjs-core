@@ -1,5 +1,5 @@
 {
-  "$schema": "../Base.Schema.json",
+  "$schema": "./Base.Schema.json",
   "description": "settings for geocoordinate services",
   "schemaPrefix": "itwin/core/gcs",
   "settingDefs": {
