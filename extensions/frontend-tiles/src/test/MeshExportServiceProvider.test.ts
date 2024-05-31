@@ -38,6 +38,7 @@ class TestProvider extends MeshExportServiceProvider {
     return this.queryMeshExports(args);
   }
 }
+
 async function mockFetch(mock: typeof window.fetch, fn: () => Promise<void>): Promise<void> {
   sinon.stub(window, "fetch").callsFake(mock);
   try {
@@ -109,10 +110,10 @@ async function makeExportsResponse(props: ExportsProps): Promise<Response> {
 }
 
 const accessToken = "this-is-a-fake-access-token";
+const testProvider = new TestProvider();
 
 describe("queryMeshExports", () => {
   const iModelId = "imdl";
-  const testProvider = new TestProvider();
 
   it("returns no results upon error", async () => {
     await mockFetch(
@@ -164,8 +165,6 @@ describe("queryMeshExports", () => {
 describe("obtainMeshExportTilesetUrl", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
-
-  const testProvider = new TestProvider();
 
   async function fetchExports(resource: RequestInfo | URL): Promise<Response> {
     expect(typeof resource).to.equal("string");

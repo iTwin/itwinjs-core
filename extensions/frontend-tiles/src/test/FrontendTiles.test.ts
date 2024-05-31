@@ -6,7 +6,14 @@ import { expect } from "chai";
 import { frontendTilesOptions, FrontendTilesOptions, initializeFrontendTiles } from "../FrontendTiles";
 
 describe("FrontendTiles", () => {
-  it("should initialize frontend tiles", () => {
+  it("should initialize frontend tiles with default values", () => {
+    initializeFrontendTiles({});
+    expect(frontendTilesOptions.maxLevelsToSkip).to.equal(4);
+    expect(frontendTilesOptions.enableEdges).to.equal(false);
+    expect(frontendTilesOptions.useIndexedDBCache).to.equal(false);
+  });
+
+  it("should initialize frontend tiles with custom values", () => {
     const options: FrontendTilesOptions = {
       maxLevelsToSkip: 1,
       enableEdges: true,
