@@ -19,7 +19,7 @@ import { SchemaContextEditor } from "./Editor";
 import { MutableClass } from "./Mutable/MutableClass";
 import * as Rules from "../Validation/ECRules";
 import { ArrayProperties, EnumerationProperties, PrimitiveProperties, Properties, StructProperties } from "./Properties";
-import { ECEditingError, ECEditingStatus, SchemaEditingError, schemaItemIdentifier } from "./Exception";
+import { customAttributeContainerIdentifier, ECEditingStatus, propertyIdentifier, SchemaEditingError, schemaItemIdentifier, schemaItemIdentifierFromName } from "./Exception";
 import { AnyDiagnostic } from "../Validation/Diagnostic";
 import { CreateSchemaItem, SchemaItems } from "./SchemaItems";
 import { MutableSchema } from "./Mutable/MutableSchema";
@@ -61,19 +61,9 @@ export class ECClasses extends SchemaItems{
     const newClass = await this.createSchemaItem(schemaOrKey, type, create, name, ...args);
 
     if (baseClassKey !== undefined) {
-      const baseClassSchema = !baseClassKey.schemaKey.matches(newClass.schema.schemaKey) ? await this._schemaEditor.getSchema(baseClassKey.schemaKey) : newClass.schema;
-      if (baseClassSchema === undefined) {
-        throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, {schemaKey: baseClassKey.schemaKey});
-      }
-
-      const baseClassItem = await baseClassSchema.lookupItem<T>(baseClassKey);
-      if (baseClassItem === undefined)
-        throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, schemaItemIdentifier(type, baseClassKey));
-
-      if (baseClassItem.schemaItemType !== this.schemaItemType)
-        throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, schemaItemIdentifier(type, baseClassKey));
-
-      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, T>(baseClassKey, async () => baseClassItem);
+      const baseClassSchema = !baseClassKey.schemaKey.matches(newClass.schema.schemaKey) ? await this.getSchema(baseClassKey.schemaKey) : newClass.schema as MutableSchema;
+      const baseClassItem = await this.lookupSchemaItem<ECClass>(baseClassSchema, baseClassKey);
+      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, T>(baseClassKey, async () => baseClassItem as T);
     }
 
     return newClass;
@@ -108,90 +98,143 @@ export class ECClasses extends SchemaItems{
    * @param type The PrimitiveType assigned to the new property.
    */
   public async createPrimitiveProperty(classKey: SchemaItemKey, name: string, type: PrimitiveType): Promise<void> {
-    const mutableClass = await this.getClass(classKey);
-    await mutableClass.createPrimitiveProperty(name, type);
+    try {
+      const mutableClass = await this.getClass(classKey);
+      await mutableClass.createPrimitiveProperty(name, type);
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreatePrimitiveProperty, propertyIdentifier(this.schemaItemType, classKey, name), e);
+    }
   }
 
   public async createPrimitivePropertyFromProps(classKey: SchemaItemKey, name: string, type: PrimitiveType, primitiveProps: PrimitivePropertyProps): Promise<void> {
-    const mutableClass = await this.getClass(classKey);
-    const newProperty = await mutableClass.createPrimitiveProperty(name, type);
-    await newProperty.fromJSON(primitiveProps);
+    try {
+      const mutableClass = await this.getClass(classKey);
+      const newProperty =  await mutableClass.createPrimitiveProperty(name, type);
+      await newProperty.fromJSON(primitiveProps);
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreatePrimitivePropertyFromProps, propertyIdentifier(this.schemaItemType, classKey, name), e);
+    }
   }
 
   public async createEnumerationProperty(classKey: SchemaItemKey, name: string, type: Enumeration): Promise<void> {
-    const mutableClass = await this.getClass(classKey);
-    const enumSchemaItemKey = mutableClass.schema.getSchemaItemKey(type.fullName);
-    if (enumSchemaItemKey === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Unable to locate the enumeration ${type.fullName}.`);
+    try {
+      const mutableClass = await this.getClass(classKey);
+      const enumSchemaItemKey = mutableClass.schema.getSchemaItemKey(type.fullName);
+      if (enumSchemaItemKey === undefined)
+        throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, schemaItemIdentifierFromName(mutableClass.schema.schemaKey, SchemaItemType.Enumeration, type.name));
 
-    await mutableClass.createPrimitiveProperty(name, type);
+      await mutableClass.createPrimitiveProperty(name, type);
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateEnumerationProperty, propertyIdentifier(this.schemaItemType, classKey, name), e);
+    }
   }
 
   public async createEnumerationPropertyFromProps(classKey: SchemaItemKey, name: string, type: Enumeration, enumProps: EnumerationPropertyProps): Promise<void> {
-    const mutableClass = await this.getClass(classKey);
-    const newProperty = await mutableClass.createPrimitiveProperty(name, type);
-    await newProperty.fromJSON(enumProps);
+    try {
+      const mutableClass = await this.getClass(classKey);
+      const newProperty =  await mutableClass.createPrimitiveProperty(name, type);
+      await newProperty.fromJSON(enumProps);
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateEnumerationArrayPropertyFromProps, propertyIdentifier(this.schemaItemType, classKey, name), e);
+    }
   }
 
   public async createPrimitiveArrayProperty(classKey: SchemaItemKey, name: string, type: PrimitiveType): Promise<void> {
-    const mutableClass = await this.getClass(classKey);
-    await mutableClass.createPrimitiveArrayProperty(name, type);
+    try {
+      const mutableClass = await this.getClass(classKey);
+      await mutableClass.createPrimitiveArrayProperty(name, type);
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreatePrimitiveArrayProperty, propertyIdentifier(this.schemaItemType, classKey, name), e);
+    }
   }
 
   public async createPrimitiveArrayPropertyFromProps(classKey: SchemaItemKey, name: string, type: PrimitiveType, primitiveProps: PrimitiveArrayPropertyProps): Promise<void> {
-    const mutableClass = await this.getClass(classKey);
-    const newProperty = await mutableClass.createPrimitiveArrayProperty(name, type);
-    await newProperty.fromJSON(primitiveProps);
+    try {
+      const mutableClass = await this.getClass(classKey);
+      const newProperty =  await mutableClass.createPrimitiveArrayProperty(name, type);
+      await newProperty.fromJSON(primitiveProps);
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreatePrimitiveArrayPropertyFromProps, propertyIdentifier(this.schemaItemType, classKey, name), e);
+    }
   }
 
   public async createEnumerationArrayProperty(classKey: SchemaItemKey, name: string, type: Enumeration): Promise<void> {
-    const mutableClass = await this.getClass(classKey);
-    await mutableClass.createPrimitiveArrayProperty(name, type);
+    try {
+      const mutableClass = await this.getClass(classKey);
+      await mutableClass.createPrimitiveArrayProperty(name, type);
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateEnumerationArrayProperty, propertyIdentifier(this.schemaItemType, classKey, name), e);
+    }
   }
 
   public async createEnumerationArrayPropertyFromProps(classKey: SchemaItemKey, name: string, type: Enumeration, props: PrimitiveArrayPropertyProps): Promise<void> {
-    const mutableClass = await this.getClass(classKey);
-    const newProperty = await mutableClass.createPrimitiveArrayProperty(name, type);
-    await newProperty.fromJSON(props);
+    try {
+      const mutableClass = await this.getClass(classKey);
+      const newProperty =  await mutableClass.createPrimitiveArrayProperty(name, type);
+      await newProperty.fromJSON(props);
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateEnumerationArrayPropertyFromProps, propertyIdentifier(this.schemaItemType, classKey, name), e);
+    }
   }
 
   public async createStructProperty(classKey: SchemaItemKey, name: string, type: StructClass): Promise<void> {
-    const mutableClass = await this.getClass(classKey);
-    await mutableClass.createStructProperty(name, type);
+    try {
+      const mutableClass = await this.getClass(classKey);
+      await mutableClass.createStructProperty(name, type);
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateStructProperty, propertyIdentifier(this.schemaItemType, classKey, name), e);
+    }
   }
 
   public async createStructPropertyFromProps(classKey: SchemaItemKey, name: string, type: StructClass, structProps: StructPropertyProps): Promise<void> {
-    const mutableClass = await this.getClass(classKey);
-    const newProperty = await mutableClass.createStructProperty(name, type);
-    await newProperty.fromJSON(structProps);
+    try {
+      const mutableClass = await this.getClass(classKey);
+      const newProperty =  await mutableClass.createStructProperty(name, type);
+      await newProperty.fromJSON(structProps);
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateStructPropertyFromProps, propertyIdentifier(this.schemaItemType, classKey, name), e);
+    }
   }
 
   public async createStructArrayProperty(classKey: SchemaItemKey, name: string, type: StructClass): Promise<void> {
-    const mutableClass = await this.getClass(classKey);
-    await mutableClass.createStructArrayProperty(name, type);
+    try {
+      const mutableClass = await this.getClass(classKey);
+      await mutableClass.createStructArrayProperty(name, type);
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateStructArrayProperty, propertyIdentifier(this.schemaItemType, classKey, name), e);
+    }
   }
 
   public async createStructArrayPropertyFromProps(classKey: SchemaItemKey, name: string, type: StructClass, structProps: StructArrayPropertyProps): Promise<void> {
-    const mutableClass = await this.getClass(classKey);
-    const newProperty = await mutableClass.createStructArrayProperty(name, type);
-    await newProperty.fromJSON(structProps);
+    try {
+      const mutableClass = await this.getClass(classKey);
+      const newProperty =  await mutableClass.createStructArrayProperty(name, type);
+      await newProperty.fromJSON(structProps);
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateStructArrayPropertyFromProps, propertyIdentifier(this.schemaItemType, classKey, name), e);
+    }
   }
 
   public async deleteProperty(classKey: SchemaItemKey, name: string): Promise<void> {
-    const mutableClass = await this.getClass(classKey);
-    await mutableClass.deleteProperty(name);
+    try {
+      const mutableClass = await this.getClass(classKey);
+      await mutableClass.deleteProperty(name);
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.DeleteProperty, propertyIdentifier(this.schemaItemType, classKey, name), e);
+    }
   }
 
   public async delete(classKey: SchemaItemKey): Promise<void> {
-    const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
-    if (schema === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${classKey.schemaKey.toString(true)} not found in context`);
+    try {
+      const schema = await this.getSchema(classKey.schemaKey);
+      const ecClass = await schema.getItem<ECClass>(classKey.name);
+      if (ecClass === undefined)
+        return;
 
-    const ecClass = await schema.getItem<ECClass>(classKey.name);
-    if (ecClass === undefined)
-      return;
-
-    await schema.deleteClass(ecClass.name);
+      await schema.deleteClass(ecClass.name);
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.DeleteClass, schemaItemIdentifier(this.schemaItemType, classKey), e);
+    }
   }
 
   /**
@@ -200,19 +243,23 @@ export class ECClasses extends SchemaItems{
    * @param customAttribute The CustomAttribute instance to add.
    */
   public async addCustomAttribute(classKey: SchemaItemKey, customAttribute: CustomAttribute): Promise<void> {
-    const mutableClass = await this.getClass(classKey);
-    mutableClass.addCustomAttribute(customAttribute);
+    try {
+      const mutableClass = await this.getClass(classKey);
+      mutableClass.addCustomAttribute(customAttribute);
 
-    const diagnosticIterable = Rules.validateCustomAttributeInstance(mutableClass, customAttribute);
+      const diagnosticIterable = Rules.validateCustomAttributeInstance(mutableClass, customAttribute);
 
-    const diagnostics: AnyDiagnostic[] = [];
-    for await (const diagnostic of diagnosticIterable) {
-      diagnostics.push(diagnostic);
-    }
+      const diagnostics: AnyDiagnostic[] = [];
+      for await (const diagnostic of diagnosticIterable) {
+        diagnostics.push(diagnostic);
+      }
 
-    if (diagnostics.length > 0) {
-      this.removeCustomAttribute(mutableClass, customAttribute);
-      throw new ECEditingError(ECEditingStatus.RuleViolation, undefined, diagnostics);
+      if (diagnostics.length > 0) {
+        this.removeCustomAttribute(mutableClass, customAttribute);
+        throw new SchemaEditingError(ECEditingStatus.RuleViolation, customAttributeContainerIdentifier(classKey.schemaKey, mutableClass.fullName, customAttribute.className), undefined, diagnostics);
+      }
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.AddCustomAttributeToClassFailed, schemaItemIdentifier(this.schemaItemType, classKey), e);
     }
   }
 
@@ -223,24 +270,24 @@ export class ECClasses extends SchemaItems{
    * @throws ECObjectsError if `name` does not meet the criteria for a valid EC name
    */
   public async setName(classKey: SchemaItemKey, name: string): Promise<SchemaItemKey> {
-    const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
-    if (schema === undefined) {
-      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${classKey.schemaKey.toString(true)} not found in context`);
+    try {
+      const schema = await this.getSchema(classKey.schemaKey);
+      const ecClass = await schema.getItem<MutableClass>(name);
+      if (ecClass !== undefined)
+        throw new SchemaEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, schemaItemIdentifierFromName(schema.schemaKey, this.schemaItemType, name));
+
+      const mutableClass = await this.getClass(classKey);
+
+      const existingName = classKey.name;
+      mutableClass.setName(name);
+
+      // Must reset in schema item map
+      await schema.deleteClass(existingName);
+      schema.addItem(mutableClass);
+      return mutableClass.key;
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.SetClassName, schemaItemIdentifier(this.schemaItemType, classKey));
     }
-
-    const ecClass = await schema.getItem<MutableClass>(name);
-    if (ecClass !== undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `An EC Class with the name ${name} already exists within the schema ${schema.name}`);
-
-    const mutableClass = await this.getClass(classKey);
-
-    const existingName = classKey.name;
-    mutableClass.setName(name);
-
-    // Must reset in schema item map
-    await schema.deleteClass(existingName);
-    schema.addItem(mutableClass);
-    return mutableClass.key;
   }
 
   /**
@@ -257,7 +304,7 @@ export class ECClasses extends SchemaItems{
       }
 
       const baseClassSchema = !baseClassKey.schemaKey.matches(itemKey.schemaKey) ? await this.getSchema(baseClassKey.schemaKey) : classItem.schema as MutableSchema;
-      const baseClassItem = await this.lookUpSchemaItem<ECClass>(baseClassSchema, baseClassKey);
+      const baseClassItem = await this.lookupSchemaItem<ECClass>(baseClassSchema, baseClassKey);
       if (classItem.baseClass !== undefined && !await baseClassItem.is(await classItem.baseClass))
         throw new SchemaEditingError(ECEditingStatus.InvalidBaseClass, schemaItemIdentifier(this.schemaItemType, baseClassKey), undefined, undefined, `Base class ${baseClassKey.fullName} must derive from ${(await classItem.baseClass).fullName}.`);
 
@@ -268,13 +315,11 @@ export class ECClasses extends SchemaItems{
   }
 
   private async getClass(classKey: SchemaItemKey): Promise<MutableClass> {
-    const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
-    if (schema === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${classKey.schemaKey.toString(true)} not found in context`);
+    const schema = await this.getSchema(classKey.schemaKey);
 
     const ecClass = await schema.getItem<MutableClass>(classKey.name);
     if (ecClass === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Class ${classKey.name} was not found in schema ${classKey.schemaKey.toString(true)}`);
+      throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, schemaItemIdentifier(this.schemaItemType, classKey));
 
     switch (ecClass.schemaItemType) {
       case SchemaItemType.EntityClass:
@@ -284,7 +329,7 @@ export class ECClasses extends SchemaItems{
       case SchemaItemType.RelationshipClass:
         break;
       default:
-        throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `Schema item type not supported`);
+        throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType,schemaItemIdentifier(this.schemaItemType, classKey));
     }
 
     return ecClass;

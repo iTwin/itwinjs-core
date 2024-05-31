@@ -67,7 +67,6 @@ export class Formats extends SchemaItems {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromPropsFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, formatProps.name!), e);
     }
 
-    await newFormat.fromJSON(formatProps);
     return newFormat.key;
   }
 }

@@ -17,7 +17,7 @@ import { MutableRelationshipClass, MutableRelationshipConstraint } from "./Mutab
 import * as Rules from "../Validation/ECRules";
 import { AnyDiagnostic, RelationshipConstraintDiagnostic, SchemaItemDiagnostic } from "../Validation/Diagnostic";
 import { NavigationProperties } from "./Properties";
-import { ECEditingStatus, SchemaEditingError, schemaItemIdentifier, schemaItemIdentifierFromName } from "./Exception";
+import { customAttributeContainerIdentifier, ECEditingStatus, SchemaEditingError, schemaItemIdentifier, schemaItemIdentifierFromName } from "./Exception";
 
 /**
  * @alpha
@@ -236,7 +236,7 @@ export class RelationshipClasses extends ECClasses {
     if (diagnostics.length > 0) {
       this.removeCustomAttribute(constraint, customAttribute);
       throw new SchemaEditingError(ECEditingStatus.AddCustomAttributeToConstraintFailed, schemaItemIdentifier(SchemaItemType.RelationshipClass, constraint.relationshipClass.key),
-        new SchemaEditingError(ECEditingStatus.RuleViolation, schemaItemIdentifier(SchemaItemType.RelationshipClass, constraint.relationshipClass.key), undefined, diagnostics));
+        new SchemaEditingError(ECEditingStatus.RuleViolation, customAttributeContainerIdentifier(constraint.relationshipClass.schema.schemaKey, constraint.fullName, customAttribute.className), undefined, diagnostics));
     }
   }
 

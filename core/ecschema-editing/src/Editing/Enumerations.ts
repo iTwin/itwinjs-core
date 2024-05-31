@@ -6,10 +6,11 @@
  * @module Editing
  */
 
-import { AnyEnumerator, ECObjectsError, ECObjectsStatus, Enumeration, EnumerationProps, PrimitiveType, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
+import { AnyEnumerator, Enumeration, EnumerationProps, PrimitiveType, primitiveTypeToString, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
 import { MutableEnumeration } from "./Mutable/MutableEnumeration";
-import { ECEditingError, ECEditingStatus } from "./Exception";
+import { ECEditingStatus, enumerationIdentifier, SchemaEditingError, schemaItemIdentifier, schemaItemIdentifierFromName } from "./Exception";
+import { SchemaItems } from "./SchemaItems";
 
 type MutableEnumerator = {
   -readonly [P in keyof AnyEnumerator]: AnyEnumerator[P]
@@ -19,34 +20,31 @@ type MutableEnumerator = {
  * @alpha
  * A class allowing you to create schema items of type Enumeration.
  */
-export class Enumerations {
-  public constructor(protected _schemaEditor: SchemaContextEditor) { }
+export class Enumerations extends SchemaItems {
+  public constructor(schemaEditor: SchemaContextEditor) {
+    super(SchemaItemType.StructClass, schemaEditor);
+  }
 
   public async create(schemaKey: SchemaKey, name: string, type: PrimitiveType.Integer | PrimitiveType.String, displayLabel?: string, isStrict?: boolean, enumerators?: AnyEnumerator[]): Promise<SchemaItemKey> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
+    let newEnum: MutableEnumeration;
 
-    let newEnum: Enumeration;
     try {
-      newEnum = await schema.createEnumeration(name, type);
-    } catch (e) {
-      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
-        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Enumeration ${name} already exists in the schema ${schema.fullName}.`);
-      } else {
-        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create Enumeration ${name} in schema ${schema.fullName}.`);
-      }
+      const schema = await this.getSchema(schemaKey);
+      const boundCreate = schema.createEnumeration.bind(schema);
+      newEnum = (await this.createSchemaItem<Enumeration>(schemaKey, this.schemaItemType, boundCreate, name, type)) as MutableEnumeration;
+
+      if (undefined !== isStrict)
+        newEnum.setIsStrict(isStrict);
+
+      if (undefined !== enumerators)
+        for (const enumerator of enumerators)
+          await this.addEnumerator(newEnum.key, enumerator);
+
+      if (displayLabel)
+        newEnum.setDisplayLabel(displayLabel);
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, name), e);
     }
-
-    if (undefined !== isStrict)
-      (newEnum as MutableEnumeration).setIsStrict(isStrict);
-
-    if (undefined !== enumerators)
-      for (const enumerator of enumerators)
-        await this.addEnumerator(newEnum.key, enumerator);
-
-    if (displayLabel)
-      (newEnum as MutableEnumeration).setDisplayLabel(displayLabel);
 
     return newEnum.key;
   }
@@ -57,75 +55,61 @@ export class Enumerations {
    * @param relationshipProps a json object that will be used to populate the new RelationshipClass. Needs a name value passed in.
    */
   public async createFromProps(schemaKey: SchemaKey, enumProps: EnumerationProps): Promise<SchemaItemKey> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
+    let newEnum: MutableEnumeration;
 
-    if (enumProps.name === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNameNotSpecified, `No name was supplied within props.`);
-
-    let newEnum: Enumeration;
     try {
-      newEnum = await schema.createEnumeration(enumProps.name);
-    } catch (e) {
-      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
-        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Class ${enumProps.name} already exists in the schema ${schema.fullName}.`);
-      } else {
-        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create class ${enumProps.name} in schema ${schema.fullName}.`);
-      }
+      const schema = await this.getSchema(schemaKey);
+      const boundCreate = schema.createEnumeration.bind(schema);
+      newEnum = (await this.createSchemaItemFromProps<Enumeration>(schemaKey, this.schemaItemType, boundCreate, enumProps)) as MutableEnumeration;
+
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromPropsFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, enumProps.name!), e);
     }
 
-    await newEnum.fromJSON(enumProps);
     return newEnum.key;
   }
 
   public async addEnumerator(enumerationKey: SchemaItemKey, enumerator: AnyEnumerator): Promise<void> {
-    const enumeration = (await this._schemaEditor.schemaContext.getSchemaItem<Enumeration>(enumerationKey));
+    try {
+      const enumeration = await this.getSchemaItem<Enumeration>(enumerationKey, SchemaItemType.Enumeration);
 
-    if (enumeration === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNotFoundInContext, `Unable to locate Enumeration class ${enumerationKey.fullName}.`);
+      if (enumeration.isInt && typeof (enumerator.value) !== "number")
+        throw new SchemaEditingError(ECEditingStatus.InvalidEnumeratorType, enumerationIdentifier(this.schemaItemType, enumerationKey, "integer", enumerator.name));
 
-    if (enumeration.schemaItemType !== SchemaItemType.Enumeration)
-      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `${enumeration.fullName} is not of type Enumerator class.`);
+      if (enumeration.isString && typeof (enumerator.value) !== "string")
+        throw new SchemaEditingError(ECEditingStatus.InvalidEnumeratorType, enumerationIdentifier(this.schemaItemType, enumerationKey, "string", enumerator.name));
 
-    if (enumeration.isInt && typeof (enumerator.value) !== "number")
-      throw new ECEditingError(ECEditingStatus.InvalidEnumeratorType, `The Enumeration ${enumeration.name} has type integer, while ${enumerator.name} has type ${typeof (enumerator.value)}.`);
-
-    if (enumeration.isString && typeof (enumerator.value) !== "string")
-      throw new ECEditingError(ECEditingStatus.InvalidEnumeratorType, `The Enumeration ${enumeration.name} has type string, while ${enumerator.name} has type ${typeof (enumerator.value)}.`);
-
-    (enumeration as MutableEnumeration).addEnumerator(enumerator);
+      (enumeration as MutableEnumeration).addEnumerator(enumerator);
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.AddEnumeratorFailed, schemaItemIdentifier(this.schemaItemType, enumerationKey), e);
+    }
   }
 
   public async setEnumeratorLabel(enumerationKey: SchemaItemKey, enumeratorName: string, label: string | undefined): Promise<void> {
-    const enumeration = (await this._schemaEditor.schemaContext.getSchemaItem<Enumeration>(enumerationKey));
+    try {
+      const enumeration = await this.getSchemaItem<Enumeration>(enumerationKey, SchemaItemType.Enumeration);
 
-    if (enumeration === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNotFoundInContext, `Unable to locate Enumeration class ${enumerationKey.fullName}.`);
+      const enumerator = enumeration.getEnumeratorByName(enumeratorName);
+      if (enumerator === undefined)
+        throw new SchemaEditingError(ECEditingStatus.EnumeratorDoesNotExist, enumerationIdentifier(this.schemaItemType, enumerationKey, primitiveTypeToString(enumeration.type!), enumeratorName));
 
-    if (enumeration.schemaItemType !== SchemaItemType.Enumeration)
-      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `${enumeration.fullName} is not of type Enumerator class.`);
-
-    const enumerator = enumeration.getEnumeratorByName(enumeratorName);
-    if (enumerator === undefined)
-      throw new ECEditingError(ECEditingStatus.EnumeratorDoesNotExist, `Enumerator ${enumeratorName} does not exists in Enumeration ${enumeration.fullName}.`);
-
-    (enumerator as MutableEnumerator).label = label;
+      (enumerator as MutableEnumerator).label = label;
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.SetEnumeratorLabelFailed, schemaItemIdentifier(this.schemaItemType, enumerationKey), e);
+    }
   }
 
   public async setEnumeratorDescription(enumerationKey: SchemaItemKey, enumeratorName: string, description: string | undefined): Promise<void> {
-    const enumeration = (await this._schemaEditor.schemaContext.getSchemaItem<Enumeration>(enumerationKey));
+    try {
+      const enumeration = await this.getSchemaItem<Enumeration>(enumerationKey, SchemaItemType.Enumeration);
 
-    if (enumeration === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNotFoundInContext, `Unable to locate Enumeration class ${enumerationKey.fullName}.`);
+      const enumerator = enumeration.getEnumeratorByName(enumeratorName);
+      if (enumerator === undefined)
+        throw new SchemaEditingError(ECEditingStatus.EnumeratorDoesNotExist, enumerationIdentifier(this.schemaItemType, enumerationKey, primitiveTypeToString(enumeration.type!), enumeratorName));
 
-    if (enumeration.schemaItemType !== SchemaItemType.Enumeration)
-      throw new ECEditingError(ECEditingStatus.InvalidSchemaItemType, `${enumeration.fullName} is not of type Enumerator class.`);
-
-    const enumerator = enumeration.getEnumeratorByName(enumeratorName);
-    if (enumerator === undefined)
-      throw new ECEditingError(ECEditingStatus.EnumeratorDoesNotExist, `Enumerator ${enumeratorName} does not exists in Enumeration ${enumeration.fullName}.`);
-
-    (enumerator as MutableEnumerator).description = description;
+      (enumerator as MutableEnumerator).description = description;
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.SetEnumeratorLabelFailed, schemaItemIdentifier(this.schemaItemType, enumerationKey), e);
+    }
   }
 }

@@ -6,41 +6,35 @@
  * @module Editing
  */
 
-import { ConstantProps, DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, Phenomenon, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
+import { Constant, ConstantProps, DelayedPromiseWithProps, Phenomenon, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
 import { MutableConstant } from "./Mutable/MutableConstant";
-import { ECEditingError, ECEditingStatus } from "./Exception";
+import { ECEditingStatus, SchemaEditingError, schemaItemIdentifierFromName } from "./Exception";
+import { SchemaItems } from "./SchemaItems";
 
 /**
  * @alpha
  * A class allowing you to create schema items of type Constant.
  */
-export class Constants {
-  public constructor(protected _schemaEditor: SchemaContextEditor) { }
+export class Constants extends SchemaItems {
+  public constructor(schemaEditor: SchemaContextEditor) {
+    super(SchemaItemType.StructClass, schemaEditor);
+  }
 
   public async create(schemaKey: SchemaKey, name: string, phenomenon: SchemaItemKey, definition: string, displayLabel?: string, numerator?: number, denominator?: number): Promise<SchemaItemKey> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined) {
-      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
-    }
-
     let newConstant: MutableConstant;
+
     try {
-      newConstant = (await schema.createConstant(name)) as MutableConstant;
-    } catch (e) {
-      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
-        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Constant ${name} already exists in the schema ${schema.fullName}.`);
-      } else {
-        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create Constant ${name} in schema ${schema.fullName}.`);
-      }
+      const schema = await this.getSchema(schemaKey);
+      const boundCreate = schema.createConstant.bind(schema);
+      newConstant = (await this.createSchemaItem<Constant>(schemaKey, this.schemaItemType, boundCreate, name)) as MutableConstant;
+
+      const newPhenomenon = (await this.getSchemaItem<Phenomenon>(phenomenon, SchemaItemType.Phenomenon));
+      newConstant.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(newPhenomenon.key, async () => newPhenomenon));
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, name), e);
     }
 
-    const newPhenomenon = (await this._schemaEditor.schemaContext.getSchemaItem<Phenomenon>(phenomenon));
-    if (newPhenomenon === undefined || newPhenomenon.schemaItemType !== SchemaItemType.Phenomenon) {
-      throw new ECEditingError(ECEditingStatus.SchemaItemNotFound, `Unable to locate phenomenon ${phenomenon.name}`);
-    }
-
-    newConstant.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(newPhenomenon.key, async () => newPhenomenon));
     newConstant.setDefinition(definition);
 
     if (numerator)
@@ -61,25 +55,15 @@ export class Constants {
    * @param relationshipProps a json object that will be used to populate the new RelationshipClass. Needs a name value passed in.
    */
   public async createFromProps(schemaKey: SchemaKey, constantProps: ConstantProps): Promise<SchemaItemKey> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
-
-    if (constantProps.name === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNameNotSpecified, `No name was supplied within props.`);
-
     let newConstant: MutableConstant;
     try {
-      newConstant = (await schema.createConstant(constantProps.name)) as MutableConstant;
-    } catch (e) {
-      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
-        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Constant ${constantProps.name} already exists in the schema ${schema.fullName}.`);
-      } else {
-        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create Constant ${constantProps.name} in schema ${schema.fullName}.`);
-      }
+      const schema = await this.getSchema(schemaKey);
+      const boundCreate = schema.createConstant.bind(schema);
+      newConstant = (await this.createSchemaItemFromProps<Constant>(schemaKey, this.schemaItemType, boundCreate, constantProps)) as MutableConstant;
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromPropsFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, constantProps.name!), e);
     }
 
-    await newConstant.fromJSON(constantProps);
     return newConstant.key;
   }
 }

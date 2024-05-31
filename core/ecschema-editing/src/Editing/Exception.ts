@@ -15,56 +15,82 @@ export enum ECEditingStatus {
   EC_EDITING_ERROR_BASE = 0x30000,
   Unknown = 0,
   RuleViolation = EC_EDITING_ERROR_BASE + 1,
-  SchemaNotFound = EC_EDITING_ERROR_BASE + 2,
-  SchemaItemNotFound = EC_EDITING_ERROR_BASE + 3,
-  SchemaItemNotFoundInContext = EC_EDITING_ERROR_BASE + 4,
-  PropertyAlreadyExists = EC_EDITING_ERROR_BASE + 5,
-  PropertyNotFound = EC_EDITING_ERROR_BASE + 6,
-  InvalidPropertyType = EC_EDITING_ERROR_BASE + 7,
-  BaseClassIsNotElement = EC_EDITING_ERROR_BASE + 8,
-  BaseClassIsNotElementUniqueAspect = EC_EDITING_ERROR_BASE + 9,
-  BaseClassIsNotElementMultiAspect = EC_EDITING_ERROR_BASE + 10,
-  SchemaItemNameNotSpecified = EC_EDITING_ERROR_BASE + 11,
-  InvalidSchemaItemType = EC_EDITING_ERROR_BASE + 12,
-  SchemaItemNameAlreadyExists = EC_EDITING_ERROR_BASE + 13,
-  InvalidEnumeratorType = EC_EDITING_ERROR_BASE + 14,
-  InvalidBaseClass = EC_EDITING_ERROR_BASE + 15,
-  EnumeratorDoesNotExist = EC_EDITING_ERROR_BASE + 16,
-  InvalidStrengthDirection = EC_EDITING_ERROR_BASE + 17,
-  InvalidECName = EC_EDITING_ERROR_BASE + 18,
-  InvalidFormatUnitsSpecified = EC_EDITING_ERROR_BASE + 19,
+  SchemaNotFound,
+  SchemaItemNotFound,
+  SchemaItemNotFoundInContext,
+  PropertyAlreadyExists,
+  PropertyNotFound,
+  InvalidPropertyType,
+  BaseClassIsNotElement,
+  BaseClassIsNotElementUniqueAspect,
+  BaseClassIsNotElementMultiAspect,
+  SchemaItemNameNotSpecified,
+  InvalidSchemaItemType,
+  SchemaItemNameAlreadyExists,
+  InvalidEnumeratorType,
+  InvalidBaseClass,
+  EnumeratorDoesNotExist,
+  InvalidStrengthDirection,
+  InvalidECName,
+  InvalidFormatUnitsSpecified,
   // Outer Errors
-  CreateSchemaItemFailed = EC_EDITING_ERROR_BASE + 1000,
-  CreateSchemaItemFromPropsFailed = EC_EDITING_ERROR_BASE + 1001,
-  CreateElementFailed = EC_EDITING_ERROR_BASE + 1001,
-  CreateElementUniqueAspectFailed = EC_EDITING_ERROR_BASE + 1001,
-  CreateElementMultiAspectFailed = EC_EDITING_ERROR_BASE + 1001,
-  SetBaseClassFailed = EC_EDITING_ERROR_BASE + 1002,
-  SetSourceConstraintFailed = EC_EDITING_ERROR_BASE + 1002,
-  SetTargetConstraintFailed = EC_EDITING_ERROR_BASE + 1003,
-  AddConstraintClassFailed = EC_EDITING_ERROR_BASE + 1004,
-  RemoveConstraintClassFailed = EC_EDITING_ERROR_BASE + 1005,
-  SetAbstractConstraintFailed = EC_EDITING_ERROR_BASE + 1006,
-  AddCustomAttributeToConstraintFailed = EC_EDITING_ERROR_BASE + 1007,
-  AddCustomAttributeToPropertyFailed = EC_EDITING_ERROR_BASE + 1007,
-  CreateNavigationPropertyFailed = EC_EDITING_ERROR_BASE + 1008,
-  CreateNavigationPropertyFromPropsFailed = EC_EDITING_ERROR_BASE + 1009,
-  SetInvertsUnitFailed = EC_EDITING_ERROR_BASE + 1010,
-  SetUnitSystemFailed = EC_EDITING_ERROR_BASE + 1011,
-  SetDescriptionFailed = EC_EDITING_ERROR_BASE + 1011,
-  SetLabelFailed = EC_EDITING_ERROR_BASE + 1011,
-  SetIsReadOnlyFailed = EC_EDITING_ERROR_BASE + 1011,
-  SetPriorityFailed = EC_EDITING_ERROR_BASE + 1011,
-  SetCategoryFailed = EC_EDITING_ERROR_BASE + 1011,
-  SetMinOccursFailed = EC_EDITING_ERROR_BASE + 1011,
-  SetMaxOccursFailed = EC_EDITING_ERROR_BASE + 1011,
-  SetExtendedTypeNameFailed = EC_EDITING_ERROR_BASE + 1011,
-  SetMinLengthFailed = EC_EDITING_ERROR_BASE + 1011,
-  SetMaxLengthFailed = EC_EDITING_ERROR_BASE + 1011,
-  SetMinValueFailed = EC_EDITING_ERROR_BASE + 1011,
-  SetMaxValueFailed = EC_EDITING_ERROR_BASE + 1011,
-  SetPropertyNameFailed = EC_EDITING_ERROR_BASE + 1011,
-  AddMixinFailed = EC_EDITING_ERROR_BASE + 1011,
+  CreateSchemaItemFailed,
+  CreateSchemaItemFromPropsFailed,
+  CreateElementFailed,
+  CreateElementUniqueAspectFailed,
+  CreateElementMultiAspectFailed,
+  SetBaseClassFailed,
+  SetSourceConstraintFailed,
+  SetTargetConstraintFailed,
+  AddConstraintClassFailed,
+  RemoveConstraintClassFailed,
+  SetAbstractConstraintFailed,
+  AddCustomAttributeToConstraintFailed,
+  AddCustomAttributeToPropertyFailed,
+  AddCustomAttributeToClassFailed,
+  CreateNavigationPropertyFailed,
+  CreateNavigationPropertyFromPropsFailed,
+  SetInvertsUnitFailed,
+  SetUnitSystemFailed,
+  SetDescriptionFailed,
+  SetLabelFailed,
+  SetIsReadOnlyFailed,
+  SetPriorityFailed ,
+  SetCategoryFailed,
+  SetMinOccursFailed,
+  SetMaxOccursFailed,
+  SetExtendedTypeNameFailed,
+  SetMinLengthFailed,
+  SetMaxLengthFailed,
+  SetMinValueFailed,
+  SetMaxValueFailed,
+  SetPropertyNameFailed,
+  AddMixinFailed,
+  AddEnumeratorFailed,
+  SetEnumeratorLabelFailed,
+  SetEnumeratorDescriptionFailed,
+  AddPresentationUnitFailed,
+  AddPresentationOverrideFormat,
+  CreateFormatOverride,
+  SetPropertyCategoryPriorityFailed,
+  CreatePrimitiveProperty,
+  CreatePrimitivePropertyFromProps,
+  CreateEnumerationProperty,
+  CreateEnumerationPropertyFromProps,
+  CreatePrimitiveArrayProperty,
+  CreatePrimitiveArrayPropertyFromProps,
+  CreateEnumerationArrayProperty,
+  CreateEnumerationArrayPropertyFromProps,
+  CreateStructProperty,
+  CreateStructPropertyFromProps,
+  CreateStructArrayProperty,
+  CreateStructArrayPropertyFromProps,
+  DeleteProperty,
+  DeleteClass,
+  SetClassName,
+  AddSchemaReference,
+  SetSchemaVersion,
+  IncrementSchemaMinorVersion,
 }
 
 export type AnyEditingError = SchemaEditingError | Error;
@@ -91,37 +117,119 @@ export enum PropertyTypeName {
   StructProperty = "StructProperty"
 }
 
-export interface ErrorIdentifier {
+export interface SchemaIdentifier {
   schemaKey: SchemaKey;
-  key?: SchemaItemKey;
-  itemName?: string;
-  type?: SchemaItemType;
-  propertyName?: string;
+}
+
+export interface SchemaItemIdentifier extends SchemaIdentifier {
+  key: SchemaItemKey;
+  itemName: string;
+  type: SchemaItemType;
+}
+
+export interface PropertyIdentifier extends SchemaItemIdentifier {
+  propertyName: string;
   propertyType?: PropertyTypeName;
 }
 
-export function schemaItemIdentifier(type: SchemaItemType, key: SchemaItemKey, propertyName?: string, propertyType?: PropertyTypeName): ErrorIdentifier {
+export interface EnumerationIdentifier extends SchemaItemIdentifier {
+  enumerationType: string;
+  enumeratorName?: string;
+}
+
+export interface CustomAttributeContainerIdentifier extends SchemaIdentifier {
+  fullName: string;
+  customAttributeName: string;
+}
+
+type AnyIdentifier = SchemaIdentifier | SchemaItemIdentifier | PropertyIdentifier | EnumerationIdentifier | CustomAttributeContainerIdentifier;
+
+function isSchemaIdentifier(identifier: AnyIdentifier) {
+  return (identifier as SchemaIdentifier).schemaKey !== undefined;
+}
+
+function isSchemaItemIdentifier(identifier: AnyIdentifier) {
+  return (identifier as SchemaItemIdentifier).itemName !== undefined &&
+    (identifier as SchemaItemIdentifier).type !== undefined;
+}
+
+function isPropertyIdentifier(identifier: AnyIdentifier) {
+  return (identifier as PropertyIdentifier).propertyName !== undefined;
+}
+
+function isEnumerationIdentifier(identifier: AnyIdentifier) {
+  return (identifier as EnumerationIdentifier).enumerationType !== undefined;
+}
+
+function isCustomAttributeContainerIdentifier(identifier: AnyIdentifier) {
+  return (identifier as CustomAttributeContainerIdentifier).customAttributeName !== undefined &&
+    (identifier as CustomAttributeContainerIdentifier).fullName !== undefined;
+}
+
+export function schemaItemIdentifier(type: SchemaItemType, key: SchemaItemKey): SchemaItemIdentifier {
+  return { schemaKey: key.schemaKey, key, itemName: key.fullName, type };
+}
+
+export function schemaItemIdentifierFromName(schemaKey: SchemaKey, type: SchemaItemType, name: string): SchemaItemIdentifier {
+  const key = new SchemaItemKey(name, schemaKey);
+  return { schemaKey, type, key, itemName: key.fullName };
+}
+
+export function propertyIdentifier(type: SchemaItemType, key: SchemaItemKey, propertyName: string, propertyType?: PropertyTypeName): PropertyIdentifier {
   return { schemaKey: key.schemaKey, itemName: key.fullName, type, key, propertyName, propertyType };
 }
 
-export function schemaItemIdentifierFromName(schemaKey: SchemaKey, type: SchemaItemType, name: string): ErrorIdentifier {
-  const key = new SchemaItemKey(name, schemaKey);
-  return { schemaKey, type, key, itemName: key.fullName };
+export function enumerationIdentifier(type: SchemaItemType, key: SchemaItemKey, enumerationType: string, enumeratorName: string ): EnumerationIdentifier {
+  return { schemaKey: key.schemaKey, key, itemName: key.fullName, type, enumerationType, enumeratorName};
+}
+
+export function customAttributeContainerIdentifier(schemaKey: SchemaKey, fullName: string, customAttributeName: string ): CustomAttributeContainerIdentifier {
+  return { schemaKey, fullName, customAttributeName };
 }
 
 /** @internal */
 export class SchemaEditingError extends BentleyError {
   private _ruleViolations?: AnyDiagnostic[];
-  private _identifier: ErrorIdentifier;
+  private _identifier: AnyIdentifier;
   private _schemaKey: SchemaKey;
   private _unknownError?: Error;
 
-  public constructor(public override readonly errorNumber: number, public identifier: ErrorIdentifier, public innerError?: AnyEditingError, ruleViolations?: AnyDiagnostic[], message?: string) {
+  public constructor(public override readonly errorNumber: number, public identifier: AnyIdentifier, public innerError?: AnyEditingError, ruleViolations?: AnyDiagnostic[], message?: string) {
     super(errorNumber, message);
     this._schemaKey = identifier.schemaKey;
     this._identifier = identifier;
     this._ruleViolations = ruleViolations;
     this.generateMessage();
+  }
+
+  public get schemaId(): SchemaIdentifier {
+    if (!isSchemaIdentifier(this._identifier))
+      throw Error("Identifier is not a SchemaIdentifier");
+    return this._identifier as SchemaIdentifier;
+  }
+
+  public get schemaItemId(): SchemaItemIdentifier {
+    if (!isSchemaItemIdentifier(this._identifier))
+      throw Error("Identifier is not a SchemaItemIdentifier");
+    return this._identifier as SchemaItemIdentifier;
+  }
+
+  public get propertyId(): PropertyIdentifier {
+    if (!isPropertyIdentifier(this._identifier))
+      throw Error("Identifier is not a PropertyIdentifier");
+    return this._identifier as PropertyIdentifier;
+  }
+
+  public get enumerationId(): EnumerationIdentifier {
+    if (!isEnumerationIdentifier(this._identifier))
+      throw Error("Identifier is not a EnumerationIdentifier");
+    return this._identifier as EnumerationIdentifier;
+  }
+
+  public get customAttributeContainerId(): CustomAttributeContainerIdentifier {
+    if (!isCustomAttributeContainerIdentifier(this._identifier))
+      throw Error("Identifier is not a CustomAttributeContainerIdentifier");
+    return this._identifier as CustomAttributeContainerIdentifier;
   }
 
   public get schemaKey(): SchemaKey {
@@ -162,46 +270,53 @@ export class SchemaEditingError extends BentleyError {
 
     switch(this.errorNumber) {
       case ECEditingStatus.SchemaNotFound:
-        this.message = `Schema Key ${this._schemaKey?.toString(true)} could not be found in the context.`;
+        this.message = `Schema Key ${this.schemaKey.toString(true)} could not be found in the context.`;
         return;
       case ECEditingStatus.SchemaItemNotFound:
-        this.message = `${this._identifier?.type} ${this._identifier.itemName} could not be found in the schema ${this._schemaKey?.name}.`;
+        this.message = `${this.schemaItemId.type} ${this.schemaItemId.itemName} could not be found in the schema ${this._schemaKey.name}.`;
         return;
       case ECEditingStatus.SchemaItemNotFoundInContext:
-        this.message = `${this._identifier?.type} ${this._identifier.itemName} could not be found in the schema context.`;
+        this.message = `${this.schemaItemId.type} ${this.schemaItemId.itemName} could not be found in the schema context.`;
         return;
       case ECEditingStatus.InvalidSchemaItemType:
-        this.message = `Expected ${this._identifier.itemName} to be of type ${this._identifier?.type}.`;
+        this.message = `Expected ${this.schemaItemId.itemName} to be of type ${this.schemaItemId.type}.`;
         return;
       case ECEditingStatus.SchemaItemNameNotSpecified:
-        this.message = `Could not create a new ${this._identifier?.type} in schema ${this._schemaKey?.name}. No name was supplied within props.`;
+        this.message = `Could not create a new ${this.schemaItemId.type} in schema ${this._schemaKey.name}. No name was supplied within props.`;
         return;
       case ECEditingStatus.SchemaItemNameAlreadyExists:
-        this.message = `${this._identifier?.type} ${this._identifier.itemName} already exists in the schema ${this._schemaKey?.name}.`;
+        this.message = `${this.schemaItemId.type} ${this.schemaItemId.itemName} already exists in the schema ${this._schemaKey.name}.`;
         return;
       case ECEditingStatus.RuleViolation:
-        this.message = `Rule violations occurred from ${this._identifier?.type} ${this._identifier.itemName}: ${this.getRuleViolationMessage()}`;
+        this.message = `Rule violations occurred from ${this.schemaItemId.type} ${this.schemaItemId.itemName}: ${this.getRuleViolationMessage()}`;
         return;
       case ECEditingStatus.PropertyNotFound:
-        this.message = `An ECProperty with the name ${this._identifier.propertyName} could not be found in the class ${this._identifier.itemName}.`;
+        this.message = `An ECProperty with the name ${this.propertyId.propertyName} could not be found in the class ${this.propertyId.itemName}.`;
         return;
       case ECEditingStatus.PropertyAlreadyExists:
-        this.message = `An ECProperty with the name ${this._identifier.propertyName} already exists in the class ${this._identifier.itemName}.`;
+        this.message = `An ECProperty with the name ${this.propertyId.propertyName} already exists in the class ${this.propertyId.itemName}.`;
         return;
       case ECEditingStatus.InvalidPropertyType:
-        this.message = `Expected property ${this._identifier.propertyName} to be of type ${this._identifier.propertyType}.`;
+        this.message = `Expected property ${this.propertyId.propertyName} to be of type ${this.propertyId.propertyType}.`;
         return;
       case ECEditingStatus.BaseClassIsNotElement:
-        this.message = `Expected base class ${this._identifier.itemName} to derive from BisCore.Element.`;
+        this.message = `Expected base class ${this.schemaItemId.itemName} to derive from BisCore.Element.`;
         return;
       case ECEditingStatus.BaseClassIsNotElementUniqueAspect:
-        this.message = `Expected base class ${this._identifier.itemName} to derive from BisCore.ElementUniqueAspect.`;
+        this.message = `Expected base class ${this.schemaItemId.itemName} to derive from BisCore.ElementUniqueAspect.`;
         return;
       case ECEditingStatus.BaseClassIsNotElementMultiAspect:
-        this.message = `Expected base class ${this._identifier.itemName} to derive from BisCore.ElementMultiAspect.`;
+        this.message = `Expected base class ${this.schemaItemId.itemName} to derive from BisCore.ElementMultiAspect.`;
         return;
       case ECEditingStatus.InvalidFormatUnitsSpecified:
-        this.message = `The specified Format unit ${this._identifier.itemName} is not of type Unit or InvertedUnit`;
+        this.message = `The specified Format unit ${this.schemaItemId.itemName} is not of type Unit or InvertedUnit`;
+        return;
+      case ECEditingStatus.InvalidEnumeratorType:
+        const enumeratorType = this.enumerationId.enumerationType === "string" ? "integer" : "string";
+        this.message = `The Enumeration ${this.enumerationId.itemName} has type ${this.enumerationId.enumerationType}, while ${this.enumerationId.enumeratorName} has type ${typeof (enumeratorType)}.`;
+        return;
+      case ECEditingStatus.EnumeratorDoesNotExist:
+        this.message = `Enumerator ${this.enumerationId.enumeratorName} does not exists in Enumeration ${this.enumerationId.itemName}.`;
         return;
     }
   }

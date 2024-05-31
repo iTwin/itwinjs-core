@@ -24,7 +24,7 @@ import { RelationshipClasses } from "./RelationshipClasses";
 import { Structs } from "./Structs";
 import { Units } from "./Units";
 import { UnitSystems } from "./UnitSystems";
-import { ECEditingError, ECEditingStatus } from "./Exception";
+import { customAttributeContainerIdentifier, ECEditingStatus, SchemaEditingError } from "./Exception";
 import { AnyDiagnostic } from "../Validation/Diagnostic";
 
 /**
@@ -99,25 +99,29 @@ export class SchemaContextEditor {
    * @param refSchema The referenced schema to add.
    */
   public async addSchemaReference(schemaKey: SchemaKey, refSchema: Schema): Promise<void> {
-    const schema = (await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Exact));
-    if (schema === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
+    try {
+      const schema = (await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Exact));
+      if (schema === undefined)
+        throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, {schemaKey});
 
-    await schema.addReference(refSchema);
-    const diagnosticIterable = Rules.validateSchemaReferences(schema);
+      await schema.addReference(refSchema);
+      const diagnosticIterable = Rules.validateSchemaReferences(schema);
 
-    const diagnostics: AnyDiagnostic[] = [];
-    for await (const diagnostic of diagnosticIterable) {
-      diagnostics.push(diagnostic);
-    }
+      const diagnostics: AnyDiagnostic[] = [];
+      for await (const diagnostic of diagnosticIterable) {
+        diagnostics.push(diagnostic);
+      }
 
-    if (diagnostics.length > 0) {
-      this.removeReference(schema, refSchema);
-      throw new ECEditingError(ECEditingStatus.RuleViolation, undefined, diagnostics);
-    }
+      if (diagnostics.length > 0) {
+        this.removeReference(schema, refSchema);
+        throw new SchemaEditingError(ECEditingStatus.RuleViolation, {schemaKey}, undefined, diagnostics);
+      }
 
-    if (!await this.schemaContext.getCachedSchema(refSchema.schemaKey)) {
-      await this.schemaContext.addSchema(refSchema);
+      if (!await this.schemaContext.getCachedSchema(refSchema.schemaKey)) {
+        await this.schemaContext.addSchema(refSchema);
+      }
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.AddSchemaReference, {schemaKey}, e);
     }
   }
 
@@ -127,22 +131,24 @@ export class SchemaContextEditor {
    * @param customAttribute The CustomAttribute instance to add.
    */
   public async addCustomAttribute(schemaKey: SchemaKey, customAttribute: CustomAttribute): Promise<void> {
-    const schema = (await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Latest));
-    if (schema === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
+    try {
+      const schema = (await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Latest));
+      if (schema === undefined)
+        throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, {schemaKey});
 
-    schema.addCustomAttribute(customAttribute);
+      const diagnosticIterable = Rules.validateCustomAttributeInstance(schema, customAttribute);
 
-    const diagnosticIterable = Rules.validateCustomAttributeInstance(schema, customAttribute);
+      const diagnostics: AnyDiagnostic[] = [];
+      for await (const diagnostic of diagnosticIterable) {
+        diagnostics.push(diagnostic);
+      }
 
-    const diagnostics: AnyDiagnostic[] = [];
-    for await (const diagnostic of diagnosticIterable) {
-      diagnostics.push(diagnostic);
-    }
-
-    if (diagnostics.length > 0) {
-      this.removeCustomAttribute(schema, customAttribute);
-      throw new ECEditingError(ECEditingStatus.RuleViolation, undefined, diagnostics);
+      if (diagnostics.length > 0) {
+        this.removeCustomAttribute(schema, customAttribute);
+        throw new SchemaEditingError(ECEditingStatus.RuleViolation, customAttributeContainerIdentifier(schemaKey, schemaKey.name, customAttribute.className), undefined, diagnostics);
+      }
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.AddCustomAttributeToClassFailed, { schemaKey }, e);
     }
   }
 
@@ -155,12 +161,16 @@ export class SchemaContextEditor {
    * @returns Resolves to the new SchemaKey containing version updates.
    */
   public async setVersion(schemaKey: SchemaKey, readVersion?: number, writeVersion?: number, minorVersion?: number): Promise<SchemaKey> {
-    const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest));
-    if (schema === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
+    try {
+      const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest));
+      if (schema === undefined)
+        throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, {schemaKey});
 
-    schema.setVersion(readVersion || schema.readVersion, writeVersion || schema.writeVersion, minorVersion || schema.minorVersion);
-    return schema.schemaKey;
+      schema.setVersion(readVersion || schema.readVersion, writeVersion || schema.writeVersion, minorVersion || schema.minorVersion);
+      return schema.schemaKey;
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.SetSchemaVersion, { schemaKey }, e);
+    }
   }
 
   /**
@@ -169,12 +179,16 @@ export class SchemaContextEditor {
    * @returns Resolves to the new SchemaKey containing version updates.
    */
   public async incrementMinorVersion(schemaKey: SchemaKey): Promise<SchemaKey> {
-    const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest));
-    if (schema === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
+    try {
+      const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest));
+      if (schema === undefined)
+        throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, {schemaKey});
 
-    schema.setVersion(schema.readVersion, schema.writeVersion, schema.minorVersion + 1);
-    return schema.schemaKey;
+      schema.setVersion(schema.readVersion, schema.writeVersion, schema.minorVersion + 1);
+      return schema.schemaKey;
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.IncrementSchemaMinorVersion, { schemaKey }, e);
+    }
   }
 
   private removeReference(schema: Schema, refSchema: Schema) {

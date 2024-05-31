@@ -31,10 +31,10 @@ export class InvertedUnits extends SchemaItems {
       const boundCreate = schema.createInvertedUnit.bind(schema);
       newUnit = (await this.createSchemaItem<InvertedUnit>(schemaKey, this.schemaItemType, boundCreate, name)) as MutableInvertedUnit;
 
-      const invertsUnit = await this.lookUpSchemaItem<Unit>(schemaKey, invertsUnitKey, SchemaItemType.Unit);
+      const invertsUnit = await this.lookupSchemaItem<Unit>(schemaKey, invertsUnitKey, SchemaItemType.Unit);
       newUnit.setInvertsUnit(new DelayedPromiseWithProps<SchemaItemKey, Unit>(invertsUnitKey, async () => invertsUnit));
 
-      const unitSystem = await this.lookUpSchemaItem<UnitSystem>(schemaKey, unitSystemKey, SchemaItemType.UnitSystem);
+      const unitSystem = await this.lookupSchemaItem<UnitSystem>(schemaKey, unitSystemKey, SchemaItemType.UnitSystem);
       newUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemKey, async () => unitSystem));
 
       if (displayLabel)

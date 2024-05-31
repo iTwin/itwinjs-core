@@ -6,62 +6,50 @@
  * @module Editing
  */
 
-import { ECObjectsError, ECObjectsStatus, PhenomenonProps, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
+import { Phenomenon, PhenomenonProps, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
 import { MutablePhenomenon } from "./Mutable/MutablePhenomenon";
-import { ECEditingError, ECEditingStatus } from "./Exception";
+import { ECEditingStatus, SchemaEditingError, schemaItemIdentifierFromName } from "./Exception";
+import { SchemaItems } from "./SchemaItems";
 
 /**
  * @alpha
  * A class allowing you to create schema items of type Phenomenon.
  */
-export class Phenomena {
-  public constructor(protected _schemaEditor: SchemaContextEditor) { }
+export class Phenomena extends SchemaItems {
+  public constructor(schemaEditor: SchemaContextEditor) {
+    super(SchemaItemType.Phenomenon, schemaEditor);
+  }
 
   public async create(schemaKey: SchemaKey, name: string, definition: string, displayLabel?: string): Promise<SchemaItemKey> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
-
     let newPhenomenon: MutablePhenomenon;
+
     try {
-      newPhenomenon = await schema.createPhenomenon(name) as MutablePhenomenon;
-    } catch (e) {
-      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
-        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Phenomenon ${name} already exists in the schema ${schema.fullName}.`);
-      } else {
-        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create Phenomenon ${name} in schema ${schema.fullName}.`);
-      }
+      const schema = await this.getSchema(schemaKey);
+      const boundCreate = schema.createPhenomenon.bind(schema);
+      newPhenomenon = (await this.createSchemaItem<Phenomenon>(schemaKey, this.schemaItemType, boundCreate, name)) as MutablePhenomenon;
+
+      if (displayLabel)
+        newPhenomenon.setDisplayLabel(displayLabel);
+
+      await newPhenomenon.setDefinition(definition);
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, name), e);
     }
-
-    if (displayLabel)
-      newPhenomenon.setDisplayLabel(displayLabel);
-
-    await newPhenomenon.setDefinition(definition);
 
     return newPhenomenon.key;
   }
 
   public async createFromProps(schemaKey: SchemaKey, phenomenonProps: PhenomenonProps): Promise<SchemaItemKey> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaNotFound, `Schema Key ${schemaKey.toString(true)} not found in context`);
-
-    if (phenomenonProps.name === undefined)
-      throw new ECEditingError(ECEditingStatus.SchemaItemNameNotSpecified, `No name was supplied within props.`);
-
     let newPhenomenon: MutablePhenomenon;
     try {
-      newPhenomenon = await schema.createPhenomenon(phenomenonProps.name) as MutablePhenomenon;
-    } catch (e) {
-      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
-        throw new ECEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, `Phenomenon ${phenomenonProps.name} already exists in the schema ${schema.fullName}.`);
-      } else {
-        throw new ECEditingError(ECEditingStatus.Unknown, `Failed to create Phenomenon ${phenomenonProps.name} in schema ${schema.fullName}.`);
-      }
+      const schema = await this.getSchema(schemaKey);
+      const boundCreate = schema.createPhenomenon.bind(schema);
+      newPhenomenon = await this.createSchemaItemFromProps<Phenomenon>(schemaKey, this.schemaItemType, boundCreate, phenomenonProps) as MutablePhenomenon;
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromPropsFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, phenomenonProps.name!), e);
     }
 
-    await newPhenomenon.fromJSON(phenomenonProps);
     return newPhenomenon.key;
   }
 }

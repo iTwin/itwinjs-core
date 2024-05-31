@@ -44,8 +44,8 @@ export class SchemaItems {
     return schemaItem;
   }
 
-  public async lookUpSchemaItem<T extends SchemaItem>(schemaOrKey: MutableSchema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType?: SchemaItemType): Promise<T>{
-    schemaItemType = schemaItemType ?? this.schemaItemType;
+  public async lookupSchemaItem<T extends SchemaItem>(schemaOrKey: MutableSchema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType?: SchemaItemType | null): Promise<T>{
+    schemaItemType = schemaItemType === null ? undefined : schemaItemType ?? this.schemaItemType;
 
     let schema: Schema;
     if (schemaOrKey instanceof SchemaKey) {
@@ -58,7 +58,7 @@ export class SchemaItems {
     if (schemaItem === undefined)
       throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, schemaItemIdentifier(schemaItemType ?? this.schemaItemType, schemaItemKey));
 
-    if (schemaItemType !== schemaItem.schemaItemType) {
+    if (schemaItemType && schemaItemType !== schemaItem.schemaItemType) {
       throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType,schemaItemIdentifier(schemaItemType ?? this.schemaItemType, schemaItemKey));
     }
 

@@ -109,8 +109,8 @@ export class Entities extends ECClasses {
 
   public async addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<void> {
     try {
-      const entity = await this.getSchemaItem<MutableEntityClass>(entityKey, SchemaItemType.EntityClass);
-      const mixin = await this.getSchemaItem<Mixin>(mixinKey);
+      const entity = await this.getSchemaItem<MutableEntityClass>(entityKey);
+      const mixin = await this.getSchemaItem<Mixin>(mixinKey, SchemaItemType.Mixin);
       entity.addMixin(mixin);
     } catch(e: any){
       throw new SchemaEditingError(ECEditingStatus.AddMixinFailed, schemaItemIdentifier(SchemaItemType.EntityClass, entityKey), e);
