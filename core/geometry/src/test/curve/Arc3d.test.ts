@@ -13,12 +13,12 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Path } from "../../curve/Path";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Geometry } from "../../Geometry";
+import { AxisOrder, Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Range1d, Range3d } from "../../geometry3d/Range";
+import { Range1d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
@@ -578,7 +578,7 @@ describe("Arc3d", () => {
       const angle0 = curvatureToRadians(ellipticalArc, curvature);
       if (angle0 !== undefined) {
         for (const theta of [angle0 /* 1Q */, Math.PI - angle0  /* 2Q */, Math.PI + angle0  /* 3Q */, -angle0 /* 4Q */]) {
-          const fraction = ellipticalArc.sweep.angleToSignedPeriodicFraction(Angle.createRadians(theta));
+          const fraction = ellipticalArc.sweep.radiansToSignedPeriodicFraction(theta);
           if (Geometry.isIn01WithTolerance(fraction, Geometry.smallFraction)) {
             fractions.push(fraction);
           }
@@ -605,15 +605,15 @@ describe("Arc3d", () => {
       // add quadrant points
       for (const quadrantAngle of [0, Angle.piOver2Radians, Math.PI, Math.PI + Angle.piOver2Radians])
         if (ellipticalArc.sweep.isRadiansInSweep(quadrantAngle))
-          fractions.add(ellipticalArc.sweep.angleToSignedPeriodicFraction(Angle.createRadians(quadrantAngle)));
+          fractions.add(ellipticalArc.sweep.radiansToSignedPeriodicFraction(quadrantAngle));
       // add end points
       fractions.add(0);
       fractions.add(1);
       // find the points in 1st quadrant, then use symmetry to populate
-      const curvature0 = ellipticalArc.matrixRef.columnXMagnitude() / ellipticalArc.matrixRef.columnYMagnitudeSquared();
-      const curvature1 = ellipticalArc.matrixRef.columnYMagnitude() / ellipticalArc.matrixRef.columnXMagnitudeSquared();
+      const curvature0 = ellipticalArc.matrixRef.columnYMagnitude() / ellipticalArc.matrixRef.columnXMagnitudeSquared();
+      const curvature1 = ellipticalArc.matrixRef.columnXMagnitude() / ellipticalArc.matrixRef.columnYMagnitudeSquared();
       const tDelta = 1.0 / (numPointsInQuadrant - 1);
-      for (let i = 1; i < numPointsInQuadrant; ++i) {
+      for (let i = 1; i < numPointsInQuadrant - 1; ++i) {
         const j = f(i * tDelta);
         const curvature = (1 - j) * curvature0 + j * curvature1;
         for (const fraction of curvatureToFractions(ellipticalArc, curvature))
@@ -638,7 +638,14 @@ describe("Arc3d", () => {
     arcs.push(Arc3d.createScaledXYColumns(scaleData.center, scaleData.axes, scaleData.r0, scaleData.r90, AngleSweep.createStartEndDegrees(100, 120)));
 
     const fLinear = (x: number): number => { return x; };
+    const fPiecewiseLinearUnder = (x: number): number => {
+      const breakFraction = 0.6;
+      const slope = (1 - breakFraction) / breakFraction;
+      return (x <= breakFraction) ? slope * x : slope * breakFraction + ((1 - slope * breakFraction) / (1 - breakFraction)) * (x - breakFraction);
+      };
     const fQuadratic = (x: number): number => { return x * x; };
+    const fScaledQuadratic = (x: number): number => { return 0.5 * x * x; }
+    const fCubic = (x: number): number => { return x * x * x; };
     const fSqrt = (x: number): number => { return Math.sqrt(x); };
     const fLinearWave = (x: number): number => {
       if (x === 0) return 0;
@@ -649,27 +656,42 @@ describe("Arc3d", () => {
     const fLinearWaveInverse = (x: number): number => {
       if (x === 0) return 0;
       if (x === 1) return 1;
-      const scale = ((a < b) ? b / a : a / b) * 100;
+      const scale = (a < b) ? b / a : a / b;
       return 0.5 + 1 / Math.PI * Math.atan(scale * Math.tan(Math.PI * (x - 0.5)));
     };
 
-    // plot the fraction->curvature graph for the first quadrant of the ellipse, normalized into unit square
-    const plotNormalizedFractionToCurvature = (arc: Arc3d, f: (x: number) => number): void => {
-      const fullArc = arc.clone();
-      fullArc.sweep = AngleSweep.create360();
-      const pts: Point3d[] = [];
-      for (let angle = 0; angle <= Angle.piOver2Radians + 0.0001; angle += 0.01) {
-        const fraction = fullArc.sweep.radiansToSignedPeriodicFraction(angle);
-        const mappedFraction = f(fraction);
-        pts.push(Point3d.create(fraction, fullArc.fractionToCurvature(mappedFraction)));
+    // plot curvature->pointHeight and arc with same y-scale in the first quadrant of the ellipse
+    const plotCurvatureDistribution = (arc: Arc3d, numPts: number, f: (x: number) => number): void => {
+      const yMag = arc.matrixRef.columnYMagnitude();
+      const c0 = yMag / arc.matrixRef.columnXMagnitudeSquared();    // curvature at y-axis point
+      const c1 = arc.matrixRef.columnXMagnitude() / (yMag * yMag);  // curvature at x-axis point
+      const mapPts: Point3d[] = [];
+      const arcPts: Point3d[] = [];
+      const numSamples = 1 + numPts * 10;
+      const delta = 1 / (numSamples - 1);
+      mapPts.push(Point3d.create(c0, Angle.piOver2Radians)); // nail the first point
+      for (let i = 1; i < numSamples - 1; ++i) {
+        const j = f(i * delta);
+        const c = (1 - j) * c0 + j * c1;  // interpolate between c0 and c1
+        const theta = curvatureToRadians(arc, c)!;
+        mapPts.push(Point3d.create(c, theta));
       }
-      Range3d.createArray(pts).getNpcToWorldRangeTransform().inverse()?.multiplyPoint3dArrayInPlace(pts);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, pts, x0, y0, z0);
+      mapPts.push(Point3d.create(c1, 0)); // nail the last point
+      const localArc = arc.cloneTransformed(Transform.createRigidFromOriginAndColumns(arc.center, arc.vector0, arc.vector90, AxisOrder.XYZ)!.inverse()!);
+      for (let i = 0; i < numSamples; ++i) {
+        const theta = mapPts[i].y;
+        const arcPt = localArc.radiansToPoint(theta);
+        mapPts[i].y = arcPt.y;  // equate map and arc y-scale
+        if (i % numPts === 0)
+          arcPts.push(arcPt);
+      }
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mapPts, x0, y0, z0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, arcPts, x0 + 3 ,y0, z0);
     };
 
     for (const arc of arcs) {
-      for (const f of [fLinear, fQuadratic, fSqrt, fLinearWave, fLinearWaveInverse]) {
-        plotNormalizedFractionToCurvature(arc, f);
+      for (const f of [fLinear, fPiecewiseLinearUnder, fQuadratic, fScaledQuadratic, fCubic, fSqrt, fLinearWave, fLinearWaveInverse]) {
+        plotCurvatureDistribution(arc, 10, f);
         y0 += yDelta;
         for (const numQuadrantPoints of [3, 4, 5, 10, 20]) {
           testArc(arc, numQuadrantPoints, f);
