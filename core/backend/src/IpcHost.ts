@@ -158,8 +158,13 @@ export abstract class IpcHandler {
    */
   public static register(): RemoveFunction {
     const impl = new (this as any)() as IpcHandler; // create an instance of subclass. "as any" is necessary because base class is abstract
+    const forbiddenFuncs = Object.getOwnPropertyNames(Object.getPrototypeOf({}));
+
     return IpcHost.handle(impl.channelName, async (_evt: Event, funcName: string, ...args: any[]): Promise<IpcInvokeReturn> => {
       try {
+        if (forbiddenFuncs.includes(funcName))
+          throw new Error(`Method "${funcName}" not available for channel: ${impl.channelName}`);
+
         const func = (impl as any)[funcName];
         if (typeof func !== "function")
           throw new IModelError(IModelStatus.FunctionNotFound, `Method "${impl.constructor.name}.${funcName}" not found on IpcHandler registered for channel: ${impl.channelName}`);

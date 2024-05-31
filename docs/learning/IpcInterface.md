@@ -56,22 +56,29 @@ interface MyInterface {
 
 2. In your backend code, implement a class that extends [IpcHandler]($backend) and implements the interface you defined in step 1. In your startup code, call the static method `register` on your new class. Your class must implement the abstract method `get channelName()`. Return the channel name variable from your interface file.
 
-```ts
-class MyClassHandler extends IpcHandler implements MyInterface
-  public get channelName() { return myChannel; }
-  public async sayHello(arg1: string, arg2: number, arg3: boolean) {
-    return `hello: ${arg1} ${arg2} ${arg3}`
-  }
+> To ensure that any `private` methods in your new class are inaccessible from the frontend, make sure to either move them out of the class or define them using the [hash # prefix](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_properties).
 
-  // ...in startup code
-  MyClass.register();
+```ts
+class MyClassHandler extends IpcHandler implements MyInterface {
+  public get channelName() {
+    return myChannel;
+  }
+  public async sayHello(arg1: string, arg2: number, arg3: boolean) {
+    return `hello: ${arg1} ${arg2} ${arg3}`;
+  }
+  #privateSayHello(arg1: string) {
+    return `hello: ${arg1}`;
+  }
+}
+
+// ...in startup code
+MyClassHandler.register();
 ```
 
 3. In your frontend code, make an Proxy object using `IpcApp.makeIpcProxy`:
 
 ```ts
-
-  const myBackendIpc = IpcApp.makeIpcProxy<MyInterface>(myChannel);
+const myBackendIpc = IpcApp.makeIpcProxy<MyInterface>(myChannel);
 ```
 
 This makes a Proxy object to call the methods of `MyInterface` from the frontend.
