@@ -113,6 +113,8 @@ export class EllipticalArcApproximationContext {
 
 /*    const f = (x: number): number => { return x; }; // TODO
 
+  // don't add interior fraction if near quadrant fraction
+
     const cMin = this.curvatureRange.low;
     const cMax = this.curvatureRange.high;
     const tDelta = 1.0 / (numPointsInQuadrant - 1);
