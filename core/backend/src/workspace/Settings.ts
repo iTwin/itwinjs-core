@@ -75,16 +75,33 @@ export namespace Setting { // eslint-disable-line @typescript-eslint/no-redeclar
 }
 
 /**
- * The name of a Setting. SettingNames must be valid JavaScript property names, defined in a [[SettingSchema]].
- * @see [SettingName]($docs/learning/backend/Workspace#settingnames)
+ * The name of a [[Setting]].
+ * Setting names must be [valid JavaScript property names](https://developer.mozilla.org/en-US/docs/Glossary/property/JavaScript).
+ * The name of a setting begins with the schema prefix of the [[SettingGroupSchema]] in which its [[SettingSchema]] is defined.
+ * A setting name therefore forms a path like file names in a file system.
+ * For example, the following are setting names defined in the `energyAnalysis`, `iot-scan-visualization`, and `vibration-map` schemas.
+ *
+ * ###TODO snippet
+ * ```ts
+ * "energyAnalysis/formats/totalWork"
+ * "energyAnalysis/formats/totalHours"
+ * "energyAnalysis/units/power"
+ * "energyAnalysis/units/temperature"
+ * "energyAnalysis/startupMode"
+ * "iot-scan-visualization/ports/cameras"
+ * "vibration-map/filters/scope"
+ * "vibration-map/filters/prefabricated"
+ * ```
+ *
  * @beta
  */
 export type SettingName = string;
 
-/** An object with only string-named members.
+/** An object that provides values for [[Setting]]s. Each of its properties' names must conform to the semantics of a [[SettignName]].
  * @beta
  */
 export interface SettingsContainer {
+  /** Accesses settings by their names. */
   [name: SettingName]: Setting | undefined;
 }
 
