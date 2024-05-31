@@ -125,7 +125,7 @@ export interface WorkspaceSettingsProps extends WorkspaceDbCloudProps {
   /** The name of the resource holding the stringified JSON of the `Settings.Dictionary`. The default resourceName is "settingsDictionary" */
   resourceName: string;
   /** The priority for loading the Settings.Dictionary. Higher values override lower values. */
-  priority: SettingsPriority | number;
+  priority: SettingsPriority;
 }
 
 /**

@@ -105,23 +105,30 @@ export interface SettingsContainer {
   [name: SettingName]: Setting | undefined;
 }
 
-/**
- * Values for Settings.Priority determine the sort order for Settings. Higher values take precedence over lower values.
+/** Defines the precedence of a [[SettingsDictionary]].
+ * [[Settings]] may contain multiple dictionaries containing different values for the same [[SettingName]].
+ * When resolving the value of a [[Setting]], the value from the highest-priority dictionary is used.
+ * Priorities are grouped into coarse categories like [[SettingsPriority.application]] and [[SettingsPriority.iModel]].
+ * Settings with priorities less than or equal to [[SettingsPriority.application]] are stored in [[IModelHost.appWorkspace]], while
+ * those with priorities higher than [[SettingsPriority.application]] are stored inside [[IModelDb.workspace]].
  * @beta
  */
-export enum SettingsPriority {
-  /** values supplied default-settings files */
-  defaults = 100,
-  /** values supplied by applications at runtime */
-  application = 200,
-  /** values that apply to all iTwins for an organization. */
-  organization = 300,
-  /** values that apply to all iModels in an iTwin. */
-  iTwin = 400,
-  /** values that apply to all branches of an iModel. */
-  branch = 500,
-  /** values stored in an iModel. */
-  iModel = 600,
+export type SettingsPriority = number;
+
+/** @beta */
+export namespace SettingsPriority {
+  /** Settings that originate from default setting files loaded automatically at the start of a session. */
+  export const defaults = 100;
+  /** Settings supplied by an application at runtime. */
+  export const application = 200;
+  /** Settings that apply to all iTwins for an organization. */
+  export const organization = 300;
+  /** Settings that apply to all iModels in an iTwin. */
+  export const iTwin = 400;
+  /** Settings that apply to all branches of an iModel. */
+  export const branch = 500;
+  /** Settings that apply to a specific iModel. */
+  export const iModel = 600;
 }
 
 /**
@@ -146,7 +153,7 @@ export interface SettingsDictionarySource {
 
 /** The properties required for adding a new Settings.Dictionary. */
 export interface SettingsDictionaryProps extends SettingsDictionarySource {
-  readonly priority: SettingsPriority | number;
+  readonly priority: SettingsPriority;
 }
 
 /** The current set of Settings for a Workspace.
@@ -171,12 +178,12 @@ export interface Settings {
    * @param priority the Settings.Priority for the Settings.Dictionary
    * @note If the Settings.Dictionary was previously added, the new content overrides the old content.
    */
-  addFile(fileName: LocalFileName, priority: SettingsPriority | number): void;
+  addFile(fileName: LocalFileName, priority: SettingsPriority): void;
 
   /** Add all files in the supplied directory with the extension ".json" or ".json5"
    * @param dirName the name of a local settings directory
    */
-  addDirectory(dirName: LocalDirName, priority: SettingsPriority | number): void;
+  addDirectory(dirName: LocalDirName, priority: SettingsPriority): void;
 
   /** Add a Settings.Dictionary from a JSON5 stringified string. The string is parsed and the resultant object is added as a Settings.Dictionary.
    * @param props properties of the Settings.Dictionary
