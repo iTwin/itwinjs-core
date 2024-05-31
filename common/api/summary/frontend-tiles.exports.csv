@@ -6,6 +6,7 @@ internal;frontendTilesOptions:
 beta;initializeFrontendTiles(options: FrontendTilesOptions): void
 beta;MeshExport
 internal;MeshExports
-beta;MeshExportServiceProvider
+beta;obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise
 beta;ObtainMeshExportTilesetUrlArgs
+beta;queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator
 beta;QueryMeshExportsArgs

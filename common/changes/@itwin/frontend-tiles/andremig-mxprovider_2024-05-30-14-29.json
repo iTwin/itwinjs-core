@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/frontend-tiles",
-      "comment": "Added MeshExportServiceProvider",
+      "comment": "Refactor FrontendTiles",
       "type": "none"
     }
   ],

@@ -5,7 +5,7 @@
 
 import { IModelApp, IModelConnection, SpatialTileTreeReferences, SpatialViewState } from "@itwin/core-frontend";
 import { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTreeRefs";
-import { ComputeSpatialTilesetBaseUrl, MeshExportServiceProvider } from "./MeshExportServiceProvider";
+import { ComputeSpatialTilesetBaseUrl, obtainMeshExportTilesetUrl } from "./MeshExportService";
 
 /** Options supplied to [[initializeFrontendTiles]].
  * @beta
@@ -56,7 +56,6 @@ export const frontendTilesOptions = {
  * @beta
  */
 export function initializeFrontendTiles(options: FrontendTilesOptions): void {
-  const provider = new MeshExportServiceProvider();
   if (undefined !== options.maxLevelsToSkip && options.maxLevelsToSkip >= 0)
     frontendTilesOptions.maxLevelsToSkip = options.maxLevelsToSkip;
 
@@ -67,7 +66,7 @@ export function initializeFrontendTiles(options: FrontendTilesOptions): void {
     frontendTilesOptions.useIndexedDBCache = true;
 
   const computeUrl = options.computeSpatialTilesetBaseUrl ?? (
-    async (iModel: IModelConnection) => provider.obtainMeshExportTilesetUrl({ iModel, accessToken: await IModelApp.getAccessToken(), enableCDN: options.enableCDN })
+    async (iModel: IModelConnection) => obtainMeshExportTilesetUrl({ iModel, accessToken: await IModelApp.getAccessToken(), enableCDN: options.enableCDN })
   );
 
   SpatialTileTreeReferences.create = (view: SpatialViewState) => createBatchedSpatialTileTreeReferences(view, computeUrl);

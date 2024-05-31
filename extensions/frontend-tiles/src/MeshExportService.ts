@@ -15,6 +15,20 @@ import { loggerCategory } from "./LoggerCategory";
  */
 export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
 
+function createMeshExportServiceQueryUrl(args: { iModelId: string, urlPrefix?: string, changesetId?: string, enableCDN?: boolean }): string {
+  const prefix = args.urlPrefix ?? "";
+  let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.iModelId}&$orderBy=date:desc`;
+  if (args.changesetId)
+    url = `${url}&changesetId=${args.changesetId}`;
+
+  if (args.enableCDN)
+    url = `${url}&cdn=1`;
+
+  url = `${url}&tileVersion=1&exportType=IMODEL`;
+
+  return url;
+}
+
 /** Represents the result of a [mesh export](https://developer.bentley.com/apis/mesh-export/operations/get-export/#export).
  * @see [[queryCompletedMeshExports]].
  * @beta
@@ -71,6 +85,43 @@ export interface QueryMeshExportsArgs {
   enableCDN?: boolean;
 }
 
+/** Query the [mesh export service](https://developer.bentley.com/apis/mesh-export/operations/get-exports/) for exports of type "IMODEL" matching
+ * the specified criteria.
+ * The exports are sorted from most-recently- to least-recently-produced.
+ * @beta
+ */
+export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator<MeshExport> {
+  const headers = {
+    /* eslint-disable-next-line @typescript-eslint/naming-convention */
+    Authorization: args.accessToken ?? await IModelApp.getAccessToken(),
+    /* eslint-disable-next-line @typescript-eslint/naming-convention */
+    Accept: "application/vnd.bentley.itwin-platform.v1+json",
+    /* eslint-disable-next-line @typescript-eslint/naming-convention */
+    Prefer: "return=representation",
+    /* eslint-disable-next-line @typescript-eslint/naming-convention */
+    SessionId: IModelApp.sessionId,
+  };
+
+  let url: string | undefined = createMeshExportServiceQueryUrl(args);
+  while (url) {
+    let result;
+    try {
+      const response = await fetch(url, { headers });
+      result = await response.json() as MeshExports;
+    } catch (err) {
+      Logger.logException(loggerCategory, err);
+      Logger.logError(loggerCategory, `Failed loading exports for iModel ${args.iModelId}`);
+      break;
+    }
+
+    const foundExports = result.exports.filter((x) => x.request.exportType === "IMODEL" && (args.includeIncomplete || x.status === "Complete"));
+    for (const foundExport of foundExports)
+      yield foundExport;
+
+    url = result._links.next?.href;
+  }
+}
+
 /** Arguments supplied  to [[obtainMeshExportTilesetUrl]].
  * @beta
  */
@@ -89,105 +140,47 @@ export interface ObtainMeshExportTilesetUrlArgs {
   enableCDN?: boolean;
 }
 
-/** Provides access to the Mesh Export Service
-* @beta
-*/
-export class MeshExportServiceProvider {
-
-  protected createMeshExportServiceQueryUrl(args: { iModelId: string, urlPrefix?: string, changesetId?: string, enableCDN?: boolean }): string {
-    const prefix = args.urlPrefix ?? "";
-    let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.iModelId}&$orderBy=date:desc`;
-    if (args.changesetId)
-      url = `${url}&changesetId=${args.changesetId}`;
-
-    if (args.enableCDN)
-      url = `${url}&cdn=1`;
-
-    url = `${url}&tileVersion=1&exportType=IMODEL`;
-
-    return url;
-  }
-
-  /** Query the [mesh export service](https://developer.bentley.com/apis/mesh-export/operations/get-exports/) for exports of type "IMODEL" matching
- * the specified criteria.
- * The exports are sorted from most-recently- to least-recently-produced.
- * @beta
- */
-  protected async* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator<MeshExport> {
-    const headers = {
-    /* eslint-disable-next-line @typescript-eslint/naming-convention */
-      Authorization: args.accessToken ?? await IModelApp.getAccessToken(),
-      /* eslint-disable-next-line @typescript-eslint/naming-convention */
-      Accept: "application/vnd.bentley.itwin-platform.v1+json",
-      /* eslint-disable-next-line @typescript-eslint/naming-convention */
-      Prefer: "return=representation",
-      /* eslint-disable-next-line @typescript-eslint/naming-convention */
-      SessionId: IModelApp.sessionId,
-    };
-
-    let url: string | undefined = this.createMeshExportServiceQueryUrl(args);
-    while (url) {
-      let result;
-      try {
-        const response = await fetch(url, { headers });
-        result = await response.json() as MeshExports;
-      } catch (err) {
-        Logger.logException(loggerCategory, err);
-        Logger.logError(loggerCategory, `Failed loading exports for iModel ${args.iModelId}`);
-        break;
-      }
-
-      const foundExports = result.exports.filter((x) => x.request.exportType === "IMODEL" && (args.includeIncomplete || x.status === "Complete"));
-      for (const foundExport of foundExports)
-        yield foundExport;
-
-      url = result._links.next?.href;
-    }
-  }
-
-  /** Obtains a URL pointing to a tileset appropriate for visualizing a specific iModel.
+/** Obtains a URL pointing to a tileset appropriate for visualizing a specific iModel.
  * [[queryCompletedMeshExports]] is used to obtain a list of available exports. By default, the list is sorted from most to least recently-exported.
  * The first export matching the iModel's changeset is selected; or, if no such export exists, the first export in the list is selected.
  * @returns A URL from which the tileset can be loaded, or `undefined` if no appropriate URL could be obtained.
  * @beta
  */
-  public async obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise<URL | undefined> {
-    if (!args.iModel.iModelId) {
-      Logger.logInfo(loggerCategory, "Cannot obtain exports for an iModel with no iModelId");
-      return undefined;
-    }
+export async function obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise<URL | undefined> {
+  if (!args.iModel.iModelId) {
+    Logger.logInfo(loggerCategory, "Cannot obtain exports for an iModel with no iModelId");
+    return undefined;
+  }
 
-    const queryArgs: QueryMeshExportsArgs = {
-      accessToken: args.accessToken,
-      iModelId: args.iModel.iModelId,
-      changesetId: args.iModel.changeset.id,
-      urlPrefix: args.urlPrefix,
-      enableCDN: args.enableCDN,
-    };
+  const queryArgs: QueryMeshExportsArgs = {
+    accessToken: args.accessToken,
+    iModelId: args.iModel.iModelId,
+    changesetId: args.iModel.changeset.id,
+    urlPrefix: args.urlPrefix,
+    enableCDN: args.enableCDN,
+  };
 
-    let selectedExport;
-    for await (const exp of this.queryMeshExports(queryArgs)) {
+  let selectedExport;
+  for await (const exp of queryMeshExports(queryArgs)) {
+    selectedExport = exp;
+    break;
+  }
+
+  if (!selectedExport && !args.requireExactChangeset) {
+    queryArgs.changesetId = undefined;
+    for await (const exp of queryMeshExports(queryArgs)) {
       selectedExport = exp;
+      Logger.logInfo(loggerCategory, `No exports for iModel ${args.iModel.iModelId} for changeset ${args.iModel.changeset.id}; falling back to most recent`);
       break;
     }
-
-    if (!selectedExport && !args.requireExactChangeset) {
-      queryArgs.changesetId = undefined;
-      for await (const exp of this.queryMeshExports(queryArgs)) {
-        selectedExport = exp;
-        Logger.logInfo(loggerCategory, `No exports for iModel ${args.iModel.iModelId} for changeset ${args.iModel.changeset.id}; falling back to most recent`);
-        break;
-      }
-    }
-
-    if (!selectedExport) {
-      Logger.logInfo(loggerCategory, `No exports available for iModel ${args.iModel.iModelId}`);
-      return undefined;
-    }
-
-    const url = new URL(selectedExport._links.mesh.href);
-    url.pathname = `${url.pathname}/tileset.json`;
-    return url;
   }
-}
 
+  if (!selectedExport) {
+    Logger.logInfo(loggerCategory, `No exports available for iModel ${args.iModel.iModelId}`);
+    return undefined;
+  }
+
+  const url = new URL(selectedExport._links.mesh.href);
+  url.pathname = `${url.pathname}/tileset.json`;
+  return url;
+}
