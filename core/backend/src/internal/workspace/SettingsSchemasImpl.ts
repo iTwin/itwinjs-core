@@ -9,14 +9,14 @@ import { extname, join } from "path";
 import { assert, BeEvent, JSONSchemaType, JSONSchemaTypeName, Mutable } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../../IModelJsFs";
-import { SettingSchema, SettingSchemaGroup, SettingsSchemas } from "../../workspace/SettingsSchemas";
+import { SettingSchema, SettingGroupSchema, SettingsSchemas } from "../../workspace/SettingsSchemas";
 import { implementationProhibited } from "../ImplementationProhibited";
 
 const makeSettingKey = (prefix: string, key: string) => `${prefix}/${key}`;
 
 class SettingsSchemasImpl implements SettingsSchemas {
   public readonly [implementationProhibited] = undefined;
-  private readonly _allGroups = new Map<string, SettingSchemaGroup>();
+  private readonly _allGroups = new Map<string, SettingGroupSchema>();
   /** a map of all registered Setting Definitions  */
   public readonly settingDefs = new Map<string, SettingSchema>();
   /** a map of all registered TypeDefs  */
@@ -138,7 +138,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
    * Add one or more [[SettingSchemaGroup]]s. `SettingSchemaGroup`s must include a `schemaPrefix` member that is used
    * to identify the group. If a group with the same name is already registered, the old values are first removed and then the new group is added.
    */
-  public addGroup(settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]): void {
+  public addGroup(settingsGroup: SettingGroupSchema | SettingGroupSchema[]): void {
     if (!Array.isArray(settingsGroup))
       settingsGroup = [settingsGroup];
 
@@ -175,7 +175,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
     this.onSchemaChanged.raiseEvent();
   }
 
-  private doAdd(settingsGroup: SettingSchemaGroup[]) {
+  private doAdd(settingsGroup: SettingGroupSchema[]) {
     settingsGroup.forEach((group) => {
       if (undefined === group.schemaPrefix)
         throw new Error(`settings group has no "schemaPrefix" member`);
@@ -255,7 +255,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
     }
   }
 
-  private validateAndAdd(group: SettingSchemaGroup) {
+  private validateAndAdd(group: SettingGroupSchema) {
     const settingDefs = group.settingDefs;
     if (undefined !== settingDefs) {
       for (const key of Object.keys(settingDefs)) {

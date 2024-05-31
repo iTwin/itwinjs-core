@@ -11,7 +11,7 @@ import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { implementationProhibited } from "../internal/ImplementationProhibited"; 
 import { SettingName } from "./Settings";
 
- /** Metadata describing a single [[Setting]] as part of a [[SettingSchemaGroup]].
+ /** Metadata describing a single [[Setting]] as part of a [[SettingGroupSchema]].
   * Every setting has a [[type]], which can be one of the following:
   * - A primitive type like `string` or `number`;
   * - An object containing any number of named properties, each with their own types; or
@@ -27,7 +27,7 @@ export interface SettingSchema extends Readonly<JSONSchema> {
   readonly type: JSONSchemaTypeName;
   /** For objects and arrays only, the name of a [[SettingSchema]] that provides a base definition for this type.
    * The name is expected to refer to a type definition registered with [[SettingsSchema.typeDefs]].
-   * Therefore, it must be the full name, including the [[SettingSchemaGroup.schemaPrefix]].
+   * Therefore, it must be the full name, including the [[SettingGroupSchema.schemaPrefix]].
    */
   readonly extends?: string;
   /** For objects only, the name and metadata of each of the object's properties. */
@@ -64,7 +64,7 @@ export interface SettingSchema extends Readonly<JSONSchema> {
   * ###TODO example code snippet for myApp/categories
   * @beta
   */
-export interface SettingSchemaGroup {
+export interface SettingGroupSchema {
   /** Uniquely identifies this group amongst all other groups.
    * The prefix can use forward-slashes to define logical subgroups - for example, two related groups with the prefixes "units/metric" and "units/imperial".
    * The user interface may parse these prefixes to display both groups under a "units" tab or expandable tree view node.
@@ -85,7 +85,7 @@ export interface SettingSchemaGroup {
 }
 
 /**
- * The registry of available [[SettingSchemaGroup]]s.
+ * The registry of available [[SettingGroupSchema]]s.
  * The registry is used for editing Settings files and for finding default values for settings.
  * @beta
  */
@@ -104,7 +104,7 @@ export interface SettingsSchemas {
   readonly onSchemaChanged: BeEvent<() => void>;
 
   validateSetting<T>(value: T, settingName: string): T;
-  addGroup(settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]): void;
+  addGroup(settingsGroup: SettingGroupSchema | SettingGroupSchema[]): void;
   addJson(settingSchema: string): void;
   addFile(fileName: LocalFileName): void;
   addDirectory(dirName: LocalDirName): void;

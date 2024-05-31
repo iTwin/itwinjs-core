@@ -8,7 +8,7 @@ import { assert, Mutable, OpenMode } from "@itwin/core-bentley";
 import { SnapshotDb, StandaloneDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { Setting, SettingsContainer, SettingsPriority } from "../../workspace/Settings";
-import { SettingSchema, SettingSchemaGroup } from "../../workspace/SettingsSchemas";
+import { SettingSchema, SettingGroupSchema } from "../../workspace/SettingsSchemas";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { GcsDbProps, GeoCoordConfig } from "../../GeoCoordConfig";
 
@@ -26,7 +26,7 @@ describe("Settings", () => {
     iModel.close();
   });
 
-  const app1: SettingSchemaGroup = {
+  const app1: SettingGroupSchema = {
     schemaPrefix: "app1",
     settingDefs: {
       sub1: {
@@ -313,7 +313,7 @@ describe("Settings", () => {
 
   describe("combineArray", () => {
     function addGroup(schemaPrefix: string, type: "number" | "object", combineArray: boolean | undefined): void {
-      const group: SettingSchemaGroup = {
+      const group: SettingGroupSchema = {
         schemaPrefix,
         settingDefs: {
           array: {
