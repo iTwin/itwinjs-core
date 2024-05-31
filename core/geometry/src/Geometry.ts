@@ -316,7 +316,7 @@ export class Geometry {
   /**
    * Correct `fraction` to `replacement` if `fraction` is undefined or too small.
    * @param fraction number to test
-   * @param replacement value to return if `fraction` is too small
+   * @param replacement value to return if `fraction` is too small. Default zero.
    * @returns `fraction` if its absolute value is at least `Geometry.smallFraction`; otherwise returns `replacement`
    */
   public static correctSmallFraction(fraction: number | undefined, replacement: number = 0.0): number {
