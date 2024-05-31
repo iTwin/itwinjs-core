@@ -69,7 +69,7 @@ export interface SettingGroupSchema {
    * The prefix can use forward-slashes to define logical subgroups - for example, two related groups with the prefixes "units/metric" and "units/imperial".
    * The user interface may parse these prefixes to display both groups under a "units" tab or expandable tree view node.
    *
-   * @note Schema prefixes beginning with "iTwin" are reserved for use by iTwin.js.
+   * @note Schema prefixes beginning with "itwin" are reserved for use by iTwin.js.
    */
   readonly schemaPrefix: string;
   /** Metadata for each [[Setting]] in this group. */
@@ -91,19 +91,43 @@ export interface SettingGroupSchema {
  */
 
  /** The registry of metadata describing groups of [[SettingSchema]]s available to the current session.
-  * ###TODO how schemas are populated at startup and should be populated/customized by apps
+  * The schemas are used to look up the default values of [[Setting]]s, validate that their values are of the type dictated by the schema, and
+  * query metadata like [[SettingsSchema.combineArray]] that modify their behavior.
+  * They can also be used to drive a user interface that enables end users to edit [[Settings]].
+  *
+  * When [[IModelHost.startup]] is invoked at the beginning of a session, schemas delivered with the application - like those describing
+  * [[Workspace]]s - are automatically loaded.
+  * The application can manually register additional schemas using methods like [[addGroup]], [[addFile]], [[addDirectory]], and [[addJson]].
+  * When [[IModelHost.shutdown]] is invoked at the end of a session, all registered schemas are unregistered.
+  *
   * @see [[IModelHost.settingsSchemas]] to access the registry for the current session.
   * @beta
   */
 export interface SettingsSchemas {
-  /** Prevents people from implementing this interface @internal */
+  /** @internal */
   readonly [implementationProhibited]: unknown;
 
-  readonly settingDefs: Map<string, SettingSchema>;
-  readonly typeDefs: Map<string, SettingSchema>;
+  /** The map of each individual registered [[SettingSchema]] defining a [[Setting]], accessed by its fully-qualified name (including its [[SettingGroupSchema.schemaPrefix]]). */
+  readonly settingDefs: ReadonlyMap<string, SettingSchema>;
+
+  /** The map of each individual registered [[SettingSchema]] defining a type that can be extended by other [[SettingSchema]]s via [[SettingSchema.extends]],
+   * accessed by its fully-qualified name (including its [[SettingGroupSchema.schemaPrefix]]).
+   */
+  readonly typeDefs: ReadonlyMap<string, SettingSchema>;
+
+  /** An event raised whenever schemas are added or removed. */
   readonly onSchemaChanged: BeEvent<() => void>;
 
+  /**
+   * Ensure that the setting value supplied is valid according to its [[SettingSchema]].
+   * If no schema has been registered for the setting, no validation is performed.
+   * @param value The value of the setting to validate against the schema.
+   * @param settingName The fully-qualified setting name.
+   * @returns `value` if `value` matches the schema corresponding to `settingName`, or if no such schema has been registered.
+   * @throws Error if `value` is invalid according to the schema.
+   */
   validateSetting<T>(value: T, settingName: string): T;
+
   addGroup(settingsGroup: SettingGroupSchema | SettingGroupSchema[]): void;
   addJson(settingSchema: string): void;
   addFile(fileName: LocalFileName): void;

@@ -37,13 +37,6 @@ class SettingsSchemasImpl implements SettingsSchemas {
     throw new Error(`value for ${path}: "${val}" is wrong type, expected ${expectedType}`);
   }
 
-  /**
-   * Ensure that the setting value supplied is valid according to the schema of its setting definition.
-   * @param value the value of the setting to validate.
-   * @param settingName the name of the setting to check [[value]] against. If no SettingSchema exists for this name, no validation is performed and value is returned.
-   * @returns [[value]] if no problems exist.
-   * @throws if [[value]] is invalid according to the SettingSchema with an explanation of the problem.
-   */
   public validateSetting<T>(value: T, settingName: string): T {
     const settingDef = this.settingDefs.get(settingName);
     if (undefined !== settingDef) // if there's no setting definition, there's no rules so just return ok
