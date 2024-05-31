@@ -1216,13 +1216,17 @@ export class PolyfaceQuery {
     }
     return builder.claimPolyface(true);
   }
-  /** Return the point count of the `source`. */
+  /**
+   * Return the point count of the `source`.
+   * * If `source` is a visitor, this is an upper bound on the number of addressed mesh vertices.
+   */
   public static visitorClientPointCount(source: Polyface | PolyfaceVisitor): number {
     if (source instanceof Polyface)
       return source.data.point.length;
     const polyface = source.clientPolyface();
     if (polyface !== undefined)
       return polyface.data.point.length;
+    const saveReadIndex = source.currentReadIndex();
     source.reset();
     let maxIndex = -1;
     while (source.moveToNextFacet()) {
@@ -1230,22 +1234,30 @@ export class PolyfaceQuery {
         if (pointIndex > maxIndex)
           maxIndex = pointIndex;
     }
+    source.moveToReadIndex(saveReadIndex);
     return maxIndex + 1;
   }
-  /** Return the facet count of the `source`. */
+  /**
+   * Return the facet count of the `source`.
+   * * If `source` is a visitor, this is the number of facets it can visit.
+   */
   public static visitorClientFacetCount(source: Polyface | PolyfaceVisitor): number {
     if (source instanceof Polyface) {
       if (source.facetCount !== undefined)
         return source.facetCount;
       source = source.createVisitor(0);
     }
+    if (source.getVisitableFacetCount)
+      return source.getVisitableFacetCount();
     const polyface = source.clientPolyface();
     if (polyface !== undefined && polyface.facetCount !== undefined)
       return polyface.facetCount;
+    const saveReadIndex = source.currentReadIndex();
     let facetCount = 0;
     source.reset();
     while (source.moveToNextFacet())
       ++facetCount;
+    source.moveToReadIndex(saveReadIndex);
     return facetCount;
   }
   /**
@@ -1662,10 +1674,10 @@ export class PolyfaceQuery {
     return result;
   }
   /**
-   * Return a new facet set with a subset of facets in polyface.
+   * Return a new facet set from the source facets, specifying how to copy duplicate facets.
    * @param source the polyface.
    * @param includeSingletons true to copy facets that only appear once
-   * @param clusterSelector indicates whether duplicate clusters are to have 0, 1, or all facets included.
+   * @param clusterSelector indicates whether to copy 0, 1, or all facets in each cluster of duplicate facets.
    */
   public static cloneByFacetDuplication(
     source: Polyface, includeSingletons: boolean, clusterSelector: DuplicateFacetClusterSelector,
