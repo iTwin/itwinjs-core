@@ -143,19 +143,23 @@ export namespace SettingsPriority {
   export const iModel = 600;
 }
 
-/**
- * A dictionary of SettingObjects with a source and priority.
-* ###TODO
+/** A named container that supplies values for [[Setting]]s.
+ * @see [[Settings.addDictionary]] to register a new settings dictionary.
  * @beta
  */
 export interface SettingsDictionary {
   /** @internal */
   [implementationProhibited]: unknown;
 
+  /** Metadata describing the dictionary. */
   readonly props: SettingsDictionaryProps;
 
-  // Value always cloned.
-  getSetting<T extends Setting>(settingName: string): T | undefined;
+  /** Obtain a copy of the value of the setting named `settingName` stored in this dictionary, or `undefined` if no such setting exists.
+   * The returned value is always cloned using [[Setting.clone]].
+   * @note Generally, applications use methods like [[Settings.getString]] and [[Setting.getArray]] to resolve a setting value from multiple
+   * dictionaries. Those methods - unlike this one - also validate that `settingName` is of type `T` as defined by its [[SettingSchema]].
+   */
+  getSetting<T extends Setting>(settingName: SettingName): T | undefined;
 }
 
 /** Uniquely identifies a [[SettingsDictionary]].
@@ -187,7 +191,12 @@ export interface Settings {
   /** @internal */
   close(): void;
 
-  /** The set of settings dictionaries from which [[Setting]] values are obtained, sorted by [[SettingsPriority]]. */
+  /** The set of settings dictionaries from which [[Setting]] values are obtained, sorted by [[SettingsPriority]].
+   * The set can contain at most one dictionary for each unique combination of name and [[WorkspaceDb]].
+   * @see [[addDictionary]], [[addFile]], [[addJson]], and [[addDirectory]] to add a new dictionary.
+   * @see [[dropDictionary]] to remove a dictionary.
+   * @see [[getDictionary]] to look up a dictionary.
+   */
   readonly dictionaries: readonly SettingsDictionary[];
 
   /** Event raised whenever a [[SettingsDictionary]] is added or removed. */
@@ -213,6 +222,7 @@ export interface Settings {
 
   /** Add a new [[SettingsDictionary]] with the priority, name, and [[WorkspaceDb]] specified by `props` and setting values supplied by `settings`.
    * @note If a dictionary with the same name and [[WorkspaceDb]] already exists, it will be replaced.
+   * @see [[addFile]], [[addJson]], and [[addDirectory]] for convenient ways to add dictionaries from various sources.
    */
   addDictionary(props: SettingsDictionaryProps, settings: SettingsContainer): void;
 
