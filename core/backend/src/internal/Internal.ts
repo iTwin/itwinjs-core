@@ -20,7 +20,7 @@
  * Example: in IModelDb.ts:
  * ```ts
  *  import { _isOpen, _nativeDb, _prepareSqliteStatement } from "./internal/Internal";
- *  class IModelDb {
+ *  export class IModelDb {
  *    // A package-internal property, initialized in the constructor, accessed as `this[_nativeDb]`.
  *    // @internal
  *    public readonly [_nativeDb]: IModelJsNative.DgnDb;
