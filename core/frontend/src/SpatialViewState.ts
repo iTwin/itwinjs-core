@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { BeEvent, CompressedId64Set, Id64String } from "@itwin/core-bentley";
+import { BeEvent, CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { Constant, Matrix3d, Range3d, XYAndZ } from "@itwin/core-geometry";
 import { AxisAlignedBox3d, HydrateViewStateRequestProps, HydrateViewStateResponseProps, SpatialViewDefinitionProps, ViewStateProps } from "@itwin/core-common";
 import { AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
@@ -254,6 +254,15 @@ export class SpatialViewState extends ViewState3d {
    */
   public setTileTreeReferencesDeactivated(modelIds: Id64String | Id64String[] | undefined, deactivated: boolean | undefined, which: "all" | "animated" | "primary" | "section" | number[]): void {
     this._treeRefs.setDeactivated(modelIds, deactivated, which);
+  }
+
+  /** For getting the [TileTreeReference]s that are in the modelIds, for planar classification.
+   *
+   * @param modelIds modelIds for which to get the TileTreeReferences
+   * @param maskTreeRefs where to store the TileTreeReferences
+   */
+  public setMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void {
+    this._treeRefs.setMaskRefs(modelIds, maskTreeRefs);
   }
 
   private registerModelSelectorListeners(): void {

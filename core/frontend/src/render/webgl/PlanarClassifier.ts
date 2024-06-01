@@ -256,7 +256,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private readonly _plane = Plane3dByOriginAndUnitNormal.create(new Point3d(0, 0, 0), new Vector3d(0, 0, 1))!;    // TBD -- Support other planes - default to X-Y for now.
   private readonly _renderState = new RenderState();
   private readonly _renderCommands: RenderCommands;
-  private readonly _branchStack;
+  private readonly _branchStack = new BranchStack();
   private readonly _batchState: BatchState;
   private _planarClipMask?: PlanarClipMaskState;
   private _classifierTreeRef?: SpatialClassifierTileTreeReference;
@@ -281,7 +281,6 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const flags = this._renderState.flags;
     flags.depthMask = flags.blend = flags.depthTest = false;
 
-    this._branchStack = target.uniforms.branch.stack;
     this._batchState = new BatchState(this._branchStack);
     this._renderCommands = new RenderCommands(target, this._branchStack, this._batchState);
   }
@@ -298,7 +297,6 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
   }
 
-  public get renderCommands(): RenderCommands { return this._renderCommands; }
   public get hiliteTexture(): Texture | undefined { return undefined !== this._classifierBuffers ? this._classifierBuffers.textures.hilite : undefined; }
   public get projectionMatrix(): Matrix4d { return this._projectionMatrix; }
   // public get properties(): SpatialClassifier { return this._classifier; }

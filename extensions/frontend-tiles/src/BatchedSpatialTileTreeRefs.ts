@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Logger } from "@itwin/core-bentley";
+import { Logger, OrderedId64Iterable } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 import {
   AnimationNodeId,
@@ -139,6 +139,20 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
     }
   }
 
+  public setMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void {
+    for (const ref of this._refs) {
+      const tree = ref.treeOwner.load();
+      if (tree) {
+        for (const modelId of modelIds) {
+          if (this._spec.models.get(modelId)) {
+            maskTreeRefs.push(ref);
+            break;
+          }
+        }
+      }
+    }
+  }
+
   public setDeactivated(): void {
     // Used for debugging. Unimplemented here.
   }
@@ -231,6 +245,8 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
       yield this._proxyRef;
     }
   }
+
+  public setMaskRefs(_modelIds: OrderedId64Iterable, _maskTreeRefs: TileTreeReference[]): void { }
 }
 
 const iModelToTilesetSpec = new Map<IModelConnection, BatchedTilesetSpec | null | Promise<BatchedTilesetSpec | null>>();

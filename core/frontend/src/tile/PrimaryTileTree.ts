@@ -8,6 +8,7 @@
 
 import {
   assert, comparePossiblyUndefined, compareStrings, Id64String,
+  OrderedId64Iterable,
 } from "@itwin/core-bentley";
 import {
   BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, ModelMapLayerSettings,
@@ -507,6 +508,8 @@ export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
   attachToViewport(args: AttachToViewportArgs): void;
   /** See SpatialViewState.detachFromViewport. */
   detachFromViewport(): void;
+  /** See SpatialViewState.setMaskRefs */
+  setMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void;
 }
 
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]] and
@@ -667,6 +670,15 @@ class SpatialRefs implements SpatialTileTreeReferences {
 
     for (const modelId of modelIds)
       this._refs.get(modelId)?.setDeactivated(deactivated, refs);
+  }
+
+  public setMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void {
+    for (const modelId of modelIds) {
+      const model = this._view.iModel.models.getLoaded(modelId);
+      assert(model !== undefined);   // Models should be loaded by RealityModelTileTree
+      if (model?.asGeometricModel)
+        maskTreeRefs.push(createMaskTreeReference(this._view, model.asGeometricModel));
+    }
   }
 
   private load(): void {

@@ -53,14 +53,8 @@ export class PlanarClipMaskState {
 
     if (!this._tileTreeRefs) {
       this._tileTreeRefs = new Array<TileTreeReference>();
-      if (this.settings.modelIds) {
-        for (const modelId of this.settings.modelIds) {
-          const model = view.iModel.models.getLoaded(modelId);
-          assert(model !== undefined);   // Models should be loaded by RealityModelTileTree
-          if (model?.asGeometricModel)
-            this._tileTreeRefs.push(createMaskTreeReference(view, model.asGeometricModel));
-        }
-      }
+      if (this.settings.modelIds && view.isSpatialView())
+        view.setMaskRefs(this.settings.modelIds, this._tileTreeRefs);
     }
 
     if (!this._allLoaded)
