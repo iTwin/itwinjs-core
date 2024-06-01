@@ -54,7 +54,7 @@
     "@itwin/imodels-access-frontend": "^5.0.1",
     "@itwin/imodels-client-authoring": "^5.1.0",
     "@itwin/imodels-client-management": "^5.1.0",
-    "@itwin/reality-data-client": "1.1.0",
+    "@itwin/reality-data-client": "^1.2.1",
     "@itwin/oidc-signin-tool": "~3.6.0",
     "body-parser": "^1.20.2"
   },
@@ -75,7 +75,7 @@
     "dotenv-expand": "^5.1.0",
     "electron": "^30.0.0",
     "esbuild-plugin-external-global": "^1.0.1",
-    "eslint": "^8.44.0",
+    "eslint": "^8.56.0",
     "express": "^4.18.2",
     "internal-tools": "workspace:*",
     "npm-run-all": "^4.1.5",

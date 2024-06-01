@@ -872,6 +872,7 @@ export abstract class IModelDb extends IModel {
    * @param {SchemaImportOptions} options - options during schema import.
    * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
    * @note Changes are saved if importSchemas is successful and abandoned if not successful.
+   * - You can use NativeLoggerCategory to turn on the native logs. You can also control [what exactly is logged by the loggers](https://www.itwinjs.org/learning/common/logging/#controlling-what-is-logged).
    * @see querySchemaVersion
    */
   public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
@@ -884,15 +885,23 @@ export abstract class IModelDb extends IModel {
       await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
         const schemaSyncDbUri = syncAccess.getUri();
         this.saveChanges();
-        let stat = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
-        if (DbResult.BE_SQLITE_ERROR_SchemaLockFailed === stat) {
-          this.abandonChanges();
-          if (this.nativeDb.getITwinId() !== Guid.empty)
-            await this.acquireSchemaLock();
-          stat = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
+
+        try {
+          this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
+        } catch (outerErr: any) {
+          if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
+            this.abandonChanges();
+            if (this.nativeDb.getITwinId() !== Guid.empty)
+              await this.acquireSchemaLock();
+            try {
+              this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
+            } catch (innerErr: any) {
+              throw new IModelError(innerErr.errorNumber, innerErr.message);
+            }
+          } else {
+            throw new IModelError(outerErr.errorNumber, outerErr.message);
+          }
         }
-        if (DbResult.BE_SQLITE_OK !== stat)
-          throw new IModelError(stat, "Error importing schema");
       });
     } else {
       const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
@@ -903,9 +912,11 @@ export abstract class IModelDb extends IModel {
       if (this.nativeDb.getITwinId() !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
         await this.acquireSchemaLock();
 
-      const stat = this.nativeDb.importSchemas(schemaFileNames, nativeImportOptions);
-      if (DbResult.BE_SQLITE_OK !== stat)
-        throw new IModelError(stat, "Error importing schema");
+      try {
+        this.nativeDb.importSchemas(schemaFileNames, nativeImportOptions);
+      } catch (err: any) {
+        throw new IModelError(err.errorNumber, err.message);
+      }
     }
     this.clearCaches();
   }
@@ -927,23 +938,32 @@ export abstract class IModelDb extends IModel {
       await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schemaSync" }, async (syncAccess) => {
         const schemaSyncDbUri = syncAccess.getUri();
         this.saveChanges();
-        let stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: false, schemaSyncDbUri });
-        if (DbResult.BE_SQLITE_ERROR_SchemaLockFailed === stat) {
-          this.abandonChanges();
-          if (this.nativeDb.getITwinId() !== Guid.empty)
-            await this.acquireSchemaLock();
-          stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true, schemaSyncDbUri });
+        try {
+          this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: false, schemaSyncDbUri });
+        } catch (outerErr: any) {
+          if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
+            this.abandonChanges();
+            if (this.nativeDb.getITwinId() !== Guid.empty)
+              await this.acquireSchemaLock();
+            try {
+              this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true, schemaSyncDbUri });
+            } catch (innerErr: any) {
+              throw new IModelError(innerErr.errorNumber, innerErr.message);
+            }
+          } else {
+            throw new IModelError(outerErr.errorNumber, outerErr.message);
+          }
         }
-        if (DbResult.BE_SQLITE_OK !== stat)
-          throw new IModelError(stat, "Error importing schema");
       });
     } else {
       if (this.iTwinId && this.iTwinId !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
         await this.acquireSchemaLock();
 
-      const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
-      if (DbResult.BE_SQLITE_OK !== stat)
-        throw new IModelError(stat, "Error importing schema");
+      try {
+        this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
+      } catch (err: any) {
+        throw new IModelError(err.errorNumber, err.message);
+      }
     }
     this.clearCaches();
   }
@@ -2687,9 +2707,31 @@ export class BriefcaseDb extends IModelDb {
 
   /** Upgrades the profile or domain schemas. File must be closed before this call and is always left closed. */
   private static async doUpgrade(briefcase: OpenBriefcaseArgs, upgradeOptions: UpgradeOptions, description: string): Promise<void> {
-    const nativeDb = this.openDgnDb({ path: briefcase.fileName }, OpenMode.ReadWrite, upgradeOptions); // performs the upgrade
-    const wasChanges = nativeDb.hasPendingTxns();
-    nativeDb.closeFile();
+    let wasChanges = false;
+    const executeUpgrade = () => {
+      const nativeDb = this.openDgnDb({ path: briefcase.fileName }, OpenMode.ReadWrite, upgradeOptions); // performs the upgrade
+      wasChanges = nativeDb.hasPendingTxns();
+      nativeDb.closeFile();
+    };
+
+    const isSchemaSyncEnabled = await withBriefcaseDb(briefcase, async (db) => {
+      await SchemaSync.pull(db);
+      return db.nativeDb.schemaSyncEnabled();
+    }) as boolean;
+
+    if (isSchemaSyncEnabled) {
+      await SchemaSync.withLockedAccess(briefcase, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
+        const schemaSyncDbUri = syncAccess.getUri();
+        executeUpgrade();
+        await withBriefcaseDb(briefcase, async (db) => {
+          db.nativeDb.schemaSyncPush(schemaSyncDbUri);
+          db.saveChanges();
+        });
+        syncAccess.synchronizeWithCloud();
+      });
+    } else {
+      executeUpgrade();
+    }
 
     if (wasChanges)
       await withBriefcaseDb(briefcase, async (db) => db.pushChanges({ ...briefcase, description, retainLocks: true }));
@@ -2727,6 +2769,7 @@ export class BriefcaseDb extends IModelDb {
         }
         return;
       }
+      throw error;
     }
     try {
       await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade }, "Upgraded domain schemas");
@@ -2740,6 +2783,7 @@ export class BriefcaseDb extends IModelDb {
           await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
         }
       }
+      throw error;
     }
   }
 
@@ -2832,6 +2876,14 @@ export class BriefcaseDb extends IModelDb {
         Logger.logWarning(category, "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.");
         args.dump();
       } else {
+        if (args.tableName === "be_Prop") {
+          if (args.getValueText(0, DbChangeStage.Old) === "ec_Db" && args.getValueText(1, DbChangeStage.Old) === "localDbInfo") {
+            return DbConflictResolution.Replace;
+          }
+        }
+        if (args.tableName.startsWith("ec_")) {
+          return DbConflictResolution.Skip;
+        }
         const msg = "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.";
         args.setLastError(msg);
         Logger.logError(category, msg);
@@ -2851,6 +2903,9 @@ export class BriefcaseDb extends IModelDb {
         Logger.logWarning(category, "PRIMARY KEY INSERT CONFLICT - resolved by replacing the existing row with the incoming row");
         args.dump();
       } else {
+        if (args.tableName.startsWith("ec_")) {
+          return DbConflictResolution.Skip;
+        }
         const msg = "PRIMARY KEY INSERT CONFLICT - rejecting this changeset";
         args.setLastError(msg);
         Logger.logError(category, msg);
@@ -2968,6 +3023,7 @@ export class BriefcaseDb extends IModelDb {
   public async pullChanges(arg?: PullChangesArgs): Promise<void> {
     await this.executeWritable(async () => {
       await BriefcaseManager.pullAndApplyChangesets(this, arg ?? {});
+      await SchemaSync.pull(this);
       this.initializeIModelDb();
     });
 

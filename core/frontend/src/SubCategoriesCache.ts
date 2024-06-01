@@ -177,7 +177,7 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
 
     public get wasCanceled() { return this._canceled || this._imodel.isClosed; }
 
-    public constructor(categoryIds: Set<string>, imodel: IModelConnection, maxCategoriesPerQuery = 200) {
+    public constructor(categoryIds: Set<string>, imodel: IModelConnection, maxCategoriesPerQuery = 2500) {
       this._imodel = imodel;
 
       const catIds = [...categoryIds];

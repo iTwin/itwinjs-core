@@ -99,6 +99,8 @@ export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterab
     Accept: "application/vnd.bentley.itwin-platform.v1+json",
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
     Prefer: "return=representation",
+    /* eslint-disable-next-line @typescript-eslint/naming-convention */
+    SessionId: IModelApp.sessionId,
   };
 
   let url: string | undefined = createMeshExportServiceQueryUrl(args);
@@ -213,6 +215,11 @@ export interface FrontendTilesOptions {
    * @beta
    */
   enableCDN?: boolean;
+  /** Specifies whether to enable an IndexedDB database for use as a local cache.
+  * Requested tiles will then first be search for in the database, and if not found, fetched as normal.
+  * @internal
+  */
+  useIndexedDBCache?: boolean;
 }
 
 /** Global configuration initialized by [[initializeFrontendTiles]].
@@ -221,6 +228,7 @@ export interface FrontendTilesOptions {
 export const frontendTilesOptions = {
   maxLevelsToSkip: 4,
   enableEdges: false,
+  useIndexedDBCache: false,
 };
 
 /** Initialize the frontend-tiles package to obtain tiles for spatial views.
@@ -232,6 +240,9 @@ export function initializeFrontendTiles(options: FrontendTilesOptions): void {
 
   if (options.enableEdges)
     frontendTilesOptions.enableEdges = true;
+
+  if (options.useIndexedDBCache)
+    frontendTilesOptions.useIndexedDBCache = true;
 
   const computeUrl = options.computeSpatialTilesetBaseUrl ?? (
     async (iModel: IModelConnection) => obtainMeshExportTilesetUrl({ iModel, accessToken: await IModelApp.getAccessToken(), enableCDN: options.enableCDN })

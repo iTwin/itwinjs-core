@@ -1,6 +1,31 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Tue, 16 Apr 2024 14:47:36 GMT and should not be manually modified.
+This log was last generated on Wed, 29 May 2024 14:36:43 GMT and should not be manually modified.
+
+## 4.6.1
+Wed, 29 May 2024 14:35:17 GMT
+
+_Version update only_
+
+## 4.6.0
+Mon, 13 May 2024 20:32:51 GMT
+
+### Updates
+
+- Improve ChangesetConflictArgs & SqliteChangeSetReader API
+- Add awareness to legacy Channels created by Batch Connectors. Update tests and documentation regarding creation of Channels against Partitions instead of Subjects. Remove sharedChannel from the list of allowedChannels by default.
+- add test logic to extract fb from iModel
+- Remove @alpha BackendLoggerCategory.Editing
+- change signature to updateElement to be Partial<ElementProps>. Also update documentation that model and classFullName may not be changed.
+- Add metadata to errors thrown by `insertElement`, `updateElement` and `deleteElement` in `IModelDb`
+- Don't save to lock-database when inserting elements if their Model is locked
+- Promote ClassRegistry.register to public.
+- Change SpanKind of RPC requests to Internal
+- Fix text annotation rotation around anchor point.
+- Add TextAnnotation APIs.
+- allow pushing changes from a briefcase opened readonly
+- deleteElementTree handles DefinitionContainers
+- log only an info message on no aspects
 
 ## 4.5.2
 Tue, 16 Apr 2024 14:46:21 GMT

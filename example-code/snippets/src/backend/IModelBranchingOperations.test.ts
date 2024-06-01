@@ -14,7 +14,7 @@ import { AccessToken } from "@itwin/core-bentley";
 import { Code, ExternalSourceProps, IModel, PhysicalElementProps, RepositoryLinkProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 process.env.TRANSFORMER_NO_STRICT_DEP_CHECK = "1"; // allow this monorepo's dev versions of core libs in transformer
-import { IModelTransformer } from "@itwin/imodel-transformer";
+import { IModelTransformer, ProcessChangesOptions } from "@itwin/imodel-transformer";
 import { KnownTestLocations } from "./IModelTestUtils";
 
 // some json will be required later, but we don't want an eslint-disable line in the example code, so just disable for the file
@@ -99,7 +99,10 @@ async function forwardSyncMasterToBranch(masterDb: BriefcaseDb, branchDb: Briefc
     // read the synchronization provenance in the scope of our representation of the external source, master
     targetScopeElementId: masterExternalSourceId,
   });
-  await synchronizer.processChanges(myAccessToken);
+  const opts: ProcessChangesOptions = {
+    accessToken: myAccessToken,
+  };
+  await synchronizer.processChanges(opts);
   synchronizer.dispose();
   // save and push
   const description = "updated branch with recent master changes";
@@ -126,7 +129,10 @@ async function reverseSyncBranchToMaster(branchDb: BriefcaseDb, masterDb: Briefc
     // be searched for from the source
     targetScopeElementId: masterExternalSourceId,
   });
-  await reverseSynchronizer.processChanges(myAccessToken);
+  const opts: ProcessChangesOptions = {
+    accessToken: myAccessToken,
+  };
+  await reverseSynchronizer.processChanges(opts);
   reverseSynchronizer.dispose();
   // save and push
   const description = "merged changes from branch into master";

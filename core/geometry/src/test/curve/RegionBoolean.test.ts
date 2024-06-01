@@ -488,7 +488,7 @@ describe("RegionBoolean", () => {
     // sectionF is a mess of diagonals.
     for (const baseName of ["sectionA", "sectionB", "sectionC", "sectionD", "sectionE", "sectionF"]) {
       GeometryCoreTestIO.consoleLog({ baseName });
-      const stringA = fs.readFileSync(`./src/test/testInputs/ChainCollector/sectionData00/${baseName}.imjs`, "utf8");
+      const stringA = fs.readFileSync(`./src/test/data/ChainCollector/sectionData00/${baseName}.imjs`, "utf8");
       const jsonA = JSON.parse(stringA);
       const section = IModelJson.Reader.parse(jsonA) as GeometryQuery[];
       const closedAreas: LineString3d[] = [];
@@ -529,7 +529,7 @@ describe("RegionBoolean", () => {
     // for (const baseName of ["sectionA", "sectionB", "sectionC", "sectionD", "sectionE", "sectionF"]) {
     for (const baseName of ["sectionC"]) {
       GeometryCoreTestIO.consoleLog({ baseName });
-      const stringA = fs.readFileSync(`./src/test/testInputs/ChainCollector/sectionData00/${baseName}.imjs`, "utf8");
+      const stringA = fs.readFileSync(`./src/test/data/ChainCollector/sectionData00/${baseName}.imjs`, "utf8");
       const jsonA = JSON.parse(stringA);
       const section = IModelJson.Reader.parse(jsonA) as GeometryQuery[];
       const closedAreas: LineString3d[] = [];
@@ -601,7 +601,7 @@ describe("RegionBoolean", () => {
     // cspell:word Madhav
     for (const baseName of ["sectionA", "sectionB", "sectionC", "sectionD", "sectionE", "MadhavInput"]) {
       GeometryCoreTestIO.consoleLog({ baseName });
-      const stringA = fs.readFileSync(`./src/test/testInputs/ChainCollector/sectionData00/${baseName}.json`, "utf8");
+      const stringA = fs.readFileSync(`./src/test/data/ChainCollector/sectionData00/${baseName}.json`, "utf8");
       const jsonA = JSON.parse(stringA);
       const parser = new SectionDataParser();
       parser.parseAny(jsonA);
@@ -675,36 +675,36 @@ describe("RegionBoolean", () => {
     // * nearly-intersecting edges larger than default tol
     // * island-in-hole
     const testCases: TestInput[] = [
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion0.imjs", expectedNumComponents: 2 },
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion1.imjs", expectedNumComponents: 1 },
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion2.imjs", expectedNumComponents: 2 },
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion3.imjs", expectedNumComponents: 2 },
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion4.imjs", expectedNumComponents: 2 },
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion5.imjs", expectedNumComponents: 2 },
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion6.imjs", expectedNumComponents: 2 },
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion7.imjs", expectedNumComponents: 3 },
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion8.imjs", expectedNumComponents: 2 },
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion9.imjs", expectedNumComponents: 2 },
-      { jsonFilePath: "./src/test/testInputs/curve/disconnectedRegions.imjs", expectedNumComponents: 2 },
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasLoops.imjs", expectedNumComponents: 1 },
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasLoops.imjs", expectedNumComponents: 1, tolerance: 0.0001 },
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsSimplified.imjs", expectedNumComponents: 1 },
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsSimplified.imjs", expectedNumComponents: 1, tolerance: 0.0001 },
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsInRectangle.imjs", expectedNumComponents: 1 },
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsWithDanglers.imjs", expectedNumComponents: 1 },   // has doglegs of length 0.0001
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsWithoutDanglers.imjs", expectedNumComponents: 1 },
-      { jsonFilePath: "./src/test/testInputs/curve/michelParityRegion.imjs", expectedNumComponents: 2 },  // has a small island in a hole!
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasCircularHole.imjs", expectedNumComponents: 1 },
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasCircularHole2.imjs", expectedNumComponents: 4, skipBoolean: true },  // without merge, 4 separate loops
-      { jsonFilePath: "./src/test/testInputs/curve/dovydasLoops.imjs", expectedNumComponents: 1 }, // union makes bridges to three holes along the bridge ray
+      { jsonFilePath: "./src/test/data/curve/laurynasRegion0.imjs", expectedNumComponents: 2 },
+      { jsonFilePath: "./src/test/data/curve/laurynasRegion1.imjs", expectedNumComponents: 1 },
+      { jsonFilePath: "./src/test/data/curve/laurynasRegion2.imjs", expectedNumComponents: 2 },
+      { jsonFilePath: "./src/test/data/curve/laurynasRegion3.imjs", expectedNumComponents: 2 },
+      { jsonFilePath: "./src/test/data/curve/laurynasRegion4.imjs", expectedNumComponents: 2 },
+      { jsonFilePath: "./src/test/data/curve/laurynasRegion5.imjs", expectedNumComponents: 2 },
+      { jsonFilePath: "./src/test/data/curve/laurynasRegion6.imjs", expectedNumComponents: 2 },
+      { jsonFilePath: "./src/test/data/curve/laurynasRegion7.imjs", expectedNumComponents: 3 },
+      { jsonFilePath: "./src/test/data/curve/laurynasRegion8.imjs", expectedNumComponents: 2 },
+      { jsonFilePath: "./src/test/data/curve/laurynasRegion9.imjs", expectedNumComponents: 2 },
+      { jsonFilePath: "./src/test/data/curve/disconnectedRegions.imjs", expectedNumComponents: 2 },
+      { jsonFilePath: "./src/test/data/curve/laurynasLoops.imjs", expectedNumComponents: 1 },
+      { jsonFilePath: "./src/test/data/curve/laurynasLoops.imjs", expectedNumComponents: 1, tolerance: 0.0001 },
+      { jsonFilePath: "./src/test/data/curve/laurynasLoopsSimplified.imjs", expectedNumComponents: 1 },
+      { jsonFilePath: "./src/test/data/curve/laurynasLoopsSimplified.imjs", expectedNumComponents: 1, tolerance: 0.0001 },
+      { jsonFilePath: "./src/test/data/curve/laurynasLoopsInRectangle.imjs", expectedNumComponents: 1 },
+      { jsonFilePath: "./src/test/data/curve/laurynasLoopsWithDanglers.imjs", expectedNumComponents: 1 },   // has doglegs of length 0.0001
+      { jsonFilePath: "./src/test/data/curve/laurynasLoopsWithoutDanglers.imjs", expectedNumComponents: 1 },
+      { jsonFilePath: "./src/test/data/curve/michelParityRegion.imjs", expectedNumComponents: 2 },  // has a small island in a hole!
+      { jsonFilePath: "./src/test/data/curve/laurynasCircularHole.imjs", expectedNumComponents: 1 },
+      { jsonFilePath: "./src/test/data/curve/laurynasCircularHole2.imjs", expectedNumComponents: 4, skipBoolean: true },  // without merge, 4 separate loops
+      { jsonFilePath: "./src/test/data/curve/dovydasLoops.imjs", expectedNumComponents: 1 }, // union makes bridges to three holes along the bridge ray
     ];
     if (GeometryCoreTestIO.enableLongTests) {
-      testCases.push({ jsonFilePath: "./src/test/testInputs/curve/michelLoops2.imjs", expectedNumComponents: 206 });                    // 2 minutes
-      testCases.push({ jsonFilePath: "./src/test/testInputs/curve/michelLoops2.imjs", expectedNumComponents: 338, skipBoolean: true }); // 10 seconds
+      testCases.push({ jsonFilePath: "./src/test/data/curve/michelLoops2.imjs", expectedNumComponents: 206 });                    // 2 minutes
+      testCases.push({ jsonFilePath: "./src/test/data/curve/michelLoops2.imjs", expectedNumComponents: 338, skipBoolean: true }); // 10 seconds
     }
     for (const testCase of testCases) {
       const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase.jsonFilePath, "utf8"))) as Loop[];
-      if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
+      if (ck.testDefined(inputs, "inputs successfully parsed")) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs, x0, y0);
         const range: Range3d = Range3d.createFromVariantData(inputs.map((loop: Loop) => { return [loop.range().low, loop.range().high]; }));
         xDelta = 1.5 * range.xLength();
@@ -712,7 +712,7 @@ describe("RegionBoolean", () => {
         let merged: Loop[] | AnyRegion | undefined = inputs;
         if (!testCase.skipBoolean) {
           merged = RegionOps.regionBooleanXY(inputs, undefined, RegionBinaryOpType.Union, testCase.tolerance);
-          if (ck.testDefined(merged, "regionBooleanXY succeeded") && merged) {
+          if (ck.testDefined(merged, "regionBooleanXY succeeded")) {
             x0 += xDelta;
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged, x0, y0);
             ck.testType(merged, UnionRegion, "regionBooleanXY produced a UnionRegion");
@@ -831,7 +831,7 @@ describe("PlaneAltitudeRangeContext", () => {
           lowHigh = geom.projectedParameterRange(rayParam.ray, lowHigh);
         else if (undefined !== geom)
           lowHigh = PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(geom, rayParam.ray, lowHigh);
-        if (ck.testDefined(lowHigh) && lowHigh) {
+        if (ck.testDefined(lowHigh)) {
           ck.testFalse(lowHigh.isNull, "projection range computed");
           ck.testTrue(lowHigh.isSinglePoint, "projection range is single point");
           ck.testCoordinate(rayParam.param, lowHigh.low, "low projection as expected");
@@ -854,9 +854,9 @@ describe("PlaneAltitudeRangeContext", () => {
     opts.closed = true;
     opts.isChordLenKnots = 1;
     const fitCurve = InterpolationCurve3d.create(opts);
-    const fitCurveLoop = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/interpolationCurveLoop.imjs", "utf8"))) as Loop;
+    const fitCurveLoop = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/interpolationCurveLoop.imjs", "utf8"))) as Loop;
     const bCurve = BSplineCurve3d.createPeriodicUniformKnots(linestring.points, 3);
-    const bCurveLoop = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/bsplineCurveLoop.imjs", "utf8"))) as Loop;
+    const bCurveLoop = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/bsplineCurveLoop.imjs", "utf8"))) as Loop;
     const lsLoop = Loop.create(linestring);
     const circle = Arc3d.createCenterNormalRadius(Point3d.createZero(), Vector3d.unitZ(), 1.0);
     const diag = Vector3d.create(1, 1, 0).normalize()!;
@@ -892,7 +892,7 @@ describe("PlaneAltitudeRangeContext", () => {
         lowHigh = param.geom.projectedParameterRange(param.ray, lowHigh);
       else if (param.geom instanceof CurvePrimitive)
         lowHigh = param.geom.projectedParameterRange(param.ray, lowHigh);
-      if (ck.testDefined(lowHigh) && lowHigh) {
+      if (ck.testDefined(lowHigh)) {
         ck.testFalse(lowHigh.isNull, `${param.label} projection range computed`);
         ck.testCoordinate(param.minParam, lowHigh.low, `${param.label} low projection as expected`);
         ck.testCoordinate(param.maxParam, lowHigh.high, `${param.label} high projection as expected`);
@@ -911,8 +911,8 @@ function testSelectedTangencySubsets(
   outputFileSuffix: string) {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
-  const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/areaBoolean/AreaBoolean.716145.Inputs.imjs", "utf8"))) as AnyRegion[];
-  // const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/areaBoolean/AreaBoolean.716145.RemoveShortSegment.imjs", "utf8"))) as AnyRegion[];
+  const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/areaBoolean/AreaBoolean.716145.Inputs.imjs", "utf8"))) as AnyRegion[];
+  // const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/areaBoolean/AreaBoolean.716145.RemoveShortSegment.imjs", "utf8"))) as AnyRegion[];
   let x0 = 0;
   let y0 = 0;
   const delta = 150;
@@ -1298,9 +1298,9 @@ describe("GeneralSweepBooleans", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const outer = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/intersections/MBContainmentBoolean/outer.imjs", "utf8"))) as AnyRegion[];
+      "./src/test/data/intersections/MBContainmentBoolean/outer.imjs", "utf8"))) as AnyRegion[];
     const inner = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/intersections/MBContainmentBoolean/inner.imjs", "utf8"))) as AnyRegion[];
+      "./src/test/data/intersections/MBContainmentBoolean/inner.imjs", "utf8"))) as AnyRegion[];
     let x0 = 0;
     const dy = 50;
     // for (const entry of outer) {

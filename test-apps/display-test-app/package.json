@@ -73,7 +73,7 @@
     "@itwin/imodels-client-management": "^5.1.0",
     "@itwin/map-layers-formats": "workspace:*",
     "@itwin/object-storage-core": "^2.2.2",
-    "@itwin/reality-data-client": "1.1.0",
+    "@itwin/reality-data-client": "^1.2.1",
     "@itwin/webgl-compatibility": "workspace:*",
     "body-parser": "^1.20.2",
     "vhacd-js": "^0.0.1"
@@ -95,7 +95,7 @@
     "dotenv-expand": "^5.1.0",
     "electron": "^30.0.0",
     "esbuild-plugin-external-global": "^1.0.1",
-    "eslint": "^8.44.0",
+    "eslint": "^8.56.0",
     "express": "^4.18.2",
     "express-ws": "^5.0.2",
     "fs-extra": "^8.1.0",

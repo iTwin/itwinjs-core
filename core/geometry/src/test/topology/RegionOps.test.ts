@@ -699,8 +699,8 @@ function testOffsetSingle(
       for (const cp of baseCurve.children) {
         for (let u = 0.0738; u < 1.0; u += 0.0467) {
           const basePt = cp.fractionToPoint(u);
-          const offsetDetail = offsetCurve!.closestPoint(basePt);
-          if (ck.testDefined(offsetDetail, "Closest point to offset computed") && offsetDetail !== undefined) {
+          const offsetDetail = offsetCurve.closestPoint(basePt);
+          if (ck.testDefined(offsetDetail, "Closest point to offset computed")) {
             let projectsToVertex = offsetDetail.fraction === 0 || offsetDetail.fraction === 1;
             if (!projectsToVertex && offsetDetail.curve instanceof LineString3d) {
               const scaledParam = offsetDetail.fraction * (offsetDetail.curve.numPoints() - 1);
@@ -993,7 +993,7 @@ describe("CloneSplitCurves", () => {
 
     // sample chains
     const inputs = IModelJson.Reader.parse(
-      JSON.parse(fs.readFileSync("./src/test/testInputs/curve/offsetCurve.imjs", "utf8")),
+      JSON.parse(fs.readFileSync("./src/test/data/curve/offsetCurve.imjs", "utf8")),
     ) as CurveChain[];
     for (const chain of inputs)
       if (chain instanceof Path || chain instanceof Loop)
@@ -1145,7 +1145,7 @@ describe("RectangleRecognizer", () => {
       ck.testUndefined(RegionOps.rectangleEdgeTransform(points.slice(0, 3), false), "short array should fail");
       const transform4 = RegionOps.rectangleEdgeTransform(points.slice(0, 4), false);
       const transform5 = RegionOps.rectangleEdgeTransform(points, true);
-      if (ck.testDefined(transform4) && transform4 && ck.testDefined(transform5) && transform5)
+      if (ck.testDefined(transform4) && ck.testDefined(transform5))
         ck.testTransform(transform4, transform5);
       ck.testUndefined(RegionOps.rectangleEdgeTransform(points.slice(0, 3), false), "short array should fail");
 
@@ -1167,11 +1167,11 @@ describe("RectangleRecognizer", () => {
     // const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const road = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/intersections/WilsonShapes/roadShape.imjs", "utf8")));
+      "./src/test/data/intersections/WilsonShapes/roadShape.imjs", "utf8")));
     const badShape = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/intersections/WilsonShapes/3pointTurnShape_overlaps.imjs", "utf8")));
+      "./src/test/data/intersections/WilsonShapes/3pointTurnShape_overlaps.imjs", "utf8")));
     const goodShape = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/intersections/WilsonShapes/3pointTurnShape_fits.imjs", "utf8")));
+      "./src/test/data/intersections/WilsonShapes/3pointTurnShape_fits.imjs", "utf8")));
 
     if (road instanceof Loop) {
       const roadRange = road.range();
@@ -1218,16 +1218,16 @@ describe("RegionOps2", () => {
     let x = 0;
     let y = 0;
     const testCases = [
-      "./src/test/testInputs/curve/arcGisLoops.imjs",
-      "./src/test/testInputs/curve/loopWithHole.imjs", // aka, split washer polygon
-      "./src/test/testInputs/curve/michelLoops.imjs",  // has a small island in a hole
-      "./src/test/testInputs/curve/michelLoops2.imjs", // 339 loops
+      "./src/test/data/curve/arcGisLoops.imjs",
+      "./src/test/data/curve/loopWithHole.imjs", // aka, split washer polygon
+      "./src/test/data/curve/michelLoops.imjs",  // has a small island in a hole
+      "./src/test/data/curve/michelLoops2.imjs", // 339 loops
     ];
     const options = new StrokeOptions();
     options.maximizeConvexFacets = true;
     for (const testCase of testCases) {
       const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase, "utf8"))) as Loop[];
-      if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
+      if (ck.testDefined(inputs, "inputs successfully parsed")) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs, x, y);
         // generate a region from loops
         const region = RegionOps.sortOuterAndHoleLoopsXY(inputs);
@@ -1279,15 +1279,15 @@ describe("RegionOps2", () => {
     const allGeometry: GeometryQuery[] = [];
     let x = 0;
     const testCases: { filename: string, numTriangles: number, numFacets: number }[] = [
-      { filename: "./src/test/testInputs/curve/convexPentagon.imjs", numTriangles: 3, numFacets: 1 },
-      { filename: "./src/test/testInputs/curve/nonConvexPentagon.imjs", numTriangles: 3, numFacets: 2 },
-      { filename: "./src/test/testInputs/curve/adjacentQuads.imjs", numTriangles: 6, numFacets: 3 },
+      { filename: "./src/test/data/curve/convexPentagon.imjs", numTriangles: 3, numFacets: 1 },
+      { filename: "./src/test/data/curve/nonConvexPentagon.imjs", numTriangles: 3, numFacets: 2 },
+      { filename: "./src/test/data/curve/adjacentQuads.imjs", numTriangles: 6, numFacets: 3 },
     ];
     const options = new StrokeOptions();
     options.maximizeConvexFacets = true;
     for (const testCase of testCases) {
       const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase.filename, "utf8"))) as Loop[];
-      if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
+      if (ck.testDefined(inputs, "inputs successfully parsed")) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs, x);
         const region = RegionOps.sortOuterAndHoleLoopsXY(inputs);
         const area = RegionOps.computeXYArea(region)!;
@@ -1316,7 +1316,7 @@ describe("RegionOps2", () => {
         // test polygon decomposition
         if (region instanceof Loop) {
           const convexPolygons = RegionOps.convexDecomposePolygonXY(region.getPackedStrokes()!, true);
-          if (ck.testDefined(convexPolygons, "decomposition succeeded") && convexPolygons) {
+          if (ck.testDefined(convexPolygons, "decomposition succeeded")) {
             ck.testExactNumber(testCase.numFacets, convexPolygons.length, "decomposition has expected number of polygons");
             const convexPolygonsPoint3dArrays = Point3dArray.cloneDeepXYZPoint3dArrays(convexPolygons);
             const polygonArea = PolygonOps.sumAreaXY(convexPolygonsPoint3dArrays);

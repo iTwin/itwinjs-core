@@ -2,7 +2,7 @@
   "name": "@itwin/workspace-editor",
   "license": "MIT",
   "main": "lib/WorkspaceEditor.js",
-  "version": "4.7.0-dev.2",
+  "version": "4.7.0-dev.14",
   "bin": {
     "WorkspaceEditor": "./lib/WorkspaceEditor.js"
   },
@@ -36,7 +36,7 @@
     "@types/mocha": "^10.0.6",
     "@types/yargs": "17.0.19",
     "@types/glob": "^5.0.35",
-    "eslint": "^8.44.0",
+    "eslint": "^8.56.0",
     "mocha": "^10.2.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.3.3"

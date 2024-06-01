@@ -47,7 +47,7 @@ export class RpcOperationPolicy {
   public allowTokenMismatch: boolean = false;
 
   /** Whether to compress the operation response with one of the client's supported encodings. */
-  public allowResponseCompression: boolean = false;
+  public allowResponseCompression: boolean = true;
 }
 
 /** An RPC operation descriptor.

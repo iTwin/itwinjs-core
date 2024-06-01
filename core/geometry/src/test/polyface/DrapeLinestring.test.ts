@@ -227,7 +227,7 @@ it("sweepLinestringToFacetsXYZingers", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
 
-  const data = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/polyface/sweepLinestringToFacetsXY/inputs.imjs", "utf8")));
+  const data = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/polyface/sweepLinestringToFacetsXY/inputs.imjs", "utf8")));
   let x0 = 0;
   const y0 = 0;
   const z0 = 0;
@@ -338,7 +338,7 @@ it("sweepLinestringToFacetsXYZVerticalMesh", () => {
 it("drapeLineStringAsLines2", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
-  const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/polyface/sweepLinestringToFacetsXY/drape-linestring-to-meshes.imjs", "utf8")));
+  const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/polyface/sweepLinestringToFacetsXY/drape-linestring-to-meshes.imjs", "utf8")));
   if (Array.isArray(inputs) && 2 === inputs.length && inputs[0] instanceof LineString3d && inputs[1] instanceof IndexedPolyface) {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs);
     const lineString = inputs[0];

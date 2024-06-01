@@ -17,12 +17,15 @@ export interface FrontendTilesOptions {
     // @internal
     enableEdges?: boolean;
     maxLevelsToSkip?: number;
+    // @internal
+    useIndexedDBCache?: boolean;
 }
 
 // @internal
 export const frontendTilesOptions: {
     maxLevelsToSkip: number;
     enableEdges: boolean;
+    useIndexedDBCache: boolean;
 };
 
 // @beta
