@@ -737,9 +737,10 @@ describe("Arc3d", () => {
       const slope = (1 - breakFraction) / breakFraction;
       return (x <= breakFraction) ? slope * x : slope * breakFraction + ((1 - slope * breakFraction) / (1 - breakFraction)) * (x - breakFraction);
       };
+    const fSqrtCubed = (x: number): number => { return Math.pow(x, 1.5); };
     const fQuadratic = (x: number): number => { return x * x; };
-    const fScaledQuadratic = (x: number): number => { return 0.5 * x * x; }
     const fCubic = (x: number): number => { return x * x * x; };
+    const fQuartic = (x: number): number => { return x * x * x * x;};
     const fSqrt = (x: number): number => { return Math.sqrt(x); };
     const fLinearWave = (x: number): number => {
       if (x === 0) return 0;
@@ -760,17 +761,22 @@ describe("Arc3d", () => {
       const c0 = yMag / arc.matrixRef.columnXMagnitudeSquared();    // curvature at y-axis point
       const c1 = arc.matrixRef.columnXMagnitude() / (yMag * yMag);  // curvature at x-axis point
       const mapPts: Point3d[] = [];
+      const blendPts: Point3d[] = [];
       const arcPts: Point3d[] = [];
       const numSamples = 1 + numPts * 10;
-      const delta = 1 / (numSamples - 1);
+      const tDelta = 1 / (numSamples - 1);
       mapPts.push(Point3d.create(c0, Angle.piOver2Radians)); // nail the first point
+      blendPts.push(Point3d.createZero());
       for (let i = 1; i < numSamples - 1; ++i) {
-        const j = f(i * delta);
+        const t = i * tDelta;
+        const j = f(t);
         const c = (1 - j) * c0 + j * c1;  // interpolate between c0 and c1
         const theta = curvatureToRadians(arc, c)!;
         mapPts.push(Point3d.create(c, theta));
+        blendPts.push(Point3d.create(t, j));
       }
       mapPts.push(Point3d.create(c1, 0)); // nail the last point
+      blendPts.push(Point3d.create(1, 1));
       const localArc = arc.cloneTransformed(Transform.createRigidFromOriginAndColumns(arc.center, arc.vector0, arc.vector90, AxisOrder.XYZ)!.inverse()!);
       for (let i = 0; i < numSamples; ++i) {
         const theta = mapPts[i].y;
@@ -780,14 +786,15 @@ describe("Arc3d", () => {
           arcPts.push(arcPt);
       }
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, mapPts, x0, y0, z0);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, arcPts, x0 + 3 ,y0, z0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, blendPts, x0 + 2, y0, z0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, arcPts, x0 + 1 ,y0, z0);
     };
 
     for (const arc of arcs) {
-      for (const f of [fLinear, fPiecewiseLinearUnder, fQuadratic, fScaledQuadratic, fCubic, fSqrt, fLinearWave, fLinearWaveInverse]) {
+      for (const f of [fLinear, fPiecewiseLinearUnder, fSqrtCubed, fQuadratic, fCubic, fQuartic, fSqrt, fLinearWave, fLinearWaveInverse]) {
         plotCurvatureDistribution(arc, 10, f);
         y0 += yDelta;
-        for (const numQuadrantPoints of [3, 4, 5, 10, 20]) {
+        for (const numQuadrantPoints of [3, 4, 5, 6, 10, 20]) {
           testArc(arc, numQuadrantPoints, f);
           z0 += zDelta;
         }
