@@ -106,7 +106,7 @@ describe("Property merger tests", () => {
       const mergedSchema = await merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "add",
             schemaType: SchemaOtherTypes.SchemaReference,
@@ -165,7 +165,7 @@ describe("Property merger tests", () => {
       const mergedSchema = await merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "add",
             schemaType: SchemaItemType.StructClass,
@@ -229,7 +229,7 @@ describe("Property merger tests", () => {
       const mergedSchema = await merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "add",
             schemaType: SchemaOtherTypes.Property,
@@ -272,7 +272,7 @@ describe("Property merger tests", () => {
       const mergedSchema = await merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "add",
             schemaType: SchemaOtherTypes.SchemaReference,
@@ -332,7 +332,7 @@ describe("Property merger tests", () => {
       const mergedSchema = await merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "add",
             schemaType: SchemaOtherTypes.SchemaReference,
@@ -387,7 +387,7 @@ describe("Property merger tests", () => {
       const mergedSchema = await merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "add",
             schemaType: SchemaOtherTypes.SchemaReference,
@@ -451,7 +451,7 @@ describe("Property merger tests", () => {
       const mergedSchema = await merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "add",
             schemaType: SchemaOtherTypes.SchemaReference,
@@ -504,7 +504,7 @@ describe("Property merger tests", () => {
       const mergedSchema = await merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "add",
             schemaType: SchemaOtherTypes.SchemaReference,
@@ -573,7 +573,7 @@ describe("Property merger tests", () => {
       const mergedSchema = await merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
@@ -628,7 +628,7 @@ describe("Property merger tests", () => {
       const mergedSchema = await merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
@@ -693,7 +693,7 @@ describe("Property merger tests", () => {
       const mergedSchema = await merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
@@ -751,7 +751,7 @@ describe("Property merger tests", () => {
       const mergedSchema = await merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
@@ -803,7 +803,7 @@ describe("Property merger tests", () => {
       const mergedSchema = await merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
@@ -863,7 +863,7 @@ describe("Property merger tests", () => {
       const mergedSchema = await merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
@@ -923,7 +923,7 @@ describe("Property merger tests", () => {
       const mergedSchema = await merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
@@ -969,7 +969,7 @@ describe("Property merger tests", () => {
       const merge = merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
@@ -1004,7 +1004,7 @@ describe("Property merger tests", () => {
       const merge = merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
@@ -1038,7 +1038,7 @@ describe("Property merger tests", () => {
       const merge = merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
@@ -1072,7 +1072,7 @@ describe("Property merger tests", () => {
       const merge = merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "add",
             schemaType: SchemaOtherTypes.SchemaReference,
@@ -1117,7 +1117,7 @@ describe("Property merger tests", () => {
       const merge = merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "add",
             schemaType: SchemaOtherTypes.SchemaReference,
@@ -1162,7 +1162,7 @@ describe("Property merger tests", () => {
       const merge = merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "add",
             schemaType: SchemaItemType.StructClass,
@@ -1213,7 +1213,7 @@ describe("Property merger tests", () => {
       const merge = merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "add",
             schemaType: SchemaOtherTypes.SchemaReference,
@@ -1267,7 +1267,7 @@ describe("Property merger tests", () => {
       const merge = merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "add",
             schemaType: SchemaItemType.Enumeration,
@@ -1325,7 +1325,7 @@ describe("Property merger tests", () => {
       const merge = merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
@@ -1367,7 +1367,7 @@ describe("Property merger tests", () => {
       const merge = merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
-        changes: [
+        differences: [
           {
             changeType: "add",
             schemaType: SchemaItemType.RelationshipClass,

@@ -7,6 +7,7 @@ public;class AuxCoordSystem
 public;AuxCoordSystem2d 
 public;AuxCoordSystem3d 
 public;AuxCoordSystemSpatial 
+beta;AvailableCoordinateReferenceSystemProps
 beta;AzureBlobStorageCredentials
 internal;BackendHubAccess
 public;BackendLoggerCategory
@@ -200,6 +201,8 @@ public;GeometricModel
 public;class GeometricModel2d 
 public;class GeometricModel3d 
 public;GeometryPart 
+beta;getAvailableCoordinateReferenceSystems(args: GetAvailableCoordinateReferenceSystemsArgs): Promise
+beta;GetAvailableCoordinateReferenceSystemsArgs
 public;Graphic3d 
 public;class GraphicalElement2d 
 public;GraphicalElement2dIsOfType 

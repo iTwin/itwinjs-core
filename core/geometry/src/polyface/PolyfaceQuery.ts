@@ -270,6 +270,22 @@ export enum DuplicateFacetClusterSelector {
 }
 
 /**
+ * Announce the points on a drape panel.
+ * * The first two points in the array are always along the draped line segment.
+ * * The last two are always on the facet.
+ * * If there are 4 points, those two pairs are distinct, i.e. both segment points are to the same side of the facet.
+ * * If there are 3 points, those two pairs share an on-facet point.
+ * * The panel is ordered so the outward normal is to the right of the draped segment.
+ * @param indexAOnFacet index (in points) of the point that is the first facet point for moving forward along the linestring.
+ * @param indexBOnFacet index (in points) of the point that is the second facet point for moving forward along the linestring.
+ * @public
+ */
+export type AnnounceDrapePanel = (
+  linestring: GrowableXYZArray, segmentIndex: number, polyface: Polyface,
+  facetIndex: number, points: Point3d[], indexAOnFacet: number, indexBOnFacet: number,
+) => any;
+
+/**
  * PolyfaceQuery is a static class whose methods implement queries on a `Polyface` or `PolyfaceVisitor` provided as a
  * parameter to each method.
  * @public
@@ -482,40 +498,22 @@ export class PolyfaceQuery {
     return true;
   }
   /**
-   * Test for convex volume by dihedral angle tests on all edges.
-   * * This tests if all dihedral angles of the mesh are positive.
-   * * In a closed solid, this is a strong test for overall mesh convexity with outward facing normals.
-   * * See [[dihedralAngleSummary]] for the definition of "dihedral angle".
-   * * With `ignoreBoundaries` true, this may be a useful test when all the facets are in a single edge-connected
-   * component, such as a pyramid with no underside.
-   * * It is not a correct test if there are multiple, disjoint components.
-   * * Take the above-mentioned pyramid with no underside.
-   * * Within the same mesh, have a second pyramid placed to the side, still facing upward.
-   * * The angles will pass the dihedral convexity test, but the composite thing surely is not convex.
+   * Compute a number summarizing the dihedral angles in the mesh.
+   * * A dihedral angle is the signed angle between adjacent facets' normals. This angle is positive when the cross
+   * product `normalA x normalB` has the same direction as facetA's traversal of the facets' shared edge.
    * @param source mesh.
    * @param ignoreBoundaries if `true` ignore simple boundary edges, i.e., allow unclosed meshes. Default is `false`.
-   * @returns true if all dihedral angles of the mesh are positive.
+   * See [[isConvexByDihedralAngleCount]] for comments about passing true when there are multiple
+   * connected components.
+   * * Return `0` if all dihedral angles are zero (and `ignoreBoundaries === true`). The mesh is planar.
+   * * Otherwise, return `1` if all dihedral angles are non-negative. The mesh probably encloses a convex volume and
+   * has outward normals.
+   * * Otherwise, return `-1` if all dihedral angles are non-positive. The mesh probably encloses a convex volume and
+   * has inward normals.
+   * * Otherwise, return `-2`. Also return `-2` if a non-manifold condition was detected, or a facet normal could not
+   * be computed. A non-manifold condition is a positive-length edge adjacent to more than 2 facets or (if
+   * `ignoreBoundaries` is false) adjacent to exactly one facet.
    */
-  public static isConvexByDihedralAngleCount(source: Polyface, ignoreBoundaries: boolean = false): boolean {
-    return this.dihedralAngleSummary(source, ignoreBoundaries) > 0;
-  }
-  /**
-  * Compute a number summarizing the dihedral angles in the mesh.
-  * * A dihedral angle is the signed angle between adjacent facets' normals. This angle is positive when the cross
-  * product `normalA x normalB` has the same direction as facetA's traversal of the facets' shared edge.
-  * @param source mesh.
-  * @param ignoreBoundaries if `true` ignore simple boundary edges, i.e., allow unclosed meshes. Default is `false`.
-  * See [[isConvexByDihedralAngleCount]] for comments about passing true when there are multiple
-  * connected components.
-  * * Return `0` if all dihedral angles are zero (and `ignoreBoundaries === true`). The mesh is planar.
-  * * Otherwise, return `1` if all dihedral angles are non-negative. The mesh probably encloses a convex volume and
-  * has outward normals.
-  * * Otherwise, return `-1` if all dihedral angles are non-positive. The mesh probably encloses a convex volume and
-  * has inward normals.
-  * * Otherwise, return `-2`. Also return `-2` if a non-manifold condition was detected, or a facet normal could not
-  * be computed. A non-manifold condition is a positive-length edge adjacent to more than 2 facets or (if
-  * `ignoreBoundaries` is false) adjacent to exactly one facet.
-  */
   public static dihedralAngleSummary(source: Polyface, ignoreBoundaries: boolean = false): number {
     // more info can be found at geometry/internaldocs/Polyface.md
     const edges = new IndexedEdgeMatcher();
@@ -575,9 +573,23 @@ export class PolyfaceQuery {
       return 0;
     return -2;
   }
-  /** Test if the facets in `source` occur in perfectly mated pairs, as is required for a closed manifold volume. */
-  public static isPolyfaceClosedByEdgePairing(source: Polyface): boolean {
-    return this.isPolyfaceManifold(source, false);
+  /**
+ * Test for convex volume by dihedral angle tests on all edges.
+ * * This tests if all dihedral angles of the mesh are positive.
+ * * In a closed solid, this is a strong test for overall mesh convexity with outward facing normals.
+ * * See [[dihedralAngleSummary]] for the definition of "dihedral angle".
+ * * With `ignoreBoundaries` true, this may be a useful test when all the facets are in a single edge-connected
+ * component, such as a pyramid with no underside.
+ * * It is not a correct test if there are multiple, disjoint components.
+ * * Take the above-mentioned pyramid with no underside.
+ * * Within the same mesh, have a second pyramid placed to the side, still facing upward.
+ * * The angles will pass the dihedral convexity test, but the composite thing surely is not convex.
+ * @param source mesh.
+ * @param ignoreBoundaries if `true` ignore simple boundary edges, i.e., allow unclosed meshes. Default is `false`.
+ * @returns true if all dihedral angles of the mesh are positive.
+ */
+  public static isConvexByDihedralAngleCount(source: Polyface, ignoreBoundaries: boolean = false): boolean {
+    return this.dihedralAngleSummary(source, ignoreBoundaries) > 0;
   }
   /**
    * Test edges pairing in `source` mesh.
@@ -601,52 +613,9 @@ export class PolyfaceQuery {
     edges.sortAndCollectClusters(undefined, allowSimpleBoundaries ? undefined : badClusters, undefined, badClusters);
     return badClusters.length === 0;
   }
-  /**
-   * Construct a CurveCollection containing boundary edges.
-   * * Each edge is a LineSegment3d.
-   * @param source polyface or visitor.
-   * @param includeTypical true to in include typical boundary edges with a single adjacent facet.
-   * @param includeMismatch true to include edges with more than 2 adjacent facets.
-   * @param includeNull true to include edges with identical start and end vertex indices.
-   */
-  public static boundaryEdges(
-    source: Polyface | PolyfaceVisitor | undefined,
-    includeTypical: boolean = true,
-    includeMismatch: boolean = true,
-    includeNull: boolean = true,
-  ): CurveCollection | undefined {
-    const result = new BagOfCurves();
-    const announceEdge = (pointA: Point3d, pointB: Point3d, _indexA: number, _indexB: number, _readIndex: number) => {
-      result.tryAddChild(LineSegment3d.create(pointA, pointB));
-    };
-    PolyfaceQuery.announceBoundaryEdges(source, announceEdge, includeTypical, includeMismatch, includeNull);
-    if (result.children.length === 0)
-      return undefined;
-    return result;
-  }
-  /**
-   * Collect boundary edges.
-   * * Return the edges as the simplest collection of chains of line segments.
-   * @param source polyface or visitor.
-   * @param includeTypical true to in include typical boundary edges with a single adjacent facet.
-   * @param includeMismatch true to include edges with more than 2 adjacent facets.
-   * @param includeNull true to include edges with identical start and end vertex indices.
-   */
-  public static collectBoundaryEdges(
-    source: Polyface | PolyfaceVisitor,
-    includeTypical: boolean = true,
-    includeMismatch: boolean = true,
-    includeNull: boolean = true,
-  ): AnyChain | undefined {
-    const collector = new MultiChainCollector(Geometry.smallMetricDistance, Geometry.smallMetricDistance);
-    PolyfaceQuery.announceBoundaryEdges(
-      source,
-      (ptA: Point3d, ptB: Point3d) => collector.captureCurve(LineSegment3d.create(ptA, ptB)),
-      includeTypical,
-      includeMismatch,
-      includeNull,
-    );
-    return collector.grabResult(true);
+  /** Test if the facets in `source` occur in perfectly mated pairs, as is required for a closed manifold volume. */
+  public static isPolyfaceClosedByEdgePairing(source: Polyface): boolean {
+    return this.isPolyfaceManifold(source, false);
   }
   /**
    * Test if the facets in `source` occur in perfectly mated pairs, as is required for a closed manifold volume.
@@ -702,6 +671,53 @@ export class PolyfaceQuery {
           announceEdge(pointA, pointB, indexA, indexB, e1.facetIndex);
       }
     }
+  }
+  /**
+   * Construct a CurveCollection containing boundary edges.
+   * * Each edge is a LineSegment3d.
+   * @param source polyface or visitor.
+   * @param includeTypical true to in include typical boundary edges with a single adjacent facet.
+   * @param includeMismatch true to include edges with more than 2 adjacent facets.
+   * @param includeNull true to include edges with identical start and end vertex indices.
+   */
+  public static boundaryEdges(
+    source: Polyface | PolyfaceVisitor | undefined,
+    includeTypical: boolean = true,
+    includeMismatch: boolean = true,
+    includeNull: boolean = true,
+  ): CurveCollection | undefined {
+    const result = new BagOfCurves();
+    const announceEdge = (pointA: Point3d, pointB: Point3d, _indexA: number, _indexB: number, _readIndex: number) => {
+      result.tryAddChild(LineSegment3d.create(pointA, pointB));
+    };
+    PolyfaceQuery.announceBoundaryEdges(source, announceEdge, includeTypical, includeMismatch, includeNull);
+    if (result.children.length === 0)
+      return undefined;
+    return result;
+  }
+  /**
+   * Collect boundary edges.
+   * * Return the edges as the simplest collection of chains of line segments.
+   * @param source polyface or visitor.
+   * @param includeTypical true to in include typical boundary edges with a single adjacent facet.
+   * @param includeMismatch true to include edges with more than 2 adjacent facets.
+   * @param includeNull true to include edges with identical start and end vertex indices.
+   */
+  public static collectBoundaryEdges(
+    source: Polyface | PolyfaceVisitor,
+    includeTypical: boolean = true,
+    includeMismatch: boolean = true,
+    includeNull: boolean = true,
+  ): AnyChain | undefined {
+    const collector = new MultiChainCollector(Geometry.smallMetricDistance, Geometry.smallMetricDistance);
+    PolyfaceQuery.announceBoundaryEdges(
+      source,
+      (ptA: Point3d, ptB: Point3d) => collector.captureCurve(LineSegment3d.create(ptA, ptB)),
+      includeTypical,
+      includeMismatch,
+      includeNull,
+    );
+    return collector.grabResult(true);
   }
   /**
    * Load all half edges from a mesh to an IndexedEdgeMatcher.
@@ -1200,13 +1216,17 @@ export class PolyfaceQuery {
     }
     return builder.claimPolyface(true);
   }
-  /** Return the point count of the `source`. */
+  /**
+   * Return the point count of the `source`.
+   * * If `source` is a visitor, this is an upper bound on the number of addressed mesh vertices.
+   */
   public static visitorClientPointCount(source: Polyface | PolyfaceVisitor): number {
     if (source instanceof Polyface)
       return source.data.point.length;
     const polyface = source.clientPolyface();
     if (polyface !== undefined)
       return polyface.data.point.length;
+    const saveReadIndex = source.currentReadIndex();
     source.reset();
     let maxIndex = -1;
     while (source.moveToNextFacet()) {
@@ -1214,22 +1234,30 @@ export class PolyfaceQuery {
         if (pointIndex > maxIndex)
           maxIndex = pointIndex;
     }
+    source.moveToReadIndex(saveReadIndex);
     return maxIndex + 1;
   }
-  /** Return the facet count of the `source`. */
+  /**
+   * Return the facet count of the `source`.
+   * * If `source` is a visitor, this is the number of facets it can visit.
+   */
   public static visitorClientFacetCount(source: Polyface | PolyfaceVisitor): number {
     if (source instanceof Polyface) {
       if (source.facetCount !== undefined)
         return source.facetCount;
       source = source.createVisitor(0);
     }
+    if (source.getVisitableFacetCount)
+      return source.getVisitableFacetCount();
     const polyface = source.clientPolyface();
     if (polyface !== undefined && polyface.facetCount !== undefined)
       return polyface.facetCount;
+    const saveReadIndex = source.currentReadIndex();
     let facetCount = 0;
     source.reset();
     while (source.moveToNextFacet())
       ++facetCount;
+    source.moveToReadIndex(saveReadIndex);
     return facetCount;
   }
   /**
@@ -1580,24 +1608,6 @@ export class PolyfaceQuery {
     return 0;
   }
   /**
-   * Collect facet duplicates.
-   * @param polyface the polyface.
-   * @param includeSingletons if true, non-duplicated facets are included in the output.
-   * @returns an array of arrays describing facet duplication. Each array `entry` in the output contains read
-   * indices of a cluster of facets with the same vertex indices.
-   */
-  public static collectDuplicateFacetIndices(polyface: Polyface, includeSingletons: boolean = false): number[][] {
-    const result: number[][] = [];
-    this.announceDuplicateFacetIndices(
-      polyface,
-      (clusterFacetIndices: number[]) => {
-        if (includeSingletons || clusterFacetIndices.length > 1)
-          result.push(clusterFacetIndices.slice());
-      },
-    );
-    return result;
-  }
-  /**
    * Announce facet duplicates.
    * @returns an array of arrays describing facet duplication. Each array `entry` in the output contains read
    * indices of a cluster of facets with the same vertex indices.
@@ -1646,10 +1656,28 @@ export class PolyfaceQuery {
     }
   }
   /**
-   * Return a new facet set with a subset of facets in polyface.
+   * Collect facet duplicates.
+   * @param polyface the polyface.
+   * @param includeSingletons if true, non-duplicated facets are included in the output.
+   * @returns an array of arrays describing facet duplication. Each array `entry` in the output contains read
+   * indices of a cluster of facets with the same vertex indices.
+   */
+  public static collectDuplicateFacetIndices(polyface: Polyface, includeSingletons: boolean = false): number[][] {
+    const result: number[][] = [];
+    this.announceDuplicateFacetIndices(
+      polyface,
+      (clusterFacetIndices: number[]) => {
+        if (includeSingletons || clusterFacetIndices.length > 1)
+          result.push(clusterFacetIndices.slice());
+      },
+    );
+    return result;
+  }
+  /**
+   * Return a new facet set from the source facets, specifying how to copy duplicate facets.
    * @param source the polyface.
    * @param includeSingletons true to copy facets that only appear once
-   * @param clusterSelector indicates whether duplicate clusters are to have 0, 1, or all facets included.
+   * @param clusterSelector indicates whether to copy 0, 1, or all facets in each cluster of duplicate facets.
    */
   public static cloneByFacetDuplication(
     source: Polyface, includeSingletons: boolean, clusterSelector: DuplicateFacetClusterSelector,
@@ -2013,18 +2041,3 @@ export class PolyfaceQuery {
     return undefined; // no intersection
   }
 }
-/**
- * Announce the points on a drape panel.
- * * The first two points in the array are always along the draped line segment.
- * * The last two are always on the facet.
- * * If there are 4 points, those two pairs are distinct, i.e. both segment points are to the same side of the facet.
- * * If there are 3 points, those two pairs share an on-facet point.
- * * The panel is ordered so the outward normal is to the right of the draped segment.
- * @param indexAOnFacet index (in points) of the point that is the first facet point for moving forward along the linestring.
- * @param indexBOnFacet index (in points) of the point that is the second facet point for moving forward along the linestring.
- * @public
- */
-export type AnnounceDrapePanel = (
-  linestring: GrowableXYZArray, segmentIndex: number, polyface: Polyface,
-  facetIndex: number, points: Point3d[], indexAOnFacet: number, indexBOnFacet: number,
-) => any;
