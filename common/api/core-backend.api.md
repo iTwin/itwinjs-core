@@ -3059,6 +3059,8 @@ export type IModelCloneContext = IModelElementCloneContext;
 
 // @public
 export abstract class IModelDb extends IModel {
+    // @internal (undocumented)
+    readonly [_nativeDb]: IModelJsNative.DgnDb;
     // @internal
     protected constructor(args: {
         nativeDb: IModelJsNative.DgnDb;
@@ -3149,8 +3151,8 @@ export abstract class IModelDb extends IModel {
     static readonly maxLimit = 10000;
     // (undocumented)
     readonly models: IModelDb.Models;
-    // @internal (undocumented)
-    readonly nativeDb: IModelJsNative.DgnDb;
+    // @internal @deprecated (undocumented)
+    get nativeDb(): IModelJsNative.DgnDb;
     // @internal (undocumented)
     notifyChangesetApplied(): void;
     readonly onBeforeClose: BeEvent<() => void>;
