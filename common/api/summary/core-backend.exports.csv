@@ -69,6 +69,8 @@ internal;CrashReportingConfig
 internal;CrashReportingConfigNameValuePair
 beta;CreateChangeSummaryArgs 
 public;CreateNewIModelProps 
+public;CreateNewWorkspaceContainerProps
+public;CreateNewWorkspaceDbVersionProps
 public;DefinitionContainer 
 public;class DefinitionElement 
 public;DefinitionGroup 
@@ -116,6 +118,7 @@ public;ECSqlInsertResult
 public;ECSqlStatement 
 public;ECSqlValue
 public;ECSqlValueIterator 
+public;EditableWorkspaceContainer 
 beta;EditableWorkspaceDb 
 public;ElementAspect 
 beta;ElementDrivesElement 
@@ -199,14 +202,12 @@ public;GeometricModel
 public;class GeometricModel2d 
 public;class GeometricModel3d 
 public;GeometryPart 
-<<<<<<< HEAD
-beta;getWorkspaceBlob(args: GetWorkspaceResourceArgs): Uint8Array | undefined
-beta;GetWorkspaceResourceArgs
-beta;getWorkspaceString(args: GetWorkspaceResourceArgs): string | undefined
-=======
 beta;getAvailableCoordinateReferenceSystems(args: GetAvailableCoordinateReferenceSystemsArgs): Promise
 beta;GetAvailableCoordinateReferenceSystemsArgs
->>>>>>> master
+beta;getWorkspaceBlob(args: GetWorkspaceResourceArgs): Uint8Array | undefined
+beta;GetWorkspaceContainerArgs 
+beta;GetWorkspaceResourceArgs
+beta;getWorkspaceString(args: GetWorkspaceResourceArgs): string | undefined
 public;Graphic3d 
 public;class GraphicalElement2d 
 public;GraphicalElement2dIsOfType 
@@ -344,15 +345,19 @@ public;SectionDrawing
 public;SectionDrawingLocation 
 public;SectionDrawingModel 
 internal;setMaxEntitiesPerEvent(max: number): number
+beta;Setting = JSONSchemaType
+beta;Setting
+beta;SettingGroupSchema
 beta;SettingName = string
-beta;SettingObject
-beta;Settings
 beta;Settings
 beta;SettingSchema 
-beta;SettingSchemaGroup
+beta;SettingsContainer
+beta;SettingsDictionary
+beta;SettingsDictionaryProps 
+beta;SettingsDictionarySource
+beta;SettingsPriority = number
+beta;SettingsPriority
 beta;SettingsSchemas
-beta;SettingType = JSONSchemaType
-beta;SettingType
 public;Sheet 
 public;SheetBorderTemplate 
 public;SheetModel 
@@ -429,9 +434,22 @@ public;WebMercatorModel
 beta;Workspace
 beta;Workspace
 beta;WorkspaceContainer
-beta;WorkspaceContainer
+public;WorkspaceContainerId = string
+public;WorkspaceContainerProps 
 beta;WorkspaceDb
-beta;WorkspaceDb
+public;WorkspaceDbCloudProps = WorkspaceDbProps & WorkspaceContainerProps
+public;WorkspaceDbFullName = string
+public;WorkspaceDbLoadError 
+public;WorkspaceDbLoadErrors 
+public;WorkspaceDbManifest
+public;WorkspaceDbName = string
+public;WorkspaceDbNameAndVersion
+public;WorkspaceDbProps 
+public;WorkspaceDbQueryResourcesArgs
+public;WorkspaceDbQueryResourcesCallback = (resourceNames: Iterable
+public;WorkspaceDbVersion = string
+public;WorkspaceDbVersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease"
+public;WorkspaceDbVersionRange = string
 beta;WorkspaceEditor
 beta;WorkspaceEditor
 beta;WorkspaceOpts
