@@ -11,6 +11,7 @@ import { ChannelRootAspectProps, IModel, IModelError } from "@itwin/core-common"
 import { Subject } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
+import { _nativeDb } from "./internal/Internal";
 
 /** The key for a channel. Used for "allowed channels" in [[ChannelControl]]
  * @beta
@@ -120,7 +121,7 @@ export class ChannelAdmin implements ChannelControl {
   }
   public verifyChannel(modelId: Id64String): void {
     // Note: indirect changes are permitted to change any channel
-    if (this._allowedModels.has(modelId) || this._iModel.nativeDb.isIndirectChanges())
+    if (this._allowedModels.has(modelId) || this._iModel[_nativeDb].isIndirectChanges())
       return;
 
     const deniedChannel = this._deniedModels.get(modelId);

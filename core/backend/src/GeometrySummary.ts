@@ -16,6 +16,7 @@ import {
 } from "@itwin/core-common";
 import { Element, GeometricElement, GeometryPart } from "./Element";
 import { IModelDb } from "./IModelDb";
+import { _nativeDb } from "./internal/Internal";
 
 interface ElementGeom {
   iterator: GeometryStreamIterator;
@@ -118,7 +119,7 @@ class ResponseGenerator {
   }
 
   public summarizePartReferences(id: Id64String, is2d: boolean): string {
-    const refIds = this.iModel.nativeDb.findGeometryPartReferences([id], is2d);
+    const refIds = this.iModel[_nativeDb].findGeometryPartReferences([id], is2d);
     return `Part references (${refIds.length}): ${refIds.join()}`;
   }
 

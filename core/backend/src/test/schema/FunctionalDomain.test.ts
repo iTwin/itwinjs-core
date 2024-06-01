@@ -19,6 +19,7 @@ import { ElementOwnsChildElements, ElementOwnsUniqueAspect, SubjectOwnsPartition
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import Sinon = require("sinon");
+import { _nativeDb } from "../../internal/Internal";
 
 let iModelDb: StandaloneDb;
 const insertedLabel = "inserted label";
@@ -243,7 +244,7 @@ describe("Functional Domain", () => {
       guid: Guid.createValue(),
     });
 
-    iModelDb.nativeDb.resetBriefcaseId(100);
+    iModelDb[_nativeDb].resetBriefcaseId(100);
 
     // Import the Functional schema
     FunctionalSchema.registerSchema();

@@ -13,6 +13,7 @@ import { LockMap, LockState } from "./BackendHubAccess";
 import { BriefcaseDb, LockControl } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { SQLiteDb } from "./SQLiteDb";
+import { _nativeDb } from "./internal/Internal"; 
 
 /**
  * Both the Model and Parent of an element are considered "owners" of their member elements. That means:
@@ -40,7 +41,7 @@ export class ServerBasedLocks implements LockControl {
 
   public constructor(iModel: BriefcaseDb) {
     this.briefcase = iModel;
-    const dbName = `${iModel.nativeDb.getTempFileBaseName()}-locks`;
+    const dbName = `${iModel[_nativeDb].getTempFileBaseName()}-locks`;
     try {
       this.lockDb.openDb(dbName, OpenMode.ReadWrite);
     } catch (_e) {

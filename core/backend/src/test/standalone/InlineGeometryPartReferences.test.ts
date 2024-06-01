@@ -13,6 +13,7 @@ import {
   GenericSchema, GeometricElement3d, GeometryPart, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { _nativeDb } from "../../internal/Internal";
 
 // The only geometry in our geometry streams will be squares of 1 meter in x and y, with origin at (pos, 0, 0).
 interface Primitive { pos: number }
@@ -242,7 +243,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
   }
 
   function inlinePartRefs(): number {
-    const result = imodel.nativeDb.inlineGeometryPartReferences();
+    const result = imodel[_nativeDb].inlineGeometryPartReferences();
     expect(result.numCandidateParts).to.equal(result.numPartsDeleted);
     expect(result.numRefsInlined).to.equal(result.numCandidateParts);
     return result.numRefsInlined;

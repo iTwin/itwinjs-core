@@ -35,6 +35,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { DisableNativeAssertions } from "../TestUtils";
 import { samplePngTexture } from "../imageData";
 import { performance } from "perf_hooks";
+import { _nativeDb } from "../../internal/Internal";
 // spell-checker: disable
 
 async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | undefined> {
@@ -1052,7 +1053,7 @@ describe("iModel", () => {
     newExtents.high.z += .001;
     imodel1.updateProjectExtents(newExtents);
 
-    const updatedProps = imodel1.nativeDb.getIModelProps();
+    const updatedProps = imodel1[_nativeDb].getIModelProps();
     assert.isTrue(updatedProps.hasOwnProperty("projectExtents"), "Returned property JSON object has project extents");
     const updatedExtents = Range3d.fromJSON(updatedProps.projectExtents);
     assert.isTrue(newExtents.isAlmostEqual(updatedExtents), "Project extents successfully updated in database");
@@ -1627,7 +1628,7 @@ describe("iModel", () => {
 
     const testLocal = "TestLocal";
     const testValue = "this is a test";
-    const nativeDb = iModel.nativeDb;
+    const nativeDb = iModel[_nativeDb];
     assert.isUndefined(nativeDb.queryLocalValue(testLocal));
     nativeDb.saveLocalValue(testLocal, testValue);
     assert.equal(nativeDb.queryLocalValue(testLocal), testValue);

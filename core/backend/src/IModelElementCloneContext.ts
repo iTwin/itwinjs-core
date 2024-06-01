@@ -13,6 +13,7 @@ import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { SQLiteDb } from "./SQLiteDb";
+import { _nativeDb } from "./internal/Internal";
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
  * @beta
@@ -32,7 +33,7 @@ export class IModelElementCloneContext {
   public constructor(sourceDb: IModelDb, targetDb?: IModelDb) {
     this.sourceDb = sourceDb;
     this.targetDb = (undefined !== targetDb) ? targetDb : sourceDb;
-    this._nativeContext = new IModelHost.platform.ImportContext(this.sourceDb.nativeDb, this.targetDb.nativeDb);
+    this._nativeContext = new IModelHost.platform.ImportContext(this.sourceDb[_nativeDb], this.targetDb[_nativeDb]);
   }
 
   /** perform necessary initialization to use a clone context, namely caching the reference types in the source's schemas */

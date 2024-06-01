@@ -14,6 +14,7 @@ import { DbResult, OpenMode } from "@itwin/core-bentley";
 import { IModelError, LocalFileName } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelHost } from "./IModelHost";
+import { _nativeDb } from "./internal/Internal";
 
 /** @internal */
 export namespace SchemaSync {
@@ -30,16 +31,16 @@ export namespace SchemaSync {
   // for tests only
   export const setTestCache = (iModel: IModelDb, cacheName?: string) => {
     if (cacheName)
-      iModel.nativeDb.saveLocalValue(testSyncCachePropKey, cacheName);
+      iModel[_nativeDb].saveLocalValue(testSyncCachePropKey, cacheName);
     else
-      iModel.nativeDb.deleteLocalValue(testSyncCachePropKey);
+      iModel[_nativeDb].deleteLocalValue(testSyncCachePropKey);
   };
 
   const getCloudAccess = async (arg: IModelDb | { readonly fileName: LocalFileName }) => {
     let nativeDb: IModelJsNative.DgnDb | undefined;
     const argIsIModelDb = arg instanceof IModelDb;
     if (argIsIModelDb) {
-      nativeDb = arg.nativeDb;
+      nativeDb = arg[_nativeDb];
     } else {
       nativeDb = new IModelHost.platform.DgnDb();
       nativeDb.openIModel(arg.fileName, OpenMode.Readonly);
@@ -74,12 +75,12 @@ export namespace SchemaSync {
 
   /** Synchronize local briefcase schemas with cloud container */
   export const pull = async (iModel: IModelDb) => {
-    if (iModel.nativeDb.schemaSyncEnabled() && !iModel.isReadonly) {
+    if (iModel[_nativeDb].schemaSyncEnabled() && !iModel.isReadonly) {
       await SchemaSync.withLockedAccess(iModel, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
         const schemaSyncDbUri = syncAccess.getUri();
         syncAccess.synchronizeWithCloud();
         iModel.clearCaches();
-        iModel.nativeDb.schemaSyncPull(schemaSyncDbUri);
+        iModel[_nativeDb].schemaSyncPull(schemaSyncDbUri);
         iModel.saveChanges("schema synchronized with cloud container");
       });
     }
@@ -99,7 +100,7 @@ export namespace SchemaSync {
     try {
       iModel.saveFileProperty(syncProperty, JSON.stringify(props));
       await withLockedAccess(arg.iModel, { operationName: "initialize schemaSync", openMode: OpenMode.Readonly }, async (syncAccess) => {
-        iModel.nativeDb.schemaSyncInit(syncAccess.getUri(), props.containerId, arg.overrideContainer ?? false);
+        iModel[_nativeDb].schemaSyncInit(syncAccess.getUri(), props.containerId, arg.overrideContainer ?? false);
         iModel.saveChanges(`Enable SchemaSync  (container id: ${props.containerId})`);
       });
     } catch (err) {

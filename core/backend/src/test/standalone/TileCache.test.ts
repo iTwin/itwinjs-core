@@ -16,6 +16,7 @@ import { GeometricModel3d } from "../../Model";
 import { RpcTrace } from "../../rpc/tracing";
 import { TestUtils } from "../TestUtils";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { _nativeDb } from "../../internal/Internal";
 
 const fakeRpc: RpcActivity = { // eslint-disable-line deprecation/deprecation
   accessToken: "dummy",
@@ -122,8 +123,8 @@ describe("TileCache, open v2", async () => {
     const iModelId = snapshot.iModelId;
     const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot.nativeDb.setITwinId(iTwinId);
-    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id); // even fake checkpoints need a changesetId!
+    snapshot[_nativeDb].setITwinId(iTwinId);
+    snapshot[_nativeDb].saveLocalValue("ParentChangeSetId", changeset.id); // even fake checkpoints need a changesetId!
     snapshot.saveChanges();
     snapshot.close();
 
@@ -132,7 +133,7 @@ describe("TileCache, open v2", async () => {
     const tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
     const tempFileBase = path.join(IModelHost.cacheDir, key);
     const checkpoint = SnapshotDb.openFile(dbPath, { key, tempFileBase });
-    expect(checkpoint.nativeDb.getTempFileBaseName()).equals(tempFileBase);
+    expect(checkpoint[_nativeDb].getTempFileBaseName()).equals(tempFileBase);
     // Generate tile
     const tileProps = await getTileProps(checkpoint);
     expect(tileProps).not.undefined;

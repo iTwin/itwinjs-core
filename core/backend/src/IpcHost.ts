@@ -17,6 +17,7 @@ import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostOptions } from "./IModelHost";
 import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
+import { _nativeDb } from "./internal/Internal";
 
 /**
   * Options for [[IpcHost.startup]]
@@ -210,7 +211,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return cancelTileContentRequests(tokenProps, contentIds);
   }
   public async cancelElementGraphicsRequests(key: string, requestIds: string[]): Promise<void> {
-    return IModelDb.findByKey(key).nativeDb.cancelElementGraphicsRequests(requestIds);
+    return IModelDb.findByKey(key)[_nativeDb].cancelElementGraphicsRequests(requestIds);
   }
   public async openBriefcase(args: OpenBriefcaseProps): Promise<IModelConnectionProps> {
     const db = await BriefcaseDb.open(args);
@@ -229,20 +230,20 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     IModelDb.findByKey(key).saveChanges(description);
   }
   public async hasPendingTxns(key: string): Promise<boolean> {
-    return IModelDb.findByKey(key).nativeDb.hasPendingTxns();
+    return IModelDb.findByKey(key)[_nativeDb].hasPendingTxns();
   }
 
   public async isUndoPossible(key: string): Promise<boolean> {
-    return IModelDb.findByKey(key).nativeDb.isUndoPossible();
+    return IModelDb.findByKey(key)[_nativeDb].isUndoPossible();
   }
   public async isRedoPossible(key: string): Promise<boolean> {
-    return IModelDb.findByKey(key).nativeDb.isRedoPossible();
+    return IModelDb.findByKey(key)[_nativeDb].isRedoPossible();
   }
   public async getUndoString(key: string): Promise<string> {
-    return IModelDb.findByKey(key).nativeDb.getUndoString();
+    return IModelDb.findByKey(key)[_nativeDb].getUndoString();
   }
   public async getRedoString(key: string): Promise<string> {
-    return IModelDb.findByKey(key).nativeDb.getUndoString();
+    return IModelDb.findByKey(key)[_nativeDb].getUndoString();
   }
 
   public async pullChanges(key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<ChangesetIndexAndId> {
@@ -281,27 +282,27 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   }
 
   public async toggleGraphicalEditingScope(key: string, startSession: boolean): Promise<boolean> {
-    const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = IModelDb.findByKey(key).nativeDb.setGeometricModelTrackingEnabled(startSession);
+    const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = IModelDb.findByKey(key)[_nativeDb].setGeometricModelTrackingEnabled(startSession);
     if (val.error)
       throw new IModelError(val.error.status, "Failed to toggle graphical editing scope");
     assert(undefined !== val.result);
     return val.result;
   }
   public async isGraphicalEditingSupported(key: string): Promise<boolean> {
-    return IModelDb.findByKey(key).nativeDb.isGeometricModelTrackingSupported();
+    return IModelDb.findByKey(key)[_nativeDb].isGeometricModelTrackingSupported();
   }
 
   public async reverseTxns(key: string, numOperations: number): Promise<IModelStatus> {
-    return IModelDb.findByKey(key).nativeDb.reverseTxns(numOperations);
+    return IModelDb.findByKey(key)[_nativeDb].reverseTxns(numOperations);
   }
   public async reverseAllTxn(key: string): Promise<IModelStatus> {
-    return IModelDb.findByKey(key).nativeDb.reverseAll();
+    return IModelDb.findByKey(key)[_nativeDb].reverseAll();
   }
   public async reinstateTxn(key: string): Promise<IModelStatus> {
-    return IModelDb.findByKey(key).nativeDb.reinstateTxn();
+    return IModelDb.findByKey(key)[_nativeDb].reinstateTxn();
   }
   public async restartTxnSession(key: string): Promise<void> {
-    return IModelDb.findByKey(key).nativeDb.restartTxnSession();
+    return IModelDb.findByKey(key)[_nativeDb].restartTxnSession();
   }
 
   public async queryConcurrency(pool: "io" | "cpu"): Promise<number> {

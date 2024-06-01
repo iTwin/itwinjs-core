@@ -35,6 +35,7 @@ import { Schema, Schemas } from "../Schema";
 import { HubMock } from "../HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { BackendHubAccess } from "../BackendHubAccess";
+import { _nativeDb } from "../internal/Internal";
 
 chai.use(chaiAsPromised);
 
@@ -148,7 +149,7 @@ export class HubWrappers {
     const props = await BriefcaseManager.downloadBriefcase(args);
     if (args.noLock) {
       const briefcase = await BriefcaseDb.open({ fileName: props.fileName });
-      briefcase.nativeDb.saveLocalValue(BriefcaseLocalValue.NoLocking, "true");
+      briefcase[_nativeDb].saveLocalValue(BriefcaseLocalValue.NoLocking, "true");
       briefcase.saveChanges();
       briefcase.close();
     }
@@ -492,7 +493,7 @@ export class IModelTestUtils {
 
   /** Flushes the Txns in the TxnTable - this allows importing of schemas */
   public static flushTxns(iModelDb: IModelDb): boolean {
-    iModelDb.nativeDb.deleteAllTxns();
+    iModelDb[_nativeDb].deleteAllTxns();
     return true;
   }
 

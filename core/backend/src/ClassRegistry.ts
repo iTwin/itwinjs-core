@@ -13,6 +13,7 @@ import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
 import { EntityReferences } from "./EntityReferences";
 import * as assert from "assert";
+import { _nativeDb } from "./internal/Internal"; 
 
 const isGeneratedClassTag = Symbol("isGeneratedClassTag");
 
@@ -74,7 +75,7 @@ export class ClassRegistry {
    */
   public static getRootEntity(iModel: IModelDb, ecTypeQualifier: string): string {
     const [classSchema, className] = ecTypeQualifier.split(".");
-    const schemaItemJson = iModel.nativeDb.getSchemaItem(classSchema, className);
+    const schemaItemJson = iModel[_nativeDb].getSchemaItem(classSchema, className);
     if (schemaItemJson.error)
       throw new IModelError(schemaItemJson.error.status, `failed to get schema item '${ecTypeQualifier}'`);
 
@@ -150,7 +151,7 @@ export class ClassRegistry {
         // eslint-disable-next-line @typescript-eslint/no-shadow
         .map(([name, prop]) => {
           assert(prop.relationshipClass);
-          const maybeMetaData = iModel.nativeDb.getSchemaItem(...prop.relationshipClass.split(":") as [string, string]);
+          const maybeMetaData = iModel[_nativeDb].getSchemaItem(...prop.relationshipClass.split(":") as [string, string]);
           assert(maybeMetaData.result !== undefined, "The nav props relationship metadata was not found");
           const relMetaData = JSON.parse(maybeMetaData.result);
           const rootClassMetaData = ClassRegistry.getRootEntity(iModel, relMetaData.target.constraintClasses[0]);

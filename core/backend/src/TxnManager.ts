@@ -16,6 +16,7 @@ import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
+import { _nativeDb } from "./internal/Internal"; 
 
 /** A string that identifies a Txn.
  * @public
@@ -303,7 +304,7 @@ export class TxnManager {
   /** Array of errors from dependency propagation */
   public readonly validationErrors: ValidationError[] = [];
 
-  private get _nativeDb() { return this._iModel.nativeDb; }
+  private get _nativeDb() { return this._iModel[_nativeDb]; }
   private _getElementClass(elClassName: string): typeof Element {
     return this._iModel.getJsClass(elClassName) as unknown as typeof Element;
   }

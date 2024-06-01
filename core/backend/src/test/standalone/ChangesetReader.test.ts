@@ -15,6 +15,7 @@ import { SqliteChangesetReader } from "../../SqliteChangesetReader";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ChannelControl } from "../../core-backend";
+import { _nativeDb } from "../../internal/Internal";
 
 describe("Changeset Reader API", async () => {
   let iTwinId: GuidString;
@@ -114,7 +115,7 @@ describe("Changeset Reader API", async () => {
     rwIModel.saveChanges("user 1: data");
 
     if ("test local changes") {
-      const reader = SqliteChangesetReader.openLocalChanges({ iModel: rwIModel.nativeDb, db: rwIModel, disableSchemaCheck: true });
+      const reader = SqliteChangesetReader.openLocalChanges({ iModel: rwIModel[_nativeDb], db: rwIModel, disableSchemaCheck: true });
       const adaptor = new ECChangesetAdaptor(reader);
       const cci = new PartialECChangeUnifier();
       while (adaptor.step()) {

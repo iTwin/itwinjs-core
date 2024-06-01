@@ -12,6 +12,7 @@ import { Angle, Arc3d, Cone, IModelJson as GeomJson, LineSegment3d, Point2d, Poi
 import { ECSqlStatement, IModelDb, IModelJsFs, PhysicalModel, PhysicalObject, SnapshotDb, SpatialCategory } from "../../core-backend";
 import { ElementRefersToElements } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { _nativeDb } from "../../internal/Internal";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -470,7 +471,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     const imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "RoundTripTest" } });
     await imodel.importSchemas([testSchemaPath]);
-    imodel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
+    imodel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
     IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
     if (undefined === spatialCategoryId)

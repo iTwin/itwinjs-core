@@ -15,6 +15,7 @@ import {
   SubjectOwnsPartitionElements,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { _nativeDb } from "../../internal/Internal";
 
 let uniqueId = 0;
 
@@ -135,7 +136,7 @@ describe("tile tree", () => {
   });
 
   afterEach(() => {
-    db.nativeDb.purgeTileTrees(undefined);
+    db[_nativeDb].purgeTileTrees(undefined);
   });
 
   it("should update after changing project extents and purging", async () => {
@@ -179,7 +180,7 @@ describe("tile tree", () => {
     expect(tree.rootTile.isLeaf).to.be.false;
 
     // Purge tile trees for a specific (non-existent) model - still nothing should change for our model.
-    db.nativeDb.purgeTileTrees(["0x123abc"]);
+    db[_nativeDb].purgeTileTrees(["0x123abc"]);
 
     tree = await db.tiles.requestTileTreeProps(treeId);
     expect(tree).not.to.be.undefined;
@@ -195,7 +196,7 @@ describe("tile tree", () => {
     expect(tree.rootTile.isLeaf).to.be.false;
 
     // Purge tile trees for our model - now we should get updated tile tree props.
-    db.nativeDb.purgeTileTrees([modelId]);
+    db[_nativeDb].purgeTileTrees([modelId]);
 
     tree = await db.tiles.requestTileTreeProps(treeId);
     expect(tree).not.to.be.undefined;
@@ -215,7 +216,7 @@ describe("tile tree", () => {
 
     // Change extents again and purge tile trees for all loaded models (by passing `undefined` for model Ids).
     newExtents = scaleProjectExtents(db, 0.75);
-    db.nativeDb.purgeTileTrees(undefined);
+    db[_nativeDb].purgeTileTrees(undefined);
 
     tree = await db.tiles.requestTileTreeProps(treeId);
     expect(tree).not.to.be.undefined;
@@ -288,7 +289,7 @@ describe("tile tree", () => {
     expect(tree2).not.to.equal(tree1);
     expect(tree2).to.deep.equal(tree1);
 
-    db.nativeDb.purgeTileTrees(undefined);
+    db[_nativeDb].purgeTileTrees(undefined);
     const tree3 = await db.tiles.requestTileTreeProps(iModelTileTreeIdToString(modelId, treeId, options));
     expect(tree3).not.to.equal(tree2);
     expect(tree3).not.to.equal(tree1);

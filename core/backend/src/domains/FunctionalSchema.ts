@@ -14,6 +14,7 @@ import { IModelDb } from "../IModelDb";
 import { KnownLocations } from "../IModelHost";
 import { Schema, Schemas } from "../Schema";
 import * as elementsModule from "./FunctionalElements";
+import { _nativeDb } from "../internal/Internal"; 
 
 /** @public */
 export class FunctionalSchema extends Schema {
@@ -32,7 +33,7 @@ export class FunctionalSchema extends Schema {
     if (iModelDb.isBriefcaseDb())
       await iModelDb.acquireSchemaLock();
 
-    const stat = iModelDb.nativeDb.importFunctionalSchema();
+    const stat = iModelDb[_nativeDb].importFunctionalSchema();
     if (DbResult.BE_SQLITE_OK !== stat) {
       throw new IModelError(stat, "Error importing Functional schema");
     }
