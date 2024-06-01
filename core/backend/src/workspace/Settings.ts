@@ -11,11 +11,8 @@ import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { WorkspaceDb } from "./Workspace";
 import { implementationProhibited } from "../internal/ImplementationProhibited";
 
-/** The type of a Setting, according to its schema
- * @beta
- */
-
-/** A union of the possible types representing the value of a single setting within a [[SettingsDictionary]], as defined by its [[SettingSchema]].
+/** The value of a single named parameter within a [[Workspace.settings]] that configures some aspect of the applications run-time behavior.
+ * Settings are stored in a [[SettingsDictionary]]. A setting is described by its [[SettingSchema]].
  * @beta
  */
 export type Setting = JSONSchemaType;
@@ -180,8 +177,30 @@ export interface SettingsDictionaryProps extends SettingsDictionarySource {
   readonly priority: SettingsPriority;
 }
 
-/** The current set of Settings for a Workspace.
- * ###TODO we need more detail than that.
+/**
+ * The collection of [[Setting]]s that supply the run-time configuration of a [[Workspace]].
+ * The `Settings` object comprises a collection of named [[SettingsDictionary]] objects.
+ * Methods like [[getSetting]], [[getString]], and [[getArray]] provide access to the value of an individual [[Setting]] by searching
+ * the [[dictionaries]] in order by their [[SettingsPriority]] to find the highest-priority setting with the requested [[SettingName]].
+ * Most methods that retrieve [[Setting]] values validate them against their [[SettingSchema]]s to ensure that they are of the correct type.
+ * A [[SettingsDictionary]] can be added or removed using [[addDictionary]] and [[dropDictionary]].
+ * Because [[Setting]]s can change at any time during the session, you should avoid caching their values wherever possible.
+ * If you must cache them (for example, to display in a user interface), you should listen for the [[onSettingsChanged]] event to be
+ * notified of potential changes.
+ *
+ * Settings are accessed via [[Workspace.settings]]. They are defined at the application level by [[IModelHost.appWorkspace]], but individual iModels may supply
+ * additional iModel-specific settings or overrides for application-level settings. When working in the context of a specific iModel, use [[IModelDb.workspace]]'s `settings`
+ * property. Any settings not overridden by the iModel will fall back to the settings defined in [[IModelHost.appWorkspace]].
+ *
+ * Application settings are loaded into [[IModelHost.appWorkspace]] when the session begins (i.e., when [[IModelHost.startup]] is invoked), and unloaded when it ends (in [[IModelHost.shutdown]]).
+ * They are read from [JSON5](https://json5.org/) files delivered with the application. The application should register any additional [[SettingsDictionary]]'s '(and their corresponding
+ * [[SettingGroupSchema]]s) at this time.
+ *
+ * iModel-specific settings are stored in the iModel's property table and loaded into [[IModelDb.workspace]] when the iModel is first opened.
+ * You can add and remove a [[SettingsDictionary]] from the property table using [[IModelDb.saveSettingDictionary]] and [[IModelDb.deleteSettingDictionary]].
+ *
+ * ###TODO explain how settings dictionaries are automatically and recursively loaded from WorkspaceDbs.
+ * @see [[IModelHost.appWorkspace]] application-wide settings, and [[IModelDb.workspace]] for settings specific to a given iModel.
  * @beta
  */
 export interface Settings {
