@@ -22,9 +22,11 @@
  *  import { _isOpen, _nativeDb } from "./internal/Internal";
  *  class IModelDb {
  *    // A package-internal property, initialized in the constructor, accessed as `this[_nativeDb]`.
+ *    // @internal
  *    public readonly [_nativeDb]: IModelJsNative.DgnDb;
  *
  *    // A package-internal method, accessed as `this[_isOpen]()`.
+ *    // @internal
  *    public [_isOpen]: () => boolean {
  *      return this[_nativeDb].isOpen();
  *    }
