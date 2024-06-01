@@ -6439,10 +6439,10 @@ export interface WorkspaceContainer {
     readonly workspace: Workspace;
 }
 
-// @public
+// @beta
 export type WorkspaceContainerId = string;
 
-// @public
+// @beta
 export interface WorkspaceContainerProps extends Optional<CloudSqlite.ContainerAccessProps, "accessToken"> {
     readonly description?: string;
     readonly loadingHelp?: string;
@@ -6478,13 +6478,13 @@ export interface WorkspaceDb {
     get version(): WorkspaceDbVersion;
 }
 
-// @public (undocumented)
+// @beta
 export type WorkspaceDbCloudProps = WorkspaceDbProps & WorkspaceContainerProps;
 
-// @public
+// @beta
 export type WorkspaceDbFullName = string;
 
-// @public
+// @beta
 export interface WorkspaceDbLoadError extends Error {
     wsDb?: WorkspaceDb;
     wsDbProps?: WorkspaceDbProps & Partial<WorkspaceDbCloudProps>;
@@ -6495,7 +6495,7 @@ export interface WorkspaceDbLoadErrors extends Error {
     wsLoadErrors?: WorkspaceDbLoadError[];
 }
 
-// @public
+// @beta
 export interface WorkspaceDbManifest {
     readonly contactName?: string;
     readonly description?: string;
@@ -6503,43 +6503,39 @@ export interface WorkspaceDbManifest {
     readonly workspaceName: string;
 }
 
-// @public
+// @beta
 export type WorkspaceDbName = string;
 
-// @public (undocumented)
+// @beta
 export interface WorkspaceDbNameAndVersion {
     readonly dbName?: string;
     readonly version?: WorkspaceDbVersionRange;
 }
 
-// @public
+// @beta
 export interface WorkspaceDbProps extends WorkspaceDbNameAndVersion {
     readonly includePrerelease?: boolean;
     readonly prefetch?: boolean;
 }
 
-// @public (undocumented)
+// @beta
 export interface WorkspaceDbQueryResourcesArgs {
-    // (undocumented)
     callback: WorkspaceDbQueryResourcesCallback;
-    // (undocumented)
     nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
-    // (undocumented)
     namePattern: string;
-    // (undocumented)
     type?: "string" | "blob";
 }
 
-// @public (undocumented)
+// @beta
 export type WorkspaceDbQueryResourcesCallback = (resourceNames: Iterable<string>) => void;
 
-// @public
+// @beta
 export type WorkspaceDbVersion = string;
 
 // @public
 export type WorkspaceDbVersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
 
-// @public
+// @beta
 export type WorkspaceDbVersionRange = string;
 
 // @beta (undocumented)

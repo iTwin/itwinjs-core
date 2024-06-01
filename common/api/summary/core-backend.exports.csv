@@ -434,22 +434,22 @@ public;WebMercatorModel
 beta;Workspace
 beta;Workspace
 beta;WorkspaceContainer
-public;WorkspaceContainerId = string
-public;WorkspaceContainerProps 
+beta;WorkspaceContainerId = string
+beta;WorkspaceContainerProps 
 beta;WorkspaceDb
-public;WorkspaceDbCloudProps = WorkspaceDbProps & WorkspaceContainerProps
-public;WorkspaceDbFullName = string
-public;WorkspaceDbLoadError 
+beta;WorkspaceDbCloudProps = WorkspaceDbProps & WorkspaceContainerProps
+beta;WorkspaceDbFullName = string
+beta;WorkspaceDbLoadError 
 public;WorkspaceDbLoadErrors 
-public;WorkspaceDbManifest
-public;WorkspaceDbName = string
-public;WorkspaceDbNameAndVersion
-public;WorkspaceDbProps 
-public;WorkspaceDbQueryResourcesArgs
-public;WorkspaceDbQueryResourcesCallback = (resourceNames: Iterable
-public;WorkspaceDbVersion = string
+beta;WorkspaceDbManifest
+beta;WorkspaceDbName = string
+beta;WorkspaceDbNameAndVersion
+beta;WorkspaceDbProps 
+beta;WorkspaceDbQueryResourcesArgs
+beta;WorkspaceDbQueryResourcesCallback = (resourceNames: Iterable
+beta;WorkspaceDbVersion = string
 public;WorkspaceDbVersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease"
-public;WorkspaceDbVersionRange = string
+beta;WorkspaceDbVersionRange = string
 beta;WorkspaceEditor
 beta;WorkspaceEditor
 beta;WorkspaceOpts

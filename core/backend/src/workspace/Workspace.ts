@@ -15,95 +15,133 @@ import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { implementationProhibited } from "../internal/ImplementationProhibited";
 
-// cspell:ignore rowid julianday primarykey premajor preminor prepatch
-
-const loggerCategory = BackendLoggerCategory.Workspace;
-
-/** The unique identifier of a WorkspaceContainer. This becomes the base name for the local directory holding the WorkspaceDbs from a WorkspaceContainer.
- * `WorkspaceContainer.Id`s may:
- *  - only contain lower case letters, numbers or dashes
- *  - not start or end with a dash
- *  - not be shorter than 3 or longer than 63 characters
+/** The unique identifier of a [[WorkspaceContainer]]. This becomes the base name for a local file directory holding the container's [[WorkspaceDb]]s.
+ * A valid `WorkspaceContainerId` must conform to the following constraints:
+ *  - Consist solely of a combination of lower case letters, numbers, and dashes.
+ *  - May not start or end with a dash.
+ *  - Must be at least 3 characters long and no longer than 63 characters.
+ * @beta
  */
 export type WorkspaceContainerId = string;
 
-/** Properties that specify a WorkspaceContainer. */
+/** Properties describing a [[WorkspaceContainer]] for methods like [[Workspace.getContainerAsync]].
+ * @beta
+ */
 export interface WorkspaceContainerProps extends Optional<CloudSqlite.ContainerAccessProps, "accessToken"> {
-  /** attempt to synchronize (i.e. call `checkForChanges`) this cloud container whenever it is connected to a cloud cache. Default=true */
+  /** Whether to synchronize the container via [[CloudSqlite.CloudContainer.checkForChanges]] whenever it is connected to a [[CloudSqlite.CloudCache]].
+   * @note This property defaults to `true`.
+   */
   readonly syncOnConnect?: boolean;
-  /** description of what's in this container */
+  /** A user-friendly description of the container's contents. */
   readonly description?: string;
-  /** in case of problems loading the container, display this message. */
+  /** A message to display to the user if problems occur while loading the container. */
   readonly loadingHelp?: string;
 }
 
-/** The base name of a WorkspaceDb within a WorkspaceContainer (without any version identifier) */
+/** The base name of a [[WorkspaceDb]], without any version information.
+ * @see [[WorkspaceDbFullName]] for the fully-specified name, including version information.
+ * @beta
+ */
 export type WorkspaceDbName = string;
 
-/** The  name of a WorkspaceDb within a WorkspaceContainer, including the version identifier */
+/** The fully-specified name of a [[WorkspaceDb]], combing its [[WorkspaceDbName]] and [[WorkspaceDbVersion]] in the format "name:version".
+ * @beta
+ */
 export type WorkspaceDbFullName = string;
 
-/** The semver-format version identifier for a WorkspaceDb. */
+/** A [semver](https://github.com/npm/node-semver) string describing the version of a [[WorkspaceDb]], e.g., "4.2.11".
+ * @beta
+ */
 export type WorkspaceDbVersion = string;
 
-/** The [semver range format](https://github.com/npm/node-semver) identifier for a range of acceptable versions. */
+/** A [semver string](https://github.com/npm/node-semver?tab=readme-ov-file#ranges) describing a range of acceptable [[WorkspaceDbVersion]]s,
+ * e.g., ">=1.2.7 <1.3.0".
+ * @beta
+ */
 export type WorkspaceDbVersionRange = string;
 
+/** Specifies the name and version of a [[WorkspaceDb]].
+ * @beta
+ */
 export interface WorkspaceDbNameAndVersion {
-  /** name of database within WorkspaceContainer. If not present, defaults to "workspace-db" */
+  /** The name of the [[WorkspaceDb]]. If omitted, it defaults to "workspace-db". */
   readonly dbName?: string;
-  /** a semver version range specifier that determines the acceptable range of versions to load. If not present, use the newest version. */
+  /** The range of acceptable versions of the [[WorkspaceDb]] of the specified [[dbName]].
+   * If omitted, it defaults to the newest available version.
+   */
   readonly version?: WorkspaceDbVersionRange;
 }
 
-/** Properties that specify how to load a WorkspaceDb within a [[WorkspaceContainer]]. */
+/** Properties that specify how to load a [[WorkspaceDb]] within a [[WorkspaceContainer]].
+ * @beta
+ */
 export interface WorkspaceDbProps extends WorkspaceDbNameAndVersion {
-  /** if true, allow semver *prerelease* versions. By default only released version are allowed. */
+  /** If true, allow semver [prerelease versions](https://github.com/npm/node-semver?tab=readme-ov-file#prerelease-tags), e.g., "1.4.2-beta.0".
+   * By default, only released version are allowed.
+   */
   readonly includePrerelease?: boolean;
-  /** start a prefetch operation whenever this WorkspaceDb is opened. */
+  /** If true, start a prefetch operation whenever this [[WorkspaceDb]] is opened, to begin downloading pages of the database before they are needed. */
   readonly prefetch?: boolean;
 }
 
+/** Properties describing a [[WorkspaceDb]] and the [[WorkspaceContainer]] containing it.
+ * @beta
+ */
 export type WorkspaceDbCloudProps = WorkspaceDbProps & WorkspaceContainerProps;
 
+/** A function supplied as [[WorkspaceDbQueryResourcesArgs.callback]] to be invoked to process the requested resources.
+ * @beta
+ */
 export type WorkspaceDbQueryResourcesCallback = (resourceNames: Iterable<string>) => void;
 
+/** Arguments supplied to [[WorkspaceDb.queryResources]].
+ * @beta
+ */
 export interface WorkspaceDbQueryResourcesArgs {
+  /** The type of resource to query. */
   type?: "string" | "blob";
+  /** A pattern against which to compare the name of each resource, using [[nameCompare]] as the comparison operator.
+   * Only resources whose names match the pattern will be included in the query results.
+   */
   namePattern: string;
+  /** The comparison operator by which to compare the name of each resource to [[namePattern]].
+   * Only resources whose names match the pattern will be included in the query results.
+   */
   nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+  /** A function invoked to process the resources that match the query criterion. */
   callback: WorkspaceDbQueryResourcesCallback;
 }
 
-/**
- * A Manifests is stored *inside* every WorkspaceDb. IT describes the meaning, content, and context of what's in a WorkspaceDb. This can be used to
- * help users understand when to use the WorkspaceDb, as well as who to contact with questions, etc.
- * @note Only the `workspaceName` field is required. Users may add additional fields for their own purposes.
- * @note Since this information is stored within the WorkspaceDb itself, it is versioned along with the rest of the contents.
- */
+ /** Metadata stored inside a [[WorkspaceDb]] describing the database's contents, to help users understand the purpose of the [[WorkspaceDb]], who to
+  * contact with questions about it, and so on.
+  * @note Only the [[workspaceName]] field is required, and users may add additional fields for their own purposes.
+  * @note Since the information is stored inside of the [[WorkspaceDb]], it is versioned along with the rest of the contents.
+  * @beta
+  */
 export interface WorkspaceDbManifest {
-  /** The name of this WorkspaceDb to be shown in user interfaces. Organizations should attempt to make this name informative enough
+  /** The name of the [[WorkspaceDb]] to be shown in user interfaces. Organizations should attempt to make this name informative enough
    * so that uses may refer to this name in conversations. It should also be unique enough that there's no confusion when it appears in
    * lists of WorkspaceDbs.
    * @note it is possible and valid to change the workspaceName between new version of a WorkspaceDb (e.g. incorporating a date).
    */
   readonly workspaceName: string;
-  /** A description of the contents of this WorkspaceDb to help users understand its purpose and appropriate usage */
+  /** A description of the contents of this [[WorkspaceDb]] to help users understand its purpose and appropriate usage. */
   readonly description?: string;
-  /** the moniker of the individual to contact with questions about this WorkspaceDb */
+  /** The name of the person to contact with questions about this [[WorkspaceDb]]. */
   readonly contactName?: string;
-  /** the moniker of the individual who last modified this WorkspaceDb */
+  /** The name of the person who last modified this [[WorkspaceDb]]. */
   readonly lastEditedBy?: string;
 }
 
 /**
- * An exception that happens attempting to load a WorkspaceDb or data from WorkspaceDb (e.g. the WorkspaceDb
- * can't be found or the user isn't authorized for access to the container.)
+ * An exception raised when attempting to load a [[WorkspaceDb]] or some of its data; for example, if the [[WorkspaceDb]] could not be found or the user
+ * is not authorized to access its [[WorkspaceContainer]].
+ * @beta
  */
 export interface WorkspaceDbLoadError extends Error {
-  /** the properties of the workspace attempting to load, including the identity of the container. */
+  /** The properties of the [[WorkspaceDb]] that was attempted to load, including the identity of its [[WorkspaceContainer]]. */
   wsDbProps?: WorkspaceDbProps & Partial<WorkspaceDbCloudProps>;
-  /** the WorkspaceDb, if available */
+  /** The [[WorkspaceDb]] in which the error occurred, if available. */
   wsDb?: WorkspaceDb;
 }
 
@@ -377,7 +415,7 @@ export namespace Workspace {
   /** IModelHost applications may supply a different implementation to diagnose (rather than merely log) errors loading workspace data */
   export let exceptionDiagnosticFn = (e: WorkspaceDbLoadErrors) => {  // eslint-disable-line prefer-const
     if (e instanceof Error)
-      Logger.logException(loggerCategory, e);
+      Logger.logException(BackendLoggerCategory.Workspace, e);
     else
       UnexpectedErrors.handle(e);
   };
@@ -392,7 +430,7 @@ export namespace Workspace {
    * any Settings.Dictionary is loaded from a WorkspaceDb. The default implementation calls `Logger.logInfo`.
    */
   export let onSettingsDictionaryLoadedFn = (loaded: SettingsDictionaryLoaded) => {  // eslint-disable-line prefer-const
-    Logger.logInfo(loggerCategory, `loaded setting dictionary ${loaded.dict.props.name} from ${loaded.from.dbFileName}`);
+    Logger.logInfo(BackendLoggerCategory.Workspace, `loaded setting dictionary ${loaded.dict.props.name} from ${loaded.from.dbFileName}`);
   };
 
   const makeSettingName = (name: string) => `${"itwin/core/workspace"}/${name}`;
