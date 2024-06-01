@@ -19,16 +19,24 @@
  *
  * Example: in IModelDb.ts:
  * ```ts
- *  import { _isOpen, _nativeDb } from "./internal/Internal";
+ *  import { _isOpen, _nativeDb, _prepareSqliteStatement } from "./internal/Internal";
  *  class IModelDb {
  *    // A package-internal property, initialized in the constructor, accessed as `this[_nativeDb]`.
  *    // @internal
  *    public readonly [_nativeDb]: IModelJsNative.DgnDb;
  *
- *    // A package-internal method, accessed as `this[_isOpen]()`.
+ *    // A package-internal computed property, accessed as `this[_isOpen]`.
  *    // @internal
- *    public [_isOpen]: () => boolean {
+ *    public get [_isOpen](): boolean {
  *      return this[_nativeDb].isOpen();
+ *    }
+ *
+ *    // A package-internal method, accessed a `this[_prepareSqliteStatement](sql, false)`.
+ *    // @internal
+ *    public [_prepareSqliteStatement](sql: string, logErrors = true): SqliteStatement {
+ *      const stmt = new SqliteStatement(sql);
+ *      stmt.prepare(this[_nativeDb], logErrors);
+ *      return stmt;
  *    }
  *  }
  * ```
@@ -43,8 +51,9 @@
  * are not subject to our API deprecation policies).
  */
 
-export const _isOpen = Symbol("isOpen");
-export const _nativeDb = Symbol("nativeDb");
+export const _isOpen = Symbol();
+export const _nativeDb = Symbol();
+export const _prepareSqliteStatement = Symbol();
 
 /** A symbol used to prevent implementations of an interface from being created outside of the package that defines the interface.
  * This is useful when a package defines a public interface with one or more private implementations.
