@@ -59,28 +59,8 @@ import { BaseSettings, SettingDictionary, SettingName, SettingResolver, Settings
 import { Workspace } from "./workspace/Workspace";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotationLayout";
 import { _nativeDb } from "./internal/Internal";
-
+import { ChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import type { BlobContainer } from "./BlobContainerService";
-/** @internal */
-export interface ChangesetConflictArgs {
-  cause: DbConflictCause;
-  opcode: DbOpcode;
-  indirect: boolean;
-  tableName: string;
-  changesetFile?: string;
-  columnCount: number;
-  getForeignKeyConflicts: () => number;
-  dump: () => void;
-  setLastError: (message: string) => void;
-  getPrimaryKeyColumns: () => number[];
-  getValueType: (columnIndex: number, stage: DbChangeStage) => DbValueType | null | undefined;
-  getValueBinary: (columnIndex: number, stage: DbChangeStage) => Uint8Array | null | undefined;
-  getValueId: (columnIndex: number, stage: DbChangeStage) => Id64String | null | undefined;
-  getValueText: (columnIndex: number, stage: DbChangeStage) => string | null | undefined;
-  getValueInteger: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
-  getValueDouble: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
-  isValueNull: (columnIndex: number, stage: DbChangeStage) => boolean | undefined;
-}
 
 // spell:ignore fontid fontmap
 
