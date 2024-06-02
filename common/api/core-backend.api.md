@@ -504,7 +504,7 @@ export namespace BlobContainer {
 // @public
 export class BriefcaseDb extends IModelDb {
     protected constructor(args: {
-        nativeDb: IModelJsNative.DgnDb;
+        [_nativeDb]: IModelJsNative.DgnDb;
         key: string;
         openMode: OpenMode;
         briefcaseId: number;
@@ -3022,7 +3022,7 @@ export abstract class IModelDb extends IModel {
     readonly [_nativeDb]: IModelJsNative.DgnDb;
     // @internal
     protected constructor(args: {
-        nativeDb: IModelJsNative.DgnDb;
+        [_nativeDb]: IModelJsNative.DgnDb;
         key: string;
         changeset?: ChangesetIdWithIndex;
     });

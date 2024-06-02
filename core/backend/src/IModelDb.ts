@@ -353,9 +353,9 @@ export abstract class IModelDb extends IModel {
   public get watchFilePathName(): LocalFileName { return `${this.pathName}-watch`; }
 
   /** @internal */
-  protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
-    super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
-    this[_nativeDb] = args.nativeDb;
+  protected constructor(args: { [_nativeDb]: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
+    super({ ...args, iTwinId: args[_nativeDb].getITwinId(), iModelId: args[_nativeDb].getIModelId() });
+    this[_nativeDb] = args[_nativeDb];
 
     // it is illegal to create an IModelDb unless the nativeDb has been opened. Throw otherwise.
     if (!this.isOpen)
@@ -2654,8 +2654,8 @@ export class BriefcaseDb extends IModelDb {
       this._locks = new ServerBasedLocks(this);
   }
 
-  protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, openMode: OpenMode, briefcaseId: number }) {
-    super({ ...args, changeset: args.nativeDb.getCurrentChangeset() });
+  protected constructor(args: { [_nativeDb]: IModelJsNative.DgnDb, key: string, openMode: OpenMode, briefcaseId: number }) {
+    super({ ...args, changeset: args[_nativeDb].getCurrentChangeset() });
     this._openMode = args.openMode;
     this.briefcaseId = args.briefcaseId;
     this.makeLockControl();
@@ -2752,7 +2752,7 @@ export class BriefcaseDb extends IModelDb {
     const file = { path: args.fileName, key: args.key };
     const openMode = (args.readonly || args.watchForChanges) ? OpenMode.Readonly : OpenMode.ReadWrite;
     const nativeDb = this.openDgnDb(file, openMode, undefined, args);
-    const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
+    const briefcaseDb = new BriefcaseDb({ [_nativeDb]: nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
 
     // If they asked to watch for changes, set an fs.watch on the "-watch" file (only it is modified while we hold this connection.)
     // Whenever there are changes, restart our defaultTxn. That loads the changes from the other connection and sends
@@ -3086,7 +3086,7 @@ export class SnapshotDb extends IModelDb {
   public static readonly onOpened = new BeEvent<(_iModelDb: SnapshotDb) => void>();
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
-    super({ nativeDb, key, changeset: nativeDb.getCurrentChangeset() });
+    super({ [_nativeDb]: nativeDb, key, changeset: nativeDb.getCurrentChangeset() });
     this._openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
   }
 
@@ -3278,7 +3278,7 @@ export class StandaloneDb extends BriefcaseDb {
     nativeDb.setITwinId(Guid.empty);
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();
-    const db = new StandaloneDb({ nativeDb, key: Guid.createValue(), briefcaseId: BriefcaseIdValue.Unassigned, openMode: OpenMode.ReadWrite });
+    const db = new StandaloneDb({ [_nativeDb]: nativeDb, key: Guid.createValue(), briefcaseId: BriefcaseIdValue.Unassigned, openMode: OpenMode.ReadWrite });
     db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     return db;
   }
@@ -3328,7 +3328,7 @@ export class StandaloneDb extends BriefcaseDb {
       if (iTwinId !== Guid.empty) // a "standalone" iModel means it is not associated with an iTwin
         throw new IModelError(IModelStatus.WrongIModel, `${filePath} is not a Standalone iModel. iTwinId=${iTwinId}`);
       assert(undefined !== file.key);
-      const db = new StandaloneDb({ nativeDb, key: file.key, openMode, briefcaseId: BriefcaseIdValue.Unassigned });
+      const db = new StandaloneDb({ [_nativeDb]: nativeDb, key: file.key, openMode, briefcaseId: BriefcaseIdValue.Unassigned });
       return db;
     } catch (error) {
       nativeDb.closeFile();
