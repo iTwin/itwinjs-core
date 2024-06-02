@@ -4,10 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** This file defines `Symbol`s for "package-internal" APIs - that is, APIs that should never be used by any code outside of iTwin.js core.
+ * Such APIs should be kept to a minimum, given that we are developing reusable libraries.
+ * But some APIs serve as lower-level "glue" that may be too error-prone for external callers to use correctly (e.g., `IModelDb[_nativeDb]`),
+ * inherently subject to instability (e.g., the RPC system), or too low-level to be of meaningful use on their own serving only to clutter the public API.
+ *
  * Top-level APIs like classes, interfaces, enums, and functions that are not intended for use outside
  * of the monorepo should never be exported from the package's barrel file, thereby excluding them
  * from the package's public API.
- * But some top-level public APIs may contain interior APIs that should be used only within the monorepo.
+ * But some top-level public APIs may contain interior package-internal APIs.
  * These should be minimized where possible, e.g., by moving a package-internal function out of a public namespace.
  * In some cases, like class properties, extracting the package-internal API from the public top-level API is not feasible.
  * Instead, you can define a `Symbol` in this file to serve as the name of the package-internal API.
