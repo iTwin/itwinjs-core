@@ -16,7 +16,7 @@ import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
-import { _nativeDb } from "./internal/Internal"; 
+import { _nativeDb } from "./internal/Internal";
 
 /** A string that identifies a Txn.
  * @public

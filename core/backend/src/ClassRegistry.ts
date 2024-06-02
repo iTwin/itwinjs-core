@@ -13,7 +13,7 @@ import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
 import { EntityReferences } from "./EntityReferences";
 import * as assert from "assert";
-import { _nativeDb } from "./internal/Internal"; 
+import { _nativeDb } from "./internal/Internal";
 
 const isGeneratedClassTag = Symbol("isGeneratedClassTag");
 

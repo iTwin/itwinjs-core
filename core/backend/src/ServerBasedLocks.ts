@@ -13,7 +13,7 @@ import { LockMap, LockState } from "./BackendHubAccess";
 import { BriefcaseDb, LockControl } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { SQLiteDb } from "./SQLiteDb";
-import { _implementation_prohibited, _nativeDb } from "./internal/Internal"; 
+import { _implementation_prohibited, _nativeDb } from "./internal/Internal";
 
 /**
  * Both the Model and Parent of an element are considered "owners" of their member elements. That means:

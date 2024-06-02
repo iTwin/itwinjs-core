@@ -11,7 +11,7 @@ import { join } from "path";
 import * as touch from "touch";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
+  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
   IModelStatus, JsonUtils, Logger, LogLevel, OpenMode, UnexpectedErrors,
 } from "@itwin/core-bentley";
 import {
@@ -334,7 +334,7 @@ export abstract class IModelDb extends IModel {
   public readonly [_nativeDb]: IModelJsNative.DgnDb;
 
   /** @internal
-   * @deprecated To be removed in iTwin.js 5.0.0. This property is internal and should not be used by any code outside of the iTwin.js core repository.
+   * @deprecated in 4.7 This property is internal and should not be used by any code outside of the iTwin.js core repository. It will be removed in 5.0.
    */
   public get nativeDb(): IModelJsNative.DgnDb { return this[_nativeDb]; }
 

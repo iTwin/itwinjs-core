@@ -51,7 +51,7 @@
  * Because many packages outside of the itwinjs-core repository do use `@internal` APIs, it is okay during the transition
  * to this new policy to temporarily preserve the existing API, delegating to the new `Symbol`-accessed package-internal API.
  * where removing the existing API would present an undue burden for those packages to update their code in the short term.
- * Those existing APIs should be annotated as `@deprecated` and removed as soon as possible. (Note, because they are `@internal`, they
+ * Those existing APIs should be annotated as `deprecated` and removed as soon as possible. (Note, because they are `@internal`, they
  * are not subject to our API deprecation policies).
  */
 
@@ -72,13 +72,13 @@ export const _prepareSqliteStatement = Symbol();
  *    name: string;
  *    [_implementation_prohibited]: unknown;
  *  }
- *  
+ *
  *  // Not exported
  *  class ThingImpl implements Thing {
  *    constructor(public name: string) { }
  *    public readonly [_implementation_prohibited] = undefined;
  *  }
- *  
+ *
  *  // @public
  *  export function getThing(name: string): Thing { return new ThingImpl(name); }
  * ```
@@ -98,4 +98,4 @@ export const _prepareSqliteStatement = Symbol();
  *
  * The vast majority of interfaces do not need this.
  */
-export const _implementation_prohibited = Symbol("implementation prohibited");
+export const _implementation_prohibited = Symbol("implementation prohibited"); // eslint-disable-line @typescript-eslint/naming-convention

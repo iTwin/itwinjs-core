@@ -14,7 +14,7 @@ import { IModelDb } from "../IModelDb";
 import { KnownLocations } from "../IModelHost";
 import { Schema, Schemas } from "../Schema";
 import * as elementsModule from "./FunctionalElements";
-import { _nativeDb } from "../internal/Internal"; 
+import { _nativeDb } from "../internal/Internal";
 
 /** @public */
 export class FunctionalSchema extends Schema {
