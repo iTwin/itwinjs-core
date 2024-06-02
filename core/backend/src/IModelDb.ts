@@ -58,7 +58,7 @@ import { ViewStore } from "./ViewStore";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { Workspace } from "./workspace/Workspace";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotationLayout";
-import { _nativeDb } from "./internal/Internal";
+import { _implementation_prohibited, _nativeDb } from "./internal/Internal";
 import { ChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import type { BlobContainer } from "./BlobContainerService";
 
@@ -104,6 +104,8 @@ export interface ComputedProjectExtents {
  * @beta
  */
 export interface LockControl {
+  /** @internal */
+  readonly [_implementation_prohibited]: unknown;
   /**
    * true if this LockControl uses a server-based concurrency approach.
    */
@@ -174,6 +176,7 @@ export interface SchemaImportOptions {
 
 /** A null-implementation of LockControl that does not attempt to limit access between briefcases. This relies on change-merging to resolve conflicts. */
 class NoLocks implements LockControl {
+  public readonly [_implementation_prohibited] = undefined;
   public get isServerBased() { return false; }
   public close(): void { }
   public clearAllLocks(): void { }
