@@ -52,9 +52,6 @@ import { Constructor } from '@itwin/core-bentley';
 import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
-import { DbChangeStage } from '@itwin/core-bentley';
-import { DbConflictCause } from '@itwin/core-bentley';
-import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
 import { DbValueType } from '@itwin/core-bentley';
 import { DefinitionElementProps } from '@itwin/core-common';
@@ -705,44 +702,6 @@ export interface ChangeMetaData {
 export interface ChangesetArg extends IModelIdArg {
     // (undocumented)
     readonly changeset: ChangesetIndexOrId;
-}
-
-// @internal (undocumented)
-export interface ChangesetConflictArgs {
-    // (undocumented)
-    cause: DbConflictCause;
-    // (undocumented)
-    changesetFile?: string;
-    // (undocumented)
-    columnCount: number;
-    // (undocumented)
-    dump: () => void;
-    // (undocumented)
-    getForeignKeyConflicts: () => number;
-    // (undocumented)
-    getPrimaryKeyColumns: () => number[];
-    // (undocumented)
-    getValueBinary: (columnIndex: number, stage: DbChangeStage) => Uint8Array | null | undefined;
-    // (undocumented)
-    getValueDouble: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
-    // (undocumented)
-    getValueId: (columnIndex: number, stage: DbChangeStage) => Id64String | null | undefined;
-    // (undocumented)
-    getValueInteger: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
-    // (undocumented)
-    getValueText: (columnIndex: number, stage: DbChangeStage) => string | null | undefined;
-    // (undocumented)
-    getValueType: (columnIndex: number, stage: DbChangeStage) => DbValueType | null | undefined;
-    // (undocumented)
-    indirect: boolean;
-    // (undocumented)
-    isValueNull: (columnIndex: number, stage: DbChangeStage) => boolean | undefined;
-    // (undocumented)
-    opcode: DbOpcode;
-    // (undocumented)
-    setLastError: (message: string) => void;
-    // (undocumented)
-    tableName: string;
 }
 
 // @beta
@@ -4006,6 +3965,8 @@ export class LockConflict extends IModelError {
 
 // @beta
 export interface LockControl {
+    // @internal (undocumented)
+    readonly [_implementation_prohibited]: unknown;
     acquireLocks(arg: {
         shared?: Id64Arg;
         exclusive?: Id64Arg;
