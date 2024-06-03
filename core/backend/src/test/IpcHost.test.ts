@@ -17,7 +17,7 @@ class MockIpcHandler extends IpcHandler implements MockIpcInterface {
   #privateFunction(): void { }
 }
 
-describe.only("IpcHost", () => {
+describe("IpcHost", () => {
   let socket: sinon.SinonStubbedInstance<IpcSocketBackend>;
 
   beforeEach(async () => {
