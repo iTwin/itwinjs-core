@@ -22,7 +22,7 @@ type MutableEnumerator = {
  */
 export class Enumerations extends SchemaItems {
   public constructor(schemaEditor: SchemaContextEditor) {
-    super(SchemaItemType.StructClass, schemaEditor);
+    super(SchemaItemType.Enumeration, schemaEditor);
   }
 
   public async create(schemaKey: SchemaKey, name: string, type: PrimitiveType.Integer | PrimitiveType.String, displayLabel?: string, isStrict?: boolean, enumerators?: AnyEnumerator[]): Promise<SchemaItemKey> {
