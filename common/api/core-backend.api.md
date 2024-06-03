@@ -992,6 +992,11 @@ export namespace CloudSqlite {
         name: string;
         rootDir: string;
     }
+    // (undocumented)
+    export interface CleanDeletedBlocksOptions {
+        debugLogging?: boolean;
+        nSeconds?: number;
+    }
     export interface CloudCache {
         // @internal
         destroy(): void;
@@ -1020,7 +1025,7 @@ export namespace CloudSqlite {
         // (undocumented)
         readonly cache?: CloudCache;
         checkForChanges(): void;
-        cleanDeletedBlocks(nSeconds?: number): Promise<void>;
+        cleanDeletedBlocks(options?: CleanDeletedBlocksOptions): Promise<void>;
         clearWriteLock(): void;
         connect(cache: CloudCache): void;
         get containerId(): string;
@@ -4709,17 +4714,21 @@ export namespace SchemaSync {
         static initializeDb(props: CloudSqlite.ContainerAccessProps): Promise<void>;
     }
     const // (undocumented)
-    setTestCache: (iModel: IModelDb, cacheName: string) => void;
+    setTestCache: (iModel: IModelDb, cacheName?: string) => void;
     const // (undocumented)
-    withLockedAccess: (iModel: TestCacheIModel, args: {
+    withLockedAccess: (iModel: IModelDb | {
+        readonly fileName: LocalFileName;
+    }, args: {
         operationName: string;
         openMode?: OpenMode;
         user?: string;
     }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
+    const pull: (iModel: IModelDb) => Promise<void>;
     const // (undocumented)
     initializeForIModel: (arg: {
         iModel: IModelDb;
         containerProps: CloudSqlite.ContainerProps;
+        overrideContainer?: boolean;
     }) => Promise<void>;
     export class SchemaSyncDb extends VersionedSqliteDb {
         // (undocumented)
