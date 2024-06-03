@@ -454,38 +454,46 @@ export namespace WorkspaceSettingNames {
 
 /** @beta */
 export namespace Workspace {
-  /** IModelHost applications may supply a different implementation to diagnose (rather than merely log) errors loading workspace data */
+  /** A function invoked to handle exceptions produced while loading workspace data.
+   * Applications can override this function to notify the user and/or attempt to diagnose the problem.
+   * The default implementation simply logs each exception.
+   */
   export let exceptionDiagnosticFn = (e: WorkspaceDbLoadErrors) => {  // eslint-disable-line prefer-const
     if (e instanceof Error)
       Logger.logException(BackendLoggerCategory.Workspace, e);
     else
       UnexpectedErrors.handle(e);
   };
-  /** passed to [[onSettingsDictionaryLoadedFn]] for every Setting.Dictionary that is loaded from a WorkspaceDb. */
+
+  /** Arguments supplied to [[onSettingsDictionaryLoadedFn]] for every [[SettingsDictionary]] that is loaded from a [[WorkspaceDb]]. */
   export interface SettingsDictionaryLoaded {
-    /** The dictionary loaded */
+    /** The dictionary that was loaded */
     dict: SettingsDictionary;
-    /** The WorkspaceDb from which the dictionary was found. */
+    /** The WorkspaceDb from which the dictionary was loaded. */
     from: WorkspaceDb;
   }
-  /** IModelHost applications may set this variable for diagnostics or user feedback. It is called each time
-   * any Settings.Dictionary is loaded from a WorkspaceDb. The default implementation calls `Logger.logInfo`.
+
+  /** A function invoked each time any [[SettingsDictionary]] is loaded from a [[WorkspaceDb]].
+   * Applications can override this function to notify the user and/or record diagnostics.
+   * The default implementation simply records an information message in the [Logger]($bentley).
    */
   export let onSettingsDictionaryLoadedFn = (loaded: SettingsDictionaryLoaded) => {  // eslint-disable-line prefer-const
     Logger.logInfo(BackendLoggerCategory.Workspace, `loaded setting dictionary ${loaded.dict.props.name} from ${loaded.from.dbFileName}`);
   };
 
-  /** either an array of [[WorkspaceDb.CloudProps]], or a settingName of a `itwin/core/workspace/workspaceDbList` from which the array can be resolved. */
-  export type DbListOrSettingName = { readonly dbs: WorkspaceDbCloudProps[], readonly settingName?: never } | { readonly settingName: string, readonly dbs?: never };
+  /** Either an array of [[WorkspaceDbCloudProps]] or the name of a [[Setting]] that provides an array of [[WorkspaceDbSettingsProps]] from which the array can be resolved.
+   * Used by [[Workspace.getWorkspaceDbs]].
+   */
+  export type DbListOrSettingName = { readonly dbs: WorkspaceDbCloudProps[], readonly settingName?: never } | { readonly settingName: SettingName, readonly dbs?: never };
 
-  /** called for each entry in a `itwin/core/workspace/workspaceDbList` setting by [[Workspace.resolveWorkspaceDbSetting]].
-   * If this function returns `false` the value is skipped and the corresponding WorkspaceDb will not be returned.
+  /** In arguments supplied to [[Workspace.getWorkspaceDbs]] and [[Workspace.resolveWorkspaceDbSetting]], an optional function used to exclude some
+   * [[WorkspaceDb]]s. Only those [[WorkspaceDb]]s for which the function returns `true` will be included.
    */
   export type DbListFilter = (
     /** The properties of the WorkspaceDb to be returned */
     dbProp: WorkspaceDbCloudProps,
-    /** the Settings.Dictionary holding the `itwin/core/workspace/workspaceDbList` setting. May be used, for example, to determine the
-     * Settings.Priority of the dictionary.
+    /** The SettingsDictionary holding the [[WorkspaceSettingNames.settingsWorkspace]] setting. May be used, for example, to determine the
+     * [[SettingsPriority]] of the dictionary.
      */
     dict: SettingsDictionary
   ) => boolean;
