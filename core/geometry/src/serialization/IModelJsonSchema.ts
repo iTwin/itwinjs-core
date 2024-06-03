@@ -7,6 +7,7 @@
  * @module Serialization
  */
 
+import { assert } from "@itwin/core-bentley";
 import { AkimaCurve3d } from "../bspline/AkimaCurve3d";
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
@@ -485,6 +486,44 @@ export namespace IModelJson {
     /** optional capping flag. */
     capped?: boolean;
   }
+
+  /**
+   * Interface for the analytical data in a channel at a single input value.
+   * See `AuxChannelData` for further information.
+   * @public
+   */
+  export interface AuxChannelDataProps {
+  /** The input value for this data. */
+  input: number;
+  /** The vertex values for this data. A single value per vertex for scalar and distance types and 3 values (x,y,z) for normal or vector channels. */
+  values: number[];
+  }
+  /**
+   * Interface for a channel of analytical mesh data.
+   * See `AuxChannel` for further information.
+   * @public
+   */
+  export interface AuxChannelProps {
+  /** An array of analytical data at one or more input values. */
+  data: AuxChannelDataProps[];
+  /** The type of data stored in this channel. */
+  dataType: AuxChannelDataType;
+  /** Optional channel name. */
+  name?: string;
+  /** Optional input name. */
+  inputName?: string;
+  }
+  /**
+   * Interface for analytical mesh data.
+   * See `PolyfaceAuxData` for further information.
+   * @public
+  */
+  export interface AuxDataProps {
+  /** Array with one or more channels of auxiliary data. */
+  channels: AuxChannelProps[];
+  /** Indices mapping channel data to the mesh facets (must be parallel to mesh indices). */
+  indices: number[];
+  }
   /**
    * Interface for extra data attached to an indexed mesh.
    * See `TaggedNumericData` for further information (e.g. value `tagA` and `tagB` values)
@@ -528,8 +567,21 @@ export namespace IModelJson {
     normalIndex?: [number];
     /** ONE BASED ZERO TERMINATED array of color indices. ZERO is terminator for single facet. */
     colorIndex?: [number];
-    /** optional array of tagged geometry (such as to request subdivision surface) */
-    taggedNumericData?: TaggedNumericDataProps;
+
+    /**
+     * Optional fixed block size for indices.
+     * If defined, each facet is represented by `numPerFace` 1-based indices, with appended zeroes if the facet has fewer edges.
+     * If undefined, mesh indices are 1-based, 0-terminated, variable-sized face loops.
+     */
+    numPerFace?: number;
+    /** Indicates if mesh closure is unknown (0 | undefined), open sheet (1), or closed solid (2). */
+    expectedClosure?: number;
+    /** Optional flag indicating if mesh display must assume both sides are visible. */
+    twoSided?: boolean;
+    /** Optional analytical data at the vertices of the mesh */
+    auxData?: AuxDataProps;
+    /** Optional array of tagged geometry (such as to request subdivision surface) */
+    tags?: TaggedNumericDataProps;
   }
   /** parser services for "iModelJson" schema
    * * 1: create a reader with `new ImodelJsonReader`
@@ -850,23 +902,6 @@ export namespace IModelJson {
       return undefined;
     }
 
-    // For each nonzero index, Announce Math.abs (value) -1
-    private static addZeroBasedIndicesFromSignedOneBased(data: any, numPerFace: number, f: (x: number) => any): void {
-      if (data && Geometry.isNumberArray(data)) {
-        if (numPerFace > 1) {
-          // all indices are used ...
-          for (const value of data) {
-            f(Math.abs(value) - 1);
-          }
-        } else {
-          // ignore separator zeros ...
-          for (const value of data) {
-            if (value !== 0)
-              f(Math.abs(value) - 1);
-          }
-        }
-      }
-    }
     /** parse polyface aux data content to PolyfaceAuxData instance */
     public static parsePolyfaceAuxData(data: any = undefined, numPerFace: number = 0): PolyfaceAuxData | undefined {
 
@@ -886,7 +921,7 @@ export namespace IModelJson {
       }
 
       const auxData = new PolyfaceAuxData(outChannels, []);
-      Reader.addZeroBasedIndicesFromSignedOneBased(data.indices, numPerFace, (x: number) => { auxData.indices.push(x); });
+      SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(data.indices, numPerFace, (x: number) => { auxData.indices.push(x); });
 
       return auxData;
     }
@@ -898,81 +933,59 @@ export namespace IModelJson {
       if (data.hasOwnProperty("point") && Array.isArray(data.point)
         && data.hasOwnProperty("pointIndex") && Array.isArray(data.pointIndex)) {
         const polyface = IndexedPolyface.create();
-        if (data.hasOwnProperty("normal") && Array.isArray(data.normal)) {
-          // for normals, addNormal() is overeager to detect the (common) case of duplicate normals in sequence.
-          // use addNormalXYZ which always creates a new one.
-          // likewise for params
-          for (const uvw of data.normal) {
-            if (Geometry.isNumberArray(uvw, 3))
-              polyface.addNormalXYZ(uvw[0], uvw[1], uvw[2]);
-          }
-        }
+        const numPerFace = data.hasOwnProperty("numPerFace") ? data.numPerFace : 0;
         if (data.hasOwnProperty("twoSided")) {
           const q = data.twoSided;
           if (q === true || q === false) {
             polyface.twoSided = q;
           }
         }
-        const numPerFace = data.hasOwnProperty("numPerFace") ? data.numPerFace : 0;
         if (data.hasOwnProperty("expectedClosure")) {
           const q = data.expectedClosure;
           if (Number.isFinite(q)) {
             polyface.expectedClosure = q;
           }
         }
-        if (data.hasOwnProperty("param") && Array.isArray(data.param)) {
+
+        if (data.hasOwnProperty("normal") && Array.isArray(data.normal) && data.hasOwnProperty("normalIndex")) {
+          // For normals, addNormal() is overeager to detect the (common) case of duplicate normals in sequence.
+          // Use addNormalXYZ which always creates a new one. Likewise for params.
+          for (const uvw of data.normal) {
+            if (Geometry.isNumberArray(uvw, 3))
+              polyface.addNormalXYZ(uvw[0], uvw[1], uvw[2]);
+          }
+          SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(data.normalIndex, numPerFace,
+            (x: number) => { polyface.addNormalIndex(x); });
+        }
+        if (data.hasOwnProperty("param") && Array.isArray(data.param) && data.hasOwnProperty("paramIndex")) {
           for (const uv of data.param) {
             if (Geometry.isNumberArray(uv, 2))
               polyface.addParamUV(uv[0], uv[1]);
           }
-        }
-        if (data.hasOwnProperty("color") && Array.isArray(data.color)) {
-          for (const c of data.color) {
-            polyface.addColor(c);
-          }
-        }
-
-        for (const p of data.point) polyface.addPointXYZ(p[0], p[1], p[2]);
-
-        if (numPerFace > 1) {
-          for (let i = 0; i < data.pointIndex.length; i++) {
-            const p = data.pointIndex[i];
-            const p0 = Math.abs(p) - 1;
-            polyface.addPointIndex(p0, p > 0);
-            if ((i + 1) % numPerFace === 0)
-              polyface.terminateFacet(false);
-          }
-
-        } else {
-          for (const p of data.pointIndex) {
-            if (p === 0)
-              polyface.terminateFacet(false); // we are responsible for index checking !!!
-            else {
-              const p0 = Math.abs(p) - 1;
-              polyface.addPointIndex(p0, p > 0);
-            }
-          }
-        }
-
-        if (data.hasOwnProperty("normalIndex")) {
-          Reader.addZeroBasedIndicesFromSignedOneBased(data.normalIndex, numPerFace,
-            (x: number) => { polyface.addNormalIndex(x); });
-        }
-        if (data.hasOwnProperty("paramIndex")) {
-          Reader.addZeroBasedIndicesFromSignedOneBased(data.paramIndex, numPerFace,
+          SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(data.paramIndex, numPerFace,
             (x: number) => { polyface.addParamIndex(x); });
         }
-
-        if (data.hasOwnProperty("colorIndex")) {
-          Reader.addZeroBasedIndicesFromSignedOneBased(data.colorIndex, numPerFace,
+        if (data.hasOwnProperty("color") && Array.isArray(data.color) && data.hasOwnProperty("colorIndex")) {
+          for (const c of data.color)
+            polyface.addColor(c);
+          SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(data.colorIndex, numPerFace,
             (x: number) => { polyface.addColorIndex(x); });
         }
+
+        for (const p of data.point)
+          polyface.addPointXYZ(p[0], p[1], p[2]);
+        SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(data.pointIndex, numPerFace,
+          (i: number, v?: boolean) => { polyface.addPointIndex(i, v); },
+          () => { polyface.terminateFacet(false); });
+
+        if (!polyface.validateAllIndices())
+          return undefined;
+
         if (data.hasOwnProperty("auxData"))
           polyface.data.auxData = Reader.parsePolyfaceAuxData(data.auxData, numPerFace);
 
-        if (data.hasOwnProperty("tags")) {
+        if (data.hasOwnProperty("tags"))
           polyface.data.taggedNumericData = Reader.parseTaggedNumericProps(data.tags);
-        }
 
         return polyface;
       }
@@ -1651,32 +1664,21 @@ export namespace IModelJson {
       return out;
     }
 
-    private handlePolyfaceAuxData(auxData: PolyfaceAuxData, pf: IndexedPolyface): any {
-      const contents: { [k: string]: any } = {};
-      contents.indices = [];
+    private handlePolyfaceAuxData(auxData: PolyfaceAuxData, pf: IndexedPolyface): AuxDataProps {
+      assert(auxData === pf.data.auxData);
+      const contents: AuxDataProps = { indices: [], channels: [] };
       const visitor = pf.createVisitor(0);
-      if (!visitor.auxData) return;
-
       while (visitor.moveToNextFacet()) {
-        for (let i = 0; i < visitor.indexCount; i++) {
-          contents.indices.push(visitor.auxData.indices[i] + 1);
-        }
+        for (let i = 0; i < visitor.indexCount; i++)
+          contents.indices.push(visitor.auxData!.indices[i] + 1);
         contents.indices.push(0);  // facet terminator.
       }
-      contents.channels = [];
       for (const inChannel of auxData.channels) {
-        const outChannel: { [k: string]: any } = {};
-        outChannel.dataType = inChannel.dataType;
-        outChannel.name = inChannel.name;
-        outChannel.inputName = inChannel.inputName;
-        outChannel.data = [];
+        const outChannel: AuxChannelProps = { data: [], dataType: inChannel.dataType, name: inChannel.name, inputName: inChannel.inputName };
         for (const inData of inChannel.data) {
-          const outData: { [k: string]: any } = {};
-          outData.input = inData.input;
-          outData.values = inData.values.slice(0);
+          const outData: AuxChannelDataProps = { input: inData.input, values: inData.values.slice(0) };
           outChannel.data.push(outData);
         }
-
         contents.channels.push(outChannel);
       }
       return contents;

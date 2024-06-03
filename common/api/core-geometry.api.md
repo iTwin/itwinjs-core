@@ -347,9 +347,11 @@ export class AuxChannel {
     computeDisplacementRange(scale?: number, result?: Range3d): Range3d;
     data: AuxChannelData[];
     dataType: AuxChannelDataType;
+    static entriesPerValue(dataType: AuxChannelDataType): number;
     get entriesPerValue(): number;
     inputName?: string;
     isAlmostEqual(other: AuxChannel, tol?: number): boolean;
+    static isScalar(dataType: AuxChannelDataType): boolean;
     get isScalar(): boolean;
     name?: string;
     get scalarRange(): Range1d | undefined;
@@ -2541,6 +2543,20 @@ export namespace IModelJson {
         vectorX: XYZProps;
         vectorY: XYZProps;
     }
+    export interface AuxChannelDataProps {
+        input: number;
+        values: number[];
+    }
+    export interface AuxChannelProps {
+        data: AuxChannelDataProps[];
+        dataType: AuxChannelDataType;
+        inputName?: string;
+        name?: string;
+    }
+    export interface AuxDataProps {
+        channels: AuxChannelProps[];
+        indices: number[];
+    }
     export interface AxesProps {
         xyVectors?: [XYZProps, XYZProps];
         yawPitchRollAngles?: YawPitchRollProps;
@@ -2608,15 +2624,19 @@ export namespace IModelJson {
         pointString?: XYZProps[];
     }
     export interface IndexedMeshProps {
+        auxData?: AuxDataProps;
         color?: [number];
         colorIndex?: [number];
+        expectedClosure?: number;
         normal?: [XYZProps];
         normalIndex?: [number];
+        numPerFace?: number;
         param?: [XYProps];
         paramIndex?: [number];
         point: [XYZProps];
         pointIndex: [number];
-        taggedNumericData?: TaggedNumericDataProps;
+        tags?: TaggedNumericDataProps;
+        twoSided?: boolean;
     }
     export interface LinearSweepProps {
         capped?: boolean;
@@ -2832,15 +2852,18 @@ export class IndexedPolyface extends Polyface {
     terminateFacet(validateAllIndices?: boolean): String[] | undefined;
     tryGetFaceData(i: number): FacetFaceData | undefined;
     tryTransformInPlace(transform: Transform): boolean;
+    validateAllIndices(index0?: number, errors?: String[]): boolean;
     get zeroTerminatedIndexCount(): number;
 }
 
 // @public
 export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
-    static createSubsetVisitor(polyface: IndexedPolyface, activeFacetIndices: number[], numWrap: number): IndexedPolyfaceSubsetVisitor;
+    static createNormalComparison(mesh: IndexedPolyface | IndexedPolyfaceVisitor, compareVector?: Vector3d, sideAngle?: Angle, numWrap?: number): IndexedPolyfaceSubsetVisitor;
+    static createSubsetVisitor(polyface: IndexedPolyface, activeFacetIndices: number[], numWrap?: number): IndexedPolyfaceSubsetVisitor;
+    getVisitableFacetCount(): number;
     moveToNextFacet(): boolean;
     moveToReadIndex(activeIndex: number): boolean;
-    parentFacetIndex(activeIndex: number): number | undefined;
+    parentFacetIndex(activeIndex?: number): number | undefined;
     reset(): void;
 }
 
@@ -2853,9 +2876,10 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     clientNormalIndex(i: number): number;
     clientParamIndex(i: number): number;
     clientPointIndex(i: number): number;
-    clientPolyface(): Polyface;
+    clientPolyface(): IndexedPolyface;
     static create(polyface: IndexedPolyface, numWrap: number): IndexedPolyfaceVisitor;
     currentReadIndex(): number;
+    getVisitableFacetCount(): number;
     moveToNextFacet(): boolean;
     moveToReadIndex(facetIndex: number): boolean;
     get numEdgesThisFacet(): number;
@@ -4245,6 +4269,7 @@ export class Point3dArray {
     } | undefined;
     static multiplyInPlace(transform: Transform, xyz: Float64Array): void;
     static packToFloat64Array(data: Point3d[], result?: Float64Array): Float64Array;
+    static packToNumberArray(data: Point3d[], result?: number[]): number[];
     static sumEdgeLengths(data: Point3d[] | Float64Array, addClosureEdge?: boolean, maxPointsToUse?: number): number;
     static sumWeightedX(weights: Float64Array, points: Point3d[]): number;
     static sumWeightedY(weights: Float64Array, points: Point3d[]): number;
@@ -4563,11 +4588,11 @@ export class PolyfaceClip {
 // @public
 export class PolyfaceData {
     constructor(needNormals?: boolean, needParams?: boolean, needColors?: boolean, twoSided?: boolean);
-    auxData: PolyfaceAuxData | undefined;
+    auxData?: PolyfaceAuxData;
     clone(): PolyfaceData;
-    color: number[] | undefined;
+    color?: number[];
     get colorCount(): number;
-    colorIndex: number[] | undefined;
+    colorIndex?: number[];
     compress(tolerance?: number): void;
     copyNormalTo(i: number, dest: Vector3d): void;
     copyParamTo(i: number, dest: Point2d): void;
@@ -4587,12 +4612,12 @@ export class PolyfaceData {
     isAlmostEqual(other: PolyfaceData): boolean;
     isAlmostEqualParamIndexUV(i: number, u: number, v: number): boolean;
     static isValidFacetStartIndexArray(facetStartIndex: number[]): boolean;
-    normal: GrowableXYZArray | undefined;
+    normal?: GrowableXYZArray;
     get normalCount(): number;
-    normalIndex: number[] | undefined;
+    normalIndex?: number[];
     param?: GrowableXYArray;
     get paramCount(): number;
-    paramIndex: number[] | undefined;
+    paramIndex?: number[];
     // @internal
     static readonly planarityLocalRelTol = 1e-13;
     point: GrowableXYZArray;
@@ -4611,7 +4636,7 @@ export class PolyfaceData {
     reverseIndicesSingleFacet(facetIndex: number, facetStartIndex: number[]): void;
     reverseNormals(): void;
     setTaggedNumericData(data: TaggedNumericData | undefined): void;
-    taggedNumericData: TaggedNumericData | undefined;
+    taggedNumericData?: TaggedNumericData;
     trimAllIndexArrays(length: number): void;
     tryTransformInPlace(transform: Transform): boolean;
     get twoSided(): boolean;
@@ -4687,8 +4712,8 @@ export class PolyfaceQuery {
     static sweepLineStringToFacetsXYReturnSweptFacets(lineStringPoints: GrowableXYZArray, polyface: Polyface): Polyface;
     // @deprecated (undocumented)
     static sweepLinestringToFacetsXYreturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface;
-    static visitorClientFacetCount(visitor: Polyface | PolyfaceVisitor): number;
-    static visitorClientPointCount(visitor: Polyface | PolyfaceVisitor): number;
+    static visitorClientFacetCount(source: Polyface | PolyfaceVisitor): number;
+    static visitorClientPointCount(source: Polyface | PolyfaceVisitor): number;
     static visitorToLoop(visitor: PolyfaceVisitor): Loop;
 }
 
@@ -4715,6 +4740,7 @@ export interface PolyfaceVisitor extends PolyfaceData {
     clientPointIndex(i: number): number;
     clientPolyface(): Polyface | undefined;
     currentReadIndex(): number;
+    getVisitableFacetCount?(): number;
     moveToNextFacet(): boolean;
     moveToReadIndex(index: number): boolean;
     pushDataFrom(other: PolyfaceVisitor, index: number): void;
@@ -5506,6 +5532,8 @@ export class Segment1d {
 
 // @public
 export namespace SerializationHelpers {
+    export function announceZeroBasedIndicesFromSignedOneBasedIndices(sourceIndices: Int32Array, numPerBlock: number, announceZeroBasedIndex: (i0: number, flag?: boolean) => any, terminateBlock?: () => any): void;
+    export function announceZeroBasedIndicesWithExternalBlocking(sourceIndices: Int32Array, blockingIndices: Int32Array, numPerBlock: number, announceZeroBasedIndex: (i0: number) => any, terminateBlock?: () => any): void;
     export interface BSplineCurveData {
         dim: number;
         params: BSplineParams;

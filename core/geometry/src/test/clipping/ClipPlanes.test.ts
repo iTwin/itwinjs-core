@@ -11,7 +11,6 @@ import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlan
 import { Arc3d } from "../../curve/Arc3d";
 import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { HalfEdgeGraph } from "../../topology/Graph";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
@@ -25,21 +24,22 @@ import { Point3d, Vector3d, XYZ } from "../../geometry3d/Point3dVector3d";
 import { IndexedXYZCollectionPolygonOps, Point3dArrayPolygonOps, PolygonOps } from "../../geometry3d/PolygonOps";
 import { Range1d, Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
+import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
 import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { prettyPrint } from "../testFunctions";
-import { Box } from "../../solid/Box";
+import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
-import { LinearSweep } from "../../solid/LinearSweep";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
-import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
-import { IndexedPolyface } from "../../polyface/Polyface";
-import { ImportedSample } from "../testInputs/ImportedSamples";
+import { LinearSweep } from "../../solid/LinearSweep";
+import { HalfEdgeGraph } from "../../topology/Graph";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { ImportedSample } from "../ImportedSamples";
+import { prettyPrint } from "../testFunctions";
 
 Checker.noisy.clipPlane = false;
 /**
@@ -343,7 +343,7 @@ describe("ConvexClipPlaneSet", () => {
 
   it("CreateFromConvexPolyface", () => {
     const mesh = ImportedSample.createPolyhedron62();
-    if (ck.testDefined(mesh) && undefined !== mesh) {
+    if (ck.testDefined(mesh)) {
       testConvertMeshToClipper(mesh);
       // verify that the reversed closed mesh produces same clipper with inward plane normals
       mesh.reverseIndices();

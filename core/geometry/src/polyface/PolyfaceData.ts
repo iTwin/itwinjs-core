@@ -43,20 +43,20 @@ export class PolyfaceData {
   /** Indices of points at facet vertices. */
   public pointIndex: number[];
   /** Coordinates of normal vectors (packed as numbers in a contiguous array). */
-  public normal: GrowableXYZArray | undefined;
+  public normal?: GrowableXYZArray;
   /** Indices of normals at facet vertices. */
-  public normalIndex: number[] | undefined;
+  public normalIndex?: number[];
   /** Coordinates of uv parameters (packed as numbers in a contiguous array). */
   public param?: GrowableXYArray;
   /** Indices of params at facet vertices. */
-  public paramIndex: number[] | undefined;
+  public paramIndex?: number[];
   /**
    * Color values. These are carried around as simple numbers, but are probably required (by display systems) to map
    * exactly to 32-bit integers.
    */
-  public color: number[] | undefined;
+  public color?: number[];
   /** Indices of colors at facet vertices. */
-  public colorIndex: number[] | undefined;
+  public colorIndex?: number[];
   /**
    * Map from facet index to face data.
    * * A "face" is a logical grouping of connected facets in the mesh, e.g., the facets that resulted from faceting
@@ -65,9 +65,9 @@ export class PolyfaceData {
    */
   public face: FacetFaceData[];
   /** Auxiliary data. */
-  public auxData: PolyfaceAuxData | undefined;
+  public auxData?: PolyfaceAuxData;
   /** Tagged geometry data. */
-  public taggedNumericData: TaggedNumericData | undefined;
+  public taggedNumericData?: TaggedNumericData;
   /**
    * Booleans indicating visibility of corresponding edges.
    * * The `edgeVisible` array is parallel to the `pointIndex` array.
@@ -506,10 +506,11 @@ export class PolyfaceData {
   }
   /**
    * Compress the instance by equating duplicate data.
-   * * Search for duplicates within points, normals, params, and colors.
+   * * Search for duplicates within vertices, normals, params, and colors.
    * * Compress each data array.
    * * Revise all indexing for the relocated data.
-   * @param tolerance (optional) tolerance for clustering mesh vertices. Default is [[Geometry.smallMetricDistance]].
+   * * [[PolyfaceAuxData]] is compressed if and only if exactly one [[AuxChannelData]] is present.
+   * @param tolerance (optional) tolerance for clustering mesh vertices only. Default value, and the tolerance used to cluster all other data, is [[Geometry.smallMetricDistance]].
    */
   public compress(tolerance: number = Geometry.smallMetricDistance): void {
     // more info can be found at geometry/internaldocs/Polyface.md
@@ -531,6 +532,19 @@ export class PolyfaceData {
       const packedColors = ClusterableArray.clusterNumberArray(this.color);
       this.color = packedColors.packedNumbers;
       packedColors.updateIndices(this.colorIndex);
+    }
+    if (this.auxData && this.auxData.channels.length === 1 && this.auxData.channels[0].data.length === 1) {
+      const dataSize = this.auxData.channels[0].entriesPerValue;
+      if (1 === dataSize) {
+        const packedData = ClusterableArray.clusterNumberArray(this.auxData.channels[0].data[0].values);
+        this.auxData.channels[0].data[0].values = packedData.packedNumbers;
+        packedData.updateIndices(this.auxData.indices);
+      } else if (3 === dataSize) {
+        const blockedData = GrowableXYZArray.create(this.auxData.channels[0].data[0].values);
+        const packedData = ClusterableArray.clusterGrowablePoint3dArray(blockedData);
+        this.auxData.channels[0].data[0].values = NumberArray.create(packedData.growablePackedPoints!.float64Data());
+        packedData.updateIndices(this.auxData.indices);
+      }
     }
   }
   /**
