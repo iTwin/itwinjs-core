@@ -44,7 +44,7 @@ export interface WorkspaceContainerProps extends Optional<CloudSqlite.ContainerA
  */
 export type WorkspaceDbName = string;
 
-/** The fully-specified name of a [[WorkspaceDb]], combing its [[WorkspaceDbName]] and [[WorkspaceDbVersion]] in the format "name:version".
+/** The fully-specified name of a [[WorkspaceDb]], combining its [[WorkspaceDbName]] and [[WorkspaceDbVersion]] in the format "name:version".
  * @beta
  */
 export type WorkspaceDbFullName = string;
@@ -65,7 +65,7 @@ export type WorkspaceDbVersionRange = string;
  */
 export interface WorkspaceDbNameAndVersion {
   /** The name of the [[WorkspaceDb]]. If omitted, it defaults to "workspace-db". */
-  readonly dbName?: string;
+  readonly dbName?: WorkspaceDbName;
   /** The range of acceptable versions of the [[WorkspaceDb]] of the specified [[dbName]].
    * If omitted, it defaults to the newest available version.
    */
@@ -184,6 +184,25 @@ export type WorkspaceResourceName = string;
  * Resources of type `string` and `blob` may be loaded directly from the `WorkspaceDb`. Resources of type `file` are
  * copied from the WorkspaceDb into a temporary local file so they can be accessed by programs directly from disk.
  * ###TODO
+ * @beta
+ */
+
+/** A SQLite database in a [[Workspace]] containing resources that the application is configured to use.
+ * Resources can represent any number of things, including:
+ * - Fonts and [TextStyle]($common)s used when placing [TextAnnotation]($common)s.
+ * - [GeographicCRS]($common)es used to define the coordinate reference system of an iTwin.
+ * - [[SettingsDictionary]]'s that contribute to the [[Workspace.settings]].
+ * - Files that can be extracted temporarily to the local file system to be accessed by programs directly from disk.
+ *
+ * Internally, each resource is stored in one of the following formats:
+ * - A `string`, which is often a stringified `JSON` representation of the resource;
+ * - A binary `blob`; or
+ * - An embedded file.
+ * 
+ * Strings and blobs can be accessed directly using [[getString]] and [[getBlob]]. Files must first be copied to the local file system using [[getFile]], and should be avoided unless the software
+ * that uses them is written to access them from disk.
+ *
+ * ###TODO how to obtain, versioning, manifest, WorkspaceContainer.
  * @beta
  */
 export interface WorkspaceDb {
