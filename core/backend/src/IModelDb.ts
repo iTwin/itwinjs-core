@@ -58,7 +58,7 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from "./workspace/Settings";
-import { Workspace, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceSettingsProps } from "./workspace/Workspace";
+import { Workspace, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbSettingsProps, WorkspaceSettingNames } from "./workspace/Workspace";
 import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "./internal/workspace/WorkspaceImpl";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
 
@@ -1474,15 +1474,15 @@ export abstract class IModelDb extends IModel {
   protected async loadWorkspaceSettings() {
     try {
       const problems: WorkspaceDbLoadError[] = [];
-      const settingProps: WorkspaceSettingsProps[] = [];
+      const settingProps: WorkspaceDbSettingsProps[] = [];
       // Note: we can't use `getArray` here because we only look at dictionaries in the iModel's workspace, not appWorkspace.
       // Also, we must concatenate all entries in all of the dictionaries stored in the iModel into a single array *before*
       // calling `loadSettingsDictionary` since that function will add new dictionaries to the workspace.
       for (const dict of this.workspace.settings.dictionaries) {
         try {
-          const props = dict.getSetting<WorkspaceSettingsProps[]>(Workspace.settingName.settingsWorkspaces);
+          const props = dict.getSetting<WorkspaceDbSettingsProps[]>(WorkspaceSettingNames.settingsWorkspaces);
           if (props)
-            settingProps.push(...IModelHost.settingsSchemas.validateSetting(props, Workspace.settingName.settingsWorkspaces));
+            settingProps.push(...IModelHost.settingsSchemas.validateSetting(props, WorkspaceSettingNames.settingsWorkspaces));
         } catch (e) {
           problems.push(e as WorkspaceDbLoadError); // something wrong with the setting stored in the iModel
         }

@@ -134,7 +134,7 @@ export interface WorkspaceDbManifest {
 }
 
 /**
- * An exception raised when attempting to load a [[WorkspaceDb]] or some of its data; for example, if the [[WorkspaceDb]] could not be found or the user
+ * An exception thrown when attempting to load a [[WorkspaceDb]] or some of its data; for example, if the [[WorkspaceDb]] could not be found or the user
  * is not authorized to access its [[WorkspaceContainer]].
  * @beta
  */
@@ -145,33 +145,35 @@ export interface WorkspaceDbLoadError extends Error {
   wsDb?: WorkspaceDb;
 }
 
-/** An exception that happened during [[IModelDb.loadWorkspaceSettings]]. The `LoadErrors` exception is passed
- * to [[Workspace.exceptionDiagnostic]] and contains the name of the iModel being loaded. */
+/** An exception that may occur while opening an [[IModelDb]] if any problems are detected while loading its [[IModelDb.workspace]].
+ * This exception is never actually thrown; instead, after the iModel is opened, the exception is forwarded to [[Workspace.exceptionDiagnosticFn]]
+ * so that the user can be notified of the problems.
+ * @beta
+ */
 export interface WorkspaceDbLoadErrors extends Error {
-  /** An array of problems that were encountered attempting to load WorkspaceDbs for an iModel. The most common problem
-   * is that the user doesn't have read access to the container of the WorkspaceDb.
+  /** An array of problems that were encountered attempting to load [[WorkspaceDb]]s for an [[IModelDb]]. The most common problem
+   * is that the user doesn't have read access to one or more [[WorkspaceContainer]]s used by the iModel's [[Workspace]]..
    */
   wsLoadErrors?: WorkspaceDbLoadError[];
 }
 
-/**
- * An entry in an `itwin/core/workspace/settingsWorkspaces` setting. This interface specifies a resource within
- * a WorkspaceDb that holds a `Settings.Dictionary` to be loaded. It also specifies the `Settings.Priority` for the Dictionary.
- * @beta
- */
-export interface WorkspaceSettingsProps extends WorkspaceDbCloudProps {
-  /** The name of the resource holding the stringified JSON of the `Settings.Dictionary`. The default resourceName is "settingsDictionary" */
+ /** Specifies a resource inside a [[WorkspaceDb]] that holds a [[SettingsDictionary]] to load into [[Workspace.settings]].
+  * Settings of this type named [[WorkspaceSettingNames.settingsWorkspaces]] are automatically loaded by [[Workspace.loadSettingsDictionary]].
+  * @beta
+  */
+export interface WorkspaceDbSettingsProps extends WorkspaceDbCloudProps {
+  /** The name of the resource holding the stringified JSON of the [[SettingsDictionary]]. */
   resourceName: string;
-  /** The priority for loading the Settings.Dictionary. Higher values override lower values. */
+  /** The priority to assign to the [[SettingsDictionary]]. */
   priority: SettingsPriority;
 }
 
-/**
- * The name for identifying resources in a [[WorkspaceDb]].
- * * `WorkspaceResourceName`s may not:
- *  - be blank or start or end with a space
- *  - be longer than 1024 characters
- * @note a single WorkspaceDb may hold WorkspaceResources of type 'blob', 'string' and 'file', all with the same WorkspaceResourceName.
+/** The name of a blob, string, or file resource stored in a [[WorkspaceDb]].
+ * Resource names must conform to the following constraints:
+ * - At least 1 character and no more than 1024 characters in length.
+ * - No leading or trailing whitespace characters.
+ * Each resource of a given type must has a unique name within the [[WorkspaceDb]]. It is technically possible, but discouraged, to define
+ * resources with the same name but different types.
  * @beta
  */
 export type WorkspaceResourceName = string;
@@ -181,6 +183,7 @@ export type WorkspaceResourceName = string;
  * Each `WorkspaceResource` in a WorkspaceDb is identified by a [[WorkspaceResourceName]].
  * Resources of type `string` and `blob` may be loaded directly from the `WorkspaceDb`. Resources of type `file` are
  * copied from the WorkspaceDb into a temporary local file so they can be accessed by programs directly from disk.
+ * ###TODO
  * @beta
  */
 export interface WorkspaceDb {
@@ -255,10 +258,9 @@ export interface WorkspaceDb {
   queryFileResource(rscName: WorkspaceResourceName): { localFileName: LocalFileName, info: IModelJsNative.EmbedFileQuery } | undefined;
 }
 
-/**
- * Options for constructing a [[Workspace]].
- * @beta
- */
+ /** Options supplied to [[IModelHost.startup]] via [[IModelHostOptions.workspace]] to customize the initialization of [[IModelHost.appWorkspace]].
+  * @beta
+  */
 export interface WorkspaceOpts {
   /** The local directory for non-cloud-based WorkspaceDb files. The workspace api will look in this directory
    * for files named `${containerId}/${dbId}.itwin-workspace`.
@@ -281,6 +283,7 @@ export interface GetWorkspaceContainerArgs extends WorkspaceContainerProps {
 /**
  * Settings and resources that customize an application for the current session.
  * See [Workspaces]($docs/learning/backend/Workspace)
+ * ###TODO WorkspaceOpts.settingsFiles
  * @beta
  */
 export interface Workspace {
@@ -329,7 +332,7 @@ export interface Workspace {
    */
   loadSettingsDictionary(
     /** The properties of the WorkspaceDb, plus the resourceName and Settings.priority. May be either a single value or an array of them */
-    props: WorkspaceSettingsProps | WorkspaceSettingsProps[],
+    props: WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[],
     /** if present, an array that is populated with a list of problems while attempting to load the Settings.Dictionary(s).   */
     problems?: WorkspaceDbLoadError[]
   ): Promise<void>;
@@ -375,6 +378,7 @@ export interface Workspace {
  * similar and versioning follows the same rules as NPM using [Semantic Versioning](https://semver.org/).
  * @note It is possible to store more than one WorkspaceDb in the same WorkspaceContainer, but access rights are administered per WorkspaceContainer.
  * That is, if a user has rights to access a WorkspaceContainer, that right applies to all WorkspaceDbs in the WorkspaceContainer.
+ * ###TODO "local" containers (no cloud container, no versioning)
  * @beta
  */
 export interface WorkspaceContainer {
@@ -410,6 +414,20 @@ export interface WorkspaceContainer {
   closeWorkspaceDb(container: WorkspaceDb): void;
 }
 
+function makeSettingName(name: string) { return `${"itwin/core/workspace"}/${name}`; }
+
+/** The names of various [[Setting]]s with special meaning to the [[Workspace]] system.
+ * @beta
+ */
+export namespace WorkspaceSettingNames {
+  /** The name of a setting that, when present in a [[WorkspaceDb]] loaded by [[Workspace.loadSettingsDictionary]], will automatically
+   * be used to find and load additional [[SettingsDictionary]]'s in other [[WorkspaceDb]]s. This permits you to chain the settings inside on [[WorkspaceDb]]
+   * to others upon which they depend.
+   * This setting's value is an array of [[WorkspaceDbSettingsProps]]s.
+   */
+  export const settingsWorkspaces = makeSettingName("settingsWorkspaces");
+}
+
 /** @beta */
 export namespace Workspace {
   /** IModelHost applications may supply a different implementation to diagnose (rather than merely log) errors loading workspace data */
@@ -431,17 +449,6 @@ export namespace Workspace {
    */
   export let onSettingsDictionaryLoadedFn = (loaded: SettingsDictionaryLoaded) => {  // eslint-disable-line prefer-const
     Logger.logInfo(BackendLoggerCategory.Workspace, `loaded setting dictionary ${loaded.dict.props.name} from ${loaded.from.dbFileName}`);
-  };
-
-  const makeSettingName = (name: string) => `${"itwin/core/workspace"}/${name}`;
-
-  /** Settings names used by the Workspace system. */
-  export const settingName = {
-    /** The name of a setting that, when present in a WorkspaceDb loaded by [[Workspace.loadSettingsDictionary]], will *automatically*
-     * be used to find additional Settings.Dictionary(s) in other WorkspaceDbs (i.e. to "chain" the settings from one WorkspaceDb to others upon
-     * which they depend.)
-     */
-    settingsWorkspaces: makeSettingName("settingsWorkspaces"),
   };
 
   /** either an array of [[WorkspaceDb.CloudProps]], or a settingName of a `itwin/core/workspace/workspaceDbList` from which the array can be resolved. */

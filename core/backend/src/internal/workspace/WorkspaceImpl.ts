@@ -16,7 +16,7 @@ import { SQLiteDb } from "../../SQLiteDb";
 import { SqliteStatement } from "../../SqliteStatement";
 import { SettingName, SettingsContainer, SettingsDictionaryProps, Settings, SettingsPriority } from "../../workspace/Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
-import { GetWorkspaceContainerArgs, Workspace, WorkspaceContainer, WorkspaceContainerId, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps, WorkspaceDbFullName, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbManifest, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbProps, WorkspaceDbQueryResourcesArgs, WorkspaceDbVersion, WorkspaceOpts, WorkspaceResourceName, WorkspaceSettingsProps } from "../../workspace/Workspace";
+import { GetWorkspaceContainerArgs, Workspace, WorkspaceContainer, WorkspaceContainerId, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps, WorkspaceDbFullName, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbManifest, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbProps, WorkspaceDbQueryResourcesArgs, WorkspaceDbVersion, WorkspaceOpts, WorkspaceResourceName, WorkspaceDbSettingsProps, WorkspaceSettingNames } from "../../workspace/Workspace";
 import { CreateNewWorkspaceContainerProps, CreateNewWorkspaceDbVersionProps, EditableWorkspaceContainer, EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
 import { SettingsImpl } from "./SettingsImpl";
@@ -369,7 +369,7 @@ class WorkspaceImpl implements Workspace {
     return container.getWorkspaceDb(props);
   }
 
-  public async loadSettingsDictionary(props: WorkspaceSettingsProps | WorkspaceSettingsProps[], problems?: WorkspaceDbLoadError[]) {
+  public async loadSettingsDictionary(props: WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[], problems?: WorkspaceDbLoadError[]) {
     if (!Array.isArray(props))
       props = [props];
 
@@ -392,9 +392,9 @@ class WorkspaceImpl implements Workspace {
           if (dict) {
             Workspace.onSettingsDictionaryLoadedFn({ dict, from: db });
             // if the dictionary we just loaded has a "settingsWorkspaces" entry, load them too, recursively
-            const nested = dict.getSetting<WorkspaceSettingsProps[]>(Workspace.settingName.settingsWorkspaces);
+            const nested = dict.getSetting<WorkspaceDbSettingsProps[]>(WorkspaceSettingNames.settingsWorkspaces);
             if (nested !== undefined) {
-              IModelHost.settingsSchemas.validateSetting<WorkspaceSettingsProps[]>(nested, Workspace.settingName.settingsWorkspaces);
+              IModelHost.settingsSchemas.validateSetting<WorkspaceDbSettingsProps[]>(nested, WorkspaceSettingNames.settingsWorkspaces);
               await this.loadSettingsDictionary(nested, problems);
             }
           }

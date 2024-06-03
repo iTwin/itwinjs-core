@@ -114,7 +114,7 @@ export interface IModelHostOptions {
   appAssetsDir?: LocalDirName;
 
   /**
-   * Options for creating the [[Workspace]]
+   * Options for creating the [[IModelHost.appWorkspace]]
    * @beta
    */
   workspace?: WorkspaceOpts;
