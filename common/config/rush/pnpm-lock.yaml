@@ -1,7 +1,7 @@
 lockfileVersion: 5.4
 
 overrides:
-  mysql2: ^3.9.7
+  mysql2: ^3.9.8
 
 importers:
 
@@ -10,7 +10,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.7.8
+      '@bentley/imodeljs-native': 4.7.20
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.1.0
       '@itwin/core-bentley': workspace:*
@@ -60,7 +60,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
-      '@bentley/imodeljs-native': 4.7.8
+      '@bentley/imodeljs-native': 4.7.20
       '@itwin/cloud-agnostic-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.2.2_scz6qrwecfbbxg4vskopkl3a7u
@@ -1709,7 +1709,7 @@ importers:
       '@itwin/itwins-client': ^1.2.0
       '@itwin/object-storage-core': ^2.2.2
       '@itwin/oidc-signin-tool': ~3.6.0
-      '@itwin/reality-data-client': 1.1.0
+      '@itwin/reality-data-client': ^1.2.1
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
@@ -1772,7 +1772,7 @@ importers:
       '@itwin/imodels-access-frontend': 5.0.1_ueafa4slb6ohrhyf7kbp6egmha
       '@itwin/imodels-client-authoring': 5.1.0
       '@itwin/imodels-client-management': 5.1.0
-      '@itwin/reality-data-client': 1.1.0_mdtbcqczpmeuv6yjzfaigjndwi
+      '@itwin/reality-data-client': 1.2.1_mdtbcqczpmeuv6yjzfaigjndwi
       azurite: 3.29.0
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
@@ -2484,7 +2484,7 @@ importers:
       '@itwin/imodels-client-management': ^5.1.0
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/perf-tools': workspace:*
-      '@itwin/reality-data-client': 1.1.0
+      '@itwin/reality-data-client': ^1.2.1
       '@types/body-parser': ^1.17.0
       '@types/express': ^4.17.20
       '@types/node': ~18.16.20
@@ -2534,7 +2534,7 @@ importers:
       '@itwin/imodels-client-authoring': 5.1.0
       '@itwin/imodels-client-management': 5.1.0
       '@itwin/oidc-signin-tool': 3.6.0_bplkyfia6fpabkwkmq6hai5lru
-      '@itwin/reality-data-client': 1.1.0_mdtbcqczpmeuv6yjzfaigjndwi
+      '@itwin/reality-data-client': 1.2.1_mdtbcqczpmeuv6yjzfaigjndwi
       body-parser: 1.20.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -2603,7 +2603,7 @@ importers:
       '@itwin/imodels-client-management': ^5.1.0
       '@itwin/map-layers-formats': workspace:*
       '@itwin/object-storage-core': ^2.2.2
-      '@itwin/reality-data-client': 1.1.0
+      '@itwin/reality-data-client': ^1.2.1
       '@itwin/webgl-compatibility': workspace:*
       '@types/express': ^4.17.20
       '@types/express-ws': ^3.0.3
@@ -2667,7 +2667,7 @@ importers:
       '@itwin/imodels-client-management': 5.1.0
       '@itwin/map-layers-formats': link:../../extensions/map-layers-formats
       '@itwin/object-storage-core': 2.2.2
-      '@itwin/reality-data-client': 1.1.0_mdtbcqczpmeuv6yjzfaigjndwi
+      '@itwin/reality-data-client': 1.2.1_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/webgl-compatibility': link:../../core/webgl-compatibility
       body-parser: 1.20.2
       vhacd-js: 0.0.1
@@ -3781,8 +3781,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.7.8:
-    resolution: {integrity: sha512-PCbjA3z8h5UFptV3yjh1eL0V6ZmgWZ52gKHaIScRnPq3BurS58CTOrWUY41XiJMy+sB+4Exkd5Ruy2rVRmdHRQ==}
+  /@bentley/imodeljs-native/4.7.20:
+    resolution: {integrity: sha512-TZGzuAH/ocw/EI/37Eu4Dl8ny/QLlQHb5vbIgA1ndynjCI0X7UUS4ptYbJ2hZnzWRw5y9u5eZXZOZlFX3e0Xjg==}
     requiresBuild: true
     dev: false
 
@@ -4487,8 +4487,8 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/reality-data-client/1.1.0_mdtbcqczpmeuv6yjzfaigjndwi:
-    resolution: {integrity: sha512-mPcBFaufYjmwO+PqmPlFe6GD8PyN8phIbZZvt5QUwgRJI/B/oE6pYDJrvIaFG8D2slDOc3nlbQKbk8vTnBWQ9A==}
+  /@itwin/reality-data-client/1.2.1_mdtbcqczpmeuv6yjzfaigjndwi:
+    resolution: {integrity: sha512-pNpnO1tbsM1HwyZcr6UkZLyMczNcYFHqsnREmjYJ4GIeCMdrWKGbH5ar4hyajqc/ZkV9zO4FXFMYgQx3yKK1zQ==}
     peerDependencies:
       '@itwin/core-bentley': ^4.0.0
     dependencies:
@@ -6015,9 +6015,9 @@ packages:
       lokijs: 1.5.12
       morgan: 1.10.0
       multistream: 2.1.1
-      mysql2: 3.9.7
+      mysql2: 3.10.0
       rimraf: 3.0.2
-      sequelize: 6.35.2_4zqrv5z5fyqt6dbtv7myvumnze
+      sequelize: 6.35.2_pshzysaws6wxz2jf4j7hoocz7a
       stoppable: 1.1.0
       tedious: 16.6.1
       to-readable-stream: 2.1.0
@@ -10182,8 +10182,8 @@ packages:
       readable-stream: 2.3.8
     dev: false
 
-  /mysql2/3.9.7:
-    resolution: {integrity: sha512-KnJT8vYRcNAZv73uf9zpXqNbvBG7DJrs+1nACsjZP1HMJ1TgXEy8wnNilXAn/5i57JizXKtrUtwDB7HxT9DDpw==}
+  /mysql2/3.10.0:
+    resolution: {integrity: sha512-qx0mfWYt1DpTPkw8mAcHW/OwqqyNqBLBHvY5IjN8+icIYTjt6znrgYJ+gxqNNRpVknb5Wc/gcCM4XjbCR0j5tw==}
     engines: {node: '>= 8.0'}
     dependencies:
       denque: 2.1.0
@@ -11658,7 +11658,7 @@ packages:
     engines: {node: '>= 10.0.0'}
     dev: false
 
-  /sequelize/6.35.2_4zqrv5z5fyqt6dbtv7myvumnze:
+  /sequelize/6.35.2_pshzysaws6wxz2jf4j7hoocz7a:
     resolution: {integrity: sha512-EdzLaw2kK4/aOnWQ7ed/qh3B6/g+1DvmeXr66RwbcqSm/+QRS9X0LDI5INBibsy4eNJHWIRPo3+QK0zL+IPBHg==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
@@ -11699,7 +11699,7 @@ packages:
       lodash: 4.17.21
       moment: 2.30.1
       moment-timezone: 0.5.44
-      mysql2: 3.9.7
+      mysql2: 3.10.0
       pg-connection-string: 2.6.2
       retry-as-promised: 7.0.4
       semver: 7.6.0

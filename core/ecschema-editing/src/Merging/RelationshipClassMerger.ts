@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { type RelationshipClassDifference, type RelationshipConstraintClassDifference, type RelationshipConstraintDifference } from "../Differencing/SchemaDifference";
 import { type MutableRelationshipClass } from "../Editing/Mutable/MutableRelationshipClass";
-import { locateSchemaItem, type SchemaItemMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
+import { locateSchemaItem, type SchemaItemMergerHandler, updateSchemaItemFullName, updateSchemaItemKey } from "./SchemaItemMerger";
 import { modifyClass } from "./ClassMerger";
 import { SchemaMergeContext } from "./SchemaMerger";
-import { EntityClass, Mixin, parseStrength, parseStrengthDirection, RelationshipClass, RelationshipMultiplicity, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
+import { EntityClass, Mixin, parseStrength, parseStrengthDirection, RelationshipClass, RelationshipConstraintProps, RelationshipMultiplicity, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaItemEditResults } from "../Editing/Editor";
 
 type ConstraintClassTypes = EntityClass | Mixin | RelationshipClass;
@@ -37,8 +37,8 @@ export const relationshipClassMerger: SchemaItemMergerHandler<RelationshipClassD
       schemaItemType: change.schemaType,
       strength: change.difference.strength,
       strengthDirection: change.difference.strengthDirection,
-      source: change.difference.source,
-      target: change.difference.target,
+      source: await updateRelationshipConstraintKey(context, change.difference.source),
+      target: await updateRelationshipConstraintKey(context, change.difference.target),
     });
   },
   async modify(context, change, itemKey, item: MutableRelationshipClass) {
@@ -150,4 +150,21 @@ function parseConstraint(path: string): "source" | "target" {
   return path.startsWith("$source")
     ? "source"
     : "target";
+}
+
+async function updateRelationshipConstraintKey(context: SchemaMergeContext, props: RelationshipConstraintProps): Promise<RelationshipConstraintProps> {
+  let abstractConstraint = props.abstractConstraint;
+  if (abstractConstraint !== undefined)
+    abstractConstraint = await updateSchemaItemFullName(context, abstractConstraint);
+
+  const constraintClasses: string[] = [];
+  for (const ecClass of props.constraintClasses) {
+    constraintClasses.push(await updateSchemaItemFullName(context, ecClass));
+  }
+
+  return {
+    ...props,
+    abstractConstraint,
+    constraintClasses,
+  };
 }

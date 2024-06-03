@@ -49,7 +49,7 @@ describe("Constant merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.Constant,
@@ -93,7 +93,7 @@ describe("Constant merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaOtherTypes.SchemaReference,
@@ -147,7 +147,7 @@ describe("Constant merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "modify",
           schemaType: SchemaItemType.Constant,
@@ -190,7 +190,7 @@ describe("Constant merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "modify",
           schemaType: SchemaItemType.Constant,
@@ -232,7 +232,7 @@ describe("Constant merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "modify",
           schemaType: SchemaItemType.Constant,
