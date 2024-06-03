@@ -151,7 +151,7 @@ describe("SchemaEditor tests", () => {
     it("Creating Element, try subclassing unsupported base class, throws", async () => {
       const elementKey = new SchemaItemKey("PhysicalModel", bisSchemaKey);
       await expect(testEditor.entities.createElement(testSchemaKey, "testElement", ECClassModifier.None, elementKey, "test element")).to.be.eventually.rejected.then(function (error) {
-        expect(error).to.have.property("errorNumber", ECEditingStatus.CreateElementFailed);
+        expect(error).to.have.property("errorNumber", ECEditingStatus.CreateElement);
         expect(error).to.have.nested.property("innerError.message", `Expected base class ${elementKey.fullName} to derive from BisCore.Element.`);
         expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.BaseClassIsNotElement);
       });
@@ -160,7 +160,7 @@ describe("SchemaEditor tests", () => {
     it("Creating ElementUniqueAspect, try subclassing unsupported base class, throws", async () => {
       const uniqueAspectKey = new SchemaItemKey("PhysicalModel", bisSchemaKey);
       await expect(testEditor.entities.createElementUniqueAspect(testSchemaKey, "testElement", ECClassModifier.None, uniqueAspectKey, "test element")).to.be.eventually.rejected.then(function (error) {
-        expect(error).to.have.property("errorNumber", ECEditingStatus.CreateElementFailed);
+        expect(error).to.have.property("errorNumber", ECEditingStatus.CreateElement);
         expect(error).to.have.nested.property("innerError.message", `Expected base class ${uniqueAspectKey.fullName} to derive from BisCore.ElementUniqueAspect.`);
         expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.BaseClassIsNotElementUniqueAspect);
       });
@@ -169,7 +169,7 @@ describe("SchemaEditor tests", () => {
     it("Creating ElementMultiAspect, try subclassing unsupported base class, throws", async () => {
       const multiAspectKey = new SchemaItemKey("PhysicalModel", bisSchemaKey);
       await expect(testEditor.entities.createElementMultiAspect(testSchemaKey, "testElement", ECClassModifier.None, multiAspectKey, "test element")).to.be.eventually.rejected.then(function (error) {
-        expect(error).to.have.property("errorNumber", ECEditingStatus.CreateElementFailed);
+        expect(error).to.have.property("errorNumber", ECEditingStatus.CreateElement);
         expect(error).to.have.nested.property("innerError.message", `Expected base class ${multiAspectKey.fullName} to derive from BisCore.ElementMultiAspect.`);
         expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.BaseClassIsNotElementMultiAspect);
       });

@@ -9,7 +9,7 @@
 import { Constant, ConstantProps, DelayedPromiseWithProps, Phenomenon, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
 import { MutableConstant } from "./Mutable/MutableConstant";
-import { ECEditingStatus, SchemaEditingError, schemaItemIdentifierFromName } from "./Exception";
+import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
 import { SchemaItems } from "./SchemaItems";
 
 /**
@@ -18,7 +18,7 @@ import { SchemaItems } from "./SchemaItems";
  */
 export class Constants extends SchemaItems {
   public constructor(schemaEditor: SchemaContextEditor) {
-    super(SchemaItemType.StructClass, schemaEditor);
+    super(SchemaItemType.Constant, schemaEditor);
   }
 
   public async create(schemaKey: SchemaKey, name: string, phenomenon: SchemaItemKey, definition: string, displayLabel?: string, numerator?: number, denominator?: number): Promise<SchemaItemKey> {
@@ -32,7 +32,7 @@ export class Constants extends SchemaItems {
       const newPhenomenon = (await this.getSchemaItem<Phenomenon>(phenomenon, SchemaItemType.Phenomenon));
       newConstant.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(newPhenomenon.key, async () => newPhenomenon));
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, name), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
     }
 
     newConstant.setDefinition(definition);
@@ -61,7 +61,7 @@ export class Constants extends SchemaItems {
       const boundCreate = schema.createConstant.bind(schema);
       newConstant = (await this.createSchemaItemFromProps<Constant>(schemaKey, this.schemaItemType, boundCreate, constantProps)) as MutableConstant;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromPropsFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, constantProps.name!), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, constantProps.name!, schemaKey), e);
     }
 
     return newConstant.key;

@@ -10,7 +10,7 @@ import { SchemaItemKey, SchemaItemType, SchemaKey, StructClass, StructClassProps
 import { SchemaContextEditor } from "./Editor";
 import { ECClasses } from "./ECClasses";
 import { MutableStructClass } from "./Mutable/MutableClass";
-import { ECEditingStatus, SchemaEditingError, schemaItemIdentifierFromName } from "./Exception";
+import { ClassId, ECEditingStatus, SchemaEditingError } from "./Exception";
 
 /**
  * @alpha A class extending ECClasses allowing you to create schema items of type StructClass.
@@ -28,7 +28,7 @@ export class Structs extends ECClasses {
       const boundCreate = schema.createStructClass.bind(schema);
       newClass = (await this.createClass<StructClass>(schemaKey, this.schemaItemType, boundCreate, name, baseClassKey)) as MutableStructClass;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, name), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new ClassId(this.schemaItemType, name, schemaKey), e);
     }
 
     if (displayLabel)
@@ -49,7 +49,7 @@ export class Structs extends ECClasses {
       const boundCreate = schema.createStructClass.bind(schema);
       newClass = (await this.createSchemaItemFromProps<StructClass>(schemaKey, this.schemaItemType, boundCreate, structProps)) as MutableStructClass;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromPropsFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, structProps.name!), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, structProps.name!, schemaKey), e);
     }
 
     return newClass.key;

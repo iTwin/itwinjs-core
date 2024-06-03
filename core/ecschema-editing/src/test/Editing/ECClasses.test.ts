@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  ECClassModifier, ECObjectsError, EntityClass, Enumeration, EnumerationArrayProperty, EnumerationProperty, NavigationProperty,
+  ECClassModifier, EntityClass, Enumeration, EnumerationArrayProperty, EnumerationProperty, NavigationProperty,
   PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, RelationshipClass, RelationshipClassProps,
   RelationshipConstraintProps, Schema, SchemaContext, SchemaItemKey, SchemaKey, StrengthDirection,
   StructArrayProperty, StructClass, StructProperty, UnitSystem,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
-import { ECEditingError } from "../../Editing/Exception";
+import { ECEditingStatus } from "../../Editing/Exception";
 
 describe("ECClass tests", () => {
   // Uses an entity class to create properties.
@@ -41,13 +41,21 @@ describe("ECClass tests", () => {
 
   it("try changing class name to invalid name, throws error", async () => {
     const result1 = await testEditor.entities.create(testKey, "testEntity1", ECClassModifier.None);
-    await expect(testEditor.entities.setName(result1, "123")).to.be.rejectedWith(ECObjectsError);
+    await expect(testEditor.entities.setName(result1, "123")).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetClassName);
+      expect(error).to.have.nested.property("innerError.message", `Could not rename class ${result1.fullName} because the specified name is not a valid ECName.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidECName);
+    });
   });
 
   it("try changing class name to existing name in the schema, returns error", async () => {
     const result1 = await testEditor.entities.create(testKey, "testEntity1", ECClassModifier.None);
     await testEditor.entities.create(testKey, "testEntity2", ECClassModifier.None);
-    await expect(testEditor.entities.setName(result1, "testEntity2")).to.be.rejectedWith(ECEditingError, `An EC Class with the name testEntity2 already exists within the schema ${testKey.name}`);
+    await expect(testEditor.entities.setName(result1, "testEntity2")).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetClassName);
+      expect(error).to.have.nested.property("innerError.message", `EntityClass TestSchema.testEntity2 already exists in the schema ${testKey.name}.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);
+    });
   });
 
   describe("Property creation tests", () => {
@@ -490,7 +498,11 @@ describe("ECClass tests", () => {
       testEditor = new SchemaContextEditor(context);
       const badKey = new SchemaItemKey("BadClass", testSchema.schemaKey);
 
-      await expect(testEditor.entities.addCustomAttribute(badKey, { className: "testCustomAttribute" })).to.be.rejectedWith(ECEditingError, `Class ${badKey.name} was not found in schema ${testSchema.schemaKey.toString(true)}`);
+      await expect(testEditor.entities.addCustomAttribute(badKey, { className: "testCustomAttribute" })).to.be.eventually.rejected.then(function (error) {
+        expect(error).to.have.property("errorNumber", ECEditingStatus.AddCustomAttributeToClass);
+        expect(error).to.have.nested.property("innerError.message", `EntityClass ValidSchema.BadClass could not be found in the schema ValidSchema.`);
+        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+      });
     });
 
     it("Adding a CustomAttribute to a class with an unsupported SchemaItemType fails as expected.", async () => {
@@ -515,7 +527,11 @@ describe("ECClass tests", () => {
       testEditor = new SchemaContextEditor(context);
       const testClass = await testSchema.getItem<UnitSystem>("testUnitSystem");
 
-      await expect(testEditor.entities.addCustomAttribute(testClass?.key as SchemaItemKey, { className: "testCustomAttribute" })).to.be.rejectedWith(ECEditingError, "Schema item type not supported");
+      await expect(testEditor.entities.addCustomAttribute(testClass?.key as SchemaItemKey, { className: "testCustomAttribute" })).to.be.eventually.rejected.then(function (error) {
+        expect(error).to.have.property("errorNumber", ECEditingStatus.AddCustomAttributeToClass);
+        expect(error).to.have.nested.property("innerError.message", `Expected ${testClass?.fullName} to be of type EntityClass.`);
+        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidSchemaItemType);
+      });
     });
   });
 });

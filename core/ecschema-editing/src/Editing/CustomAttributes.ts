@@ -14,7 +14,7 @@ import {
 import { SchemaContextEditor } from "./Editor";
 import { ECClasses } from "./ECClasses";
 import { MutableCAClass } from "./Mutable/MutableCAClass";
-import { ECEditingStatus, SchemaEditingError, schemaItemIdentifierFromName } from "./Exception";
+import { ClassId, ECEditingStatus, SchemaEditingError } from "./Exception";
 
 /**
  * @alpha
@@ -33,7 +33,7 @@ export class CustomAttributes extends ECClasses {
       const boundCreate = schema.createCustomAttributeClass.bind(schema);
       newClass = (await this.createClass<CustomAttributeClass>(schemaKey, this.schemaItemType, boundCreate, name, baseClassKey)) as MutableCAClass;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, name), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new ClassId(this.schemaItemType, name, schemaKey), e);
     }
 
     if (displayLabel)
@@ -56,7 +56,7 @@ export class CustomAttributes extends ECClasses {
       const boundCreate = schema.createCustomAttributeClass.bind(schema);
       newClass = (await this.createSchemaItemFromProps<CustomAttributeClass>(schemaKey, this.schemaItemType, boundCreate, caProps)) as MutableCAClass;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromPropsFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, caProps.name!), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, caProps.name!, schemaKey), e);
     }
 
     return newClass.key;

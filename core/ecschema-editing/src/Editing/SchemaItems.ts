@@ -8,7 +8,7 @@
 
 import { ECObjectsError, ECObjectsStatus, Schema, SchemaItem, SchemaItemKey, SchemaItemProps, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
-import { ECEditingStatus, SchemaEditingError, schemaItemIdentifier, schemaItemIdentifierFromName } from "./Exception";
+import { ECEditingStatus, SchemaEditingError, SchemaId, SchemaItemId } from "./Exception";
 import { MutableSchema } from "./Mutable/MutableSchema";
 
 export type CreateSchemaItem<T extends SchemaItem> = (name: string, ...args: any[]) => Promise<T>;
@@ -24,7 +24,7 @@ export class SchemaItems {
   public async getSchema(schemaKey: SchemaKey): Promise<MutableSchema> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
-      throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, {schemaKey});
+      throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, new SchemaId(schemaKey));
 
     return schema;
   }
@@ -34,11 +34,11 @@ export class SchemaItems {
     schemaItemType = schemaItemType === null ? undefined : schemaItemType ?? this.schemaItemType;
 
     if (!schemaItem) {
-      throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, schemaItemIdentifier(schemaItemType ?? this.schemaItemType, schemaItemKey));
+      throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(schemaItemType ?? this.schemaItemType, schemaItemKey));
     }
 
     if (schemaItemType && schemaItemType !== schemaItem.schemaItemType) {
-      throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType,schemaItemIdentifier(schemaItemType ?? this.schemaItemType, schemaItemKey));
+      throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new SchemaItemId(schemaItemType ?? this.schemaItemType, schemaItemKey));
     }
 
     return schemaItem;
@@ -56,10 +56,10 @@ export class SchemaItems {
 
     const schemaItem = await schema.lookupItem<T>(schemaItemKey);
     if (schemaItem === undefined)
-      throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, schemaItemIdentifier(schemaItemType ?? this.schemaItemType, schemaItemKey));
+      throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new SchemaItemId(schemaItemType ?? this.schemaItemType, schemaItemKey));
 
     if (schemaItemType && schemaItemType !== schemaItem.schemaItemType) {
-      throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType,schemaItemIdentifier(schemaItemType ?? this.schemaItemType, schemaItemKey));
+      throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new SchemaItemId(schemaItemType ?? this.schemaItemType, schemaItemKey));
     }
 
     return schemaItem;
@@ -77,7 +77,7 @@ export class SchemaItems {
       return await create(name, ...args);
     } catch (e) {
       if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.DuplicateItem) {
-        throw new SchemaEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, schemaItemIdentifierFromName(schema.schemaKey, type, name));
+        throw new SchemaEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, new SchemaItemId(type, name, schema.schemaKey));
       } else {
         throw new Error(`Failed to create class ${name} in schema ${schema.fullName}.`);
       }
@@ -86,7 +86,7 @@ export class SchemaItems {
 
   public async createSchemaItemFromProps<T extends SchemaItem>(schemaOrKey: Schema | SchemaKey, type: SchemaItemType, create: CreateSchemaItem<T>, props: SchemaItemProps): Promise<T> {
     if (props.name === undefined)
-      throw new SchemaEditingError(ECEditingStatus.SchemaItemNameNotSpecified, {schemaKey: schemaOrKey instanceof Schema ? schemaOrKey.schemaKey : schemaOrKey, type});
+      throw new SchemaEditingError(ECEditingStatus.SchemaItemNameNotSpecified, new SchemaItemId(type, "", schemaOrKey instanceof Schema ? schemaOrKey.schemaKey : schemaOrKey));
 
     const newItem = await this.createSchemaItem<T>(schemaOrKey, type, create, props.name);
     await newItem.fromJSON(props);

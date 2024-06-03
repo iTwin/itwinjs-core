@@ -10,7 +10,7 @@ import { Format, InvertedUnit, SchemaItem, SchemaItemFormatProps, SchemaItemKey,
 import { FormatType } from "@itwin/core-quantity";
 import { SchemaContextEditor } from "./Editor";
 import { MutableFormat } from "./Mutable/MutableFormat";
-import { ECEditingStatus, SchemaEditingError, schemaItemIdentifier, schemaItemIdentifierFromName } from "./Exception";
+import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
 import { SchemaItems } from "./SchemaItems";
 
 /**
@@ -35,13 +35,13 @@ export class Formats extends SchemaItems {
           const unitItem = await this.getSchemaItem<Unit | InvertedUnit>(unit, null);
 
           if (unitItem.schemaItemType !== SchemaItemType.Unit && unitItem.schemaItemType !== SchemaItemType.InvertedUnit)
-            throw new SchemaEditingError(ECEditingStatus.InvalidFormatUnitsSpecified, schemaItemIdentifier((unitItem as SchemaItem).schemaItemType, (unitItem as SchemaItem).key));
+            throw new SchemaEditingError(ECEditingStatus.InvalidFormatUnitsSpecified, new SchemaItemId((unitItem as SchemaItem).schemaItemType, (unitItem as SchemaItem).key));
 
           newFormat.addUnit(unitItem);
         }
       }
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, name), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
     }
 
     if (displayLabel)
@@ -64,7 +64,7 @@ export class Formats extends SchemaItems {
       const boundCreate = schema.createFormat.bind(schema);
       newFormat = await this.createSchemaItemFromProps<Format>(schemaKey, this.schemaItemType, boundCreate, formatProps) as MutableFormat;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromPropsFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, formatProps.name!), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, formatProps.name!, schemaKey), e);
     }
 
     return newFormat.key;

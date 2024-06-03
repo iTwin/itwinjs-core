@@ -236,7 +236,7 @@ describe("Entities tests", () => {
     const entityResult = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
 
     await expect(testEditor.entities.setBaseClass(entityResult, baseClassKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClassFailed);
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `Schema Key ${badSchemaKey.toString(true)} could not be found in the context.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
     });
@@ -246,7 +246,7 @@ describe("Entities tests", () => {
     const baseClassKey = new SchemaItemKey("testBaseClass", testKey);
     const createResult = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
     await expect(testEditor.entities.setBaseClass(createResult, baseClassKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClassFailed);
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `EntityClass ${baseClassKey.fullName} could not be found in the schema ${testKey.name}.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
     });
@@ -261,7 +261,7 @@ describe("Entities tests", () => {
     const unitResult = await testEditor.unitSystems.createFromProps(testKey, unitSystemProps);
     const entityResult = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
     await expect(testEditor.entities.setBaseClass(entityResult, unitResult)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClassFailed);
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `Expected ${unitResult.fullName} to be of type EntityClass.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidSchemaItemType);
     });
@@ -272,7 +272,7 @@ describe("Entities tests", () => {
     const entityKey =  new SchemaItemKey("testEntityClass", testKey);
 
     await expect(testEditor.entities.setBaseClass(entityKey, baseClassRes)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClassFailed);
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `EntityClass ${entityKey.fullName} could not be found in the schema context.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
     });
@@ -284,7 +284,7 @@ describe("Entities tests", () => {
     const entityRes = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
 
     await expect(testEditor.entities.setBaseClass(entityRes, baseClassKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClassFailed);
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `Schema Key ${schemaKey.toString(true)} could not be found in the context.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
     });
@@ -299,7 +299,7 @@ describe("Entities tests", () => {
 
     const newBaseClassRes = await testEditor.entities.create(testKey, "newBaseClass", ECClassModifier.None, "testLabel");
     await expect(testEditor.entities.setBaseClass(entityRes, newBaseClassRes)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClassFailed);
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `Base class ${newBaseClassRes.fullName} must derive from ${baseClassRes.fullName}.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
     });

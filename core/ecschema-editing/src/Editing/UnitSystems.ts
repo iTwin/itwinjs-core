@@ -9,7 +9,7 @@
 import { SchemaItemKey, SchemaItemType, SchemaKey, UnitSystem, UnitSystemProps } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
 import { MutableUnitSystem } from "./Mutable/MutableUnitSystem";
-import { ECEditingStatus, SchemaEditingError, schemaItemIdentifierFromName } from "./Exception";
+import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
 import { SchemaItems } from "./SchemaItems";
 
 /**
@@ -33,7 +33,7 @@ export class UnitSystems extends SchemaItems {
         newUnitSystem.setDisplayLabel(displayLabel);
 
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, name), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
     }
 
     return newUnitSystem.key;
@@ -46,7 +46,7 @@ export class UnitSystems extends SchemaItems {
       const boundCreate = schema.createUnitSystem.bind(schema);
       newUnitSystem = await this.createSchemaItemFromProps<UnitSystem>(schemaKey, this.schemaItemType, boundCreate, unitSystemProps) as MutableUnitSystem;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromPropsFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, unitSystemProps.name!), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, unitSystemProps.name!, schemaKey), e);
     }
 
     return newUnitSystem.key;

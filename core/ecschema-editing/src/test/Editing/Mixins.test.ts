@@ -109,7 +109,7 @@ describe("Mixins tests", () => {
   it("should return error message because it tries to set base class that is not of mixin type", async () => {
     const mixinResult = await testEditor.mixins.create(testKey, "testMixin", entityKey);
     await expect(testEditor.mixins.setBaseClass(mixinResult, entityKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClassFailed);
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `Expected ${entityKey.fullName} to be of type Mixin.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidSchemaItemType);
     });
@@ -119,7 +119,7 @@ describe("Mixins tests", () => {
     const baseClassKey = new SchemaItemKey("testBaseClass", testKey);
     const mixinRes = await testEditor.mixins.create(testKey, "testMixin", entityKey);
     await expect(testEditor.mixins.setBaseClass(mixinRes, baseClassKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClassFailed);
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `Mixin ${baseClassKey.fullName} could not be found in the schema ${testKey.name}.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
     });
@@ -130,7 +130,7 @@ describe("Mixins tests", () => {
     const mixinKey =  new SchemaItemKey("testMixin", testKey);
 
     await expect(testEditor.mixins.setBaseClass(mixinKey, entityKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClassFailed);
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `Mixin ${mixinKey.fullName} could not be found in the schema context.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
     });
@@ -142,7 +142,7 @@ describe("Mixins tests", () => {
     const mixinRes = await testEditor.mixins.create(testKey, "testMixin", entityKey);
 
     await expect(testEditor.mixins.setBaseClass(mixinRes, baseClassKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClassFailed);
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `Schema Key ${schemaKey.toString(true)} could not be found in the context.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
     });
@@ -158,7 +158,7 @@ describe("Mixins tests", () => {
     const newBaseClassRes = await testEditor.mixins.create(testKey, "newBaseClass", entityKey);
 
     await expect(testEditor.mixins.setBaseClass(mixinRes, newBaseClassRes)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClassFailed);
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `Base class ${newBaseClassRes.fullName} must derive from ${baseClassRes.fullName}.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
     });

@@ -12,12 +12,12 @@ import {
   SchemaKey, StrengthDirection, StrengthType,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
-import { ECClasses, ECClassSchemaItems } from "./ECClasses";
+import { ECClasses } from "./ECClasses";
 import { MutableRelationshipClass, MutableRelationshipConstraint } from "./Mutable/MutableRelationshipClass";
 import * as Rules from "../Validation/ECRules";
 import { AnyDiagnostic, RelationshipConstraintDiagnostic, SchemaItemDiagnostic } from "../Validation/Diagnostic";
 import { NavigationProperties } from "./Properties";
-import { customAttributeContainerIdentifier, ECEditingStatus, SchemaEditingError, schemaItemIdentifier, schemaItemIdentifierFromName } from "./Exception";
+import { ClassId, CustomAttributeId, ECEditingStatus, RelationshipConstraintId, SchemaEditingError } from "./Exception";
 
 /**
  * @alpha
@@ -31,7 +31,7 @@ export class RelationshipClasses extends ECClasses {
   /**
    * Allows access for editing of NavigationProperty attributes.
    */
-  public readonly navigationProperties = new NavigationProperties(this.schemaItemType as ECClassSchemaItems, this._schemaEditor);
+  public readonly navigationProperties = new NavigationProperties(this.schemaItemType, this._schemaEditor);
 
   /**
    * Creates a RelationshipClass.
@@ -50,7 +50,7 @@ export class RelationshipClasses extends ECClasses {
       const boundCreate = schema.createRelationshipClass.bind(schema);
       newClass = (await this.createClass<RelationshipClass>(schemaKey, this.schemaItemType, boundCreate, name, baseClassKey, modifier)) as MutableRelationshipClass;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, name), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new ClassId(this.schemaItemType, name, schemaKey), e);
     }
 
     newClass.setStrength(strength);
@@ -67,7 +67,7 @@ export class RelationshipClasses extends ECClasses {
   public async setSourceConstraint(relationshipKey: SchemaItemKey, source: RelationshipConstraint): Promise<void> {
     const relationship = await this.getSchemaItem<MutableRelationshipClass>(relationshipKey)
       .catch((e) => {
-        throw new SchemaEditingError(ECEditingStatus.SetSourceConstraintFailed, schemaItemIdentifier(this.schemaItemType, relationshipKey), e);
+        throw new SchemaEditingError(ECEditingStatus.SetSourceConstraint, new ClassId(this.schemaItemType, relationshipKey), e);
       });
 
     relationship.setSourceConstraint(source);
@@ -81,7 +81,7 @@ export class RelationshipClasses extends ECClasses {
   public async setTargetConstraint(relationshipKey: SchemaItemKey, target: RelationshipConstraint): Promise<void> {
     const relationship = await this.getSchemaItem<MutableRelationshipClass>(relationshipKey)
       .catch((e) => {
-        throw new SchemaEditingError(ECEditingStatus.SetTargetConstraintFailed, schemaItemIdentifier(this.schemaItemType, relationshipKey), e);
+        throw new SchemaEditingError(ECEditingStatus.SetTargetConstraint, new ClassId(this.schemaItemType, relationshipKey), e);
       });
 
     relationship.setTargetConstraint(target);
@@ -99,7 +99,7 @@ export class RelationshipClasses extends ECClasses {
       const boundCreate = schema.createRelationshipClass.bind(schema);
       newClass = (await this.createSchemaItemFromProps<RelationshipClass>(schemaKey, this.schemaItemType, boundCreate, relationshipProps)) as MutableRelationshipClass;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromPropsFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, relationshipProps.name!), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, relationshipProps.name!, schemaKey), e);
     }
 
     await newClass.source.fromJSON(relationshipProps.source);
@@ -123,7 +123,7 @@ export class RelationshipClasses extends ECClasses {
       await this.validate(relClass!);
     } catch(e: any) {
       relClass!.baseClass = baseClass;
-      throw new SchemaEditingError(ECEditingStatus.SetBaseClassFailed, schemaItemIdentifier(SchemaItemType.RelationshipClass, itemKey), e);
+      throw new SchemaEditingError(ECEditingStatus.SetBaseClass, new ClassId(SchemaItemType.RelationshipClass, itemKey), e);
     }
   }
 
@@ -132,7 +132,7 @@ export class RelationshipClasses extends ECClasses {
       const relationshipClass = await this.getSchemaItem<MutableRelationshipClass>(relationshipKey);
       await relationshipClass.createNavigationProperty(name, relationship, direction);
     } catch(e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateNavigationPropertyFailed, schemaItemIdentifier(SchemaItemType.RelationshipClass, relationshipKey), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateNavigationProperty, new ClassId(SchemaItemType.RelationshipClass, relationshipKey), e);
     }
   }
 
@@ -147,7 +147,7 @@ export class RelationshipClasses extends ECClasses {
       const property = await relationshipClass.createNavigationProperty(navigationProps.name, navigationProps.relationshipName, navigationProps.direction);
       await property.fromJSON(navigationProps);
     } catch(e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateNavigationPropertyFromPropsFailed, schemaItemIdentifier(SchemaItemType.RelationshipClass, relationshipKey), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateNavigationPropertyFromProps, new ClassId(SchemaItemType.RelationshipClass, relationshipKey), e);
     }
   }
 
@@ -180,14 +180,14 @@ export class RelationshipClasses extends ECClasses {
       await this.validate(constraint.relationshipClass);
     } catch(e: any){
       mutableConstraint.abstractConstraint = existing;
-      throw new SchemaEditingError(ECEditingStatus.SetAbstractConstraintFailed, schemaItemIdentifier(SchemaItemType.RelationshipClass, constraint.relationshipClass.key), e);
+      throw new SchemaEditingError(ECEditingStatus.SetAbstractConstraint, new RelationshipConstraintId(constraint), e);
     }
 
     try {
       await this.validate(constraint);
     } catch(e: any){
       mutableConstraint.abstractConstraint = existing;
-      throw new SchemaEditingError(ECEditingStatus.SetAbstractConstraintFailed, schemaItemIdentifier(SchemaItemType.RelationshipClass, constraint.relationshipClass.key), e);
+      throw new SchemaEditingError(ECEditingStatus.SetAbstractConstraint, new RelationshipConstraintId(constraint), e);
     }
   }
 
@@ -199,14 +199,14 @@ export class RelationshipClasses extends ECClasses {
       await this.validate(constraint.relationshipClass);
     } catch(e: any){
       mutableConstraint.removeClass(ecClass);
-      throw new SchemaEditingError(ECEditingStatus.AddConstraintClassFailed, schemaItemIdentifier(SchemaItemType.RelationshipClass, constraint.relationshipClass.key), e);
+      throw new SchemaEditingError(ECEditingStatus.AddConstraintClass, new RelationshipConstraintId(constraint), e);
     }
 
     try {
       await this.validate(constraint);
     } catch(e: any){
       mutableConstraint.removeClass(ecClass);
-      throw new SchemaEditingError(ECEditingStatus.AddConstraintClassFailed, schemaItemIdentifier(SchemaItemType.RelationshipClass, constraint.relationshipClass.key), e);
+      throw new SchemaEditingError(ECEditingStatus.AddConstraintClass, new RelationshipConstraintId(constraint), e);
     }
   }
 
@@ -218,7 +218,7 @@ export class RelationshipClasses extends ECClasses {
       await this.validate(constraint);
     } catch(e: any) {
       mutableConstraint.addClass(ecClass);
-      throw new SchemaEditingError(ECEditingStatus.RemoveConstraintClassFailed, schemaItemIdentifier(SchemaItemType.RelationshipClass, constraint.relationshipClass.key), e);
+      throw new SchemaEditingError(ECEditingStatus.RemoveConstraintClass, new RelationshipConstraintId(constraint), e);
     }
   }
 
@@ -235,8 +235,8 @@ export class RelationshipClasses extends ECClasses {
 
     if (diagnostics.length > 0) {
       this.removeCustomAttribute(constraint, customAttribute);
-      throw new SchemaEditingError(ECEditingStatus.AddCustomAttributeToConstraintFailed, schemaItemIdentifier(SchemaItemType.RelationshipClass, constraint.relationshipClass.key),
-        new SchemaEditingError(ECEditingStatus.RuleViolation, customAttributeContainerIdentifier(constraint.relationshipClass.schema.schemaKey, constraint.fullName, customAttribute.className), undefined, diagnostics));
+      throw new SchemaEditingError(ECEditingStatus.AddCustomAttributeToConstraint, new RelationshipConstraintId(constraint),
+        new SchemaEditingError(ECEditingStatus.RuleViolation, new CustomAttributeId(customAttribute.className, constraint), undefined, diagnostics));
     }
   }
 
@@ -257,7 +257,12 @@ export class RelationshipClasses extends ECClasses {
       diagnostics.push(diagnostic);
     }
 
-    if (diagnostics.length > 0)
-      throw new SchemaEditingError(ECEditingStatus.RuleViolation, schemaItemIdentifier(SchemaItemType.RelationshipClass, relationshipKey), undefined, diagnostics);
+    if (diagnostics.length > 0) {
+      if (relationshipOrConstraint instanceof RelationshipClass) {
+        throw new SchemaEditingError(ECEditingStatus.RuleViolation, new ClassId(SchemaItemType.RelationshipClass, relationshipKey), undefined, diagnostics);
+      } else {
+        throw new SchemaEditingError(ECEditingStatus.RuleViolation, new RelationshipConstraintId(relationshipOrConstraint), undefined, diagnostics);
+      }
+    }
   }
 }

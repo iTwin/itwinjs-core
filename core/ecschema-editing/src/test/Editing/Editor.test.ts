@@ -10,8 +10,17 @@ import {
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { AnyDiagnostic } from "../../Validation/Diagnostic";
 import { Diagnostics } from "../../Validation/ECRules";
+import { ECEditingStatus } from "../../Editing/Exception";
 
 /* eslint-disable @typescript-eslint/naming-convention */
+
+function getRuleViolationMessage(ruleViolations: AnyDiagnostic[]) {
+  let violations = "";
+  for (const diagnostic of ruleViolations){
+    violations += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
+  }
+  return violations;
+}
 
 // TODO: Add tests for cases where invalid names are passed into props objects. (to test the error message)
 describe("Editor tests", () => {
@@ -127,13 +136,15 @@ describe("Editor tests", () => {
         testEditor = new SchemaContextEditor(context);
         testKey = schemaA.schemaKey;
 
-        try {
-          await testEditor.addCustomAttribute(testKey, { className: "SchemaB.TestCustomAttribute" });
-        } catch(e: any) {
-          const violations = e.ruleViolations as AnyDiagnostic[];
+        await expect(testEditor.addCustomAttribute(testKey, { className: "SchemaB.TestCustomAttribute" })).to.be.eventually.rejected.then(function (error) {
+          expect(error).to.have.property("errorNumber", ECEditingStatus.AddCustomAttributeToClass);
+          expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
+          expect(error).to.have.nested.property("innerError.message", `Rule violations occurred from CustomAttribute SchemaB.TestCustomAttribute, container ${testKey.name}: ${getRuleViolationMessage(error.innerError.ruleViolations)}`);
+          const violations = error.innerError.ruleViolations as AnyDiagnostic[];
           expect(violations[0]).to.deep.equal(new Diagnostics.CustomAttributeClassNotFound(schemaA, ["SchemaA", "SchemaB.TestCustomAttribute"]));
           expect(schemaA.customAttributes && schemaA.customAttributes.has("SchemaB.TestCustomAttribute")).to.be.false;
-        }
+        });
+
       });
     });
 
@@ -207,7 +218,10 @@ describe("Editor tests", () => {
         try {
           await testEditor.addSchemaReference(schemaA.schemaKey, schemaC);
         } catch(e: any) {
-          const violations = e.ruleViolations as AnyDiagnostic[];
+          expect(e).to.have.property("errorNumber", ECEditingStatus.AddSchemaReference);
+          expect(e).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
+          expect(e).to.have.nested.property("innerError.message", `Rule violations occurred from Schema ${schemaA.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`);
+          const violations = e.innerError.ruleViolations as AnyDiagnostic[];
           expect(violations[0]).to.deep.equal(new Diagnostics.SchemaRefAliasMustBeUnique(schemaA, [schemaA.name, "b", "SchemaB", "SchemaC"]));
           expect(violations[1]).to.deep.equal(new Diagnostics.ReferenceCyclesNotAllowed(schemaA, [schemaA.name, `SchemaC --> SchemaA, SchemaA --> SchemaC`]));
           expect(schemaA.getReferenceSync("SchemaC")).to.be.undefined;

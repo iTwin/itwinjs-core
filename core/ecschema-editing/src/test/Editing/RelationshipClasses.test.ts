@@ -551,7 +551,7 @@ describe("Relationship tests from an existing schema", () => {
     try {
       await testEditor.relationships.addConstraintClass(relClass.source, constraintClass);
     } catch(e: any) {
-      expect(e).to.have.property("errorNumber", ECEditingStatus.AddConstraintClassFailed);
+      expect(e).to.have.property("errorNumber", ECEditingStatus.AddConstraintClass);
       expect(e).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
       expect(e).to.have.nested.property("innerError.message", `Rule violations occurred from RelationshipClass ${relClassResult.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`);
       const violations = e.innerError.ruleViolations as AnyDiagnostic[];
@@ -597,7 +597,7 @@ describe("Relationship tests from an existing schema", () => {
     try {
       await testEditor.relationships.addConstraintClass(relClass.source, entityClass);
     } catch(e: any) {
-      expect(e).to.have.property("errorNumber", ECEditingStatus.AddConstraintClassFailed);
+      expect(e).to.have.property("errorNumber", ECEditingStatus.AddConstraintClass);
       expect(e).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
       expect(e).to.have.nested.property("innerError.message", `Rule violations occurred from RelationshipClass ${relClassResult.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`);
       const violations = e.innerError.ruleViolations as AnyDiagnostic[];
@@ -636,9 +636,9 @@ describe("Relationship tests from an existing schema", () => {
     try {
       await testEditor.relationships.addConstraintClass(relClass.source, constraintClass);
     } catch(e: any) {
-      expect(e).to.have.property("errorNumber", ECEditingStatus.AddConstraintClassFailed);
+      expect(e).to.have.property("errorNumber", ECEditingStatus.AddConstraintClass);
       expect(e).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
-      expect(e).to.have.nested.property("innerError.message", `Rule violations occurred from RelationshipClass ${relClassResult.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`);
+      expect(e).to.have.nested.property("innerError.message", `Rule violations occurred from constraint ${relClass.source.fullName} of RelationshipClass ${relClassResult.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`);
       const violations = e.innerError.ruleViolations as AnyDiagnostic[];
       expect(violations[0]).to.deep.equal(new Diagnostics.AbstractConstraintMustExistWithMultipleConstraints(relClass.source, ["Source", relClass.fullName]));
       expect(relClass.source.constraintClasses?.length).to.eq(1);
@@ -676,9 +676,9 @@ describe("Relationship tests from an existing schema", () => {
     try {
       await testEditor.relationships.removeConstraintClass(relClass.target, constraintClass);
     } catch(e: any) {
-      expect(e).to.have.property("errorNumber", ECEditingStatus.RemoveConstraintClassFailed);
+      expect(e).to.have.property("errorNumber", ECEditingStatus.RemoveConstraintClass);
       expect(e).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
-      expect(e).to.have.nested.property("innerError.message", `Rule violations occurred from RelationshipClass ${relClassResult.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`);
+      expect(e).to.have.nested.property("innerError.message", `Rule violations occurred from constraint ${relClass.target.fullName} of RelationshipClass ${relClassResult.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`);
       const violations = e.innerError.ruleViolations as AnyDiagnostic[];
       expect(violations[0]).to.deep.equal(new Diagnostics.AtLeastOneConstraintClassDefined(relClass.target, ["Target", relClass.fullName]));
       expect(relClass.target.constraintClasses?.length).to.eq(1);
@@ -718,9 +718,9 @@ describe("Relationship tests from an existing schema", () => {
       await testEditor.relationships.setAbstractConstraint(relClass.source, undefined);
     } catch(e: any) {
       expect((await relClass.source.constraintClasses![0]).fullName).eq("TestSchema.TestSourceEntity");
-      expect(e).to.have.property("errorNumber", ECEditingStatus.SetAbstractConstraintFailed);
+      expect(e).to.have.property("errorNumber", ECEditingStatus.SetAbstractConstraint);
       expect(e).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
-      expect(e).to.have.nested.property("innerError.message", `Rule violations occurred from RelationshipClass ${relClassResult.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`);
+      expect(e).to.have.nested.property("innerError.message", `Rule violations occurred from constraint ${relClass.source.fullName} of RelationshipClass ${relClassResult.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`);
       const violations = e.innerError.ruleViolations as AnyDiagnostic[];
       expect(violations[0]).to.deep.equal(new Diagnostics.AbstractConstraintMustExistWithMultipleConstraints(relClass.source, ["Source", relClass.fullName]));
       expect((await relClass.source.constraintClasses![0]).fullName).eq("TestSchema.TestSourceEntity");
@@ -784,7 +784,7 @@ describe("Relationship tests from an existing schema", () => {
     const baseClassRes = await testEditor.entities.create(testKey, "testBaseClass", ECClassModifier.None);
     const relRes = await testEditor.relationships.create(testKey, "testRelationship", ECClassModifier.None, StrengthType.Holding, StrengthDirection.Forward);
     await expect(testEditor.relationships.setBaseClass(relRes, baseClassRes)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClassFailed);
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `Expected ${baseClassRes.fullName} to be of type RelationshipClass.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidSchemaItemType);
     });
@@ -795,7 +795,7 @@ describe("Relationship tests from an existing schema", () => {
     const relRes = await testEditor.relationships.create(testKey, "testRelationship", ECClassModifier.None, StrengthType.Referencing, StrengthDirection.Forward);
 
     await expect(testEditor.relationships.setBaseClass(relRes, baseClassKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClassFailed);
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `RelationshipClass ${baseClassKey.fullName} could not be found in the schema ${testKey.name}.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
     });
@@ -806,7 +806,7 @@ describe("Relationship tests from an existing schema", () => {
     const relationshipKey = new SchemaItemKey("testRelationship", testKey);
 
     await expect(testEditor.relationships.setBaseClass(relationshipKey, baseClassRes)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClassFailed);
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `RelationshipClass ${relationshipKey.fullName} could not be found in the schema context.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
     });
@@ -818,7 +818,7 @@ describe("Relationship tests from an existing schema", () => {
     const relRes = await testEditor.relationships.create(testKey, "testRelationship", ECClassModifier.None, StrengthType.Referencing, StrengthDirection.Forward);
 
     await expect(testEditor.relationships.setBaseClass(relRes, baseClassKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClassFailed);
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `Schema Key ${schemaKey.toString(true)} could not be found in the context.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
     });
@@ -834,7 +834,7 @@ describe("Relationship tests from an existing schema", () => {
     expect(await relClass?.baseClass).to.eql(baseClass);
 
     await expect(testEditor.relationships.setBaseClass(relRes, newBaseClassRes)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClassFailed);
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `Base class ${newBaseClassRes.fullName} must derive from ${baseClassRes.fullName}.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
     });
@@ -899,7 +899,7 @@ describe("Relationship tests from an existing schema", () => {
       await testEditor.relationships.setBaseClass(relRes, baseClassRes);
     } catch (e: any) {
       expect(relClass.baseClass).to.be.undefined;
-      expect(e).to.have.property("errorNumber", ECEditingStatus.SetBaseClassFailed);
+      expect(e).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
       expect(e).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
       expect(e).to.have.nested.property("innerError.message", `Rule violations occurred from RelationshipClass ${relRes.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`);
     }

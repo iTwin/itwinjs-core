@@ -13,7 +13,7 @@ import {
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
 import { MutableKindOfQuantity } from "./Mutable/MutableKindOfQuantity";
-import { ECEditingStatus, SchemaEditingError, schemaItemIdentifier, schemaItemIdentifierFromName } from "./Exception";
+import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
 import { SchemaItems } from "./SchemaItems";
 
 /**
@@ -47,7 +47,7 @@ export class KindOfQuantities extends SchemaItems {
         koqItem.setDisplayLabel(displayLabel);
       }
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, name), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
     }
 
     return koqItem.key;
@@ -60,7 +60,7 @@ export class KindOfQuantities extends SchemaItems {
       const boundCreate = schema.createKindOfQuantity.bind(schema);
       koqItem = await this.createSchemaItemFromProps<KindOfQuantity>(schemaKey, this.schemaItemType, boundCreate, koqProps) as MutableKindOfQuantity;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromPropsFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, koqProps.name!), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, koqProps.name!, schemaKey), e);
     }
 
     return koqItem.key;
@@ -78,7 +78,7 @@ export class KindOfQuantities extends SchemaItems {
       const presentationFormat = await this.getSchemaItem<Format>(format, SchemaItemType.Format);
       kindOfQuantity.addPresentationFormat(presentationFormat, isDefault);
     } catch(e: any) {
-      throw new SchemaEditingError(ECEditingStatus.AddPresentationUnitFailed, schemaItemIdentifier(this.schemaItemType, koqKey), e);
+      throw new SchemaEditingError(ECEditingStatus.AddPresentationUnit, new SchemaItemId(this.schemaItemType, koqKey), e);
     }
   }
 
@@ -87,7 +87,7 @@ export class KindOfQuantities extends SchemaItems {
       const kindOfQuantity = await this.getSchemaItem<MutableKindOfQuantity>(koqKey);
       kindOfQuantity.addPresentationFormat(overrideFormat, isDefault);
     } catch(e: any) {
-      throw new SchemaEditingError(ECEditingStatus.AddPresentationOverrideFormat, schemaItemIdentifier(this.schemaItemType, koqKey), e);
+      throw new SchemaEditingError(ECEditingStatus.AddPresentationOverride, new SchemaItemId(this.schemaItemType, koqKey), e);
     }
   }
 
@@ -103,7 +103,7 @@ export class KindOfQuantities extends SchemaItems {
       const parentFormat = await this.getSchemaItem<Format>(parent, SchemaItemType.Format);
       return new OverrideFormat(parentFormat, precision, unitLabelOverrides);
     } catch(e: any) {
-      throw new SchemaEditingError(ECEditingStatus.AddPresentationOverrideFormat, schemaItemIdentifier(this.schemaItemType, koqKey), e);
+      throw new SchemaEditingError(ECEditingStatus.AddPresentationOverride, new SchemaItemId(this.schemaItemType, koqKey), e);
     }
   }
 }

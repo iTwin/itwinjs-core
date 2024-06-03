@@ -6,10 +6,10 @@
  * @module Editing
  */
 
-import { AnyEnumerator, Enumeration, EnumerationProps, PrimitiveType, primitiveTypeToString, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
+import { AnyEnumerator, Enumeration, EnumerationProps, PrimitiveType, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
 import { MutableEnumeration } from "./Mutable/MutableEnumeration";
-import { ECEditingStatus, enumerationIdentifier, SchemaEditingError, schemaItemIdentifier, schemaItemIdentifierFromName } from "./Exception";
+import { ECEditingStatus, EnumerationId, SchemaEditingError, SchemaItemId } from "./Exception";
 import { SchemaItems } from "./SchemaItems";
 
 type MutableEnumerator = {
@@ -22,7 +22,7 @@ type MutableEnumerator = {
  */
 export class Enumerations extends SchemaItems {
   public constructor(schemaEditor: SchemaContextEditor) {
-    super(SchemaItemType.StructClass, schemaEditor);
+    super(SchemaItemType.Enumeration, schemaEditor);
   }
 
   public async create(schemaKey: SchemaKey, name: string, type: PrimitiveType.Integer | PrimitiveType.String, displayLabel?: string, isStrict?: boolean, enumerators?: AnyEnumerator[]): Promise<SchemaItemKey> {
@@ -43,7 +43,7 @@ export class Enumerations extends SchemaItems {
       if (displayLabel)
         newEnum.setDisplayLabel(displayLabel);
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, name), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
     }
 
     return newEnum.key;
@@ -63,7 +63,7 @@ export class Enumerations extends SchemaItems {
       newEnum = (await this.createSchemaItemFromProps<Enumeration>(schemaKey, this.schemaItemType, boundCreate, enumProps)) as MutableEnumeration;
 
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromPropsFailed, schemaItemIdentifierFromName(schemaKey, this.schemaItemType, enumProps.name!), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, enumProps.name!, schemaKey), e);
     }
 
     return newEnum.key;
@@ -74,14 +74,14 @@ export class Enumerations extends SchemaItems {
       const enumeration = await this.getSchemaItem<Enumeration>(enumerationKey, SchemaItemType.Enumeration);
 
       if (enumeration.isInt && typeof (enumerator.value) !== "number")
-        throw new SchemaEditingError(ECEditingStatus.InvalidEnumeratorType, enumerationIdentifier(this.schemaItemType, enumerationKey, "integer", enumerator.name));
+        throw new SchemaEditingError(ECEditingStatus.InvalidEnumeratorType, new EnumerationId(enumeration, enumerator));
 
       if (enumeration.isString && typeof (enumerator.value) !== "string")
-        throw new SchemaEditingError(ECEditingStatus.InvalidEnumeratorType, enumerationIdentifier(this.schemaItemType, enumerationKey, "string", enumerator.name));
+        throw new SchemaEditingError(ECEditingStatus.InvalidEnumeratorType, new EnumerationId(enumeration, enumerator));
 
       (enumeration as MutableEnumeration).addEnumerator(enumerator);
     } catch(e: any) {
-      throw new SchemaEditingError(ECEditingStatus.AddEnumeratorFailed, schemaItemIdentifier(this.schemaItemType, enumerationKey), e);
+      throw new SchemaEditingError(ECEditingStatus.AddEnumerator, new SchemaItemId(this.schemaItemType, enumerationKey), e);
     }
   }
 
@@ -91,11 +91,11 @@ export class Enumerations extends SchemaItems {
 
       const enumerator = enumeration.getEnumeratorByName(enumeratorName);
       if (enumerator === undefined)
-        throw new SchemaEditingError(ECEditingStatus.EnumeratorDoesNotExist, enumerationIdentifier(this.schemaItemType, enumerationKey, primitiveTypeToString(enumeration.type!), enumeratorName));
+        throw new SchemaEditingError(ECEditingStatus.EnumeratorDoesNotExist, new EnumerationId(enumeration, enumeratorName));
 
       (enumerator as MutableEnumerator).label = label;
     } catch(e: any) {
-      throw new SchemaEditingError(ECEditingStatus.SetEnumeratorLabelFailed, schemaItemIdentifier(this.schemaItemType, enumerationKey), e);
+      throw new SchemaEditingError(ECEditingStatus.SetEnumeratorLabel, new SchemaItemId(this.schemaItemType, enumerationKey), e);
     }
   }
 
@@ -105,11 +105,11 @@ export class Enumerations extends SchemaItems {
 
       const enumerator = enumeration.getEnumeratorByName(enumeratorName);
       if (enumerator === undefined)
-        throw new SchemaEditingError(ECEditingStatus.EnumeratorDoesNotExist, enumerationIdentifier(this.schemaItemType, enumerationKey, primitiveTypeToString(enumeration.type!), enumeratorName));
+        throw new SchemaEditingError(ECEditingStatus.EnumeratorDoesNotExist, new EnumerationId(enumeration, enumeratorName));
 
       (enumerator as MutableEnumerator).description = description;
     } catch(e: any) {
-      throw new SchemaEditingError(ECEditingStatus.SetEnumeratorLabelFailed, schemaItemIdentifier(this.schemaItemType, enumerationKey), e);
+      throw new SchemaEditingError(ECEditingStatus.SetEnumeratorLabel, new SchemaItemId(this.schemaItemType, enumerationKey), e);
     }
   }
 }

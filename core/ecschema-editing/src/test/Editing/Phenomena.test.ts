@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import { ECVersion, Phenomenon, SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
+import { ECEditingStatus } from "../../Editing/Exception";
 
 // TODO: Must add phenomenon and Unit system tests before you can do this.
 describe("Phenomenons tests", () => {
@@ -39,11 +40,19 @@ describe("Phenomenons tests", () => {
 
   it("try creating Phenomenon class to unknown schema, throws error", async () => {
     const badKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
-    await expect(testEditor.phenomenons.create(badKey, "testPhenomenon", "Units.LENGTH(2)")).to.be.rejectedWith(Error, `Schema Key ${badKey.toString(true)} not found in context`);;
+    await expect(testEditor.phenomenons.create(badKey, "testPhenomenon", "Units.LENGTH(2)")).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
+      expect(error).to.have.nested.property("innerError.message", `Schema Key ${badKey.toString(true)} could not be found in the context.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
+    });
   });
 
   it("try creating Phenomenon with existing name, throws error", async () => {
     await testEditor.phenomenons.create(testKey, "testPhenomenon", "Units.LENGTH(2)");
-    await expect(testEditor.phenomenons.create(testKey, "testPhenomenon", "Units.LENGTH(2)")).to.be.rejectedWith(Error, `Phenomenon testPhenomenon already exists in the schema ${testKey.name}.`);
+    await expect(testEditor.phenomenons.create(testKey, "testPhenomenon", "Units.LENGTH(2)")).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
+      expect(error).to.have.nested.property("innerError.message", `Phenomenon testSchema.testPhenomenon already exists in the schema ${testKey.name}.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);
+    });
   });
 });
