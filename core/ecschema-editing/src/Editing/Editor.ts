@@ -72,12 +72,13 @@ export class SchemaContextEditor {
    * @param schemaKey The SchemaKey identifying the schema.
   */
   public async getSchema(schemaKey: SchemaKey): Promise<MutableSchema | undefined> {
-    const schema = (await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Latest));
+    const schema = await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Latest);
     if (schema === undefined)
       return undefined;
 
     return schema;
   }
+
   /**
    * Creates a Schema with the given properties and adds it to the current schema context.
    * @param name The name given to the new schema.
@@ -100,15 +101,11 @@ export class SchemaContextEditor {
    */
   public async addSchemaReference(schemaKey: SchemaKey, refSchema: Schema): Promise<void> {
     try {
-      const schema = (await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Exact));
-      if (schema === undefined)
-        throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, {schemaKey});
-
+      const schema = await this.lookupSchema(schemaKey, SchemaMatchType.Exact);
       await schema.addReference(refSchema);
-      const diagnosticIterable = Rules.validateSchemaReferences(schema);
 
       const diagnostics: AnyDiagnostic[] = [];
-      for await (const diagnostic of diagnosticIterable) {
+      for await (const diagnostic of Rules.validateSchemaReferences(schema)) {
         diagnostics.push(diagnostic);
       }
 
@@ -132,16 +129,11 @@ export class SchemaContextEditor {
    */
   public async addCustomAttribute(schemaKey: SchemaKey, customAttribute: CustomAttribute): Promise<void> {
     try {
-      const schema = (await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Latest));
-      if (schema === undefined)
-        throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, {schemaKey});
-
+      const schema = await this.lookupSchema(schemaKey);
       schema.addCustomAttribute(customAttribute);
 
-      const diagnosticIterable = Rules.validateCustomAttributeInstance(schema, customAttribute);
-
       const diagnostics: AnyDiagnostic[] = [];
-      for await (const diagnostic of diagnosticIterable) {
+      for await (const diagnostic of Rules.validateCustomAttributeInstance(schema, customAttribute)) {
         diagnostics.push(diagnostic);
       }
 
@@ -164,11 +156,9 @@ export class SchemaContextEditor {
    */
   public async setVersion(schemaKey: SchemaKey, readVersion?: number, writeVersion?: number, minorVersion?: number): Promise<SchemaKey> {
     try {
-      const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest));
-      if (schema === undefined)
-        throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, {schemaKey});
-
+      const schema = await this.lookupSchema(schemaKey);
       schema.setVersion(readVersion || schema.readVersion, writeVersion || schema.writeVersion, minorVersion || schema.minorVersion);
+
       return schema.schemaKey;
     } catch(e: any) {
       throw new SchemaEditingError(ECEditingStatus.SetSchemaVersion, { schemaKey }, e);
@@ -182,11 +172,9 @@ export class SchemaContextEditor {
    */
   public async incrementMinorVersion(schemaKey: SchemaKey): Promise<SchemaKey> {
     try {
-      const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest));
-      if (schema === undefined)
-        throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, {schemaKey});
-
+      const schema = await this.lookupSchema(schemaKey);
       schema.setVersion(schema.readVersion, schema.writeVersion, schema.minorVersion + 1);
+
       return schema.schemaKey;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.IncrementSchemaMinorVersion, { schemaKey }, e);
@@ -204,6 +192,14 @@ export class SchemaContextEditor {
     assert(schema.customAttributes !== undefined);
     const map = schema.customAttributes as Map<string, CustomAttribute>;
     map.delete(customAttribute.className);
+  }
+
+  private async lookupSchema(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<MutableSchema> {
+    const schema = await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, matchType);
+    if (schema === undefined)
+      throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, { schemaKey });
+
+    return schema;
   }
 }
 

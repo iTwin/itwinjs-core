@@ -1,8 +1,9 @@
 import { expect } from "chai";
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { Constant, ConstantProps, ECVersion, SchemaContext, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
+import { ECEditingError, ECEditingStatus, SchemaEditingError } from "../../Editing/Exception";
 
-describe("CustomAttribute tests", () => {
+describe("Constants tests", () => {
   let testEditor: SchemaContextEditor;
   let testKey: SchemaKey;
   let context: SchemaContext;
@@ -40,11 +41,19 @@ describe("CustomAttribute tests", () => {
 
   it("try creating Constant to unknown schema, throws error", async () => {
     const badKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
-    await expect(testEditor.constants.create(badKey, "testConstant", phenomenonKey, "testDefinition")).to.be.rejectedWith(Error, `Schema Key ${badKey.toString(true)} not found in context`);;
+    await expect(testEditor.constants.create(badKey, "testConstant", phenomenonKey, "testDefinition")).to.be.rejected.then((error: SchemaEditingError) => {
+      expect(error.errorNumber).equals(ECEditingStatus.CreateSchemaItemFailed);
+      expect(error.innerError).is.not.undefined;
+      expect(error.innerError?.message).equals(`Schema Key ${badKey.toString(true)} could not be found in the context.`);
+    });
   });
 
   it("try creating Constant with existing name, throws error", async () => {
     await testEditor.constants.create(testKey, "testConstant", phenomenonKey, "testDefinition");
-    await expect(testEditor.constants.create(testKey, "testConstant", phenomenonKey, "testDefinition")).to.be.rejectedWith(Error, `Constant testConstant already exists in the schema ${testKey.name}.`);
+    await expect(testEditor.constants.create(testKey, "testConstant", phenomenonKey, "testDefinition")).to.be.rejected.then((error: SchemaEditingError) => {
+      expect(error.errorNumber).equals(ECEditingStatus.CreateSchemaItemFailed);
+      expect(error.innerError).is.not.undefined;
+      expect(error.innerError?.message).equals(`Constant testSchema.testConstant already exists in the schema ${testKey.name}.`);
+    });
   });
 });

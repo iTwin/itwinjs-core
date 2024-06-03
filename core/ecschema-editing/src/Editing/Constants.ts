@@ -18,7 +18,7 @@ import { SchemaItems } from "./SchemaItems";
  */
 export class Constants extends SchemaItems {
   public constructor(schemaEditor: SchemaContextEditor) {
-    super(SchemaItemType.StructClass, schemaEditor);
+    super(SchemaItemType.Constant, schemaEditor);
   }
 
   public async create(schemaKey: SchemaKey, name: string, phenomenon: SchemaItemKey, definition: string, displayLabel?: string, numerator?: number, denominator?: number): Promise<SchemaItemKey> {
