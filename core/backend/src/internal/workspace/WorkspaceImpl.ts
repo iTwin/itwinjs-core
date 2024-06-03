@@ -17,7 +17,7 @@ import { SqliteStatement } from "../../SqliteStatement";
 import { SettingName, SettingsContainer, SettingsDictionaryProps, Settings, SettingsPriority } from "../../workspace/Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { GetWorkspaceContainerArgs, Workspace, WorkspaceContainer, WorkspaceContainerId, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps, WorkspaceDbFullName, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbManifest, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbProps, WorkspaceDbQueryResourcesArgs, WorkspaceDbVersion, WorkspaceOpts, WorkspaceResourceName, WorkspaceDbSettingsProps, WorkspaceSettingNames } from "../../workspace/Workspace";
-import { CreateNewWorkspaceContainerProps, CreateNewWorkspaceDbVersionProps, EditableWorkspaceContainer, EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
+import { CreateNewWorkspaceContainerArgs, CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
 import { SettingsImpl } from "./SettingsImpl";
 import { implementationProhibited } from "../ImplementationProhibited";
@@ -470,10 +470,10 @@ class EditorImpl implements WorkspaceEditor {
   public readonly [implementationProhibited] = undefined;
   public workspace = new EditorWorkspaceImpl(new SettingsImpl(), { containerDir: join(IModelHost.cacheDir, workspaceEditorName) });
 
-  public async initializeContainer(args: CreateNewWorkspaceContainerProps) {
+  public async initializeContainer(args: CreateNewWorkspaceContainerArgs) {
     class CloudAccess extends CloudSqlite.DbAccess<WorkspaceSqliteDb> {
       protected static override _cacheName = workspaceEditorName;
-      public static async initializeWorkspace(args: CreateNewWorkspaceContainerProps) {
+      public static async initializeWorkspace(args: CreateNewWorkspaceContainerArgs) {
         const props = await this.createBlobContainer({ scope: args.scope, metadata: { ...args.metadata, containerType: "workspace" } });
         const dbFullName = makeWorkspaceDbFileName(workspaceDbNameWithDefault(args.dbName), "1.0.0");
         await super._initializeDb({ ...args, props, dbName: dbFullName, dbType: WorkspaceSqliteDb, blockSize: "4M" });
@@ -483,7 +483,7 @@ class EditorImpl implements WorkspaceEditor {
     return CloudAccess.initializeWorkspace(args);
   }
 
-  public async createNewCloudContainer(args: CreateNewWorkspaceContainerProps): Promise<EditableWorkspaceContainer> {
+  public async createNewCloudContainer(args: CreateNewWorkspaceContainerArgs): Promise<EditableWorkspaceContainer> {
     const cloudContainer = await this.initializeContainer(args);
     const userToken = await IModelHost.authorizationClient?.getAccessToken();
     const accessToken = await CloudSqlite.requestToken({ ...cloudContainer, accessLevel: "write", userToken });
@@ -523,7 +523,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWork
       isPublic: cloudContainer.isPublic,
     };
   }
-  public async createNewWorkspaceDbVersion(args: CreateNewWorkspaceDbVersionProps): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }> {
+  public async createNewWorkspaceDbVersion(args: CreateNewWorkspaceDbVersionArgs): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }> {
     const cloudContainer = this.cloudContainer;
     if (undefined === cloudContainer)
       throw new Error("versions require cloud containers");

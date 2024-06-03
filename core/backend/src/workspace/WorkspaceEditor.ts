@@ -10,7 +10,10 @@ import { LocalFileName } from "@itwin/core-common";
 import { SQLiteDb } from "../SQLiteDb";
 import { SettingsContainer } from "./Settings";
 import { BlobContainer } from "../BlobContainerService";
-import { GetWorkspaceContainerArgs, Workspace, WorkspaceContainer, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps, WorkspaceDbManifest, WorkspaceDbNameAndVersion, WorkspaceDbProps, WorkspaceResourceName } from "./Workspace";
+import {
+ GetWorkspaceContainerArgs, Workspace, WorkspaceContainer, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps, WorkspaceDbManifest, WorkspaceDbName, WorkspaceDbNameAndVersion,
+ WorkspaceDbProps, WorkspaceDbVersion, WorkspaceResourceName,
+} from "./Workspace";
 import { WorkspaceSqliteDb } from "../internal/workspace/WorkspaceSqliteDb";
 import { constructWorkspaceEditor } from "../internal/workspace/WorkspaceImpl";
 import { implementationProhibited } from "../internal/ImplementationProhibited";
@@ -18,26 +21,26 @@ import { implementationProhibited } from "../internal/ImplementationProhibited";
 /** @beta */
 export namespace WorkspaceEditor {
   /**
-   * Construct a new `WorkspaceEditor`
-   * @note the caller becomes the owner of the Workspace.Editor and is responsible for calling `close` on it when it is no longer used.
-   * It is illegal to have more than one Workspace.Editor active in a single session.
+   * Create a new [[WorkspaceEditor]] for creating new versions of [[WorkspaceDb]]s.
+   * @note the caller becomes the owner of the Workspace.Editor and is responsible for calling [[WorkspaceEditor.close]] on it when they are finished using it.
+   * @note It is illegal to have more than one Workspace.Editor active in a single session.
    */
   export function construct(): WorkspaceEditor {
     return constructWorkspaceEditor();
   }
 
   /**
-   * Create a new, empty, EditableDb file on the local filesystem for importing Workspace resources.
+   * Create a new, empty, [[EditableWorkspaceDb]] file on the local filesystem for importing [[Workspace]] resources.
    */
   export function createEmptyDb(args: { localFileName: LocalFileName, manifest: WorkspaceDbManifest }): void {
     WorkspaceSqliteDb.createNewDb(args.localFileName, args);
   }
 }
 
-/**
- * The properties needed to create a new container from the BlobContainer service
+/** Arguments supplied to [[WorkspaceEditor.createNewCloudContainer]] to create a new [[EditableWorkspaceContainer]].
+ * @beta
  */
-export interface CreateNewWorkspaceContainerProps {
+export interface CreateNewWorkspaceContainerArgs {
   /**
    * The scope of the container. This determines the ownership of the container, how RBAC rights are assigned,
    * and the location of the datacenter
@@ -47,52 +50,59 @@ export interface CreateNewWorkspaceContainerProps {
   manifest: WorkspaceDbManifest;
   /** Metadata stored by the BlobContainer service */
   metadata: Omit<BlobContainer.Metadata, "containerType">;
-  dbName?: string;
+  /** The name of the default [[WorkspaceDb]] created inside the new container.
+   * Default: "workspace-db";
+   */
+  dbName?: WorkspaceDbName;
 }
 
 /**
- * A Workspace.Editor.Container supplies methods for creating and modifying versions of a WorkspaceDb.
+ * A [[WorkspaceContainer]] opened for editing by a [[WorkspaceEditor]].
+ * You can create new [[WorkspaceDb]]s or new versions of existing [[WorkspaceDb]]s inside it.
+ * Before actually making any changes to the container's contents, you must first obtain an exclusive write lock on it via
+ * [[acquireWriteLock]]. Only one user can hold the write lock at any given time. When you have finished making changes,
+ * you can use [[releaseWriteLock]] to publish your changes, or [[abandonChanges]] to discard them.
+ * @beta
  */
 export interface EditableWorkspaceContainer extends WorkspaceContainer {
   /**
-   * Create a copy of an existing WorkspaceDb in this Workspace.Editor.Container with a new version number.
-   * This function is used by administrator tools that modify Workspaces.
-   * This requires that the *write lock on the container be held*.
+   * Create a copy of an existing [[WorkspaceDb]] in this container with a new [[WorkspaceDbVersion]].
    * The copy should be modified with new content before the write lock is released,
    * and thereafter may never be modified again.
    * @note The copy actually shares all of the data with the original, but with copy-on-write if/when data in the new WorkspaceDb is modified.
-   * @param props - The properties that determine the source WorkspaceDb for the new version.
+   * @param props - The properties that determine the source WorkspaceDb to serve as the basis for the new version.
    * @returns A promise that resolves to an object containing the old and new WorkspaceDb names and versions.
    */
-  createNewWorkspaceDbVersion(props: CreateNewWorkspaceDbVersionProps): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }>;
+  createNewWorkspaceDbVersion(props: CreateNewWorkspaceDbVersionArgs): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }>;
 
   /**
-   * Create a new empty WorkspaceDb.
+   * Create a new, empty [[WorkspaceDb]].
    * @param args - The arguments for creating the new WorkspaceDb.
    * @returns A promise that resolves to an EditableWorkspaceDb.
    */
-  createDb(args: { dbName?: string, version?: string, manifest: WorkspaceDbManifest }): Promise<EditableWorkspaceDb>;
+  createDb(args: { dbName?: WorkspaceDbName, version?: WorkspaceDbVersion, manifest: WorkspaceDbManifest }): Promise<EditableWorkspaceDb>;
 
   /**
-   * Get the cloud properties of this Container.
+   * Get the cloud properties of this container.
    */
   get cloudProps(): WorkspaceContainerProps | undefined;
 
   /**
-   * Get an EditableWorkspaceDb to add, delete, or update resources *within a newly created version* of a WorkspaceDb.
+   * Get an editable [[WorkspaceDb]] to add, delete, or update resources *within a newly created version* of a WorkspaceDb.
    * @param props - The properties of the WorkspaceDb.
    */
   getEditableDb(props: WorkspaceDbProps): EditableWorkspaceDb;
 
   /**
-   * Acquire the write lock on the container.
-   * @param user - The user acquiring the write lock.
+   * Acquire the write lock on the container. Use [[releaseWriteLock]] to release the lock after publishing your changes, or
+   * [[abandonChanges]] to release the lock and discard your changes.
+   * @param user - The name of the user acquiring the write lock.
    */
   acquireWriteLock(user: string): void;
 
   /**
-   * Release the write lock on the container. This should be called after all changes to the EditableDb are complete. It
-   * "publishes" and uploads the changes to the new version of the EditableDb and it is thereafter immutable.
+   * Release the write lock on the container. This should be called after all changes to the container's contents are complete. It
+   * publishes and uploads the changes made to any [[WorkspaceDb]]s while the lock was held, after which those dbs become immutable.
    */
   releaseWriteLock(): void;
 
@@ -103,17 +113,17 @@ export interface EditableWorkspaceContainer extends WorkspaceContainer {
 }
 
 /**
- * The release increment for a version number.
+ * The release increment for a version number, used as part of [[CreateNewWorkspaceDbVersionArgs]] to specify the kind of version to create.
  * @see [semver.ReleaseType](https://www.npmjs.com/package/semver)
  */
 export type WorkspaceDbVersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
 
 /**
- * The properties for creating a new version of a WorkspaceDb.
+ * Arguments supplied to [[Workspace.createNewWorkspaceDbVersion]].
  */
-export interface CreateNewWorkspaceDbVersionProps {
+export interface CreateNewWorkspaceDbVersionArgs {
   /**
-   * The properties that determine the source WorkspaceDb for the new version.
+   * The properties that determine the source [[WorkspaceDb]] to serve as the basis for the new version.
    * This is usually the latest version, but it is possible to create patches to older versions.
    */
   fromProps?: WorkspaceDbProps;
@@ -125,15 +135,14 @@ export interface CreateNewWorkspaceDbVersionProps {
 
 /**
  * An editable [[WorkspaceDb]]. This is used only by tools to allow administrators to create and modify WorkspaceDbs.
- * For cloud-based WorkspaceDbs, the write token must be obtained before the methods in this interface may be used.
- * Normally, only admins will have write access to Workspaces.
+ * For cloud-based WorkspaceDbs, the container's write token must be obtained via [[EditableWorkspaceContainer.acquireWriteLock]] before the methods in this interface may be used.
+ * Normally, only admins will have write access to a [[Workspace]].
  * Only one admin at a time may be editing a Workspace.
  * @beta
  */
 export interface EditableWorkspaceDb extends WorkspaceDb {
   /**
-   * Get the cloud properties of the WorkspaceDb.
-   * @returns The cloud properties of the WorkspaceDb, or undefined if not available.
+   * The cloud properties of the [[WorkspaceDb]], if this is a cloud-based WorkspaceDb.
    */
   get cloudProps(): WorkspaceDbCloudProps | undefined;
 
@@ -144,9 +153,10 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
   updateManifest(manifest: WorkspaceDbManifest): void;
 
   /**
-   * Add or update a Settings resource to this WorkspaceDb.
+   * Add or update a resource in this WorkspaceDb that can be loaded as a [[SettingsDictionary]].
+   * The `settings` will be stored as stringified JSON.
    * @param settings - The settings object to add or update.
-   * @param rscName - The name of the settings resource.
+   * @param rscName - The name of the settings resource. Defaults to "settingsDictionary" if undefined.
    */
   updateSettingsResource(settings: SettingsContainer, rscName?: string): void;
 
@@ -154,6 +164,7 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
    * Add a new string resource to this WorkspaceDb.
    * @param rscName - The name of the string resource.
    * @param val - The string to save.
+   * @throws if a string resource named `rscName` already exists.
    */
   addString(rscName: WorkspaceResourceName, val: string): void;
 
@@ -171,9 +182,10 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
   removeString(rscName: WorkspaceResourceName): void;
 
   /**
-   * Add a new blob resource to this WorkspaceDb.
+   * Add a new binary resource to this WorkspaceDb.
    * @param rscName - The name of the blob resource.
    * @param val - The blob to save.
+   * @throws if a blob resource named `rscName` already exists.
    */
   addBlob(rscName: WorkspaceResourceName, val: Uint8Array): void;
 
@@ -189,11 +201,12 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
    * @param rscName - The name of the blob resource.
    * @returns A BlobIO writer.
    * @note After writing is complete, the caller must call `close` on the BlobIO and must call `saveChanges` on the `db`.
+   * @internal
    */
   getBlobWriter(rscName: WorkspaceResourceName): SQLiteDb.BlobIO;
 
   /**
-   * Remove a blob resource.
+   * Remove a binary resource.
    * @param rscName - The name of the blob resource to remove.
    */
   removeBlob(rscName: WorkspaceResourceName): void;
@@ -258,7 +271,7 @@ export interface WorkspaceEditor {
    * @returns A promise that resolves to a container for editing WorkspaceDbs.
    * @note The current user must have administrator rights for the iTwin for the container.
    */
-  createNewCloudContainer(props: CreateNewWorkspaceContainerProps): Promise<EditableWorkspaceContainer>;
+  createNewCloudContainer(props: CreateNewWorkspaceContainerArgs): Promise<EditableWorkspaceContainer>;
 
   /**
    * Closes this editor. All workspace containers are dropped.
