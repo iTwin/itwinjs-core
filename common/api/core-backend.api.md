@@ -1449,17 +1449,16 @@ export interface CreateNewIModelProps extends IModelNameArg {
     readonly version0?: LocalFileName;
 }
 
-// @public
-export interface CreateNewWorkspaceContainerProps {
-    // (undocumented)
-    dbName?: string;
+// @beta
+export interface CreateNewWorkspaceContainerArgs {
+    dbName?: WorkspaceDbName;
     manifest: WorkspaceDbManifest;
     metadata: Omit<BlobContainer.Metadata, "containerType">;
     scope: BlobContainer.Scope;
 }
 
-// @public
-export interface CreateNewWorkspaceDbVersionProps {
+// @beta
+export interface CreateNewWorkspaceDbVersionArgs {
     fromProps?: WorkspaceDbProps;
     identifier?: string;
     versionType: WorkspaceDbVersionIncrement;
@@ -1970,17 +1969,17 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
     next(): IteratorResult<ECSqlValue>;
 }
 
-// @public
+// @beta
 export interface EditableWorkspaceContainer extends WorkspaceContainer {
     abandonChanges(): void;
     acquireWriteLock(user: string): void;
     get cloudProps(): WorkspaceContainerProps | undefined;
     createDb(args: {
-        dbName?: string;
-        version?: string;
+        dbName?: WorkspaceDbName;
+        version?: WorkspaceDbVersion;
         manifest: WorkspaceDbManifest;
     }): Promise<EditableWorkspaceDb>;
-    createNewWorkspaceDbVersion(props: CreateNewWorkspaceDbVersionProps): Promise<{
+    createNewWorkspaceDbVersion(props: CreateNewWorkspaceDbVersionArgs): Promise<{
         oldDb: WorkspaceDbNameAndVersion;
         newDb: WorkspaceDbNameAndVersion;
     }>;
@@ -1994,6 +1993,7 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
     addFile(rscName: WorkspaceResourceName, localFileName: LocalFileName, fileExt?: string): void;
     addString(rscName: WorkspaceResourceName, val: string): void;
     get cloudProps(): WorkspaceDbCloudProps | undefined;
+    // @internal
     getBlobWriter(rscName: WorkspaceResourceName): SQLiteDb.BlobIO;
     removeBlob(rscName: WorkspaceResourceName): void;
     removeFile(rscName: WorkspaceResourceName): void;
@@ -6391,7 +6391,7 @@ export interface Workspace {
         filter?: Workspace.DbListFilter;
     }): Promise<WorkspaceDb[]>;
     loadSettingsDictionary(
-    props: WorkspaceSettingsProps | WorkspaceSettingsProps[],
+    props: WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[],
     problems?: WorkspaceDbLoadError[]): Promise<void>;
     resolveWorkspaceDbSetting(
     settingName: SettingName,
@@ -6406,14 +6406,11 @@ export namespace Workspace {
     dbProp: WorkspaceDbCloudProps,
     dict: SettingsDictionary) => boolean;
     let onSettingsDictionaryLoadedFn: (loaded: SettingsDictionaryLoaded) => void;
-    const settingName: {
-        settingsWorkspaces: string;
-    };
     export type DbListOrSettingName = {
         readonly dbs: WorkspaceDbCloudProps[];
         readonly settingName?: never;
     } | {
-        readonly settingName: string;
+        readonly settingName: SettingName;
         readonly dbs?: never;
     };
     export interface SettingsDictionaryLoaded {
@@ -6472,7 +6469,6 @@ export interface WorkspaceDb {
         localFileName: LocalFileName;
         info: IModelJsNative.EmbedFileQuery;
     } | undefined;
-    // (undocumented)
     queryResources(args: WorkspaceDbQueryResourcesArgs): void;
     readonly sqliteDb: SQLiteDb;
     get version(): WorkspaceDbVersion;
@@ -6490,7 +6486,7 @@ export interface WorkspaceDbLoadError extends Error {
     wsDbProps?: WorkspaceDbProps & Partial<WorkspaceDbCloudProps>;
 }
 
-// @public
+// @beta
 export interface WorkspaceDbLoadErrors extends Error {
     wsLoadErrors?: WorkspaceDbLoadError[];
 }
@@ -6508,7 +6504,7 @@ export type WorkspaceDbName = string;
 
 // @beta
 export interface WorkspaceDbNameAndVersion {
-    readonly dbName?: string;
+    readonly dbName?: WorkspaceDbName;
     readonly version?: WorkspaceDbVersionRange;
 }
 
@@ -6530,9 +6526,15 @@ export interface WorkspaceDbQueryResourcesArgs {
 export type WorkspaceDbQueryResourcesCallback = (resourceNames: Iterable<string>) => void;
 
 // @beta
+export interface WorkspaceDbSettingsProps extends WorkspaceDbCloudProps {
+    priority: SettingsPriority;
+    resourceName: string;
+}
+
+// @beta
 export type WorkspaceDbVersion = string;
 
-// @public
+// @beta
 export type WorkspaceDbVersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
 
 // @beta
@@ -6552,8 +6554,8 @@ export interface WorkspaceEditor {
     // @internal (undocumented)
     [implementationProhibited]: unknown;
     close(): void;
-    createNewCloudContainer(props: CreateNewWorkspaceContainerProps): Promise<EditableWorkspaceContainer>;
-    getContainer(props: GetWorkspaceContainerArgs): EditableWorkspaceContainer;
+    createNewCloudContainer(args: CreateNewWorkspaceContainerArgs): Promise<EditableWorkspaceContainer>;
+    getContainer(args: GetWorkspaceContainerArgs): EditableWorkspaceContainer;
     getContainerAsync(props: WorkspaceContainerProps): Promise<EditableWorkspaceContainer>;
     readonly workspace: Workspace;
 }
@@ -6568,9 +6570,8 @@ export interface WorkspaceOpts {
 export type WorkspaceResourceName = string;
 
 // @beta
-export interface WorkspaceSettingsProps extends WorkspaceDbCloudProps {
-    priority: SettingsPriority;
-    resourceName: string;
+export namespace WorkspaceSettingNames {
+    const settingsWorkspaces: string;
 }
 
 // (No @packageDocumentation comment for this package)

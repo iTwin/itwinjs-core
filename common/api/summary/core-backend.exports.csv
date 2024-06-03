@@ -69,8 +69,8 @@ internal;CrashReportingConfig
 internal;CrashReportingConfigNameValuePair
 beta;CreateChangeSummaryArgs 
 public;CreateNewIModelProps 
-public;CreateNewWorkspaceContainerProps
-public;CreateNewWorkspaceDbVersionProps
+beta;CreateNewWorkspaceContainerArgs
+beta;CreateNewWorkspaceDbVersionArgs
 public;DefinitionContainer 
 public;class DefinitionElement 
 public;DefinitionGroup 
@@ -118,7 +118,7 @@ public;ECSqlInsertResult
 public;ECSqlStatement 
 public;ECSqlValue
 public;ECSqlValueIterator 
-public;EditableWorkspaceContainer 
+beta;EditableWorkspaceContainer 
 beta;EditableWorkspaceDb 
 public;ElementAspect 
 beta;ElementDrivesElement 
@@ -440,18 +440,19 @@ beta;WorkspaceDb
 beta;WorkspaceDbCloudProps = WorkspaceDbProps & WorkspaceContainerProps
 beta;WorkspaceDbFullName = string
 beta;WorkspaceDbLoadError 
-public;WorkspaceDbLoadErrors 
+beta;WorkspaceDbLoadErrors 
 beta;WorkspaceDbManifest
 beta;WorkspaceDbName = string
 beta;WorkspaceDbNameAndVersion
 beta;WorkspaceDbProps 
 beta;WorkspaceDbQueryResourcesArgs
 beta;WorkspaceDbQueryResourcesCallback = (resourceNames: Iterable
+beta;WorkspaceDbSettingsProps 
 beta;WorkspaceDbVersion = string
-public;WorkspaceDbVersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease"
+beta;WorkspaceDbVersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease"
 beta;WorkspaceDbVersionRange = string
 beta;WorkspaceEditor
 beta;WorkspaceEditor
 beta;WorkspaceOpts
 beta;WorkspaceResourceName = string
-beta;WorkspaceSettingsProps 
+beta;WorkspaceSettingNames

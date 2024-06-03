@@ -115,11 +115,13 @@ export interface EditableWorkspaceContainer extends WorkspaceContainer {
 /**
  * The release increment for a version number, used as part of [[CreateNewWorkspaceDbVersionArgs]] to specify the kind of version to create.
  * @see [semver.ReleaseType](https://www.npmjs.com/package/semver)
+ * @beta
  */
 export type WorkspaceDbVersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
 
 /**
  * Arguments supplied to [[Workspace.createNewWorkspaceDbVersion]].
+ * @beta
  */
 export interface CreateNewWorkspaceDbVersionArgs {
   /**
@@ -235,9 +237,10 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
   removeFile(rscName: WorkspaceResourceName): void;
 }
 
-/** An editor used to supply workspace administrators tools for creating or editing WorkspaceDbs. */
-/**
- * Represents an editor that is associated with a workspace.
+/** An object that permits administrators to modify the contents of a [[Workspace]].
+ * Use [[construct]] to obtain a WorkspaceEditor, and [[close]] when finished using it.
+ * Only one WorkspaceEditor may be in use at any given time.
+ * Use [[getContainer]] to edit an existing [[WorkspaceContainer]], or [[createNewCloudContainer]] to create a new [[WorkspaceContainer]].
  * @beta
  */
 export interface WorkspaceEditor {
@@ -246,35 +249,28 @@ export interface WorkspaceEditor {
 
   /**
    * The workspace dedicated to this editor.
-   * @note This workspace is independent of all iModel or IModelHost workspaces.
-   * It does not share settings or WorkspaceDbs with others.
+   * @note This workspace is independent from [[IModelHost.appWorkspace]] and all [[IModelDb.workspace]]s. It has its own [[Settings]] and [[WorkspaceDb]]s.
    */
   readonly workspace: Workspace;
 
   /**
    * Retrieves a container for the editor with the specified properties and access token.
-   * @param props - The properties of the workspace container.
-   * @returns A container for editing WorkspaceDbs.
    */
-  getContainer(props: GetWorkspaceContainerArgs): EditableWorkspaceContainer;
+  getContainer(args: GetWorkspaceContainerArgs): EditableWorkspaceContainer;
 
   /**
    * Asynchronously retrieves a container for the editor with the specified properties.
-   * @param props - The properties of the workspace container.
-   * @returns A promise that resolves to a container for editing WorkspaceDbs.
    */
   getContainerAsync(props: WorkspaceContainerProps): Promise<EditableWorkspaceContainer>;
 
   /**
-   * Creates a new cloud container, for holding WorkspaceDbs, from the BlobContainer service.
-   * @param props - The properties for creating a new container.
-   * @returns A promise that resolves to a container for editing WorkspaceDbs.
+   * Creates a new cloud container for holding WorkspaceDbs, from the [[BlobContainer]] service.
    * @note The current user must have administrator rights for the iTwin for the container.
    */
-  createNewCloudContainer(props: CreateNewWorkspaceContainerArgs): Promise<EditableWorkspaceContainer>;
+  createNewCloudContainer(args: CreateNewWorkspaceContainerArgs): Promise<EditableWorkspaceContainer>;
 
   /**
-   * Closes this editor. All workspace containers are dropped.
+   * Closes this editor. All [[workspace]] containers are dropped.
    */
   close(): void;
 }
