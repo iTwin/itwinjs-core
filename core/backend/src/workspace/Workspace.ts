@@ -395,13 +395,15 @@ export interface Workspace {
 }
 
 /**
- * A WorkspaceContainer is a type of `CloudSqlite.CloudContainer` that holds one or more WorkspaceDbs. Normally a WorkspaceContainer will hold (many versions of) a single WorkspaceDb.
+ * A WorkspaceContainer is a type of [[CloudSqlite.CloudContainer]] that holds one or more [[WorkspaceDb]]s. Normally a WorkspaceContainer will hold (many versions of) a single WorkspaceDb.
  * Each version of a WorkspaceDb is treated as immutable after it is created and is stored in the WorkspaceContainer indefinitely. That means that
  * older versions of the WorkspaceDb may continue to be used, for example by archived projects. For programmers familiar with [NPM](https://www.npmjs.com/), this is conceptually
  * similar and versioning follows the same rules as NPM using [Semantic Versioning](https://semver.org/).
  * @note It is possible to store more than one WorkspaceDb in the same WorkspaceContainer, but access rights are administered per WorkspaceContainer.
  * That is, if a user has rights to access a WorkspaceContainer, that right applies to all WorkspaceDbs in the WorkspaceContainer.
- * ###TODO "local" containers (no cloud container, no versioning)
+ * @note Not every WorkspaceContainer is associated with a [[CloudSqlite.CloudContainer]] - WorkspaceContainers may also be loaded from the local file system.
+ * In this case, [[cloudContainer]] will be `undefined`.
+ * @see [[Workspace.getContainer]] and [[Workspace.getContainerAsync]] to load a container.
  * @beta
  */
 export interface WorkspaceContainer {
@@ -411,24 +413,23 @@ export interface WorkspaceContainer {
    * @internal
    */
   readonly filesDir: LocalDirName;
-  /** The unique identifier for a WorkspaceContainer a cloud storage account. */
+  /** The workspace into which this container was loaded. */
   readonly workspace: Workspace;
-  /** CloudContainer for this WorkspaceContainer (`undefined` if this is a local WorkspaceContainer.) */
+  /** Cloud container for this WorkspaceContainer, or `undefined` if this is a local WorkspaceContainer. */
   readonly cloudContainer?: CloudSqlite.CloudContainer;
-  /** properties supplied when this container was loaded */
+  /** Properties supplied when this container was loaded */
   readonly fromProps: WorkspaceContainerProps;
 
   /** @internal */
   addWorkspaceDb(toAdd: WorkspaceDb): void;
 
   /**
-   * Find the appropriate version of a WorkspaceDb in this WorkspaceContainer based on the SemVer rule
-   * in the `WorkspaceDb.Props`.
-   * If no version satisfying the WorkspaceDb.Props rules exists, throws an exception.
+   * Find the fully-qualified name of a [[WorkspaceDb]] satisfying the name and version criteria specified by `props`.
+   * @throws Error if no version satisfying the criteria exists.
    */
   resolveDbFileName(props: WorkspaceDbProps): WorkspaceDbFullName;
 
-  /** get a WorkspaceDb from this WorkspaceContainer. */
+  /** Obtain a [[WorkspaceDb]] satisfying the name and version criteria specified by `props`. */
   getWorkspaceDb(props?: WorkspaceDbProps): WorkspaceDb;
 
   /** Close and remove a currently opened [[WorkspaceDb]] from this Workspace.
