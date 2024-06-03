@@ -6,14 +6,14 @@
  * @module Merging
  */
 
+import { MutableSchema } from "../Editing/Mutable/MutableSchema";
 import { Schema, type SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../Editing/Editor";
-import { MutableSchema } from "../Editing/Mutable/MutableSchema";
+import { SchemaConflictsError } from "../Differencing/Errors";
 import { SchemaDifference, SchemaDifferences } from "../Differencing/SchemaDifference";
 import { mergeCustomAttribute } from "./CustomAttributeMerger";
 import { mergeSchemaItems } from "./SchemaItemMerger";
 import { mergeSchemaReferences } from "./SchemaReferenceMerger";
-import { SchemaConflictsError } from "../Differencing/SchemaConflicts";
 
 /**
  * Defines the context of a Schema merging run.
@@ -102,7 +102,7 @@ export class SchemaMerger {
       throw new Error(`The target schema '${targetSchemaKey.name}' could not be found in the editing context.`);
     }
 
-    if(differences.changes === undefined || differences.changes.length === 0) {
+    if(differences.differences === undefined || differences.differences.length === 0) {
       return schema;
     }
 
@@ -113,23 +113,23 @@ export class SchemaMerger {
       sourceSchemaKey,
     };
 
-    for (const referenceChange of differences.changes.filter(SchemaDifference.isSchemaReferenceDifference)) {
+    for (const referenceChange of differences.differences.filter(SchemaDifference.isSchemaReferenceDifference)) {
       await mergeSchemaReferences(context, referenceChange);
     }
 
-    const schemaDifference = differences.changes.find(SchemaDifference.isSchemaDifference);
+    const schemaDifference = differences.differences.find(SchemaDifference.isSchemaDifference);
     if(schemaDifference !== undefined) {
       await mergeSchemaProperties(schema, schemaDifference);
     }
 
     // Filter a list of possible schema item changes. This list gets filtered and order in the
     // mergeSchemaItems method.
-    for await (const _mergeResult of mergeSchemaItems(context, differences.changes)) {
+    for await (const _mergeResult of mergeSchemaItems(context, differences.differences)) {
     }
 
     // At last the custom attributes gets merged because it could be that the CustomAttributes
     // depend on classes that has to get merged in as items before.
-    for (const customAttributeChange of differences.changes.filter(SchemaDifference.isCustomAttributeDifference)) {
+    for (const customAttributeChange of differences.differences.filter(SchemaDifference.isCustomAttributeDifference)) {
       await mergeCustomAttribute(context, customAttributeChange);
     }
 

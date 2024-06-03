@@ -28,7 +28,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.StructClass,
@@ -54,7 +54,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.CustomAttributeClass,
@@ -81,7 +81,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.EntityClass,
@@ -131,7 +131,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaOtherTypes.SchemaReference,
@@ -184,7 +184,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaOtherTypes.SchemaReference,
@@ -227,7 +227,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.EntityClass,
@@ -285,7 +285,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.Mixin,
@@ -324,7 +324,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "modify",
           schemaType: SchemaItemType.StructClass,
@@ -363,7 +363,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.StructClass,
@@ -402,7 +402,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "modify",
           schemaType: SchemaItemType.CustomAttributeClass,
@@ -443,7 +443,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.CustomAttributeClass,
@@ -482,7 +482,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "modify",
           schemaType: SchemaItemType.EntityClass,
@@ -519,7 +519,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.EntityClass,
@@ -556,7 +556,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "modify",
           schemaType: SchemaItemType.StructClass,
@@ -585,7 +585,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "modify",
           schemaType: SchemaItemType.EntityClass,
@@ -618,7 +618,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.EntityClass,
@@ -666,7 +666,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "modify",
           schemaType: SchemaItemType.EntityClass,
@@ -695,7 +695,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.EntityClass,
@@ -735,7 +735,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.EntityClass,
@@ -796,7 +796,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "modify" as any,
           schemaType: SchemaOtherTypes.EntityClassMixin,
@@ -825,7 +825,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaOtherTypes.EntityClassMixin,
@@ -854,7 +854,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.StructClass,
@@ -899,7 +899,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.Mixin,
@@ -937,7 +937,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.CustomAttributeClass,
@@ -980,7 +980,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.CustomAttributeClass,

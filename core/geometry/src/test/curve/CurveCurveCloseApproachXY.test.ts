@@ -16,6 +16,7 @@ import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
 import { UnionRegion } from "../../curve/UnionRegion";
+import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Checker } from "../Checker";
@@ -1253,51 +1254,44 @@ describe("CurveCurveCloseApproachXY", () => {
     const maxDistance = 5;
     // loop1
     const arc1 = Arc3d.createCircularStartMiddleEnd(Point3d.create(1, 5), Point3d.create(3, 6.5), Point3d.create(5, 5))!;
-    const lineString1 = LineString3d.create([5, 5], [6, 3], [7, 5], [10, 3]);
-    const lineSegment1 = LineSegment3d.create(Point3d.create(10, 3), Point3d.create(1, 5));
+    const lineSegment1 = LineSegment3d.create(Point3d.create(5, 5), Point3d.create(7, 7));
+    const lineString1 = LineString3d.create([7, 7], [5, 3], [1, 5]);
     const geometryA = Loop.create();
     geometryA.tryAddChild(arc1);
-    geometryA.tryAddChild(lineString1);
     geometryA.tryAddChild(lineSegment1);
+    geometryA.tryAddChild(lineString1);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     // loop2
     const arc2 = Arc3d.createCircularStartMiddleEnd(Point3d.create(0, -2), Point3d.create(2, -3.5), Point3d.create(4, -2))!;
-    const lineString2 = LineString3d.create([4, -2], [6, -1], [8, -2], [10, 2]);
+    const lineString2 = LineString3d.create([4, -2], [6, -3], [8, -2], [10, 2]);
     const lineSegment2 = LineSegment3d.create(Point3d.create(10, 2), Point3d.create(0, -2));
     const geometryB = Loop.create();
     geometryB.tryAddChild(arc2);
     geometryB.tryAddChild(lineString2);
     geometryB.tryAddChild(lineSegment2);
+    geometryB.tryTranslateInPlace(-3, 12, 5);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // find approaches
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
-    const approachLen = approaches.length;
-    ck.testLE(0, approachLen);
-    if (approachLen > 0) {
-      for (const ap of approaches) {
-        const start = ap.detailA.point;
-        const end = ap.detailB.point;
-        if (start.isAlmostEqual(end)) // intersection between geometries
-          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, start, 0.0625);
-        else { // closest approach between geometries
-          const approachSegment = LineSegment3d.create(start, end);
-          const lenSqr = start.distanceSquaredXY(end);
-          ck.testLE(
-            Math.sqrt(lenSqr), maxDistance, undefined, "approach length must be smaller than maxDistance",
-          );
-          GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
-        }
-      }
+    ck.testTrue(0 < approaches.length, "found at least one close approach");
+    for (const ap of approaches) {
+      const approachSegment = LineSegment3d.create(ap.detailA.point, ap.detailB.point);
+      const trueDist = approachSegment.curveLength();
+      const xyDist = approachSegment.point0Ref.distanceXY(approachSegment.point1Ref);
+      ck.testTrue(xyDist > Geometry.smallMetricDistance, "geometries do not intersect");
+      ck.testLE(xyDist, trueDist, "approach distance ignores z");
+      ck.testLE(xyDist, maxDistance, "approach distance is no more than maxDistance");
+      GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
     }
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
-    ck.testDefined(closestApproach);
-    const minLenSqr = closestApproach!.detailA.point.distanceSquaredXY(closestApproach!.detailB.point);
-    const expectedMinLenSqr = 1;
-    ck.testLE(
-      Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
-    );
-    ck.testCoordinate(minLenSqr, expectedMinLenSqr);
+    if (ck.testDefined(closestApproach, "found closest approach")) {
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, closestApproach.detailA.point, 0.06);
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, closestApproach.detailB.point, 0.06);
+      const xyDist = closestApproach.detailA.point.distanceXY(closestApproach.detailB.point);
+      ck.testLE(xyDist, maxDistance, "closest approach distance is no more than maxDistance");
+      ck.testCoordinate(xyDist, 2.5, "found expected closest approach distance");
+    }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LoopLoop");
     expect(ck.getNumErrors()).equals(0);
   });
