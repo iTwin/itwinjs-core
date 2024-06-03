@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Increase restrictions on native app storage name.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

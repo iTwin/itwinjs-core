@@ -868,6 +868,7 @@ export abstract class IModelDb extends IModel {
    * @param {SchemaImportOptions} options - options during schema import.
    * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
    * @note Changes are saved if importSchemas is successful and abandoned if not successful.
+   * - You can use NativeLoggerCategory to turn on the native logs. You can also control [what exactly is logged by the loggers](https://www.itwinjs.org/learning/common/logging/#controlling-what-is-logged).
    * @see querySchemaVersion
    */
   public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
@@ -880,15 +881,23 @@ export abstract class IModelDb extends IModel {
       await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
         const schemaSyncDbUri = syncAccess.getUri();
         this.saveChanges();
-        let stat = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
-        if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === stat) {
-          this.abandonChanges();
-          if (this.nativeDb.getITwinId() !== Guid.empty)
-            await this.acquireSchemaLock();
-          stat = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
+
+        try {
+          this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
+        } catch (outerErr: any) {
+          if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
+            this.abandonChanges();
+            if (this.nativeDb.getITwinId() !== Guid.empty)
+              await this.acquireSchemaLock();
+            try {
+              this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
+            } catch (innerErr: any) {
+              throw new IModelError(innerErr.errorNumber, innerErr.message);
+            }
+          } else {
+            throw new IModelError(outerErr.errorNumber, outerErr.message);
+          }
         }
-        if (DbResult.BE_SQLITE_OK !== stat)
-          throw new IModelError(stat, "Error importing schema");
       });
     } else {
       const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
@@ -899,9 +908,11 @@ export abstract class IModelDb extends IModel {
       if (this.nativeDb.getITwinId() !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
         await this.acquireSchemaLock();
 
-      const stat = this.nativeDb.importSchemas(schemaFileNames, nativeImportOptions);
-      if (DbResult.BE_SQLITE_OK !== stat)
-        throw new IModelError(stat, "Error importing schema");
+      try {
+        this.nativeDb.importSchemas(schemaFileNames, nativeImportOptions);
+      } catch (err: any) {
+        throw new IModelError(err.errorNumber, err.message);
+      }
     }
     this.clearCaches();
   }
@@ -923,23 +934,32 @@ export abstract class IModelDb extends IModel {
       await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schemaSync" }, async (syncAccess) => {
         const schemaSyncDbUri = syncAccess.getUri();
         this.saveChanges();
-        let stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: false, schemaSyncDbUri });
-        if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === stat) {
-          this.abandonChanges();
-          if (this.nativeDb.getITwinId() !== Guid.empty)
-            await this.acquireSchemaLock();
-          stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true, schemaSyncDbUri });
+        try {
+          this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: false, schemaSyncDbUri });
+        } catch (outerErr: any) {
+          if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
+            this.abandonChanges();
+            if (this.nativeDb.getITwinId() !== Guid.empty)
+              await this.acquireSchemaLock();
+            try {
+              this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true, schemaSyncDbUri });
+            } catch (innerErr: any) {
+              throw new IModelError(innerErr.errorNumber, innerErr.message);
+            }
+          } else {
+            throw new IModelError(outerErr.errorNumber, outerErr.message);
+          }
         }
-        if (DbResult.BE_SQLITE_OK !== stat)
-          throw new IModelError(stat, "Error importing schema");
       });
     } else {
       if (this.iTwinId && this.iTwinId !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
         await this.acquireSchemaLock();
 
-      const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
-      if (DbResult.BE_SQLITE_OK !== stat)
-        throw new IModelError(stat, "Error importing schema");
+      try {
+        this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
+      } catch (err: any) {
+        throw new IModelError(err.errorNumber, err.message);
+      }
     }
     this.clearCaches();
   }
