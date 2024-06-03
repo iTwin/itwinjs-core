@@ -136,6 +136,8 @@ export class SchemaContextEditor {
       if (schema === undefined)
         throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, {schemaKey});
 
+      schema.addCustomAttribute(customAttribute);
+
       const diagnosticIterable = Rules.validateCustomAttributeInstance(schema, customAttribute);
 
       const diagnostics: AnyDiagnostic[] = [];
