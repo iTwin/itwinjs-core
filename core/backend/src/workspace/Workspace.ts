@@ -178,23 +178,14 @@ export interface WorkspaceDbSettingsProps extends WorkspaceDbCloudProps {
  */
 export type WorkspaceResourceName = string;
 
-/**
- * A WorkspaceDb holds workspace resources. `WorkspaceDb`s are stored in in cloud WorkspaceContainers.
- * Each `WorkspaceResource` in a WorkspaceDb is identified by a [[WorkspaceResourceName]].
- * Resources of type `string` and `blob` may be loaded directly from the `WorkspaceDb`. Resources of type `file` are
- * copied from the WorkspaceDb into a temporary local file so they can be accessed by programs directly from disk.
- * ###TODO
- * @beta
- */
-
-/** A SQLite database in a [[Workspace]] containing resources that the application is configured to use.
- * Resources can represent any number of things, including:
+/** A SQLite database in a [[Workspace]] containing named resources that the application is configured to use.
+ * Resources are referred to by their [[WorkspaceResourceName]]s and can represent any number of things, including:
  * - Fonts and [TextStyle]($common)s used when placing [TextAnnotation]($common)s.
  * - [GeographicCRS]($common)es used to define the coordinate reference system of an iTwin.
  * - [[SettingsDictionary]]'s that contribute to the [[Workspace.settings]].
  * - Files that can be extracted temporarily to the local file system to be accessed by programs directly from disk.
  *
- * Internally, each resource is stored in one of the following formats:
+ * Ultimately, each resource is stored in one of the following formats:
  * - A `string`, which is often a stringified `JSON` representation of the resource;
  * - A binary `blob`; or
  * - An embedded file.
@@ -202,41 +193,50 @@ export type WorkspaceResourceName = string;
  * Strings and blobs can be accessed directly using [[getString]] and [[getBlob]]. Files must first be copied to the local file system using [[getFile]], and should be avoided unless the software
  * that uses them is written to access them from disk.
  *
- * ###TODO how to obtain, versioning, manifest, WorkspaceContainer.
+ * A `WorkspaceDb` resides in a [[WorkspaceContainer]] that can be published to the cloud. Once published, the `WorkspaceDb` becomes immutable.
+ * However, multiple versions of a single `WorkspaceDb` can be created, allowing the [[Workspace]] contents to evolve over time.
+ * `WorkspaceDb`s use [semantic versioning](https://github.com/npm/node-semver).
+ *
+ * The set of available `WorkspaceDb`s available for use for specific purposes are defined in the [[Workspace]]'s [[Settings]]. You can obtain
+ * a single `WorkspaceDb` using [[WorkspaceContainer.getWorkspaceDb]], but more commonly you will use [[Workspace.getWorkspaceDbs]] to obtain
+ * a list of all of the `WorkspaceDb`s, sorted by priority, that correspond to a given [[SettingName]].
+ *
+ * You can create new `WorkspaceDb`s (or new versions of existing `WorkspaceDb`s) using [[WorkspaceEditor]].
  * @beta
  */
 export interface WorkspaceDb {
   /** @internal */
   [implementationProhibited]: unknown;
-  /** The WorkspaceContainer holding this WorkspaceDb. */
+  /** The [[WorkspaceContainer]] in which this db resides. */
   readonly container: WorkspaceContainer;
   /** The base name of this WorkspaceDb, without version */
   readonly dbName: WorkspaceDbName;
-  /** event raised before this WorkspaceDb is closed. */
+  /** An event raised before this WorkspaceDb is [[close]]d. */
   readonly onClose: BeEvent<() => void>;
-  /** Name by which a WorkspaceDb may be opened. This will be either a local file name or the name of a database in a cloud container */
+  /** The name by which the WorkspaceDb can be opened. This will be either a local file name or the name of a database in a [[CloudSqlite.CloudContainer]]. */
   readonly dbFileName: string;
-  /** the SQLiteDb for this WorkspaceDb */
+  /** The underlying SQLite database that stores this WorkspaceDb's resources. */
   readonly sqliteDb: SQLiteDb;
-  /** determine whether this WorkspaceDb is currently open */
+  /** Whether the underlying [[sqliteDb]] is currently [[open]]ed. */
   readonly isOpen: boolean;
-  /** The manifest that describes the content of this WorkspaceDb. */
+  /** The manifest that describes the contents and context of this WorkspaceDb. */
   get manifest(): WorkspaceDbManifest;
-  /** Get the version of this WorkspaceDb */
+  /** The version of this WorkspaceDb */
   get version(): WorkspaceDbVersion;
 
-  /** Open the SQLiteDb of this WorkspaceDb. Generally WorkspaceDbs are left closed and opened/closed as they're used. However,
+  /** Open the underlying [[sqliteDb]] to perform a query. Generally WorkspaceDbs are left closed and opened/closed as they're used. However,
    * when there will be significant activity against a WorkspaceDb, it may be useful to open it before the operations and close it afterwards.
+   * Methods like [[queryResources]] open the SQLite database automatically and [[close]] it before they return.
    */
   open(): void;
 
-  /** Close the SQLiteDb of this WorkspaceDb. */
+  /** Close the underlying [[sqliteDb]]. You should call this after [[open]]ing the database and completing your query. */
   close(): void;
 
-  /** Get a string resource from this WorkspaceDb, if present. */
+  /** Look up a string resource by name, if one exists. */
   getString(rscName: WorkspaceResourceName): string | undefined;
 
-  /** Get a blob resource from this WorkspaceDb, if present. */
+  /** Look up a binary resource by name, if one exists. */
   getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
 
   /** Get a BlobIO reader for a blob WorkspaceResource.
@@ -250,27 +250,31 @@ export interface WorkspaceDb {
    * @param rscName The name of the file resource in the WorkspaceDb
    * @param targetFileName optional name for extracted file. Some applications require files in specific locations or filenames. If
    * you know the full path to use for the extracted file, you can supply it. Generally, it is best to *not* supply the filename and
-   * keep the extracted files in the  filesDir.
-   * @returns the full path to a file on the local filesystem.
-   * @note The file is copied from the file into the local filesystem so it may be accessed directly. This happens only
+   * keep the extracted files in the directory specified by [[WorkspaceContainer.filesDir]].
+   * @returns the full path to a file on the local file system, or undefined if the no file named `rscName` exists.
+   * @note The file is copied from the file into the local file system so it may be accessed directly. This happens only
    * as necessary, if the local file doesn't exist, or if it is out-of-date because it was updated in the file.
    * For this reason, you should not save the local file name, and instead call this method every time you access it, so its
    * content is always holds the correct version.
    * @note The filename will be a hash value, not the resource name.
-   * @note Workspace resource files are set readonly as they are copied from the file.
+   * @note Workspace resource files are set as read-only as they are copied from the file.
    * To edit them, you must first copy them to another location.
    */
   getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
 
   /**
-   * Ensure that the contents of a `WorkspaceDb` are downloaded into the local cache so that it may be accessed offline.
-   * Until the promise is resolved, the `WorkspaceDb` is not fully downloaded, but it *may* be safely accessed during the download.
+   * Ensure that the contents of this `WorkspaceDb` are downloaded into the local cache so that it may be accessed offline.
+   * Until the promise resolves, the `WorkspaceDb` is not fully downloaded, but it *may* be safely accessed during the download.
    * To determine the progress of the download, use the `localBlocks` and `totalBlocks` values returned by `CloudContainer.queryDatabase`.
-   * @returns a `CloudSqlite.CloudPrefetch` object that can be used to await and/or cancel the prefetch.
-   * @throws if this WorkspaceDb is not from a `CloudContainer`.
+   * @returns a [[CloudSqlite.CloudPrefetch]] object that can be used to await and/or cancel the prefetch.
+   * @throws if this WorkspaceDb is not from a [[CloudSqlite.CloudContainer]].
    */
   prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch;
 
+  /** Find resources of a particular type with names matching a specified pattern.
+   * The matching resources will be supplied to [[WorkspaceDbQueryResourcesArgs.callbackk]].
+   * @see [[queryWorkspaceResources]] to query resources within multiple `WorkspaceDb`s.
+   */
   queryResources(args: WorkspaceDbQueryResourcesArgs): void;
 
   /** @internal */
@@ -281,13 +285,13 @@ export interface WorkspaceDb {
   * @beta
   */
 export interface WorkspaceOpts {
-  /** The local directory for non-cloud-based WorkspaceDb files. The workspace api will look in this directory
+  /** The local directory for non-cloud-based [[WorkspaceDb]] files. The [[Workspace]] API will look in this directory
    * for files named `${containerId}/${dbId}.itwin-workspace`.
-   * @note if not supplied, defaults to `iTwin/Workspace` in the user-local folder.
+   * @note if not supplied, defaults to "iTwin/Workspace" in the user-local folder.
    */
   containerDir?: LocalDirName;
 
-  /** the local fileName(s) of one or more settings files to load after the Workspace is first created. */
+  /** The name(s) of one or more local JSON files containing [[SettingsDictionary]]s to load when initializing the [[Workspace]]. */
   settingsFiles?: LocalFileName | LocalFileName[];
 }
 
@@ -302,7 +306,7 @@ export interface GetWorkspaceContainerArgs extends WorkspaceContainerProps {
 /**
  * Settings and resources that customize an application for the current session.
  * See [Workspaces]($docs/learning/backend/Workspace)
- * ###TODO WorkspaceOpts.settingsFiles
+ * ###TODO
  * @beta
  */
 export interface Workspace {
@@ -317,69 +321,69 @@ export interface Workspace {
   /** The current [[Settings]] for this Workspace */
   readonly settings: Settings;
 
-  /** Get The CloudCache for cloud-based WorkspaceContainers */
+  /** Get the cloud cache for cloud-based [[WorkspaceContainer]]s. */
   getCloudCache(): CloudSqlite.CloudCache;
 
-  /** search for a previously opened container.
-   * @param containerId the id of the container
-   * @returns the [[WorkspaceContainer]] for `containerId` if it was not previously opened with [[getContainer]]
+  /** Search for a container previously opened by [[getContainer]] or [[getContainerAsync]].
+   * @param containerId The id of the container
+   * @returns the [[WorkspaceContainer]] for `containerId`, or `undefined` if no such container has been opened.
    * @internal
    */
   findContainer(containerId: WorkspaceContainerId): WorkspaceContainer | undefined;
 
-  /** Get a [[WorkspaceContainer]] by [[WorkspaceContainer.Props]]
-   * @param props the properties of the `WorkspaceContainer`. If `props.containerId` was already opened, its WorkspaceContainer is returned.
+  /** Obtain the [[WorkspaceContainer]] specified by `props`.
+   * @param props The properties of the `WorkspaceContainer`, opening it if it is not already opened.
    * Otherwise it is created.
-   * @note this function allows a `WorkspaceContainer.Props` without its AccessToken. It will attempt to obtain one from the BlobContainer service,
+   * @note This function allows a `WorkspaceContainer.Props` without its [AccessToken]($bentley). It will attempt to obtain one from the [[BlobContainer]] service,
    * hence this function is async.
-   * @see [[getContainer]]
+   * @see [[getContainer]] to obtain a container synchronously.
   */
   getContainerAsync(props: WorkspaceContainerProps): Promise<WorkspaceContainer>;
 
   /** Get a WorkspaceContainer with a supplied access token. This function is synchronous and may be used if:
-   * - a valid accessToken is al is already available
-   * - the container has already been previously prefetched in another session (this is useful for offline usage)
-   * - the container is public and doesn't require an accessToken
-   * @see [[getContainerAsync]]
+   * - a valid [AccessToken]($bentley) is already available;
+   * - the container has already been previously prefetched in another session (this is useful for offline usage); or
+   * - the container is public and doesn't require an [AccessToken]($bentley).
+   * @see [[getContainerAsync]] to obtain a container asynchronously if the above conditions do not apply.
    */
   getContainer(props: GetWorkspaceContainerArgs): WorkspaceContainer;
 
-  /** Load a settings dictionary from the specified WorkspaceDb, and add it to the current Settings for this Workspace.
+  /** Load a [[SettingsDictionary]] from the specified [[WorkspaceDb]] and add it to this workspace's current [[Settings]].
    * @note this function will load the dictionaries from the supplied list, and it will also call itself recursively for any entries in
-   * the loaded Settings with the name `settingsWorkspaces`. In this manner, WorkspaceSettings may be "chained" together so that loading one
-   * causes its "dependent" WorkspaceSettings to be loaded. Its Promise is resolve after all have been loaded (or failed).
+   * the loaded Settings with the name [[WorkspaceSettingNames.settingsWorkspaces]]. In this manner, WorkspaceSettings may be "chained" together so that loading one
+   * causes its "dependent" WorkspaceSettings to be loaded. Its `Promise` is resolved after all have been loaded (or failed to load).
    */
   loadSettingsDictionary(
-    /** The properties of the WorkspaceDb, plus the resourceName and Settings.priority. May be either a single value or an array of them */
+    /** The properties of the [[WorkspaceDb]], plus the resourceName and [[SettingsPriority]]. May be either a single value or an array of them */
     props: WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[],
-    /** if present, an array that is populated with a list of problems while attempting to load the Settings.Dictionary(s).   */
+    /** If present, an array that is populated with a list of problems while attempting to load the [[SettingsDictionary]](s).   */
     problems?: WorkspaceDbLoadError[]
   ): Promise<void>;
 
-  /** Get a single [[WorkspaceDb]] from a WorkspaceDb.CloudProps.  */
+  /** Get a single [[WorkspaceDb]].  */
   getWorkspaceDb(props: WorkspaceDbCloudProps): Promise<WorkspaceDb>;
 
   /**
-   * Resolve the value of all Settings from this Workspace with the supplied settingName into an array of WorkspaceDb.CloudProps
-   * that can be used to query or load workspace resources. The settings must each be of type `itwin/core/workspace/workspaceDbList`.
-   * The returned array will be sorted according to user's priority-based wishes, with the first entry being the highest priority WorkspaceDb.
-   * @note The list is built by combining, in order, all of the settings with the supplied SettingName. It may therefore include the
+   * Resolve the value of all [[Setting]]s from this workspace with the supplied `settingName` into an array of [[WorkspaceDbCloudProps]]
+   * that can be used to query or load workspace resources. The settings must each be an array of type [[WorkspaceDbSettingsProps]].
+   * The returned array will be sorted according to their [[SettingsPriority]], with the first entry being the highest priority [[WorkspaceDb]].
+   * @note The list is built by combining, in order, all of the settings with the supplied [[SettingName]]. It may therefore include the
    * properties of same WorkspaceDb multiple times. This list is automatically de-duped by [[getWorkspaceDb]].
    * @note This function is rarely used directly. Usually it is called by [[getWorkspaceDbs]]. However, this function is synchronous and may sometimes
    * be useful for editors, tests, or diagnostics.
    */
   resolveWorkspaceDbSetting(
-    /** the name of the */
+    /** the name of the setting. */
     settingName: SettingName,
-    /** optional filter to choose specific WorkspaceDbs from the settings values. If present, only  */
+    /** optional filter to choose specific WorkspaceDbs from the settings values. If present, only those WorkspaceDbs for which the filter returns `true` will be included. */
     filter?: Workspace.DbListFilter): WorkspaceDbCloudProps[];
 
   /**
-   * Get a sorted array of WorkspaceDbs that can be used to query or load resources. If the arguments supply a `settingName`, this function will
-   * use [[resolveWorkspaceDbSetting]] to get get the array of WorkspaceDb.CloudProps.
-   * @returns Promise for an array of WorkspaceDb sorted by priority so that resources found in WorkspaceDbs earlier in the list take precedence
+   * Get a sorted array of [[WorkspaceDb]]s that can be used to query or load resources. If the arguments supply a `settingName`, this function will
+   * use [[resolveWorkspaceDbSetting]] to get get the array of [[WorkspaceDbCloudProps]].
+   * @returns A `Promise` resolving to an array of [[WorkspaceDb]]s sorted by [[SettingsPriority]] so that resources found in WorkspaceDbs earlier in the list take precedence
    * over ones with the same name in later WorkspaceDbs. No WorkspaceDb will appear more than once in the list.
-   * @note this function may request an accessToken for each WorkspaceDb if necessary, and hence is asynchronous.
+   * @note this function may request an [AccessToken]($bentley) for each WorkspaceDb if necessary, and hence is asynchronous.
    */
   getWorkspaceDbs(
     args: Workspace.DbListOrSettingName & {
