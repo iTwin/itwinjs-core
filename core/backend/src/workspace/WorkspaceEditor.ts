@@ -96,6 +96,8 @@ export interface EditableWorkspaceContainer extends WorkspaceContainer {
   /**
    * Acquire the write lock on the container. Use [[releaseWriteLock]] to release the lock after publishing your changes, or
    * [[abandonChanges]] to release the lock and discard your changes.
+   * Only one use can hold the write lock at any given time. However, readers can continue to read the published contents of the container while
+   * a writer holds the write lock. Readers will only see the writer's changes after they are published by [[releaseWriteLock]].
    * @param user - The name of the user acquiring the write lock.
    */
   acquireWriteLock(user: string): void;
