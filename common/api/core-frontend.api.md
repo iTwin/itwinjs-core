@@ -3161,6 +3161,12 @@ export interface EdgeTableInfo {
     readonly width: number;
 }
 
+// @internal
+export interface EditCommandHandler {
+    // (undocumented)
+    finishCommand(): Promise<string>;
+}
+
 // @public
 export namespace EditManipulator {
     export enum EventType {
@@ -15121,6 +15127,8 @@ export class ToolAdmin {
     setAdjustedDataPoint(ev: BeButtonEvent): void;
     // (undocumented)
     setCursor(cursor: string | undefined): void;
+    // @internal (undocumented)
+    setEditCommandHandler(handler?: EditCommandHandler): void;
     // @internal (undocumented)
     setIncompatibleViewportCursor(restore: boolean): void;
     // @internal (undocumented)
