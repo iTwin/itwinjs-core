@@ -26,12 +26,10 @@ export class Enumerations extends SchemaItems {
   }
 
   public async create(schemaKey: SchemaKey, name: string, type: PrimitiveType.Integer | PrimitiveType.String, displayLabel?: string, isStrict?: boolean, enumerators?: AnyEnumerator[]): Promise<SchemaItemKey> {
-    let newEnum: MutableEnumeration;
-
     try {
       const schema = await this.getSchema(schemaKey);
       const boundCreate = schema.createEnumeration.bind(schema);
-      newEnum = (await this.createSchemaItem<Enumeration>(schemaKey, this.schemaItemType, boundCreate, name, type)) as MutableEnumeration;
+      const newEnum = await this.createSchemaItem<Enumeration>(schemaKey, this.schemaItemType, boundCreate, name, type) as MutableEnumeration;
 
       if (undefined !== isStrict)
         newEnum.setIsStrict(isStrict);
@@ -42,11 +40,11 @@ export class Enumerations extends SchemaItems {
 
       if (displayLabel)
         newEnum.setDisplayLabel(displayLabel);
+
+      return newEnum.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
     }
-
-    return newEnum.key;
   }
 
   /**
@@ -55,18 +53,14 @@ export class Enumerations extends SchemaItems {
    * @param relationshipProps a json object that will be used to populate the new RelationshipClass. Needs a name value passed in.
    */
   public async createFromProps(schemaKey: SchemaKey, enumProps: EnumerationProps): Promise<SchemaItemKey> {
-    let newEnum: MutableEnumeration;
-
     try {
       const schema = await this.getSchema(schemaKey);
       const boundCreate = schema.createEnumeration.bind(schema);
-      newEnum = (await this.createSchemaItemFromProps<Enumeration>(schemaKey, this.schemaItemType, boundCreate, enumProps)) as MutableEnumeration;
-
+      const newEnum = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, boundCreate, enumProps);
+      return newEnum.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, enumProps.name!, schemaKey), e);
     }
-
-    return newEnum.key;
   }
 
   public async addEnumerator(enumerationKey: SchemaItemKey, enumerator: AnyEnumerator): Promise<void> {

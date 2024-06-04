@@ -11,7 +11,7 @@ import {
   CustomAttributeContainerProps,
   DelayedPromiseWithProps,
   ECClass, ECObjectsError, ECObjectsStatus, Enumeration, EnumerationPropertyProps, PrimitiveArrayPropertyProps,
-  PrimitivePropertyProps, PrimitiveType, Schema, SchemaItemKey, SchemaItemType, SchemaKey, StructArrayPropertyProps,
+  PrimitivePropertyProps, PrimitiveType, SchemaItemKey, SchemaItemType, SchemaKey, StructArrayPropertyProps,
   StructClass, StructPropertyProps,
 } from "@itwin/ecschema-metadata";
 import { assert } from "@itwin/core-bentley";
@@ -60,8 +60,8 @@ export class ECClasses extends SchemaItems{
    */
   public readonly structProperties = new StructProperties(this.schemaItemType, this._schemaEditor);
 
-  public async createClass<T extends ECClass>(schemaOrKey: Schema | SchemaKey, type: SchemaItemType, create: CreateSchemaItem<T>, name: string, baseClassKey?: SchemaItemKey, ...args: any[]): Promise<T> {
-    const newClass = await this.createSchemaItem(schemaOrKey, type, create, name, ...args);
+  public async createClass<T extends ECClass>(schemaKey: SchemaKey, type: SchemaItemType, create: CreateSchemaItem<T>, name: string, baseClassKey?: SchemaItemKey, ...args: any[]): Promise<T> {
+    const newClass = await this.createSchemaItem(schemaKey, type, create, name, ...args);
 
     if (baseClassKey !== undefined) {
       const baseClassSchema = !baseClassKey.schemaKey.matches(newClass.schema.schemaKey) ? await this.getSchema(baseClassKey.schemaKey) : newClass.schema as MutableSchema;

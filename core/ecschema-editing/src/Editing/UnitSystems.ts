@@ -40,15 +40,13 @@ export class UnitSystems extends SchemaItems {
   }
 
   public async createFromProps(schemaKey: SchemaKey, unitSystemProps: UnitSystemProps): Promise<SchemaItemKey> {
-    let newUnitSystem: MutableUnitSystem;
     try {
       const schema = await this.getSchema(schemaKey);
       const boundCreate = schema.createUnitSystem.bind(schema);
-      newUnitSystem = await this.createSchemaItemFromProps<UnitSystem>(schemaKey, this.schemaItemType, boundCreate, unitSystemProps) as MutableUnitSystem;
+      const newUnitSystem = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, boundCreate, unitSystemProps);
+      return newUnitSystem.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, unitSystemProps.name!, schemaKey), e);
     }
-
-    return newUnitSystem.key;
   }
 }

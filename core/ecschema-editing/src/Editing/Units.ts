@@ -23,12 +23,10 @@ export class Units extends SchemaItems {
   }
 
   public async create(schemaKey: SchemaKey, name: string, definition: string, phenomenon: SchemaItemKey, unitSystem: SchemaItemKey, displayLabel?: string): Promise<SchemaItemKey> {
-    let newUnit: MutableUnit;
-
     try {
       const schema = await this.getSchema(schemaKey);
       const boundCreate = schema.createUnit.bind(schema);
-      newUnit = (await this.createSchemaItem<Unit>(schemaKey, this.schemaItemType, boundCreate, name)) as MutableUnit;
+      const newUnit = (await this.createSchemaItem<Unit>(schemaKey, this.schemaItemType, boundCreate, name)) as MutableUnit;
 
       const phenomenonItem = await this.lookupSchemaItem<Phenomenon>(schema, phenomenon, SchemaItemType.Phenomenon);
       await newUnit.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenon, async () => phenomenonItem));
@@ -41,23 +39,20 @@ export class Units extends SchemaItems {
       if (displayLabel)
         newUnit.setDisplayLabel(displayLabel);
 
+      return newUnit.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
     }
-
-    return newUnit.key;
   }
 
   public async createFromProps(schemaKey: SchemaKey, unitProps: SchemaItemUnitProps): Promise<SchemaItemKey> {
-    let newUnit: MutableUnit;
     try {
       const schema = await this.getSchema(schemaKey);
       const boundCreate = schema.createUnit.bind(schema);
-      newUnit = await this.createSchemaItemFromProps<Unit>(schemaKey, this.schemaItemType, boundCreate, unitProps) as MutableUnit;
+      const newUnit = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, boundCreate, unitProps);
+      return newUnit.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, unitProps.name!, schemaKey), e);
     }
-
-    return newUnit.key;
   }
 }

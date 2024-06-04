@@ -43,20 +43,18 @@ export class RelationshipClasses extends ECClasses {
    * @param baseClassKey An optional SchemaItemKey that specifies the base relationship class.
    */
   public async create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, strength: StrengthType, direction: StrengthDirection, baseClassKey?: SchemaItemKey): Promise<SchemaItemKey> {
-    let newClass: MutableRelationshipClass;
-
     try {
       const schema = await this.getSchema(schemaKey);
       const boundCreate = schema.createRelationshipClass.bind(schema);
-      newClass = (await this.createClass<RelationshipClass>(schemaKey, this.schemaItemType, boundCreate, name, baseClassKey, modifier)) as MutableRelationshipClass;
+      const newClass = await this.createClass<RelationshipClass>(schemaKey, this.schemaItemType, boundCreate, name, baseClassKey, modifier) as MutableRelationshipClass;
+
+      newClass.setStrength(strength);
+      newClass.setStrengthDirection(direction);
+
+      return newClass.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new ClassId(this.schemaItemType, name, schemaKey), e);
     }
-
-    newClass.setStrength(strength);
-    newClass.setStrengthDirection(direction);
-
-    return newClass.key;
   }
 
   /**
@@ -93,19 +91,18 @@ export class RelationshipClasses extends ECClasses {
    * @param relationshipProps a json object that will be used to populate the new RelationshipClass. Needs a name value passed in.
    */
   public async createFromProps(schemaKey: SchemaKey, relationshipProps: RelationshipClassProps): Promise<SchemaItemKey> {
-    let newClass: MutableRelationshipClass;
     try {
       const schema = await this.getSchema(schemaKey);
       const boundCreate = schema.createRelationshipClass.bind(schema);
-      newClass = (await this.createSchemaItemFromProps<RelationshipClass>(schemaKey, this.schemaItemType, boundCreate, relationshipProps)) as MutableRelationshipClass;
+      const newClass = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, boundCreate, relationshipProps);
+
+      await newClass.source.fromJSON(relationshipProps.source);
+      await newClass.target.fromJSON(relationshipProps.target);
+
+      return newClass.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, relationshipProps.name!, schemaKey), e);
     }
-
-    await newClass.source.fromJSON(relationshipProps.source);
-    await newClass.target.fromJSON(relationshipProps.target);
-
-    return newClass.key;
   }
 
   /**

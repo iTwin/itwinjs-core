@@ -26,12 +26,10 @@ export class KindOfQuantities extends SchemaItems {
   }
 
   public async create(schemaKey: SchemaKey, name: string, persistenceUnitKey: SchemaItemKey, displayLabel?: string): Promise<SchemaItemKey> {
-    let koqItem: MutableKindOfQuantity;
-
     try {
       const schema = await this.getSchema(schemaKey);
       const boundCreate = schema.createKindOfQuantity.bind(schema);
-      koqItem = (await this.createSchemaItem<KindOfQuantity>(schemaKey, this.schemaItemType, boundCreate, name)) as MutableKindOfQuantity;
+      const koqItem = await this.createSchemaItem<KindOfQuantity>(schemaKey, this.schemaItemType, boundCreate, name) as MutableKindOfQuantity;
 
       const persistenceUnit = await this.lookupSchemaItem<Unit | InvertedUnit>(schema, persistenceUnitKey, null);
 
@@ -46,24 +44,22 @@ export class KindOfQuantities extends SchemaItems {
       if (displayLabel !== undefined) {
         koqItem.setDisplayLabel(displayLabel);
       }
+
+      return koqItem.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
     }
-
-    return koqItem.key;
   }
 
   public async createFromProps(schemaKey: SchemaKey, koqProps: KindOfQuantityProps): Promise<SchemaItemKey> {
-    let koqItem: MutableKindOfQuantity;
     try {
       const schema = await this.getSchema(schemaKey);
       const boundCreate = schema.createKindOfQuantity.bind(schema);
-      koqItem = await this.createSchemaItemFromProps<KindOfQuantity>(schemaKey, this.schemaItemType, boundCreate, koqProps) as MutableKindOfQuantity;
+      const koqItem = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, boundCreate, koqProps);
+      return koqItem.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, koqProps.name!, schemaKey), e);
     }
-
-    return koqItem.key;
   }
 
   /**

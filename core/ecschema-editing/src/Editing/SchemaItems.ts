@@ -65,14 +65,8 @@ export class SchemaItems {
     return schemaItem;
   }
 
-  public async createSchemaItem<T extends SchemaItem>(schemaOrKey: Schema | SchemaKey, type: SchemaItemType, create: CreateSchemaItem<T>, name: string, ...args: any[]): Promise<T> {
-    let schema: Schema;
-    if (schemaOrKey instanceof SchemaKey) {
-      schema = await this.getSchema(schemaOrKey);
-    } else {
-      schema = schemaOrKey;
-    }
-
+  protected async createSchemaItem<T extends SchemaItem>(schemaKey: SchemaKey, type: SchemaItemType, create: CreateSchemaItem<T>, name: string, ...args: any[]): Promise<T> {
+    const schema = await this.getSchema(schemaKey);
     try {
       return await create(name, ...args);
     } catch (e) {
@@ -84,11 +78,11 @@ export class SchemaItems {
     }
   }
 
-  public async createSchemaItemFromProps<T extends SchemaItem>(schemaOrKey: Schema | SchemaKey, type: SchemaItemType, create: CreateSchemaItem<T>, props: SchemaItemProps): Promise<T> {
+  protected async createSchemaItemFromProps<T extends SchemaItem>(schemaKey: SchemaKey, type: SchemaItemType, create: CreateSchemaItem<T>, props: SchemaItemProps): Promise<T> {
     if (props.name === undefined)
-      throw new SchemaEditingError(ECEditingStatus.SchemaItemNameNotSpecified, new SchemaItemId(type, "", schemaOrKey instanceof Schema ? schemaOrKey.schemaKey : schemaOrKey));
+      throw new SchemaEditingError(ECEditingStatus.SchemaItemNameNotSpecified, new SchemaItemId(type, "", schemaKey));
 
-    const newItem = await this.createSchemaItem<T>(schemaOrKey, type, create, props.name);
+    const newItem = await this.createSchemaItem<T>(schemaKey, type, create, props.name);
     await newItem.fromJSON(props);
 
     return newItem;

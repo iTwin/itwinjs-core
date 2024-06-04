@@ -26,22 +26,19 @@ export class CustomAttributes extends ECClasses {
   }
 
   public async create(schemaKey: SchemaKey, name: string, containerType: CustomAttributeContainerType, displayLabel?: string, baseClassKey?: SchemaItemKey): Promise<SchemaItemKey> {
-    let newClass: MutableCAClass;
-
     try {
       const schema = await this.getSchema(schemaKey);
       const boundCreate = schema.createCustomAttributeClass.bind(schema);
-      newClass = (await this.createClass<CustomAttributeClass>(schemaKey, this.schemaItemType, boundCreate, name, baseClassKey)) as MutableCAClass;
+      const newClass = await this.createClass<CustomAttributeClass>(schemaKey, this.schemaItemType, boundCreate, name, baseClassKey) as MutableCAClass;
+
+      if (displayLabel)
+        newClass.setDisplayLabel(displayLabel);
+
+      newClass.setContainerType(containerType);
+      return newClass.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new ClassId(this.schemaItemType, name, schemaKey), e);
     }
-
-    if (displayLabel)
-      newClass.setDisplayLabel(displayLabel);
-
-    newClass.setContainerType(containerType);
-
-    return newClass.key;
   }
 
   /**
@@ -50,15 +47,13 @@ export class CustomAttributes extends ECClasses {
    * @param caProps a json object that will be used to populate the new CustomAttributeClass. Needs a name value passed in.
    */
   public async createFromProps(schemaKey: SchemaKey, caProps: CustomAttributeClassProps): Promise<SchemaItemKey> {
-    let newClass: MutableCAClass;
     try {
       const schema = await this.getSchema(schemaKey);
       const boundCreate = schema.createCustomAttributeClass.bind(schema);
-      newClass = (await this.createSchemaItemFromProps<CustomAttributeClass>(schemaKey, this.schemaItemType, boundCreate, caProps)) as MutableCAClass;
+      const newClass = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, boundCreate, caProps);
+      return newClass.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, caProps.name!, schemaKey), e);
     }
-
-    return newClass.key;
   }
 }
