@@ -119,8 +119,10 @@ Since an iModel is located in a specific geographic region, LandscapePro™ want
 
 Note that modifying the iModel settings requires obtaining an exclusive write lock on the entire iModel. Ordinary users should never perform this kind of operation - only administrators.
 
-The next time we open the iModel, the new settings dictionary will automatically be loaded, and we can query the hardiness range setting:
+The next time we open the iModel, the new settings dictionary will automatically be loaded, and we can query its settings:
 
 ```ts
 [[include:WorkspaceExamples.QuerySettingDictionary]]
 ```
+
+The "hardinessRange" setting is obtained from the iModel's settings dictionary, while the "defaultTool" falls back to the value defined in `IModelHost.appWorkspace.settings`.

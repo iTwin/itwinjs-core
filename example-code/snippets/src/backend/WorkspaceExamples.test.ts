@@ -229,8 +229,11 @@ describe("Workspace Examples", () => {
       // __PUBLISH_SECTION_START__ WorkspaceExamples.QuerySettingDictionary
       const hardinessRange = iModel.workspace.settings.getObject<HardinessRange>("landscapePro/hardinessRange");
       // returns { minimum: 8, maximum: 10 }
+      defaultTool = iModel.workspace.settings.getString("landscapePro/ui/defaultTool");
+      // returns "place-koi-pond" as specified by IModelHost.appWorkspace.settings.
       // __PUBLISH_SECTION_END__
       expect(hardinessRange).to.deep.equal(range);
+      expect(defaultTool).to.equal("place-koi-pond");
     });
   });
 });
