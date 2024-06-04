@@ -162,7 +162,7 @@ describe("Workspace Examples", () => {
 
       // __PUBLISH_SECTION_START__ WorkspaceExamples.AddDictionary
       const values: SettingsContainer = {
-        "landscapePro/ui/defaultToolId": "place-shrub",
+        "landscapePro/ui/defaultTool": "place-shrub",
         "landscapePro/ui/availableTools": [ "place-shrub", "place-koi-pond", "apply-mulch" ],
       };
 
@@ -174,12 +174,40 @@ describe("Workspace Examples", () => {
       };
 
       IModelHost.appWorkspace.settings.addDictionary(props, values);
-      // __PUBLISH_SECTION_END
+      // __PUBLISH_SECTION_END__
 
-      expect(IModelHost.appWorkspace.settings.getString("landscapePro/ui/defaultToolId")).to.equal("place-shrub");
-      expect(IModelHost.appWorkspace.settings.getArray<string>("landscapePro/ui/availableTools")).to.deep.equal(["place-shrub", "place-koi-pond", "apply-mulch"]);
-      expect(IModelHost.appWorkspace.settings.getString("landscapePro/flora/shrubDbs")).to.be.undefined;
-      expect(IModelHost.appWorkspace.settings.getString("landscapePro/flora/shrubDbs", "defaultShrubs")).to.equal("defaultShrubs");
+      // __PUBLISH_SECTION_START__ WorkspaceExamples.GetSettings
+      let defaultTool = IModelHost.appWorkspace.settings.getString("landscapePro/ui/defaultTool"); // "place-shrub"
+      let availableTools = IModelHost.appWorkspace.settings.getArray<string>("landscapePro/ui/availableTools"); // ["place-shrub", "place-koi-pond", "apply-mulch"]
+      let shrubDbs = IModelHost.appWorkspace.settings.getString("landscapePro/flora/shrubDbs"); // undefined
+      const shrubDbsOrDefault = IModelHost.appWorkspace.settings.getString("landscapePro/flora/shrubDbs", "defaultShrubs"); // "defaultShrubs"
+      // __PUBLISH_SECTION_END__
+
+      expect(defaultTool).to.equal("place-shrub");
+      expect(availableTools).to.deep.equal(["place-shrub", "place-koi-pond", "apply-mulch"]);
+      expect(shrubDbs).to.be.undefined;
+      expect(shrubDbsOrDefault).to.equal("defaultShrubs");
+
+      // __PUBLISH_SECTION_START__ WorkspaceExamples.AddSecondDictionary
+      IModelHost.appWorkspace.settings.addDictionary({
+        name: "LandscapeProOverrides",
+        priority: SettingsPriority.application,
+      }, {
+        "landscapePro/flora/shrubDbs": "coniferousShrubs",
+        "landscapePro/ui/defaultTool": "place-koi-pond",
+        "landscapePro/ui/availableTools": ["place-gazebo", "apply-mulch"],
+      });
+      // __PUBLISH_SECTION_END__
+
+      // __PUBLISH_SECTION_START__ WorkspaceExamples.GetMergedSettings
+      defaultTool = IModelHost.appWorkspace.settings.getString("landscapePro/ui/defaultTool"); // "place-koi-pond"
+      availableTools = IModelHost.appWorkspace.settings.getArray<string>("landscapePro/ui/availableTools"); // ["place-gazebo", "apply-mulch", "place-shrub", "place-koi-pond"]
+      shrubDbs = IModelHost.appWorkspace.settings.getString("landscapePro/flora/shrubDbs"); // "coniferousShrubs"
+      // __PUBLISH_SECTION_END__
+
+      expect(defaultTool).to.equal("place-koi-pond");
+      expect(availableTools).to.deep.equal(["place-gazebo", "apply-mulch", "place-shrub", "place-koi-pond"]);
+      expect(shrubDbs).to.equal("coniferousShrubs");
     });
   });
 });

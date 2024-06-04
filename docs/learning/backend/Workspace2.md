@@ -68,3 +68,41 @@ Let's load a settings dictionary that provides values for some of the settings i
 ```ts
 [[include:WorkspaceExamples.AddDictionary]]
 ```
+
+Now you can access the setting values defined in the dictionary via `IModelHost.appWorkspace.settings`:
+
+```ts
+[[include:WorkspaceExamples.GetSettings]]
+```
+
+Note that `getString` returns `undefined` for "landscapePro/shrubDbs" because our dictionary didn't provide a value for it. The overload of that function (and similar functions like [Settings.getBoolean]($backend) and [Settings.getObject]($backend)) allows you to specify a default value to use if the value is not defined.
+
+Any number of dictionaries can be added to [[Workspace.settings]]. Let's add another one:
+
+```ts
+[[include:WorkspaceExamples.AddSecondDictionary]]
+```
+
+This dictionary adds a value for "landscapePro/flora/shrubDbs", and defines new values for the two settings that were also defined in the previous dictionary. See what happens when we look up those settings' values again:
+
+```ts
+[[include:WorkspaceExamples.GetMergedSettings]]
+```
+
+Now, as expected, "landscapePro/flora/shrubDbs" is no longer `undefined`. The value of "landscapePro/ui/defaultTool" has been overwritten with the value specified by the new dictionary. And the "landscapePro/ui/availableTools" array now has the merged contents of the arrays defined in *both* dictionaries. What rules determine how the value of a setting is resolved when multiple dictionaries provide a value for it?
+
+The answer lies in the dictionaries' [SettingsPriority]($backend)s and in the [SettingSchema]($backend) that defines the array property. Configurations are often layered: an application may ship with built-in default settings, that an administrator may selectively override for all users of the application. Beyond that, additional configuration may be needed on a per-organization, per-iTwin, and/or per-iModel level. [SettingsPriority]($backend) define which dictionaries' settings take precedence over others - the dictionary with the highest priority wins.
+
+A [SettingsPriority]($backend) is just a number, but specific values carry semantics:
+- [SettingsPriority.defaults]($backend) describes settings from settings dictionaries loaded from files automatically at the start of a session.
+- [SettingsPriority.application]($backend) describes settings supplied by the application at run-time to override or supplement the defaults.
+- [SettingsPriority.organization]($backend) describes settings that apply to all iTwins belonging to a particular organization.
+- [SettingsPriority.iTwin]($backend) describes settings that apply to all of the contents (including iModels) of a particular iTwin.
+- [SettingsPriority.branch]($backend) describes settings that apply to all branches of a particular iModel.
+- [SettingsPriority.iModel]($backend) describes settings that apply to one specific iModel.
+
+[SettingsDictionary]($backend)s of `application` priority or lower reside in [IModelHost.appWorkspace]($backend). Those of higher priority are stored in an [IModelDb.workspace]($backend) - more on those shortly.
+
+What about the "landscapePro/ui/availableTools" array? In the [LandscapePro™ schema](#settings-schemas), the corresponding `settingDef` has [SettingSchema.combineArray]($backend) set to `true`, meaning that when multiple dictionaries provide a value for the setting, they are merged together to form a single array, eliminating duplicates, and sorted in descending order by dictionary priority.
+
+
