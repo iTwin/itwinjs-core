@@ -103,11 +103,11 @@ A [SettingsPriority]($backend) is just a number, but specific values carry seman
 - [SettingsPriority.branch]($backend) describes settings that apply to all branches of a particular iModel.
 - [SettingsPriority.iModel]($backend) describes settings that apply to one specific iModel.
 
-[SettingsDictionary]($backend)s of `application` priority or lower reside in [IModelHost.appWorkspace]($backend). Those of higher priority are stored in an [IModelDb.workspace]($backend) - more on those [shortly](#imodel-workspaces).
+[SettingsDictionary]($backend)s of `application` priority or lower reside in [IModelHost.appWorkspace]($backend). Those of higher priority are stored in an [IModelDb.workspace]($backend) - more on those [shortly](#imodel-settings).
 
 What about the "landscapePro/ui/availableTools" array? In the [LandscapePro™ schema](#settings-schemas), the corresponding `settingDef` has [SettingSchema.combineArray]($backend) set to `true`, meaning that - when multiple dictionaries provide a value for the setting - instead of being overridden, they are merged together to form a single array, eliminating duplicates, and sorted in descending order by dictionary priority.
 
-# iModel workspaces
+# iModel settings
 
 So far, we have been working with [IModelHost.appWorkspace]($backend). But - as [mentioned above](#settings-priorities) - each [IModelDb]($backend) has its own workspace as well, with its own [Settings]($backend) that can override and/or supplement the application workspace's settings. These settings are stored as [SettingsDictionary]($backend)s in the iModel's `be_Props` table. When the iModel is opened, its [Workspace.settings]($backend) are populated from those dictionaries. So, an application is working in the context of a particular iModel, it should resolve setting values by asking [IModelDb.workspace]($backend), which will fall back to [IModelHost.appWorkspace]($backend) if the iModel's settings dictionaries don't provide a value for the requested setting.
 
@@ -128,5 +128,21 @@ The next time we open the iModel, the new settings dictionary will automatically
 The "hardinessRange" setting is obtained from the iModel's settings dictionary, while the "defaultTool" falls back to the value defined in `IModelHost.appWorkspace.settings`.
 
 # Workspace resources
+
+"Resources" are bits of data that an application depends on at run-time to perform its functions. The kinds of resources can vary widely from one application to another, but some common examples include:
+- [TextStyle]($common)s and fonts used when placing [TextAnnotation]($common)s.
+- [GeographicCRS]($common)es used to specify an iModel's spatial coordinate system.
+- Images that can be used as pattern maps for [Texture]($backend)s.
+- [SettingsDictionary]($backend)s defining reusable settings.
+
+It might be technically possible to store resources in [Setting]($backend)s, but doing so would present significant disadvantages:
+- Some resources, like images and fonts, may be defined in a binary format that is inefficient to represent using JSON.
+- Some resources, like geographic coordinate system definitions, must be extracted to files on the local file system before they can be used.
+- Some resources may be large, in size and/or quantity.
+- Resources can often be reused across many projects, organizations, and iModels.
+- Administrators often desire for resources to be versioned.
+- Administrators often want to restrict who can read or create resources.
+
+To address these requirements, workspace resources are stored in immutable, versioned [CloudSqlite]($backend) databases called [WorkspaceDb]($backend)s, and [Setting]($backend)s are configured to enable the application to locate those resources in the context of a session and - if relevant - an iModel.
 
 
