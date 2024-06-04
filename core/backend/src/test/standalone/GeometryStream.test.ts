@@ -1586,7 +1586,7 @@ describe("ElementGeometry", () => {
     assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
-  it.only("create GeometricElement3d from local coordinate interpolation curve flatbuffer data", async () => {
+  it("create GeometricElement3d from local coordinate interpolation curve flatbuffer data", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
