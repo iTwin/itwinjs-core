@@ -151,6 +151,11 @@ describe("Workspace Examples", () => {
       IModelHost.settingsSchemas.addGroup(schema);
       // __PUBLISH_SECTION_END__
       
+      expect(IModelHost.settingsSchemas.typeDefs.has("landscapePro/hardinessZone")).to.be.true;
+      for (const settingName of Object.keys(schema.settingDefs)) {
+        expect(IModelHost.settingsSchemas.settingDefs.has(`landscapePro/${settingName}`)).to.be.true;
+      }
+
       expect(() => IModelHost.settingsSchemas.validateSetting("just a string", "landscapePro/flora/shrubDbs")).not.to.throw;
       expect(() => IModelHost.settingsSchemas.validateSetting(123, "landscapePro/flora/shrubDbs")).to.throw("wrong type");
     });
