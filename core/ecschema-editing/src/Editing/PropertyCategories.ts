@@ -23,9 +23,7 @@ export class PropertyCategories extends SchemaItems {
 
   public async create(schemaKey: SchemaKey, name: string, priority: number, displayLabel?: string): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createPropertyCategory.bind(schema);
-      const newPropCategory = await this.createSchemaItem<PropertyCategory>(schemaKey, this.schemaItemType, boundCreate, name) as MutablePropertyCategory;
+      const newPropCategory = await this.createSchemaItem<PropertyCategory>(schemaKey, this.schemaItemType, (schema) => schema.createPropertyCategory.bind(schema), name) as MutablePropertyCategory;
       newPropCategory.setPriority(priority);
       if (displayLabel)
         newPropCategory.setDisplayLabel(displayLabel);
@@ -38,9 +36,7 @@ export class PropertyCategories extends SchemaItems {
 
   public async createFromProps(schemaKey: SchemaKey, propertyCategoryProps: PropertyCategoryProps): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createPropertyCategory.bind(schema);
-      const newPropCategory = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, boundCreate, propertyCategoryProps);
+      const newPropCategory = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createPropertyCategory.bind(schema), propertyCategoryProps);
       return newPropCategory.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, propertyCategoryProps.name!, schemaKey), e);

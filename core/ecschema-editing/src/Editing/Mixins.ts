@@ -29,13 +29,11 @@ export class Mixins extends ECClasses {
   /**
    * Allows access for editing of NavigationProperty attributes.
    */
-  public readonly navigationProperties = new NavigationProperties(SchemaItemType.Mixin, this._schemaEditor);
+  public readonly navigationProperties = new NavigationProperties(SchemaItemType.Mixin, this.schemaEditor);
 
   public async create(schemaKey: SchemaKey, name: string, appliesTo: SchemaItemKey, displayLabel?: string, baseClassKey?: SchemaItemKey): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createMixinClass.bind(schema);
-      const newClass = await this.createClass<Mixin>(schemaKey, this.schemaItemType, boundCreate, name, baseClassKey) as MutableMixin;
+      const newClass = await this.createClass<Mixin>(schemaKey, this.schemaItemType, (schema) => schema.createMixinClass.bind(schema), name, baseClassKey) as MutableMixin;
       const newAppliesTo = await this.getSchemaItem<EntityClass>(appliesTo, SchemaItemType.EntityClass);
       newClass.setAppliesTo(new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(newAppliesTo.key, async () => newAppliesTo));
 
@@ -55,9 +53,7 @@ export class Mixins extends ECClasses {
    */
   public async createFromProps(schemaKey: SchemaKey, mixinProps: MixinProps): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createMixinClass.bind(schema);
-      const newClass = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, boundCreate, mixinProps);
+      const newClass = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createMixinClass.bind(schema), mixinProps);
       return newClass.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, mixinProps.name!, schemaKey), e);

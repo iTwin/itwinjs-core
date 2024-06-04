@@ -27,11 +27,8 @@ export class KindOfQuantities extends SchemaItems {
 
   public async create(schemaKey: SchemaKey, name: string, persistenceUnitKey: SchemaItemKey, displayLabel?: string): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createKindOfQuantity.bind(schema);
-      const koqItem = await this.createSchemaItem<KindOfQuantity>(schemaKey, this.schemaItemType, boundCreate, name) as MutableKindOfQuantity;
-
-      const persistenceUnit = await this.lookupSchemaItem<Unit | InvertedUnit>(schema, persistenceUnitKey, null);
+      const koqItem = await this.createSchemaItem<KindOfQuantity>(schemaKey, this.schemaItemType, (schema) => schema.createKindOfQuantity.bind(schema), name) as MutableKindOfQuantity;
+      const persistenceUnit = await this.lookupSchemaItem<Unit | InvertedUnit>(koqItem.schema.schemaKey, persistenceUnitKey, null);
 
       if (persistenceUnit.schemaItemType === SchemaItemType.Unit) {
         koqItem.persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
@@ -53,9 +50,7 @@ export class KindOfQuantities extends SchemaItems {
 
   public async createFromProps(schemaKey: SchemaKey, koqProps: KindOfQuantityProps): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createKindOfQuantity.bind(schema);
-      const koqItem = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, boundCreate, koqProps);
+      const koqItem = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createKindOfQuantity.bind(schema), koqProps);
       return koqItem.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, koqProps.name!, schemaKey), e);

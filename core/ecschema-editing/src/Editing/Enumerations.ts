@@ -27,9 +27,7 @@ export class Enumerations extends SchemaItems {
 
   public async create(schemaKey: SchemaKey, name: string, type: PrimitiveType.Integer | PrimitiveType.String, displayLabel?: string, isStrict?: boolean, enumerators?: AnyEnumerator[]): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createEnumeration.bind(schema);
-      const newEnum = await this.createSchemaItem<Enumeration>(schemaKey, this.schemaItemType, boundCreate, name, type) as MutableEnumeration;
+      const newEnum = await this.createSchemaItem<Enumeration>(schemaKey, this.schemaItemType, (schema) => schema.createEnumeration.bind(schema), name, type) as MutableEnumeration;
 
       if (undefined !== isStrict)
         newEnum.setIsStrict(isStrict);
@@ -54,9 +52,7 @@ export class Enumerations extends SchemaItems {
    */
   public async createFromProps(schemaKey: SchemaKey, enumProps: EnumerationProps): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createEnumeration.bind(schema);
-      const newEnum = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, boundCreate, enumProps);
+      const newEnum = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createEnumeration.bind(schema), enumProps);
       return newEnum.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, enumProps.name!, schemaKey), e);

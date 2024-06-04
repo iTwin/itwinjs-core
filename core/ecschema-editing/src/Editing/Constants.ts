@@ -23,9 +23,7 @@ export class Constants extends SchemaItems {
 
   public async create(schemaKey: SchemaKey, name: string, phenomenon: SchemaItemKey, definition: string, displayLabel?: string, numerator?: number, denominator?: number): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createConstant.bind(schema);
-      const newConstant = await this.createSchemaItem<Constant>(schemaKey, this.schemaItemType, boundCreate, name) as MutableConstant;
+      const newConstant = await this.createSchemaItem<Constant>(schemaKey, this.schemaItemType, (schema) => schema.createConstant.bind(schema), name) as MutableConstant;
 
       const newPhenomenon = (await this.getSchemaItem<Phenomenon>(phenomenon, SchemaItemType.Phenomenon));
       newConstant.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(newPhenomenon.key, async () => newPhenomenon));
@@ -54,9 +52,7 @@ export class Constants extends SchemaItems {
    */
   public async createFromProps(schemaKey: SchemaKey, constantProps: ConstantProps): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createConstant.bind(schema);
-      const newConstant = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, boundCreate, constantProps);
+      const newConstant = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createConstant.bind(schema), constantProps);
       return newConstant.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, constantProps.name!, schemaKey), e);

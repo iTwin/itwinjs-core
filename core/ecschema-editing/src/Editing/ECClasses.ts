@@ -42,23 +42,23 @@ export class ECClasses extends SchemaItems{
   /**
    * Allows access for editing of base Property attributes.
    */
-  public readonly properties = new Properties(this.schemaItemType, this._schemaEditor);
+  public readonly properties = new Properties(this.schemaItemType, this.schemaEditor);
   /**
    * Allows access for editing of ArrayProperty attributes.
    */
-  public readonly arrayProperties = new ArrayProperties(this.schemaItemType, this._schemaEditor);
+  public readonly arrayProperties = new ArrayProperties(this.schemaItemType, this.schemaEditor);
   /**
    * Allows access for editing of PrimitiveProperty attributes.
    */
-  public readonly primitiveProperties = new PrimitiveProperties(this.schemaItemType, this._schemaEditor);
+  public readonly primitiveProperties = new PrimitiveProperties(this.schemaItemType, this.schemaEditor);
   /**
    * Allows access for editing of EnumerationProperty attributes.
    */
-  public readonly enumerationProperties = new EnumerationProperties(this.schemaItemType, this._schemaEditor);
+  public readonly enumerationProperties = new EnumerationProperties(this.schemaItemType, this.schemaEditor);
   /**
    * Allows access for editing of StructProperty attributes.
    */
-  public readonly structProperties = new StructProperties(this.schemaItemType, this._schemaEditor);
+  public readonly structProperties = new StructProperties(this.schemaItemType, this.schemaEditor);
 
   public async createClass<T extends ECClass>(schemaKey: SchemaKey, type: SchemaItemType, create: CreateSchemaItem<T>, name: string, baseClassKey?: SchemaItemKey, ...args: any[]): Promise<T> {
     const newClass = await this.createSchemaItem(schemaKey, type, create, name, ...args);
@@ -351,7 +351,7 @@ export class ECClasses extends SchemaItems{
 
   private async findDerivedClasses(mutableClass: MutableClass): Promise<Array<MutableClass>>{
     const derivedClasses: Array<MutableClass> = [];
-    const schemaItems = this._schemaEditor.schemaContext.getSchemaItems();
+    const schemaItems = this.schemaEditor.schemaContext.getSchemaItems();
     let { value, done } = schemaItems.next();
     while (!done) {
       if (await value.is(mutableClass)) {

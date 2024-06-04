@@ -31,7 +31,7 @@ export class RelationshipClasses extends ECClasses {
   /**
    * Allows access for editing of NavigationProperty attributes.
    */
-  public readonly navigationProperties = new NavigationProperties(this.schemaItemType, this._schemaEditor);
+  public readonly navigationProperties = new NavigationProperties(this.schemaItemType, this.schemaEditor);
 
   /**
    * Creates a RelationshipClass.
@@ -44,9 +44,7 @@ export class RelationshipClasses extends ECClasses {
    */
   public async create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, strength: StrengthType, direction: StrengthDirection, baseClassKey?: SchemaItemKey): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createRelationshipClass.bind(schema);
-      const newClass = await this.createClass<RelationshipClass>(schemaKey, this.schemaItemType, boundCreate, name, baseClassKey, modifier) as MutableRelationshipClass;
+      const newClass = await this.createClass<RelationshipClass>(schemaKey, this.schemaItemType, (schema) => schema.createRelationshipClass.bind(schema), name, baseClassKey, modifier) as MutableRelationshipClass;
 
       newClass.setStrength(strength);
       newClass.setStrengthDirection(direction);
@@ -92,9 +90,7 @@ export class RelationshipClasses extends ECClasses {
    */
   public async createFromProps(schemaKey: SchemaKey, relationshipProps: RelationshipClassProps): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createRelationshipClass.bind(schema);
-      const newClass = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, boundCreate, relationshipProps);
+      const newClass = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createRelationshipClass.bind(schema), relationshipProps);
 
       await newClass.source.fromJSON(relationshipProps.source);
       await newClass.target.fromJSON(relationshipProps.target);
@@ -111,7 +107,7 @@ export class RelationshipClasses extends ECClasses {
    * @param baseClassKey The SchemaItemKey of the base class. Specifying 'undefined' removes the base class.
    */
   public override async setBaseClass(itemKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<void> {
-    const relClass = await this._schemaEditor.schemaContext.getSchemaItem<RelationshipClass>(itemKey);
+    const relClass = await this.schemaEditor.schemaContext.getSchemaItem<RelationshipClass>(itemKey);
     const baseClass = relClass?.baseClass;
 
     await super.setBaseClass(itemKey, baseClassKey);

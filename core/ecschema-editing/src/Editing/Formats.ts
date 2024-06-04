@@ -24,9 +24,7 @@ export class Formats extends SchemaItems {
 
   public async create(schemaKey: SchemaKey, name: string, formatType: FormatType, displayLabel?: string, units?: SchemaItemKey[]): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createFormat.bind(schema);
-      const newFormat = await this.createSchemaItem<Format>(schemaKey, this.schemaItemType, boundCreate, name) as MutableFormat;
+      const newFormat = await this.createSchemaItem<Format>(schemaKey, this.schemaItemType, (schema) => schema.createFormat.bind(schema), name) as MutableFormat;
 
       if (units !== undefined) {
         for (const unit of units) {
@@ -57,9 +55,7 @@ export class Formats extends SchemaItems {
    */
   public async createFromProps(schemaKey: SchemaKey, formatProps: SchemaItemFormatProps): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createFormat.bind(schema);
-      const newFormat = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, boundCreate, formatProps);
+      const newFormat = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createFormat.bind(schema), formatProps);
       return newFormat.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, formatProps.name!, schemaKey), e);

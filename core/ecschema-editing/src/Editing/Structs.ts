@@ -22,9 +22,7 @@ export class Structs extends ECClasses {
 
   public async create(schemaKey: SchemaKey, name: string, displayLabel?: string, baseClassKey?: SchemaItemKey): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createStructClass.bind(schema);
-      const newClass = await this.createClass<StructClass>(schemaKey, this.schemaItemType, boundCreate, name, baseClassKey) as MutableStructClass;
+      const newClass = await this.createClass<StructClass>(schemaKey, this.schemaItemType, (schema) => schema.createStructClass.bind(schema), name, baseClassKey) as MutableStructClass;
 
       if (displayLabel)
         newClass.setDisplayLabel(displayLabel);
@@ -42,9 +40,7 @@ export class Structs extends ECClasses {
    */
   public async createFromProps(schemaKey: SchemaKey, structProps: StructClassProps): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createStructClass.bind(schema);
-      const newClass = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, boundCreate, structProps);
+      const newClass = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createStructClass.bind(schema), structProps);
       return newClass.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, structProps.name!, schemaKey), e);

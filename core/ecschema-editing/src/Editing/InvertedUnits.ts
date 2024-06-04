@@ -25,9 +25,7 @@ export class InvertedUnits extends SchemaItems {
   }
   public async create(schemaKey: SchemaKey, name: string, invertsUnitKey: SchemaItemKey, unitSystemKey: SchemaItemKey, displayLabel?: string): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createInvertedUnit.bind(schema);
-      const newUnit = await this.createSchemaItem<InvertedUnit>(schemaKey, this.schemaItemType, boundCreate, name) as MutableInvertedUnit;
+      const newUnit = await this.createSchemaItem<InvertedUnit>(schemaKey, this.schemaItemType, (schema) => schema.createInvertedUnit.bind(schema), name) as MutableInvertedUnit;
 
       const invertsUnit = await this.lookupSchemaItem<Unit>(schemaKey, invertsUnitKey, SchemaItemType.Unit);
       newUnit.setInvertsUnit(new DelayedPromiseWithProps<SchemaItemKey, Unit>(invertsUnitKey, async () => invertsUnit));
@@ -46,9 +44,7 @@ export class InvertedUnits extends SchemaItems {
 
   public async createFromProps(schemaKey: SchemaKey, invertedUnitProps: InvertedUnitProps): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createInvertedUnit.bind(schema);
-      const newUnit = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, boundCreate, invertedUnitProps);
+      const newUnit = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createInvertedUnit.bind(schema), invertedUnitProps);
       return newUnit.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, invertedUnitProps.name!, schemaKey), e);

@@ -28,7 +28,7 @@ export class Entities extends ECClasses {
   /**
    * Allows access for editing of NavigationProperty attributes.
    */
-  public readonly navigationProperties = new NavigationProperties(SchemaItemType.EntityClass, this._schemaEditor);
+  public readonly navigationProperties = new NavigationProperties(SchemaItemType.EntityClass, this.schemaEditor);
 
   public async createElement(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, baseClassKey: SchemaItemKey, displayLabel?: string, mixins?: Mixin[]): Promise<SchemaItemKey> {
     try {
@@ -71,9 +71,7 @@ export class Entities extends ECClasses {
 
   public async create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, displayLabel?: string, baseClassKey?: SchemaItemKey, mixins?: Mixin[]): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createEntityClass.bind(schema);
-      const newClass = await this.createClass<EntityClass>(schemaKey, this.schemaItemType, boundCreate, name, baseClassKey, modifier) as MutableEntityClass;
+      const newClass = await this.createClass<EntityClass>(schemaKey, this.schemaItemType, (schema) => schema.createEntityClass.bind(schema), name, baseClassKey, modifier) as MutableEntityClass;
 
       if (mixins !== undefined)
         mixins.forEach((m) => newClass.addMixin(m));
@@ -94,9 +92,7 @@ export class Entities extends ECClasses {
    */
   public async createFromProps(schemaKey: SchemaKey, entityProps: EntityClassProps): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createEntityClass.bind(schema);
-      const newClass = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, boundCreate, entityProps);
+      const newClass = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createEntityClass.bind(schema), entityProps);
       return newClass.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, entityProps.name!, schemaKey), e);

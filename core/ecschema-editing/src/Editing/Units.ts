@@ -24,14 +24,12 @@ export class Units extends SchemaItems {
 
   public async create(schemaKey: SchemaKey, name: string, definition: string, phenomenon: SchemaItemKey, unitSystem: SchemaItemKey, displayLabel?: string): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createUnit.bind(schema);
-      const newUnit = (await this.createSchemaItem<Unit>(schemaKey, this.schemaItemType, boundCreate, name)) as MutableUnit;
+      const newUnit = await this.createSchemaItem<Unit>(schemaKey, this.schemaItemType, (schema) => schema.createUnit.bind(schema), name) as MutableUnit;
 
-      const phenomenonItem = await this.lookupSchemaItem<Phenomenon>(schema, phenomenon, SchemaItemType.Phenomenon);
+      const phenomenonItem = await this.lookupSchemaItem<Phenomenon>(newUnit.schema.schemaKey, phenomenon, SchemaItemType.Phenomenon);
       await newUnit.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenon, async () => phenomenonItem));
 
-      const unitSystemItem = await this.lookupSchemaItem<UnitSystem>(schema, unitSystem, SchemaItemType.UnitSystem);
+      const unitSystemItem = await this.lookupSchemaItem<UnitSystem>(newUnit.schema.schemaKey, unitSystem, SchemaItemType.UnitSystem);
       await newUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystem, async () => unitSystemItem));
 
       await newUnit.setDefinition(definition);
@@ -47,9 +45,7 @@ export class Units extends SchemaItems {
 
   public async createFromProps(schemaKey: SchemaKey, unitProps: SchemaItemUnitProps): Promise<SchemaItemKey> {
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createUnit.bind(schema);
-      const newUnit = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, boundCreate, unitProps);
+      const newUnit = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createUnit.bind(schema), unitProps);
       return newUnit.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, unitProps.name!, schemaKey), e);
