@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// import "./setup"; TO BE UNCOMMENTED. Can't be ran without .env with this enabled.
+import "./setup";
 import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";

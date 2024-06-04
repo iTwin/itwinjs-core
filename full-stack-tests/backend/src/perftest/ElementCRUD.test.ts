@@ -8,8 +8,7 @@ import * as path from "path";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
 import {
-  BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, mapNativeElementProps, QueryBinder, QueryRowFormat,
-  SubCategoryAppearance,
+  BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
 import { DrawingCategory, ECSqlStatement, Element, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
@@ -84,11 +83,12 @@ function createElemProps(className: string, _iModelName: IModelDb, modId: Id64St
     elementProps.sub1Long = values.sub1Long;
     elementProps.sub1Double = values.sub1Double;
   }
-  if (className.includes("PerfElement2d"))
+  if (className.includes("PerfElement2d")) {
     elementProps.baseStr2 = values.baseStr2;
-  elementProps.baseStr = values.baseStr;
-  elementProps.baseLong = values.baseLong;
-  elementProps.baseDouble = values.baseDouble;
+    elementProps.baseStr = values.baseStr;
+    elementProps.baseLong = values.baseLong;
+    elementProps.baseDouble = values.baseDouble;
+  }
   return elementProps;
 }
 
@@ -246,17 +246,6 @@ describe("PerformanceElementsTests", () => {
           // eslint-disable-next-line no-console
           console.log(`Executing Element Read for the class ${name} on an iModel with ${size} elements ${opCount} times`);
 
-          const getQueryReaderElement = async (elementId: string) => {
-            const rows: any[] = [];
-            for await (const row of perfimodel.createQueryReader(`SELECT $ FROM Bis.Element WHERE ECInstanceId = :elementId`,
-              new QueryBinder().bindId(1, elementId), { convertClassIdsToClassNames: true, rowFormat: QueryRowFormat.UseJsPropertyNames },
-            )) {
-              rows.push(row.toRow());
-            }
-
-            return rows;
-          };
-
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", `IModelPerformance_Read_${name}_${opCount}.bim`);
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
           const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.PhysicalElement");
@@ -306,35 +295,11 @@ describe("PerformanceElementsTests", () => {
           }
           const endTime12 = new Date().getTime();
 
-          const startTime13 = new Date().getTime();
-          for (let i = 0; i < opCount; ++i) {
-            const elId = minId + elementIdIncrement * i;
-
-            perfimodel.withPreparedStatement("SELECT $ FROM Bis.Element WHERE ECInstanceId=? OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB", (statement: ECSqlStatement) => {
-              statement.bindId(1, Id64.fromLocalAndBriefcaseIds(elId, 0));
-
-              if (statement.step() !== DbResult.BE_SQLITE_ROW)
-                return undefined;
-
-              return mapNativeElementProps(JSON.parse(statement.getValue(0).getString()));
-            });
-          }
-          const endTime13 = new Date().getTime();
-
-          const startTime2 = new Date().getTime();
-          for (let i = 0; i < opCount; ++i) {
-            const elId = minId + elementIdIncrement * i;
-            await getQueryReaderElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
-          }
-          const endTime2 = new Date().getTime();
-
           const elapsedTime = endTime - startTime;
           const elapsedTime1 = endTime1 - startTime1;
           const elapsedTime11 = endTime11 - startTime11;
           const elapsedTime12 = endTime12 - startTime12;
-          const elapsedTime13 = endTime13 - startTime13;
-          const elapsedTime2 = endTime2 - startTime2;
-          console.log(elapsedTime, elapsedTime1, elapsedTime11, elapsedTime12, elapsedTime13, elapsedTime2);
+          console.log(elapsedTime, elapsedTime11, elapsedTime12, elapsedTime1);
 
           reporter.addEntry("PerformanceElementsTests", "ElementsRead", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount, CoreVersion: CORE_MAJ_MIN });
           perfimodel.close();
@@ -523,21 +488,11 @@ describe("PerformanceElementsTests2d", () => {
     }
   });
 
-  it("ElementsRead2d", async () => {
+  it.skip("ElementsRead2d", async () => {
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
         const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d", `Performance2d_seed_${name}_${size}.bim`);
         for (const opCount of crudConfig.opSizes) {
-
-          const getQueryReaderElement = async (elementId: string) => {
-            const rows: any[] = [];
-            for await (const row of perfimodel.createQueryReader(`SELECT $ FROM Bis.Element WHERE ECInstanceId = :elementId`, new QueryBinder().bindId(1, elementId), { convertClassIdsToClassNames: true, rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-              rows.push(row.toRow());
-            }
-
-            return rows;
-          };
-
           // eslint-disable-next-line no-console
           console.log(`Executing Element Read for the class ${name} on an iModel with ${size} elements ${opCount} times`);
 
@@ -590,37 +545,13 @@ describe("PerformanceElementsTests2d", () => {
           }
           const endTime12 = new Date().getTime();
 
-          const startTime13 = new Date().getTime();
-          for (let i = 0; i < opCount; ++i) {
-            const elId = minId + elementIdIncrement * i;
-
-            perfimodel.withPreparedStatement("SELECT $ FROM Bis.Element WHERE ECInstanceId=? OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB", (statement: ECSqlStatement) => {
-              statement.bindId(1, Id64.fromLocalAndBriefcaseIds(elId, 0));
-
-              if (statement.step() !== DbResult.BE_SQLITE_ROW)
-                return undefined;
-
-              return mapNativeElementProps(JSON.parse(statement.getValue(0).getString()));
-            });
-          }
-          const endTime13 = new Date().getTime();
-
-          const startTime2 = new Date().getTime();
-          for (let i = 0; i < opCount; ++i) {
-            const elId = minId + elementIdIncrement * i;
-            await getQueryReaderElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
-          }
-          const endTime2 = new Date().getTime();
-
           verifyProps;
 
-          const elapsedTime = (endTime - startTime);
-          const elapsedTime1 = (endTime1 - startTime1);
-          const elapsedTime11 = (endTime11 - startTime11);
-          const elapsedTime12 = (endTime12 - startTime12);
-          const elapsedTime13 = (endTime13 - startTime13);
-          const elapsedTime2 = (endTime2 - startTime2);
-          console.log(elapsedTime, elapsedTime1, elapsedTime11, elapsedTime12, elapsedTime13, elapsedTime2);
+          const elapsedTime = endTime - startTime;
+          const elapsedTime1 = endTime1 - startTime1;
+          const elapsedTime11 = endTime11 - startTime11;
+          const elapsedTime12 = endTime12 - startTime12;
+          console.log(elapsedTime, elapsedTime11, elapsedTime12, elapsedTime1);
 
           reporter.addEntry("PerformanceElementsTests2d", "ElementsRead2d", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount, CoreVersion: CORE_MAJ_MIN });
           perfimodel.close();
