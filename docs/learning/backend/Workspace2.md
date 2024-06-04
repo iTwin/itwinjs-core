@@ -41,7 +41,7 @@ We can define the LandscapePro™ schema programmatically as follows:
 [[include:WorkspaceExamples.SettingGroupSchema]]
 ```
 
-This schema defines 5 settingDefs and 1 typeDef. Note the "landscapePro" schema prefix, which is implicitly included in each settingDef and typeDef name in our schema - for example, the full name of our "hardinessRange" setting is "landscapePro/hardinessRange".
+This schema defines 5 settingDefs and 1 typeDef. Note the "landscapePro" schema prefix, which is implicitly included in the name of each settingDef and typeDef in the schema - for example, the full name of the "hardinessRange" setting is "landscapePro/hardinessRange".
 
 The "hardinessZone" typeDef represents a [USDA hardiness zone](https://en.wikipedia.org/wiki/Hardiness_zone) as an integer between 0 and 13. The "hardinessRange" settingDef reuses that typeDef for both its "minimum" and "maximum" properties by declaring that each `extends` that type. Note that `extends` requires the schema prefix to be specified, even within the same schema that defines the typeDef.
 
