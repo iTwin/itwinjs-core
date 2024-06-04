@@ -73,6 +73,110 @@ Object {
       },
     },
     Object {
+      "category": "test-category",
+      "editor": undefined,
+      "isReadonly": false,
+      "itemsField": Object {
+        "category": "test-category",
+        "editor": undefined,
+        "isReadonly": false,
+        "label": "Array Items Field",
+        "name": "array-items-field",
+        "priority": 0,
+        "properties": Array [
+          Object {
+            "property": Object {
+              "classInfo": "0x1",
+              "name": "PropertyName",
+              "type": "string",
+            },
+          },
+        ],
+        "renderer": undefined,
+        "type": Object {
+          "typeName": "string",
+          "valueFormat": "Primitive",
+        },
+      },
+      "label": "Test Array Properties Field",
+      "name": "test-array-properties-field",
+      "priority": 0,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": "0x1",
+            "name": "PropertyName",
+            "type": "TestPropertyType",
+          },
+        },
+      ],
+      "renderer": undefined,
+      "type": Object {
+        "memberType": Object {
+          "typeName": "string",
+          "valueFormat": "Primitive",
+        },
+        "typeName": "string[]",
+        "valueFormat": "Array",
+      },
+    },
+    Object {
+      "category": "test-category",
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Test Struct Properties Field",
+      "memberFields": Array [
+        Object {
+          "category": "test-category",
+          "editor": undefined,
+          "isReadonly": false,
+          "label": "Test Struct Member Field",
+          "name": "test-struct-member-field",
+          "priority": 0,
+          "properties": Array [
+            Object {
+              "property": Object {
+                "classInfo": "0x5",
+                "name": "StructMemberProperty",
+                "type": "string",
+              },
+            },
+          ],
+          "renderer": undefined,
+          "type": Object {
+            "typeName": "string",
+            "valueFormat": "Primitive",
+          },
+        },
+      ],
+      "name": "test-struct-properties-field",
+      "priority": 0,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": "0x1",
+            "name": "PropertyName",
+            "type": "TestPropertyType",
+          },
+        },
+      ],
+      "renderer": undefined,
+      "type": Object {
+        "members": Array [
+          Object {
+            "label": "Test Member 1",
+            "name": "test-member-1",
+            "type": Object {
+              "typeName": "string",
+              "valueFormat": "Primitive",
+            },
+          },
+        ],
+        "typeName": "TestStruct",
+        "valueFormat": "Struct",
+      },
+    },
+    Object {
       "actualPrimaryClassIds": Array [],
       "autoExpand": false,
       "category": "test-category",

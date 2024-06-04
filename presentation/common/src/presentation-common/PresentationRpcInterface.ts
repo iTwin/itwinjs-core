@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { IModelRpcProps, RpcInterface, RpcOperation } from "@itwin/core-common";
+import { IModelRpcProps, RpcInterface } from "@itwin/core-common";
 import { DescriptorJSON, DescriptorOverrides, SelectClassInfoJSON } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";
@@ -195,7 +195,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public static readonly interfaceName = "PresentationRpcInterface"; // eslint-disable-line @typescript-eslint/naming-convention
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "4.0.0";
+  public static interfaceVersion = "4.1.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -206,14 +206,12 @@ export class PresentationRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  @RpcOperation.setPolicy({ allowResponseCompression: true })
   // eslint-disable-next-line deprecation/deprecation
   public async getPagedNodes(_token: IModelRpcProps, _options: Paged<HierarchyRpcRequestOptions>): PresentationRpcResponse<PagedResponse<NodeJSON>> {
     return this.forward(arguments);
   }
 
   /** @beta */
-  @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getNodesDescriptor(
     _token: IModelRpcProps,
     _options: HierarchyLevelDescriptorRpcRequestOptions,
@@ -222,25 +220,21 @@ export class PresentationRpcInterface extends RpcInterface {
   }
 
   // TODO: add paged version of this (#387280)
-  @RpcOperation.setPolicy({ allowResponseCompression: true })
   // eslint-disable-next-line deprecation/deprecation
   public async getNodePaths(_token: IModelRpcProps, _options: FilterByInstancePathsHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]> {
     return this.forward(arguments);
   }
 
   // TODO: add paged version of this (#387280)
-  @RpcOperation.setPolicy({ allowResponseCompression: true })
   // eslint-disable-next-line deprecation/deprecation
   public async getFilteredNodePaths(_token: IModelRpcProps, _options: FilterByTextHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]> {
     return this.forward(arguments);
   }
 
-  @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getContentSources(_token: IModelRpcProps, _options: ContentSourcesRpcRequestOptions): PresentationRpcResponse<ContentSourcesRpcResult> {
     return this.forward(arguments);
   }
 
-  @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getContentDescriptor(_token: IModelRpcProps, _options: ContentDescriptorRpcRequestOptions): PresentationRpcResponse<DescriptorJSON | undefined> {
     arguments[1] = { ...arguments[1], transport: "unparsed-json" };
     const response: PresentationRpcResponseData<DescriptorJSON | string | undefined> = await this.forward(arguments);
@@ -254,7 +248,6 @@ export class PresentationRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getPagedContent(
     _token: IModelRpcProps,
     _options: Paged<ContentRpcRequestOptions>,
@@ -262,12 +255,10 @@ export class PresentationRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getPagedContentSet(_token: IModelRpcProps, _options: Paged<ContentRpcRequestOptions>): PresentationRpcResponse<PagedResponse<ItemJSON>> {
     return this.forward(arguments);
   }
 
-  @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getElementProperties(
     _token: IModelRpcProps,
     _options: SingleElementPropertiesRpcRequestOptions,
@@ -275,7 +266,6 @@ export class PresentationRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getPagedDistinctValues(
     _token: IModelRpcProps,
     _options: DistinctValuesRpcRequestOptions,
@@ -295,7 +285,6 @@ export class PresentationRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getPagedDisplayLabelDefinitions(
     _token: IModelRpcProps,
     _options: DisplayLabelsRpcRequestOptions,
@@ -315,7 +304,6 @@ export class PresentationRpcInterface extends RpcInterface {
     _scopeId: string,
   ): PresentationRpcResponse<KeySetJSON>;
   public async computeSelection(_token: IModelRpcProps, _options: ComputeSelectionRpcRequestOptions): PresentationRpcResponse<KeySetJSON>;
-  @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async computeSelection(
     _token: IModelRpcProps,
     _options: ComputeSelectionRpcRequestOptions | SelectionScopeRpcRequestOptions,

@@ -7,6 +7,7 @@ public;class AuxCoordSystem
 public;AuxCoordSystem2d 
 public;AuxCoordSystem3d 
 public;AuxCoordSystemSpatial 
+beta;AvailableCoordinateReferenceSystemProps
 beta;AzureBlobStorageCredentials
 internal;BackendHubAccess
 public;BackendLoggerCategory
@@ -60,6 +61,8 @@ internal;FontIndexProps
 public;CodeSpecs
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
+beta;computeTextBlockExtents(args: ComputeTextBlockExtentsArgs): XAndY
+beta;ComputeTextBlockExtentsArgs
 alpha;ConcreteEntity = Element_2 | Model | ElementAspect | Relationship
 alpha;ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps
 beta;convertEC2SchemasToEC3Schemas(ec2XmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[]
@@ -115,7 +118,8 @@ public;ECSqlInsertResult
 public;ECSqlStatement 
 public;ECSqlValue
 public;ECSqlValueIterator 
-internal;EditableWorkspaceDb 
+beta;EditableWorkspaceDb 
+beta;EditableWorkspaceDb
 public;ElementAspect 
 beta;ElementDrivesElement 
 beta;ElementDrivesElementProps 
@@ -197,6 +201,8 @@ public;GeometricModel
 public;class GeometricModel2d 
 public;class GeometricModel3d 
 public;GeometryPart 
+beta;getAvailableCoordinateReferenceSystems(args: GetAvailableCoordinateReferenceSystemsArgs): Promise
+beta;GetAvailableCoordinateReferenceSystemsArgs
 public;Graphic3d 
 public;class GraphicalElement2d 
 public;GraphicalElement2dIsOfType 
@@ -242,9 +248,6 @@ public;class IpcHandler
 public;IpcHost
 public;IpcHostOpts
 public;ITwinIdArg
-internal;ITwinWorkspace 
-internal;ITwinWorkspaceContainer 
-internal;ITwinWorkspaceDb 
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -285,7 +288,7 @@ beta;OnModelIdArg
 beta;OnModelPropsArg 
 beta;OnSubModelIdArg 
 beta;OnSubModelPropsArg 
-public;OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs
+public;OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs & OpenSqliteArgs
 public;OrthographicViewDefinition 
 beta;PartialECChangeUnifier
 public;class PhysicalElement 
@@ -302,6 +305,8 @@ public;PhysicalTypeIsOfPhysicalMaterial
 public;PlanCallout 
 public;Platform
 internal;ProcessChangesetOptions
+beta;produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometryArgs): TextBlockGeometryProps
+beta;ProduceTextAnnotationGeometryArgs
 public;ProgressFunction = (loaded: number, total: number) => ProgressStatus
 public;ProgressStatus
 beta;PropertyStore
@@ -350,7 +355,7 @@ public;SheetModel
 public;SheetTemplate 
 public;SheetViewDefinition 
 public;SnapshotDb 
-public;SnapshotDbOpenArgs = SnapshotOpenOptions & CloudContainerArgs
+public;SnapshotDbOpenArgs = SnapshotOpenOptions & CloudContainerArgs & OpenSqliteArgs
 public;SpatialCategory 
 public;class SpatialElement 
 public;SpatialLocation 
@@ -418,8 +423,11 @@ beta;ViewStore
 public;VolumeElement 
 public;WebMercatorModel 
 beta;Workspace
+beta;Workspace
+internal;construct(settings: Settings, opts?: WorkspaceOpts): Workspace
 beta;WorkspaceCloudCacheProps 
 beta;WorkspaceContainer
+internal;validateVersion(version?: WorkspaceDb.Version): string
 beta;WorkspaceContainer
 beta;WorkspaceDb
 beta;WorkspaceDb

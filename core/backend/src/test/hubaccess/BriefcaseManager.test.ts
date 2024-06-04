@@ -11,6 +11,7 @@ import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubMock } from "../../HubMock";
 import { TestChangeSetUtility } from "../TestChangeSetUtility";
+import { ChannelControl } from "../../core-backend";
 
 describe("BriefcaseManager", async () => {
   const testITwinId: string = Guid.createValue();
@@ -145,6 +146,7 @@ describe("BriefcaseManager", async () => {
     const briefcaseId = iModelPullAndPush.briefcaseId;
     const pathname = iModelPullAndPush.pathName;
 
+    iModelPullAndPush.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const rootEl: Element = iModelPullAndPush.elements.getRootSubject();
     rootEl.userLabel = `${rootEl.userLabel}changed`;
     iModelPullAndPush.elements.updateElement(rootEl.toJSON());

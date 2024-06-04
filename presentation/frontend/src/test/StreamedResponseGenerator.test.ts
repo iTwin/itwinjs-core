@@ -2,11 +2,12 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { StreamedResponseGenerator, StreamedResponseGeneratorProps } from "../presentation-frontend/StreamedResponseGenerator";
+
 import { expect } from "chai";
 import sinon from "sinon";
 import { PagedResponse, PageOptions } from "@itwin/presentation-common";
 import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
+import { StreamedResponseGenerator, StreamedResponseGeneratorProps } from "../presentation-frontend/StreamedResponseGenerator";
 
 describe("StreamedResponseGenerator", () => {
   /** Creates a response with the total item count and an array of items for the requested page. */
@@ -150,6 +151,43 @@ describe("StreamedResponseGenerator", () => {
 
     const generator = new StreamedResponseGenerator(props);
     await createItemsResponse(generator);
+  });
+
+  it("should fetch items in batches of specified size", async () => {
+    const items = [1, 2];
+    const fakePageRetriever = sinon.fake(async (page) => ({
+      total: items.length,
+      items: items.slice(page.start, page.start + 1),
+    }));
+    const props: StreamedResponseGeneratorProps<number> = {
+      batchSize: 1,
+      getBatch: fakePageRetriever,
+    };
+
+    const generator = new StreamedResponseGenerator(props);
+    const { items: generatedItems } = await createItemsResponse(generator);
+
+    expect(generatedItems).to.deep.eq([1, 2]);
+    expect(fakePageRetriever).to.be.calledTwice;
+  });
+
+  it("should fetch items in batches of specified size up to requested page size", async () => {
+    const items = [1, 2, 3];
+    const fakePageRetriever = sinon.fake(async (page) => ({
+      total: items.length,
+      items: items.slice(page.start, page.start + 1),
+    }));
+    const props: StreamedResponseGeneratorProps<number> = {
+      paging: { size: 2 },
+      batchSize: 1,
+      getBatch: fakePageRetriever,
+    };
+
+    const generator = new StreamedResponseGenerator(props);
+    const { items: generatedItems } = await createItemsResponse(generator);
+
+    expect(generatedItems).to.deep.eq([1, 2]);
+    expect(fakePageRetriever).to.be.calledTwice;
   });
 
   it("calls getter once with 0,0 partial page options when given `undefined` page options", async () => {

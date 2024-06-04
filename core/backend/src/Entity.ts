@@ -11,7 +11,7 @@ import { EntityProps, EntityReferenceSet, PropertyCallback, PropertyMetaData } f
 import type { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 
-/** Represents an entity in an [[IModelDb]] such as an [[Element]], [[Model]], or [[Relationship]].
+/** Represents one of the fundamental building block in an [[IModelDb]]: as an [[Element]], [[Model]], or [[Relationship]].
  * Every subclass of Entity represents one BIS [ECClass]($ecschema-metadata).
  * An Entity is typically instantiated from an [EntityProps]($common) and can be converted back to this representation via [[Entity.toJSON]].
  * @public

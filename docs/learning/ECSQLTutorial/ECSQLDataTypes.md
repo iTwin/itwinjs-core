@@ -23,8 +23,6 @@ ECSQL defines a set of built-in system properties. They don't have to be defined
 > SELECT ECClassId, CodeValue FROM bis.Element WHERE ECInstanceId=0x20000000004
 > ```
 
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECClassId, CodeValue FROM bis.Element WHERE ECInstanceId=0x20000000004"></iframe>
-
 ## Primitive Data Types
 
 ECSQL supports all primitive types built into the EC system. This means that in addition to the basic numeric and string data types in SQL-92, ECSQL also supports boolean, BLOBs, date-time and point types.
@@ -42,8 +40,6 @@ For Boolean types ECSQL supports the literals `True` and `False`.
 > ```sql
 > SELECT ECInstanceId, ECClassId, IsPrivate FROM bis.Model
 > ```
-
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECInstanceId, ECClassId, IsPrivate FROM bis.Model"></iframe>
 
 Boolean properties or expressions do not need to be compared to `True` and `False` as they return a
 boolean value already.
@@ -66,8 +62,6 @@ boolean value already.
 >
 > are equivalent.
 
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECInstanceId,ECClassId FROM bis.Model WHERE IsPrivate"></iframe>
-
 And the same example with `False`:
 
 > **Try it yourself**
@@ -86,8 +80,6 @@ And the same example with `False`:
 > SELECT ECInstanceId,ECClassId FROM bis.Model WHERE NOT IsPrivate
 > ```
 
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECInstanceId,ECClassId FROM bis.Model WHERE NOT IsPrivate"></iframe>
-
 ## DateTime
 
 ECSQL supports dates without time (`DATE`), dates with time (`TIMESTAMP`), and times without date (`TIME`).
@@ -105,8 +97,6 @@ See [ECSQL Reference](../ECSQL.md#datetime) for details.
 > ```sql
 > SELECT ECInstanceId, CodeValue, LastMod FROM bis.Element WHERE LastMod BETWEEN TIMESTAMP '2020-03-11T12:30:20.492Z' AND TIMESTAMP '2020-03-11T12:31:03.494Z'
 > ```
-
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECInstanceId, CodeValue, LastMod FROM bis.Element WHERE LastMod BETWEEN TIMESTAMP '2020-03-11T12:30:20.492Z' AND TIMESTAMP '2020-03-11T12:31:03.494Z'"></iframe>
 
 ## Points
 
@@ -131,8 +121,6 @@ following system properties (See [ECSQL Reference](../ECSQL.md#points) for detai
 > ```sql
 > SELECT ecinstanceid, Origin FROM bis.spatialelement WHERE Origin.X BETWEEN 0 AND 10 AND Origin.Y BETWEEN 0 AND 10 AND Origin.Z BETWEEN 0 AND 10
 > ```
-
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ecinstanceid, Origin FROM bis.spatialelement WHERE Origin.X BETWEEN 0 AND 10 AND Origin.Y BETWEEN 0 AND 10 AND Origin.Z BETWEEN 0 AND 10"></iframe>
 
 ## Navigation Properties
 
@@ -160,8 +148,6 @@ following system properties (See [ECSQL Reference](../ECSQL.md#navigation-proper
 > SELECT ECInstanceId, CodeValue, LastMod, Parent FROM bis.Element WHERE ECInstanceId = 0x20000000007
 > ```
 
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECInstanceId, CodeValue, LastMod, Parent FROM bis.Element WHERE ECInstanceId = 0x20000000007"></iframe>
-
 > **Try it yourself**
 >
 > _Goal:_ Return the id of the parent [Element](../../bis/domains/BisCore.ecschema.md#element) for the element with id value _0x20000000007_.
@@ -171,8 +157,6 @@ following system properties (See [ECSQL Reference](../ECSQL.md#navigation-proper
 > ```sql
 > SELECT ECInstanceId, CodeValue, LastMod, Parent.Id FROM bis.Element WHERE ECInstanceId = 0x20000000007
 > ```
-
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECInstanceId, CodeValue, LastMod, Parent.Id FROM bis.Element WHERE ECInstanceId = 0x20000000007"></iframe>
 
 ---
 
@@ -185,8 +169,6 @@ following system properties (See [ECSQL Reference](../ECSQL.md#navigation-proper
 > ```sql
 > SELECT Parent.Id, Parent.RelECClassId FROM bis.Element WHERE ECInstanceId = 0x20000000007
 > ```
-
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT Parent.Id, Parent.RelECClassId FROM bis.Element WHERE ECInstanceId = 0x20000000007"></iframe>
 
 Find more examples in the lesson about [Joins and ECRelationshipClasses](./Joins.md#examples).
 
@@ -253,10 +235,8 @@ In ECSQL you can refer to Array ECProperties only as a whole.
 > SELECT Name, EnumValues FROM meta.ECEnumerationDef WHERE Name='SectionType'
 > ```
 
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT Name, EnumValues FROM meta.ECEnumerationDef WHERE Name='SectionType'"></iframe>
-
 You can find more ECSQL examples in the respective section of the [ECSQL Reference](../ECSQL.md#arrays).
 
 ---
 
-[**< Previous**](./FirstExamples.md) &nbsp; | &nbsp; [**Next >**](./Joins.md)
+[< Previous](./FirstExamples.md) &nbsp; | &nbsp; [Next >](./Joins.md)

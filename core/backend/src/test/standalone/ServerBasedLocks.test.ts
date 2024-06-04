@@ -18,6 +18,7 @@ import { ServerBasedLocks } from "../../ServerBasedLocks";
 import { HubMock } from "../../HubMock";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { ChannelControl } from "../../core-backend";
 
 describe("Server-based locks", () => {
   const createVersion0 = async () => {
@@ -74,6 +75,7 @@ describe("Server-based locks", () => {
     const lockSpy = sinonSpy(IModelHost.hubAccess, "acquireLocks");
     let bc1 = await BriefcaseDb.open({ fileName: briefcase1Props.fileName });
     assert.isTrue(bc1.locks.isServerBased);
+    bc1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     let bc2 = await BriefcaseDb.open({ fileName: briefcase2Props.fileName });
     assert.isTrue(bc2.locks.isServerBased);
 
@@ -149,7 +151,9 @@ describe("Server-based locks", () => {
     bc2.close();
 
     bc1 = await BriefcaseDb.open({ fileName: briefcase1Props.fileName });
+    bc1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     bc2 = await BriefcaseDb.open({ fileName: briefcase2Props.fileName });
+    bc2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     bc1Locks = bc1.locks as ServerBasedLocks;
     bc2Locks = bc2.locks as ServerBasedLocks;

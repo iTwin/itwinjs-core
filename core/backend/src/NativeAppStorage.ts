@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { join } from "path";
+import { join, relative } from "node:path";
 import { DbResult, IModelStatus } from "@itwin/core-bentley";
 import { IModelError, StorageValue } from "@itwin/core-common";
 import { ECDb, ECDbOpenMode } from "./ECDb";
@@ -191,11 +191,16 @@ export class NativeAppStorage {
       IModelHost.onBeforeShutdown.addOnce(() => this.closeAll());
       this._init = true;
     }
+    if (name.includes("\x00"))
+      throw new Error("Storage name contains illegal characters");
     const fileName = name + this._ext;
     if (!IModelJsFs.existsSync(NativeHost.appSettingsCacheDir))
       IModelJsFs.recursiveMkDirSync(NativeHost.appSettingsCacheDir);
 
     const storageFile = join(NativeHost.appSettingsCacheDir, fileName);
+    if (relative(NativeHost.appSettingsCacheDir, storageFile).startsWith(".."))
+      throw new Error("Storage name should not be a path");
+
     try {
       return this.find(fileName); // see if it's already open
     } catch (err) {

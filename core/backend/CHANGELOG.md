@@ -1,6 +1,71 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Fri, 08 Mar 2024 15:58:53 GMT and should not be manually modified.
+This log was last generated on Wed, 29 May 2024 14:36:43 GMT and should not be manually modified.
+
+## 4.6.1
+Wed, 29 May 2024 14:35:17 GMT
+
+_Version update only_
+
+## 4.6.0
+Mon, 13 May 2024 20:32:51 GMT
+
+### Updates
+
+- Improve ChangesetConflictArgs & SqliteChangeSetReader API
+- Add awareness to legacy Channels created by Batch Connectors. Update tests and documentation regarding creation of Channels against Partitions instead of Subjects. Remove sharedChannel from the list of allowedChannels by default.
+- add test logic to extract fb from iModel
+- Remove @alpha BackendLoggerCategory.Editing
+- change signature to updateElement to be Partial<ElementProps>. Also update documentation that model and classFullName may not be changed.
+- Add metadata to errors thrown by `insertElement`, `updateElement` and `deleteElement` in `IModelDb`
+- Don't save to lock-database when inserting elements if their Model is locked
+- Promote ClassRegistry.register to public.
+- Change SpanKind of RPC requests to Internal
+- Fix text annotation rotation around anchor point.
+- Add TextAnnotation APIs.
+- allow pushing changes from a briefcase opened readonly
+- deleteElementTree handles DefinitionContainers
+- log only an info message on no aspects
+
+## 4.5.2
+Tue, 16 Apr 2024 14:46:21 GMT
+
+_Version update only_
+
+## 4.5.1
+Wed, 03 Apr 2024 18:26:58 GMT
+
+_Version update only_
+
+## 4.5.0
+Tue, 02 Apr 2024 19:06:00 GMT
+
+### Updates
+
+- Fix SectionDrawing.insert to insert a SectionDrawingModel, not a DrawingModel.
+- Added busyTimeout parameter to allow read/write connection to set it.
+- Added new tests for selecting duplicate property names using UseECSqlPropertyNames QueryRowFormat.
+- Add metadata to errors thrown by `insertElement`, `updateElement` and `deleteElement` in `IModelDb`
+- make case of pattern_useconstantlod match backend code
+- `IModelDb`: Fix `IModelDb.views.accessViewStore` ignoring supplied `userToken` and `accessLevel` values
+- Throws an error if BlobContainer.service is undefined in CloudSqlite.requestToken
+- add SnapshotDb.openCheckpoint to open a checkpoint directly from its cloud container
+- Introduce EditableWorkspaceDb.
+
+## 4.4.9
+Mon, 15 Apr 2024 20:29:22 GMT
+
+_Version update only_
+
+## 4.4.8
+Mon, 25 Mar 2024 22:22:26 GMT
+
+_Version update only_
+
+## 4.4.7
+Fri, 15 Mar 2024 19:15:14 GMT
+
+_Version update only_
 
 ## 4.4.6
 Fri, 08 Mar 2024 15:57:11 GMT
@@ -51,6 +116,18 @@ Mon, 12 Feb 2024 18:15:58 GMT
 - Change reserved SQLite keywords from tests.
 - modified getAspects to handle dot separator in full class name
 - lint fix
+
+## 4.3.5
+Mon, 25 Mar 2024 16:54:36 GMT
+
+_Version update only_
+
+## 4.3.4
+Fri, 22 Mar 2024 13:30:30 GMT
+
+### Updates
+
+- Bump @itwin/object-storage-azure and @itwin/object-storage-core
 
 ## 4.3.3
 Wed, 03 Jan 2024 19:28:38 GMT

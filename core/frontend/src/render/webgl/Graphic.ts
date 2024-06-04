@@ -8,7 +8,7 @@
 
 import { assert, dispose, Id64String } from "@itwin/core-bentley";
 import { ElementAlignedBox3d, FeatureAppearanceProvider, RenderFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
-import { Transform } from "@itwin/core-geometry";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { GraphicBranch, GraphicBranchFrustum, GraphicBranchOptions } from "../GraphicBranch";
@@ -55,6 +55,10 @@ export class GraphicOwner extends Graphic {
   }
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.graphic.collectStatistics(stats);
+  }
+
+  public override unionRange(range: Range3d) {
+    this.graphic.unionRange(range);
   }
 
   public addCommands(commands: RenderCommands): void {
@@ -264,6 +268,10 @@ export class Batch extends Graphic {
     this.perTargetData.collectStatistics(stats);
   }
 
+  public override unionRange(range: Range3d) {
+    range.extendRange(this.range);
+  }
+
   public addCommands(commands: RenderCommands): void {
     commands.addBatch(this);
   }
@@ -354,6 +362,15 @@ export class Branch extends Graphic {
     this.branch.collectStatistics(stats);
   }
 
+  public override unionRange(range: Range3d) {
+    const thisRange = new Range3d();
+    for (const graphic of this.branch.entries)
+      graphic.unionRange(thisRange);
+
+    this.localToWorldTransform.multiplyRange(thisRange, thisRange);
+    range.extendRange(thisRange);
+  }
+
   private shouldAddCommands(commands: RenderCommands): boolean {
     const group = commands.target.currentBranch.groupNodeId;
     if (undefined !== group && undefined !== this.branch.groupNodeId && this.branch.groupNodeId !== group)
@@ -400,6 +417,10 @@ export class AnimationTransformBranch extends Graphic {
 
   public override collectStatistics(stats: RenderMemory.Statistics) {
     this.graphic.collectStatistics(stats);
+  }
+
+  public override unionRange(range: Range3d) {
+    this.graphic.unionRange(range);
   }
 
   public override addCommands(commands: RenderCommands) {
@@ -465,5 +486,10 @@ export class GraphicsArray extends Graphic {
   public collectStatistics(stats: RenderMemory.Statistics): void {
     for (const graphic of this.graphics)
       graphic.collectStatistics(stats);
+  }
+
+  public override unionRange(range: Range3d) {
+    for (const graphic of this.graphics)
+      graphic.unionRange(range);
   }
 }

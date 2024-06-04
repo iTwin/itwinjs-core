@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import { Plane3dByOriginAndUnitNormal } from "../../core-geometry";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
@@ -56,6 +57,18 @@ function exerciseArcSet(ck: Checker, arcA: Arc3d) {
   ck.testTrue(arcD.isAlmostEqual(arcB));
   transform.multiplyPoint3d(myPoint, myPoint); // this indirectly modifies arcB, but not arcD
   ck.testFalse(arcD.isAlmostEqual(arcB));
+
+  const arcXY = Arc3d.createXY(Point3d.create(2,7,1), 8, AngleSweep.createStartEndRadians(2,8));
+  const arcE = arcXY.cloneAtZ();
+  ck.testTrue(arcE.isAlmostEqual(arcXY), "cloneAtZ of xy-arc with undefined param is just clone");
+  ck.testFalse(arcC.isInPlane(Plane3dByOriginAndUnitNormal.createXYPlane(arcC.center)), "arcC is a non-xy-arc");
+  const arcF = arcC.cloneAtZ();
+  ck.testFalse(arcF.isAlmostEqual(arcC), "cloneAtZ of non-xy-arc is not the same arc");
+  ck.testPoint3d(arcF.center, arcC.center, "cloneAtZ of non-xy-arc with undefined param doesn't change center");
+  ck.testTrue(arcF.isInPlane(Plane3dByOriginAndUnitNormal.createXYPlane(arcF.center)), "cloneAtZ of non-xy-arc with undefined param is in the horizontal plane at its center");
+  const arcG = arcC.cloneAtZ(100);
+  ck.testExactNumber(arcG.center.z, 100, "cloneAtZ sets new center to param");
+  ck.testTrue(arcG.isInPlane(Plane3dByOriginAndUnitNormal.createXYPlane(Point3d.create(arcC.center.x, arcC.center.y, 100))), "cloneAtZ of non-xy-arc is in the horizontal plane at the new center");
 }
 function exerciseArc3d(ck: Checker, arc: Arc3d) {
   const vector0 = arc.vector0;
@@ -84,8 +97,8 @@ function exerciseArc3d(ck: Checker, arc: Arc3d) {
     "arc length smaller than circle on max radius");
   const fA = 0.35;
   const fB = 0.51;
-  const arc3A = arc.clonePartialCurve(fA, fB)!;
-  const arc3B = arc.clonePartialCurve(fB, fA)!;
+  const arc3A = arc.clonePartialCurve(fA, fB);
+  const arc3B = arc.clonePartialCurve(fB, fA);
   ck.testCoordinate(arc3A.curveLength(), arc3B.curveLength(), "Reversed partials match length");
   const length1 = arc1.curveLength();
   const fuzzyLengthRange = Range1d.createXX(0.5 * length1, 2.0 * length1);
@@ -103,7 +116,7 @@ describe("Arc3d", () => {
       Arc3d.create(
         Point3d.create(1, 2, 5),
         Vector3d.create(1, 0, 0),
-        Vector3d.create(0, 2, 0), AngleSweep.createStartEndDegrees(0, 90))!);
+        Vector3d.create(0, 2, 0), AngleSweep.createStartEndDegrees(0, 90)));
 
     ck.testTrue(Arc3d.createCircularStartMiddleEnd(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(4, 0, 0)) instanceof LineString3d);
 
@@ -277,7 +290,7 @@ describe("Arc3d", () => {
         const point2 = Point3d.create(3, 0);
         const arcData = Arc3d.createFilletArc(point0, point1, point2, radius);
         GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(point0, point1, point2), x0, y0);
-        if (ck.testDefined(arcData, "Fillet Arc exists") && arcData && arcData.arc) {
+        if (ck.testDefined(arcData, "Fillet Arc exists") && arcData.arc) {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, arcData.arc, x0, y0);
           GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, point1.interpolate(arcData.fraction10, point0), markerRadius, x0, y0);
           GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, point1.interpolate(arcData.fraction12, point2), markerRadius, x0, y0);
@@ -327,7 +340,7 @@ describe("Arc3d", () => {
       x0 = 0;
       y0 += dx;
     }
-    GeometryCoreTestIO.consoleLog(`chord error range ${rangeE.toJSON()}`);
+    GeometryCoreTestIO.consoleLog(`chord error range ${JSON.stringify(rangeE.toJSON())}`);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "PreciseRange");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -348,7 +361,7 @@ describe("Arc3d", () => {
     GeometryCoreTestIO.captureGeometry(allGeometry, arc, x0, y0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "ArnoldasFailureLinearSys3d");
     const r = arc.circularRadius();
-    if (ck.testDefined(r) && r !== undefined) {
+    if (ck.testDefined(r)) {
       ck.testCoordinate(r, point0.distance(arc.center));
       ck.testCoordinate(r, point1.distance(arc.center));
       ck.testCoordinate(r, point2.distance(arc.center));
@@ -525,7 +538,7 @@ describe("Arc3d", () => {
 
     for (const fraction of [0.0, 0.125]) {
       const circleCurvature = circle.fractionToCurvature(fraction)!;
-      const circleDerivatives = circle.fractionToPointAnd2Derivatives(0.0)!;
+      const circleDerivatives = circle.fractionToPointAnd2Derivatives(0.0);
       ck.testCoordinate(circleCurvature, curvature, "curvature from full circle");
       assert.isTrue(Geometry.isAlmostEqualNumber(circleCurvature, curvature));
 

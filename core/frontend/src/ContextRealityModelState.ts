@@ -6,12 +6,13 @@
  * @module Views
  */
 
-import { Id64String } from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { ContextRealityModel, ContextRealityModelProps, FeatureAppearance, RealityDataFormat, RealityDataSourceKey } from "@itwin/core-common";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { RealityDataSource } from "./RealityDataSource";
+import { SpatialClassifiersState } from "./SpatialClassifiersState";
 import { createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileTree, TileTreeReference } from "./tile/internal";
 
 /** A [ContextRealityModel]($common) attached to a [[DisplayStyleState]] supplying a [[TileTreeReference]] used to draw the
@@ -31,7 +32,7 @@ export class ContextRealityModelState extends ContextRealityModel {
 
   /** @internal */
   public constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState) {
-    super(props);
+    super(props, { createClassifiers: (container) => SpatialClassifiersState.create(container) });
     this.iModel = iModel;
     this._appearanceOverrides = props.appearanceOverrides ? FeatureAppearance.fromJSON(props.appearanceOverrides) : undefined;
     if (undefined === props.orbitGtBlob) {
@@ -68,6 +69,12 @@ export class ContextRealityModelState extends ContextRealityModel {
 
   /** The tile tree reference responsible for drawing the reality model into a [[Viewport]]. */
   public get treeRef(): TileTreeReference { return this._treeRef; }
+
+  /** The set of available [[ActiveSpatialClassifier]]s that can be used to classify the reality model. */
+  public override get classifiers(): SpatialClassifiersState {
+    assert(super.classifiers instanceof SpatialClassifiersState);
+    return super.classifiers;
+  }
 
   /** The transient Id assigned to this reality model at run-time. */
   public get modelId(): Id64String | undefined {

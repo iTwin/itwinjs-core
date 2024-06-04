@@ -15,8 +15,8 @@ import { MutableClass, MutableStructClass } from "./Mutable/MutableClass";
  * @alpha A class extending ECClasses allowing you to create schema items of type StructClass.
  */
 export class Structs extends ECClasses {
-  public constructor(_schemaEditor: SchemaContextEditor) {
-    super(_schemaEditor);
+  public constructor(schemaEditor: SchemaContextEditor) {
+    super(SchemaItemType.StructClass, schemaEditor);
   }
 
   public async create(schemaKey: SchemaKey, name: string, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults> {

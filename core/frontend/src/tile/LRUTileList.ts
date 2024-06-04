@@ -238,7 +238,7 @@ export class LRUTileList {
     this._userIdSets.clear();
   }
 
-  /** Compute the amount of GPU memory allocated to the tile's content and, if greater than zero, add the tile to the end of the "not selected" partition.
+  /** Compute the amount of GPU memory allocated to the tile's content and, if greater than zero, add the tile to the beginning of the "selected" partition.
    * Invoked by TileAdmin whenever a tile's content is set to a valid RenderGraphic.
    */
   public add(tile: Tile): void {
@@ -258,10 +258,10 @@ export class LRUTileList {
     if (tile.bytesUsed <= 0)
       return;
 
-    // Insert just before the sentinel, indicating this is the most-recently-used non-selected tile.
+    // Insert just after the sentinel, indicating this is the least-recently-used selected tile.
     this._totalBytesUsed += tile.bytesUsed;
     this.append(tile);
-    this.moveBeforeSentinel(tile);
+    this.moveAfterSentinel(tile);
   }
 
   /** Remove the tile from the list and deduct its previously-used GPU memory from the list's running total.
@@ -416,5 +416,17 @@ export class LRUTileList {
       this._head = tile;
     else
       tile.previous.next = tile;
+  }
+
+  protected moveAfterSentinel(tile: Tile): void {
+    this.unlink(tile);
+    tile.next = this._sentinel.next;
+    this._sentinel.next = tile;
+    tile.previous = this._sentinel;
+
+    if (!tile.next)
+      this._tail = tile;
+    else
+      tile.next.previous = tile;
   }
 }

@@ -6,8 +6,19 @@ import path from "path";
 import sanitize from "sanitize-filename";
 import { IModelDb, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
 import { GuidString, Id64String } from "@itwin/core-bentley";
-import { BisCodeSpec, Code, IModel, LocalFileName, PhysicalElementProps } from "@itwin/core-common";
+import {
+  BisCodeSpec,
+  CategoryProps,
+  Code,
+  ElementAspectProps,
+  GeometricModel3dProps,
+  IModel,
+  InformationPartitionElementProps,
+  LocalFileName,
+  PhysicalElementProps,
+} from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { XMLParser } from "fast-xml-parser";
 
 export function createValidIModelFileName(imodelName: string) {
   return sanitize(imodelName.replace(/[ ]+/g, "-").replaceAll("`", "").replaceAll("'", "")).toLocaleLowerCase();
@@ -39,6 +50,46 @@ export async function buildTestIModelConnection(name: string, cb: (db: IModelDb)
   return SnapshotConnection.openFile(fileName);
 }
 
+/** Import an ECSchema into given iModel. */
+export function importSchema(mochaContext: Mocha.Context, imodel: { importSchemaStrings: (xmls: string[]) => void }, schemaContentXml: string) {
+  const schemaName = `SCHEMA_${mochaContext.test!.fullTitle()}`.replace(/[^\w\d_]/gi, "_").replace(/_+/g, "_");
+  const schemaAlias = `test`;
+  const schemaXml = `
+    <?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="${schemaName}" alias="${schemaAlias}" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECSchemaReference name="CoreCustomAttributes" version="01.00.03" alias="CoreCA" />
+      <ECSchemaReference name="ECDbMap" version="02.00.01" alias="ecdbmap" />
+      ${schemaContentXml}
+    </ECSchema>
+  `;
+  imodel.importSchemaStrings([schemaXml]);
+
+  const parsedSchema = new XMLParser({
+    ignoreAttributes: false,
+    attributeNamePrefix: "",
+    isArray: (_, jpath) => jpath.startsWith("ECSchema."),
+  }).parse(schemaXml);
+  const schemaItems = Object.values(parsedSchema.ECSchema)
+    .flatMap<any>((itemDef) => itemDef)
+    .filter((itemDef: any) => !!itemDef.typeName);
+
+  return {
+    schemaName,
+    schemaAlias,
+    items: schemaItems.reduce<{ [className: string]: { name: string; fullName: string; label: string } }>((classesObj, schemaItemDef) => {
+      const name = schemaItemDef.typeName;
+      return {
+        ...classesObj,
+        [name]: {
+          fullName: `${schemaName}:${name}`,
+          name,
+          label: schemaItemDef.displayLabel,
+        },
+      };
+    }, {}),
+  };
+}
+
 /** Insert a document partition element into created imodel. Return created element's className and Id. */
 export function insertDocumentPartition(db: IModelDb, code: string, label?: string, federationGuid?: GuidString) {
   const id = db.elements.insertElement({
@@ -52,54 +103,104 @@ export function insertDocumentPartition(db: IModelDb, code: string, label?: stri
   return { className: "BisCore:DocumentPartition", id };
 }
 
-/** Insert a model element into created imodel. Return created element's className and Id. */
-export function insertPhysicalModel(db: IModelDb, label: string, parentId?: Id64String) {
+export function insertPhysicalModelWithPartition(props: { db: IModelDb; codeValue: string; partitionParentId?: Id64String }) {
+  const { codeValue, partitionParentId, ...baseProps } = props;
+  const partitionKey = insertPhysicalPartition({ ...baseProps, codeValue, parentId: partitionParentId ?? IModel.rootSubjectId });
+  return insertPhysicalSubModel({ ...baseProps, modeledElementId: partitionKey.id });
+}
+
+export function insertPhysicalPartition(
+  props: { db: IModelDb; codeValue: string; parentId: Id64String } & Partial<Omit<InformationPartitionElementProps, "id" | "parent" | "code">>,
+) {
+  const { db, classFullName, codeValue, parentId, ...partitionProps } = props;
+  const defaultModelClassName = `BisCore:PhysicalPartition`;
+  const className = classFullName ?? defaultModelClassName;
   const partitionId = db.elements.insertElement({
-    classFullName: "BisCore:PhysicalPartition",
+    classFullName: className,
     model: IModel.repositoryModelId,
-    code: new Code({ scope: parentId ?? IModel.rootSubjectId, spec: BisCodeSpec.informationPartitionElement, value: label }),
+    code: new Code({ spec: BisCodeSpec.informationPartitionElement, scope: parentId, value: codeValue }),
     parent: {
-      id: parentId ?? IModel.rootSubjectId,
-      relClassName: "BisCore:SubjectOwnsPartitionElements",
+      id: parentId,
+      relClassName: `BisCore:SubjectOwnsPartitionElements`,
     },
+    ...partitionProps,
   });
-  const modelClassName = "BisCore:PhysicalModel";
+  return { className, id: partitionId };
+}
+
+export function insertPhysicalSubModel(
+  props: { db: IModelDb; modeledElementId: Id64String } & Partial<Omit<GeometricModel3dProps, "id" | "modeledElement" | "parentModel">>,
+) {
+  const { db, classFullName, modeledElementId, ...modelProps } = props;
+  const defaultModelClassName = `BisCore:PhysicalModel`;
+  const className = classFullName ?? defaultModelClassName;
   const modelId = db.models.insertModel({
-    classFullName: modelClassName,
-    modeledElement: { id: partitionId },
+    classFullName: className,
+    modeledElement: { id: modeledElementId },
+    ...modelProps,
   });
-  return { className: modelClassName, id: modelId };
+  return { className, id: modelId };
 }
 
 /** Insert a spatial category element into created imodel. Return created element's className and Id. */
-export function insertSpatialCategory(db: IModelDb, label: string, modelId = IModel.dictionaryId) {
-  const className = "BisCore:SpatialCategory";
+export function insertSpatialCategory(
+  props: { db: IModelDb; codeValue: string; modelId?: Id64String } & Partial<Omit<CategoryProps, "id" | "model" | "parent" | "code">>,
+) {
+  const { db, classFullName, modelId, codeValue, ...categoryProps } = props;
+  const defaultClassName = `BisCore:SpatialCategory`;
+  const className = classFullName ?? defaultClassName;
+  const model = modelId ?? IModel.dictionaryId;
   const id = db.elements.insertElement({
     classFullName: className,
-    model: modelId,
-    code: new Code({ spec: BisCodeSpec.spatialCategory, scope: modelId, value: label }),
+    model,
+    code: new Code({ spec: BisCodeSpec.spatialCategory, scope: model, value: codeValue }),
+    ...categoryProps,
   });
   return { className, id };
 }
 
 /** Insert a physical element into created imodel. Return created element's className and Id. */
-export function insertPhysicalElement(db: IModelDb, label: string, modelId: Id64String, categoryId: Id64String, parentId?: Id64String) {
-  const className = "Generic:PhysicalObject";
+export function insertPhysicalElement<TAdditionalProps extends {}>(
+  props: { db: IModelDb; modelId: Id64String; categoryId: Id64String; parentId?: Id64String } & Partial<
+    Omit<PhysicalElementProps, "id" | "model" | "category" | "parent">
+  > &
+    TAdditionalProps,
+) {
+  const { db, classFullName, modelId, categoryId, parentId, ...elementProps } = props;
+  const defaultClassName = "Generic:PhysicalObject";
+  const className = classFullName ?? defaultClassName;
   const id = db.elements.insertElement({
     classFullName: className,
     model: modelId,
     category: categoryId,
     code: Code.createEmpty(),
-    userLabel: label,
     ...(parentId
       ? {
           parent: {
             id: parentId,
-            relClassName: "BisCore:PhysicalElementAssemblesElements",
+            relClassName: `BisCore:PhysicalElementAssemblesElements`,
           },
         }
       : undefined),
+    ...elementProps,
   } as PhysicalElementProps);
+  return { className, id };
+}
+
+/** Insert an aspect into created imodel, return its key */
+export function insertElementAspect<TAdditionalProps extends {}>(
+  props: { db: IModelDb; elementId: Id64String } & Partial<Omit<ElementAspectProps, "element">> & TAdditionalProps,
+) {
+  const { db, classFullName, elementId, ...aspectProps } = props;
+  const defaultClassName = "BisCore:ElementMultiAspect";
+  const className = classFullName ?? defaultClassName;
+  const id = db.elements.insertAspect({
+    classFullName: className,
+    element: {
+      id: elementId,
+    },
+    ...aspectProps,
+  } as ElementAspectProps);
   return { className, id };
 }
 

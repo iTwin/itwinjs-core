@@ -312,6 +312,28 @@ describe("Solids", () => {
 
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("TorusPipeNonCircular", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const nonCircularArc = Arc3d.create(Point3d.create(-0.003571875), Vector3d.create(-0.001190625, 0.127), Vector3d.create(0.001190625, 0, 0.127), AngleSweep.createStartEndDegrees(0, 90));
+    ck.testFalse(nonCircularArc.isCircular, "expect slightly non-circular arc");
+    const seg0 = LineSegment3d.create(nonCircularArc.center, Point3d.createAdd2Scaled(nonCircularArc.center, 1, nonCircularArc.vector0, 1));
+    const seg1 = LineSegment3d.create(nonCircularArc.center, Point3d.createAdd2Scaled(nonCircularArc.center, 1, nonCircularArc.vector90, 1));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [nonCircularArc, seg0, seg1]);
+    const diam = 0.009525;
+    const solid = TorusPipe.createAlongArc(nonCircularArc, diam / 2, true);
+    if (ck.testDefined(solid, "created torus pipe")) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, solid);
+      ck.testTrue(solid.cloneLocalToWorld().matrix.isRigid(false), "TorusPipe.createAlongArc forced arc circularity by squaring its axes and equating their lengths");
+      const vec0Near = solid.cloneVectorX().scale(solid.getMajorRadius()).isAlmostEqual(nonCircularArc.vector0);
+      const vec90Near = solid.cloneVectorY().scale(solid.getMajorRadius()).isAlmostEqual(nonCircularArc.vector90, 0.000012);
+      ck.testTrue(vec0Near && vec90Near, "TorusPipe frame is near the original arc's frame");
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "TorusPipeNonCircular");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("LinearSweeps", () => {
     const ck = new Checker();
     exerciseSolids(ck, Sample.createSimpleLinearSweeps(), "LinearSweeps");
@@ -396,8 +418,8 @@ describe("Solids", () => {
     const rectangleB = Path.create(Sample.createRectangleXY(0, 0, 2, 1, 1));
     const rectangleC = Path.create(Sample.createRectangleXY(0, 0, 2, 1, 2));
 
-    const sweep2 = RuledSweep.create([rectangleA.clone()!, rectangleB.clone()!], false)!;
-    const sweep3 = RuledSweep.create([rectangleA.clone()!, rectangleB.clone()!, rectangleC.clone()!], false)!;
+    const sweep2 = RuledSweep.create([rectangleA.clone(), rectangleB.clone()], false)!;
+    const sweep3 = RuledSweep.create([rectangleA.clone(), rectangleB.clone(), rectangleC.clone()], false)!;
     ck.testFalse(sweep2.isAlmostEqual(sweep3));
     expect(ck.getNumErrors()).equals(0);
   });
@@ -430,8 +452,8 @@ describe("Solids", () => {
     const contourA = SweepContour.createForLinearSweep(path)!;
     const contourB = contourA.cloneTransformed(Transform.createTranslationXYZ(5, 0, 0))!;
     const allGeometry: GeometryQuery[] = [];
-    GeometryCoreTestIO.captureGeometry(allGeometry, contourA.getCurves()!.clone(), 0, 0, 0);
-    GeometryCoreTestIO.captureGeometry(allGeometry, contourB.getCurves()!.clone(), 0, 0, 0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, contourA.getCurves().clone(), 0, 0, 0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, contourB.getCurves().clone(), 0, 0, 0);
     ck.testFalse(contourA.isAlmostEqual(contourB));
     ck.testFalse(contourA.isAlmostEqual(path));
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "SweepContour");

@@ -37,7 +37,7 @@ export class SimpleFactory {
     g.Point3d.create(-2.90089, 0.32481216727, -2.789798787)];
   // _vector1 has messy  coordinates
   private static _vector2 = [
-    g.Vector3d.create(3 / 27, 4 / 27, 5 / 27)!,
+    g.Vector3d.create(3 / 27, 4 / 27, 5 / 27),
     g.Vector3d.create(3, 5, 10).normalize()!,
     g.Vector3d.create(-2.90089, 0.32481216727, -2.789798787)];
 
@@ -113,7 +113,7 @@ export class SimpleFactory {
 
   public static createDefaultPlane3dByOriginAndVectors(select: number): g.Plane3dByOriginAndVectors | undefined {
     if (select === 0)
-      return g.Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0)!;
+      return g.Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0);
     if (select === 1)
       return g.Plane3dByOriginAndVectors.createOriginAndVectors(SimpleFactory._point1[1], SimpleFactory._vector1[0], SimpleFactory._vector1[2]);
     if (select === 2)

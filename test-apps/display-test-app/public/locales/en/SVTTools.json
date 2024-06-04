@@ -70,6 +70,9 @@
     "AddGltfDecoration": {
       "keyin": "dta gltf"
     },
+    "AddTextDecoration": {
+      "keyin": "dta text"
+    },
     "ShutDown": {
       "keyin": "dta shutdown"
     },
@@ -181,6 +184,12 @@
     },
     "DtaClipByElementGeometry": {
       "keyin": "dta clip element geometry"
+    },
+    "DtaClassify": {
+      "keyin": "dta classify"
+    },
+    "CreateSectionDrawing": {
+      "keyin": "dta create section drawing"
     }
   }
 }

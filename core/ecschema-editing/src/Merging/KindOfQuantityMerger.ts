@@ -2,66 +2,77 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Format, InvertedUnit, KindOfQuantity, OverrideFormat, SchemaItem, SchemaItemKey, Unit } from "@itwin/ecschema-metadata";
-import { PropertyValueResolver, SchemaItemMerger } from "./SchemaItemMerger";
-import { KindOfQuantityChanges } from "../Validation/SchemaChanges";
+import { type KindOfQuantityDifference } from "../Differencing/SchemaDifference";
+import { type SchemaItemMergerHandler, updateSchemaItemFullName } from "./SchemaItemMerger";
+import { type MutableKindOfQuantity } from "../Editing/Mutable/MutableKindOfQuantity";
+import { SchemaMergeContext } from "./SchemaMerger";
 
 /**
+ * Defines a merge handler to merge KindOfQuantity schema items.
  * @internal
  */
-export default class KindOfQuantityMerger extends SchemaItemMerger<KindOfQuantity> {
-
-  protected override async merge(itemKey: SchemaItemKey, source: KindOfQuantity, changes: KindOfQuantityChanges) {
-    for (const presentationUnitChange of changes.presentationUnitChanges.values()) {
-      for (const change of presentationUnitChange.presentationUnitChange) {
-        const format = change.diagnostic.messageArgs![0];
-        const isDefault = source.defaultPresentationFormat === format;
-
-        if (OverrideFormat.isOverrideFormat(format)) {
-          const parentFormat = await this.lookup<Format>(format.parent);
-          if (parentFormat === undefined) {
-            throw new Error(`Unable to locate the format class ${format.parent.name} in the merged schema.`);
-          }
-
-          const unitAndLabels: Array<[Unit | InvertedUnit, string | undefined]> | undefined = [];
-          if (format.units !== undefined) {
-            for (const [unit, label] of format.units) {
-              const targetUnit = await this.lookup<Unit | InvertedUnit>(unit);
-              if (targetUnit === undefined) {
-                throw new Error(`Unable to locate the unit class ${unit.name} in the merged schema.`);
-              }
-              unitAndLabels.push([targetUnit, label]);
-            }
-          }
-          const overrideFormat = await this.context.editor.kindOfQuantities.createFormatOverride(itemKey, parentFormat.key, format.precision, unitAndLabels);
-          await this.context.editor.kindOfQuantities.addPresentationOverrideFormat(itemKey, overrideFormat, isDefault);
-        } else {
-          const targetFormat = await this.lookup<Format>(format);
-          if (targetFormat === undefined) {
-            throw new Error(`Unable to locate the format class ${format.name} in the merged schema.`);
-          }
-          await this.context.editor.kindOfQuantities.addPresentationFormat(itemKey, targetFormat.key, isDefault);
+export const kindOfQuantityMerger: SchemaItemMergerHandler<KindOfQuantityDifference> = {
+  async add(context, change) {
+    if (change.difference.persistenceUnit === undefined) {
+      return { errorMessage: "KindOfQuantity must define persistenceUnit" };
+    }
+    if (change.difference.relativeError === undefined) {
+      return { errorMessage: "KindOfQuantity must define relativeError" };
+    }
+    change.difference.persistenceUnit = await updateSchemaItemFullName(context, change.difference.persistenceUnit);
+    if(change.difference.presentationUnits) {
+      if(Array.isArray(change.difference.presentationUnits)) {
+        for(let index = 0; index < change.difference.presentationUnits.length; index++) {
+          change.difference.presentationUnits[index] = await updateOverrideFormat(context, change.difference.presentationUnits[index]);
         }
+      } else {
+        change.difference.presentationUnits = await updateOverrideFormat(context, change.difference.presentationUnits);
       }
     }
+
+    return context.editor.kindOfQuantities.createFromProps(context.targetSchemaKey, {
+      ...change.difference,
+      name: change.itemName,
+      schemaItemType: change.schemaType,
+      persistenceUnit: change.difference.persistenceUnit,
+      presentationUnits: change.difference.presentationUnits,
+      relativeError: change.difference.relativeError,
+    });
+  },
+  async modify(_context, change, itemKey, item: MutableKindOfQuantity) {
+    if(change.difference.label !== undefined) {
+      item.setDisplayLabel(change.difference.label);
+    }
+    if(change.difference.description !== undefined) {
+      item.setDescription(change.difference.description);
+    }
+    if(change.difference.relativeError !== undefined) {
+      item.setRelativeError(change.difference.relativeError);
+    }
+    if(change.difference.persistenceUnit !== undefined) {
+      // TODO: It should be checked if the unit is the same, but referring to the source schema.
+      throw new Error(`Changing the kind of quantity '${itemKey.name}' persistenceUnit is not supported.`);
+    }
+    return { itemKey };
+  },
+};
+
+async function updateOverrideFormat(context: SchemaMergeContext, formatString: string) {
+  // https://www.itwinjs.org/v1/bis/ec/kindofquantity/#format-string
+  const match = formatString.match(/^([^(]+)\((\d+)\)\[(.*)\]$/);
+  if(match === null) {
+    return formatString;
   }
 
-  /**
-   *
-   * Creates the property value resolver for [[KindOfQuantity]] items.
-   */
-  protected override async createPropertyValueResolver(): Promise<PropertyValueResolver<KindOfQuantity>> {
-    return {
-      persistenceUnit: (newValue, targetItemKey, oldValue) => {
-        if (oldValue !== undefined && oldValue !== newValue) {
-          throw new Error(`Changing the kind of quantity '${targetItemKey.name}' persistenceUnit is not supported.`);
-        }
-        const [schemaName, itemName] = SchemaItem.parseFullName(newValue);
-        if (this.context.targetSchema.getReferenceSync(schemaName) === undefined) {
-          return `${targetItemKey.schemaName}.${itemName}`;
-        }
-        return newValue;
-      },
-    };
+  const originalFormat = match[1];
+  const updatedFormat = await updateSchemaItemFullName(context, originalFormat);
+
+  const unitOverrides  = match[3].split("][");
+  for(let index=0; index< unitOverrides.length; index++) {
+    const [unit, label] = unitOverrides[index].split("|");
+    const updatedUnit = await updateSchemaItemFullName(context, unit);
+    unitOverrides[index] = `${updatedUnit}${label ? `|${label}` : ""}`;
   }
+
+  return `${updatedFormat}(${match[2]})[${unitOverrides.join("][")}]`;
 }

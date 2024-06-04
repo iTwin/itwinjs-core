@@ -278,6 +278,14 @@ export type ComputePriorityFunction<T> = (value: T) => number;
 export type Constructor<T> = new (...args: any[]) => T;
 
 // @internal
+export enum DbChangeStage {
+    // (undocumented)
+    New = 1,
+    // (undocumented)
+    Old = 0
+}
+
+// @internal
 export enum DbConflictCause {
     // (undocumented)
     Conflict = 3,
@@ -443,6 +451,20 @@ export enum DbResult {
     BE_SQLITE_ROW = 100,
     BE_SQLITE_SCHEMA = 17,
     BE_SQLITE_TOOBIG = 18
+}
+
+// @internal
+export enum DbValueType {
+    // (undocumented)
+    BlobVal = 4,
+    // (undocumented)
+    FloatVal = 2,
+    // (undocumented)
+    IntegerVal = 1,
+    // (undocumented)
+    NullVal = 5,
+    // (undocumented)
+    TextVal = 3
 }
 
 // @public

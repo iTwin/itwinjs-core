@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { DbResult, Id64, IModelStatus, Logger } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import { EntityMetaData, EntityReferenceSet, IModelError, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -16,7 +16,9 @@ import * as assert from "assert";
 
 const isGeneratedClassTag = Symbol("isGeneratedClassTag");
 
-/** The mapping between a BIS class name (in the form "schema:class") and its JavaScript constructor function
+/** Maintains the mapping between the name of a BIS [ECClass]($ecschema-metadata) (in "schema:class" format) and the JavaScript [[Entity]] class that implements it.
+ * Applications or modules that supply their own Entity subclasses should use [[registerModule]] or [[register]] at startup
+ * to establish their mappings.
  * @public
  */
 export class ClassRegistry {
@@ -25,7 +27,10 @@ export class ClassRegistry {
   public static isNotFoundError(err: any) { return (err instanceof IModelError) && (err.errorNumber === IModelStatus.NotFound); }
   /** @internal */
   public static makeMetaDataNotFoundError(className: string): IModelError { return new IModelError(IModelStatus.NotFound, `metadata not found for ${className}`); }
-  /** @internal */
+  /** Register a single `entityClass` defined in the specified `schema`.
+   * @see [[registerModule]] to register multiple classes.
+   * @public
+   */
   public static register(entityClass: typeof Entity, schema: typeof Schema) {
     entityClass.schema = schema;
     const key = (`${schema.schemaName}:${entityClass.className}`).toLowerCase();
@@ -193,9 +198,10 @@ export class ClassRegistry {
     return generatedClass;
   }
 
-  /** Register all of the classes found in the given module that derive from Entity. See the example in [[Schema]]
+  /** Register all of the classes found in the given module that derive from [[Entity]].
+   * [[register]] will be invoked for each subclass of `Entity` exported by `moduleObj`.
    * @param moduleObj The module to search for subclasses of Entity
-   * @param schema The schema for all found classes
+   * @param schema The schema that contains all of the [ECClass]($ecschema-metadata)es exported by `moduleObj`.
    */
   public static registerModule(moduleObj: any, schema: typeof Schema) {
     for (const thisMember in moduleObj) { // eslint-disable-line guard-for-in
@@ -268,11 +274,23 @@ export class ClassRegistry {
  * @internal
  */
 export class MetaDataRegistry {
-  private _registry: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();
+  private _registry = new Map<string, EntityMetaData>();
+  private _classIdToName = new Map<Id64String, string>();
 
   /** Get the specified Entity metadata */
-  public find(classFullName: string): EntityMetaData | undefined { return this._registry.get(classFullName.toLowerCase()); }
+  public find(classFullName: string): EntityMetaData | undefined {
+    return this._registry.get(classFullName.toLowerCase());
+  }
+
+  public findByClassId(classId: Id64String): EntityMetaData | undefined {
+    const name = this._classIdToName.get(classId);
+    return undefined !== name ? this.find(name) : undefined;
+  }
 
   /** Add metadata to the cache */
-  public add(classFullName: string, metaData: EntityMetaData): void { this._registry.set(classFullName.toLowerCase(), metaData); }
+  public add(classFullName: string, metaData: EntityMetaData): void {
+    const name = classFullName.toLowerCase();
+    this._registry.set(name, metaData);
+    this._classIdToName.set(metaData.classId, name);
+  }
 }

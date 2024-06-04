@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "4.5.0-dev.28",
+  "version": "4.7.0-dev.15",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "typings": "lib/cjs/core-backend",
@@ -19,6 +19,7 @@
     "cover": "nyc npm -s test",
     "extract-api": "betools extract-api --entry=core-backend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
     "ios:webpack:tests": "TESTS_GLOB=./lib/**/*.test.js webpack --config ../../tools/internal/ios/ios.webpack.config.js",
     "ios:copy:assets": "cpx \"./src/test/assets/**/*\" ../../tools/internal/lib/ios/assets/assets && cpx \"./src/assets/**/*\" ../../tools/internal/lib/ios/assets/assets",
@@ -44,9 +45,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.5.0-dev.28",
-    "@itwin/core-common": "workspace:^4.5.0-dev.28",
-    "@itwin/core-geometry": "workspace:^4.5.0-dev.28",
+    "@itwin/core-bentley": "workspace:^4.7.0-dev.15",
+    "@itwin/core-common": "workspace:^4.7.0-dev.15",
+    "@itwin/core-geometry": "workspace:^4.7.0-dev.15",
     "@opentelemetry/api": "^1.0.4"
   },
   "peerDependenciesMeta": {
@@ -65,7 +66,7 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-webpack-tools": "workspace:*",
     "@itwin/ecsql-common": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.44",
+    "@itwin/eslint-plugin": "^4.0.2",
     "@opentelemetry/api": "1.0.4",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
@@ -82,7 +83,7 @@
     "cpx2": "^3.0.0",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
-    "eslint": "^8.44.0",
+    "eslint": "^8.56.0",
     "fs-extra": "^8.1.0",
     "internal-tools": "workspace:*",
     "mocha": "^10.2.0",
@@ -93,11 +94,11 @@
     "sinon": "^17.0.1",
     "source-map-loader": "^4.0.0",
     "ts-node": "^10.8.2",
-    "typescript": "~5.0.2",
+    "typescript": "~5.3.3",
     "webpack": "^5.76.0"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "4.5.5",
+    "@bentley/imodeljs-native": "4.7.20",
     "@itwin/cloud-agnostic-core": "^2.1.0",
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/object-storage-azure": "^2.2.2",

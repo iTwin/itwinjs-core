@@ -368,7 +368,9 @@ describe("PresentationRpcImpl", () => {
 
       it("should reuse request promise when request is repeated multiple times and iModel takes long to find", async () => {
         const refreshIModelContainerPromise = new ResolvablePromise<void>();
-        (testData.imodelMock as moq.IMock<IModelDb>).setup(async (x) => x.refreshContainerForRpc(moq.It.isAny())).returns(async () => refreshIModelContainerPromise);
+        (testData.imodelMock as moq.IMock<IModelDb>)
+          .setup(async (x) => x.refreshContainerForRpc(moq.It.isAny()))
+          .returns(async () => refreshIModelContainerPromise);
 
         const rpcOptions: HierarchyRpcRequestOptions = {
           ...defaultRpcParams,
@@ -1240,30 +1242,37 @@ describe("PresentationRpcImpl", () => {
           descriptor: descriptorOverrides,
           keys: keys.toJSON(),
         };
-        const managerOptions: WithCancelEvent<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>> = {
-          imodel: testData.imodelMock.object,
-          rulesetOrId: testData.rulesetOrId,
-          paging: testData.pageOptions,
-          descriptor: descriptorOverrides,
-          keys,
-          cancelEvent: new BeEvent<() => void>(),
-        };
+        sinon.stub(impl, "getPagedContent").resolves({
+          statusCode: PresentationStatus.Success,
+          result: undefined,
+        });
+        const response = await impl.getPagedContentSet(testData.imodelToken, rpcOptions);
+        expect(response.statusCode).to.eq(PresentationStatus.Error);
+        expect(response.errorMessage).to.contain("empty result");
+      });
 
-        const presentationManagerDetailStub = {
-          getContent: sinon.spy(async () => undefined),
+      it("handles case when `getPagedContent` call returns an error status", async () => {
+        const keys = new KeySet();
+        const descriptorOverrides: DescriptorOverrides = {
+          displayType: "",
+          contentFlags: 0,
         };
-        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock
-          .setup(async (x) => x.getDetail().getContent(managerOptions))
-          .returns(async () => undefined)
-          .verifiable();
-        presentationManagerMock
-          .setup(async (x) => x.getContentSetSize(managerOptions))
-          .returns(async () => 0)
-          .verifiable();
-        const actualResult = await impl.getPagedContentSet(testData.imodelToken, rpcOptions);
-        presentationManagerMock.verifyAll();
-        expect(actualResult.result).to.deep.eq({ total: 0, items: [] });
+        const rpcOptions: Paged<ContentRpcRequestOptions> = {
+          ...defaultRpcParams,
+          rulesetOrId: testData.rulesetOrId,
+          descriptor: descriptorOverrides,
+          keys: keys.toJSON(),
+        };
+        sinon.stub(impl, "getPagedContent").resolves({
+          statusCode: PresentationStatus.Error,
+          errorMessage: "test error message",
+        });
+        expect(await impl.getPagedContentSet(testData.imodelToken, rpcOptions)).to.deep.eq({
+          statusCode: PresentationStatus.Error,
+          errorMessage: "test error message",
+          result: undefined,
+          diagnostics: undefined,
+        });
       });
 
       it("enforces maximum page size when requesting with larger size than allowed", async () => {

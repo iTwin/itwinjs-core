@@ -11,4 +11,5 @@ import { Phenomenon } from "@itwin/ecschema-metadata";
 export abstract class MutablePhenomenon extends Phenomenon {
   public abstract override setDefinition(definition: string): Promise<void>;
   public abstract override setDisplayLabel(displayLabel: string): void;
+  public abstract override setDescription(description: string): void;
 }

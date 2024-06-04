@@ -3,14 +3,16 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Field, NestedContentField, PropertiesField } from "../../presentation-common";
-import { FieldDescriptor, FieldDescriptorType } from "../../presentation-common/content/Fields";
+import { Field, NestedContentField, PrimitiveTypeDescription, PropertiesField, PropertyValueFormat } from "../../presentation-common";
+import { ArrayPropertiesField, FieldDescriptor, FieldDescriptorType, StructPropertiesField } from "../../presentation-common/content/Fields";
 import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
 import {
+  createTestArrayPropertiesContentField,
   createTestCategoryDescription,
   createTestNestedContentField,
   createTestPropertiesContentField,
   createTestSimpleContentField,
+  createTestStructPropertiesContentField,
 } from "../_helpers/Content";
 import { createTestECClassInfo, createTestPropertyInfo, createTestRelatedClassInfo } from "../_helpers/EC";
 
@@ -28,6 +30,61 @@ describe("Field", () => {
       const json = createTestPropertiesContentField({
         category,
         properties: [{ property: createTestPropertyInfo() }],
+      }).toJSON();
+      const field = Field.fromJSON(json, [category]);
+      expect(field).to.matchSnapshot();
+    });
+
+    it("creates valid ArrayPropertiesField from valid JSON", () => {
+      const category = createTestCategoryDescription();
+      const itemType: PrimitiveTypeDescription = {
+        valueFormat: PropertyValueFormat.Primitive,
+        typeName: "string",
+      };
+      const json = createTestArrayPropertiesContentField({
+        category,
+        properties: [{ property: createTestPropertyInfo() }],
+        type: {
+          valueFormat: PropertyValueFormat.Array,
+          typeName: `${itemType.typeName}[]`,
+          memberType: itemType,
+        },
+        itemsField: createTestPropertiesContentField({
+          properties: [{ property: createTestPropertyInfo() }],
+          renderer: { name: "custom-renderer" },
+          editor: { name: "custom-editor" },
+        }),
+      }).toJSON();
+      const field = Field.fromJSON(json, [category]);
+      expect(field).to.matchSnapshot();
+    });
+
+    it("creates valid StructPropertiesField from valid JSON", () => {
+      const category = createTestCategoryDescription();
+      const memberType: PrimitiveTypeDescription = {
+        valueFormat: PropertyValueFormat.Primitive,
+        typeName: "string",
+      };
+      const json = createTestStructPropertiesContentField({
+        category,
+        properties: [{ property: createTestPropertyInfo() }],
+        type: {
+          valueFormat: PropertyValueFormat.Struct,
+          typeName: `MyStruct`,
+          members: [
+            {
+              name: "member1",
+              label: "Member One",
+              type: memberType,
+            },
+          ],
+        },
+        memberFields: [
+          createTestPropertiesContentField({
+            properties: [{ property: createTestPropertyInfo() }],
+            type: memberType,
+          }),
+        ],
       }).toJSON();
       const field = Field.fromJSON(json, [category]);
       expect(field).to.matchSnapshot();
@@ -150,6 +207,24 @@ describe("PropertiesField", () => {
       }).toJSON();
       const field = PropertiesField.fromJSON(json, [category]);
       expect(field).to.matchSnapshot();
+    });
+  });
+
+  describe("isArrayPropertiesField", () => {
+    it("returns false", () => {
+      const field = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo() }],
+      });
+      expect(field.isArrayPropertiesField()).to.be.false;
+    });
+  });
+
+  describe("isStructPropertiesField", () => {
+    it("returns false", () => {
+      const field = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo() }],
+      });
+      expect(field.isStructPropertiesField()).to.be.false;
     });
   });
 
@@ -419,6 +494,61 @@ describe("PropertiesField", () => {
       });
       const clone = field.clone();
       expect(clone).to.be.instanceOf(PropertiesField);
+      expect(clone.toJSON()).to.deep.eq(field.toJSON());
+    });
+  });
+
+  describe("isArrayPropertiesField", () => {
+    it("returns false for non-array properties field", () => {
+      const field = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo() }],
+      });
+      expect(field.isArrayPropertiesField()).to.be.false;
+    });
+  });
+});
+
+describe("ArrayPropertiesField", () => {
+  describe("isArrayPropertiesField", () => {
+    it("returns true", () => {
+      const field = createTestArrayPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ type: "string[]" }) }],
+        itemsField: createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo() }] }),
+      });
+      expect(field.isArrayPropertiesField()).to.be.true;
+    });
+  });
+
+  describe("clone", () => {
+    it("returns exact copy of itself", () => {
+      const field = createTestArrayPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ type: "string[]" }) }],
+        itemsField: createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo() }] }),
+      });
+      const clone = field.clone();
+      expect(clone).to.be.instanceOf(ArrayPropertiesField);
+      expect(clone.toJSON()).to.deep.eq(field.toJSON());
+    });
+  });
+});
+
+describe("StructPropertiesField", () => {
+  describe("isStructPropertiesField", () => {
+    it("returns true", () => {
+      const field = createTestStructPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ type: "MyStruct" }) }],
+      });
+      expect(field.isStructPropertiesField()).to.be.true;
+    });
+  });
+
+  describe("clone", () => {
+    it("returns exact copy of itself", () => {
+      const field = createTestStructPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ type: "MyStruct" }) }],
+      });
+      const clone = field.clone();
+      expect(clone).to.be.instanceOf(StructPropertiesField);
       expect(clone.toJSON()).to.deep.eq(field.toJSON());
     });
   });

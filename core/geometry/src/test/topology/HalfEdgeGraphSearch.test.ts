@@ -16,7 +16,6 @@ import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "../../topology/HalfEdgeGraphSearch";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { ImportedSample } from "../testInputs/ImportedSamples";
 
 // cspell:word internaldocs
 
@@ -122,12 +121,12 @@ describe("HalfEdgeGraphSearch", () => {
     return sampleMesh;
   }
   it("collectConnectedComponentsComplexMesh", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const meshes: IndexedPolyface[] = [];
     meshes.push(getSampleMesh());
-    meshes.push(ImportedSample.createIndexedPolyface("./src/test/testInputs/polyface/mesh7K.imjs")!);
-    meshes.push(ImportedSample.createIndexedPolyface("./src/test/testInputs/polyface/mesh10K-2components.imjs")!);
+    meshes.push(GeometryCoreTestIO.jsonFileToIndexedPolyface("./src/test/data/polyface/mesh7K.imjs")!);
+    meshes.push(GeometryCoreTestIO.jsonFileToIndexedPolyface("./src/test/data/polyface/mesh10K-2components.imjs")!);
     let xShift = 0;
     let yShift = 0;
     for (const mesh of meshes) {
@@ -244,7 +243,7 @@ describe("HalfEdgeGraphSearch", () => {
     expect(ck.getNumErrors()).equals(0);
   });
   it("HalfEdgeGraphSearch.graphToPolyface", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const graph = new HalfEdgeGraph();
     const node0 = graph.addEdgeXY(1, 1, 0, 0);

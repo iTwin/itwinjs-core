@@ -8,7 +8,7 @@ import * as chaiAsPromised from "chai-as-promised";
 import { existsSync, removeSync } from "fs-extra";
 import { join } from "path";
 import * as sinon from "sinon";
-import { BriefcaseDb, CloudSqlite, IModelHost, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
+import { BlobContainer, BriefcaseDb, CloudSqlite, IModelHost, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { assert, BeDuration, DbResult, Guid, GuidString, OpenMode } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
@@ -66,12 +66,12 @@ describe("CloudSqlite", () => {
 
   it("should query bcvHttpLog", async () => {
     const c1Props = { containerId: testContainers[0].containerId, baseUri: AzuriteTest.baseUri, userToken: "" };
-    let metadata = await AzuriteTest.service.queryMetadata(c1Props)!;
+    let metadata = await AzuriteTest.service.queryMetadata(c1Props);
     let json = metadata.json!;
 
     expect(json.blockSize).equal("64K");
     await AzuriteTest.service.updateJson(c1Props, { blockSize: "128K", newProp: true });
-    metadata = await AzuriteTest.service.queryMetadata(c1Props)!;
+    metadata = await AzuriteTest.service.queryMetadata(c1Props);
     json = metadata.json!;
     expect(json.blockSize).equal("128K");
     expect(json.newProp).equal(true);
@@ -476,6 +476,16 @@ describe("CloudSqlite", () => {
     ps1.close(); // kills the timer that's using fake clock. Must be before restoring sinon stubs
     clock.restore();
     sinon.restore();
+  });
+
+  it("should throw error if BlobContainer.service is undefined", async () => {
+    const contain1 = testContainers[0];
+    const contProps = { baseUri: AzuriteTest.baseUri, containerId: contain1.containerId, storageType: AzuriteTest.storageType, writeable: true };
+
+    const service = BlobContainer.service;
+    BlobContainer.service = undefined; // ensures the service is un-instantiated
+    await expect(CloudSqlite.requestToken(contProps)).to.be.rejectedWith("BlobContainer.service is not defined");
+    BlobContainer.service = service;
   });
 });
 

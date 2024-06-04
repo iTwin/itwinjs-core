@@ -319,6 +319,14 @@ interface ToolEvent {
   vp?: ScreenViewport; // Viewport is optional - keyboard events aren't associated with a Viewport.
 }
 
+/** Supplied by EditTools.initialize to make sure the current edit command finishes before starting a new primitive tool in the event that
+ * the current edit tool that did not do so in it's onCleanup.
+ * @internal
+ */
+export interface EditCommandHandler {
+  finishCommand(): Promise<string>;
+}
+
 /** Controls the operation of [[Tool]]s, administering the current [[ViewTool]], [[PrimitiveTool]], and [[IdleTool]] and forwarding events to the appropriate tool.
  * @see [[IModelApp.toolAdmin]] to access the session's `ToolAdmin`.
  * @public
@@ -345,6 +353,7 @@ export class ToolAdmin {
   private _defaultToolArgs?: any[];
   private _lastHandledMotionTime?: BeTimePoint;
   private _mouseMoveOverTimeout?: NodeJS.Timeout;
+  private _editCommandHandler?: EditCommandHandler;
 
   /** The name of the [[PrimitiveTool]] to use as the default tool. Defaults to "Select", referring to [[SelectionTool]].
    * @see [[startDefaultTool]] to activate the default tool.
@@ -1597,9 +1606,16 @@ export class ToolAdmin {
   }
 
   /** @internal */
+  public setEditCommandHandler(handler?: EditCommandHandler) {
+    this._editCommandHandler = handler;
+  }
+
+  /** @internal */
   public async setPrimitiveTool(newTool?: PrimitiveTool) {
     if (undefined !== this._primitiveTool) {
       await this._primitiveTool.onCleanup();
+      if (undefined !== this._editCommandHandler)
+        await this._editCommandHandler.finishCommand();
       this._primitiveTool = undefined;
     }
     this._primitiveTool = newTool;
@@ -1705,6 +1721,18 @@ export class ToolAdmin {
   public async startDefaultTool(): Promise<void> {
     if (!await IModelApp.tools.run(this.defaultToolId, this.defaultToolArgs))
       return this.startPrimitiveTool(undefined);
+  }
+
+  /**
+   * Call from external events or immediate tools that may have invalidated the current primitive tool's state.
+   * Examples are undo, which may invalidate any references to elements, or an immediate tool that uses an edit command to write to the iModel,
+   * since immediate tools do not replace the active tool.
+   * The current primitive tool is expected to call installTool with a new instance, or exitTool to start the default tool.
+   * @note Should be called even if the primitive tool is currently suspended by a view tool or input collector.
+   */
+  public async restartPrimitiveTool(): Promise<void> {
+    if (undefined !== this._primitiveTool)
+      await this._primitiveTool.onRestartTool();
   }
 
   public setCursor(cursor: string | undefined): void {

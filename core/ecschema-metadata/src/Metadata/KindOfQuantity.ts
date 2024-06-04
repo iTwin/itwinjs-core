@@ -279,6 +279,14 @@ export class KindOfQuantity extends SchemaItem {
     if (undefined !== kindOfQuantityProps.presentationUnits)
       await this.processPresentationUnits(kindOfQuantityProps.presentationUnits);
   }
+
+  /**
+   * @alpha
+   * Used for schema editing.
+   */
+  protected setRelativeError(relativeError: number): void {
+    this._relativeError = relativeError;
+  }
 }
 /**
  * @internal

@@ -20,9 +20,13 @@ import { TransformProps } from '@itwin/core-geometry';
 // @beta
 export interface BasicManipulationCommandIpc extends EditCommandIpc {
     // (undocumented)
+    addAllowedChannel(channelKey: string): Promise<void>;
+    // (undocumented)
     deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
     insertGeometricElement(props: GeometricElementProps): Promise<Id64String>;
     insertGeometryPart(props: GeometryPartProps): Promise<Id64String>;
+    // (undocumented)
+    removeAllowedChannel(channelKey: string): Promise<void>;
     requestElementGeometry(id: Id64String, filter?: FlatBufferGeometryFilter): Promise<ElementGeometryInfo | undefined>;
     // (undocumented)
     rotatePlacement(ids: CompressedId64Set, matrix: Matrix3dProps, aboutCenter: boolean): Promise<IModelStatus>;

@@ -506,7 +506,7 @@ describe("GrowablePoint3dArray", () => {
       const vectorI0 = xyzPoints.vectorXYAndZIndex(spacePoint, i0);
       const vectorI1 = xyzPoints.vectorIndexXYAndZ(i0, spacePoint);
       if (ck.testPointer(vectorI0) && ck.testPointer(vectorI1) && distance0 !== undefined) {
-        ck.testCoordinate(vectorI0.magnitude(), distance0)!;
+        ck.testCoordinate(vectorI0.magnitude(), distance0);
         ck.testCoordinate(distance0, distance1);
         ck.testExactNumber(vectorI0.x, -vectorI1.x);
         ck.testExactNumber(vectorI0.y, -vectorI1.y);
@@ -582,7 +582,7 @@ describe("GrowablePoint3dArray", () => {
         const dotA = array0.dotProductIndexIndexIndex(k1, k2, k);
         const dotB = array0.dotProductIndexIndexXYAndZ(k1, k2, point0);
         if (ck.testDefined(dotA) && ck.testDefined(dotB))
-          ck.testExactNumber(dotA!, dotB!, "dot products to indexed points");
+          ck.testExactNumber(dotA, dotB, "dot products to indexed points");
       }
     }
     // bad transfers when the dest is not empty . . .

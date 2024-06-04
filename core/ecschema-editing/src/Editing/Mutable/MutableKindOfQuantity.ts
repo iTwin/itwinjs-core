@@ -12,5 +12,7 @@ export abstract class MutableKindOfQuantity extends KindOfQuantity {
   public abstract override addPresentationFormat(format: Format | OverrideFormat, isDefault: boolean): void;
   public abstract override createFormatOverride(parent: Format, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): OverrideFormat;
   public abstract override setDisplayLabel(displayLabel: string): void;
+  public abstract override setDescription(description: string): void;
+  public abstract override setRelativeError(relativeError: number): void;
   public abstract override set persistenceUnit(value: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined);
 }

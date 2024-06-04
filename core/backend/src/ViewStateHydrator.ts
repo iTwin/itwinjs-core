@@ -7,6 +7,7 @@ import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, ModelProps
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelDb } from "./IModelDb";
 
+/** @internal */
 export class ViewStateHydrator {
   private _imodel: IModelDb;
   public constructor(iModel: IModelDb) {

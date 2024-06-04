@@ -22,9 +22,12 @@ import { HubMock } from "../../HubMock";
 import {
   BriefcaseDb,
   BriefcaseManager,
-  DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, SpatialCategory, Subject,
+  ChannelControl,
+  DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, LockState, OpenBriefcaseArgs, SpatialCategory, Subject,
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
+import { ServerBasedLocks } from "../../ServerBasedLocks";
+
 chai.use(chaiAsPromised);
 
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
@@ -53,6 +56,44 @@ describe("IModelWriteTest", () => {
   });
   after(() => HubMock.shutdown());
 
+  it("Check busyTimeout option", async () => {
+    const iModelProps = {
+      iModelName: "ReadWriteTest",
+      iTwinId,
+    };
+
+    const iModelId = await HubMock.createNewIModel(iModelProps);
+    const briefcaseProps = await BriefcaseManager.downloadBriefcase({ accessToken: "test token", iTwinId, iModelId });
+
+    const tryOpen = async (args: OpenBriefcaseArgs) => {
+      const start = performance.now();
+      let didThrow = false;
+      try {
+        await BriefcaseDb.open(args);
+
+      } catch (e: any) {
+        assert.strictEqual(e.errorNumber, DbResult.BE_SQLITE_BUSY, "Expect error 'Db is busy'");
+        didThrow = true;
+      }
+      assert.isTrue(didThrow);
+      return performance.now() - start;
+    };
+    const seconds = (s: number) => s * 1000;
+
+    const db = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
+    db.saveChanges();
+    // lock db so another connection cannot write to it.
+    db.saveFileProperty({ name: "test", namespace: "test" }, "");
+
+    assert.isAtMost(await tryOpen({ fileName: briefcaseProps.fileName, busyTimeout: seconds(0) }), seconds(1), "open should fail with busy error instantly");
+    assert.isAtLeast(await tryOpen({ fileName: briefcaseProps.fileName, busyTimeout: seconds(1) }), seconds(1), "open should fail with atleast 1 sec delay due to retry");
+    assert.isAtLeast(await tryOpen({ fileName: briefcaseProps.fileName, busyTimeout: seconds(2) }), seconds(2), "open should fail with atleast 2 sec delay due to retry");
+    assert.isAtLeast(await tryOpen({ fileName: briefcaseProps.fileName, busyTimeout: seconds(3) }), seconds(3), "open should fail with atleast 3 sec delay due to retry");
+
+    db.abandonChanges();
+    db.close();
+  });
+
   it("WatchForChanges", async () => {
     const iModelProps = {
       iModelName: "ReadWriteTest",
@@ -74,6 +115,7 @@ describe("IModelWriteTest", () => {
     sinon.stub(fs, "watch").callsFake(watchStub);
 
     const bc = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
+    bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const roBC = await BriefcaseDb.open({ fileName: briefcaseProps.fileName, watchForChanges: true });
 
     const code1 = IModelTestUtils.getUniqueModelCode(bc, "newPhysicalModel1");
@@ -106,6 +148,7 @@ describe("IModelWriteTest", () => {
     const rwIModelId = await HubMock.createNewIModel({ accessToken: adminAccessToken, iTwinId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
     const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken: adminAccessToken, iTwinId, iModelId: rwIModelId });
+    rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     // create and insert a new model with code1
     const code1 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel1");
@@ -227,6 +270,7 @@ describe("IModelWriteTest", () => {
         </ECEntityClass>
     </ECSchema>`;
     await rwIModel.importSchemaStrings([schema]);
+    rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     rwIModel.saveChanges("user 1: schema changeset");
     if ("push changes") {
       // Push the changes to the hub
@@ -311,6 +355,8 @@ describe("IModelWriteTest", () => {
         </ECEntityClass>
     </ECSchema>`;
     await rwIModel.importSchemaStrings([schema]);
+    rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    rwIModel2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     rwIModel.saveChanges("user 1: schema changeset");
     if ("push changes") {
@@ -603,7 +649,8 @@ describe("IModelWriteTest", () => {
   it("parent lock should suffice when inserting into deeply nested sub-model", async () => {
     const version0 = IModelTestUtils.resolveAssetFile("test.bim");
     const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "subModelCoveredByParentLockTest", version0 });
-    const iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId });
+    let iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId });
+    iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     /*
     Job Subject
@@ -615,7 +662,10 @@ describe("IModelWriteTest", () => {
     const definitionModelId = DefinitionModel.insert(iModel, jobSubjectId, "Definition");
 
     iModel.saveChanges();
+    const locks = iModel.locks;
+    expect(locks.isServerBased).true;
     await iModel.pushChanges({ description: "create model" });
+    expect(iModel.locks).equal(locks); // pushing should not change your locks
 
     /*
     Job Subject                                           <--- Lock this
@@ -707,11 +757,30 @@ describe("IModelWriteTest", () => {
     const drawingGraphicId1 = iModel.elements.insertElement(drawingGraphicProps1);
 
     assert.isTrue(iModel.elements.getElement(drawingGraphicId1).model === drawingModelId);
-
     iModel.saveChanges();
+    expect(iModel.locks.holdsExclusiveLock(drawingModelId)).true;
+
+    const fileName = iModel.nativeDb.getFilePath();
+    iModel.close(); // close rw
+    iModel = await BriefcaseDb.open({ fileName, readonly: true }); // reopen readonly
+    expect(iModel.locks.isServerBased).false; // readonly sessions should not have server based locks
+
+    // verify we can push changes from a readonly briefcase
     await iModel.pushChanges({ description: "insert graphic into nested sub-model" });
 
+    // try it again to verify we can get the ServerBasedLocks again
+    await iModel.pushChanges({ description: "should do nothing" });
     iModel.close();
+
+    // reopen readwrite to verify we released all locks from readonly briefcase
+    iModel = await BriefcaseDb.open({ fileName });
+    expect(iModel.locks.isServerBased).true;
+    const serverLocks = iModel.locks as ServerBasedLocks;
+    expect(serverLocks.holdsExclusiveLock(drawingModelId)).false;
+    expect(serverLocks.getLockCount(LockState.Shared)).equal(0);
+    expect(serverLocks.getLockCount(LockState.Exclusive)).equal(0);
+    iModel.close();
+
   });
 
 });

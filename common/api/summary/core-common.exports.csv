@@ -15,6 +15,7 @@ public;AnalysisStyleProps
 public;AnalysisStyleThematic
 public;AnalysisStyleThematicProps
 public;AppearanceOverrideProps
+beta;ApplyTextStyleOptions
 public;AreaFillProps
 public;AreaPattern
 beta;Atmosphere
@@ -46,6 +47,7 @@ public;Base64EncodedString
 public;BaseLayerProps = BaseMapLayerProps | ColorDefProps
 public;BaseLayerSettings = BaseMapLayerSettings | ColorDef
 public;BaseLayerSettings
+beta;BaselineShift = "subscript" | "superscript" | "none"
 public;BaseMapLayerProps 
 public;BaseMapLayerSettings 
 public;BaseReaderOptions
@@ -274,6 +276,8 @@ public;FontMapProps
 public;FontProps
 public;FontType
 internal;FormDataCommon
+beta;FractionRun 
+beta;FractionRunProps 
 public;FresnelSettings
 public;FresnelSettingsProps
 public;Frustum
@@ -445,6 +449,8 @@ internal;LegacyAnalysisStyleProps
 internal;LightLocationProps 
 public;LightSettings
 public;LightSettingsProps
+beta;LineBreakRun 
+beta;LineBreakRunProps 
 public;LinePixels
 public;LineStyle
 public;LineStyleProps 
@@ -505,6 +511,8 @@ public;NonUniformColor
 public;NormalMapFlags
 beta;NormalMapParams
 public;NormalMapProps 
+internal;NotifyEntitiesChangedArgs 
+internal;NotifyEntitiesChangedMetadata
 public;Npc
 public;NpcCenter: Point3d
 public;NpcCorners: Point3d[]
@@ -528,6 +536,7 @@ public;OpenBriefcaseOptions
 public;OpenBriefcaseProps 
 beta;OpenCheckpointArgs
 public;OpenDbKey
+public;OpenSqliteArgs
 internal;OPERATION: unique symbol
 alpha;OrbitGtBlobProps
 beta;OverriddenBy
@@ -541,6 +550,8 @@ public;PackedFeature
 internal;PackedFeatureModelTable
 internal;PackedFeatureTable 
 public;PackedFeatureWithIndex 
+beta;Paragraph 
+beta;ParagraphProps 
 internal;ParsedTileTreeIdAndContentId
 internal;parseTileTreeIdAndContentId(treeId: string, contentId: string): ParsedTileTreeIdAndContentId
 public;PartReference
@@ -710,7 +721,7 @@ internal;RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) =
 internal;RpcRequestFulfillment
 internal;RpcRequestFulfillment
 internal;RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number
-internal;RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void
+internal;RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason?: any) => void) => void
 public;RpcRequestStatus
 deprecated;RpcRequestStatus
 public;RpcRequestStatus
@@ -724,6 +735,9 @@ beta;RpcRoutingToken
 internal;RpcSerializedValue
 internal;RpcSerializedValue
 internal;RpcSessionInvocation 
+beta;Run = TextRun | FractionRun | LineBreakRun
+beta;Run
+beta;RunProps = TextRunProps | FractionRunProps | LineBreakRunProps
 beta;SchemaState
 public;SectionDrawingLocationProps 
 public;SectionDrawingProps 
@@ -768,6 +782,7 @@ public;SpatialClassifierProps
 public;SpatialClassifiers 
 public;SpatialClassifiersContainer
 public;SpatialViewDefinitionProps 
+beta;StackedFractionType = "horizontal" | "diagonal"
 public;StandaloneOpenOptions = OpenDbKey
 beta;StorageValue = string | number | boolean | undefined | Uint8Array
 public;SubCategoryAppearance
@@ -786,10 +801,31 @@ public;TerrainProviderName = string
 deprecated;TerrainProviderName = string
 public;TerrainSettings
 internal;TestRpcManager
+beta;TextAnnotation
+public;TextAnnotation2dProps 
+public;TextAnnotation3dProps 
+beta;TextAnnotationAnchor
+beta;TextAnnotationCreateArgs
+beta;TextAnnotationProps
+beta;TextBlock 
+beta;class TextBlockComponent
+beta;TextBlockComponentProps
+beta;TextBlockGeometryProps
+beta;TextBlockGeometryPropsEntry =
+beta;TextBlockJustification = "left" | "center" | "right"
+beta;TextBlockProps 
+beta;TextBlockStringifyOptions
+beta;TextRun 
+beta;TextRunProps 
 public;TextString
 beta;TextStringGlyphData
 public;TextStringPrimitive
 public;TextStringProps
+beta;TextStyle
+beta;TextStyleColor = ColorDefProps | "subcategory"
+beta;TextStyleProps
+beta;TextStyleSettings
+beta;TextStyleSettingsProps
 public;TextureData
 public;TextureImageSpec = Id64String | string
 public;TextureLoadProps

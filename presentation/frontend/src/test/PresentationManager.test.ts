@@ -1108,13 +1108,12 @@ describe("PresentationManager", () => {
       const keyset = new KeySet();
       const descriptor = createTestContentDescriptor({ fields: [] });
       const result = {
-        total: 999,
+        total: 1,
         items: [new Item([], "", "", undefined, {}, {}, [])],
       };
       const options: Paged<ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet>> = {
         imodel: testData.imodelMock.object,
         rulesetOrId: testData.rulesetId,
-        paging: testData.pageOptions,
         descriptor: descriptor.createDescriptorOverrides(),
         keys: keyset,
       };

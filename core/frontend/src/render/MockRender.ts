@@ -89,6 +89,7 @@ export namespace MockRender {
 
     public dispose() { }
     public collectStatistics(_stats: RenderMemory.Statistics): void { }
+    public unionRange() { }
   }
 
   export class List extends Graphic {

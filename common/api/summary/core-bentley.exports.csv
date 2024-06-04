@@ -32,10 +32,12 @@ public;CompressedId64Set = string
 public;CompressedId64Set
 public;ComputePriorityFunction
 public;Constructor
+internal;DbChangeStage
 internal;DbConflictCause
 internal;DbConflictResolution
 public;DbOpcode
 public;DbResult
+internal;DbValueType
 public;Dictionary
 public;DictionaryEntry
 public;DisposableList 

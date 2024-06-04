@@ -1,5 +1,8 @@
 lockfileVersion: 5.4
 
+overrides:
+  mysql2: ^3.9.8
+
 importers:
 
   .:
@@ -7,7 +10,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.5.5
+      '@bentley/imodeljs-native': 4.7.20
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.1.0
       '@itwin/core-bentley': workspace:*
@@ -16,7 +19,7 @@ importers:
       '@itwin/core-telemetry': workspace:*
       '@itwin/core-webpack-tools': workspace:*
       '@itwin/ecsql-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/object-storage-azure': ^2.2.2
       '@itwin/object-storage-core': ^2.2.2
       '@opentelemetry/api': 1.0.4
@@ -35,7 +38,7 @@ importers:
       cpx2: ^3.0.0
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       form-data: ^2.5.1
       fs-extra: ^8.1.0
       internal-tools: workspace:*
@@ -53,11 +56,11 @@ importers:
       source-map-loader: ^4.0.0
       touch: ^3.1.0
       ts-node: ^10.8.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
-      '@bentley/imodeljs-native': 4.5.5
+      '@bentley/imodeljs-native': 4.7.20
       '@itwin/cloud-agnostic-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.2.2_scz6qrwecfbbxg4vskopkl3a7u
@@ -78,7 +81,7 @@ importers:
       '@itwin/core-geometry': link:../geometry
       '@itwin/core-webpack-tools': link:../../tools/webpack-core
       '@itwin/ecsql-common': link:../ecsql/common
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@opentelemetry/api': 1.0.4
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
@@ -95,7 +98,7 @@ importers:
       cpx2: 3.0.0
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      eslint: 8.44.0
+      eslint: 8.56.0
       internal-tools: link:../../tools/internal
       mocha: 10.2.0
       node-simctl: 7.2.1
@@ -104,14 +107,14 @@ importers:
       rimraf: 3.0.2
       sinon: 17.0.1
       source-map-loader: 4.0.0_webpack@5.76.0
-      ts-node: 10.8.2_x3yja37h4nvnkgmzh32ve3yzmm
-      typescript: 5.0.2
+      ts-node: 10.8.2_zifzk4dbgzfq65cu6hdbkv4dfq
+      typescript: 5.3.3
       webpack: 5.76.0
 
   ../../core/bentley:
     specifiers:
       '@itwin/build-tools': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@opentelemetry/api': 1.0.4
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
@@ -119,14 +122,14 @@ importers:
       '@types/node': ~18.16.20
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@opentelemetry/api': 1.0.4
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
@@ -134,30 +137,31 @@ importers:
       '@types/node': 18.16.20
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../core/common:
     specifiers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/object-storage-core': ^2.2.2
       '@types/chai': 4.3.1
       '@types/flatbuffers': ~1.10.0
       '@types/mocha': ^10.0.6
+      '@types/node': ~18.16.20
       chai: ^4.3.10
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       flatbuffers: ~1.12.0
       js-base64: ^3.6.1
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     dependencies:
       flatbuffers: 1.12.0
       js-base64: 3.6.1
@@ -165,17 +169,18 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-geometry': link:../geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@itwin/object-storage-core': 2.2.2
       '@types/chai': 4.3.1
       '@types/flatbuffers': 1.10.0
       '@types/mocha': 10.0.6
+      '@types/node': 18.16.20
       chai: 4.3.10
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../core/ecschema-editing:
     specifiers:
@@ -185,7 +190,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-quantity': workspace:*
       '@itwin/ecschema-metadata': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/almost-equal': 1.1.0
       '@types/benchmark': ^2.1.0
       '@types/chai': 4.3.1
@@ -198,12 +203,12 @@ importers:
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^17.0.1
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     devDependencies:
       '@bentley/units-schema': 1.0.8
       '@itwin/build-tools': link:../../tools/build
@@ -211,7 +216,7 @@ importers:
       '@itwin/core-common': link:../common
       '@itwin/core-quantity': link:../quantity
       '@itwin/ecschema-metadata': link:../ecschema-metadata
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/almost-equal': 1.1.0
       '@types/benchmark': 2.1.0
       '@types/chai': 4.3.1
@@ -224,12 +229,12 @@ importers:
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       cpx2: 3.0.0
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 17.0.1
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../core/ecschema-locaters:
     specifiers:
@@ -238,7 +243,7 @@ importers:
       '@bentley/bis-core-schema': ^1.0.15
       '@bentley/bis-custom-attributes-schema': ^1.0.0
       '@bentley/construction-schema': ^1.0.4
-      '@bentley/core-custom-attributes-schema': ^1.0.3
+      '@bentley/core-custom-attributes-schema': ^1.0.4
       '@bentley/ecdb-map-schema': ^2.0.1
       '@bentley/ecdb-schema-policies-schema': ^1.0.1
       '@bentley/formats-schema': ^1.0.0
@@ -251,7 +256,7 @@ importers:
       '@bentley/units-schema': ^1.0.8
       '@itwin/build-tools': workspace:*
       '@itwin/ecschema-metadata': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
@@ -263,25 +268,25 @@ importers:
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       fs-extra: ^8.1.0
-      glob: ^7.1.2
+      glob: ^10.3.12
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^17.0.1
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     dependencies:
       '@xmldom/xmldom': 0.8.5
       fs-extra: 8.1.0
-      glob: 7.1.2
+      glob: 10.3.12
     devDependencies:
       '@bentley/aec-units-schema': 1.0.3
       '@bentley/architectural-physical-schema': 1.0.3
       '@bentley/bis-core-schema': 1.0.15
       '@bentley/bis-custom-attributes-schema': 1.0.0
       '@bentley/construction-schema': 1.0.4
-      '@bentley/core-custom-attributes-schema': 1.0.3
+      '@bentley/core-custom-attributes-schema': 1.0.4
       '@bentley/ecdb-map-schema': 2.0.1
       '@bentley/ecdb-schema-policies-schema': 1.0.1
       '@bentley/formats-schema': 1.0.0
@@ -294,7 +299,7 @@ importers:
       '@bentley/units-schema': 1.0.8
       '@itwin/build-tools': link:../../tools/build
       '@itwin/ecschema-metadata': link:../ecschema-metadata
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/fs-extra': 4.0.7
@@ -305,12 +310,12 @@ importers:
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       cpx2: 3.0.0
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 17.0.1
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../core/ecschema-metadata:
     specifiers:
@@ -318,7 +323,7 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-quantity': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/almost-equal': 1.1.0
       '@types/benchmark': ^2.1.0
       '@types/chai': 4.3.1
@@ -332,12 +337,12 @@ importers:
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^17.0.1
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     dependencies:
       almost-equal: 1.1.0
     devDependencies:
@@ -345,7 +350,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-quantity': link:../quantity
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/almost-equal': 1.1.0
       '@types/benchmark': 2.1.0
       '@types/chai': 4.3.1
@@ -358,12 +363,12 @@ importers:
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       cpx2: 3.0.0
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 17.0.1
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../core/ecschema-rpc/common:
     specifiers:
@@ -372,20 +377,20 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-metadata': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
-      eslint: ^8.44.0
+      '@itwin/eslint-plugin': ^4.0.2
+      eslint: ^8.56.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-bentley': link:../../bentley
       '@itwin/core-common': link:../../common
       '@itwin/core-geometry': link:../../geometry
       '@itwin/ecschema-metadata': link:../../ecschema-metadata
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
-      eslint: 8.44.0
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
+      eslint: 8.56.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../core/ecschema-rpc/impl:
     specifiers:
@@ -396,10 +401,10 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/ecschema-rpcinterface-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
-      eslint: ^8.44.0
+      '@itwin/eslint-plugin': ^4.0.2
+      eslint: ^8.56.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-backend': link:../../backend
@@ -408,37 +413,37 @@ importers:
       '@itwin/core-geometry': link:../../geometry
       '@itwin/ecschema-metadata': link:../../ecschema-metadata
       '@itwin/ecschema-rpcinterface-common': link:../common
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
-      eslint: 8.44.0
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
+      eslint: 8.56.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../core/ecsql/common:
     specifiers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       chai: ^4.3.10
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     dependencies:
       '@itwin/core-bentley': link:../../bentley
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       chai: 4.3.10
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../core/electron:
     specifiers:
@@ -448,20 +453,20 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@openid/appauth': ^1.2.6
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
       chai: ^4.3.10
-      electron: ^29.0.0
-      eslint: ^8.44.0
-      glob: ^7.1.2
+      electron: ^30.0.0
+      eslint: ^8.56.0
+      glob: ^10.3.12
       mocha: ^10.2.0
       open: ^7.0.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       username: ^5.1.0
       webpack: ^5.76.0
       webpack-cli: ^5.0.1
@@ -476,18 +481,18 @@ importers:
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
       chai: 4.3.10
-      electron: 29.0.0
-      eslint: 8.44.0
-      glob: 7.1.2
+      electron: 30.0.0
+      eslint: 8.56.0
+      glob: 10.3.12
       mocha: 10.2.0
       rimraf: 3.0.2
       source-map-loader: 4.0.0_webpack@5.76.0
-      typescript: 5.0.2
+      typescript: 5.3.3
       webpack: 5.76.0_webpack-cli@5.0.1
       webpack-cli: 5.0.1_webpack@5.76.0
 
@@ -496,7 +501,7 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/body-parser': ^1.17.0
       '@types/chai': 4.3.1
       '@types/express': ^4.17.20
@@ -504,17 +509,17 @@ importers:
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
       '@types/sinon': ^17.0.2
-      '@types/supertest': ^2.0.4
+      '@types/supertest': ^6.0.2
       chai: ^4.3.10
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       express: ^4.18.2
       express-ws: ^5.0.2
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^17.0.1
-      supertest: ^3.0.0
-      typescript: ~5.0.2
+      supertest: ^7.0.0
+      typescript: ~5.3.3
     dependencies:
       express: 4.18.2
       express-ws: 5.0.2_express@4.18.2
@@ -522,7 +527,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-backend': link:../backend
       '@itwin/core-common': link:../common
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/body-parser': 1.17.0
       '@types/chai': 4.3.1
       '@types/express': 4.17.20
@@ -530,34 +535,34 @@ importers:
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
       '@types/sinon': 17.0.2
-      '@types/supertest': 2.0.4
+      '@types/supertest': 6.0.2
       chai: 4.3.10
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 17.0.1
-      supertest: 3.0.0
-      typescript: 5.0.2
+      supertest: 7.0.0
+      typescript: 5.3.3
 
   ../../core/extension:
     specifiers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
-      eslint: ^8.44.0
+      '@itwin/eslint-plugin': ^4.0.2
+      eslint: ^8.56.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     dependencies:
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
-      eslint: 8.44.0
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
+      eslint: 8.56.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../core/frontend:
     specifiers:
@@ -572,7 +577,7 @@ importers:
       '@itwin/core-orbitgt': workspace:*
       '@itwin/core-quantity': workspace:*
       '@itwin/core-telemetry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/object-storage-core': ^2.2.2
       '@itwin/webgl-compatibility': workspace:*
       '@loaders.gl/core': ^3.1.6
@@ -586,16 +591,17 @@ importers:
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       fuse.js: ^3.3.0
-      glob: ^7.1.2
+      glob: ^10.3.12
+      meshoptimizer: ~0.20.0
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^17.0.1
       source-map-loader: ^4.0.0
       typemoq: ^2.1.0
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       webpack: ^5.76.0
       wms-capabilities: 0.4.0
     dependencies:
@@ -607,6 +613,7 @@ importers:
       '@loaders.gl/core': 3.1.6
       '@loaders.gl/draco': 3.1.6
       fuse.js: 3.3.0
+      meshoptimizer: 0.20.0
       wms-capabilities: 0.4.0
     devDependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
@@ -617,7 +624,7 @@ importers:
       '@itwin/core-geometry': link:../geometry
       '@itwin/core-orbitgt': link:../orbitgt
       '@itwin/core-quantity': link:../quantity
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/mocha': 10.0.6
@@ -627,15 +634,15 @@ importers:
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       cpx2: 3.0.0
-      eslint: 8.44.0
-      glob: 7.1.2
+      eslint: 8.56.0
+      glob: 10.3.12
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 17.0.1
       source-map-loader: 4.0.0_webpack@5.76.0
       typemoq: 2.1.0
-      typescript: 5.0.2
+      typescript: 5.3.3
       webpack: 5.76.0
 
   ../../core/frontend-devtools:
@@ -645,13 +652,13 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/file-saver': ^2.0.1
       cpx2: ^3.0.0
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       file-saver: ^2.0.2
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     dependencies:
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
@@ -660,45 +667,47 @@ importers:
       file-saver: 2.0.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/file-saver': 2.0.1
       cpx2: 3.0.0
-      eslint: 8.44.0
+      eslint: 8.56.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../core/geometry:
     specifiers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/flatbuffers': ~1.10.0
       '@types/mocha': ^10.0.6
+      '@types/node': ~18.16.20
       chai: ^4.3.10
       debug: ^2.6.9
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       flatbuffers: ~1.12.0
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     dependencies:
       '@itwin/core-bentley': link:../bentley
       flatbuffers: 1.12.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/flatbuffers': 1.10.0
       '@types/mocha': 10.0.6
+      '@types/node': 18.16.20
       chai: 4.3.10
       debug: 2.6.9
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../core/hypermodeling:
     specifiers:
@@ -709,20 +718,20 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.3.10
       cpx2: ^3.0.0
-      eslint: ^8.44.0
-      glob: ^7.1.2
+      eslint: ^8.56.0
+      glob: ^10.3.12
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       webpack: ^5.76.0
     dependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
@@ -733,20 +742,20 @@ importers:
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
       '@itwin/core-geometry': link:../geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       babel-loader: 8.2.5_webpack@5.76.0
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.10
       cpx2: 3.0.0
-      eslint: 8.44.0
-      glob: 7.1.2
+      eslint: 8.56.0
+      glob: 10.3.12
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
       source-map-loader: 4.0.0_webpack@5.76.0
-      typescript: 5.0.2
+      typescript: 5.3.3
       webpack: 5.76.0
 
   ../../core/i18n:
@@ -755,7 +764,7 @@ importers:
       '@itwin/certa': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/i18next': ^8.4.2
       '@types/i18next-browser-languagedetector': ^2.0.1
@@ -763,14 +772,14 @@ importers:
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.3.10
-      eslint: ^8.44.0
-      glob: ^7.1.2
+      eslint: ^8.56.0
+      glob: ^10.3.12
       i18next: ^21.9.1
       i18next-browser-languagedetector: ^6.1.2
       i18next-http-backend: ^1.4.4
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       webpack: ^5.76.0
       webpack-cli: ^5.0.1
     dependencies:
@@ -782,7 +791,7 @@ importers:
       '@itwin/certa': link:../../tools/certa
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/i18next': 8.4.2
       '@types/i18next-browser-languagedetector': 2.0.1
@@ -790,11 +799,11 @@ importers:
       babel-loader: 8.2.5_webpack@5.76.0
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.10
-      eslint: 8.44.0
-      glob: 7.1.2
+      eslint: 8.56.0
+      glob: 10.3.12
       rimraf: 3.0.2
       source-map-loader: 4.0.0_webpack@5.76.0
-      typescript: 5.0.2
+      typescript: 5.3.3
       webpack: 5.76.0_webpack-cli@5.0.1
       webpack-cli: 5.0.1_webpack@5.76.0
 
@@ -806,7 +815,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@svgdotjs/svg.js': 3.0.13
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
@@ -814,13 +823,13 @@ importers:
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.3.10
       cpx2: ^3.0.0
-      eslint: ^8.44.0
-      glob: ^7.1.2
+      eslint: ^8.56.0
+      glob: ^10.3.12
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       webpack: ^5.76.0
     dependencies:
       '@svgdotjs/svg.js': 3.0.13
@@ -831,20 +840,20 @@ importers:
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
       '@itwin/core-geometry': link:../geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       babel-loader: 8.2.5_webpack@5.76.0
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.10
       cpx2: 3.0.0
-      eslint: 8.44.0
-      glob: 7.1.2
+      eslint: 8.56.0
+      glob: 10.3.12
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
       source-map-loader: 4.0.0_webpack@5.76.0
-      typescript: 5.0.2
+      typescript: 5.3.3
       webpack: 5.76.0
 
   ../../core/mobile:
@@ -854,28 +863,28 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.202
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
-      '@types/superagent': ^4.1.14
+      '@types/superagent': ^8.1.6
       '@types/ws': ^7.0.0
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       lodash: ^4.17.21
       mocha: ^10.2.0
       rimraf: ^3.0.2
-      superagent: ^7.1.5
-      typescript: ~5.0.2
+      superagent: ^9.0.1
+      typescript: ~5.3.3
       ws: ^7.5.3
     dependencies:
       lodash: 4.17.21
-      superagent: 7.1.5
+      superagent: 9.0.1
       ws: 7.5.3
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -883,60 +892,60 @@ importers:
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.7
       '@types/lodash': 4.14.202
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
-      '@types/superagent': 4.1.14
+      '@types/superagent': 8.1.6
       '@types/ws': 7.2.0
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../core/orbitgt:
     specifiers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
       chai: ^4.3.10
       cpx2: ^3.0.0
       debug: ^2.6.9
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
       chai: 4.3.10
       cpx2: 3.0.0
       debug: 2.6.9
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../core/quantity:
     specifiers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/glob': ^5.0.35
@@ -944,16 +953,16 @@ importers:
       '@types/sinon': ^17.0.2
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^17.0.1
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/glob': 5.0.35
@@ -961,12 +970,12 @@ importers:
       '@types/sinon': 17.0.2
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 17.0.1
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../core/telemetry:
     specifiers:
@@ -974,15 +983,15 @@ importers:
       '@itwin/certa': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       chai: ^4.3.10
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       mocha: ^10.2.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       webpack: ^5.76.0
     dependencies:
       '@itwin/core-bentley': link:../bentley
@@ -990,15 +999,15 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       chai: 4.3.10
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       rimraf: 3.0.2
       source-map-loader: 4.0.0_webpack@5.76.0
-      typescript: 5.0.2
+      typescript: 5.3.3
       webpack: 5.76.0
 
   ../../core/webgl-compatibility:
@@ -1006,36 +1015,36 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/certa': workspace:*
       '@itwin/core-bentley': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.3.10
-      eslint: ^8.44.0
-      glob: ^7.1.2
+      eslint: ^8.56.0
+      glob: ^10.3.12
       mocha: ^10.2.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       webpack: ^5.76.0
     dependencies:
       '@itwin/core-bentley': link:../bentley
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       babel-loader: 8.2.5_webpack@5.76.0
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.10
-      eslint: 8.44.0
-      glob: 7.1.2
+      eslint: 8.56.0
+      glob: 10.3.12
       mocha: 10.2.0
       rimraf: 3.0.2
       source-map-loader: 4.0.0_webpack@5.76.0
-      typescript: 5.0.2
+      typescript: 5.3.3
       webpack: 5.76.0
 
   ../../domains/analytical/backend:
@@ -1044,7 +1053,7 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
@@ -1052,18 +1061,18 @@ importers:
       '@types/semver': 7.3.10
       chai: ^4.3.10
       cpx2: ^3.0.0
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       semver: ^7.3.5
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-backend': link:../../../core/backend
       '@itwin/core-bentley': link:../../../core/bentley
       '@itwin/core-common': link:../../../core/common
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
@@ -1071,12 +1080,12 @@ importers:
       '@types/semver': 7.3.10
       chai: 4.3.10
       cpx2: 3.0.0
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
       semver: 7.3.5
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../domains/linear-referencing/backend:
     specifiers:
@@ -1084,7 +1093,7 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/linear-referencing-common': workspace:*
       '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
@@ -1092,17 +1101,17 @@ importers:
       '@types/node': ~18.16.20
       chai: ^4.3.10
       cpx2: ^3.0.0
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-backend': link:../../../core/backend
       '@itwin/core-bentley': link:../../../core/bentley
       '@itwin/core-common': link:../../../core/common
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@itwin/linear-referencing-common': link:../common
       '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.7
@@ -1110,41 +1119,41 @@ importers:
       '@types/node': 18.16.20
       chai: 4.3.10
       cpx2: 3.0.0
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../domains/linear-referencing/common:
     specifiers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
       chai: ^4.3.10
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-bentley': link:../../../core/bentley
       '@itwin/core-common': link:../../../core/common
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
       chai: 4.3.10
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../domains/physical-material/backend:
     specifiers:
@@ -1152,33 +1161,33 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
       chai: ^4.3.10
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/core-backend': link:../../../core/backend
       '@itwin/core-bentley': link:../../../core/bentley
       '@itwin/core-common': link:../../../core/common
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
       chai: 4.3.10
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../editor/backend:
     specifiers:
@@ -1188,10 +1197,10 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/editor-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
-      eslint: ^8.44.0
+      '@itwin/eslint-plugin': ^4.0.2
+      eslint: ^8.56.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     dependencies:
       '@itwin/editor-common': link:../common
     devDependencies:
@@ -1200,10 +1209,10 @@ importers:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
-      eslint: 8.44.0
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
+      eslint: 8.56.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../editor/common:
     specifiers:
@@ -1211,27 +1220,27 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       chai: ^4.3.10
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       mocha: ^10.2.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       chai: 4.3.10
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../editor/frontend:
     specifiers:
@@ -1243,11 +1252,11 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/editor-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       cpx2: ^3.0.0
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     dependencies:
       '@itwin/editor-common': link:../common
     devDependencies:
@@ -1258,11 +1267,11 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       cpx2: 3.0.0
-      eslint: 8.44.0
+      eslint: 8.56.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../example-code/app:
     specifiers:
@@ -1273,18 +1282,18 @@ importers:
       '@itwin/core-electron': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/oidc-signin-tool': ~3.6.0
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
       chai: ^4.3.10
       cpx2: ^3.0.0
-      electron: ^29.0.0
-      eslint: ^8.44.0
+      electron: ^30.0.0
+      eslint: ^8.56.0
       mocha: ^10.2.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -1292,20 +1301,20 @@ importers:
       '@itwin/core-electron': link:../../core/electron
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
-      electron: 29.0.0
+      electron: 30.0.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
-      '@itwin/oidc-signin-tool': 3.6.0_jnugpd6eetd5tw3o6ktya5d7lm
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
+      '@itwin/oidc-signin-tool': 3.6.0_bplkyfia6fpabkwkmq6hai5lru
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
       chai: 4.3.10
       cpx2: 3.0.0
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../example-code/snippets:
     specifiers:
@@ -1319,11 +1328,11 @@ importers:
       '@itwin/ecschema-editing': workspace:*
       '@itwin/ecschema-locaters': workspace:*
       '@itwin/ecschema-metadata': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@itwin/imodel-transformer': ^0.1.1
+      '@itwin/eslint-plugin': ^4.0.2
+      '@itwin/imodel-transformer': ^0.4.2
       '@itwin/itwins-client': ^1.2.0
       '@itwin/oidc-signin-tool': ~3.6.0
-      '@itwin/service-authorization': ^0.6.3
+      '@itwin/service-authorization': ^1.0.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
@@ -1333,11 +1342,11 @@ importers:
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       fs-extra: ^8.1.0
       mocha: ^10.2.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -1348,14 +1357,14 @@ importers:
       '@itwin/ecschema-editing': link:../../core/ecschema-editing
       '@itwin/ecschema-locaters': link:../../core/ecschema-locaters
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/imodel-transformer': 0.1.1_weqmipkhmjm5vfy37lv47aijmu
+      '@itwin/imodel-transformer': 0.4.2_weqmipkhmjm5vfy37lv47aijmu
       '@itwin/itwins-client': 1.2.0
-      '@itwin/service-authorization': 0.6.3_mdtbcqczpmeuv6yjzfaigjndwi
+      '@itwin/service-authorization': 1.0.0_67wltvhdskk2oee2c3z2o4tfly
       '@xmldom/xmldom': 0.8.5
       fs-extra: 8.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@itwin/oidc-signin-tool': 3.6.0_mdtbcqczpmeuv6yjzfaigjndwi
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
@@ -1365,10 +1374,10 @@ importers:
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       cpx2: 3.0.0
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../extensions/frontend-tiles:
     specifiers:
@@ -1378,7 +1387,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^10.0.6
@@ -1388,13 +1397,13 @@ importers:
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
-      eslint: ^8.44.0
-      glob: ^7.1.2
+      eslint: ^8.56.0
+      glob: ^10.3.12
       mocha: ^10.2.0
       rimraf: ^3.0.2
       sinon: ^17.0.1
       source-map-loader: ^4.0.0
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       webpack: ^5.76.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -1403,7 +1412,7 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/mocha': 10.0.6
@@ -1413,13 +1422,13 @@ importers:
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
-      eslint: 8.44.0
-      glob: 7.1.2
+      eslint: 8.56.0
+      glob: 10.3.12
       mocha: 10.2.0
       rimraf: 3.0.2
       sinon: 17.0.1
       source-map-loader: 4.0.0_webpack@5.76.0
-      typescript: 5.0.2
+      typescript: 5.3.3
       webpack: 5.76.0
 
   ../../extensions/map-layers-auth:
@@ -1428,13 +1437,14 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       '@types/sinon': ^17.0.2
       '@types/sinon-chai': ^3.2.0
       chai: ^4.3.10
-      eslint: ^8.44.0
+      eslint: ^8.56.0
+      fetch-mock: ~9.11.0
       ignore-styles: ^5.0.1
       jsdom: ^19.0.0
       jsdom-global: 3.0.2
@@ -1444,19 +1454,20 @@ importers:
       sinon: ^17.0.1
       sinon-chai: ^3.7.0
       source-map-support: ^0.5.6
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       '@types/sinon': 17.0.2
       '@types/sinon-chai': 3.2.0
       chai: 4.3.10
-      eslint: 8.44.0
+      eslint: 8.56.0
+      fetch-mock: 9.11.0
       ignore-styles: 5.0.1
       jsdom: 19.0.0
       jsdom-global: 3.0.2_jsdom@19.0.0
@@ -1466,7 +1477,7 @@ importers:
       sinon: 17.0.1
       sinon-chai: 3.7.0_chai@4.3.10+sinon@17.0.1
       source-map-support: 0.5.6
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../extensions/map-layers-formats:
     specifiers:
@@ -1476,9 +1487,10 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
+      '@types/geojson': ~7946.0.14
       '@types/google-protobuf': ~3.15.6
       '@types/mocha': ^10.0.6
       '@types/sinon': ^17.0.2
@@ -1486,7 +1498,9 @@ importers:
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
-      eslint: ^8.44.0
+      eslint: ^8.56.0
+      fetch-mock: ~9.11.0
+      flatbush: ~4.4.0
       google-protobuf: ~3.20.1
       ignore-styles: ^5.0.1
       jsdom: ^19.0.0
@@ -1498,8 +1512,9 @@ importers:
       sinon-chai: ^3.7.0
       source-map-support: ^0.5.6
       typemoq: ^2.1.0
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     dependencies:
+      flatbush: 4.4.0
       google-protobuf: 3.20.1
     devDependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
@@ -1508,9 +1523,10 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
+      '@types/geojson': 7946.0.14
       '@types/google-protobuf': 3.15.6
       '@types/mocha': 10.0.6
       '@types/sinon': 17.0.2
@@ -1518,7 +1534,8 @@ importers:
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       cpx2: 3.0.0
-      eslint: 8.44.0
+      eslint: 8.56.0
+      fetch-mock: 9.11.0
       ignore-styles: 5.0.1
       jsdom: 19.0.0
       jsdom-global: 3.0.2_jsdom@19.0.0
@@ -1529,18 +1546,18 @@ importers:
       sinon-chai: 3.7.0_chai@4.3.10+sinon@17.0.1
       source-map-support: 0.5.6
       typemoq: 2.1.0
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../extensions/test-extension:
     specifiers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-extension': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       buffer: ^6.0.3
       esbuild: ^0.13.8
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       url: ^0.11.0
     dependencies:
       '@itwin/core-extension': link:../../core/extension
@@ -1548,11 +1565,11 @@ importers:
       url: 0.11.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       esbuild: 0.13.8
-      eslint: 8.44.0
+      eslint: 8.56.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../full-stack-tests/backend:
     specifiers:
@@ -1580,9 +1597,9 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-metadata': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@itwin/imodels-access-backend': ^3.0.0
-      '@itwin/imodels-client-authoring': ^3.0.0
+      '@itwin/eslint-plugin': ^4.0.2
+      '@itwin/imodels-access-backend': ^5.0.1
+      '@itwin/imodels-client-authoring': ^5.1.0
       '@itwin/itwins-client': ^1.2.0
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/perf-tools': workspace:*
@@ -1597,7 +1614,7 @@ importers:
       cpx2: ^3.0.0
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       fs-extra: ^8.1.0
       internal-tools: workspace:*
       mkdirp: ^1.0.4
@@ -1606,7 +1623,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^17.0.1
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     dependencies:
       '@azure/storage-blob': 12.7.0
       '@bentley/aec-units-schema': 1.0.3
@@ -1631,18 +1648,18 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/imodels-access-backend': 3.0.0_wj555zckjupkhkzyssqqpl4sei
-      '@itwin/imodels-client-authoring': 3.0.0
+      '@itwin/imodels-access-backend': 5.0.1_wj555zckjupkhkzyssqqpl4sei
+      '@itwin/imodels-client-authoring': 5.1.0
       '@itwin/itwins-client': 1.2.0
       '@itwin/oidc-signin-tool': 3.6.0_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/perf-tools': link:../../tools/perf-tools
-      azurite: 3.29.0
+      azurite: 3.30.0
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       cpx2: 3.0.0
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      eslint: 8.44.0
+      eslint: 8.56.0
       fs-extra: 8.1.0
       mocha: 10.2.0
       nyc: 15.1.0
@@ -1650,7 +1667,7 @@ importers:
       sinon: 17.0.1
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/fs-extra': 4.0.7
@@ -1659,7 +1676,7 @@ importers:
       internal-tools: link:../../tools/internal
       mkdirp: 1.0.4
       npm-run-all: 4.1.5
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../full-stack-tests/core:
     specifiers:
@@ -1682,17 +1699,17 @@ importers:
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
       '@itwin/electron-authorization': ^0.14.1
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/express-server': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
-      '@itwin/imodels-access-backend': ^3.0.0
-      '@itwin/imodels-access-frontend': ^3.0.0
-      '@itwin/imodels-client-authoring': ^3.0.0
-      '@itwin/imodels-client-management': ^3.0.0
+      '@itwin/imodels-access-backend': ^5.0.1
+      '@itwin/imodels-access-frontend': ^5.0.1
+      '@itwin/imodels-client-authoring': ^5.1.0
+      '@itwin/imodels-client-management': ^5.1.0
       '@itwin/itwins-client': ^1.2.0
       '@itwin/object-storage-core': ^2.2.2
       '@itwin/oidc-signin-tool': ~3.6.0
-      '@itwin/reality-data-client': 1.1.0
+      '@itwin/reality-data-client': ^1.2.1
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
@@ -1710,10 +1727,10 @@ importers:
       crypto-browserify: 3.12.0
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      electron: ^29.0.0
-      eslint: ^8.44.0
+      electron: ^30.0.0
+      eslint: ^8.56.0
       fs-extra: ^8.1.0
-      glob: ^7.1.2
+      glob: ^10.3.12
       https-browserify: ^1.0.0
       internal-tools: workspace:*
       mkdirp: ^1.0.4
@@ -1728,7 +1745,7 @@ importers:
       source-map-loader: ^4.0.0
       stream-browserify: ^3.0.0
       stream-http: ^3.2.0
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       webpack: ^5.76.0
       webpack-cli: ^5.0.1
     dependencies:
@@ -1748,28 +1765,28 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
-      '@itwin/electron-authorization': 0.14.1_jnugpd6eetd5tw3o6ktya5d7lm
+      '@itwin/electron-authorization': 0.14.1_bplkyfia6fpabkwkmq6hai5lru
       '@itwin/express-server': link:../../core/express-server
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
-      '@itwin/imodels-access-backend': 3.0.0_wj555zckjupkhkzyssqqpl4sei
-      '@itwin/imodels-access-frontend': 3.0.0_ueafa4slb6ohrhyf7kbp6egmha
-      '@itwin/imodels-client-authoring': 3.0.0
-      '@itwin/imodels-client-management': 3.0.0
-      '@itwin/reality-data-client': 1.1.0_mdtbcqczpmeuv6yjzfaigjndwi
-      azurite: 3.29.0
+      '@itwin/imodels-access-backend': 5.0.1_wj555zckjupkhkzyssqqpl4sei
+      '@itwin/imodels-access-frontend': 5.0.1_ueafa4slb6ohrhyf7kbp6egmha
+      '@itwin/imodels-client-authoring': 5.1.0
+      '@itwin/imodels-client-management': 5.1.0
+      '@itwin/reality-data-client': 1.2.1_mdtbcqczpmeuv6yjzfaigjndwi
+      azurite: 3.30.0
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
-      electron: 29.0.0
+      electron: 30.0.0
       fs-extra: 8.1.0
       sinon: 17.0.1
       sinon-chai: 3.7.0_chai@4.3.10+sinon@17.0.1
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@itwin/itwins-client': 1.2.0
       '@itwin/object-storage-core': 2.2.2
-      '@itwin/oidc-signin-tool': 3.6.0_jnugpd6eetd5tw3o6ktya5d7lm
+      '@itwin/oidc-signin-tool': 3.6.0_bplkyfia6fpabkwkmq6hai5lru
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/fs-extra': 4.0.7
@@ -1784,8 +1801,8 @@ importers:
       crypto-browserify: 3.12.0
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      eslint: 8.44.0
-      glob: 7.1.2
+      eslint: 8.56.0
+      glob: 10.3.12
       https-browserify: 1.0.0
       internal-tools: link:../../tools/internal
       mkdirp: 1.0.4
@@ -1798,7 +1815,7 @@ importers:
       source-map-loader: 4.0.0_webpack@5.76.0
       stream-browserify: 3.0.0
       stream-http: 3.2.0
-      typescript: 5.0.2
+      typescript: 5.3.3
       webpack: 5.76.0_webpack-cli@5.0.1
       webpack-cli: 5.0.1_webpack@5.76.0
 
@@ -1815,12 +1832,12 @@ importers:
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/ecschema-rpcinterface-common': workspace:*
       '@itwin/ecschema-rpcinterface-impl': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/express-server': workspace:*
-      '@itwin/imodels-access-backend': ^3.0.0
-      '@itwin/imodels-access-frontend': ^3.0.0
-      '@itwin/imodels-client-authoring': ^3.0.0
-      '@itwin/imodels-client-management': ^3.0.0
+      '@itwin/imodels-access-backend': ^5.0.1
+      '@itwin/imodels-access-frontend': ^5.0.1
+      '@itwin/imodels-client-authoring': ^5.1.0
+      '@itwin/imodels-client-management': ^5.1.0
       '@itwin/itwins-client': ^1.2.0
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/presentation-common': workspace:*
@@ -1836,8 +1853,8 @@ importers:
       cpx2: ^3.0.0
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      eslint: ^8.44.0
-      glob: ^7.1.2
+      eslint: ^8.56.0
+      glob: ^10.3.12
       internal-tools: workspace:*
       mocha: ^10.2.0
       npm-run-all: ^4.1.5
@@ -1847,7 +1864,7 @@ importers:
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
       stream-browserify: ^3.0.0
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       webpack: ^5.76.0
       webpack-cli: ^5.0.1
     dependencies:
@@ -1861,10 +1878,10 @@ importers:
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
       '@itwin/ecschema-rpcinterface-impl': link:../../core/ecschema-rpc/impl
-      '@itwin/imodels-access-backend': 3.0.0_wj555zckjupkhkzyssqqpl4sei
-      '@itwin/imodels-access-frontend': 3.0.0_ueafa4slb6ohrhyf7kbp6egmha
-      '@itwin/imodels-client-authoring': 3.0.0
-      '@itwin/imodels-client-management': 3.0.0
+      '@itwin/imodels-access-backend': 5.0.1_wj555zckjupkhkzyssqqpl4sei
+      '@itwin/imodels-access-frontend': 5.0.1_ueafa4slb6ohrhyf7kbp6egmha
+      '@itwin/imodels-client-authoring': 5.1.0
+      '@itwin/imodels-client-management': 5.1.0
       '@itwin/oidc-signin-tool': 3.6.0_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
@@ -1876,7 +1893,7 @@ importers:
       openid-client: 4.7.4
     devDependencies:
       '@itwin/core-backend': link:../../core/backend
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@itwin/express-server': link:../../core/express-server
       '@itwin/itwins-client': 1.2.0
       '@types/chai': 4.3.1
@@ -1886,8 +1903,8 @@ importers:
       assert: 2.0.0
       browserify-zlib: 0.2.0
       cpx2: 3.0.0
-      eslint: 8.44.0
-      glob: 7.1.2
+      eslint: 8.56.0
+      glob: 10.3.12
       internal-tools: link:../../tools/internal
       npm-run-all: 4.1.5
       null-loader: 4.0.1_webpack@5.76.0
@@ -1895,7 +1912,7 @@ importers:
       rimraf: 3.0.2
       source-map-loader: 4.0.0_webpack@5.76.0
       stream-browserify: 3.0.0
-      typescript: 5.0.2
+      typescript: 5.3.3
       webpack: 5.76.0_webpack-cli@5.0.1
       webpack-cli: 5.0.1_webpack@5.76.0
 
@@ -1912,8 +1929,7 @@ importers:
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/ecschema-rpcinterface-common': workspace:*
       '@itwin/ecschema-rpcinterface-impl': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@itwin/oidc-signin-tool': ~3.6.0
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -1939,10 +1955,11 @@ importers:
       deep-equal: ^1
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       eslint-config-prettier: ^9.1.0
       faker: ^4.1.0
       fast-sort: ^3.0.2
+      fast-xml-parser: ^4.3.5
       i18next-http-backend: ^1.4.4
       internal-tools: workspace:*
       jsdom: ^19.0.0
@@ -1955,7 +1972,7 @@ importers:
       sinon-chai: ^3.7.0
       source-map-support: ^0.5.6
       typemoq: ^2.1.0
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -1967,7 +1984,6 @@ importers:
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
       '@itwin/ecschema-rpcinterface-impl': link:../../core/ecschema-rpc/impl
-      '@itwin/oidc-signin-tool': 3.6.0_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
@@ -1991,6 +2007,7 @@ importers:
       deep-equal: 1.0.0
       faker: 4.1.0
       fast-sort: 3.0.2
+      fast-xml-parser: 4.3.5
       mocha: 10.2.0
       rimraf: 3.0.2
       sinon: 17.0.1
@@ -1999,20 +2016,20 @@ importers:
       typemoq: 2.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       cache-require-paths: 0.3.0
       cross-env: 5.1.4
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      eslint: 8.44.0
-      eslint-config-prettier: 9.1.0_eslint@8.44.0
+      eslint: 8.56.0
+      eslint-config-prettier: 9.1.0_eslint@8.56.0
       i18next-http-backend: 1.4.4
       internal-tools: link:../../tools/internal
       jsdom: 19.0.0
       jsdom-global: 3.0.2_jsdom@19.0.0
       prettier: 3.2.5
       sanitize-filename: 1.6.3
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../full-stack-tests/rpc:
     specifiers:
@@ -2024,7 +2041,7 @@ importers:
       '@itwin/core-electron': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-mobile': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/express-server': workspace:*
       '@types/chai': 4.3.1
       '@types/express': ^4.17.20
@@ -2036,17 +2053,17 @@ importers:
       browserify-zlib: ^0.2.0
       buffer: ^6.0.3
       chai: ^4.3.10
-      electron: ^29.0.0
-      eslint: ^8.44.0
+      electron: ^30.0.0
+      eslint: ^8.56.0
       express: ^4.18.2
-      glob: ^7.1.2
+      glob: ^10.3.12
       null-loader: ^4.0.1
       rimraf: ^3.0.2
       semver: ^7.3.5
       source-map-loader: ^4.0.0
       spdy: ^4.0.1
       stream-browserify: ^3.0.0
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       webpack: ^5.76.0
       webpack-cli: ^5.0.1
     dependencies:
@@ -2057,14 +2074,14 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-mobile': link:../../core/mobile
       '@itwin/express-server': link:../../core/express-server
-      electron: 29.0.0
+      electron: 30.0.0
       express: 4.18.2
       semver: 7.3.5
       spdy: 4.0.1
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/express': 4.17.20
       '@types/mocha': 10.0.6
@@ -2075,13 +2092,13 @@ importers:
       browserify-zlib: 0.2.0
       buffer: 6.0.3
       chai: 4.3.10
-      eslint: 8.44.0
-      glob: 7.1.2
+      eslint: 8.56.0
+      glob: 10.3.12
       null-loader: 4.0.1_webpack@5.76.0
       rimraf: 3.0.2
       source-map-loader: 4.0.0_webpack@5.76.0
       stream-browserify: 3.0.0
-      typescript: 5.0.2
+      typescript: 5.3.3
       webpack: 5.76.0_webpack-cli@5.0.1
       webpack-cli: 5.0.1_webpack@5.76.0
 
@@ -2095,18 +2112,18 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/core-quantity': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/express-server': workspace:*
-      '@itwin/imodels-access-backend': ^3.0.0
-      '@itwin/imodels-access-frontend': ^3.0.0
-      '@itwin/imodels-client-authoring': ^3.0.0
-      '@itwin/imodels-client-management': ^3.0.0
+      '@itwin/imodels-access-backend': ^5.0.1
+      '@itwin/imodels-access-frontend': ^5.0.1
+      '@itwin/imodels-client-authoring': ^5.1.0
+      '@itwin/imodels-client-management': ^5.1.0
       '@itwin/itwins-client': ^1.2.0
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
-      '@itwin/service-authorization': ^0.6.3
+      '@itwin/service-authorization': ^1.0.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^10.0.6
@@ -2119,8 +2136,8 @@ importers:
       cpx2: ^3.0.0
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      eslint: ^8.44.0
-      glob: ^7.1.2
+      eslint: ^8.56.0
+      glob: ^10.3.12
       internal-tools: workspace:*
       mocha: ^10.2.0
       npm-run-all: ^4.1.5
@@ -2130,7 +2147,7 @@ importers:
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
       stream-browserify: ^3.0.0
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       webpack: ^5.76.0
       webpack-cli: ^5.0.1
     dependencies:
@@ -2141,15 +2158,15 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-quantity': link:../../core/quantity
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
-      '@itwin/imodels-access-backend': 3.0.0_wj555zckjupkhkzyssqqpl4sei
-      '@itwin/imodels-access-frontend': 3.0.0_ueafa4slb6ohrhyf7kbp6egmha
-      '@itwin/imodels-client-authoring': 3.0.0
-      '@itwin/imodels-client-management': 3.0.0
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
+      '@itwin/imodels-access-backend': 5.0.1_wj555zckjupkhkzyssqqpl4sei
+      '@itwin/imodels-access-frontend': 5.0.1_ueafa4slb6ohrhyf7kbp6egmha
+      '@itwin/imodels-client-authoring': 5.1.0
+      '@itwin/imodels-client-management': 5.1.0
       '@itwin/oidc-signin-tool': 3.6.0_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
-      '@itwin/service-authorization': 0.6.3_mdtbcqczpmeuv6yjzfaigjndwi
+      '@itwin/service-authorization': 1.0.0_67wltvhdskk2oee2c3z2o4tfly
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       dotenv: 10.0.0
@@ -2169,8 +2186,8 @@ importers:
       browserify-zlib: 0.2.0
       buffer: 6.0.3
       cpx2: 3.0.0
-      eslint: 8.44.0
-      glob: 7.1.2
+      eslint: 8.56.0
+      glob: 10.3.12
       internal-tools: link:../../tools/internal
       npm-run-all: 4.1.5
       null-loader: 4.0.1_webpack@5.76.0
@@ -2178,7 +2195,7 @@ importers:
       rimraf: 3.0.2
       source-map-loader: 4.0.0_webpack@5.76.0
       stream-browserify: 3.0.0
-      typescript: 5.0.2
+      typescript: 5.3.3
       webpack: 5.76.0_webpack-cli@5.0.1
       webpack-cli: 5.0.1_webpack@5.76.0
 
@@ -2190,7 +2207,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-quantity': workspace:*
       '@itwin/ecschema-metadata': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/presentation-common': workspace:*
       '@sinonjs/fake-timers': ^11.2.2
       '@types/chai': 4.3.1
@@ -2214,7 +2231,7 @@ importers:
       cpx2: ^3.0.0
       cross-env: ^5.1.4
       deep-equal: ^1
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       eslint-config-prettier: ^9.1.0
       faker: ^4.1.0
       mocha: ^10.2.0
@@ -2227,8 +2244,9 @@ importers:
       semver: ^7.3.5
       sinon: ^17.0.1
       sinon-chai: ^3.7.0
+      source-map-support: ^0.5.6
       typemoq: ^2.1.0
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     dependencies:
       object-hash: 1.3.1
       rxjs: 7.8.1
@@ -2241,7 +2259,7 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@itwin/presentation-common': link:../common
       '@sinonjs/fake-timers': 11.2.2
       '@types/chai': 4.3.1
@@ -2265,8 +2283,8 @@ importers:
       cpx2: 3.0.0
       cross-env: 5.1.4
       deep-equal: 1.0.0
-      eslint: 8.44.0
-      eslint-config-prettier: 9.1.0_eslint@8.44.0
+      eslint: 8.56.0
+      eslint-config-prettier: 9.1.0_eslint@8.56.0
       faker: 4.1.0
       mocha: 10.2.0
       nyc: 15.1.0
@@ -2274,8 +2292,9 @@ importers:
       rimraf: 3.0.2
       sinon: 17.0.1
       sinon-chai: 3.7.0_chai@4.3.10+sinon@17.0.1
+      source-map-support: 0.5.6
       typemoq: 2.1.0
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../presentation/common:
     specifiers:
@@ -2284,7 +2303,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-quantity': workspace:*
       '@itwin/ecschema-metadata': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.8
@@ -2302,7 +2321,7 @@ importers:
       cpx2: ^3.0.0
       cross-env: ^5.1.4
       deep-equal: ^1
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       eslint-config-prettier: ^9.1.0
       faker: ^4.1.0
       json-schema-faker: 0.5.0-rc16
@@ -2312,8 +2331,9 @@ importers:
       rimraf: ^3.0.2
       sinon: ^17.0.1
       sinon-chai: ^3.7.0
+      source-map-support: ^0.5.6
       typemoq: ^2.1.0
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       typescript-json-schema: ^0.55.0
       yargs: ^17.4.0
     devDependencies:
@@ -2322,7 +2342,7 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/chai-jest-snapshot': 1.3.8
@@ -2340,8 +2360,8 @@ importers:
       cpx2: 3.0.0
       cross-env: 5.1.4
       deep-equal: 1.0.0
-      eslint: 8.44.0
-      eslint-config-prettier: 9.1.0_eslint@8.44.0
+      eslint: 8.56.0
+      eslint-config-prettier: 9.1.0_eslint@8.56.0
       faker: 4.1.0
       json-schema-faker: 0.5.0-rc16
       mocha: 10.2.0
@@ -2350,8 +2370,9 @@ importers:
       rimraf: 3.0.2
       sinon: 17.0.1
       sinon-chai: 3.7.0_chai@4.3.10+sinon@17.0.1
+      source-map-support: 0.5.6
       typemoq: 2.1.0
-      typescript: 5.0.2
+      typescript: 5.3.3
       typescript-json-schema: 0.55.0
       yargs: 17.4.0
 
@@ -2364,8 +2385,9 @@ importers:
       '@itwin/core-i18n': workspace:*
       '@itwin/core-quantity': workspace:*
       '@itwin/ecschema-metadata': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/presentation-common': workspace:*
+      '@itwin/unified-selection': ^0.1.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.8
@@ -2380,7 +2402,7 @@ importers:
       cpx2: ^3.0.0
       cross-env: ^5.1.4
       deep-equal: ^1
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       eslint-config-prettier: ^9.1.0
       faker: ^4.1.0
       jsdom: ^19.0.0
@@ -2395,8 +2417,9 @@ importers:
       sinon-chai: ^3.7.0
       source-map-support: ^0.5.6
       typemoq: ^2.1.0
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     dependencies:
+      '@itwin/unified-selection': 0.1.0
       rxjs: 7.8.1
       rxjs-for-await: 1.0.0_rxjs@7.8.1
     devDependencies:
@@ -2407,7 +2430,7 @@ importers:
       '@itwin/core-i18n': link:../../core/i18n
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@itwin/presentation-common': link:../common
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
@@ -2423,8 +2446,8 @@ importers:
       cpx2: 3.0.0
       cross-env: 5.1.4
       deep-equal: 1.0.0
-      eslint: 8.44.0
-      eslint-config-prettier: 9.1.0_eslint@8.44.0
+      eslint: 8.56.0
+      eslint-config-prettier: 9.1.0_eslint@8.56.0
       faker: 4.1.0
       jsdom: 19.0.0
       jsdom-global: 3.0.2_jsdom@19.0.0
@@ -2436,7 +2459,7 @@ importers:
       sinon-chai: 3.7.0_chai@4.3.10+sinon@17.0.1
       source-map-support: 0.5.6
       typemoq: 2.1.0
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../test-apps/display-performance-test-app:
     specifiers:
@@ -2452,20 +2475,20 @@ importers:
       '@itwin/core-mobile': workspace:*
       '@itwin/core-quantity': workspace:*
       '@itwin/electron-authorization': ^0.14.1
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/frontend-tiles': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
-      '@itwin/imodels-access-backend': ^3.0.0
-      '@itwin/imodels-access-frontend': ^3.0.0
-      '@itwin/imodels-client-authoring': ^3.0.0
-      '@itwin/imodels-client-management': ^3.0.0
+      '@itwin/imodels-access-backend': ^5.0.1
+      '@itwin/imodels-access-frontend': ^5.0.1
+      '@itwin/imodels-client-authoring': ^5.1.0
+      '@itwin/imodels-client-management': ^5.1.0
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/perf-tools': workspace:*
-      '@itwin/reality-data-client': 1.1.0
+      '@itwin/reality-data-client': ^1.2.1
       '@types/body-parser': ^1.17.0
       '@types/express': ^4.17.20
       '@types/node': ~18.16.20
-      '@typescript-eslint/parser': ~5.55.0
+      '@typescript-eslint/parser': ~6.21.0
       body-parser: ^1.20.2
       browserslist-to-esbuild: ^1.2.0
       child_process: ^1.0.2
@@ -2474,9 +2497,9 @@ importers:
       cross-env: ^5.1.4
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      electron: ^29.0.0
+      electron: ^30.0.0
       esbuild-plugin-external-global: ^1.0.1
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       express: ^4.18.2
       internal-tools: workspace:*
       npm-run-all: ^4.1.5
@@ -2487,7 +2510,7 @@ importers:
       rollup-plugin-ignore: ^1.0.10
       rollup-plugin-visualizer: ^5.9.2
       rollup-plugin-webpack-stats: ^0.2.0
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       vite: ^4.5.2
       vite-plugin-env-compatible: ^1.1.1
       vite-plugin-inspect: ^0.7.28
@@ -2503,24 +2526,24 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-mobile': link:../../core/mobile
       '@itwin/core-quantity': link:../../core/quantity
-      '@itwin/electron-authorization': 0.14.1_jnugpd6eetd5tw3o6ktya5d7lm
+      '@itwin/electron-authorization': 0.14.1_bplkyfia6fpabkwkmq6hai5lru
       '@itwin/frontend-tiles': link:../../extensions/frontend-tiles
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
-      '@itwin/imodels-access-backend': 3.0.0_wj555zckjupkhkzyssqqpl4sei
-      '@itwin/imodels-access-frontend': 3.0.0_ueafa4slb6ohrhyf7kbp6egmha
-      '@itwin/imodels-client-authoring': 3.0.0
-      '@itwin/imodels-client-management': 3.0.0
-      '@itwin/oidc-signin-tool': 3.6.0_jnugpd6eetd5tw3o6ktya5d7lm
-      '@itwin/reality-data-client': 1.1.0_mdtbcqczpmeuv6yjzfaigjndwi
+      '@itwin/imodels-access-backend': 5.0.1_wj555zckjupkhkzyssqqpl4sei
+      '@itwin/imodels-access-frontend': 5.0.1_ueafa4slb6ohrhyf7kbp6egmha
+      '@itwin/imodels-client-authoring': 5.1.0
+      '@itwin/imodels-client-management': 5.1.0
+      '@itwin/oidc-signin-tool': 3.6.0_bplkyfia6fpabkwkmq6hai5lru
+      '@itwin/reality-data-client': 1.2.1_mdtbcqczpmeuv6yjzfaigjndwi
       body-parser: 1.20.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@itwin/perf-tools': link:../../tools/perf-tools
       '@types/body-parser': 1.17.0
       '@types/express': 4.17.20
       '@types/node': 18.16.20
-      '@typescript-eslint/parser': 5.55.0_6ndl6d37z3ezupnqjymvncqbpi
+      '@typescript-eslint/parser': 6.21.0_xdgzedli73k7lw4xlyzszm74om
       browserslist-to-esbuild: 1.2.0
       child_process: 1.0.2
       chrome-launcher: 0.15.2
@@ -2528,9 +2551,9 @@ importers:
       cross-env: 5.1.4
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      electron: 29.0.0
+      electron: 30.0.0
       esbuild-plugin-external-global: 1.0.1
-      eslint: 8.44.0
+      eslint: 8.56.0
       express: 4.18.2
       internal-tools: link:../../tools/internal
       npm-run-all: 4.1.5
@@ -2541,7 +2564,7 @@ importers:
       rollup-plugin-ignore: 1.0.10
       rollup-plugin-visualizer: 5.9.2
       rollup-plugin-webpack-stats: 0.2.0
-      typescript: 5.0.2
+      typescript: 5.3.3
       vite: 4.5.2_@types+node@18.16.20
       vite-plugin-env-compatible: 1.1.1
       vite-plugin-inspect: 0.7.28_vite@4.5.2
@@ -2570,22 +2593,22 @@ importers:
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
       '@itwin/electron-authorization': ^0.14.1
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@itwin/frontend-devtools': workspace:*
       '@itwin/frontend-tiles': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
-      '@itwin/imodels-access-backend': ^3.0.0
-      '@itwin/imodels-access-frontend': ^3.0.0
-      '@itwin/imodels-client-authoring': ^3.0.0
-      '@itwin/imodels-client-management': ^3.0.0
+      '@itwin/imodels-access-backend': ^5.0.1
+      '@itwin/imodels-access-frontend': ^5.0.1
+      '@itwin/imodels-client-authoring': ^5.1.0
+      '@itwin/imodels-client-management': ^5.1.0
       '@itwin/map-layers-formats': workspace:*
       '@itwin/object-storage-core': ^2.2.2
-      '@itwin/reality-data-client': 1.1.0
+      '@itwin/reality-data-client': ^1.2.1
       '@itwin/webgl-compatibility': workspace:*
       '@types/express': ^4.17.20
       '@types/express-ws': ^3.0.3
       '@types/fs-extra': ^4.0.7
-      '@typescript-eslint/parser': ~5.55.0
+      '@typescript-eslint/parser': ~6.21.0
       body-parser: ^1.20.2
       browserslist-to-esbuild: ^1.2.0
       child_process: ^1.0.2
@@ -2593,9 +2616,9 @@ importers:
       cross-env: ^5.1.4
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      electron: ^29.0.0
+      electron: ^30.0.0
       esbuild-plugin-external-global: ^1.0.1
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       express: ^4.18.2
       express-ws: ^5.0.2
       fs-extra: ^8.1.0
@@ -2610,7 +2633,7 @@ importers:
       rollup-plugin-visualizer: ^5.9.2
       rollup-plugin-webpack-stats: ^0.2.0
       ts-node: ^10.8.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       vhacd-js: ^0.0.1
       vite: ^4.5.2
       vite-plugin-env-compatible: ^1.1.1
@@ -2634,17 +2657,17 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
-      '@itwin/electron-authorization': 0.14.1_jnugpd6eetd5tw3o6ktya5d7lm
+      '@itwin/electron-authorization': 0.14.1_bplkyfia6fpabkwkmq6hai5lru
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/frontend-tiles': link:../../extensions/frontend-tiles
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
-      '@itwin/imodels-access-backend': 3.0.0_wj555zckjupkhkzyssqqpl4sei
-      '@itwin/imodels-access-frontend': 3.0.0_ueafa4slb6ohrhyf7kbp6egmha
-      '@itwin/imodels-client-authoring': 3.0.0
-      '@itwin/imodels-client-management': 3.0.0
+      '@itwin/imodels-access-backend': 5.0.1_wj555zckjupkhkzyssqqpl4sei
+      '@itwin/imodels-access-frontend': 5.0.1_ueafa4slb6ohrhyf7kbp6egmha
+      '@itwin/imodels-client-authoring': 5.1.0
+      '@itwin/imodels-client-management': 5.1.0
       '@itwin/map-layers-formats': link:../../extensions/map-layers-formats
       '@itwin/object-storage-core': 2.2.2
-      '@itwin/reality-data-client': 1.1.0_mdtbcqczpmeuv6yjzfaigjndwi
+      '@itwin/reality-data-client': 1.2.1_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/webgl-compatibility': link:../../core/webgl-compatibility
       body-parser: 1.20.2
       vhacd-js: 0.0.1
@@ -2652,20 +2675,20 @@ importers:
       '@itwin/backend-webpack-tools': link:../../tools/backend-webpack
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-webpack-tools': link:../../tools/webpack-core
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/express': 4.17.20
       '@types/express-ws': 3.0.3
       '@types/fs-extra': 4.0.7
-      '@typescript-eslint/parser': 5.55.0_6ndl6d37z3ezupnqjymvncqbpi
+      '@typescript-eslint/parser': 6.21.0_xdgzedli73k7lw4xlyzszm74om
       browserslist-to-esbuild: 1.2.0
       child_process: 1.0.2
       cpx2: 3.0.0
       cross-env: 5.1.4
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      electron: 29.0.0
+      electron: 30.0.0
       esbuild-plugin-external-global: 1.0.1
-      eslint: 8.44.0
+      eslint: 8.56.0
       express: 4.18.2
       express-ws: 5.0.2_express@4.18.2
       fs-extra: 8.1.0
@@ -2679,8 +2702,8 @@ importers:
       rollup-plugin-ignore: 1.0.10
       rollup-plugin-visualizer: 5.9.2
       rollup-plugin-webpack-stats: 0.2.0
-      ts-node: 10.8.2_typescript@5.0.2
-      typescript: 5.0.2
+      ts-node: 10.8.2_typescript@5.3.3
+      typescript: 5.3.3
       vite: 4.5.2
       vite-plugin-env-compatible: 1.1.1
       vite-plugin-inspect: 0.7.28_vite@4.5.2
@@ -2693,12 +2716,12 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/node': ~18.16.20
       '@types/yargs': 17.0.19
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
@@ -2708,12 +2731,12 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/node': 18.16.20
       '@types/yargs': 17.0.19
-      eslint: 8.44.0
+      eslint: 8.56.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../test-apps/imjs-importer:
     specifiers:
@@ -2722,16 +2745,16 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
       '@types/yargs': 17.0.19
       chai: ^4.3.10
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       mocha: ^10.2.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
@@ -2742,15 +2765,15 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
       '@types/yargs': 17.0.19
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../test-apps/imodel-from-geojson:
     specifiers:
@@ -2759,15 +2782,15 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.202
       '@types/node': ~18.16.20
       '@types/yargs': 17.0.19
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       fs-extra: ^8.1.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
@@ -2778,14 +2801,14 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/fs-extra': 4.0.7
       '@types/lodash': 4.14.202
       '@types/node': 18.16.20
       '@types/yargs': 17.0.19
-      eslint: 8.44.0
+      eslint: 8.56.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../test-apps/imodel-from-orbitgt:
     specifiers:
@@ -2795,13 +2818,13 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/core-orbitgt': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/fs-extra': ^4.0.7
       '@types/node': ~18.16.20
       '@types/yargs': 17.0.19
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
@@ -2812,13 +2835,13 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/fs-extra': 4.0.7
       '@types/node': 18.16.20
       '@types/yargs': 17.0.19
-      eslint: 8.44.0
+      eslint: 8.56.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../test-apps/imodel-from-reality-model:
     specifiers:
@@ -2827,15 +2850,15 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.202
       '@types/node': ~18.16.20
       '@types/yargs': 17.0.19
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       fs-extra: ^8.1.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
@@ -2846,14 +2869,14 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/fs-extra': 4.0.7
       '@types/lodash': 4.14.202
       '@types/node': 18.16.20
       '@types/yargs': 17.0.19
-      eslint: 8.44.0
+      eslint: 8.56.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../tools/backend-webpack:
     specifiers:
@@ -2863,7 +2886,7 @@ importers:
       chalk: ^3.0.0
       concurrently: ^3.6.1
       fs-extra: ^8.1.0
-      glob: ^7.1.2
+      glob: ^10.3.12
       nodemon: ^2.0.4
       rimraf: ^3.0.2
       webpack: ^5.76.0
@@ -2876,7 +2899,7 @@ importers:
       chalk: 3.0.0
       concurrently: 3.6.1
       fs-extra: 8.1.0
-      glob: 7.1.2
+      glob: 10.3.12
       nodemon: 2.0.4
       webpack: 5.76.0
       yargonaut: 1.1.2
@@ -2886,49 +2909,49 @@ importers:
 
   ../../tools/build:
     specifiers:
-      '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@microsoft/api-extractor': ~7.36.4
+      '@itwin/eslint-plugin': ^4.0.2
+      '@microsoft/api-extractor': ~7.40.0
       '@types/node': ~18.16.20
       chalk: ^3.0.0
       cpx2: ^3.0.0
       cross-spawn: ^7.0.1
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       fs-extra: ^8.1.0
-      glob: ^7.1.2
+      glob: ^10.3.12
       mocha: ^10.2.0
       mocha-junit-reporter: ^2.0.2
       rimraf: ^3.0.2
       tree-kill: ^1.2.2
-      typedoc: ^0.23.28
-      typedoc-plugin-merge-modules: ^4.0.1
-      typescript: ~5.0.2
+      typedoc: ^0.25.8
+      typedoc-plugin-merge-modules: ^5.1.0
+      typescript: ~5.3.3
       wtfnode: ^0.9.1
       yargs: ^17.4.0
     dependencies:
-      '@microsoft/api-extractor': 7.36.4_@types+node@18.16.20
+      '@microsoft/api-extractor': 7.40.0_@types+node@18.16.20
       chalk: 3.0.0
       cpx2: 3.0.0
       cross-spawn: 7.0.1
       fs-extra: 8.1.0
-      glob: 7.1.2
+      glob: 10.3.12
       mocha: 10.2.0
       mocha-junit-reporter: 2.0.2_mocha@10.2.0
       rimraf: 3.0.2
       tree-kill: 1.2.2
-      typedoc: 0.23.28_typescript@5.0.2
-      typedoc-plugin-merge-modules: 4.0.1_typedoc@0.23.28
-      typescript: 5.0.2
+      typedoc: 0.25.8_typescript@5.3.3
+      typedoc-plugin-merge-modules: 5.1.0_typedoc@0.25.8
+      typescript: 5.3.3
       wtfnode: 0.9.1
       yargs: 17.4.0
     devDependencies:
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/node': 18.16.20
-      eslint: 8.44.0
+      eslint: 8.56.0
 
   ../../tools/certa:
     specifiers:
       '@itwin/build-tools': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/detect-port': ~1.1.0
       '@types/express': ^4.17.20
@@ -2938,8 +2961,8 @@ importers:
       '@types/yargs': 17.0.19
       canonical-path: ^1.0.0
       detect-port: ~1.3.0
-      electron: ^29.0.0
-      eslint: ^8.44.0
+      electron: ^30.0.0
+      eslint: ^8.56.0
       express: ^4.18.2
       jsonc-parser: ~2.0.3
       lodash: ^4.17.21
@@ -2948,7 +2971,7 @@ importers:
       playwright: ~1.35.1
       rimraf: ^3.0.2
       source-map-support: ^0.5.6
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       yargs: ^17.4.0
     dependencies:
       canonical-path: 1.0.0
@@ -2962,7 +2985,7 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../build
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/detect-port': 1.1.0
       '@types/express': 4.17.20
@@ -2970,11 +2993,11 @@ importers:
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
       '@types/yargs': 17.0.19
-      electron: 29.0.0
-      eslint: 8.44.0
+      electron: 30.0.0
+      eslint: 8.56.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../tools/ecschema2ts:
     specifiers:
@@ -2985,7 +3008,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-locaters': workspace:*
       '@itwin/ecschema-metadata': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/chai-string': ^1.4.1
       '@types/fs-extra': ^4.0.7
@@ -2997,13 +3020,13 @@ importers:
       chalk: ^3.0.0
       commander: ^2.14.1
       cpx2: ^3.0.0
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       fs-extra: ^8.1.0
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       source-map-support: ^0.5.6
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -3018,7 +3041,7 @@ importers:
       fs-extra: 8.1.0
     devDependencies:
       '@itwin/build-tools': link:../build
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/chai-string': 1.4.1
       '@types/fs-extra': 4.0.7
@@ -3026,49 +3049,49 @@ importers:
       '@types/node': 18.16.20
       chai: 4.3.10
       cpx2: 3.0.0
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
       source-map-support: 0.5.6
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../tools/internal:
     specifiers:
       '@itwin/build-tools': workspace:*
-      glob: ^7.1.2
+      glob: ^10.3.12
       mocha: ^10.2.0
       yargs: ^17.4.0
     dependencies:
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../build
-      glob: 7.1.2
+      glob: 10.3.12
       mocha: 10.2.0
 
   ../../tools/perf-tools:
     specifiers:
       '@itwin/build-tools': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/fs-extra': ^4.0.7
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       fs-extra: ^8.1.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
     dependencies:
       fs-extra: 8.1.0
     devDependencies:
       '@itwin/build-tools': link:../build
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/fs-extra': 4.0.7
-      eslint: 8.44.0
+      eslint: 8.56.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   ../../tools/webpack-core:
     specifiers:
       '@itwin/build-tools': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.8
@@ -3082,11 +3105,11 @@ importers:
       chalk: ^3.0.0
       copy-webpack-plugin: ^11.0.0
       cpx2: ^3.0.0
-      eslint: ^8.44.0
+      eslint: ^8.56.0
       file-loader: ^6.2.0
       findup: 0.1.5
       fs-extra: ^8.1.0
-      glob: ^7.1.2
+      glob: ^10.3.12
       lodash: ^4.17.21
       memfs: ^3.2.2
       mocha: ^10.2.0
@@ -3094,7 +3117,7 @@ importers:
       resolve: 1.19.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       webpack: ^5.76.0
     dependencies:
       chalk: 3.0.0
@@ -3102,13 +3125,13 @@ importers:
       file-loader: 6.2.0_webpack@5.76.0
       findup: 0.1.5
       fs-extra: 8.1.0
-      glob: 7.1.2
+      glob: 10.3.12
       lodash: 4.17.21
       resolve: 1.19.0
       source-map-loader: 4.0.0_webpack@5.76.0
     devDependencies:
       '@itwin/build-tools': link:../build
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/chai-jest-snapshot': 1.3.8
@@ -3120,12 +3143,12 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.10
       chai-jest-snapshot: 2.0.0_chai@4.3.10
       cpx2: 3.0.0
-      eslint: 8.44.0
+      eslint: 8.56.0
       memfs: 3.2.2
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
       webpack: 5.76.0
 
   ../../ui/appui-abstract:
@@ -3133,7 +3156,7 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/certa': workspace:*
       '@itwin/core-bentley': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       '@types/sinon': ^17.0.2
@@ -3142,8 +3165,8 @@ importers:
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.3.10
       cpx2: ^3.0.0
-      eslint: ^8.44.0
-      glob: ^7.1.2
+      eslint: ^8.56.0
+      glob: ^10.3.12
       ignore-styles: ^5.0.1
       mocha: ^10.2.0
       raf: ^3.4.0
@@ -3151,13 +3174,13 @@ importers:
       sinon: ^17.0.1
       sinon-chai: ^3.7.0
       source-map-loader: ^4.0.0
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       webpack: ^5.76.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
       '@itwin/core-bentley': link:../../core/bentley
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       '@types/sinon': 17.0.2
@@ -3166,8 +3189,8 @@ importers:
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.10
       cpx2: 3.0.0
-      eslint: 8.44.0
-      glob: 7.1.2
+      eslint: 8.56.0
+      glob: 10.3.12
       ignore-styles: 5.0.1
       mocha: 10.2.0
       raf: 3.4.0
@@ -3175,7 +3198,7 @@ importers:
       sinon: 17.0.1
       sinon-chai: 3.7.0_chai@4.3.10+sinon@17.0.1
       source-map-loader: 4.0.0_webpack@5.76.0
-      typescript: 5.0.2
+      typescript: 5.3.3
       webpack: 5.76.0
 
   ../../utils/workspace-editor:
@@ -3184,34 +3207,34 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
-      '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/eslint-plugin': ^4.0.2
       '@types/chai': 4.3.1
       '@types/glob': ^5.0.35
       '@types/mocha': ^10.0.6
       '@types/yargs': 17.0.19
-      eslint: ^8.44.0
-      glob: ^7.1.2
+      eslint: ^8.56.0
+      glob: ^10.3.12
       mocha: ^10.2.0
       rimraf: ^3.0.2
-      typescript: ~5.0.2
+      typescript: ~5.3.3
       yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
-      glob: 7.1.2
+      glob: 10.3.12
       yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
+      '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
       '@types/chai': 4.3.1
       '@types/glob': 5.0.35
       '@types/mocha': 10.0.6
       '@types/yargs': 17.0.19
-      eslint: 8.44.0
+      eslint: 8.56.0
       mocha: 10.2.0
       rimraf: 3.0.2
-      typescript: 5.0.2
+      typescript: 5.3.3
 
 packages:
 
@@ -3734,8 +3757,8 @@ packages:
     resolution: {integrity: sha512-VuR/K6odSLBXPtUoyX0v4m1l0MLw/pyeX2b1DuMHlnOMS9/Ub9oi6BgMbwOYUslWP8Bxw4HcFoiR8F4aPasmaw==}
     dev: true
 
-  /@bentley/core-custom-attributes-schema/1.0.3:
-    resolution: {integrity: sha512-FrKkgkuMgc85o8Ag8/5YGh7MnwCD19tgJiAmktjlZo43ZxfsiwE+iu+SJzfLsYCDYb6Z3KcRb5O5l4dA0Dp6uA==}
+  /@bentley/core-custom-attributes-schema/1.0.4:
+    resolution: {integrity: sha512-Ciii3iXwm6DmKQrZdhdyI2hHPXGsSEDsL6bGEP2gRfnG6PcXsxITFc6ta7ZTuXVCkWlKnKoW4YEsh0PANFjwcg==}
     dev: true
 
   /@bentley/ecdb-map-schema/2.0.1:
@@ -3758,8 +3781,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.5.5:
-    resolution: {integrity: sha512-j3lOJ94wZfEenuTSsmofNn+6891Dna7/qa8Cb3nivSWazT3/lUFrA5kG1S1qCSEBPU8PllcjCH6UBcr3k4Ri8g==}
+  /@bentley/imodeljs-native/4.7.20:
+    resolution: {integrity: sha512-TZGzuAH/ocw/EI/37Eu4Dl8ny/QLlQHb5vbIgA1ndynjCI0X7UUS4ptYbJ2hZnzWRw5y9u5eZXZOZlFX3e0Xjg==}
     requiresBuild: true
     dev: false
 
@@ -3842,11 +3865,11 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /@es-joy/jsdoccomment/0.38.0:
-    resolution: {integrity: sha512-TFac4Bnv0ZYNkEeDnOWHQhaS1elWlvOCQxH06iHeu5iffs+hCaLVIZJwF+FqksQi68R4i66Pu+4DfFGvble+Uw==}
+  /@es-joy/jsdoccomment/0.42.0:
+    resolution: {integrity: sha512-R1w57YlVA6+YE01wch3GPYn6bCsrOV3YW/5oGGE2tmX6JcL9Nr+b5IikrjMPF+v9CV3ay+obImEdsDhovhJrzw==}
     engines: {node: '>=16'}
     dependencies:
-      comment-parser: 1.3.1
+      comment-parser: 1.4.1
       esquery: 1.5.0
       jsdoc-type-pratt-parser: 4.0.0
 
@@ -4048,13 +4071,13 @@ packages:
     dev: true
     optional: true
 
-  /@eslint-community/eslint-utils/4.4.0_eslint@8.44.0:
+  /@eslint-community/eslint-utils/4.4.0_eslint@8.56.0:
     resolution: {integrity: sha512-1/sA4dwrzBAyeUoQ6oxahHKmrZvsnLCg4RfxW3ZFGGmQkSNQPFNLV9CUEFQP1x9EYXHTo5p6xdhZM1Ne9p/AfA==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     peerDependencies:
       eslint: ^6.0.0 || ^7.0.0 || >=8.0.0
     dependencies:
-      eslint: 8.44.0
+      eslint: 8.56.0
       eslint-visitor-keys: 3.4.3
 
   /@eslint-community/regexpp/4.10.0:
@@ -4077,8 +4100,8 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /@eslint/js/8.44.0:
-    resolution: {integrity: sha512-Ag+9YM4ocKQx9AarydN0KY2j0ErMHNIocPDrVo8zAE44xLTjEtz81OdR68/cydGtk6m6jDb5Za3r2useMzYmSw==}
+  /@eslint/js/8.56.0:
+    resolution: {integrity: sha512-gMsVel9D7f2HLkBma9VbtzZRehRogVRfbr++f06nL2vnCGCNlzOD+/MUov/F4p8myyAHspEhVobgjpX64q5m6A==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
   /@humanwhocodes/config-array/0.11.14:
@@ -4108,7 +4131,6 @@ packages:
       strip-ansi-cjs: /strip-ansi/6.0.1
       wrap-ansi: 8.1.0
       wrap-ansi-cjs: /wrap-ansi/7.0.0
-    dev: true
 
   /@istanbuljs/load-nyc-config/1.1.0:
     resolution: {integrity: sha512-VjeHSlIzpv/NyD3N0YuHfXOPDIixcA1q2ZV98wsMqcYlPmv2n3Yb2lYP9XMElnaFVXg5A7YLTeLu6V84uQDjmQ==}
@@ -4149,7 +4171,7 @@ packages:
       lodash: 4.17.21
       mocha: 10.2.0
       puppeteer: 15.5.0
-      source-map-support: 0.5.6
+      source-map-support: 0.5.21
       yargs: 17.4.0
     transitivePeerDependencies:
       - bufferutil
@@ -4157,7 +4179,7 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/certa/3.8.0_electron@29.0.0:
+  /@itwin/certa/3.8.0_electron@30.0.0:
     resolution: {integrity: sha512-7Vl2PtJH43ZAmAbGFNqy6eW/+j7zq/nI8HvrauaqupbvHaCWPyaI8T98A5hScR7TlIPpB9sCU/+5Fjxs34BfQw==}
     hasBin: true
     peerDependencies:
@@ -4167,27 +4189,19 @@ packages:
         optional: true
     dependencies:
       detect-port: 1.3.0
-      electron: 29.0.0
+      electron: 30.0.0
       express: 4.18.2
       jsonc-parser: 2.0.3
       lodash: 4.17.21
       mocha: 10.2.0
       puppeteer: 15.5.0
-      source-map-support: 0.5.6
+      source-map-support: 0.5.21
       yargs: 17.4.0
     transitivePeerDependencies:
       - bufferutil
       - encoding
       - supports-color
       - utf-8-validate
-
-  /@itwin/cloud-agnostic-core/1.6.0:
-    resolution: {integrity: sha512-IKj3lxaVQqGezz7bkFjKEf9g7Bk4i2cu2aCJsd9HnV2gn79lo8oU0UiPJ+kuVtMsEcN/yRq/EXk/IR/VnNkLKA==}
-    engines: {node: '>=12.20 <19.0.0'}
-    dependencies:
-      inversify: 5.0.5
-      reflect-metadata: 0.1.13
-    dev: false
 
   /@itwin/cloud-agnostic-core/2.1.0:
     resolution: {integrity: sha512-nVFJ55+sj3IExsXwPXJwtud2cK1+5gYsS1Q96Vz6pBQ1rn84i22JUwGmlBrvf3Em6obseBaDQ6GCRA4aUpAjgQ==}
@@ -4226,7 +4240,19 @@ packages:
       reflect-metadata: 0.1.13
     dev: false
 
-  /@itwin/electron-authorization/0.14.1_jnugpd6eetd5tw3o6ktya5d7lm:
+  /@itwin/core-common/4.6.0_67wltvhdskk2oee2c3z2o4tfly:
+    resolution: {integrity: sha512-QH9JMtZIj5bbx6gts8xBnXtNoM22r4AWUQrP6xd9Az1//HjfIGQKbTY7TDWalP2bGelI4l2D7qWeid9VZVlVHg==}
+    peerDependencies:
+      '@itwin/core-bentley': ^4.6.0
+      '@itwin/core-geometry': ^4.6.0
+    dependencies:
+      '@itwin/core-bentley': link:../../core/bentley
+      '@itwin/core-geometry': link:../../core/geometry
+      flatbuffers: 1.12.0
+      js-base64: 3.6.1
+    dev: false
+
+  /@itwin/electron-authorization/0.14.1_bplkyfia6fpabkwkmq6hai5lru:
     resolution: {integrity: sha512-NslwCLw129obJHBRMcV/MdykqbD7d93SKTYOOBdaEab2T2niGCmCTJAOkjcWiZZMU0SwmjyxmY9iqdZjvvIqCA==}
     peerDependencies:
       '@itwin/core-bentley': ^3.3.0 || ^4.0.0
@@ -4235,46 +4261,46 @@ packages:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@openid/appauth': 1.3.1
-      electron: 29.0.0
+      electron: 30.0.0
       keytar: 7.9.0
       username: 5.1.0
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@itwin/eslint-plugin/4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi:
-    resolution: {integrity: sha512-71OXjYjVLgyvFhdGiCzimpvdh/kbL8UKG4f83rIG80RwPnzN3Sf45F4v2S4ldWt339BPBmG2ogOOhGXHzlcjRA==}
+  /@itwin/eslint-plugin/4.0.2_xdgzedli73k7lw4xlyzszm74om:
+    resolution: {integrity: sha512-UDwToOexhFRlS8XQSezvjoRHp8FH9KxfJSb6b1pN2a21g0uhsqxCQDKuOrGwSnJEERIvxMJB0ddH0aYg4dRvJw==}
+    engines: {node: ^18.18.0 || >=20.0.0}
     hasBin: true
     peerDependencies:
-      eslint: ^8.36.0
+      eslint: ^8.56.0
       typescript: ^3.7.0 || ^4.0.0 || ^5.0.0
     dependencies:
-      '@typescript-eslint/eslint-plugin': 5.55.0_odicrze7mzofy3itnjcgazdwoe
-      '@typescript-eslint/parser': 5.55.0_6ndl6d37z3ezupnqjymvncqbpi
-      eslint: 8.44.0
-      eslint-import-resolver-node: 0.3.4
-      eslint-import-resolver-typescript: 2.7.1_5qbttfwjnxfghnsj3y7wwhv3de
-      eslint-plugin-deprecation: 1.5.0_6ndl6d37z3ezupnqjymvncqbpi
-      eslint-plugin-import: 2.29.1_eslint@8.44.0
+      '@typescript-eslint/eslint-plugin': 7.0.2_dqzt4o5ous35ew6a25fcci52uu
+      '@typescript-eslint/parser': 7.0.2_xdgzedli73k7lw4xlyzszm74om
+      eslint: 8.56.0
+      eslint-plugin-deprecation: 2.0.0_xdgzedli73k7lw4xlyzszm74om
+      eslint-plugin-import: 2.29.1_eslint@8.56.0
       eslint-plugin-jam3: 0.2.3
-      eslint-plugin-jsdoc: 43.2.0_eslint@8.44.0
-      eslint-plugin-jsx-a11y: 6.8.0_eslint@8.44.0
-      eslint-plugin-prefer-arrow: 1.2.3_eslint@8.44.0
-      eslint-plugin-react: 7.33.2_eslint@8.44.0
-      eslint-plugin-react-hooks: 4.6.0_eslint@8.44.0
-      typescript: 5.0.2
+      eslint-plugin-jsdoc: 48.0.6_eslint@8.56.0
+      eslint-plugin-jsx-a11y: 6.8.0_eslint@8.56.0
+      eslint-plugin-prefer-arrow: 1.2.3_eslint@8.56.0
+      eslint-plugin-react: 7.33.2_eslint@8.56.0
+      eslint-plugin-react-hooks: 4.6.0_eslint@8.56.0
+      typescript: 5.3.3
+      workspace-tools: 0.36.4
     transitivePeerDependencies:
       - supports-color
 
-  /@itwin/imodel-transformer/0.1.1_weqmipkhmjm5vfy37lv47aijmu:
-    resolution: {integrity: sha512-93BvB8H1rUpOVb6+qzaLyBzU42Xh67lyGnbrsaeOre3U3WiK6taoKjVjKOHjRcQnRZ7+enbZXAOUzfGtquaxIQ==}
+  /@itwin/imodel-transformer/0.4.2_weqmipkhmjm5vfy37lv47aijmu:
+    resolution: {integrity: sha512-uSfVKFdzMvptc634gtnorxAthflL2n2y72e4z6fXV0Q4ToXRSn25kFGPVgDtaASAptIh5VPz2xaqT1Obbq/ImA==}
     engines: {node: ^18.0.0}
     peerDependencies:
-      '@itwin/core-backend': 3.6.0 - 3.6.1
-      '@itwin/core-bentley': 3.6.0 - 3.6.1
-      '@itwin/core-common': 3.6.0 - 3.6.1
-      '@itwin/core-geometry': 3.6.0 - 3.6.1
-      '@itwin/ecschema-metadata': 3.6.0 - 3.6.1
+      '@itwin/core-backend': ^3.6.0 || ^4.0.0
+      '@itwin/core-bentley': ^3.6.0 || ^4.0.0
+      '@itwin/core-common': ^3.6.0 || ^4.0.0
+      '@itwin/core-geometry': ^3.6.0 || ^4.0.0
+      '@itwin/ecschema-metadata': ^3.6.0 || ^4.0.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -4282,58 +4308,77 @@ packages:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      semver: 7.3.5
+      semver: 7.6.0
     dev: false
 
-  /@itwin/imodels-access-backend/3.0.0_wj555zckjupkhkzyssqqpl4sei:
-    resolution: {integrity: sha512-kNhwi+qQ28OCGcHvi3/oklb60o1Ziv2zrFwHsrvXZvvCWtxIouMxXKtX30e0R7lByJavXS7g4G/V6Nlo+k0+JQ==}
+  /@itwin/imodels-access-backend/5.0.1_wj555zckjupkhkzyssqqpl4sei:
+    resolution: {integrity: sha512-RAPhMbfNW0EynbclD07KbTKy4E4bMS8lv2Q4ZsNtjLOde+QPjpO+ll/Y7e4BTjK6HjxNOzCHtP/8dH/5WU8hSA==}
     peerDependencies:
-      '@itwin/core-backend': ^3.6.0
-      '@itwin/core-bentley': ^3.6.0
-      '@itwin/core-common': ^3.6.0
+      '@itwin/core-backend': ^4.0.0
+      '@itwin/core-bentley': ^4.0.0
+      '@itwin/core-common': ^4.0.0
     dependencies:
       '@azure/abort-controller': 1.1.0
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
-      '@itwin/imodels-client-authoring': 3.0.0
-      axios: 0.21.4
+      '@itwin/imodels-access-common': 5.0.1_mzyk4ayjeukc3ktflsb4gz56li
+      '@itwin/imodels-client-authoring': 5.1.0
+      axios: 1.6.5
     transitivePeerDependencies:
       - debug
       - encoding
+      - inversify
+      - reflect-metadata
     dev: false
 
-  /@itwin/imodels-access-frontend/3.0.0_ueafa4slb6ohrhyf7kbp6egmha:
-    resolution: {integrity: sha512-b6o5gpx+UfR74qsB6u8r4Ewu/jKDSrWsu7AeBR8WIfubdHFQlat1paODiEcG9RklBNuiD56KkpzxrqB5RRllMA==}
+  /@itwin/imodels-access-common/5.0.1_mzyk4ayjeukc3ktflsb4gz56li:
+    resolution: {integrity: sha512-bIAlAHv7lUi0GlasEjEyvvCWg816+YW8Rrc5X74c9FoYKT63ut4n1H2NLJ5i1japggwB/ss07eJo4p7rUDxzSg==}
     peerDependencies:
-      '@itwin/core-bentley': ^3.6.0
-      '@itwin/core-common': ^3.6.0
-      '@itwin/core-frontend': ^3.6.0
+      '@itwin/core-bentley': ^4.0.0
+      '@itwin/core-common': ^4.0.0
+    dependencies:
+      '@itwin/core-bentley': link:../../core/bentley
+      '@itwin/core-common': link:../../core/common
+      '@itwin/imodels-client-management': 5.1.0
+    transitivePeerDependencies:
+      - debug
+    dev: false
+
+  /@itwin/imodels-access-frontend/5.0.1_ueafa4slb6ohrhyf7kbp6egmha:
+    resolution: {integrity: sha512-iQCqA3NEH79Swea0nY0GxN7R5pjbEGg3E8mbTEqp8PPjI7se4/Gp6zeGy8QNhfzBFQiKGr08knLF/rtJyvGP3A==}
+    peerDependencies:
+      '@itwin/core-bentley': ^4.0.0
+      '@itwin/core-common': ^4.0.0
+      '@itwin/core-frontend': ^4.0.0
     dependencies:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
-      '@itwin/imodels-client-management': 3.0.0
+      '@itwin/imodels-access-common': 5.0.1_mzyk4ayjeukc3ktflsb4gz56li
+      '@itwin/imodels-client-management': 5.1.0
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@itwin/imodels-client-authoring/3.0.0:
-    resolution: {integrity: sha512-LqoviR78mJXB//OF6ZYAMGpSQ4IgOWfRVsrEc/JQ1YaTTG0fLquZeNzH2M/jjpLlqwJp9dMDzOzlxJP2om6eUA==}
+  /@itwin/imodels-client-authoring/5.1.0:
+    resolution: {integrity: sha512-ftgwDRoOqFYhcGzAOm/qGNPMtORjAsHhYDIjtGpOzA//0SQPgd0wC4MkH2biS0gyTVlL/qkrNldV8+xTw11Q2g==}
     dependencies:
-      '@azure/storage-blob': 12.7.0
-      '@itwin/imodels-client-management': 3.0.0
-      '@itwin/object-storage-azure': 1.6.0
-      '@itwin/object-storage-core': 1.6.0
+      '@azure/storage-blob': 12.13.0
+      '@itwin/imodels-client-management': 5.1.0
+      '@itwin/object-storage-azure': 2.2.2
+      '@itwin/object-storage-core': 2.2.2
     transitivePeerDependencies:
       - debug
       - encoding
+      - inversify
+      - reflect-metadata
     dev: false
 
-  /@itwin/imodels-client-management/3.0.0:
-    resolution: {integrity: sha512-yzgizCzXKZ7fyT54DQF+4OE2OCrLgBw10XzNHisDY0kjeXvbxyh5xPdOZf9+rB0nJ5f77RLmEzieqHYrMGvaWw==}
+  /@itwin/imodels-client-management/5.1.0:
+    resolution: {integrity: sha512-DADjPoDkCY4PYcI06uKkB+FB5pilLMtb9bikbYdz7F4p2IiQo7ITAGDtjeCQaEAeMUMSeJ5WubaqFat52mchAA==}
     dependencies:
-      axios: 0.21.4
+      axios: 1.6.5
     transitivePeerDependencies:
       - debug
     dev: false
@@ -4345,16 +4390,17 @@ packages:
     transitivePeerDependencies:
       - debug
 
-  /@itwin/object-storage-azure/1.6.0:
-    resolution: {integrity: sha512-b0rxhn0NAFY1alOEGMAUaJtK8WG7xoJPDOVjuA8nC7zFcxxtP2VOsSOauuie2zzL3GDi9OU6vywR3gAcJcTZww==}
+  /@itwin/object-storage-azure/2.2.2:
+    resolution: {integrity: sha512-bRnRmOX4DK5BAvzii4rsVRuzV5LruBq1MP823sbHnOrop7BKNTkTup5qWHOXOmY71fJ/t26JukBwEIx9eMuOsA==}
     engines: {node: '>=12.20 <19.0.0'}
+    peerDependencies:
+      inversify: ^6.0.1
+      reflect-metadata: ^0.1.13
     dependencies:
       '@azure/core-paging': 1.5.0
       '@azure/storage-blob': 12.13.0
-      '@itwin/cloud-agnostic-core': 1.6.0
-      '@itwin/object-storage-core': 1.6.0
-      inversify: 5.0.5
-      reflect-metadata: 0.1.13
+      '@itwin/cloud-agnostic-core': 2.2.2
+      '@itwin/object-storage-core': 2.2.2
     transitivePeerDependencies:
       - debug
       - encoding
@@ -4376,18 +4422,6 @@ packages:
     transitivePeerDependencies:
       - debug
       - encoding
-    dev: false
-
-  /@itwin/object-storage-core/1.6.0:
-    resolution: {integrity: sha512-6X6YZ5E/kSJJlKQm7+xluzBGBGPILlEmEfzBgEcDqEwABS214OcKU74kW5mfrB6AiNXKZ2RkxfafW/ZpYi24fg==}
-    engines: {node: '>=12.20 <19.0.0'}
-    dependencies:
-      '@itwin/cloud-agnostic-core': 1.6.0
-      axios: 0.27.2
-      inversify: 5.0.5
-      reflect-metadata: 0.1.13
-    transitivePeerDependencies:
-      - debug
     dev: false
 
   /@itwin/object-storage-core/2.2.2:
@@ -4417,12 +4451,12 @@ packages:
       - debug
     dev: false
 
-  /@itwin/oidc-signin-tool/3.6.0_jnugpd6eetd5tw3o6ktya5d7lm:
+  /@itwin/oidc-signin-tool/3.6.0_bplkyfia6fpabkwkmq6hai5lru:
     resolution: {integrity: sha512-Zvdmckc+EzSEuY7pFakhhbUFkUM56RaHdce5b5OBOhIKB97Yxier9rMl6g7z1Ariahai2VXgpOrLb62fDk8qLg==}
     peerDependencies:
       '@itwin/core-bentley': ^3.3.0
     dependencies:
-      '@itwin/certa': 3.8.0_electron@29.0.0
+      '@itwin/certa': 3.8.0_electron@30.0.0
       '@itwin/core-bentley': link:../../core/bentley
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
@@ -4453,8 +4487,8 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/reality-data-client/1.1.0_mdtbcqczpmeuv6yjzfaigjndwi:
-    resolution: {integrity: sha512-mPcBFaufYjmwO+PqmPlFe6GD8PyN8phIbZZvt5QUwgRJI/B/oE6pYDJrvIaFG8D2slDOc3nlbQKbk8vTnBWQ9A==}
+  /@itwin/reality-data-client/1.2.1_mdtbcqczpmeuv6yjzfaigjndwi:
+    resolution: {integrity: sha512-pNpnO1tbsM1HwyZcr6UkZLyMczNcYFHqsnREmjYJ4GIeCMdrWKGbH5ar4hyajqc/ZkV9zO4FXFMYgQx3yKK1zQ==}
     peerDependencies:
       '@itwin/core-bentley': ^4.0.0
     dependencies:
@@ -4466,17 +4500,23 @@ packages:
       - debug
     dev: false
 
-  /@itwin/service-authorization/0.6.3_mdtbcqczpmeuv6yjzfaigjndwi:
-    resolution: {integrity: sha512-dJgNADV4eo76epyef0Qr3E1zvC2VhmLs6eDtyJC2stlEHq/aFwtZvhsHlGelgsEOKab/HqY8X6TDEWJ/gK0eew==}
+  /@itwin/service-authorization/1.0.0_67wltvhdskk2oee2c3z2o4tfly:
+    resolution: {integrity: sha512-q8EaCi69mVdvUJX8DOpIdsxTw+oVV9/z+/fGDyPhMNvQ2RvZ+9F2WZjKYQxmI0/nB/nEQlxR9HQGuv7xFrEgxQ==}
     peerDependencies:
-      '@itwin/core-bentley': ^3.0.0
+      '@itwin/core-bentley': ^3.3.0 || ^4.0.0
     dependencies:
       '@itwin/core-bentley': link:../../core/bentley
+      '@itwin/core-common': 4.6.0_67wltvhdskk2oee2c3z2o4tfly
+      got: 11.8.6
       jsonwebtoken: 9.0.2
       jwks-rsa: 2.1.5
-      openid-client: 4.7.4
     transitivePeerDependencies:
+      - '@itwin/core-geometry'
       - supports-color
+    dev: false
+
+  /@itwin/unified-selection/0.1.0:
+    resolution: {integrity: sha512-1Pe2i3sw5dK4h394uC5wTRWvnXxeBZGv+t9LcG7tQr2L+l0Hv+Ryo5+yTN34kABEhMe2UwSHnBRU8jOGsiorIQ==}
     dev: false
 
   /@jridgewell/gen-mapping/0.3.3:
@@ -4551,7 +4591,7 @@ packages:
   /@loaders.gl/schema/3.1.6:
     resolution: {integrity: sha512-6l9bcEGLC/KBvyAbZdMpx9jLo9A1Sl15smW+FSI2pZx8BGQZQNePCNvaN3YEywvVIVmz5wF/xAsaCw8Asw9zbw==}
     dependencies:
-      '@types/geojson': 7946.0.13
+      '@types/geojson': 7946.0.14
     dev: false
 
   /@loaders.gl/worker-utils/3.1.6:
@@ -4560,32 +4600,32 @@ packages:
       '@babel/runtime': 7.23.8
     dev: false
 
-  /@microsoft/api-extractor-model/7.27.6_@types+node@18.16.20:
-    resolution: {integrity: sha512-eiCnlayyum1f7fS2nA9pfIod5VCNR1G+Tq84V/ijDrKrOFVa598BLw145nCsGDMoFenV6ajNi2PR5WCwpAxW6Q==}
+  /@microsoft/api-extractor-model/7.28.8_@types+node@18.16.20:
+    resolution: {integrity: sha512-/q6ds8XQVqs4Tq0/HueFiMk0wwJH8RaXHm+Z7XJ9ffeZ+6/oQUh6E0++uVfNoMD0JmZvLTV8++UgQ4dXMRQFWA==}
     dependencies:
       '@microsoft/tsdoc': 0.14.2
       '@microsoft/tsdoc-config': 0.16.2
-      '@rushstack/node-core-library': 3.59.7_@types+node@18.16.20
+      '@rushstack/node-core-library': 3.65.0_@types+node@18.16.20
     transitivePeerDependencies:
       - '@types/node'
     dev: false
 
-  /@microsoft/api-extractor/7.36.4_@types+node@18.16.20:
-    resolution: {integrity: sha512-21UECq8C/8CpHT23yiqTBQ10egKUacIpxkPyYR7hdswo/M5yTWdBvbq+77YC9uPKQJOUfOD1FImBQ1DzpsdeQQ==}
+  /@microsoft/api-extractor/7.40.0_@types+node@18.16.20:
+    resolution: {integrity: sha512-U4yTHabfut6WuYUnSM2+FWUsNIJ+w8ZfQGqZWLjH5I/MZvCyDBFyPDIhZAnndd4Vd3pwl4eSBpeMDe8etkCxpA==}
     hasBin: true
     dependencies:
-      '@microsoft/api-extractor-model': 7.27.6_@types+node@18.16.20
+      '@microsoft/api-extractor-model': 7.28.8_@types+node@18.16.20
       '@microsoft/tsdoc': 0.14.2
       '@microsoft/tsdoc-config': 0.16.2
-      '@rushstack/node-core-library': 3.59.7_@types+node@18.16.20
-      '@rushstack/rig-package': 0.4.1
-      '@rushstack/ts-command-line': 4.15.2
+      '@rushstack/node-core-library': 3.65.0_@types+node@18.16.20
+      '@rushstack/rig-package': 0.5.1
+      '@rushstack/ts-command-line': 4.17.1
       colors: 1.2.5
       lodash: 4.17.21
       resolve: 1.22.8
       semver: 7.5.4
       source-map: 0.6.1
-      typescript: 5.0.4
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@types/node'
     dev: false
@@ -4659,7 +4699,6 @@ packages:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
     requiresBuild: true
-    dev: true
     optional: true
 
   /@polka/url/1.0.0-next.24:
@@ -4699,8 +4738,8 @@ packages:
       picomatch: 2.3.1
     dev: true
 
-  /@rushstack/node-core-library/3.59.7_@types+node@18.16.20:
-    resolution: {integrity: sha512-ln1Drq0h+Hwa1JVA65x5mlSgUrBa1uHL+V89FqVWQgXd1vVIMhrtqtWGQrhTnFHxru5ppX+FY39VWELF/FjQCw==}
+  /@rushstack/node-core-library/3.65.0_@types+node@18.16.20:
+    resolution: {integrity: sha512-4AistGV/26JjSMrBuCc0bh13ayQ5mZo/SpnJjETkmkoKNaqIQpZdWr/T04Sa3DLBc4U2e61cx5ZpDzvTVCo+pQ==}
     peerDependencies:
       '@types/node': '*'
     peerDependenciesMeta:
@@ -4717,15 +4756,15 @@ packages:
       z-schema: 5.0.5
     dev: false
 
-  /@rushstack/rig-package/0.4.1:
-    resolution: {integrity: sha512-AGRwpqlXNSp9LhUSz4HKI9xCluqQDt/obsQFdv/NYIekF3pTTPzc+HbQsIsjVjYnJ3DcmxOREVMhvrMEjpiq6g==}
+  /@rushstack/rig-package/0.5.1:
+    resolution: {integrity: sha512-pXRYSe29TjRw7rqxD4WS3HN/sRSbfr+tJs4a9uuaSIBAITbUggygdhuG0VrO0EO+QqH91GhYMN4S6KRtOEmGVA==}
     dependencies:
       resolve: 1.22.8
       strip-json-comments: 3.1.1
     dev: false
 
-  /@rushstack/ts-command-line/4.15.2:
-    resolution: {integrity: sha512-5+C2uoJY8b+odcZD6coEe2XNC4ZjGB4vCMESbqW/8DHRWC/qIHfANdmN9F1wz/lAgxz72i7xRoVtPY2j7e4gpQ==}
+  /@rushstack/ts-command-line/4.17.1:
+    resolution: {integrity: sha512-2jweO1O57BYP5qdBGl6apJLB+aRIn5ccIRTPDyULh0KMwVzFqWtw6IZWt1qtUoZD/pD2RNkIOosH6Cq45rIYeg==}
     dependencies:
       '@types/argparse': 1.0.38
       argparse: 1.0.10
@@ -4875,7 +4914,7 @@ packages:
   /@types/cpx/1.5.2:
     resolution: {integrity: sha512-CL9DbTAdf5NYcbYpBTli6JxVIpCAhJp1FeQiXd9SNjbC4o9k6McnHkU0FHgj9UYoN7TVX3poaaBrwFabTY7Skw==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
     dev: false
 
   /@types/debug/4.1.12:
@@ -4960,9 +4999,8 @@ packages:
       '@types/node': 18.16.20
     dev: true
 
-  /@types/geojson/7946.0.13:
-    resolution: {integrity: sha512-bmrNrgKMOhM3WsafmbGmC+6dsF2Z308vLFsQ3a/bT8X8Sv5clVYpPars/UPq+sAaJP+5OoLAYgwbkS5QEJdLUQ==}
-    dev: false
+  /@types/geojson/7946.0.14:
+    resolution: {integrity: sha512-WCfD5Ht3ZesJUsONdhvm84dmzWOiOzOAqOncN0++w0lBw1o8OuDNJF2McvvCef/yBqb/HYRahp1BYtODFQ8bRg==}
 
   /@types/glob/5.0.35:
     resolution: {integrity: sha512-wc+VveszMLyMWFvXLkloixT4n0harUIVZjnpzztaZ0nKLuul7Z32iMt2fUFGAaZ4y1XWjFRMtCI5ewvyh4aIeg==}
@@ -5027,6 +5065,10 @@ packages:
     resolution: {integrity: sha512-C/ZFcv+0iIbtLSupcUunpFzKdolJRQ3BOef7d9jfuxkTaPsd4iRgbgfxihe50rnr/Ywu2t5mwgXpddtLxMYi9Q==}
     dev: true
 
+  /@types/methods/1.1.4:
+    resolution: {integrity: sha512-ymXWVrDiCxTBE3+RIrrP533E70eA+9qu7zdWoHuOmGujkYtzf4HQF96b8nwHLqhuf4ykX61IGRIB38CC6/sImQ==}
+    dev: true
+
   /@types/mime/1.3.5:
     resolution: {integrity: sha512-/pyBZWSLD2n0dcHE3hq8s8ZvcETHtEuF+3E7XVt0Ig2nvsVQXdghHVcEkIWjy9A0wKfTn97a/PSDYohKIlnP/w==}
 
@@ -5060,15 +5102,11 @@ packages:
     resolution: {integrity: sha512-eEn8RkzZFcT0gb8qyi0CcfSOQnLE+NbGLIIaxGGmjn/N35v/C3M8ohxcpSlNlCv+H8vPpMGmrGDdCkzr8xu2tQ==}
     dev: true
 
-  /@types/node/18.16.1:
-    resolution: {integrity: sha512-DZxSZWXxFfOlx7k7Rv4LAyiMroaxa3Ly/7OOzZO8cBNho0YzAi4qlbrx8W27JGqG57IgR/6J7r+nOJWw6kcvZA==}
-    dev: false
-
   /@types/node/18.16.20:
     resolution: {integrity: sha512-nL54VfDjThdP2UXJXZao5wp76CDiDw4zSRO8d4Tk7UgDqNKGKVEQB0/t3ti63NS+YNNkIQDvwEAF04BO+WYu7Q==}
 
-  /@types/node/20.11.19:
-    resolution: {integrity: sha512-7xMnVEcZFu0DikYjWOlRq7NTPETrm7teqUT2WkQjrTIkEgUyyGdWsj/Zg8bEJt5TNklzbPD1X3fqfsHw3SpapQ==}
+  /@types/node/20.12.7:
+    resolution: {integrity: sha512-wq0cICSkRLVaf3UGLMGItu/PtdY7oaXaI/RVU+xliKVOtRna3PRY57ZDfztpDL0n11vfymMUnXv8QwYCO7L1wg==}
     dependencies:
       undici-types: 5.26.5
 
@@ -5146,17 +5184,19 @@ packages:
       '@types/node': 18.16.20
     dev: true
 
-  /@types/superagent/4.1.14:
-    resolution: {integrity: sha512-iiXaOL2wSbnSY4qg0mFPWJHL9iwyEsoNYwaHF2w58/fsVAQJlj+KUfFAFZu+nzbz+b7dUprJEAc+O9vhHHhQTA==}
+  /@types/superagent/8.1.6:
+    resolution: {integrity: sha512-yzBOv+6meEHSzV2NThYYOA6RtqvPr3Hbob9ZLp3i07SH27CrYVfm8CrF7ydTmidtelsFiKx2I4gZAiAOamGgvQ==}
     dependencies:
       '@types/cookiejar': 2.1.5
+      '@types/methods': 1.1.4
       '@types/node': 18.16.20
     dev: true
 
-  /@types/supertest/2.0.4:
-    resolution: {integrity: sha512-0TvOJ+6XVMSImgqc2ClNllfVffCxHQhFbsbwOGzGTjdFydoaG052LPqnP8SnmSlnokOcQiPPcbz+Yi30LxWPyA==}
+  /@types/supertest/6.0.2:
+    resolution: {integrity: sha512-137ypx2lk/wTQbW6An6safu9hXmajAifU/s7szAHLN/FeIm5w7yR0Wkl9fdJMRSHwOn4HLAI0DaB2TOORuhPDg==}
     dependencies:
-      '@types/superagent': 4.1.14
+      '@types/methods': 1.1.4
+      '@types/superagent': 8.1.6
     dev: true
 
   /@types/touch/3.1.2:
@@ -5202,12 +5242,12 @@ packages:
       '@types/node': 18.16.20
     optional: true
 
-  /@typescript-eslint/eslint-plugin/5.55.0_odicrze7mzofy3itnjcgazdwoe:
-    resolution: {integrity: sha512-IZGc50rtbjk+xp5YQoJvmMPmJEYoC53SiKPXyqWfv15XoD2Y5Kju6zN0DwlmaGJp1Iw33JsWJcQ7nw0lGCGjVg==}
-    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+  /@typescript-eslint/eslint-plugin/7.0.2_dqzt4o5ous35ew6a25fcci52uu:
+    resolution: {integrity: sha512-/XtVZJtbaphtdrWjr+CJclaCVGPtOdBpFEnvtNf/jRV0IiEemRrL0qABex/nEt8isYcnFacm3nPHYQwL+Wb7qg==}
+    engines: {node: ^16.0.0 || >=18.0.0}
     peerDependencies:
-      '@typescript-eslint/parser': ^5.0.0
-      eslint: ^6.0.0 || ^7.0.0 || ^8.0.0
+      '@typescript-eslint/parser': ^7.0.0
+      eslint: ^8.56.0
       typescript: '*'
     peerDependenciesMeta:
       '@typescript-eslint/parser':
@@ -5216,172 +5256,198 @@ packages:
         optional: true
     dependencies:
       '@eslint-community/regexpp': 4.10.0
-      '@typescript-eslint/parser': 5.55.0_6ndl6d37z3ezupnqjymvncqbpi
-      '@typescript-eslint/scope-manager': 5.55.0
-      '@typescript-eslint/type-utils': 5.55.0_6ndl6d37z3ezupnqjymvncqbpi
-      '@typescript-eslint/utils': 5.55.0_6ndl6d37z3ezupnqjymvncqbpi
+      '@typescript-eslint/parser': 7.0.2_xdgzedli73k7lw4xlyzszm74om
+      '@typescript-eslint/scope-manager': 7.0.2
+      '@typescript-eslint/type-utils': 7.0.2_xdgzedli73k7lw4xlyzszm74om
+      '@typescript-eslint/utils': 7.0.2_xdgzedli73k7lw4xlyzszm74om
+      '@typescript-eslint/visitor-keys': 7.0.2
       debug: 4.3.4
-      eslint: 8.44.0
-      grapheme-splitter: 1.0.4
+      eslint: 8.56.0
+      graphemer: 1.4.0
       ignore: 5.3.0
-      natural-compare-lite: 1.4.0
-      semver: 7.5.4
-      tsutils: 3.21.0_typescript@5.0.2
-      typescript: 5.0.2
+      natural-compare: 1.4.0
+      semver: 7.6.0
+      ts-api-utils: 1.2.1_typescript@5.3.3
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
 
-  /@typescript-eslint/parser/5.55.0_6ndl6d37z3ezupnqjymvncqbpi:
-    resolution: {integrity: sha512-ppvmeF7hvdhUUZWSd2EEWfzcFkjJzgNQzVST22nzg958CR+sphy8A6K7LXQZd6V75m1VKjp+J4g/PCEfSCmzhw==}
-    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+  /@typescript-eslint/parser/6.21.0_xdgzedli73k7lw4xlyzszm74om:
+    resolution: {integrity: sha512-tbsV1jPne5CkFQCgPBcDOt30ItF7aJoZL997JSF7MhGQqOeT3svWRYxiqlfA5RUdlHN6Fi+EI9bxqbdyAUZjYQ==}
+    engines: {node: ^16.0.0 || >=18.0.0}
     peerDependencies:
-      eslint: ^6.0.0 || ^7.0.0 || ^8.0.0
+      eslint: ^7.0.0 || ^8.0.0
       typescript: '*'
     peerDependenciesMeta:
       typescript:
         optional: true
     dependencies:
-      '@typescript-eslint/scope-manager': 5.55.0
-      '@typescript-eslint/types': 5.55.0
-      '@typescript-eslint/typescript-estree': 5.55.0_typescript@5.0.2
+      '@typescript-eslint/scope-manager': 6.21.0
+      '@typescript-eslint/types': 6.21.0
+      '@typescript-eslint/typescript-estree': 6.21.0_typescript@5.3.3
+      '@typescript-eslint/visitor-keys': 6.21.0
       debug: 4.3.4
-      eslint: 8.44.0
-      typescript: 5.0.2
+      eslint: 8.56.0
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
+    dev: true
 
-  /@typescript-eslint/scope-manager/5.55.0:
-    resolution: {integrity: sha512-OK+cIO1ZGhJYNCL//a3ROpsd83psf4dUJ4j7pdNVzd5DmIk+ffkuUIX2vcZQbEW/IR41DYsfJTB19tpCboxQuw==}
-    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
-    dependencies:
-      '@typescript-eslint/types': 5.55.0
-      '@typescript-eslint/visitor-keys': 5.55.0
-
-  /@typescript-eslint/scope-manager/5.62.0:
-    resolution: {integrity: sha512-VXuvVvZeQCQb5Zgf4HAxc04q5j+WrNAtNh9OwCsCgpKqESMTu3tF/jhZ3xG6T4NZwWl65Bg8KuS2uEvhSfLl0w==}
-    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
-    dependencies:
-      '@typescript-eslint/types': 5.62.0
-      '@typescript-eslint/visitor-keys': 5.62.0
-
-  /@typescript-eslint/type-utils/5.55.0_6ndl6d37z3ezupnqjymvncqbpi:
-    resolution: {integrity: sha512-ObqxBgHIXj8rBNm0yh8oORFrICcJuZPZTqtAFh0oZQyr5DnAHZWfyw54RwpEEH+fD8suZaI0YxvWu5tYE/WswA==}
-    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+  /@typescript-eslint/parser/7.0.2_xdgzedli73k7lw4xlyzszm74om:
+    resolution: {integrity: sha512-GdwfDglCxSmU+QTS9vhz2Sop46ebNCXpPPvsByK7hu0rFGRHL+AusKQJ7SoN+LbLh6APFpQwHKmDSwN35Z700Q==}
+    engines: {node: ^16.0.0 || >=18.0.0}
     peerDependencies:
-      eslint: '*'
+      eslint: ^8.56.0
       typescript: '*'
     peerDependenciesMeta:
       typescript:
         optional: true
     dependencies:
-      '@typescript-eslint/typescript-estree': 5.55.0_typescript@5.0.2
-      '@typescript-eslint/utils': 5.55.0_6ndl6d37z3ezupnqjymvncqbpi
+      '@typescript-eslint/scope-manager': 7.0.2
+      '@typescript-eslint/types': 7.0.2
+      '@typescript-eslint/typescript-estree': 7.0.2_typescript@5.3.3
+      '@typescript-eslint/visitor-keys': 7.0.2
       debug: 4.3.4
-      eslint: 8.44.0
-      tsutils: 3.21.0_typescript@5.0.2
-      typescript: 5.0.2
+      eslint: 8.56.0
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
 
-  /@typescript-eslint/types/5.55.0:
-    resolution: {integrity: sha512-M4iRh4AG1ChrOL6Y+mETEKGeDnT7Sparn6fhZ5LtVJF1909D5O4uqK+C5NPbLmpfZ0XIIxCdwzKiijpZUOvOug==}
-    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+  /@typescript-eslint/scope-manager/6.21.0:
+    resolution: {integrity: sha512-OwLUIWZJry80O99zvqXVEioyniJMa+d2GrqpUTqi5/v5D5rOrppJVBPa0yKCblcigC0/aYAzxxqQ1B+DS2RYsg==}
+    engines: {node: ^16.0.0 || >=18.0.0}
+    dependencies:
+      '@typescript-eslint/types': 6.21.0
+      '@typescript-eslint/visitor-keys': 6.21.0
 
-  /@typescript-eslint/types/5.62.0:
-    resolution: {integrity: sha512-87NVngcbVXUahrRTqIK27gD2t5Cu1yuCXxbLcFtCzZGlfyVWWh8mLHkoxzjsB6DDNnvdL+fW8MiwPEJyGJQDgQ==}
-    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+  /@typescript-eslint/scope-manager/7.0.2:
+    resolution: {integrity: sha512-l6sa2jF3h+qgN2qUMjVR3uCNGjWw4ahGfzIYsCtFrQJCjhbrDPdiihYT8FnnqFwsWX+20hK592yX9I2rxKTP4g==}
+    engines: {node: ^16.0.0 || >=18.0.0}
+    dependencies:
+      '@typescript-eslint/types': 7.0.2
+      '@typescript-eslint/visitor-keys': 7.0.2
 
-  /@typescript-eslint/typescript-estree/5.55.0_typescript@5.0.2:
-    resolution: {integrity: sha512-I7X4A9ovA8gdpWMpr7b1BN9eEbvlEtWhQvpxp/yogt48fy9Lj3iE3ild/1H3jKBBIYj5YYJmS2+9ystVhC7eaQ==}
-    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+  /@typescript-eslint/type-utils/7.0.2_xdgzedli73k7lw4xlyzszm74om:
+    resolution: {integrity: sha512-IKKDcFsKAYlk8Rs4wiFfEwJTQlHcdn8CLwLaxwd6zb8HNiMcQIFX9sWax2k4Cjj7l7mGS5N1zl7RCHOVwHq2VQ==}
+    engines: {node: ^16.0.0 || >=18.0.0}
+    peerDependencies:
+      eslint: ^8.56.0
+      typescript: '*'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+    dependencies:
+      '@typescript-eslint/typescript-estree': 7.0.2_typescript@5.3.3
+      '@typescript-eslint/utils': 7.0.2_xdgzedli73k7lw4xlyzszm74om
+      debug: 4.3.4
+      eslint: 8.56.0
+      ts-api-utils: 1.2.1_typescript@5.3.3
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - supports-color
+
+  /@typescript-eslint/types/6.21.0:
+    resolution: {integrity: sha512-1kFmZ1rOm5epu9NZEZm1kckCDGj5UJEf7P1kliH4LKu/RkwpsfqqGmY2OOcUs18lSlQBKLDYBOGxRVtrMN5lpg==}
+    engines: {node: ^16.0.0 || >=18.0.0}
+
+  /@typescript-eslint/types/7.0.2:
+    resolution: {integrity: sha512-ZzcCQHj4JaXFjdOql6adYV4B/oFOFjPOC9XYwCaZFRvqN8Llfvv4gSxrkQkd2u4Ci62i2c6W6gkDwQJDaRc4nA==}
+    engines: {node: ^16.0.0 || >=18.0.0}
+
+  /@typescript-eslint/typescript-estree/6.21.0_typescript@5.3.3:
+    resolution: {integrity: sha512-6npJTkZcO+y2/kr+z0hc4HwNfrrP4kNYh57ek7yCNlrBjWQ1Y0OS7jiZTkgumrvkX5HkEKXFZkkdFNkaW2wmUQ==}
+    engines: {node: ^16.0.0 || >=18.0.0}
     peerDependencies:
       typescript: '*'
     peerDependenciesMeta:
       typescript:
         optional: true
     dependencies:
-      '@typescript-eslint/types': 5.55.0
-      '@typescript-eslint/visitor-keys': 5.55.0
+      '@typescript-eslint/types': 6.21.0
+      '@typescript-eslint/visitor-keys': 6.21.0
       debug: 4.3.4
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.5.4
-      tsutils: 3.21.0_typescript@5.0.2
-      typescript: 5.0.2
+      minimatch: 9.0.3
+      semver: 7.6.0
+      ts-api-utils: 1.2.1_typescript@5.3.3
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
 
-  /@typescript-eslint/typescript-estree/5.62.0_typescript@5.0.2:
-    resolution: {integrity: sha512-CmcQ6uY7b9y694lKdRB8FEel7JbU/40iSAPomu++SjLMntB+2Leay2LO6i8VnJk58MtE9/nQSFIH6jpyRWyYzA==}
-    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+  /@typescript-eslint/typescript-estree/7.0.2_typescript@5.3.3:
+    resolution: {integrity: sha512-3AMc8khTcELFWcKcPc0xiLviEvvfzATpdPj/DXuOGIdQIIFybf4DMT1vKRbuAEOFMwhWt7NFLXRkbjsvKZQyvw==}
+    engines: {node: ^16.0.0 || >=18.0.0}
     peerDependencies:
       typescript: '*'
     peerDependenciesMeta:
       typescript:
         optional: true
     dependencies:
-      '@typescript-eslint/types': 5.62.0
-      '@typescript-eslint/visitor-keys': 5.62.0
+      '@typescript-eslint/types': 7.0.2
+      '@typescript-eslint/visitor-keys': 7.0.2
       debug: 4.3.4
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.5.4
-      tsutils: 3.21.0_typescript@5.0.2
-      typescript: 5.0.2
+      minimatch: 9.0.3
+      semver: 7.6.0
+      ts-api-utils: 1.2.1_typescript@5.3.3
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
 
-  /@typescript-eslint/utils/5.55.0_6ndl6d37z3ezupnqjymvncqbpi:
-    resolution: {integrity: sha512-FkW+i2pQKcpDC3AY6DU54yl8Lfl14FVGYDgBTyGKB75cCwV3KpkpTMFi9d9j2WAJ4271LR2HeC5SEWF/CZmmfw==}
-    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+  /@typescript-eslint/utils/6.21.0_xdgzedli73k7lw4xlyzszm74om:
+    resolution: {integrity: sha512-NfWVaC8HP9T8cbKQxHcsJBY5YE1O33+jpMwN45qzWWaPDZgLIbo12toGMWnmhvCpd3sIxkpDw3Wv1B3dYrbDQQ==}
+    engines: {node: ^16.0.0 || >=18.0.0}
     peerDependencies:
-      eslint: ^6.0.0 || ^7.0.0 || ^8.0.0
+      eslint: ^7.0.0 || ^8.0.0
     dependencies:
-      '@eslint-community/eslint-utils': 4.4.0_eslint@8.44.0
+      '@eslint-community/eslint-utils': 4.4.0_eslint@8.56.0
       '@types/json-schema': 7.0.15
       '@types/semver': 7.5.6
-      '@typescript-eslint/scope-manager': 5.55.0
-      '@typescript-eslint/types': 5.55.0
-      '@typescript-eslint/typescript-estree': 5.55.0_typescript@5.0.2
-      eslint: 8.44.0
-      eslint-scope: 5.1.1
-      semver: 7.5.4
+      '@typescript-eslint/scope-manager': 6.21.0
+      '@typescript-eslint/types': 6.21.0
+      '@typescript-eslint/typescript-estree': 6.21.0_typescript@5.3.3
+      eslint: 8.56.0
+      semver: 7.6.0
     transitivePeerDependencies:
       - supports-color
       - typescript
 
-  /@typescript-eslint/utils/5.62.0_6ndl6d37z3ezupnqjymvncqbpi:
-    resolution: {integrity: sha512-n8oxjeb5aIbPFEtmQxQYOLI0i9n5ySBEY/ZEHHZqKQSFnxio1rv6dthascc9dLuwrL0RC5mPCxB7vnAVGAYWAQ==}
-    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+  /@typescript-eslint/utils/7.0.2_xdgzedli73k7lw4xlyzszm74om:
+    resolution: {integrity: sha512-PZPIONBIB/X684bhT1XlrkjNZJIEevwkKDsdwfiu1WeqBxYEEdIgVDgm8/bbKHVu+6YOpeRqcfImTdImx/4Bsw==}
+    engines: {node: ^16.0.0 || >=18.0.0}
     peerDependencies:
-      eslint: ^6.0.0 || ^7.0.0 || ^8.0.0
+      eslint: ^8.56.0
     dependencies:
-      '@eslint-community/eslint-utils': 4.4.0_eslint@8.44.0
+      '@eslint-community/eslint-utils': 4.4.0_eslint@8.56.0
       '@types/json-schema': 7.0.15
       '@types/semver': 7.5.6
-      '@typescript-eslint/scope-manager': 5.62.0
-      '@typescript-eslint/types': 5.62.0
-      '@typescript-eslint/typescript-estree': 5.62.0_typescript@5.0.2
-      eslint: 8.44.0
-      eslint-scope: 5.1.1
-      semver: 7.5.4
+      '@typescript-eslint/scope-manager': 7.0.2
+      '@typescript-eslint/types': 7.0.2
+      '@typescript-eslint/typescript-estree': 7.0.2_typescript@5.3.3
+      eslint: 8.56.0
+      semver: 7.6.0
     transitivePeerDependencies:
       - supports-color
       - typescript
 
-  /@typescript-eslint/visitor-keys/5.55.0:
-    resolution: {integrity: sha512-q2dlHHwWgirKh1D3acnuApXG+VNXpEY5/AwRxDVuEQpxWaB0jCDe0jFMVMALJ3ebSfuOVE8/rMS+9ZOYGg1GWw==}
-    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+  /@typescript-eslint/visitor-keys/6.21.0:
+    resolution: {integrity: sha512-JJtkDduxLi9bivAB+cYOVMtbkqdPOhZ+ZI5LC47MIRrDV4Yn2o+ZnW10Nkmr28xRpSpdJ6Sm42Hjf2+REYXm0A==}
+    engines: {node: ^16.0.0 || >=18.0.0}
     dependencies:
-      '@typescript-eslint/types': 5.55.0
+      '@typescript-eslint/types': 6.21.0
       eslint-visitor-keys: 3.4.3
 
-  /@typescript-eslint/visitor-keys/5.62.0:
-    resolution: {integrity: sha512-07ny+LHRzQXepkGg6w0mFY41fVUNBrL2Roj/++7V1txKugfjm/Ci/qSND03r2RhlJhJYMcTn9AhhSSqQp0Ysyw==}
-    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+  /@typescript-eslint/visitor-keys/7.0.2:
+    resolution: {integrity: sha512-8Y+YiBmqPighbm5xA2k4wKTxRzx9EkBu7Rlw+WHqMvRJ3RPz/BMBO9b2ru0LUNmXg120PHUXD5+SWFy2R8DqlQ==}
+    engines: {node: ^16.0.0 || >=18.0.0}
     dependencies:
-      '@typescript-eslint/types': 5.62.0
+      '@typescript-eslint/types': 7.0.2
       eslint-visitor-keys: 3.4.3
+
+  /@ungap/structured-clone/1.2.0:
+    resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
 
   /@webassemblyjs/ast/1.11.1:
     resolution: {integrity: sha512-ukBh14qFLjxTQNTXocdyksN5QdM28S1CxHt2rdskFyL+xFV7VremuBLVbmCePj+URalXBENx/9Lm7lnhihtCSw==}
@@ -5520,6 +5586,9 @@ packages:
 
   /@xtuc/long/4.2.2:
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
+
+  /@yarnpkg/lockfile/1.1.0:
+    resolution: {integrity: sha512-GpSwvyXOcOOlV70vbnzjj4fW5xW/FdUF6nQEt1ENy7m4ZCczi1+/buVUPAqmGfqznsORNFzUMjctTIp8a9tuCQ==}
 
   /abab/2.0.6:
     resolution: {integrity: sha512-j2afSsaIENvHZN2B8GOpF566vZ5WVk5opAiMTvWgaQT8DkbOqsTfvNAvHoRGU2zzP8cPoqys+xHTRDWW8L+/BA==}
@@ -5676,7 +5745,6 @@ packages:
   /ansi-regex/6.0.1:
     resolution: {integrity: sha512-n5M855fKb2SsfMIiFFoVrABHJC8QtHwVx+mHWP3QcEqBHYienj5dHSgjbxtC0WEZXYt4wcD6zrQElDPhFuZgfA==}
     engines: {node: '>=12'}
-    dev: true
 
   /ansi-sequence-parser/1.1.1:
     resolution: {integrity: sha512-vJXt3yiaUL4UU546s3rPXlsry/RnM730G1+HkpKE012AN0sx1eOrxSu95oKDIonskeLTijMgqWZ3uDEe3NFvyg==}
@@ -5702,7 +5770,6 @@ packages:
   /ansi-styles/6.2.1:
     resolution: {integrity: sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug==}
     engines: {node: '>=12'}
-    dev: true
 
   /anymatch/3.1.3:
     resolution: {integrity: sha512-KMReFUr0B4t+D+OBkjR3KYqvocp2XaSzO55UcB6mgQMd3KbcE+mWTyvVV7D/zsdEbNnV6acZUutkiHQXvTr1Rw==}
@@ -5834,7 +5901,6 @@ packages:
 
   /asap/2.0.6:
     resolution: {integrity: sha512-BSHWgDSAiKs50o2Re8ppvp3seVHXSRM44cdSsT9FfNEUUZLOGWVCsiWaRPWM1Znn+mqZ1OfVZ3z3DWEzSp7hRA==}
-    dev: false
 
   /asn1.js/5.4.1:
     resolution: {integrity: sha512-+I//4cYPccV8LdmBLiX8CYvf9Sp3vQsrqu2QNXRcrbiWvcx/UdlFiqUJJzxRQxgsZmvhXhn4cSKeSmoFjVdupA==}
@@ -5872,7 +5938,7 @@ packages:
       '@types/bluebird': 3.5.42
       bluebird: 3.7.2
       lodash: 4.17.21
-      source-map-support: 0.5.6
+      source-map-support: 0.5.21
     dev: true
 
   /asynciterator.prototype/1.0.0:
@@ -5933,8 +5999,8 @@ packages:
     dependencies:
       dequal: 2.0.3
 
-  /azurite/3.29.0:
-    resolution: {integrity: sha512-gzl8+LqereINQ45BuED4DNq9w3ipw0DCYAkGz8xwOFAlwjWey6C3JpolaIjrYNeX4r52bRCt53tPQ2fVCaNcYA==}
+  /azurite/3.30.0:
+    resolution: {integrity: sha512-YHICJMhR8GFOAWT+E8OzQUfhPZ2Nmx5D3L8MNNJkBIxsO7of0+nLOMrW2rJM454kV8VqoiECJhCC8u8udmePXg==}
     engines: {node: '>=10.0.0', vscode: ^1.39.0}
     hasBin: true
     dependencies:
@@ -5949,11 +6015,11 @@ packages:
       lokijs: 1.5.12
       morgan: 1.10.0
       multistream: 2.1.1
-      mysql2: 3.7.1
+      mysql2: 3.10.0
       rimraf: 3.0.2
-      sequelize: 6.35.2_tzgr72vms3h4goocrl5366wzf4
+      sequelize: 6.35.2_qjhl5a2srfinctylh3la6owyde
       stoppable: 1.1.0
-      tedious: 16.6.1
+      tedious: 16.7.1
       to-readable-stream: 2.1.0
       tslib: 2.6.2
       uri-templates: 0.2.0
@@ -6247,6 +6313,10 @@ packages:
     dependencies:
       base64-js: 1.5.1
       ieee754: 1.2.1
+
+  /builtin-modules/3.3.0:
+    resolution: {integrity: sha512-zhaCDicdLuWN5UbN5IMnFqNMhNfo919sH85y2/ea+5Yg9TsTkeZxpL+JLbp6cgYFS4sRLp3YV4S6yDuqVWHYOw==}
+    engines: {node: '>=6'}
 
   /builtin-status-codes/3.0.0:
     resolution: {integrity: sha512-HpGFw18DgFWlncDfjTa2rcQ4W88O1mC8e8yZ2AvQY5KDaktSTwo+KRf6nHK6FRI5FyRyb/5T6+TSxfP7QyGsmQ==}
@@ -6618,8 +6688,8 @@ packages:
     resolution: {integrity: sha512-KRs7WVDKg86PWiuAqhDrAQnTXZKraVcCc6vFdL14qrZ/DcWwuRo7VoiYXalXO7S5GKpqYiVEwCbgFDfxNHKJBQ==}
     engines: {node: ^12.20.0 || >=14}
 
-  /comment-parser/1.3.1:
-    resolution: {integrity: sha512-B52sN2VNghyq5ofvUsqZjmk6YkihBX5vMSChmSK9v4ShjKf3Vk5Xcmgpw4o+iIgtrnM/u5FiMpz9VKb8lpBveA==}
+  /comment-parser/1.4.1:
+    resolution: {integrity: sha512-buhp5kePrmda3vhc5B9t7pUQXAb2Tnd0qgpkIhPhkHXxJpiPJ11H0ZEU0oBpJ2QztSbzG/ZxMj/CHsYJqRHmyg==}
     engines: {node: '>= 12.0.0'}
 
   /commondir/1.0.1:
@@ -6704,8 +6774,14 @@ packages:
       webpack: 5.76.0
     dev: false
 
+  /core-js/3.37.0:
+    resolution: {integrity: sha512-fu5vHevQ8ZG4og+LXug8ulUtVxjOcEYvifJr7L5Bfq9GOztVqsKd9/59hUk2ZSbCrS3BqUr3EpaYGIYzq7g3Ug==}
+    requiresBuild: true
+    dev: true
+
   /core-util-is/1.0.3:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
+    dev: false
 
   /cpx2/3.0.0:
     resolution: {integrity: sha512-WVI69l0qqlDboGngiggQitRyto20og3YNNZp6ySva9dRMYpy9OQd5ep7mQvkvuBeUkIluOKR6jBOek7FRS7X0w==}
@@ -6800,6 +6876,7 @@ packages:
       path-key: 3.1.1
       shebang-command: 2.0.0
       which: 2.0.2
+    dev: false
 
   /cross-spawn/7.0.3:
     resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}
@@ -7064,7 +7141,6 @@ packages:
     dependencies:
       asap: 2.0.6
       wrappy: 1.0.2
-    dev: false
 
   /diff/3.5.0:
     resolution: {integrity: sha512-A46qtFgd+g7pDZinpnwiRJtxbC1hpgf0uzP3iG89scHk0AUC7A1TGxf5OiiOUv/JMZR8GOt8hL900hV0bOy5xA==}
@@ -7153,7 +7229,6 @@ packages:
 
   /eastasianwidth/0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
-    dev: true
 
   /ecdsa-sig-formatter/1.0.11:
     resolution: {integrity: sha512-nagl3RYrbNv6kQkeJIpt6NJZy8twLB/2vtz6yN9Z4vRKHN4/QZJIEbqohALSgwKdnksuY3k5Addp5lg8sVoVcQ==}
@@ -7167,14 +7242,14 @@ packages:
   /electron-to-chromium/1.4.640:
     resolution: {integrity: sha512-z/6oZ/Muqk4BaE7P69bXhUhpJbUM9ZJeka43ZwxsDshKtePns4mhBlh8bU5+yrnOnz3fhG82XLzGUXazOmsWnA==}
 
-  /electron/29.0.0:
-    resolution: {integrity: sha512-HhrRC5vWb6fAbWXP3A6ABwKUO9JvYSC4E141RzWFgnDBqNiNtabfmgC8hsVeCR65RQA2MLSDgC8uP52I9zFllQ==}
+  /electron/30.0.0:
+    resolution: {integrity: sha512-GRwKphq/TUhSlb44OwSckXKl50f5OR/pm9MvF3rBLyqcxwfu7L11xejrZ0hDea1eKyCkzGd4B+cIqaQiDguPEA==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
     requiresBuild: true
     dependencies:
       '@electron/get': 2.0.3
-      '@types/node': 20.11.19
+      '@types/node': 20.12.7
       extract-zip: 2.0.1
     transitivePeerDependencies:
       - supports-color
@@ -7582,20 +7657,14 @@ packages:
       source-map: 0.6.1
     dev: true
 
-  /eslint-config-prettier/9.1.0_eslint@8.44.0:
+  /eslint-config-prettier/9.1.0_eslint@8.56.0:
     resolution: {integrity: sha512-NSWl5BFQWEPi1j4TjVNItzYV7dZXZ+wP6I6ZhrBGpChQhZRUaElihE9uRRkcbRnNb76UMKDF3r+WTmNcGPKsqw==}
     hasBin: true
     peerDependencies:
       eslint: '>=7.0.0'
     dependencies:
-      eslint: 8.44.0
+      eslint: 8.56.0
     dev: true
-
-  /eslint-import-resolver-node/0.3.4:
-    resolution: {integrity: sha512-ogtf+5AB/O+nM6DIeBUNr2fuT7ot9Qg/1harBfBtaP13ekEWFQEEMP94BCB7zaNW3gyY+8SHYF00rnqYwXKWOA==}
-    dependencies:
-      debug: 2.6.9
-      resolve: 1.19.0
 
   /eslint-import-resolver-node/0.3.9:
     resolution: {integrity: sha512-WFj2isz22JahUv+B788TlO3N6zL3nNJGU8CcZbPZvVEkBPaJdCV4vy5wyghty5ROFbCRnm132v8BScu5/1BQ8g==}
@@ -7604,24 +7673,7 @@ packages:
       is-core-module: 2.13.1
       resolve: 1.22.8
 
-  /eslint-import-resolver-typescript/2.7.1_5qbttfwjnxfghnsj3y7wwhv3de:
-    resolution: {integrity: sha512-00UbgGwV8bSgUv34igBDbTOtKhqoRMy9bFjNehT40bXg6585PNIct8HhXZ0SybqB9rWtXj9crcku8ndDn/gIqQ==}
-    engines: {node: '>=4'}
-    peerDependencies:
-      eslint: '*'
-      eslint-plugin-import: '*'
-    dependencies:
-      debug: 4.3.4
-      eslint: 8.44.0
-      eslint-plugin-import: 2.29.1_eslint@8.44.0
-      glob: 7.2.3
-      is-glob: 4.0.3
-      resolve: 1.22.8
-      tsconfig-paths: 3.15.0
-    transitivePeerDependencies:
-      - supports-color
-
-  /eslint-module-utils/2.8.0_eslint@8.44.0:
+  /eslint-module-utils/2.8.0_eslint@8.56.0:
     resolution: {integrity: sha512-aWajIYfsqCKRDgUfjEXNN/JlrzauMuSEy5sbd7WXbtW3EH6A6MpwEh42c7qD+MqQo9QMJ6fWLAeIJynx0g6OAw==}
     engines: {node: '>=4'}
     peerDependencies:
@@ -7631,23 +7683,23 @@ packages:
         optional: true
     dependencies:
       debug: 3.2.7
-      eslint: 8.44.0
+      eslint: 8.56.0
 
-  /eslint-plugin-deprecation/1.5.0_6ndl6d37z3ezupnqjymvncqbpi:
-    resolution: {integrity: sha512-mRcssI/tLROueBQ6yf4LnnGTijbMsTCPIpbRbPj5R5wGYVCpk1zDmAS0SEkgcUDXOPc22qMNFR24Qw7vSPrlTA==}
+  /eslint-plugin-deprecation/2.0.0_xdgzedli73k7lw4xlyzszm74om:
+    resolution: {integrity: sha512-OAm9Ohzbj11/ZFyICyR5N6LbOIvQMp7ZU2zI7Ej0jIc8kiGUERXPNMfw2QqqHD1ZHtjMub3yPZILovYEYucgoQ==}
     peerDependencies:
-      eslint: ^6.0.0 || ^7.0.0 || ^8.0.0
-      typescript: ^3.7.5 || ^4.0.0 || ^5.0.0
+      eslint: ^7.0.0 || ^8.0.0
+      typescript: ^4.2.4 || ^5.0.0
     dependencies:
-      '@typescript-eslint/utils': 5.62.0_6ndl6d37z3ezupnqjymvncqbpi
-      eslint: 8.44.0
+      '@typescript-eslint/utils': 6.21.0_xdgzedli73k7lw4xlyzszm74om
+      eslint: 8.56.0
       tslib: 2.6.2
-      tsutils: 3.21.0_typescript@5.0.2
-      typescript: 5.0.2
+      tsutils: 3.21.0_typescript@5.3.3
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
 
-  /eslint-plugin-import/2.29.1_eslint@8.44.0:
+  /eslint-plugin-import/2.29.1_eslint@8.56.0:
     resolution: {integrity: sha512-BbPC0cuExzhiMo4Ff1BTVwHpjjv28C5R+btTOGaCRC7UEz801up0JadwkeSk5Ued6TG34uaczuVuH6qyy5YUxw==}
     engines: {node: '>=4'}
     peerDependencies:
@@ -7659,9 +7711,9 @@ packages:
       array.prototype.flatmap: 1.3.2
       debug: 3.2.7
       doctrine: 2.1.0
-      eslint: 8.44.0
+      eslint: 8.56.0
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.8.0_eslint@8.44.0
+      eslint-module-utils: 2.8.0_eslint@8.56.0
       hasown: 2.0.0
       is-core-module: 2.13.1
       is-glob: 4.0.3
@@ -7680,25 +7732,26 @@ packages:
       has: 1.0.4
       requireindex: 1.1.0
 
-  /eslint-plugin-jsdoc/43.2.0_eslint@8.44.0:
-    resolution: {integrity: sha512-Hst7XUfqh28UmPD52oTXmjaRN3d0KrmOZdgtp4h9/VHUJD3Evoo82ZGXi1TtRDWgWhvqDIRI63O49H0eH7NrZQ==}
-    engines: {node: '>=16'}
+  /eslint-plugin-jsdoc/48.0.6_eslint@8.56.0:
+    resolution: {integrity: sha512-LgwXOX6TWxxFYcbdVe+BJ94Kl/pgjSPYHLzqEdAMXTA1BH9WDx7iJ+9/iDajPF64LtzWX8C1mCfpbMZjJGhAOw==}
+    engines: {node: '>=18'}
     peerDependencies:
-      eslint: ^7.0.0 || ^8.0.0
+      eslint: ^7.0.0 || ^8.0.0 || ^9.0.0
     dependencies:
-      '@es-joy/jsdoccomment': 0.38.0
+      '@es-joy/jsdoccomment': 0.42.0
       are-docs-informative: 0.0.2
-      comment-parser: 1.3.1
+      comment-parser: 1.4.1
       debug: 4.3.4
       escape-string-regexp: 4.0.0
-      eslint: 8.44.0
+      eslint: 8.56.0
       esquery: 1.5.0
-      semver: 7.5.4
-      spdx-expression-parse: 3.0.1
+      is-builtin-module: 3.2.1
+      semver: 7.6.0
+      spdx-expression-parse: 4.0.0
     transitivePeerDependencies:
       - supports-color
 
-  /eslint-plugin-jsx-a11y/6.8.0_eslint@8.44.0:
+  /eslint-plugin-jsx-a11y/6.8.0_eslint@8.56.0:
     resolution: {integrity: sha512-Hdh937BS3KdwwbBaKd5+PLCOmYY6U4f2h9Z2ktwtNKvIdIEu137rjYbcb9ApSbVJfWxANNuiKTD/9tOKjK9qOA==}
     engines: {node: '>=4.0'}
     peerDependencies:
@@ -7714,7 +7767,7 @@ packages:
       damerau-levenshtein: 1.0.8
       emoji-regex: 9.2.2
       es-iterator-helpers: 1.0.15
-      eslint: 8.44.0
+      eslint: 8.56.0
       hasown: 2.0.0
       jsx-ast-utils: 3.3.5
       language-tags: 1.0.9
@@ -7722,22 +7775,22 @@ packages:
       object.entries: 1.1.7
       object.fromentries: 2.0.7
 
-  /eslint-plugin-prefer-arrow/1.2.3_eslint@8.44.0:
+  /eslint-plugin-prefer-arrow/1.2.3_eslint@8.56.0:
     resolution: {integrity: sha512-J9I5PKCOJretVuiZRGvPQxCbllxGAV/viI20JO3LYblAodofBxyMnZAJ+WGeClHgANnSJberTNoFWWjrWKBuXQ==}
     peerDependencies:
       eslint: '>=2.0.0'
     dependencies:
-      eslint: 8.44.0
+      eslint: 8.56.0
 
-  /eslint-plugin-react-hooks/4.6.0_eslint@8.44.0:
+  /eslint-plugin-react-hooks/4.6.0_eslint@8.56.0:
     resolution: {integrity: sha512-oFc7Itz9Qxh2x4gNHStv3BqJq54ExXmfC+a1NjAta66IAN87Wu0R/QArgIS9qKzX3dXKPI9H5crl9QchNMY9+g==}
     engines: {node: '>=10'}
     peerDependencies:
       eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0
     dependencies:
-      eslint: 8.44.0
+      eslint: 8.56.0
 
-  /eslint-plugin-react/7.33.2_eslint@8.44.0:
+  /eslint-plugin-react/7.33.2_eslint@8.56.0:
     resolution: {integrity: sha512-73QQMKALArI8/7xGLNI/3LylrEYrlKZSb5C9+q3OtOewTnMQi5cT+aE9E41sLCmli3I9PGGmD1yiZydyo4FEPw==}
     engines: {node: '>=4'}
     peerDependencies:
@@ -7748,7 +7801,7 @@ packages:
       array.prototype.tosorted: 1.1.2
       doctrine: 2.1.0
       es-iterator-helpers: 1.0.15
-      eslint: 8.44.0
+      eslint: 8.56.0
       estraverse: 5.3.0
       jsx-ast-utils: 3.3.5
       minimatch: 3.1.2
@@ -7779,18 +7832,19 @@ packages:
     resolution: {integrity: sha512-wpc+LXeiyiisxPlEkUzU6svyS1frIO3Mgxj1fdy7Pm8Ygzguax2N3Fa/D/ag1WqbOprdI+uY6wMUl8/a2G+iag==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
-  /eslint/8.44.0:
-    resolution: {integrity: sha512-0wpHoUbDUHgNCyvFB5aXLiQVfK9B0at6gUvzy83k4kAsQ/u769TQDX6iKC+aO4upIHO9WSaA3QoXYQDHbNwf1A==}
+  /eslint/8.56.0:
+    resolution: {integrity: sha512-Go19xM6T9puCOWntie1/P997aXxFsOi37JIHRWI514Hc6ZnaHGKY9xFhrU65RT6CcBEzZoGG1e6Nq+DT04ZtZQ==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     hasBin: true
     dependencies:
-      '@eslint-community/eslint-utils': 4.4.0_eslint@8.44.0
+      '@eslint-community/eslint-utils': 4.4.0_eslint@8.56.0
       '@eslint-community/regexpp': 4.10.0
       '@eslint/eslintrc': 2.1.4
-      '@eslint/js': 8.44.0
+      '@eslint/js': 8.56.0
       '@humanwhocodes/config-array': 0.11.14
       '@humanwhocodes/module-importer': 1.0.1
       '@nodelib/fs.walk': 1.2.8
+      '@ungap/structured-clone': 1.2.0
       ajv: 6.12.6
       chalk: 4.1.2
       cross-spawn: 7.0.3
@@ -7809,7 +7863,6 @@ packages:
       globals: 13.24.0
       graphemer: 1.4.0
       ignore: 5.3.0
-      import-fresh: 3.3.0
       imurmurhash: 0.1.4
       is-glob: 4.0.3
       is-path-inside: 3.0.3
@@ -7821,7 +7874,6 @@ packages:
       natural-compare: 1.4.0
       optionator: 0.9.3
       strip-ansi: 6.0.1
-      strip-json-comments: 3.1.1
       text-table: 0.2.0
     transitivePeerDependencies:
       - supports-color
@@ -7989,10 +8041,6 @@ packages:
       utils-merge: 1.0.1
       vary: 1.1.2
 
-  /extend/3.0.2:
-    resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
-    dev: true
-
   /extract-zip/2.0.1:
     resolution: {integrity: sha512-GDhU9ntwuKyGXdZBUgTIe+vXnWj0fppUEtMDL0+idd5Sta8TGpHssn/eusA9mrPr9qNDym6SxAYZjNvCn/9RBg==}
     engines: {node: '>= 10.17.0'}
@@ -8030,10 +8078,16 @@ packages:
 
   /fast-safe-stringify/2.1.1:
     resolution: {integrity: sha512-W+KJc2dmILlPplD/H4K9l9LcAHAfPtP6BY84uVLXQ6Evcz9Lcg33Y2z1IVblT6xdY54PXYVHEv+0Wpq8Io6zkA==}
-    dev: false
 
   /fast-sort/3.0.2:
     resolution: {integrity: sha512-DIKDkHBt+IubEEU44/kEulX3SbIuufEHIhRfw0MCh7f/HLGWmR/Dk7xg2tapT28pVFqnEV1ZDtl6SeViAyVe4Q==}
+    dev: false
+
+  /fast-xml-parser/4.3.5:
+    resolution: {integrity: sha512-sWvP1Pl8H03B8oFJpFR3HE31HUfwtX7Rlf9BNsvdpujD4n7WMhfmu8h9wOV2u+c1k0ZilTADhPqypzx2J690ZQ==}
+    hasBin: true
+    dependencies:
+      strnum: 1.0.5
     dev: false
 
   /fastest-levenshtein/1.0.16:
@@ -8054,6 +8108,29 @@ packages:
   /fecha/4.2.3:
     resolution: {integrity: sha512-OP2IUU6HeYKJi3i0z4A19kHMQoLVs4Hc+DPqqxI2h/DPZHTm/vjsfC6P0b4jCMy14XizLBqvndQ+UilD7707Jw==}
     dev: false
+
+  /fetch-mock/9.11.0:
+    resolution: {integrity: sha512-PG1XUv+x7iag5p/iNHD4/jdpxL9FtVSqRMUQhPab4hVDt80T1MH5ehzVrL2IdXO9Q2iBggArFvPqjUbHFuI58Q==}
+    engines: {node: '>=4.0.0'}
+    peerDependencies:
+      node-fetch: '*'
+    peerDependenciesMeta:
+      node-fetch:
+        optional: true
+    dependencies:
+      '@babel/core': 7.23.7
+      '@babel/runtime': 7.23.8
+      core-js: 3.37.0
+      debug: 4.3.4
+      glob-to-regexp: 0.4.1
+      is-subset: 0.1.1
+      lodash.isequal: 4.5.0
+      path-to-regexp: 2.4.0
+      querystring: 0.2.0
+      whatwg-url: 6.5.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
 
   /figlet/1.7.0:
     resolution: {integrity: sha512-gO8l3wvqo0V7wEFLXPbkX83b7MVjRrk1oRLfYlZXol8nEpb/ON9pcKLI4qpBv5YtOTfrINtqb7b40iYY2FTWFg==}
@@ -8150,6 +8227,17 @@ packages:
     resolution: {integrity: sha512-c7CZADjRcl6j0PlvFy0ZqXQ67qSEZfrVPynmnL+2zPc+NtMvrF8Y0QceMo7QqnSPc7+uWjUIAbvCQ5WIKlMVdQ==}
     dev: false
 
+  /flatbush/4.4.0:
+    resolution: {integrity: sha512-cf6G+sfy/+/FLH7Ls1URQ5GCRlXgwgqUZiEsMNrMZqb3Us3EkKmzUlKbnyoBy/4wI4oLJ+8cyCQoKJIVm92Fmg==}
+    dependencies:
+      flatqueue: 2.0.3
+    dev: false
+
+  /flatqueue/2.0.3:
+    resolution: {integrity: sha512-RZCWZNkmxzUOh8jqEcEGZCycb3B8KAfpPwg3H//cURasunYxsg1eIvE+QDSjX+ZPHTIVfINfK1aLTrVKKO0i4g==}
+    engines: {node: '>= 12.17.0'}
+    dev: false
+
   /flatted/3.2.9:
     resolution: {integrity: sha512-36yxDn5H7OFZQla0/jFJmbIKTdZAQHngCedGxiMmpNfEZM0sdEeT+WczLQrjK6D7o2aiyLYDnkw0R3JK0Qv1RQ==}
 
@@ -8175,16 +8263,15 @@ packages:
     resolution: {integrity: sha512-dCIq9FpEcyQyXKCkyzmlPTFNgrCzPudOe+mhvJU5zAtlBnGVy2yKxtfsxK2tQBThwq225jcvBjpw1Gr40uzZCA==}
     engines: {node: '>=8.0.0'}
     dependencies:
-      cross-spawn: 7.0.1
+      cross-spawn: 7.0.3
       signal-exit: 3.0.7
 
   /foreground-child/3.1.1:
     resolution: {integrity: sha512-TMKDUnIte6bfb5nWv7V/caI169OHgvwjb7V4WkeUvbQQdjr5rWKqHFiKWb/fcOwB+CzBT+qbWjvj+DVwRskpIg==}
     engines: {node: '>=14'}
     dependencies:
-      cross-spawn: 7.0.1
+      cross-spawn: 7.0.3
       signal-exit: 4.1.0
-    dev: true
 
   /form-data/2.5.1:
     resolution: {integrity: sha512-m21N3WOmEEURgk6B9GLOE4RuWOFf28Lhh9qGYeNlGq4VDXUlJy2th2slBNU8Gp8EzloYZOibZJ7t5ecIrFSjVA==}
@@ -8193,6 +8280,7 @@ packages:
       asynckit: 0.4.0
       combined-stream: 1.0.8
       mime-types: 2.1.35
+    dev: false
 
   /form-data/4.0.0:
     resolution: {integrity: sha512-ETEklSGi5t0QMZuiXoA/Q6vcnxcLQP5vdugSpuAyi6SVGi2clPPp+xgEhuMaHC+zGgn31Kd235W35f7Hykkaww==}
@@ -8206,19 +8294,12 @@ packages:
     resolution: {integrity: sha512-varLbTj0e0yVyRpqQhuWV+8hlePAgaoFRhNFj50BNjEIrw1/DphHSObtqwskVCPWNgzwPoQrZAbfa/SBiicNeg==}
     dev: true
 
-  /formidable/1.2.6:
-    resolution: {integrity: sha512-KcpbcpuLNOwrEjnbpMC0gS+X8ciDoZE1kkqzat4a8vrprf+s9pKNQ/QIwWfbfs4ltgmFl3MD177SNTkve3BwGQ==}
-    deprecated: 'Please upgrade to latest, formidable@v2 or formidable@v3! Check these notes: https://bit.ly/2ZEqIau'
-    dev: true
-
-  /formidable/2.1.2:
-    resolution: {integrity: sha512-CM3GuJ57US06mlpQ47YcunuUZ9jpm8Vx+P2CGt2j7HpgkKZO/DJYQ0Bobim8G6PFQmK5lOqOOdUXboU+h73A4g==}
+  /formidable/3.5.1:
+    resolution: {integrity: sha512-WJWKelbRHN41m5dumb0/k8TeAx7Id/y3a+Z7QfhxP/htI9Js5zYaEDtG8uMgG0vM0lOlqnmjE99/kfpOYi/0Og==}
     dependencies:
       dezalgo: 1.0.4
       hexoid: 1.0.0
       once: 1.4.0
-      qs: 6.11.2
-    dev: false
 
   /forwarded/0.2.0:
     resolution: {integrity: sha512-buRG0fpBtRHSTCOASe6hD258tEubFoRLb4ZNA6NxMVHNw2gOcwHo9wyablzMzOA5z9xA9L1KNjk/Nt6MT9aYow==}
@@ -8369,6 +8450,17 @@ packages:
       call-bind: 1.0.5
       get-intrinsic: 1.2.2
 
+  /git-up/7.0.0:
+    resolution: {integrity: sha512-ONdIrbBCFusq1Oy0sC71F5azx8bVkvtZtMJAsv+a6lz5YAmbNnLD6HAB4gptHZVLPR8S2/kVN6Gab7lryq5+lQ==}
+    dependencies:
+      is-ssh: 1.4.0
+      parse-url: 8.1.0
+
+  /git-url-parse/13.1.1:
+    resolution: {integrity: sha512-PCFJyeSSdtnbfhSNRw9Wk96dDCNx+sogTe4YNXeXSJxt7xz5hvXekuRn9JX7m+Mf4OscCu8h+mtAl3+h5Fo8lQ==}
+    dependencies:
+      git-up: 7.0.0
+
   /github-from-package/0.0.0:
     resolution: {integrity: sha512-SyHy3T1v2NUXn29OsWdxmK6RwHD+vkj3v8en8AOBZ1wBQ/hCAQ5bAQTD02kW4W9tUp/3Qh6J8r9EvntiyCmOOw==}
     dev: false
@@ -8388,8 +8480,8 @@ packages:
   /glob-to-regexp/0.4.1:
     resolution: {integrity: sha512-lkX1HJXwyMcprw/5YUZc2s7DrpAiHB21/V+E1rHUrVNokkvB6bqMzT0VfV6/86ZNabt1k14YOIaT7nDvOX3Iiw==}
 
-  /glob/10.3.10:
-    resolution: {integrity: sha512-fa46+tv1Ak0UPK1TOy/pZrIybNNt4HCv7SDzwyfiOZkvZLEbjsZkJBPtDHVshZjbecAoAGSC20MjLDG/qr679g==}
+  /glob/10.3.12:
+    resolution: {integrity: sha512-TCNv8vJ+xz4QiqTpfOJA7HvYv+tNIRHKfUWw/q+v2jdgN4ebz+KY9tGx5J4rHP0o84mNP+ApH66HRX8us3Khqg==}
     engines: {node: '>=16 || 14 >=14.17'}
     hasBin: true
     dependencies:
@@ -8397,18 +8489,7 @@ packages:
       jackspeak: 2.3.6
       minimatch: 9.0.3
       minipass: 7.0.4
-      path-scurry: 1.10.1
-    dev: true
-
-  /glob/7.1.2:
-    resolution: {integrity: sha512-MJTUg1kjuLeQCJ+ccE4Vpa6kKVXkPYJ2mOCQyUuKLcLQsdrMCpBPUi8qVE6+YuaJkozeA9NusTAw3hLr8Xe5EQ==}
-    dependencies:
-      fs.realpath: 1.0.0
-      inflight: 1.0.6
-      inherits: 2.0.4
-      minimatch: 3.1.2
-      once: 1.4.0
-      path-is-absolute: 1.0.1
+      path-scurry: 1.10.2
 
   /glob/7.2.0:
     resolution: {integrity: sha512-lmLf6gtyrPq8tTjSmrO94wBeQbFR3HbLHbuyD69wuyQkImp2hWqMGB47OX65FBkPffO641IP9jWa1z4ivqG26Q==}
@@ -8445,7 +8526,7 @@ packages:
       es6-error: 4.1.1
       matcher: 3.0.0
       roarr: 2.15.4
-      semver: 7.5.4
+      semver: 7.6.0
       serialize-error: 7.0.1
     optional: true
 
@@ -8553,9 +8634,6 @@ packages:
   /graceful-fs/4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
 
-  /grapheme-splitter/1.0.4:
-    resolution: {integrity: sha512-bzh50DW9kTPM00T8y4o8vQg89Di9oLJVLW/KaOGIXJWP/iqCN6WKYkbNOF04vFLJhwcpYUh9ydh/+5vpOqV4YQ==}
-
   /graphemer/1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
 
@@ -8654,7 +8732,6 @@ packages:
   /hexoid/1.0.0:
     resolution: {integrity: sha512-QFLV0taWQOZtvIRIAdBChesmogZrtuXvVWsFHZTk2SU+anspqZ2vMnoLg7IE1+Uk16N19APic1BuF8bC8c2m5g==}
     engines: {node: '>=8'}
-    dev: false
 
   /hmac-drbg/1.0.1:
     resolution: {integrity: sha512-Tti3gMqLdZfhOQY1Mzf/AanLiqh1WTiJgEj26ZuYQ9fbkLomzGchCws4FyrSd4VkpBfiNhaE1On+lOz894jvXg==}
@@ -8869,10 +8946,6 @@ packages:
     engines: {node: '>=10.13.0'}
     dev: true
 
-  /inversify/5.0.5:
-    resolution: {integrity: sha512-60QsfPz8NAU/GZqXu8hJ+BhNf/C/c+Hp0eDc6XMIJTxBiP36AQyyQKpBkOVTLWBFDQWYVHpbbEuIsHu9dLuJDA==}
-    dev: false
-
   /inversify/6.0.1:
     resolution: {integrity: sha512-B3ex30927698TJENHR++8FfEaJGqoWOgI6ZY5Ht/nLUsFCwHn6akbwtnUAPCgUepAnTpe2qHxhDNjoKLyz6rgQ==}
     dev: false
@@ -8930,6 +9003,12 @@ packages:
   /is-buffer/1.1.6:
     resolution: {integrity: sha512-NcdALwpXkTm5Zvvbk7owOUSvVvBKDgKP5/ewfXEznmQFfs4ZRmanOeKBTjRVjka3QFoN6XJ+9F3USqfHqTaU5w==}
     dev: false
+
+  /is-builtin-module/3.2.1:
+    resolution: {integrity: sha512-BSLE3HnV2syZ0FK0iMA/yUGplUeMmNz4AW5fnTunbCIqZi4vG3WjJT9FHMy5D69xmAYBHXQhJdALdpwVxV501A==}
+    engines: {node: '>=6'}
+    dependencies:
+      builtin-modules: 3.3.0
 
   /is-callable/1.2.7:
     resolution: {integrity: sha512-1BC0BVFhS/p0qtw6enp8e+8OD0UrK0oFLztSjNzhcKA3WDuJxxAPXzPuPtKkjEY9UUoEWlX/8fgKeu2S8i9JTA==}
@@ -9083,6 +9162,11 @@ packages:
     dependencies:
       call-bind: 1.0.5
 
+  /is-ssh/1.4.0:
+    resolution: {integrity: sha512-x7+VxdxOdlV3CYpjvRLBv5Lo9OJerlYanjwFrPR9fuGPjCiNiCzFgAWpiLAohSbsnH4ZAys3SBh+hq5rJosxUQ==}
+    dependencies:
+      protocols: 2.0.1
+
   /is-stream/1.1.0:
     resolution: {integrity: sha512-uQPm8kcs47jx38atAcWTVxyltQYoPT68y9aWYdV6yWXSyW8mzSat0TL6CiWdZeCdF3KrAvpVtnHbTv4RN+rqdQ==}
     engines: {node: '>=0.10.0'}
@@ -9102,6 +9186,10 @@ packages:
     engines: {node: '>= 0.4'}
     dependencies:
       has-tostringtag: 1.0.0
+
+  /is-subset/0.1.1:
+    resolution: {integrity: sha512-6Ybun0IkarhmEqxXCNw/C0bna6Zb/TkfUX9UbwJtK6ObwAVCxmAP308WWTHviM/zAqXk05cdhYsUsZeGQh99iw==}
+    dev: true
 
   /is-symbol/1.0.4:
     resolution: {integrity: sha512-C/CPBqKWnvdcxqIARxyOh4v1UUEOCHpgDa0WYgpKDFMszcrPcffg5uhwSgPCLD2WWxmq6isisz87tzT01tuGhg==}
@@ -9152,6 +9240,7 @@ packages:
 
   /isarray/1.0.0:
     resolution: {integrity: sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ==}
+    dev: false
 
   /isarray/2.0.5:
     resolution: {integrity: sha512-xHjhDr3cNBK0BzdUJSPXZntQUx/mwMS5Rw4A7lPJ90XGAO6ISP/ePDNuo0vhqOZU+UD5JoodwCAAoZQd3FeAKw==}
@@ -9250,7 +9339,6 @@ packages:
       '@isaacs/cliui': 8.0.2
     optionalDependencies:
       '@pkgjs/parseargs': 0.11.0
-    dev: true
 
   /jest-diff/21.2.1:
     resolution: {integrity: sha512-E5fu6r7PvvPr5qAWE1RaUwIh/k6Zx/3OOkZ4rk5dBJkEWRrUuSgbMt2EO8IUTPTd6DOqU3LW6uTIwX5FRvXoFA==}
@@ -9290,7 +9378,6 @@ packages:
 
   /jju/1.4.0:
     resolution: {integrity: sha512-8wb9Yw966OSxApiCt0K3yNJL8pnNeIv+OEq2YMidz4FKP6nonSRoOXc80iXY4JaN2FC11B9qsNmDsm+ZOfMROA==}
-    dev: false
 
   /jose/2.0.6:
     resolution: {integrity: sha512-FVoPY7SflDodE4lknJmbAHSUjLCzE2H1F6MS0RYKMQ8SR+lNccpMf8R4eqkNYyyUjR5qZReOzZo5C5YiHOCjjg==}
@@ -9480,7 +9567,7 @@ packages:
       lodash.isstring: 4.0.1
       lodash.once: 4.1.1
       ms: 2.1.3
-      semver: 7.5.4
+      semver: 7.6.0
     dev: false
 
   /jsx-ast-utils/3.3.5:
@@ -9671,7 +9758,6 @@ packages:
 
   /lodash.isequal/4.5.0:
     resolution: {integrity: sha512-pDo3lu8Jhfjqls6GkMgpahsF9kCyayhgykjyLMNFTKWrpVdAQtYyB4muAMWozBB4ig/dtWAmsMxLEI8wuz+DYQ==}
-    dev: false
 
   /lodash.isinteger/4.0.4:
     resolution: {integrity: sha512-DBwtEWN2caHQ9/imiNeEA5ys1JoRtRfY3d7V9wkqtbycnAmTvRRmbHKDV4a0EYc678/dia0jrte4tjYwVBaZUA==}
@@ -9695,6 +9781,10 @@ packages:
   /lodash.once/4.1.1:
     resolution: {integrity: sha512-Sb487aTOCr9drQVL8pIxOzVhafOjZN9UU54hiN8PU3uAiSV7lx1yYNpbNmex2PK6dSJoNTSJUUswT651yww3Mg==}
     dev: false
+
+  /lodash.sortby/4.7.0:
+    resolution: {integrity: sha512-HDWXG8isMntAyRF5vZ7xKuEvOhT4AhlRt/3czTSjvGUxjYCBVRQY48ViDHyfYz9VIoBkW4TMGQNapx+l3RUwdA==}
+    dev: true
 
   /lodash.values/4.3.0:
     resolution: {integrity: sha512-r0RwvdCv8id9TUblb/O7rYPwVy6lerCbcawrfdo9iC/1t1wsNMJknO79WNBgwkH0hIeJ08jmvvESbFpNb4jH0Q==}
@@ -9749,10 +9839,9 @@ packages:
     resolution: {integrity: sha512-tqNXrS78oMOE73NMxK4EMLQsQowWf8jKooH9g7xPavRT706R6bkQJ6DY2Te7QukaZsulxa30wQ7bk0pm4XiHmA==}
     engines: {node: '>=8'}
 
-  /lru-cache/10.1.0:
-    resolution: {integrity: sha512-/1clY/ui8CzjKFyjdvwPWJUYKiFVXG2I2cY0ssG7h4+hwk+XOIX7ZSG9Q7TW8TW3Kp3BUSqgFWBLgL4PJ+Blag==}
+  /lru-cache/10.2.0:
+    resolution: {integrity: sha512-2bIM8x+VAf6JT4bKAljS1qUWgMsqZRPGJS6FSahIMPVvctcNhyVp7AJu7quxOW9jwkryBReKZY5tY5JYv2n/7Q==}
     engines: {node: 14 || >=16.14}
-    dev: true
 
   /lru-cache/4.0.2:
     resolution: {integrity: sha512-uQw9OqphAGiZhkuPlpFGmdTU2tEuhxTourM/19qGJrxBPHAr/f8BT1a0i/lOclESnGatdJG/UCkP9kZB/Lh1iw==}
@@ -9810,7 +9899,7 @@ packages:
     resolution: {integrity: sha512-hXdUTZYIVOt1Ex//jAQi+wTZZpUpwBj/0QsOzqegb3rGMMeJiSEu5xLHnYfBrRV4RH2+OCSOO95Is/7x1WJ4bw==}
     engines: {node: '>=10'}
     dependencies:
-      semver: 7.5.4
+      semver: 7.6.0
 
   /make-error/1.3.6:
     resolution: {integrity: sha512-s8UhlNe7vPKomQhC1qFelMokr/Sc3AgNbso3n74mVPA5LTZwkB9NlXf4XPamLxJE8h0gh73rM94xvwRT2CVInw==}
@@ -9890,6 +9979,10 @@ packages:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
     engines: {node: '>= 8'}
 
+  /meshoptimizer/0.20.0:
+    resolution: {integrity: sha512-olcJ1q+YVnjroRJpCL1Dj5aZxr2JMr2hRutMUwhuHZvpAL7SIZgOT6eMlFF4TbBGSR89tawE/gqB79J/LrW/Nw==}
+    dev: false
+
   /methods/1.1.2:
     resolution: {integrity: sha512-iclAHeNqNm68zFtnZ0e+1L2yUIdvzNoauKU4WBA3VvH/vPFieF7qfRlwUZU+DA9P9bPXIS90ulxoUoCH23sV2w==}
     engines: {node: '>= 0.6'}
@@ -9928,7 +10021,6 @@ packages:
     resolution: {integrity: sha512-USPkMeET31rOMiarsBNIHZKLGgvKc/LrjofAnBlOttf5ajRvqiRA8QsenbcooctK6d6Ts6aqZXBA+XbkKthiQg==}
     engines: {node: '>=4.0.0'}
     hasBin: true
-    dev: false
 
   /mimic-fn/2.1.0:
     resolution: {integrity: sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==}
@@ -9965,19 +10057,11 @@ packages:
     dependencies:
       brace-expansion: 2.0.1
 
-  /minimatch/7.4.6:
-    resolution: {integrity: sha512-sBz8G/YjVniEz6lKPNpKxXwazJe4c19fEfV2GDMX6AjFz+MX9uDWIZW8XreVhkFW3fkIdTv/gxWr/Kks5FFAVw==}
-    engines: {node: '>=10'}
-    dependencies:
-      brace-expansion: 2.0.1
-    dev: false
-
   /minimatch/9.0.3:
     resolution: {integrity: sha512-RHiac9mvaRw0x3AYRgDC1CxAP7HTcNrrECeA8YYJeWnpo+2Q5CegtZjaotWTWxDG3UeGA1coE05iH1mPjT/2mg==}
     engines: {node: '>=16 || 14 >=14.17'}
     dependencies:
       brace-expansion: 2.0.1
-    dev: true
 
   /minimist/1.2.8:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
@@ -9985,7 +10069,6 @@ packages:
   /minipass/7.0.4:
     resolution: {integrity: sha512-jYofLM5Dam9279rdkWzqHozUo4ybjdZmCsDHePy5V/PbBcVMiSZR97gmAy45aqi8CK1lG2ECd356FU86avfwUQ==}
     engines: {node: '>=16 || 14 >=14.17'}
-    dev: true
 
   /mkdirp-classic/0.5.3:
     resolution: {integrity: sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A==}
@@ -10099,8 +10182,8 @@ packages:
       readable-stream: 2.3.8
     dev: false
 
-  /mysql2/3.7.1:
-    resolution: {integrity: sha512-4EEqYu57mnkW5+Bvp5wBebY7PpfyrmvJ3knHcmLkp8FyBu4kqgrF2GxIjsC2tbLNZWqJaL21v/MYH7bU5f03oA==}
+  /mysql2/3.10.0:
+    resolution: {integrity: sha512-qx0mfWYt1DpTPkw8mAcHW/OwqqyNqBLBHvY5IjN8+icIYTjt6znrgYJ+gxqNNRpVknb5Wc/gcCM4XjbCR0j5tw==}
     engines: {node: '>= 8.0'}
     dependencies:
       denque: 2.1.0
@@ -10138,9 +10221,6 @@ packages:
   /native-duplexpair/1.0.0:
     resolution: {integrity: sha512-E7QQoM+3jvNtlmyfqRZ0/U75VFgCls+fSkbml2MpgWkWyz3ox8Y58gNhfuziuQYGNNQAbFZJQck55LHCnCK6CA==}
     dev: false
-
-  /natural-compare-lite/1.4.0:
-    resolution: {integrity: sha512-Tj+HTDSJJKaZnfiuw+iaF9skdPpTo2GtEly5JHnWV/hfv2Qj/9RKsGISQtLh2ox3l5EAGw487hnBee0sIJ6v2g==}
 
   /natural-compare/1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
@@ -10180,7 +10260,7 @@ packages:
     resolution: {integrity: sha512-p7eGEiQil0YUV3ItH4/tBb781L5impVmmx2E9FRKF7d18XXzp4PGT2tdYMFY6wQqgxD0IwNZOiSJ0/K0fSi/OA==}
     engines: {node: '>=10'}
     dependencies:
-      semver: 7.5.4
+      semver: 7.6.0
     dev: false
 
   /node-abort-controller/3.1.1:
@@ -10694,6 +10774,16 @@ packages:
       error-ex: 1.3.2
       json-parse-better-errors: 1.0.2
 
+  /parse-path/7.0.0:
+    resolution: {integrity: sha512-Euf9GG8WT9CdqwuWJGdf3RkUcTBArppHABkO7Lm8IzRQp0e2r/kkFnmhu4TSK30Wcu5rVAZLmfPKSBBi9tWFog==}
+    dependencies:
+      protocols: 2.0.1
+
+  /parse-url/8.1.0:
+    resolution: {integrity: sha512-xDvOoLU5XRrcOZvnI6b8zA6n9O9ejNk/GExuz1yBuWUGn9KA97GI6HTs6u02wKara1CeVmZhH+0TZFdWScR89w==}
+    dependencies:
+      parse-path: 7.0.0
+
   /parse5/6.0.1:
     resolution: {integrity: sha512-Ofn/CTFzRGTTxwpNEs9PP93gXShHcTq255nzRYSKe8AkVpZY7e1fpmTfOyoIvjP5HG7Z2ZM7VS9PPhQGW2pOpw==}
     dev: true
@@ -10734,16 +10824,19 @@ packages:
   /path-parse/1.0.7:
     resolution: {integrity: sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==}
 
-  /path-scurry/1.10.1:
-    resolution: {integrity: sha512-MkhCqzzBEpPvxxQ71Md0b1Kk51W01lrYvlMzSUaIzNsODdd7mqhiimSZlr+VegAz5Z6Vzt9Xg2ttE//XBhH3EQ==}
+  /path-scurry/1.10.2:
+    resolution: {integrity: sha512-7xTavNy5RQXnsjANvVvMkEjvloOinkAjv/Z6Ildz9v2RinZ4SBKTWFOVRbaF8p0vpHnyjV/UwNDdKuUv6M5qcA==}
     engines: {node: '>=16 || 14 >=14.17'}
     dependencies:
-      lru-cache: 10.1.0
+      lru-cache: 10.2.0
       minipass: 7.0.4
-    dev: true
 
   /path-to-regexp/0.1.7:
     resolution: {integrity: sha512-5DFkuoqlv1uYQKxy8omFBeJPQcdoE07Kv2sferDCrAq1ohOU+MSDswDIbnx3YAM60qIOnYa53wBhXW0EbMonrQ==}
+
+  /path-to-regexp/2.4.0:
+    resolution: {integrity: sha512-G6zHoVqC6GGTQkZwF4lkuEyMbVOjoBKAEybQUypI1WTkqinCOrq2x6U2+phkJ1XsEMTy4LjtwPI7HW+NVrRR2w==}
+    dev: true
 
   /path-to-regexp/6.2.1:
     resolution: {integrity: sha512-JLyh7xT1kizaEvcaXOQwOc2/Yhw6KZOvPf1S8401UyLk86CU79LN3vl7ztXGm/pZ+YjoyAJ4rxmHwbkBXJX+yw==}
@@ -10895,6 +10988,7 @@ packages:
 
   /process-nextick-args/2.0.1:
     resolution: {integrity: sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==}
+    dev: false
 
   /process-on-spawn/1.0.0:
     resolution: {integrity: sha512-1WsPDsUSMmZH5LeMLegqkPDrsGgsWwk1Exipy2hvB0o/F0ASzbpIctSCcZIK1ykJvtTJULEH+20WOFjMvGnCTg==}
@@ -10922,6 +11016,9 @@ packages:
     resolution: {integrity: sha512-vGrhOavPSTz4QVNuBNdcNXePNdNMaO1xj9yBeH1ScQPjk/rhg9sSlCXPhMkFuaNNW/syTvYqsnbIJxMBfRbbag==}
     engines: {node: '>= 8'}
     dev: true
+
+  /protocols/2.0.1:
+    resolution: {integrity: sha512-/XJ368cyBJ7fzLMwLKv1e4vLxOju2MNAIokcr7meSaNcVbWz/CPcW22cP04mwxOErdA5mwjA8Q6w/cdAQxVn7Q==}
 
   /proxy-addr/2.0.7:
     resolution: {integrity: sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==}
@@ -11039,7 +11136,6 @@ packages:
     resolution: {integrity: sha512-X/xY82scca2tau62i9mDyU9K+I+djTMUsvwf7xnUX5GLvVzgJybOJf4Y6o9Zx3oJK/LSXg5tTZBjwzqVPaPO2g==}
     engines: {node: '>=0.4.x'}
     deprecated: The querystring API is considered Legacy. new code should use the URLSearchParams API instead.
-    dev: false
 
   /querystringify/2.2.0:
     resolution: {integrity: sha512-FIqgj2EUvTa7R50u0rGsyTftzjYmv/a3hO345bZNrqabNqjtgiDMgmo4mkUjd+nzU5oF3dClKqFIPUKybUyqoQ==}
@@ -11143,6 +11239,7 @@ packages:
       safe-buffer: 5.1.2
       string_decoder: 1.1.1
       util-deprecate: 1.0.2
+    dev: false
 
   /readable-stream/3.6.2:
     resolution: {integrity: sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA==}
@@ -11316,7 +11413,7 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
     dependencies:
-      glob: 10.3.10
+      glob: 10.3.12
     dev: true
 
   /ripemd160/2.0.2:
@@ -11425,6 +11522,7 @@ packages:
 
   /safe-buffer/5.1.2:
     resolution: {integrity: sha512-Gd2UZBJDkXlY7GbJxfsE8/nvKkUEU1G38c1siN6QP6a9PT9MmHB8GnpscSmMJSoF8LOIrt8ud/wPtojys4G6+g==}
+    dev: false
 
   /safe-buffer/5.2.1:
     resolution: {integrity: sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==}
@@ -11524,6 +11622,14 @@ packages:
     hasBin: true
     dependencies:
       lru-cache: 6.0.0
+    dev: false
+
+  /semver/7.6.0:
+    resolution: {integrity: sha512-EnwXhrlwXMk9gKu5/flx5sv/an57AkRplG3hTK68W7FRDN+k+OWBj65M7719OkA82XLBxrcX0KSHj+X5COhOVg==}
+    engines: {node: '>=10'}
+    hasBin: true
+    dependencies:
+      lru-cache: 6.0.0
 
   /send/0.18.0:
     resolution: {integrity: sha512-qqWzuOjSFOuqPjFe4NOsMLafToQQwBSOEpS+FwEt3A2V3vKubTquT3vmLTQpFgMXp8AlFWFuP1qKaJZOtPpVXg==}
@@ -11552,7 +11658,7 @@ packages:
     engines: {node: '>= 10.0.0'}
     dev: false
 
-  /sequelize/6.35.2_tzgr72vms3h4goocrl5366wzf4:
+  /sequelize/6.35.2_qjhl5a2srfinctylh3la6owyde:
     resolution: {integrity: sha512-EdzLaw2kK4/aOnWQ7ed/qh3B6/g+1DvmeXr66RwbcqSm/+QRS9X0LDI5INBibsy4eNJHWIRPo3+QK0zL+IPBHg==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
@@ -11593,12 +11699,12 @@ packages:
       lodash: 4.17.21
       moment: 2.30.1
       moment-timezone: 0.5.44
-      mysql2: 3.7.1
+      mysql2: 3.10.0
       pg-connection-string: 2.6.2
       retry-as-promised: 7.0.4
-      semver: 7.5.4
+      semver: 7.6.0
       sequelize-pool: 7.1.0
-      tedious: 16.6.1
+      tedious: 16.7.1
       toposort-class: 1.0.1
       uuid: 8.3.2
       validator: 13.11.0
@@ -11721,7 +11827,6 @@ packages:
   /signal-exit/4.1.0:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
-    dev: true
 
   /simple-concat/1.0.1:
     resolution: {integrity: sha512-cSFtAPtRhljv69IK0hTVZQ+OfE9nePi/rtJmw5UjHeVyVroEqJXP1sFztKUy1qU+xvz3u/sfYJLa947b7nAN2Q==}
@@ -11844,6 +11949,12 @@ packages:
       spdx-exceptions: 2.3.0
       spdx-license-ids: 3.0.16
 
+  /spdx-expression-parse/4.0.0:
+    resolution: {integrity: sha512-Clya5JIij/7C6bRR22+tnGXbc4VKlibKSVj2iHvVeX5iMW7s1SIQlqu699JkODJJIhh/pUu8L0/VLh8xflD+LQ==}
+    dependencies:
+      spdx-exceptions: 2.3.0
+      spdx-license-ids: 3.0.16
+
   /spdx-license-ids/3.0.16:
     resolution: {integrity: sha512-eWN+LnM3GR6gPu35WxNgbGl8rmY1AEmoMDvL/QD6zYmPWgywxWqJWNdLGT+ke8dKNWrcYgYjPpG5gbTfghP8rw==}
 
@@ -11944,7 +12055,6 @@ packages:
       eastasianwidth: 0.2.0
       emoji-regex: 9.2.2
       strip-ansi: 7.1.0
-    dev: true
 
   /string.prototype.matchall/4.0.10:
     resolution: {integrity: sha512-rGXbGmOEosIQi6Qva94HUjgPs9vKW+dkG7Y8Q5O2OYkWL6wFaTRZO8zM4mhP94uX55wgyrXzfS2aGtGzUL7EJQ==}
@@ -11994,6 +12104,7 @@ packages:
     resolution: {integrity: sha512-n/ShnvDi6FHbbVfviro+WojiFzv+s8MPMHBczVePfUpDJLwoLT0ht1l4YwBCbi8pJAveEEdnkHyPyTP/mzRfwg==}
     dependencies:
       safe-buffer: 5.1.2
+    dev: false
 
   /string_decoder/1.3.0:
     resolution: {integrity: sha512-hkRX8U1WjJFd8LsDJ2yQ/wWWxaopEsABU1XfkM8A+j0+85JAGppt16cr1Whg6KIbb4okU6Mql6BOj+uup/wKeA==}
@@ -12018,7 +12129,6 @@ packages:
     engines: {node: '>=12'}
     dependencies:
       ansi-regex: 6.0.1
-    dev: true
 
   /strip-bom/3.0.0:
     resolution: {integrity: sha512-vavAMRXOgBVNF6nyEEmL3DBK19iRpDcoIwW+swQ+CbGiu7lju6t+JklA1MHweoWtadgt4ISVUsXLyDq34ddcwA==}
@@ -12052,6 +12162,10 @@ packages:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
 
+  /strnum/1.0.5:
+    resolution: {integrity: sha512-J8bbNyKKXl5qYcR36TIO8W3mVGVHrmmxsd5PAItGkmyzwJvybiw2IVq5nqd0i4LSNSkB/sx9VHllbfFdr9k1JA==}
+    dev: false
+
   /subarg/1.0.0:
     resolution: {integrity: sha512-RIrIdRY0X1xojthNcVtgT9sjpOGagEUKpZdgBUi054OEPFo282yg+zE+t1Rj3+RqKq2xStL7uUHhY+AjbC4BXg==}
     dependencies:
@@ -12065,48 +12179,49 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /superagent/3.8.3:
-    resolution: {integrity: sha512-GLQtLMCoEIK4eDv6OGtkOoSMt3D+oq0y3dsxMuYuDvaNUvuT8eFBuLmfR0iYYzHC1e8hpzC6ZsxbuP6DIalMFA==}
-    engines: {node: '>= 4.0'}
-    deprecated: Please upgrade to v7.0.2+ of superagent.  We have fixed numerous issues with streams, form-data, attach(), filesystem errors not bubbling up (ENOENT on attach()), and all tests are now passing.  See the releases tab for more information at <https://github.com/visionmedia/superagent/releases>.
-    dependencies:
-      component-emitter: 1.3.1
-      cookiejar: 2.1.4
-      debug: 3.2.7
-      extend: 3.0.2
-      form-data: 2.5.1
-      formidable: 1.2.6
-      methods: 1.1.2
-      mime: 1.6.0
-      qs: 6.11.2
-      readable-stream: 2.3.8
-    dev: true
-
-  /superagent/7.1.5:
-    resolution: {integrity: sha512-HQYyGuDRFGmZ6GNC4hq2f37KnsY9Lr0/R1marNZTgMweVDQLTLJJ6DGQ9Tj/xVVs5HEnop9EMmTbywb5P30aqw==}
-    engines: {node: '>=6.4.0 <13 || >=14'}
+  /superagent/9.0.1:
+    resolution: {integrity: sha512-CcRSdb/P2oUVaEpQ87w9Obsl+E9FruRd6b2b7LdiBtJoyMr2DQt7a89anAfiX/EL59j9b2CbRFvf2S91DhuCww==}
+    engines: {node: '>=14.18.0'}
     dependencies:
       component-emitter: 1.3.1
       cookiejar: 2.1.4
       debug: 4.3.4
       fast-safe-stringify: 2.1.1
       form-data: 4.0.0
-      formidable: 2.1.2
+      formidable: 3.5.1
       methods: 1.1.2
       mime: 2.6.0
       qs: 6.11.2
-      readable-stream: 3.6.2
-      semver: 7.5.4
+      semver: 7.6.0
     transitivePeerDependencies:
       - supports-color
     dev: false
 
-  /supertest/3.0.0:
-    resolution: {integrity: sha512-qpiarzDVqh36Q5SfYoCr57Z1HukIUI0WUaXRef9vNj8FrgB/diGLILtxOTh/B8ye2bDCHexMtSwxugL9fI7O4A==}
-    engines: {node: '>=4.0.0'}
+  /superagent/9.0.2:
+    resolution: {integrity: sha512-xuW7dzkUpcJq7QnhOsnNUgtYp3xRwpt2F7abdRYIpCsAt0hhUqia0EdxyXZQQpNmGtsCzYHryaKSV3q3GJnq7w==}
+    engines: {node: '>=14.18.0'}
+    dependencies:
+      component-emitter: 1.3.1
+      cookiejar: 2.1.4
+      debug: 4.3.4
+      fast-safe-stringify: 2.1.1
+      form-data: 4.0.0
+      formidable: 3.5.1
+      methods: 1.1.2
+      mime: 2.6.0
+      qs: 6.11.2
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
+  /supertest/7.0.0:
+    resolution: {integrity: sha512-qlsr7fIC0lSddmA3tzojvzubYxvlGtzumcdHgPwbFWMISQwL22MhM2Y3LNt+6w9Yyx7559VW5ab70dgphm8qQA==}
+    engines: {node: '>=14.18.0'}
     dependencies:
       methods: 1.1.2
-      superagent: 3.8.3
+      superagent: 9.0.2
+    transitivePeerDependencies:
+      - supports-color
     dev: true
 
   /supports-color/2.0.0:
@@ -12169,8 +12284,8 @@ packages:
       inherits: 2.0.4
       readable-stream: 3.6.2
 
-  /tedious/16.6.1:
-    resolution: {integrity: sha512-KKSDB1OPrPk0WbMPug9YqRbPl44zMjdL2hFyzLEidr2IkItzpV0ZbzW8VA47QIS2oyWhCU7ifIEQY12n23IRDA==}
+  /tedious/16.7.1:
+    resolution: {integrity: sha512-NmedZS0NJiTv3CoYnf1FtjxIDUgVYzEmavrc8q2WHRb+lP4deI9BpQfmNnBZZaWusDbP5FVFZCcvzb3xOlNVlQ==}
     engines: {node: '>=16'}
     dependencies:
       '@azure/identity': 3.4.1
@@ -12183,7 +12298,6 @@ packages:
       jsbi: 4.3.0
       native-duplexpair: 1.0.0
       node-abort-controller: 3.1.1
-      punycode: 2.3.1
       sprintf-js: 1.1.3
     transitivePeerDependencies:
       - supports-color
@@ -12196,7 +12310,7 @@ packages:
       bluebird: 3.7.2
       lodash: 4.17.21
       shell-quote: 1.8.1
-      source-map-support: 0.5.6
+      source-map-support: 0.5.21
     dev: true
 
   /term-size/2.2.1:
@@ -12325,6 +12439,12 @@ packages:
   /tr46/0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
 
+  /tr46/1.0.1:
+    resolution: {integrity: sha512-dTpowEjclQ7Kgx5SdBkqRzVhERQXov8/l9Ft9dVM9fmg0W0KQSVaXX9T4i6twCPNtYiZM53lpSSUAwJbFPOHxA==}
+    dependencies:
+      punycode: 2.3.1
+    dev: true
+
   /tr46/3.0.0:
     resolution: {integrity: sha512-l7FvfAHlcmulp8kr+flpQZmVwtu7nfRV7NZujtN0OqES8EL4O4e0qqzL0DC5gAvx/ZC/9lk6rhcUwYvkBnBnYA==}
     engines: {node: '>=12'}
@@ -12348,7 +12468,15 @@ packages:
       utf8-byte-length: 1.0.4
     dev: true
 
-  /ts-node/10.8.2_typescript@5.0.2:
+  /ts-api-utils/1.2.1_typescript@5.3.3:
+    resolution: {integrity: sha512-RIYA36cJn2WiH9Hy77hdF9r7oEwxAtB/TS9/S4Qd90Ap4z5FSiin5zEiTL44OII1Y3IIlEvxwxFUVgrHSZ/UpA==}
+    engines: {node: '>=16'}
+    peerDependencies:
+      typescript: '>=4.2.0'
+    dependencies:
+      typescript: 5.3.3
+
+  /ts-node/10.8.2_typescript@5.3.3:
     resolution: {integrity: sha512-LYdGnoGddf1D6v8REPtIH+5iq/gTDuZqv2/UJUU7tKjuEU8xVZorBM+buCGNjj+pGEud+sOoM4CX3/YzINpENA==}
     hasBin: true
     peerDependencies:
@@ -12375,12 +12503,12 @@ packages:
       create-require: 1.1.1
       diff: 4.0.2
       make-error: 1.3.6
-      typescript: 5.0.2
+      typescript: 5.3.3
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
     dev: true
 
-  /ts-node/10.8.2_x3yja37h4nvnkgmzh32ve3yzmm:
+  /ts-node/10.8.2_zifzk4dbgzfq65cu6hdbkv4dfq:
     resolution: {integrity: sha512-LYdGnoGddf1D6v8REPtIH+5iq/gTDuZqv2/UJUU7tKjuEU8xVZorBM+buCGNjj+pGEud+sOoM4CX3/YzINpENA==}
     hasBin: true
     peerDependencies:
@@ -12408,7 +12536,7 @@ packages:
       create-require: 1.1.1
       diff: 4.0.2
       make-error: 1.3.6
-      typescript: 5.0.2
+      typescript: 5.3.3
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
     dev: true
@@ -12460,14 +12588,14 @@ packages:
   /tslib/2.6.2:
     resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
 
-  /tsutils/3.21.0_typescript@5.0.2:
+  /tsutils/3.21.0_typescript@5.3.3:
     resolution: {integrity: sha512-mHKK3iUXL+3UF6xL5k0PEhKRUBKPBCv/+RkEOpjRWxxx27KKRBmmA60A9pgOUvMi8GKhRMPEmjBRPzs2W7O1OA==}
     engines: {node: '>= 6'}
     peerDependencies:
       typescript: '>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta'
     dependencies:
       tslib: 1.14.1
-      typescript: 5.0.2
+      typescript: 5.3.3
 
   /tunnel-agent/0.6.0:
     resolution: {integrity: sha512-McnNiV1l8RYeY8tBgEpuodCC1mLUdbSN+CYBL7kJsJNInOP8UjDDEwdk6Mw60vdLLrr5NHKZhMAOSrR2NZuQ+w==}
@@ -12556,26 +12684,26 @@ packages:
     dependencies:
       is-typedarray: 1.0.0
 
-  /typedoc-plugin-merge-modules/4.0.1_typedoc@0.23.28:
-    resolution: {integrity: sha512-peuoWT/xcpEO71kNuaTBAS2IVwc8qm5tiIXnJc0vW/Cy9HHoVGkYecarkwtLBl5VmrhZjZN6LQNriqYfgHA1+A==}
+  /typedoc-plugin-merge-modules/5.1.0_typedoc@0.25.8:
+    resolution: {integrity: sha512-jXH27L/wlxFjErgBXleh3opVgjVTXFEuBo68Yfl18S9Oh/IqxK6NV94jlEJ9hl4TXc9Zm2l7Rfk41CEkcCyvFQ==}
     peerDependencies:
-      typedoc: 0.23.x
+      typedoc: 0.24.x || 0.25.x
     dependencies:
-      typedoc: 0.23.28_typescript@5.0.2
+      typedoc: 0.25.8_typescript@5.3.3
     dev: false
 
-  /typedoc/0.23.28_typescript@5.0.2:
-    resolution: {integrity: sha512-9x1+hZWTHEQcGoP7qFmlo4unUoVJLB0H/8vfO/7wqTnZxg4kPuji9y3uRzEu0ZKez63OJAUmiGhUrtukC6Uj3w==}
-    engines: {node: '>= 14.14'}
+  /typedoc/0.25.8_typescript@5.3.3:
+    resolution: {integrity: sha512-mh8oLW66nwmeB9uTa0Bdcjfis+48bAjSH3uqdzSuSawfduROQLlXw//WSNZLYDdhmMVB7YcYZicq6e8T0d271A==}
+    engines: {node: '>= 16'}
     hasBin: true
     peerDependencies:
-      typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x
+      typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x || 5.1.x || 5.2.x || 5.3.x
     dependencies:
       lunr: 2.3.9
       marked: 4.3.0
-      minimatch: 7.4.6
+      minimatch: 9.0.3
       shiki: 0.14.7
-      typescript: 5.0.2
+      typescript: 5.3.3
     dev: false
 
   /typemoq/2.1.0:
@@ -12610,16 +12738,10 @@ packages:
     hasBin: true
     dev: true
 
-  /typescript/5.0.2:
-    resolution: {integrity: sha512-wVORMBGO/FAs/++blGNeAVdbNKtIh1rbBL2EyQ1+J9lClJ93KiiKe8PmFIVdXhHcyv44SL9oglmfeSsndo0jRw==}
-    engines: {node: '>=12.20'}
+  /typescript/5.3.3:
+    resolution: {integrity: sha512-pXWcraxM0uxAS+tN0AG/BF2TyqmHO014Z070UsJ+pFvYuRSq8KH8DmWpnbXe0pEPDHXZV3FcAbJkijJ5oNEnWw==}
+    engines: {node: '>=14.17'}
     hasBin: true
-
-  /typescript/5.0.4:
-    resolution: {integrity: sha512-cW9T5W9xY37cc+jfEnaUvX91foxtHkza3Nw3wkoF4sSlKn0MONdkdEndig/qPBWXNkmplh3NzayQzCiHM4/hqw==}
-    engines: {node: '>=12.20'}
-    hasBin: true
-    dev: false
 
   /uid-safe/2.1.5:
     resolution: {integrity: sha512-KPHm4VL5dDXKz01UuEd88Df+KzynaohSL9fBh096KWAxSKZQDI2uBrVqtvRM4rwrIrRRKsdLNML/lnaaVSRioA==}
@@ -12938,6 +13060,10 @@ packages:
   /webidl-conversions/3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
 
+  /webidl-conversions/4.0.2:
+    resolution: {integrity: sha512-YQ+BmxuTgd6UXZW3+ICGfyqRyHXVlD5GtQr5+qjiNW7bF0cqrzX500HVXPBOvgXb5YnzDd+h0zqyv61KUD7+Sg==}
+    dev: true
+
   /webidl-conversions/7.0.0:
     resolution: {integrity: sha512-VwddBukDzu71offAQR975unBIGqfKZpM+8ZX6ySk8nYhVoo5CYaZyzt3YBvYtRtO+aoGlqxPg/B87NGVZ/fu6g==}
     engines: {node: '>=12'}
@@ -13103,6 +13229,14 @@ packages:
       tr46: 0.0.3
       webidl-conversions: 3.0.1
 
+  /whatwg-url/6.5.0:
+    resolution: {integrity: sha512-rhRZRqx/TLJQWUpQ6bmrt2UV4f0HCQ463yQuONJqC6fO2VoEb1pTYddbe59SkYq87aoM5A3bdhMZiUiVws+fzQ==}
+    dependencies:
+      lodash.sortby: 4.7.0
+      tr46: 1.0.1
+      webidl-conversions: 4.0.2
+    dev: true
+
   /which-boxed-primitive/1.0.2:
     resolution: {integrity: sha512-bwZdv0AKLpplFY2KZRX6TvyuN7ojjr7lwkg6ml0roIy9YeuSr7JS372qlNW18UQYzgYK9ziGcerWqZOmEn9VNg==}
     dependencies:
@@ -13235,6 +13369,17 @@ packages:
   /workerpool/6.2.1:
     resolution: {integrity: sha512-ILEIE97kDZvF9Wb9f6h5aXK4swSlKGUcOEGiIYb2OOu/IrDU9iwj0fD//SsA6E5ibwJxpEvhullJY4Sl4GcpAw==}
 
+  /workspace-tools/0.36.4:
+    resolution: {integrity: sha512-v0UFVvw9BjHtRu2Dau5PEJKkuG8u4jPlpXZQWjSz9XgbSutpPURqtO2P0hp3cVmQVATh8lkMFCewFgJuDnyC/w==}
+    dependencies:
+      '@yarnpkg/lockfile': 1.1.0
+      fast-glob: 3.3.2
+      git-url-parse: 13.1.1
+      globby: 11.1.0
+      jju: 1.4.0
+      js-yaml: 4.1.0
+      micromatch: 4.0.5
+
   /wrap-ansi/6.2.0:
     resolution: {integrity: sha512-r6lPcBGxZXlIcymEu7InxDMhdW0KDxpLgoFLcguasxCaJ/SOIZwINatK9KY/tf+ZrlywOKU0UDj3ATXUBfxJXA==}
     engines: {node: '>=8'}
@@ -13258,7 +13403,6 @@ packages:
       ansi-styles: 6.2.1
       string-width: 5.1.2
       strip-ansi: 7.1.0
-    dev: true
 
   /wrappy/1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}

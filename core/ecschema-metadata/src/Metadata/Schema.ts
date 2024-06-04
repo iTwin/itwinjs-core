@@ -649,6 +649,21 @@ export class Schema implements CustomAttributeContainerProps {
     return schema !== undefined && schema.schemaKey !== undefined && schema.context !== undefined;
   }
 
+  /**
+   * @alpha
+   * Used for schema editing.
+   */
+  protected setDisplayLabel(displayLabel: string) {
+    this._label = displayLabel;
+  }
+
+  /**
+   * @alpha
+   * Used for schema editing.
+   */
+  protected setDescription(description: string) {
+    this._description = description;
+  }
 }
 
 /**

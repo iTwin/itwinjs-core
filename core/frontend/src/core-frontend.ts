@@ -73,6 +73,7 @@ export * from "./PerModelCategoryVisibility";
 export * from "./PlanarClipMaskState";
 export * from "./SelectionSet";
 export * from "./SheetViewState";
+export * from "./SpatialClassifiersState";
 export * from "./SpatialViewState";
 export * from "./Sprites";
 export * from "./StandardView";
@@ -145,6 +146,15 @@ export * from "./render/primitives/mesh/MeshPrimitives";
 export * from "./render/webgl/IModelFrameLifecycle";
 export * from "./render/webgl/PerformanceMetrics";
 export * from "./render/webgl/Target";
+export type {
+  TxnEntityChange,
+  TxnEntityChangeIterable,
+  TxnEntityChangeType,
+  TxnEntityChanges,
+  TxnEntityChangesFilterOptions,
+  TxnEntityMetadata,
+  TxnEntityMetadataCriterion,
+} from "./TxnEntityChanges";
 export * from "./tile/internal";
 export * from "./tools/AccuDrawTool";
 export * from "./tools/ClipViewTool";

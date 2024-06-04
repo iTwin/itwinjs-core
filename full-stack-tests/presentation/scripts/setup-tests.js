@@ -10,8 +10,14 @@ const chaiAsPromised = require("chai-as-promised");
 const sinonChai = require("sinon-chai");
 const chaiSubset = require("chai-subset");
 const jsdom = require("jsdom");
+const sourceMapSupport = require("source-map-support");
 
 console.log(`Backend PID: ${process.pid}`);
+
+// see https://github.com/babel/babel/issues/4605
+sourceMapSupport.install({
+  environment: "node",
+});
 
 // Do not log JSDOM errors into console
 require("jsdom-global")(undefined, {

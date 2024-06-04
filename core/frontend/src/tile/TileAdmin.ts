@@ -130,6 +130,8 @@ export class TileAdmin {
   /** @internal */
   public readonly disableMagnification: boolean;
   /** @internal */
+  public readonly percentGPUMemDisablePreload: number;
+  /** @internal */
   public readonly alwaysRequestEdges: boolean;
   /** @internal */
   public readonly alwaysSubdivideIncompleteTiles: boolean;
@@ -139,6 +141,8 @@ export class TileAdmin {
   public readonly maximumMajorTileFormatVersion: number;
   /** @internal */
   public readonly useProjectExtents: boolean;
+  /** @internal */
+  public readonly expandProjectExtents: boolean;
   /** @internal */
   public readonly optimizeBRepProcessing: boolean;
   /** @internal */
@@ -232,10 +236,12 @@ export class TileAdmin {
     this.ignoreAreaPatterns = options.ignoreAreaPatterns ?? defaultTileOptions.ignoreAreaPatterns;
     this.enableExternalTextures = options.enableExternalTextures ?? defaultTileOptions.enableExternalTextures;
     this.disableMagnification = options.disableMagnification ?? defaultTileOptions.disableMagnification;
+    this.percentGPUMemDisablePreload = Math.max(0, Math.min((options.percentGPUMemDisablePreload === undefined ? 80 : options.percentGPUMemDisablePreload), 80));
     this.alwaysRequestEdges = true === options.alwaysRequestEdges;
     this.alwaysSubdivideIncompleteTiles = options.alwaysSubdivideIncompleteTiles ?? defaultTileOptions.alwaysSubdivideIncompleteTiles;
     this.maximumMajorTileFormatVersion = options.maximumMajorTileFormatVersion ?? defaultTileOptions.maximumMajorTileFormatVersion;
     this.useProjectExtents = options.useProjectExtents ?? defaultTileOptions.useProjectExtents;
+    this.expandProjectExtents = options.expandProjectExtents ?? defaultTileOptions.expandProjectExtents;
     this.optimizeBRepProcessing = options.optimizeBRepProcessing ?? defaultTileOptions.optimizeBRepProcessing;
     this.useLargerTiles = options.useLargerTiles ?? defaultTileOptions.useLargerTiles;
     this.mobileRealityTileMinToleranceRatio = Math.max(options.mobileRealityTileMinToleranceRatio ?? 3.0, 1.0);
@@ -400,6 +406,16 @@ export class TileAdmin {
 
     this._gpuMemoryLimit = limit;
     this._maxTotalTileContentBytes = maxBytes;
+  }
+
+  /** Returns whether or not preloading for context (reality and map tiles) is currently allowed.
+   * It is not allowed on mobile devices or if [[TileAdmin.Props.percentGPUMemDisablePreload]] is 0.
+   * Otherwise it is always allowed if [[GpuMemoryLimit]] is "none".
+   * Otherwise it is only allowed if current GPU memory utilization is less than [[TileAdmin.Props.percentGPUMemDisablePreload]] of GpuMemoryLimit.
+   * @internal
+   */
+  public get isPreloadingAllowed(): boolean {
+    return !this._isMobile && this.percentGPUMemDisablePreload > 0 && (this._maxTotalTileContentBytes === undefined || this._lruList.totalBytesUsed / this._maxTotalTileContentBytes * 100 < this.percentGPUMemDisablePreload);
   }
 
   /** Invoked from the [[ToolAdmin]] event loop to process any pending or active requests for tiles.
@@ -1084,6 +1100,9 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      */
     useProjectExtents?: boolean;
 
+    /** @internal See TreeFlags.ExpandProjectExtents. Default: true. */
+    expandProjectExtents?: boolean;
+
     /** When producing facets from BRep entities, use an optimized pipeline to improve performance.
      * Default value: true
      * @internal
@@ -1169,6 +1188,19 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * @alpha
      */
     disableMagnification?: boolean;
+
+    /** The Percentage of GPU memory utilization at which to disable preloading for context (reality and map tiles).
+     * While GPU memory usage is at or above this percentage of the limit, preloading will be disabled.
+     * A setting of 0 will disable preloading altogether.
+     * If GpuMemoryLimit is "none", then a setting of anything above 0 is ignored.
+     * Mobile devices do not allow preloading and will ignore this setting.
+     *
+     * Default value: 80
+     * Minimum value 0.
+     * Maximum value 80.
+     * @alpha
+     */
+    percentGPUMemDisablePreload?: number;
 
     /** Preloading parents for context (reality and map tiles) will improve the user experience by making it more likely that tiles in nearly the required resolution will be
      * already loaded as the view is manipulated.  This value controls the depth above the the selected tile depth that will be preloaded. The default

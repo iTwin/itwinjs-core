@@ -51,4 +51,6 @@ export abstract class MutableSchema extends Schema {
   public abstract override setVersion(readVersion?: number, writeVersion?: number, minorVersion?: number): void;
   public abstract override deleteClass(name: string): Promise<void>;
   public abstract override deleteClassSync(name: string): void;
+  public abstract override setDisplayLabel(displayLabel: string): void;
+  public abstract override setDescription(displayLabel: string): void;
 }

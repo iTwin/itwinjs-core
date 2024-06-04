@@ -25,6 +25,9 @@ The ECSQL examples in the tutorial work with the "House Sample" iModel. You can 
 
 The schemas for iModels are based on [BIS](../../bis/index.md). Therefore, the examples throughout the tutorial use the BIS schemas. While not required to learn ECSQL, familiarity with BIS is a good idea to get more from this tutorial.
 
+For a video overview of BIS:
+> [Understanding iModel Data: An Introduction to BIS (Base Infrastructure Schemas)](https://www.youtube.com/watch?v=PqMkgBysQgg&list=PL6YCKeNfXXd9GjLi9ICRb0pACkR0OHTEH&index=6)
+
 ## Scope
 
 The data in iModels can only be modified via the respective APIs. ECSQL is used to query the data from iModels. Therefore the tutorial only covers the query portion of ECSQL, i.e. **ECSQL SELECT** statements.
@@ -43,25 +46,11 @@ If you want to follow along with your own iModel:
 2. Authenticate with your iTwin credentials.
 3. Open your iModel by clicking on the iModels in the table
 
-### Step 2 - Open the sample iModel
-
-For this ECSQL tutorial, the embedded console will attach to the sample iModel we provide.
-
-### Step 3 - Run an ECSQL in the iModelConsole
+### Step 2 - Run an ECSQL in the iModelConsole
 
 Once you have opened your iModel, just type in the ECSQL and hit _Enter_ to execute it.
 
 Or simply use the provided sample below:
-
-> **Try it yourself**
->
-> _ECSQL_
->
-> ```sql
-> SELECT * FROM bis.Element
-> ```
-
-<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT * FROM bis.Element"></iframe>
 
 ## Tutorial Overview
 
@@ -74,10 +63,17 @@ Or simply use the provided sample below:
 - [Lesson 7: Meta Queries - Querying ECSchemas](./MetaQueries.md)
 - [Lesson 8: Querying Change Summaries](./ChangeSummaryQueries.md)
 - [Lesson 9: Class Filter](./ClassFilter.md)
-- [Lesson 10: Conditional Expressions](./ConditionalExpr.md)
-- [Lesson 11: Built-In functions](./BuiltInFunctions.md)
-- [Lesson 12: Instance Props](./InstanceProps.md)
+
+## Further Learning and Resources
+
+- [ECSql Overview](../ECSQL.md)
+- [ECSql Reference Documentation](../ECSqlReference/index.md)
+- YouTube videos about ECSql
+  - [How to Query Digital Twin Data [Part 1]](https://www.youtube.com/watch?v=vmQIi6RRyv8&list=PL6YCKeNfXXd9VFzTF-NSeN_l5vB7OTWR6&index=2)
+  - [How to Query Digital Twin Data [Part 2]](https://www.youtube.com/watch?v=aftgWdPlx1s&list=PL6YCKeNfXXd9VFzTF-NSeN_l5vB7OTWR6&index=2)
+- [iModel Console](https://imodelconsole.bentley.com)
+- [iModel Schema Explorer](https://imodelschemaeditor.bentley.com)
 
 ---
 
-[**Next >**](./KeyToECSQL.md)
+[Next >](./KeyToECSQL.md)
