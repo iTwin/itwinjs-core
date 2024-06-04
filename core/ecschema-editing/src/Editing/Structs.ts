@@ -21,20 +21,16 @@ export class Structs extends ECClasses {
   }
 
   public async create(schemaKey: SchemaKey, name: string, displayLabel?: string, baseClassKey?: SchemaItemKey): Promise<SchemaItemKey> {
-    let newClass: MutableStructClass;
-
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createStructClass.bind(schema);
-      newClass = (await this.createClass<StructClass>(schemaKey, this.schemaItemType, boundCreate, name, baseClassKey)) as MutableStructClass;
+      const newClass = await this.createClass<StructClass>(schemaKey, this.schemaItemType, (schema) => schema.createStructClass.bind(schema), name, baseClassKey) as MutableStructClass;
+
+      if (displayLabel)
+        newClass.setDisplayLabel(displayLabel);
+
+      return newClass.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new ClassId(this.schemaItemType, name, schemaKey), e);
     }
-
-    if (displayLabel)
-      newClass.setDisplayLabel(displayLabel);
-
-    return newClass.key;
   }
 
   /**
@@ -43,15 +39,11 @@ export class Structs extends ECClasses {
    * @param structProps a json object that will be used to populate the new StructClass. Needs a name value passed in.
    */
   public async createFromProps(schemaKey: SchemaKey, structProps: StructClassProps): Promise<SchemaItemKey> {
-    let newClass: MutableStructClass;
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createStructClass.bind(schema);
-      newClass = (await this.createSchemaItemFromProps<StructClass>(schemaKey, this.schemaItemType, boundCreate, structProps)) as MutableStructClass;
+      const newClass = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createStructClass.bind(schema), structProps);
+      return newClass.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, structProps.name!, schemaKey), e);
     }
-
-    return newClass.key;
   }
 }

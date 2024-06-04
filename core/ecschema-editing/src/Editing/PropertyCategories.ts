@@ -22,34 +22,25 @@ export class PropertyCategories extends SchemaItems {
   }
 
   public async create(schemaKey: SchemaKey, name: string, priority: number, displayLabel?: string): Promise<SchemaItemKey> {
-    let newPropCategory: MutablePropertyCategory;
-
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createPropertyCategory.bind(schema);
-      newPropCategory = (await this.createSchemaItem<PropertyCategory>(schemaKey, this.schemaItemType, boundCreate, name)) as MutablePropertyCategory;
+      const newPropCategory = await this.createSchemaItem<PropertyCategory>(schemaKey, this.schemaItemType, (schema) => schema.createPropertyCategory.bind(schema), name) as MutablePropertyCategory;
       newPropCategory.setPriority(priority);
       if (displayLabel)
         newPropCategory.setDisplayLabel(displayLabel);
 
+      return newPropCategory.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
     }
-
-    return newPropCategory.key;
   }
 
   public async createFromProps(schemaKey: SchemaKey, propertyCategoryProps: PropertyCategoryProps): Promise<SchemaItemKey> {
-    let newPropCategory: MutablePropertyCategory;
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createPropertyCategory.bind(schema);
-      newPropCategory = await this.createSchemaItemFromProps<PropertyCategory>(schemaKey, this.schemaItemType, boundCreate, propertyCategoryProps) as MutablePropertyCategory;
+      const newPropCategory = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createPropertyCategory.bind(schema), propertyCategoryProps);
+      return newPropCategory.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, propertyCategoryProps.name!, schemaKey), e);
     }
-
-    return newPropCategory.key;
   }
 
   public async setPriority(propCategoryKey: SchemaItemKey, priority: number): Promise<void> {

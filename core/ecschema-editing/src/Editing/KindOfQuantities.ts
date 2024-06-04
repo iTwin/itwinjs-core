@@ -26,14 +26,9 @@ export class KindOfQuantities extends SchemaItems {
   }
 
   public async create(schemaKey: SchemaKey, name: string, persistenceUnitKey: SchemaItemKey, displayLabel?: string): Promise<SchemaItemKey> {
-    let koqItem: MutableKindOfQuantity;
-
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createKindOfQuantity.bind(schema);
-      koqItem = (await this.createSchemaItem<KindOfQuantity>(schemaKey, this.schemaItemType, boundCreate, name)) as MutableKindOfQuantity;
-
-      const persistenceUnit = await this.lookupSchemaItem<Unit | InvertedUnit>(schema, persistenceUnitKey, null);
+      const koqItem = await this.createSchemaItem<KindOfQuantity>(schemaKey, this.schemaItemType, (schema) => schema.createKindOfQuantity.bind(schema), name) as MutableKindOfQuantity;
+      const persistenceUnit = await this.lookupSchemaItem<Unit | InvertedUnit>(koqItem.schema.schemaKey, persistenceUnitKey, null);
 
       if (persistenceUnit.schemaItemType === SchemaItemType.Unit) {
         koqItem.persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
@@ -46,24 +41,20 @@ export class KindOfQuantities extends SchemaItems {
       if (displayLabel !== undefined) {
         koqItem.setDisplayLabel(displayLabel);
       }
+
+      return koqItem.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
     }
-
-    return koqItem.key;
   }
 
   public async createFromProps(schemaKey: SchemaKey, koqProps: KindOfQuantityProps): Promise<SchemaItemKey> {
-    let koqItem: MutableKindOfQuantity;
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createKindOfQuantity.bind(schema);
-      koqItem = await this.createSchemaItemFromProps<KindOfQuantity>(schemaKey, this.schemaItemType, boundCreate, koqProps) as MutableKindOfQuantity;
+      const koqItem = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createKindOfQuantity.bind(schema), koqProps);
+      return koqItem.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, koqProps.name!, schemaKey), e);
     }
-
-    return koqItem.key;
   }
 
   /**

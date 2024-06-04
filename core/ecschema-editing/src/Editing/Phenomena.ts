@@ -22,34 +22,26 @@ export class Phenomena extends SchemaItems {
   }
 
   public async create(schemaKey: SchemaKey, name: string, definition: string, displayLabel?: string): Promise<SchemaItemKey> {
-    let newPhenomenon: MutablePhenomenon;
-
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createPhenomenon.bind(schema);
-      newPhenomenon = (await this.createSchemaItem<Phenomenon>(schemaKey, this.schemaItemType, boundCreate, name)) as MutablePhenomenon;
+      const newPhenomenon = await this.createSchemaItem<Phenomenon>(schemaKey, this.schemaItemType, (schema) => schema.createPhenomenon.bind(schema), name) as MutablePhenomenon;
 
       if (displayLabel)
         newPhenomenon.setDisplayLabel(displayLabel);
 
       await newPhenomenon.setDefinition(definition);
+
+      return newPhenomenon.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
     }
-
-    return newPhenomenon.key;
   }
 
   public async createFromProps(schemaKey: SchemaKey, phenomenonProps: PhenomenonProps): Promise<SchemaItemKey> {
-    let newPhenomenon: MutablePhenomenon;
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createPhenomenon.bind(schema);
-      newPhenomenon = await this.createSchemaItemFromProps<Phenomenon>(schemaKey, this.schemaItemType, boundCreate, phenomenonProps) as MutablePhenomenon;
+      const newPhenomenon = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createPhenomenon.bind(schema), phenomenonProps);
+      return newPhenomenon.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, phenomenonProps.name!, schemaKey), e);
     }
-
-    return newPhenomenon.key;
   }
 }

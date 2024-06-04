@@ -23,12 +23,8 @@ export class Formats extends SchemaItems {
   }
 
   public async create(schemaKey: SchemaKey, name: string, formatType: FormatType, displayLabel?: string, units?: SchemaItemKey[]): Promise<SchemaItemKey> {
-    let newFormat: MutableFormat;
-
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createFormat.bind(schema);
-      newFormat = (await this.createSchemaItem<Format>(schemaKey, this.schemaItemType, boundCreate, name)) as MutableFormat;
+      const newFormat = await this.createSchemaItem<Format>(schemaKey, this.schemaItemType, (schema) => schema.createFormat.bind(schema), name) as MutableFormat;
 
       if (units !== undefined) {
         for (const unit of units) {
@@ -40,16 +36,16 @@ export class Formats extends SchemaItems {
           newFormat.addUnit(unitItem);
         }
       }
+
+      if (displayLabel)
+        newFormat.setDisplayLabel(displayLabel);
+
+      // TODO: Handle the setting of format traits, separators, etc....
+      newFormat.setFormatType(formatType);
+      return newFormat.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
     }
-
-    if (displayLabel)
-      newFormat.setDisplayLabel(displayLabel);
-
-    // TODO: Handle the setting of format traits, separators, etc....
-    newFormat.setFormatType(formatType);
-    return newFormat.key;
   }
 
   /**
@@ -58,15 +54,11 @@ export class Formats extends SchemaItems {
    * @param relationshipProps a json object that will be used to populate the new RelationshipClass. Needs a name value passed in.
    */
   public async createFromProps(schemaKey: SchemaKey, formatProps: SchemaItemFormatProps): Promise<SchemaItemKey> {
-    let newFormat: MutableFormat;
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createFormat.bind(schema);
-      newFormat = await this.createSchemaItemFromProps<Format>(schemaKey, this.schemaItemType, boundCreate, formatProps) as MutableFormat;
+      const newFormat = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createFormat.bind(schema), formatProps);
+      return newFormat.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, formatProps.name!, schemaKey), e);
     }
-
-    return newFormat.key;
   }
 }

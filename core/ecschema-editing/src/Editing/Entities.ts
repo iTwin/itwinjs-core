@@ -28,7 +28,7 @@ export class Entities extends ECClasses {
   /**
    * Allows access for editing of NavigationProperty attributes.
    */
-  public readonly navigationProperties = new NavigationProperties(SchemaItemType.EntityClass, this._schemaEditor);
+  public readonly navigationProperties = new NavigationProperties(SchemaItemType.EntityClass, this.schemaEditor);
 
   public async createElement(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, baseClassKey: SchemaItemKey, displayLabel?: string, mixins?: Mixin[]): Promise<SchemaItemKey> {
     try {
@@ -70,23 +70,19 @@ export class Entities extends ECClasses {
   }
 
   public async create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, displayLabel?: string, baseClassKey?: SchemaItemKey, mixins?: Mixin[]): Promise<SchemaItemKey> {
-    let newClass: MutableEntityClass;
-
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createEntityClass.bind(schema);
-      newClass = (await this.createClass<EntityClass>(schemaKey, this.schemaItemType, boundCreate, name, baseClassKey, modifier)) as MutableEntityClass;
+      const newClass = await this.createClass<EntityClass>(schemaKey, this.schemaItemType, (schema) => schema.createEntityClass.bind(schema), name, baseClassKey, modifier) as MutableEntityClass;
+
+      if (mixins !== undefined)
+        mixins.forEach((m) => newClass.addMixin(m));
+
+      if (displayLabel)
+        newClass.setDisplayLabel(displayLabel);
+
+      return newClass.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new ClassId(this.schemaItemType, name, schemaKey), e);
     }
-
-    if (mixins !== undefined)
-      mixins.forEach((m) => newClass.addMixin(m));
-
-    if (displayLabel)
-      newClass.setDisplayLabel(displayLabel);
-
-    return newClass.key;
   }
 
   /**
@@ -95,16 +91,12 @@ export class Entities extends ECClasses {
    * @param entityProps a json object that will be used to populate the new EntityClass. Needs a name value passed in.
    */
   public async createFromProps(schemaKey: SchemaKey, entityProps: EntityClassProps): Promise<SchemaItemKey> {
-    let newClass: MutableEntityClass;
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createEntityClass.bind(schema);
-      newClass = (await this.createSchemaItemFromProps<EntityClass>(schemaKey, this.schemaItemType, boundCreate, entityProps)) as MutableEntityClass;
+      const newClass = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createEntityClass.bind(schema), entityProps);
+      return newClass.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, entityProps.name!, schemaKey), e);
     }
-
-    return newClass.key;
   }
 
   public async addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<void> {

@@ -22,33 +22,25 @@ export class UnitSystems extends SchemaItems {
   }
 
   public async create(schemaKey: SchemaKey, name: string, displayLabel?: string): Promise<SchemaItemKey> {
-    let newUnitSystem: MutableUnitSystem;
 
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createUnitSystem.bind(schema);
-      newUnitSystem = (await this.createSchemaItem<UnitSystem>(schemaKey, this.schemaItemType, boundCreate, name)) as MutableUnitSystem;
+      const newUnitSystem = await this.createSchemaItem<UnitSystem>(schemaKey, this.schemaItemType, (schema) => schema.createUnitSystem.bind(schema), name) as MutableUnitSystem;
 
       if (displayLabel)
         newUnitSystem.setDisplayLabel(displayLabel);
 
+      return newUnitSystem.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
     }
-
-    return newUnitSystem.key;
   }
 
   public async createFromProps(schemaKey: SchemaKey, unitSystemProps: UnitSystemProps): Promise<SchemaItemKey> {
-    let newUnitSystem: MutableUnitSystem;
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createUnitSystem.bind(schema);
-      newUnitSystem = await this.createSchemaItemFromProps<UnitSystem>(schemaKey, this.schemaItemType, boundCreate, unitSystemProps) as MutableUnitSystem;
+      const newUnitSystem = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createUnitSystem.bind(schema), unitSystemProps);
+      return newUnitSystem.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, unitSystemProps.name!, schemaKey), e);
     }
-
-    return newUnitSystem.key;
   }
 }

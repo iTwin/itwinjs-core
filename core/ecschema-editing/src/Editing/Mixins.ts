@@ -29,26 +29,21 @@ export class Mixins extends ECClasses {
   /**
    * Allows access for editing of NavigationProperty attributes.
    */
-  public readonly navigationProperties = new NavigationProperties(SchemaItemType.Mixin, this._schemaEditor);
+  public readonly navigationProperties = new NavigationProperties(SchemaItemType.Mixin, this.schemaEditor);
 
   public async create(schemaKey: SchemaKey, name: string, appliesTo: SchemaItemKey, displayLabel?: string, baseClassKey?: SchemaItemKey): Promise<SchemaItemKey> {
-    let newClass: MutableMixin;
-
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createMixinClass.bind(schema);
-      newClass = (await this.createClass<Mixin>(schemaKey, this.schemaItemType, boundCreate, name, baseClassKey)) as MutableMixin;
+      const newClass = await this.createClass<Mixin>(schemaKey, this.schemaItemType, (schema) => schema.createMixinClass.bind(schema), name, baseClassKey) as MutableMixin;
       const newAppliesTo = await this.getSchemaItem<EntityClass>(appliesTo, SchemaItemType.EntityClass);
       newClass.setAppliesTo(new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(newAppliesTo.key, async () => newAppliesTo));
 
+      if (displayLabel)
+        newClass.setDisplayLabel(displayLabel);
+
+      return newClass.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new ClassId(this.schemaItemType, name, schemaKey), e);
     }
-
-    if (displayLabel)
-      newClass.setDisplayLabel(displayLabel);
-
-    return newClass.key;
   }
 
   /**
@@ -57,16 +52,12 @@ export class Mixins extends ECClasses {
    * @param mixinProps a json object that will be used to populate the new MixinClass. Needs a name value passed in.
    */
   public async createFromProps(schemaKey: SchemaKey, mixinProps: MixinProps): Promise<SchemaItemKey> {
-    let newClass: MutableMixin;
     try {
-      const schema = await this.getSchema(schemaKey);
-      const boundCreate = schema.createMixinClass.bind(schema);
-      newClass = (await this.createSchemaItemFromProps<Mixin>(schemaKey, this.schemaItemType, boundCreate, mixinProps)) as MutableMixin;
+      const newClass = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createMixinClass.bind(schema), mixinProps);
+      return newClass.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, mixinProps.name!, schemaKey), e);
     }
-
-    return newClass.key;
   }
 
   public async addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<void> {
