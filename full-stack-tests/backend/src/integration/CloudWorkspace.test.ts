@@ -8,12 +8,8 @@ import { expect } from "chai";
 import * as fs from "fs-extra";
 import { join } from "path";
 import {
-    CreateNewWorkspaceDbVersionProps,
-  EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, IModelJsFs, SettingsContainer, SettingsPriority, StandaloneDb, Workspace, WorkspaceContainerProps, 
-  WorkspaceDbCloudProps, 
-  WorkspaceDbLoadError, 
-  WorkspaceDbLoadErrors, 
-  WorkspaceDbQueryResourcesArgs, WorkspaceEditor, getWorkspaceBlob, getWorkspaceString, queryWorkspaceResources,
+  CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, IModelJsFs, SettingsContainer, SettingsPriority, StandaloneDb, Workspace, WorkspaceContainerProps, 
+  WorkspaceDbCloudProps,  WorkspaceDbLoadError,  WorkspaceDbLoadErrors,  WorkspaceDbQueryResourcesArgs, WorkspaceEditor, WorkspaceSettingNames, getWorkspaceBlob, getWorkspaceString, queryWorkspaceResources,
 } from "@itwin/core-backend";
 import { assert, Guid } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
@@ -83,7 +79,7 @@ describe("Cloud workspace containers", () => {
 
   it("edit cloud workspace", async () => {
     let user: string;
-    const makeVersion = async (args: CreateNewWorkspaceDbVersionProps) => {
+    const makeVersion = async (args: CreateNewWorkspaceDbVersionArgs) => {
       expect(orgContainer.cloudContainer).not.undefined;
       orgContainer.acquireWriteLock(user);
       const copied = await orgContainer.createNewWorkspaceDbVersion(args);
@@ -172,7 +168,7 @@ describe("Cloud workspace containers", () => {
     };
 
     const imodelSettings: SettingsContainer = {};
-    imodelSettings[Workspace.settingName.settingsWorkspaces] = [settingsWorkspaces];
+    imodelSettings[WorkspaceSettingNames.settingsWorkspaces] = [settingsWorkspaces];
     imodelSettings["app1/max1"] = 100;
     imodel.saveSettingDictionary("Dict2", imodelSettings);
     imodel.close();
@@ -205,7 +201,7 @@ describe("Cloud workspace containers", () => {
       branchSettings["app1/max2"] = 20;
       branchSettings["app1/styles/lineStyleDbs"] = [style1Props, style3Props]; // style3 purposely causes a load error
       branchSettings["app1/styles/textStyleDbs"] = [style2Props];
-      branchSettings[Workspace.settingName.settingsWorkspaces] = [{ ...itwin2ContainerProps, priority: SettingsPriority.iTwin }];
+      branchSettings[WorkspaceSettingNames.settingsWorkspaces] = [{ ...itwin2ContainerProps, priority: SettingsPriority.iTwin }];
 
       editDb.updateSettingsResource(branchSettings);
     });
