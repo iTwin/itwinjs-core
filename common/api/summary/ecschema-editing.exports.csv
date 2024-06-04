@@ -77,7 +77,6 @@ alpha;PresentationUnitChanges
 alpha;PropertyCategoryDifference 
 alpha;PropertyChanges 
 beta;class PropertyDiagnostic
-alpha;PropertyEditResults
 alpha;PropertyMissing 
 alpha;PropertyValueChange 
 alpha;RelationshipClassChanges 
@@ -100,11 +99,9 @@ internal;fromSchemaChanges(targetSchema: Schema, schemaChanges: SchemaChanges): 
 alpha;SchemaDifference
 alpha;SchemaDifferenceConflict
 alpha;SchemaDifferences
-alpha;SchemaEditResults
 alpha;class SchemaItemChange 
 alpha;SchemaItemChanges 
 beta;class SchemaItemDiagnostic
-alpha;SchemaItemEditResults
 alpha;SchemaItemMissing 
 beta;SchemaMerger
 alpha;SchemaOtherTypes

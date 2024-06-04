@@ -14,10 +14,10 @@ import { SchemaMergeContext } from "./SchemaMerger";
 export const kindOfQuantityMerger: SchemaItemMergerHandler<KindOfQuantityDifference> = {
   async add(context, change) {
     if (change.difference.persistenceUnit === undefined) {
-      return { errorMessage: "KindOfQuantity must define persistenceUnit" };
+      throw new Error("KindOfQuantity must define persistenceUnit");
     }
     if (change.difference.relativeError === undefined) {
-      return { errorMessage: "KindOfQuantity must define relativeError" };
+      throw new Error("KindOfQuantity must define relativeError");
     }
     change.difference.persistenceUnit = await updateSchemaItemFullName(context, change.difference.persistenceUnit);
     if(change.difference.presentationUnits) {
@@ -53,7 +53,6 @@ export const kindOfQuantityMerger: SchemaItemMergerHandler<KindOfQuantityDiffere
       // TODO: It should be checked if the unit is the same, but referring to the source schema.
       throw new Error(`Changing the kind of quantity '${itemKey.name}' persistenceUnit is not supported.`);
     }
-    return { itemKey };
   },
 };
 
