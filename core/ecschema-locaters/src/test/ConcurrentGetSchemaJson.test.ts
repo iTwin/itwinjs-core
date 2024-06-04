@@ -216,7 +216,7 @@ describe("Concurrent schema JSON deserialization", () => {
         label: "BIS Core",
         name: "BisCore",
         version: "01.00.15",
-        references:[{name:"CoreCustomAttributes", version:"01.00.04"}],
+        references:[{name:"CoreCustomAttributes", version:"01.00.04"},{name:"ECDbMap", version:"02.00.00"},{name:"ECDbSchemaPolicies", version:"01.00.00"}],
       };
     }
     if (schemaName === "CoreCustomAttributes") {
@@ -227,6 +227,26 @@ describe("Concurrent schema JSON deserialization", () => {
         label: "Core Custom Attributes",
         name: "CoreCustomAttributes",
         version: "01.00.04",
+      };
+    }
+    if (schemaName === "ECDbMap") {
+      return {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        alias: "ECDbMap",
+        description: "ECDbMap Desc",
+        label: "ECDbMap",
+        name: "ECDbMap",
+        version: "02.00.00",
+      };
+    }
+    if (schemaName === "ECDbSchemaPolicies") {
+      return {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        alias: "ECDbSchemaPolicies",
+        description: "ECDbSchemaPolicies Desc",
+        label: "ECDbSchemaPolicies",
+        name: "ECDbSchemaPolicies",
+        version: "01.00.00",
       };
     }
 

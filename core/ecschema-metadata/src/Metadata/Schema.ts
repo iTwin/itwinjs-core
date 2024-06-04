@@ -602,30 +602,7 @@ export class Schema implements CustomAttributeContainerProps {
    * Loads the schema header (name, version alias, label and description) from the input SchemaProps
    */
   public async fromJSON(schemaProps: SchemaProps) {
-    if (undefined === this._schemaKey) {
-      const schemaName = schemaProps.name;
-      const version = ECVersion.fromString(schemaProps.version);
-      this._schemaKey = new SchemaKey(schemaName, version);
-    } else {
-      if (schemaProps.name.toLowerCase() !== this.name.toLowerCase())
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} does not match the provided name, '${schemaProps.name}'.`);
-      if (this.schemaKey.version.compare(ECVersion.fromString(schemaProps.version)))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} has the version '${this.schemaKey.version}' that does not match the provided version '${schemaProps.version}'.`);
-    }
-
-    if (SCHEMAURL3_2_JSON !== schemaProps.$schema && SCHEMAURL3_2_XML !== schemaProps.$schema) // TODO: Allow for 3.x URI versions to allow the API to read newer specs. (Start at 3.2 though)
-      throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, `The Schema ${this.name} has an unsupported namespace '${schemaProps.$schema}'.`);
-
-    if (ECName.validate(schemaProps.alias))
-      this._alias = schemaProps.alias;
-    else
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${schemaProps.name} does not have the required 'alias' attribute.`);
-
-    if (undefined !== schemaProps.label)
-      this._label = schemaProps.label;
-
-    if (undefined !== schemaProps.description)
-      this._description = schemaProps.description;
+    this.fromJSONSync(schemaProps);
   }
 
   /**

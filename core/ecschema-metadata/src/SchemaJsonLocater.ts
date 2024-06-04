@@ -27,17 +27,13 @@ export class SchemaJsonLocater implements ISchemaLocater {
 
   /** Get a schema by [SchemaKey]
    * @param schemaKey The [SchemaKey] that identifies the schema.
-   * @param _matchType The [SchemaMatchType] to used for comparing schema versions.
+   * @param matchType The [SchemaMatchType] to used for comparing schema versions.
    * @param context The [SchemaContext] used to facilitate schema location.
    * @throws [ECObjectsError]($ecschema-metadata) if the schema exists, but cannot be loaded.
    */
-  public async getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, _matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
-    const schemaProps = this._getSchema(schemaKey.name);
-    if (!schemaProps)
-      return undefined;
-
-    context = context ? context : new SchemaContext();
-    return await Schema.fromJson(schemaProps, context) as T;
+  public async getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
+    await this.getSchemaInfo(schemaKey, matchType, context);
+    return await context.getCachedSchema(schemaKey, matchType) as T;
   }
 
   /**
@@ -46,7 +42,15 @@ export class SchemaJsonLocater implements ISchemaLocater {
    * @param matchType The match type to use when locating the schema
    */
   public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
-    return this.getSchema(schemaKey, matchType, context);
+    const schemaProps = this._getSchema(schemaKey.name);
+    if (!schemaProps)
+      return undefined;
+
+    const schemaInfo = await Schema.startLoadingFromJson(schemaProps, context || new SchemaContext());
+    if (schemaInfo !== undefined && schemaInfo.schemaKey.matches(schemaKey, matchType)) {
+      return schemaInfo;
+    }
+    return undefined;
   }
 
   /** Get a schema by [SchemaKey] synchronously.
