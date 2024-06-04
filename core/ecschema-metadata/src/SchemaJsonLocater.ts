@@ -47,9 +47,9 @@ export class SchemaJsonLocater implements ISchemaLocater {
       return undefined;
 
     const schemaInfo = await Schema.startLoadingFromJson(schemaProps, context || new SchemaContext());
-    if (schemaInfo !== undefined && schemaInfo.schemaKey.matches(schemaKey, matchType)) {
+    if (schemaInfo !== undefined && schemaInfo.schemaKey.matches(schemaKey, matchType))
       return schemaInfo;
-    }
+
     return undefined;
   }
 
