@@ -59,4 +59,12 @@ The set of currently-registered schemas can be accessed via [IModelHost.settings
 
 Your application should register its schemas shortly after invoking [IModelHost.startup]($backend). Registering a schema adds its typeDefs and settingDefs to [SettingsSchemas.typeDefs]($backend) and [SettingsSchemas.schemaDefs]($backend), respectively. It also raises the [SettingsSchemas.onSchemaChanged]($backend) event. All schemas are unregistered when [IModelHost.shutdown]($backend) is invoked.
 
+# Settings dictionaries
 
+The values of [Setting]($backend)s are provided by [SettingsDictionary]($backend)s. The [Settings]($backend) for the current session can be accessed via the `settings` property of [IModelHost.appWorkspace]($backend). You can add new dictionaries to provide settings values at any time during the session, although most dictionaries will be loaded shortly after [IModelHost.startup]($backend).
+
+Let's load a settings dictionary that provides values for some of the settings in the LandscapePro™ schema:
+
+```ts
+[[include:WorkspaceExamples.AddDictionary]]
+```

@@ -7,6 +7,7 @@ import { expect } from "chai";
 import { IModelHost, SettingsContainer, StandaloneDb, SettingsPriority } from "@itwin/core-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { SettingGroupSchema } from "@itwin/core-backend";
+import { SettingsDictionaryProps } from "@itwin/core-backend";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Workspace Examples", () => {
@@ -105,7 +106,7 @@ describe("Workspace Examples", () => {
           "flora/treeDbs": {
             type: "array",
             extends: "itwin/core/workspace/workspaceDbList",
-            combineArray: true,
+            combineArray: false,
           },
           "ui/defaultTool": {
             type: "string",
@@ -117,7 +118,7 @@ describe("Workspace Examples", () => {
             items: {
               type: "string",
             },
-            combineArray: false,
+            combineArray: true,
           },
           hardinessRange: {
             type: "object",
@@ -152,12 +153,33 @@ describe("Workspace Examples", () => {
       // __PUBLISH_SECTION_END__
       
       expect(IModelHost.settingsSchemas.typeDefs.has("landscapePro/hardinessZone")).to.be.true;
-      for (const settingName of Object.keys(schema.settingDefs)) {
+      for (const settingName of Object.keys(schema.settingDefs!)) {
         expect(IModelHost.settingsSchemas.settingDefs.has(`landscapePro/${settingName}`)).to.be.true;
       }
 
       expect(() => IModelHost.settingsSchemas.validateSetting("just a string", "landscapePro/flora/shrubDbs")).not.to.throw;
       expect(() => IModelHost.settingsSchemas.validateSetting(123, "landscapePro/flora/shrubDbs")).to.throw("wrong type");
+
+      // __PUBLISH_SECTION_START__ WorkspaceExamples.AddDictionary
+      const values: SettingsContainer = {
+        "landscapePro/ui/defaultToolId": "place-shrub",
+        "landscapePro/ui/availableTools": [ "place-shrub", "place-koi-pond", "apply-mulch" ],
+      };
+
+      const props: SettingsDictionaryProps = {
+        // A unique name for this dictionary.
+        name: "LandscapeProDefaults",
+        // This dictionary's priority relative to other dictionaries.
+        priority: SettingsPriority.defaults,
+      };
+
+      IModelHost.appWorkspace.settings.addDictionary(props, values);
+      // __PUBLISH_SECTION_END
+
+      expect(IModelHost.appWorkspace.settings.getString("landscapePro/ui/defaultToolId")).to.equal("place-shrub");
+      expect(IModelHost.appWorkspace.settings.getArray<string>("landscapePro/ui/availableTools")).to.deep.equal(["place-shrub", "place-koi-pond", "apply-mulch"]);
+      expect(IModelHost.appWorkspace.settings.getString("landscapePro/flora/shrubDbs")).to.be.undefined;
+      expect(IModelHost.appWorkspace.settings.getString("landscapePro/flora/shrubDbs", "defaultShrubs")).to.equal("defaultShrubs");
     });
   });
 });
