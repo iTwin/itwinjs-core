@@ -257,52 +257,57 @@ export class TestRunner {
     };
     // Perform all the tests for this iModel. If the iModel name contains an asterisk,
     // treat it as a wildcard and run tests for each iModel that matches the given wildcard.
-    for (const testProps of set.tests) {
-      this._config.push(testProps);
+    // for (const testProps of set.tests) {
+    //   this._config.push(set);
 
-      // Ensure IModelApp is initialized with options required by this test.
-      if (IModelApp.initialized && this.curConfig.requiresRestart(this.lastRestartConfig)) {
-        await IModelApp.shutdown();
-      }
-      if (!IModelApp.initialized) {
-        const renderOptions: RenderSystem.Options = this.curConfig.renderOptions ?? {};
-        if (!this.curConfig.useDisjointTimer) {
-          const ext = this.curConfig.renderOptions?.disabledExtensions;
-          renderOptions.disabledExtensions = Array.isArray(ext) ? ext.concat(["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"]) : ["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"];
-        }
-        await DisplayPerfTestApp.startup({
-          renderSys: renderOptions,
-          tileAdmin: this.curConfig.tileProps,
-          realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
-        });
-        this.lastRestartConfig = this.curConfig;
-      }
-
-      // Run test against all iModels matching the test config.
-      const iModelNames = await this.getIModelNames();
-      const originalViewName = this.curConfig.viewName;
-      for (const iModelName of iModelNames) {
-        this.curConfig.iModelName = iModelName;
-        this.curConfig.viewName = originalViewName;
-
-        let context: TestContext;
-        try {
-          context = await this.openIModel();
-        } catch (e: any) {
-          await this.logError(`Failed to open iModel ${iModelName}: ${(e as Error).message}`);
-          continue;
-        }
-
-        try {
-          await this.runTests(context);
-        } catch {
-          await this.logError(`Failed to run tests on iModel ${iModelName}`);
-        } finally {
-          await context.iModel.close();
-        }
-      }
-      this._config.pop();
+    // Ensure IModelApp is initialized with options required by this test.
+    if (IModelApp.initialized && this.curConfig.requiresRestart(this.lastRestartConfig)) {
+      await IModelApp.shutdown();
     }
+    if (!IModelApp.initialized) {
+      const renderOptions: RenderSystem.Options = this.curConfig.renderOptions ?? {};
+      if (!this.curConfig.useDisjointTimer) {
+        const ext = this.curConfig.renderOptions?.disabledExtensions;
+        renderOptions.disabledExtensions = Array.isArray(ext) ? ext.concat(["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"]) : ["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"];
+      }
+      await DisplayPerfTestApp.startup({
+        renderSys: renderOptions,
+        tileAdmin: this.curConfig.tileProps,
+        realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
+      });
+      this.lastRestartConfig = this.curConfig;
+    }
+
+    // Run test against all iModels matching the test config.
+    const iModelNames = await this.getIModelNames();
+    const originalViewName = this.curConfig.viewName;
+    for (const iModelName of iModelNames) {
+      this.curConfig.iModelName = iModelName;
+      this.curConfig.viewName = originalViewName;
+
+      let context: TestContext;
+      try {
+        context = await this.openIModel();
+      } catch (e: any) {
+        await this.logError(`Failed to open iModel ${iModelName}: ${(e as Error).message}`);
+        continue;
+      }
+
+      try {
+
+        for (const testProps of set.tests) {
+          this._config.push(testProps);
+          await this.runTests(context);
+          this._config.pop();
+        }
+      } catch {
+        await this.logError(`Failed to run tests on iModel ${iModelName}`);
+      } finally {
+        await context.iModel.close();
+      }
+    }
+    //   this._config.pop();
+    // }
 
     this._config.pop();
   }
