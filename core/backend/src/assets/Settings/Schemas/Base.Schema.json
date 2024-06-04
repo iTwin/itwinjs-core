@@ -6,6 +6,8 @@
     "schemaPrefix",
     "description"
   ],
+  "schemaPrefix": "itwin/core/base",
+  "description": "meta-schema for all iTwin settings schemas",
   "properties": {
     "settingDefs": {
       "type": "object",
