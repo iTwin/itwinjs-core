@@ -145,7 +145,14 @@ describe("Workspace Examples", () => {
           }
         }
       };
-      // __PUBLISH_EXTRACT_END
+      // __PUBLISH_EXTRACT_END__
+
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.RegisterSchema
+      IModelHost.settingsSchemas.addGroup(schema);
+      // __PUBLISH_SECTION_END__
+      
+      expect(() => IModelHost.settingsSchemas.validateSetting("just a string", "landscapePro/flora/shrubDbs")).not.to.throw;
+      expect(() => IModelHost.settingsSchemas.validateSetting(123, "landscapePro/flora/shrubDbs")).to.throw("wrong type");
     });
   });
 });

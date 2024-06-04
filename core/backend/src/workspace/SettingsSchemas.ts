@@ -106,12 +106,12 @@ export interface SettingsSchemas {
   readonly [implementationProhibited]: unknown;
 
   /** The map of each individual registered [[SettingSchema]] defining a [[Setting]], accessed by its fully-qualified name (including its [[SettingGroupSchema.schemaPrefix]]). */
-  readonly settingDefs: ReadonlyMap<string, SettingSchema>;
+  readonly settingDefs: ReadonlyMap<SettingName, SettingSchema>;
 
   /** The map of each individual registered [[SettingSchema]] defining a type that can be extended by other [[SettingSchema]]s via [[SettingSchema.extends]],
    * accessed by its fully-qualified name (including its [[SettingGroupSchema.schemaPrefix]]).
    */
-  readonly typeDefs: ReadonlyMap<string, SettingSchema>;
+  readonly typeDefs: ReadonlyMap<SettingName, SettingSchema>;
 
   /** An event raised whenever schemas are added or removed. */
   readonly onSchemaChanged: BeEvent<() => void>;
@@ -124,7 +124,7 @@ export interface SettingsSchemas {
    * @returns `value` if `value` matches the schema corresponding to `settingName`, or if no such schema has been registered.
    * @throws Error if `value` is invalid according to the schema.
    */
-  validateSetting<T>(value: T, settingName: string): T;
+  validateSetting<T>(value: T, settingName: SettingName): T;
 
   /** Register one or more [[SettingGroupSchema]]s.
    * If a group with the same [[SettingGroupSchema.prefix]] was previously registered, it will be replaced.

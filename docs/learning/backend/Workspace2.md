@@ -25,7 +25,7 @@ A [SettingName]($backend) must be unique, [###TODO restrictions on names???]and 
 
 Each setting begins with the "landscapePro" schema prefix followed by a forward slash. Forward slashes are used to create logical groupings of settings, similar to how file paths group files into directories. In the above example, "ui" and "flora" are two separate groups containing two settings each, while "hardinessRange" is a top-level setting. An application user interface that permits the user to view or edit settings would probably present these groups as individual nodes in a tree view, or as tabs.
 
-# Settings Schemas
+# Settings schemas
 
 The metadata describing a group of related [Setting]($backend)s is defined in a [SettingGroupSchema]($backend). The schema is based on [JSON Schema](https://json-schema.org/), with the following additions:
 
@@ -40,4 +40,12 @@ We can define the LandscapePro™ schema programmatically as follows:
 ```ts
 [[include:WorkspaceExamples.SettingGroupSchema]]
 ```
+
+This schema defines 5 settingDefs and 1 typeDef. Note the "landscapePro" schema prefix, which is implicitly included in each settingDef and typeDef name in our schema - for example, the full name of our "hardinessRange" setting is "landscapePro/hardinessRange".
+
+The "hardinessZone" typeDef represents a [USDA hardiness zone](https://en.wikipedia.org/wiki/Hardiness_zone) as an integer between 0 and 13. The "hardinessRange" settingDef reuses that typeDef for both its "minimum" and "maximum" properties by declaring that each `extends` that type. Note that `extends` requires the schema prefix to be specified, even within the same schema that defines the typeDef.
+
+The "flora/treeDbs" settingDef `extends` the "workspaceDbList" typeDef from a different schema - the [workspace schema](https://github.com/iTwin/itwinjs-core/blob/master/core/backend/src/assets/Settings/Schemas/Workspace.Schema.json) delivered with the application, with the "itwin/core/workspace" schema prefix.
+
+## Registering schemas
 
