@@ -8,6 +8,7 @@ import { IModelHost, SettingsContainer, StandaloneDb, SettingsPriority } from "@
 import { IModelTestUtils } from "./IModelTestUtils";
 import { SettingGroupSchema } from "@itwin/core-backend";
 import { SettingsDictionaryProps } from "@itwin/core-backend";
+import { OpenMode } from "@itwin/core-bentley";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Workspace Examples", () => {
@@ -221,8 +222,9 @@ describe("Workspace Examples", () => {
         "landscapePro/hardinessRange": range,
       });
       // __PUBLISH_SECTION_END__
+      const iModelName = iModel.pathName;
       iModel.close();
-      iModel = IModelTestUtils.openIModelForWrite("test.bim");
+      iModel = StandaloneDb.openFile(iModelName, OpenMode.ReadWrite);
       
       // __PUBLISH_SECTION_START__ WorkspaceExamples.QuerySettingDictionary
       const hardinessRange = iModel.workspace.settings.getObject<HardinessRange>("landscapePro/hardinessRange");
