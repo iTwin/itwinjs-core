@@ -378,19 +378,14 @@ export class SchemaEditingError extends BentleyError {
   }
 
   public toDebugString(): string {
-    switch (this.errorNumber) {
-      case ECEditingStatus.SchemaItemNotFound: return this._appendMessage("ECEditingStatus.SchemaItemNotFound");
-      case ECEditingStatus.SchemaItemNotFoundInContext: return this._appendMessage("ECEditingStatus.SchemaItemNotFoundInContext");
-      case ECEditingStatus.BaseClassIsNotElement: return this._appendMessage("ECEditingStatus.BaseClassIsNotElement");
-      case ECEditingStatus.BaseClassIsNotElementUniqueAspect: return this._appendMessage("ECEditingStatus.BaseClassIsNotElementUniqueAspect");
-      case ECEditingStatus.BaseClassIsNotElementMultiAspect: return this._appendMessage("ECEditingStatus.BaseClassIsNotMultiAspectElement");
-      case ECEditingStatus.SchemaItemNameNotSpecified: return this._appendMessage("ECEditingStatus.SchemaItemNameNotSpecified");
-      case ECEditingStatus.InvalidSchemaItemType: return this._appendMessage("ECEditingStatus.InvalidSchemaItemType");
-      case ECEditingStatus.RuleViolation: return this._appendMessage("ECEditingStatus.RuleViolation");
-      default:
-        /* istanbul ignore next */
-        return this._appendMessage(`Error ${this.errorNumber.toString()}`);
+    let innerMessage = "";
+    if (this.innerError) {
+      if (this.innerError instanceof SchemaEditingError)
+        innerMessage = `: Inner error: ${this.innerError.toDebugString()}`;
+      else
+        innerMessage = `: Inner error: ${this.innerError.message}`;
     }
+    return this._appendMessage(`ECEditingStatus.${ECEditingStatus[this.errorNumber]}`) + innerMessage;
   }
 
   private _appendMessage(e: string) {
