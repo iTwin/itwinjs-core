@@ -77,7 +77,7 @@ Now you can access the setting values defined in the dictionary via `IModelHost.
 
 Note that `getString` returns `undefined` for "landscapePro/shrubDbs" because our dictionary didn't provide a value for it. The overload of that function (and similar functions like [Settings.getBoolean]($backend) and [Settings.getObject]($backend)) allows you to specify a default value to use if the value is not defined.
 
-Any number of dictionaries can be added to [[Workspace.settings]]. Let's add another one:
+Any number of dictionaries can be added to [Workspace.settings]($backend). Let's add another one:
 
 ```ts
 [[include:WorkspaceExamples.AddSecondDictionary]]
@@ -103,7 +103,7 @@ A [SettingsPriority]($backend) is just a number, but specific values carry seman
 - [SettingsPriority.branch]($backend) describes settings that apply to all branches of a particular iModel.
 - [SettingsPriority.iModel]($backend) describes settings that apply to one specific iModel.
 
-[SettingsDictionary]($backend)s of `application` priority or lower reside in [IModelHost.appWorkspace]($backend). Those of higher priority are stored in an [IModelDb.workspace]($backend) - more on those [[shortly](#imodel-workspaces).
+[SettingsDictionary]($backend)s of `application` priority or lower reside in [IModelHost.appWorkspace]($backend). Those of higher priority are stored in an [IModelDb.workspace]($backend) - more on those [shortly](#imodel-workspaces).
 
 What about the "landscapePro/ui/availableTools" array? In the [LandscapePro™ schema](#settings-schemas), the corresponding `settingDef` has [SettingSchema.combineArray]($backend) set to `true`, meaning that - when multiple dictionaries provide a value for the setting - instead of being overridden, they are merged together to form a single array, eliminating duplicates, and sorted in descending order by dictionary priority.
 
@@ -126,3 +126,7 @@ The next time we open the iModel, the new settings dictionary will automatically
 ```
 
 The "hardinessRange" setting is obtained from the iModel's settings dictionary, while the "defaultTool" falls back to the value defined in `IModelHost.appWorkspace.settings`.
+
+# Workspace resources
+
+
