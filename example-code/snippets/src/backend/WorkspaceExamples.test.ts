@@ -6,9 +6,10 @@
 import { expect } from "chai";
 import { IModelHost, SettingsContainer, StandaloneDb, SettingsPriority } from "@itwin/core-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
+import { SettingGroupSchema } from "@itwin/core-backend";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
-describe("Example Code", () => {
+describe("Workspace Examples", () => {
   let iModel: StandaloneDb;
 
   before(async () => {
@@ -90,4 +91,61 @@ describe("Example Code", () => {
     expect(defaultTool).eq(defaultsDict["itwin/core/default-tool"]);
   });
 
+  describe("LandscapePro", () => {
+    it("SettingGroupSchema", () => {
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.SettingGroupSchema
+      const schema: SettingGroupSchema = {
+        schemaPrefix: "landscapePro",
+        description: "LandscapePro configuration settings",
+        settingDefs: {
+          "flora/shrubDbs": {
+            type: "string",
+            description: "The name of a setting that specifies the WorkspaceDbs from which to load shrub definitions",
+          },
+          "flora/treeDbs": {
+            type: "array",
+            extends: "itwin/core/workspace/workspaceDbList",
+            combineArray: true,
+          },
+          "ui/defaultTool": {
+            type: "string",
+            description: "Id of the tool that is active when the application starts",
+          },
+          "ui/availableTools": {
+            type: "array",
+            description: "Ids of tools that should be shown to the user",
+            items: {
+              type: "string",
+            },
+            combineArray: false,
+          },
+          hardinessRange: {
+            type: "object",
+            description: "Specifies the upper and lower limits on the hardiness zone for flora that can survive in a region",
+            properties: {
+              minimum: {
+                type: "integer",
+                extends: "landscapePro/hardinessZone",
+                description: "The lower limit on hardiness zone for flora that can survive in a region",
+              },
+              maximum: {
+                type: "integer",
+                extends: "landscapePro/hardinessZone",
+                description: "The upper limit on hardiness zone for flora that can survive in a region",
+              },
+            },
+          },
+        },
+        typeDefs: {
+          hardinessZone: {
+            type: "integer",
+            description: "A USDA hardiness zone used to describe the surivability of plants in a geographical region",
+            minimum: 0,
+            maximum: 13,
+          }
+        }
+      };
+      // __PUBLISH_EXTRACT_END
+    });
+  });
 });
