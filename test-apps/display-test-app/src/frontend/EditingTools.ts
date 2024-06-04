@@ -206,7 +206,8 @@ export class PlaceLineStringTool extends CreateElementTool {
             return;
 
           const partProps: GeometryPartProps = { classFullName: "BisCore:GeometryPart", model: IModel.dictionaryId, code: Code.createEmpty() };
-          const partId = await basicManipulationIpc.insertGeometryPart(partProps, { entryArray: partBuilder.entries });
+          partProps.elementGeometryBuilderParams = { entryArray: partBuilder.entries };
+          const partId = await basicManipulationIpc.insertGeometryPart(partProps);
 
           for (const pt of this._points) {
             if (!builder.appendGeometryPart3d(partId, pt))
@@ -215,7 +216,8 @@ export class PlaceLineStringTool extends CreateElementTool {
         }
 
         const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles } };
-        await basicManipulationIpc.insertGeometricElement(elemProps, { entryArray: builder.entries });
+        elemProps.elementGeometryBuilderParams = { entryArray: builder.entries };
+        await basicManipulationIpc.insertGeometricElement(elemProps);
         await this.saveChanges();
       }
     } catch (err: any) {
