@@ -93,7 +93,7 @@ describe("Workspace Examples", () => {
   });
 
   describe("LandscapePro", () => {
-    it("SettingGroupSchema", () => {
+    it("SettingGroupSchema", async () => {
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.SettingGroupSchema
       const schema: SettingGroupSchema = {
         schemaPrefix: "landscapePro",
@@ -208,6 +208,27 @@ describe("Workspace Examples", () => {
       expect(defaultTool).to.equal("place-koi-pond");
       expect(availableTools).to.deep.equal(["place-gazebo", "apply-mulch", "place-shrub", "place-koi-pond"]);
       expect(shrubDbs).to.equal("coniferousShrubs");
+
+      // __PUBLISH_SECTION_START__ WorkspaceExamples.saveSettingDictionary
+      interface HardinessRange {
+        minimum: number;
+        maximum: number;
+      }
+
+      const range: HardinessRange = { minimum: 8, maximum: 10 };
+      await iModel.acquireSchemaLock();
+      iModel.saveSettingDictionary("landscapePro/iModelSettings", {
+        "landscapePro/hardinessRange": range,
+      });
+      // __PUBLISH_SECTION_END__
+      iModel.close();
+      iModel = IModelTestUtils.openIModelForWrite("test.bim");
+      
+      // __PUBLISH_SECTION_START__ WorkspaceExamples.QuerySettingDictionary
+      const hardinessRange = iModel.workspace.settings.getObject<HardinessRange>("landscapePro/hardinessRange");
+      // returns { minimum: 8, maximum: 10 }
+      // __PUBLISH_SECTION_END__
+      expect(hardinessRange).to.deep.equal(range);
     });
   });
 });
