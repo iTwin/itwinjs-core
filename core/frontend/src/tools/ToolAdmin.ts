@@ -355,7 +355,9 @@ export class ToolAdmin {
   private _mouseMoveOverTimeout?: NodeJS.Timeout;
   private _editCommandHandler?: EditCommandHandler;
 
-  /** The name of the [[PrimitiveTool]] to use as the default tool. Defaults to "Select", referring to [[SelectionTool]].
+  /** The name of the [[InteractiveTool]] to use as the default tool, normally a sub-class of [[PrimitiveTool]].
+   * Defaults to "Select", referring to [[SelectionTool]].
+   * @note An empty string signifies no default tool allowing more events to be handled by [[idleTool]].
    * @see [[startDefaultTool]] to activate the default tool.
    * @see [[defaultToolArgs]] to supply arguments when starting the tool.
    */
@@ -1712,15 +1714,23 @@ export class ToolAdmin {
   }
 
   /**
-   * Starts the default [[Tool]], if any. Generally invoked automatically when other tools exit, so shouldn't be called directly.
-   * @note The default tool is expected to be a subclass of [[PrimitiveTool]]. A call to startDefaultTool is required to terminate
+   * Starts the default [[InteractiveTool]], if any. Generally invoked automatically when other tools exit, so shouldn't be called directly.
+   * @note The default tool is normally a subclass of [[PrimitiveTool]]. A call to startDefaultTool is required to terminate
    * an active [[ViewTool]] or [[InputCollector]] and replace or clear the current [[PrimitiveTool]].
    * The tool's [[Tool.run]] method is invoked with arguments specified by [[defaultToolArgs]].
    * @see [[defaultToolId]] to configure the default tool.
    */
   public async startDefaultTool(): Promise<void> {
-    if (!await IModelApp.tools.run(this.defaultToolId, this.defaultToolArgs))
-      return this.startPrimitiveTool(undefined);
+    const tool = IModelApp.tools.create(this.defaultToolId, this.defaultToolArgs);
+
+    if (tool instanceof PrimitiveTool) {
+      if (!await tool.run(this.defaultToolArgs))
+        return this.startPrimitiveTool(undefined);
+    } else {
+      await this.startPrimitiveTool(undefined); // Ensure active primitive tool is terminated instead of suspended...
+      if (undefined !== tool)
+        await tool.run(this.defaultToolArgs);
+    }
   }
 
   /**
