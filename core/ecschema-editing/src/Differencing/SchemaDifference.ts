@@ -9,7 +9,7 @@
 import { AnySchemaFix } from "././SchemaFixes";
 import { SchemaChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
-import { SchemaDifferenceConflict } from "./SchemaConflicts";
+import { ConflictCode, SchemaDifferenceConflict } from "./SchemaConflicts";
 import { SchemaDiagnosticVisitor } from "./SchemaDiagnosticVisitor";
 import {
   AnyEnumerator, AnyPropertyProps, ConstantProps, CustomAttribute,
@@ -19,7 +19,7 @@ import {
 } from "@itwin/ecschema-metadata";
 
 /** Utility-Type to remove possible readonly flags on the given type. */
-type PartialEditable<T> = {
+export type PartialEditable<T> = {
   -readonly [P in keyof T]?: T[P];
 };
 
@@ -28,7 +28,7 @@ type PartialEditable<T> = {
  * that are not needed for the schema differencing. Also all properties are made mutable
  * by removing the readonly flag if present.
  */
-type SchemaItemProperties<T extends SchemaItemProps> = {
+export type SchemaItemProperties<T extends SchemaItemProps> = {
   [P in keyof PartialEditable<Omit<T, keyof Omit<SchemaItemProps, "label" | "description" | "customAttributes">>>]: T[P]
 };
 
@@ -90,11 +90,19 @@ export namespace SchemaDifference {
     for (const diagnostic of schemaChanges.allDiagnostics) {
       visitor.visit(diagnostic);
     }
+    const schemaItemChanges = visitor.schemaItemChanges.filter((difference) => 
+      !visitor.conflicts.find((conflict) => conflict.code === ConflictCode.ConflictingItemName 
+        && conflict.itemName === difference.itemName && conflict.schemaType === difference.schemaType));
+
+    const schemaItemPathChanges = visitor.schemaItemPathChanges.filter((difference) => 
+      !visitor.conflicts.find((conflict) => (conflict.code === ConflictCode.ConflictingPropertyName &&
+        conflict.itemName === difference.itemName && conflict.path === difference.path 
+        && difference.schemaType === SchemaOtherTypes.Property)));
 
     const changes: AnySchemaDifference[] = [
       ...visitor.schemaChanges,
-      ...visitor.schemaItemChanges,
-      ...visitor.schemaItemPathChanges,
+      ...schemaItemChanges,
+      ...schemaItemPathChanges,
       ...visitor.customAttributeChanges,
     ];
 
@@ -257,6 +265,18 @@ export namespace SchemaDifference {
   export function isRelationshipConstraintClassDifference(difference: AnySchemaDifference): difference is RelationshipConstraintClassDifference {
     return difference.schemaType === SchemaOtherTypes.RelationshipConstraintClass;
   }
+
+    /**
+   * Indicates whether the given difference is type of ClassItemDifference.
+   * @alpha
+   */
+    export function isClassItemDifference(difference: AnySchemaDifference): difference is ClassItemDifference {
+      return isStructClassDifference(difference)
+        || isCustomAttributeClassDifference(difference)
+        || isEntityClassDifference(difference)
+        || isMixinClassDifference(difference)
+        || isRelationshipClassDifference(difference);
+    }
 }
 
 /**

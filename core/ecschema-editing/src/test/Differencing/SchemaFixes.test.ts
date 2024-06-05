@@ -9,7 +9,9 @@ import { SchemaDifference } from "../../Differencing/SchemaDifference";
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
 /* eslint-disable @typescript-eslint/naming-convention */
 
-describe.only("Difference Conflict Resolving", () => {
+describe("Difference Conflict Resolving", () => {
+
+  
 
   it("shall re-apply stored conflict resolutions", async () => {
     const targetSchema = await Schema.fromJson({

@@ -14,6 +14,7 @@ import { mergeCustomAttribute } from "./CustomAttributeMerger";
 import { mergeSchemaItems } from "./SchemaItemMerger";
 import { mergeSchemaReferences } from "./SchemaReferenceMerger";
 import { hasUnresolvedConflicts, SchemaConflictsError } from "../Differencing/SchemaConflicts";
+import { RenameFixes } from "../Differencing/RenameFixes";
 
 /**
  * Defines the context of a Schema merging run.
@@ -78,6 +79,26 @@ export class SchemaMerger {
     return this.mergeSchemas(input);
   }
 
+  private async applyFixes(differences: SchemaDifferences) {
+    if (differences.fixes && differences.fixes.length > 0) {
+      for (const fix of differences.fixes) {
+        switch (fix.type) {
+          case "rename":
+            RenameFixes.add(differences, fix);
+            break;
+        }
+      }
+
+      for (const fix of differences.fixes) {
+        switch (fix.type) {
+          case "rename":
+            RenameFixes.modify(differences, fix);
+            break;
+        }
+      }
+    }
+  }
+
   /**
    * Merges the schema differences in the target schema. The target schema is defined
    * in the given differences object.
@@ -101,6 +122,8 @@ export class SchemaMerger {
     if (schema === undefined) {
       throw new Error(`The target schema '${targetSchemaKey.name}' could not be found in the editing context.`);
     }
+
+    await this.applyFixes(differences);
 
     if(differences.changes === undefined || differences.changes.length === 0) {
       return schema;

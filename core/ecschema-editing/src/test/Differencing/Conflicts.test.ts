@@ -63,6 +63,10 @@ describe("Difference Conflict Reporting", () => {
         source:  "PropertyCategory",
         target:  "EntityClass",
         description: "Target schema already contains a schema item with the name but different type.",
+        difference: {
+          priority: undefined,
+          schemaItemType: "PropertyCategory",
+        }
       });
     });
   });
@@ -256,6 +260,11 @@ describe("Difference Conflict Reporting", () => {
         source:  "boolean",
         target:  "string",
         description: "Target class already contains a property with a different type.",
+        difference: {
+          name: "MyProperty",
+          type: "PrimitiveProperty",
+          typeName: "boolean",
+        },
       });
     });
   });

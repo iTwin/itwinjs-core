@@ -191,6 +191,7 @@ export class SchemaDiagnosticVisitor {
         source: sourceValue,
         target: targetValue,
         description: "Target schema already contains a schema item with the name but different type.",
+        difference: schemaItem.toJSON(),
       });
     }
 
@@ -350,7 +351,7 @@ export class SchemaDiagnosticVisitor {
   }
 
   private validatePropertyChange(ecProperty: Property, propertyName: string, sourceValue: unknown, targetValue: unknown): boolean {
-    if (propertyName === "primitiveType") {
+    if (propertyName === "primitiveType" || propertyName === "type") {
       this.addConflict({
         id: `${ConflictCode.ConflictingPropertyName}-${ecProperty.class.name}-${ecProperty.name}`,
         code: ConflictCode.ConflictingPropertyName,
@@ -360,6 +361,7 @@ export class SchemaDiagnosticVisitor {
         source: sourceValue,
         target: targetValue,
         description: "Target class already contains a property with a different type.",
+        difference: ecProperty.toJSON(),
       });
       return false;
     }
