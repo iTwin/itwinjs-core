@@ -13,7 +13,7 @@ A [Setting]($backend) is simply a name-value pair. The value can be of one of th
 - An `object` containing properties of any of these types; or
 - An `array` containing elements of one of these types.
 
-A [SettingName]($backend) must be unique, [###TODO restrictions on names???]and should begin with the schema prefix of the [schema](#settings-schemas) that defines the setting. (More on schemas shortly). For example, LandscapePro™ might define the following settings:
+A [SettingName]($backend) must be unique, 1 to 1024 characters long with no leading nor trailing whitespace, and should begin with the schema prefix of the [schema](#settings-schemas) that defines the setting. (More on schemas shortly). For example, LandscapePro™ might define the following settings:
 
 ```
   "landscapePro/ui/defaultToolId"
@@ -154,3 +154,6 @@ Ultimately, each resource is stored as one of three underlying types:
 
 Strings and blobs can be accessed directly using [WorkspaceDb.getString]($backend) and [WorkspaceDb.getBlob]($backend). Files must first be copied onto the local file system using [WorkspaceDb.getFile]($backend), and should be avoided unless they must be used with software that requires them to be accessed from disk.
 
+## Workspace containers
+
+[WorkspaceDb]($backend)s are stored in access-controlled [WorkspaceContainer]($backend)s backed by cloud storage and cached locally on disk. So, the structure of a [Workspace]($backend) is a hierarchy: a `Workspace` contains any number of `WorkspaceContainer`s, each of which contains any number of `WorkspaceDb`s, each of which contains any number of resources.

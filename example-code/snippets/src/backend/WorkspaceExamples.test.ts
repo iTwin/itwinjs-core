@@ -107,7 +107,6 @@ describe("Workspace Examples", () => {
           "flora/treeDbs": {
             type: "array",
             extends: "itwin/core/workspace/workspaceDbList",
-            combineArray: false,
           },
           "ui/defaultTool": {
             type: "string",
