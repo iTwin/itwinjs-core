@@ -85,6 +85,7 @@
     },
     "workspaceDbList": {
       "type": "array",
+      "combineArray": true,
       "items": {
         "type": "object",
         "extends": "itwin/core/workspace/workspaceDb"
