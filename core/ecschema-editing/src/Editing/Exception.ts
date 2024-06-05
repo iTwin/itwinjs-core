@@ -93,16 +93,21 @@ export enum ECEditingStatus {
   IncrementSchemaMinorVersion,
 }
 
-export type AnyEditingError = SchemaEditingError | Error;
+function getEnumeratorType(enumeration: Enumeration, enumerator: AnyEnumerator | string) {
+  if (typeof(enumerator) === "string")
+    return enumeration.isString ? "string" : "int";
 
-export enum TaskType {
-  Add,
-  Create,
-  Update,
-  Change,
-  Delete
+  return typeof(enumerator.value) === "string" ? "string" : "int";
 }
 
+/**
+ * A type that constrains the possible error types handled by SchemaEditingError
+ */
+export type AnyEditingError = SchemaEditingError | Error;
+
+/**
+ * Defines the possible property type names.
+ */
 export enum PropertyTypeName {
   ArrayProperty = "ArrayProperty",
   PrimitiveProperty = "PrimitiveProperty",
@@ -111,13 +116,112 @@ export enum PropertyTypeName {
   StructProperty = "StructProperty"
 }
 
-type ECClassSchemaItems = SchemaItemType.EntityClass | SchemaItemType.StructClass | SchemaItemType.RelationshipClass | SchemaItemType.Mixin | SchemaItemType.CustomAttributeClass;
-
-export interface SchemaTypeIdentifier {
-  name: string;
+/**
+ * Defines the possible schema type identifiers.
+ */
+export enum SchemaTypeIdentifiers {
+  SchemaIdentifier,
+  SchemaItemIdentifier,
+  ClassIdentifier,
+  PropertyIdentifier,
+  EnumerationIdentifier,
+  CustomAttributeIdentifier,
+  RelationshipConstraintIdentifier
 }
 
-export class SchemaId implements SchemaTypeIdentifier {
+/**
+ * Type that constrains SchemaItemType enum to those used by EC Class types.
+ */
+type ECClassSchemaItems = SchemaItemType.EntityClass | SchemaItemType.StructClass | SchemaItemType.RelationshipClass | SchemaItemType.Mixin | SchemaItemType.CustomAttributeClass;
+
+/**
+ * Type that defines the possible SchemaTypeIdentifiers for SchemaItemId classes.
+ */
+type AnySchemaItemTypeIdentifier = SchemaTypeIdentifiers.SchemaItemIdentifier | SchemaTypeIdentifiers.ClassIdentifier | SchemaTypeIdentifiers.EnumerationIdentifier;
+
+/**
+ * Type that encompasses all ISchemaTypeIdentifier interfaces
+ */
+type AnyIdentifier = ISchemaIdentifier | ISchemaItemIdentifier | IClassIdentifier | IPropertyIdentifier | ICustomAttributeIdentifier | IRelationshipConstraintIdentifier | IEnumerationIdentifier;
+
+/**
+ * A base interface that defines what is needed to identity any schema type.
+ * @beta
+ */
+interface ISchemaTypeIdentifier {
+  readonly name: string;
+  readonly schemaKey: SchemaKey;
+  readonly typeIdentifier: SchemaTypeIdentifiers;
+}
+
+/**
+ * Interface that defines the data needed to identify a Schema.
+ */
+interface ISchemaIdentifier extends ISchemaTypeIdentifier {
+  readonly typeIdentifier: SchemaTypeIdentifiers.SchemaIdentifier;
+}
+
+/**
+ * Interface that defines the data needed to identify a SchemaItem.
+ */
+interface ISchemaItemIdentifier extends ISchemaTypeIdentifier {
+  readonly schemaItemType: SchemaItemType;
+  readonly schemaItemKey: SchemaItemKey;
+  readonly typeIdentifier: AnySchemaItemTypeIdentifier;
+}
+
+/**
+ * Interface that defines the data needed to identify an EC Class.
+ */
+interface IClassIdentifier extends ISchemaTypeIdentifier {
+  readonly schemaItemType: ECClassSchemaItems;
+  readonly schemaItemKey: SchemaItemKey;
+  readonly typeIdentifier: SchemaTypeIdentifiers.ClassIdentifier;
+}
+
+/**
+ * Interface that defines the data needed to identify an EC Property.
+ */
+interface IPropertyIdentifier extends ISchemaTypeIdentifier {
+  readonly fullName: string;
+  readonly ecClass: ClassId;
+  readonly typeName?: PropertyTypeName;
+  readonly typeIdentifier: SchemaTypeIdentifiers.PropertyIdentifier;
+}
+
+/**
+ * Interface that defines the data needed to identify an Enumeration.
+ */
+interface IEnumerationIdentifier extends ISchemaTypeIdentifier {
+  readonly schemaItemType: SchemaItemType;
+  readonly schemaItemKey: SchemaItemKey;
+  readonly enumerationType: string;
+  readonly enumeratorName: string;
+  readonly enumeratorType: string;
+  readonly typeIdentifier: SchemaTypeIdentifiers.EnumerationIdentifier;
+}
+
+/**
+ * Interface that defines the data needed to identify a CustomAttribute.
+ */
+interface ICustomAttributeIdentifier extends ISchemaTypeIdentifier {
+  readonly containerFullName: string;
+  readonly typeIdentifier: SchemaTypeIdentifiers.CustomAttributeIdentifier;
+}
+
+/**
+ * Interface that defines the data needed to identify a RelationshipConstraint.
+ */
+interface IRelationshipConstraintIdentifier extends ISchemaTypeIdentifier {
+  readonly relationshipKey: SchemaItemKey;
+  readonly typeIdentifier: SchemaTypeIdentifiers.RelationshipConstraintIdentifier;
+}
+
+/**
+ * An ISchemaIdentifier implementation to identify Schemas
+ */
+export class SchemaId implements ISchemaIdentifier {
+  public readonly typeIdentifier = SchemaTypeIdentifiers.SchemaIdentifier;
   public readonly name: string;
   public readonly schemaKey: SchemaKey;
   constructor(schemaKey: SchemaKey) {
@@ -126,11 +230,16 @@ export class SchemaId implements SchemaTypeIdentifier {
   }
 }
 
-export class SchemaItemId implements SchemaTypeIdentifier {
+/**
+ * An ISchemItemIdentifier implementation to identify SchemaItems
+ */
+export class SchemaItemId implements ISchemaItemIdentifier {
+  public readonly typeIdentifier: AnySchemaItemTypeIdentifier;
   public readonly name: string;
-  public readonly type: SchemaItemType;
   public readonly schemaKey: SchemaKey;
+  public readonly schemaItemType: SchemaItemType;
   public readonly schemaItemKey: SchemaItemKey;
+
   constructor(schemaItemType: SchemaItemType, schemaItemKeyOrName: SchemaItemKey | string, schemaKey?: SchemaKey) {
     if (typeof(schemaItemKeyOrName) === "string") {
       if (!schemaKey)
@@ -143,18 +252,29 @@ export class SchemaItemId implements SchemaTypeIdentifier {
       this.schemaItemKey = schemaItemKeyOrName;
     }
 
-    this.type = schemaItemType;
+    this.schemaItemType = schemaItemType;
     this.name = this.schemaItemKey.fullName;
+    this.typeIdentifier = SchemaTypeIdentifiers.SchemaItemIdentifier;
   }
 }
 
-export class ClassId extends SchemaItemId {
+/**
+ * An IClassIdentifier implementation to identify Class instances.
+ */
+export class ClassId extends SchemaItemId implements IClassIdentifier {
+  public override readonly typeIdentifier = SchemaTypeIdentifiers.ClassIdentifier;
+  public override readonly schemaItemType: ECClassSchemaItems;
   constructor(schemaItemType: ECClassSchemaItems, schemaItemKeyOrName: SchemaItemKey | string, schemaKey?: SchemaKey) {
     super(schemaItemType, schemaItemKeyOrName, schemaKey);
+    this.schemaItemType = schemaItemType;
   }
 }
 
-export class PropertyId implements SchemaTypeIdentifier {
+/**
+ * An IPropertyIdentifier implementation to identify Property instances.
+ */
+export class PropertyId implements IPropertyIdentifier {
+  public readonly typeIdentifier = SchemaTypeIdentifiers.PropertyIdentifier;
   public readonly name: string;
   public readonly fullName: string;
   public readonly ecClass: ClassId;
@@ -170,7 +290,11 @@ export class PropertyId implements SchemaTypeIdentifier {
   }
 }
 
-export class EnumerationId extends SchemaItemId {
+/**
+ * An IEnumerationIdentifier implementation to identify Enumeration instances.
+ */
+export class EnumerationId extends SchemaItemId implements IEnumerationIdentifier{
+  public override readonly typeIdentifier = SchemaTypeIdentifiers.EnumerationIdentifier;
   public readonly enumerationType: string;
   public readonly enumeratorName: string;
   public readonly enumeratorType: string;
@@ -178,18 +302,15 @@ export class EnumerationId extends SchemaItemId {
     super(SchemaItemType.Enumeration, enumeration.key);
     this.enumerationType = enumeration.type ? primitiveTypeToString(enumeration.type) : "string";
     this.enumeratorName = typeof(enumerator) === "string" ? enumerator : enumerator.name;
-    this.enumeratorType = this.getEnumeratorType(enumeration, enumerator);
-  }
-
-  private getEnumeratorType(enumeration: Enumeration, enumerator: AnyEnumerator | string) {
-    if (typeof(enumerator) === "string")
-      return enumeration.isString ? "string" : "int";
-
-    return typeof(enumerator.value) === "string" ? "string" : "int";
+    this.enumeratorType = getEnumeratorType(enumeration, enumerator);
   }
 }
 
-export class CustomAttributeId implements SchemaTypeIdentifier {
+/**
+ * An ICustomAttributeIdentifier implementation to identify CustomAttribute instances.
+ */
+export class CustomAttributeId implements ICustomAttributeIdentifier {
+  public readonly typeIdentifier = SchemaTypeIdentifiers.CustomAttributeIdentifier;
   public readonly name: string;
   public readonly schemaKey: SchemaKey;
   public readonly containerFullName: string;
@@ -200,7 +321,11 @@ export class CustomAttributeId implements SchemaTypeIdentifier {
   }
 }
 
-export class RelationshipConstraintId implements SchemaTypeIdentifier {
+/**
+ * An IRelationshipConstraintIdentifier implementation to identify RelationshipConstraints.
+ */
+export class RelationshipConstraintId implements IRelationshipConstraintIdentifier {
+  public readonly typeIdentifier = SchemaTypeIdentifiers.RelationshipConstraintIdentifier;
   public readonly name: string;
   public readonly relationshipKey: SchemaItemKey;
   public readonly schemaKey: SchemaKey;
@@ -209,71 +334,6 @@ export class RelationshipConstraintId implements SchemaTypeIdentifier {
     this.relationshipKey = constraint.relationshipClass.key;
     this.schemaKey = this.relationshipKey.schemaKey;
   }
-}
-
-type AnyIdentifier = SchemaId | PropertyId | CustomAttributeId | RelationshipConstraintId | EnumerationId;
-
-/**
- * Indicates if the given identifier is a SchemaId instance.
- * @param identifier The identifier to check.
- * @returns true if the identifier is the correct type.
- */
-export function isSchemaIdentifier(identifier: AnyIdentifier): identifier is SchemaId {
-  return identifier instanceof SchemaId;
-}
-
-/**
- * Indicates if the given identifier is a SchemaId instance.
- * @param identifier The identifier to check.
- * @returns true if the identifier is the correct type.
- */
-export function isSchemaItemIdentifier(identifier: AnyIdentifier): identifier is SchemaItemId {
-  return identifier instanceof SchemaItemId;
-}
-
-/**
- * Indicates if the given identifier is a ClassId instance.
- * @param identifier The identifier to check.
- * @returns true if the identifier is the correct type.
- */
-export function isClassIdentifier(identifier: AnyIdentifier): identifier is ClassId {
-  return identifier instanceof ClassId;
-}
-
-/**
- * Indicates if the given identifier is a PropertyId instance.
- * @param identifier The identifier to check.
- * @returns true if the identifier is the correct type.
- */
-export function isPropertyIdentifier(identifier: AnyIdentifier): identifier is PropertyId {
-  return identifier instanceof PropertyId;
-}
-
-/**
- * Indicates if the given identifier is a EnumerationId instance.
- * @param identifier The identifier to check.
- * @returns true if the identifier is the correct type.
- */
-export function isEnumerationIdentifier(identifier: AnyIdentifier): identifier is EnumerationId {
-  return identifier instanceof EnumerationId;
-}
-
-/**
- * Indicates if the given identifier is a CustomAttributeId instance.
- * @param identifier The identifier to check.
- * @returns true if the identifier is the correct type.
- */
-export function isCustomAttributeIdentifier(identifier: AnyIdentifier): identifier is CustomAttributeId {
-  return identifier instanceof CustomAttributeId;
-}
-
-/**
- * Indicates if the given identifier is a RelationshipConstraintId instance.
- * @param identifier The identifier to check.
- * @returns true if the identifier is the correct type.
- */
-export function isRelationshipConstraintIdentifier(identifier: AnyIdentifier): identifier is RelationshipConstraintId {
-  return identifier instanceof RelationshipConstraintId;
 }
 
 /**
@@ -308,9 +368,9 @@ export class SchemaEditingError extends BentleyError {
    * @throws Error if the identifier is not an instance of SchemaId.
    */
   public get schemaId(): SchemaId {
-    if (!isSchemaIdentifier(this.identifier))
+    if (this.identifier.typeIdentifier !== SchemaTypeIdentifiers.SchemaIdentifier)
       throw new Error("identifier is not a SchemaId.");
-    return this.identifier as SchemaItemId;
+    return this.identifier as SchemaId;
   }
 
   /**
@@ -318,7 +378,7 @@ export class SchemaEditingError extends BentleyError {
    * @throws Error if the identifier is not an instance of SchemaItemId.
    */
   public get schemaItemId(): SchemaItemId {
-    if (!isSchemaItemIdentifier(this.identifier))
+    if (this.isSchemaItemIdentifier(this.identifier))
       throw new Error("identifier is not a SchemaItemId.");
     return this.identifier as SchemaItemId;
   }
@@ -328,9 +388,9 @@ export class SchemaEditingError extends BentleyError {
    * @throws Error if the identifier is not an instance of ClassId.
    */
   public get classId(): ClassId {
-    if (!isClassIdentifier(this.identifier))
+    if (this.identifier.typeIdentifier !== SchemaTypeIdentifiers.ClassIdentifier)
       throw new Error("identifier is not a ClassId.");
-    return this.identifier;
+    return this.identifier as ClassId;
   }
 
   /**
@@ -338,7 +398,7 @@ export class SchemaEditingError extends BentleyError {
    * @throws Error if the identifier is not an instance of PropertyId.
    */
   public get propertyId(): PropertyId {
-    if (!isPropertyIdentifier(this.identifier))
+    if (this.identifier.typeIdentifier !== SchemaTypeIdentifiers.PropertyIdentifier)
       throw new Error("identifier is not a PropertyId.");
     return this.identifier;
   }
@@ -348,9 +408,9 @@ export class SchemaEditingError extends BentleyError {
    * @throws Error if the identifier is not an instance of EnumerationId.
    */
   public get enumerationId(): EnumerationId {
-    if (!isEnumerationIdentifier(this.identifier))
+    if (this.identifier.typeIdentifier !== SchemaTypeIdentifiers.EnumerationIdentifier)
       throw new Error("identifier is not a EnumerationId.");
-    return this.identifier;
+    return this.identifier as EnumerationId;
   }
 
   /**
@@ -358,7 +418,7 @@ export class SchemaEditingError extends BentleyError {
    * @throws Error if the identifier is not an instance of CustomAttributeId.
    */
   public get customAttributeId(): CustomAttributeId {
-    if (!isCustomAttributeIdentifier(this.identifier))
+    if (this.identifier.typeIdentifier !== SchemaTypeIdentifiers.CustomAttributeIdentifier)
       throw new Error("identifier is not a CustomAttributeId.");
     return this.identifier;
   }
@@ -368,7 +428,7 @@ export class SchemaEditingError extends BentleyError {
    * @throws Error if the identifier is not an instance of RelationshipConstraintId.
    */
   public get relationshipConstraintId(): RelationshipConstraintId {
-    if (!isRelationshipConstraintIdentifier(this.identifier))
+    if (this.identifier.typeIdentifier !== SchemaTypeIdentifiers.RelationshipConstraintIdentifier)
       throw new Error("identifier is not a RelationshipConstraintId.");
     return this.identifier;
   }
@@ -401,19 +461,19 @@ export class SchemaEditingError extends BentleyError {
         this.message = `Schema Key ${this._schemaKey.toString(true)} could not be found in the context.`;
         return;
       case ECEditingStatus.SchemaItemNotFound:
-        this.message = `${this.schemaItemId.type} ${this.schemaItemId.name} could not be found in the schema ${this._schemaKey.name}.`;
+        this.message = `${this.schemaItemId.schemaItemType} ${this.schemaItemId.name} could not be found in the schema ${this._schemaKey.name}.`;
         return;
       case ECEditingStatus.SchemaItemNotFoundInContext:
-        this.message = `${this.schemaItemId.type} ${this.schemaItemId.name} could not be found in the schema context.`;
+        this.message = `${this.schemaItemId.schemaItemType} ${this.schemaItemId.name} could not be found in the schema context.`;
         return;
       case ECEditingStatus.InvalidSchemaItemType:
-        this.message = `Expected ${this.schemaItemId.name} to be of type ${this.schemaItemId.type}.`;
+        this.message = `Expected ${this.schemaItemId.name} to be of type ${this.schemaItemId.schemaItemType}.`;
         return;
       case ECEditingStatus.SchemaItemNameNotSpecified:
-        this.message = `Could not create a new ${this.schemaItemId.type} in schema ${this._schemaKey.name}. No name was supplied within props.`;
+        this.message = `Could not create a new ${this.schemaItemId.schemaItemType} in schema ${this._schemaKey.name}. No name was supplied within props.`;
         return;
       case ECEditingStatus.SchemaItemNameAlreadyExists:
-        this.message = `${this.schemaItemId.type} ${this.schemaItemId.name} already exists in the schema ${this._schemaKey.name}.`;
+        this.message = `${this.schemaItemId.schemaItemType} ${this.schemaItemId.name} already exists in the schema ${this._schemaKey.name}.`;
         return;
       case ECEditingStatus.RuleViolation:
         this.message = this.getRuleViolationMessage();
@@ -460,18 +520,30 @@ export class SchemaEditingError extends BentleyError {
       violations += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
     }
 
-    if (isSchemaIdentifier(this.identifier))
+    if (this.identifier.typeIdentifier === SchemaTypeIdentifiers.SchemaIdentifier)
       return `Rule violations occurred from Schema ${this.schemaId.name}: ${violations}`;
 
-    if (isSchemaItemIdentifier(this.identifier))
-      return `Rule violations occurred from ${this.schemaItemId.type} ${this.schemaItemId.name}: ${violations}`;
+    if (this.identifier.typeIdentifier === SchemaTypeIdentifiers.SchemaItemIdentifier)
+      return `Rule violations occurred from ${this.schemaItemId.schemaItemType} ${this.schemaItemId.name}: ${violations}`;
 
-    if (isCustomAttributeIdentifier(this.identifier))
+    if (this.identifier.typeIdentifier === SchemaTypeIdentifiers.ClassIdentifier)
+      return `Rule violations occurred from ${this.schemaItemId.schemaItemType} ${this.schemaItemId.name}: ${violations}`;
+
+    if (this.identifier.typeIdentifier === SchemaTypeIdentifiers.CustomAttributeIdentifier)
       return `Rule violations occurred from CustomAttribute ${this.customAttributeId.name}, container ${this.customAttributeId.containerFullName}: ${violations}`;
 
-    if (isRelationshipConstraintIdentifier(this.identifier))
+    if (this.identifier.typeIdentifier === SchemaTypeIdentifiers.RelationshipConstraintIdentifier)
       return `Rule violations occurred from constraint ${this.relationshipConstraintId.name} of RelationshipClass ${this.relationshipConstraintId.relationshipKey.fullName}: ${violations}`;
 
     throw new Error ("Could not generate rule violation message due to invalid identifier.");
+  }
+
+  private isSchemaItemIdentifier(identifier: AnyIdentifier) {
+    if (identifier.typeIdentifier !== SchemaTypeIdentifiers.SchemaItemIdentifier &&
+      identifier.typeIdentifier !== SchemaTypeIdentifiers.ClassIdentifier &&
+      identifier.typeIdentifier !== SchemaTypeIdentifiers.EnumerationIdentifier)
+      return true;
+
+    return false;
   }
 }
