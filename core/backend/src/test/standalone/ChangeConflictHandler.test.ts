@@ -21,6 +21,7 @@ import {
   ChannelControl,
   DictionaryModel,
   MergeChangesetConflictArgs,
+  PullMergeMethod,
   SpatialCategory,
   SqliteChangesetReader,
 } from "../../core-backend";
@@ -54,8 +55,9 @@ export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: 
 }
 
 Logger.setLevel("Changeset", LogLevel.Trace);
+const kPullMergeMethod = "Merge" as PullMergeMethod;
 
-describe("Changeset conflict handler", () => {
+describe("Changeset conflict handler (Only work with PullMergeMethod: Merge)", () => {
   let iTwinId: GuidString;
   let accessToken1: string;
   let accessToken2: string;
@@ -113,13 +115,13 @@ describe("Changeset conflict handler", () => {
     accessToken3 = await HubWrappers.getAccessToken(TestUserType.Super);
     const rwIModelId = await HubMock.createNewIModel({ accessToken: accessToken1, iTwinId, iModelName, description: "TestSubject", noLocks: undefined });
     assert.isNotEmpty(rwIModelId);
-    b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken1, iTwinId, iModelId: rwIModelId, noLock: true });
+    b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken1, iTwinId, iModelId: rwIModelId, noLock: true, pullMergeMethod: kPullMergeMethod });
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
-    b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId, iModelId: rwIModelId, noLock: true });
+    b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId, iModelId: rwIModelId, noLock: true, pullMergeMethod: kPullMergeMethod });
     b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
-    b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken3, iTwinId, iModelId: rwIModelId, noLock: true });
+    b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken3, iTwinId, iModelId: rwIModelId, noLock: true, pullMergeMethod: kPullMergeMethod });
 
     [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
       b1,

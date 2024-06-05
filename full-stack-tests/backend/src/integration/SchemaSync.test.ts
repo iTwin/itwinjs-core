@@ -253,7 +253,9 @@ for (const pullMergeMethod of ["Merge", "Rebase"] as PullMergeMethod[]) {
 
       const openNewBriefcase = async (accessToken: AccessToken) => {
         const bcProps = await BriefcaseManager.downloadBriefcase({ iModelId, iTwinId, accessToken });
-        return BriefcaseDb.open(bcProps);
+        const bc = await BriefcaseDb.open(bcProps);
+        bc.pullMergeMethod = pullMergeMethod;
+        return bc;
       };
 
       const b1 = await openNewBriefcase(user1AccessToken);
@@ -341,7 +343,9 @@ for (const pullMergeMethod of ["Merge", "Rebase"] as PullMergeMethod[]) {
 
       const openNewBriefcase = async (accessToken: AccessToken) => {
         const bcProps = await BriefcaseManager.downloadBriefcase({ iModelId, iTwinId, accessToken });
-        return BriefcaseDb.open(bcProps);
+        const bc = await BriefcaseDb.open(bcProps);
+        bc.pullMergeMethod = pullMergeMethod;
+        return bc;
       };
 
       const b1 = await openNewBriefcase(user1AccessToken);
@@ -525,11 +529,15 @@ for (const pullMergeMethod of ["Merge", "Rebase"] as PullMergeMethod[]) {
 
       const openNewBriefcase = async (accessToken: AccessToken) => {
         const bcProps = await BriefcaseManager.downloadBriefcase({ iModelId, iTwinId, accessToken });
-        return BriefcaseDb.open(bcProps);
+        const bc = await BriefcaseDb.open(bcProps);
+        bc.pullMergeMethod = pullMergeMethod;
+        return bc;
       };
 
       const b1Props = await BriefcaseManager.downloadBriefcase({ iModelId, iTwinId, accessToken: user1AccessToken });
       let b1 = await BriefcaseDb.open(b1Props);
+      b1.pullMergeMethod = pullMergeMethod;
+
       const b2 = await openNewBriefcase(user2AccessToken);
       const b3 = await openNewBriefcase(user3AccessToken);
 
@@ -602,6 +610,7 @@ for (const pullMergeMethod of ["Merge", "Rebase"] as PullMergeMethod[]) {
       // 5. B1 modify schema add new property but do not push to hub. But it will be push to SchemaSync container.
       await BriefcaseDb.upgradeSchemas(b1Props);
       b1 = await BriefcaseDb.open(b1Props);
+      b1.pullMergeMethod = pullMergeMethod;
       assert.equal(querySchemaSyncDataVer(b1), "0x3", "profile & domain schema upgrade should change dataVer from 0x1 -> 0x3");
       await assertChangesetTypeAndDescr(b1, ChangesetType.SchemaSync, "Upgraded domain schemas");
       // upgradeSchema() also push changes.
@@ -866,7 +875,9 @@ for (const pullMergeMethod of ["Merge", "Rebase"] as PullMergeMethod[]) {
 
       const openNewBriefcase = async (accessToken: AccessToken) => {
         const bcProps = await BriefcaseManager.downloadBriefcase({ iModelId, iTwinId, accessToken });
-        return BriefcaseDb.open(bcProps);
+        const bc = await BriefcaseDb.open(bcProps);
+        bc.pullMergeMethod = pullMergeMethod;
+        return bc;
       };
 
       const b1 = await openNewBriefcase(user1AccessToken);
