@@ -345,7 +345,7 @@ describe("IModelWriteTest", () => {
     };
     const briefcaseDb = await BriefcaseDb.open({ fileName: briefcaseProps.fileName});
     briefcaseDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    let firstElement = {"id":undefined, "code":Code.createEmpty()};
+    let firstElement = {"id":undefined, "codeValue": "test"};
     briefcaseDb.withPreparedStatement("SELECT * from Bis.Element LIMIT 1", (stmt: ECSqlStatement) => {
       if (stmt.step() === DbResult.BE_SQLITE_ROW) {
         firstElement = stmt.getRow();
@@ -354,10 +354,10 @@ describe("IModelWriteTest", () => {
     // make change to the briefcaseDb that does not affect code, e.g., save file property
     // expect no error from verifyCode
     expect(() => briefcaseDb.saveFileProperty({ name: "codeServiceProp", namespace: "codeService", id: 1, subId: 1 }, "codeService test")).to.not.throw();
-    const newProps = { id: firstElement.id, code: Code.createEmpty(), classFullName: undefined, model: undefined };
-    await briefcaseDb.locks.acquireLocks({exclusive: firstElement.id});
     // make change to the briefcaseDb that affects code that will invoke verifyCode, e.g., update an element with a non-null code
     // expect error from verifyCode
+    const newProps = { id: firstElement.id, code: {...Code.createEmpty(), value:firstElement.codeValue}, classFullName: undefined, model: undefined };
+    await briefcaseDb.locks.acquireLocks({exclusive: firstElement.id});
     expect(() => briefcaseDb.elements.updateElement(newProps)).to.throw(CodeService.Error);
     // clean up
     CodeService.createForIModel = originalCreateForIModel;
