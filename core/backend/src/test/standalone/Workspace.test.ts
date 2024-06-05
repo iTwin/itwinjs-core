@@ -72,6 +72,7 @@ describe("WorkspaceFile", () => {
   it("WorkspaceDbNames", () => {
     const expectBadName = (names: string[]) => {
       names.forEach((dbName) => {
+        console.log(dbName);
         expect(() => validateWorkspaceDbName(dbName)).to.throw("dbName");
       });
     };
@@ -94,7 +95,12 @@ describe("WorkspaceFile", () => {
       "newline\n",
       "a".repeat(256), // too long
       " leading space",
-      "trailing space "]);
+      "trailing space ",
+      "per.iod",
+      "hash#tag",
+      "back`tick",
+      "single'quote",
+    ]);
 
     validateWorkspaceDbName(Guid.createValue()); // guids should be valid
   });
