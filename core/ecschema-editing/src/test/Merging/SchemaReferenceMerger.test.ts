@@ -45,7 +45,7 @@ describe("Schema reference merging tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [{
+      differences: [{
         changeType: "add",
         schemaType: SchemaOtherTypes.SchemaReference,
         difference: {
