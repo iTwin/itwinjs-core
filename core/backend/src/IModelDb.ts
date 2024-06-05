@@ -2769,10 +2769,11 @@ export class BriefcaseDb extends IModelDb {
         this.onCodeServiceCreated.raiseEvent(briefcaseDb);
       } catch (e: any) {
         if ((e as CodeService.Error).errorId !== "NoCodeIndex") { // no code index means iModel isn't enforcing codes.
+          Logger.logWarning(loggerCategory, `The CodeService is not available for this briefcase: errorId: ${(e as CodeService.Error).errorId}, errorMessage; ${e.message}. Proceeding with BriefcaseDb.open(), but all operations involving codes will fail.`);
           briefcaseDb._codeService = {
             verifyCode: (props: CodeService.ElementCodeProps) => {
               if (props.props.code !== null) {
-                // throw e or other CodeService.Error?
+                e.message = `The CodeService is not available for this briefcase: errorId: ${(e as CodeService.Error).errorId}, errorMessage; ${e.message}. Proceeding with BriefcaseDb.open(), but all operations involving codes will fail.`
                 throw e;
               }
             },

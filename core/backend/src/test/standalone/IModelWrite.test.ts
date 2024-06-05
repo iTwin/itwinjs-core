@@ -6,6 +6,7 @@
 import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
   Code, ColorDef,
+  FilePropertyProps,
   GeometricElement2dProps, GeometryStreamProps, IModel, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
@@ -328,6 +329,41 @@ describe("IModelWriteTest", () => {
     assert.equal(0, rwIModel.nativeDb.getChangesetSize());
     await rwIModel.pushChanges({ description: "schema changeset", accessToken: adminToken });
     rwIModel.close();
+  });
+
+  it.only("should set a fake verifyCode for codeService that throws error for operations that affect code, if failed to open codeService ", async () => {
+    const iModelProps = {
+      iModelName: "codeServiceTest",
+      iTwinId,
+    };
+    const iModelId = await HubMock.createNewIModel(iModelProps);
+    const briefcaseProps = await BriefcaseManager.downloadBriefcase({ accessToken: "codeServiceTest", iTwinId, iModelId });
+    const originalCreateForIModel = CodeService.createForIModel;
+    // can be any errors except 'NoCodeIndex'
+    CodeService.createForIModel = async () => {
+      throw new CodeService.Error("MissingCode", 0x10000 + 1, " ");
+    };
+    const briefcaseDb = await BriefcaseDb.open({ fileName: briefcaseProps.fileName});
+    briefcaseDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    let firstElement = {"id":undefined, "code":Code.createEmpty()};
+    briefcaseDb.withPreparedStatement("SELECT * from Bis.Element LIMIT 1", (stmt: ECSqlStatement) => {
+      if (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        firstElement = stmt.getRow();
+      }
+    });
+    const myPropsStr: FilePropertyProps = { name: "codeServiceProp", namespace: "codeService", id: 1, subId: 1 };
+    const myStrVal = "codeService test";
+    // make change to the briefcaseDb that does not affect code, e.g., save file property
+    // expect no error from verifyCode
+    expect(() => briefcaseDb.saveFileProperty(myPropsStr, myStrVal)).to.not.throw();
+    const newProps = { id: firstElement.id, code: Code.createEmpty(), classFullName: undefined, model: undefined };
+    await briefcaseDb.locks.acquireLocks({exclusive: firstElement.id});
+    // make change to the briefcaseDb that affects code that will invoke verifyCode, e.g., update an element with a non-null code
+    // expect error from verifyCode
+    expect(() => briefcaseDb.elements.updateElement(newProps)).to.throw(CodeService.Error);
+    // clean up
+    CodeService.createForIModel = originalCreateForIModel;
+    briefcaseDb.close();
   });
 
   it("clear cache on schema changes", async () => {
