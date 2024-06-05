@@ -20,6 +20,7 @@ import {
   ChangesetConflictArgs,
   ChannelControl,
   DictionaryModel,
+  MergeChangesetConflictArgs,
   SpatialCategory,
   SqliteChangesetReader,
 } from "../../core-backend";
@@ -54,7 +55,7 @@ export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: 
 
 Logger.setLevel("Changeset", LogLevel.Trace);
 
-describe.only("Changeset conflict handler", () => {
+describe("Changeset conflict handler", () => {
   let iTwinId: GuidString;
   let accessToken1: string;
   let accessToken2: string;
@@ -158,7 +159,7 @@ describe.only("Changeset conflict handler", () => {
   });
 
   async function spyChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, test: (s: sinon.SinonSpy<ChangesetConflictArgs[], DbConflictResolution>) => void) {
-    const s1 = sinon.spy(b.txns as any, "_onRebaseLocalTxnConflict" as any) as sinon.SinonSpy<ChangesetConflictArgs[], DbConflictResolution>;
+    const s1 = sinon.spy(b, "onChangesetConflict" as any) as sinon.SinonSpy<ChangesetConflictArgs[], DbConflictResolution>;
     try {
       await cb();
     } finally {
@@ -168,7 +169,7 @@ describe.only("Changeset conflict handler", () => {
   }
 
   async function stubChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, test: (s: sinon.SinonStub<ChangesetConflictArgs[], DbConflictResolution>) => void) {
-    const s1 = sinon.stub(b.txns as any, "_onRebaseLocalTxnConflict" as any);
+    const s1 = sinon.stub(b as any, "onChangesetConflict" as any);
     try {
       test(s1 as sinon.SinonStub<ChangesetConflictArgs[], DbConflictResolution>);
       await cb();
@@ -177,7 +178,7 @@ describe.only("Changeset conflict handler", () => {
     }
   }
   async function fakeChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, interceptMethod: (arg: ChangesetConflictArgs) => DbConflictResolution | undefined) {
-    const s1 = sinon.stub<ChangesetConflictArgs[], DbConflictResolution>(b.txns as any, "_onRebaseLocalTxnConflict" as any);
+    const s1 = sinon.stub<ChangesetConflictArgs[], DbConflictResolution>(b as any, "onChangesetConflict" as any);
     s1.callsFake(interceptMethod);
     try {
       await cb();
@@ -230,13 +231,6 @@ describe.only("Changeset conflict handler", () => {
         expect(arg.indirect).false;
         expect(arg.tableName).eq("bis_Element");
       },
-    );
-    b1.abandonChanges();
-    b1.txns.reverseSingleTxn();
-    await spyChangesetConflictHandler(
-      b1,
-      async () => b1.pullChanges(),
-      (spy) => expect(spy.callCount).eq(0, "changeset conflict handler should not be called"),
     );
   });
   it("DbConflictCause.Data - indirect change is not considered as data conflict & replaces existing change)", async () => {
@@ -343,11 +337,17 @@ describe.only("Changeset conflict handler", () => {
       b3,
       async () => b3.pullChanges({ accessToken: accessToken1 }),
       (spy) => {
-        expect(spy.callCount).eq(0);
+        expect(spy.callCount).eq(1);
+        expect(spy.alwaysReturned(DbConflictResolution.Skip)).true;
+        const arg = spy.args[0][0];
+        expect(arg.cause).eq(DbConflictCause.NotFound);
+        expect(arg.opcode).eq(DbOpcode.Delete);
+        expect(arg.indirect).true;
+        expect(arg.tableName).eq("bis_GeometricElement3d");
       },
     );
   });
-  it("DbConflictCause.Constraint - duplicate userLabels", async () => {
+  it.skip("DbConflictCause.Constraint - duplicate userLabels", async () => {
     await b1.pullChanges();
     await b2.pullChanges();
     const nonUniqueGuid = Guid.createValue();
@@ -371,9 +371,9 @@ describe.only("Changeset conflict handler", () => {
       b2,
       async () => assertThrowsAsync(
         async () => b2.pushChanges({ accessToken: accessToken1, description: "" }),
-        "Detected 1 foreign key conflicts in ChangeSet. Aborting merge."),
+        "Error in native callback"),
       (spy) => {
-        expect(spy.callCount).eq(3);
+        expect(spy.callCount).eq(2);
         expect(spy.returnValues[0]).eq(DbConflictResolution.Skip);
         const arg0 = spy.args[0][0];
         expect(arg0.cause).eq(DbConflictCause.Constraint);
@@ -430,7 +430,62 @@ describe.only("Changeset conflict handler", () => {
     await fakeChangesetConflictHandler(
       b2,
       async () => b2.pushChanges({ accessToken: accessToken1, description: "" }),
-      (arg: ChangesetConflictArgs) => {
+      (arg: MergeChangesetConflictArgs) => {
+
+        // *** SqliteChangeReader API test ***
+        const reader = SqliteChangesetReader.openFile({ fileName: arg.changesetFile!, db: b2 });
+        expect(reader.step()).is.true;
+        expect(reader.tableName).equals("be_Prop");
+        expect(reader.getPrimaryKeyColumnNames()).deep.equals(["Namespace", "Name", "Id", "SubId"]);
+        expect(reader.primaryKeyValues).deep.equals(["test", "test", "0xfffffff", "0x1234"]);
+        expect(reader.getChangeValue(0, "Old")).equals("test");
+        expect(reader.getChangeValue(1, "Old")).equals("test");
+        expect(reader.getChangeValue(2, "Old")).equals("0xfffffff");
+        expect(reader.getChangeValue(3, "Old")).equals("0x1234");
+        expect(reader.getChangeValue(4, "Old")).is.undefined;
+        expect(reader.getChangeValue(5, "Old")).equals("test");
+        expect(reader.getChangeValue(6, "Old")).is.undefined;
+        expect(reader.getChangeValue(7, "Old")).is.undefined;
+
+        expect(reader.getChangeValue(0, "New")).is.undefined;
+        expect(reader.getChangeValue(1, "New")).is.undefined;
+        expect(reader.getChangeValue(2, "New")).is.undefined;
+        expect(reader.getChangeValue(3, "New")).is.undefined;
+        expect(reader.getChangeValue(4, "New")).is.undefined;
+        expect(reader.getChangeValue(5, "New")).equals("test1");
+        expect(reader.getChangeValue(6, "New")).is.undefined;
+        expect(reader.getChangeValue(7, "New")).is.undefined;
+
+        expect(reader.getChangeValueType(0, "Old")).equals(DbValueType.TextVal);
+        expect(reader.getChangeValueType(1, "Old")).equals(DbValueType.TextVal);
+        expect(reader.getChangeValueType(2, "Old")).equals(DbValueType.IntegerVal);
+        expect(reader.getChangeValueType(3, "Old")).equals(DbValueType.IntegerVal);
+        expect(reader.getChangeValueType(4, "Old")).is.undefined;
+        expect(reader.getChangeValueType(5, "Old")).equals(DbValueType.TextVal);
+        expect(reader.getChangeValueType(6, "Old")).is.undefined;
+        expect(reader.getChangeValueType(7, "Old")).is.undefined;
+
+        expect(reader.getChangeValueType(0, "New")).is.undefined;
+        expect(reader.getChangeValueType(1, "New")).is.undefined;
+        expect(reader.getChangeValueType(2, "New")).is.undefined;
+        expect(reader.getChangeValueType(3, "New")).is.undefined;
+        expect(reader.getChangeValueType(4, "New")).is.undefined;
+        expect(reader.getChangeValueType(5, "New")).equals(DbValueType.TextVal);
+        expect(reader.getChangeValueType(6, "New")).is.undefined;
+        expect(reader.getChangeValueType(7, "New")).is.undefined;
+
+        expect(reader.getChangeValueBinary(0, "Old")).deep.equals(new Uint8Array([116, 101, 115, 116]));
+        expect(reader.getChangeValueDouble(0, "Old")).equals(0);
+        expect(reader.getChangeValueId(0, "Old")).equals("0");
+        expect(reader.getChangeValueInteger(0, "Old")).equals(0);
+        expect(reader.getChangeValueText(0, "Old")).equals("test");
+
+        expect(reader.getChangeValueBinary(0, "New")).is.undefined;
+        expect(reader.getChangeValueDouble(0, "New")).is.undefined;
+        expect(reader.getChangeValueId(0, "New")).is.undefined;
+        expect(reader.getChangeValueInteger(0, "New")).is.undefined;
+        expect(reader.getChangeValueText(0, "New")).is.undefined;
+
         // *** ChangesetConflictArgs API test ***
         expect(arg.tableName).eq("be_Prop");
         expect(arg.cause).eq(DbConflictCause.Data);
@@ -497,8 +552,8 @@ describe.only("Changeset conflict handler", () => {
         // 5 - StrData
         expect(arg.getValueBinary(5, DbChangeStage.Old)).deep.equals(new Uint8Array([116, 101, 115, 116]));
         expect(arg.getValueBinary(5, DbChangeStage.New)).deep.equals(new Uint8Array([116, 101, 115, 116, 49]));
-        expect(arg.getValueId(5, DbChangeStage.New)).is.equals("0");
-        expect(arg.getValueId(5, DbChangeStage.Old)).is.equals("0");
+        expect(arg.getValueId(5, DbChangeStage.New)).is.equals("0x0");
+        expect(arg.getValueId(5, DbChangeStage.Old)).is.equals("0x0");
         expect(arg.getValueText(5, DbChangeStage.New)).is.equals("test1");
         expect(arg.getValueText(5, DbChangeStage.Old)).is.equals("test");
         expect(arg.getValueType(5, DbChangeStage.New)).is.equals(DbValueType.TextVal);

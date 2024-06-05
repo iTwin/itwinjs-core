@@ -8,11 +8,11 @@
 
 import * as touch from "touch";
 import {
-  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType, Id64Array, Id64String, IModelStatus, IndexMap, Logger, LogLevel, OrderedId64Array,
+  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictCause, DbConflictResolution, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, LogLevel, OrderedId64Array,
 } from "@itwin/core-bentley";
 import { EntityIdAndClassIdIterable, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseDb, StandaloneDb } from "./IModelDb";
+import { BriefcaseDb, ChangesetConflictArgs, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
@@ -81,24 +81,8 @@ export interface TxnArgs {
 }
 
 /** @internal */
-export interface ChangesetConflictArgs {
-  cause: DbConflictCause;
-  opcode: DbOpcode;
-  indirect: boolean;
-  tableName: string;
-  columnCount: number;
+export interface RebaseChangesetConflictArgs extends ChangesetConflictArgs {
   txn: TxnArgs;
-  getForeignKeyConflicts: () => number;
-  dump: () => void;
-  setLastError: (message: string) => void;
-  getPrimaryKeyColumns: () => number[];
-  getValueType: (columnIndex: number, stage: DbChangeStage) => DbValueType | null | undefined;
-  getValueBinary: (columnIndex: number, stage: DbChangeStage) => Uint8Array | null | undefined;
-  getValueId: (columnIndex: number, stage: DbChangeStage) => Id64String | null | undefined;
-  getValueText: (columnIndex: number, stage: DbChangeStage) => string | null | undefined;
-  getValueInteger: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
-  getValueDouble: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
-  isValueNull: (columnIndex: number, stage: DbChangeStage) => boolean | undefined;
 }
 
 /** Strictly for tests. @internal */
@@ -442,7 +426,7 @@ export class TxnManager {
   }
 
   /** @internal */
-  protected _onRebaseLocalTxnConflict(args: ChangesetConflictArgs): DbConflictResolution {
+  protected _onRebaseLocalTxnConflict(args: RebaseChangesetConflictArgs): DbConflictResolution {
     const category = "DgnCore";
     const interpretConflictCause = (cause: DbConflictCause) => {
       switch (cause) {
@@ -460,6 +444,9 @@ export class TxnManager {
     };
 
     if (args.cause === DbConflictCause.Data && !args.indirect) {
+      if (args.tableName.startsWith("ec_")) {
+        return DbConflictResolution.Skip;
+      }
       const msg = "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.";
       args.setLastError(msg);
       Logger.logError(category, msg);
@@ -468,6 +455,9 @@ export class TxnManager {
     }
 
     if (args.cause === DbConflictCause.Conflict) {
+      if (args.tableName.startsWith("ec_")) {
+        return DbConflictResolution.Skip;
+      }
       const msg = "PRIMARY KEY INSERT CONFLICT - rejecting this changeset";
       args.setLastError(msg);
       Logger.logError(category, msg);
