@@ -2772,7 +2772,7 @@ export class BriefcaseDb extends IModelDb {
           Logger.logWarning(loggerCategory, `The CodeService is not available for this briefcase: errorId: ${(e as CodeService.Error).errorId}, errorMessage; ${e.message}. Proceeding with BriefcaseDb.open(), but all operations involving codes will fail.`);
           briefcaseDb._codeService = {
             verifyCode: (props: CodeService.ElementCodeProps) => {
-              if (props.props.code !== null) {
+              if (props.props.code !== Code.createEmpty()) {
                 e.message = `The CodeService is not available for this briefcase: errorId: ${(e as CodeService.Error).errorId}, errorMessage; ${e.message}. Proceeding with BriefcaseDb.open(), but all operations involving codes will fail.`
                 throw e;
               }

@@ -351,11 +351,9 @@ describe("IModelWriteTest", () => {
         firstElement = stmt.getRow();
       }
     });
-    const myPropsStr: FilePropertyProps = { name: "codeServiceProp", namespace: "codeService", id: 1, subId: 1 };
-    const myStrVal = "codeService test";
     // make change to the briefcaseDb that does not affect code, e.g., save file property
     // expect no error from verifyCode
-    expect(() => briefcaseDb.saveFileProperty(myPropsStr, myStrVal)).to.not.throw();
+    expect(() => briefcaseDb.saveFileProperty({ name: "codeServiceProp", namespace: "codeService", id: 1, subId: 1 }, "codeService test")).to.not.throw();
     const newProps = { id: firstElement.id, code: Code.createEmpty(), classFullName: undefined, model: undefined };
     await briefcaseDb.locks.acquireLocks({exclusive: firstElement.id});
     // make change to the briefcaseDb that affects code that will invoke verifyCode, e.g., update an element with a non-null code
