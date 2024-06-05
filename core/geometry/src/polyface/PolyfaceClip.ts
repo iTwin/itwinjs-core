@@ -224,10 +224,18 @@ export class PolyfaceClip {
         GrowableXYZArray.multiplyTransformInPlace(worldToLocal, shards);
       const outsidePieces = RegionOps.polygonBooleanXYToLoops(shards, RegionBinaryOpType.Union, []);
       if (outsidePieces && outsidePieces.children.length > 0) {
-        if (localToWorld)
-          outsidePieces.tryTransformInPlace(localToWorld);
         RegionOps.consolidateAdjacentPrimitives(outsidePieces); // source of the T-vertices removed in claimPolyface
-        this.addRegion(builder, outsidePieces);
+        const options = new StrokeOptions();
+        options.maximizeConvexFacets = true;
+        const localFacets = RegionOps.facetRegionXY(outsidePieces, options);
+        if (localFacets) {
+          // prefer to add non-convex facets
+          builder.addIndexedPolyface(localFacets, false, localToWorld);
+        } else {  // failsafe; we don't expect to get here
+          if (localToWorld)
+            outsidePieces.tryTransformInPlace(localToWorld);
+          this.addRegion(builder, outsidePieces); // possibly non-convex!
+        }
       }
     }
   }

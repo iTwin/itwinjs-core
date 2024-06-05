@@ -6,6 +6,7 @@ import { CustomAttributeClass, EntityClass, Mixin, Schema, SchemaContext, Schema
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { ECEditingStatus } from "../../Editing/Exception";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -28,7 +29,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.StructClass,
@@ -54,7 +55,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.CustomAttributeClass,
@@ -81,7 +82,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.EntityClass,
@@ -131,7 +132,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaOtherTypes.SchemaReference,
@@ -184,7 +185,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaOtherTypes.SchemaReference,
@@ -227,7 +228,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.EntityClass,
@@ -285,7 +286,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.Mixin,
@@ -324,7 +325,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "modify",
           schemaType: SchemaItemType.StructClass,
@@ -363,7 +364,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.StructClass,
@@ -402,7 +403,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "modify",
           schemaType: SchemaItemType.CustomAttributeClass,
@@ -443,7 +444,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.CustomAttributeClass,
@@ -482,7 +483,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "modify",
           schemaType: SchemaItemType.EntityClass,
@@ -519,7 +520,7 @@ describe("Class merger tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.EntityClass,
@@ -556,7 +557,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "modify",
           schemaType: SchemaItemType.StructClass,
@@ -585,7 +586,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "modify",
           schemaType: SchemaItemType.EntityClass,
@@ -618,7 +619,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.EntityClass,
@@ -645,7 +646,11 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Baseclass TargetSchema.TestBase must derive from TargetSchema.TargetBase");
+    await expect(merge).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
+      expect(error).to.have.nested.property("innerError.message", `Base class TargetSchema.TestBase must derive from TargetSchema.TargetBase.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
+    });
   });
 
   it.skip("should throw an error when merging entity base class changed from existing one to undefined", async () => {
@@ -666,7 +671,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "modify",
           schemaType: SchemaItemType.EntityClass,
@@ -695,7 +700,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.EntityClass,
@@ -735,7 +740,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.EntityClass,
@@ -796,7 +801,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "modify" as any,
           schemaType: SchemaOtherTypes.EntityClassMixin,
@@ -825,7 +830,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaOtherTypes.EntityClassMixin,
@@ -837,7 +842,11 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Mixin Class TargetSchema.NotExistingMixin not found in schema context.");
+    await expect(merge).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("errorNumber", ECEditingStatus.AddMixin);
+      expect(error).to.have.nested.property("innerError.message", `Mixin TargetSchema.NotExistingMixin could not be found in the schema context.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
+    });
   });
 
   it("should throw an error when merging struct base class changed from undefined to existing one", async () => {
@@ -854,7 +863,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.StructClass,
@@ -899,7 +908,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.Mixin,
@@ -919,7 +928,11 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Baseclass TargetSchema.TestBase must derive from TargetSchema.BaseMixin.");
+    await expect(merge).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
+      expect(error).to.have.nested.property("innerError.message", `Base class TargetSchema.TestBase must derive from TargetSchema.BaseMixin.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
+    });
   });
 
   it("should throw an error when merging custom attribute base class changed from undefined to existing one", async () => {
@@ -937,7 +950,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.CustomAttributeClass,
@@ -980,7 +993,7 @@ describe("Class merger tests", () => {
     const merge = merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.CustomAttributeClass,
@@ -1009,6 +1022,10 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Baseclass TargetSchema.TestBase must derive from TargetSchema.TargetBase");
+    await expect(merge).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
+      expect(error).to.have.nested.property("innerError.message", `Base class TargetSchema.TestBase must derive from TargetSchema.TargetBase.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
+    });
   });
 });

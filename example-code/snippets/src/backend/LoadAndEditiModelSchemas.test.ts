@@ -36,32 +36,21 @@ describe("SchemaLoadAndEdit", () => {
     // __PUBLISH_EXTRACT_END__
 
     // __PUBLISH_EXTRACT_START__ IModelSchemas.editSchemas
-    const createSchemaResult = await editor.createSchema("PipingSchema", "PS", 1,0,42);
-    if (createSchemaResult.errorMessage !== undefined) {
-      throw new Error("Failed to create schema");
-    }
+    const schemaKey = await editor.createSchema("PipingSchema", "PS", 1,0,42);
 
     const bisSchema = loader.getSchema("BisCore");
-    const addRefResult = await editor.addSchemaReference(createSchemaResult.schemaKey!, bisSchema);
-    if(addRefResult.errorMessage !== undefined) {
-      throw new Error(`failed to add reference schema: ${addRefResult.errorMessage}`);
-    }
+    await editor.addSchemaReference(schemaKey, bisSchema);
 
-    const createClassResult = await editor.entities.createElement(createSchemaResult.schemaKey!, "Pipe", ECClassModifier.None, bisSchema.getSchemaItemKey("BisCore.PhysicalElement"));
-    if (createClassResult.errorMessage !== undefined) {
-      throw new Error(`Failed to create class: ${createClassResult.errorMessage}`);
-    }
+    const elementKey = await editor.entities.createElement(schemaKey, "Pipe", ECClassModifier.None, bisSchema.getSchemaItemKey("BisCore.PhysicalElement"));
 
-    const createPropResult = await editor.entities.createProperty(createClassResult.itemKey!, "Diameter", PrimitiveType.Double, "cgk");
-    if (createPropResult.errorMessage !== undefined) {
-      throw new Error(`Failed to create property: ${createPropResult.errorMessage}`);
-    }
+    await editor.entities.createProperty(elementKey, "Diameter", PrimitiveType.Double, "cgk");
+
     // __PUBLISH_EXTRACT_END__
 
     // __PUBLISH_EXTRACT_START__ IModelSchemas.importToIModel
-    const pipingSchema = await editor.getSchema(createSchemaResult.schemaKey!);
+    const pipingSchema = await editor.getSchema(schemaKey);
     if (pipingSchema === undefined) {
-      throw new Error(`Schema Key ${createSchemaResult.schemaKey!.toString(true)} not found in context`);
+      throw new Error(`Schema Key ${schemaKey.toString(true)} not found in context`);
     }
     const schemaXml = await SchemaXml.writeString(pipingSchema);
     await iModelDb.importSchemaStrings([schemaXml]);

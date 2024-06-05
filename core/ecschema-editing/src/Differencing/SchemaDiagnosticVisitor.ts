@@ -52,17 +52,17 @@ function derivedFrom(ecClass: ECClass | undefined, baseClassName: string): boole
  */
 export class SchemaDiagnosticVisitor {
 
-  public readonly schemaChanges: Array<SchemaDifference|SchemaReferenceDifference>;
-  public readonly schemaItemChanges: Array<AnySchemaItemDifference>;
-  public readonly schemaItemPathChanges: Array<AnySchemaItemPathDifference>;
-  public readonly customAttributeChanges: Array<CustomAttributeDifference>;
+  public readonly schemaDifferences: Array<SchemaDifference|SchemaReferenceDifference>;
+  public readonly schemaItemDifferences: Array<AnySchemaItemDifference>;
+  public readonly schemaItemPathDifferences: Array<AnySchemaItemPathDifference>;
+  public readonly customAttributeDifferences: Array<CustomAttributeDifference>;
   public readonly conflicts: Array<SchemaDifferenceConflict>;
 
   constructor() {
-    this.schemaChanges = [];
-    this.schemaItemChanges = [];
-    this.schemaItemPathChanges = [];
-    this.customAttributeChanges = [];
+    this.schemaDifferences = [];
+    this.schemaItemDifferences = [];
+    this.schemaItemPathDifferences = [];
+    this.customAttributeDifferences = [];
     this.conflicts = [];
   }
 
@@ -136,7 +136,7 @@ export class SchemaDiagnosticVisitor {
   }
 
   private visitChangedSchemaProperties(diagnostic: AnyDiagnostic) {
-    let modifyEntry = this.schemaChanges.find((entry): entry is SchemaDifference => {
+    let modifyEntry = this.schemaDifferences.find((entry): entry is SchemaDifference => {
       return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.Schema;
     });
 
@@ -164,14 +164,14 @@ export class SchemaDiagnosticVisitor {
     }
 
     if (addEntry && hasChanges) {
-      this.schemaChanges.push(modifyEntry);
+      this.schemaDifferences.push(modifyEntry);
     }
   }
 
   private visitMissingSchemaItem(diagnostic: AnyDiagnostic) {
     const schemaItem = diagnostic.ecDefinition as AnySchemaItem;
 
-    this.schemaItemChanges.push({
+    this.schemaItemDifferences.push({
       changeType: "add",
       schemaType: schemaItem.schemaItemType,
       itemName: schemaItem.name,
@@ -199,7 +199,7 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.schemaItemChanges.find((entry): entry is AnySchemaItemDifference => {
+    let modifyEntry = this.schemaItemDifferences.find((entry): entry is AnySchemaItemDifference => {
       return entry.changeType === "modify" && entry.itemName === schemaItem.name;
     });
 
@@ -210,7 +210,7 @@ export class SchemaDiagnosticVisitor {
         itemName: schemaItem.name,
         difference: {},
       } as AnySchemaItemDifference;
-      this.schemaItemChanges.push(modifyEntry);
+      this.schemaItemDifferences.push(modifyEntry);
     }
 
     // TODO: Since propertyName is type of string, the compiler complains about accepting
@@ -221,7 +221,7 @@ export class SchemaDiagnosticVisitor {
 
   private visitChangedEnumeration(diagnostic: AnyDiagnostic) {
     const enumeration = diagnostic.ecDefinition as Enumeration;
-    if (this.schemaItemPathChanges.find((entry) => entry.changeType === "add" && entry.itemName === enumeration.name)) {
+    if (this.schemaItemPathDifferences.find((entry) => entry.changeType === "add" && entry.itemName === enumeration.name)) {
       return;
     }
 
@@ -244,7 +244,7 @@ export class SchemaDiagnosticVisitor {
   private visitMissingEnumerator(diagnostic: AnyDiagnostic) {
     const enumeration = diagnostic.ecDefinition as Enumeration;
     const [enumerator] = diagnostic.messageArgs as [AnyEnumerator];
-    this.schemaItemPathChanges.push({
+    this.schemaItemPathDifferences.push({
       changeType: "add",
       schemaType: SchemaOtherTypes.Enumerator,
       itemName: enumeration.name,
@@ -254,7 +254,7 @@ export class SchemaDiagnosticVisitor {
   }
 
   private lookupEnumeratorEntry(changeType: DifferenceType, item: string, enumeratorName: string) {
-    return this.schemaItemPathChanges.find((change) => {
+    return this.schemaItemPathDifferences.find((change) => {
       return change.changeType === changeType
         && change.schemaType === SchemaOtherTypes.Enumerator
         && change.itemName === item
@@ -274,7 +274,7 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.schemaItemPathChanges.find((entry): entry is EnumeratorDifference => {
+    let modifyEntry = this.schemaItemPathDifferences.find((entry): entry is EnumeratorDifference => {
       return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.Enumerator && entry.itemName === enumeration.name && entry.path === enumerator.name;
     });
 
@@ -286,7 +286,7 @@ export class SchemaDiagnosticVisitor {
         path: enumerator.name,
         difference: {},
       };
-      this.schemaItemPathChanges.push(modifyEntry);
+      this.schemaItemPathDifferences.push(modifyEntry);
     }
 
     if (sourceValue !== undefined) {
@@ -314,7 +314,7 @@ export class SchemaDiagnosticVisitor {
 
   private visitMissingProperty(diagnostic: AnyDiagnostic) {
     const property = diagnostic.ecDefinition as Property;
-    this.schemaItemPathChanges.push({
+    this.schemaItemPathDifferences.push({
       changeType: "add",
       schemaType: SchemaOtherTypes.Property,
       itemName: property.class.name,
@@ -330,7 +330,7 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.schemaItemPathChanges.find((entry): entry is ClassPropertyDifference => {
+    let modifyEntry = this.schemaItemPathDifferences.find((entry): entry is ClassPropertyDifference => {
       return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.Property && entry.itemName === property.class.name && entry.path === property.name;
     });
 
@@ -342,7 +342,7 @@ export class SchemaDiagnosticVisitor {
         path: property.name,
         difference: {},
       };
-      this.schemaItemPathChanges.push(modifyEntry);
+      this.schemaItemPathDifferences.push(modifyEntry);
     }
 
     if (propertyName !== "name" && sourceValue !== undefined) {
@@ -375,7 +375,7 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.schemaItemChanges.find((entry): entry is ClassItemDifference => {
+    let modifyEntry = this.schemaItemDifferences.find((entry): entry is ClassItemDifference => {
       return entry.changeType === "modify" && entry.schemaType === ecClass.schemaItemType && entry.itemName === ecClass.name;
     });
 
@@ -386,7 +386,7 @@ export class SchemaDiagnosticVisitor {
         itemName: ecClass.name,
         difference: {},
       } as ClassItemDifference;
-      this.schemaItemChanges.push(modifyEntry);
+      this.schemaItemDifferences.push(modifyEntry);
     }
 
     modifyEntry.difference.baseClass = sourceBaseClass.fullName;
@@ -444,7 +444,7 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    let modifyEntry = this.schemaItemChanges.find((entry): entry is EntityClassMixinDifference => {
+    let modifyEntry = this.schemaItemDifferences.find((entry): entry is EntityClassMixinDifference => {
       return entry.changeType === "add" && entry.schemaType === SchemaOtherTypes.EntityClassMixin && entry.itemName === ecClass.name;
     });
 
@@ -455,7 +455,7 @@ export class SchemaDiagnosticVisitor {
         itemName: ecClass.name,
         difference: [],
       };
-      this.schemaItemChanges.push(modifyEntry);
+      this.schemaItemDifferences.push(modifyEntry);
     }
     modifyEntry.difference.push(mixin.fullName);
   }
@@ -483,7 +483,7 @@ export class SchemaDiagnosticVisitor {
     const className = constraint.relationshipClass.name;
     const constraintPath = constraint.isSource ? "$source" : "$target";
 
-    let modifyEntry = this.schemaItemPathChanges.find((entry): entry is RelationshipConstraintClassDifference => {
+    let modifyEntry = this.schemaItemPathDifferences.find((entry): entry is RelationshipConstraintClassDifference => {
       return entry.changeType === "add" && entry.schemaType === SchemaOtherTypes.RelationshipConstraintClass, entry.itemName === className && entry.path === constraintPath;
     });
 
@@ -495,7 +495,7 @@ export class SchemaDiagnosticVisitor {
         path: constraintPath,
         difference: [],
       };
-      this.schemaItemPathChanges.push(modifyEntry);
+      this.schemaItemPathDifferences.push(modifyEntry);
     }
 
     const [constraintClass] = diagnostic.messageArgs as [ECClass];
@@ -506,11 +506,11 @@ export class SchemaDiagnosticVisitor {
     const constraint = diagnostic.ecDefinition as RelationshipConstraint;
     const className = constraint.relationshipClass.name;
     const constraintPath = constraint.isSource ? "$source" : "$target";
-    if (this.schemaItemChanges.find((entry) => entry.changeType === "add" && entry.itemName === className)) {
+    if (this.schemaItemDifferences.find((entry) => entry.changeType === "add" && entry.itemName === className)) {
       return;
     }
 
-    let modifyEntry = this.schemaItemPathChanges.find((entry): entry is RelationshipConstraintDifference => {
+    let modifyEntry = this.schemaItemPathDifferences.find((entry): entry is RelationshipConstraintDifference => {
       return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.RelationshipConstraint && entry.itemName === className && entry.path === constraintPath;
     });
 
@@ -522,7 +522,7 @@ export class SchemaDiagnosticVisitor {
         path: constraintPath,
         difference: {},
       };
-      this.schemaItemPathChanges.push(modifyEntry);
+      this.schemaItemPathDifferences.push(modifyEntry);
     }
 
     const [propertyName, propertyValue] = diagnostic.messageArgs as [keyof RelationshipConstraintProps, any];
@@ -542,7 +542,7 @@ export class SchemaDiagnosticVisitor {
 
   private visitSchemaReference(diagnostic: AnyDiagnostic, changeType: DifferenceType) {
     const [referencedSchema] = diagnostic.messageArgs as [Schema];
-    this.schemaChanges.push({
+    this.schemaDifferences.push({
       changeType,
       schemaType: SchemaOtherTypes.SchemaReference,
       difference: {
@@ -556,7 +556,7 @@ export class SchemaDiagnosticVisitor {
     const [customAttribute] = diagnostic.messageArgs as [CustomAttribute];
     const ecType = diagnostic.ecDefinition;
     if (Schema.isSchema(ecType)) {
-      return this.customAttributeChanges.push({
+      return this.customAttributeDifferences.push({
         changeType: "add",
         schemaType: SchemaOtherTypes.CustomAttributeInstance,
         appliedTo: "Schema",
@@ -565,7 +565,7 @@ export class SchemaDiagnosticVisitor {
     }
 
     if (SchemaItem.isSchemaItem(ecType)) {
-      return this.customAttributeChanges.push({
+      return this.customAttributeDifferences.push({
         changeType: "add",
         schemaType: SchemaOtherTypes.CustomAttributeInstance,
         appliedTo: "SchemaItem",
@@ -575,7 +575,7 @@ export class SchemaDiagnosticVisitor {
     }
 
     if (Property.isProperty(ecType)) {
-      return this.customAttributeChanges.push({
+      return this.customAttributeDifferences.push({
         changeType: "add",
         schemaType: SchemaOtherTypes.CustomAttributeInstance,
         appliedTo: "Property",
@@ -586,7 +586,7 @@ export class SchemaDiagnosticVisitor {
     }
 
     if (RelationshipConstraint.isRelationshipConstraint(ecType)) {
-      return this.customAttributeChanges.push({
+      return this.customAttributeDifferences.push({
         changeType: "add",
         schemaType: SchemaOtherTypes.CustomAttributeInstance,
         appliedTo: "RelationshipConstraint",

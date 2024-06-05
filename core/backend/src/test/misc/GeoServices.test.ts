@@ -8,8 +8,9 @@ import {
   GeographicCRSInterpretRequestProps, GeographicCRSProps,
 } from "@itwin/core-common";
 import { IModelHost } from "../../IModelHost";
-import { Geometry } from "@itwin/core-geometry";
+import { Geometry, Range2d, Range2dProps } from "@itwin/core-geometry";
 import { GeoCoordConfig } from "../../GeoCoordConfig";
+import { getAvailableCoordinateReferenceSystems } from "../../GeographicCRSServices";
 
 // spell-checker: disable
 
@@ -801,6 +802,94 @@ describe("GeoServices", () => {
       };
 
       await interpretWKTTest('COMPD_CS["UTM84-18N",PROJCS["UTM84-18N",GEOGCS["LL84",DATUM["WGS84",SPHEROID["WGS84",6378137.000,298.25722293]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Universal Transverse Mercator System"],PARAMETER["UTM Zone Number (1 - 60)",18.0],PARAMETER["Hemisphere, North or South",1.0],UNIT["Meter",1.00000000000000]],VERT_CS["Geoid Height",VERT_DATUM["EGM96 geoid",2005],UNIT["METER",1.000000]]]', utm84Zone18NGeoid);
+    });
+  });
+
+  describe("Verify list of CRS", async () => {
+    const validationRange = 50;
+    const validationRangeSmall = 10;
+
+    const validateCRSList = async (expectedCount: number, allowedRange: number, extent?: Range2dProps): Promise<void> => {
+      const listOfCRS = await getAvailableCoordinateReferenceSystems({ extent });
+
+      // Check fields of returned CRS's
+      const extentRange: Range2d = Range2d.fromJSON(extent);
+      for (const crs of listOfCRS) {
+        // Validate extent
+        if (extent !== undefined) {
+          const crsExtentRange: Range2d = Range2d.fromJSON(crs.crsExtent);
+          const intersects = extentRange.intersectsRange(crsExtentRange);
+          assert.isTrue(intersects);
+        }
+
+        // These fields should always be present
+        assert.isTrue(crs.name !== undefined);
+        assert.isTrue(crs.description !== undefined);
+        assert.isTrue(crs.deprecated === true || crs.deprecated === false);
+      }
+
+      assert.isTrue(listOfCRS.length > expectedCount - allowedRange && listOfCRS.length < expectedCount + allowedRange);
+    };
+
+    const validateExtent = (expectedExtent: Range2d, crsExtent: Range2dProps) => {
+      const crsExtentRange: Range2d = Range2d.fromJSON(crsExtent);
+      assert.equal(crsExtentRange.low.x, expectedExtent.low.x);
+      assert.equal(crsExtentRange.low.y, expectedExtent.low.y);
+      assert.equal(crsExtentRange.high.x, expectedExtent.high.x);
+      assert.equal(crsExtentRange.high.y, expectedExtent.high.y);
+    };
+
+    it("should get all CRS", async () => {
+      await validateCRSList(11874, validationRange);
+    });
+
+    it("should return CRS that are in the specified range (1)", async () => {
+      const extent: Range2dProps = { low: { x: 60.1, y: 61.2 }, high: { x: 62.3, y: 63.4 } };
+      await validateCRSList(82, validationRangeSmall, extent);
+    });
+
+    it("should return CRS that are in the specified range (2)", async () => {
+      const extent: Range2dProps = { low: { x: 0, y: 2 }, high: { x: 1, y: 3 } };
+      await validateCRSList(67, validationRangeSmall, extent);
+    });
+
+    it("should return CRS that are in the specified range (3)", async () => {
+      const extent: Range2dProps = { low: { x: 0.3, y: 2.4 }, high: { x: 1.6, y: 3.77 } };
+      await validateCRSList(62, validationRangeSmall, extent);
+    });
+
+    it("should retrieve the whole list of CRS and validate the properties for a few selected CRS.", async () => {
+      const listOfCRS = await getAvailableCoordinateReferenceSystems({});
+      let nbFound = 0;
+      for (const crs of listOfCRS) {
+        switch (crs.name) {
+          case "3TM111-83":
+            nbFound++;
+            assert.equal(crs.description, "Use NAD83-AB/3TM-111 instead.");
+            assert.equal(crs.deprecated, true);
+            validateExtent(Range2d.fromJSON({ low: { x: -113, y: 48 }, high: { x: -109, y: 84 } }), crs.crsExtent);
+            break;
+          case "NAD27-CAN.MTM-1":
+            nbFound++;
+            assert.equal(crs.description, "NAD27 / MTM zone 1");
+            assert.equal(crs.deprecated, false);
+            validateExtent(Range2d.fromJSON({ low: { x: -54.5, y: 45 }, high: { x: -50.5, y: 55 } }), crs.crsExtent);
+            break;
+          case "AL83-EF":
+            nbFound++;
+            assert.equal(crs.description, "NAD83 Alabama State Plane, East Zone, US Foot");
+            assert.equal(crs.deprecated, false);
+            validateExtent(Range2d.fromJSON({ low: { x: -87.5, y: 30 }, high: { x: -84, y: 35.75 } }), crs.crsExtent);
+            break;
+          case "ME-E":
+            nbFound++;
+            assert.equal(crs.description, "NAD27 Maine State Plane, East Zone(1801), US Foot");
+            assert.equal(crs.deprecated, false);
+            validateExtent(Range2d.fromJSON({ low: { x: -71, y: 43.5 }, high: { x: -66, y: 48 } }), crs.crsExtent);
+            break;
+        }
+      }
+      assert.equal(nbFound, 4);
     });
   });
 

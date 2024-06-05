@@ -3161,6 +3161,12 @@ export interface EdgeTableInfo {
     readonly width: number;
 }
 
+// @internal
+export interface EditCommandHandler {
+    // (undocumented)
+    finishCommand(): Promise<string>;
+}
+
 // @public
 export namespace EditManipulator {
     export enum EventType {
@@ -11172,7 +11178,7 @@ export namespace RealityMeshParams {
         transform?: Transform;
         wantNormals?: boolean;
         wantParams?: boolean;
-    }): Polyface | undefined;
+    }): IndexedPolyface | undefined;
 }
 
 // @beta
@@ -11434,7 +11440,7 @@ export class RealityTileDrawArgs extends TileDrawArgs {
 
 // @beta
 export interface RealityTileGeometry {
-    polyfaces?: Polyface[];
+    polyfaces?: IndexedPolyface[];
 }
 
 // @internal
@@ -13879,6 +13885,8 @@ export abstract class TerrainMeshProvider {
 export interface TerrainMeshProviderOptions {
     dataSource?: string;
     exaggeration: number;
+    // @beta
+    produceGeometry?: boolean;
     wantNormals: boolean;
     wantSkirts: boolean;
 }
@@ -14170,6 +14178,8 @@ export class TileAdmin {
     readonly enableImprovedElision: boolean;
     // @internal (undocumented)
     get enableInstancing(): boolean;
+    // @internal (undocumented)
+    readonly expandProjectExtents: boolean;
     forgetUser(user: TileUser): void;
     // @internal
     freeMemory(): void;
@@ -14301,6 +14311,8 @@ export namespace TileAdmin {
         enableImprovedElision?: boolean;
         enableIndexedEdges?: boolean;
         enableInstancing?: boolean;
+        // @internal
+        expandProjectExtents?: boolean;
         // @beta
         generateAllPolyfaceEdges?: boolean;
         gpuMemoryLimits?: GpuMemoryLimit | GpuMemoryLimits;
@@ -14514,7 +14526,7 @@ export class TileGeometryCollector {
     get isAllGeometryLoaded(): boolean;
     markLoading(): void;
     protected readonly _options: TileGeometryCollectorOptions;
-    readonly polyfaces: Polyface[];
+    readonly polyfaces: IndexedPolyface[];
     requestMissingTiles(): void;
 }
 
@@ -15106,6 +15118,7 @@ export class ToolAdmin {
     set reloadToolSettingsHandler(handler: (() => void) | undefined);
     // @beta
     reloadToolSettingsProperties(): void;
+    restartPrimitiveTool(): Promise<void>;
     // @internal (undocumented)
     sendButtonEvent(ev: BeButtonEvent): Promise<any>;
     // (undocumented)
@@ -15114,6 +15127,8 @@ export class ToolAdmin {
     setAdjustedDataPoint(ev: BeButtonEvent): void;
     // (undocumented)
     setCursor(cursor: string | undefined): void;
+    // @internal (undocumented)
+    setEditCommandHandler(handler?: EditCommandHandler): void;
     // @internal (undocumented)
     setIncompatibleViewportCursor(restore: boolean): void;
     // @internal (undocumented)

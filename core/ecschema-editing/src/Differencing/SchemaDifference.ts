@@ -90,27 +90,27 @@ export namespace SchemaDifference {
     for (const diagnostic of schemaChanges.allDiagnostics) {
       visitor.visit(diagnostic);
     }
-    const schemaItemChanges = visitor.schemaItemChanges.filter((difference) => 
+    const schemaItemChanges = visitor.schemaItemDifferences.filter((difference) => 
       !visitor.conflicts.find((conflict) => conflict.code === ConflictCode.ConflictingItemName 
         && conflict.itemName === difference.itemName && conflict.schemaType === difference.schemaType));
 
-    const schemaItemPathChanges = visitor.schemaItemPathChanges.filter((difference) => 
+    const schemaItemPathChanges = visitor.schemaItemPathDifferences.filter((difference) => 
       !visitor.conflicts.find((conflict) => (conflict.code === ConflictCode.ConflictingPropertyName &&
         conflict.itemName === difference.itemName && conflict.path === difference.path 
         && difference.schemaType === SchemaOtherTypes.Property)));
 
-    const changes: AnySchemaDifference[] = [
-      ...visitor.schemaChanges,
+    const differences: AnySchemaDifference[] = [
+      ...visitor.schemaDifferences,
       ...schemaItemChanges,
       ...schemaItemPathChanges,
-      ...visitor.customAttributeChanges,
+      ...visitor.customAttributeDifferences,
     ];
 
     return {
       sourceSchemaName: schemaChanges.schema.schemaKey.toString(),
       targetSchemaName: targetSchema.schemaKey.toString(),
       conflicts: visitor.conflicts.length > 0 ? visitor.conflicts : undefined,
-      changes,
+      differences,
     };
   }
 
@@ -290,7 +290,7 @@ export interface SchemaDifferences {
   readonly targetSchemaName: string;
 
   /** List of differences between the compared schemas. */
-  readonly changes: AnySchemaDifference[];
+  readonly differences: AnySchemaDifference[];
 
   /** List of conflicts found while comparing the schemas. */
   readonly conflicts?: SchemaDifferenceConflict[];

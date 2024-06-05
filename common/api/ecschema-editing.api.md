@@ -17,6 +17,7 @@ import { CustomAttributeClass } from '@itwin/ecschema-metadata';
 import { CustomAttributeClassProps } from '@itwin/ecschema-metadata';
 import { CustomAttributeContainerProps } from '@itwin/ecschema-metadata';
 import { CustomAttributeContainerType } from '@itwin/ecschema-metadata';
+import { ECClass } from '@itwin/ecschema-metadata';
 import { ECClassModifier } from '@itwin/ecschema-metadata';
 import { ECName } from '@itwin/ecschema-metadata';
 import { EntityClass } from '@itwin/ecschema-metadata';
@@ -1081,16 +1082,6 @@ export abstract class PropertyDiagnostic<ARGS extends any[]> extends BaseDiagnos
     get schema(): Schema;
 }
 
-// @alpha (undocumented)
-export interface PropertyEditResults {
-    // (undocumented)
-    errorMessage?: string;
-    // (undocumented)
-    itemKey?: SchemaItemKey;
-    // (undocumented)
-    propertyName?: string;
-}
-
 // @alpha
 export class PropertyMissing extends BaseSchemaChange {
     get defaultChangeType(): ChangeType;
@@ -1613,11 +1604,11 @@ export class SchemaConflictsError extends Error {
 // @alpha
 export class SchemaContextEditor {
     constructor(schemaContext: SchemaContext);
-    addCustomAttribute(schemaKey: SchemaKey, customAttribute: CustomAttribute): Promise<SchemaEditResults>;
-    addSchemaReference(schemaKey: SchemaKey, refSchema: Schema): Promise<SchemaEditResults>;
+    addCustomAttribute(schemaKey: SchemaKey, customAttribute: CustomAttribute): Promise<void>;
+    addSchemaReference(schemaKey: SchemaKey, refSchema: Schema): Promise<void>;
     // (undocumented)
     readonly constants: Constants;
-    createSchema(name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number): Promise<SchemaEditResults>;
+    createSchema(name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number): Promise<SchemaKey>;
     // (undocumented)
     readonly customAttributes: CustomAttributes;
     // (undocumented)
@@ -1629,7 +1620,7 @@ export class SchemaContextEditor {
     // (undocumented)
     readonly formats: Formats;
     getSchema(schemaKey: SchemaKey): Promise<MutableSchema | undefined>;
-    incrementMinorVersion(schemaKey: SchemaKey): Promise<SchemaEditResults>;
+    incrementMinorVersion(schemaKey: SchemaKey): Promise<SchemaKey>;
     // (undocumented)
     readonly invertedUnits: InvertedUnits;
     // (undocumented)
@@ -1643,9 +1634,7 @@ export class SchemaContextEditor {
     // (undocumented)
     readonly relationships: RelationshipClasses;
     get schemaContext(): SchemaContext;
-    // @internal (undocumented)
-    readonly schemaItems: SchemaItems;
-    setVersion(schemaKey: SchemaKey, readVersion?: number, writeVersion?: number, minorVersion?: number): Promise<SchemaEditResults>;
+    setVersion(schemaKey: SchemaKey, readVersion?: number, writeVersion?: number, minorVersion?: number): Promise<SchemaKey>;
     // (undocumented)
     readonly structs: Structs;
     // (undocumented)
@@ -1715,18 +1704,10 @@ export interface SchemaDifferenceConflict {
 
 // @alpha
 export interface SchemaDifferences {
-    readonly changes: AnySchemaDifference[];
     readonly conflicts?: SchemaDifferenceConflict[];
+    readonly differences: AnySchemaDifference[];
     readonly sourceSchemaName: string;
     readonly targetSchemaName: string;
-}
-
-// @alpha (undocumented)
-export interface SchemaEditResults {
-    // (undocumented)
-    errorMessage?: string;
-    // (undocumented)
-    schemaKey?: SchemaKey;
 }
 
 // @alpha
@@ -1752,14 +1733,6 @@ export abstract class SchemaItemDiagnostic<TYPE extends SchemaItem, ARGS extends
     static diagnosticType: DiagnosticType;
     get diagnosticType(): DiagnosticType;
     get schema(): Schema;
-}
-
-// @alpha (undocumented)
-export interface SchemaItemEditResults {
-    // (undocumented)
-    errorMessage?: string;
-    // (undocumented)
-    itemKey?: SchemaItemKey;
 }
 
 // @alpha

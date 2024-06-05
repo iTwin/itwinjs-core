@@ -178,6 +178,7 @@ import { PropertyCallback } from '@itwin/core-common';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
 import { Range2d } from '@itwin/core-geometry';
+import { Range2dProps } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Rank } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
@@ -216,6 +217,7 @@ import { SynchronizationConfigLinkProps } from '@itwin/core-common';
 import { TextAnnotation } from '@itwin/core-common';
 import { TextAnnotation2dProps } from '@itwin/core-common';
 import { TextAnnotation3dProps } from '@itwin/core-common';
+import { TextBlock } from '@itwin/core-common';
 import { TextBlockGeometryProps } from '@itwin/core-common';
 import { TextStyleSettings } from '@itwin/core-common';
 import { TextureData } from '@itwin/core-common';
@@ -311,6 +313,14 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
 }
 
+// @beta
+export interface AvailableCoordinateReferenceSystemProps {
+    crsExtent: Range2dProps;
+    deprecated: boolean;
+    description: string;
+    name: string;
+}
+
 // @beta (undocumented)
 export interface AzureBlobStorageCredentials {
     // (undocumented)
@@ -359,8 +369,6 @@ export enum BackendLoggerCategory {
     // @internal
     DevTools = "core-backend.DevTools",
     ECDb = "core-backend.ECDb",
-    // @alpha
-    Editing = "core-backend.Editing",
     EventSink = "core-backend.EventSink",
     Functional = "core-backend.Functional",
     IModelDb = "core-backend.IModelDb",
@@ -984,6 +992,11 @@ export namespace CloudSqlite {
         name: string;
         rootDir: string;
     }
+    // (undocumented)
+    export interface CleanDeletedBlocksOptions {
+        debugLogging?: boolean;
+        nSeconds?: number;
+    }
     export interface CloudCache {
         // @internal
         destroy(): void;
@@ -1012,7 +1025,7 @@ export namespace CloudSqlite {
         // (undocumented)
         readonly cache?: CloudCache;
         checkForChanges(): void;
-        cleanDeletedBlocks(nSeconds?: number): Promise<void>;
+        cleanDeletedBlocks(options?: CleanDeletedBlocksOptions): Promise<void>;
         clearWriteLock(): void;
         connect(cache: CloudCache): void;
         get containerId(): string;
@@ -1417,6 +1430,15 @@ export interface ComputedProjectExtents {
 export interface ComputeProjectExtentsOptions {
     reportExtentsWithOutliers?: boolean;
     reportOutliers?: boolean;
+}
+
+// @beta
+export function computeTextBlockExtents(args: ComputeTextBlockExtentsArgs): XAndY;
+
+// @beta
+export interface ComputeTextBlockExtentsArgs {
+    iModel: IModelDb;
+    textBlock: TextBlock;
 }
 
 // @alpha
@@ -2863,6 +2885,14 @@ export class GeometryPart extends DefinitionElement {
     geom?: GeometryStreamProps;
     // (undocumented)
     toJSON(): GeometryPartProps;
+}
+
+// @beta
+export function getAvailableCoordinateReferenceSystems(args: GetAvailableCoordinateReferenceSystemsArgs): Promise<AvailableCoordinateReferenceSystemProps[]>;
+
+// @beta
+export interface GetAvailableCoordinateReferenceSystemsArgs {
+    extent?: Range2dProps;
 }
 
 // @public
@@ -4684,17 +4714,21 @@ export namespace SchemaSync {
         static initializeDb(props: CloudSqlite.ContainerAccessProps): Promise<void>;
     }
     const // (undocumented)
-    setTestCache: (iModel: IModelDb, cacheName: string) => void;
+    setTestCache: (iModel: IModelDb, cacheName?: string) => void;
     const // (undocumented)
-    withLockedAccess: (iModel: TestCacheIModel, args: {
+    withLockedAccess: (iModel: IModelDb | {
+        readonly fileName: LocalFileName;
+    }, args: {
         operationName: string;
         openMode?: OpenMode;
         user?: string;
     }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
+    const pull: (iModel: IModelDb) => Promise<void>;
     const // (undocumented)
     initializeForIModel: (arg: {
         iModel: IModelDb;
         containerProps: CloudSqlite.ContainerProps;
+        overrideContainer?: boolean;
     }) => Promise<void>;
     export class SchemaSyncDb extends VersionedSqliteDb {
         // (undocumented)

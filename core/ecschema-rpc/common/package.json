@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-rpcinterface-common",
-  "version": "4.6.0-dev.24",
+  "version": "4.7.0-dev.15",
   "description": "Schema RPC Interface common interface",
   "main": "lib/cjs/ecschema-rpc-interface.js",
   "typings": "lib/cjs/ecschema-rpc-interface",
@@ -42,8 +42,8 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.52",
-    "eslint": "^8.44.0",
+    "@itwin/eslint-plugin": "^4.0.2",
+    "eslint": "^8.56.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.3.3"
   }
