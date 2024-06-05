@@ -44,6 +44,7 @@ export interface TestSetsProps extends TestConfigProps {
 
 /** Context for any number of TestCases to be run against an iModel. */
 interface TestContext {
+  readonly iModelName: string;
   readonly iModel: IModelConnection;
   readonly externalSavedViews: ViewStateSpec[];
 }
@@ -292,7 +293,7 @@ export class TestRunner {
         this.curConfig.viewName = originalViewName;
 
         try {
-          const reuseContext = context && set.reuseContext && context.iModel.name == iModelName;
+          const reuseContext = context && set.reuseContext && context.iModelName == iModelName;
           if(!reuseContext){
             if(context){
               context?.iModel.close();
@@ -309,7 +310,7 @@ export class TestRunner {
             await this.runTests(context);
           }
           else{
-            await this.logError(`Failed to run tests on iModel ${iModelName}`);
+            await this.logError(`Invalid test context on iModel ${iModelName}`);
           }
         } catch {
           await this.logError(`Failed to run tests on iModel ${iModelName}`);
@@ -701,7 +702,7 @@ export class TestRunner {
         throw new Error("Missing iTwinId for remote iModel");
       const iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
       const externalSavedViews = await this._savedViewsFetcher.getSavedViews(iTwinId, iModelId, await IModelApp.getAccessToken());
-      return { iModel, externalSavedViews };
+      return { iModel, externalSavedViews, iModelName: this.curConfig.iModelName };
     } else {
       // Load local iModel and its saved views
       const filepath = `${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`;
@@ -721,7 +722,7 @@ export class TestRunner {
           };
         });
       }
-      return { iModel, externalSavedViews };
+      return { iModel, externalSavedViews, iModelName: this.curConfig.iModelName};
     }
   }
 
