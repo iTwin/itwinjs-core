@@ -25,7 +25,7 @@ export namespace RenameFixes {
   }
 
   function addProperty(differences: SchemaDifferences, fix: Rename) {
-    const classPropertyDifference = differences.changes.find((change) => change.changeType === "add" 
+    const classPropertyDifference = differences.differences.find((change) => change.changeType === "add" 
       && SchemaDifference.isClassPropertyDifference(change) && change.itemName === fix.itemName 
       && change.path === fix.path);
 
@@ -33,7 +33,7 @@ export namespace RenameFixes {
       return;
     }
 
-    const classItemDifference = differences.changes.find((change) => change.changeType === "add" 
+    const classItemDifference = differences.differences.find((change) => change.changeType === "add" 
       && SchemaDifference.isClassItemDifference(change) && change.itemName === fix.itemName) as ClassItemDifference;
 
     if (classItemDifference && classItemDifference.difference.properties) {
@@ -49,7 +49,7 @@ export namespace RenameFixes {
     if (conflict === undefined) 
       throw new Error(`Property ${fix.itemName}.${fix.path} couldn't be found in conflicts or differences.`); 
 
-    differences.changes.push({
+    differences.differences.push({
       changeType: "add",
       schemaType: SchemaOtherTypes.Property,
       itemName: fix.itemName,
@@ -59,7 +59,7 @@ export namespace RenameFixes {
   }
 
   export function addSchemaItem(differences: SchemaDifferences, fix: Rename) {
-    const difference = differences.changes.find((change) => change.changeType === "add" 
+    const difference = differences.differences.find((change) => change.changeType === "add" 
       && "itemName" in change && change.itemName === fix.itemName) as PartialEditable<AnySchemaItemDifference>;
     if (difference !== undefined) {
       return;
@@ -69,7 +69,7 @@ export namespace RenameFixes {
     if (conflict === undefined)
       throw new Error(`Entity ${fix.itemName} couldn't be found in conflicts or differences.`); 
 
-    differences.changes.push({
+    differences.differences.push({
       changeType: "add",
       schemaType: conflict.schemaType,
       itemName: fix.value,
@@ -78,7 +78,7 @@ export namespace RenameFixes {
   }
 
   function renameProperty (differences: SchemaDifferences, fix: Rename) {
-    for (const change of differences.changes) {
+    for (const change of differences.differences) {
       if (change.schemaType === SchemaOtherTypes.Property && change.itemName === fix.itemName && change.path === fix.path) {
         const difference = change as PartialEditable<ClassPropertyDifference>;
         difference.path = fix.value;
@@ -97,7 +97,7 @@ export namespace RenameFixes {
 
  function getFixChange(differences: SchemaDifferences, fix: Rename) {
     return differences.conflicts?.find((conflict) => conflict.itemName === fix.itemName)
-      ?? differences.changes.find((change) => 'itemName' in change && change.itemName === fix.itemName);
+      ?? differences.differences.find((change) => 'itemName' in change && change.itemName === fix.itemName);
   }
 
  async function renameSchemaItem(differences: SchemaDifferences, fix: Rename) {
@@ -185,7 +185,7 @@ export namespace RenameFixes {
   }
 
   function renamePropertyCategoryName(differences: SchemaDifferences, oldKey: SchemaItemKey, newKey: SchemaItemKey) {
-    for (const change of differences.changes) {
+    for (const change of differences.differences) {
       if (change.schemaType === SchemaItemType.PropertyCategory)
         renameName(change, oldKey, newKey);
 
@@ -206,7 +206,7 @@ export namespace RenameFixes {
   }
 
   function renameKindOfQuantityName(differences: SchemaDifferences, oldKey: SchemaItemKey, newKey: SchemaItemKey) {
-    for (const change of differences.changes) {
+    for (const change of differences.differences) {
       if (SchemaDifference.isClassItemDifference(change) && change.difference.properties) {
         for (const property of change.difference.properties) {
           if (property.kindOfQuantity && oldKey.matchesFullName(property.kindOfQuantity)) {
@@ -224,7 +224,7 @@ export namespace RenameFixes {
   }
 
   function renameEnumerationName(differences: SchemaDifferences, oldKey: SchemaItemKey, newKey: SchemaItemKey) {
-    for (const change of differences.changes) {
+    for (const change of differences.differences) {
       if (SchemaDifference.isClassItemDifference(change) && change.difference.properties) {
         for (const property of change.difference.properties) {
           if (property.type === "PrimitiveProperty" || property.type === "PrimitiveArrayProperty") {
@@ -246,7 +246,7 @@ export namespace RenameFixes {
   }
 
   function renamePhenomenonName(differences: SchemaDifferences, oldKey: SchemaItemKey, newKey: SchemaItemKey) {
-    for (const change of differences.changes) {
+    for (const change of differences.differences) {
       if (change.schemaType === SchemaItemType.Constant || change.schemaType === SchemaItemType.Unit) {
         if (change.difference.phenomenon && oldKey.matchesFullName(change.difference.phenomenon))
           change.difference.phenomenon = newKey.fullName;
@@ -255,7 +255,7 @@ export namespace RenameFixes {
   }
 
   function renameStructClassName(differences: SchemaDifferences, oldKey: SchemaItemKey, newKey: SchemaItemKey) {
-    for (const change of differences.changes) {
+    for (const change of differences.differences) {
       if (change.schemaType === SchemaItemType.StructClass) {
         renameBaseClass(change.difference, oldKey, newKey);
       } 
@@ -281,7 +281,7 @@ export namespace RenameFixes {
   }
 
   function renameCustomAttributeClassName(differences: SchemaDifferences, oldKey: SchemaItemKey, newKey: SchemaItemKey) {
-    for (const change of differences.changes) {
+    for (const change of differences.differences) {
       if (change.schemaType === SchemaItemType.CustomAttributeClass) {
         renameBaseClass(change.difference, oldKey, newKey);
       }
@@ -326,7 +326,7 @@ export namespace RenameFixes {
   }
 
   function renameRelationshipClassName(differences: SchemaDifferences, oldKey: SchemaItemKey, newKey: SchemaItemKey) {
-    for (const change of differences.changes) {
+    for (const change of differences.differences) {
       if (change.schemaType === SchemaItemType.RelationshipClass) {
         renameBaseClass(change.difference, oldKey, newKey);
       }
@@ -354,7 +354,7 @@ export namespace RenameFixes {
   }
 
   function renameEntityClassName(differences: SchemaDifferences, oldKey: SchemaItemKey, newKey: SchemaItemKey) {
-    for (const change of differences.changes) {
+    for (const change of differences.differences) {
       if (change.schemaType === SchemaItemType.EntityClass) {
         renameName(change, oldKey, newKey);
         renameBaseClass(change.difference, oldKey, newKey);
@@ -372,7 +372,7 @@ export namespace RenameFixes {
   }
 
   function renameMixinName(differences: SchemaDifferences, oldKey: SchemaItemKey, newKey: SchemaItemKey) {
-    for (const change of differences.changes) {
+    for (const change of differences.differences) {
       if (change.schemaType === SchemaItemType.Mixin) {
         renameBaseClass(change.difference, oldKey, newKey);
       } 
