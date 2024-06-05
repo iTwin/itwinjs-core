@@ -39,6 +39,12 @@ export interface WorkspaceContainerProps extends Optional<CloudSqlite.ContainerA
 }
 
 /** The base name of a [[WorkspaceDb]], without any version information.
+ * The name must conform to the following constraints:
+ * - Case-insensitively unique among all [[WorkspaceDb]]s in the same [[WorkspaceContainer]].
+ * - Between 1 and 255 characters in length.
+ * - A legal filename on both [Windows](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions) and UNIX.
+ * - Contain none of the following characters: forward or backward slash, period, comma, single or double quote, backtick, and "#".
+ * - Begin or end with a whitespace character.
  * @see [[WorkspaceDbFullName]] for the fully-specified name, including version information.
  * @beta
  */
