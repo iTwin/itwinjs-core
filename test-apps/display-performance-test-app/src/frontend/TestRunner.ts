@@ -315,11 +315,10 @@ export class TestRunner {
           await this.logError(`Failed to run tests on iModel ${iModelName}`);
         } 
       }
-      
-      await context?.iModel.close();
       this._config.pop();
     }
-
+      
+    await context?.iModel.close();
     this._config.pop();
   }
 
