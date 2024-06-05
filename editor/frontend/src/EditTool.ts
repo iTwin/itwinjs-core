@@ -74,6 +74,9 @@ export class EditTools {
     // clean up if we're being shut down
     IModelApp.onBeforeShutdown.addListener(() => this.shutdown());
 
+    // Make sure current edit command finishes before starting a new primitive tool...
+    IModelApp.toolAdmin.setEditCommandHandler(this);
+
     const namespacePromise = IModelApp.localization.registerNamespace(this.namespace);
 
     const tools = IModelApp.tools;
@@ -93,7 +96,13 @@ export class EditTools {
     tools.registerModule(ProjectGeoLocation, this.namespace);
   }
 
+  /** @internal */
+  public static async finishCommand(): Promise<string> {
+    return this.startCommand<string>({ commandId: "", iModelKey: "" });
+  }
+
   private static shutdown() {
+    IModelApp.toolAdmin.setEditCommandHandler();
     this._initialized = false;
   }
 }
