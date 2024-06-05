@@ -330,7 +330,7 @@ export class RelationshipConstraintId implements IRelationshipConstraintIdentifi
   public readonly relationshipKey: SchemaItemKey;
   public readonly schemaKey: SchemaKey;
   constructor(constraint: RelationshipConstraint) {
-    this.name = constraint.fullName;
+    this.name = constraint.isSource ? "Source" : "Target";
     this.relationshipKey = constraint.relationshipClass.key;
     this.schemaKey = this.relationshipKey.schemaKey;
   }
@@ -533,7 +533,7 @@ export class SchemaEditingError extends BentleyError {
       return `Rule violations occurred from CustomAttribute ${this.customAttributeId.name}, container ${this.customAttributeId.containerFullName}: ${violations}`;
 
     if (this.identifier.typeIdentifier === SchemaTypeIdentifiers.RelationshipConstraintIdentifier)
-      return `Rule violations occurred from constraint ${this.relationshipConstraintId.name} of RelationshipClass ${this.relationshipConstraintId.relationshipKey.fullName}: ${violations}`;
+      return `Rule violations occurred from ${this.relationshipConstraintId.name} constraint of RelationshipClass ${this.relationshipConstraintId.relationshipKey.fullName}: ${violations}`;
 
     throw new Error ("Could not generate rule violation message due to invalid identifier.");
   }
