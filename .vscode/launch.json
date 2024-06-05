@@ -628,6 +628,23 @@
       ]
     },
     {
+      "name": "[perftests] Different classes PerfTests (Offline)",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/backend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "perftest:diffElem"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
+      ]
+    },
+    {
       "name": "imjs-importer.   See launch.json to give command line args",
       "presentation": {
         "group": "6_Misc"
