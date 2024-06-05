@@ -21,7 +21,6 @@ export { SchemaValidater } from "./Validation/SchemaValidater";
 export { SchemaMerger } from "./Merging/SchemaMerger";
 export * from "./Differencing/SchemaDifference";
 export * from "./Differencing/SchemaConflicts";
-export * from "./Differencing/Errors";
 
 /** @docs-package-description
  * The ecschema-editing package contains classes for validating, and editing ECSchemas that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).
