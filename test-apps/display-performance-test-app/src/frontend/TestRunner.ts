@@ -256,14 +256,17 @@ export class TestRunner {
       /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
       baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
     };
+      
+    let context: TestContext | undefined = undefined;
 
     // Perform all the tests for this iModel. If the iModel name contains an asterisk,
     // treat it as a wildcard and run tests for each iModel that matches the given wildcard.
     for (const testProps of set.tests) {
-      this._config.push(set);
+      this._config.push(testProps);
 
       // Ensure IModelApp is initialized with options required by this test.
       if (IModelApp.initialized && this.curConfig.requiresRestart(this.lastRestartConfig)) {
+        context = undefined;
         await IModelApp.shutdown();
       }
       if (!IModelApp.initialized) {
@@ -283,8 +286,6 @@ export class TestRunner {
       // Run test against all iModels matching the test config.
       const iModelNames = await this.getIModelNames();
       const originalViewName = this.curConfig.viewName;
-      
-      let context: TestContext | undefined = undefined;
 
       for (const iModelName of iModelNames) {
         this.curConfig.iModelName = iModelName;
@@ -293,7 +294,6 @@ export class TestRunner {
         try {
           const reuseContext = context && set.reuseContext && context.iModel.name == iModelName;
           if(!reuseContext){
-
             if(context){
               context?.iModel.close();
             }
