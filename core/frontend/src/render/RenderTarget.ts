@@ -125,6 +125,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   public abstract changeRenderPlan(plan: RenderPlan): void;
   public abstract drawFrame(sceneMilSecElapsed?: number): void;
   public overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void { }
+  public getCurrentFeatureSymbologyOverrides(): FeatureSymbology.Overrides | undefined { return undefined; }
   public setHiliteSet(_hilited: HiliteSet): void { }
   public setFlashed(_elementId: Id64String, _intensity: number): void { }
   public onBeforeRender(_viewport: Viewport, _setSceneNeedRedraw: (redraw: boolean) => void): void { }

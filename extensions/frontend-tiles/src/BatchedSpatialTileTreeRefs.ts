@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Logger, OrderedId64Iterable } from "@itwin/core-bentley";
+import { Id64String, Logger, OrderedId64Iterable } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 import {
   AnimationNodeId,
@@ -153,6 +153,27 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
     }
   }
 
+  public getMaskModels(models: OrderedId64Iterable | undefined, useVisible: boolean): Map<Id64String, boolean> | undefined {
+    const maskModels = new Map<Id64String, boolean>();
+    const includedModels = new Set(this._spec.models.keys());
+    if (useVisible) {
+      for (const modelId of includedModels) {
+        const isViewed = this._models.views(modelId);
+        maskModels.set(modelId, isViewed);
+      }
+    } else {
+      for (const modelId of includedModels)
+        maskModels.set(modelId, false);
+      if (models) {
+        for (const modelId of models) {
+          maskModels.set(modelId, true);
+        }
+      }
+    }
+    return maskModels.size > 0 ? maskModels : undefined;
+  }
+
+  // _view.models
   public setDeactivated(): void {
     // Used for debugging. Unimplemented here.
   }
@@ -247,6 +268,8 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
   }
 
   public setMaskRefs(_modelIds: OrderedId64Iterable, _maskTreeRefs: TileTreeReference[]): void { }
+
+  public getMaskModels(_models: OrderedId64Iterable | undefined, _useVisible: boolean): Map<Id64String, boolean> | undefined { return undefined; }
 }
 
 const iModelToTilesetSpec = new Map<IModelConnection, BatchedTilesetSpec | null | Promise<BatchedTilesetSpec | null>>();

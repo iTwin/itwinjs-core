@@ -781,6 +781,33 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     return this._subCategoryPriorities.get(idLo, idHi) ?? 0;
   }
 
+  /** Adds all fully transparent elements to the _neverDrawn set.  This is used for BatchedModels planar masks.
+   * @internal
+   */
+  public addInvisibleElementOverridesToNeverDrawn(): void {
+    this._elementOverrides.forEach((lo, hi) => {
+      const app = this.getElementOverrides(lo, hi, 0);
+      if (app?.isFullyTransparent)
+        this._neverDrawn.add(lo, hi);
+    });
+  }
+
+  /** Adds all visible subcategories to the modelSubCategoryOverrides for the specified model.  This is used for BatchedModels planar masks.
+   * @internal
+   */
+  public addModelSubCategoryOverrides(modelId: Id64String): void {
+    const modelLo = Id64.getLowerUint32(modelId);
+    const modelHi = Id64.getUpperUint32(modelId);
+    let entry = this._modelSubCategoryOverrides.get(modelLo, modelHi);
+    if (undefined === entry) {
+      entry = new Id64.Uint32Set();
+      this._modelSubCategoryOverrides.set(modelLo, modelHi, entry);
+    }
+    this._visibleSubCategories.forEach((subcatLo: number, subcatHi: number) => {
+      entry?.add(subcatLo, subcatHi);
+    });
+  }
+
   /** Construct a new Overrides that overrides nothing.
    * @see [FeatureSymbology.Overrides]($frontend) to construct overrides based on a [ViewState]($frontend) or [Viewport]($frontend).
    */

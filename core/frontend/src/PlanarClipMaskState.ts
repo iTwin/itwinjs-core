@@ -6,11 +6,12 @@
  * @module Views
  */
 
-import { assert, Id64String } from "@itwin/core-bentley";
-import { PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps, PlanarClipMaskSettings } from "@itwin/core-common";
+import { Id64String } from "@itwin/core-bentley";
+import { FeatureAppearance, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps, PlanarClipMaskSettings } from "@itwin/core-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { createMaskTreeReference, DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
+import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
 import { ViewState3d } from "./ViewState";
+import { SceneContext } from "./ViewContext";
 
 /** The State of Planar Clip Mask applied to a reality model or background map.
  * Handles loading models and their associated tiles for models that are used by masks but may not be otherwise loaded or displayed.
@@ -63,29 +64,53 @@ export class PlanarClipMaskState {
     return this._allLoaded ? this._tileTreeRefs : undefined;
   }
 
-  public getPlanarClipMaskSymbologyOverrides(): FeatureSymbology.Overrides | undefined {
+  public getPlanarClipMaskSymbologyOverrides(view: ViewState3d, context: SceneContext): FeatureSymbology.Overrides | undefined {
+    let overrideModels;
+    if (view.isSpatialView())
+      overrideModels = view.getMaskModels(this.settings.modelIds, PlanarClipMaskMode.Priority === this.settings.mode);
+
+    if (!this.settings.subCategoryOrElementIds && !overrideModels)
+      return undefined;
+
+    const overrides = new FeatureSymbology.Overrides();
+
+    if (overrideModels) {
+      // overrideModels is used for batched models.  For those, we need to create model overrides for visibility (using transparency).
+      const appOn = FeatureAppearance.fromTransparency(0.0);
+      const appOff = FeatureAppearance.fromTransparency(1.0);
+      // For Priority or Models mode, we need to start with the current overrides and modify them
+      if (PlanarClipMaskMode.Priority === this.settings.mode || PlanarClipMaskMode.Models === this.settings.mode) {
+        const curOverrides = new FeatureSymbology.Overrides(context.viewport);
+        curOverrides.addInvisibleElementOverridesToNeverDrawn();  // need this for fully trans element overrides to not participate in mask
+        overrideModels.forEach((use: boolean, modelId: string) => {
+          if (!use)
+            curOverrides.addModelSubCategoryOverrides(modelId);  // need this for visible categories on unused models to not participate in mask
+          curOverrides.override({ modelId, appearance: use ? appOn : appOff, onConflict: "replace" });
+        });
+        return curOverrides;
+      }
+      // Otherwise, we just start with a default overrides and modify it.
+      overrideModels.forEach((use: boolean, modelId: string) => {
+        overrides.override({ modelId, appearance: use ? appOn : appOff, onConflict: "replace" });
+      });
+    }
+
     if (!this.settings.subCategoryOrElementIds)
       return undefined;
 
     switch (this.settings.mode) {
       case PlanarClipMaskMode.IncludeElements: {
-        const overrides = new FeatureSymbology.Overrides();
         overrides.setAlwaysDrawnSet(this.settings.subCategoryOrElementIds, true);
         return overrides;
       }
       case PlanarClipMaskMode.ExcludeElements: {
-        const overrides = new FeatureSymbology.Overrides();
-
         overrides.ignoreSubCategory = true;
         overrides.setNeverDrawnSet(this.settings.subCategoryOrElementIds);
-
         return overrides;
       }
       case PlanarClipMaskMode.IncludeSubCategories: {
-        const overrides = new FeatureSymbology.Overrides();
         for (const subCategoryId of this.settings.subCategoryOrElementIds)
           overrides.setVisibleSubCategory(subCategoryId);
-
         return overrides;
       }
     }

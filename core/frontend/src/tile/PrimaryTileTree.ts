@@ -510,6 +510,8 @@ export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
   detachFromViewport(): void;
   /** See SpatialViewState.setMaskRefs */
   setMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void;
+  /** See SpatialViewState.getMaskModels */
+  getMaskModels(models: OrderedId64Iterable | undefined, useVisible: boolean): Map<Id64String, boolean> | undefined;
 }
 
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]] and
@@ -680,6 +682,8 @@ class SpatialRefs implements SpatialTileTreeReferences {
         maskTreeRefs.push(createMaskTreeReference(this._view, model.asGeometricModel));
     }
   }
+
+  public getMaskModels(_models: OrderedId64Iterable | undefined, _useVisible: boolean): Map<Id64String, boolean> | undefined { return undefined; }
 
   private load(): void {
     if (!this._allLoaded) {

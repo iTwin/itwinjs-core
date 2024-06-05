@@ -418,7 +418,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._projectionMatrix = projection.projectionMatrix;
     this._frustum = projection.textureFrustum;
     this._debugFrustum = projection.debugFrustum;
-    this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides();
+    this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides(viewState, context);
 
     const drawTree = (treeRef: TileTreeReference, graphics: RenderGraphic[]) => {
       this._graphics = graphics;

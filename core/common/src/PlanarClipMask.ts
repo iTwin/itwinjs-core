@@ -150,8 +150,8 @@ export interface PriorityPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
 export class PlanarClipMaskSettings {
   /** Specifies how the mask geometry is produced. */
   public readonly mode: PlanarClipMaskMode;
-  /** For any mode other than [[PlanarClipMaskMode.Priority]], the Ids of the [GeometricModel]($backend)s containing the geometry used to produce the mask.
-   * If `undefined`, the set of all models in the view's [ModelSelector]($backend) is used.
+  /** For any mode other than [[PlanarClipMaskMode.Priority]], the Ids of the [GeometricModel]($backend)s containing the geometry used to produce the mask,
+   * and if `undefined`, no mask geometry will be created.
    * The mask geometry can be filtered by [[subCategoryOrElementIds]].
    */
   public readonly modelIds?: OrderedId64Iterable;

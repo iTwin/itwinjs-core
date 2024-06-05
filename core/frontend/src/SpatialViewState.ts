@@ -257,12 +257,21 @@ export class SpatialViewState extends ViewState3d {
   }
 
   /** For getting the [TileTreeReference]s that are in the modelIds, for planar classification.
-   *
    * @param modelIds modelIds for which to get the TileTreeReferences
    * @param maskTreeRefs where to store the TileTreeReferences
+   * @internal
    */
   public setMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void {
     this._treeRefs.setMaskRefs(modelIds, maskTreeRefs);
+  }
+
+  /** For getting a Map of modelIds and a flag for whether to participate in masking, for planar classification.
+   * @param models mask models to set flag by when useVisible is false
+   * @param useVisible when true, use visible models to set flag
+   * @internal
+   */
+  public getMaskModels(models: OrderedId64Iterable | undefined, useVisible: boolean): Map<Id64String, boolean> | undefined {
+    return this._treeRefs.getMaskModels(models, useVisible);
   }
 
   private registerModelSelectorListeners(): void {
