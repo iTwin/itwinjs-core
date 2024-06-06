@@ -8,15 +8,22 @@ import {
   SchemaContext, SchemaItemKey, SchemaKey,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
+import { AnyDiagnostic } from "../../Validation/Diagnostic";
+import { Diagnostics } from "../../Validation/ECRules";
+import { ECEditingStatus } from "../../Editing/Exception";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
+function getRuleViolationMessage(ruleViolations: AnyDiagnostic[]) {
+  let violations = "";
+  for (const diagnostic of ruleViolations){
+    violations += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
+  }
+  return violations;
+}
+
 // TODO: Add tests for cases where invalid names are passed into props objects. (to test the error message)
 describe("Editor tests", () => {
-
-  function normalizeLineEnds(s: string): string {
-    return s.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-  }
 
   describe("SchemaEditor tests", () => {
     let testEditor: SchemaContextEditor;
@@ -35,9 +42,9 @@ describe("Editor tests", () => {
       });
 
       it("upon schema creation, return a defined SchemaKey from SchemaEditResults", async () => {
-        const result = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
-        expect(result.schemaKey?.name).to.eql("testSchema");
-        expect(result.schemaKey?.version).to.eql(new ECVersion(1, 0, 0));
+        const schemaKey = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
+        expect(schemaKey?.name).to.eql("testSchema");
+        expect(schemaKey?.version).to.eql(new ECVersion(1, 0, 0));
       });
     });
 
@@ -61,9 +68,7 @@ describe("Editor tests", () => {
         testEditor = new SchemaContextEditor(context);
         testKey = testSchema.schemaKey;
 
-        const result = await testEditor.addCustomAttribute(testKey, { className: "TestCustomAttribute" });
-
-        expect(result).to.eql({});
+        await testEditor.addCustomAttribute(testKey, { className: "TestCustomAttribute" });
         expect(testSchema.customAttributes && testSchema.customAttributes.has("TestCustomAttribute")).to.be.true;
       });
 
@@ -99,9 +104,7 @@ describe("Editor tests", () => {
         testEditor = new SchemaContextEditor(context);
         testKey = schemaA.schemaKey;
 
-        const result = await testEditor.addCustomAttribute(testKey, { className: "SchemaB.TestCustomAttribute" });
-
-        expect(result).to.eql({});
+        await testEditor.addCustomAttribute(testKey, { className: "SchemaB.TestCustomAttribute" });
         expect(schemaA.customAttributes && schemaA.customAttributes.has("SchemaB.TestCustomAttribute")).to.be.true;
       });
 
@@ -133,10 +136,15 @@ describe("Editor tests", () => {
         testEditor = new SchemaContextEditor(context);
         testKey = schemaA.schemaKey;
 
-        const result = await testEditor.addCustomAttribute(testKey, { className: "SchemaB.TestCustomAttribute" });
+        await expect(testEditor.addCustomAttribute(testKey, { className: "SchemaB.TestCustomAttribute" })).to.be.eventually.rejected.then(function (error) {
+          expect(error).to.have.property("errorNumber", ECEditingStatus.AddCustomAttributeToClass);
+          expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
+          expect(error).to.have.nested.property("innerError.message", `Rule violations occurred from CustomAttribute SchemaB.TestCustomAttribute, container ${testKey.name}: ${getRuleViolationMessage(error.innerError.ruleViolations)}`);
+          const violations = error.innerError.ruleViolations as AnyDiagnostic[];
+          expect(violations[0]).to.deep.equal(new Diagnostics.CustomAttributeClassNotFound(schemaA, ["SchemaA", "SchemaB.TestCustomAttribute"]));
+          expect(schemaA.customAttributes && schemaA.customAttributes.has("SchemaB.TestCustomAttribute")).to.be.false;
+        });
 
-        expect(result.errorMessage).to.eql("ECObjects-502: The CustomAttribute container 'SchemaA' has a CustomAttribute with the class 'SchemaB.TestCustomAttribute' which cannot be found.\r\n");
-        expect(schemaA.customAttributes && schemaA.customAttributes.has("SchemaB.TestCustomAttribute")).to.be.false;
       });
     });
 
@@ -162,9 +170,8 @@ describe("Editor tests", () => {
         testKey = testSchema.schemaKey;
         const refSchema = await Schema.fromJson(refSchemaJson, context);
 
-        const result = await testEditor.addSchemaReference(testKey, refSchema);
+        await testEditor.addSchemaReference(testKey, refSchema);
 
-        expect(result).to.eql({});
         expect(testSchema.getReferenceNameByAlias("rs")).to.equal("RefSchema");
         expect(await testEditor.schemaContext.getCachedSchema(refSchema.schemaKey)).to.eql(refSchema);
       });
@@ -208,11 +215,17 @@ describe("Editor tests", () => {
         testEditor = new SchemaContextEditor(context);
         testKey = schemaA.schemaKey;
 
-        const result = await testEditor.addSchemaReference(schemaA.schemaKey, schemaC);
-
-        expect(result.errorMessage).not.undefined;
-        expect(normalizeLineEnds(result.errorMessage!)).to.equal(normalizeLineEnds("ECObjects-2: Schema 'SchemaA' has multiple schema references (SchemaB, SchemaC) with the same alias 'b', which is not allowed.\r\nECObjects-3: Schema 'SchemaA' has reference cycles: SchemaC --> SchemaA, SchemaA --> SchemaC\r\n"));
-        expect(schemaA.getReferenceSync("SchemaC")).to.be.undefined;
+        try {
+          await testEditor.addSchemaReference(schemaA.schemaKey, schemaC);
+        } catch(e: any) {
+          expect(e).to.have.property("errorNumber", ECEditingStatus.AddSchemaReference);
+          expect(e).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
+          expect(e).to.have.nested.property("innerError.message", `Rule violations occurred from Schema ${schemaA.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`);
+          const violations = e.innerError.ruleViolations as AnyDiagnostic[];
+          expect(violations[0]).to.deep.equal(new Diagnostics.SchemaRefAliasMustBeUnique(schemaA, [schemaA.name, "b", "SchemaB", "SchemaC"]));
+          expect(violations[1]).to.deep.equal(new Diagnostics.ReferenceCyclesNotAllowed(schemaA, [schemaA.name, `SchemaC --> SchemaA, SchemaA --> SchemaC`]));
+          expect(schemaA.getReferenceSync("SchemaC")).to.be.undefined;
+        }
       });
     });
 
@@ -231,7 +244,7 @@ describe("Editor tests", () => {
 
         const result = await testEditor.setVersion(testSchema.schemaKey, 2, 3, 4);
 
-        expect(result).to.eql({});
+        expect(result).to.deep.equal(testSchema.schemaKey);
         expect(testSchema.readVersion).to.equal(2);
         expect(testSchema.writeVersion).to.equal(3);
         expect(testSchema.minorVersion).to.equal(4);
@@ -251,7 +264,7 @@ describe("Editor tests", () => {
 
         const result = await testEditor.setVersion(testSchema.schemaKey, undefined, 3, 4);
 
-        expect(result).to.eql({});
+        expect(result).to.deep.equal(testSchema.schemaKey);
         expect(testSchema.readVersion).to.equal(1);
         expect(testSchema.writeVersion).to.equal(3);
         expect(testSchema.minorVersion).to.equal(4);
@@ -271,7 +284,7 @@ describe("Editor tests", () => {
 
         const result = await testEditor.setVersion(testSchema.schemaKey, 2, undefined, 4);
 
-        expect(result).to.eql({});
+        expect(result).to.deep.equal(testSchema.schemaKey);
         expect(testSchema.readVersion).to.equal(2);
         expect(testSchema.writeVersion).to.equal(2);
         expect(testSchema.minorVersion).to.equal(4);
@@ -291,7 +304,7 @@ describe("Editor tests", () => {
 
         const result = await testEditor.setVersion(testSchema.schemaKey, 2, 3, undefined);
 
-        expect(result).to.eql({});
+        expect(result).to.deep.equal(testSchema.schemaKey);
         expect(testSchema.readVersion).to.equal(2);
         expect(testSchema.writeVersion).to.equal(3);
         expect(testSchema.minorVersion).to.equal(3);
@@ -311,7 +324,7 @@ describe("Editor tests", () => {
 
         const result = await testEditor.incrementMinorVersion(testSchema.schemaKey);
 
-        expect(result).to.eql({});
+        expect(result).to.deep.equal(testSchema.schemaKey);
         expect(testSchema.minorVersion).to.equal(4);
       });
     });
