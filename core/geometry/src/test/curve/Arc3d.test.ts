@@ -58,7 +58,7 @@ function exerciseArcSet(ck: Checker, arcA: Arc3d) {
   transform.multiplyPoint3d(myPoint, myPoint); // this indirectly modifies arcB, but not arcD
   ck.testFalse(arcD.isAlmostEqual(arcB));
 
-  const arcXY = Arc3d.createXY(Point3d.create(2,7,1), 8, AngleSweep.createStartEndRadians(2,8));
+  const arcXY = Arc3d.createXY(Point3d.create(2, 7, 1), 8, AngleSweep.createStartEndRadians(2, 8));
   const arcE = arcXY.cloneAtZ();
   ck.testTrue(arcE.isAlmostEqual(arcXY), "cloneAtZ of xy-arc with undefined param is just clone");
   ck.testFalse(arcC.isInPlane(Plane3dByOriginAndUnitNormal.createXYPlane(arcC.center)), "arcC is a non-xy-arc");
@@ -552,7 +552,7 @@ describe("Arc3d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
   // Test 3-point elliptical arc constructor
-  it("CreateThroughPoints", () => {
+  it("CreateThreePointEllipse", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -560,7 +560,7 @@ describe("Arc3d", () => {
     const p0 = Point3d.create(1, 0, 0);
     const p1 = Point3d.create(0, 1, 0);
     const p2 = Point3d.create(-1, 0, 0);
-    const unitCircle = Arc3d.createThroughPoints(p0, p1, p2);
+    const unitCircle = Arc3d.createStartMiddleEnd(p0, p1, p2);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [p0, p1, p2], x0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, unitCircle, x0);
     if (ck.testDefined(unitCircle, "created the arc")) {
@@ -573,7 +573,7 @@ describe("Arc3d", () => {
     }
     x0 += 5;
     p1.y = 2;
-    const ellipse1 = Arc3d.createThroughPoints(p0, p1, p2);
+    const ellipse1 = Arc3d.createStartMiddleEnd(p0, p1, p2);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [p0, p1, p2], x0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, ellipse1, x0);
     if (ck.testDefined(ellipse1, "created the arc")) {
@@ -586,7 +586,7 @@ describe("Arc3d", () => {
     x0 += 5;
     p0.y = 1;
     p2.y = -1;
-    const ellipse2 = Arc3d.createThroughPoints(p0, p1, p2);
+    const ellipse2 = Arc3d.createStartMiddleEnd(p0, p1, p2);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [p0, p1, p2], x0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, ellipse2, x0);
     if (!ck.testTrue(undefined === ellipse2, "arc construction not possible") && ellipse2) {
@@ -597,7 +597,7 @@ describe("Arc3d", () => {
     }
     x0 += 5;
     p1.y = 1;
-    const ellipse3 = Arc3d.createThroughPoints(p0, p1, p2);
+    const ellipse3 = Arc3d.createStartMiddleEnd(p0, p1, p2);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [p0, p1, p2], x0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, ellipse3, x0);
     if (ck.testDefined(ellipse3, "created the arc")) {
@@ -609,7 +609,7 @@ describe("Arc3d", () => {
     }
     x0 += 5;
     p1.y = -1;
-    const ellipse4 = Arc3d.createThroughPoints(p0, p1, p2, AngleSweep.createStartEndDegrees(0, 200));
+    const ellipse4 = Arc3d.createStartMiddleEnd(p0, p1, p2, AngleSweep.createStartEndDegrees(0, 200));
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [p0, p1, p2], x0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, ellipse4, x0);
     if (ck.testDefined(ellipse4, "created the arc")) {
@@ -619,7 +619,7 @@ describe("Arc3d", () => {
       ck.testFalse(ellipse4.isCircular, "ellipse is not circular");
       ck.testCoordinate(0, ellipse4.closestPoint(p1, false).a, "middle point is on the ellipse");
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "CreateThroughPoints");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "CreateThreePointEllipse");
     expect(ck.getNumErrors()).equals(0);
   });
 

@@ -237,7 +237,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param result optional preallocated result
    * @returns elliptical arc, or undefined if construction impossible.
    */
-  public static createThroughPoints(point0: Point3d, point1: Point3d, point2: Point3d, sweep?: AngleSweep, result?: Arc3d): Arc3d | undefined {
+  public static createStartMiddleEnd(point0: Point3d, point1: Point3d, point2: Point3d, sweep?: AngleSweep, result?: Arc3d): Arc3d | undefined {
     const center = point0.interpolate(0.5, point2);
     const vector0 = Vector3d.createStartEnd(center, point0);
     const vector1 = Vector3d.createStartEnd(center, point1);

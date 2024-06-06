@@ -248,7 +248,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     static createFilletArc(point0: Point3d, point1: Point3d, point2: Point3d, radius: number): ArcBlendData;
     static createRefs(center: Point3d, matrix: Matrix3d, sweep: AngleSweep, result?: Arc3d): Arc3d;
     static createScaledXYColumns(center: Point3d | undefined, matrix: Matrix3d, radius0: number, radius90: number, sweep?: AngleSweep, result?: Arc3d): Arc3d;
-    static createThroughPoints(point0: Point3d, point1: Point3d, point2: Point3d, sweep?: AngleSweep, result?: Arc3d): Arc3d | undefined;
+    static createStartMiddleEnd(point0: Point3d, point1: Point3d, point2: Point3d, sweep?: AngleSweep, result?: Arc3d): Arc3d | undefined;
     static createUnitCircle(): Arc3d;
     static createXY(center: Point3d, radius: number, sweep?: AngleSweep): Arc3d;
     static createXYEllipse(center: Point3d, radiusA: number, radiusB: number, sweep?: AngleSweep): Arc3d;
