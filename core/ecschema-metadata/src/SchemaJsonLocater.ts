@@ -32,7 +32,8 @@ export class SchemaJsonLocater implements ISchemaLocater {
    * @throws [ECObjectsError]($ecschema-metadata) if the schema exists, but cannot be loaded.
    */
   public async getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
-    return this.getSchemaSync(schemaKey, matchType, context) as T;
+    await this.getSchemaInfo(schemaKey, matchType, context);
+    return await context.getCachedSchema(schemaKey, matchType) as T;
   }
 
   /**
@@ -41,7 +42,15 @@ export class SchemaJsonLocater implements ISchemaLocater {
    * @param matchType The match type to use when locating the schema
    */
   public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
-    return this.getSchema(schemaKey, matchType, context);
+    const schemaProps = this._getSchema(schemaKey.name);
+    if (!schemaProps)
+      return undefined;
+
+    const schemaInfo = await Schema.startLoadingFromJson(schemaProps, context);
+    if (schemaInfo !== undefined && schemaInfo.schemaKey.matches(schemaKey, matchType))
+      return schemaInfo;
+
+    return undefined;
   }
 
   /** Get a schema by [SchemaKey] synchronously.
