@@ -93,11 +93,13 @@ export enum ECEditingStatus {
 
 /**
  * A type that constrains the possible error types handled by SchemaEditingError
+ * @alpha
  */
 export type AnyEditingError = SchemaEditingError | Error;
 
 /**
  * Defines the possible property type names.
+ * @alpha
  */
 export enum PropertyTypeName {
   ArrayProperty = "ArrayProperty",
@@ -109,6 +111,7 @@ export enum PropertyTypeName {
 
 /**
  * Defines the possible schema type identifiers.
+ * @alpha
  */
 export enum SchemaTypeIdentifiers {
   SchemaIdentifier = "Schema",
@@ -123,24 +126,27 @@ export enum SchemaTypeIdentifiers {
 
 /**
  * Type that constrains SchemaItemType enum to those used by EC Class types.
+ * @alpha
  */
-type ECClassSchemaItems = SchemaItemType.EntityClass | SchemaItemType.StructClass | SchemaItemType.RelationshipClass | SchemaItemType.Mixin | SchemaItemType.CustomAttributeClass;
+export type ECClassSchemaItems = SchemaItemType.EntityClass | SchemaItemType.StructClass | SchemaItemType.RelationshipClass | SchemaItemType.Mixin | SchemaItemType.CustomAttributeClass;
 
 /**
  * Type that defines the possible SchemaTypeIdentifiers for SchemaItemId classes.
+ * @alpha
  */
-type AnySchemaItemTypeIdentifier = SchemaTypeIdentifiers.SchemaItemIdentifier | SchemaTypeIdentifiers.ClassIdentifier;
+export type AnySchemaItemTypeIdentifier = SchemaTypeIdentifiers.SchemaItemIdentifier | SchemaTypeIdentifiers.ClassIdentifier;
 
 /**
  * Type that encompasses all ISchemaTypeIdentifier interfaces
+ * @alpha
  */
-type AnyIdentifier = ISchemaIdentifier | ISchemaItemIdentifier | IClassIdentifier | IPropertyIdentifier | ICustomAttributeIdentifier | IRelationshipConstraintIdentifier | IEnumeratorIdentifier;
+export type AnyIdentifier = ISchemaIdentifier | ISchemaItemIdentifier | IClassIdentifier | IPropertyIdentifier | ICustomAttributeIdentifier | IRelationshipConstraintIdentifier | IEnumeratorIdentifier;
 
 /**
  * A base interface that defines what is needed to identity any schema type.
- * @beta
+ * @alpha
  */
-interface ISchemaTypeIdentifier {
+export interface ISchemaTypeIdentifier {
   readonly name: string;
   readonly schemaKey: SchemaKey;
   readonly typeIdentifier: SchemaTypeIdentifiers;
@@ -148,15 +154,17 @@ interface ISchemaTypeIdentifier {
 
 /**
  * Interface that defines the data needed to identify a Schema.
+ * @alpha
  */
-interface ISchemaIdentifier extends ISchemaTypeIdentifier {
+export interface ISchemaIdentifier extends ISchemaTypeIdentifier {
   readonly typeIdentifier: SchemaTypeIdentifiers.SchemaIdentifier;
 }
 
 /**
  * Interface that defines the data needed to identify a SchemaItem.
+ * @alpha
  */
-interface ISchemaItemIdentifier extends ISchemaTypeIdentifier {
+export interface ISchemaItemIdentifier extends ISchemaTypeIdentifier {
   readonly schemaItemType: SchemaItemType;
   readonly schemaItemKey: SchemaItemKey;
   readonly typeIdentifier: AnySchemaItemTypeIdentifier;
@@ -164,8 +172,9 @@ interface ISchemaItemIdentifier extends ISchemaTypeIdentifier {
 
 /**
  * Interface that defines the data needed to identify an EC Class.
+ * @alpha
  */
-interface IClassIdentifier extends ISchemaTypeIdentifier {
+export interface IClassIdentifier extends ISchemaTypeIdentifier {
   readonly schemaItemType: ECClassSchemaItems;
   readonly schemaItemKey: SchemaItemKey;
   readonly typeIdentifier: SchemaTypeIdentifiers.ClassIdentifier;
@@ -173,8 +182,9 @@ interface IClassIdentifier extends ISchemaTypeIdentifier {
 
 /**
  * Interface that defines the data needed to identify an EC Property.
+ * @alpha
  */
-interface IPropertyIdentifier extends ISchemaTypeIdentifier {
+export interface IPropertyIdentifier extends ISchemaTypeIdentifier {
   readonly fullName: string;
   readonly ecClass: ClassId;
   readonly typeName?: PropertyTypeName;
@@ -183,6 +193,7 @@ interface IPropertyIdentifier extends ISchemaTypeIdentifier {
 
 /**
  * Interface that defines the data needed to identify an Enumerator.
+ * @alpha
  */
 interface IEnumeratorIdentifier extends ISchemaTypeIdentifier {
   readonly enumeratorType: string;
@@ -193,22 +204,25 @@ interface IEnumeratorIdentifier extends ISchemaTypeIdentifier {
 
 /**
  * Interface that defines the data needed to identify a CustomAttribute.
+ * @alpha
  */
-interface ICustomAttributeIdentifier extends ISchemaTypeIdentifier {
+export interface ICustomAttributeIdentifier extends ISchemaTypeIdentifier {
   readonly containerFullName: string;
   readonly typeIdentifier: SchemaTypeIdentifiers.CustomAttributeIdentifier;
 }
 
 /**
  * Interface that defines the data needed to identify a RelationshipConstraint.
+ * @alpha
  */
-interface IRelationshipConstraintIdentifier extends ISchemaTypeIdentifier {
+export interface IRelationshipConstraintIdentifier extends ISchemaTypeIdentifier {
   readonly relationshipKey: SchemaItemKey;
   readonly typeIdentifier: SchemaTypeIdentifiers.RelationshipConstraintIdentifier;
 }
 
 /**
  * An ISchemaIdentifier implementation to identify Schemas
+ * @alpha
  */
 export class SchemaId implements ISchemaIdentifier {
   public readonly typeIdentifier = SchemaTypeIdentifiers.SchemaIdentifier;
@@ -222,6 +236,7 @@ export class SchemaId implements ISchemaIdentifier {
 
 /**
  * An ISchemItemIdentifier implementation to identify SchemaItems
+ * @alpha
  */
 export class SchemaItemId implements ISchemaItemIdentifier {
   public readonly typeIdentifier: AnySchemaItemTypeIdentifier;
@@ -250,6 +265,7 @@ export class SchemaItemId implements ISchemaItemIdentifier {
 
 /**
  * An IClassIdentifier implementation to identify Class instances.
+ * @alpha
  */
 export class ClassId extends SchemaItemId implements IClassIdentifier {
   public override readonly typeIdentifier = SchemaTypeIdentifiers.ClassIdentifier;
@@ -262,6 +278,7 @@ export class ClassId extends SchemaItemId implements IClassIdentifier {
 
 /**
  * An IPropertyIdentifier implementation to identify Property instances.
+ * @alpha
  */
 export class PropertyId implements IPropertyIdentifier {
   public readonly typeIdentifier = SchemaTypeIdentifiers.PropertyIdentifier;
@@ -282,6 +299,7 @@ export class PropertyId implements IPropertyIdentifier {
 
 /**
  * An IEnumeratorIdentifier implementation to identify Enumerator instances.
+ * @alpha
  */
 export class EnumeratorId implements IEnumeratorIdentifier{
   public readonly typeIdentifier = SchemaTypeIdentifiers.EnumeratorIdentifier;
@@ -302,6 +320,7 @@ export class EnumeratorId implements IEnumeratorIdentifier{
 
 /**
  * An ICustomAttributeIdentifier implementation to identify CustomAttribute instances.
+ * @alpha
  */
 export class CustomAttributeId implements ICustomAttributeIdentifier {
   public readonly typeIdentifier = SchemaTypeIdentifiers.CustomAttributeIdentifier;
@@ -317,6 +336,7 @@ export class CustomAttributeId implements ICustomAttributeIdentifier {
 
 /**
  * An IRelationshipConstraintIdentifier implementation to identify RelationshipConstraints.
+ * @alpha
  */
 export class RelationshipConstraintId implements IRelationshipConstraintIdentifier {
   public readonly typeIdentifier = SchemaTypeIdentifiers.RelationshipConstraintIdentifier;
@@ -331,12 +351,12 @@ export class RelationshipConstraintId implements IRelationshipConstraintIdentifi
 }
 
 /**
- * @internal
  * An exception class for the ecschema-editing API. Contains identifiers for schema types involved in the
  * exception. An example being SchemaItemId which contains the name of the SchemaItem, SchemaItemKey, SchemaItemType, etc.
  * Typically will contain an innerError of type SchemaEditingError containing the identifier of the schema item that
  * caused the exception. The containing error instance will identify the method called (identified by the errorNumber)
  * and the identifier of the schema item being modified/created.
+ * @alpha
  */
 export class SchemaEditingError extends Error {
   private _ruleViolations?: AnyDiagnostic[];
