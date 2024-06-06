@@ -100,9 +100,9 @@ describe("Workspace Examples", () => {
         schemaPrefix: "landscapePro",
         description: "LandscapePro configuration settings",
         settingDefs: {
-          "flora/shrubDbs": {
+          "flora/preferredStyle": {
             type: "string",
-            description: "The name of a setting that specifies the WorkspaceDbs from which to load shrub definitions",
+            description: "The name of one of a set of predefined 'styles' of foliage that might be used to select appropriate flora",
           },
           "flora/treeDbs": {
             type: "array",
@@ -157,8 +157,8 @@ describe("Workspace Examples", () => {
         expect(IModelHost.settingsSchemas.settingDefs.has(`landscapePro/${settingName}`)).to.be.true;
       }
 
-      expect(() => IModelHost.settingsSchemas.validateSetting("just a string", "landscapePro/flora/shrubDbs")).not.to.throw;
-      expect(() => IModelHost.settingsSchemas.validateSetting(123, "landscapePro/flora/shrubDbs")).to.throw("wrong type");
+      expect(() => IModelHost.settingsSchemas.validateSetting("just a string", "landscapePro/flora/preferredStyle")).not.to.throw;
+      expect(() => IModelHost.settingsSchemas.validateSetting(123, "landscapePro/flora/preferredStyle")).to.throw("wrong type");
 
       // __PUBLISH_SECTION_START__ WorkspaceExamples.AddDictionary
       const values: SettingsContainer = {
@@ -179,21 +179,21 @@ describe("Workspace Examples", () => {
       // __PUBLISH_SECTION_START__ WorkspaceExamples.GetSettings
       let defaultTool = IModelHost.appWorkspace.settings.getString("landscapePro/ui/defaultTool"); // "place-shrub"
       let availableTools = IModelHost.appWorkspace.settings.getArray<string>("landscapePro/ui/availableTools"); // ["place-shrub", "place-koi-pond", "apply-mulch"]
-      let shrubDbs = IModelHost.appWorkspace.settings.getString("landscapePro/flora/shrubDbs"); // undefined
-      const shrubDbsOrDefault = IModelHost.appWorkspace.settings.getString("landscapePro/flora/shrubDbs", "defaultShrubs"); // "defaultShrubs"
+      let preferredStyle = IModelHost.appWorkspace.settings.getString("landscapePro/flora/preferredStyle"); // undefined
+      const preferredStyleOrDefault = IModelHost.appWorkspace.settings.getString("landscapePro/flora/preferredStyle", "default"); // "default"
       // __PUBLISH_SECTION_END__
 
       expect(defaultTool).to.equal("place-shrub");
       expect(availableTools).to.deep.equal(["place-shrub", "place-koi-pond", "apply-mulch"]);
-      expect(shrubDbs).to.be.undefined;
-      expect(shrubDbsOrDefault).to.equal("defaultShrubs");
+      expect(preferredStyle).to.be.undefined;
+      expect(preferredStyleOrDefault).to.equal("default");
 
       // __PUBLISH_SECTION_START__ WorkspaceExamples.AddSecondDictionary
       IModelHost.appWorkspace.settings.addDictionary({
         name: "LandscapeProOverrides",
         priority: SettingsPriority.application,
       }, {
-        "landscapePro/flora/shrubDbs": "coniferousShrubs",
+        "landscapePro/flora/preferredStyle": "coniferous",
         "landscapePro/ui/defaultTool": "place-koi-pond",
         "landscapePro/ui/availableTools": ["place-gazebo", "apply-mulch"],
       });
@@ -202,12 +202,12 @@ describe("Workspace Examples", () => {
       // __PUBLISH_SECTION_START__ WorkspaceExamples.GetMergedSettings
       defaultTool = IModelHost.appWorkspace.settings.getString("landscapePro/ui/defaultTool"); // "place-koi-pond"
       availableTools = IModelHost.appWorkspace.settings.getArray<string>("landscapePro/ui/availableTools"); // ["place-gazebo", "apply-mulch", "place-shrub", "place-koi-pond"]
-      shrubDbs = IModelHost.appWorkspace.settings.getString("landscapePro/flora/shrubDbs"); // "coniferousShrubs"
+      preferredStyle = IModelHost.appWorkspace.settings.getString("landscapePro/flora/preferredStyle"); // "coniferous"
       // __PUBLISH_SECTION_END__
 
       expect(defaultTool).to.equal("place-koi-pond");
       expect(availableTools).to.deep.equal(["place-gazebo", "apply-mulch", "place-shrub", "place-koi-pond"]);
-      expect(shrubDbs).to.equal("coniferousShrubs");
+      expect(preferredStyle).to.equal("coniferous");
 
       // __PUBLISH_SECTION_START__ WorkspaceExamples.saveSettingDictionary
       interface HardinessRange {

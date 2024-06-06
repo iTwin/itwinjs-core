@@ -2,7 +2,7 @@
 
 Every non-trivial application requires some level of configuration to customize its run-time behavior and help it locate data resources required for it to perform its functions. An iTwin.js [Workspace]($backend) comprises the [Settings]($backend) that supply this configuration and the [WorkspaceContainer]($backend)s that provide those resources.
 
-To explore [Workspace]($backend) concepts, let's take the example of an imaginary application called "LandscapePro™" that allows users to decorate an iModel by adding landscaping features like shrubs, flower beds, and patio furniture.
+To explore [Workspace]($backend) concepts, let's take the example of an imaginary application called "LandscapePro™" that allows users to decorate an iModel by adding landscaping features like trees, shrubs, flower beds, and patio furniture.
 
 # Settings
 
@@ -18,7 +18,7 @@ A [SettingName]($backend) must be unique, 1 to 1024 characters long with no lead
 ```
   "landscapePro/ui/defaultToolId"
   "landscapePro/ui/availableTools"
-  "landscapePro/flora/shrubDbs"
+  "landscapePro/flora/preferredStyle"
   "landscapePro/flora/treeDbs"
   "landscapePro/hardinessRange"
 ```
@@ -75,7 +75,7 @@ Now you can access the setting values defined in the dictionary via `IModelHost.
 [[include:WorkspaceExamples.GetSettings]]
 ```
 
-Note that `getString` returns `undefined` for "landscapePro/shrubDbs" because our dictionary didn't provide a value for it. The overload of that function (and similar functions like [Settings.getBoolean]($backend) and [Settings.getObject]($backend)) allows you to specify a default value to use if the value is not defined.
+Note that `getString` returns `undefined` for "landscapePro/preferredStyle" because our dictionary didn't provide a value for it. The overload of that function (and similar functions like [Settings.getBoolean]($backend) and [Settings.getObject]($backend)) allows you to specify a default value to use if the value is not defined.
 
 Any number of dictionaries can be added to [Workspace.settings]($backend). Let's add another one:
 
@@ -83,13 +83,13 @@ Any number of dictionaries can be added to [Workspace.settings]($backend). Let's
 [[include:WorkspaceExamples.AddSecondDictionary]]
 ```
 
-This dictionary adds a value for "landscapePro/flora/shrubDbs", and defines new values for the two settings that were also defined in the previous dictionary. See what happens when we look up those settings' values again:
+This dictionary adds a value for "landscapePro/flora/preferredStyle", and defines new values for the two settings that were also defined in the previous dictionary. See what happens when we look up those settings' values again:
 
 ```ts
 [[include:WorkspaceExamples.GetMergedSettings]]
 ```
 
-Now, as expected, "landscapePro/flora/shrubDbs" is no longer `undefined`. The value of "landscapePro/ui/defaultTool" has been overwritten with the value specified by the new dictionary. And the "landscapePro/ui/availableTools" array now has the merged contents of the arrays defined in *both* dictionaries. What rules determine how the value of a setting is resolved when multiple dictionaries provide a value for it? The answer lies in the dictionaries' [SettingsPriority]($backend)s.
+Now, as expected, "landscapePro/flora/preferredStyle" is no longer `undefined`. The value of "landscapePro/ui/defaultTool" has been overwritten with the value specified by the new dictionary. And the "landscapePro/ui/availableTools" array now has the merged contents of the arrays defined in *both* dictionaries. What rules determine how the value of a setting is resolved when multiple dictionaries provide a value for it? The answer lies in the dictionaries' [SettingsPriority]($backend)s.
 
 ## Settings priorities
 
