@@ -27,6 +27,8 @@ export class Angle implements BeJSONFunctions {
   public static readonly piOver2Radians = 1.5707963267948966e+000;
   /** maximal accuracy value of pi (180 degrees), in radians */
   public static readonly piRadians = 3.141592653589793e+000;
+  /** maximal accuracy value of 3*pi/2 (270 degrees), in radians */
+  public static readonly pi3Over2Radians = 4.71238898038469e+000;
   /** maximal accuracy value of 2*pi (360 degrees), in radians */
   public static readonly pi2Radians = 6.283185307179586e+000;
   /** scale factor for converting radians to degrees */
@@ -263,7 +265,7 @@ export class Angle implements BeJSONFunctions {
     // fall through for NaN disaster.
     return 0;
   }
-  /** Adjust a radians value so it is positive in 0..2Pi */
+  /** Adjust a radians value so it is positive in [0, 2pi) */
   public static adjustRadians0To2Pi(radians: number): number {
     if (radians >= 0) {
       const period = Math.PI * 2.0;

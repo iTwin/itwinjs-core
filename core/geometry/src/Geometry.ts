@@ -498,6 +498,10 @@ export class Geometry {
   public static isSmallAngleRadians(value: number): boolean {
     return Math.abs(value) < Geometry.smallAngleRadians;
   }
+  /** Test if `value` is small compared to `smallAngleRadiansSquared` */
+  public static isSmallAngleRadiansSquared(value: number): boolean {
+    return Math.abs(value) < Geometry.smallAngleRadiansSquared;
+  }
   /**
    * Returns `true` if both values are `undefined` or if both are defined and almost equal within tolerance.
    * If one is `undefined` and the other is not, then `false` is returned.
@@ -513,12 +517,21 @@ export class Geometry {
     return true;
   }
   /**
-   * Toleranced equality test using tolerance `tolerance * ( 1 + abs(a) + abs(b) )`.
-   * * `Geometry.smallAngleRadians` is used if tolerance is `undefined`.
+   * Toleranced equality test.
+   * @param tolerance relative tolerance. Default value is `Geometry.smallAngleRadians`.
+   * @returns true if and only if `a` and `b` are almost equal.
    */
   public static isAlmostEqualNumber(a: number, b: number, tolerance: number = Geometry.smallAngleRadians): boolean {
     const sumAbs = 1.0 + Math.abs(a) + Math.abs(b);
     return Math.abs(a - b) <= tolerance * sumAbs;
+  }
+  /**
+   * Toleranced test for equality to at least one of two numbers.
+   * @param tolerance relative tolerance. Default value is `Geometry.smallAngleRadians`.
+   * @returns true if and only if `a` and `b` are almost equal, or `a` and `c` are almost equal.
+   */
+  public static isAlmostEqualEitherNumber(a: number, b: number, c: number, tolerance: number = Geometry.smallAngleRadians): boolean {
+    return this.isAlmostEqualNumber(a, b, tolerance) || this.isAlmostEqualNumber(a, c, tolerance);
   }
   /**
    * Toleranced equality test using tolerance `tolerance * ( 1 + abs(a.x) + abs(a.y) + abs(b.x) + abs(b.y) )`.
@@ -1151,12 +1164,12 @@ export class Geometry {
     return apply01 ? x >= 0.0 && x <= 1.0 : true;
   }
   /**
-   * Test if `x` is in the interval [0,1] for a given positive `tolerance`.
-   * * Make sure to pass a positive `tolerance` because there is no check for that in the code.
+   * Test if `x` is in the interval [0,1] for a given `tolerance`.
    * @param x value to test.
-   * @param tolerance the tolerance.
+   * @param tolerance allowable distance outside the interval within which to classify `x` as inside.
    */
   public static isIn01WithTolerance(x: number, tolerance: number): boolean {
+    tolerance = Math.abs(tolerance);
     return x + tolerance >= 0.0 && x - tolerance <= 1.0;
   }
   /**
