@@ -183,10 +183,19 @@ Once the write lock is released, the new versions of the `WorkspaceDb`s are publ
 [[include:WorkspaceExamples.AddTrees]]
 ```
 
-In the example above, we created version 1.1.0 of the "cornus" `WorkspaceDb`, added two species of dogwood tree to it, and uploaded it. Later, we might create a patched version that includes a species of dogwood that we forgot, and add a second `WorkspaceDb` to hold trees of the genus *abies*:
+In the example above, we created version 1.1.0 of the "cornus" `WorkspaceDb`, added two species of dogwood tree to it, and uploaded it. Later, we might create a patched version 1.1.1 that includes a species of dogwood that we forgot in version 1.1.0, and add a second `WorkspaceDb` to hold trees of the genus *abies*:
 
 ```ts
 [[include:WorkspaceExamples.CreatePatch]]
 ```
 
+## Accessing workspace resources
+
+Now that we have some [WorkspaceDb]($backend)s, we can configure our [Settings]($backend) to use them. The [LandscapePro schema](#settings-schemas) defines a `treeDbs` setting that `extends` the type [itwin/core/workspace/workspaceDbList](https://github.com/iTwin/itwinjs-core/blob/master/core/backend/src/assets/Settings/Schemas/Workspace.Schema.json). This type defines an array of [WorkspaceDbProps]($backend), and overrides the `combineArray` property to `true`. So, a setting of this type can be resolved to a list of [WorkspaceDb]($backend)s, sorted by [SettingsPriority]($backend), from which you can obtain resources.
+
+Let's write a function that produces a list of all of the available trees that can survive in a specified USDA hardiness zone:
+
+```ts
+[[include:WorkspaceExamples.getAvailableTrees]]
+```
 

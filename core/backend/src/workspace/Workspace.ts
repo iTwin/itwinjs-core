@@ -109,9 +109,10 @@ export interface WorkspaceDbQueryResourcesArgs {
   /** A pattern against which to compare the name of each resource, using [[nameCompare]] as the comparison operator.
    * Only resources whose names match the pattern will be included in the query results.
    */
-  namePattern: string;
+  namePattern?: string;
   /** The comparison operator by which to compare the name of each resource to [[namePattern]].
    * Only resources whose names match the pattern will be included in the query results.
+   * Ignored if [[namePattern]] is undefined.
    */
   nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
   /** A function invoked to process the resources that match the query criterion. */
@@ -477,9 +478,10 @@ export interface QueryWorkspaceResourcesArgs {
   /** A pattern against which to compare the name of each resource, using [[nameCompare]] as the comparison operator.
    * Only resources whose names match the pattern will be included in the query results.
    */
-  namePattern: string;
+  namePattern?: string;
   /** The comparison operator by which to compare the name of each resource to [[namePattern]].
    * Only resources whose names match the pattern will be included in the query results.
+   * Ignored i [[namePattern]] is undefined.
    */
   nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
   /** A function invoked to process the resources that match the query criteria. */

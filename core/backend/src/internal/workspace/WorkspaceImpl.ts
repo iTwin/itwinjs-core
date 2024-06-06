@@ -309,14 +309,18 @@ class WorkspaceDbImpl implements WorkspaceDb {
   public queryResources(args: WorkspaceDbQueryResourcesArgs): void {
     const table = "blob" !== args.type ? "strings" : "blobs";
     this.withOpenDb((db) => {
-      db.withSqliteStatement(`SELECT id from ${table} WHERE id ${args.nameCompare ?? "="} ?`, (stmt) => {
+      const where = undefined !== args.namePattern ? ` WHERE id ${args.nameCompare ?? "="} ?` : "";
+      db.withSqliteStatement(`SELECT id from ${table}${where}`, (stmt) => {
         function * makeIterable() {
           while (DbResult.BE_SQLITE_ROW === stmt.step()) {
             yield stmt.getValueString(0);
           }
         }
 
-        stmt.bindString(1, args.namePattern);
+        if (undefined !== args.namePattern) {
+          stmt.bindString(1, args.namePattern);
+        }
+        
         args.callback(makeIterable());
       });
     });

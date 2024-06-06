@@ -4,14 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { IModelHost, SettingsContainer, StandaloneDb, SettingsPriority, WorkspaceEditor } from "@itwin/core-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { SettingGroupSchema } from "@itwin/core-backend";
-import { SettingsDictionaryProps } from "@itwin/core-backend";
-import { Guid, OpenMode } from "@itwin/core-bentley";
+import {
+  EditableWorkspaceContainer, EditableWorkspaceDb, SettingGroupSchema, SettingsDictionaryProps, Workspace,
+  IModelHost, SettingsContainer, StandaloneDb, SettingsPriority, WorkspaceEditor, WorkspaceDb ,
+} from "@itwin/core-backend";
+import { Guid, OpenMode, assert } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
-import { EditableWorkspaceContainer } from "@itwin/core-backend";
-import { EditableWorkspaceDb } from "@itwin/core-backend";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Workspace Examples", () => {
@@ -360,6 +359,36 @@ describe("Workspace Examples", () => {
       // ###TODO expect(abiesDb.cloudProps!.version).to.equal("1.1.0");
       
       AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
+
+      // __PUBLISH_SECTION_START__ WorkspaceExamples.getAvailableTrees
+      async function getAvailableTrees(hardiness: HardinessRange): Promise<TreeResource[]> {
+        // Resolve the list of WorkspaceDbs from the setting.
+        const dbs = await iModel.workspace.getWorkspaceDbs({ settingName: "landscapePro/flora/treeDbs" });
+
+        // Query for all the trees in all the WorkspaceDbs and collect a list of those that match the hardiness criterion.
+        const trees: TreeResource[] = [];
+        Workspace.queryResources({
+          dbs,
+          callback: (resources: Iterable<{ name: string, db: WorkspaceDb }>) => {
+            for (const resource of resources) {
+              // Look up the tree as stringified JSON in the current WorkspaceDb.
+              const str = resource.db.getString(resource.name);
+              assert(undefined !== str);
+              const tree = JSON.parse(str) as TreeResource;
+              if (tree.hardiness.minimum >= hardiness.minimum || tree.hardiness.maximum <= hardiness.maximum) {
+                trees.push(tree);
+              }
+            }
+          },
+        });
+
+        return trees;
+      }
+      // __PUBLISH_SECTION_END__
+      
+      // __PUBLISH_SECTION_START__ WorkspaceExamples.QueryResources
+        // ###TODO
+      // __PUBLISH_SECTION_END__
     });
   });
 });
