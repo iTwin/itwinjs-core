@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "delete breifcase .bim file on a failed download",
+      "comment": "delete briefcase .bim file on a failed download",
       "type": "none"
     }
   ],
