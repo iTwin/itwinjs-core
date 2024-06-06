@@ -243,8 +243,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const vector1 = Vector3d.createStartEnd(center, point1);
     const v0DotV1 = vector0.dotProduct(vector1);
     const v0Len2 = vector0.magnitudeSquared();
-    if (v0DotV1 * v0DotV1 >= v0Len2)
-      return undefined;
+    if (Math.abs(v0DotV1) >= v0Len2)
+      return undefined; // middle point projects to end of axis or beyond
     const normal = vector0.crossProduct(vector1);
     const vector90 = normal.unitCrossProductWithDefault(vector0, 0, 0, 0);
     const v1DotV90 = vector1.dotProduct(vector90);
