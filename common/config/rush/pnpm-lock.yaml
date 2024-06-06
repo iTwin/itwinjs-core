@@ -1318,6 +1318,7 @@ importers:
 
   ../../example-code/snippets:
     specifiers:
+      '@azure/storage-blob': ^12.7.0
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
@@ -1339,6 +1340,7 @@ importers:
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
       '@xmldom/xmldom': ~0.8.5
+      azurite: ^3.29.0
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
@@ -1348,6 +1350,7 @@ importers:
       rimraf: ^3.0.2
       typescript: ~5.3.3
     dependencies:
+      '@azure/storage-blob': 12.7.0
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -1361,6 +1364,7 @@ importers:
       '@itwin/itwins-client': 1.2.0
       '@itwin/service-authorization': 1.0.0_67wltvhdskk2oee2c3z2o4tfly
       '@xmldom/xmldom': 0.8.5
+      azurite: 3.29.0
       fs-extra: 8.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -5998,6 +6002,45 @@ packages:
     resolution: {integrity: sha512-jsyHu61e6N4Vbz/v18DHwWYKK0bSWLqn47eeDSKPB7m8tqMHF9YJ+mhIk2lVteyZrY8tnSj/jHOv4YiTCuCJgg==}
     dependencies:
       dequal: 2.0.3
+
+  /azurite/3.29.0:
+    resolution: {integrity: sha512-gzl8+LqereINQ45BuED4DNq9w3ipw0DCYAkGz8xwOFAlwjWey6C3JpolaIjrYNeX4r52bRCt53tPQ2fVCaNcYA==}
+    engines: {node: '>=10.0.0', vscode: ^1.39.0}
+    hasBin: true
+    dependencies:
+      '@azure/ms-rest-js': 1.11.2
+      args: 5.0.3
+      axios: 0.27.2
+      etag: 1.8.1
+      express: 4.18.2
+      fs-extra: 11.2.0
+      glob-to-regexp: 0.4.1
+      jsonwebtoken: 9.0.2
+      lokijs: 1.5.12
+      morgan: 1.10.0
+      multistream: 2.1.1
+      mysql2: 3.10.0
+      rimraf: 3.0.2
+      sequelize: 6.35.2_qjhl5a2srfinctylh3la6owyde
+      stoppable: 1.1.0
+      tedious: 16.7.1
+      to-readable-stream: 2.1.0
+      tslib: 2.6.2
+      uri-templates: 0.2.0
+      uuid: 3.4.0
+      winston: 3.11.0
+      xml2js: 0.6.2
+    transitivePeerDependencies:
+      - debug
+      - ibm_db
+      - mariadb
+      - oracledb
+      - pg
+      - pg-hstore
+      - snowflake-sdk
+      - sqlite3
+      - supports-color
+    dev: false
 
   /azurite/3.30.0:
     resolution: {integrity: sha512-YHICJMhR8GFOAWT+E8OzQUfhPZ2Nmx5D3L8MNNJkBIxsO7of0+nLOMrW2rJM454kV8VqoiECJhCC8u8udmePXg==}
