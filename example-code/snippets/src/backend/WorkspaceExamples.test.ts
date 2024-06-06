@@ -252,18 +252,7 @@ describe("Workspace Examples", () => {
         },
         // Ownership, access control, and datacenter location are defined by the iTwin.
         scope: { iTwinId },
-        // The name of the default WorkspaceDb to be created inside the new container.
-        dbName: "cornus",
-        // The manifest to be embedded inside the default WorkspaceDb.
-        manifest: {
-          // A user-facing name for the WorkspaceDb.
-          workspaceName: "Trees: cornus",
-          // A description of the WorkspaceDb's contents and purpose.
-          description: "Trees belonging to the genus cornus",
-          // The name of someone (typically an administrator) who can provide help and information
-          // about this WorkspaceDb.
-          contactName: "Sylvia Wood",
-        },
+        manifest: { workspaceName: "trees" },
       });
       // __PUBLISH_SECTION_END__
       
@@ -280,7 +269,17 @@ describe("Workspace Examples", () => {
         treeDb.addString(species, JSON.stringify(tree));
       }
 
-      const cornusDb = container.getEditableDb({ dbName: "cornus" });
+      await container.acquireWriteLock("Sylvia Wood");
+      
+      const cornusDb = await container.createDb({
+        dbName: "cornus",
+        version: "1.0.0",
+        manifest: {
+          workspaceName: "Trees: cornus",
+          description: "Trees belonging to the cornus genus",
+          contactName: "Sylvia Wood",
+        },
+      });
 
       addTree(cornusDb, "alternifolia", {
         commonName: "Pagoda Dogwood",
