@@ -219,7 +219,14 @@ export class BriefcaseManager {
     } catch (error: unknown) {
       if (arg.accessToken && arg.briefcaseId === undefined)
         await this.releaseBriefcase(arg.accessToken, { briefcaseId, iModelId: arg.iModelId });
-
+      if (IModelJsFs.existsSync(fileName)) {
+        try {
+          IModelJsFs.unlinkSync(fileName);
+          Logger.logInfo(loggerCategory, `Deleted ${fileName}`);
+        } catch (deleteError: unknown) {
+          Logger.logWarning(loggerCategory, `Failed to delete ${fileName}. errorMessage: ${(deleteError as Error).message}`);
+        }
+      }
       throw error;
     }
 
