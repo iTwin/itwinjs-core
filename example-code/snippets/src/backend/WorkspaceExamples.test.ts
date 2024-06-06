@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
 import {
   EditableWorkspaceContainer, EditableWorkspaceDb, SettingGroupSchema, SettingsDictionaryProps, Workspace,
-  IModelHost, SettingsContainer, StandaloneDb, SettingsPriority, WorkspaceEditor, WorkspaceDb ,
+  IModelHost, SettingsContainer, StandaloneDb, SettingsPriority, WorkspaceEditor, WorkspaceDb, WorkspaceDbProps ,
 } from "@itwin/core-backend";
 import { Guid, OpenMode, assert } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
@@ -217,7 +217,7 @@ describe("Workspace Examples", () => {
         maximum: number;
       }
 
-      const range: HardinessRange = { minimum: 8, maximum: 10 };
+      const range: HardinessRange = { minimum: 6, maximum: 8 };
       await iModel.acquireSchemaLock();
       iModel.saveSettingDictionary("landscapePro/iModelSettings", {
         "landscapePro/hardinessRange": range,
@@ -380,7 +380,7 @@ describe("Workspace Examples", () => {
               const str = resource.db.getString(resource.name);
               assert(undefined !== str);
               const tree = JSON.parse(str) as TreeResource;
-              if (tree.hardiness.minimum >= hardiness.minimum || tree.hardiness.maximum <= hardiness.maximum) {
+              if (tree.hardiness.minimum <= hardiness.maximum && hardiness.minimum <= tree.hardiness.maximum) {
                 trees.push(tree);
               }
             }
@@ -392,8 +392,45 @@ describe("Workspace Examples", () => {
       // __PUBLISH_SECTION_END__
       
       // __PUBLISH_SECTION_START__ WorkspaceExamples.QueryResources
-        // ###TODO
+      assert(undefined !== cornusDb.cloudProps);
+
+      // Point the setting at the cornus WorkspaceDb.
+      let treeDbProps: WorkspaceDbProps = { ...cornusDb.cloudProps };
+      iModel.workspace.settings.addDictionary({
+        name: "trees",
+        priority: SettingsPriority.iModel,
+      }, {
+        "landscapePro/flora/treeDbs": [treeDbProps],
+      });
+
+      const anyHardiness: HardinessRange = { minimum: 0, maximum: 13 };
+
+      let allTrees = await getAvailableTrees(anyHardiness);
+
+      // Roughleaf Dogwood excluded because its hardiness range (9, 9) is outside of the iModel's range (6, 8).
+      const iModelTrees = await getAvailableTrees(iModel.workspace.settings.getObject<HardinessRange>("landscapePro/hardinessRange", anyHardiness));
       // __PUBLISH_SECTION_END__
+
+      expect(allTrees.map((x) => x.commonName)).to.deep.equal(["Pagoda Dogwood", "Roughleaf Dogwood", "Northern Swamp Dogwood"]);
+      expect(iModelTrees.map((x) => x.commonName)).to.deep.equal(["Pagoda Dogwood", "Northern Swamp Dogwood"]);
+
+      // __PUBLISH_SECTION_START__ WorkspaceExamples.QuerySpecificVersion
+      treeDbProps = {
+        ...treeDbProps,
+        version: "1.1.0",
+      };
+
+      iModel.workspace.settings.addDictionary({
+        name: "trees",
+        priority: SettingsPriority.iModel,
+      }, {
+        "landscapePro/flora/treeDbs": [treeDbProps],
+      });
+
+      allTrees = await getAvailableTrees(anyHardiness);
+      // __PUBLISH_SECTION_END__
+
+      expect(allTrees.map((x) => x.commonName)).to.deep.equal(["Pagoda Dogwood", "Roughleaf Dogwood"]);
     });
   });
 });

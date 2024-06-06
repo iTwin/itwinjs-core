@@ -191,11 +191,27 @@ In the example above, we created version 1.1.0 of the "cornus" `WorkspaceDb`, ad
 
 ## Accessing workspace resources
 
-Now that we have some [WorkspaceDb]($backend)s, we can configure our [Settings]($backend) to use them. The [LandscapePro schema](#settings-schemas) defines a `treeDbs` setting that `extends` the type [itwin/core/workspace/workspaceDbList](https://github.com/iTwin/itwinjs-core/blob/master/core/backend/src/assets/Settings/Schemas/Workspace.Schema.json). This type defines an array of [WorkspaceDbProps]($backend), and overrides the `combineArray` property to `true`. So, a setting of this type can be resolved to a list of [WorkspaceDb]($backend)s, sorted by [SettingsPriority]($backend), from which you can obtain resources.
+Now that we have some [WorkspaceDb]($backend)s, we can configure our [Settings]($backend) to use them. The [LandscapePro schema](#settings-schemas) defines a "landscapePro/flora/treeDbs" setting that `extends` the type [itwin/core/workspace/workspaceDbList](https://github.com/iTwin/itwinjs-core/blob/master/core/backend/src/assets/Settings/Schemas/Workspace.Schema.json). This type defines an array of [WorkspaceDbProps]($backend), and overrides the `combineArray` property to `true`. So, a setting of this type can be resolved to a list of [WorkspaceDb]($backend)s, sorted by [SettingsPriority]($backend), from which you can obtain resources.
 
 Let's write a function that produces a list of all of the available trees that can survive in a specified USDA hardiness zone:
 
 ```ts
 [[include:WorkspaceExamples.getAvailableTrees]]
+```
+
+Now, let's configure the "landscapePro/flora/treeDbs" setting to point to the cornus `WorkspaceDb`, and use the `getAvailableTrees` function to retrieve `TreeResource`s from it:
+
+```ts
+[[include:WorkspaceExamples.QueryResources]]
+```
+
+`allTrees` includes the Pagoda, Roughleaf, and Northern Swamp Dogwoods, because they all fall within the hardiness range (0, 13). `iModelTrees` excludes the Roughleaf Dogwood, because its hardiness range (9, 9) does not intersect the iModel's hardiness range (6, 8).
+
+Note that we configured the setting to point to the patch 1.1.1 version of the cornus `WorkspaceDb` that added the Northern Swamp Dogwood. If we had omitted the [WorkspaceDbProps.version]($backend) property, it would have defaulted to the latest version - in this case, 1.1.1 again, but if in the future we created a new version, that would become the new "latest" version and automatically get picked up for use.
+
+If we configure the setting to use version 1.1.0, we will not find the Northern Swamp Dogwood added in 1.1.1:
+
+```ts
+[[include:WorkspaceExamples.QuerySpecificVersion]]
 ```
 
