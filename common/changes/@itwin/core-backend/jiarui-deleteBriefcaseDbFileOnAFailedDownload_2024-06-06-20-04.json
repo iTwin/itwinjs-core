@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "delete breifcase .bim file on a failed download",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
