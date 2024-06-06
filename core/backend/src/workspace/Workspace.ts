@@ -279,7 +279,7 @@ export interface WorkspaceDb {
 
   /** Find resources of a particular type with names matching a specified pattern.
    * The matching resources will be supplied to [[WorkspaceDbQueryResourcesArgs.callbackk]].
-   * @see [[queryWorkspaceResources]] to query resources within multiple `WorkspaceDb`s.
+   * @see [[Workspace.queryResources]] to query resources within multiple `WorkspaceDb`s.
    */
   queryResources(args: WorkspaceDbQueryResourcesArgs): void;
 
@@ -458,6 +458,57 @@ export namespace WorkspaceSettingNames {
   export const settingsWorkspaces = makeSettingName("settingsWorkspaces");
 }
 
+/** A function supplied as part of a [[QueryWorkspaceResourcesArgs]] to iterate the resources retrieved by [[Workspace.queryResources]].
+ * The `resources` object should only be used inside the function - it is an error to attempt to iterate it after the function returns.
+ * @beta
+ */
+export type QueryWorkspaceResourcesCallback = (resources: Iterable<{ name: string, db: WorkspaceDb }>) => void;
+
+/** Arguments supplied to [[Workspace.queryResources]] defining the query criteria and the list of [[WorkspaceDb]]s to query.
+ * @beta
+ */
+export interface QueryWorkspaceResourcesArgs {
+  /** The list of `WorkspaceDb`s to query, in the order in which they are to be queried.
+   * @see [[Workspace.resolveWorkspaceDbSetting]] or [[Workspace.getWorkspaceDbs]] to obtain an appropriate list of `WorkspaceDb`s.
+   */
+  dbs: WorkspaceDb[];
+  /** The type of resource to query. */
+  type?: "string" | "blob";
+  /** A pattern against which to compare the name of each resource, using [[nameCompare]] as the comparison operator.
+   * Only resources whose names match the pattern will be included in the query results.
+   */
+  namePattern: string;
+  /** The comparison operator by which to compare the name of each resource to [[namePattern]].
+   * Only resources whose names match the pattern will be included in the query results.
+   */
+  nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+  /** A function invoked to process the resources that match the query criteria. */
+  callback: QueryWorkspaceResourcesCallback;
+}
+
+function getWorkspaceResource(dbs: WorkspaceDb[], name: string, type: "string" | "blob"): string | Uint8Array | undefined {
+  for (const db of dbs) {
+    const val = type === "blob" ? db.getBlob(name) : db.getString(name);
+    if (undefined !== val) {
+      return val;
+    }
+  }
+
+  return undefined;
+}
+
+/** Arguments supplied to [[Workspace.getStringResource]] and [[WOrkspace.getBlobResource]].
+ * @beta
+ */
+export interface GetWorkspaceResourceArgs {
+  /** The list of `WorkspaceDb`s to search, in the order in which they are to be searched.
+   * @see [[Workspace.resolveWorkspaceDbSetting]] or [[Workspace.getWorkspaceDbs]] to obtain an appropriate list of `WorkspaceDb`s.
+   */
+  dbs: WorkspaceDb[];
+  /** The name of the resource to find. */
+  name: WorkspaceResourceName;
+}
+
 /** @beta */
 export namespace Workspace {
   /** A function invoked to handle exceptions produced while loading workspace data.
@@ -503,93 +554,46 @@ export namespace Workspace {
      */
     dict: SettingsDictionary
   ) => boolean;
-}
 
-/** A function supplied as part of a [[QueryWorkspaceResourcesArgs]] to iterate the resources retrieved by [[queryWorkspaceResources]].
- * The `resources` object should only be used inside the function - it is an error to attempt to iterate it after the function returns.
- * @beta
- */
-export type QueryWorkspaceResourcesCallback = (resources: Iterable<{ name: string, db: WorkspaceDb }>) => void;
-
-/** Arguments supplied to [[queryWorkspaceResources]] defining the query criteria and the list of [[WorkspaceDb]]s to query.
- * @beta
- */
-export interface QueryWorkspaceResourcesArgs {
-  /** The list of `WorkspaceDb`s to query, in the order in which they are to be queried. */
-  dbs: WorkspaceDb[];
-  /** The type of resource to query. */
-  type?: "string" | "blob";
-  /** A pattern against which to compare the name of each resource, using [[nameCompare]] as the comparison operator.
-   * Only resources whose names match the pattern will be included in the query results.
+  /** Searches a list of [[WorkspaceDb]]s for a string resource of a given name.
+   * The list is searched in order, and the first resource with the request name is returned.
+   * If no such resource exists, the function returns `undefined`.
+   * @see [[WorkspaceDb.getString]] if you only need to search a single `WorkspaceDb`.
+   * @beta
    */
-  namePattern: string;
-  /** The comparison operator by which to compare the name of each resource to [[namePattern]].
-   * Only resources whose names match the pattern will be included in the query results.
-   */
-  nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
-  /** A function invoked to process the resources that match the query criteria. */
-  callback: QueryWorkspaceResourcesCallback;
-}
-
-/** Query a list of [[WorkspaceDb]]s to find resources of a particular type with names matching a specified pattern.
- * @see [[WorkspaceDb.queryResources]] if you only need to query a single `WorkspaceDb`.
- * @beta
- */
-export function queryWorkspaceResources(args: QueryWorkspaceResourcesArgs): void {
-  const resources: Array<{ name: string, db: WorkspaceDb }> = [];
-  for (const db of args.dbs) {
-    db.queryResources({
-      type: args.type,
-      namePattern: args.namePattern,
-      nameCompare: args.nameCompare,
-      callback: (names) => {
-        for (const name of names) {
-          resources.push({ db, name });
-        }
-      },
-    });
+  export function getStringResource(args: GetWorkspaceResourceArgs): string | undefined {
+    return getWorkspaceResource(args.dbs, args.name, "string") as string | undefined;
   }
 
-  args.callback(resources);
-}
+  /** Searches a list of [[WorkspaceDb]]s for a blob resource of a given name.
+   * The list is searched in order, and the first resource with the request name is returned.
+   * If no such resource exists, the function returns `undefined`.
+   * @see [[WorkspaceDb.getblob]] if you only need to search a single `WorkspaceDb`.
+   * @beta
+   */
+  export function getBlobResource(args: GetWorkspaceResourceArgs): Uint8Array | undefined {
+    return getWorkspaceResource(args.dbs, args.name, "blob") as Uint8Array | undefined;
+  }
 
-function getWorkspaceResource(dbs: WorkspaceDb[], name: string, type: "string" | "blob"): string | Uint8Array | undefined {
-  for (const db of dbs) {
-    const val = type === "blob" ? db.getBlob(name) : db.getString(name);
-    if (undefined !== val) {
-      return val;
+  /** Query a list of [[WorkspaceDb]]s to find resources of a particular type with names matching a specified pattern.
+   * @see [[WorkspaceDb.queryResources]] if you only need to query a single `WorkspaceDb`.
+   * @beta
+   */
+  export function queryResources(args: QueryWorkspaceResourcesArgs): void {
+    const resources: Array<{ name: string, db: WorkspaceDb }> = [];
+    for (const db of args.dbs) {
+      db.queryResources({
+        type: args.type,
+        namePattern: args.namePattern,
+        nameCompare: args.nameCompare,
+        callback: (names) => {
+          for (const name of names) {
+            resources.push({ db, name });
+          }
+        },
+      });
     }
+
+    args.callback(resources);
   }
-
-  return undefined;
-}
-
-/** Arguments supplied to [[getWorkspaceString]] and [[getWorkspaceBlob]].
- * @beta
- */
-export interface GetWorkspaceResourceArgs {
-  /** The list of `WorkspaceDb`s to search, in the order in which they are to be searched. */
-  dbs: WorkspaceDb[];
-  /** The name of the resource to find. */
-  name: WorkspaceResourceName;
-}
-
-/** Searches a list of [[WorkspaceDb]]s for a string resource of a given name.
- * The list is searched in order, and the first resource with the request name is returned.
- * If no such resource exists, the function returns `undefined`.
- * @see [[WorkspaceDb.getString]] if you only need to search a single `WorkspaceDb`.
- * @beta
- */
-export function getWorkspaceString(args: GetWorkspaceResourceArgs): string | undefined {
-  return getWorkspaceResource(args.dbs, args.name, "string") as string | undefined;
-}
-
-/** Searches a list of [[WorkspaceDb]]s for a blob resource of a given name.
- * The list is searched in order, and the first resource with the request name is returned.
- * If no such resource exists, the function returns `undefined`.
- * @see [[WorkspaceDb.getblob]] if you only need to search a single `WorkspaceDb`.
- * @beta
- */
-export function getWorkspaceBlob(args: GetWorkspaceResourceArgs): Uint8Array | undefined {
-  return getWorkspaceResource(args.dbs, args.name, "blob") as Uint8Array | undefined;
 }

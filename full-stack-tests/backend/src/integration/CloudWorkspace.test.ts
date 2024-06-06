@@ -9,7 +9,7 @@ import * as fs from "fs-extra";
 import { join } from "path";
 import {
   CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, IModelJsFs, SettingsContainer, SettingsPriority, StandaloneDb, Workspace, WorkspaceContainerProps, 
-  WorkspaceDbCloudProps,  WorkspaceDbLoadError,  WorkspaceDbLoadErrors,  WorkspaceDbQueryResourcesArgs, WorkspaceEditor, WorkspaceSettingNames, getWorkspaceBlob, getWorkspaceString, queryWorkspaceResources,
+  WorkspaceDbCloudProps,  WorkspaceDbLoadError,  WorkspaceDbLoadErrors,  WorkspaceDbQueryResourcesArgs, WorkspaceEditor, WorkspaceSettingNames,
 } from "@itwin/core-backend";
 import { assert, Guid } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
@@ -304,7 +304,7 @@ describe("Cloud workspace containers", () => {
     expect(found.length).equal(10);
 
     found.length = 0;
-    queryWorkspaceResources({
+    Workspace.queryResources({
       ...globSearch,
       type: "string",
       dbs: textDbs,
@@ -315,16 +315,16 @@ describe("Cloud workspace containers", () => {
     // Note: the order of the two style WorkspaceDbs is reversed in the text vs. line style settings so
     // we should find different values for the same name depending on which list we use
     const styleName = "styles/num-0";
-    expect(getWorkspaceString({ dbs: lineStyleDbs, name: styleName })).equal("batch1/value 0");
-    expect(getWorkspaceString({ dbs: textDbs, name: styleName })).equal("batch2/value 0");
-    expect(getWorkspaceBlob({ dbs: lineStyleDbs, name: styleName })).deep.equal(new Uint8Array([100]));
-    expect(getWorkspaceBlob({ dbs: textDbs, name: styleName })).deep.equal(new Uint8Array([200]));
+    expect(Workspace.getStringResource({ dbs: lineStyleDbs, name: styleName })).equal("batch1/value 0");
+    expect(Workspace.getStringResource({ dbs: textDbs, name: styleName })).equal("batch2/value 0");
+    expect(Workspace.getBlobResource({ dbs: lineStyleDbs, name: styleName })).deep.equal(new Uint8Array([100]));
+    expect(Workspace.getBlobResource({ dbs: textDbs, name: styleName })).deep.equal(new Uint8Array([200]));
 
     // get a value from org workspace specified at "app priority" (lowest) in appSetting for "app1/styles/linestyleDbs"
-    expect(getWorkspaceString({ dbs: lineStyleDbs, name: "string 1" })).equal("value of string 1");
+    expect(Workspace.getStringResource({ dbs: lineStyleDbs, name: "string 1" })).equal("value of string 1");
 
     found.length = 0;
-    queryWorkspaceResources({
+    Workspace.queryResources({
       dbs: textDbs,
       namePattern: "styles/num-1",
       type: "string",
@@ -333,7 +333,7 @@ describe("Cloud workspace containers", () => {
     expect(found.length).equal(2);
 
     found.length = 0;
-    queryWorkspaceResources({
+    Workspace.queryResources({
       dbs: lineStyleDbs,
       namePattern: "styles/num-1",
       type: "string",
