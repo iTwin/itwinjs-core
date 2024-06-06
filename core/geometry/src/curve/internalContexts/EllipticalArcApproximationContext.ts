@@ -232,7 +232,7 @@ export class QuadrantFractions {
 };
 
 /**
- * Context for sampling an elliptical Arc3d to construct its approximation.
+ * Context for sampling a non-circular Arc3d, e.g., to construct an approximation.
  * @internal
  */
 export class EllipticalArcApproximationContext {
@@ -242,12 +242,12 @@ export class EllipticalArcApproximationContext {
   private _curvatureRange: Range1d;
   private _isValidArc: boolean;
   private constructor(arc: Arc3d) {
-    const scaleData = arc.toScaledMatrix3d();
-    this._arc = Arc3d.createScaledXYColumns(scaleData.center, scaleData.axes, scaleData.r0, scaleData.r90, scaleData.sweep);
+    const scaledData = arc.toScaledMatrix3d();
+    this._arc = Arc3d.createScaledXYColumns(scaledData.center, scaledData.axes, scaledData.r0, scaledData.r90, scaledData.sweep);
     this._axx = arc.matrixRef.columnXMagnitudeSquared();
     this._ayy = arc.matrixRef.columnYMagnitudeSquared();
     this._curvatureRange = Range1d.createNull();
-    this._isValidArc = true;
+    this._isValidArc = !this._arc.sweep.isEmpty;  // ellipse must have a nonzero sweep
     if (Geometry.isSmallMetricDistanceSquared(this._axx) || Geometry.isSmallMetricDistanceSquared(this._ayy))
       this._isValidArc = false; // ellipse must have positive radii
     else if (Geometry.isSameCoordinateSquared(this._axx, this._ayy))
@@ -322,11 +322,31 @@ export class EllipticalArcApproximationContext {
   /** Compute samples for the elliptical arc as fraction parameters. */
   private sampleFractions(options: EllipticalArcApproximationOptions): QuadrantFractions[] | number[] {
     const radiansQ1: number[] = []; // strictly interior to Q1
+    if (!this.isValidArc)
+      return radiansQ1;
 
     const compareFractions: OrderedComparator<number> = (f0: number, f1: number): number => {
       if (Geometry.isAlmostEqualNumber(f0, f1, Geometry.smallFraction))
         return 0;
       return f0 < f1 ? -1 : 1;
+    };
+    const compareRadians: OrderedComparator<number> = (a0: number, a1: number): number => {
+      if (Geometry.isAlmostEqualNumber(a0, a1, Geometry.smallAngleRadians))
+        return 0;
+      return a0 < a1 ? -1 : 1;
+    };
+    const compareQuadrantFractions: OrderedComparator<QuadrantFractions> = (_q0: QuadrantFractions, _q1: QuadrantFractions): number => {
+      // START HERE:
+      return 0;
+    };
+    const shiftRadiansToSweep = (angle: number, sweep: AngleSweep): { angle: number, inSweep: boolean } => {
+      const inSweep = sweep.isRadiansInSweep(angle, true);
+      if (inSweep) {
+        const fraction = sweep.radiansToPositivePeriodicFraction(angle, 2);
+        if (Geometry.isIn01(fraction))
+          angle = sweep.fractionToRadians(fraction);
+      }
+      return { angle, inSweep };
     };
     const addRadiansToFractionSet = (dest: OrderedSet<number>, radians: number): number | undefined => {
       const fraction = this.arc.sweep.radiansToSignedPeriodicFraction(radians);
@@ -386,23 +406,22 @@ export class EllipticalArcApproximationContext {
     }
 
     if (options.structuredOutput) {
-      const result: QuadrantFractions[] = [];
-      createQuadrantFractionsBetweenRadians(this.arc.sweep.startRadians, Angle.piRadians); // TEMPORARY to pin the lambda
-      /*
-      // WIP
-      let startAngle = this.arc.sweep.startRadians;
-      let endAngle;
-      for (const angle of [0, Angle.piOver2Radians, Angle.piRadians, Angle.pi3Over2Radians]) {
+      const qAngles = new OrderedSet<number>(compareRadians);
+      qAngles.add(this.arc.sweep.endRadians);
+      for (const qAngle of [0, Angle.piOver2Radians, Angle.piRadians, Angle.pi3Over2Radians]) {
+        const shifted = shiftRadiansToSweep(qAngle, this.arc.sweep);
+        if (shifted.inSweep)
+          qAngles.add(shifted.angle);
       }
-      // TODO: last quadrant
-
-      // TODO: loop over q angles: if this.arc.sweep.isRadiansInSweep(q) then call createQuadrantFractionsInSweep
-      // [angle0, angleA = QuadrantFractions.nextQuadrantRadians(angle, this.arc.sweep.isCCW)]
-      // [angleA, angleB = QuadrantFractions.nextQuadrantRadians(angleA, this.arc.sweep.isCCW)]
-      // ...
-      // [angleZ, angle1]
-      */
-     return result;
+      const quadrants = new OrderedSet<QuadrantFractions>(compareQuadrantFractions);
+      let a0 = this.arc.sweep.startRadians;
+      for (const a1 of qAngles) {
+        const quadrant = createQuadrantFractionsBetweenRadians(a0, a1);
+        if (quadrant)
+          quadrants.add(quadrant);
+        a0 = a1;
+      }
+      return [...quadrants];
     }
 
     // add the fractions we know we have to hit exactly
