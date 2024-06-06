@@ -6,9 +6,8 @@
  * @module Editing
  */
 
-import { BentleyError } from "@itwin/core-bentley";
 import { AnyDiagnostic } from "../Validation/Diagnostic";
-import { AnyEnumerator, CustomAttributeContainerProps, Enumeration, primitiveTypeToString, Property, RelationshipConstraint, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
+import { AnyEnumerator, CustomAttributeContainerProps, Enumeration, PrimitiveType, primitiveTypeToString, Property, RelationshipConstraint, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 
 /** @alpha */
 export enum ECEditingStatus {
@@ -30,7 +29,6 @@ export enum ECEditingStatus {
   InvalidEnumeratorType,
   InvalidBaseClass,
   EnumeratorDoesNotExist,
-  InvalidStrengthDirection,
   InvalidECName,
   InvalidFormatUnitsSpecified,
   // Outer Errors
@@ -93,13 +91,6 @@ export enum ECEditingStatus {
   IncrementSchemaMinorVersion,
 }
 
-function getEnumeratorType(enumeration: Enumeration, enumerator: AnyEnumerator | string) {
-  if (typeof(enumerator) === "string")
-    return enumeration.isString ? "string" : "int";
-
-  return typeof(enumerator.value) === "string" ? "string" : "int";
-}
-
 /**
  * A type that constrains the possible error types handled by SchemaEditingError
  */
@@ -120,13 +111,14 @@ export enum PropertyTypeName {
  * Defines the possible schema type identifiers.
  */
 export enum SchemaTypeIdentifiers {
-  SchemaIdentifier,
-  SchemaItemIdentifier,
-  ClassIdentifier,
-  PropertyIdentifier,
-  EnumerationIdentifier,
-  CustomAttributeIdentifier,
-  RelationshipConstraintIdentifier
+  SchemaIdentifier = "Schema",
+  SchemaItemIdentifier = "SchemaItem",
+  ClassIdentifier = "Class",
+  PropertyIdentifier = "Property",
+  EnumerationIdentifier = "Enumeration",
+  EnumeratorIdentifier = "Enumerator",
+  CustomAttributeIdentifier = "CustomAttribute",
+  RelationshipConstraintIdentifier = "RelationshipConstraint"
 }
 
 /**
@@ -137,12 +129,12 @@ type ECClassSchemaItems = SchemaItemType.EntityClass | SchemaItemType.StructClas
 /**
  * Type that defines the possible SchemaTypeIdentifiers for SchemaItemId classes.
  */
-type AnySchemaItemTypeIdentifier = SchemaTypeIdentifiers.SchemaItemIdentifier | SchemaTypeIdentifiers.ClassIdentifier | SchemaTypeIdentifiers.EnumerationIdentifier;
+type AnySchemaItemTypeIdentifier = SchemaTypeIdentifiers.SchemaItemIdentifier | SchemaTypeIdentifiers.ClassIdentifier;
 
 /**
  * Type that encompasses all ISchemaTypeIdentifier interfaces
  */
-type AnyIdentifier = ISchemaIdentifier | ISchemaItemIdentifier | IClassIdentifier | IPropertyIdentifier | ICustomAttributeIdentifier | IRelationshipConstraintIdentifier | IEnumerationIdentifier;
+type AnyIdentifier = ISchemaIdentifier | ISchemaItemIdentifier | IClassIdentifier | IPropertyIdentifier | ICustomAttributeIdentifier | IRelationshipConstraintIdentifier | IEnumeratorIdentifier;
 
 /**
  * A base interface that defines what is needed to identity any schema type.
@@ -190,15 +182,13 @@ interface IPropertyIdentifier extends ISchemaTypeIdentifier {
 }
 
 /**
- * Interface that defines the data needed to identify an Enumeration.
+ * Interface that defines the data needed to identify an Enumerator.
  */
-interface IEnumerationIdentifier extends ISchemaTypeIdentifier {
-  readonly schemaItemType: SchemaItemType;
-  readonly schemaItemKey: SchemaItemKey;
-  readonly enumerationType: string;
-  readonly enumeratorName: string;
+interface IEnumeratorIdentifier extends ISchemaTypeIdentifier {
   readonly enumeratorType: string;
-  readonly typeIdentifier: SchemaTypeIdentifiers.EnumerationIdentifier;
+  readonly enumeration: SchemaItemKey;
+  readonly enumerationType: string;
+  readonly typeIdentifier: SchemaTypeIdentifiers.EnumeratorIdentifier;
 }
 
 /**
@@ -291,18 +281,22 @@ export class PropertyId implements IPropertyIdentifier {
 }
 
 /**
- * An IEnumerationIdentifier implementation to identify Enumeration instances.
+ * An IEnumeratorIdentifier implementation to identify Enumerator instances.
  */
-export class EnumerationId extends SchemaItemId implements IEnumerationIdentifier{
-  public override readonly typeIdentifier = SchemaTypeIdentifiers.EnumerationIdentifier;
+export class EnumeratorId implements IEnumeratorIdentifier{
+  public readonly typeIdentifier = SchemaTypeIdentifiers.EnumeratorIdentifier;
+  public readonly enumeration: SchemaItemKey;
   public readonly enumerationType: string;
-  public readonly enumeratorName: string;
   public readonly enumeratorType: string;
-  constructor(enumeration: Enumeration, enumerator: AnyEnumerator | string) {
-    super(SchemaItemType.Enumeration, enumeration.key);
-    this.enumerationType = enumeration.type ? primitiveTypeToString(enumeration.type) : "string";
-    this.enumeratorName = typeof(enumerator) === "string" ? enumerator : enumerator.name;
-    this.enumeratorType = getEnumeratorType(enumeration, enumerator);
+  public readonly name: string;
+  public readonly schemaKey: SchemaKey;
+
+  constructor(enumerator: AnyEnumerator | string, enumeration: Enumeration) {
+    this.enumeration = enumeration.key;
+    this.enumerationType = enumeration.type ? primitiveTypeToString(enumeration.type): "string";
+    this.enumeratorType = getEnumeratorType(enumeration ?? PrimitiveType.String, enumerator);
+    this.name = typeof(enumerator) === "string" ? enumerator : enumerator.name;
+    this.schemaKey = enumeration.schema.schemaKey;
   }
 }
 
@@ -344,7 +338,7 @@ export class RelationshipConstraintId implements IRelationshipConstraintIdentifi
  * caused the exception. The containing error instance will identify the method called (identified by the errorNumber)
  * and the identifier of the schema item being modified/created.
  */
-export class SchemaEditingError extends BentleyError {
+export class SchemaEditingError extends Error {
   private _ruleViolations?: AnyDiagnostic[];
   private _schemaKey: SchemaKey;
 
@@ -356,8 +350,8 @@ export class SchemaEditingError extends BentleyError {
    * @param ruleViolations Will contain EC rule violations of type [[AnyDiagnostic]] for exceptions with the error code ECEditingStatus.RuleViolation.
    * @param message Optional error message. Most messages on automatically generated by this class based on the ECEditingStatus code.
    */
-  public constructor(public override readonly errorNumber: number, public readonly identifier: AnyIdentifier, public readonly innerError?: AnyEditingError, ruleViolations?: AnyDiagnostic[], message?: string) {
-    super(errorNumber, message);
+  public constructor(public readonly errorNumber: ECEditingStatus, public readonly identifier: AnyIdentifier, public readonly innerError?: AnyEditingError, ruleViolations?: AnyDiagnostic[], message?: string) {
+    super(message);
     this._ruleViolations = ruleViolations;
     this._schemaKey = identifier.schemaKey,
     this.generateMessage();
@@ -404,13 +398,13 @@ export class SchemaEditingError extends BentleyError {
   }
 
   /**
-   * Gets the EnumerationId instance.
-   * @throws Error if the identifier is not an instance of EnumerationId.
+   * Gets the EnumeratorId instance.
+   * @throws Error if the identifier is not an instance of EnumeratorId.
    */
-  public get enumerationId(): EnumerationId {
-    if (this.identifier.typeIdentifier !== SchemaTypeIdentifiers.EnumerationIdentifier)
+  public get enumeratorId(): EnumeratorId {
+    if (this.identifier.typeIdentifier !== SchemaTypeIdentifiers.EnumeratorIdentifier)
       throw new Error("identifier is not a EnumerationId.");
-    return this.identifier as EnumerationId;
+    return this.identifier as EnumeratorId;
   }
 
   /**
@@ -433,23 +427,27 @@ export class SchemaEditingError extends BentleyError {
     return this.identifier;
   }
 
+  /** Gets rule violations that were reported during validation. Returns an array of [[AnyDiagnostic]] if
+   * the errorNumber is ECEditingStatus.RuleViolation, otherwise undefined.
+   */
   public get ruleViolations(): AnyDiagnostic[] | undefined {
     return this._ruleViolations;
   }
 
+  /**
+   * Returns a readable string containing the ECEditingStatus along with the error message. Any
+   * innerError will also be appended.
+   * @returns
+   */
   public toDebugString(): string {
     let innerMessage = "";
     if (this.innerError) {
       if (this.innerError instanceof SchemaEditingError)
-        innerMessage = `: Inner error: ${this.innerError.toDebugString()}`;
+        innerMessage = ` Inner error: ${this.innerError.toDebugString()}`;
       else
-        innerMessage = `: Inner error: ${this.innerError.message}`;
+        innerMessage = ` Inner error: ${this.innerError.message}`;
     }
     return this._appendMessage(`ECEditingStatus.${ECEditingStatus[this.errorNumber]}`) + innerMessage;
-  }
-
-  private _appendMessage(e: string) {
-    return this.message ? `${e}: ${this.message}` : e;
   }
 
   private generateMessage() {
@@ -476,7 +474,7 @@ export class SchemaEditingError extends BentleyError {
         this.message = `${this.schemaItemId.schemaItemType} ${this.schemaItemId.name} already exists in the schema ${this._schemaKey.name}.`;
         return;
       case ECEditingStatus.RuleViolation:
-        this.message = this.getRuleViolationMessage();
+        this.message = this._getRuleViolationMessage();
         return;
       case ECEditingStatus.PropertyNotFound:
         this.message = `An ECProperty with the name ${this.propertyId.name} could not be found in the class ${this.propertyId.ecClass.name}.`;
@@ -500,18 +498,24 @@ export class SchemaEditingError extends BentleyError {
         this.message = `The specified Format unit ${this.schemaItemId.name} is not of type Unit or InvertedUnit`;
         return;
       case ECEditingStatus.InvalidEnumeratorType:
-        this.message = `The Enumeration ${this.enumerationId.name} has type ${this.enumerationId.enumerationType}, while Enumerator ${this.enumerationId.enumeratorName} has type ${this.enumerationId.enumeratorType}.`;
+        this.message = `The Enumeration ${this.enumeratorId.enumeration.fullName} has type ${this.enumeratorId.enumerationType}, while Enumerator ${this.enumeratorId.name} has type ${this.enumeratorId.enumeratorType}.`;
         return;
       case ECEditingStatus.EnumeratorDoesNotExist:
-        this.message = `Enumerator ${this.enumerationId.enumeratorName} does not exists in Enumeration ${this.enumerationId.name}.`;
+        this.message = `Enumerator ${this.enumeratorId.name} does not exists in Enumeration ${this.enumeratorId.enumeration.name}.`;
         return;
       case ECEditingStatus.InvalidECName:
         this.message = `Could not rename class ${this.schemaItemId.name} because the specified name is not a valid ECName.`;
         return;
+      default:
+        this.message = this._createTaskErrorMessage();
     }
   }
 
-  private getRuleViolationMessage(): string {
+  private _appendMessage(e: string) {
+    return this.message ? `${e}: ${this.message}` : e;
+  }
+
+  private _getRuleViolationMessage(): string {
     if (!this._ruleViolations)
       return "";
 
@@ -520,30 +524,53 @@ export class SchemaEditingError extends BentleyError {
       violations += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
     }
 
-    if (this.identifier.typeIdentifier === SchemaTypeIdentifiers.SchemaIdentifier)
-      return `Rule violations occurred from Schema ${this.schemaId.name}: ${violations}`;
+    switch (this.identifier.typeIdentifier) {
+      case SchemaTypeIdentifiers.SchemaIdentifier:
+        return `Rule violations occurred from Schema ${this.schemaId.name}: ${violations}`;
+      case SchemaTypeIdentifiers.SchemaItemIdentifier:
+        return `Rule violations occurred from ${this.schemaItemId.schemaItemType} ${this.schemaItemId.name}: ${violations}`;
+      case SchemaTypeIdentifiers.ClassIdentifier:
+        return `Rule violations occurred from ${this.schemaItemId.schemaItemType} ${this.schemaItemId.name}: ${violations}`;
+      case SchemaTypeIdentifiers.CustomAttributeIdentifier:
+        return `Rule violations occurred from CustomAttribute ${this.customAttributeId.name}, container ${this.customAttributeId.containerFullName}: ${violations}`;
+      case SchemaTypeIdentifiers.RelationshipConstraintIdentifier:
+        return `Rule violations occurred from ${this.relationshipConstraintId.name} constraint of RelationshipClass ${this.relationshipConstraintId.relationshipKey.fullName}: ${violations}`;
+      default:
+        throw new Error ("Invalid identifier.");
+    }
+  }
 
-    if (this.identifier.typeIdentifier === SchemaTypeIdentifiers.SchemaItemIdentifier)
-      return `Rule violations occurred from ${this.schemaItemId.schemaItemType} ${this.schemaItemId.name}: ${violations}`;
+  private _createTaskErrorMessage() {
+    // Make sure we have an inner error or else it is not a task error
+    if (!this.innerError)
+      return "";
 
-    if (this.identifier.typeIdentifier === SchemaTypeIdentifiers.ClassIdentifier)
-      return `Rule violations occurred from ${this.schemaItemId.schemaItemType} ${this.schemaItemId.name}: ${violations}`;
-
-    if (this.identifier.typeIdentifier === SchemaTypeIdentifiers.CustomAttributeIdentifier)
-      return `Rule violations occurred from CustomAttribute ${this.customAttributeId.name}, container ${this.customAttributeId.containerFullName}: ${violations}`;
-
-    if (this.identifier.typeIdentifier === SchemaTypeIdentifiers.RelationshipConstraintIdentifier)
-      return `Rule violations occurred from ${this.relationshipConstraintId.name} constraint of RelationshipClass ${this.relationshipConstraintId.relationshipKey.fullName}: ${violations}`;
-
-    throw new Error ("Could not generate rule violation message due to invalid identifier.");
+    switch (this.identifier.typeIdentifier) {
+      case SchemaTypeIdentifiers.SchemaIdentifier:
+      case SchemaTypeIdentifiers.SchemaItemIdentifier:
+      case SchemaTypeIdentifiers.ClassIdentifier:
+      case SchemaTypeIdentifiers.RelationshipConstraintIdentifier:
+        return `While performing task '${ECEditingStatus[this.errorNumber]}' an error occurred editing ${this.identifier.typeIdentifier} ${this.identifier.name}.`;
+      case SchemaTypeIdentifiers.PropertyIdentifier:
+        return `While performing task '${ECEditingStatus[this.errorNumber]}' an error occurred editing ${this.identifier.typeIdentifier} ${this.identifier.fullName}.`;
+      default:
+        throw new Error ("Invalid identifier.");
+    }
   }
 
   private isSchemaItemIdentifier(identifier: AnyIdentifier) {
     if (identifier.typeIdentifier !== SchemaTypeIdentifiers.SchemaItemIdentifier &&
-      identifier.typeIdentifier !== SchemaTypeIdentifiers.ClassIdentifier &&
-      identifier.typeIdentifier !== SchemaTypeIdentifiers.EnumerationIdentifier)
+      identifier.typeIdentifier !== SchemaTypeIdentifiers.ClassIdentifier)
       return true;
 
     return false;
   }
+}
+
+function getEnumeratorType(enumeration: Enumeration, enumerator: AnyEnumerator | string) {
+  if (typeof(enumerator) === "string") {
+    return enumeration.type ? primitiveTypeToString(enumeration.type) : "string";
+  }
+
+  return typeof(enumerator.value) === "string" ? "string" : "int";
 }
