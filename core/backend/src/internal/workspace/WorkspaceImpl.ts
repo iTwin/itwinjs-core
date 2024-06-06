@@ -17,9 +17,9 @@ import { SqliteStatement } from "../../SqliteStatement";
 import { SettingName, Settings, SettingsContainer, SettingsDictionaryProps, SettingsPriority } from "../../workspace/Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  GetWorkspaceContainerArgs, Workspace, WorkspaceContainer, WorkspaceContainerId, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps,
+  GetWorkspaceContainerArgs, GetWorkspaceResourceArgs, Workspace, WorkspaceContainer, WorkspaceContainerId, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps,
   WorkspaceDbFullName, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbManifest, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbProps,
-  WorkspaceDbQueryResourcesArgs, WorkspaceDbSettingsProps, WorkspaceDbVersion, WorkspaceOpts, WorkspaceResourceName, WorkspaceSettingNames,
+  WorkspaceDbQueryResourcesArgs, WorkspaceDbSettingsProps, WorkspaceDbVersion, WorkspaceOpts, WorkspaceResourceName, WorkspaceSettingNames, getWorkspaceBlob, getWorkspaceString,
 } from "../../workspace/Workspace";
 import { CreateNewWorkspaceContainerArgs, CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
@@ -460,6 +460,21 @@ class WorkspaceImpl implements Workspace {
       }
     }
     return result;
+  }
+
+  public async getStringResource(args: GetWorkspaceResourceArgs<string>): Promise<string | undefined> {
+    const dbs = await this.getWorkspaceDbs({ settingName: args.setting, problems: args.problems });
+    return getWorkspaceString({ dbs, name: args.resource }) ?? args.default;
+  }
+
+  public async getBlobResource(args: GetWorkspaceResourceArgs<Uint8Array>): Promise<Uint8Array | undefined> {
+    const dbs = await this.getWorkspaceDbs({ settingName: args.setting, problems: args.problems });
+    return getWorkspaceBlob({ dbs, name: args.resource }) ?? args.default;
+  }
+
+  public async getJsonResource<T extends object>(args: GetWorkspaceResourceArgs<T>): Promise<T | undefined> {
+    const str = await this.getStringResource({ ...args, default: undefined });
+    return undefined !== str ? JSON.parse(str) as T : args.default;
   }
 }
 

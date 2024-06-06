@@ -398,6 +398,12 @@ export interface Workspace {
       /** only valid when called with a settingName, if so passed as `filter` argument to [[resolveWorkspaceDbSetting]]  */
       filter?: Workspace.DbListFilter;
     }): Promise<WorkspaceDb[]>;
+
+  getStringResource(args: GetWorkspaceResourceArgs<string>): Promise<string | undefined>;
+
+  getBlobResource(args: GetWorkspaceResourceArgs<Uint8Array>): Promise<Uint8Array | undefined>;
+
+  getJsonResource<T extends object>(args: GetWorkspaceResourceArgs<T>): Promise<T | undefined>;
 }
 
 /**
@@ -564,14 +570,18 @@ function getWorkspaceResource(dbs: WorkspaceDb[], name: string, type: "string" |
   return undefined;
 }
 
-/** Arguments supplied to [[getWorkspaceString]] and [[getWorkspaceBlob]].
+/** Arguments supplied to [[Workspace.getStringResource]], [[Workspace.getBlobResource]], and [[Workspace.getJsonResource]].
  * @beta
  */
-export interface GetWorkspaceResourceArgs {
-  /** The list of `WorkspaceDb`s to search, in the order in which they are to be searched. */
-  dbs: WorkspaceDb[];
-  /** The name of the resource to find. */
-  name: WorkspaceResourceName;
+export interface GetWorkspaceResourceArgs<T extends string | Uint8Array | object> {
+  /** The name of the resource to retrieve. */
+  resource: WorkspaceResourceName;
+  /** The name of the [[Setting]] that resolves to an aray of [[WorkspaceDbCloudProps]] specifying the [[WorkspaceDb]]s in which to search. */
+  setting: SettingName;
+  /** A default value to return if no [[WorkspaceDb]] provides a value for the [[resource]]. */
+  default?: T;
+  /** An array to populate with a list of errors that occur while attempting to load [[WorkspaceDb]]s. */
+  problems?: WorkspaceDbLoadError[];
 }
 
 /** Searches a list of [[WorkspaceDb]]s for a string resource of a given name.
@@ -580,7 +590,7 @@ export interface GetWorkspaceResourceArgs {
  * @see [[WorkspaceDb.getString]] if you only need to search a single `WorkspaceDb`.
  * @beta
  */
-export function getWorkspaceString(args: GetWorkspaceResourceArgs): string | undefined {
+export function getWorkspaceString(args: { dbs: WorkspaceDb[], name: WorkspaceResourceName }): string | undefined {
   return getWorkspaceResource(args.dbs, args.name, "string") as string | undefined;
 }
 
@@ -590,6 +600,6 @@ export function getWorkspaceString(args: GetWorkspaceResourceArgs): string | und
  * @see [[WorkspaceDb.getblob]] if you only need to search a single `WorkspaceDb`.
  * @beta
  */
-export function getWorkspaceBlob(args: GetWorkspaceResourceArgs): Uint8Array | undefined {
+export function getWorkspaceBlob(args: { dbs: WorkspaceDb[], name: WorkspaceResourceName }): Uint8Array | undefined {
   return getWorkspaceResource(args.dbs, args.name, "blob") as Uint8Array | undefined;
 }
