@@ -317,8 +317,15 @@ describe("Cloud workspace containers", () => {
     const styleName = "styles/num-0";
     expect(getWorkspaceString({ dbs: lineStyleDbs, name: styleName })).equal("batch1/value 0");
     expect(getWorkspaceString({ dbs: textDbs, name: styleName })).equal("batch2/value 0");
+
+    const foundStyleName = await imodel2.workspace.getStringResource({ setting: "app1/styles/textStyleDbs", resource: styleName });
+    expect(foundStyleName).to.equal("batch2/value 0");
+
     expect(getWorkspaceBlob({ dbs: lineStyleDbs, name: styleName })).deep.equal(new Uint8Array([100]));
     expect(getWorkspaceBlob({ dbs: textDbs, name: styleName })).deep.equal(new Uint8Array([200]));
+
+    const foundBlob = await imodel2.workspace.getBlobResource({ setting: "app1/styles/textStyleDbs", resource: styleName });
+    expect(foundBlob).to.deep.equal(new Uint8Array([200]));
 
     // get a value from org workspace specified at "app priority" (lowest) in appSetting for "app1/styles/linestyleDbs"
     expect(getWorkspaceString({ dbs: lineStyleDbs, name: "string 1" })).equal("value of string 1");
