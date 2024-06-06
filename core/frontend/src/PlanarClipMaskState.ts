@@ -83,8 +83,6 @@ export class PlanarClipMaskState {
         const curOverrides = new FeatureSymbology.Overrides(context.viewport);
         curOverrides.addInvisibleElementOverridesToNeverDrawn();  // need this for fully trans element overrides to not participate in mask
         overrideModels.forEach((use: boolean, modelId: string) => {
-          if (!use)
-            curOverrides.addModelSubCategoryOverrides(modelId);  // need this for visible categories on unused models to not participate in mask
           curOverrides.override({ modelId, appearance: use ? appOn : appOff, onConflict: "replace" });
         });
         return curOverrides;
