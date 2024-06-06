@@ -397,7 +397,7 @@ describe("Workspace Examples", () => {
       // Point the setting at the cornus WorkspaceDb.
       let treeDbProps: WorkspaceDbProps = { ...cornusDb.cloudProps };
       iModel.workspace.settings.addDictionary({
-        name: "Landscape Pro Trees",
+        name: "LandscapePro Trees",
         priority: SettingsPriority.iModel,
       }, {
         "landscapePro/flora/treeDbs": [treeDbProps],
@@ -421,7 +421,7 @@ describe("Workspace Examples", () => {
       };
 
       iModel.workspace.settings.addDictionary({
-        name: "Landscape Pro Trees",
+        name: "LandscapePro Trees",
         priority: SettingsPriority.iModel,
       }, {
         "landscapePro/flora/treeDbs": [treeDbProps],
