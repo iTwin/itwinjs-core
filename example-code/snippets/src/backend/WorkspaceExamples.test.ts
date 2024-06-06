@@ -10,6 +10,8 @@ import { SettingGroupSchema } from "@itwin/core-backend";
 import { SettingsDictionaryProps } from "@itwin/core-backend";
 import { Guid, OpenMode } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
+import { EditableWorkspaceContainer } from "@itwin/core-backend";
+import { EditableWorkspaceDb } from "@itwin/core-backend";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Workspace Examples", () => {
@@ -238,17 +240,63 @@ describe("Workspace Examples", () => {
       IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
       AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
 
-      const editor = WorkspaceEditor.construct();
       const iTwinId = Guid.createValue();
-      const orgWsName = "all settings for org";
-      const orgContainer = await editor.createNewCloudContainer({
-        metadata: { label: "orgContainer1", description: "org workspace1" },
+
+      // __PUBLISH_SECTION_START__ WorkspaceExamples.CreateWorkspaceDb
+      const editor = WorkspaceEditor.construct();
+      const container: EditableWorkspaceContainer = await editor.createNewCloudContainer({
+        // A description of the new WorkspaceContainer.
+        metadata: {
+          label: "trees",
+          description: "trees organized by genus",
+        },
+        // Ownership, access control, and datacenter location are defined by the iTwin.
         scope: { iTwinId },
-        manifest: { workspaceName: orgWsName },
+        // The name of the default WorkspaceDb to be created inside the new container.
+        dbName: "cornus",
+        // The manifest to be embedded inside the default WorkspaceDb.
+        manifest: {
+          // A user-facing name for the WorkspaceDb.
+          workspaceName: "Trees: cornus",
+          // A description of the WorkspaceDb's contents and purpose.
+          description: "Trees belonging to the genus cornus",
+          // The name of someone (typically an administrator) who can provide help and information
+          // about this WorkspaceDb.
+          contactName: "Sylvia Wood",
+        },
+      });
+      // __PUBLISH_SECTION_END__
+      
+      expect(container.cloudProps).not.to.be.undefined;
+
+      // __PUBLISH_SECTION_START__ WorkspaceExamples.AddTrees
+      interface TreeResource {
+        commonName: string;
+        hardiness: HardinessRange;
+        light: "full" | "shade" | "partial";
+      }
+
+      function addTree(treeDb: EditableWorkspaceDb, species: string, tree: TreeResource): void {
+        treeDb.addString(species, JSON.stringify(tree));
+      }
+
+      const cornusDb = container.getEditableDb({ dbName: "cornus" });
+
+      addTree(cornusDb, "alternifolia", {
+        commonName: "Pagoda Dogwood",
+        hardiness: { minimum: 4, maximum: 8 },
+        light: "full",
       });
 
-      expect(orgContainer).not.to.be.undefined;
-
+      addTree(cornusDb, "asperifolia", {
+        commonName: "Roughleaf Dogwood",
+        hardiness: { minimum: 9, maximum: 9 },
+        light: "full",
+      });
+      // __PUBLISH_SECTION_END__
+      
+      expect(cornusDb.getString("alternifolia")).not.to.be.undefined;
+      
       AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
     });
   });

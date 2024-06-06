@@ -2,7 +2,7 @@
 
 Every non-trivial application requires some level of configuration to customize its run-time behavior and help it locate data resources required for it to perform its functions. An iTwin.js [Workspace]($backend) comprises the [Settings]($backend) that supply this configuration and the [WorkspaceContainer]($backend)s that provide those resources.
 
-To explore [Workspace]($backend) concepts, let's take the example of an imaginary application called "LandscapePro™" that allows users to decorate an iModel by adding landscaping features like trees, shrubs, flower beds, and patio furniture.
+To explore [Workspace]($backend) concepts, let's take the example of an imaginary application called "LandscapePro" that allows users to decorate an iModel by adding landscaping features like trees, shrubs, flower beds, and patio furniture.
 
 # Settings
 
@@ -13,7 +13,7 @@ A [Setting]($backend) is simply a name-value pair. The value can be of one of th
 - An `object` containing properties of any of these types; or
 - An `array` containing elements of one of these types.
 
-A [SettingName]($backend) must be unique, 1 to 1024 characters long with no leading nor trailing whitespace, and should begin with the schema prefix of the [schema](#settings-schemas) that defines the setting. (More on schemas shortly). For example, LandscapePro™ might define the following settings:
+A [SettingName]($backend) must be unique, 1 to 1024 characters long with no leading nor trailing whitespace, and should begin with the schema prefix of the [schema](#settings-schemas) that defines the setting. (More on schemas shortly). For example, LandscapePro might define the following settings:
 
 ```
   "landscapePro/ui/defaultToolId"
@@ -35,7 +35,7 @@ The metadata describing a group of related [Setting]($backend)s is defined in a 
 - `typeDefs` - an object consisting of [SettingSchema]($backend)s describing reusable *types* of [Setting]($backend)s that can be referenced by [SettingSchema]($backend)s in this or any other schema.
 - `order` - an optional integer used to sort the schema in a user interface that lists multiple schemas, where schemas of lower order sort before those with higher order.
 
-We can define the LandscapePro™ schema programmatically as follows:
+We can define the LandscapePro schema programmatically as follows:
 
 ```ts
 [[include:WorkspaceExamples.SettingGroupSchema]]
@@ -63,7 +63,7 @@ Your application should register its schemas shortly after invoking [IModelHost.
 
 The values of [Setting]($backend)s are provided by [SettingsDictionary]($backend)s. The [Settings]($backend) for the current session can be accessed via the `settings` property of [IModelHost.appWorkspace]($backend). You can add new dictionaries to provide settings values at any time during the session, although most dictionaries will be loaded shortly after [IModelHost.startup]($backend).
 
-Let's load a settings dictionary that provides values for some of the settings in the LandscapePro™ schema:
+Let's load a settings dictionary that provides values for some of the settings in the LandscapePro schema:
 
 ```ts
 [[include:WorkspaceExamples.AddDictionary]]
@@ -105,13 +105,13 @@ A [SettingsPriority]($backend) is just a number, but specific values carry seman
 
 [SettingsDictionary]($backend)s of `application` priority or lower reside in [IModelHost.appWorkspace]($backend). Those of higher priority are stored in an [IModelDb.workspace]($backend) - more on those [shortly](#imodel-settings).
 
-What about the "landscapePro/ui/availableTools" array? In the [LandscapePro™ schema](#settings-schemas), the corresponding `settingDef` has [SettingSchema.combineArray]($backend) set to `true`, meaning that - when multiple dictionaries provide a value for the setting - instead of being overridden, they are merged together to form a single array, eliminating duplicates, and sorted in descending order by dictionary priority.
+What about the "landscapePro/ui/availableTools" array? In the [LandscapePro schema](#settings-schemas), the corresponding `settingDef` has [SettingSchema.combineArray]($backend) set to `true`, meaning that - when multiple dictionaries provide a value for the setting - instead of being overridden, they are merged together to form a single array, eliminating duplicates, and sorted in descending order by dictionary priority.
 
 # iModel settings
 
 So far, we have been working with [IModelHost.appWorkspace]($backend). But - as [mentioned above](#settings-priorities) - each [IModelDb]($backend) has its own workspace as well, with its own [Settings]($backend) that can override and/or supplement the application workspace's settings. These settings are stored as [SettingsDictionary]($backend)s in the iModel's `be_Props` table. When the iModel is opened, its [Workspace.settings]($backend) are populated from those dictionaries. So, an application is working in the context of a particular iModel, it should resolve setting values by asking [IModelDb.workspace]($backend), which will fall back to [IModelHost.appWorkspace]($backend) if the iModel's settings dictionaries don't provide a value for the requested setting.
 
-Since an iModel is located in a specific geographic region, LandscapePro™ wants to limit the selection of foliage based on the USDA hardiness zone(s) in which the iModel resides. An administrator could configure the hardiness zone of an iModel as follows:
+Since an iModel is located in a specific geographic region, LandscapePro wants to limit the selection of foliage based on the USDA hardiness zone(s) in which the iModel resides. An administrator could configure the hardiness zone of an iModel as follows:
 
 ```ts
 [[include:WorkspaceExamples.saveSettingDictionary]]
@@ -152,8 +152,26 @@ Ultimately, each resource is stored as one of three underlying types:
 - A binary blob, such as an image.
 - An embedded file, like the kind that defines a [GeographicCRS]($common).
 
-String and blob resources can be accessed directly using [WorkspaceDb.getString]($backend) and [WorkspaceDb.getBlob]($backend). File resources must first be copied onto the local file system using [WorkspaceDb.getFile]($backend), and should be avoided unless they must be used with software that requires them to be accessed from disk. [###TODO should usually use getWorkspaceDbs and getWorkspaceString/Blob]
+String and blob resources can be accessed directly using [WorkspaceDb.getString]($backend) and [WorkspaceDb.getBlob]($backend). File resources must first be copied onto the local file system using [WorkspaceDb.getFile]($backend), and should be avoided unless they must be used with software that requires them to be accessed from disk.
 
-[WorkspaceDb]($backend)s are stored in access-controlled [WorkspaceContainer]($backend)s backed by cloud storage. So, the structure of a [Workspace]($backend) is a hierarchy: a `Workspace` contains any number of `WorkspaceContainer`s, each of which contains any number of `WorkspaceDb`s, each of which contains any number of resources.
+[WorkspaceDb]($backend)s are stored in access-controlled [WorkspaceContainer]($backend)s backed by cloud storage. So, the structure of a [Workspace]($backend) is a hierarchy: a `Workspace` contains any number of `WorkspaceContainer`s, each of which contains any number of `WorkspaceDb`s, each of which contains any number of resources. The container is the unit of access control - anyone who has read access to the container can read the contents of any `WorkspaceDb` inside it, and anyone with write access to the container can modify its contents.
 
-[WorkspaceDb]($backend)s are versioned according to the [semantic versioning](https://semver.org) scheme
+## Creating and querying resources
+
+> Note: Creating and managing data in workspaces is a task for administrators, not end-users. Administrators will typically use a specialized application designed for this task. For the purposes of illustration, the following examples will use the `WorkspaceEditor` API directly.
+
+LandscapePro allows users to decorate a landscape with a variety of trees and other flora. So, trees are one of the kinds of resources the application needs to access to perform its functions. Naturally, they should be stored in the [Workspace]($backend). Let's create a [WorkspaceDb]($backend) to hold trees of the genus *Cornus*.
+
+```ts
+[[include:WorkspaceExamples.CreateWorkspaceDb]]
+```
+
+Since every [WorkspaceDb]($backend) must reside inside a [WorkspaceContainer]($backend), we must first create a container. Creating a container also creates a default `WorkspaceDb`. In the example above, we set up the default `WorkspaceDb` to be our as-yet empty "cornus" tree database.
+
+Now, let's define what a "tree" resource looks like, and add some to the new `WorkspaceDb`.
+
+```ts
+[[include:WorkspaceExamples.AddTrees]]
+```
+
+
