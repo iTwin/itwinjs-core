@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import { ProcessDetector } from "@itwin/core-bentley";
+import { LogLevel, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { IModelHost, IModelHostOptions } from "@itwin/core-backend";
@@ -38,6 +38,9 @@ export async function initializeBackend() {
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
   iModelHost.cacheDir = process.env.BRIEFCASE_CACHE_LOCATION;
   iModelHost.authorizationClient = await initializeAuthorizationClient();
+
+   Logger.initializeToConsole();
+  Logger.setLevel("GeoCoord", LogLevel.Info);
 
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
