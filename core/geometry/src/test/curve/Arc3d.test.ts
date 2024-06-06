@@ -602,7 +602,7 @@ describe("Arc3d", () => {
       ck.testFalse(ellipse3.isCircular, "ellipse is not circular");
     }
     x0 += 5;
-    p1.y = 1;
+    p1.y = -1.95;
     const ellipse4 = Arc3d.createStartMiddleEnd(p0, p1, p2);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [p0, p1, p2], x0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, ellipse4, x0);
@@ -611,19 +611,36 @@ describe("Arc3d", () => {
       ck.testPoint3d(ellipse4.center, Point3d.createZero(), "ellipse centered at origin");
       ck.testVector3d(ellipse4.vector0, Vector3d.create(p0.x, p0.y, p0.z), "ellipse vector0 along x-axis");
       ck.testFalse(ellipse4.isCircular, "ellipse is not circular");
-      ck.testCoordinate(0, ellipse4.closestPoint(p1, false).a, "middle point is on the ellipse");
+    }
+    x0 += 5;
+    p1.y = -2;
+    const ellipse5 = Arc3d.createStartMiddleEnd(p0, p1, p2);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [p0, p1, p2], x0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, ellipse5, x0);
+    ck.testTrue(undefined === ellipse5, "arc construction not possible");
+    x0 += 5;
+    p1.y = 1;
+    const ellipse6 = Arc3d.createStartMiddleEnd(p0, p1, p2);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [p0, p1, p2], x0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, ellipse6, x0);
+    if (ck.testDefined(ellipse6, "created the arc")) {
+      ck.testTrue(ellipse6.sweep.isFullCircle, "ellipse is full sweep");
+      ck.testPoint3d(ellipse6.center, Point3d.createZero(), "ellipse centered at origin");
+      ck.testVector3d(ellipse6.vector0, Vector3d.create(p0.x, p0.y, p0.z), "ellipse vector0 along x-axis");
+      ck.testFalse(ellipse6.isCircular, "ellipse is not circular");
+      ck.testCoordinate(0, ellipse6.closestPoint(p1, false).a, "middle point is on the ellipse");
     }
     x0 += 5;
     p1.y = -1;
-    const ellipse5 = Arc3d.createStartMiddleEnd(p0, p1, p2, AngleSweep.createStartEndDegrees(0, 200));
+    const ellipse7 = Arc3d.createStartMiddleEnd(p0, p1, p2, AngleSweep.createStartEndDegrees(0, 200));
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [p0, p1, p2], x0);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, ellipse5, x0);
-    if (ck.testDefined(ellipse5, "created the arc")) {
-      ck.testFalse(ellipse5.sweep.isFullCircle, "ellipse is not full sweep");
-      ck.testPoint3d(ellipse5.center, Point3d.createZero(), "ellipse centered at origin");
-      ck.testVector3d(ellipse5.vector0, Vector3d.create(p0.x, p0.y, p0.z), "ellipse vector0 along x-axis");
-      ck.testFalse(ellipse5.isCircular, "ellipse is not circular");
-      ck.testCoordinate(0, ellipse5.closestPoint(p1, false).a, "middle point is on the ellipse");
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, ellipse7, x0);
+    if (ck.testDefined(ellipse7, "created the arc")) {
+      ck.testFalse(ellipse7.sweep.isFullCircle, "ellipse is not full sweep");
+      ck.testPoint3d(ellipse7.center, Point3d.createZero(), "ellipse centered at origin");
+      ck.testVector3d(ellipse7.vector0, Vector3d.create(p0.x, p0.y, p0.z), "ellipse vector0 along x-axis");
+      ck.testFalse(ellipse7.isCircular, "ellipse is not circular");
+      ck.testCoordinate(0, ellipse7.closestPoint(p1, false).a, "middle point is on the ellipse");
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "CreateThreePointEllipse");
     expect(ck.getNumErrors()).equals(0);

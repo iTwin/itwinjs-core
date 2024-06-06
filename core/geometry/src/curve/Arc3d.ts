@@ -244,15 +244,15 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const v0DotV1 = vector0.dotProduct(vector1);
     const v0Len2 = vector0.magnitudeSquared();
     if (Math.abs(v0DotV1) >= v0Len2)
-      return undefined; // middle point projects to end of axis or beyond
+      return undefined; // middle point projects to end of axis or beyond (rules out negative under the radical below)
     const normal = vector0.crossProduct(vector1);
     const vector90 = normal.unitCrossProductWithDefault(vector0, 0, 0, 0);
     const v1DotV90 = vector1.dotProduct(vector90);
-    // Solve the standard ellipse equation for unknown axis length, given local coords of point1 (v0.v1/||v0||, v90.v1)
-    const v90Len2 = Geometry.safeDivideFraction(v0Len2 * v0Len2 * v1DotV90 * v1DotV90, v0Len2 * v0Len2 - v0DotV1 * v0DotV1, 0);
-    if (Geometry.isSmallMetricDistanceSquared(v90Len2))
+    // Solve the standard ellipse equation for the unknown axis length, given local coords of point1 (v0.v1/||v0||, v90.v1)
+    const v90Len = Geometry.safeDivideFraction(v0Len2 * v1DotV90, Math.sqrt(v0Len2 * v0Len2 - v0DotV1 * v0DotV1), 0);
+    if (Geometry.isSmallMetricDistanceSquared(v90Len))
       return undefined;
-    vector90.scaleInPlace(Math.sqrt(v90Len2));
+    vector90.scaleInPlace(v90Len);
     return Arc3d.create(center, vector0, vector90, sweep, result);
   }
   /**
