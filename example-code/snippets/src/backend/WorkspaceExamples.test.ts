@@ -280,7 +280,15 @@ describe("Workspace Examples", () => {
         treeDb.addString(species, JSON.stringify(tree));
       }
 
-      const cornusDb = container.getEditableDb({ dbName: "cornus" });
+      container.acquireWriteLock("Sylvia Wood");
+      
+      const cornusDbProps = (await container.createNewWorkspaceDbVersion({
+        fromProps: { dbName: "cornus" },
+        versionType: "minor",
+      })).newDb;
+      
+      const cornusDb = container.getEditableDb(cornusDbProps);
+      cornusDb.open();
 
       addTree(cornusDb, "alternifolia", {
         commonName: "Pagoda Dogwood",
@@ -293,9 +301,23 @@ describe("Workspace Examples", () => {
         hardiness: { minimum: 9, maximum: 9 },
         light: "full",
       });
+
+      cornusDb.close();
+      container.releaseWriteLock();
       // __PUBLISH_SECTION_END__
+      expect(cornusDb.cloudProps).not.to.be.undefined;
+      expect(cornusDb.cloudProps!.version).to.equal("1.1.0");
       
-      expect(cornusDb.getString("alternifolia")).not.to.be.undefined;
+      // __PUBLISH_SECTION_START__ WorkspaceExamples.CreatePatch
+      // container.acquireWriteLock("Sylvia Wood");
+
+      // const cornusPatchProps = (await container.createNewWorkspaceDbVersion({
+      //   fromProps: { dbName: "cornus", version: "1.1.0" },
+      //   versionType: "patch",
+      // })).newDb;
+      
+      // addTree()
+      // __PUBLISH_SECTION_END__
       
       AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
     });

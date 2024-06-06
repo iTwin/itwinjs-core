@@ -168,10 +168,25 @@ LandscapePro allows users to decorate a landscape with a variety of trees and ot
 
 Since every [WorkspaceDb]($backend) must reside inside a [WorkspaceContainer]($backend), we must first create a container. Creating a container also creates a default `WorkspaceDb`. In the example above, we set up the default `WorkspaceDb` to be our as-yet empty "cornus" tree database.
 
-Now, let's define what a "tree" resource looks like, and add some to the new `WorkspaceDb`.
+Now, let's define what a "tree" resource looks like, and add some to the new `WorkspaceDb`. To do so, we'll need to make a new version of the empty "cornus" `WorkspaceDb` we created above. `WorkspaceDb`s use [semantic versioning](https://semver.org/), and each version of a given `WorkspaceDb` becomes immutable once it is published to cloud storage. So, the process for creating a new version of a `WorkspaceDb` is as follows:
+1. Acquire the container's write lock. Only one person can make changes to the contents of a given container at any given time.
+1. Create a new version of an existing `WorkspaceDb`.
+1. Open the new version of the db for writing.
+1. Modify the contents of the db.
+1. Close the db.
+1. (Optionally, create more new versions of `WorkspaceDb`s in the same container).
+1. Release the container's write lock.
+
+Once the write lock is released, the new versions of the `WorkspaceDb`s are published to cloud storage and become immutable. Alternatively, you can discard all of your changes via [WorkspaceEditor.abandonChanges]($backend) - this also releases the write lock.
 
 ```ts
 [[include:WorkspaceExamples.AddTrees]]
+```
+
+In the example above, we created version 1.1.0 of the "cornus" `WorkspaceDb`, added two species of dogwood tree to it, and uploaded it. Later, we might create a patched version that includes a species of dogwood that we forgot:
+
+```ts
+[[include:WorkspaceExamples.CreatePatch]]
 ```
 
 
