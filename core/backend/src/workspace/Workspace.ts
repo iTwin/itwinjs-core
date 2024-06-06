@@ -118,7 +118,7 @@ export interface WorkspaceDbQueryResourcesArgs {
   callback: WorkspaceDbQueryResourcesCallback;
 }
 
- /** Metadata stored inside a [[WorkspaceDb]] describing the database's contents, to help users understand the purpose of the [[WorkspaceDb]], who to
+/** Metadata stored inside a [[WorkspaceDb]] describing the database's contents, to help users understand the purpose of the [[WorkspaceDb]], who to
   * contact with questions about it, and so on.
   * @note Only the [[workspaceName]] field is required, and users may add additional fields for their own purposes.
   * @note Since the information is stored inside of the [[WorkspaceDb]], it is versioned along with the rest of the contents.
@@ -163,7 +163,7 @@ export interface WorkspaceDbLoadErrors extends Error {
   wsLoadErrors?: WorkspaceDbLoadError[];
 }
 
- /** Specifies a resource inside a [[WorkspaceDb]] that holds a [[SettingsDictionary]] to load into [[Workspace.settings]].
+/** Specifies a resource inside a [[WorkspaceDb]] that holds a [[SettingsDictionary]] to load into [[Workspace.settings]].
   * Settings of this type named [[WorkspaceSettingNames.settingsWorkspaces]] are automatically loaded by [[Workspace.loadSettingsDictionary]].
   * @beta
   */
@@ -195,7 +195,7 @@ export type WorkspaceResourceName = string;
  * - A `string`, which is often a stringified `JSON` representation of the resource;
  * - A binary `blob`; or
  * - An embedded file.
- * 
+ *
  * Strings and blobs can be accessed directly using [[getString]] and [[getBlob]]. Files must first be copied to the local file system using [[getFile]], and should be avoided unless the software
  * that uses them is written to access them from disk.
  *
@@ -287,7 +287,7 @@ export interface WorkspaceDb {
   queryFileResource(rscName: WorkspaceResourceName): { localFileName: LocalFileName, info: IModelJsNative.EmbedFileQuery } | undefined;
 }
 
- /** Options supplied to [[IModelHost.startup]] via [[IModelHostOptions.workspace]] to customize the initialization of [[IModelHost.appWorkspace]].
+/** Options supplied to [[IModelHost.startup]] via [[IModelHostOptions.workspace]] to customize the initialization of [[IModelHost.appWorkspace]].
   * @beta
   */
 export interface WorkspaceOpts {
