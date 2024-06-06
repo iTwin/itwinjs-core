@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { IModelHost, SettingsContainer, StandaloneDb, SettingsPriority } from "@itwin/core-backend";
+import { IModelHost, SettingsContainer, StandaloneDb, SettingsPriority, WorkspaceEditor } from "@itwin/core-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { SettingGroupSchema } from "@itwin/core-backend";
 import { SettingsDictionaryProps } from "@itwin/core-backend";
-import { OpenMode } from "@itwin/core-bentley";
+import { Guid, OpenMode } from "@itwin/core-bentley";
+import { AzuriteTest } from "./AzuriteTest";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Workspace Examples", () => {
@@ -233,6 +234,22 @@ describe("Workspace Examples", () => {
       // __PUBLISH_SECTION_END__
       expect(hardinessRange).to.deep.equal(range);
       expect(defaultTool).to.equal("place-koi-pond");
+
+      IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
+      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
+
+      const editor = WorkspaceEditor.construct();
+      const iTwinId = Guid.createValue();
+      const orgWsName = "all settings for org";
+      const orgContainer = await editor.createNewCloudContainer({
+        metadata: { label: "orgContainer1", description: "org workspace1" },
+        scope: { iTwinId },
+        manifest: { workspaceName: orgWsName },
+      });
+
+      expect(orgContainer).not.to.be.undefined;
+
+      AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
     });
   });
 });
