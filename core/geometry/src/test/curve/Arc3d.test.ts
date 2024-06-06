@@ -589,7 +589,7 @@ describe("Arc3d", () => {
     const ellipse2 = Arc3d.createStartMiddleEnd(p0, p1, p2);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [p0, p1, p2], x0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, ellipse2, x0);
-    ck.testTrue(undefined === ellipse2, "arc construction not possible");
+    ck.testUndefined(ellipse2, "arc construction not possible");
     x0 += 5;
     p1.y = 1.95;
     const ellipse3 = Arc3d.createStartMiddleEnd(p0, p1, p2);
@@ -617,7 +617,7 @@ describe("Arc3d", () => {
     const ellipse5 = Arc3d.createStartMiddleEnd(p0, p1, p2);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [p0, p1, p2], x0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, ellipse5, x0);
-    ck.testTrue(undefined === ellipse5, "arc construction not possible");
+    ck.testUndefined(ellipse5, "arc construction not possible");
     x0 += 5;
     p1.y = 1;
     const ellipse6 = Arc3d.createStartMiddleEnd(p0, p1, p2);
