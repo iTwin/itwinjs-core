@@ -487,7 +487,7 @@ export namespace Workspace {
     Logger.logInfo(BackendLoggerCategory.Workspace, `loaded setting dictionary ${loaded.dict.props.name} from ${loaded.from.dbFileName}`);
   };
 
-  /** Either an array of [[WorkspaceDbCloudProps]] or the name of a [[Setting]] that provides an array of [[WorkspaceDbSettingsProps]] from which the array can be resolved.
+  /** Either an array of [[WorkspaceDbCloudProps]] or the name of a [[Setting]] that resolves to an array of [[WorkspaceDbCloudProps]].
    * Used by [[Workspace.getWorkspaceDbs]].
    */
   export type DbListOrSettingName = { readonly dbs: WorkspaceDbCloudProps[], readonly settingName?: never } | { readonly settingName: SettingName, readonly dbs?: never };
