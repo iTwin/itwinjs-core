@@ -552,8 +552,8 @@ describe("Arc3d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
   // Test 3-point elliptical arc constructor
-  it.only("CreateThreePointEllipse", () => {
-    const ck = new Checker(true, true);
+  it("CreateThreePointEllipse", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
 
