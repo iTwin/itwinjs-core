@@ -53,11 +53,18 @@
  * where removing the existing API would present an undue burden for those packages to update their code in the short term.
  * Those existing APIs should be annotated as `deprecated` and removed as soon as possible. (Note, because they are `@internal`, they
  * are not subject to our API deprecation policies).
+ *
+ * NOTE: Currently, it is possible for people to misconfigure their dependencies such that they end up with multiple versions of this package, which would
+ * cause multiple independent sets of the symbols below to exist.
+ * To avoid breaking them, for now we use `Symbol.for("name")` instead of `Symbol()` to add the symbols to the global registry.
+ * This does permit sneaky people to call internal APIs by looking up the corresponding symbol via `Symbol.for`.
+ * In iTwin.js 5.0, we will prohibit people from ending up in the multiple-versions-of-core-dependencies situation, and switch to
+ * using `unique symbol`s instead.
  */
 
-export const _isOpen = Symbol();
-export const _nativeDb = Symbol();
-export const _prepareSqliteStatement = Symbol();
+export const _isOpen = Symbol.for("_isOpen");
+export const _nativeDb = Symbol.for("_nativeDb");
+export const _prepareSqliteStatement = Symbol.for("_prepareSqliteStatement");
 
 /** A symbol used to prevent implementations of an interface from being created outside of the package that defines the interface.
  * This is useful when a package defines a public interface with one or more private implementations.
@@ -98,4 +105,4 @@ export const _prepareSqliteStatement = Symbol();
  *
  * The vast majority of interfaces do not need this.
  */
-export const _implementation_prohibited = Symbol("implementation prohibited"); // eslint-disable-line @typescript-eslint/naming-convention
+export const _implementationProhibited = Symbol.for("_implementationProhibited");

@@ -13,7 +13,7 @@ import { LockMap, LockState } from "./BackendHubAccess";
 import { BriefcaseDb, LockControl } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { SQLiteDb } from "./SQLiteDb";
-import { _implementation_prohibited, _nativeDb } from "./internal/Internal";
+import { _implementationProhibited, _nativeDb } from "./internal/Internal";
 
 /**
  * Both the Model and Parent of an element are considered "owners" of their member elements. That means:
@@ -35,7 +35,7 @@ const enum LockOrigin {
 
 /** @internal */
 export class ServerBasedLocks implements LockControl {
-  public readonly [_implementation_prohibited] = undefined;
+  public readonly [_implementationProhibited] = undefined;
   public get isServerBased() { return true; }
   protected readonly lockDb = new SQLiteDb();
   protected readonly briefcase: BriefcaseDb;
