@@ -53,6 +53,10 @@ export class AngleSweep implements BeJSONFunctions {
   public get sweepRadians() {
     return this._radians1 - this._radians0;
   }
+  /** Whether the sweep angles are within smallAngle tolerance, without period shift. */
+  public get isEmpty() {
+    return Angle.isAlmostEqualRadiansNoPeriodShift(0, this.sweepRadians);
+  }
   /** Return the (strongly typed) start angle */
   public get startAngle() {
     return Angle.createRadians(this._radians0);
