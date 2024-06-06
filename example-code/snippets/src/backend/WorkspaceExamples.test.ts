@@ -276,7 +276,9 @@ describe("Workspace Examples", () => {
       }
 
       function addTree(treeDb: EditableWorkspaceDb, species: string, tree: TreeResource): void {
-        treeDb.addString(species, JSON.stringify(tree));
+        // We use a prefix to distinguish trees from other kinds of resources that might be present in the same WorkspaceDb.
+        const resourceName = `landscapePro/tree/${species}`;
+        treeDb.addString(resourceName, JSON.stringify(tree));
       }
 
       container.acquireWriteLock("Lief E. Greene");
@@ -369,6 +371,9 @@ describe("Workspace Examples", () => {
         const trees: TreeResource[] = [];
         Workspace.queryResources({
           dbs,
+          // Include only tree resources, as indicated by their name prefix.
+          namePattern: "landscapePro/tree/%",
+          nameCompare: "LIKE",
           callback: (resources: Iterable<{ name: string, db: WorkspaceDb }>) => {
             for (const resource of resources) {
               // Look up the tree as stringified JSON in the current WorkspaceDb.
