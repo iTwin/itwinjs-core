@@ -156,7 +156,7 @@ String and blob resources can be accessed directly using [WorkspaceDb.getString]
 
 [WorkspaceDb]($backend)s are stored in access-controlled [WorkspaceContainer]($backend)s backed by cloud storage. So, the structure of a [Workspace]($backend) is a hierarchy: a `Workspace` contains any number of `WorkspaceContainer`s, each of which contains any number of `WorkspaceDb`s, each of which contains any number of resources. The container is the unit of access control - anyone who has read access to the container can read the contents of any `WorkspaceDb` inside it, and anyone with write access to the container can modify its contents.
 
-## Creating and querying resources
+## Creating workspace resources
 
 > Note: Creating and managing data in workspaces is a task for administrators, not end-users. Administrators will typically use a specialized application designed for this task. For the purposes of illustration, the following examples will use the `WorkspaceEditor` API directly.
 
@@ -183,7 +183,7 @@ Once the write lock is released, the new versions of the `WorkspaceDb`s are publ
 [[include:WorkspaceExamples.AddTrees]]
 ```
 
-In the example above, we created version 1.1.0 of the "cornus" `WorkspaceDb`, added two species of dogwood tree to it, and uploaded it. Later, we might create a patched version that includes a species of dogwood that we forgot:
+In the example above, we created version 1.1.0 of the "cornus" `WorkspaceDb`, added two species of dogwood tree to it, and uploaded it. Later, we might create a patched version that includes a species of dogwood that we forgot, and add a second `WorkspaceDb` to hold trees of the genus *abies*:
 
 ```ts
 [[include:WorkspaceExamples.CreatePatch]]

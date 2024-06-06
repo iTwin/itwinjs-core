@@ -257,12 +257,12 @@ describe("Workspace Examples", () => {
         // The manifest to be embedded inside the default WorkspaceDb.
         manifest: {
           // A user-facing name for the WorkspaceDb.
-          workspaceName: "Trees: cornus",
+          workspaceName: "Dogwood trees",
           // A description of the WorkspaceDb's contents and purpose.
           description: "Trees belonging to the genus cornus",
           // The name of someone (typically an administrator) who can provide help and information
           // about this WorkspaceDb.
-          contactName: "Sylvia Wood",
+          contactName: "Lief E. Greene",
         },
       });
       // __PUBLISH_SECTION_END__
@@ -280,7 +280,7 @@ describe("Workspace Examples", () => {
         treeDb.addString(species, JSON.stringify(tree));
       }
 
-      container.acquireWriteLock("Sylvia Wood");
+      container.acquireWriteLock("Lief E. Greene");
       
       const cornusDbProps = (await container.createNewWorkspaceDbVersion({
         fromProps: { dbName: "cornus" },
@@ -309,8 +309,7 @@ describe("Workspace Examples", () => {
       expect(cornusDb.cloudProps!.version).to.equal("1.1.0");
       
       // __PUBLISH_SECTION_START__ WorkspaceExamples.CreatePatch
-      container.acquireWriteLock("Sylvia Wood");
-
+      container.acquireWriteLock("Lief E. Greene");
       const cornusPatchProps = (await container.createNewWorkspaceDbVersion({
         fromProps: { dbName: "cornus", version: "1.1.0" },
         versionType: "patch",
@@ -324,9 +323,39 @@ describe("Workspace Examples", () => {
         light: "full",
       });
       cornusDb.close();
+
+      await container.createDb({
+        dbName: "abies",
+        manifest: {
+          workspaceName: "Fir trees",
+          description: "Trees belonging to the genus abies",
+          contactName: "Sylvia Wood",
+        },
+      });
+
+      const abiesDbProps = (await container.createNewWorkspaceDbVersion({
+        fromProps: { dbName: "abies" },
+        versionType: "minor",
+      })).newDb;
+
+      const abiesDb = container.getEditableDb(abiesDbProps);
+      abiesDb.open();
+      addTree(abiesDb, "amabilis", {
+        commonName: "Pacific Silver Fir",
+        hardiness: { minimum: 5, maximum: 5 },
+        light: "full",
+      });
+      addTree(abiesDb, "balsamea", {
+        commonName: "Balsam Fir",
+        hardiness: { minimum: 3, maximum: 6 },
+        light: "full",
+      });
+      abiesDb.close();
+      
       container.releaseWriteLock();
       // __PUBLISH_SECTION_END__
       expect(cornusDb.cloudProps!.version).to.equal("1.1.1");
+      expect(abiesDb.cloudProps!.version).to.equal("1.1.0");
       
       AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
     });
