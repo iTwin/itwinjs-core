@@ -464,20 +464,6 @@ export namespace WorkspaceSettingNames {
   export const settingsWorkspaces = makeSettingName("settingsWorkspaces");
 }
 
-/** Arguments supplied to [[Workspace.getStringResource]], [[Workspace.getBlobResource]], and [[Workspace.getJsonResource]].
- * @beta
- */
-export interface GetWorkspaceResourceArgs<T extends string | Uint8Array | object> {
-  /** The name of the resource to retrieve. */
-  resource: WorkspaceResourceName;
-  /** The name of the [[Setting]] that resolves to an aray of [[WorkspaceDbCloudProps]] specifying the [[WorkspaceDb]]s in which to search. */
-  setting: SettingName;
-  /** A default value to return if no [[WorkspaceDb]] provides a value for the [[resource]]. */
-  default?: T;
-  /** An array to populate with a list of errors that occur while attempting to load [[WorkspaceDb]]s. */
-  problems?: WorkspaceDbLoadError[];
-}
-
 /** @beta */
 export namespace Workspace {
   /** A function invoked to handle exceptions produced while loading workspace data.
@@ -582,6 +568,20 @@ function getWorkspaceResource(dbs: WorkspaceDb[], name: string, type: "string" |
   }
 
   return undefined;
+}
+
+/** Arguments supplied to [[Workspace.getStringResource]], [[Workspace.getBlobResource]], and [[Workspace.getJsonResource]].
+ * @beta
+ */
+export interface GetWorkspaceResourceArgs<T extends string | Uint8Array | object> {
+  /** The name of the resource to retrieve. */
+  resource: WorkspaceResourceName;
+  /** The name of the [[Setting]] that resolves to an aray of [[WorkspaceDbCloudProps]] specifying the [[WorkspaceDb]]s in which to search. */
+  setting: SettingName;
+  /** A default value to return if no [[WorkspaceDb]] provides a value for the [[resource]]. */
+  default?: T;
+  /** An array to populate with a list of errors that occur while attempting to load [[WorkspaceDb]]s. */
+  problems?: WorkspaceDbLoadError[];
 }
 
 /** Searches a list of [[WorkspaceDb]]s for a string resource of a given name.
