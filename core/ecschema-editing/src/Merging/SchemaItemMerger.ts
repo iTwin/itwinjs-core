@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import type { SchemaMergeContext } from "./SchemaMerger";
-import type { SchemaEditResults, SchemaItemEditResults } from "../Editing/Editor";
 import { AnySchemaDifference, AnySchemaItemDifference, AnySchemaItemPathDifference, SchemaDifference } from "../Differencing/SchemaDifference";
 import { ECObjectsError, ECObjectsStatus, SchemaContext, SchemaItem, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { enumerationMerger, enumeratorMerger } from "./EnumerationMerger";
@@ -18,17 +17,18 @@ import { mergeClassItems } from "./ClassMerger";
  * @internal
  */
 export interface SchemaItemMergerHandler<T extends AnySchemaItemDifference | AnySchemaItemPathDifference> {
-  add:    (context: SchemaMergeContext, change: T) => Promise<SchemaItemEditResults>;
-  modify: (context: SchemaMergeContext, change: T, itemKey: SchemaItemKey, item: any) => Promise<SchemaItemEditResults>;
+  add:    (context: SchemaMergeContext, change: T) => Promise<SchemaItemKey>;
+  modify: (context: SchemaMergeContext, change: T, itemKey: SchemaItemKey, item: any) => Promise<void>;
 }
 
 /**
  * Handles the merging logic for everything that is same for all schema items such as labels or descriptions
  * @internal
  */
-async function mergeSchemaItem<T extends AnySchemaItemDifference|AnySchemaItemPathDifference>(context: SchemaMergeContext, change: T, merger: SchemaItemMergerHandler<T>): Promise<SchemaEditResults> {
+async function mergeSchemaItem<T extends AnySchemaItemDifference|AnySchemaItemPathDifference>(context: SchemaMergeContext, change: T, merger: SchemaItemMergerHandler<T>): Promise<void> {
   if(change.changeType === "add") {
-    return merger.add(context, change);
+    await merger.add(context, change);
+    return;
   }
 
   if(change.changeType === "modify") {
@@ -36,7 +36,7 @@ async function mergeSchemaItem<T extends AnySchemaItemDifference|AnySchemaItemPa
     return merger.modify(context, change, schemaItem.key, schemaItem);
   }
 
-  return { errorMessage: `The merger does not support ${change.changeType} of ${change.schemaType}.` };
+  throw new Error(`The merger does not support ${change.changeType} of ${change.schemaType}.`);
 }
 
 /**
