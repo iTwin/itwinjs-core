@@ -959,56 +959,36 @@ describe.only("TxnManager PushPullMerge", () => {
     }
   });
 
+  function assertTxnStates(txn: TxnManager, hasLocalChanges: boolean, hasUnsavedChanges: boolean, hasPendingTxns: boolean, isUndoPossible: boolean, isRedoPossible: boolean) {
+    assert.strictEqual(txn.hasLocalChanges, hasLocalChanges);
+    assert.strictEqual(txn.hasUnsavedChanges, hasUnsavedChanges);
+    assert.strictEqual(txn.hasPendingTxns, hasPendingTxns);
+    assert.strictEqual(txn.isUndoPossible, isUndoPossible);
+    assert.strictEqual(txn.isRedoPossible, isRedoPossible);
+  }
+
   it("Pull with pending Txns", async () => {
     for (const txn of txns) {
-      assert.isFalse(txn.hasPendingTxns);
-      assert.isFalse(txn.hasLocalChanges);
-      assert.isFalse(txn.hasUnsavedChanges);
-      assert.isFalse(txn.isUndoPossible);
-      assert.isFalse(txn.isRedoPossible);
+      assertTxnStates(txn, false, false, false, false, false);
     }
 
-    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(briefcases[0],
-      IModelTestUtils.getUniqueModelCode(briefcases[0], "firstPhysicalModel"), false);
+    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(briefcases[0], IModelTestUtils.getUniqueModelCode(briefcases[0], "firstPhysicalModel"), false);
 
-    assert.isFalse(txns[0].hasPendingTxns);
-    assert.isTrue(txns[0].hasLocalChanges);
-    assert.isTrue(txns[0].hasUnsavedChanges);
-    assert.isFalse(txns[0].isUndoPossible);
-    assert.isFalse(txns[0].isRedoPossible);
+    assertTxnStates(txns[0], true, true, false, false, false);
     briefcases[0].saveChanges("inserted first model");
-    assert.isTrue(txns[0].hasPendingTxns);
-    assert.isTrue(txns[0].hasLocalChanges);
-    assert.isFalse(txns[0].hasUnsavedChanges);
-    assert.isTrue(txns[0].isUndoPossible);
-    assert.isFalse(txns[0].isRedoPossible);
+    assertTxnStates(txns[0], true, false, true, true, false);
 
     await briefcases[0].pushChanges({ accessToken: accessTokens[0], description: "new physical model" });
-    assert.isFalse(txns[0].hasPendingTxns);
-    assert.isFalse(txns[0].hasLocalChanges);
-    assert.isFalse(txns[0].isUndoPossible);
+    assertTxnStates(txns[0], false, false, false, false, false);
 
     await briefcases[1].pullChanges();
-    assert.isFalse(txns[1].hasPendingTxns);
-    assert.isFalse(txns[1].hasLocalChanges);
-    assert.isFalse(txns[1].hasUnsavedChanges);
-    assert.isFalse(txns[1].isUndoPossible);
-    assert.isFalse(txns[1].isRedoPossible);
+    assertTxnStates(txns[1], false, false, false, false, false);
 
-    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(briefcases[2],
-      IModelTestUtils.getUniqueModelCode(briefcases[2], "localPhysicalModel"), false);
+    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(briefcases[2], IModelTestUtils.getUniqueModelCode(briefcases[2], "localPhysicalModel"), false);
     briefcases[2].saveChanges("inserted local model");
-    assert.isTrue(txns[2].hasPendingTxns);
-    assert.isTrue(txns[2].hasLocalChanges);
-    assert.isFalse(txns[2].hasUnsavedChanges);
-    assert.isTrue(txns[2].isUndoPossible);
-    assert.isFalse(txns[2].isRedoPossible);
+    assertTxnStates(txns[2], true, false, true, true, false);
     await briefcases[2].pullChanges();
-    assert.isTrue(txns[2].hasPendingTxns);
-    assert.isTrue(txns[2].hasLocalChanges);
-    assert.isFalse(txns[2].hasUnsavedChanges);
-    assert.isTrue(txns[2].isUndoPossible);
-    assert.isFalse(txns[2].isRedoPossible);
+    assertTxnStates(txns[2], true, false, true, true, false);
 
     /* txns.reverseSingleTxn();
     assert.isFalse(txns.hasPendingTxns, "should not have pending txns if they all are reversed");
