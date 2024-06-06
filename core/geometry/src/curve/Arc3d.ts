@@ -227,6 +227,35 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     );
   }
   /**
+   * Create an arc from three points on the ellipse: two points on an axis and one in between.
+   * @param point0 start of arc, on an axis
+   * @param point1 point on arc somewhere between `point0` and `point2`
+   * @param point2 point on arc directly opposite `point0`
+   * @param sweep angular sweep, measured from `point0` in the direction of `point1`.
+   *  For a semicircle from `point0` to `point2` passing through `point1`, pass `AngleSweep.createStartEndDegrees(0,180)`.
+   *  Default value is full sweep to create the entire ellipse.
+   * @param result optional preallocated result
+   * @returns elliptical arc, or undefined if construction impossible.
+   */
+  public static createThroughPoints(point0: Point3d, point1: Point3d, point2: Point3d, sweep?: AngleSweep, result?: Arc3d): Arc3d | undefined {
+    const center = point0.interpolate(0.5, point2);
+    const vector0 = Vector3d.createStartEnd(center, point0);
+    const vector1 = Vector3d.createStartEnd(center, point1);
+    const v0DotV1 = vector0.dotProduct(vector1);
+    const v0Len2 = vector0.magnitudeSquared();
+    if (v0DotV1 * v0DotV1 >= v0Len2)
+      return undefined;
+    const normal = vector0.crossProduct(vector1);
+    const vector90 = normal.unitCrossProductWithDefault(vector0, 0, 0, 0);
+    const v1DotV90 = vector1.dotProduct(vector90);
+    // Solve the standard ellipse equation for unknown axis length, given local coords of point1 (v0.v1/||v0||, v90.v1)
+    const v90Len2 = Geometry.safeDivideFraction(v0Len2 * v0Len2 * v1DotV90 * v1DotV90, v0Len2 * v0Len2 - v0DotV1 * v0DotV1, 0);
+    if (Geometry.isSmallMetricDistanceSquared(v90Len2))
+      return undefined;
+    vector90.scaleInPlace(Math.sqrt(v90Len2));
+    return Arc3d.create(center, vector0, vector90, sweep, result);
+  }
+  /**
    * Return a clone of this arc, projected to given z value.
    * * If `z` is omitted, the clone is at the z of the center.
    * * This function projects the arc into a plane parallel to xy-plane.
