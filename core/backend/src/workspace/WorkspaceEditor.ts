@@ -241,7 +241,7 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
 }
 
 /** An object that permits administrators to modify the contents of a [[Workspace]].
- * Use [[construct]] to obtain a WorkspaceEditor, and [[close]] when finished using it.
+ * Use [[WorkspaceEditor.construct]] to obtain a WorkspaceEditor, and [[close]] when finished using it.
  * Only one WorkspaceEditor may be in use at any given time.
  * Use [[getContainer]] to edit an existing [[WorkspaceContainer]], or [[createNewCloudContainer]] to create a new [[WorkspaceContainer]].
  * @beta

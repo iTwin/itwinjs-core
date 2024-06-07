@@ -57,7 +57,7 @@ The set of currently-registered schemas can be accessed via [IModelHost.settings
 [[include:WorkspaceExamples.RegisterSchema]]
 ```
 
-Your application should register its schemas shortly after invoking [IModelHost.startup]($backend). Registering a schema adds its typeDefs and settingDefs to [SettingsSchemas.typeDefs]($backend) and [SettingsSchemas.schemaDefs]($backend), respectively. It also raises the [SettingsSchemas.onSchemaChanged]($backend) event. All schemas are unregistered when [IModelHost.shutdown]($backend) is invoked.
+Your application should register its schemas shortly after invoking [IModelHost.startup]($backend). Registering a schema adds its typeDefs and settingDefs to [SettingsSchemas.typeDefs]($backend) and [SettingsSchemas.settingDefs]($backend), respectively. It also raises the [SettingsSchemas.onSchemaChanged]($backend) event. All schemas are unregistered when [IModelHost.shutdown]($backend) is invoked.
 
 ## Settings dictionaries
 
@@ -179,7 +179,7 @@ Now, let's define what a "tree" resource looks like, and add some to the new `Wo
 1. (Optionally, create more new versions of `WorkspaceDb`s in the same container).
 1. Release the container's write lock.
 
-Once the write lock is released, the new versions of the `WorkspaceDb`s are published to cloud storage and become immutable. Alternatively, you can discard all of your changes via [WorkspaceEditor.abandonChanges]($backend) - this also releases the write lock.
+Once the write lock is released, the new versions of the `WorkspaceDb`s are published to cloud storage and become immutable. Alternatively, you can discard all of your changes via [EditableWorkspaceContainer.abandonChanges]($backend) - this also releases the write lock.
 
 ```ts
 [[include:WorkspaceExamples.AddTrees]]

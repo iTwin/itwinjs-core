@@ -260,10 +260,10 @@ export interface Settings {
    */
   getSetting<T extends Setting>(settingName: SettingName, defaultValue?: T): T | undefined;
 
-  /** Obtain an iterator over all of the values in the [[dictionaries]] for the [[Setting]] identified by `settingName`, ordered by [[SettingPriority]]. */
+  /** Obtain an iterator over all of the values in the [[dictionaries]] for the [[Setting]] identified by `settingName`, ordered by [[SettingsPriority]]. */
   getSettingEntries<T extends Setting>(settingName: SettingName): Iterable<{ value: T, dictionary: SettingsDictionary}>;
 
-  /** Obtain an iterator over all of the values in the [[dictionaries]] for the [[Setting]] identified by `settingName`, ordered by [[SettingPriority]]. */
+  /** Obtain an iterator over all of the values in the [[dictionaries]] for the [[Setting]] identified by `settingName`, ordered by [[SettingsPriority]]. */
   getSettingValues<T extends Setting>(settingName: SettingName): Iterable<T>;
 
   /** Look up the value of a string [[Setting]] named `settingName`, returning `defaultValue` if no such value is defined.

@@ -525,7 +525,7 @@ export namespace Workspace {
       UnexpectedErrors.handle(e);
   };
 
-  /** Arguments supplied to [[onSettingsDictionaryLoadedFn]] for every [[SettingsDictionary]] that is loaded from a [[WorkspaceDb]]. */
+  /** Arguments supplied to [[Workspace.onSettingsDictionaryLoadedFn]] for every [[SettingsDictionary]] that is loaded from a [[WorkspaceDb]]. */
   export interface SettingsDictionaryLoaded {
     /** The dictionary that was loaded */
     dict: SettingsDictionary;
