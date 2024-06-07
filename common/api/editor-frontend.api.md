@@ -159,6 +159,8 @@ export namespace EditTools {
 export class EditTools {
     // (undocumented)
     static busyRetry?: EditTools.BusyRetry;
+    // @internal (undocumented)
+    static finishCommand(): Promise<string>;
     static initialize(): Promise<void>;
     // (undocumented)
     static readonly namespace = "Editor";

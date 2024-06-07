@@ -14,7 +14,7 @@ import { ECObjectsError, ECObjectsStatus } from "@itwin/ecschema-metadata";
 export const phenomenonMerger: SchemaItemMergerHandler<PhenomenonDifference> = {
   add: async (context, change) => {
     if (change.difference.definition === undefined) {
-      return { errorMessage: "Phenomenon must define definition" };
+      throw new Error("Phenomenon must define definition");
     }
 
     return context.editor.phenomenons.createFromProps(context.targetSchemaKey, {
@@ -38,6 +38,5 @@ export const phenomenonMerger: SchemaItemMergerHandler<PhenomenonDifference> = {
 
       await phenomenon.setDefinition(change.difference.definition);
     }
-    return { itemKey };
   },
 };
