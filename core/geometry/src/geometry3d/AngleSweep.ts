@@ -251,10 +251,18 @@ export class AngleSweep implements BeJSONFunctions {
    * *  allows period shift
    */
   public static radiansToPositivePeriodicFractionStartEnd(radians: number, radians0: number, radians1: number, zeroSweepDefault: number = 0.0): number {
-    if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, radians0))
-      return 0.0;
-    if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, radians1))
-      return 1.0;
+    if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians0, radians1)) {
+      // for 2nPi sweep, allow matching without period shift, else we never return 1.0
+      if (Angle.isAlmostEqualRadiansNoPeriodShift(radians, radians0))
+        return 0.0;
+      if (Angle.isAlmostEqualRadiansNoPeriodShift(radians, radians1))
+        return 1.0;
+    } else {
+      if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, radians0))
+        return 0.0;
+      if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, radians1))
+        return 1.0;
+    }
     const sweep = radians1 - radians0;
     const delta = radians - radians0;
     if (sweep > 0) {
@@ -316,10 +324,18 @@ export class AngleSweep implements BeJSONFunctions {
    * *  allows period shift
    */
   public radiansToSignedPeriodicFraction(radians: number): number {
-    if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, this._radians0))
-      return 0.0;
-    if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, this._radians1))
-      return 1.0;
+    if (Angle.isAlmostEqualRadiansAllowPeriodShift(this._radians0, this._radians1)) {
+      // for 2nPi sweep, allow matching without period shift, else we never return 1.0
+      if (Angle.isAlmostEqualRadiansNoPeriodShift(radians, this._radians0))
+        return 0.0;
+      if (Angle.isAlmostEqualRadiansNoPeriodShift(radians, this._radians1))
+        return 1.0;
+    } else {
+      if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, this._radians0))
+        return 0.0;
+      if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, this._radians1))
+        return 1.0;
+    }
     const sweep = this._radians1 - this._radians0;
     const delta = radians - this._radians0 - 0.5 * sweep; // measure from middle of interval
     if (sweep > 0) {
