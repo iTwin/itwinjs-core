@@ -288,6 +288,8 @@ export class TestRunner {
         let context: TestContext;
         try {
           context = await this.openIModel();
+          await this.logToConsole(JSON.stringify(context.iModel.projectExtents));
+          await this.logToFile(JSON.stringify(context.iModel.projectExtents));
         } catch (e: any) {
           await this.logError(`Failed to open iModel ${iModelName}: ${(e as Error).message}`);
           continue;
