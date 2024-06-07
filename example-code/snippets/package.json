@@ -4,7 +4,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "azurite:setup": "mkdirp ./lib/cjs/test/azuriteStorage && azurite-blob --silent --loose --location ./lib/test/azuriteStorage",
+    "azurite:setup": "mkdirp ./lib/cjs/test/azuriteStorage && azurite-blob --blobPort 10001 --silent --loose --location ./lib/test/azuriteStorage",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json ../../generated-docs",
     "copy:assets": "cpx \"./src/backend/assets/**/*\" ./lib/backend/assets",

@@ -16,7 +16,7 @@ import { LocalDirName, LocalFileName } from "@itwin/core-common";
 export namespace AzuriteTest {
 
   export const storageType = "azure" as const;
-  export const httpAddr = "127.0.0.1:10000";
+  export const httpAddr = "127.0.0.1:10001";
   export const accountName = "devstoreaccount1";
   export const baseUri = `http://${httpAddr}/${accountName}`;
 
