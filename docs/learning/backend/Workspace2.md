@@ -77,6 +77,8 @@ Now you can access the setting values defined in the dictionary via `IModelHost.
 
 Note that `getString` returns `undefined` for "landscapePro/preferredStyle" because our dictionary didn't provide a value for it. The overload of that function (and similar functions like [Settings.getBoolean]($backend) and [Settings.getObject]($backend)) allows you to specify a default value to use if the value is not defined.
 
+> Note: In general, avoid caching the values of individual settings - just query them each time you need them, because they can change at any time. If you must cache (for example, if you are populating a user interface from the setting values), listen for and react to the [Settings.onSettingsChanged]($backend) event.
+
 Any number of dictionaries can be added to [Workspace.settings]($backend). Let's add another one:
 
 ```ts
@@ -217,3 +219,4 @@ If we configure the setting to use version 1.1.0, then `allTrees` will not inclu
 [[include:WorkspaceExamples.QuerySpecificVersion]]
 ```
 
+We could also configure the version more precisely using [semantic versioning](https://semver.org) rules to specify a range of acceptable versions. When compatible new versions of a `WorkspaceDb` are published, the workspace would automatically consume them without requiring any explicit changes to its [Settings]($backend).
