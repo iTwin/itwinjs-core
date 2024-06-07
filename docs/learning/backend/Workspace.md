@@ -147,7 +147,7 @@ It might be technically possible to store resources in [Setting]($backend)s, but
 
 To address these requirements, workspace resources are stored in immutable, versioned [CloudSqlite]($backend) databases called [WorkspaceDb]($backend)s, and [Setting]($backend)s are configured to enable the application to locate those resources in the context of a session and - if relevant - an iModel.
 
-A [WorkspaceDb]($backend) can contain any number of resources of any kind, where "kind" refers to the purpose for which it is intended to be used. For example, fonts, text styles, and images are different kinds of resources. Each resource must have a unique name, between 1 and 1024 characters in length and containing no leading or trailing whitespace. Typically, a resource name will incorporate a [schemaPrefix](#settings-schemas) and an additional qualifier to distinguish between different kinds of resources. For example, a database may include text styles named "itwin/textStyles/<styleName>" and images named "itwin/patternMaps/<imageName>". This is only a convention, however, and some administrators may find it more convenient to store only one kind of resource in each database.
+A [WorkspaceDb]($backend) can contain any number of resources of any kind, where "kind" refers to the purpose for which it is intended to be used. For example, fonts, text styles, and images are different kinds of resources. Each resource must have a unique name, between 1 and 1024 characters in length and containing no leading or trailing whitespace. Typically, a resource name will incorporate a [schemaPrefix](#settings-schemas) and an additional qualifier to distinguish between different kinds of resources. For example, a database may include text styles named "itwin/textStyles/*styleName*" and images named "itwin/patternMaps/*imageName*". This is only a convention, however, and some administrators may find it more convenient to store only one kind of resource in each database.
 
 Ultimately, each resource is stored as one of three underlying types:
 - A string, which quite often is interpreted as a serialized JSON object. Examples include text styles and settings dictionaries.
@@ -160,7 +160,7 @@ String and blob resources can be accessed directly using [WorkspaceDb.getString]
 
 ### Creating workspace resources
 
-> Note: Creating and managing data in workspaces is a task for administrators, not end-users. Administrators will typically use a specialized application designed for this task. For the purposes of illustration, the following examples will use the `WorkspaceEditor` API directly.
+> Note: Creating and managing data in workspaces is a task for administrators, not end-users. Administrators will typically use a specialized application with a user interface designed for this task. For the purposes of illustration, the following examples will use the `WorkspaceEditor` API directly.
 
 LandscapePro allows users to decorate a landscape with a variety of trees and other flora. So, trees are one of the kinds of resources the application needs to access to perform its functions. Naturally, they should be stored in the [Workspace]($backend). Let's create a [WorkspaceDb]($backend) to hold trees of the genus *Cornus*.
 
@@ -171,7 +171,7 @@ LandscapePro allows users to decorate a landscape with a variety of trees and ot
 Since every [WorkspaceDb]($backend) must reside inside a [WorkspaceContainer]($backend), we must first create a container. Creating a container also creates a default `WorkspaceDb`. In the example above, we set up the default `WorkspaceDb` to be our as-yet empty "cornus" tree database.
 
 Now, let's define what a "tree" resource looks like, and add some to the new `WorkspaceDb`. To do so, we'll need to make a new version of the empty "cornus" `WorkspaceDb` we created above. `WorkspaceDb`s use [semantic versioning](https://semver.org/), and each version of a given `WorkspaceDb` becomes immutable once it is published to cloud storage. So, the process for creating a new version of a `WorkspaceDb` is as follows:
-1. Acquire the container's write lock. Only one person can make changes to the contents of a given container at any given time.
+1. Acquire the container's write lock. Only one person - the current holder of the lock - can make changes to the contents of a given container at any given time.
 1. Create a new version of an existing `WorkspaceDb`.
 1. Open the new version of the db for writing.
 1. Modify the contents of the db.
@@ -209,7 +209,7 @@ Now, let's configure the "landscapePro/flora/treeDbs" setting to point to the tw
 [[include:WorkspaceExamples.QueryResources]]
 ```
 
-`allTrees` includes all five tree species from the two genuses, because they all fall within the hardiness range (0, 13). `iModelTrees` excludeds the Roughleaf Dogwood and Pacific SilverFir, because their hardiness ranges of (9, 9) and (5, 5) do not intersect the iModel's hardiness range (6, 8).
+In the example above, `allTrees` includes all five tree species from the two genuses, because they all fall within the hardiness range (0, 13). `iModelTrees` excludes the Roughleaf Dogwood and Pacific Silver Fir, because their hardiness ranges of (9, 9) and (5, 5) do not intersect the iModel's hardiness range (6, 8).
 
 Note that we configured the setting to point to the patch 1.1.1 version of the cornus `WorkspaceDb` that added the Northern Swamp Dogwood. If we had omitted the [WorkspaceDbProps.version]($backend) property, it would have defaulted to the latest version - in this case, 1.1.1 again, but if in the future we created a new version, that would become the new "latest" version and automatically get picked up for use.
 
