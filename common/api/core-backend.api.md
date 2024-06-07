@@ -1993,6 +1993,8 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
     addFile(rscName: WorkspaceResourceName, localFileName: LocalFileName, fileExt?: string): void;
     addString(rscName: WorkspaceResourceName, val: string): void;
     get cloudProps(): WorkspaceDbCloudProps | undefined;
+    // (undocumented)
+    readonly container: EditableWorkspaceContainer;
     // @internal
     getBlobWriter(rscName: WorkspaceResourceName): SQLiteDb.BlobIO;
     removeBlob(rscName: WorkspaceResourceName): void;
@@ -2896,9 +2898,6 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
 }
 
 // @beta
-export function getWorkspaceBlob(args: GetWorkspaceResourceArgs): Uint8Array | undefined;
-
-// @beta
 export interface GetWorkspaceContainerArgs extends WorkspaceContainerProps {
     accessToken: AccessToken;
 }
@@ -2908,9 +2907,6 @@ export interface GetWorkspaceResourceArgs {
     dbs: WorkspaceDb[];
     name: WorkspaceResourceName;
 }
-
-// @beta
-export function getWorkspaceString(args: GetWorkspaceResourceArgs): string | undefined;
 
 // @public
 export class Graphic3d extends GraphicalElement3d {
@@ -4550,14 +4546,11 @@ export interface QueryLocalChangesArgs {
 }
 
 // @beta
-export function queryWorkspaceResources(args: QueryWorkspaceResourcesArgs): void;
-
-// @beta
 export interface QueryWorkspaceResourcesArgs {
     callback: QueryWorkspaceResourcesCallback;
     dbs: WorkspaceDb[];
     nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
-    namePattern: string;
+    namePattern?: string;
     type?: "string" | "blob";
 }
 
@@ -4948,9 +4941,9 @@ export interface SettingsSchemas {
     addJson(settingSchema: string): void;
     readonly onSchemaChanged: BeEvent<() => void>;
     removeGroup(schemaPrefix: string): void;
-    readonly settingDefs: ReadonlyMap<string, SettingSchema>;
-    readonly typeDefs: ReadonlyMap<string, SettingSchema>;
-    validateSetting<T>(value: T, settingName: string): T;
+    readonly settingDefs: ReadonlyMap<SettingName, SettingSchema>;
+    readonly typeDefs: ReadonlyMap<SettingName, SettingSchema>;
+    validateSetting<T>(value: T, settingName: SettingName): T;
 }
 
 // @public
@@ -6413,6 +6406,9 @@ export namespace Workspace {
         readonly settingName: SettingName;
         readonly dbs?: never;
     };
+    export function getBlobResource(args: GetWorkspaceResourceArgs): Uint8Array | undefined;
+    export function getStringResource(args: GetWorkspaceResourceArgs): string | undefined;
+    export function queryResources(args: QueryWorkspaceResourcesArgs): void;
     export interface SettingsDictionaryLoaded {
         dict: SettingsDictionary;
         from: WorkspaceDb;
@@ -6518,7 +6514,7 @@ export interface WorkspaceDbProps extends WorkspaceDbNameAndVersion {
 export interface WorkspaceDbQueryResourcesArgs {
     callback: WorkspaceDbQueryResourcesCallback;
     nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
-    namePattern: string;
+    namePattern?: string;
     type?: "string" | "blob";
 }
 

@@ -7,7 +7,7 @@ import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
 import * as semver from "semver";
-import { AccessToken, BeEvent, DbResult, Mutable, OpenMode, assert } from "@itwin/core-bentley";
+import { AccessToken, assert, BeEvent, DbResult, Mutable, OpenMode } from "@itwin/core-bentley";
 import { FilePropertyProps, IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { CloudSqlite } from "../../CloudSqlite";
 import { IModelHost, KnownLocations } from "../../IModelHost";
@@ -321,7 +321,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
         if (undefined !== args.namePattern) {
           stmt.bindString(1, args.namePattern);
         }
-        
+
         args.callback(makeIterable());
       });
     });

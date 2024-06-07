@@ -8,7 +8,7 @@ import { expect } from "chai";
 import * as fs from "fs-extra";
 import { join } from "path";
 import {
-  CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, IModelJsFs, SettingsContainer, SettingsPriority, StandaloneDb, Workspace, WorkspaceContainerProps, 
+  CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, IModelJsFs, SettingsContainer, SettingsPriority, StandaloneDb, Workspace, WorkspaceContainerProps,
   WorkspaceDbCloudProps,  WorkspaceDbLoadError,  WorkspaceDbLoadErrors,  WorkspaceDbQueryResourcesArgs, WorkspaceEditor, WorkspaceSettingNames,
 } from "@itwin/core-backend";
 import { assert, Guid } from "@itwin/core-bentley";

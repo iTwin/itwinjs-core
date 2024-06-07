@@ -8,10 +8,10 @@
 
 import { BeEvent, JSONSchema, JSONSchemaTypeName } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
-import { implementationProhibited } from "../internal/ImplementationProhibited"; 
+import { implementationProhibited } from "../internal/ImplementationProhibited";
 import { SettingName } from "./Settings";
 
- /** Metadata describing a single [[Setting]] as part of a [[SettingGroupSchema]].
+/** Metadata describing a single [[Setting]] as part of a [[SettingGroupSchema]].
   * Every setting has a [[type]], which can be one of the following:
   * - A primitive type like `string` or `number`;
   * - An object containing any number of named properties, each with their own types; or
@@ -41,7 +41,7 @@ export interface SettingSchema extends Readonly<JSONSchema> {
   readonly combineArray?: boolean;
 }
 
- /** Metadata describing a group of related [[SettingSchema]]s. You can register setting schema groups via [[SettingsSchemas.addGroup]] and
+/** Metadata describing a group of related [[SettingSchema]]s. You can register setting schema groups via [[SettingsSchemas.addGroup]] and
   * remove them via [[SettingsSchemas.removeGroup]].
   *
   * All of the settings share the same [[schemaPrefix]], which must be unique amongst all other groups.
@@ -88,7 +88,7 @@ export interface SettingGroupSchema {
  * @beta
  */
 
- /** The registry of metadata describing groups of [[SettingSchema]]s available to the current session.
+/** The registry of metadata describing groups of [[SettingSchema]]s available to the current session.
   * The schemas are used to look up the default values of [[Setting]]s, validate that their values are of the type dictated by the schema, and
   * query metadata like [[SettingsSchema.combineArray]] that modify their behavior.
   * They can also be used to drive a user interface that enables end users to edit [[Settings]].

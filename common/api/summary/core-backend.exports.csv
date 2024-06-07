@@ -204,10 +204,8 @@ public;class GeometricModel3d
 public;GeometryPart 
 beta;getAvailableCoordinateReferenceSystems(args: GetAvailableCoordinateReferenceSystemsArgs): Promise
 beta;GetAvailableCoordinateReferenceSystemsArgs
-beta;getWorkspaceBlob(args: GetWorkspaceResourceArgs): Uint8Array | undefined
 beta;GetWorkspaceContainerArgs 
 beta;GetWorkspaceResourceArgs
-beta;getWorkspaceString(args: GetWorkspaceResourceArgs): string | undefined
 public;Graphic3d 
 public;class GraphicalElement2d 
 public;GraphicalElement2dIsOfType 
@@ -318,7 +316,6 @@ beta;PropertyStore
 public;PullChangesArgs = ToChangesetArgs &
 public;PushChangesArgs 
 beta;QueryLocalChangesArgs
-beta;queryWorkspaceResources(args: QueryWorkspaceResourcesArgs): void
 beta;QueryWorkspaceResourcesArgs
 beta;class RecipeDefinitionElement 
 public;Relationship 

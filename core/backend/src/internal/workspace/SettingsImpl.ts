@@ -12,7 +12,7 @@ import { extname, join } from "path";
 import { BeEvent } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../../IModelJsFs";
-import { SettingName, SettingsContainer, SettingsDictionarySource, Settings, Setting, SettingsPriority, SettingsDictionary, SettingsDictionaryProps } from "../../workspace/Settings";
+import { Setting, SettingName, Settings, SettingsContainer, SettingsDictionary, SettingsDictionaryProps, SettingsDictionarySource, SettingsPriority } from "../../workspace/Settings";
 import { IModelHost } from "../../IModelHost";
 import { implementationProhibited } from "../ImplementationProhibited";
 

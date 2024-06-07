@@ -68,7 +68,7 @@ describe("Setting", () => {
       expect(Setting.areEqual([], { })).to.be.false;
       expect(Setting.areEqual(false, undefined)).to.be.false;
       expect(Setting.areEqual("", false)).to.be.false;
-      expect(Setting.areEqual([8, 9], { "0": 8, "1": 9 })).to.be.false;
+      expect(Setting.areEqual([8, 9], { 0: 8, 1: 9 })).to.be.false;
     });
 
     it("should return true if objects have the same properties in different orders", () => {

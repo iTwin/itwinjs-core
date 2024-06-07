@@ -6,10 +6,10 @@
 import { expect } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
 import {
-  EditableWorkspaceContainer, EditableWorkspaceDb, SettingGroupSchema, SettingsDictionaryProps, Workspace,
-  IModelHost, SettingsContainer, StandaloneDb, SettingsPriority, WorkspaceEditor, WorkspaceDb, WorkspaceDbProps ,
+  EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, SettingGroupSchema, SettingsContainer,
+  SettingsDictionaryProps, SettingsPriority, StandaloneDb, Workspace, WorkspaceDb, WorkspaceEditor ,
 } from "@itwin/core-backend";
-import { Guid, OpenMode, assert } from "@itwin/core-bentley";
+import { assert, Guid, OpenMode } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
@@ -122,7 +122,7 @@ describe("Workspace Examples", () => {
             },
             combineArray: true,
           },
-          hardinessRange: {
+          "hardinessRange": {
             type: "object",
             description: "Specifies the upper and lower limits on the hardiness zone for flora that can survive in a region",
             properties: {
@@ -145,15 +145,15 @@ describe("Workspace Examples", () => {
             description: "A USDA hardiness zone used to describe the surivability of plants in a geographical region",
             minimum: 0,
             maximum: 13,
-          }
-        }
+          },
+        },
       };
       // __PUBLISH_EXTRACT_END__
 
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.RegisterSchema
       IModelHost.settingsSchemas.addGroup(schema);
       // __PUBLISH_SECTION_END__
-      
+
       expect(IModelHost.settingsSchemas.typeDefs.has("landscapePro/hardinessZone")).to.be.true;
       for (const settingName of Object.keys(schema.settingDefs!)) {
         expect(IModelHost.settingsSchemas.settingDefs.has(`landscapePro/${settingName}`)).to.be.true;
@@ -226,7 +226,7 @@ describe("Workspace Examples", () => {
       const iModelName = iModel.pathName;
       iModel.close();
       iModel = StandaloneDb.openFile(iModelName, OpenMode.ReadWrite);
-      
+
       // __PUBLISH_SECTION_START__ WorkspaceExamples.QuerySettingDictionary
       const hardinessRange = iModel.workspace.settings.getObject<HardinessRange>("landscapePro/hardinessRange");
       // returns { minimum: 8, maximum: 10 }
@@ -266,14 +266,14 @@ describe("Workspace Examples", () => {
             contactName: "Lief E. Greene",
           },
         });
-        
+
         container.acquireWriteLock("Lief E. Greene");
 
         const dbProps = (await container.createNewWorkspaceDbVersion({ versionType: "minor" })).newDb;
         return container.getEditableDb(dbProps);
       }
       // __PUBLISH_SECTION_END__
-      
+
       // __PUBLISH_SECTION_START__ WorkspaceExamples.AddTrees
       interface TreeResource {
         commonName: string;
@@ -307,13 +307,13 @@ describe("Workspace Examples", () => {
       // __PUBLISH_SECTION_END__
       expect(cornusDb.cloudProps).not.to.be.undefined;
       expect(cornusDb.cloudProps!.version).to.equal("1.1.0");
-      
+
       // __PUBLISH_SECTION_START__ WorkspaceExamples.CreatePatch
       cornusDb.container.acquireWriteLock("Lief E. Greene");
       const cornusPatchProps = (await cornusDb.container.createNewWorkspaceDbVersion({
         versionType: "patch",
       })).newDb;
-      
+
       cornusDb = cornusDb.container.getEditableDb(cornusPatchProps);
       cornusDb.open();
       addTree(cornusDb, "racemosa", {
@@ -338,11 +338,11 @@ describe("Workspace Examples", () => {
       });
       abiesDb.close();
       abiesDb.container.releaseWriteLock();
-      
+
       // __PUBLISH_SECTION_END__
       expect(cornusDb.cloudProps!.version).to.equal("1.1.1");
       expect(abiesDb.cloudProps!.version).to.equal("1.1.0");
-      
+
       AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
 
       // __PUBLISH_SECTION_START__ WorkspaceExamples.getAvailableTrees
@@ -373,7 +373,7 @@ describe("Workspace Examples", () => {
         return trees;
       }
       // __PUBLISH_SECTION_END__
-      
+
       // __PUBLISH_SECTION_START__ WorkspaceExamples.QueryResources
       assert(undefined !== cornusDb.cloudProps);
 

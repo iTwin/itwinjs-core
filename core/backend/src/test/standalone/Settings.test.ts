@@ -8,7 +8,7 @@ import { assert, Mutable, OpenMode } from "@itwin/core-bentley";
 import { SnapshotDb, StandaloneDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { Setting, SettingsContainer, SettingsPriority } from "../../workspace/Settings";
-import { SettingSchema, SettingGroupSchema } from "../../workspace/SettingsSchemas";
+import { SettingGroupSchema, SettingSchema } from "../../workspace/SettingsSchemas";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { GcsDbProps, GeoCoordConfig } from "../../GeoCoordConfig";
 
@@ -328,14 +328,14 @@ describe("Settings", () => {
 
       IModelHost.settingsSchemas.addGroup(group);
     }
-    
+
     function addArray(schemaPrefix: string, name: string, value: Setting[], priority: SettingsPriority | number): void {
       const settings: SettingsContainer = { };
       settings[`${schemaPrefix}/array`] = value;
-      
+
       IModelHost.appWorkspace.settings.addDictionary({
-        name: name,
-        priority: priority,
+        name,
+        priority,
       }, settings);
     }
 
@@ -379,7 +379,7 @@ describe("Settings", () => {
       addGroup("numbers", "number", true);
 
       addArray("numbers", "a", [4, 8], 101);
-      addArray("numbers", "c", [3, 6, 9, 12], 99)
+      addArray("numbers", "c", [3, 6, 9, 12], 99);
       addArray("numbers", "b", [2, 4, 6, 8, 10, 12], 100);
 
       expect(IModelHost.appWorkspace.settings.getArray<number>("numbers/array")).to.deep.equal([4, 8, 2, 6, 10, 12, 3, 9]);

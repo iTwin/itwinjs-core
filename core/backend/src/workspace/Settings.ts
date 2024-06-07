@@ -125,7 +125,7 @@ export interface SettingsContainer {
 export type SettingsPriority = number;
 
 /** @beta */
-export namespace SettingsPriority {
+export namespace SettingsPriority { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Settings that originate from default setting files loaded automatically at the start of a session. */
   export const defaults = 100;
   /** Settings supplied by an application at runtime. */

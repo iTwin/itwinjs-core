@@ -444,7 +444,9 @@ export interface WorkspaceContainer {
   closeWorkspaceDb(container: WorkspaceDb): void;
 }
 
-function makeSettingName(name: string) { return `${"itwin/core/workspace"}/${name}`; }
+function makeSettingName(name: string) {
+  return `${"itwin/core/workspace"}/${name}`;
+}
 
 /** The names of various [[Setting]]s with special meaning to the [[Workspace]] system.
  * @beta

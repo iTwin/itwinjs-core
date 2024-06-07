@@ -9,7 +9,7 @@ import { extname, join } from "path";
 import { assert, BeEvent, JSONSchemaType, JSONSchemaTypeName, Mutable } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../../IModelJsFs";
-import { SettingSchema, SettingGroupSchema, SettingsSchemas } from "../../workspace/SettingsSchemas";
+import { SettingGroupSchema, SettingSchema, SettingsSchemas } from "../../workspace/SettingsSchemas";
 import { implementationProhibited } from "../ImplementationProhibited";
 
 const makeSettingKey = (prefix: string, key: string) => `${prefix}/${key}`;

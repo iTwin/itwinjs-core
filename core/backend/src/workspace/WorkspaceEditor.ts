@@ -11,8 +11,8 @@ import { SQLiteDb } from "../SQLiteDb";
 import { SettingsContainer } from "./Settings";
 import { BlobContainer } from "../BlobContainerService";
 import {
- GetWorkspaceContainerArgs, Workspace, WorkspaceContainer, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps, WorkspaceDbManifest, WorkspaceDbName, WorkspaceDbNameAndVersion,
- WorkspaceDbProps, WorkspaceDbVersion, WorkspaceResourceName,
+  GetWorkspaceContainerArgs, Workspace, WorkspaceContainer, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps, WorkspaceDbManifest, WorkspaceDbName, WorkspaceDbNameAndVersion,
+  WorkspaceDbProps, WorkspaceDbVersion, WorkspaceResourceName,
 } from "./Workspace";
 import { WorkspaceSqliteDb } from "../internal/workspace/WorkspaceSqliteDb";
 import { constructWorkspaceEditor } from "../internal/workspace/WorkspaceImpl";

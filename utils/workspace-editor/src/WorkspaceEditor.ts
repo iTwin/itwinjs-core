@@ -14,8 +14,8 @@ import {
   CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, SQLiteDb, SqliteStatement, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbFullName, WorkspaceDbVersionIncrement, WorkspaceEditor, WorkspaceResourceName,
 } from "@itwin/core-backend";
 import {
-    constructWorkspaceDb,
-    makeWorkspaceDbFileName,
+  constructWorkspaceDb,
+  makeWorkspaceDbFileName,
   parseWorkspaceDbFileName,
   validateWorkspaceDbName,
   validateWorkspaceDbVersion,

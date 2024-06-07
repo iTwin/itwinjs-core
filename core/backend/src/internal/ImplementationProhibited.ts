@@ -16,13 +16,13 @@
  *    name: string;
  *    [implementationProhibited]: unknown;
  *  }
- *  
+ *
  *  // Not exported
  *  class ThingImpl implements Thing {
  *    constructor(public name: string) { }
  *    public readonly [implementationProhibited] = undefined;
  *  }
- *  
+ *
  *  // @public
  *  export function getThing(name: string): Thing { return new ThingImpl(name); }
  * ```

@@ -72,7 +72,6 @@ describe("WorkspaceFile", () => {
   it("WorkspaceDbNames", () => {
     const expectBadName = (names: string[]) => {
       names.forEach((dbName) => {
-        console.log(dbName);
         expect(() => validateWorkspaceDbName(dbName)).to.throw("dbName");
       });
     };
