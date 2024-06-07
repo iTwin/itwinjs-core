@@ -322,23 +322,9 @@ describe("Workspace Examples", () => {
         light: "full",
       });
       cornusDb.close();
+      cornusDb.container.releaseWriteLock();
 
-      /* ###TODO this uploads an empty db and then throws an error because it's published and can't be edited.
-      await container.createDb({
-        dbName: "abies",
-        manifest: {
-          workspaceName: "Fir trees",
-          description: "Trees belonging to the genus abies",
-          contactName: "Sylvia Wood",
-        },
-      });
-
-      const abiesDbProps = (await container.createNewWorkspaceDbVersion({
-        fromProps: { dbName: "abies" },
-        versionType: "minor",
-      })).newDb;
-
-      const abiesDb = container.getEditableDb(abiesDbProps);
+      const abiesDb = await createTreeDb("abies");
       abiesDb.open();
       addTree(abiesDb, "amabilis", {
         commonName: "Pacific Silver Fir",
@@ -351,12 +337,11 @@ describe("Workspace Examples", () => {
         light: "full",
       });
       abiesDb.close();
-      */
+      abiesDb.container.releaseWriteLock();
       
-      cornusDb.container.releaseWriteLock();
       // __PUBLISH_SECTION_END__
       expect(cornusDb.cloudProps!.version).to.equal("1.1.1");
-      // ###TODO expect(abiesDb.cloudProps!.version).to.equal("1.1.0");
+      expect(abiesDb.cloudProps!.version).to.equal("1.1.0");
       
       AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
 
@@ -393,12 +378,14 @@ describe("Workspace Examples", () => {
       assert(undefined !== cornusDb.cloudProps);
 
       // Point the setting at the cornus WorkspaceDb.
-      let treeDbProps: WorkspaceDbProps = { ...cornusDb.cloudProps };
       iModel.workspace.settings.addDictionary({
         name: "LandscapePro Trees",
         priority: SettingsPriority.iModel,
       }, {
-        "landscapePro/flora/treeDbs": [treeDbProps],
+        "landscapePro/flora/treeDbs": [
+          { ...cornusDb.cloudProps },
+          { ...abiesDb.cloudProps },
+        ],
       });
 
       const anyHardiness: HardinessRange = { minimum: 0, maximum: 13 };
@@ -409,26 +396,29 @@ describe("Workspace Examples", () => {
       const iModelTrees = await getAvailableTrees(iModel.workspace.settings.getObject<HardinessRange>("landscapePro/hardinessRange", anyHardiness));
       // __PUBLISH_SECTION_END__
 
-      expect(allTrees.map((x) => x.commonName)).to.deep.equal(["Pagoda Dogwood", "Roughleaf Dogwood", "Northern Swamp Dogwood"]);
-      expect(iModelTrees.map((x) => x.commonName)).to.deep.equal(["Pagoda Dogwood", "Northern Swamp Dogwood"]);
+      expect(allTrees.map((x) => x.commonName)).to.deep.equal([
+        "Pagoda Dogwood", "Roughleaf Dogwood", "Northern Swamp Dogwood", "Pacific Silver Fir", "Balsam Fir",
+      ]);
+      expect(iModelTrees.map((x) => x.commonName)).to.deep.equal(["Pagoda Dogwood", "Northern Swamp Dogwood", "Balsam Fir"]);
 
       // __PUBLISH_SECTION_START__ WorkspaceExamples.QuerySpecificVersion
-      treeDbProps = {
-        ...treeDbProps,
-        version: "1.1.0",
-      };
-
       iModel.workspace.settings.addDictionary({
         name: "LandscapePro Trees",
         priority: SettingsPriority.iModel,
       }, {
-        "landscapePro/flora/treeDbs": [treeDbProps],
+        "landscapePro/flora/treeDbs": [
+          {
+            ...cornusDb.cloudProps,
+            version: "1.1.0",
+          },
+          { ...abiesDb.cloudProps },
+        ],
       });
 
       allTrees = await getAvailableTrees(anyHardiness);
       // __PUBLISH_SECTION_END__
 
-      expect(allTrees.map((x) => x.commonName)).to.deep.equal(["Pagoda Dogwood", "Roughleaf Dogwood"]);
+      expect(allTrees.map((x) => x.commonName)).to.deep.equal(["Pagoda Dogwood", "Roughleaf Dogwood", "Pacific Silver Fir", "Balsam Fir"]);
     });
   });
 });

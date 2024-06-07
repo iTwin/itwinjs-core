@@ -199,17 +199,17 @@ Let's write a function that produces a list of all of the available trees that c
 [[include:WorkspaceExamples.getAvailableTrees]]
 ```
 
-Now, let's configure the "landscapePro/flora/treeDbs" setting to point to the cornus `WorkspaceDb`, and use the `getAvailableTrees` function to retrieve `TreeResource`s from it:
+Now, let's configure the "landscapePro/flora/treeDbs" setting to point to the two `WorkspaceDb`s we created, and use the `getAvailableTrees` function to retrieve `TreeResource`s from it:
 
 ```ts
 [[include:WorkspaceExamples.QueryResources]]
 ```
 
-`allTrees` includes the Pagoda, Roughleaf, and Northern Swamp Dogwoods, because they all fall within the hardiness range (0, 13). `iModelTrees` excludes the Roughleaf Dogwood, because its hardiness range (9, 9) does not intersect the iModel's hardiness range (6, 8).
+`allTrees` includes all five tree species from the two genuses, because they all fall within the hardiness range (0, 13). `iModelTrees` excludeds the Roughleaf Dogwood and Pacific SilverFir, because their hardiness ranges of (9, 9) and (5, 5) do not intersect the iModel's hardiness range (6, 8).
 
 Note that we configured the setting to point to the patch 1.1.1 version of the cornus `WorkspaceDb` that added the Northern Swamp Dogwood. If we had omitted the [WorkspaceDbProps.version]($backend) property, it would have defaulted to the latest version - in this case, 1.1.1 again, but if in the future we created a new version, that would become the new "latest" version and automatically get picked up for use.
 
-If we configure the setting to use version 1.1.0, we will not find the Northern Swamp Dogwood added in 1.1.1:
+If we configure the setting to use version 1.1.0, then `allTrees` will not include the Northern Swamp Dogwood added in 1.1.1:
 
 ```ts
 [[include:WorkspaceExamples.QuerySpecificVersion]]
