@@ -267,9 +267,16 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
     }
   }
 
-  public setMaskRefs(_modelIds: OrderedId64Iterable, _maskTreeRefs: TileTreeReference[]): void { }
+  public setMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void {
+    this._impl?.setMaskRefs(modelIds, maskTreeRefs);
+  }
 
-  public getMaskModels(_models: OrderedId64Iterable | undefined, _useVisible: boolean): Map<Id64String, boolean> | undefined { return undefined; }
+  public getMaskModels(models: OrderedId64Iterable | undefined, useVisible: boolean): Map<Id64String, boolean> | undefined {
+    if (this._impl)
+      return this._impl.getMaskModels(models, useVisible);
+    else
+      return undefined;
+  }
 }
 
 const iModelToTilesetSpec = new Map<IModelConnection, BatchedTilesetSpec | null | Promise<BatchedTilesetSpec | null>>();
