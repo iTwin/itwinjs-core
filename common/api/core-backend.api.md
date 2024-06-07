@@ -1973,7 +1973,7 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
 export interface EditableWorkspaceContainer extends WorkspaceContainer {
     abandonChanges(): void;
     acquireWriteLock(user: string): void;
-    get cloudProps(): WorkspaceContainerProps | undefined;
+    readonly cloudProps: WorkspaceContainerProps | undefined;
     createDb(args: {
         dbName?: WorkspaceDbName;
         version?: WorkspaceDbVersion;

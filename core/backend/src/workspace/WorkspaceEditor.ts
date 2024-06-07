@@ -85,7 +85,7 @@ export interface EditableWorkspaceContainer extends WorkspaceContainer {
   /**
    * Get the cloud properties of this container.
    */
-  get cloudProps(): WorkspaceContainerProps | undefined;
+  readonly cloudProps: WorkspaceContainerProps | undefined;
 
   /**
    * Get an editable [[WorkspaceDb]] to add, delete, or update resources *within a newly created version* of a WorkspaceDb.
