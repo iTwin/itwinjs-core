@@ -152,7 +152,7 @@ describe("Workspace Examples", () => {
 
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.RegisterSchema
       IModelHost.settingsSchemas.addGroup(schema);
-      // __PUBLISH_SECTION_END__
+      // __PUBLISH_EXTRACT_END__
 
       expect(IModelHost.settingsSchemas.typeDefs.has("landscapePro/hardinessZone")).to.be.true;
       for (const settingName of Object.keys(schema.settingDefs!)) {
@@ -162,7 +162,7 @@ describe("Workspace Examples", () => {
       expect(() => IModelHost.settingsSchemas.validateSetting("just a string", "landscapePro/flora/preferredStyle")).not.to.throw;
       expect(() => IModelHost.settingsSchemas.validateSetting(123, "landscapePro/flora/preferredStyle")).to.throw("wrong type");
 
-      // __PUBLISH_SECTION_START__ WorkspaceExamples.AddDictionary
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.AddDictionary
       const values: SettingsContainer = {
         "landscapePro/ui/defaultTool": "place-shrub",
         "landscapePro/ui/availableTools": [ "place-shrub", "place-koi-pond", "apply-mulch" ],
@@ -176,21 +176,21 @@ describe("Workspace Examples", () => {
       };
 
       IModelHost.appWorkspace.settings.addDictionary(props, values);
-      // __PUBLISH_SECTION_END__
+      // __PUBLISH_EXTRACT_END__
 
-      // __PUBLISH_SECTION_START__ WorkspaceExamples.GetSettings
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.GetSettings
       let defaultTool = IModelHost.appWorkspace.settings.getString("landscapePro/ui/defaultTool"); // "place-shrub"
       let availableTools = IModelHost.appWorkspace.settings.getArray<string>("landscapePro/ui/availableTools"); // ["place-shrub", "place-koi-pond", "apply-mulch"]
       let preferredStyle = IModelHost.appWorkspace.settings.getString("landscapePro/flora/preferredStyle"); // undefined
       const preferredStyleOrDefault = IModelHost.appWorkspace.settings.getString("landscapePro/flora/preferredStyle", "default"); // "default"
-      // __PUBLISH_SECTION_END__
+      // __PUBLISH_EXTRACT_END__
 
       expect(defaultTool).to.equal("place-shrub");
       expect(availableTools).to.deep.equal(["place-shrub", "place-koi-pond", "apply-mulch"]);
       expect(preferredStyle).to.be.undefined;
       expect(preferredStyleOrDefault).to.equal("default");
 
-      // __PUBLISH_SECTION_START__ WorkspaceExamples.AddSecondDictionary
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.AddSecondDictionary
       IModelHost.appWorkspace.settings.addDictionary({
         name: "LandscapeProOverrides",
         priority: SettingsPriority.application,
@@ -199,19 +199,19 @@ describe("Workspace Examples", () => {
         "landscapePro/ui/defaultTool": "place-koi-pond",
         "landscapePro/ui/availableTools": ["place-gazebo", "apply-mulch"],
       });
-      // __PUBLISH_SECTION_END__
+      // __PUBLISH_EXTRACT_END__
 
-      // __PUBLISH_SECTION_START__ WorkspaceExamples.GetMergedSettings
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.GetMergedSettings
       defaultTool = IModelHost.appWorkspace.settings.getString("landscapePro/ui/defaultTool"); // "place-koi-pond"
       availableTools = IModelHost.appWorkspace.settings.getArray<string>("landscapePro/ui/availableTools"); // ["place-gazebo", "apply-mulch", "place-shrub", "place-koi-pond"]
       preferredStyle = IModelHost.appWorkspace.settings.getString("landscapePro/flora/preferredStyle"); // "coniferous"
-      // __PUBLISH_SECTION_END__
+      // __PUBLISH_EXTRACT_END__
 
       expect(defaultTool).to.equal("place-koi-pond");
       expect(availableTools).to.deep.equal(["place-gazebo", "apply-mulch", "place-shrub", "place-koi-pond"]);
       expect(preferredStyle).to.equal("coniferous");
 
-      // __PUBLISH_SECTION_START__ WorkspaceExamples.saveSettingDictionary
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.saveSettingDictionary
       interface HardinessRange {
         minimum: number;
         maximum: number;
@@ -222,17 +222,17 @@ describe("Workspace Examples", () => {
       iModel.saveSettingDictionary("landscapePro/iModelSettings", {
         "landscapePro/hardinessRange": range,
       });
-      // __PUBLISH_SECTION_END__
+      // __PUBLISH_EXTRACT_END__
       const iModelName = iModel.pathName;
       iModel.close();
       iModel = StandaloneDb.openFile(iModelName, OpenMode.ReadWrite);
 
-      // __PUBLISH_SECTION_START__ WorkspaceExamples.QuerySettingDictionary
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.QuerySettingDictionary
       const hardinessRange = iModel.workspace.settings.getObject<HardinessRange>("landscapePro/hardinessRange");
       // returns { minimum: 8, maximum: 10 }
       defaultTool = iModel.workspace.settings.getString("landscapePro/ui/defaultTool");
       // returns "place-koi-pond" as specified by IModelHost.appWorkspace.settings.
-      // __PUBLISH_SECTION_END__
+      // __PUBLISH_EXTRACT_END__
       expect(hardinessRange).to.deep.equal(range);
       expect(defaultTool).to.equal("place-koi-pond");
 
@@ -241,7 +241,7 @@ describe("Workspace Examples", () => {
 
       const iTwinId = Guid.createValue();
 
-      // __PUBLISH_SECTION_START__ WorkspaceExamples.CreateWorkspaceDb
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.CreateWorkspaceDb
       const editor = WorkspaceEditor.construct();
 
       async function createTreeDb(genus: string): Promise<EditableWorkspaceDb> {
@@ -272,9 +272,9 @@ describe("Workspace Examples", () => {
         const dbProps = (await container.createNewWorkspaceDbVersion({ versionType: "minor" })).newDb;
         return container.getEditableDb(dbProps);
       }
-      // __PUBLISH_SECTION_END__
+      // __PUBLISH_EXTRACT_END__
 
-      // __PUBLISH_SECTION_START__ WorkspaceExamples.AddTrees
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.AddTrees
       interface TreeResource {
         commonName: string;
         hardiness: HardinessRange;
@@ -304,11 +304,11 @@ describe("Workspace Examples", () => {
 
       cornusDb.close();
       cornusDb.container.releaseWriteLock();
-      // __PUBLISH_SECTION_END__
+      // __PUBLISH_EXTRACT_END__
       expect(cornusDb.cloudProps).not.to.be.undefined;
       expect(cornusDb.cloudProps!.version).to.equal("1.1.0");
 
-      // __PUBLISH_SECTION_START__ WorkspaceExamples.CreatePatch
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.CreatePatch
       cornusDb.container.acquireWriteLock("Lief E. Greene");
       const cornusPatchProps = (await cornusDb.container.createNewWorkspaceDbVersion({
         versionType: "patch",
@@ -339,13 +339,13 @@ describe("Workspace Examples", () => {
       abiesDb.close();
       abiesDb.container.releaseWriteLock();
 
-      // __PUBLISH_SECTION_END__
+      // __PUBLISH_EXTRACT_END__
       expect(cornusDb.cloudProps!.version).to.equal("1.1.1");
       expect(abiesDb.cloudProps!.version).to.equal("1.1.0");
 
       AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
 
-      // __PUBLISH_SECTION_START__ WorkspaceExamples.getAvailableTrees
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.getAvailableTrees
       async function getAvailableTrees(hardiness: HardinessRange): Promise<TreeResource[]> {
         // Resolve the list of WorkspaceDbs from the setting.
         const dbs = await iModel.workspace.getWorkspaceDbs({ settingName: "landscapePro/flora/treeDbs" });
@@ -372,9 +372,9 @@ describe("Workspace Examples", () => {
 
         return trees;
       }
-      // __PUBLISH_SECTION_END__
+      // __PUBLISH_EXTRACT_END__
 
-      // __PUBLISH_SECTION_START__ WorkspaceExamples.QueryResources
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.QueryResources
       assert(undefined !== cornusDb.cloudProps);
 
       // Point the setting at the cornus WorkspaceDb.
@@ -394,14 +394,14 @@ describe("Workspace Examples", () => {
 
       // Roughleaf Dogwood excluded because its hardiness range (9, 9) is outside of the iModel's range (6, 8).
       const iModelTrees = await getAvailableTrees(iModel.workspace.settings.getObject<HardinessRange>("landscapePro/hardinessRange", anyHardiness));
-      // __PUBLISH_SECTION_END__
+      // __PUBLISH_EXTRACT_END__
 
       expect(allTrees.map((x) => x.commonName)).to.deep.equal([
         "Pagoda Dogwood", "Roughleaf Dogwood", "Northern Swamp Dogwood", "Pacific Silver Fir", "Balsam Fir",
       ]);
       expect(iModelTrees.map((x) => x.commonName)).to.deep.equal(["Pagoda Dogwood", "Northern Swamp Dogwood", "Balsam Fir"]);
 
-      // __PUBLISH_SECTION_START__ WorkspaceExamples.QuerySpecificVersion
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.QuerySpecificVersion
       iModel.workspace.settings.addDictionary({
         name: "LandscapePro Trees",
         priority: SettingsPriority.iModel,
@@ -416,7 +416,7 @@ describe("Workspace Examples", () => {
       });
 
       allTrees = await getAvailableTrees(anyHardiness);
-      // __PUBLISH_SECTION_END__
+      // __PUBLISH_EXTRACT_END__
 
       expect(allTrees.map((x) => x.commonName)).to.deep.equal(["Pagoda Dogwood", "Roughleaf Dogwood", "Pacific Silver Fir", "Balsam Fir"]);
     });
