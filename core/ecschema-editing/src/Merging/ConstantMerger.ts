@@ -14,10 +14,10 @@ import { DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, Phenomenon } 
 export const constantMerger: SchemaItemMergerHandler<ConstantDifference> = {
   async add(context, change) {
     if (change.difference.phenomenon === undefined) {
-      return { errorMessage: "Constant must define phenomenon" };
+      throw new Error("Constant must define phenomenon");
     }
     if (change.difference.definition === undefined) {
-      return { errorMessage: "Constant must define definition" };
+      throw new Error("Constant must define definition");
     }
 
     // Needs to update the reference from source to target schema.
@@ -68,6 +68,5 @@ export const constantMerger: SchemaItemMergerHandler<ConstantDifference> = {
 
       item.setPhenomenon(new DelayedPromiseWithProps(phenomenon.key, async () => phenomenon));
     }
-    return { itemKey };
   },
 };

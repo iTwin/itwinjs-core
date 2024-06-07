@@ -8,7 +8,6 @@ import { type MutableEntityClass } from "../Editing/Mutable/MutableEntityClass";
 import { modifyClass } from "./ClassMerger";
 import { SchemaItemKey } from "@itwin/ecschema-metadata";
 import { SchemaMergeContext } from "./SchemaMerger";
-import { SchemaItemEditResults } from "../Editing/Editor";
 
 /**
  * Defines a merge handler to merge Entity Class schema items.
@@ -27,10 +26,7 @@ export const entityClassMerger: SchemaItemMergerHandler<EntityClassDifference> =
     if(change.difference.mixins !== undefined) {
       for(const mixin of change.difference.mixins) {
         const mixinKey = await updateSchemaItemKey(context, mixin);
-        const result = await context.editor.entities.addMixin(itemKey, mixinKey);
-        if(result.errorMessage) {
-          return result;
-        }
+        await context.editor.entities.addMixin(itemKey, mixinKey);
       }
     }
 
@@ -42,18 +38,14 @@ export const entityClassMerger: SchemaItemMergerHandler<EntityClassDifference> =
  * Merges Mixins to Entity Class schema items.
  * @internal
  */
-export async function mergeClassMixins(context: SchemaMergeContext, change: EntityClassMixinDifference): Promise<SchemaItemEditResults> {
+export async function mergeClassMixins(context: SchemaMergeContext, change: EntityClassMixinDifference): Promise<void> {
   if(change.changeType === "add") {
     for(const mixinFullName of change.difference) {
       const mixinKey = await updateSchemaItemKey(context, mixinFullName);
       const entityKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
-      const result = await context.editor.entities.addMixin(entityKey, mixinKey);
-      if(result.errorMessage) {
-        throw new Error(result.errorMessage);
-      }
+      await context.editor.entities.addMixin(entityKey, mixinKey);
     }
-    return {};
   } else {
-    return { errorMessage: `Changing the entity class '${change.itemName}' mixins is not supported.`};
+    throw new Error(`Changing the entity class '${change.itemName}' mixins is not supported.`);
   }
 }
