@@ -143,25 +143,18 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
     for (const ref of this._refs) {
       const tree = ref.treeOwner.load();
       if (tree) {
-        for (const modelId of modelIds) {
-          if (this._spec.models.get(modelId)) {
-            maskTreeRefs.push(ref);
-            break;
+        const refModelIds = ref.groupModelIds;
+        if (refModelIds) {
+          for (const modelId of modelIds) {
+            if (refModelIds.has(modelId)) {
+              maskTreeRefs.push(ref);
+              break;
+            }
           }
         }
       }
     }
-    for (const ref of this._excludedRefs) {
-      const tree = ref.treeOwner.load();
-      if (tree) {
-        for (const modelId of modelIds) {
-          if (this._spec.models.get(modelId)) {
-            maskTreeRefs.push(ref);
-            break;
-          }
-        }
-      }
-    }
+    this._excludedRefs.collectMaskRefs(modelIds, maskTreeRefs);
   }
 
   public getMaskModels(models: OrderedId64Iterable | undefined, useVisible: boolean): Map<Id64String, boolean> | undefined {

@@ -676,10 +676,12 @@ class SpatialRefs implements SpatialTileTreeReferences {
 
   public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void {
     for (const modelId of modelIds) {
-      const model = this._view.iModel.models.getLoaded(modelId);
-      assert(model !== undefined);   // Models should be loaded by RealityModelTileTree
-      if (model?.asGeometricModel)
-        maskTreeRefs.push(createMaskTreeReference(this._view, model.asGeometricModel));
+      if (!this._excludedModels?.has(modelId)) {
+        const model = this._view.iModel.models.getLoaded(modelId);
+        assert(model !== undefined);   // Models should be loaded by RealityModelTileTree
+        if (model?.asGeometricModel)
+          maskTreeRefs.push(createMaskTreeReference(this._view, model.asGeometricModel));
+      }
     }
   }
 
