@@ -158,10 +158,6 @@ class SectionTarget extends MockRender.OffScreenTarget {
   public override overrideFeatureSymbology(ovrs: FeatureSymbology.Overrides): void {
     this._attachment.symbologyOverrides = ovrs;
   }
-
-  public override getCurrentFeatureSymbologyOverrides(): FeatureSymbology.Overrides | undefined {
-    return this._attachment.symbologyOverrides;
-  }
 }
 
 /** Draws the contents of an orthographic [[ViewState3d]] directly into a [[DrawingViewState]], if the associated [SectionDrawing]($backend)

@@ -463,9 +463,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public override overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
     this.uniforms.branch.overrideFeatureSymbology(ovr);
   }
-  public override getCurrentFeatureSymbologyOverrides(): FeatureSymbology.Overrides | undefined {
-    return this.currentFeatureSymbologyOverrides;
-  }
   public override setHiliteSet(hilite: HiliteSet): void {
     this._hilites = hilite;
     desync(this._hiliteSyncTarget);

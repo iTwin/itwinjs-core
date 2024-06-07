@@ -593,10 +593,6 @@ class AttachmentTarget extends MockRender.OffScreenTarget {
   public override overrideFeatureSymbology(ovrs: FeatureSymbology.Overrides): void {
     this._attachment.symbologyOverrides = ovrs;
   }
-
-  public override getCurrentFeatureSymbologyOverrides(): FeatureSymbology.Overrides | undefined {
-    return this._attachment.symbologyOverrides;
-  }
 }
 
 /** Draws the contents of a view attachment into a sheet view. */

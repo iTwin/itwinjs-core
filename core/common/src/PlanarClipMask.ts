@@ -18,15 +18,24 @@ export enum PlanarClipMaskMode {
   /** Mask based on priority. Different types of models have different default priorities as enumerated by [[PlanarClipMaskPriority]].
    * For example, background maps have the lowest priority, so they are masked by all other types, while design models have the highest priority and are therefore never masked.
    * The priority of a reality model can be overridden by [[PlanarClipMaskSettings.priority]]. This is useful to allow one reality model to mask another overlapping one.
+   * Everything visible in the view creates the mask, so turning off models, categories, or elements (via fully transparent overrides) will make things not be in the mask.
    */
   Priority = 1,
-  /** Indicates that masks should be produced from the geometry in a set of [GeometricModel]($backend)s. */
+  /** Indicates that masks should be produced from the geometry in a set of [GeometricModel]($backend)s, regardless of what model is on or off in the view.
+   * However, things that are off from category settings or element feature overrides in the view will not be in the mask for these models.
+   */
   Models = 2,
-  /** Indicates that masks should be produced from geometry belonging to a set of subcategories. */
+  /** Indicates that masks should be produced from geometry belonging to a set of subcategories.
+   * View settings do not affect what is in the mask.
+   */
   IncludeSubCategories = 3,
-  /** Indicates that masks should be produced from the geometry of a set of [GeometricElement]($backend)s. */
+  /** Indicates that masks should be produced from the geometry of a set of [GeometricElement]($backend)s.
+   * View settings do not affect what is in the mask.
+   */
   IncludeElements = 4,
-  /** Indicates that masks should be produced from the geometry of all [GeometricElement]($backend)s in a view, **except** for a specified set of excluded elements. */
+  /** Indicates that masks should be produced from the geometry of all [GeometricElement]($backend)s in a view, **except** for a specified set of excluded elements.
+   * View settings do not affect what is in the mask.
+   */
   ExcludeElements = 5,
 }
 
