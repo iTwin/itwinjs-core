@@ -227,9 +227,9 @@ export interface WorkspaceDb {
   /** Whether the underlying [[sqliteDb]] is currently [[open]]ed. */
   readonly isOpen: boolean;
   /** The manifest that describes the contents and context of this WorkspaceDb. */
-  get manifest(): WorkspaceDbManifest;
+  readonly manifest: WorkspaceDbManifest;
   /** The version of this WorkspaceDb */
-  get version(): WorkspaceDbVersion;
+  readonly version: WorkspaceDbVersion;
 
   /** Open the underlying [[sqliteDb]] to perform a query. Generally WorkspaceDbs are left closed and opened/closed as they're used. However,
    * when there will be significant activity against a WorkspaceDb, it may be useful to open it before the operations and close it afterwards.

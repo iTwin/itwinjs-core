@@ -6456,7 +6456,7 @@ export interface WorkspaceDb {
     getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
     getString(rscName: WorkspaceResourceName): string | undefined;
     readonly isOpen: boolean;
-    get manifest(): WorkspaceDbManifest;
+    readonly manifest: WorkspaceDbManifest;
     readonly onClose: BeEvent<() => void>;
     open(): void;
     prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch;
@@ -6467,7 +6467,7 @@ export interface WorkspaceDb {
     } | undefined;
     queryResources(args: WorkspaceDbQueryResourcesArgs): void;
     readonly sqliteDb: SQLiteDb;
-    get version(): WorkspaceDbVersion;
+    readonly version: WorkspaceDbVersion;
 }
 
 // @beta
