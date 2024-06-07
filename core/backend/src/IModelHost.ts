@@ -192,6 +192,11 @@ export interface IModelHostOptions {
    * Will be changed to default to `false` in 5.0.
    */
   allowSharedChannel?: boolean;
+
+  /**
+   * Set destination for GeoCoord asset dir
+   */
+  geoCoordAssetDir?: string;
 }
 
 /** Configuration of core-backend.
@@ -494,6 +499,8 @@ export class IModelHost {
 
     this.configuration = options;
     this.setupTileCache();
+
+    IModelHost.platform.DgnDb.setGeoCoordAssetsDir(options.geoCoordAssetDir ?? "");
 
     process.once("beforeExit", IModelHost.shutdown);
     this.onAfterStartup.raiseEvent();

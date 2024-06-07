@@ -7,7 +7,7 @@ import * as path from "path";
 import * as sinon from "sinon";
 import { RpcRegistry } from "@itwin/core-common";
 import { BriefcaseManager } from "../BriefcaseManager";
-import { SnapshotDb } from "../IModelDb";
+import { IModelDb, SnapshotDb } from "../IModelDb";
 import { IModelHost, IModelHostConfiguration, IModelHostOptions, KnownLocations } from "../IModelHost";
 import { Schemas } from "../Schema";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -15,7 +15,8 @@ import { AzureServerStorage, AzureServerStorageBindings, AzureServerStorageBindi
 import { ServerStorage } from "@itwin/object-storage-core";
 import { TestUtils } from "./TestUtils";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { Logger, LogLevel } from "@itwin/core-bentley";
+import { Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { SettingsPriority } from "../core-backend";
 
 describe("IModelHost", () => {
   const opts = { cacheDir: TestUtils.getCacheDir() };
@@ -249,5 +250,21 @@ describe("IModelHost", () => {
     referencePaths = [path.join(assetsDir, "exact-match")];
     sha1 = IModelHost.computeSchemaChecksum({ schemaXmlPath, referencePaths, exactMatch: true });
     expect(sha1).equal("2a618664fbba1df7c05f27d7c0e8f58de250003b");
+  });
+
+  it.only("should change default GeoCoord asset directory", async () => {
+    const config: IModelHostOptions = {};
+    config.geoCoordAssetDir = "test/geoCoordAssets";
+    await IModelHost.startup(config);
+
+    const gcsSettings = {
+      "gcs/disableWorkspaces": true,
+    };
+    IModelHost.appWorkspace.settings.addDictionary("gcs/disableWorkspaces", SettingsPriority.application, gcsSettings);
+
+    const filename = IModelTestUtils.resolveAssetFile("mirukuru.ibim");
+    const imodel = IModelDb.openDgnDb({ path: filename }, OpenMode.Readonly);
+    imodel.closeFile();
+
   });
 });
