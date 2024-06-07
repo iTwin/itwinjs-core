@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BeDuration, BeEvent, Guid, GuidString, Id64, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import { BeDuration, BeEvent, DbResult, Guid, GuidString, Id64, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   Code, ColorByName, DomainOptions, EntityIdAndClassId, EntityIdAndClassIdIterable, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
@@ -13,6 +13,7 @@ import {
   BriefcaseDb,
   ChangeInstanceKey,
   ChannelControl,
+  ECSqlStatement,
   HubMock,
   IModelHost, IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
 } from "../../core-backend";
@@ -20,6 +21,26 @@ import { HubWrappers, IModelTestUtils, TestElementDrivesElement, TestPhysicalObj
 import { KnownTestLocations } from "../KnownTestLocations";
 
 /// cspell:ignore accum
+async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
+  try {
+    await test();
+  } catch (e) {
+    if (e instanceof Error && msg) {
+      assert.equal(e.message, msg);
+    }
+    return;
+  }
+  throw new Error(`Failed to throw error with message: "${msg}"`);
+};
+
+function getCount(imodel: BriefcaseDb, className: string): number {
+  let result = 0;
+  imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
+    assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
+    result = stmt.getValue(0).getInteger();
+  });
+  return result;
+}
 
 describe("TxnManager", () => {
   let imodel: StandaloneDb;
@@ -942,7 +963,7 @@ describe.only("TxnManager PushPullMerge", () => {
     const iModelId = await HubMock.createNewIModel({ accessToken: accessTokens[0], iTwinId, iModelName, description: "TestSubject", noLocks: undefined });
     assert.isNotEmpty(iModelId);
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 4; i++) {
       accessTokens[i] = await HubWrappers.getAccessToken(TestUserType.Regular);
       briefcases[i] = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessTokens[i], iTwinId, iModelId, noLock: true });
       briefcases[i].channels.addAllowedChannel(ChannelControl.sharedChannelName);
@@ -959,195 +980,66 @@ describe.only("TxnManager PushPullMerge", () => {
     }
   });
 
-  function assertTxnStates(txn: TxnManager, hasLocalChanges: boolean, hasUnsavedChanges: boolean, hasPendingTxns: boolean, isUndoPossible: boolean, isRedoPossible: boolean) {
-    assert.strictEqual(txn.hasLocalChanges, hasLocalChanges);
-    assert.strictEqual(txn.hasUnsavedChanges, hasUnsavedChanges);
-    assert.strictEqual(txn.hasPendingTxns, hasPendingTxns);
-    assert.strictEqual(txn.isUndoPossible, isUndoPossible);
-    assert.strictEqual(txn.isRedoPossible, isRedoPossible);
+  function assertTxnStates(txn: TxnManager, hasLocalChanges: boolean, hasUnsavedChanges: boolean, hasPendingTxns: boolean, isUndoPossible: boolean, isRedoPossible: boolean, message: string) {
+    assert.strictEqual(txn.hasLocalChanges, hasLocalChanges, `hasLocalChanges: ${message}`);
+    assert.strictEqual(txn.hasUnsavedChanges, hasUnsavedChanges, `hasUnsavedChanges: ${message}`);
+    assert.strictEqual(txn.hasPendingTxns, hasPendingTxns, `hasPendingTxns: ${message}`);
+    assert.strictEqual(txn.isUndoPossible, isUndoPossible, `isUndoPossible: ${message}`);
+    assert.strictEqual(txn.isRedoPossible, isRedoPossible, `isRedoPossible: ${message}`);
   }
 
   it("Pull with pending Txns", async () => {
     for (const txn of txns) {
-      assertTxnStates(txn, false, false, false, false, false);
+      assertTxnStates(txn, false, false, false, false, false, "initial state");
     }
 
     IModelTestUtils.createAndInsertPhysicalPartitionAndModel(briefcases[0], IModelTestUtils.getUniqueModelCode(briefcases[0], "firstPhysicalModel"), false);
 
-    assertTxnStates(txns[0], true, true, false, false, false);
+    assertTxnStates(txns[0], true, true, false, false, false, "initial create");
     briefcases[0].saveChanges("inserted first model");
-    assertTxnStates(txns[0], true, false, true, true, false);
+    assertTxnStates(txns[0], true, false, true, true, false, "initial saved changes");
 
     await briefcases[0].pushChanges({ accessToken: accessTokens[0], description: "new physical model" });
-    assertTxnStates(txns[0], false, false, false, false, false);
+    assertTxnStates(txns[0], false, false, false, false, false, "pushed changes");
 
+    // second model has no changes
     await briefcases[1].pullChanges();
-    assertTxnStates(txns[1], false, false, false, false, false);
+    assertTxnStates(txns[1], false, false, false, false, false, "pulled changes");
 
+    // third model gets saved changes
     IModelTestUtils.createAndInsertPhysicalPartitionAndModel(briefcases[2], IModelTestUtils.getUniqueModelCode(briefcases[2], "localPhysicalModel"), false);
     briefcases[2].saveChanges("inserted local model");
-    assertTxnStates(txns[2], true, false, true, true, false);
+    assertTxnStates(txns[2], true, false, true, true, false, "briefcase 2 with saved local changes");
     await briefcases[2].pullChanges();
-    assertTxnStates(txns[2], true, false, true, true, false);
+    assertTxnStates(txns[2], true, false, true, true, false, "briefcase 2 after pull");
+    assert.strictEqual(2, getCount(briefcases[2], PhysicalModel.classFullName)); // the pulled and local models
+    // undo and redo after pull
+    assert.strictEqual(txns[2].reverseTxns(1), IModelStatus.Success);
+    assertTxnStates(txns[2], false, false, false, false, true, "briefcase 2 after undo");
+    assert.strictEqual(1, getCount(briefcases[2], PhysicalModel.classFullName)); // the pulled models
+    assert.strictEqual(txns[2].reinstateTxn(), IModelStatus.Success);
+    assert.strictEqual(2, getCount(briefcases[2], PhysicalModel.classFullName)); // the pulled and local models
+    assertTxnStates(txns[2], true, true, false, true, false, "briefcase 2 after redo");
 
-    /* txns.reverseSingleTxn();
-    assert.isFalse(txns.hasPendingTxns, "should not have pending txns if they all are reversed");
-    assert.isFalse(txns.hasLocalChanges);
-    txns.reinstateTxn();
-    assert.isTrue(txns.hasPendingTxns, "now there should be pending txns again");
-    assert.isTrue(txns.hasLocalChanges);
-    beforeUndo = afterUndo = 0; // reset this for tests below
+    // fourth model gets unsaved changes
+    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(briefcases[3], IModelTestUtils.getUniqueModelCode(briefcases[3], "localPhysicalModel"), false);
+    assertTxnStates(txns[3], true, true, false, false, false, "briefcase 3 with unsaved local changes");
+    await assertThrowsAsync(async () => briefcases[3].pullChanges(), "unsaved changes present");
+    assertTxnStates(txns[3], true, true, false, false, false, "briefcase 3 after pull with unsaved changes");
 
-    model = models.getModel(modelId);
-    assert.isDefined(model.geometryGuid);
-    const guid1 = model.geometryGuid;
-
-    let element = elements.getElement<TestPhysicalObject>(elementId);
-    assert.equal(element.intProperty, 100, "int property should be 100");
-
-    assert.isTrue(txns.isUndoPossible);  // we have an undoable Txn, but nothing undone.
-    assert.equal(change1Msg, txns.getUndoString());
-    assert.equal(IModelStatus.Success, txns.reverseSingleTxn());
-
-    model = models.getModel(modelId);
-    assert.isUndefined(model.geometryGuid, "geometryGuid undefined after undo");
-
-    assert.isTrue(txns.isRedoPossible);
-    assert.equal(change1Msg, txns.getRedoString());
-    assert.equal(beforeUndo, 1);
-    assert.equal(afterUndo, 1);
-    assert.equal(undoAction, TxnAction.Reverse);
-
-    assert.throws(() => elements.getElementProps(elementId), IModelError, "reading element");
-    assert.throws(() => elements.getElement(elementId), IModelError);
-    assert.equal(IModelStatus.Success, txns.reinstateTxn());
-    model = models.getModel(modelId);
-    assert.equal(model.geometryGuid, guid1, "geometryGuid should return redo");
-
-    assert.isTrue(txns.isUndoPossible);
-    assert.isFalse(txns.isRedoPossible);
-    assert.equal(beforeUndo, 2);
-    assert.equal(afterUndo, 2);
-    assert.equal(undoAction, TxnAction.Reinstate);
-
-    element = elements.getElement(elementId);
-    element.intProperty = 200;
-    element.update();
-
-    imodel.saveChanges(change2Msg);
-
-    model = models.getModel(modelId);
-    assert.equal(model.geometryGuid, guid1, "geometryGuid should not update with no geometry changes");
-
-    element = elements.getElement(elementId);
-    assert.equal(element.intProperty, 200, "int property should be 200");
-    assert.equal(txns.getTxnDescription(txns.queryPreviousTxnId(txns.getCurrentTxnId())), change2Msg);
-
-    assert.equal(IModelStatus.Success, txns.reverseSingleTxn());
-    element = elements.getElement(elementId);
-    assert.equal(element.intProperty, 100, "int property should be 100");
-
-    // make sure abandon changes works.
-    element.delete();
-    assert.throws(() => elements.getElement(elementId), IModelError);
-    imodel.abandonChanges(); //
-    element = elements.getElement(elementId); // should be back now.
-    elements.insertElement(props); // create a new element
-    imodel.saveChanges(change2Msg);
-
-    model = models.getModel(modelId);
-    assert.isDefined(model.geometryGuid);
-    assert.notEqual(model.geometryGuid, guid1, "geometryGuid should update with adds");
-
-    elementId = elements.insertElement(props); // create a new element
-    assert.isTrue(txns.hasUnsavedChanges);
-    assert.equal(IModelStatus.Success, txns.reverseSingleTxn());
-    assert.isFalse(txns.hasUnsavedChanges);
-    assert.throws(() => elements.getElement(elementId), IModelError); // reversing a txn with pending uncommitted changes should abandon them.
-    assert.equal(IModelStatus.Success, txns.reinstateTxn());
-    assert.throws(() => elements.getElement(elementId), IModelError); // doesn't come back, wasn't committed
-
-    // verify multi-txn operations are undone/redone together
-    const el1 = elements.insertElement(props);
-    imodel.saveChanges("step 1");
-    txns.beginMultiTxnOperation();
-    assert.equal(1, txns.getMultiTxnOperationDepth());
-    const el2 = elements.insertElement(props);
-    imodel.saveChanges("step 2");
-    const el3 = elements.insertElement(props);
-    imodel.saveChanges("step 3");
-    txns.endMultiTxnOperation();
-    assert.equal(0, txns.getMultiTxnOperationDepth());
-    assert.equal(IModelStatus.Success, txns.reverseSingleTxn());
-    assert.throws(() => elements.getElement(el2), IModelError);
-    assert.throws(() => elements.getElement(el3), IModelError);
-    elements.getElement(el1);
-    assert.equal(IModelStatus.Success, txns.reverseSingleTxn());
-    assert.throws(() => elements.getElement(el1), IModelError);
-    assert.equal(IModelStatus.Success, txns.reinstateTxn());
-    assert.throws(() => elements.getElement(el2), IModelError);
-    assert.throws(() => elements.getElement(el3), IModelError);
-    elements.getElement(el1);
-    assert.equal(IModelStatus.Success, txns.reinstateTxn());
-    elements.getElement(el1);
-    elements.getElement(el2);
-    elements.getElement(el3);
-
-    assert.equal(IModelStatus.Success, txns.cancelTo(txns.queryFirstTxnId()));
-    assert.isFalse(txns.hasUnsavedChanges);
-    assert.isFalse(txns.hasPendingTxns);
-    assert.isFalse(txns.hasLocalChanges);
-
-    model = models.getModel(modelId);
-    assert.isUndefined(model.geometryGuid, "undo all, geometryGuid goes back to undefined");
-
-    const modifyId = elements.insertElement(props);
-    imodel.saveChanges("check guid changes");
-
-    model = models.getModel(modelId);
-    const guid2 = model.geometryGuid;
-    const toModify = elements.getElement<TestPhysicalObject>(modifyId);
-    toModify.placement.origin.x += 1;
-    toModify.placement.origin.y += 1;
-    toModify.update();
-    const saveUpdateMsg = "save update to modify guid";
-    imodel.saveChanges(saveUpdateMsg);
-    model = models.getModel(modelId);
-    assert.notEqual(guid2, model.geometryGuid, "update placement should change guid");
-
-    const lastMod = models.queryLastModifiedTime(modelId);
-    await BeDuration.wait(300); // we update the lastMod below, make sure it will be different by waiting .3 seconds
-    const guid3 = model.geometryGuid;
-    models.updateGeometryGuid(modelId);
-    model = models.getModel(modelId);
-    assert.notEqual(guid3, model.geometryGuid, "update model should change guid");
-    const lastMod2 = models.queryLastModifiedTime(modelId);
-    assert.notEqual(lastMod, lastMod2);
-    // imodel.saveChanges("update geometry guid");
-
-    // Deleting a geometric element updates model's GeometryGuid; deleting any element updates model's LastMod.
-    await BeDuration.wait(300); // for lastMod...
-    const guid4 = model.geometryGuid;
-    toModify.delete();
-    const deleteTxnMsg = "save deletion of element";
-    imodel.saveChanges(deleteTxnMsg);
-    assert.throws(() => elements.getElement(modifyId));
-    model = models.getModel(modelId);
-    expect(model.geometryGuid).not.to.equal(guid4);
-    const lastMod3 = models.queryLastModifiedTime(modelId);
-    expect(lastMod3).not.to.equal(lastMod2);
-
-    assert.isTrue(txns.isUndoPossible);
-
-    // test restarting the session, which should truncate undo history
-    txns.restartSession();
-
-    assert.isFalse(txns.isUndoPossible);
-    assert.equal("", txns.getUndoString());
-
-    assert.isFalse(txns.isRedoPossible);
-    assert.isFalse(txns.hasUnsavedChanges);
-    assert.isTrue(txns.hasPendingTxns); // these are from the previous session
-    cleanup.forEach((drop) => drop());*/
+    // reverse the changes and then pull
+    briefcases[3].saveChanges("Temporarily save changes");
+    assertTxnStates(txns[3], true, false, true, true, false, "briefcase 3 with saved local changes");
+    assert.strictEqual(1, getCount(briefcases[3], PhysicalModel.classFullName)); // the local model
+    assert.strictEqual(txns[3].reverseTxns(1), IModelStatus.Success);
+    assertTxnStates(txns[3], false, false, false, false, true, "briefcase 3 after undo");
+    assert.strictEqual(0, getCount(briefcases[3], PhysicalModel.classFullName)); // no model
+    await briefcases[3].pullChanges();
+    // after this, should be able to redo the changes
+    assertTxnStates(txns[3], false, false, false, false, true, "briefcase 3 after pull");
+    assert.strictEqual(1, getCount(briefcases[3], PhysicalModel.classFullName)); // the pulled model
+    assert.strictEqual(txns[3].reinstateTxn(), IModelStatus.Success);
+    assert.strictEqual(2, getCount(briefcases[3], PhysicalModel.classFullName)); // the pulled and local models
+    assertTxnStates(txns[3], true, false, true, true, false, "briefcase 3 after redo");
   });
 }); // describe
