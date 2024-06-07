@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@itwin/core-bentley";
+import { Logger, assert, dispose } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ThematicDisplaySensor, ThematicDisplaySensorSettings } from "@itwin/core-common";
 import { WebGLDisposable } from "./Disposable";
@@ -47,6 +47,8 @@ export class ThematicSensors implements WebGLDisposable {
 
   public static create(target: Target, range: Range3d): ThematicSensors {
     let sensors: ThematicDisplaySensor[] = [];
+
+    Logger.logInfo("ThematicSensors", JSON.stringify(range));
 
     if (target.plan.thematic !== undefined) {
       sensors = _accumulateSensorsInRange(

@@ -5,14 +5,14 @@
 
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import {
-  assert, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
+  assert, Dictionary, Id64, Id64Array, Id64String, Logger, LoggingMetaData, LogLevel, ProcessDetector, SortedArray, StopWatch,
 } from "@itwin/core-bentley";
 import {
   BackgroundMapType, BaseMapLayerSettings, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
 } from "@itwin/core-common";
 import {
   CheckpointConnection,
-  DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
+  DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, FrontendLoggerCategory, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
   ModelDisplayTransform,
   ModelDisplayTransformProvider,
   PerformanceMetrics, Pixel, RenderMemory, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ToolAdmin, ViewRect, ViewState,
@@ -203,6 +203,15 @@ export class TestRunner {
 
   /** Run all the tests. */
   public async run(): Promise<void> {
+
+    const errCb = async (category: string, message: string, _metaData: LoggingMetaData) => this.logToConsole(`${category}: ${ message}`);
+    const warnCb = async (category: string, message: string, _metaData: LoggingMetaData) => this.logToConsole(`${category}: ${ message}`);
+    const infoCb = async (category: string, message: string, _metaData: LoggingMetaData) => this.logToConsole(`${category}: ${ message}`);
+    const traceCb = async (category: string, message: string, _metaData: LoggingMetaData) => this.logToConsole(`${category}: ${ message}`);
+
+    Logger.initialize(errCb, warnCb, infoCb, traceCb);
+    Logger.setLevel("ThematicSensors", LogLevel.Trace);
+
     const msg = `View Log,  Model Base Location: ${this.curConfig.iModelLocation}\n  format: Time_started  ModelName  [ViewName]`;
     await this.logToConsole(msg);
     await this.logToFile(msg, { noAppend: true });
