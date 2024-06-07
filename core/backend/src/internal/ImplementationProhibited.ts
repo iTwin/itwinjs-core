@@ -2,6 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Workspace
+ */
 
 /** A symbol used to prevent implementations of an interface from being created outside of the package that defines the interface.
  * This is useful when a package defines a public interface with one or more private implementations.
