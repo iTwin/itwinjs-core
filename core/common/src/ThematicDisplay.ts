@@ -6,7 +6,7 @@
  * @module Symbology
  */
 
-import { compareNumbers } from "@itwin/core-bentley";
+import { compareNumbers, Logger } from "@itwin/core-bentley";
 import { Point3d, Range1d, Range1dProps, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { Gradient } from "./Gradient";
@@ -317,7 +317,9 @@ export class ThematicDisplaySensor {
   }
 
   public static fromJSON(json?: ThematicDisplaySensorProps) {
+    Logger.logInfo("ThematicSensors", JSON.stringify(json));
     return new ThematicDisplaySensor(json);
+
   }
 
   public toJSON(): ThematicDisplaySensorProps {
