@@ -381,8 +381,16 @@ export class LineLayout {
     this.range.low.setZero();
     this.range.high.setZero();
 
+    // Some runs (fractions) are taller than others.
+    // We want to center each run vertically inside the line.
+    let lineHeight = 0;
     for (const run of this._runs) {
-      const runOffset = { x: this.range.high.x, y: 0 };
+      lineHeight = Math.max(lineHeight, run.range.yLength());
+    }
+    
+    for (const run of this._runs) {
+      const runHeight = run.range.yLength();
+      const runOffset = { x: this.range.high.x, y: (lineHeight - runHeight) / 2 };
       run.offsetFromLine = runOffset;
 
       const runLayoutRange = run.range.cloneTranslated(runOffset);
