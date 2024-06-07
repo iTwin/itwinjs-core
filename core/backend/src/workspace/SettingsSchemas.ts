@@ -48,7 +48,6 @@ export interface SettingSchema extends Readonly<JSONSchema> {
   * The prefix is combined with the name of each [[SettingSchema]] in the group to form the fully-qualified name used to refer
   * to the setting outside of the group, e.g., when accessing [[SettingsSchemas.settingDefs]] or in [[SettingSchema.extends]].
   * In the following example, the fully-qualified name of the setting named "metric" is "format/units/metric".
-  * ###TODO example snippet
   *
   * ```json
   *  {
@@ -61,7 +60,6 @@ export interface SettingSchema extends Readonly<JSONSchema> {
   *
   * A group can also define [[SettingSchema]]s that, rather than describing actual [[Setting]]s, instead describe types that can be extended by [[Setting]]s via
   * [[SettingSchema.extends]]. A [[SettingSchema]] can refer to type definitions defined in its own group or any other group.
-  * ###TODO example code snippet for myApp/categories
   * @beta
   */
 export interface SettingGroupSchema {
@@ -97,6 +95,8 @@ export interface SettingGroupSchema {
   * [[Workspace]]s - are automatically loaded.
   * The application can manually register additional schemas using methods like [[addGroup]], [[addFile]], [[addDirectory]], and [[addJson]].
   * When [[IModelHost.shutdown]] is invoked at the end of a session, all registered schemas are unregistered.
+  *
+  * See the [learning article]($docs/learning/backend/Workspace) for a detailed overiew and examples.
   *
   * @see [[IModelHost.settingsSchemas]] to access the registry for the current session.
   * @beta

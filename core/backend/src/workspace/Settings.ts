@@ -90,7 +90,6 @@ export namespace Setting { // eslint-disable-line @typescript-eslint/no-redeclar
  * A setting name therefore forms a path like file names in a file system.
  * For example, the following are setting names defined in the `energyAnalysis`, `iot-scan-visualization`, and `vibration-map` schemas.
  *
- * ###TODO snippet
  * ```ts
  * "energyAnalysis/formats/totalWork"
  * "energyAnalysis/formats/totalHours"
@@ -199,7 +198,8 @@ export interface SettingsDictionaryProps extends SettingsDictionarySource {
  * iModel-specific settings are stored in the iModel's property table and loaded into [[IModelDb.workspace]] when the iModel is first opened.
  * You can add and remove a [[SettingsDictionary]] from the property table using [[IModelDb.saveSettingDictionary]] and [[IModelDb.deleteSettingDictionary]].
  *
- * ###TODO explain how settings dictionaries are automatically and recursively loaded from WorkspaceDbs.
+ * See the [learning article]($docs/learning/backend/Workspace) for a detailed overiew and examples.
+ *
  * @see [[IModelHost.appWorkspace]] application-wide settings, and [[IModelDb.workspace]] for settings specific to a given iModel.
  * @beta
  */
