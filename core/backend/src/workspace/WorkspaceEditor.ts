@@ -145,6 +145,7 @@ export interface CreateNewWorkspaceDbVersionArgs {
  * @beta
  */
 export interface EditableWorkspaceDb extends WorkspaceDb {
+  readonly container: EditableWorkspaceContainer;
   /**
    * The cloud properties of the [[WorkspaceDb]], if this is a cloud-based WorkspaceDb.
    */

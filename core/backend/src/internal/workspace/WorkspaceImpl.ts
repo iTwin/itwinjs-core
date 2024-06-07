@@ -7,7 +7,7 @@ import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
 import * as semver from "semver";
-import { AccessToken, BeEvent, DbResult, Mutable, OpenMode } from "@itwin/core-bentley";
+import { AccessToken, BeEvent, DbResult, Mutable, OpenMode, assert } from "@itwin/core-bentley";
 import { FilePropertyProps, IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { CloudSqlite } from "../../CloudSqlite";
 import { IModelHost, KnownLocations } from "../../IModelHost";
@@ -184,20 +184,21 @@ class WorkspaceDbImpl implements WorkspaceDb {
   public readonly [implementationProhibited] = undefined;
   public readonly sqliteDb = new WorkspaceSqliteDb();
   public readonly dbName: WorkspaceDbName;
-  public readonly container: WorkspaceContainer;
+  protected readonly _container: WorkspaceContainer;
   public readonly onClose = new BeEvent<() => void>();
   public readonly dbFileName: string;
   protected _manifest?: WorkspaceDbManifest;
 
   /** true if this WorkspaceDb is currently open */
   public get isOpen() { return this.sqliteDb.isOpen; }
+  public get container(): WorkspaceContainer { return this._container; }
   public queryFileResource(rscName: WorkspaceResourceName): { localFileName: LocalFileName, info: IModelJsNative.EmbedFileQuery } | undefined {
     const info = this.sqliteDb.nativeDb.queryEmbeddedFile(rscName);
     if (undefined === info)
       return undefined;
 
     // since resource names can contain illegal characters, path separators, etc., we make the local file name from its hash, in hex.
-    let localFileName = join(this.container.filesDir, createHash("sha1").update(this.dbFileName).update(rscName).digest("hex"));
+    let localFileName = join(this._container.filesDir, createHash("sha1").update(this.dbFileName).update(rscName).digest("hex"));
     if (info.fileExt !== "") // since some applications may expect to see the extension, append it here if it was supplied.
       localFileName = `${localFileName}.${info.fileExt}`;
     return { localFileName, info };
@@ -206,7 +207,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
   public constructor(props: WorkspaceDbProps, container: WorkspaceContainer) {
     this.dbName = workspaceDbNameWithDefault(props.dbName);
     validateWorkspaceDbName(this.dbName);
-    this.container = container;
+    this._container = container;
     this.dbFileName = container.resolveDbFileName(props);
     container.addWorkspaceDb(this);
     if (true === props.prefetch)
@@ -214,14 +215,14 @@ class WorkspaceDbImpl implements WorkspaceDb {
   }
 
   public open() {
-    this.sqliteDb.openDb(this.dbFileName, OpenMode.Readonly, this.container.cloudContainer);
+    this.sqliteDb.openDb(this.dbFileName, OpenMode.Readonly, this._container.cloudContainer);
   }
 
   public close() {
     if (this.isOpen) {
       this.onClose.raiseEvent();
       this.sqliteDb.closeDb();
-      this.container.closeWorkspaceDb(this);
+      this._container.closeWorkspaceDb(this);
     }
   }
   public get version() {
@@ -300,7 +301,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
   }
 
   public prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch {
-    const cloudContainer = this.container.cloudContainer;
+    const cloudContainer = this._container.cloudContainer;
     if (cloudContainer === undefined)
       throw new Error("no cloud container to prefetch");
     return CloudSqlite.startCloudPrefetch(cloudContainer, this.dbFileName, opts);
@@ -597,6 +598,11 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWork
 }
 
 class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
+  public override get container(): EditableWorkspaceContainer {
+    assert(this._container instanceof EditorContainerImpl);
+    return this._container;
+  }
+
   private static validateResourceName(name: WorkspaceResourceName) {
     if (name.trim() !== name) {
       throw new Error("resource name may not have leading or trailing spaces");
@@ -613,7 +619,7 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
       throw new Error("value is too large");
   }
   public get cloudProps(): WorkspaceDbCloudProps | undefined {
-    const props = (this.container as EditorContainerImpl).cloudProps as Mutable<WorkspaceDbCloudProps>;
+    const props = (this._container as EditorContainerImpl).cloudProps as Mutable<WorkspaceDbCloudProps>;
     if (props === undefined)
       return undefined;
 
@@ -622,13 +628,13 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
   }
 
   public override open() {
-    this.sqliteDb.openDb(this.dbFileName, OpenMode.ReadWrite, this.container.cloudContainer);
+    this.sqliteDb.openDb(this.dbFileName, OpenMode.ReadWrite, this._container.cloudContainer);
   }
 
   public override close() {
     if (this.isOpen) {
       // whenever we close an EditableDb, update the name of the last editor in the manifest
-      const lastEditedBy = (this.container.cloudContainer as any)?.writeLockHeldBy;
+      const lastEditedBy = (this._container.cloudContainer as any)?.writeLockHeldBy;
       if (lastEditedBy !== undefined)
         this.updateManifest({ ...this.manifest, lastEditedBy });
 

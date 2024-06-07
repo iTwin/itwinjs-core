@@ -243,31 +243,37 @@ describe("Workspace Examples", () => {
 
       // __PUBLISH_SECTION_START__ WorkspaceExamples.CreateWorkspaceDb
       const editor = WorkspaceEditor.construct();
-      const container: EditableWorkspaceContainer = await editor.createNewCloudContainer({
-        // A description of the new WorkspaceContainer.
-        metadata: {
-          label: "trees",
-          description: "trees organized by genus",
-        },
-        // Ownership, access control, and datacenter location are defined by the iTwin.
-        scope: { iTwinId },
-        // The name of the default WorkspaceDb to be created inside the new container.
-        dbName: "cornus",
-        // The manifest to be embedded inside the default WorkspaceDb.
-        manifest: {
-          // A user-facing name for the WorkspaceDb.
-          workspaceName: "Dogwood trees",
-          // A description of the WorkspaceDb's contents and purpose.
-          description: "Trees belonging to the genus cornus",
-          // The name of someone (typically an administrator) who can provide help and information
-          // about this WorkspaceDb.
-          contactName: "Lief E. Greene",
-        },
-      });
+
+      async function createTreeDb(genus: string): Promise<EditableWorkspaceDb> {
+        const label = `Trees ${genus}`;
+        const description = `Trees of the genus ${genus}`;
+        const container: EditableWorkspaceContainer = await editor.createNewCloudContainer({
+          // A description of the new WorkspaceContainer.
+          metadata: {
+            label,
+            description,
+          },
+          // Ownership, access control, and datacenter location are defined by the iTwin.
+          scope: { iTwinId },
+          // The manifest to be embedded inside the default WorkspaceDb.
+          manifest: {
+            // A user-facing name for the WorkspaceDb.
+            workspaceName: label,
+            // A description of the WorkspaceDb's contents and purpose.
+            description,
+            // The name of someone (typically an administrator) who can provide help and information
+            // about this WorkspaceDb.
+            contactName: "Lief E. Greene",
+          },
+        });
+        
+        container.acquireWriteLock("Lief E. Greene");
+
+        const dbProps = (await container.createNewWorkspaceDbVersion({ versionType: "minor" })).newDb;
+        return container.getEditableDb(dbProps);
+      }
       // __PUBLISH_SECTION_END__
       
-      expect(container.cloudProps).not.to.be.undefined;
-
       // __PUBLISH_SECTION_START__ WorkspaceExamples.AddTrees
       interface TreeResource {
         commonName: string;
@@ -281,14 +287,7 @@ describe("Workspace Examples", () => {
         treeDb.addString(resourceName, JSON.stringify(tree));
       }
 
-      container.acquireWriteLock("Lief E. Greene");
-      
-      const cornusDbProps = (await container.createNewWorkspaceDbVersion({
-        fromProps: { dbName: "cornus" },
-        versionType: "minor",
-      })).newDb;
-      
-      let cornusDb = container.getEditableDb(cornusDbProps);
+      let cornusDb = await createTreeDb("cornus");
       cornusDb.open();
 
       addTree(cornusDb, "alternifolia", {
@@ -304,19 +303,18 @@ describe("Workspace Examples", () => {
       });
 
       cornusDb.close();
-      container.releaseWriteLock();
+      cornusDb.container.releaseWriteLock();
       // __PUBLISH_SECTION_END__
       expect(cornusDb.cloudProps).not.to.be.undefined;
       expect(cornusDb.cloudProps!.version).to.equal("1.1.0");
       
       // __PUBLISH_SECTION_START__ WorkspaceExamples.CreatePatch
-      container.acquireWriteLock("Lief E. Greene");
-      const cornusPatchProps = (await container.createNewWorkspaceDbVersion({
-        fromProps: { dbName: "cornus", version: "1.1.0" },
+      cornusDb.container.acquireWriteLock("Lief E. Greene");
+      const cornusPatchProps = (await cornusDb.container.createNewWorkspaceDbVersion({
         versionType: "patch",
       })).newDb;
       
-      cornusDb = container.getEditableDb(cornusPatchProps);
+      cornusDb = cornusDb.container.getEditableDb(cornusPatchProps);
       cornusDb.open();
       addTree(cornusDb, "racemosa", {
         commonName: "Northern Swamp Dogwood",
@@ -355,7 +353,7 @@ describe("Workspace Examples", () => {
       abiesDb.close();
       */
       
-      container.releaseWriteLock();
+      cornusDb.container.releaseWriteLock();
       // __PUBLISH_SECTION_END__
       expect(cornusDb.cloudProps!.version).to.equal("1.1.1");
       // ###TODO expect(abiesDb.cloudProps!.version).to.equal("1.1.0");
