@@ -312,8 +312,7 @@ export interface GetWorkspaceContainerArgs extends WorkspaceContainerProps {
 
 /**
  * Settings and resources that customize an application for the current session.
- * See [Workspaces]($docs/learning/backend/Workspace)
- * ###TODO
+ * See the [learning article]($docs/learning/backend/Workspace) for a detailed overiew and examples.
  * @beta
  */
 export interface Workspace {

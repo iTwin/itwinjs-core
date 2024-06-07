@@ -1,290 +1,222 @@
-# Workspaces and Settings in iTwin.js
+# Workspaces and Settings
 
-> Note: Workspaces and Settings are both backend-only concepts.
+Every non-trivial application requires some level of configuration to customize its run-time behavior and help it locate data resources required for it to perform its functions. An iTwin.js [Workspace]($backend) comprises the [Settings]($backend) that supply this configuration and the [WorkspaceContainer]($backend)s that provide those resources.
 
-## Workspaces
+To explore [Workspace]($backend) concepts, let's take the example of an imaginary application called "LandscapePro" that allows users to decorate an iModel by adding landscaping features like trees, shrubs, flower beds, and patio furniture.
 
-The [Workspace]($backend) api enables applications to have configurable options and to load resources on demand. It allows administrators to specify choices for configuration options and to decide which resources and which versions are appropriate for their users.
+# Settings
 
-When an iTwin.js backend starts, [IModelHost.startup]($backend) creates an instance of a [Workspace]($backend), in [IModelHost.appWorkspace]($backend).
+[Settings]($backend) are how administrators of an application or project configure the workspace for end-users. Be careful to avoid confusing them with "user preferences", which can be configured by individual users. For example, an application might provide a check box to toggle "dark mode" on or off. Each individual user can make their own choice as to whether they want to use this mode - it is a user preference, not a setting. But an administrator may define a setting that controls whether users can see that check box in the first place.
 
-`IModelHost.appWorkspace` can be used to customize the session according to the choices of the application, including the default values for its settings.
+A [Setting]($backend) is simply a name-value pair. The value can be of one of the following types:
+- A `string`, `number`, or `boolean`;
+- An `object` containing properties of any of these types; or
+- An `array` containing elements of one of these types.
 
-Whenever an application opens an iModel using the [IModelDb]($backend) class, it creates an instance of a [Workspace]($backend) in [IModelDb.workspace]($backend) to customize the session according to the choices made by administrators for the iTwin and the iModel.
+A [SettingName]($backend) must be unique, 1 to 1024 characters long with no leading nor trailing whitespace, and should begin with the schema prefix of the [schema](#settings-schemas) that defines the setting. (More on schemas shortly). For example, LandscapePro might define the following settings:
 
-When combined, the `IModelHost.appWorkspace` and the `IModelDb.workspace` customize a session according to the:
-
-1. application's defaults
-2. organization of the user
-3. current iTwin
-4. current iModel
-
-In the list above, later entries tend to change more frequently and, in the case of duplicate values, later entries override earlier ones.
-
-[Workspace]($backend)s expresses the current state of the session in two forms:
-
-  1. [Settings](#settings)
-  2. [WorkspaceDb](#workspaceDbs)
-
-`Settings` are *named parameters* that an application defines via `SettingSchema`s and whose values are determined via a "Settings Editor" and supplied at runtime via one or more [Settings.Dictionary]($backend). `WorkspaceDb`s hold *named resources* (i.e. data) that the application uses. `Settings` and `WorkspaceDb`s are often related in application logic, e.g.:
-
-- Settings may contain the properties necessary to find a resource, including a list of `WorkspaceDb` to search
-- `WorkspaceDb`s may hold a [Settings.Dictionary]($backend) resource that defines a group of `Settings`
-
-This means that there must be some way to initialize the process. That is accomplished by [Settings stored inside an iModel](#imodel-based-settings) that are automatically loaded whenever it opens.
-
-## Settings
-
-Settings are named parameters defined by applications but supplied at runtime. Their values may be supplied by administrators and may vary according to circumstances across and even within sessions. At runtime, Settings are just JavaScript primitives and may be accessed via [Settings.getSetting]($backend), [Settings.resolveSetting]($backend) (and the related type-specific functions), by supplying a `SettingName`. Setting lookup is generally very efficient, so settings should *not* be cached in application code and should instead be retrieved as needed. That way they do not get out of sync as they change.
-
-### SettingSchema
-
-Groups of related `Setting`s are defined by [SettingSchema]($backend)s according to the rules of the iTwin Setting meta-schema (see `Base.Schema.json`). The iTwin Setting meta-schema follows [JSON Schema](https://json-schema.org/), with the following additions:
-
- - `schemaPrefix` is a required property that gives a name to a set of related settings. The names of all settings in a schema inherit the schemaPrefix.
- - `description` is a required property that gives a human-readable description of the schema.
- - `settingDefs` defines a group of settings.
- - `typeDefs` provides a group of types definitions. `typeDefs` may be used to define complex types that are used in multiple settings.
-
-`settingDefs` may use `typeDefs` via the "extends" keyword.
-
-For example:
-
-```json
-{
-  "schemaPrefix": "myApp",
-  "description": "the settings for myApplication",
-  "settingDefs": {
-    "placementCategories": {
-      "type": "array",
-      "description": "possible categories for placement",
-      "extends": "myApp/categories"
-    },
-    "searchCategories": {
-      "type": "array",
-      "description": "possible categories to search",
-      "extends": "myApp/categories"
-    }
-  },
-  "typeDefs": {
-    "categories": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "description": "category names"
-      }
-    }
-  }
-}
+```
+  "landscapePro/ui/defaultToolId"
+  "landscapePro/ui/availableTools"
+  "landscapePro/flora/preferredStyle"
+  "landscapePro/flora/treeDbs"
+  "landscapePro/hardinessRange"
 ```
 
-This schema defines two settings, `myApp/placementCategories` and `myApp/searchCategories`, both of which are arrays of strings. The schema also defines a type, `myApp/categories`, which is an array of category names. Both settings extend the `myApp/categories` type. The value of the "extends" keyword is the full name of a typeDef (including schemaPrefix) defined in a SettingSchema. In this manner, `SettingsSchema` may reference typeDefs defined in other SettingsSchemas.
+Each setting's name begins with the "landscapePro" schema prefix followed by a forward slash. Forward slashes are used to create logical groupings of settings, similar to how file paths group files into directories. In the above example, "ui" and "flora" are two separate groups containing two settings each, while "hardinessRange" is a top-level setting. An application user interface that permits the user to view or edit settings would probably present these groups as individual nodes in a tree view, or as tabs.
 
+# Settings schemas
 
-A primary objective of creating a [SettingSchema]($backend) is to advertise the existence, meaning, and "form" of a Setting. Users supply values for Setting using a Settings Editor, and are presented with the information from `SettingsSchema`s to guide their choices. Also, `SettingSchema`s add validation rules at runtime and may also supply a default value so users can understand what happens if they don't provide a value for a Setting.
+The metadata describing a group of related [Setting]($backend)s is defined in a [SettingGroupSchema]($backend). The schema is based on [JSON Schema](https://json-schema.org/), with the following additions:
 
-Applications should register their SettingSchemas in every session with the `Settings` subsystem by calling [SettingsSchemas.addGroup]($backend).
+- `schemaPrefix` (required) - a unique name for the schema. All of the names in the schema inherit this prefix.
+- `description` (required) - a description of the schema appropriate for displaying to a user.
+- `settingDefs` - an object consisting of [SettingSchema]($backend)s describing individual [Setting]($backend)s, indexed by their [SettingName]($backend)s.
+- `typeDefs` - an object consisting of [SettingSchema]($backend)s describing reusable *types* of [Setting]($backend)s that can be referenced by [SettingSchema]($backend)s in this or any other schema.
+- `order` - an optional integer used to sort the schema in a user interface that lists multiple schemas, where schemas of lower order sort before those with higher order.
 
-### SettingNames
-
-A [SettingName]($backend) is used to retrieve the current value of a Setting. `SettingName`s must be unique across all applications, so they should be formed as a "path", with the parts separated by a "/". The first entry in the path is the schemaPrefix and all Settings from a `SettingSchema` inherit it. The settings editor may split the path parts of a `SettingName` (using the "/" delimiter) as "tabs" for editing.
-
-For example:
+We can define the LandscapePro schema programmatically as follows:
 
 ```ts
-"energyAnalysis/formats/totalWork"
-"energyAnalysis/formats/totalHours"
-"energyAnalysis/units/power"
-"energyAnalysis/units/temperature"
-"energyAnalysis/startupMode"
-"iot-scan-visualization/ports/cameras"
-"vibration-map/filters/scope"
-"vibration-map/filters/prefabricated"
+[[include:WorkspaceExamples.SettingGroupSchema]]
 ```
 
-Are SettingNames from the `energyAnalysis`, `iot-scan-visualization`, and `vibration-map` SettingSchemas.
+This schema defines 5 settingDefs and 1 typeDef. Note the "landscapePro" schema prefix, which is implicitly included in the name of each settingDef and typeDef in the schema - for example, the full name of the "hardinessRange" setting is "landscapePro/hardinessRange".
 
-`SettingName`s must be valid [JavaScript property names](https://developer.mozilla.org/en-US/docs/Glossary/property/JavaScript), but may not contain periods or spaces.
+The "hardinessZone" typeDef represents a [USDA hardiness zone](https://en.wikipedia.org/wiki/Hardiness_zone) as an integer between 0 and 13. The "hardinessRange" settingDef reuses that typeDef for both its "minimum" and "maximum" properties by declaring that each `extends` that type. Note that `extends` requires the schema prefix to be specified, even within the same schema that defines the typeDef.
 
-### SettingTypes
+The "flora/treeDbs" settingDef `extends` the "workspaceDbList" typeDef from a different schema - the [workspace schema](https://github.com/iTwin/itwinjs-core/blob/master/core/backend/src/assets/Settings/Schemas/Workspace.Schema.json) delivered with the application, with the "itwin/core/workspace" schema prefix.
 
-A `SettingSchema` defines the *type* of a `settingDef` as one of:
+## Registering schemas
 
-- `string`
-- `number`
-- `integer`
-- `boolean`
-- `object`
-- an array of one the above.
+Schemas enable the application to validate that the setting values loaded at run-time match the expected types - for example, if we try to retrieve the value of the "landscapePro/ui/defaultToolId" setting and discover a number where we expect a string, an exception will be thrown. They can also be used by user interfaces that allow administrators to configure settings by enforcing types and other constraints like the one that requires "hardinessZone" to be an integer between 0 and 13. To do this, the schema must first be registered.
 
-The Settings Editor will enforce that the values supplied for a Setting is the correct type.
-
-### Settings.Dictionary
-
-The *values* for one or more Settings may be established by creating a JavaScript object with properties matching [SettingName]($backend)s.
-
-E.g.:
+The set of currently-registered schemas can be accessed via [IModelHost.settingsSchemas]($backend). You can register new ones in a variety of ways. Most commonly, applications will deliver their schemas in JSON files, in which case they can use [SettingsSchemas.addFile]($backend) to supply a single JSON file or [SettingsSchemas.addDirectory]($backend) to supply a directory full of them. In our case, however, we've defined the schema programmatically, so we'll register it using [SettingsSchemas.addGroup]($backend):
 
 ```ts
-[[include:Settings.addDictionaryDefine]]
+[[include:WorkspaceExamples.RegisterSchema]]
 ```
 
-> Note: The types of the properties should match the types in the SettingSchema.
+Your application should register its schemas shortly after invoking [IModelHost.startup]($backend). Registering a schema adds its typeDefs and settingDefs to [SettingsSchemas.typeDefs]($backend) and [SettingsSchemas.schemaDefs]($backend), respectively. It also raises the [SettingsSchemas.onSchemaChanged]($backend) event. All schemas are unregistered when [IModelHost.shutdown]($backend) is invoked.
 
-Then, the dictionary can be given a [Settings.Dictionary.Name]($backend), and a [Settings.Priority]($backend) and be added to the current [Settings]($backend):
+# Settings dictionaries
+
+The values of [Setting]($backend)s are provided by [SettingsDictionary]($backend)s. The [Settings]($backend) for the current session can be accessed via the `settings` property of [IModelHost.appWorkspace]($backend). You can add new dictionaries to provide settings values at any time during the session, although most dictionaries will be loaded shortly after [IModelHost.startup]($backend).
+
+Let's load a settings dictionary that provides values for some of the settings in the LandscapePro schema:
 
 ```ts
-[[include:Settings.addDictionary]]
+[[include:WorkspaceExamples.AddDictionary]]
 ```
 
-Values in `Settings.Dictionary`s with a higher `SettingsPriority` override values in dictionaries with a lower priority.
-
-E.g.:
+Now you can access the setting values defined in the dictionary via `IModelHost.appWorkspace.settings`:
 
 ```ts
-[[include:Settings.addITwinDictionary]]
+[[include:WorkspaceExamples.GetSettings]]
 ```
 
-then
+Note that `getString` returns `undefined` for "landscapePro/preferredStyle" because our dictionary didn't provide a value for it. The overload of that function (and similar functions like [Settings.getBoolean]($backend) and [Settings.getObject]($backend)) allows you to specify a default value to use if the value is not defined.
 
-E.g.:
+> Note: In general, avoid caching the values of individual settings - just query them each time you need them, because they can change at any time. If you must cache (for example, if you are populating a user interface from the setting values), listen for and react to the [Settings.onSettingsChanged]($backend) event.
+
+Any number of dictionaries can be added to [Workspace.settings]($backend). Let's add another one:
 
 ```ts
-[[include:Settings.dropITwinDictionary]]
+[[include:WorkspaceExamples.AddSecondDictionary]]
 ```
 
-Settings may also be stored externally, in JSON. That can be either stringified JSON (via [JSON.stringify](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify)) stored in a `WorkspaceDb`, or in a `.json` file.
-
-> Hint: iTwin.js supports [JSON5](https://json5.org/) format to permit comments in settings files. [VSCode](https://code.visualstudio.com/) recognizes the `.json5` extension to edit JSON5 content with comments.
-
-### Settings loaded at application startup
-
-When [IModelhost.startup](#backend) is called, all files with the extension ".json" or ".json5" in the `@itwin/core-backend` package `assets\Settings` directory, plus all files listed by `IModelHostConfiguration.workspace.settingsFiles`, are loaded into `IModelHost.appWorkspace.settings`.
-
-### iModel Based Settings
-
-Every iModel can hold a set of `Settings.Dictionary`(ies) that are automatically loaded when the iModel is opened. This can be used to supply Setting values that are present every session, for example, lists of `WorkspaceDb`s to search.
-
-To save a `Settings.Dictionary` in an iModel, use [IModelDb.saveSettingDictionary]($backend).
-
-## WorkspaceDbs
-
-[WorkspaceDb]($backend)s are SQLite databases that hold [workspace resources](#workspace-resources). They can be accessed directly from cloud storage and are cached locally.
-
-Containers can each have independent access rights, and users and applications are granted permissions to read, write, create, etc. by authenticating their identity and then obtaining a container-specific (usually expiring) *shared access signature* token (a `sasToken`) from the storage authority.
-
-Cloud-based `WorkspaceContainer`s provide a mechanism for storing and retrieving `WorkspaceDb`s through a secure, reliable, and highly available cloud api.
-
-Data stored in cloud-based `WorkspaceDb`s:
-
-- can be versioned
-- can have fine-grained access permissions, or may be publicly accessible for read-only access
-- can be accessed directly from cloud storage without pre-downloading
-- is automatically *cached* locally for fast access
-- can be fully downloaded for offline use
-- is automatically synched when changes are made
-
-The `WorkspaceContainer` apis abstract the cloud storage implementation, so it may be configured to use many cloud storage system (e.g. Azure, AWS, Google, etc.)
-
-A [WorkspaceContainer]($backend) is a special type of cloud container that (only) holds [WorkspaceDb]($backend)s. [WorkspaceDb]($backend)s are databases that hold [workspace resources](#workspace-resources).
-
-Conceptually, you can picture the hierarchy like this:
-
-  - `WorkspaceContainer`
-    - `WorkspaceDb`
-      - `WorkspaceResource`
-
-Each `WorkspaceContainer` may hold many `WorkspaceDb`s, though ordinarily a `WorkspaceContainer`s holds (versions of) a single `WorkspaceDb`. There is no limit on the number of `WorkspaceDbs` within a `WorkspaceContainer` or accessed during a session, nor is there a limit on the number of resources held within a `WorkspaceDb`.
-
-However, when deciding how to organize workspace data, keep in mind:
-
-- Access rights are per-`WorkspaceContainer`. That is, if a user has permission to access a `WorkspaceContainer`, they will have access to all `WorkspaceDb`s within it.
-- For offline access, `WorkspaceDb`s are saved as files on local computers, and must be downloaded before going offline and then updated whenever new versions are created. Large downloads can be time consuming, so breaking large sets of resources into multiple `WorkspaceDb`s can be helpful.
-- `WorkspaceDb`s are versioned. There is no versioning of individual resources within a `WorkspaceDb`.
-
-
-#### Workspace related Settings
-
-The `SettingsSchema` for workspaces (`Workspace.Schema.json`) defines the following `typeDefs`:
-
-`itwin/core/workspace/WorkspaceDb` - the properties to open a `WorkspaceDb`, including the `containerId` and `baseUri` of the `WorkspaceContainer`.
-`itwin/core/workspace/WorkspaceDbList` - a (sorted) array of `itwin/core/workspace/WorkspaceDb`s.
-
-It also defines the following `settingDef`:
-
-`itwin/core/workspace/settingsWorkspaces` - an array of `WorkspaceDb`s from which to load settings dictionaries. Each entry in the list "extends" the `itwin/core/workspace/WorkspaceDb` typeDef and also includes the `resourceName` of the settings dictionary resource and a `Settings.Priority` to load the settings dictionary.
-
-
-
-To load a [workspace resource](#workspace-resources), you must first obtain a `WorkspaceDb` by calling [Workspace.getWorkspaceDb]($backend) and supplying a [WorkspaceDb.Name]($backend). That value must be an entry in a `workspace/databases` Setting. The `workspace/databases` Setting will supply the `containerName` and `dbName`. The value of `containerName` must be an entry in a `cloud/containers` Setting. The `cloud/containers` Setting will supply the `containerId` and `baseUri`.
-
-
-
-Will attempt to load a `WorkspaceDb` with:
-- the most recent version greater than or equal to 1.0.0 but less than 2.0.0 of the database `struct` (e.g. `struct:1.5.2`)
-- in a cloud container with id `16e7f4ca-f08b-4778-9882-5bfb2ac7b160` and baseUri `https://containers.itwinjs.org`
-
-Workspace settings may also be stored [in an iModel](#imodel-based-settings) so `WorkspaceDb`s may be iModel specific. So if this:
-
-
-were stored in a `Settings.Dictionary` in an iModel, then
+This dictionary adds a value for "landscapePro/flora/preferredStyle", and defines new values for the two settings that were also defined in the previous dictionary. See what happens when we look up those settings' values again:
 
 ```ts
-  const wsdb = await iModel.workspace.getWorkspaceDbs(
+[[include:WorkspaceExamples.GetMergedSettings]]
 ```
 
-Will attempt to load a `WorkspaceDb` with:
-- the most recent version greater than or equal to 1.4.3 but less than 1.5.0 of the database `struct` (e.g. `struct:1.4.10`)
-- in a cloud container with id `16e7f4ca-f08b-4778-9882-5bfb2ac7b160` and baseUri `https://containers.itwinjs.org`
+Now, as expected, "landscapePro/flora/preferredStyle" is no longer `undefined`. The value of "landscapePro/ui/defaultTool" has been overwritten with the value specified by the new dictionary. And the "landscapePro/ui/availableTools" array now has the merged contents of the arrays defined in *both* dictionaries. What rules determine how the value of a setting is resolved when multiple dictionaries provide a value for it? The answer lies in the dictionaries' [SettingsPriority]($backend)s.
 
-### CloudContainer Shared Access Signature (SAS) Tokens
+## Settings priorities
 
-To access a CloudContainer, users must first obtain a Shared Access Signature token (aka a `sasToken`) from the container authority, by supplying their user credentials. A `sasToken` provides access for a specific purpose for a limited time. `sasTokens` expire, usually after a few hours, and must be *refreshed* before they expire for sessions that outlive them.
+Configurations are often layered: an application may ship with built-in default settings, that an administrator may selectively override for all users of the application. Beyond that, additional configuration may be needed on a per-organization, per-iTwin, and/or per-iModel level. [SettingsPriority]($backend) define which dictionaries' settings take precedence over others - the dictionary with the highest priority overrides any other dictionaries that provide a value for a given setting.
 
-Administrators may provide access to CloudContainers to groups of users via RBAC rules. Normally most users are provided readonly access to WorkspaceContainers, since they have no need or ability to change workspace content. Only a small set of trusted administrators are granted rights to modify the content of `WorkspaceContainer`s.
+A [SettingsPriority]($backend) is just a number, but specific values carry semantics:
+- [SettingsPriority.defaults]($backend) describes settings from settings dictionaries loaded from files automatically at the start of a session.
+- [SettingsPriority.application]($backend) describes settings supplied by the application at run-time to override or supplement the defaults.
+- [SettingsPriority.organization]($backend) describes settings that apply to all iTwins belonging to a particular organization.
+- [SettingsPriority.iTwin]($backend) describes settings that apply to all of the contents (including iModels) of a particular iTwin.
+- [SettingsPriority.branch]($backend) describes settings that apply to all branches of a particular iModel.
+- [SettingsPriority.iModel]($backend) describes settings that apply to one specific iModel.
 
-If a WorkspaceContainer is marked for offline use, it is downloaded using a valid `sasToken`, but is available indefinitely without the token thereafter. When the user goes online again, a new `sasToken` must be obtained to refresh the WorkspaceContainer if it has been modified in the cloud.
+[SettingsDictionary]($backend)s of `application` priority or lower reside in [IModelHost.appWorkspace]($backend). Those of higher priority are stored in an [IModelDb.workspace]($backend) - more on those [shortly](#imodel-settings).
 
-A few special "public" WorkspaceContainers may be read by anyone, without a `sasToken`.
+What about the "landscapePro/ui/availableTools" array? In the [LandscapePro schema](#settings-schemas), the corresponding `settingDef` has [SettingSchema.combineArray]($backend) set to `true`, meaning that - when multiple dictionaries provide a value for the setting - instead of being overridden, they are merged together to form a single array, eliminating duplicates, and sorted in descending order by dictionary priority.
 
-## Workspace Resources
+# iModel settings
 
-A `WorkspaceDb` holds a set of resources, each with a [WorkspaceResource.Name]($backend) and a resource type.
+So far, we have been working with [IModelHost.appWorkspace]($backend). But - as [mentioned above](#settings-priorities) - each [IModelDb]($backend) has its own workspace as well, with its own [Settings]($backend) that can override and/or supplement the application workspace's settings. These settings are stored as [SettingsDictionary]($backend)s in the iModel's `be_Props` table. When the iModel is opened, its [Workspace.settings]($backend) are populated from those dictionaries. So, an application is working in the context of a particular iModel, it should resolve setting values by asking [IModelDb.workspace]($backend), which will fall back to [IModelHost.appWorkspace]($backend) if the iModel's settings dictionaries don't provide a value for the requested setting.
 
-Possible resource types are:
+Since an iModel is located in a specific geographic region, LandscapePro wants to limit the selection of foliage based on the USDA hardiness zone(s) in which the iModel resides. An administrator could configure the hardiness zone of an iModel as follows:
 
-- `string` resources that hold strings. They may be loaded with [WorkspaceDb.getString]($backend).
-- `blob` resources that hold `Uint8Array`s. They may be loaded with [WorkspaceDb.getBlob]($backend).
-- `file` resources that hold arbitrary files. They may be extracted to local files with [WorkspaceDb.getFile]($backend)
+```ts
+[[include:WorkspaceExamples.saveSettingDictionary]]
+```
 
-> Note: files may be compressed as they are stored in `WorkspaceContainer`s. In general, files should only be used for backwards compatibility with code that reads files from disk. They should be avoided if possible.
+Note that modifying the iModel settings requires obtaining an exclusive write lock on the entire iModel. Ordinary users should never perform this kind of operation - only administrators.
 
-### WorkspaceResource.Names
+The next time we open the iModel, the new settings dictionary will automatically be loaded, and we can query its settings:
 
-[WorkspaceResource.Name]($backend)s identify resources within a `WorkspaceDb`. There are no restrictions on the format of a `WorkspaceResource.Name`, other than they are limited to 1024 characters and may not start or end with a blank character.
+```ts
+[[include:WorkspaceExamples.QuerySettingDictionary]]
+```
 
-> Note: `WorkspaceResource.Name`s must be unique for each resource type. But, it is possible to have a `string`, a `blob`, and a `file` resource in the same `WorkspaceDb` with the same `WorkspaceResource.Name`.
+The "hardinessRange" setting is obtained from the iModel's settings dictionary, while the "defaultTool" falls back to the value defined in `IModelHost.appWorkspace.settings`.
 
-### Settings.Dictionary Resources
+# Workspace resources
 
-It is often useful to store `Settings.Dictionary`s in a `WorkspaceContainer`, so they may be distributed, versioned, aliased, and access controlled. This can be accomplished by storing the stringified JSON representation of the `Settings.Dictionary` as a `string` resource and using [Workspace.loadSettingsDictionary]($backend) to load it.
+"Resources" are bits of data that an application depends on at run-time to perform its functions. The kinds of resources can vary widely from one application to another, but some common examples include:
+- [TextStyle]($common)s and fonts used when placing [TextAnnotation]($common)s.
+- [GeographicCRS]($common)es used to specify an iModel's spatial coordinate system.
+- Images that can be used as pattern maps for [Texture]($backend)s.
+- [SettingsDictionary]($backend)s defining reusable settings.
 
-## Creating and Editing WorkspaceDbs with Workspace.Editor
+It might be technically possible to store resources in [Setting]($backend)s, but doing so would present significant disadvantages:
+- Some resources, like images and fonts, may be defined in a binary format that is inefficient to represent using JSON.
+- Some resources, like geographic coordinate system definitions, must be extracted to files on the local file system before they can be used.
+- Some resources may be large, in size and/or quantity.
+- Resources can often be reused across many projects, organizations, and iModels.
+- Administrators often desire for resources to be versioned.
+- Administrators often want to restrict who can read or create resources.
 
-`WorkspaceDb`s are always created and modified by administrators, not users, using the `Workspace.Editor` api.
+To address these requirements, workspace resources are stored in immutable, versioned [CloudSqlite]($backend) databases called [WorkspaceDb]($backend)s, and [Setting]($backend)s are configured to enable the application to locate those resources in the context of a session and - if relevant - an iModel.
 
-#### WorkspaceContainer Locks
+A [WorkspaceDb]($backend) can contain any number of resources of any kind, where "kind" refers to the purpose for which it is intended to be used. For example, fonts, text styles, and images are different kinds of resources. Each resource must have a unique name, between 1 and 1024 characters in length and containing no leading or trailing whitespace. Typically, a resource name will incorporate a [schemaPrefix](#settings-schemas) and an additional qualifier to distinguish between different kinds of resources. For example, a database may include text styles named "itwin/textStyles/<styleName>" and images named "itwin/patternMaps/<imageName>". This is only a convention, however, and some administrators may find it more convenient to store only one kind of resource in each database.
 
-To edit a WorkspaceDb, administrators must first obtain authorization in the form of a writeable `sasToken` from the container authority. Additionally, there may only be one editor *per container* at the same time. This is enforced via the *write-lock* for WorkspaceContainers. The `Workspace.Editor` utility has a command `acquireLock` that acquires the write-lock for a WorkspaceContainer. The `acquireLock` command must be executed before any other editing commands may be performed, and will fail if another user has already obtained the write-lock.
+Ultimately, each resource is stored as one of three underlying types:
+- A string, which quite often is interpreted as a serialized JSON object. Examples include text styles and settings dictionaries.
+- A binary blob, such as an image.
+- An embedded file, like the kind that defines a [GeographicCRS]($common).
 
-All changes to `WorkspaceDb`s are performed locally and are not visible to users until the `releaseLock` command is executed. The `releaseLock` command pushes all changes to the cloud before it releases the write-lock.
+String and blob resources can be accessed directly using [WorkspaceDb.getString]($backend) and [WorkspaceDb.getBlob]($backend). File resources must first be copied onto the local file system using [WorkspaceDb.getFile]($backend), and should be avoided unless they must be used with software that requires them to be accessed from disk.
 
-> Note the write-lock is per-WorkspaceContainer, not per-WorkspaceDb. Locking a WorkspaceContainer implicitly locks all `WorkspaceDb`s within it.
+[WorkspaceDb]($backend)s are stored in access-controlled [WorkspaceContainer]($backend)s backed by cloud storage. So, the structure of a [Workspace]($backend) is a hierarchy: a `Workspace` contains any number of `WorkspaceContainer`s, each of which contains any number of `WorkspaceDb`s, each of which contains any number of resources. The container is the unit of access control - anyone who has read access to the container can read the contents of any `WorkspaceDb` inside it, and anyone with write access to the container can modify its contents.
 
-## Workspace Editor
+## Creating workspace resources
 
-#### WorkspaceDb Versions
+> Note: Creating and managing data in workspaces is a task for administrators, not end-users. Administrators will typically use a specialized application designed for this task. For the purposes of illustration, the following examples will use the `WorkspaceEditor` API directly.
 
-The [Workspace.Editor]($backend) enforces that `WorkspaceDb`s always have a version number associated with them within a `WorkspaceContainer` (by default, the initial version is marked "1.0.0"). WorkspaceDb version numbers follow the [semver versioning](https://semver.org/) rules. To modify an existing WorkspaceDb within a `WorkspaceContainer`, administrators must (with the write-lock held) make a new version using the `versionDb` command. New versions may be of type "patch", "minor", or "major", depending on its impact to users. When the write-lock is released, the newly edited version of the WorkspaceDb becomes immutable and may never be changed again. This way old or archived projects may continue to refer to consistent workspace data without risk.
+LandscapePro allows users to decorate a landscape with a variety of trees and other flora. So, trees are one of the kinds of resources the application needs to access to perform its functions. Naturally, they should be stored in the [Workspace]($backend). Let's create a [WorkspaceDb]($backend) to hold trees of the genus *Cornus*.
 
-By specifying acceptable [version ranges](https://docs.npmjs.com/cli/v6/using-npm/semver#ranges) in `workspace/databases` Settings, administrators can control when, how, and if users see updates to workspace resources.
+```ts
+[[include:WorkspaceExamples.CreateWorkspaceDb]]
+```
+
+Since every [WorkspaceDb]($backend) must reside inside a [WorkspaceContainer]($backend), we must first create a container. Creating a container also creates a default `WorkspaceDb`. In the example above, we set up the default `WorkspaceDb` to be our as-yet empty "cornus" tree database.
+
+Now, let's define what a "tree" resource looks like, and add some to the new `WorkspaceDb`. To do so, we'll need to make a new version of the empty "cornus" `WorkspaceDb` we created above. `WorkspaceDb`s use [semantic versioning](https://semver.org/), and each version of a given `WorkspaceDb` becomes immutable once it is published to cloud storage. So, the process for creating a new version of a `WorkspaceDb` is as follows:
+1. Acquire the container's write lock. Only one person can make changes to the contents of a given container at any given time.
+1. Create a new version of an existing `WorkspaceDb`.
+1. Open the new version of the db for writing.
+1. Modify the contents of the db.
+1. Close the db.
+1. (Optionally, create more new versions of `WorkspaceDb`s in the same container).
+1. Release the container's write lock.
+
+Once the write lock is released, the new versions of the `WorkspaceDb`s are published to cloud storage and become immutable. Alternatively, you can discard all of your changes via [WorkspaceEditor.abandonChanges]($backend) - this also releases the write lock.
+
+```ts
+[[include:WorkspaceExamples.AddTrees]]
+```
+
+In the example above, we created version 1.1.0 of the "cornus" `WorkspaceDb`, added two species of dogwood tree to it, and uploaded it. Later, we might create a patched version 1.1.1 that includes a species of dogwood that we forgot in version 1.1.0, and add a second `WorkspaceDb` to hold trees of the genus *abies*:
+
+```ts
+[[include:WorkspaceExamples.CreatePatch]]
+```
+
+Note that we created one `WorkspaceContainer` to hold versions of the "cornus" `WorkspaceDb`, and a separate container for the "abies" `WorkspaceDb`. Alternatively, we could have put both `WorkspaceDb`s into the same container. However, because access control is enforced at the container level, maintaining a 1:1 mapping between containers and `WorkspaceDb`s simplifies things and reduces contention for the container's write lock.
+
+## Accessing workspace resources
+
+Now that we have some [WorkspaceDb]($backend)s, we can configure our [Settings]($backend) to use them. The [LandscapePro schema](#settings-schemas) defines a "landscapePro/flora/treeDbs" setting that `extends` the type [itwin/core/workspace/workspaceDbList](https://github.com/iTwin/itwinjs-core/blob/master/core/backend/src/assets/Settings/Schemas/Workspace.Schema.json). This type defines an array of [WorkspaceDbProps]($backend), and overrides the `combineArray` property to `true`. So, a setting of this type can be resolved to a list of [WorkspaceDb]($backend)s, sorted by [SettingsPriority]($backend), from which you can obtain resources.
+
+Let's write a function that produces a list of all of the available trees that can survive in a specified USDA hardiness zone:
+
+```ts
+[[include:WorkspaceExamples.getAvailableTrees]]
+```
+
+Now, let's configure the "landscapePro/flora/treeDbs" setting to point to the two `WorkspaceDb`s we created, and use the `getAvailableTrees` function to retrieve `TreeResource`s from it:
+
+```ts
+[[include:WorkspaceExamples.QueryResources]]
+```
+
+`allTrees` includes all five tree species from the two genuses, because they all fall within the hardiness range (0, 13). `iModelTrees` excludeds the Roughleaf Dogwood and Pacific SilverFir, because their hardiness ranges of (9, 9) and (5, 5) do not intersect the iModel's hardiness range (6, 8).
+
+Note that we configured the setting to point to the patch 1.1.1 version of the cornus `WorkspaceDb` that added the Northern Swamp Dogwood. If we had omitted the [WorkspaceDbProps.version]($backend) property, it would have defaulted to the latest version - in this case, 1.1.1 again, but if in the future we created a new version, that would become the new "latest" version and automatically get picked up for use.
+
+If we configure the setting to use version 1.1.0, then `allTrees` will not include the Northern Swamp Dogwood added in 1.1.1:
+
+```ts
+[[include:WorkspaceExamples.QuerySpecificVersion]]
+```
+
+We could also configure the version more precisely using [semantic versioning](https://semver.org) rules to specify a range of acceptable versions. When compatible new versions of a `WorkspaceDb` are published, the workspace would automatically consume them without requiring any explicit changes to its [Settings]($backend).
