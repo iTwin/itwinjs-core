@@ -8,7 +8,8 @@ import * as sinon from "sinon";
 import { Range3d } from "@itwin/core-geometry";
 import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { BlankConnection, IModelApp } from "@itwin/core-frontend";
-import { MeshExport, MeshExports, obtainMeshExportTilesetUrl, queryMeshExports, QueryMeshExportsArgs } from "../MeshExportService";
+import { MeshExport, MeshExports } from "../FrontendTiles";
+import { obtainIModelTilesetUrl } from "../GraphicsService";
 
 use(chaiAsPromised);
 
@@ -46,14 +47,6 @@ function makeResponse(jsonMethod: () => Promise<MeshExports>): Response {
   return {
     json: async () => jsonMethod(),
   } as Response;
-}
-
-async function expectExports(expectedIds: string[], args: QueryMeshExportsArgs): Promise<void> {
-  let idIndex = 0;
-  for await (const exp of queryMeshExports(args))
-    expect(exp.id).to.equal(expectedIds[idIndex++]);
-
-  expect(idIndex).to.equal(expectedIds.length);
 }
 
 interface ExportProps {
@@ -105,57 +98,7 @@ async function makeExportsResponse(props: ExportsProps): Promise<Response> {
 
 const accessToken = "this-is-a-fake-access-token";
 
-describe("queryMeshExports", () => {
-  const iModelId = "imdl";
-
-  it("returns no results upon error", async () => {
-    await mockFetch(
-      () => { throw new Error("fetch threw"); },
-      async () => expectExports([], { accessToken, iModelId }),
-    );
-    await mockFetch(
-      async () => Promise.resolve(makeResponse(
-        () => { throw new Error("json threw"); }),
-      ),
-      async () => expectExports([], { accessToken, iModelId }),
-    );
-  });
-
-  it("produces one set of results", async () => {
-    await mockFetch(
-      async () => makeExportsResponse({ exports: [{ id: "a" }, { id: "b" }, { id: "c" }] }),
-      async () => expectExports(["a", "b", "c"], { accessToken, iModelId }),
-    );
-  });
-
-  it("iterates over multiple sets of results", async () => {
-    let fetchedFirst = false;
-    await mockFetch(
-      async () => {
-        if (!fetchedFirst) {
-          fetchedFirst = true;
-          return makeExportsResponse({ exports: [{ id: "a" }, { id: "b" }], next: "next.org" });
-        } else {
-          return makeExportsResponse({ exports: [{ id: "c" }, { id: "d" }] });
-        }
-      },
-      async () => expectExports(["a", "b", "c", "d"], { accessToken, iModelId }),
-    );
-  });
-
-  it("includes only completed exports unless otherwise specified", async () => {
-    await mockFetch(
-      async () => makeExportsResponse({ exports: [ { id: "a", status: "Complete" }, { id: "b", status: "Feeling Blessed" } ] }),
-      async () => {
-        await expectExports(["a"], { iModelId, accessToken });
-        await expectExports(["a", "b"], { iModelId, accessToken, includeIncomplete: true }),
-        await expectExports(["a"], { iModelId, accessToken, includeIncomplete: false });
-      },
-    );
-  });
-});
-
-describe("obtainMeshExportTilesetUrl", () => {
+describe("obtainIModelTilesetUrl", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
@@ -189,7 +132,7 @@ describe("obtainMeshExportTilesetUrl", () => {
     await mockFetch(
       async (resource) => fetchExports(resource),
       async () => {
-        const url = await obtainMeshExportTilesetUrl({
+        const url = await obtainIModelTilesetUrl({
           iModel,
           accessToken,
           requireExactChangeset: args.exact,

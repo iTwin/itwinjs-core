@@ -29,6 +29,24 @@ export const frontendTilesOptions: {
 };
 
 // @beta
+export interface GraphicsDataSource {
+    // (undocumented)
+    displayName: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    sourceId: string;
+    // (undocumented)
+    sourceType: string;
+    // (undocumented)
+    sourceVersionId: string;
+    // (undocumented)
+    status: string;
+    // (undocumented)
+    url: string;
+}
+
+// @beta
 export function initializeFrontendTiles(options: FrontendTilesOptions): void;
 
 // @beta
@@ -68,14 +86,50 @@ export interface MeshExports {
 }
 
 // @beta
-export function obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise<URL | undefined>;
+export function obtainGraphicsDataSourceUrl(args: ObtainGraphicsDataSourceUrlArgs): Promise<URL | undefined>;
 
 // @beta
-export interface ObtainMeshExportTilesetUrlArgs {
+export interface ObtainGraphicsDataSourceUrlArgs {
+    accessToken: AccessToken;
+    enableCDN?: boolean;
+    requireExactVersion?: boolean;
+    sessionId: string;
+    sourceId: string;
+    sourceType: string;
+    sourceVersionId?: string;
+    urlPrefix?: string;
+}
+
+// @beta
+export function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs): Promise<URL | undefined>;
+
+// @beta
+export interface ObtainIModelTilesetUrlArgs {
     accessToken: AccessToken;
     enableCDN?: boolean;
     iModel: IModelConnection;
     requireExactChangeset?: boolean;
+    urlPrefix?: string;
+}
+
+// @beta
+export function obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise<URL | undefined>;
+
+// @beta
+export type ObtainMeshExportTilesetUrlArgs = ObtainIModelTilesetUrlArgs;
+
+// @beta
+export function queryGraphicsDataSources(args: QueryGraphicsDataSourcesArgs): AsyncIterableIterator<GraphicsDataSource>;
+
+// @beta
+export interface QueryGraphicsDataSourcesArgs {
+    accessToken: AccessToken;
+    enableCDN?: boolean;
+    includeIncomplete?: boolean;
+    sessionId: string;
+    sourceId: string;
+    sourceType: string;
+    sourceVersionId?: string;
     urlPrefix?: string;
 }
 

@@ -4,4 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./FrontendTiles";
-export * from "./MeshExportService";
+export * from "./GraphicsServiceProvider";
+export * from "./GraphicsService";
+
