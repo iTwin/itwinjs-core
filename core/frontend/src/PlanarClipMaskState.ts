@@ -10,8 +10,8 @@ import { Id64String } from "@itwin/core-bentley";
 import { FeatureAppearance, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps, PlanarClipMaskSettings } from "@itwin/core-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
-import { ViewState3d } from "./ViewState";
 import { SceneContext } from "./ViewContext";
+import { SpatialViewState } from "./SpatialViewState";
 
 /** The State of Planar Clip Mask applied to a reality model or background map.
  * Handles loading models and their associated tiles for models that are used by masks but may not be otherwise loaded or displayed.
@@ -39,7 +39,7 @@ export class PlanarClipMaskState {
       this._tileTreeRefs.forEach((treeRef) => treeRef.discloseTileTrees(trees));
   }
 
-  public getTileTrees(view: ViewState3d, classifiedModelId: Id64String): TileTreeReference[] | undefined {
+  public getTileTrees(view: SpatialViewState, classifiedModelId: Id64String): TileTreeReference[] | undefined {
     if (this.settings.mode === PlanarClipMaskMode.Priority) {
       const viewTrees = new Array<TileTreeReference>();
       const thisPriority = this.settings.priority === undefined ? PlanarClipMaskPriority.RealityModel : this.settings.priority;
@@ -54,8 +54,8 @@ export class PlanarClipMaskState {
 
     if (!this._tileTreeRefs) {
       this._tileTreeRefs = new Array<TileTreeReference>();
-      if (this.settings.modelIds && view.isSpatialView())
-        view.setMaskRefs(this.settings.modelIds, this._tileTreeRefs);
+      if (this.settings.modelIds)
+        view.collectMaskRefs(this.settings.modelIds, this._tileTreeRefs);
     }
 
     if (!this._allLoaded)
@@ -64,10 +64,8 @@ export class PlanarClipMaskState {
     return this._allLoaded ? this._tileTreeRefs : undefined;
   }
 
-  public getPlanarClipMaskSymbologyOverrides(view: ViewState3d, context: SceneContext): FeatureSymbology.Overrides | undefined {
-    let overrideModels;
-    if (view.isSpatialView())
-      overrideModels = view.getMaskModels(this.settings.modelIds, PlanarClipMaskMode.Priority === this.settings.mode);
+  public getPlanarClipMaskSymbologyOverrides(view: SpatialViewState, context: SceneContext): FeatureSymbology.Overrides | undefined {
+    const overrideModels = view.getMaskModels(this.settings.modelIds, PlanarClipMaskMode.Priority === this.settings.mode);
 
     if (!this.settings.subCategoryOrElementIds && !overrideModels)
       return undefined;

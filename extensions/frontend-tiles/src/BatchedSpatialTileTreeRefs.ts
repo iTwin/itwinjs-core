@@ -139,8 +139,19 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
     }
   }
 
-  public setMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void {
+  public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void {
     for (const ref of this._refs) {
+      const tree = ref.treeOwner.load();
+      if (tree) {
+        for (const modelId of modelIds) {
+          if (this._spec.models.get(modelId)) {
+            maskTreeRefs.push(ref);
+            break;
+          }
+        }
+      }
+    }
+    for (const ref of this._excludedRefs) {
       const tree = ref.treeOwner.load();
       if (tree) {
         for (const modelId of modelIds) {
@@ -267,8 +278,8 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
     }
   }
 
-  public setMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void {
-    this._impl?.setMaskRefs(modelIds, maskTreeRefs);
+  public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void {
+    this._impl?.collectMaskRefs(modelIds, maskTreeRefs);
   }
 
   public getMaskModels(models: OrderedId64Iterable | undefined, useVisible: boolean): Map<Id64String, boolean> | undefined {

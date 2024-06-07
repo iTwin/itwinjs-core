@@ -508,8 +508,8 @@ export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
   attachToViewport(args: AttachToViewportArgs): void;
   /** See SpatialViewState.detachFromViewport. */
   detachFromViewport(): void;
-  /** See SpatialViewState.setMaskRefs */
-  setMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void;
+  /** See SpatialViewState.collectMaskRefs */
+  collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void;
   /** See SpatialViewState.getMaskModels */
   getMaskModels(models: OrderedId64Iterable | undefined, useVisible: boolean): Map<Id64String, boolean> | undefined;
 }
@@ -674,7 +674,7 @@ class SpatialRefs implements SpatialTileTreeReferences {
       this._refs.get(modelId)?.setDeactivated(deactivated, refs);
   }
 
-  public setMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void {
+  public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void {
     for (const modelId of modelIds) {
       const model = this._view.iModel.models.getLoaded(modelId);
       assert(model !== undefined);   // Models should be loaded by RealityModelTileTree
