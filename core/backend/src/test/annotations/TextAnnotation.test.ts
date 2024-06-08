@@ -212,7 +212,7 @@ describe("layoutTextBlock", () => {
     expect(doLayout(textBlock).lines.length).to.equal(5);
   });
 
-  it.only("computes range for wrapped lines", function () {
+  it("computes range for wrapped lines", function () {
     if (ProcessDetector.isMobileAppBackend) {
       // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
       // users are not expected to do any editing, but long term we will attempt to find a better
@@ -231,17 +231,22 @@ describe("layoutTextBlock", () => {
     block.appendRun(makeTextRun("abc"));
     expectBlockRange(3, 1);
 
-    block.appendRun(makeTextRun("def"));
-    expectBlockRange(3, 2);
+    block.appendRun(makeTextRun("defg"));
+    expectBlockRange(4, 2);
 
     block.width = 1;
-    expectBlockRange(3, 2);
+    expectBlockRange(4, 2);
 
-    block.width = 7;
-    expectBlockRange(6, 1);
+    block.width = 8;
+    expectBlockRange(7, 1);
   
-    block.width = 5;
-    expectBlockRange(3, 2);
+    block.width = 6;
+    expectBlockRange(4, 2);
+
+    block.width = 10;
+    expectBlockRange(7, 1);
+    block.appendRun(makeTextRun("hijk"));
+    expectBlockRange(7, 2);
   });
 
   function expectLines(input: string, width: number, expectedLines: string[]): TextBlockLayout {

@@ -338,6 +338,11 @@ export class RunLayout {
       return undefined;
     }
 
+    if (breakPos === 0) {
+      // The string can't be wrapped.
+      return undefined;
+    }
+
     // Trim this run and return the remainder.
     const charOffset = this.charOffset + breakPos;
     const numChars = this.numChars - breakPos;
