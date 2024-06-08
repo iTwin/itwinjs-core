@@ -504,12 +504,11 @@ export class TextBlockLayout {
       return;
     }
 
+    // TextBlock.width specifies the minimum width of the document. The actual width is determined by the widest line.
     let docWidth = this.source.width;
-    if (docWidth <= 0) {
-      for (const line of this.lines) {
-        const lineWidth = line.justificationRange.xLength();
-        docWidth = Math.max(docWidth, lineWidth);
-      }
+    for (const line of this.lines) {
+      const lineWidth = line.justificationRange.xLength();
+      docWidth = Math.max(docWidth, lineWidth);
     }
 
     let minOffset = Number.MAX_VALUE;

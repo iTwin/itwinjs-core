@@ -178,7 +178,6 @@ describe("layoutTextBlock", () => {
     expect(tb.lines[2].offsetFromDocument.y).to.equal(tb.lines[1].offsetFromDocument.y - (lineHeight + lineHeight * lineSpacingFactor));
     expect(tb.lines.every((line) => line.offsetFromDocument.x === 0)).to.be.true;
   });
-
   it("splits paragraphs into multiple lines if runs exceed the document width", function () {
     if (ProcessDetector.isMobileAppBackend) {
       // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
@@ -212,6 +211,11 @@ describe("layoutTextBlock", () => {
     expect(doLayout(textBlock).lines.length).to.equal(5);
   });
 
+  function expectRange(width: number, height: number, range: Range2d): void {
+    expect(range.xLength()).to.equal(width);
+    expect(range.yLength()).to.equal(height);
+  }
+
   it("computes range for wrapped lines", function () {
     if (ProcessDetector.isMobileAppBackend) {
       // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
@@ -224,8 +228,7 @@ describe("layoutTextBlock", () => {
 
     function expectBlockRange(width: number, height: number): void {
       const layout = doLayout(block);
-      expect(layout.range.yLength()).to.equal(height);
-      expect(layout.range.xLength()).to.equal(width);
+      expectRange(width, height, layout.range);
     }
 
     block.appendRun(makeTextRun("abc"));
@@ -249,7 +252,7 @@ describe("layoutTextBlock", () => {
     expectBlockRange(7, 2);
   });
 
-  it("computes range split runs", function () {
+  it("computes range for split runs", function () {
     if (ProcessDetector.isMobileAppBackend) {
       // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
       // users are not expected to do any editing, but long term we will attempt to find a better
@@ -261,8 +264,7 @@ describe("layoutTextBlock", () => {
 
     function expectBlockRange(width: number, height: number): void {
       const layout = doLayout(block);
-      expect(layout.range.yLength()).to.equal(height);
-      expect(layout.range.xLength()).to.equal(width);
+      expectRange(width, height, layout.range);
     }
 
     const sentence = "a bc def ghij klmno";
@@ -276,6 +278,83 @@ describe("layoutTextBlock", () => {
     expectBlockRange(10, 2);
   });
     
+  it("justifies lines", function () {
+    if (ProcessDetector.isMobileAppBackend) {
+      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
+      // users are not expected to do any editing, but long term we will attempt to find a better
+      // solution.
+      this.skip();
+    }
+    
+    const block = TextBlock.create({ styleName: "", styleOverrides: { lineSpacingFactor: 0 } });
+    
+    function expectBlockRange(width: number, height: number): void {
+      const layout = doLayout(block);
+      expectRange(width, height, layout.range);
+    }
+
+    function expectLineOffset(offset: number, lineIndex: number): void {
+      const layout = doLayout(block);
+      expect(layout.lines.length).least(lineIndex + 1);
+
+      const line = layout.lines[lineIndex];
+      expect(line.offsetFromDocument.y).to.equal(-(lineIndex + 1));
+      expect(line.offsetFromDocument.x).to.equal(offset);
+    }
+
+    block.appendRun(makeTextRun("abc"));
+    block.appendRun(makeTextRun("defg"));
+    expectBlockRange(7, 1);
+    expectLineOffset(0, 0);
+
+    block.justification = "right";
+    expectBlockRange(7, 1);
+    expectLineOffset(0, 0);
+
+    block.justification = "center";
+    expectBlockRange(7, 1);
+    expectLineOffset(0, 0);
+
+    block.justification = "left";
+    block.width = 4;
+    expectBlockRange(4, 2);
+    expectLineOffset(0, 0);
+    expectLineOffset(0, 1);
+
+    block.justification = "right";
+    expectBlockRange(4, 2);
+    expectLineOffset(1, 0);
+    expectLineOffset(0, 1);
+
+    block.justification = "center";
+    expectBlockRange(4, 2);
+    expectLineOffset(0.5, 0);
+    expectLineOffset(0, 1);
+
+    block.width = 2;
+    block.justification = "left";
+    expectBlockRange(4, 2);
+    expectLineOffset(0, 0);
+    expectLineOffset(0, 1);
+
+    block.justification = "right";
+    expectBlockRange(4, 2);
+    expectLineOffset(1, 0);
+    expectLineOffset(0, 1);
+
+    block.appendRun(makeTextRun("123456789"));
+    expectBlockRange(9, 3);
+    expectLineOffset(6, 0);
+    expectLineOffset(5, 1);
+    expectLineOffset(0, 2);
+
+    block.justification = "center";
+    expectBlockRange(9, 3);
+    expectLineOffset(3, 0);
+    expectLineOffset(2.5, 1);
+    expectLineOffset(0, 2);
+  });
+
   function expectLines(input: string, width: number, expectedLines: string[]): TextBlockLayout {
     const textBlock = TextBlock.create({ styleName: "" });
     textBlock.width = width;
