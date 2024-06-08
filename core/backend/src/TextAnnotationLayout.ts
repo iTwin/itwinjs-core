@@ -346,7 +346,11 @@ export class RunLayout {
     // Trim this run and return the remainder.
     const charOffset = this.charOffset + breakPos;
     const numChars = this.numChars - breakPos;
+
     this.numChars = breakPos;
+    const thisRanges = context.computeRangeForTextRun(this.style, this.source, 0, this.numChars);
+    this.range = thisRanges.layout;
+    this.justificationRange = thisRanges.justification;
 
     const leftover = this.source.content.substring(charOffset, charOffset + numChars);
     return this.cloneForWrap({

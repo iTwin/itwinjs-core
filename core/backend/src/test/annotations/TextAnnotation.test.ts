@@ -249,6 +249,33 @@ describe("layoutTextBlock", () => {
     expectBlockRange(7, 2);
   });
 
+  it("computes range split runs", function () {
+    if (ProcessDetector.isMobileAppBackend) {
+      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
+      // users are not expected to do any editing, but long term we will attempt to find a better
+      // solution.
+      this.skip();
+    }
+
+    const block = TextBlock.create({ styleName: "", styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } })
+
+    function expectBlockRange(width: number, height: number): void {
+      const layout = doLayout(block);
+      expect(layout.range.yLength()).to.equal(height);
+      expect(layout.range.xLength()).to.equal(width);
+    }
+
+    const sentence = "a bc def ghij klmno";
+    expect(sentence.length).to.equal(19);
+    block.appendRun(makeTextRun(sentence));
+
+    block.width = 19;
+    expectBlockRange(19, 1);
+
+    block.width = 10;
+    expectBlockRange(10, 2);
+  });
+    
   function expectLines(input: string, width: number, expectedLines: string[]): TextBlockLayout {
     const textBlock = TextBlock.create({ styleName: "" });
     textBlock.width = width;
