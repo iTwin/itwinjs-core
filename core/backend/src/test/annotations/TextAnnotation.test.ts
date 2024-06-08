@@ -66,6 +66,29 @@ describe("layoutTextBlock", () => {
     expect(s1.color).to.equal("subcategory");
   });
 
+  it("aligns text to center based on height of stacked fraction", () => {
+    const textBlock = TextBlock.create({ styleName: "" });
+    const fractionRun = FractionRun.create({ numerator: "1", denominator: "2", styleName: "fraction" });
+    const textRun = TextRun.create({ content: "text", styleName: "text" });
+    textBlock.appendRun(fractionRun);
+    textBlock.appendRun(textRun);
+
+    const layout = doLayout(textBlock);
+
+    const fractionLayout = layout.lines[0].runs[0];
+    const textLayout = layout.lines[0].runs[1];
+
+    const round = (num: number, numDecimalPlaces: number) => {
+      const mult = Math.pow(100, numDecimalPlaces);
+      return Math.round(num * mult) / mult;
+    };
+
+    expect(textLayout.range.yLength()).to.equal(1);
+    expect(round(fractionLayout.range.yLength(), 2)).to.equal(1.75);
+    expect(fractionLayout.offsetFromLine.y).to.equal(0);
+    expect(round(textLayout.offsetFromLine.y, 3)).to.equal(.375);
+  });
+
   it("produces one line per paragraph if document width <= 0", () => {
     const textBlock = TextBlock.create({ styleName: "" });
     for (let i = 0; i < 4; i++) {

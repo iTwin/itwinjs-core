@@ -387,7 +387,7 @@ export class LineLayout {
     for (const run of this._runs) {
       lineHeight = Math.max(lineHeight, run.range.yLength());
     }
-    
+
     for (const run of this._runs) {
       const runHeight = run.range.yLength();
       const runOffset = { x: this.range.high.x, y: (lineHeight - runHeight) / 2 };
