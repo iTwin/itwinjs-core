@@ -6,6 +6,7 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { ECClassModifier, Enumeration, EnumerationProps, PrimitiveType, SchemaContext, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
+import { ECEditingStatus } from "../../Editing/Exception";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -17,8 +18,7 @@ describe("Enumerations tests", () => {
   beforeEach(async () => {
     context = new SchemaContext();
     testEditor = new SchemaContextEditor(context);
-    const result = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
-    testKey = result.schemaKey!;
+    testKey = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
   });
 
   it("should create a new Enumeration class using a SchemaEditor", async () => {
@@ -53,7 +53,7 @@ describe("Enumerations tests", () => {
     };
 
     const result = await testEditor.enumerations.createFromProps(testKey, enumerationProps);
-    const testEnumeration = await testEditor.schemaContext.getSchemaItem<Enumeration>(result.itemKey!) as Enumeration;
+    const testEnumeration = await testEditor.schemaContext.getSchemaItem<Enumeration>(result) as Enumeration;
     expect(testEnumeration.name).to.eql("testEnumeration");
     const enumerator = testEnumeration.getEnumeratorByName("testEnumerator");
     expect(enumerator).to.not.be.undefined;
@@ -63,7 +63,7 @@ describe("Enumerations tests", () => {
   it("should add Enumerator to existing Enumeration.", async () => {
     const enumerator = { name: "testEnum", value: 1 };
     const enumResult  = await testEditor.enumerations.create(testKey, "testEnumeration", PrimitiveType.Integer);
-    await testEditor.enumerations.addEnumerator(enumResult.itemKey!, enumerator);
+    await testEditor.enumerations.addEnumerator(enumResult, enumerator);
     const schema = await testEditor.schemaContext.getCachedSchema(testKey);
     const testEnumeration = await schema?.getItem("testEnumeration") as Enumeration;
     const testEnum = testEnumeration.getEnumeratorByName("testEnum");
@@ -74,24 +74,40 @@ describe("Enumerations tests", () => {
   it("add Enumerator to a type that is not an enumeration, throws.", async () => {
     const enumerator = { name: "testEnum", value: 1 };
     const result  = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None);
-    await expect(testEditor.enumerations.addEnumerator(result.itemKey!, enumerator)).to.be.rejectedWith(Error, "testSchema.testEntity is not of type Enumerator class.");
+    await expect(testEditor.enumerations.addEnumerator(result, enumerator)).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("errorNumber", ECEditingStatus.AddEnumerator);
+      expect(error).to.have.nested.property("innerError.message", `Expected ${result.fullName} to be of type Enumeration.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidSchemaItemType);
+    });
   });
 
   it("add string Enumerator to an enumeration of type number, throws.", async () => {
     const enumerator = { name: "testEnum", value: "one" };
     const result  = await testEditor.enumerations.create(testKey, "testEnumeration", PrimitiveType.Integer);
-    await expect(testEditor.enumerations.addEnumerator(result.itemKey!, enumerator)).to.be.rejectedWith(Error, "The Enumeration testEnumeration has type integer, while testEnum has type string.");
+    await expect(testEditor.enumerations.addEnumerator(result, enumerator)).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("errorNumber", ECEditingStatus.AddEnumerator);
+      expect(error).to.have.nested.property("innerError.message", `The Enumeration ${result.fullName} has type int, while Enumerator testEnum has type string.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidEnumeratorType);
+    });
   });
 
-  it("add string Enumerator to an enumeration of type number, throws.", async () => {
+  it("add number Enumerator to an enumeration of type string, throws.", async () => {
     const enumerator = { name: "testEnum", value: 1 };
     const result  = await testEditor.enumerations.create(testKey, "testEnumeration", PrimitiveType.String);
-    await expect(testEditor.enumerations.addEnumerator(result.itemKey!, enumerator)).to.be.rejectedWith(Error, "The Enumeration testEnumeration has type string, while testEnum has type number.");
+    await expect(testEditor.enumerations.addEnumerator(result, enumerator)).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("errorNumber", ECEditingStatus.AddEnumerator);
+      expect(error).to.have.nested.property("innerError.message", `The Enumeration ${result.fullName} has type string, while Enumerator testEnum has type int.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidEnumeratorType);
+    });
   });
 
   it("add string Enumerator to an enumeration that can't be found, throws.", async () => {
     const enumerator = { name: "testEnum", value: 1 };
     const badKey = new SchemaItemKey("badKey", testKey);
-    await expect(testEditor.enumerations.addEnumerator(badKey, enumerator)).to.be.rejectedWith(Error, "Unable to locate Enumeration class testSchema.badKey.");
+    await expect(testEditor.enumerations.addEnumerator(badKey, enumerator)).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("errorNumber", ECEditingStatus.AddEnumerator);
+      expect(error).to.have.nested.property("innerError.message", `Enumeration ${badKey.fullName} could not be found in the schema context.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
+    });
   });
 });

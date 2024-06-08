@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { SchemaEditResults } from "../ecschema-editing";
 import type { SchemaMergeContext } from "./SchemaMerger";
 import type { ClassItemDifference, ClassPropertyDifference, DifferenceType } from "../Differencing/SchemaDifference";
 import { AnyProperty, AnyPropertyProps, ArrayPropertyProps, CustomAttribute, ECClass, Enumeration, EnumerationPropertyProps, NavigationPropertyProps, parsePrimitiveType, PrimitivePropertyProps, RelationshipClass, SchemaItemKey, SchemaItemType, StructClass, StructPropertyProps } from "@itwin/ecschema-metadata";
@@ -17,14 +16,14 @@ type PartialEditable<T> = {
 
 interface PropertyMerger<T extends AnyPropertyProps> {
   is(property: AnyPropertyProps): property is T;
-  add(context: SchemaMergeContext, itemKey: SchemaItemKey, props: PartialEditable<T>): Promise<SchemaEditResults>;
-  merge(context: SchemaMergeContext, itemKey: SchemaItemKey, property: AnyProperty, props: T): Promise<SchemaEditResults>;
+  add(context: SchemaMergeContext, itemKey: SchemaItemKey, props: PartialEditable<T>): Promise<void>;
+  merge(context: SchemaMergeContext, itemKey: SchemaItemKey, property: AnyProperty, props: T): Promise<void>;
 }
 
 /**
  * @internal
  */
-export async function mergePropertyDifference(context: SchemaMergeContext, change: ClassPropertyDifference): Promise<SchemaEditResults> {
+export async function mergePropertyDifference(context: SchemaMergeContext, change: ClassPropertyDifference): Promise<void> {
   const classKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
   return mergeClassProperty(context, change, classKey, {
     ...change.difference,
@@ -35,14 +34,10 @@ export async function mergePropertyDifference(context: SchemaMergeContext, chang
 /**
  * @internal
  */
-export async function mergeClassProperties(context: SchemaMergeContext, change: ClassItemDifference, itemKey: SchemaItemKey): Promise<SchemaEditResults> {
+export async function mergeClassProperties(context: SchemaMergeContext, change: ClassItemDifference, itemKey: SchemaItemKey): Promise<void> {
   for (const property of change.difference.properties || []) {
-    const result = await mergeClassProperty(context, change, itemKey, property);
-    if (result.errorMessage) {
-      return result;
-    }
+    await mergeClassProperty(context, change, itemKey, property);
   }
-  return {};
 }
 
 async function mergeClassProperty(context: SchemaMergeContext, change: { changeType: DifferenceType }, itemKey: SchemaItemKey, property: AnyPropertyProps) {
@@ -51,7 +46,7 @@ async function mergeClassProperty(context: SchemaMergeContext, change: { changeT
     : modifyClassProperty(context, itemKey, property);
 }
 
-async function addClassProperty(context: SchemaMergeContext, itemKey: SchemaItemKey, property: PartialEditable<AnyPropertyProps>): Promise<SchemaEditResults> {
+async function addClassProperty(context: SchemaMergeContext, itemKey: SchemaItemKey, property: PartialEditable<AnyPropertyProps>): Promise<void> {
   if (property.category !== undefined) {
     property.category = await updateSchemaItemFullName(context, property.category);
   }
@@ -60,27 +55,14 @@ async function addClassProperty(context: SchemaMergeContext, itemKey: SchemaItem
     property.kindOfQuantity = await updateSchemaItemFullName(context, property.kindOfQuantity);
   }
 
-  const createResult = await createProperty(context, itemKey, property);
-  if (createResult.errorMessage) {
-    return createResult;
-  }
+  await createProperty(context, itemKey, property);
 
   if (property.customAttributes !== undefined) {
-    const result = await applyCustomAttributes(context, property.customAttributes as CustomAttribute[], async (ca) => {
-      try{
-        const classEditor = await getClassEditor(context, itemKey);
-        await classEditor.properties.addCustomAttribute(itemKey, property.name, ca);
-        return {};
-      } catch(e: any) {
-        return { errorMessage: e.message };
-      }
+    await applyCustomAttributes(context, property.customAttributes as CustomAttribute[], async (ca) => {
+      const classEditor = await getClassEditor(context, itemKey);
+      await classEditor.properties.addCustomAttribute(itemKey, property.name, ca);
     });
-    if (result.errorMessage) {
-      return result;
-    }
   }
-
-  return {};
 }
 
 async function createProperty(context: SchemaMergeContext, itemKey: SchemaItemKey, property: PartialEditable<AnyPropertyProps>) {
@@ -99,18 +81,18 @@ async function createProperty(context: SchemaMergeContext, itemKey: SchemaItemKe
   return {};
 }
 
-async function modifyClassProperty(context: SchemaMergeContext, itemKey: SchemaItemKey, propertyProps: AnyPropertyProps): Promise<SchemaEditResults> {
+async function modifyClassProperty(context: SchemaMergeContext, itemKey: SchemaItemKey, propertyProps: AnyPropertyProps): Promise<void> {
   const ecClass = await context.editor.schemaContext.getSchemaItem(itemKey) as ECClass;
   const property = await ecClass.getProperty(propertyProps.name) as MutableProperty;
   if (property === undefined) {
-    return { errorMessage: `Couldn't find property ${propertyProps.name} on class ${itemKey.name}` };
+    throw new Error(`Couldn't find property ${propertyProps.name} on class ${itemKey.name}`);
   }
 
   if (propertyProps.type !== undefined) {
-    return { errorMessage: `Changing the property '${property.fullName}' type is not supported.` };
+    throw new Error(`Changing the property '${property.fullName}' type is not supported.`);
   }
   if (propertyProps.kindOfQuantity !== undefined) {
-    return { errorMessage: `Changing the property '${property.fullName}' kind of quantity is not supported.` };
+    throw new Error(`Changing the property '${property.fullName}' kind of quantity is not supported.`);
   }
 
   const classEditor = await getClassEditor(context, ecClass);
@@ -149,8 +131,6 @@ async function modifyClassProperty(context: SchemaMergeContext, itemKey: SchemaI
   if (property.isStruct()) {
     return structProperty.merge(context, itemKey, property, propertyProps as any);
   }
-
-  return {};
 }
 
 async function getClassEditor(context: SchemaMergeContext, ecClass: ECClass | SchemaItemKey): Promise<ECClasses> {
@@ -193,23 +173,24 @@ const enumerationProperty: PropertyMerger<EnumerationPropertyProps> = {
   is(property): property is EnumerationPropertyProps {
     return primitiveProperty.is(property) && property.typeName.includes(".");
   },
-  async add(context, itemKey, property): Promise<SchemaEditResults> {
+  async add(context, itemKey, property): Promise<void> {
     const enumerationKey = await updateSchemaItemKey(context, property.typeName);
     const enumerationType = await context.editor.schemaContext.getSchemaItem<Enumeration>(enumerationKey);
     if (enumerationType === undefined) {
-      return { errorMessage: `Unable to locate the enumeration class ${enumerationKey.name} in the context schema.` };
+      throw new Error(`Unable to locate the enumeration class ${enumerationKey.name} in the context schema.`);
     }
 
     property.typeName = enumerationKey.fullName;
 
     const classEditor = await getClassEditor(context, itemKey);
-    return arrayProperty.is(property)
-      ? classEditor.createEnumerationArrayPropertyFromProps(itemKey, property.name, enumerationType, property)
-      : classEditor.createEnumerationPropertyFromProps(itemKey, property.name, enumerationType, property);
+
+    arrayProperty.is(property)
+      ? await classEditor.createEnumerationArrayPropertyFromProps(itemKey, property.name, enumerationType, property)
+      : await classEditor.createEnumerationPropertyFromProps(itemKey, property.name, enumerationType, property);
   },
   async merge(context, itemKey, property, props) {
     if ("enumeration" in props && props.enumeration !== undefined) {
-      return { errorMessage: `Changing the property '${property.fullName}' enumeration is not supported.` };
+      throw new Error(`Changing the property '${property.fullName}' enumeration is not supported.`);
     }
     return primitiveProperty.merge(context, itemKey, property, props);
   },
@@ -219,11 +200,11 @@ const navigationProperty: PropertyMerger<NavigationPropertyProps> = {
   is(property): property is NavigationPropertyProps {
     return property.type === "NavigationProperty";
   },
-  async add(context, itemKey, property): Promise<SchemaEditResults> {
+  async add(context, itemKey, property): Promise<void> {
     const relationshipKey = await updateSchemaItemKey(context, property.relationshipName);
     const relationshipType = await context.editor.schemaContext.getSchemaItem<RelationshipClass>(relationshipKey);
     if (relationshipType === undefined) {
-      return { errorMessage: `Unable to locate the relationship class ${relationshipKey.name} in the context schema.` };
+      throw new Error(`Unable to locate the relationship class ${relationshipKey.name} in the context schema.`);
     }
 
     property.relationshipName = relationshipKey.fullName;
@@ -235,16 +216,15 @@ const navigationProperty: PropertyMerger<NavigationPropertyProps> = {
       return context.editor.mixins.createNavigationPropertyFromProps(itemKey, property);
     if (ecClass.schemaItemType === SchemaItemType.RelationshipClass)
       return context.editor.relationships.createNavigationPropertyFromProps(itemKey, property);
-    return { errorMessage: `Navigation property can't be added to ${ecClass.schemaItemType}.` };
+    throw new Error(`Navigation property can't be added to ${ecClass.schemaItemType}.`);
   },
   async merge(_context, _itemKey, property, props) {
     if (props.direction !== undefined) {
-      return { errorMessage: `Changing the property '${property.fullName}' direction is not supported.` };
+      throw new Error(`Changing the property '${property.fullName}' direction is not supported.`);
     }
     if ("relationshipClass" in props && props.relationshipClass !== undefined) {
-      return { errorMessage: `Changing the property '${property.fullName}' relationship class is not supported.` };
+      throw new Error(`Changing the property '${property.fullName}' relationship class is not supported.`);
     }
-    return {};
   },
 };
 
@@ -252,10 +232,10 @@ const primitiveProperty: PropertyMerger<PrimitivePropertyProps> = {
   is(property): property is PrimitivePropertyProps {
     return property.type === "PrimitiveProperty" || property.type === "PrimitiveArrayProperty";
   },
-  async add(context, itemKey, property): Promise<SchemaEditResults> {
+  async add(context, itemKey, property): Promise<void> {
     const propertyType = parsePrimitiveType(property.typeName);
     if (propertyType === undefined) {
-      return { errorMessage: `Invalid property type ${property.typeName} on property ${property.name}` };
+      throw new Error(`Invalid property type ${property.typeName} on property ${property.name}`);
     }
 
     const classEditor = await getClassEditor(context, itemKey);
@@ -265,7 +245,7 @@ const primitiveProperty: PropertyMerger<PrimitivePropertyProps> = {
   },
   async merge(context, itemKey, property, props) {
     if (props.typeName) {
-      return { errorMessage: `Changing the property '${property.fullName}' primitiveType is not supported.` };
+      throw new Error(`Changing the property '${property.fullName}' primitiveType is not supported.`);
     }
 
     const classEditor = await getClassEditor(context, itemKey);
@@ -284,7 +264,6 @@ const primitiveProperty: PropertyMerger<PrimitivePropertyProps> = {
     if (props.maxValue !== undefined) {
       await classEditor.primitiveProperties.setMaxValue(itemKey, property.name, props.maxValue);
     }
-    return {};
   },
 };
 
@@ -292,11 +271,11 @@ const structProperty: PropertyMerger<StructPropertyProps> = {
   is(property): property is StructPropertyProps {
     return property.type === "StructProperty" || property.type === "StructArrayProperty";
   },
-  async add(context, itemKey, property): Promise<SchemaEditResults> {
+  async add(context, itemKey, property): Promise<void> {
     const structKey = await updateSchemaItemKey(context, property.typeName);
     const structType = await context.editor.schemaContext.getSchemaItem<StructClass>(structKey);
     if (structType === undefined) {
-      return { errorMessage: `Unable to locate the struct ${structKey.name} in the context schema.` };
+      throw new Error(`Unable to locate the struct ${structKey.name} in the context schema.`);
     }
 
     property.typeName = structKey.fullName;
@@ -308,8 +287,7 @@ const structProperty: PropertyMerger<StructPropertyProps> = {
   },
   async merge(_context, _itemKey, property, props) {
     if ("structClass" in props && props.structClass !== undefined) {
-      return { errorMessage: `Changing the property '${property.fullName}' structClass is not supported.` };
+      throw new Error(`Changing the property '${property.fullName}' structClass is not supported.`);
     }
-    return {};
   },
 };

@@ -6,9 +6,10 @@
 import { assert, expect } from "chai";
 import * as os from "os";
 import * as readline from "readline";
+import * as sinon from "sinon";
 import { AccessToken, BriefcaseStatus, GuidString, StopWatch } from "@itwin/core-bentley";
 import { BriefcaseIdValue, BriefcaseProps, IModelError, IModelVersion } from "@itwin/core-common";
-import { BriefcaseDb, BriefcaseManager, IModelHost, IModelJsFs, RequestNewBriefcaseArg, V2CheckpointManager } from "@itwin/core-backend";
+import { BriefcaseDb, BriefcaseManager, CheckpointManager, IModelHost, IModelJsFs, RequestNewBriefcaseArg, V2CheckpointManager } from "@itwin/core-backend";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/index";
 import { HubUtility, TestUserType } from "../HubUtility";
 
@@ -162,6 +163,23 @@ describe("BriefcaseManager", () => {
     const downloadPromise = BriefcaseManager.downloadBriefcase(args);
     setTimeout(async () => aborted = 1, 1000);
     await expect(downloadPromise).to.eventually.be.rejectedWith("cancelled").have.property("errorNumber", BriefcaseStatus.DownloadCancelled);
+  });
+
+  it("Should be able to delete the briefcase .bim file on a failed download", async () => {
+    const testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
+    const args: RequestNewBriefcaseArg & BriefcaseProps = {
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId: testIModelId,
+      briefcaseId: BriefcaseIdValue.Unassigned,
+    };
+    const fileName = BriefcaseManager.getFileName(args);
+    await BriefcaseManager.deleteBriefcaseFiles(fileName);
+    sinon.stub(CheckpointManager, "downloadCheckpoint").throws(new Error("testError"));
+    const downloadPromise = BriefcaseManager.downloadBriefcase({...args, fileName});
+    await expect(downloadPromise).to.eventually.be.rejectedWith("testError");
+    expect(IModelJsFs.existsSync(fileName)).to.be.false;
+    sinon.restore();
   });
 
 });

@@ -14,13 +14,13 @@ import type { MutableEnumeration } from "../Editing/Mutable/MutableEnumeration";
 export const enumerationMerger: SchemaItemMergerHandler<EnumerationDifference> = {
   async add(context, change: EnumerationDifference) {
     if (change.difference.type === undefined) {
-      return { errorMessage: "Enumerations must define a type property" };
+      throw new Error("Enumerations must define a type property");
     }
     if (change.difference.isStrict === undefined) {
-      return { errorMessage: "Enumerations must define whether enumeration is strict." };
+      throw new Error("Enumerations must define whether enumeration is strict.");
     }
     if (change.difference.enumerators === undefined) {
-      return { errorMessage: "Enumerations must define at least ine enumerator." };
+      throw new Error("Enumerations must define at least ine enumerator.");
     }
 
     return context.editor.enumerations.createFromProps(context.targetSchemaKey, {
@@ -34,7 +34,7 @@ export const enumerationMerger: SchemaItemMergerHandler<EnumerationDifference> =
   },
   async modify(_context, change, itemKey, item: MutableEnumeration) {
     if(change.difference.type !== undefined) {
-      return { errorMessage: `The Enumeration ${itemKey.name} has an incompatible type. It must be "${primitiveTypeToString(item.type!)}", not "${change.difference.type}".` };
+      throw new Error(`The Enumeration ${itemKey.name} has an incompatible type. It must be "${primitiveTypeToString(item.type!)}", not "${change.difference.type}".`);
     }
     if(change.difference.label !== undefined) {
       item.setDisplayLabel(change.difference.label);
@@ -45,7 +45,6 @@ export const enumerationMerger: SchemaItemMergerHandler<EnumerationDifference> =
     if(change.difference.isStrict !== undefined) {
       item.setIsStrict(change.difference.isStrict);
     }
-    return { itemKey};
   },
 };
 
@@ -56,10 +55,10 @@ export const enumerationMerger: SchemaItemMergerHandler<EnumerationDifference> =
 export const enumeratorMerger: SchemaItemMergerHandler<EnumeratorDifference> = {
   async add(context, change) {
     if (change.difference.name === undefined) {
-      return { errorMessage: "Enumerators must define a name" };
+      throw new Error("Enumerators must define a name");
     }
     if (change.difference.value === undefined) {
-      return { errorMessage: "Enumerators must define a value" };
+      throw new Error("Enumerators must define a value");
     }
 
     const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
@@ -69,12 +68,11 @@ export const enumeratorMerger: SchemaItemMergerHandler<EnumeratorDifference> = {
       label: change.difference.label,
       description: change.difference.description,
     });
-
-    return { itemKey };
+    return itemKey;
   },
   async modify(context, change, itemKey) {
     if(change.difference.value !== undefined) {
-      return { errorMessage: `Failed to merge enumerator attribute, Enumerator "${change.path}" has different values.` };
+      throw new Error(`Failed to merge enumerator attribute, Enumerator "${change.path}" has different values.`);
     }
 
     if(change.difference.description !== undefined) {
@@ -83,6 +81,5 @@ export const enumeratorMerger: SchemaItemMergerHandler<EnumeratorDifference> = {
     if(change.difference.label !== undefined) {
       await context.editor.enumerations.setEnumeratorLabel(itemKey, change.path, change.difference.label);
     }
-    return { itemKey };
   },
 };
