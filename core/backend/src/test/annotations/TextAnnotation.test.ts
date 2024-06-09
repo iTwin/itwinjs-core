@@ -613,6 +613,52 @@ describe("layoutTextBlock", () => {
       expect(computeDimensions({ width: 2 })).to.deep.equal(computeDimensions({ width: 2 }));
       expect(computeDimensions({ width: 2 })).not.to.deep.equal(computeDimensions({ width: 3 }));
     });
+
+    it("excludes trailing blank glyphs from justification ranges", () => {
+      function computeRanges(chars: string): TextLayoutRanges {
+        return iModel.computeRangesForText({
+          chars,
+          bold: false,
+          italic: false,
+          fontId: 1,
+          widthFactor: 1,
+          lineHeight: 1,
+          baselineShift: "none",
+        });
+      }
+
+      function test(chars: string, expectEqualRanges: boolean): void {
+        const { justification, layout }= computeRanges(chars);
+        expect(layout.low.x).to.equal(justification.low.x);
+        expect(layout.high.y).to.equal(justification.high.y);
+        expect(layout.low.y).to.equal(justification.low.y);
+
+        if (expectEqualRanges) {
+          expect(layout.high.x).to.equal(justification.high.x);
+        } else {
+          expect(layout.high.x).greaterThan(justification.high.x);
+        }
+      }
+
+      test("abcdef", true);
+      test("abcdef ", false);
+      test("abcdef   ", false);
+      test("abc def", true);
+
+      // new line has no width ever.
+      test("abcdef\n", true);
+
+      // apparently native code doesn't consider tab characters to be "blank".
+      test("abcdef\t", true);
+
+      // apparently native code doesn't consider "thin space" to be "blank".
+      test("abcdef\u2009", true);
+
+      const r1 = computeRanges("abcdef ");
+      const r2 = computeRanges("abcdef    ");
+      expect(r1.layout.xLength()).lessThan(r2.layout.xLength());
+      expect(r1.justification.xLength()).to.equal(r2.justification.xLength());
+    });
   });
 });
 
