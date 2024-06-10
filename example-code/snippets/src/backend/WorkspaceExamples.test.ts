@@ -253,7 +253,7 @@ describe("Workspace Examples", () => {
             label,
             description,
           },
-          // Ownership, access control, and datacenter location are defined by the iTwin.
+          // Ownership and datacenter are defined by the iTwin. Access rights are granted by RBAC administrators of the iTwin.
           scope: { iTwinId },
           // The manifest to be embedded inside the default WorkspaceDb.
           manifest: {
