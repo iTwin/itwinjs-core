@@ -7,12 +7,14 @@
  */
 
 import {
-  CustomAttributeClassProps, CustomAttributeContainerType, DelayedPromiseWithProps, ECClass,
+  CustomAttributeClass,
+  CustomAttributeClassProps, CustomAttributeContainerType,
   SchemaItemKey, SchemaItemType, SchemaKey,
 } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import { SchemaContextEditor } from "./Editor";
 import { ECClasses } from "./ECClasses";
 import { MutableCAClass } from "./Mutable/MutableCAClass";
+import { ClassId, ECEditingStatus, SchemaEditingError } from "./Exception";
 
 /**
  * @alpha
@@ -23,32 +25,18 @@ export class CustomAttributes extends ECClasses {
     super(SchemaItemType.CustomAttributeClass, schemaEditor);
   }
 
-  public async create(schemaKey: SchemaKey, name: string, containerType: CustomAttributeContainerType, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+  public async create(schemaKey: SchemaKey, name: string, containerType: CustomAttributeContainerType, displayLabel?: string, baseClassKey?: SchemaItemKey): Promise<SchemaItemKey> {
+    try {
+      const newClass = await this.createClass<CustomAttributeClass>(schemaKey, this.schemaItemType, (schema) => schema.createCustomAttributeClass.bind(schema), name, baseClassKey) as MutableCAClass;
 
-    const newClass = (await schema.createCustomAttributeClass(name)) as MutableCAClass;
-    if (newClass === undefined)
-      return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
+      if (displayLabel)
+        newClass.setDisplayLabel(displayLabel);
 
-    if (baseClass !== undefined) {
-      const baseClassItem = await schema.lookupItem<ECClass>(baseClass);
-      if (baseClassItem === undefined)
-        return { errorMessage: `Unable to locate base class ${baseClass.fullName} in schema ${schema.fullName}.` };
-
-      if (baseClassItem.schemaItemType !== SchemaItemType.CustomAttributeClass)
-        return { errorMessage: `${baseClassItem.fullName} is not of type CustomAttribute Class.` };
-
-      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClass, async () => baseClassItem);
+      newClass.setContainerType(containerType);
+      return newClass.key;
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new ClassId(this.schemaItemType, name, schemaKey), e);
     }
-
-    if (displayLabel)
-      newClass.setDisplayLabel(displayLabel);
-
-    newClass.setContainerType(containerType);
-
-    return { itemKey: newClass.key };
   }
 
   /**
@@ -56,20 +44,12 @@ export class CustomAttributes extends ECClasses {
    * @param schemaKey a SchemaKey of the Schema that will house the new object.
    * @param caProps a json object that will be used to populate the new CustomAttributeClass. Needs a name value passed in.
    */
-  public async createFromProps(schemaKey: SchemaKey, caProps: CustomAttributeClassProps): Promise<SchemaItemEditResults> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
-
-    if (caProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
-
-    const newClass = (await schema.createCustomAttributeClass(caProps.name)) as MutableCAClass;
-    if (newClass === undefined)
-      return { errorMessage: `Failed to create class ${caProps.name} in schema ${schemaKey.toString(true)}.` };
-
-    await newClass.fromJSON(caProps);
-
-    return { itemKey: newClass.key };
+  public async createFromProps(schemaKey: SchemaKey, caProps: CustomAttributeClassProps): Promise<SchemaItemKey> {
+    try {
+      const newClass = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createCustomAttributeClass.bind(schema), caProps);
+      return newClass.key;
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, caProps.name!, schemaKey), e);
+    }
   }
 }
