@@ -282,6 +282,11 @@ export class RunLayout {
     return new RunLayout({ source, charOffset, numChars, range, justificationRange, denominatorRange, numeratorRange, offsetFromLine, style, fontId });
   }
 
+  public stringify(): string {
+    const str = this.source.type === "text" ? this.source.content.substring(this.charOffset, this.charOffset + this.numChars) : this.source.stringify();
+    return `"${str}"`;
+  }
+
   public canWrap(): this is { source: TextRun } {
     return this.source.type === "text";
   }
@@ -373,6 +378,11 @@ export class LineLayout {
     this.source = source;
   }
 
+  public stringify(): string {
+    const runs = this._runs.map((run) => run.stringify());
+    return `${runs.join(",")}`;
+  }
+
   public get runs(): ReadonlyArray<RunLayout> { return this._runs; }
   public get isEmpty() { return this._runs.length === 0; }
   public get back(): RunLayout {
@@ -427,6 +437,10 @@ export class TextBlockLayout {
 
     this.populateLines(context);
     this.justifyLines();
+  }
+
+  public stringify(): string {
+    return this.lines.map((line) => line.stringify()).join("\n");
   }
 
   private get _back(): LineLayout {

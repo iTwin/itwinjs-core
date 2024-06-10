@@ -36,7 +36,14 @@ function makeTextRun(content: string, styleName = ""): TextRun {
   return TextRun.create({ content, styleName });
 }
 
-describe("layoutTextBlock", () => {
+function isIntlSupported(): boolean {
+  // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
+  // users are not expected to do any editing, but long term we will attempt to find a better
+  // solution.
+  return !ProcessDetector.isMobileAppBackend;
+}
+
+describe.only("layoutTextBlock", () => {
   it("resolves TextStyleSettings from combination of TextBlock and Run", () => {
     const textBlock = TextBlock.create({ styleName: "block", styleOverrides: { widthFactor: 34, color: 0x00ff00 }});
     const run0 = TextRun.create({ content: "run0", styleName: "run", styleOverrides: { lineHeight: 56, color: 0xff0000 }});
@@ -178,13 +185,12 @@ describe("layoutTextBlock", () => {
     expect(tb.lines[2].offsetFromDocument.y).to.equal(tb.lines[1].offsetFromDocument.y - (lineHeight + lineHeight * lineSpacingFactor));
     expect(tb.lines.every((line) => line.offsetFromDocument.x === 0)).to.be.true;
   });
+
   it("splits paragraphs into multiple lines if runs exceed the document width", function () {
-    if (ProcessDetector.isMobileAppBackend) {
-      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
-      // users are not expected to do any editing, but long term we will attempt to find a better
-      // solution.
+    if (!isIntlSupported()) {
       this.skip();
     }
+
     const textBlock = TextBlock.create({ styleName: "" });
     textBlock.width = 6;
     textBlock.appendRun(makeTextRun("ab"));
@@ -217,10 +223,7 @@ describe("layoutTextBlock", () => {
   }
 
   it("computes range for wrapped lines", function () {
-    if (ProcessDetector.isMobileAppBackend) {
-      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
-      // users are not expected to do any editing, but long term we will attempt to find a better
-      // solution.
+    if (!isIntlSupported()) {
       this.skip();
     }
 
@@ -253,10 +256,7 @@ describe("layoutTextBlock", () => {
   });
 
   it("computes range for split runs", function () {
-    if (ProcessDetector.isMobileAppBackend) {
-      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
-      // users are not expected to do any editing, but long term we will attempt to find a better
-      // solution.
+    if (!isIntlSupported()) {
       this.skip();
     }
 
@@ -279,10 +279,7 @@ describe("layoutTextBlock", () => {
   });
     
   it("justifies lines", function () {
-    if (ProcessDetector.isMobileAppBackend) {
-      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
-      // users are not expected to do any editing, but long term we will attempt to find a better
-      // solution.
+    if (!isIntlSupported()) {
       this.skip();
     }
     
@@ -372,12 +369,10 @@ describe("layoutTextBlock", () => {
   }
 
   it("splits a single TextRun at word boundaries if it exceeds the document width", function () {
-    if (ProcessDetector.isMobileAppBackend) {
-      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
-      // users are not expected to do any editing, but long term we will attempt to find a better
-      // solution.
+    if (!isIntlSupported()) {
       this.skip();
     }
+
     expectLines("a bc def ghij klmno pqrstu vwxyz", 5, [
       "a bc ",
       "def ",
@@ -422,12 +417,10 @@ describe("layoutTextBlock", () => {
   });
 
   it("considers consecutive whitespace a single 'word'", function () {
-    if (ProcessDetector.isMobileAppBackend) {
-      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
-      // users are not expected to do any editing, but long term we will attempt to find a better
-      // solution.
+    if (!isIntlSupported()) {
       this.skip();
     }
+
     expectLines("a b  c   d    e     f      ", 3, [
       "a b",
       "  c",
@@ -442,23 +435,19 @@ describe("layoutTextBlock", () => {
   });
 
   it("performs word-wrapping on Japanese text", function () {
-    if (ProcessDetector.isMobileAppBackend) {
-      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
-      // users are not expected to do any editing, but long term we will attempt to find a better
-      // solution.
+    if (!isIntlSupported()) {
       this.skip();
     }
+
     // "I am a cat. The name is Tanuki."
     expectLines("吾輩は猫である。名前はたぬき。", 1, ["吾輩", "は", "猫", "で", "ある", "。", "名前", "は", "たぬき", "。"]);
   });
 
   it("performs word-wrapping with punctuation", function () {
-    if (ProcessDetector.isMobileAppBackend) {
-      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
-      // users are not expected to do any editing, but long term we will attempt to find a better
-      // solution.
+    if (!isIntlSupported()) {
       this.skip();
     }
+
     expectLines("1.24 56.7 8,910", 1, ["1.24", " ", "56.7", " ", "8,910"]);
 
     // NOTE: Chrome splits a.bc and de.f on the periods. Safari and electron do not.
@@ -477,12 +466,10 @@ describe("layoutTextBlock", () => {
   });
 
   it("performs word-wrapping and line-splitting with multiple runs", function () {
-    if (ProcessDetector.isMobileAppBackend) {
-      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
-      // users are not expected to do any editing, but long term we will attempt to find a better
-      // solution.
+    if (!isIntlSupported()) {
       this.skip();
     }
+
     const textBlock = TextBlock.create({ styleName: "" });
     for (const str of ["The ", "quick brown", " fox jumped over ", "the lazy ", "dog"]) {
       textBlock.appendRun(makeTextRun(str));
@@ -526,7 +513,26 @@ describe("layoutTextBlock", () => {
     ]);
   });
 
-  describe("using native font library", () => {
+  it.only("wraps multiple runs", function () {
+    if (!isIntlSupported()) {
+      this.skip();
+    }
+
+    const block = TextBlock.create({ styleName: "" });
+    // block.appendRun(makeTextRun("aaaa"));
+    block.appendRun(makeTextRun("bbbb cccc")); //  dddd eeee"));
+    block.appendRun(makeTextRun("ffff gggg")); //  hhhh iiii"));
+
+    for (let width = 7; width >= 1; width--) {
+      console.log(width);
+      block.width = width;
+      const layout = doLayout(block);
+      console.log(layout.stringify());
+      // expect(layout.lines.length).to.equal(1 + 7 + 7);
+    }
+  });
+
+  describe.only("using native font library", () => {
     let iModel: SnapshotDb;
 
     before(() => {
@@ -672,7 +678,7 @@ function mockIModel(): IModelDb {
   return iModel as IModelDb;
 }
 
-describe("produceTextAnnotationGeometry", () => {
+describe.only("produceTextAnnotationGeometry", () => {
   type Color = ColorDef | "subcategory";
 
   function makeText(color?: Color): TextRun {
@@ -772,7 +778,7 @@ describe("produceTextAnnotationGeometry", () => {
   });
 });
 
-describe("TextAnnotation element", () => {
+describe.only("TextAnnotation element", () => {
   function makeElement(props?: Partial<TextAnnotation2dProps>): TextAnnotation2d {
     return TextAnnotation2d.fromJSON({
       category: "0x12",
@@ -786,7 +792,7 @@ describe("TextAnnotation element", () => {
     }, mockIModel());
   }
 
-  describe("getAnnotation", () => {
+  describe.only("getAnnotation", () => {
     it("returns undefined if not present in JSON properties", () => {
       expect(makeElement().getAnnotation()).to.be.undefined;
     });
@@ -822,7 +828,7 @@ describe("TextAnnotation element", () => {
     });
   });
 
-  describe("setAnnotation", () => {
+  describe.only("setAnnotation", () => {
     it("updates JSON properties and recomputes geometry stream", () => {
       const elem = makeElement();
       expect(elem.geom).to.be.undefined;
@@ -850,7 +856,7 @@ describe("TextAnnotation element", () => {
     });
   });
 
-  describe("persistence", () => {
+  describe.only("persistence", () => {
     let imodel: SnapshotDb;
     let seed: GeometricElement3d;
 
@@ -946,8 +952,4 @@ describe("TextAnnotation element", () => {
       test(createAnnotation());
     });
   });
-});
-
-describe("IModelDb.computeRangesForText", () => {
-
 });
