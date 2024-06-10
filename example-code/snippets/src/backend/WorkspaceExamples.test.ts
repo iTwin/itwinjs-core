@@ -302,6 +302,8 @@ describe("Workspace Examples", () => {
         light: "full",
       });
 
+      // Close the db and release the write lock, which publishes the changes to the cloud and makes
+      // them visible to other users.
       cornusDb.close();
       cornusDb.container.releaseWriteLock();
       // __PUBLISH_EXTRACT_END__
