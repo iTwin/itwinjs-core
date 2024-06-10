@@ -198,6 +198,7 @@ internal;EdgeParams
 internal;edgeParamsFromImdl(imdl: ImdlModel.EdgeParams): EdgeParams
 internal;EdgeTable
 internal;EdgeTableInfo
+internal;EditCommandHandler
 public;EditManipulator
 internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
 alpha;ElementAgenda
