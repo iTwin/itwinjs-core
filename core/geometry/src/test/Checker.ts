@@ -464,6 +464,11 @@ export class Checker {
       return this.announceOK();
     return this.announceError("Angle.isAlmostEqualNoPeriodShift", params);
   }
+  public testRadians(radiansA: number, radiansB: number, ...params: any[]): boolean {
+    if (Geometry.isSmallAngleRadians(radiansA - radiansB))
+      return this.announceOK();
+    return this.announceError("Expect same radian angle", params);
+  }
   public testGeometry(
     dataA: GeometryQuery | GeometryQuery[] | undefined,
     dataB: GeometryQuery | GeometryQuery[] | undefined,
