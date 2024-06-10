@@ -41,7 +41,7 @@ export type FindFontId = (name: string) => FontId;
 /** @internal */
 export type FindTextStyle = (name: string) => TextStyleSettings;
 
-/** Arguments supplied to [[computeTextBlockExtents]] and [[getLayoutTextBlockResult]].
+/** Arguments supplied to [[computeTextBlockExtents]].
  * @beta
  */
 export interface ComputeTextBlockExtentsArgs {
@@ -51,7 +51,10 @@ export interface ComputeTextBlockExtentsArgs {
   iModel: IModelDb;
 }
 
-/** @internal */
+/**
+ * Arguments supplied to [[getLayoutTextBlockResult]].
+ * @beta
+ */
 export interface LayoutTextBlockArgs extends ComputeTextBlockExtentsArgs {
   /** @internal chiefly for tests, by default uses IModelJsNative.DgnDb.computeRangesForText. */
   computeTextRange?: ComputeRangesForTextLayout;
@@ -86,7 +89,7 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
  * The layout returned matches the visual layout of the geometry produced by [[produceTextAnnotationGeometry]].
  * @beta
  */
-export function getLayoutTextBlockResult(args: ComputeTextBlockExtentsArgs): TextBlockLayoutResult {
+export function getLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult {
   const layout = layoutTextBlock(args);
   return layout.toResult();
 }
