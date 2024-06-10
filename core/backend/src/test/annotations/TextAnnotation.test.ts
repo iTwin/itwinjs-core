@@ -23,13 +23,17 @@ function doLayout(textBlock: TextBlock, args?: {
   findFontId?: FindFontId;
   computeTextRange?: ComputeRangesForTextLayout;
 }): TextBlockLayout {
-  return layoutTextBlock({
+  const layout = layoutTextBlock({
     textBlock,
     iModel: {} as any,
     findTextStyle: args?.findTextStyle ?? (() => TextStyleSettings.defaults),
     findFontId: args?.findFontId ?? (() => 0),
     computeTextRange: args?.computeTextRange ?? computeTextRangeAsStringLength,
   });
+
+  console.log("--------------------------");
+  console.log(layout.stringify());
+  return layout;
 }
 
 function makeTextRun(content: string, styleName = ""): TextRun {
@@ -513,7 +517,7 @@ describe.only("layoutTextBlock", () => {
     ]);
   });
 
-  it.only("wraps multiple runs", function () {
+  it("wraps multiple runs", function () {
     if (!isIntlSupported()) {
       this.skip();
     }
@@ -523,7 +527,7 @@ describe.only("layoutTextBlock", () => {
     block.appendRun(makeTextRun("bbbb cccc")); //  dddd eeee"));
     block.appendRun(makeTextRun("ffff gggg")); //  hhhh iiii"));
 
-    for (let width = 7; width >= 1; width--) {
+    for (let width = 11; width >= 1; width--) {
       console.log(width);
       block.width = width;
       const layout = doLayout(block);
@@ -532,7 +536,7 @@ describe.only("layoutTextBlock", () => {
     }
   });
 
-  describe.only("using native font library", () => {
+  describe("using native font library", () => {
     let iModel: SnapshotDb;
 
     before(() => {
@@ -678,7 +682,7 @@ function mockIModel(): IModelDb {
   return iModel as IModelDb;
 }
 
-describe.only("produceTextAnnotationGeometry", () => {
+describe("produceTextAnnotationGeometry", () => {
   type Color = ColorDef | "subcategory";
 
   function makeText(color?: Color): TextRun {
@@ -778,7 +782,7 @@ describe.only("produceTextAnnotationGeometry", () => {
   });
 });
 
-describe.only("TextAnnotation element", () => {
+describe("TextAnnotation element", () => {
   function makeElement(props?: Partial<TextAnnotation2dProps>): TextAnnotation2d {
     return TextAnnotation2d.fromJSON({
       category: "0x12",
@@ -792,7 +796,7 @@ describe.only("TextAnnotation element", () => {
     }, mockIModel());
   }
 
-  describe.only("getAnnotation", () => {
+  describe("getAnnotation", () => {
     it("returns undefined if not present in JSON properties", () => {
       expect(makeElement().getAnnotation()).to.be.undefined;
     });
@@ -828,7 +832,7 @@ describe.only("TextAnnotation element", () => {
     });
   });
 
-  describe.only("setAnnotation", () => {
+  describe("setAnnotation", () => {
     it("updates JSON properties and recomputes geometry stream", () => {
       const elem = makeElement();
       expect(elem.geom).to.be.undefined;
@@ -856,7 +860,7 @@ describe.only("TextAnnotation element", () => {
     });
   });
 
-  describe.only("persistence", () => {
+  describe("persistence", () => {
     let imodel: SnapshotDb;
     let seed: GeometricElement3d;
 

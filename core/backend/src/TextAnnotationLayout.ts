@@ -364,6 +364,32 @@ export class RunLayout {
       numChars,
     });
   }
+
+  public split(context: LayoutContext): RunLayout[] {
+    assert(this.charOffset === 0, "cannot re-split a run");
+    if (!this.canWrap() || this.charOffset > 0) {
+      return [this];
+    }
+
+    const segmenter = new (global as any).Intl.Segmenter(undefined, { granularity: "word" });
+    const myText = this.source.content.substring(this.charOffset, this.charOffset + this.numChars);
+    if (myText.length === 0) {
+      return [];
+    }
+
+    const segments = Array.from(segmenter.segment(myText)) as any[];
+    if (segments.length <= 1) {
+      return [this];
+    }
+
+    return segments.map((segment) => {
+      return this.cloneForWrap({
+        ranges: context.computeRangeForText(segment.segment, this.style, this.source.baselineShift),
+        charOffset: segment.index,
+        numChars: segment.segment.length,
+      });
+    });
+  }
 }
 
 /** @internal */
@@ -435,7 +461,13 @@ export class TextBlockLayout {
   public constructor(source: TextBlock, context: LayoutContext) {
     this.source = source;
 
-    this.populateLines(context);
+    const useNewMethod = true;
+    if (useNewMethod) {
+      this._populateLines(context);
+    } else {
+      this.populateLines(context);
+    }
+    
     this.justifyLines();
   }
 
@@ -510,6 +542,59 @@ export class TextBlockLayout {
 
     if (line.runs.length > 0) {
       this.flushLine(context, line);
+    }
+  }
+
+  private _populateLines(context: LayoutContext): void {
+    const doc = this.source;
+    if (doc.paragraphs.length === 0) {
+      return;
+    }
+
+    const doWrap = doc.width > 0;
+    let curLine = new LineLayout(doc.paragraphs[0]);
+    for (let i = 0; i < doc.paragraphs.length; i++) {
+      const paragraph = doc.paragraphs[i];
+      if (i > 0) {
+        curLine = this.flushLine(context, curLine, paragraph);
+      }
+
+      let runs = paragraph.runs.map((run) => RunLayout.create(run, context));
+      if (doWrap) {
+        runs = runs.map((run) => run.split(context)).flat();
+      }
+
+      for (const run of runs) {
+        if ("linebreak" === run.source.type) {
+          curLine.append(run);
+          curLine = this.flushLine(context, curLine);
+          continue;
+        }
+
+        if (!doWrap) {
+          curLine.append(run);
+          continue;
+        }
+
+        const runWidth = run.range.xLength();
+        const lineWidth = curLine.range.xLength();
+        if (runWidth + lineWidth < doc.width) {
+          curLine.append(run);
+          continue;
+        }
+
+        if (curLine.runs.length === 0) {
+          curLine.append(run);
+          curLine = this.flushLine(context, curLine);
+        } else {
+          curLine = this.flushLine(context, curLine);
+          curLine.append(run);
+        }
+      }
+    }
+    
+    if (curLine.runs.length > 0) {
+      this.flushLine(context, curLine);
     }
   }
 
