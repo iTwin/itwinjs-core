@@ -1,6 +1,8 @@
 # Workspaces and Settings
 
-Every non-trivial application requires some level of configuration to customize its run-time behavior and help it locate data resources required for it to perform its functions. An iTwin.js [Workspace]($backend) comprises the [Settings]($backend) that supply this configuration and the [WorkspaceContainer]($backend)s that provide those resources.
+Every non-trivial application requires some level of configuration to customize its run-time behavior and help it locate data resources required for it to perform its functions. An iTwin.js [Workspace]($backend) comprises the [Settings]($backend) that supply this configuration and the [WorkspaceContainer]($backend)s that provide those resources. Settings dictionaries inside of [Workspace.settings]($backend) provide values for individual settings, some of which are configured to point to one or more [WorkspaceDb]($backend)s that provide resources for particular purposes. The anatomy of a `Workspace` is illustrated below:
+
+![Anatomy of a Workspace](./workspace-anatomy.jpeg)
 
 To explore [Workspace]($backend) concepts, let's take the example of an imaginary application called "LandscapePro" that allows users to decorate an iModel by adding landscaping features like trees, shrubs, flower beds, and patio furniture.
 
