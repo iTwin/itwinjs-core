@@ -58,6 +58,7 @@ export class Angle implements BeJSONFunctions {
     static adjustDegrees0To360(degrees: number): number;
     static adjustDegreesSigned180(degrees: number): number;
     static adjustRadians0To2Pi(radians: number): number;
+    static adjustRadians0ToLessThan2Pi(radians: number): number;
     static adjustRadiansMinusPiPlusPi(radians: number): number;
     static cleanupTrigValue(value: number, tolerance?: number): number;
     clone(): Angle;
@@ -156,6 +157,7 @@ export class AngleSweep implements BeJSONFunctions {
     isAlmostEqualNoPeriodShift(other: AngleSweep): boolean;
     isAngleInSweep(angle: Angle): boolean;
     get isCCW(): boolean;
+    get isEmpty(): boolean;
     get isFullCircle(): boolean;
     get isFullLatitudeSweep(): boolean;
     static isRadiansInStartEnd(radians: number, radians0: number, radians1: number, allowPeriodShift?: boolean): boolean;
@@ -164,6 +166,7 @@ export class AngleSweep implements BeJSONFunctions {
     radiansToPositivePeriodicFraction(radians: number, zeroSweepDefault?: number): number;
     static radiansToPositivePeriodicFractionStartEnd(radians: number, radians0: number, radians1: number, zeroSweepDefault?: number): number;
     radiansToSignedPeriodicFraction(radians: number): number;
+    static radiansToSignedPeriodicFractionStartEnd(radians: number, radians0: number, radians1: number): number;
     reverseInPlace(): void;
     setFrom(other: AngleSweep): void;
     setFromJSON(json?: any): void;
