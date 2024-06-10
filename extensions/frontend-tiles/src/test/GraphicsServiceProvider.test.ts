@@ -7,7 +7,7 @@ import { expect, use } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import { IModelApp } from "@itwin/core-frontend";
-import { obtainGraphicsDataSourceUrl, queryGraphicsDataSources, QueryGraphicsDataSourcesArgs } from "../GraphicsServiceProvider";
+import { GraphicRepresentationFormat, obtainGraphicsDataSourceUrl, queryGraphicsDataSources, QueryGraphicsDataSourcesArgs } from "../GraphicsServiceProvider";
 
 use(chaiAsPromised);
 
@@ -60,7 +60,7 @@ function makeResponse(jsonMethod: () => Promise<TestJsonResponses>): Response {
 async function expectSources(expectedIds: string[], args: QueryGraphicsDataSourcesArgs): Promise<void> {
   let idIndex = 0;
   for await (const src of queryGraphicsDataSources(args))
-    expect(src.id).to.equal(expectedIds[idIndex++]);
+    expect(src.representationId).to.equal(expectedIds[idIndex++]);
 
   expect(idIndex).to.equal(expectedIds.length);
 }
@@ -111,31 +111,34 @@ function makeSources(props: SourcesProps): TestJsonResponses {
 async function makeSourcesResponse(props: SourcesProps): Promise<Response> {
   return makeResponse(async () => Promise.resolve(makeSources(props)));
 }
-
-const accessToken = "this-is-a-fake-access-token";
-const sessionId = "testSession";
-const sourceId = "srcId";
-const sourceType = "srcType";
+const testArgs = {
+  accessToken: "this-is-a-fake-access-token",
+  sessionId: "testSession",
+  sourceId: "srcId",
+  sourceType: "srcType",
+  format: GraphicRepresentationFormat.IMDL,
+  iTwinId: "iTwinId",
+};
 
 describe("queryGraphicsDataSources", () => {
 
   it("returns no results upon error", async () => {
     await mockFetch(
       () => { throw new Error("fetch threw"); },
-      async () => expectSources([], { accessToken, sessionId, sourceId, sourceType }),
+      async () => expectSources([], testArgs),
     );
     await mockFetch(
       async () => Promise.resolve(makeResponse(
         () => { throw new Error("json threw"); }),
       ),
-      async () => expectSources([], { accessToken, sessionId, sourceId, sourceType }),
+      async () => expectSources([], testArgs),
     );
   });
 
   it("produces one set of results", async () => {
     await mockFetch(
       async () => makeSourcesResponse({ exports: [{ id: "a" }, { id: "b" }, { id: "c" }] }),
-      async () => expectSources(["a", "b", "c"], { accessToken, sessionId, sourceId, sourceType }),
+      async () => expectSources(["a", "b", "c"], testArgs),
     );
   });
 
@@ -150,18 +153,16 @@ describe("queryGraphicsDataSources", () => {
           return makeSourcesResponse({ exports: [{ id: "c" }, { id: "d" }] });
         }
       },
-      async () => expectSources(["a", "b", "c", "d"], { accessToken, sessionId, sourceId, sourceType }),
-    );
-
+      async () => expectSources(["a", "b", "c", "d"], testArgs));
   });
 
   it("includes only completed Graphics Data Sources unless otherwise specified", async () => {
     await mockFetch(
       async () => makeSourcesResponse({ exports: [ { id: "a", status: "Complete" }, { id: "b", status: "Feeling Blessed" } ] }),
       async () => {
-        await expectSources(["a"], {  sessionId, sourceId, sourceType, accessToken });
-        await expectSources(["a", "b"], { sessionId, sourceId, sourceType, accessToken, includeIncomplete: true }),
-        await expectSources(["a"], {  sessionId, sourceId, sourceType, accessToken, includeIncomplete: false });
+        await expectSources(["a"], testArgs);
+        await expectSources(["a", "b"], { ...testArgs, includeIncomplete: true }),
+        await expectSources(["a"], { ...testArgs, includeIncomplete: false });
       },
     );
   });
@@ -200,10 +201,7 @@ describe("obtainGraphicsDataSourceUrl", () => {
       async (resource) => fetchSources(resource),
       async () => {
         const url = await obtainGraphicsDataSourceUrl({
-          accessToken,
-          sessionId,
-          sourceId,
-          sourceType,
+          ...testArgs,
           sourceVersionId: args.versionId,
           requireExactVersion: args.exact,
         });

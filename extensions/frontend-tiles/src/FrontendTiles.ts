@@ -5,7 +5,7 @@
 
 import { IModelApp, IModelConnection, SpatialTileTreeReferences, SpatialViewState } from "@itwin/core-frontend";
 import { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTreeRefs";
-import { queryGraphicsDataSources } from "./GraphicsServiceProvider";
+import { GraphicRepresentationFormat, queryGraphicsDataSources } from "./GraphicsServiceProvider";
 import { AccessToken } from "@itwin/core-bentley";
 import { obtainIModelTilesetUrl, ObtainIModelTilesetUrlArgs} from "./GraphicsService";
 
@@ -61,6 +61,8 @@ export interface MeshExports {
 export interface QueryMeshExportsArgs {
   /** The token used to access the mesh export service. */
   accessToken: AccessToken;
+  /** If defined, the iTwinId associated with the Mesh Export */
+  iTwinId: string;
   /** The Id of the iModel for which to query exports. */
   iModelId: string;
   /** If defined, constrains the query to exports produced from the specified changeset. */
@@ -85,6 +87,8 @@ export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterab
     sourceId: args.iModelId,
     sourceVersionId: args.changesetId,
     sourceType: "IMODEL",
+    format: GraphicRepresentationFormat.IMDL,
+    iTwinId: args.iTwinId,
     urlPrefix: args.urlPrefix,
     includeIncomplete: args.includeIncomplete,
     enableCDN: args.enableCDN,
@@ -92,13 +96,13 @@ export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterab
 
   for await (const data of queryGraphicsDataSources(graphicsArgs)){
     const meshExport = {
-      id: data.id,
+      id: data.representationId,
       displayName: data.displayName,
       status: "Complete",
       request: {
-        iModelId: data.sourceId,
-        changesetId: data.sourceVersionId,
-        exportType: data.sourceType,
+        iModelId: data.dataSource.id,
+        changesetId: data.dataSource.versionId ?? "",
+        exportType: data.dataSource.type,
         geometryOptions: {},
         viewDefinitionFilter: {},
       },
@@ -106,7 +110,7 @@ export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterab
       /* eslint-disable-next-line @typescript-eslint/naming-convention */
       _links: {
         mesh: {
-          href: data.url,
+          href: data.url ?? "",
         },
       },
     };
