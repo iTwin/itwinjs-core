@@ -164,11 +164,11 @@ String and blob resources can be accessed directly using [WorkspaceDb.getString]
 
 LandscapePro allows users to decorate a landscape with a variety of trees and other flora. So, trees are one of the kinds of resources the application needs to access to perform its functions. Naturally, they should be stored in the [Workspace]($backend). Let's create a [WorkspaceDb]($backend) to hold trees of the genus *Cornus*.
 
+Since every [WorkspaceDb]($backend) must reside inside a [WorkspaceContainer]($backend), we must first create a container. Creating a container also creates a default `WorkspaceDb`. In the example below, we will set up the default `WorkspaceDb` to be our as-yet empty "cornus" tree database.
+
 ```ts
 [[include:WorkspaceExamples.CreateWorkspaceDb]]
 ```
-
-Since every [WorkspaceDb]($backend) must reside inside a [WorkspaceContainer]($backend), we must first create a container. Creating a container also creates a default `WorkspaceDb`. In the example above, we set up the default `WorkspaceDb` to be our as-yet empty "cornus" tree database.
 
 Now, let's define what a "tree" resource looks like, and add some to the new `WorkspaceDb`. To do so, we'll need to make a new version of the empty "cornus" `WorkspaceDb` we created above. `WorkspaceDb`s use [semantic versioning](https://semver.org/), and each version of a given `WorkspaceDb` becomes immutable once it is published to cloud storage. So, the process for creating a new version of a `WorkspaceDb` is as follows:
 1. Acquire the container's write lock. Only one person - the current holder of the lock - can make changes to the contents of a given container at any given time.
