@@ -331,7 +331,7 @@ describe("IModelWriteTest", () => {
     rwIModel.close();
   });
 
-  it.only("should set a fake verifyCode for codeService that throws error for operations that affect code, if failed to open codeService ", async () => {
+  it("should set a fake verifyCode for codeService that throws error for operations that affect code, if failed to open codeService ", async () => {
     const iModelProps = {
       iModelName: "codeServiceTest",
       iTwinId,
