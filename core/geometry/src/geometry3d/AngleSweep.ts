@@ -314,7 +314,41 @@ export class AngleSweep implements BeJSONFunctions {
     }
   }
   /**
-   * Return the fractionalized position of the given angle (as radian) computed with consideration of
+   * Return the fractionalized position of the given angle (as radians) computed with consideration of
+   * 2PI period and with consideration of angle sweep direction (CW or CCW).
+   * *  the start angle is at fraction 0
+   * *  the end angle is at fraction 1
+   * *  interior angles are between 0 and 1
+   * *  negative fraction for angles "before" the start angle
+   * *  fraction larger than one for angles "after" the end angle
+   * *  allows period shift
+   */
+  public static radiansToSignedPeriodicFractionStartEnd(radians: number, radians0: number, radians1: number): number {
+    if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians0, radians1)) {
+      // for 2nPi sweep, allow matching without period shift, else we never return 1.0
+      if (Angle.isAlmostEqualRadiansNoPeriodShift(radians, radians0))
+        return 0.0;
+      if (Angle.isAlmostEqualRadiansNoPeriodShift(radians, radians1))
+        return 1.0;
+    } else {
+      if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, radians0))
+        return 0.0;
+      if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, radians1))
+        return 1.0;
+    }
+    const sweep = radians1 - radians0;
+    const delta = radians - radians0 - 0.5 * sweep; // measure from middle of interval
+    if (sweep > 0) {
+      const delta1 = Angle.adjustRadiansMinusPiPlusPi(delta);
+      const fraction1 = 0.5 + Geometry.safeDivideFraction(delta1, sweep, 0.0);
+      return fraction1;
+    }
+    const delta2 = Angle.adjustRadiansMinusPiPlusPi(-delta);
+    const fraction = 0.5 + Geometry.safeDivideFraction(delta2, -sweep, 0.0);
+    return fraction;
+  }
+  /**
+   * Return the fractionalized position of the given angle (as radians) computed with consideration of
    * 2PI period and with consideration of angle sweep direction (CW or CCW).
    * *  the start angle is at fraction 0
    * *  the end angle is at fraction 1
@@ -324,28 +358,7 @@ export class AngleSweep implements BeJSONFunctions {
    * *  allows period shift
    */
   public radiansToSignedPeriodicFraction(radians: number): number {
-    if (Angle.isAlmostEqualRadiansAllowPeriodShift(this._radians0, this._radians1)) {
-      // for 2nPi sweep, allow matching without period shift, else we never return 1.0
-      if (Angle.isAlmostEqualRadiansNoPeriodShift(radians, this._radians0))
-        return 0.0;
-      if (Angle.isAlmostEqualRadiansNoPeriodShift(radians, this._radians1))
-        return 1.0;
-    } else {
-      if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, this._radians0))
-        return 0.0;
-      if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, this._radians1))
-        return 1.0;
-    }
-    const sweep = this._radians1 - this._radians0;
-    const delta = radians - this._radians0 - 0.5 * sweep; // measure from middle of interval
-    if (sweep > 0) {
-      const delta1 = Angle.adjustRadiansMinusPiPlusPi(delta);
-      const fraction1 = 0.5 + Geometry.safeDivideFraction(delta1, sweep, 0.0);
-      return fraction1;
-    }
-    const delta2 = Angle.adjustRadiansMinusPiPlusPi(-delta);
-    const fraction = 0.5 + Geometry.safeDivideFraction(delta2, -sweep, 0.0);
-    return fraction;
+    return AngleSweep.radiansToSignedPeriodicFractionStartEnd(radians, this._radians0, this._radians1);
   }
   /**
    * Return the fractionalized position of the given angle (as Angle) computed with consideration of
