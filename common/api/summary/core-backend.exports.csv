@@ -203,6 +203,7 @@ public;class GeometricModel3d
 public;GeometryPart 
 beta;getAvailableCoordinateReferenceSystems(args: GetAvailableCoordinateReferenceSystemsArgs): Promise
 beta;GetAvailableCoordinateReferenceSystemsArgs
+beta;getLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult
 public;Graphic3d 
 public;class GraphicalElement2d 
 public;GraphicalElement2dIsOfType 
@@ -249,6 +250,7 @@ public;IpcHost
 public;IpcHostOpts
 public;ITwinIdArg
 public;KnownLocations
+beta;LayoutTextBlockArgs 
 internal;LightLocation 
 public;LineStyle 
 public;LineStyleDefinition

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added a function `getLayoutTextBlockResult` to get the results of calculating a TextBlock's layout.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
