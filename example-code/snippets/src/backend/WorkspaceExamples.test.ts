@@ -248,9 +248,9 @@ describe("Workspace Examples", () => {
         const label = `Trees ${genus}`;
         const description = `Trees of the genus ${genus}`;
         const container: EditableWorkspaceContainer = await editor.createNewCloudContainer({
-          // A description of the new WorkspaceContainer.
+          // A description of the new `CloudSQLite.Container` for use as a `Workspace` container.
           metadata: {
-            label,
+            label: `Workspace for {label}`,
             description,
           },
           // Ownership and datacenter are defined by the iTwin. Access rights are granted by RBAC administrators of the iTwin.
