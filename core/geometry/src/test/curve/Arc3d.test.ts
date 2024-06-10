@@ -4,19 +4,23 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Plane3dByOriginAndUnitNormal } from "../../core-geometry";
+import { OrderedSet } from "@itwin/core-bentley";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { GeometryQuery } from "../../curve/GeometryQuery";
+import {
+  EllipticalArcApproximationContext, EllipticalArcApproximationOptions, EllipticalArcSampleMethod, FractionMapper, QuadrantFractions,
+} from "../../curve/internalContexts/EllipticalArcApproximationContext";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Path } from "../../curve/Path";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { AxisOrder, Geometry } from "../../Geometry";
+import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
@@ -646,76 +650,16 @@ describe("Arc3d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("ParameterizationSpeed", () => {
+  // cspell:word Eberly
+  it.only("EllipseSampler", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
-
-    // Return theta in first quadrant
-    const curvatureToRadians = (ellipticalArc: Arc3d, curvature: number): number | undefined => {
-      if (ellipticalArc.isCircular)
-        return undefined;
-      if (curvature <= 0)
-        return undefined;
-      if (!ellipticalArc.vector0.isPerpendicularTo(ellipticalArc.vector90))
-        return undefined;
-      const uLengthSquared = ellipticalArc.vector0.magnitudeSquared();
-      const vLengthSquared = ellipticalArc.vector90.magnitudeSquared();
-      const scaledNormalLengthSquared = (uLengthSquared * vLengthSquared) / (curvature * curvature);
-      const numerator = Math.cbrt(scaledNormalLengthSquared) - uLengthSquared;
-      const denominator = vLengthSquared - uLengthSquared;
-      const cosTheta = Math.sqrt(Math.abs(numerator / denominator));
-      return Math.acos(cosTheta);
-    };
-
-    const curvatureToFractions = (ellipticalArc: Arc3d, curvature: number): number[] => {
-      const fractions: number[] = [];
-      const angle0 = curvatureToRadians(ellipticalArc, curvature);
-      if (angle0 !== undefined) {
-        for (const theta of [angle0 /* 1Q */, Math.PI - angle0  /* 2Q */, Math.PI + angle0  /* 3Q */, -angle0 /* 4Q */]) {
-          const fraction = ellipticalArc.sweep.radiansToSignedPeriodicFraction(theta);
-          if (Geometry.isIn01WithTolerance(fraction, Geometry.smallFraction)) {
-            fractions.push(fraction);
-          }
-        }
-      }
-      return fractions;
-    };
-
     const a = 10;
     const b = 3;
     let x0 = 0;
-    const xDelta = 2 * a + 1;
+    const xDelta = (arcWidth: number) => 2 * arcWidth + 1;
     let y0 = 0;
-    const yDelta = 2 * b + 1;
-    let z0 = 0;
-    const zDelta = 2 * Math.max(a, b) + 1;
-
-    // lambda f [0,1]->[0,1] is bijective
-    const testArc = (ellipticalArc: Arc3d, numPointsInQuadrant: number, f: (x: number) => number): void => {
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, ellipticalArc, x0, y0, z0);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [ellipticalArc.center.plus(ellipticalArc.vector0), ellipticalArc.center, ellipticalArc.center.plus(ellipticalArc.vector90)], x0, y0, z0);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [ellipticalArc.center, ellipticalArc.startPoint()], x0, y0, z0);
-      const fractions = new Set<number>();
-      // add quadrant points
-      for (const quadrantAngle of [0, Angle.piOver2Radians, Math.PI, Math.PI + Angle.piOver2Radians])
-        if (ellipticalArc.sweep.isRadiansInSweep(quadrantAngle))
-          fractions.add(ellipticalArc.sweep.radiansToSignedPeriodicFraction(quadrantAngle));
-      // add end points
-      fractions.add(0);
-      fractions.add(1);
-      // find the points in 1st quadrant, then use symmetry to populate
-      const curvature0 = ellipticalArc.matrixRef.columnYMagnitude() / ellipticalArc.matrixRef.columnXMagnitudeSquared();
-      const curvature1 = ellipticalArc.matrixRef.columnXMagnitude() / ellipticalArc.matrixRef.columnYMagnitudeSquared();
-      const tDelta = 1.0 / (numPointsInQuadrant - 1);
-      for (let i = 1; i < numPointsInQuadrant - 1; ++i) {
-        const j = f(i * tDelta);
-        const curvature = (1 - j) * curvature0 + j * curvature1;
-        for (const fraction of curvatureToFractions(ellipticalArc, curvature))
-          fractions.add(fraction);
-      }
-      for (const fraction of [...fractions].sort())
-        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, ellipticalArc.fractionToPoint(fraction), 0.1, x0, y0, z0);
-    };
+    const yDelta = (arcHeight: number) => 2 * arcHeight + 1;
 
     const arcs: Arc3d[] = [];
 
@@ -724,88 +668,135 @@ describe("Arc3d", () => {
     arcs.push(Arc3d.createXYEllipse(Point3d.createZero(), a, b, AngleSweep.createStartEndDegrees(0, 90)));
     arcs.push(Arc3d.createXYEllipse(Point3d.createZero(), a, b, AngleSweep.createStartEndDegrees(-100, 32)));
     arcs.push(Arc3d.createXYEllipse(Point3d.createZero(), a, b, AngleSweep.createStartEndDegrees(147, -100)));
+    arcs.push(Arc3d.createXYEllipse(Point3d.createZero(), a, a - 2, AngleSweep.createStartEndDegrees(90, 0)));
+    arcs.push(Arc3d.createXYEllipse(Point3d.createZero(), a, 1, AngleSweep.createStartEndDegrees(90, 270)));
 
-    // general arcs need their axes squared first
-    const scaleData = Arc3d.create(Point3d.create(1, 3, 2), Vector3d.create(2, 4, -1), Vector3d.create(3, 2, -3)).toScaledMatrix3d();
-    arcs.push(Arc3d.createScaledXYColumns(scaleData.center, scaleData.axes, scaleData.r0, scaleData.r90, scaleData.sweep));
-    arcs.push(Arc3d.createScaledXYColumns(scaleData.center, scaleData.axes, scaleData.r0, scaleData.r90));
-    arcs.push(Arc3d.createScaledXYColumns(scaleData.center, scaleData.axes, scaleData.r0, scaleData.r90, AngleSweep.createStartEndDegrees(100, 120)));
+    // general arcs
+    const arc0 = Arc3d.create(Point3d.createZero(), Vector3d.create(2, 4, -1), Vector3d.create(3, 2, -3));
+    arcs.push(arc0);
+    const perpData0 = arc0.toScaledMatrix3d();
+    const arc1 = Arc3d.createScaledXYColumns(perpData0.center, perpData0.axes, perpData0.r0, perpData0.r90);  // change the start point
+    arcs.push(arc1);
+    const arc2 = arc0.clone();
+    arc2.sweep = AngleSweep.createStartEndDegrees(-15, 345);  // negative sweep
+    arcs.push(arc2);
+    const arc3 = arc0.clone();
+    arc3.sweep = AngleSweep.createStartEndDegrees(100, 120);  // tiny sweep
+    arcs.push(arc3);
+    const arc4 = Arc3d.createStartMiddleEnd(Point3d.create(-1, -1, -2), Point3d.create(0.5, 0.5, 1.7), Point3d.create(1, 1, 2));
+    if (ck.testDefined(arc4, "use new ctor"))
+      arcs.push(arc4);
 
-    const fLinear = (x: number): number => { return x; };
+    // Remap functions for curvature interpolation
+    const fEberly = (x: number) => x;
     const fPiecewiseLinearUnder = (x: number): number => {
       const breakFraction = 0.6;
       const slope = (1 - breakFraction) / breakFraction;
       return (x <= breakFraction) ? slope * x : slope * breakFraction + ((1 - slope * breakFraction) / (1 - breakFraction)) * (x - breakFraction);
       };
-    const fSqrtCubed = (x: number): number => { return Math.pow(x, 1.5); };
-    const fQuadratic = (x: number): number => { return x * x; };
-    const fCubic = (x: number): number => { return x * x * x; };
-    const fQuartic = (x: number): number => { return x * x * x * x;};
-    const fSqrt = (x: number): number => { return Math.sqrt(x); };
-    const fLinearWave = (x: number): number => {
-      if (x === 0) return 0;
-      if (x === 1) return 1;
-      const scale = (b < a) ? b / a : a / b;
-      return 0.5 + 1 / Math.PI * Math.atan(scale * Math.tan(Math.PI * (x - 0.5)));
-    };
-    const fLinearWaveInverse = (x: number): number => {
-      if (x === 0) return 0;
-      if (x === 1) return 1;
-      const scale = (a < b) ? b / a : a / b;
-      return 0.5 + 1 / Math.PI * Math.atan(scale * Math.tan(Math.PI * (x - 0.5)));
-    };
+    const fSqrtCubed = (x: number)=> Math.pow(x, 1.5);
+    const fQuadratic = (x: number) => x * x;
+    const fCubic = (x: number) => x * x * x;
+    const fQuartic = (x: number) => x * x * x * x;
+    const fSqrt = (x: number) => Math.sqrt(x);
+    const remaps: FractionMapper[] = [fEberly, fPiecewiseLinearUnder, fSqrtCubed, fQuadratic, fCubic, fQuartic, fSqrt];
 
-    // plot curvature->pointHeight and arc with same y-scale in the first quadrant of the ellipse
-    const plotCurvatureDistribution = (arc: Arc3d, numPts: number, f: (x: number) => number): void => {
-      const yMag = arc.matrixRef.columnYMagnitude();
-      const c0 = yMag / arc.matrixRef.columnXMagnitudeSquared();    // curvature at y-axis point
-      const c1 = arc.matrixRef.columnXMagnitude() / (yMag * yMag);  // curvature at x-axis point
-      const mapPts: Point3d[] = [];
-      const blendPts: Point3d[] = [];
-      const arcPts: Point3d[] = [];
-      const numSamples = 1 + numPts * 10;
-      const tDelta = 1 / (numSamples - 1);
-      mapPts.push(Point3d.create(c0, Angle.piOver2Radians)); // nail the first point
-      blendPts.push(Point3d.createZero());
-      for (let i = 1; i < numSamples - 1; ++i) {
-        const t = i * tDelta;
-        const j = f(t);
-        const c = (1 - j) * c0 + j * c1;  // interpolate between c0 and c1
-        const theta = curvatureToRadians(arc, c)!;
-        mapPts.push(Point3d.create(c, theta));
-        blendPts.push(Point3d.create(t, j));
-      }
-      mapPts.push(Point3d.create(c1, 0)); // nail the last point
-      blendPts.push(Point3d.create(1, 1));
-      const localArc = arc.cloneTransformed(Transform.createRigidFromOriginAndColumns(arc.center, arc.vector0, arc.vector90, AxisOrder.XYZ)!.inverse()!);
-      for (let i = 0; i < numSamples; ++i) {
-        const theta = mapPts[i].y;
-        const arcPt = localArc.radiansToPoint(theta);
-        mapPts[i].y = arcPt.y;  // equate map and arc y-scale
-        if (i % numPts === 0)
-          arcPts.push(arcPt);
-      }
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mapPts, x0, y0, z0);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, blendPts, x0 + 2, y0, z0);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, arcPts, x0 + 1 ,y0, z0);
-    };
-
-    for (const arc of arcs) {
-      for (const f of [fLinear, fPiecewiseLinearUnder, fSqrtCubed, fQuadratic, fCubic, fQuartic, fSqrt, fLinearWave, fLinearWaveInverse]) {
-        plotCurvatureDistribution(arc, 10, f);
-        y0 += yDelta;
-        for (const numQuadrantPoints of [3, 4, 5, 6, 10, 20]) {
-          testArc(arc, numQuadrantPoints, f);
-          z0 += zDelta;
+    const displaySamples = (arc: Arc3d, samples: QuadrantFractions[] | number[], options: EllipticalArcApproximationOptions, x?: number, y?: number, z?: number): void => {
+      if (options.structuredOutput) {
+        ck.testType(samples[0], QuadrantFractions, "output is structured");
+        for (let i = 0; i < samples.length; ++i) {
+          const quadrant = samples[i] as QuadrantFractions;
+          for (let j = 0; j < quadrant.fractions.length - 1; ++j) // skip last fraction...
+            GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, arc.fractionToPoint(quadrant.fractions[j]), 0.1, x, y, z);
+          if (i === samples.length - 1 && !arc.sweep.isFullCircle) // ...unless last fraction of last quadrant of open arc
+            GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, arc.fractionToPoint(quadrant.fractions[quadrant.fractions.length - 1]), 0.1, x, y, z);
         }
-        x0 += xDelta;
-        z0 = y0 = 0;
+      } else {
+        ck.testIsFinite(samples[0], "output is number array");
+        for (const fraction of samples as number[])
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, arc.fractionToPoint(fraction), 0.1, x, y, z);
       }
-      x0 += 3 * xDelta;
-      z0 = 0;
-    }
+    };
+    const convertToFlatArray = (array: QuadrantFractions[] | number[]): number[] => {
+      if (0 === array.length)
+        return [];
+      if (Number.isFinite(array[0]))
+        return array as number[];
+      const set = new OrderedSet<number>((s0: number, s1: number) => { return s0 < s1 ? -1 : (s0 > s1 ? 1 : 0); });
+      for (const q of array as QuadrantFractions[])
+        for (const f of q.fractions)
+          set.add(f);
+      return [...set];
+    };
+    const compareOutputFormats = (samples: QuadrantFractions[] | number[], context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions): void => {
+      const options2 = options.clone();
+      options2.structuredOutput = !options2.structuredOutput;
+      const samples2 = context.sampleFractions(options2);
+      if (ck.testTrue(samples2.length > 0, "other output format has samples")) {
+        const flatArray = convertToFlatArray(samples);
+        const flatArray2 = convertToFlatArray(samples2);
+        ck.testFractionArray(flatArray, flatArray2, "structured output equivalent to flat array");
+      }
+    };
+    const testArc = (arc: Arc3d, options: EllipticalArcApproximationOptions, x?: number, y?: number, z?: number): number => {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, x, y, z);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arc.center.plus(arc.vector0), arc.center, arc.center.plus(arc.vector90)], x, y, z);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arc.center, arc.startPoint()], x, y, z);
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "ParameterizationSpeed");
+      const context = EllipticalArcApproximationContext.create(arc);
+      if (!ck.testTrue(context.isValidArc, "context accepted arc"))
+        return Geometry.largeCoordinateResult;
+
+      // test the sample points
+      const samples = context.sampleFractions(options);
+      if (ck.testTrue(samples.length > 0, "result has samples")) {
+        displaySamples(arc, samples, options, x, y, z);
+        compareOutputFormats(samples, context, options);
+      }
+
+      // test the main method
+      let error = Geometry.largeCoordinateResult;
+      const chain = context.constructCircularArcChain(options);
+      if (ck.testDefined(chain, "constructed an approximation")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x, y, z);
+        error = context.computeError(chain);
+      }
+      return error;
+    };
+
+    for (let iArc = 0; iArc < arcs.length; ++iArc) {
+      const arc = arcs[iArc];
+      const perpData = arc.toScaledMatrix3d();
+      const xWidth = perpData.r0;
+      const yWidth = perpData.r90;
+      let minError = Geometry.largeCoordinateResult;
+      let minErrorRemapIndex = -1;
+      for (const numQuadrantSamples of [3, 4, 5, 6, 10, 20]) {
+        // naive method
+        let options = EllipticalArcApproximationOptions.create(EllipticalArcSampleMethod.UniformParameter, false, numQuadrantSamples);
+        minError = testArc(arc, options, x0, y0);
+        y0 += yDelta(yWidth);
+        // curvature interpolation methods
+        for (let iRemap = 0; iRemap < remaps.length; ++iRemap) {
+          options = EllipticalArcApproximationOptions.create(EllipticalArcSampleMethod.NonUniformCurvature, false, numQuadrantSamples, undefined, remaps[iRemap]);
+          const error = testArc(arc, options, x0, y0);
+          if (minError > error) {
+            minError = error;
+            minErrorRemapIndex = iRemap;
+          }
+          y0 += yDelta(yWidth);
+        }
+        // TODO: subdivision methods. For valid comparisons, maybe pass in the current minError and see
+        // if we can get an approximation with fewer points.
+
+        if (minError < Geometry.largeCoordinateResult)
+          GeometryCoreTestIO.consoleLog(`Arc ${iArc} min error is ${minError} using remap #${minErrorRemapIndex} on ${numQuadrantSamples} Q1 samples.`);
+        x0 += xDelta(xWidth);
+        y0 = 0;
+      }
+      x0 += 2 * xDelta(xWidth);
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "EllipseSampler");
     expect(ck.getNumErrors()).equals(0);
   });
 });
