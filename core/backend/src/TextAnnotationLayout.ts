@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { BaselineShift, FontId, FractionRun, Paragraph, Run, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, FontId, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockLayoutResult, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Range2d, XAndY } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
@@ -41,7 +41,7 @@ export type FindFontId = (name: string) => FontId;
 /** @internal */
 export type FindTextStyle = (name: string) => TextStyleSettings;
 
-/** Arguments supplied to [[computeTextBlockExtents]].
+/** Arguments supplied to [[computeTextBlockExtents]] and [[getLayoutTextBlockResult]].
  * @beta
  */
 export interface ComputeTextBlockExtentsArgs {
@@ -67,6 +67,7 @@ export interface LayoutTextBlockArgs extends ComputeTextBlockExtentsArgs {
  * Each series of consecutive non-linebreak runs within a paragraph is concatenated into one line.
  * If the document specifies a width > 0, individual lines are split to try to avoid exceeding that width.
  * Individual TextRuns can be split onto multiple lines at word boundaries if necessary. Individual FractionRuns are never split.
+ * @see [[getLayoutTextBlockResult]]
  * @internal
  */
 export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
@@ -79,9 +80,20 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
   return new TextBlockLayout(args.textBlock, new LayoutContext(args.textBlock, computeTextRange, findTextStyle, findFontId));
 }
 
+/**
+ * Gets the result of laying out the the contents of a TextBlock into a series of lines containing runs.
+ * The visual layout accounts for the [TextStyle]($common)s, fonts, and [TextBlock.width]($common). It applies word-wrapping if needed.
+ * The layout returned matches the visual layout of the geometry produced by [[produceTextAnnotationGeometry]].
+ * @beta
+ */
+export function getLayoutTextBlockResult(args: ComputeTextBlockExtentsArgs): TextBlockLayoutResult {
+  const layout = layoutTextBlock(args);
+  return layout.toResult();
+}
+
 /** Compute the bounding box containing the contents of a [TextBlock]($common).
  * This process converts each [Paragraph]($common) into a set of lines of text, laying out the glyphs of individual
- * [Run]($common)s based on their [TextStyle]($common)s and fonts, and applying work-wrapping based on [TextBlock.width]($common).
+ * [Run]($common)s based on their [TextStyle]($common)s and fonts, and applying word-wrapping based on [TextBlock.width]($common).
  * The resultant extents can be supplied to [TextAnnotation.computeTransform]($common) and [TextAnnotation.computeAnchorPoint]($common).
  * @beta
  */
@@ -350,6 +362,32 @@ export class RunLayout {
       numChars,
     });
   }
+
+  public toResult(paragraph: Paragraph): RunLayoutResult {
+    const result: RunLayoutResult = {
+      sourceRunIndex: paragraph.runs.indexOf(this.source),
+      fontId: this.fontId,
+      characterOffset: this.charOffset,
+      characterCount: this.numChars,
+      range: this.range.toJSON(),
+      offsetFromLine: this.offsetFromLine,
+      textStyle: this.style.toJSON(),
+    };
+
+    if (this.justificationRange) {
+      result.justificationRange = this.justificationRange.toJSON();
+    }
+
+    if (this.numeratorRange) {
+      result.numeratorRange = this.numeratorRange.toJSON();
+    }
+
+    if (this.denominatorRange) {
+      result.denominatorRange = this.denominatorRange.toJSON();
+    }
+
+    return result;
+  }
 }
 
 /** @internal */
@@ -394,6 +432,16 @@ export class LineLayout {
       }
     }
   }
+
+  public toResult(textBlock: TextBlock): LineLayoutResult {
+    return {
+      sourceParagraphIndex: textBlock.paragraphs.indexOf(this.source),
+      runs: this.runs.map((x) => x.toResult(this.source)),
+      range: this.range.toJSON(),
+      justificationRange: this.justificationRange.toJSON(),
+      offsetFromDocument: this.offsetFromDocument,
+    };
+  }
 }
 
 /**
@@ -410,6 +458,13 @@ export class TextBlockLayout {
 
     this.populateLines(context);
     this.justifyLines();
+  }
+
+  public toResult(): TextBlockLayoutResult {
+    return {
+      lines: this.lines.map((x) => x.toResult(this.source)),
+      range: this.range.toJSON(),
+    };
   }
 
   private get _back(): LineLayout {
