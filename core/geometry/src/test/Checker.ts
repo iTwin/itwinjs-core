@@ -149,56 +149,42 @@ export class Checker {
         return this.announceError(`mismatched point at array position ${i}`, dataA, dataB, params);
     return this.announceOK();
   }
-  /** Test if number arrays (either or both possibly undefined) match. */
+  /** Test if number arrays match with tolerance. */
+  public testNumberArrayWithTol(dataA: number[] | GrowableFloat64Array | Float64Array | undefined, dataB: number[] | GrowableFloat64Array | Float64Array | undefined, tol: number = Geometry.smallMetricDistance, ...params: any[]): boolean {
+    const numA = dataA === undefined ? 0 : dataA.length;
+    const numB = dataB === undefined ? 0 : dataB.length;
+    if (numA !== numB)
+      return this.announceError("array length mismatch", dataA, dataB, params);
+    if (dataA && dataB) {
+      const aGrowable = dataA instanceof GrowableFloat64Array;
+      const bGrowable = dataB instanceof GrowableFloat64Array;
+      let numError = 0;
+      for (let i = 0; i < dataA.length; i++) {
+        const aVal = aGrowable ? dataA.atUncheckedIndex(i) : dataA[i];
+        const bVal = bGrowable ? dataB.atUncheckedIndex(i) : dataB[i];
+        if (!Geometry.isSameCoordinate(aVal, bVal, tol))
+          numError++;
+      }
+      if (numError !== 0)
+        return this.announceError("contents different", dataA, dataB, params);
+    }
+    return this.announceOK();
+  }
+  /** Test if fraction arrays (either or both possibly undefined) match. */
+  public testFractionArray(dataA: number[] | Float64Array | undefined, dataB: number[] | Float64Array | undefined, ...params: any[]): boolean {
+    return this.testNumberArrayWithTol(dataA, dataB, Geometry.smallFraction, params);
+  }
+  /** Test if coordinate arrays (either or both possibly undefined) match. */
   public testNumberArray(dataA: number[] | Float64Array | undefined, dataB: number[] | Float64Array | undefined, ...params: any[]): boolean {
-    const numA = dataA === undefined ? 0 : dataA.length;
-    const numB = dataB === undefined ? 0 : dataB.length;
-    if (numA !== numB)
-      return this.announceError("array length mismatch", dataA, dataB, params);
-    if (dataA && dataB) {
-      let numError = 0;
-      for (let i = 0; i < dataA.length; i++) {
-        if (!Geometry.isSameCoordinate(dataA[i], dataB[i]))
-          numError++;
-      }
-      if (numError !== 0)
-        return this.announceError("contents different", dataA, dataB, params);
-    }
-    return this.announceOK();
+    return this.testNumberArrayWithTol(dataA, dataB, Geometry.smallMetricDistance, params);
   }
-  /** Test if number arrays (either or both possibly undefined) match. */
+  /** Test if coordinate arrays (either or both possibly undefined) match. */
   public testNumberArrayG(dataA: number[] | undefined, dataB: GrowableFloat64Array | undefined, ...params: any[]): boolean {
-    const numA = dataA === undefined ? 0 : dataA.length;
-    const numB = dataB === undefined ? 0 : dataB.length;
-    if (numA !== numB)
-      return this.announceError("array length mismatch", dataA, dataB, params);
-    if (dataA && dataB) {
-      let numError = 0;
-      for (let i = 0; i < dataA.length; i++) {
-        if (!Geometry.isSameCoordinate(dataA[i], dataB.atUncheckedIndex(i)))
-          numError++;
-      }
-      if (numError !== 0)
-        return this.announceError("contents different", dataA, dataB, params);
-    }
-    return this.announceOK();
+    return this.testNumberArrayWithTol(dataA, dataB, Geometry.smallMetricDistance, params);
   }
-  /** Test if number arrays (either or both possibly undefined) match. */
+  /** Test if coordinate arrays (either or both possibly undefined) match. */
   public testNumberArrayGG(dataA: GrowableFloat64Array | undefined, dataB: GrowableFloat64Array | undefined, ...params: any[]): boolean {
-    const numA = dataA === undefined ? 0 : dataA.length;
-    const numB = dataB === undefined ? 0 : dataB.length;
-    if (numA !== numB)
-      return this.announceError("array length mismatch", dataA, dataB, params);
-    if (dataA && dataB) {
-      let numError = 0;
-      for (let i = 0; i < dataA.length; i++) {
-        if (!Geometry.isSameCoordinate(dataA.atUncheckedIndex(i), dataB.atUncheckedIndex(i)))
-          numError++;
-      }
-      if (numError !== 0)
-        return this.announceError("contents different", dataA, dataB, params);
-    }
-    return this.announceOK();
+    return this.testNumberArrayWithTol(dataA, dataB, Geometry.smallMetricDistance, params);
   }
   /** Test if both ranges have equal low and high parts, or both are null ranges. */
   public testRange3d(dataA: Range3d, dataB: Range3d, ...params: any[]): boolean {
