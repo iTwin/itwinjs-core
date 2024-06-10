@@ -152,7 +152,7 @@ A [WorkspaceDb]($backend) can contain any number of resources of any kind, where
 Ultimately, each resource is stored as one of three underlying types:
 - A string, which quite often is interpreted as a serialized JSON object. Examples include text styles and settings dictionaries.
 - A binary blob, such as an image.
-- An embedded file, like the kind that defines a [GeographicCRS]($common).
+- An embedded file, like a PDF file that users can view in a separate application.
 
 String and blob resources can be accessed directly using [WorkspaceDb.getString]($backend) and [WorkspaceDb.getBlob]($backend). File resources must first be copied onto the local file system using [WorkspaceDb.getFile]($backend), and should be avoided unless they must be used with software that requires them to be accessed from disk.
 
