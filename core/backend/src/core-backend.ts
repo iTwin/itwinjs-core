@@ -72,6 +72,7 @@ export * from "./ViewStore";
 export * from "./workspace/Settings";
 export * from "./workspace/SettingsSchemas";
 export * from "./workspace/Workspace";
+export * from "./workspace/WorkspaceEditor";
 export * from "./SqliteChangesetReader";
 export * from "./ChangesetECAdaptor";
 
