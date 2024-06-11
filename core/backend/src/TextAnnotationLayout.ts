@@ -303,7 +303,7 @@ export class RunLayout {
       return [this];
     }
 
-    return segments.map((segment) => {
+    return segments.map((segment: any) => {
       return this.cloneForWrap({
         ranges: context.computeRangeForText(segment.segment, this.style, this.source.baselineShift),
         charOffset: segment.index,
