@@ -578,7 +578,7 @@ export class TextBlockLayout {
 
         const runWidth = run.range.xLength();
         const lineWidth = curLine.range.xLength();
-        if (runWidth + lineWidth < doc.width) {
+        if (runWidth + lineWidth <= doc.width) {
           curLine.append(run);
           continue;
         }

@@ -363,8 +363,7 @@ describe.only("layoutTextBlock", () => {
     textBlock.appendRun(run);
 
     const layout = doLayout(textBlock);
-    expect(layout.lines.every((line) => line.runs.length === 1)).to.be.true;
-    expect(layout.lines.every((line) => line.runs[0].source === run)).to.be.true;
+    expect(layout.lines.every((line) => line.runs.every((r) => r.source === run))).to.be.true;
 
     const actual = layout.lines.map((line) => line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars)).join(""));
     expect(actual).to.deep.equal(expectedLines);
@@ -682,7 +681,7 @@ function mockIModel(): IModelDb {
   return iModel as IModelDb;
 }
 
-describe("produceTextAnnotationGeometry", () => {
+describe.only("produceTextAnnotationGeometry", () => {
   type Color = ColorDef | "subcategory";
 
   function makeText(color?: Color): TextRun {
@@ -782,7 +781,7 @@ describe("produceTextAnnotationGeometry", () => {
   });
 });
 
-describe("TextAnnotation element", () => {
+describe.only("TextAnnotation element", () => {
   function makeElement(props?: Partial<TextAnnotation2dProps>): TextAnnotation2d {
     return TextAnnotation2d.fromJSON({
       category: "0x12",
