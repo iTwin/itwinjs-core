@@ -16,7 +16,7 @@ import { ServerStorage } from "@itwin/object-storage-core";
 import { TestUtils } from "./TestUtils";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
-import { SettingsPriority } from "../core-backend";
+import { BackendLoggerCategory, SettingsPriority } from "../core-backend";
 
 describe("IModelHost", () => {
   const opts = { cacheDir: TestUtils.getCacheDir() };
@@ -253,10 +253,12 @@ describe("IModelHost", () => {
   });
 
   it.only("should change default GeoCoord asset directory", async () => {
-    const config: IModelHostOptions = {};
-    config.geoCoordAssetDir = "test/geoCoordAssets";
-    await IModelHost.startup(config);
+    Logger.setLevel("GeoCoord", LogLevel.Trace);
+    const logChanged = sinon.spy(Logger as any, "logWarning");
 
+    const config: IModelHostOptions = {};
+    config.geoCoordAssetDir = "D:/test/geoCoordAssets";
+    await IModelHost.startup(config);
     const gcsSettings = {
       "gcs/disableWorkspaces": true,
     };
@@ -264,7 +266,34 @@ describe("IModelHost", () => {
 
     const filename = IModelTestUtils.resolveAssetFile("mirukuru.ibim");
     const imodel = IModelDb.openDgnDb({ path: filename }, OpenMode.Readonly);
+    imodel.getIModelProps();
     imodel.closeFile();
+
+    expect(logChanged.callCount).eq(2);
+    const call = logChanged.getCalls()[0];
+    expect(call.lastArg === "Unable to find GCS file assets\\coordsys.dty in Workspace or D:\\test\\geoCoordAssets\\coordsys.dty").equals(true);
+
+  });
+
+  it.only("should keep default GeoCoord asset directory", async () => {
+    Logger.setLevel("GeoCoord", LogLevel.Trace);
+    const logChanged = sinon.spy(Logger as any, "logWarning");
+
+    const config: IModelHostOptions = {};
+    await IModelHost.startup(config);
+    const gcsSettings = {
+      "gcs/disableWorkspaces": true,
+    };
+    IModelHost.appWorkspace.settings.addDictionary("gcs/disableWorkspaces", SettingsPriority.application, gcsSettings);
+
+    const filename = IModelTestUtils.resolveAssetFile("mirukuru.ibim");
+    const imodel = IModelDb.openDgnDb({ path: filename }, OpenMode.Readonly);
+    imodel.getIModelProps();
+    imodel.closeFile();
+
+    expect(logChanged.callCount).eq(2);
+    const call = logChanged.getCalls()[0];
+    expect(call.lastArg === "Unable to find GCS file assets\\coordsys.dty in Workspace or D:\\imodel-native\\out\\Winx64\\imodeljsnodeaddon_pkgs\\imodeljs-win32-x64\\Assets\\coordsys.dty").equals(true);
 
   });
 });

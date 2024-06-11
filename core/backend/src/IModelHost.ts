@@ -518,6 +518,7 @@ export class IModelHost {
   public static async shutdown(this: void): Promise<void> {
     // Note: This method is set as a node listener where `this` is unbound. Call private method to
     // ensure `this` is correct. Don't combine these methods.
+    IModelHost.platform.DgnDb.terminateGeoCoordAssetsDir();
     return IModelHost.doShutdown();
   }
 
