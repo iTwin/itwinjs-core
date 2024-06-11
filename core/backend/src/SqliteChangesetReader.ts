@@ -11,6 +11,7 @@ import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const { DbChangeStage } = InternalUseOnly;
 
 /** Changed value type

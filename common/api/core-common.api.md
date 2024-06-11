@@ -1166,11 +1166,6 @@ export enum ChangesetType {
     SchemaSync = 65
 }
 
-// @alpha
-export class ChannelConstraintError extends IModelError {
-    constructor(message: string, getMetaData?: LoggingMetaData);
-}
-
 // @public
 export interface ChannelRootAspectProps extends ElementAspectProps {
     owner: string;

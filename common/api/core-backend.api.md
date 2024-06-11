@@ -52,12 +52,7 @@ import { Constructor } from '@itwin/core-bentley';
 import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
-import { DbChangeStage } from '@itwin/core-bentley';
-import { DbConflictCause } from '@itwin/core-bentley';
-import { DbConflictResolution } from '@itwin/core-bentley';
-import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
-import { DbValueType } from '@itwin/core-bentley';
 import { DefinitionElementProps } from '@itwin/core-common';
 import { DisplayStyle3dProps } from '@itwin/core-common';
 import { DisplayStyle3dSettings } from '@itwin/core-common';
@@ -124,6 +119,7 @@ import { IModelTileTreeProps } from '@itwin/core-common';
 import { IModelVersion } from '@itwin/core-common';
 import { IndexedPolyface } from '@itwin/core-geometry';
 import { InformationPartitionElementProps } from '@itwin/core-common';
+import { InternalUseOnly } from '@itwin/core-bentley';
 import { InternetConnectivityStatus } from '@itwin/core-common';
 import { IpcAppNotifications } from '@itwin/core-common';
 import { IpcListener } from '@itwin/core-common';
@@ -208,7 +204,6 @@ import { SnapshotOpenOptions } from '@itwin/core-common';
 import { SourceAndTarget } from '@itwin/core-common';
 import { SpatialViewDefinitionProps } from '@itwin/core-common';
 import { StandardViewIndex } from '@itwin/core-geometry';
-import { StatusCodeWithMessage } from '@itwin/core-bentley';
 import { StorageValue } from '@itwin/core-common';
 import { SubCategoryAppearance } from '@itwin/core-common';
 import { SubCategoryProps } from '@itwin/core-common';
@@ -481,8 +476,6 @@ export class BriefcaseDb extends IModelDb {
     get iTwinId(): GuidString;
     // (undocumented)
     protected makeLockControl(): void;
-    // @internal
-    onChangesetConflict(args: ChangesetConflictArgs): DbConflictResolution | undefined;
     readonly onClosed: BeEvent<() => void>;
     // @alpha (undocumented)
     static readonly onCodeServiceCreated: BeEvent<(briefcase: BriefcaseDb) => void>;
@@ -664,44 +657,6 @@ export interface ChangeMetaData {
 export interface ChangesetArg extends IModelIdArg {
     // (undocumented)
     readonly changeset: ChangesetIndexOrId;
-}
-
-// @internal (undocumented)
-export interface ChangesetConflictArgs {
-    // (undocumented)
-    cause: DbConflictCause;
-    // (undocumented)
-    changesetFile?: string;
-    // (undocumented)
-    columnCount: number;
-    // (undocumented)
-    dump: () => void;
-    // (undocumented)
-    getForeignKeyConflicts: () => number;
-    // (undocumented)
-    getPrimaryKeyColumns: () => number[];
-    // (undocumented)
-    getValueBinary: (columnIndex: number, stage: DbChangeStage) => Uint8Array | null | undefined;
-    // (undocumented)
-    getValueDouble: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
-    // (undocumented)
-    getValueId: (columnIndex: number, stage: DbChangeStage) => Id64String | null | undefined;
-    // (undocumented)
-    getValueInteger: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
-    // (undocumented)
-    getValueText: (columnIndex: number, stage: DbChangeStage) => string | null | undefined;
-    // (undocumented)
-    getValueType: (columnIndex: number, stage: DbChangeStage) => DbValueType | null | undefined;
-    // (undocumented)
-    indirect: boolean;
-    // (undocumented)
-    isValueNull: (columnIndex: number, stage: DbChangeStage) => boolean | undefined;
-    // (undocumented)
-    opcode: DbOpcode;
-    // (undocumented)
-    setLastError: (message: string) => void;
-    // (undocumented)
-    tableName: string;
 }
 
 // @beta
@@ -1919,7 +1874,10 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     stepAsync(): Promise<DbResult>;
     stepForInsert(): ECSqlInsertResult;
     // @internal
-    tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors?: boolean): StatusCodeWithMessage<DbResult>;
+    tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors?: boolean): {
+        status: DbResult;
+        message: string;
+    };
 }
 
 // @public
@@ -5141,9 +5099,9 @@ export class SqliteChangesetReader implements IDisposable {
     getChangeValuesArray(stage: SqliteValueStage): SqliteValueArray | undefined;
     getChangeValuesObject(stage: SqliteValueStage, args?: ChangeFormatArgs): SqliteChange | undefined;
     getChangeValueText(columnIndex: number, stage: SqliteValueStage): string | null | undefined;
-    getChangeValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined;
+    getChangeValueType(columnIndex: number, stage: SqliteValueStage): InternalUseOnly.DbValueType | undefined;
     getColumnNames(tableName: string): string[];
-    getColumnValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined;
+    getColumnValueType(columnIndex: number, stage: SqliteValueStage): InternalUseOnly.DbValueType | undefined;
     getPrimaryKeyColumnNames(): string[];
     get hasRow(): boolean;
     isColumnValueNull(columnIndex: number, stage: SqliteValueStage): boolean | undefined;

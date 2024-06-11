@@ -65,6 +65,7 @@ import { ChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 
 import type { BlobContainer } from "./BlobContainerService";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const { DbConflictCause, DbConflictResolution, DbChangeStage } = InternalUseOnly;
 
 // spell:ignore fontid fontmap

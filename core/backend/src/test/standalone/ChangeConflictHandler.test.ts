@@ -27,6 +27,7 @@ import { ChangesetConflictArgs } from "../../internal/ChangesetConflictArgs";
 chai.use(chaiAsPromised);
 import sinon = require("sinon");
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const { DbChangeStage, DbValueType, DbConflictCause, DbConflictResolution } = InternalUseOnly;
 
 async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
