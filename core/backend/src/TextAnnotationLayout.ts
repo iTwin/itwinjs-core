@@ -264,6 +264,7 @@ export class RunLayout {
     return new RunLayout({ source, charOffset, numChars, range, justificationRange, denominatorRange, numeratorRange, offsetFromLine, style, fontId });
   }
 
+  /** Compute a string representation, primarily for debugging purposes. */
   public stringify(): string {
     return this.source.type === "text" ? this.source.content.substring(this.charOffset, this.charOffset + this.numChars) : this.source.stringify();
   }
@@ -282,67 +283,6 @@ export class RunLayout {
       range: args.ranges.layout,
       justificationRange: args.ranges.justification,
       offsetFromLine: { ...this.offsetFromLine },
-    });
-  }
-
-  public wrap(availableWidth: number, shouldForceLeadingUnit: boolean, context: LayoutContext): RunLayout | undefined {
-    if (!this.canWrap()) {
-      return undefined;
-    }
-
-    // An optimization that tracks the computed width so far so we don't have to repeatedly recompute preceding character ranges.
-    // Assumes (to the best of Jeff's knowledge) that characters before a break point can't affect the shaping of subsequent characters.
-    let runningWidth = 0;
-    let breakPos = 0;
-
-    // ###TODO TypeScript only provides type declarations for Intl.Segmenter if targeting ES2022+.
-    // But doing so causes inexplicable issues with initialization of Model.modeledElement.
-    // So until that's resolved, access it via cast to any.
-    const segmenter = new (global as any).Intl.Segmenter(undefined, { granularity: "word" });
-    const myText = this.source.content.substring(this.charOffset, this.charOffset + this.numChars);
-    if (myText.length === 0) {
-      return undefined;
-    }
-
-    for (const segment of segmenter.segment(myText)) {
-      const testContent = segment.segment;
-      const forceCurrentUnit = shouldForceLeadingUnit && (0 === breakPos);
-
-      // If we don't fit, the previous break position is the split point.
-      const ranges = context.computeRangeForText(testContent, this.style, this.source.baselineShift);
-      if (!forceCurrentUnit && (runningWidth + ranges.justification.xLength()) > availableWidth) {
-        break;
-      }
-
-      // Otherwise, we fit; keep trying.
-      runningWidth += ranges.layout.xLength();
-      breakPos = segment.index + testContent.length;
-    }
-
-    // If the whole thing fits, we don't have to wrap (i.e., we just wasted a bunch of time).
-    if (breakPos >= myText.length) {
-      return undefined;
-    }
-
-    if (breakPos === 0) {
-      // The string can't be wrapped.
-      return undefined;
-    }
-
-    // Trim this run and return the remainder.
-    const charOffset = this.charOffset + breakPos;
-    const numChars = this.numChars - breakPos;
-
-    this.numChars = breakPos;
-    const thisRanges = context.computeRangeForTextRun(this.style, this.source, 0, this.numChars);
-    this.range = thisRanges.layout;
-    this.justificationRange = thisRanges.justification;
-
-    const leftover = this.source.content.substring(charOffset, charOffset + numChars);
-    return this.cloneForWrap({
-      ranges: context.computeRangeForText(leftover, this.style, this.source.baselineShift),
-      charOffset,
-      numChars,
     });
   }
 
@@ -385,6 +325,7 @@ export class LineLayout {
     this.source = source;
   }
 
+  /** Compute a string representation, primarily for debugging purposes. */
   public stringify(): string {
     const runs = this._runs.map((run) => run.stringify());
     return `${runs.join("")}`;
@@ -447,16 +388,11 @@ export class TextBlockLayout {
       this.range.high.x = source.width;
     }
 
-    const useNewMethod = true;
-    if (useNewMethod) {
-      this._populateLines(context);
-    } else {
-      this.populateLines(context);
-    }
-    
+    this.populateLines(context);
     this.justifyLines();
   }
 
+  /** Compute a string representation, primarily for debugging purposes. */
   public stringify(): string {
     return this.lines.map((line) => line.stringify()).join("\n");
   }
@@ -467,71 +403,6 @@ export class TextBlockLayout {
   }
 
   private populateLines(context: LayoutContext): void {
-    const doc = this.source;
-    if (doc.paragraphs.length === 0) {
-      return;
-    }
-
-    const isWrapped = doc.width > 0;
-
-    let line = new LineLayout(doc.paragraphs[0]);
-    for (let i = 0; i < doc.paragraphs.length; i++) {
-      const paragraph = doc.paragraphs[i];
-      if (i > 0) {
-        line = this.flushLine(context, line, paragraph);
-      }
-
-      for (const run of paragraph.runs) {
-        let layoutRun = RunLayout.create(run, context);
-
-        // Line break? It always "fits" and causes us to flush the line.
-        if ("linebreak" === run.type) {
-          line.append(layoutRun);
-          line = this.flushLine(context, line);
-          continue;
-        }
-
-        const effectiveRunWidth = isWrapped ? layoutRun.range.xLength() : 0;
-        let effectiveRemainingWidth = isWrapped ? doc.width - line.range.xLength() : Number.MAX_VALUE;
-
-        // Do we fit (no wrapping or narrow enough)? Append and go around to the next run.
-        if (effectiveRunWidth < effectiveRemainingWidth) {
-          line.append(layoutRun);
-          continue;
-        }
-
-        // Can't fit, but can't wrap? Force on the line if it's the first thing; otherwise flush and add to the next line.
-        let leftOver = layoutRun.wrap(effectiveRemainingWidth, line.runs.length === 0, context);
-        if (!leftOver) {
-          if (line.runs.length === 0) {
-            line.append(layoutRun);
-            line = this.flushLine(context, line);
-          } else {
-            line = this.flushLine(context, line);
-            line.append(layoutRun);
-          }
-
-          continue;
-        }
-
-        // Otherwise, keep splitting the run into lines until the whole thing is appended.
-        do {
-          line.append(layoutRun);
-          line = this.flushLine(context, line);
-          effectiveRemainingWidth = doc.width;
-          layoutRun = leftOver;
-        } while (leftOver = layoutRun.wrap(effectiveRemainingWidth, line.runs.length === 0, context));
-
-        line.append(layoutRun);
-      }
-    }
-
-    if (line.runs.length > 0) {
-      this.flushLine(context, line);
-    }
-  }
-
-  private _populateLines(context: LayoutContext): void {
     const doc = this.source;
     if (doc.paragraphs.length === 0) {
       return;
@@ -589,12 +460,8 @@ export class TextBlockLayout {
       return;
     }
 
-    // TextBlock.width specifies the minimum width of the document. The actual width is determined by the widest line.
+    // This is the minimum width of the document's bounding box.
     let docWidth = this.source.width;
-    // for (const line of this.lines) {
-    //   const lineWidth = line.justificationRange.xLength();
-    //   docWidth = Math.max(docWidth, lineWidth);
-    // }
 
     let minOffset = Number.MAX_VALUE;
     for (const line of this.lines) {
@@ -610,6 +477,7 @@ export class TextBlockLayout {
     }
 
     if (minOffset < 0) {
+      // Shift left to accomodate lines that exceeded the document's minimum width.
       this.range.low.x += minOffset;
       this.range.high.x += minOffset;
     }

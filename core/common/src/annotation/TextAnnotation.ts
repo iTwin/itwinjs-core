@@ -68,8 +68,9 @@ export interface TextAnnotationCreateArgs {
  * [TextAnnotation2d]($backend) and [TextAnnotation3d]($backend) elements store a single TextAnnotation from which their geometric representation is generated.
  * Other types of elements may store multiple TextAnnotations, positioned relative to one another.
  * The annotation's position and orientation relative to the host element's [Placement]($common) is determined as follows:
- * - First, a bounding box enclosing the contents of the [[textBlock]] is computed using [computeTextBlockBoundingBox]($backend).
- * - Then, an "anchor point" is computed based on the text box and the [[anchor]] property. For example, if the annotation is anchored at the center-left, the anchor point will be (width/2, -height).
+ * - First, a bounding box is computed enclosing the contents of the [[textBlock].
+ * - Then, an "anchor point" is computed based on the bounding box and the [[anchor]] property. The anchor point can be at one of the four corners of the box, in the middle of one of its four
+ * edges, or in the center of the box.
  * - The [[orientation]] is applied to rotate the box around the anchor point.
  * - Finally, the [[offset]] is added to the anchor point to apply translation.
  * @see [produceTextAnnotationGeometry]($backend) to decompose the annotation into a set of geometric primitives suitable for use with [[GeometryStreamBuilder.appendTextBlock]].
