@@ -56,6 +56,7 @@ describe("ChangedElements", () => {
       endChangesetId,
       wantParents: true,
       wantPropertyChecksums: true,
+      wantBoundingBoxes: true,
     };
     const result = await cache.processChangesets(accessToken, iModel, options);
 
@@ -191,6 +192,7 @@ describe("ChangedElements", () => {
       wantParents: true,
       wantPropertyChecksums: true,
       wantRelationshipCaching: true,
+      wantBoundingBoxes: true,
     };
     // Get file path before processing and rolling since it requires closing the iModelDb
     const iModelFilepath = iModel.pathName;
@@ -260,6 +262,7 @@ describe("ChangedElements", () => {
       wantParents: true,
       wantPropertyChecksums: true,
       wantRelationshipCaching: false,
+      wantBoundingBoxes: true,
     };
     // Get file path before processing and rolling since it requires closing the iModelDb
     const iModelFilepath = iModel.pathName;
