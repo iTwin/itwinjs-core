@@ -648,7 +648,7 @@ describe("Relationship Class merger tests", () => {
     await expect(merge).to.be.eventually.rejected.then(function (error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.AddConstraintClass);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
-      expect(error).to.have.nested.property("innerError.message", `Rule violations occurred from constraint BaseRelationship:Source of RelationshipClass TargetSchema.BaseRelationship: ${getRuleViolationMessage(error.innerError.ruleViolations)}`);
+      expect(error).to.have.nested.property("innerError.message", `Rule violations occurred from Source constraint of RelationshipClass TargetSchema.BaseRelationship: ${getRuleViolationMessage(error.innerError.ruleViolations)}`);
     });
   });
 
