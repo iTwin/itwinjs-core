@@ -199,7 +199,7 @@ export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometr
     textBlock: args.annotation.textBlock,
   });
 
-  const dimensions = layout.range.diagonal();
+  const dimensions = layout.range;
   const transform = args.annotation.computeTransform(dimensions);
 
   const anchorPoint = args.debugAnchorPointAndRange ? args.annotation.computeAnchorPoint(dimensions) : undefined;

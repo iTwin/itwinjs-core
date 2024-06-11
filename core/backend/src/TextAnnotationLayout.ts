@@ -41,18 +41,12 @@ export type FindFontId = (name: string) => FontId;
 /** @internal */
 export type FindTextStyle = (name: string) => TextStyleSettings;
 
-/** Arguments supplied to [[computeTextBlockExtents]].
- * @beta
- */
-export interface ComputeTextBlockExtentsArgs {
+/** @internal */
+export interface LayoutTextBlockArgs {
   /** The text block whose extents are to be computed. */
   textBlock: TextBlock;
   /** The iModel from which to obtain fonts and [TextStyle]($common)s when laying out glyphs. */
   iModel: IModelDb;
-}
-
-/** @internal */
-export interface LayoutTextBlockArgs extends ComputeTextBlockExtentsArgs {
   /** @internal chiefly for tests, by default uses IModelJsNative.DgnDb.computeRangesForText. */
   computeTextRange?: ComputeRangesForTextLayout;
   /** @internal chiefly for tests, by default looks up styles from a workspace. */
@@ -77,18 +71,6 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
   const findTextStyle = args.findTextStyle ?? (() => TextStyleSettings.fromJSON());
 
   return new TextBlockLayout(args.textBlock, new LayoutContext(args.textBlock, computeTextRange, findTextStyle, findFontId));
-}
-
-/** Compute the bounding box containing the contents of a [TextBlock]($common).
- * This process converts each [Paragraph]($common) into a set of lines of text, laying out the glyphs of individual
- * [Run]($common)s based on their [TextStyle]($common)s and fonts, and applying work-wrapping based on [TextBlock.width]($common).
- * The resultant extents can be supplied to [TextAnnotation.computeTransform]($common) and [TextAnnotation.computeAnchorPoint]($common).
- * @beta
- */
-export function computeTextBlockExtents(args: ComputeTextBlockExtentsArgs): XAndY {
-  const range = layoutTextBlock(args).range;
-  assert(range.low.isZero);
-  return { x: range.high.x, y: range.high.y };
 }
 
 function scaleRange(range: Range2d, scale: number): void {
@@ -460,6 +442,11 @@ export class TextBlockLayout {
   public constructor(source: TextBlock, context: LayoutContext) {
     this.source = source;
 
+    if (source.width > 0) {
+      this.range.low.x = 0;
+      this.range.high.x = source.width;
+    }
+
     const useNewMethod = true;
     if (useNewMethod) {
       this._populateLines(context);
@@ -604,10 +591,10 @@ export class TextBlockLayout {
 
     // TextBlock.width specifies the minimum width of the document. The actual width is determined by the widest line.
     let docWidth = this.source.width;
-    for (const line of this.lines) {
-      const lineWidth = line.justificationRange.xLength();
-      docWidth = Math.max(docWidth, lineWidth);
-    }
+    // for (const line of this.lines) {
+    //   const lineWidth = line.justificationRange.xLength();
+    //   docWidth = Math.max(docWidth, lineWidth);
+    // }
 
     let minOffset = Number.MAX_VALUE;
     for (const line of this.lines) {
@@ -622,8 +609,10 @@ export class TextBlockLayout {
       minOffset = Math.min(offset, minOffset);
     }
 
-    this.range.low.x += minOffset;
-    this.range.high.x += minOffset;
+    if (minOffset < 0) {
+      this.range.low.x += minOffset;
+      this.range.high.x += minOffset;
+    }
   }
 
   private flushLine(context: LayoutContext, line: LineLayout, nextParagraph?: Paragraph): LineLayout {

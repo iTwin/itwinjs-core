@@ -9,7 +9,7 @@ describe("TextAnnotation", () => {
         anchor: { horizontal, vertical },
       });
 
-      const extents = { x: 20, y: 10 };
+      const extents = new Range2d(0, 0, 20, 10);
       const actual = annotation.computeAnchorPoint(extents);
       expect(actual.x).to.equal(x);
       expect(actual.y).to.equal(y);
@@ -43,7 +43,7 @@ describe("TextAnnotation", () => {
       // NB: In TextBlock coordinates, the origin is at the top-left.
       const dimensions = { x: 20, y: 10 };
       const extents = new Range3d(0, -dimensions.y, 0, dimensions.x, 0, 0);
-      const transform = annotation.computeTransform(dimensions);
+      const transform = annotation.computeTransform(new Range2d(0, -dimensions.y, dimensions.x, 0));
       const expected = Range3d.createRange2d(new Range2d(expectedRange[0], expectedRange[1], expectedRange[2], expectedRange[3]));
       const actual = transform.multiplyRange(extents);
 

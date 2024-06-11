@@ -6,7 +6,7 @@
  * @module Annotation
  */
 
-import { Point3d, Transform, XAndY, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
+import { Point3d, Range2d, Transform, XAndY, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
 import { TextBlock, TextBlockProps } from "./TextBlock";
 
 /** Describes how to compute the "anchor point" for a [[TextAnnotation]].
@@ -68,8 +68,7 @@ export interface TextAnnotationCreateArgs {
  * [TextAnnotation2d]($backend) and [TextAnnotation3d]($backend) elements store a single TextAnnotation from which their geometric representation is generated.
  * Other types of elements may store multiple TextAnnotations, positioned relative to one another.
  * The annotation's position and orientation relative to the host element's [Placement]($common) is determined as follows:
- * - First, the width and height of a box enclosing the contents of the [[textBlock]] must be computed using [computeTextBlockExtents]($backend). This yields a box with the top-left
- * corner at (0, 0) and the bottom-right corner at (width, -height).
+ * - First, a bounding box enclosing the contents of the [[textBlock]] is computed using [computeTextBlockBoundingBox]($backend).
  * - Then, an "anchor point" is computed based on the text box and the [[anchor]] property. For example, if the annotation is anchored at the center-left, the anchor point will be (width/2, -height).
  * - The [[orientation]] is applied to rotate the box around the anchor point.
  * - Finally, the [[offset]] is added to the anchor point to apply translation.
@@ -149,8 +148,8 @@ export class TextAnnotation {
    * @param textBlockDimensions The width and height of the bounding box containing the text block. You can compute this using [computeTextBlockExtents]($backend).
    * @see [[computeAnchorPoint]] to compute the transform's anchor point.
    */
-  public computeTransform(textBlockDimensions: XAndY): Transform {
-    const anchorPt = this.computeAnchorPoint(textBlockDimensions);
+  public computeTransform(boundingBox: Range2d): Transform {
+    const anchorPt = this.computeAnchorPoint(boundingBox);
     const matrix = this.orientation.toMatrix3d();
 
     const rotation = Transform.createFixedPointAndMatrix(anchorPt, matrix);
@@ -159,28 +158,28 @@ export class TextAnnotation {
   }
 
   /** Compute the anchor point of this annotation as specified by [[anchor]].
-   * @param textBlockDimensions The width and height of the bounding box containing the [[textBlock]]. You can compute this using [computeTextBlockExtents]($backend).
+   * @param boundingBox A box fully containing the [[textBlock]]. You can compute this using [computeTextBlockBoundingBox]($backend).
    * @see [[computeTransform]] to compute the transform relative to the anchor point.
    */
-  public computeAnchorPoint(textBlockDimensions: XAndY): Point3d {
-    let x = 0;
-    let y = 0;
+  public computeAnchorPoint(boundingBox: Range2d): Point3d {
+    let x = boundingBox.low.x;
+    let y = boundingBox.high.y;
 
     switch (this.anchor.horizontal) {
       case "center":
-        x += textBlockDimensions.x / 2;
+        x += boundingBox.xLength() / 2;
         break;
       case "right":
-        x += textBlockDimensions.x;
+        x += boundingBox.xLength();
         break;
     }
 
     switch (this.anchor.vertical) {
       case "middle":
-        y -= textBlockDimensions.y / 2;
+        y -= boundingBox.yLength() / 2;
         break;
       case "bottom":
-        y -= textBlockDimensions.y;
+        y -= boundingBox.yLength();
         break;
     }
 
