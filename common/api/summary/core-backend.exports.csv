@@ -59,6 +59,7 @@ internal;BisCodeSpecIndexProps
 internal;FontIndexProps
 public;CodeSpecs
 public;ComputedProjectExtents
+beta;computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult
 public;ComputeProjectExtentsOptions
 alpha;ConcreteEntity = Element_2 | Model | ElementAspect | Relationship
 alpha;ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps
@@ -250,6 +251,7 @@ public;IpcHost
 public;IpcHostOpts
 public;ITwinIdArg
 public;KnownLocations
+beta;LayoutTextBlockArgs
 internal;LightLocation 
 public;LineStyle 
 public;LineStyleDefinition
