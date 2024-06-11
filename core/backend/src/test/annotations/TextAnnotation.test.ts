@@ -693,7 +693,11 @@ describe("layoutTextBlock", () => {
     });
   });
 
-  it("should have the same data when converted to a layout result", () => {
+  it("should have the same data when converted to a layout result", function () {
+    if (!isIntlSupported()) {
+      this.skip();
+    }
+
     // Initialize a new TextBlockLayout object
     const textBlock = TextBlock.create({ width: 50, styleName: "", styleOverrides: { widthFactor: 34, color: 0x00ff00, fontName: "arial" }});
     const run0 = TextRun.create({
