@@ -16,9 +16,9 @@ import {
   IModelHubStatus,
   IModelStatus,
   RealityDataStatus,
-  RepositoryStatus,
   RpcInterfaceStatus,
 } from "./BentleyError";
+import { RepositoryStatus } from "./internal/BentleyErrorInternal";
 
 /* eslint-disable @typescript-eslint/no-shadow */
 

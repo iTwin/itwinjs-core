@@ -388,7 +388,7 @@ export class IModelHost {
 
     this._platform = ProcessDetector.isMobileAppBackend ? (process as any)._linkedBinding("iModelJsNative") as typeof IModelJsNative : NativeLibrary.load();
     this._platform.logger = Logger;
-    Logger.logLevelChangedFn = () => IModelHost.syncNativeLogLevels(); // the arrow function exists only so that it can be spied in tests
+    Logger.onLogLevelChanged.addListener(() => IModelHost.syncNativeLogLevels()); // the arrow function exists only so that it can be spied in tests
 
     if (options.crashReportingConfig && options.crashReportingConfig.crashDir && !ProcessDetector.isElectronAppBackend && !ProcessDetector.isMobileAppBackend) {
       this.platform.setCrashReporting(options.crashReportingConfig);
