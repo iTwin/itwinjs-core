@@ -7,7 +7,7 @@
  */
 
 import { BaselineShift, FontId, FractionRun, Paragraph, Run, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
-import { Range2d, XAndY } from "@itwin/core-geometry";
+import { Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 
@@ -41,18 +41,12 @@ export type FindFontId = (name: string) => FontId;
 /** @internal */
 export type FindTextStyle = (name: string) => TextStyleSettings;
 
-/** Arguments supplied to [[computeTextBlockExtents]].
- * @beta
- */
-export interface ComputeTextBlockExtentsArgs {
+/** @internal */
+export interface LayoutTextBlockArgs {
   /** The text block whose extents are to be computed. */
   textBlock: TextBlock;
   /** The iModel from which to obtain fonts and [TextStyle]($common)s when laying out glyphs. */
   iModel: IModelDb;
-}
-
-/** @internal */
-export interface LayoutTextBlockArgs extends ComputeTextBlockExtentsArgs {
   /** @internal chiefly for tests, by default uses IModelJsNative.DgnDb.computeRangesForText. */
   computeTextRange?: ComputeRangesForTextLayout;
   /** @internal chiefly for tests, by default looks up styles from a workspace. */
@@ -77,18 +71,6 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
   const findTextStyle = args.findTextStyle ?? (() => TextStyleSettings.fromJSON());
 
   return new TextBlockLayout(args.textBlock, new LayoutContext(args.textBlock, computeTextRange, findTextStyle, findFontId));
-}
-
-/** Compute the bounding box containing the contents of a [TextBlock]($common).
- * This process converts each [Paragraph]($common) into a set of lines of text, laying out the glyphs of individual
- * [Run]($common)s based on their [TextStyle]($common)s and fonts, and applying work-wrapping based on [TextBlock.width]($common).
- * The resultant extents can be supplied to [TextAnnotation.computeTransform]($common) and [TextAnnotation.computeAnchorPoint]($common).
- * @beta
- */
-export function computeTextBlockExtents(args: ComputeTextBlockExtentsArgs): XAndY {
-  const range = layoutTextBlock(args).range;
-  assert(range.low.isZero);
-  return { x: range.high.x, y: range.high.y };
 }
 
 function scaleRange(range: Range2d, scale: number): void {
@@ -282,6 +264,11 @@ export class RunLayout {
     return new RunLayout({ source, charOffset, numChars, range, justificationRange, denominatorRange, numeratorRange, offsetFromLine, style, fontId });
   }
 
+  /** Compute a string representation, primarily for debugging purposes. */
+  public stringify(): string {
+    return this.source.type === "text" ? this.source.content.substring(this.charOffset, this.charOffset + this.numChars) : this.source.stringify();
+  }
+
   public canWrap(): this is { source: TextRun } {
     return this.source.type === "text";
   }
@@ -299,55 +286,29 @@ export class RunLayout {
     });
   }
 
-  public wrap(availableWidth: number, shouldForceLeadingUnit: boolean, context: LayoutContext): RunLayout | undefined {
-    if (!this.canWrap()) {
-      return undefined;
+  public split(context: LayoutContext): RunLayout[] {
+    assert(this.charOffset === 0, "cannot re-split a run");
+    if (!this.canWrap() || this.charOffset > 0) {
+      return [this];
     }
 
-    // An optimization that tracks the computed width so far so we don't have to repeatedly recompute preceding character ranges.
-    // Assumes (to the best of Jeff's knowledge) that characters before a break point can't affect the shaping of subsequent characters.
-    let runningWidth = 0;
-    let breakPos = 0;
-
-    // ###TODO TypeScript only provides type declarations for Intl.Segmenter if targeting ES2022+.
-    // But doing so causes inexplicable issues with initialization of Model.modeledElement.
-    // So until that's resolved, access it via cast to any.
     const segmenter = new (global as any).Intl.Segmenter(undefined, { granularity: "word" });
     const myText = this.source.content.substring(this.charOffset, this.charOffset + this.numChars);
     if (myText.length === 0) {
-      return undefined;
+      return [];
     }
 
-    for (const segment of segmenter.segment(myText)) {
-      const testContent = segment.segment;
-      const forceCurrentUnit = shouldForceLeadingUnit && (0 === breakPos);
-
-      // If we don't fit, the previous break position is the split point.
-      const ranges = context.computeRangeForText(testContent, this.style, this.source.baselineShift);
-      if (!forceCurrentUnit && (runningWidth + ranges.justification.xLength()) > availableWidth) {
-        break;
-      }
-
-      // Otherwise, we fit; keep trying.
-      runningWidth += ranges.layout.xLength();
-      breakPos = segment.index + testContent.length;
+    const segments = Array.from(segmenter.segment(myText));
+    if (segments.length <= 1) {
+      return [this];
     }
 
-    // If the whole thing fits, we don't have to wrap (i.e., we just wasted a bunch of time).
-    if (breakPos >= myText.length) {
-      return undefined;
-    }
-
-    // Trim this run and return the remainder.
-    const charOffset = this.charOffset + breakPos;
-    const numChars = this.numChars - breakPos;
-    this.numChars = breakPos;
-
-    const leftover = this.source.content.substring(charOffset, charOffset + numChars);
-    return this.cloneForWrap({
-      ranges: context.computeRangeForText(leftover, this.style, this.source.baselineShift),
-      charOffset,
-      numChars,
+    return segments.map((segment: any) => {
+      return this.cloneForWrap({
+        ranges: context.computeRangeForText(segment.segment, this.style, this.source.baselineShift),
+        charOffset: segment.index,
+        numChars: segment.segment.length,
+      });
     });
   }
 }
@@ -362,6 +323,12 @@ export class LineLayout {
 
   public constructor(source: Paragraph) {
     this.source = source;
+  }
+
+  /** Compute a string representation, primarily for debugging purposes. */
+  public stringify(): string {
+    const runs = this._runs.map((run) => run.stringify());
+    return `${runs.join("")}`;
   }
 
   public get runs(): ReadonlyArray<RunLayout> { return this._runs; }
@@ -381,8 +348,16 @@ export class LineLayout {
     this.range.low.setZero();
     this.range.high.setZero();
 
+    // Some runs (fractions) are taller than others.
+    // We want to center each run vertically inside the line.
+    let lineHeight = 0;
     for (const run of this._runs) {
-      const runOffset = { x: this.range.high.x, y: 0 };
+      lineHeight = Math.max(lineHeight, run.range.yLength());
+    }
+
+    for (const run of this._runs) {
+      const runHeight = run.range.yLength();
+      const runOffset = { x: this.range.high.x, y: (lineHeight - runHeight) / 2 };
       run.offsetFromLine = runOffset;
 
       const runLayoutRange = run.range.cloneTranslated(runOffset);
@@ -408,8 +383,18 @@ export class TextBlockLayout {
   public constructor(source: TextBlock, context: LayoutContext) {
     this.source = source;
 
+    if (source.width > 0) {
+      this.range.low.x = 0;
+      this.range.high.x = source.width;
+    }
+
     this.populateLines(context);
     this.justifyLines();
+  }
+
+  /** Compute a string representation, primarily for debugging purposes. */
+  public stringify(): string {
+    return this.lines.map((line) => line.stringify()).join("\n");
   }
 
   private get _back(): LineLayout {
@@ -423,62 +408,50 @@ export class TextBlockLayout {
       return;
     }
 
-    const isWrapped = doc.width > 0;
-
-    let line = new LineLayout(doc.paragraphs[0]);
+    const doWrap = doc.width > 0;
+    let curLine = new LineLayout(doc.paragraphs[0]);
     for (let i = 0; i < doc.paragraphs.length; i++) {
       const paragraph = doc.paragraphs[i];
       if (i > 0) {
-        line = this.flushLine(context, line, paragraph);
+        curLine = this.flushLine(context, curLine, paragraph);
       }
 
-      for (const run of paragraph.runs) {
-        let layoutRun = RunLayout.create(run, context);
+      let runs = paragraph.runs.map((run) => RunLayout.create(run, context));
+      if (doWrap) {
+        runs = runs.map((run) => run.split(context)).flat();
+      }
 
-        // Line break? It always "fits" and causes us to flush the line.
-        if ("linebreak" === run.type) {
-          line.append(layoutRun);
-          line = this.flushLine(context, line);
+      for (const run of runs) {
+        if ("linebreak" === run.source.type) {
+          curLine.append(run);
+          curLine = this.flushLine(context, curLine);
           continue;
         }
 
-        const effectiveRunWidth = isWrapped ? layoutRun.range.xLength() : 0;
-        let effectiveRemainingWidth = isWrapped ? doc.width - line.range.xLength() : Number.MAX_VALUE;
-
-        // Do we fit (no wrapping or narrow enough)? Append and go around to the next run.
-        if (effectiveRunWidth < effectiveRemainingWidth) {
-          line.append(layoutRun);
+        if (!doWrap) {
+          curLine.append(run);
           continue;
         }
 
-        // Can't fit, but can't wrap? Force on the line if it's the first thing; otherwise flush and add to the next line.
-        let leftOver = layoutRun.wrap(effectiveRemainingWidth, line.runs.length === 0, context);
-        if (!leftOver) {
-          if (line.runs.length === 0) {
-            line.append(layoutRun);
-            line = this.flushLine(context, line);
-          } else {
-            line = this.flushLine(context, line);
-            line.append(layoutRun);
-          }
-
+        const runWidth = run.range.xLength();
+        const lineWidth = curLine.range.xLength();
+        if (runWidth + lineWidth <= doc.width) {
+          curLine.append(run);
           continue;
         }
 
-        // Otherwise, keep splitting the run into lines until the whole thing is appended.
-        do {
-          line.append(layoutRun);
-          line = this.flushLine(context, line);
-          effectiveRemainingWidth = doc.width;
-          layoutRun = leftOver;
-        } while (leftOver = layoutRun.wrap(effectiveRemainingWidth, line.runs.length === 0, context));
-
-        line.append(layoutRun);
+        if (curLine.runs.length === 0) {
+          curLine.append(run);
+          curLine = this.flushLine(context, curLine);
+        } else {
+          curLine = this.flushLine(context, curLine);
+          curLine.append(run);
+        }
       }
     }
 
-    if (line.runs.length > 0) {
-      this.flushLine(context, line);
+    if (curLine.runs.length > 0) {
+      this.flushLine(context, curLine);
     }
   }
 
@@ -487,13 +460,8 @@ export class TextBlockLayout {
       return;
     }
 
-    let docWidth = this.source.width;
-    if (docWidth <= 0) {
-      for (const line of this.lines) {
-        const lineWidth = line.justificationRange.xLength();
-        docWidth = Math.max(docWidth, lineWidth);
-      }
-    }
+    // This is the minimum width of the document's bounding box.
+    const docWidth = this.source.width;
 
     let minOffset = Number.MAX_VALUE;
     for (const line of this.lines) {
@@ -508,8 +476,11 @@ export class TextBlockLayout {
       minOffset = Math.min(offset, minOffset);
     }
 
-    this.range.low.x += minOffset;
-    this.range.high.x += minOffset;
+    if (minOffset < 0) {
+      // Shift left to accomodate lines that exceeded the document's minimum width.
+      this.range.low.x += minOffset;
+      this.range.high.x += minOffset;
+    }
   }
 
   private flushLine(context: LayoutContext, line: LineLayout, nextParagraph?: Paragraph): LineLayout {

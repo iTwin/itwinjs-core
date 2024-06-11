@@ -1,31 +1,27 @@
 {
-  "$id": "http://itwinjs.org/json-schema/gcs",
-  "$schema": "http://json-schema.org/draft-07/schema",
-  "title": "GeoCoordinate settings",
+  "$schema": "./Base.Schema.json",
   "description": "settings for geocoordinate services",
-  "type": "object",
-  "groupName": "gcs",
-  "properties": {
-    "gcs/default/databases": {
+  "schemaPrefix": "itwin/core/gcs",
+  "settingDefs": {
+    "default/databases": {
       "type": "array",
-      "cumulative": false,
-      "description": "List of GCS workspace database aliases loaded by default. Must be entries in \"workspace/databases\".",
+      "description": "array of GCS WorkspaceDbs",
       "items": {
-        "type": "string"
-      },
-      "default": [
-        "gcs/base",
-        "gcs/entire-earth"
-      ]
+        "type": "object",
+        "extends": "itwin/core/workspace/workspaceDb",
+        "description": "Properties of a WorkspaceDb holding GCS data.",
+        "properties": {
+          "priority": {
+            "type": "number",
+            "description": "Priority value for GCS database, higher values are searched first",
+            "default": 500
+          }
+        }
+      }
     },
-    "gcs/disableWorkspaces": {
+    "disableWorkspaces": {
       "type": "boolean",
       "description": "If true, do not load any GCS workspaces",
-      "default": false
-    },
-    "gcs/noLocalData": {
-      "type": "boolean",
-      "description": "If true, do not attempt to load GCS data from local files",
       "default": false
     }
   }
