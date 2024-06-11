@@ -1,6 +1,6 @@
 sep=;
 Release Tag;API Item
-internal;BrowserLocalFavoritePropertiesStorage
+internal;BrowserLocalFavoritePropertiesStorage 
 beta;consoleDiagnosticsHandler(diagnostics: ClientDiagnostics): void
 beta;createCombinedDiagnosticsHandler(handlers: ClientDiagnosticsHandler[]): (diagnostics: ClientDiagnostics) => void
 public;createFavoritePropertiesStorage(type: DefaultFavoritePropertiesStorageTypes): IFavoritePropertiesStorage
@@ -10,7 +10,7 @@ public;DefaultFavoritePropertiesStorageTypes
 internal;DEPRECATED_PROPERTIES_SETTING_NAMESPACE = "Properties"
 internal;FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME = "FavoritePropertiesOrderInfo"
 internal;FAVORITE_PROPERTIES_SETTING_NAME = "FavoriteProperties"
-public;FavoritePropertiesManager
+public;FavoritePropertiesManager 
 public;FavoritePropertiesManagerProps
 public;FavoritePropertiesOrderInfo
 public;FavoritePropertiesScope
@@ -24,34 +24,34 @@ public;HiliteSet
 public;HiliteSetProvider
 public;HiliteSetProviderProps
 public;IFavoritePropertiesStorage
-internal;IModelAppFavoritePropertiesStorage
+internal;IModelAppFavoritePropertiesStorage 
 alpha;IModelContentChangeEventArgs
 alpha;IModelHierarchyChangeEventArgs
 internal;IMODELJS_PRESENTATION_SETTING_NAMESPACE = "imodeljs.presentation"
 public;ISelectionProvider
-internal;NoopFavoritePropertiesStorage
-internal;OfflineCachingFavoritePropertiesStorage
+internal;NoopFavoritePropertiesStorage 
+internal;OfflineCachingFavoritePropertiesStorage 
 internal;OfflineCachingFavoritePropertiesStorageProps
 public;Presentation
 public;PresentationFrontendLoggerCategory
-public;PresentationManager
+public;PresentationManager 
 public;PresentationManagerProps
 public;PresentationProps
 public;PropertyFullName = string
 public;RulesetManager
-internal;RulesetManagerImpl
+internal;RulesetManagerImpl 
 public;RulesetVariablesManager
-internal;RulesetVariablesManagerImpl
-public;SelectionChangeEvent
+internal;RulesetVariablesManagerImpl 
+public;SelectionChangeEvent 
 public;SelectionChangeEventArgs
 public;SelectionChangesListener = (args: SelectionChangeEventArgs, provider: ISelectionProvider) => void
 public;SelectionChangeType
-public;SelectionHandler
+public;SelectionHandler 
 public;SelectionHandlerProps
 public;SelectionHelper
-public;SelectionManager
+public;SelectionManager 
 public;SelectionManagerProps
 public;SelectionScopesManager
 public;SelectionScopesManagerProps
-internal;ToolSelectionSyncHandler
+internal;ToolSelectionSyncHandler 
 internal;TRANSIENT_ELEMENT_CLASSNAME = "/TRANSIENT"
