@@ -7,7 +7,7 @@ import { expect, use } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import { IModelApp } from "@itwin/core-frontend";
-import { GraphicRepresentationFormat, obtainGraphicsDataSourceUrl, queryGraphicsDataSources, QueryGraphicsDataSourcesArgs } from "../GraphicsServiceProvider";
+import { GraphicRepresentationFormat, obtainGraphicRepresentationUrl, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/GraphicRepresentationProvider";
 
 use(chaiAsPromised);
 
@@ -57,9 +57,9 @@ function makeResponse(jsonMethod: () => Promise<TestJsonResponses>): Response {
   } as Response;
 }
 
-async function expectSources(expectedIds: string[], args: QueryGraphicsDataSourcesArgs): Promise<void> {
+async function expectSources(expectedIds: string[], args: QueryGraphicRepresentationsArgs): Promise<void> {
   let idIndex = 0;
-  for await (const src of queryGraphicsDataSources(args))
+  for await (const src of queryGraphicRepresentations(args))
     expect(src.representationId).to.equal(expectedIds[idIndex++]);
 
   expect(idIndex).to.equal(expectedIds.length);
@@ -114,10 +114,13 @@ async function makeSourcesResponse(props: SourcesProps): Promise<Response> {
 const testArgs = {
   accessToken: "this-is-a-fake-access-token",
   sessionId: "testSession",
-  sourceId: "srcId",
-  sourceType: "srcType",
+  dataSource: {
+    iTwinId: "iTwinId",
+    id: "srcId",
+    changeId: undefined,
+    type: "srcType",
+  },
   format: GraphicRepresentationFormat.IMDL,
-  iTwinId: "iTwinId",
 };
 
 describe("queryGraphicsDataSources", () => {
@@ -200,9 +203,16 @@ describe("obtainGraphicsDataSourceUrl", () => {
     await mockFetch(
       async (resource) => fetchSources(resource),
       async () => {
-        const url = await obtainGraphicsDataSourceUrl({
-          ...testArgs,
-          sourceVersionId: args.versionId,
+        const url = await obtainGraphicRepresentationUrl({
+          accessToken: "this-is-a-fake-access-token",
+          sessionId: "testSession",
+          dataSource: {
+            iTwinId: "iTwinId",
+            id: "srcId",
+            changeId: args.versionId,
+            type: "srcType",
+          },
+          format: GraphicRepresentationFormat.IMDL,
           requireExactVersion: args.exact,
         });
 

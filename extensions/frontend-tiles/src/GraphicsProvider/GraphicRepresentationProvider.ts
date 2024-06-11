@@ -4,10 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, Logger} from "@itwin/core-bentley";
-import { loggerCategory} from "./LoggerCategory";
+import { loggerCategory} from "../LoggerCategory";
 
-/**
- * The format of the Graphic Representation
+/** The format of the Graphic Representation
  * @beta
  */
 export enum GraphicRepresentationFormat {
@@ -15,8 +14,8 @@ export enum GraphicRepresentationFormat {
   Tiles3D = "3DTILES",
 }
 
-/**
- * The status of the Graphic Representation
+/** Graphic representations are generated from Data Sources.
+ * The status of a Graphic Representation indicates the progress of that generation process.
  * @beta
  */
 export enum GraphicRepresentationStatus {
@@ -27,18 +26,24 @@ export enum GraphicRepresentationStatus {
 }
 
 /**
- * Represents the Data Source of a Graphic Representation
+ * Represents a data source for a graphic representation.
+ * A data source is usually higher-fidelity and contains more information, but may not be as well suited for visualization
+ * as a graphic representation.
  * @beta
  */
 export interface DataSource {
+  /** The iTwinId associated with th data source */
   iTwinId: string;
+  /** The id of the data source */
   id: string;
+  /** The change id of the data source */
   changeId?: string;
+  /** The type of the data source */
   type: string;
 }
 
-/**
- * Represents a Graphic Representation, the result of a query to the Graphics Service Provider for Graphics Data Sources.
+/** represents a visual representation of data from a data source.
+ * This could be a 3D model, a map, or any other kind of graphical data.
  * @see [[queryGraphicsDataSources]].
  * @beta
  */
@@ -47,21 +52,24 @@ export interface GraphicRepresentation {
   displayName: string;
   /** The Id of the Graphic Representation */
   representationId: string;
-  /** The status of the query to the Graphics Service for the Graphic Representation */
+  /** The status of the query from the Graphics Provider for the Graphic Representation */
   status: GraphicRepresentationStatus;
-  /** The tile format of the Graphic Representation*/
+  /** The format of the Graphic Representation*/
   format: GraphicRepresentationFormat;
   /** The url of the Graphic Representation */
   url?: string;
-  /** The Graphics Data Source providing the Graphic Representation */
+  /** The data source that the representation originates from.
+  * For example, a GraphicRepresentation in the 3D Tiles format might have a dataSource that is a specific iModel changeset.
+  */
   dataSource: DataSource;
 }
 
-function createGraphicsDataSourceQueryUrl(args: { sourceId: string, urlPrefix?: string, sourceVersionId?: string, enableCDN?: boolean }): string {
+/** Creates a URL used to query for Graphic Representations */
+function createGraphicRepresentationsQueryUrl(args: { sourceId: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean }): string {
   const prefix = args.urlPrefix ?? "";
   let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.sourceId}&$orderBy=date:desc`;
-  if (args.sourceVersionId)
-    url = `${url}&changesetId=${args.sourceVersionId}`;
+  if (args.changeId)
+    url = `${url}&changesetId=${args.changeId}`;
 
   if (args.enableCDN)
     url = `${url}&cdn=1`;
@@ -74,34 +82,28 @@ function createGraphicsDataSourceQueryUrl(args: { sourceId: string, urlPrefix?: 
 /** Arguments supplied to [[queryGraphicsDataSources]].
  * @beta
  */
-export interface QueryGraphicsDataSourcesArgs {
+export interface QueryGraphicRepresentationsArgs {
   /** The token used to access the mesh export service. */
   accessToken: AccessToken;
   /** The Session Id */
   sessionId: string;
-  /** The Id of the iModel for which to query exports. */
-  sourceId: string;
-  /** The type of Graphics Data Source for which to query */
-  sourceType: string;
+  /** The Data Source for which to query */
+  dataSource: DataSource;
   /** The format of the Graphics Data Source */
   format: GraphicRepresentationFormat;
-  /** If defined, the iTwinId associated with the Graphics Data Source */
-  iTwinId: string;
-  /** If defined, constrains the query to exports produced from the specified changeset. */
-  sourceVersionId?: string;
   /** Chiefly used in testing environments. */
   urlPrefix?: string;
-  /** If true, exports whose status is not "Complete" (indicating the export successfully finished) will be included in the results. */
+  /** If true, exports whose status is not "Complete" (indicating the export successfully finished) will be included in the results */
   includeIncomplete?: boolean;
   /** If true, enables a CDN (content delivery network) to access tiles faster. */
   enableCDN?: boolean;
 }
 
-/** Query the [Graphics Data Sources] for sources matching the specified criteria.
- * The sources are sorted from most-recently- to least-recently-produced.
+/** Query Graphic Representations for representations matching the specified criteria.
+ * The representations are sorted from most-recently- to least-recently-produced.
  * @beta
  */
-export async function* queryGraphicsDataSources(args: QueryGraphicsDataSourcesArgs): AsyncIterableIterator<GraphicRepresentation> {
+export async function* queryGraphicRepresentations(args: QueryGraphicRepresentationsArgs): AsyncIterableIterator<GraphicRepresentation> {
   interface ServiceJsonResponse {
     id: string;
     displayName: string;
@@ -144,7 +146,7 @@ export async function* queryGraphicsDataSources(args: QueryGraphicsDataSourcesAr
     SessionId: args.sessionId,
   };
 
-  let url: string | undefined = createGraphicsDataSourceQueryUrl(args);
+  let url: string | undefined = createGraphicRepresentationsQueryUrl({ sourceId: args.dataSource.id, urlPrefix: args.urlPrefix, changeId: args.dataSource.changeId, enableCDN: args.enableCDN });
   while (url) {
     let result;
     try {
@@ -152,11 +154,11 @@ export async function* queryGraphicsDataSources(args: QueryGraphicsDataSourcesAr
       result = await response.json() as ServiceJsonResponses;
     } catch (err) {
       Logger.logException(loggerCategory, err);
-      Logger.logError(loggerCategory, `Failed loading Graphics Data for Source ${args.sourceId}`);
+      Logger.logError(loggerCategory, `Failed loading Graphics Data for Source ${args.dataSource.id}`);
       break;
     }
 
-    const foundSources = result.exports.filter((x) => x.request.exportType === args.sourceType && (args.includeIncomplete || x.status === GraphicRepresentationStatus.Complete));
+    const foundSources = result.exports.filter((x) => x.request.exportType === args.dataSource.type && (args.includeIncomplete || x.status === GraphicRepresentationStatus.Complete));
     for (const foundSource of foundSources) {
       const graphicRepresentation = {
         displayName: foundSource.displayName,
@@ -165,7 +167,7 @@ export async function* queryGraphicsDataSources(args: QueryGraphicsDataSourcesAr
         format: args.format,
         url: foundSource._links.mesh.href,
         dataSource: {
-          iTwinId: args.iTwinId,
+          iTwinId: args.dataSource.iTwinId,
           id: foundSource.request.iModelId,
           versionId: foundSource.request.changesetId,
           type: foundSource.request.exportType,
@@ -179,24 +181,18 @@ export async function* queryGraphicsDataSources(args: QueryGraphicsDataSourcesAr
   }
 }
 
-/** Arguments supplied  to [[obtainGraphicsDataSourceUrl]].
+/** Arguments supplied  to [[obtainGraphicRepresentationUrl]].
  * @beta
  */
-export interface ObtainGraphicsDataSourceUrlArgs {
+export interface ObtainGraphicRepresentationUrlArgs {
   /** The token used to access the mesh export service. */
   accessToken: AccessToken;
   /** The Session Id */
   sessionId: string;
-  /** The Id of the source for which to query */
-  sourceId: string;
-  /** The Graphics Data Source type for which to query */
-  sourceType: string;
+  /** The data source for which to query */
+  dataSource: DataSource;
   /** The format of the Graphics Data Source */
   format: GraphicRepresentationFormat;
-  /** The iTwinId associated with the Graphics Data Source */
-  iTwinId: string;
-  /** The version Id of the source for which to query */
-  sourceVersionId?: string;
   /** Chiefly used in testing environments. */
   urlPrefix?: string;
   /** If true, only Graphics Data produced for a specific version will be considered; otherwise, if no Graphics Data Sources are found for the version,
@@ -207,47 +203,49 @@ export interface ObtainGraphicsDataSourceUrlArgs {
   enableCDN?: boolean;
 }
 
-/** Obtains a URL pointing to a tileset.
- * [[queryGraphicsDataSources]] is used to obtain a list of available sources. By default, the list is sorted from most to least recently-created.
- * The first Graphics Data matching the source version is selected; or, if no such Graphics Data exists, the first source in the list is selected.
+/** Obtains a URL pointing to a Graphic Representation.
+ * [[queryGraphicRepresentations]] is used to obtain a list of available representations. By default, the list is sorted from most to least recently-created.
+ * The first representation matching the source version is selected; or, if no such representation exists, the first representation in the list is selected.
  * @returns A URL from which the tileset can be loaded, or `undefined` if no appropriate URL could be obtained.
  * @beta
  */
-export async function obtainGraphicsDataSourceUrl(args: ObtainGraphicsDataSourceUrlArgs): Promise<URL | undefined> {
-  if (!args.sourceId) {
+export async function obtainGraphicRepresentationUrl(args: ObtainGraphicRepresentationUrlArgs): Promise<URL | undefined> {
+  if (!args.dataSource.id) {
     Logger.logInfo(loggerCategory, "Cannot obtain Graphics Data from a source without an Id");
     return undefined;
   }
 
-  const queryArgs: QueryGraphicsDataSourcesArgs = {
+  const queryArgs: QueryGraphicRepresentationsArgs = {
     accessToken: args.accessToken,
     sessionId: args.sessionId,
-    sourceId: args.sourceId,
-    sourceType: args.sourceType,
+    dataSource: {
+      iTwinId: args.dataSource.iTwinId,
+      id: args.dataSource.id,
+      changeId: args.dataSource.changeId,
+      type: args.dataSource.type,
+    },
     format: args.format,
-    iTwinId: args.iTwinId,
-    sourceVersionId: args.sourceVersionId,
     urlPrefix: args.urlPrefix,
     enableCDN: args.enableCDN,
   };
 
   let selectedData;
-  for await (const data of queryGraphicsDataSources(queryArgs)) {
+  for await (const data of queryGraphicRepresentations(queryArgs)) {
     selectedData = data;
     break;
   }
 
   if (!selectedData && !args.requireExactVersion) {
-    queryArgs.sourceVersionId = undefined;
-    for await (const data of queryGraphicsDataSources(queryArgs)) {
+    queryArgs.dataSource.changeId = undefined;
+    for await (const data of queryGraphicRepresentations(queryArgs)) {
       selectedData = data;
-      Logger.logInfo(loggerCategory, `No data for Graphics Data Source ${args.sourceId} for version ${args.sourceVersionId}; falling back to most recent`);
+      Logger.logInfo(loggerCategory, `No data for Data Source ${args.dataSource.id} for version ${args.dataSource.changeId}; falling back to most recent`);
       break;
     }
   }
 
   if ((!selectedData) || (!selectedData.url)) {
-    Logger.logInfo(loggerCategory, `No data available for Graphics Data Source ${args.sourceId}`);
+    Logger.logInfo(loggerCategory, `No data available for Data Source ${args.dataSource.id}`);
     return undefined;
   }
 

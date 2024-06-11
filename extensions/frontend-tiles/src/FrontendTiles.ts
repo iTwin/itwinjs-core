@@ -5,9 +5,9 @@
 
 import { IModelApp, IModelConnection, SpatialTileTreeReferences, SpatialViewState } from "@itwin/core-frontend";
 import { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTreeRefs";
-import { GraphicRepresentationFormat, queryGraphicsDataSources } from "./GraphicsServiceProvider";
+import { GraphicRepresentationFormat, queryGraphicRepresentations } from "./GraphicsProvider/GraphicRepresentationProvider";
 import { AccessToken } from "@itwin/core-bentley";
-import { obtainIModelTilesetUrl, ObtainIModelTilesetUrlArgs} from "./GraphicsService";
+import { obtainIModelTilesetUrl, ObtainIModelTilesetUrlArgs} from "./GraphicsProvider/GraphicsProvider";
 
 /** A function that can provide the base URL where a tileset representing all of the spatial models in a given iModel are stored.
  * The tileset is expected to reside at "baseUrl/tileset.json" and to have been produced by the [mesh export service](https://developer.bentley.com/apis/mesh-export/).
@@ -84,24 +84,25 @@ export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterab
   const graphicsArgs = {
     accessToken: args.accessToken,
     sessionId: IModelApp.sessionId,
-    sourceId: args.iModelId,
-    sourceVersionId: args.changesetId,
-    sourceType: "IMODEL",
+    dataSource: {
+      iTwinId: args.iTwinId,
+      id: args.iModelId,
+      changeId: args.changesetId,
+      type: "IMODEL",
+    },
     format: GraphicRepresentationFormat.IMDL,
-    iTwinId: args.iTwinId,
     urlPrefix: args.urlPrefix,
-    includeIncomplete: args.includeIncomplete,
     enableCDN: args.enableCDN,
   };
 
-  for await (const data of queryGraphicsDataSources(graphicsArgs)){
+  for await (const data of queryGraphicRepresentations(graphicsArgs)){
     const meshExport = {
       id: data.representationId,
       displayName: data.displayName,
       status: "Complete",
       request: {
         iModelId: data.dataSource.id,
-        changesetId: data.dataSource.versionId ?? "",
+        changesetId: data.dataSource.changeId ?? "",
         exportType: data.dataSource.type,
         geometryOptions: {},
         viewDefinitionFilter: {},

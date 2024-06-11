@@ -8,8 +8,8 @@ import * as sinon from "sinon";
 import { Range3d } from "@itwin/core-geometry";
 import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { BlankConnection, IModelApp } from "@itwin/core-frontend";
-import { MeshExport, MeshExports } from "../FrontendTiles";
-import { obtainIModelTilesetUrl } from "../GraphicsService";
+import { MeshExport, MeshExports } from "../../FrontendTiles";
+import { obtainIModelTilesetUrl } from "../../GraphicsProvider/GraphicsProvider";
 
 use(chaiAsPromised);
 

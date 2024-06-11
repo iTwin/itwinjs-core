@@ -5,8 +5,8 @@
 
 import { AccessToken, Logger} from "@itwin/core-bentley";
 import { IModelApp, IModelConnection} from "@itwin/core-frontend";
-import { GraphicRepresentationFormat, obtainGraphicsDataSourceUrl} from "./GraphicsServiceProvider";
-import { loggerCategory} from "./LoggerCategory";
+import { GraphicRepresentationFormat, obtainGraphicRepresentationUrl} from "./GraphicRepresentationProvider";
+import { loggerCategory} from "../LoggerCategory";
 
 /** Arguments supplied  to [[obtainMeshExportTilesetUrl]].
  * @beta
@@ -47,15 +47,17 @@ Promise<URL|undefined> {
   const graphicsArgs = {
     accessToken: args.accessToken,
     sessionId: IModelApp.sessionId,
-    sourceId: args.iModel.iModelId,
-    sourceVersionId: args.iModel.changeset.id,
-    sourceType: "IMODEL",
+    dataSource: {
+      iTwinId: args.iModel.iTwinId,
+      id: args.iModel.iModelId,
+      changeId: args.iModel.changeset.id,
+      type: "IMODEL",
+    },
     format: GraphicRepresentationFormat.IMDL,
-    iTwinId: args.iModel.iTwinId,
     urlPrefix: args.urlPrefix,
     requireExactVersion: args.requireExactChangeset,
     enableCDN: args.enableCDN,
   };
 
-  return obtainGraphicsDataSourceUrl(graphicsArgs);
+  return obtainGraphicRepresentationUrl(graphicsArgs);
 }
