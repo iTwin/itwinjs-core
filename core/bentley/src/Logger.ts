@@ -65,8 +65,16 @@ export class Logger {
   /** NOTE: this property is accessed by native code. */
   private static categoryFilter: {[categoryName: string]: LogLevel} = {};
 
-  /** NOTE: this property is accessed by native code. */
-  private static minLevel: LogLevel | undefined;
+  private static _minLevel: LogLevel | undefined;
+
+  // NOTE: the `minLevel` property is accessed by native code. */
+  /** The least severe level at which messages should be displayed by default.
+   * @see [[setLevelDefault]] to change this default.
+   * @see [[setLevel]] to override this default for specific categories.
+   */
+  public static get minLevel(): LogLevel | undefined {
+    return this._minLevel;
+  }
 
   /** Should the call stack be included when an exception is logged?  */
   public static logExceptionCallstacks = false;
@@ -109,7 +117,7 @@ export class Logger {
 
   /** Set the least severe level at which messages should be displayed by default. Call setLevel to override this default setting for specific categories. */
   public static setLevelDefault(minLevel: LogLevel): void {
-    this.minLevel = minLevel;
+    this._minLevel = minLevel;
     this.onLogLevelChanged.raiseEvent();
   }
 
@@ -195,7 +203,7 @@ export class Logger {
    * This turns off logging for all messages for which no category minimum level is defined.
    */
   public static turnOffLevelDefault(): void {
-    Logger.minLevel = undefined;
+    Logger._minLevel = undefined;
   }
 
   /** Turns off all category level filters previously defined with [[Logger.setLevel]].
