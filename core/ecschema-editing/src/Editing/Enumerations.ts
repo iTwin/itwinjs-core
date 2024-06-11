@@ -9,7 +9,7 @@
 import { AnyEnumerator, Enumeration, EnumerationProps, PrimitiveType, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
 import { MutableEnumeration } from "./Mutable/MutableEnumeration";
-import { ECEditingStatus, EnumerationId, SchemaEditingError, SchemaItemId } from "./Exception";
+import { ECEditingStatus, EnumeratorId, SchemaEditingError, SchemaItemId } from "./Exception";
 import { SchemaItems } from "./SchemaItems";
 
 type MutableEnumerator = {
@@ -64,10 +64,10 @@ export class Enumerations extends SchemaItems {
       const enumeration = await this.getSchemaItem<Enumeration>(enumerationKey, SchemaItemType.Enumeration);
 
       if (enumeration.isInt && typeof (enumerator.value) !== "number")
-        throw new SchemaEditingError(ECEditingStatus.InvalidEnumeratorType, new EnumerationId(enumeration, enumerator));
+        throw new SchemaEditingError(ECEditingStatus.InvalidEnumeratorType, new EnumeratorId(enumerator, enumeration));
 
       if (enumeration.isString && typeof (enumerator.value) !== "string")
-        throw new SchemaEditingError(ECEditingStatus.InvalidEnumeratorType, new EnumerationId(enumeration, enumerator));
+        throw new SchemaEditingError(ECEditingStatus.InvalidEnumeratorType, new EnumeratorId(enumerator, enumeration));
 
       (enumeration as MutableEnumeration).addEnumerator(enumerator);
     } catch(e: any) {
@@ -81,7 +81,7 @@ export class Enumerations extends SchemaItems {
 
       const enumerator = enumeration.getEnumeratorByName(enumeratorName);
       if (enumerator === undefined)
-        throw new SchemaEditingError(ECEditingStatus.EnumeratorDoesNotExist, new EnumerationId(enumeration, enumeratorName));
+        throw new SchemaEditingError(ECEditingStatus.EnumeratorDoesNotExist, new EnumeratorId(enumeratorName, enumeration));
 
       (enumerator as MutableEnumerator).label = label;
     } catch(e: any) {
@@ -95,7 +95,7 @@ export class Enumerations extends SchemaItems {
 
       const enumerator = enumeration.getEnumeratorByName(enumeratorName);
       if (enumerator === undefined)
-        throw new SchemaEditingError(ECEditingStatus.EnumeratorDoesNotExist, new EnumerationId(enumeration, enumeratorName));
+        throw new SchemaEditingError(ECEditingStatus.EnumeratorDoesNotExist, new EnumeratorId(enumeratorName, enumeration));
 
       (enumerator as MutableEnumerator).description = description;
     } catch(e: any) {

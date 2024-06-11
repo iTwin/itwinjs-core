@@ -377,8 +377,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
       throw new Error("ViewStoreRpc version mismatch");
 
     const db = await getIModelForRpc(tokenProps);
-    const viewStore = await db.views.accessViewStore({ accessLevel: forWrite ? "write" : "read", userToken: RpcTrace.currentActivity?.accessToken });
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const viewStore = await db.views.accessViewStore({ accessLevel: forWrite ? "write" : "read" });
     const access = viewStore[forWrite ? "writeLocker" : "reader"] as any;
 
     const func = access[methodName];
