@@ -23,17 +23,26 @@ function doLayout(textBlock: TextBlock, args?: {
   findFontId?: FindFontId;
   computeTextRange?: ComputeRangesForTextLayout;
 }): TextBlockLayout {
-  return layoutTextBlock({
+  const layout = layoutTextBlock({
     textBlock,
     iModel: {} as any,
     findTextStyle: args?.findTextStyle ?? (() => TextStyleSettings.defaults),
     findFontId: args?.findFontId ?? (() => 0),
     computeTextRange: args?.computeTextRange ?? computeTextRangeAsStringLength,
   });
+
+  return layout;
 }
 
 function makeTextRun(content: string, styleName = ""): TextRun {
   return TextRun.create({ content, styleName });
+}
+
+function isIntlSupported(): boolean {
+  // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
+  // users are not expected to do any editing, but long term we will attempt to find a better
+  // solution.
+  return !ProcessDetector.isMobileAppBackend;
 }
 
 describe("layoutTextBlock", () => {
@@ -64,6 +73,29 @@ describe("layoutTextBlock", () => {
     expect(s1.lineHeight).to.equal(1);
     expect(s1.fontName).to.equal("run1");
     expect(s1.color).to.equal("subcategory");
+  });
+
+  it("aligns text to center based on height of stacked fraction", () => {
+    const textBlock = TextBlock.create({ styleName: "" });
+    const fractionRun = FractionRun.create({ numerator: "1", denominator: "2", styleName: "fraction" });
+    const textRun = TextRun.create({ content: "text", styleName: "text" });
+    textBlock.appendRun(fractionRun);
+    textBlock.appendRun(textRun);
+
+    const layout = doLayout(textBlock);
+
+    const fractionLayout = layout.lines[0].runs[0];
+    const textLayout = layout.lines[0].runs[1];
+
+    const round = (num: number, numDecimalPlaces: number) => {
+      const mult = Math.pow(100, numDecimalPlaces);
+      return Math.round(num * mult) / mult;
+    };
+
+    expect(textLayout.range.yLength()).to.equal(1);
+    expect(round(fractionLayout.range.yLength(), 2)).to.equal(1.75);
+    expect(fractionLayout.offsetFromLine.y).to.equal(0);
+    expect(round(textLayout.offsetFromLine.y, 3)).to.equal(.375);
   });
 
   it("produces one line per paragraph if document width <= 0", () => {
@@ -157,12 +189,10 @@ describe("layoutTextBlock", () => {
   });
 
   it("splits paragraphs into multiple lines if runs exceed the document width", function () {
-    if (ProcessDetector.isMobileAppBackend) {
-      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
-      // users are not expected to do any editing, but long term we will attempt to find a better
-      // solution.
+    if (!isIntlSupported()) {
       this.skip();
     }
+
     const textBlock = TextBlock.create({ styleName: "" });
     textBlock.width = 6;
     textBlock.appendRun(makeTextRun("ab"));
@@ -171,7 +201,7 @@ describe("layoutTextBlock", () => {
     expect(doLayout(textBlock).lines.length).to.equal(1);
 
     textBlock.appendRun(makeTextRun("ef"));
-    expect(doLayout(textBlock).lines.length).to.equal(2);
+    expect(doLayout(textBlock).lines.length).to.equal(1);
     textBlock.appendRun(makeTextRun("ghi"));
     expect(doLayout(textBlock).lines.length).to.equal(2);
 
@@ -189,6 +219,141 @@ describe("layoutTextBlock", () => {
     expect(doLayout(textBlock).lines.length).to.equal(5);
   });
 
+  function expectRange(width: number, height: number, range: Range2d): void {
+    expect(range.xLength()).to.equal(width);
+    expect(range.yLength()).to.equal(height);
+  }
+
+  it("computes range for wrapped lines", function () {
+    if (!isIntlSupported()) {
+      this.skip();
+    }
+
+    const block = TextBlock.create({ styleName: "", width: 3, styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
+
+    function expectBlockRange(width: number, height: number): void {
+      const layout = doLayout(block);
+      expectRange(width, height, layout.range);
+    }
+
+    block.appendRun(makeTextRun("abc"));
+    expectBlockRange(3, 1);
+
+    block.appendRun(makeTextRun("defg"));
+    expectBlockRange(4, 2);
+
+    block.width = 1;
+    expectBlockRange(4, 2);
+
+    block.width = 8;
+    expectBlockRange(8, 1);
+
+    block.width = 6;
+    expectBlockRange(6, 2);
+
+    block.width = 10;
+    expectBlockRange(10, 1);
+    block.appendRun(makeTextRun("hijk"));
+    expectBlockRange(10, 2);
+  });
+
+  it("computes range for split runs", function () {
+    if (!isIntlSupported()) {
+      this.skip();
+    }
+
+    const block = TextBlock.create({ styleName: "", styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
+
+    function expectBlockRange(width: number, height: number): void {
+      const layout = doLayout(block);
+      expectRange(width, height, layout.range);
+    }
+
+    const sentence = "a bc def ghij klmno";
+    expect(sentence.length).to.equal(19);
+    block.appendRun(makeTextRun(sentence));
+
+    block.width = 19;
+    expectBlockRange(19, 1);
+
+    block.width = 10;
+    expectBlockRange(10, 2);
+  });
+
+  it("justifies lines", function () {
+    if (!isIntlSupported()) {
+      this.skip();
+    }
+
+    const block = TextBlock.create({ styleName: "", styleOverrides: { lineSpacingFactor: 0 } });
+
+    function expectBlockRange(width: number, height: number): void {
+      const layout = doLayout(block);
+      expectRange(width, height, layout.range);
+    }
+
+    function expectLineOffset(offset: number, lineIndex: number): void {
+      const layout = doLayout(block);
+      expect(layout.lines.length).least(lineIndex + 1);
+
+      const line = layout.lines[lineIndex];
+      expect(line.offsetFromDocument.y).to.equal(-(lineIndex + 1));
+      expect(line.offsetFromDocument.x).to.equal(offset);
+    }
+
+    block.appendRun(makeTextRun("abc"));
+    block.appendRun(makeTextRun("defg"));
+    expectBlockRange(7, 1);
+    expectLineOffset(0, 0);
+
+    block.justification = "right";
+    expectBlockRange(7, 1);
+    expectLineOffset(0, 0);
+
+    block.justification = "center";
+    expectBlockRange(7, 1);
+    expectLineOffset(0, 0);
+
+    block.justification = "left";
+    block.width = 4;
+    expectBlockRange(4, 2);
+    expectLineOffset(0, 0);
+    expectLineOffset(0, 1);
+
+    block.justification = "right";
+    expectBlockRange(4, 2);
+    expectLineOffset(1, 0);
+    expectLineOffset(0, 1);
+
+    block.justification = "center";
+    expectBlockRange(4, 2);
+    expectLineOffset(0.5, 0);
+    expectLineOffset(0, 1);
+
+    block.width = 2;
+    block.justification = "left";
+    expectBlockRange(4, 2);
+    expectLineOffset(0, 0);
+    expectLineOffset(0, 1);
+
+    block.justification = "right";
+    expectBlockRange(4, 2);
+    expectLineOffset(-1, 0);
+    expectLineOffset(-2, 1);
+
+    block.appendRun(makeTextRun("123456789"));
+    expectBlockRange(9, 3);
+    expectLineOffset(-1, 0);
+    expectLineOffset(-2, 1);
+    expectLineOffset(-7, 2);
+
+    block.justification = "center";
+    expectBlockRange(9, 3);
+    expectLineOffset(-0.5, 0);
+    expectLineOffset(-1, 1);
+    expectLineOffset(-3.5, 2);
+  });
+
   function expectLines(input: string, width: number, expectedLines: string[]): TextBlockLayout {
     const textBlock = TextBlock.create({ styleName: "" });
     textBlock.width = width;
@@ -196,8 +361,7 @@ describe("layoutTextBlock", () => {
     textBlock.appendRun(run);
 
     const layout = doLayout(textBlock);
-    expect(layout.lines.every((line) => line.runs.length === 1)).to.be.true;
-    expect(layout.lines.every((line) => line.runs[0].source === run)).to.be.true;
+    expect(layout.lines.every((line) => line.runs.every((r) => r.source === run))).to.be.true;
 
     const actual = layout.lines.map((line) => line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars)).join(""));
     expect(actual).to.deep.equal(expectedLines);
@@ -206,12 +370,10 @@ describe("layoutTextBlock", () => {
   }
 
   it("splits a single TextRun at word boundaries if it exceeds the document width", function () {
-    if (ProcessDetector.isMobileAppBackend) {
-      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
-      // users are not expected to do any editing, but long term we will attempt to find a better
-      // solution.
+    if (!isIntlSupported()) {
       this.skip();
     }
+
     expectLines("a bc def ghij klmno pqrstu vwxyz", 5, [
       "a bc ",
       "def ",
@@ -256,12 +418,10 @@ describe("layoutTextBlock", () => {
   });
 
   it("considers consecutive whitespace a single 'word'", function () {
-    if (ProcessDetector.isMobileAppBackend) {
-      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
-      // users are not expected to do any editing, but long term we will attempt to find a better
-      // solution.
+    if (!isIntlSupported()) {
       this.skip();
     }
+
     expectLines("a b  c   d    e     f      ", 3, [
       "a b",
       "  c",
@@ -276,23 +436,19 @@ describe("layoutTextBlock", () => {
   });
 
   it("performs word-wrapping on Japanese text", function () {
-    if (ProcessDetector.isMobileAppBackend) {
-      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
-      // users are not expected to do any editing, but long term we will attempt to find a better
-      // solution.
+    if (!isIntlSupported()) {
       this.skip();
     }
+
     // "I am a cat. The name is Tanuki."
     expectLines("吾輩は猫である。名前はたぬき。", 1, ["吾輩", "は", "猫", "で", "ある", "。", "名前", "は", "たぬき", "。"]);
   });
 
   it("performs word-wrapping with punctuation", function () {
-    if (ProcessDetector.isMobileAppBackend) {
-      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
-      // users are not expected to do any editing, but long term we will attempt to find a better
-      // solution.
+    if (!isIntlSupported()) {
       this.skip();
     }
+
     expectLines("1.24 56.7 8,910", 1, ["1.24", " ", "56.7", " ", "8,910"]);
 
     // NOTE: Chrome splits a.bc and de.f on the periods. Safari and electron do not.
@@ -311,12 +467,10 @@ describe("layoutTextBlock", () => {
   });
 
   it("performs word-wrapping and line-splitting with multiple runs", function () {
-    if (ProcessDetector.isMobileAppBackend) {
-      // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
-      // users are not expected to do any editing, but long term we will attempt to find a better
-      // solution.
+    if (!isIntlSupported()) {
       this.skip();
     }
+
     const textBlock = TextBlock.create({ styleName: "" });
     for (const str of ["The ", "quick brown", " fox jumped over ", "the lazy ", "dog"]) {
       textBlock.appendRun(makeTextRun(str));
@@ -358,6 +512,50 @@ describe("layoutTextBlock", () => {
       "over the ",
       "lazy dog",
     ]);
+  });
+
+  it("wraps multiple runs", function () {
+    if (!isIntlSupported()) {
+      this.skip();
+    }
+
+    const block = TextBlock.create({ styleName: "" });
+    block.appendRun(makeTextRun("aa")); // 2 chars wide
+    block.appendRun(makeTextRun("bb ccc d ee")); // 11 chars wide
+    block.appendRun(makeTextRun("ff ggg h")); // 8 chars wide
+
+    function expectLayout(width: number, expected: string): void {
+      block.width = width;
+      const layout = doLayout(block);
+      expect(layout.stringify()).to.equal(expected);
+    }
+
+    expectLayout(23, "aabb ccc d eeff ggg h");
+    expectLayout(22, "aabb ccc d eeff ggg h");
+    expectLayout(21, "aabb ccc d eeff ggg h");
+    expectLayout(20, "aabb ccc d eeff ggg \nh");
+    expectLayout(19, "aabb ccc d eeff ggg\n h");
+    expectLayout(18, "aabb ccc d eeff \nggg h");
+    expectLayout(17, "aabb ccc d eeff \nggg h");
+    expectLayout(16, "aabb ccc d eeff \nggg h");
+    expectLayout(15, "aabb ccc d eeff\n ggg h");
+    expectLayout(14, "aabb ccc d ee\nff ggg h");
+    expectLayout(13, "aabb ccc d ee\nff ggg h");
+    expectLayout(12, "aabb ccc d \neeff ggg h");
+    expectLayout(11, "aabb ccc d \neeff ggg h");
+    expectLayout(10, "aabb ccc d\n eeff ggg \nh");
+    expectLayout(9, "aabb ccc \nd eeff \nggg h");
+    expectLayout(8, "aabb ccc\n d eeff \nggg h");
+    expectLayout(7, "aabb \nccc d \neeff \nggg h");
+    expectLayout(6, "aabb \nccc d \neeff \nggg h");
+    expectLayout(5, "aabb \nccc d\n eeff\n ggg \nh");
+    expectLayout(4, "aabb\n ccc\n d \neeff\n ggg\n h");
+    expectLayout(3, "aa\nbb \nccc\n d \nee\nff \nggg\n h");
+    expectLayout(2, "aa\nbb\n \nccc\n d\n \nee\nff\n \nggg\n h");
+    expectLayout(1, "aa\nbb\n \nccc\n \nd\n \nee\nff\n \nggg\n \nh");
+    expectLayout(0, "aabb ccc d eeff ggg h");
+    expectLayout(-1, "aabb ccc d eeff ggg h");
+    expectLayout(-2, "aabb ccc d eeff ggg h");
   });
 
   describe("using native font library", () => {
@@ -446,6 +644,52 @@ describe("layoutTextBlock", () => {
       expect(computeDimensions({ height: 2 })).not.to.deep.equal(computeDimensions({ height: 3 }));
       expect(computeDimensions({ width: 2 })).to.deep.equal(computeDimensions({ width: 2 }));
       expect(computeDimensions({ width: 2 })).not.to.deep.equal(computeDimensions({ width: 3 }));
+    });
+
+    it("excludes trailing blank glyphs from justification ranges", () => {
+      function computeRanges(chars: string): TextLayoutRanges {
+        return iModel.computeRangesForText({
+          chars,
+          bold: false,
+          italic: false,
+          fontId: 1,
+          widthFactor: 1,
+          lineHeight: 1,
+          baselineShift: "none",
+        });
+      }
+
+      function test(chars: string, expectEqualRanges: boolean): void {
+        const { justification, layout }= computeRanges(chars);
+        expect(layout.low.x).to.equal(justification.low.x);
+        expect(layout.high.y).to.equal(justification.high.y);
+        expect(layout.low.y).to.equal(justification.low.y);
+
+        if (expectEqualRanges) {
+          expect(layout.high.x).to.equal(justification.high.x);
+        } else {
+          expect(layout.high.x).greaterThan(justification.high.x);
+        }
+      }
+
+      test("abcdef", true);
+      test("abcdef ", false);
+      test("abcdef   ", false);
+      test("abc def", true);
+
+      // new line has no width ever.
+      test("abcdef\n", true);
+
+      // apparently native code doesn't consider tab characters to be "blank".
+      test("abcdef\t", true);
+
+      // apparently native code doesn't consider "thin space" to be "blank".
+      test("abcdef\u2009", true);
+
+      const r1 = computeRanges("abcdef ");
+      const r2 = computeRanges("abcdef    ");
+      expect(r1.layout.xLength()).lessThan(r2.layout.xLength());
+      expect(r1.justification.xLength()).to.equal(r2.justification.xLength());
     });
   });
 
@@ -846,8 +1090,4 @@ describe("TextAnnotation element", () => {
       test(createAnnotation());
     });
   });
-});
-
-describe("IModelDb.computeRangesForText", () => {
-
 });

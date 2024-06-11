@@ -9,22 +9,22 @@ describe("TextAnnotation", () => {
         anchor: { horizontal, vertical },
       });
 
-      const extents = { x: 20, y: 10 };
+      const extents = new Range2d(0, 0, 20, 10);
       const actual = annotation.computeAnchorPoint(extents);
       expect(actual.x).to.equal(x);
       expect(actual.y).to.equal(y);
     }
 
     it("should compute anchor point based on anchor settings and text block dimensions", () => {
-      expectAnchor(0, 0, "left", "top");
-      expectAnchor(0, -10, "left", "bottom");
-      expectAnchor(0, -5, "left", "middle");
-      expectAnchor(20, 0, "right", "top");
-      expectAnchor(20, -10, "right", "bottom");
-      expectAnchor(20, -5, "right", "middle");
-      expectAnchor(10, 0, "center", "top");
-      expectAnchor(10, -10, "center", "bottom");
-      expectAnchor(10, -5, "center", "middle");
+      expectAnchor(0, 10, "left", "top");
+      expectAnchor(0, 0, "left", "bottom");
+      expectAnchor(0, 5, "left", "middle");
+      expectAnchor(20, 10, "right", "top");
+      expectAnchor(20, 0, "right", "bottom");
+      expectAnchor(20, 5, "right", "middle");
+      expectAnchor(10, 10, "center", "top");
+      expectAnchor(10, 0, "center", "bottom");
+      expectAnchor(10, 5, "center", "middle");
     });
   });
 
@@ -43,7 +43,7 @@ describe("TextAnnotation", () => {
       // NB: In TextBlock coordinates, the origin is at the top-left.
       const dimensions = { x: 20, y: 10 };
       const extents = new Range3d(0, -dimensions.y, 0, dimensions.x, 0, 0);
-      const transform = annotation.computeTransform(dimensions);
+      const transform = annotation.computeTransform(new Range2d(0, -dimensions.y, dimensions.x, 0));
       const expected = Range3d.createRange2d(new Range2d(expectedRange[0], expectedRange[1], expectedRange[2], expectedRange[3]));
       const actual = transform.multiplyRange(extents);
 
