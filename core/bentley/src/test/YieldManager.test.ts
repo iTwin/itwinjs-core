@@ -13,8 +13,12 @@ describe("YieldManager", () => {
 
     const expectedYieldTimes = 5;
     const yieldManager = new CountingYieldManager();
-    (yieldManager as any).actualYield = async () => { yieldManager.actualYieldCount++ };
+
+    (yieldManager as any).actualYield = async () => {
+      yieldManager.actualYieldCount++;
+    };
     for (let i = 0; i < expectedYieldTimes * yieldManager.options.iterationsBeforeYield; ++i) {
+
       await yieldManager.allowYield();
     }
 
