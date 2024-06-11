@@ -9,7 +9,7 @@
 // spell:ignore datacenter
 
 import { AccessToken, GuidString, Id64String } from "@itwin/core-bentley";
-import { SettingObject } from "./workspace/Settings";
+import { SettingsContainer } from "./workspace/Settings";
 
 /**
  * Types and functions for creating, deleting and authorizing access to cloud-based blob containers for an iTwin.
@@ -65,7 +65,7 @@ export namespace BlobContainer {
     /** Optional human-readable explanation of the information held in the container. This will be displayed in the administrator RBAC panel, and on usage reports. */
     description?: string;
     /** optional properties for the container */
-    json?: SettingObject;
+    json?: SettingsContainer;
   }
 
   /** Properties returned by `Service.requestToken` */
@@ -155,7 +155,7 @@ export namespace BlobContainer {
     queryMetadata(container: AccessContainerProps): Promise<Metadata>;
 
     /** update the json properties of this container */
-    updateJson(container: AccessContainerProps, json: SettingObject): Promise<void>;
+    updateJson(container: AccessContainerProps, json: SettingsContainer): Promise<void>;
 
     /** Request a `ContainerToken` for a container. Throws on failure. */
     requestToken(props: RequestTokenProps): Promise<TokenProps>;
