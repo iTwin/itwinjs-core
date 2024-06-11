@@ -7,9 +7,9 @@ import { assert, expect } from "chai";
 import { BentleyStatus, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
   Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet,
-  CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Matrix3d,
-  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceBuilder, Range2d, Range3d, SolidPrimitive, Sphere,
-  StrokeOptions, Transform, Vector3d, YawPitchRollAngles,
+  CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, InterpolationCurve3d, InterpolationCurve3dOptions, InterpolationCurve3dProps,
+  LineSegment3d, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceBuilder, Range2d, Range3d,
+  SolidPrimitive, Sphere, StrokeOptions, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import {
   AreaPattern, BackgroundFill, BRepGeometryCreate, BRepGeometryFunction, BRepGeometryInfo, BRepGeometryOperation, Code, ColorByName,
@@ -1578,6 +1578,43 @@ describe("ElementGeometry", () => {
     assert.exists(entryEL);
     newEntries.push(entryEL!);
     expected.push({ opcode: ElementGeometryOpcode.ArcPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
+
+    elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
+    const newId = imodel.elements.insertElement(elementProps);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+  });
+
+  it("create GeometricElement3d from local coordinate interpolation curve flatbuffer data", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const testOrigin = Point3d.create(5, 10, 0);
+    const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
+    const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
+
+    const pts: Point3d[] = [];
+    pts.push(Point3d.create(5, 10, 0));
+    pts.push(Point3d.create(10, 10, 0));
+    pts.push(Point3d.create(10, 15, 0));
+    pts.push(Point3d.create(5, 15, 0));
+
+    const expected: ExpectedElementGeometryEntry[] = [];
+    const newEntries: ElementGeometryDataEntry[] = [];
+
+    const interpolationProps: InterpolationCurve3dProps = { fitPoints: pts, closed: false, isChordLenKnots: 1, isColinearTangents: 1 };
+    const interpolationOpts = InterpolationCurve3dOptions.create(interpolationProps);
+    const interpolationCurve = InterpolationCurve3d.createCapture(interpolationOpts);
+    assert.isDefined(interpolationCurve);
+
+    const entry1 = ElementGeometry.fromGeometryQuery(interpolationCurve!);
+    assert.exists(entry1);
+    newEntries.push(entry1!);
+    expected.push({ opcode: ElementGeometryOpcode.CurvePrimitive, geometryCategory: "curvePrimitive" });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
     const newId = imodel.elements.insertElement(elementProps);
