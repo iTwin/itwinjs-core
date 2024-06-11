@@ -1451,14 +1451,7 @@ export class ToolAdmin {
     if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
       return false;
 
-    if (IModelStatus.Success !== await imodel.txns.reverseSingleTxn())
-      return false;
-
-    // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
-    if (undefined !== this._primitiveTool)
-      await this._primitiveTool.onRestartTool();
-
-    return true;
+    return (IModelStatus.Success === await imodel.txns.reverseSingleTxn() ? true : false);
   }
 
   /** Called to redo previous data button for primitive tools or undo last write operation. */
@@ -1474,14 +1467,7 @@ export class ToolAdmin {
     if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
       return false;
 
-    if (IModelStatus.Success !== await imodel.txns.reinstateTxn())
-      return false;
-
-    // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
-    if (undefined !== this._primitiveTool)
-      await this._primitiveTool.onRestartTool();
-
-    return true;
+    return (IModelStatus.Success === await imodel.txns.reinstateTxn() ? true : false);
   }
 
   private onActiveToolChanged(tool: Tool, start: StartOrResume): void {
