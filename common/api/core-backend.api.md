@@ -218,6 +218,7 @@ import { SynchronizationConfigLinkProps } from '@itwin/core-common';
 import { TextAnnotation } from '@itwin/core-common';
 import { TextAnnotation2dProps } from '@itwin/core-common';
 import { TextAnnotation3dProps } from '@itwin/core-common';
+import { TextBlock } from '@itwin/core-common';
 import { TextBlockGeometryProps } from '@itwin/core-common';
 import { TextBlockLayoutResult } from '@itwin/core-common';
 import { TextStyleSettings } from '@itwin/core-common';
@@ -3688,13 +3689,15 @@ export class KnownLocations {
 }
 
 // @beta
-export interface LayoutTextBlockArgs extends ComputeTextBlockExtentsArgs {
+export interface LayoutTextBlockArgs {
     // @internal
     computeTextRange?: ComputeRangesForTextLayout;
     // @internal
     findFontId?: FindFontId;
     // @internal
     findTextStyle?: FindTextStyle;
+    iModel: IModelDb;
+    textBlock: TextBlock;
 }
 
 // @internal
