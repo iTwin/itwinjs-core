@@ -59,8 +59,17 @@ export class Logger {
   protected static _logInfo: LogFunction | undefined;
   protected static _logTrace: LogFunction | undefined;
 
+  private static _onLogLevelChanged: BeEvent<() => void> | undefined;
+
   /** An event raised whenever [[setLevel]] or [[setLevelDefault]] is called. */
-  public static readonly onLogLevelChanged = new BeEvent<() => void>();
+  public static get onLogLevelChanged(): BeEvent<() => void> {
+    // We have to lazily initialize because it's static and BeEvent imports UnexpectedErrors which imports Logger which wants to instantiate BeEvent.
+    if (undefined === Logger._onLogLevelChanged) {
+      Logger._onLogLevelChanged = new BeEvent<() => void>();
+    }
+
+    return Logger._onLogLevelChanged;
+  }
 
   private static _categoryFilter: {[categoryName: string]: LogLevel | undefined} = {};
 
