@@ -31,8 +31,6 @@ function doLayout(textBlock: TextBlock, args?: {
     computeTextRange: args?.computeTextRange ?? computeTextRangeAsStringLength,
   });
 
-  console.log("--------------------------");
-  console.log(layout.stringify());
   return layout;
 }
 
@@ -516,23 +514,48 @@ describe("layoutTextBlock", () => {
     ]);
   });
 
-  it.only("wraps multiple runs", function () {
+  it("wraps multiple runs", function () {
     if (!isIntlSupported()) {
       this.skip();
     }
 
     const block = TextBlock.create({ styleName: "" });
-    // block.appendRun(makeTextRun("aaaa"));
-    block.appendRun(makeTextRun("bbbb cccc")); //  dddd eeee"));
-    block.appendRun(makeTextRun("ffff gggg")); //  hhhh iiii"));
+    block.appendRun(makeTextRun("aa")); // 2 chars wide
+    block.appendRun(makeTextRun("bb ccc d ee")); // 11 chars wide
+    block.appendRun(makeTextRun("ff ggg h")); // 8 chars wide
 
-    for (let width = 11; width >= 1; width--) {
-      console.log(width);
+    function expectLayout(width: number, expected: string): void {
       block.width = width;
       const layout = doLayout(block);
-      console.log(layout.stringify());
-      // expect(layout.lines.length).to.equal(1 + 7 + 7);
+      expect(layout.stringify()).to.equal(expected);
     }
+
+    expectLayout(23, "aabb ccc d eeff ggg h");
+    expectLayout(22, "aabb ccc d eeff ggg h");
+    expectLayout(21, "aabb ccc d eeff ggg h");
+    expectLayout(20, "aabb ccc d eeff ggg \nh");
+    expectLayout(19, "aabb ccc d eeff ggg\n h");
+    expectLayout(18, "aabb ccc d eeff \nggg h");
+    expectLayout(17, "aabb ccc d eeff \nggg h");
+    expectLayout(16, "aabb ccc d eeff \nggg h");
+    expectLayout(15, "aabb ccc d eeff\n ggg h");
+    expectLayout(14, "aabb ccc d ee\nff ggg h");
+    expectLayout(13, "aabb ccc d ee\nff ggg h");
+    expectLayout(12, "aabb ccc d \neeff ggg h");
+    expectLayout(11, "aabb ccc d \neeff ggg h");
+    expectLayout(10, "aabb ccc d\n eeff ggg \nh");
+    expectLayout(9, "aabb ccc \nd eeff \nggg h");
+    expectLayout(8, "aabb ccc\n d eeff \nggg h");
+    expectLayout(7, "aabb \nccc d \neeff \nggg h");
+    expectLayout(6, "aabb \nccc d \neeff \nggg h");
+    expectLayout(5, "aabb \nccc d\n eeff\n ggg \nh");
+    expectLayout(4, "aabb\n ccc\n d \neeff\n ggg\n h");
+    expectLayout(3, "aa\nbb \nccc\n d \nee\nff \nggg\n h");
+    expectLayout(2, "aa\nbb\n \nccc\n d\n \nee\nff\n \nggg\n h");
+    expectLayout(1, "aa\nbb\n \nccc\n \nd\n \nee\nff\n \nggg\n \nh");
+    expectLayout(0, "aabb ccc d eeff ggg h");
+    expectLayout(-1, "aabb ccc d eeff ggg h");
+    expectLayout(-2, "aabb ccc d eeff ggg h");
   });
 
   describe("using native font library", () => {

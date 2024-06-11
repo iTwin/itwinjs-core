@@ -283,8 +283,7 @@ export class RunLayout {
   }
 
   public stringify(): string {
-    const str = this.source.type === "text" ? this.source.content.substring(this.charOffset, this.charOffset + this.numChars) : this.source.stringify();
-    return `"${str}"`;
+    return this.source.type === "text" ? this.source.content.substring(this.charOffset, this.charOffset + this.numChars) : this.source.stringify();
   }
 
   public canWrap(): this is { source: TextRun } {
@@ -406,7 +405,7 @@ export class LineLayout {
 
   public stringify(): string {
     const runs = this._runs.map((run) => run.stringify());
-    return `${runs.join(",")}`;
+    return `${runs.join("")}`;
   }
 
   public get runs(): ReadonlyArray<RunLayout> { return this._runs; }
