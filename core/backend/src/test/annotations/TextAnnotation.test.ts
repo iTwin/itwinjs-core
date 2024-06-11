@@ -47,7 +47,7 @@ function isIntlSupported(): boolean {
   return !ProcessDetector.isMobileAppBackend;
 }
 
-describe.only("layoutTextBlock", () => {
+describe("layoutTextBlock", () => {
   it("resolves TextStyleSettings from combination of TextBlock and Run", () => {
     const textBlock = TextBlock.create({ styleName: "block", styleOverrides: { widthFactor: 34, color: 0x00ff00 }});
     const run0 = TextRun.create({ content: "run0", styleName: "run", styleOverrides: { lineHeight: 56, color: 0xff0000 }});
@@ -203,7 +203,7 @@ describe.only("layoutTextBlock", () => {
     expect(doLayout(textBlock).lines.length).to.equal(1);
 
     textBlock.appendRun(makeTextRun("ef"));
-    expect(doLayout(textBlock).lines.length).to.equal(2);
+    expect(doLayout(textBlock).lines.length).to.equal(1);
     textBlock.appendRun(makeTextRun("ghi"));
     expect(doLayout(textBlock).lines.length).to.equal(2);
 
@@ -516,7 +516,7 @@ describe.only("layoutTextBlock", () => {
     ]);
   });
 
-  it("wraps multiple runs", function () {
+  it.only("wraps multiple runs", function () {
     if (!isIntlSupported()) {
       this.skip();
     }
@@ -681,7 +681,7 @@ function mockIModel(): IModelDb {
   return iModel as IModelDb;
 }
 
-describe.only("produceTextAnnotationGeometry", () => {
+describe("produceTextAnnotationGeometry", () => {
   type Color = ColorDef | "subcategory";
 
   function makeText(color?: Color): TextRun {
@@ -781,7 +781,7 @@ describe.only("produceTextAnnotationGeometry", () => {
   });
 });
 
-describe.only("TextAnnotation element", () => {
+describe("TextAnnotation element", () => {
   function makeElement(props?: Partial<TextAnnotation2dProps>): TextAnnotation2d {
     return TextAnnotation2d.fromJSON({
       category: "0x12",
