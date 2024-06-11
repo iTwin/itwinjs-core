@@ -218,7 +218,6 @@ import { SynchronizationConfigLinkProps } from '@itwin/core-common';
 import { TextAnnotation } from '@itwin/core-common';
 import { TextAnnotation2dProps } from '@itwin/core-common';
 import { TextAnnotation3dProps } from '@itwin/core-common';
-import { TextBlock } from '@itwin/core-common';
 import { TextBlockGeometryProps } from '@itwin/core-common';
 import { TextStyleSettings } from '@itwin/core-common';
 import { TextureData } from '@itwin/core-common';
@@ -1392,15 +1391,6 @@ export interface ComputedProjectExtents {
 export interface ComputeProjectExtentsOptions {
     reportExtentsWithOutliers?: boolean;
     reportOutliers?: boolean;
-}
-
-// @beta
-export function computeTextBlockExtents(args: ComputeTextBlockExtentsArgs): XAndY;
-
-// @beta
-export interface ComputeTextBlockExtentsArgs {
-    iModel: IModelDb;
-    textBlock: TextBlock;
 }
 
 // @alpha
@@ -4453,6 +4443,7 @@ export interface ProduceTextAnnotationGeometryArgs {
     annotation: TextAnnotation;
     // @internal
     computeTextRange?: ComputeRangesForTextLayout;
+    debugAnchorPointAndRange?: boolean;
     // @internal
     findFontId?: FindFontId;
     // @internal
