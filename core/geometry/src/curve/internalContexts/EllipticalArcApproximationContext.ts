@@ -8,8 +8,11 @@ import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Range1d } from "../../geometry3d/Range";
+import { Transform } from "../../geometry3d/Transform";
 import { Arc3d } from "../Arc3d";
 import { CurveChain } from "../CurveCollection";
+import { CurveCurve } from "../CurveCurve";
+import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
 
 /** @packageDocumentation
@@ -232,6 +235,7 @@ export class QuadrantFractions {
  */
 export class EllipticalArcApproximationContext {
   private _arc: Arc3d;
+  private _toPlane: Transform;
   private _axx: number;
   private _ayy: number;
   private _curvatureRange: Range1d;
@@ -240,19 +244,27 @@ export class EllipticalArcApproximationContext {
   private constructor(arc: Arc3d) {
     const scaledData = arc.toScaledMatrix3d();
     this._arc = Arc3d.createScaledXYColumns(scaledData.center, scaledData.axes, scaledData.r0, scaledData.r90, scaledData.sweep);
+    this._toPlane = Transform.createIdentity();
     this._axx = arc.matrixRef.columnXMagnitudeSquared();
     this._ayy = arc.matrixRef.columnYMagnitudeSquared();
     this._curvatureRange = Range1d.createNull();
-    this._isValidArc = !this._arc.sweep.isEmpty;  // ellipse must have a nonzero sweep
+    this._isValidArc = false;
+
+    if (this._arc.sweep.isEmpty)
+      return; // ellipse must have a nonzero sweep
     if (Geometry.isSmallMetricDistanceSquared(this._axx) || Geometry.isSmallMetricDistanceSquared(this._ayy))
-      this._isValidArc = false; // ellipse must have positive radii
-    else if (Geometry.isSameCoordinateSquared(this._axx, this._ayy))
-      this._isValidArc = false; // ellipse must not be circular
-    else {
-      // extreme curvatures are at the axis points
-      this._curvatureRange.extendX(Math.sqrt(this._axx) / this._ayy);
-      this._curvatureRange.extendX(Math.sqrt(this._ayy) / this._axx);
-    }
+      return; // ellipse must have positive radii
+    if (Geometry.isSameCoordinateSquared(this._axx, this._ayy))
+      return; // ellipse must not be circular
+    const toWorld = Transform.createRefs(scaledData.center, scaledData.axes);
+    const toPlane = toWorld.inverse();
+    if (undefined === toPlane)
+      return; // will never get here
+
+    this._toPlane = toPlane;
+    this._curvatureRange.extendX(Math.sqrt(this._axx) / this._ayy); // extreme curvatures lie...
+    this._curvatureRange.extendX(Math.sqrt(this._ayy) / this._axx); // ...at the axis points
+    this._isValidArc = true;
   }
   /** Constructor, clones input. */
   public static create(arc: Arc3d) {
@@ -261,6 +273,10 @@ export class EllipticalArcApproximationContext {
   /** The arc to be sampled. Its axes are forced to be perpendicular. */
   public get arc(): Arc3d {
     return this._arc;
+  }
+  /** The rigid transformation that rotates and translates the arc into the xy-plane at the origin. */
+  public get toPlane(): Transform {
+    return this._toPlane;
   }
   /** The squared length of the arc axis at angle 0 degrees. */
   public get vector0LengthSquared(): number {
@@ -278,7 +294,6 @@ export class EllipticalArcApproximationContext {
   public get isValidArc(): boolean {
     return this._isValidArc;
   }
-
   /**
    * Compute the angle corresponding to the point in the ellipse's first quadrant with the given curvature.
    * * The elliptical arc is assumed to be non-circular and have perpendicular axes of positive length; its sweep is ignored.
@@ -306,39 +321,79 @@ export class EllipticalArcApproximationContext {
       cos(t) = sqrt((lambda(K) - u.u)/(v.v - u.u))
     Solving for t yields the formula for t(K).
     */
-    if (!this.isValidArc)
-      return undefined;
     if (!this.curvatureRange.containsX(curvature))
       return undefined; // ellipse does not attain this curvature
     const lambda = Math.cbrt((this._axx * this._ayy) / (curvature * curvature));
     const cosTheta = Math.sqrt(Math.abs((lambda - this._axx) / (this._ayy - this._axx)));
     return Math.acos(cosTheta);
   }
-
-  /** Compute the maximum distance between a full/partial approximation to this ellipse and the elliptical arc. */
-  public computeError(approximation: Arc3d | LineString3d | CurveChain): number {
-    let maxError = Geometry.largeCoordinateResult;
-    if (approximation instanceof CurveChain) {
-      for (const child of approximation.children) {
+  /**
+   * Compute the maximum xy-distance between a segment or circular arc, and this elliptical arc.
+   * @return max approximation error, or `Geometry.largeCoordinateResult` if the error could not be computed.
+   */
+  private static computePrimitiveErrorXY(arc: Arc3d, approx: Arc3d | LineSegment3d): number {
+    const maxProjDist = approx.quickLength() / 2;
+    const details = CurveCurve.closeApproachProjectedXYPairs(arc, approx, maxProjDist);
+    let maxError = -1;
+    for (const approach of details) {
+      if (Geometry.isAlmostEqualEitherNumber(approach.detailA.fraction, 0, 1, Geometry.smallFraction))
+        continue; // rule out perpendiculars on arc ends
+      if (Geometry.isAlmostEqualEitherNumber(approach.detailB.fraction, 0, 1, Geometry.smallFraction))
+        continue; // rule out perpendiculars on approx ends
+      const error = approach.detailA.point.distanceXY(approach.detailB.point);
+      if (maxError < error)
+        maxError = error;
+    }
+    return maxError >= 0 ? maxError : Geometry.largeCoordinateResult;
+  }
+  /**
+   * Compute the maximum xy-distance between a full/partial approximant and the elliptical arc.
+   * @return max approximation error, or `Geometry.largeCoordinateResult` if the error could not be computed.
+  */
+  private static computeErrorXY(arc: Arc3d, approx: Arc3d | LineString3d | CurveChain): number {
+    let maxError = -1;
+    if (approx instanceof CurveChain) {
+      for (const child of approx.children) {
         if (child instanceof Arc3d) {
-          const error = this.computeError(child);
-          if (error < Geometry.largeCoordinateResult && maxError < error)
+          const error = this.computeErrorXY(arc, child);
+          if (error >= 0 && maxError < error)
             maxError = error;
         }
       }
-    } else if (approximation instanceof Arc3d && approximation.isCircular) {
-      // TODO: can we do this directly without invoking CurveCurve stuff?
+    } else if (approx instanceof Arc3d) {
+      if (approx.isCircular) {
+        const error = this.computePrimitiveErrorXY(arc, approx);
+        if (error >= 0 && maxError < error)
+          maxError = error;
+      }
     } else {
-      // TODO: compute max of segment errors
+      const segment = LineSegment3d.createXYXY(0, 0, 0, 0);
+      for (let i = 0; i < approx.points.length - 1; ++i) {
+        approx.getIndexedSegment(i, segment);
+        const error = this.computePrimitiveErrorXY(arc, segment);
+        if (error >= 0 && maxError < error)
+          maxError = error;
+      }
     }
-    return maxError;
+    return maxError >= 0 ? maxError : Geometry.largeCoordinateResult;
   }
-
+  /**
+   * Compute the maximum distance between a full/partial approximation to this ellipse and the elliptical arc.
+   * @return max approximation error, or `Geometry.largeCoordinateResult` if the error could not be computed.
+   */
+  public computeError(approximation: Arc3d | LineString3d | CurveChain): number {
+    if (!this.isValidArc)
+      return Geometry.largeCoordinateResult;
+    const arcXY = this.arc.cloneTransformed(this.toPlane);
+    const approxXY = approximation.cloneTransformed(this.toPlane);
+    if (undefined === approxXY)
+      return Geometry.largeCoordinateResult;  // no children in chain?
+    return EllipticalArcApproximationContext.computeErrorXY(arcXY, approxXY as Arc3d | LineString3d | CurveChain);
+  }
   /** Compute samples for the elliptical arc as fraction parameters. */
   public sampleFractions(options: EllipticalArcApproximationOptions): QuadrantFractions[] | number[] {
     if (!this.isValidArc)
       return [];
-
     const compareFractions: OrderedComparator<number> = (f0: number, f1: number): number => {
       if (Geometry.isAlmostEqualNumber(f0, f1, Geometry.smallFraction))
         return 0;
@@ -415,7 +470,6 @@ export class EllipticalArcApproximationContext {
       qf.axisAtEnd = Geometry.isAlmostEqualEitherNumber(qf.fractions[qf.fractions.length - 1], qFrac0, qFrac1, Geometry.smallFraction);
       return qf;
     };
-
     // Sample the ellipse in strict interior of Quadrant 1
     const radiansQ1: number[] = []; // unordered
     switch (options.sampleMethod) {
@@ -474,9 +528,10 @@ export class EllipticalArcApproximationContext {
     }
     return [...fractions];
   }
-
   /** Construct a circular arc chain approximation to the elliptical arc. */
   public constructCircularArcChain(_options: EllipticalArcApproximationOptions): CurveChain | undefined {
+    if (!this.isValidArc)
+      return undefined;
     // TODO: call sampleFractions, generate Path/Loop
     return undefined;
   }
