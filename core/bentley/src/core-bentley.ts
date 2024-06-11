@@ -38,7 +38,7 @@ export * from "./UnexpectedErrors";
 export * from "./UtilityTypes";
 export * from "./YieldManager";
 
-import { staticLoggerMetadata } from "./internal/LoggerInternal";
+import { staticLoggerMetadata } from "./internal/staticLoggerMetadata";
 
 export const InternalUseOnly = {
  staticLoggerMetadata: staticLoggerMetadata,

@@ -41,9 +41,3 @@ export enum RepositoryStatus {
   ChannelConstraintViolation = 0x1500F,
 }
 
-/** When you want to associate an explanatory message with an error status value. */
-export interface StatusCodeWithMessage<ErrorCodeType> {
-  status: ErrorCodeType;
-  message: string;
-}
-

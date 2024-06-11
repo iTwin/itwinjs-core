@@ -7,7 +7,7 @@
  */
 
 import { DbResult } from "./BeSQLite";
-import { RepositoryStatus } from "./internal/BentleyErrorInternal";
+import { RepositoryStatus } from "./internal/RepositoryStatus";
 
 /** Standard status code.
  * This status code should be rarely used.

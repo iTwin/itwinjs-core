@@ -10,7 +10,7 @@ import { BeEvent } from "./BeEvent";
 import { BentleyError, IModelStatus, LoggingMetaData } from "./BentleyError";
 import { BentleyLoggerCategory } from "./BentleyLoggerCategory";
 import { IDisposable } from "./Disposable";
-import { staticLoggerMetadata } from "./internal/LoggerInternal";
+import { staticLoggerMetadata } from "./internal/staticLoggerMetadata";
 
 /** Defines the *signature* for a log function.
  * @public
