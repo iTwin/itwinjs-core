@@ -277,11 +277,12 @@ export abstract class IModelConnection extends IModel {
 
   /**
    * queries the BisCore.SubCategory table for the entries that are children of the passed categoryIds
+   * If no iterable is passed, all subcategories are returned. If an empty iterable is passed, no subcategories are returned.
    * @param compressedCategoryIds compressed category Ids
    * @returns array of SubCategoryResultRow
    * @internal
    */
-  public async querySubCategories(compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]> {
+  public async querySubCategories(compressedCategoryIds?: CompressedId64Set): Promise<SubCategoryResultRow[]> {
     return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).querySubCategories(this.getRpcProps(), compressedCategoryIds);
   }
 

@@ -706,16 +706,22 @@ export abstract class IModelDb extends IModel {
   }
 
   /**
-   * queries the BisCore.SubCategory table for the entries that are children of the passed categoryIds
+   * queries the BisCore.SubCategory table for the entries that are children of the passed categoryIds.
+   * If no iterable is passed, all subcategories are returned. If an empty iterable is passed, no subcategories are returned.
    * @param categoryIds categoryIds to query
    * @returns array of SubCategoryResultRow
    * @internal
    */
-  public async querySubCategories(categoryIds: Iterable<Id64String>): Promise<SubCategoryResultRow[]> {
+  public async querySubCategories(categoryIds?: Iterable<Id64String>): Promise<SubCategoryResultRow[]> {
     const result: SubCategoryResultRow[] = [];
+    let query: string;
+    if (!categoryIds) {
+      query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory`;
+    } else {
+      const where = [...categoryIds].join(",");
+      query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
+    }
 
-    const where = [...categoryIds].join(",");
-    const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
     try {
       for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         result.push(row.toRow() as SubCategoryResultRow);
