@@ -38,6 +38,8 @@ export * from "./UnexpectedErrors";
 export * from "./UtilityTypes";
 export * from "./YieldManager";
 
+export * as InternalUseOnly from "./internal/cross-package";
+
 /** @docs-package-description
  * The core-bentley package contains classes to solve problems that are common for both client and server use cases.
  */

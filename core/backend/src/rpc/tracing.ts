@@ -8,8 +8,7 @@
 
 // cspell:ignore calltrace
 
-import { assert, Logger, SpanKind, Tracing } from "@itwin/core-bentley";
-import { staticLoggerMetadata } from "@itwin/core-bentley/lib/cjs/internal/staticLoggerMetadata";
+import { assert, InternalUseOnly, Logger, SpanKind, Tracing } from "@itwin/core-bentley";
 import { RpcActivity, RpcInvocation } from "@itwin/core-common";
 import { AsyncLocalStorage } from "async_hooks";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
@@ -75,5 +74,5 @@ export function initializeTracing(enableOpenTelemetry: boolean = false) {
   }
 
   // set up static logger metadata to include current RpcActivity information for logs during rpc processing
-  staticLoggerMetadata.set("rpc", () => RpcInvocation.sanitizeForLog(RpcTrace.currentActivity));
+  InternalUseOnly.staticLoggerMetadata.set("rpc", () => RpcInvocation.sanitizeForLog(RpcTrace.currentActivity));
 }
