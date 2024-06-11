@@ -15,7 +15,7 @@ A [Setting]($backend) is simply a name-value pair. The value can be of one of th
 - An `object` containing properties of any of these types; or
 - An `array` containing elements of one of these types.
 
-A [SettingName]($backend) must be unique, 1 to 1024 characters long with no leading nor trailing whitespace, and should begin with the schema prefix of the [schema](#settings-schemas) that defines the setting. (More on schemas shortly). For example, LandscapePro might define the following settings:
+A [SettingName]($backend) must be unique, 1 to 1024 characters long with no leading nor trailing whitespace, and should begin with the schema prefix of the [schema](#settings-schemas) that defines the setting. For example, LandscapePro might define the following settings:
 
 ```
   "landscapePro/ui/defaultToolId"
