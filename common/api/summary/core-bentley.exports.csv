@@ -32,12 +32,8 @@ public;CompressedId64Set = string
 public;CompressedId64Set
 public;ComputePriorityFunction
 public;Constructor
-internal;DbChangeStage
-internal;DbConflictCause
-internal;DbConflictResolution
 public;DbOpcode
 public;DbResult
-internal;DbValueType
 public;Dictionary
 public;DictionaryEntry
 public;DisposableList 
@@ -111,7 +107,6 @@ public;PromiseReturnType
 public;ReadonlyOrderedSet
 public;ReadonlySortedArray
 alpha;RealityDataStatus
-internal;RepositoryStatus
 public;RequireAtLeastOne
 beta;RpcInterfaceStatus
 public;shallowClone
@@ -120,7 +115,6 @@ public;SpanKind
 deprecated;SpanKind
 alpha;class StatusCategory
 alpha;StatusCategoryHandler = (error: Error) => StatusCategory | undefined
-internal;StatusCodeWithMessage
 public;StopWatch
 alpha;class SuccessCategory 
 public;Tracing
@@ -138,6 +132,5 @@ public;UintArrayBuilderOptions
 public;UnexpectedErrors
 public;using
 public;utf8ToString(utf8: Uint8Array): string | undefined
-internal;utf8ToStringPolyfill(utf8: Uint8Array): string | undefined
 public;YieldManager
 public;YieldManagerOptions
