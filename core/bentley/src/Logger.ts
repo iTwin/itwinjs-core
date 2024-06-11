@@ -10,6 +10,7 @@ import { BeEvent } from "./BeEvent";
 import { BentleyError, IModelStatus, LoggingMetaData } from "./BentleyError";
 import { BentleyLoggerCategory } from "./BentleyLoggerCategory";
 import { IDisposable } from "./Disposable";
+import { staticLoggerMetadata } from "./internal/LoggerInternal";
 
 /** Defines the *signature* for a log function.
  * @public
@@ -70,12 +71,6 @@ export class Logger {
   /** Should the call stack be included when an exception is logged?  */
   public static logExceptionCallstacks = false;
 
-  /** All static metadata is combined with per-call metadata and stringified in every log message.
-   * Static metadata can either be an object or a function that returns an object.
-   * Use a key to identify entries in the map so the can be removed individually.
-   * @internal */
-  public static staticMetaData = new Map<string, LoggingMetaData>();
-
   /** Initialize the logger streams. Should be called at application initialization time. */
   public static initialize(logError?: LogFunction, logWarning?: LogFunction, logInfo?: LogFunction, logTrace?: LogFunction): void {
     Logger._logError = logError;
@@ -97,7 +92,7 @@ export class Logger {
   /** merge the supplied metadata with all static metadata into one object */
   public static getMetaData(metaData?: LoggingMetaData): object {
     const metaObj = {};
-    for (const meta of Logger.staticMetaData) {
+    for (const meta of staticLoggerMetadata) {
       const val = BentleyError.getMetaData(meta[1]);
       if (val)
         Object.assign(metaObj, val);

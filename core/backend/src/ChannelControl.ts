@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { DbResult, Id64String, IModelStatus, RepositoryStatus } from "@itwin/core-bentley";
+import { DbResult, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { ChannelRootAspectProps, IModel, IModelError } from "@itwin/core-common";
 import { Subject } from "./Element";
 import { IModelDb } from "./IModelDb";
@@ -125,7 +125,7 @@ export class ChannelAdmin implements ChannelControl {
 
     const deniedChannel = this._deniedModels.get(modelId);
     if (undefined !== deniedChannel)
-      throw new IModelError(RepositoryStatus.ChannelConstraintViolation, `channel "${deniedChannel}" is not allowed`);
+      throw new Error(`channel "${deniedChannel}" is not allowed`);
 
     const channel = this.getChannelKey(modelId);
     if (this._allowedChannels.has(channel)) {

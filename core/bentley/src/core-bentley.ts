@@ -38,6 +38,12 @@ export * from "./UnexpectedErrors";
 export * from "./UtilityTypes";
 export * from "./YieldManager";
 
+import { staticLoggerMetadata } from "./internal/LoggerInternal";
+
+export const InternalUseOnly = {
+ staticLoggerMetadata: staticLoggerMetadata,
+}
+
 /** @docs-package-description
  * The core-bentley package contains classes to solve problems that are common for both client and server use cases.
  */
