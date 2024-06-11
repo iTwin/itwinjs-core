@@ -6,7 +6,8 @@
  * @module SQLiteDb
  */
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String, IDisposable } from "@itwin/core-bentley";
+import { DbOpcode, DbResult, Id64String, IDisposable } from "@itwin/core-bentley";
+import { DbChangeStage, DbValueType } from "@itwin/core-bentley/lib/cjs/internal/BeSQLiteInternal";
 import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
