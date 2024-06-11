@@ -26,15 +26,15 @@ export enum PlanarClipMaskMode {
    */
   Models = 2,
   /** Indicates that masks should be produced from geometry belonging to a set of subcategories.
-   * View settings do not affect what is in the mask.
+   * View settings do not affect what is in the mask, unless [[PlanarClipMaskSettings.subCategoryOrElementIds]] is undefined, in which case it behaves like Models mode.
    */
   IncludeSubCategories = 3,
   /** Indicates that masks should be produced from the geometry of a set of [GeometricElement]($backend)s.
-   * View settings do not affect what is in the mask.
+   * View settings do not affect what is in the mask, unless [[PlanarClipMaskSettings.subCategoryOrElementIds]] is undefined, in which case it behaves like Models mode.
    */
   IncludeElements = 4,
   /** Indicates that masks should be produced from the geometry of all [GeometricElement]($backend)s in a view, **except** for a specified set of excluded elements.
-   * View settings do not affect what is in the mask.
+   * View settings do not affect what is in the mask, unless [[PlanarClipMaskSettings.subCategoryOrElementIds]] is undefined, in which case it behaves like Models mode.
    */
   ExcludeElements = 5,
 }
@@ -166,6 +166,7 @@ export class PlanarClipMaskSettings {
   public readonly modelIds?: OrderedId64Iterable;
   /** For [[PlanarClipMaskMode.IncludeElements]] or [[PlanarClipMaskMode.ExcludedElements]], the Ids of the [GeometricElement]($backend)s to include or exclude from masking;
    * for [[PlanarClipMaskMode.IncludeSubCategories]], the Ids of the subcategories whose geometry contributes to the mask.
+   * If undefined, Modes IncludeSubCategories, IncludeElements, and ExcludeElements behave like Models mode.
    */
   public readonly subCategoryOrElementIds?: OrderedId64Iterable;
   /** For [[PlanarClipMaskMode.Priority]], the priority value. */

@@ -67,45 +67,44 @@ export class PlanarClipMaskState {
   public getPlanarClipMaskSymbologyOverrides(view: SpatialViewState, context: SceneContext): FeatureSymbology.Overrides | undefined {
     const overrideModels = view.getMaskModels(this.settings.modelIds, PlanarClipMaskMode.Priority === this.settings.mode);
 
-    if (!this.settings.subCategoryOrElementIds && !overrideModels)
+    const noSubCategoryOrElementIds = !this.settings.subCategoryOrElementIds;
+    if (noSubCategoryOrElementIds && !overrideModels)
       return undefined;
 
     const overrides = new FeatureSymbology.Overrides();
 
     if (overrideModels) {
       // overrideModels is used for batched models.  For those, we need to create model overrides for visibility (using transparency).
-      const appOn = FeatureAppearance.fromTransparency(0.0);
       const appOff = FeatureAppearance.fromTransparency(1.0);
       // For Priority or Models mode, we need to start with the current overrides and modify them
-      if (PlanarClipMaskMode.Priority === this.settings.mode || PlanarClipMaskMode.Models === this.settings.mode) {
+      if (PlanarClipMaskMode.Priority === this.settings.mode || PlanarClipMaskMode.Models === this.settings.mode || noSubCategoryOrElementIds) {
         const curOverrides = new FeatureSymbology.Overrides(context.viewport);
         curOverrides.addInvisibleElementOverridesToNeverDrawn();  // need this for fully trans element overrides to not participate in mask
         overrideModels.forEach((use: boolean, modelId: string) => {
-          curOverrides.override({ modelId, appearance: use ? appOn : appOff, onConflict: "replace" });
+          if (!use)
+            curOverrides.override({ modelId, appearance: appOff, onConflict: "replace" });
         });
         return curOverrides;
       }
       // Otherwise, we just start with a default overrides and modify it.
       overrideModels.forEach((use: boolean, modelId: string) => {
-        overrides.override({ modelId, appearance: use ? appOn : appOff, onConflict: "replace" });
+        if (!use)
+          overrides.override({ modelId, appearance: appOff, onConflict: "replace" });
       });
     }
 
-    if (!this.settings.subCategoryOrElementIds)
-      return undefined;
-
     switch (this.settings.mode) {
       case PlanarClipMaskMode.IncludeElements: {
-        overrides.setAlwaysDrawnSet(this.settings.subCategoryOrElementIds, true);
+        overrides.setAlwaysDrawnSet(this.settings.subCategoryOrElementIds!, true);
         return overrides;
       }
       case PlanarClipMaskMode.ExcludeElements: {
         overrides.ignoreSubCategory = true;
-        overrides.setNeverDrawnSet(this.settings.subCategoryOrElementIds);
+        overrides.setNeverDrawnSet(this.settings.subCategoryOrElementIds!);
         return overrides;
       }
       case PlanarClipMaskMode.IncludeSubCategories: {
-        for (const subCategoryId of this.settings.subCategoryOrElementIds)
+        for (const subCategoryId of this.settings.subCategoryOrElementIds!)
           overrides.setVisibleSubCategory(subCategoryId);
         return overrides;
       }
