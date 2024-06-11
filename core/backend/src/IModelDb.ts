@@ -11,7 +11,7 @@ import { join } from "path";
 import * as touch from "touch";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbOpcode, DbResult,
+  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult,
   Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, InternalUseOnly, JsonUtils, Logger, LogLevel, OpenMode,
 } from "@itwin/core-bentley";
 import {
@@ -61,29 +61,11 @@ import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from
 import { Workspace, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbSettingsProps, WorkspaceSettingNames } from "./workspace/Workspace";
 import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "./internal/workspace/WorkspaceImpl";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
+import { ChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 
 import type { BlobContainer } from "./BlobContainerService";
 
-/** @internal */
-export interface ChangesetConflictArgs {
-  cause: DbConflictCause;
-  opcode: DbOpcode;
-  indirect: boolean;
-  tableName: string;
-  changesetFile?: string;
-  columnCount: number;
-  getForeignKeyConflicts: () => number;
-  dump: () => void;
-  setLastError: (message: string) => void;
-  getPrimaryKeyColumns: () => number[];
-  getValueType: (columnIndex: number, stage: DbChangeStage) => DbValueType | null | undefined;
-  getValueBinary: (columnIndex: number, stage: DbChangeStage) => Uint8Array | null | undefined;
-  getValueId: (columnIndex: number, stage: DbChangeStage) => Id64String | null | undefined;
-  getValueText: (columnIndex: number, stage: DbChangeStage) => string | null | undefined;
-  getValueInteger: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
-  getValueDouble: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
-  isValueNull: (columnIndex: number, stage: DbChangeStage) => boolean | undefined;
-}
+const { DbConflictCause, DbConflictResolution, DbChangeStage } = InternalUseOnly;
 
 // spell:ignore fontid fontmap
 
@@ -2833,14 +2815,12 @@ export class BriefcaseDb extends IModelDb {
     return briefcaseDb;
   }
 
-  /**  This is called by native code when applying a changeset
-   * @internal
-   */
-  public onChangesetConflict(args: ChangesetConflictArgs): DbConflictResolution | undefined {
+  /**  This is called by native code when applying a changeset */
+  private onChangesetConflict(args: ChangesetConflictArgs): InternalUseOnly.DbConflictResolution | undefined {
     // returning undefined will result in native handler to resolve conflict
 
     const category = "DgnCore";
-    const interpretConflictCause = (cause: DbConflictCause) => {
+    const interpretConflictCause = (cause: InternalUseOnly.DbConflictCause) => {
       switch (cause) {
         case DbConflictCause.Data:
           return "data";
