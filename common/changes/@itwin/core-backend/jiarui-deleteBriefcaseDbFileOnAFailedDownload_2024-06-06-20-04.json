@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Increase restrictions on native app storage name.",
+      "comment": "delete briefcase .bim file on a failed download",
       "type": "none"
     }
   ],

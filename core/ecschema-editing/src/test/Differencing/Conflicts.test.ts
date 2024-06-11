@@ -34,34 +34,347 @@ describe("Difference Conflict Reporting", () => {
     alias: "conflict",
   };
 
-  describe("Schema conflicts", () => {
-    const sourceSchema = {
-      ...schemaHeader,
-      items: {
-        SameNameOtherItemType: {
-          schemaItemType: "PropertyCategory",
+  describe("Different schema item type conflicts", () => {
+    it("should find a conflict between EntityClass and KindOfQuantity types", async () => {
+      const sourceSchema = {
+        ...schemaHeader,
+        items: {
+          TestCustomAttributeClass: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+          TestItem: {
+            schemaItemType: "EntityClass",
+            modifier: "Sealed",
+            customAttributes: [
+              {
+                className: "ConflictSchema.TestCustomAttributeClass",
+              },
+            ],
+            properties: [
+              {
+                name: "Name",
+                type: "PrimitiveProperty",
+                description: "name of item",
+                label: "Name",
+                priority: 0,
+                typeName: "string",
+              },
+            ],
+          },
         },
-      },
-    };
+      };
 
-    const targetSchema = {
-      ...schemaHeader,
-      items: {
-        SameNameOtherItemType: {
-          schemaItemType: "EntityClass",
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          TestUnitSystem: {
+            schemaItemType: "UnitSystem",
+          },
+          TestPhenomenon: {
+            schemaItemType: "Phenomenon",
+            definition: "TestPhenomenon",
+          },
+          TestUnit: {
+            schemaItemType: "Unit",
+            unitSystem: "ConflictSchema.TestUnitSystem",
+            phenomenon: "ConflictSchema.TestPhenomenon",
+            definition: "TestUnit",
+          },
+          TestItem: {
+            schemaItemType: "KindOfQuantity",
+            description: "Description of koq",
+            persistenceUnit: "ConflictSchema.TestUnit",
+            relativeError: 1.23,
+          },
         },
-      },
-    };
+      };
 
-    it("should find a conflict for schema items with different type", async () => {
       const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(findConflictItem(differences, "SameNameOtherItemType")).deep.equals({
-        id: "C-001-SameNameOtherItemType",
-        code:    ConflictCode.ConflictingItemName,
-        schemaType: "PropertyCategory",
-        itemName:    "SameNameOtherItemType",
-        source:  "PropertyCategory",
-        target:  "EntityClass",
+      expect(findConflictItem(differences, "TestItem")).deep.equals({
+        code: ConflictCode.ConflictingItemName,
+        schemaType: "EntityClass",
+        itemName: "TestItem",
+        source: "EntityClass",
+        target: "KindOfQuantity",
+        description: "Target schema already contains a schema item with the name but different type.",
+      });
+    });
+
+    it("should find a conflict between RelationshipClass and Mixin types", async () => {
+      const sourceSchema = {
+        ...schemaHeader,
+        items: {
+          TestCustomAttributeClass: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+          TestEntityClass: {
+            schemaItemType: "EntityClass",
+          },
+          TestItem: {
+            schemaItemType: "RelationshipClass",
+            customAttributes: [
+              {
+                className: "ConflictSchema.TestCustomAttributeClass",
+              },
+            ],
+            description: "Description of TestRelationship",
+            modifier: "None",
+            strength: "Referencing",
+            strengthDirection: "Forward",
+            source: {
+              multiplicity: "(0..*)",
+              polymorphic: true,
+              roleLabel: "refers to",
+              abstractContraint: "ConflictSchema.TestEntityClass",
+              constraintClasses: [
+                "ConflictSchema.TestEntityClass",
+              ],
+              customAttributes: [
+                {
+                  className: "ConflictSchema.TestCustomAttributeClass",
+                },
+              ],
+            },
+            target: {
+              multiplicity: "(0..*)",
+              roleLabel: "is referenced by",
+              polymorphic: true,
+              abstractContraint: "ConflictSchema.TestEntityClass",
+              constraintClasses: [
+                "ConflictSchema.TestEntityClass",
+              ],
+              customAttributes: [
+                {
+                  className: "ConflictSchema.TestCustomAttributeClass",
+                },
+              ],
+            },
+          },
+        },
+      };
+
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          TestCustomAttributeClass: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+          TestEntityClass: {
+            schemaItemType: "EntityClass",
+          },
+          TestItem: {
+            schemaItemType: "Mixin",
+            appliesTo: "ConflictSchema.TestEntityClass",
+            customAttributes: [
+              {
+                className: "ConflictSchema.TestCustomAttributeClass",
+              },
+            ],
+            properties: [
+              {
+                name: "Name",
+                type: "PrimitiveProperty",
+                description: "name of item",
+                label: "Name",
+                priority: 0,
+                typeName: "string",
+              },
+            ],
+          },
+        },
+      };
+
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      expect(findConflictItem(differences, "TestItem")).deep.equals({
+        code: ConflictCode.ConflictingItemName,
+        schemaType: "RelationshipClass",
+        itemName: "TestItem",
+        source: "RelationshipClass",
+        target: "Mixin",
+        description: "Target schema already contains a schema item with the name but different type.",
+      });
+    });
+
+    it("should find a conflict between CustomAttributeClass and Enumeration types", async () => {
+      const sourceSchema = {
+        ...schemaHeader,
+        items: {
+          TestItem: {
+            schemaItemType: "Enumeration",
+            type: "int",
+            enumerators: [
+              {
+                name: "EnumeratorOne",
+                value: 1,
+              },
+            ],
+          },
+        },
+      };
+
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          TestCustomAttributeClass: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+          TestItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+            customAttributes: [
+              {
+                className: "ConflictSchema.TestCustomAttributeClass",
+              },
+            ],
+            properties: [
+              {
+                name: "Name",
+                type: "PrimitiveProperty",
+                description: "name of item",
+                label: "Name",
+                priority: 0,
+                typeName: "string",
+                customAttributes: [
+                  {
+                    className: "ConflictSchema.TestCustomAttributeClass",
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      };
+
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      expect(findConflictItem(differences, "TestItem")).deep.equals({
+        code: ConflictCode.ConflictingItemName,
+        schemaType: "Enumeration",
+        itemName: "TestItem",
+        source: "Enumeration",
+        target: "CustomAttributeClass",
+        description: "Target schema already contains a schema item with the name but different type.",
+      });
+    });
+
+    it("should find a conflict between PropertyCategory and Phenomenon types", async () => {
+      const sourceSchema = {
+        ...schemaHeader,
+        items: {
+          TestItem: {
+            schemaItemType: "Phenomenon",
+            definition: "TestPhenomenon",
+          },
+        },
+      };
+
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          TestItem: {
+            schemaItemType: "PropertyCategory",
+            priority: 4,
+          },
+        },
+      };
+
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      expect(findConflictItem(differences, "TestItem")).deep.equals({
+        code: ConflictCode.ConflictingItemName,
+        schemaType: "Phenomenon",
+        itemName: "TestItem",
+        source: "Phenomenon",
+        target: "PropertyCategory",
+        description: "Target schema already contains a schema item with the name but different type.",
+      });
+    });
+
+    it("should find a conflict between StructClass and Format types", async () => {
+      const sourceSchema = {
+        ...schemaHeader,
+        items: {
+          TestUnitSystem: {
+            schemaItemType: "UnitSystem",
+          },
+          TestPhenomenon: {
+            schemaItemType: "Phenomenon",
+            definition: "TestPhenomenon",
+          },
+          TestUnit: {
+            schemaItemType: "Unit",
+            unitSystem: "ConflictSchema.TestUnitSystem",
+            phenomenon: "ConflictSchema.TestPhenomenon",
+            definition: "TestUnit",
+          },
+          TestItem: {
+            schemaItemType: "Format",
+            type: "Fractional",
+            precision: 8,
+            formatTraits: [
+              "KeepSingleZero",
+              "KeepDecimalPoint",
+              "ShowUnitLabel",
+            ],
+            decimalSeparator: ",",
+            thousandSeparator: ".",
+            uomSeparator: "",
+            composite: {
+              spacer: "",
+              units: [
+                {
+                  name: "ConflictSchema.TestUnit",
+                  label: "'",
+                },
+              ],
+            },
+          },
+        },
+      };
+
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          TestCustomAttributeClass: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+          TestItem: {
+            schemaItemType: "StructClass",
+            modifier: "Sealed",
+            customAttributes: [
+              {
+                className: "ConflictSchema.TestCustomAttributeClass",
+              },
+            ],
+            properties: [
+              {
+                name: "Name",
+                type: "PrimitiveProperty",
+                description: "name of item",
+                label: "Name",
+                priority: 0,
+                typeName: "string",
+                customAttributes: [
+                  {
+                    className: "ConflictSchema.TestCustomAttributeClass",
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      };
+
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      expect(findConflictItem(differences, "TestItem")).deep.equals({
+        code: ConflictCode.ConflictingItemName,
+        schemaType: "Format",
+        itemName: "TestItem",
+        source: "Format",
+        target: "StructClass",
         description: "Target schema already contains a schema item with the name but different type.",
         difference: {
           priority: undefined,

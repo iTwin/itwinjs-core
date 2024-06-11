@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-frontend",
-      "comment": "",
+      "comment": "Removed usage of `require` as it is not supported in ES modules",
       "type": "none"
     }
   ],
