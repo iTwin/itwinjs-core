@@ -6,11 +6,19 @@
 import { AccessToken, Logger} from "@itwin/core-bentley";
 import { loggerCategory} from "./LoggerCategory";
 
+/**
+ * The format of the Graphic Representation
+ * @beta
+ */
 export enum GraphicRepresentationFormat {
   IMDL = "IMDL",
   Tiles3D = "3DTILES",
 }
 
+/**
+ * The status of the Graphic Representation
+ * @beta
+ */
 export enum GraphicRepresentationStatus {
   InProgress = "In progress",
   Complete = "Complete",
@@ -19,8 +27,18 @@ export enum GraphicRepresentationStatus {
 }
 
 /**
- * Represents the result of a [mesh
- * export](https://developer.bentley.com/apis/mesh-export/operations/get-export/#export).
+ * Represents the Data Source of a Graphic Representation
+ * @beta
+ */
+export interface DataSource {
+  iTwinId: string;
+  id: string;
+  changeId?: string;
+  type: string;
+}
+
+/**
+ * Represents a Graphic Representation, the result of a query to the Graphics Service Provider for Graphics Data Sources.
  * @see [[queryGraphicsDataSources]].
  * @beta
  */
@@ -36,16 +54,7 @@ export interface GraphicRepresentation {
   /** The url of the Graphic Representation */
   url?: string;
   /** The Graphics Data Source providing the Graphic Representation */
-  dataSource: {
-    /** The iTwinId associated with the Graphics Data Source */
-    iTwinId: string;
-    /** The Id of the Graphics Data Source */
-    id: string;
-    /** The version Id of the Graphics Data Source */
-    versionId?: string;
-    /** The type of the Graphics Data Source */
-    type: string;
-  };
+  dataSource: DataSource;
 }
 
 function createGraphicsDataSourceQueryUrl(args: { sourceId: string, urlPrefix?: string, sourceVersionId?: string, enableCDN?: boolean }): string {
@@ -61,6 +70,7 @@ function createGraphicsDataSourceQueryUrl(args: { sourceId: string, urlPrefix?: 
 
   return url;
 }
+
 /** Arguments supplied to [[queryGraphicsDataSources]].
  * @beta
  */
