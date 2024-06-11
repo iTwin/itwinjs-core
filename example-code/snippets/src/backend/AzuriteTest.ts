@@ -16,7 +16,7 @@ import { LocalDirName, LocalFileName } from "@itwin/core-common";
 export namespace AzuriteTest {
 
   export const storageType = "azure" as const;
-  export const httpAddr = "127.0.0.1:10000";
+  export const httpAddr = "127.0.0.1:10001";
   export const accountName = "devstoreaccount1";
   export const baseUri = `http://${httpAddr}/${accountName}`;
 
@@ -40,8 +40,8 @@ export namespace AzuriteTest {
     export const createAzContainer = async (container: { containerId: string, isPublic?: boolean }) => {
       const createProps: BlobContainer.CreateNewContainerProps = {
         metadata: {
+          label: "Test Container",
           description: "CloudSqlite container for tests",
-          label: "test for CloudSqlite",
           containerType: "cloud-sqlite",
           json: { blockSize: "64K" },
         },
@@ -140,7 +140,7 @@ export namespace AzuriteTest {
       if (arg.scope.iModelId)
         opts.metadata!.imodelid = arg.scope.iModelId;
       if (arg.scope.ownerGuid)
-        opts.metadata!.ownerGuid = arg.scope.ownerGuid;
+        opts.metadata!.ownerguid = arg.scope.ownerGuid;
       if (arg.metadata.description)
         opts.metadata!.description = arg.metadata.description;
       if (arg.metadata.json)
