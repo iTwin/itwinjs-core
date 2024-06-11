@@ -230,69 +230,65 @@ export class QuadrantFractions {
 };
 
 /**
- * Context for sampling a non-circular Arc3d, e.g., to construct an approximation.
+ * Interface implemented by sampler classes.
+ * * Implementation constructors are assumed to supply the sampler with the ellipse and relevant parameters.
  * @internal
  */
-export class EllipticalArcApproximationContext {
-  private _arc: Arc3d;
-  private _toPlane: Transform;
-  private _axx: number;
-  private _ayy: number;
+interface EllipticalArcSampler {
+  /**
+   * Return samples interior to the first quadrant of the (full) ellipse.
+   * * Samples are returned as an unordered array of radian angles in the open interval (0, pi/2).
+   * @param result optional preallocated array to populate and return
+   * @return array of radian angles
+   */
+  computeSamplesStrictlyInsideQuadrant1(result?: number[]): number[];
+};
+
+/**
+ * Implementation for method `EllipticalArcSampleMethod.UniformParameter`
+ * @internal
+ */
+class UniformParameterSampler implements EllipticalArcSampler {
+  protected _context: EllipticalArcApproximationContext;
+  protected _options: EllipticalArcApproximationOptions;
+  private constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
+    this._context = c;
+    this._options = o;
+  }
+  public static create(context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions): UniformParameterSampler {
+    return new UniformParameterSampler(context, options);
+  }
+  public computeSamplesStrictlyInsideQuadrant1(result?: number[]): number[] {
+    if (!result)
+      result = [];
+    if (this._context.isValidArc) {
+      const aDelta = Angle.piOver2Radians / (this._options.numSamplesInQuadrant - 1);
+      for (let i = 1; i < this._options.numSamplesInQuadrant - 1; ++i)
+        result.push(i * aDelta);
+    }
+    return result;
+  }
+};
+/**
+ * Implementation for method `EllipticalArcSampleMethod.NonUniformCurvature`
+ * @internal
+ */
+class NonUniformCurvatureSampler implements EllipticalArcSampler {
+  protected _context: EllipticalArcApproximationContext;
+  protected _options: EllipticalArcApproximationOptions;
+  private _xMag2: number;
+  private _yMag2: number;
   private _curvatureRange: Range1d;
-  private _isValidArc: boolean;
-  /** captures input */
-  private constructor(arc: Arc3d) {
-    const scaledData = arc.toScaledMatrix3d();
-    this._arc = Arc3d.createScaledXYColumns(scaledData.center, scaledData.axes, scaledData.r0, scaledData.r90, scaledData.sweep);
-    this._toPlane = Transform.createIdentity();
-    this._axx = arc.matrixRef.columnXMagnitudeSquared();
-    this._ayy = arc.matrixRef.columnYMagnitudeSquared();
-    this._curvatureRange = Range1d.createNull();
-    this._isValidArc = false;
-
-    if (this._arc.sweep.isEmpty)
-      return; // ellipse must have a nonzero sweep
-    if (Geometry.isSmallMetricDistanceSquared(this._axx) || Geometry.isSmallMetricDistanceSquared(this._ayy))
-      return; // ellipse must have positive radii
-    if (Geometry.isSameCoordinateSquared(this._axx, this._ayy))
-      return; // ellipse must not be circular
-    const toWorld = Transform.createRefs(scaledData.center, scaledData.axes);
-    const toPlane = toWorld.inverse();
-    if (undefined === toPlane)
-      return; // will never get here
-
-    this._toPlane = toPlane;
-    this._curvatureRange.extendX(Math.sqrt(this._axx) / this._ayy); // extreme curvatures lie...
-    this._curvatureRange.extendX(Math.sqrt(this._ayy) / this._axx); // ...at the axis points
-    this._isValidArc = true;
+  protected constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
+    this._context = c;
+    this._options = o;
+    this._xMag2 = c.arc.matrixRef.columnXMagnitudeSquared();
+    this._yMag2 = c.arc.matrixRef.columnYMagnitudeSquared();
+    // extreme curvatures occur at the axis points
+    this._curvatureRange = Range1d.createXX(Math.sqrt(this._xMag2) / this._yMag2, Math.sqrt(this._yMag2) / this._xMag2);
   }
-  /** Constructor, clones input. */
-  public static create(arc: Arc3d) {
-    return new EllipticalArcApproximationContext(arc);
-  }
-  /** The arc to be sampled. Its axes are forced to be perpendicular. */
-  public get arc(): Arc3d {
-    return this._arc;
-  }
-  /** The rigid transformation that rotates and translates the arc into the xy-plane at the origin. */
-  public get toPlane(): Transform {
-    return this._toPlane;
-  }
-  /** The squared length of the arc axis at angle 0 degrees. */
-  public get vector0LengthSquared(): number {
-    return this._axx;
-  }
-  /** The squared length of the arc axis at angle 90 degrees. */
-  public get vector90LengthSquared(): number {
-    return this._ayy;
-  }
-  /** The curvature range of the arc. These extrema occur at its axis points. */
-  public get curvatureRange(): Range1d {
-    return this._curvatureRange;
-  }
-  /** Whether the arc is amenable to sampling. */
-  public get isValidArc(): boolean {
-    return this._isValidArc;
+  public static create(context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions): NonUniformCurvatureSampler {
+    return new NonUniformCurvatureSampler(context, options);
   }
   /**
    * Compute the angle corresponding to the point in the ellipse's first quadrant with the given curvature.
@@ -321,11 +317,84 @@ export class EllipticalArcApproximationContext {
       cos(t) = sqrt((lambda(K) - u.u)/(v.v - u.u))
     Solving for t yields the formula for t(K).
     */
-    if (!this.curvatureRange.containsX(curvature))
+    if (!this._curvatureRange.containsX(curvature))
       return undefined; // ellipse does not attain this curvature
-    const lambda = Math.cbrt((this._axx * this._ayy) / (curvature * curvature));
-    const cosTheta = Math.sqrt(Math.abs((lambda - this._axx) / (this._ayy - this._axx)));
+    const lambda = Math.cbrt((this._xMag2 * this._yMag2) / (curvature * curvature));
+    const cosTheta = Math.sqrt(Math.abs((lambda - this._xMag2) / (this._yMag2 - this._xMag2)));
     return Math.acos(cosTheta);
+  }
+  public computeSamplesStrictlyInsideQuadrant1(result?: number[]): number[] {
+    if (!result)
+      result = [];
+    if (this._context.isValidArc) {
+      const tDelta = 1.0 / (this._options.numSamplesInQuadrant - 1);
+      for (let i = 1; i < this._options.numSamplesInQuadrant - 1; ++i) {
+        const j = this._options.remapFunction(i * tDelta);
+        const curvature = (1 - j) * this._curvatureRange.low + j * this._curvatureRange.high;
+        const angle = this.curvatureToRadians(curvature);
+        if (undefined !== angle)
+          result.push(angle);
+      }
+    }
+    return result;
+  }
+};
+/**
+ * Implementation for method `EllipticalArcSampleMethod.UniformCurvature`
+ * @internal
+ */
+class UniformCurvatureSampler extends NonUniformCurvatureSampler implements EllipticalArcSampler {
+  private constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
+    super(c, o.clone());
+    this._options.remapFunction = (f: number) => f;
+  }
+  public static override create(context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions): UniformCurvatureSampler {
+    return new UniformCurvatureSampler(context, options);
+  }
+};
+
+/**
+ * Context for sampling a non-circular Arc3d, e.g., to construct an approximation.
+ * @internal
+ */
+export class EllipticalArcApproximationContext {
+  private _arc: Arc3d;
+  private _toPlane: Transform;
+  private _isValidArc: boolean;
+  /** captures input */
+  private constructor(arc: Arc3d) {
+    const scaledData = arc.toScaledMatrix3d();
+    this._arc = Arc3d.createScaledXYColumns(scaledData.center, scaledData.axes, scaledData.r0, scaledData.r90, scaledData.sweep);
+    this._toPlane = Transform.createIdentity();
+    this._isValidArc = false;
+    if (this._arc.sweep.isEmpty)
+      return; // ellipse must have a nonzero sweep
+    const xMag2 = arc.matrixRef.columnXMagnitudeSquared();
+    const yMag2 = arc.matrixRef.columnYMagnitudeSquared();
+    if (Geometry.isSmallMetricDistanceSquared(xMag2) || Geometry.isSmallMetricDistanceSquared(yMag2))
+      return; // ellipse must have positive radii
+    if (Geometry.isSameCoordinateSquared(xMag2, yMag2))
+      return; // ellipse must not be circular
+    const toWorld = Transform.createRefs(scaledData.center, scaledData.axes);
+    if (undefined === toWorld.inverse(this._toPlane))
+      return; // will never get here
+    this._isValidArc = true;
+  }
+  /** Constructor, clones input. */
+  public static create(arc: Arc3d) {
+    return new EllipticalArcApproximationContext(arc);
+  }
+  /** The arc to be sampled. Its axes are forced to be perpendicular. */
+  public get arc(): Arc3d {
+    return this._arc;
+  }
+  /** The rigid transformation that rotates and translates the arc into the xy-plane at the origin. */
+  public get toPlane(): Transform {
+    return this._toPlane;
+  }
+  /** Whether the arc is amenable to sampling. */
+  public get isValidArc(): boolean {
+    return this._isValidArc;
   }
   /**
    * Compute the maximum xy-distance between a segment or circular arc, and this elliptical arc.
@@ -474,26 +543,19 @@ export class EllipticalArcApproximationContext {
     const radiansQ1: number[] = []; // unordered
     switch (options.sampleMethod) {
       case EllipticalArcSampleMethod.UniformParameter: {
-        const aDelta = Angle.piOver2Radians / (options.numSamplesInQuadrant - 1);
-        for (let i = 1; i < options.numSamplesInQuadrant - 1; ++i)
-          radiansQ1.push(i * aDelta);
+        UniformParameterSampler.create(this, options).computeSamplesStrictlyInsideQuadrant1(radiansQ1);
         break;
       }
-      case EllipticalArcSampleMethod.UniformCurvature:
+      case EllipticalArcSampleMethod.UniformCurvature: {
+        UniformCurvatureSampler.create(this, options).computeSamplesStrictlyInsideQuadrant1(radiansQ1);
+        break;
+      }
       case EllipticalArcSampleMethod.NonUniformCurvature: {
-        const f = (options.sampleMethod === EllipticalArcSampleMethod.UniformCurvature) ? (x: number) => x : options.remapFunction;
-        const tDelta = 1.0 / (options.numSamplesInQuadrant - 1);
-        for (let i = 1; i < options.numSamplesInQuadrant - 1; ++i) {
-          const j = f(i * tDelta);
-          const curvature = (1 - j) * this.curvatureRange.low + j * this.curvatureRange.high;
-          const angle = this.curvatureToRadians(curvature);
-          if (undefined !== angle)
-            radiansQ1.push(angle);
-        }
+        NonUniformCurvatureSampler.create(this, options).computeSamplesStrictlyInsideQuadrant1(radiansQ1);
         break;
       }
       default: {
-        // TODO: subdivision methods. Refactor to factory pattern using a 1-method interface for each method to implement sampleQ1InteriorRadians.
+        // TODO: subdivision methods
         break;
       }
     }
