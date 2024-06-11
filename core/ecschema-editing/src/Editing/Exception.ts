@@ -381,7 +381,7 @@ export class SchemaEditingError extends Error {
    * Gets the SchemaId instance.
    * @throws Error if the identifier is not an instance of SchemaId.
    */
-  public get schemaId(): SchemaId {
+  private get _schemaId(): SchemaId {
     if (this.identifier.typeIdentifier !== SchemaTypeIdentifiers.SchemaIdentifier)
       throw new Error("identifier is not a SchemaId.");
     return this.identifier as SchemaId;
@@ -391,7 +391,7 @@ export class SchemaEditingError extends Error {
    * Gets the SchemaItemId instance.
    * @throws Error if the identifier is not an instance of SchemaItemId.
    */
-  public get schemaItemId(): SchemaItemId {
+  private get _schemaItemId(): SchemaItemId {
     if (this.isSchemaItemIdentifier(this.identifier))
       throw new Error("identifier is not a SchemaItemId.");
     return this.identifier as SchemaItemId;
@@ -401,7 +401,7 @@ export class SchemaEditingError extends Error {
    * Gets the ClassId instance.
    * @throws Error if the identifier is not an instance of ClassId.
    */
-  public get classId(): ClassId {
+  private get _classId(): ClassId {
     if (this.identifier.typeIdentifier !== SchemaTypeIdentifiers.ClassIdentifier)
       throw new Error("identifier is not a ClassId.");
     return this.identifier as ClassId;
@@ -411,7 +411,7 @@ export class SchemaEditingError extends Error {
    * Gets the PropertyId instance.
    * @throws Error if the identifier is not an instance of PropertyId.
    */
-  public get propertyId(): PropertyId {
+  private get _propertyId(): PropertyId {
     if (this.identifier.typeIdentifier !== SchemaTypeIdentifiers.PropertyIdentifier)
       throw new Error("identifier is not a PropertyId.");
     return this.identifier;
@@ -421,7 +421,7 @@ export class SchemaEditingError extends Error {
    * Gets the EnumeratorId instance.
    * @throws Error if the identifier is not an instance of EnumeratorId.
    */
-  public get enumeratorId(): EnumeratorId {
+  private get _enumeratorId(): EnumeratorId {
     if (this.identifier.typeIdentifier !== SchemaTypeIdentifiers.EnumeratorIdentifier)
       throw new Error("identifier is not a EnumerationId.");
     return this.identifier as EnumeratorId;
@@ -431,7 +431,7 @@ export class SchemaEditingError extends Error {
    * Gets the CustomAttributeId instance.
    * @throws Error if the identifier is not an instance of CustomAttributeId.
    */
-  public get customAttributeId(): CustomAttributeId {
+  private get _customAttributeId(): CustomAttributeId {
     if (this.identifier.typeIdentifier !== SchemaTypeIdentifiers.CustomAttributeIdentifier)
       throw new Error("identifier is not a CustomAttributeId.");
     return this.identifier;
@@ -441,7 +441,7 @@ export class SchemaEditingError extends Error {
    * Gets the RelationshipConstraintId instance.
    * @throws Error if the identifier is not an instance of RelationshipConstraintId.
    */
-  public get relationshipConstraintId(): RelationshipConstraintId {
+  private get _relationshipConstraintId(): RelationshipConstraintId {
     if (this.identifier.typeIdentifier !== SchemaTypeIdentifiers.RelationshipConstraintIdentifier)
       throw new Error("identifier is not a RelationshipConstraintId.");
     return this.identifier;
@@ -479,52 +479,52 @@ export class SchemaEditingError extends Error {
         this.message = `Schema Key ${this._schemaKey.toString(true)} could not be found in the context.`;
         return;
       case ECEditingStatus.SchemaItemNotFound:
-        this.message = `${this.schemaItemId.schemaItemType} ${this.schemaItemId.name} could not be found in the schema ${this._schemaKey.name}.`;
+        this.message = `${this._schemaItemId.schemaItemType} ${this._schemaItemId.name} could not be found in the schema ${this._schemaKey.name}.`;
         return;
       case ECEditingStatus.SchemaItemNotFoundInContext:
-        this.message = `${this.schemaItemId.schemaItemType} ${this.schemaItemId.name} could not be found in the schema context.`;
+        this.message = `${this._schemaItemId.schemaItemType} ${this._schemaItemId.name} could not be found in the schema context.`;
         return;
       case ECEditingStatus.InvalidSchemaItemType:
-        this.message = `Expected ${this.schemaItemId.name} to be of type ${this.schemaItemId.schemaItemType}.`;
+        this.message = `Expected ${this._schemaItemId.name} to be of type ${this._schemaItemId.schemaItemType}.`;
         return;
       case ECEditingStatus.SchemaItemNameNotSpecified:
-        this.message = `Could not create a new ${this.schemaItemId.schemaItemType} in schema ${this._schemaKey.name}. No name was supplied within props.`;
+        this.message = `Could not create a new ${this._schemaItemId.schemaItemType} in schema ${this._schemaKey.name}. No name was supplied within props.`;
         return;
       case ECEditingStatus.SchemaItemNameAlreadyExists:
-        this.message = `${this.schemaItemId.schemaItemType} ${this.schemaItemId.name} already exists in the schema ${this._schemaKey.name}.`;
+        this.message = `${this._schemaItemId.schemaItemType} ${this._schemaItemId.name} already exists in the schema ${this._schemaKey.name}.`;
         return;
       case ECEditingStatus.RuleViolation:
         this.message = this._getRuleViolationMessage();
         return;
       case ECEditingStatus.PropertyNotFound:
-        this.message = `An ECProperty with the name ${this.propertyId.name} could not be found in the class ${this.propertyId.ecClass.name}.`;
+        this.message = `An ECProperty with the name ${this._propertyId.name} could not be found in the class ${this._propertyId.ecClass.name}.`;
         return;
       case ECEditingStatus.PropertyAlreadyExists:
-        this.message = `An ECProperty with the name ${this.propertyId.name} already exists in the class ${this.propertyId.ecClass.name}.`;
+        this.message = `An ECProperty with the name ${this._propertyId.name} already exists in the class ${this._propertyId.ecClass.name}.`;
         return;
       case ECEditingStatus.InvalidPropertyType:
-        this.message = `Expected property ${this.propertyId.name} to be of type ${this.propertyId.typeName}.`;
+        this.message = `Expected property ${this._propertyId.name} to be of type ${this._propertyId.typeName}.`;
         return;
       case ECEditingStatus.BaseClassIsNotElement:
-        this.message = `Expected base class ${this.schemaItemId.name} to derive from BisCore.Element.`;
+        this.message = `Expected base class ${this._schemaItemId.name} to derive from BisCore.Element.`;
         return;
       case ECEditingStatus.BaseClassIsNotElementUniqueAspect:
-        this.message = `Expected base class ${this.schemaItemId.name} to derive from BisCore.ElementUniqueAspect.`;
+        this.message = `Expected base class ${this._schemaItemId.name} to derive from BisCore.ElementUniqueAspect.`;
         return;
       case ECEditingStatus.BaseClassIsNotElementMultiAspect:
-        this.message = `Expected base class ${this.schemaItemId.name} to derive from BisCore.ElementMultiAspect.`;
+        this.message = `Expected base class ${this._schemaItemId.name} to derive from BisCore.ElementMultiAspect.`;
         return;
       case ECEditingStatus.InvalidFormatUnitsSpecified:
-        this.message = `The specified Format unit ${this.schemaItemId.name} is not of type Unit or InvertedUnit`;
+        this.message = `The specified Format unit ${this._schemaItemId.name} is not of type Unit or InvertedUnit`;
         return;
       case ECEditingStatus.InvalidEnumeratorType:
-        this.message = `The Enumeration ${this.enumeratorId.enumeration.fullName} has type ${this.enumeratorId.enumerationType}, while Enumerator ${this.enumeratorId.name} has type ${this.enumeratorId.enumeratorType}.`;
+        this.message = `The Enumeration ${this._enumeratorId.enumeration.fullName} has type ${this._enumeratorId.enumerationType}, while Enumerator ${this._enumeratorId.name} has type ${this._enumeratorId.enumeratorType}.`;
         return;
       case ECEditingStatus.EnumeratorDoesNotExist:
-        this.message = `Enumerator ${this.enumeratorId.name} does not exists in Enumeration ${this.enumeratorId.enumeration.name}.`;
+        this.message = `Enumerator ${this._enumeratorId.name} does not exists in Enumeration ${this._enumeratorId.enumeration.name}.`;
         return;
       case ECEditingStatus.InvalidECName:
-        this.message = `Could not rename class ${this.schemaItemId.name} because the specified name is not a valid ECName.`;
+        this.message = `Could not rename class ${this._schemaItemId.name} because the specified name is not a valid ECName.`;
         return;
       default:
         this.message = this._createTaskErrorMessage();
@@ -546,15 +546,15 @@ export class SchemaEditingError extends Error {
 
     switch (this.identifier.typeIdentifier) {
       case SchemaTypeIdentifiers.SchemaIdentifier:
-        return `Rule violations occurred from Schema ${this.schemaId.name}: ${violations}`;
+        return `Rule violations occurred from Schema ${this._schemaId.name}: ${violations}`;
       case SchemaTypeIdentifiers.SchemaItemIdentifier:
-        return `Rule violations occurred from ${this.schemaItemId.schemaItemType} ${this.schemaItemId.name}: ${violations}`;
+        return `Rule violations occurred from ${this._schemaItemId.schemaItemType} ${this._schemaItemId.name}: ${violations}`;
       case SchemaTypeIdentifiers.ClassIdentifier:
-        return `Rule violations occurred from ${this.schemaItemId.schemaItemType} ${this.schemaItemId.name}: ${violations}`;
+        return `Rule violations occurred from ${this._schemaItemId.schemaItemType} ${this._schemaItemId.name}: ${violations}`;
       case SchemaTypeIdentifiers.CustomAttributeIdentifier:
-        return `Rule violations occurred from CustomAttribute ${this.customAttributeId.name}, container ${this.customAttributeId.containerFullName}: ${violations}`;
+        return `Rule violations occurred from CustomAttribute ${this._customAttributeId.name}, container ${this._customAttributeId.containerFullName}: ${violations}`;
       case SchemaTypeIdentifiers.RelationshipConstraintIdentifier:
-        return `Rule violations occurred from ${this.relationshipConstraintId.name} constraint of RelationshipClass ${this.relationshipConstraintId.relationshipKey.fullName}: ${violations}`;
+        return `Rule violations occurred from ${this._relationshipConstraintId.name} constraint of RelationshipClass ${this._relationshipConstraintId.relationshipKey.fullName}: ${violations}`;
       default:
         throw new Error ("Invalid identifier.");
     }
