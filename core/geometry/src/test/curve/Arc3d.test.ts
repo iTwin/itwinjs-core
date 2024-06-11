@@ -650,7 +650,6 @@ describe("Arc3d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  // cspell:word Eberly
   it.only("EllipseSampler", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
@@ -688,18 +687,18 @@ describe("Arc3d", () => {
       arcs.push(arc4);
 
     // Remap functions for curvature interpolation
-    const fEberly = (x: number) => x;
+    const fIdentity = (x: number) => x;
     const fPiecewiseLinearUnder = (x: number): number => {
       const breakFraction = 0.6;
       const slope = (1 - breakFraction) / breakFraction;
       return (x <= breakFraction) ? slope * x : slope * breakFraction + ((1 - slope * breakFraction) / (1 - breakFraction)) * (x - breakFraction);
       };
-    const fSqrtCubed = (x: number)=> Math.pow(x, 1.5);
+    const fSqrtCubed = (x: number) => Math.pow(x, 1.5);
     const fQuadratic = (x: number) => x * x;
     const fCubic = (x: number) => x * x * x;
     const fQuartic = (x: number) => x * x * x * x;
     const fSqrt = (x: number) => Math.sqrt(x);
-    const remaps: FractionMapper[] = [fEberly, fPiecewiseLinearUnder, fSqrtCubed, fQuadratic, fCubic, fQuartic, fSqrt];
+    const remaps: FractionMapper[] = [fIdentity, fPiecewiseLinearUnder, fSqrtCubed, fQuadratic, fCubic, fQuartic, fSqrt];
 
     const displaySamples = (arc: Arc3d, samples: QuadrantFractions[] | number[], options: EllipticalArcApproximationOptions, x?: number, y?: number, z?: number): void => {
       if (options.structuredOutput) {
