@@ -52,7 +52,7 @@ export interface ComputeTextBlockExtentsArgs {
 }
 
 /**
- * Arguments supplied to [[getLayoutTextBlockResult]].
+ * Arguments supplied to [[computeLayoutTextBlockResult]].
  * @beta
  */
 export interface LayoutTextBlockArgs extends ComputeTextBlockExtentsArgs {
@@ -70,7 +70,7 @@ export interface LayoutTextBlockArgs extends ComputeTextBlockExtentsArgs {
  * Each series of consecutive non-linebreak runs within a paragraph is concatenated into one line.
  * If the document specifies a width > 0, individual lines are split to try to avoid exceeding that width.
  * Individual TextRuns can be split onto multiple lines at word boundaries if necessary. Individual FractionRuns are never split.
- * @see [[getLayoutTextBlockResult]]
+ * @see [[computeLayoutTextBlockResult]]
  * @internal
  */
 export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
@@ -89,7 +89,7 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
  * The layout returned matches the visual layout of the geometry produced by [[produceTextAnnotationGeometry]].
  * @beta
  */
-export function getLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult {
+export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult {
   const layout = layoutTextBlock(args);
   return layout.toResult();
 }

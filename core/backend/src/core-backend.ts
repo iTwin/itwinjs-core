@@ -62,7 +62,7 @@ export * from "./SchemaUtils";
 export * from "./SQLiteDb";
 export * from "./SqliteStatement";
 export * from "./TextAnnotationElement";
-export { computeTextBlockExtents, getLayoutTextBlockResult, ComputeTextBlockExtentsArgs, LayoutTextBlockArgs } from "./TextAnnotationLayout";
+export { computeTextBlockExtents, computeLayoutTextBlockResult, ComputeTextBlockExtentsArgs, LayoutTextBlockArgs } from "./TextAnnotationLayout";
 export * from "./TextAnnotationGeometry";
 export * from "./Texture";
 export * from "./TileStorage";
