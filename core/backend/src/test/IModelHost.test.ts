@@ -16,7 +16,7 @@ import { ServerStorage } from "@itwin/object-storage-core";
 import { TestUtils } from "./TestUtils";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
-import { BackendLoggerCategory, SettingsPriority } from "../core-backend";
+import { SettingsPriority } from "../core-backend";
 
 describe("IModelHost", () => {
   const opts = { cacheDir: TestUtils.getCacheDir() };
@@ -252,17 +252,40 @@ describe("IModelHost", () => {
     expect(sha1).equal("2a618664fbba1df7c05f27d7c0e8f58de250003b");
   });
 
-  it("should change default GeoCoord asset directory", async () => {
+});
+
+describe("GeoCoord Asset Directory", () => {
+  before(async () => {
     Logger.setLevel("GeoCoord", LogLevel.Trace);
+    const gcsSettings = {
+      "gcs/disableWorkspaces": true,
+    };
+    IModelHost.appWorkspace.settings.addDictionary("gcs/disableWorkspaces", SettingsPriority.application, gcsSettings);
+  });
+
+  after(async () => {
+    Logger.setLevel("GeoCoord", LogLevel.Error);
+    const gcsSettings = {
+      "gcs/disableWorkspaces": false,
+    };
+    IModelHost.appWorkspace.settings.addDictionary("gcs/disableWorkspaces", SettingsPriority.application, gcsSettings);
+    await TestUtils.startBackend();
+  });
+
+  beforeEach(async () => {
+    await TestUtils.shutdownBackend();
+  });
+
+  afterEach(async () => {
+    sinon.restore();
+  });
+
+  it("should change default GeoCoord asset directory", async () => {
     const logChanged = sinon.spy(Logger as any, "logWarning");
 
     const config: IModelHostOptions = {};
     config.geoCoordAssetDir = "D:/test/geoCoordAssets";
     await IModelHost.startup(config);
-    const gcsSettings = {
-      "gcs/disableWorkspaces": true,
-    };
-    IModelHost.appWorkspace.settings.addDictionary("gcs/disableWorkspaces", SettingsPriority.application, gcsSettings);
 
     const filename = IModelTestUtils.resolveAssetFile("mirukuru.ibim");
     const imodel = IModelDb.openDgnDb({ path: filename }, OpenMode.Readonly);
@@ -276,15 +299,10 @@ describe("IModelHost", () => {
   });
 
   it("should keep default GeoCoord asset directory", async () => {
-    Logger.setLevel("GeoCoord", LogLevel.Trace);
     const logChanged = sinon.spy(Logger as any, "logWarning");
 
     const config: IModelHostOptions = {};
     await IModelHost.startup(config);
-    const gcsSettings = {
-      "gcs/disableWorkspaces": true,
-    };
-    IModelHost.appWorkspace.settings.addDictionary("gcs/disableWorkspaces", SettingsPriority.application, gcsSettings);
 
     const filename = IModelTestUtils.resolveAssetFile("mirukuru.ibim");
     const imodel = IModelDb.openDgnDb({ path: filename }, OpenMode.Readonly);

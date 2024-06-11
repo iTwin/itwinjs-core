@@ -406,6 +406,10 @@ export class IModelHost {
     }
   }
 
+  private static setGeoCoordDir(options: IModelHostOptions) {
+    this._platform?.DgnDb.setGeoCoordAssetsDir(options.geoCoordAssetDir ?? "");
+  }
+
   /** @internal */
   public static tileStorage?: TileStorage;
 
@@ -500,7 +504,7 @@ export class IModelHost {
     this.configuration = options;
     this.setupTileCache();
 
-    IModelHost.platform.DgnDb.setGeoCoordAssetsDir(options.geoCoordAssetDir ?? "");
+    this.setGeoCoordDir(options);
 
     process.once("beforeExit", IModelHost.shutdown);
     this.onAfterStartup.raiseEvent();
