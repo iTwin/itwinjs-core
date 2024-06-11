@@ -1,49 +1,49 @@
 sep=;
 Release Tag;API Item
-public;AcquireNewBriefcaseIdArg
-public;AnnotationElement2d
+public;AcquireNewBriefcaseIdArg 
+public;AnnotationElement2d 
 beta;AnyDb = IModelDb | ECDb
-public;class AuxCoordSystem
-public;AuxCoordSystem2d
-public;AuxCoordSystem3d
-public;AuxCoordSystemSpatial
+public;class AuxCoordSystem 
+public;AuxCoordSystem2d 
+public;AuxCoordSystem3d 
+public;AuxCoordSystemSpatial 
 beta;AvailableCoordinateReferenceSystemProps
 beta;AzureBlobStorageCredentials
 internal;BackendHubAccess
 public;BackendLoggerCategory
 public;BindParameter = number | string
-public;BisCoreSchema
+public;BisCoreSchema 
 beta;BlobContainer
-public;BriefcaseDb
-public;BriefcaseDbArg
-public;BriefcaseIdArg
+public;BriefcaseDb 
+public;BriefcaseDbArg 
+public;BriefcaseIdArg 
 internal;BriefcaseLocalValue
 public;BriefcaseManager
-public;class Callout
-public;Category
-public;CategoryOwnsSubCategories
-public;CategorySelector
+public;class Callout 
+public;Category 
+public;CategoryOwnsSubCategories 
+public;CategorySelector 
 beta;ChangedECInstance
-internal;ChangedElementsDb
+internal;ChangedElementsDb 
 beta;ChangeFormatArgs
 beta;ChangeInstanceKey
 beta;ChangeMetaData
-public;ChangesetArg
+public;ChangesetArg 
 internal;ChangesetConflictArgs
-beta;ChangesetECAdaptor
-internal;ChangesetIndexArg
-public;ChangesetRangeArg
+beta;ChangesetECAdaptor 
+internal;ChangesetIndexArg 
+public;ChangesetRangeArg 
 beta;ChangeSummary
 beta;ChangeSummaryManager
-internal;ChannelAdmin
+internal;ChannelAdmin 
 beta;ChannelControl
 beta;ChannelControl
 beta;ChannelKey = string
-public;ChannelRootAspect
+public;ChannelRootAspect 
 internal;CheckpointArg = DownloadRequest
 deprecated;CheckpointArg = DownloadRequest
 internal;CheckpointManager
-public;CheckpointProps
+public;CheckpointProps 
 public;ClassRegistry
 public;CloudContainerArgs
 beta;CloudSqlite
@@ -51,7 +51,7 @@ internal;BcvHttpLog
 internal;BcvHttpLogFilterOptions
 internal;BcvStats
 internal;BcvStatsFilterOptions
-internal;LockAndOpenArgs
+internal;LockAndOpenArgs 
 internal;transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise
 alpha;CodeService
 alpha;CodeService
@@ -59,6 +59,7 @@ internal;BisCodeSpecIndexProps
 internal;FontIndexProps
 public;CodeSpecs
 public;ComputedProjectExtents
+beta;computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult
 public;ComputeProjectExtentsOptions
 beta;computeTextBlockExtents(args: ComputeTextBlockExtentsArgs): XAndY
 beta;ComputeTextBlockExtentsArgs
@@ -67,80 +68,80 @@ alpha;ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | Rel
 beta;convertEC2SchemasToEC3Schemas(ec2XmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[]
 internal;CrashReportingConfig
 internal;CrashReportingConfigNameValuePair
-beta;CreateChangeSummaryArgs
-public;CreateNewIModelProps
+beta;CreateChangeSummaryArgs 
+public;CreateNewIModelProps 
 beta;CreateNewWorkspaceContainerArgs
 beta;CreateNewWorkspaceDbVersionArgs
-public;DefinitionContainer
-public;class DefinitionElement
-public;DefinitionGroup
-public;DefinitionGroupGroupsDefinitions
-public;DefinitionModel
-public;DefinitionPartition
-public;class DefinitionSet
+public;DefinitionContainer 
+public;class DefinitionElement 
+public;DefinitionGroup 
+public;DefinitionGroupGroupsDefinitions 
+public;DefinitionModel 
+public;DefinitionPartition 
+public;class DefinitionSet 
 beta;deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, filter: ElementSubTreeDeleteFilter): void
 beta;deleteElementTree(iModel: IModelDb, topElement: Id64String): void
-public;DetailCallout
-public;class DetailingSymbol
+public;DetailCallout 
+public;class DetailingSymbol 
 internal;DevTools
 internal;DevToolsOsStats
 internal;DevToolsProcessStats
 internal;DevToolsStats
 internal;DevToolsStatsFormatter
-public;DictionaryModel
-public;class DisplayStyle
-public;DisplayStyle2d
-public;DisplayStyle3d
-public;DisplayStyleCreationOptions
-public;DocumentListModel
-public;DocumentPartition
-beta;DownloadChangesetArg
-beta;DownloadChangesetRangeArg
+public;DictionaryModel 
+public;class DisplayStyle 
+public;DisplayStyle2d 
+public;DisplayStyle3d 
+public;DisplayStyleCreationOptions 
+public;DocumentListModel 
+public;DocumentPartition 
+beta;DownloadChangesetArg 
+beta;DownloadChangesetRangeArg 
 internal;DownloadJob
 beta;DownloadProgressArg
 internal;DownloadRequest
 internal;Downloads
-public;Drawing
-public;DrawingCategory
-public;DrawingGraphic
-public;DrawingGraphicRepresentsElement
-public;DrawingGraphicRepresentsFunctionalElement
-public;DrawingModel
-public;DrawingViewDefinition
-beta;class DriverBundleElement
-public;ECDb
+public;Drawing 
+public;DrawingCategory 
+public;DrawingGraphic 
+public;DrawingGraphicRepresentsElement 
+public;DrawingGraphicRepresentsFunctionalElement 
+public;DrawingModel 
+public;DrawingViewDefinition 
+beta;class DriverBundleElement 
+public;ECDb 
 public;ECDbOpenMode
 public;ECEnumValue
 beta;ECSchemaXmlContext
 public;ECSqlBinder
 public;ECSqlColumnInfo
 public;ECSqlInsertResult
-public;ECSqlStatement
+public;ECSqlStatement 
 public;ECSqlValue
-public;ECSqlValueIterator
-beta;EditableWorkspaceContainer
-beta;EditableWorkspaceDb
-public;ElementAspect
-beta;ElementDrivesElement
-beta;ElementDrivesElementProps
-public;ElementEncapsulatesElements
-public;ElementGroupsMembers
-public;ElementGroupsMembersProps
-public;ElementMultiAspect
-public;ElementOwnsChildElements
-public;ElementOwnsExternalSourceAspects
-public;ElementOwnsMultiAspects
-public;ElementOwnsUniqueAspect
-public;ElementRefersToElements
+public;ECSqlValueIterator 
+beta;EditableWorkspaceContainer 
+beta;EditableWorkspaceDb 
+public;ElementAspect 
+beta;ElementDrivesElement 
+beta;ElementDrivesElementProps 
+public;ElementEncapsulatesElements 
+public;ElementGroupsMembers 
+public;ElementGroupsMembersProps 
+public;ElementMultiAspect 
+public;ElementOwnsChildElements 
+public;ElementOwnsExternalSourceAspects 
+public;ElementOwnsMultiAspects 
+public;ElementOwnsUniqueAspect 
+public;ElementRefersToElements 
 beta;ElementSubTreeDeleteFilter = (elementId: Id64String, scope: ElementTreeWalkerScope) => boolean
-beta;ElementSubTreeDeleter
+beta;ElementSubTreeDeleter 
 beta;class ElementTreeBottomUp
-beta;ElementTreeDeleter
+beta;ElementTreeDeleter 
 beta;ElementTreeWalkerModelInfo
 beta;ElementTreeWalkerScope
-public;ElementUniqueAspect
-public;ElevationCallout
-public;EmbeddedFileLink
+public;ElementUniqueAspect 
+public;ElevationCallout 
+public;EmbeddedFileLink 
 public;Entity
 public;EntityClassType
 alpha;EntityReferences
@@ -152,7 +153,7 @@ public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
 public;ExportGraphicsInfo
 public;ExportGraphicsLines
 public;ExportGraphicsMesh
-public;ExportGraphicsMeshVisitor
+public;ExportGraphicsMeshVisitor 
 public;ExportGraphicsOptions
 public;ExportLinesFunction = (info: ExportLinesInfo) => void
 public;ExportLinesInfo
@@ -163,89 +164,88 @@ public;ExportPartInfo
 public;ExportPartInstanceInfo
 public;ExportPartLinesFunction = (info: ExportPartLinesInfo) => void
 public;ExportPartLinesInfo
-beta;ExternalSource
+beta;ExternalSource 
+public;ExternalSourceAspect 
 public;ExternalSourceAspect
-public;ExternalSourceAspect
-beta;ExternalSourceAttachment
-beta;ExternalSourceAttachmentAttachesSource
-beta;ExternalSourceGroup
-beta;ExternalSourceGroupGroupsSources
-beta;ExternalSourceIsInRepository
-beta;ExternalSourceOwnsAttachments
+beta;ExternalSourceAttachment 
+beta;ExternalSourceAttachmentAttachesSource 
+beta;ExternalSourceGroup 
+beta;ExternalSourceGroupGroupsSources 
+beta;ExternalSourceIsInRepository 
+beta;ExternalSourceOwnsAttachments 
 public;class FileNameResolver
-beta;FolderContainsRepositories
-alpha;FolderLink
-public;class FunctionalBreakdownElement
-public;class FunctionalComponentElement
-public;FunctionalComposite
-public;class FunctionalElement
-public;FunctionalElementIsOfType
-public;FunctionalModel
-public;FunctionalPartition
-public;FunctionalSchema
-public;class FunctionalType
-internal;GcsDbProps
+beta;FolderContainsRepositories 
+alpha;FolderLink 
+public;class FunctionalBreakdownElement 
+public;class FunctionalComponentElement 
+public;FunctionalComposite 
+public;class FunctionalElement 
+public;FunctionalElementIsOfType 
+public;FunctionalModel 
+public;FunctionalPartition 
+public;FunctionalSchema 
+public;class FunctionalType 
+internal;GcsDbProps 
 internal;generateElementGraphics(request: ElementGraphicsRequestProps, iModel: IModelDb): Promise
-public;GenericDocument
-public;GenericGraphicalModel3d
-public;GenericGraphicalType2d
-public;GenericPhysicalMaterial
-public;GenericPhysicalType
-public;GenericSchema
+public;GenericDocument 
+public;GenericGraphicalModel3d 
+public;GenericGraphicalType2d 
+public;GenericPhysicalMaterial 
+public;GenericPhysicalType 
+public;GenericSchema 
 internal;GeoCoordConfig
-public;class GeometricElement
-public;class GeometricElement2d
-public;GeometricElement2dHasTypeDefinition
-public;class GeometricElement3d
-public;GeometricElement3dHasTypeDefinition
-public;GeometricModel
-public;class GeometricModel2d
-public;class GeometricModel3d
-public;GeometryPart
+public;class GeometricElement 
+public;class GeometricElement2d 
+public;GeometricElement2dHasTypeDefinition 
+public;class GeometricElement3d 
+public;GeometricElement3dHasTypeDefinition 
+public;GeometricModel 
+public;class GeometricModel2d 
+public;class GeometricModel3d 
+public;GeometryPart 
 beta;getAvailableCoordinateReferenceSystems(args: GetAvailableCoordinateReferenceSystemsArgs): Promise
 beta;GetAvailableCoordinateReferenceSystemsArgs
-beta;getLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult
-beta;GetWorkspaceContainerArgs
+beta;GetWorkspaceContainerArgs 
 beta;GetWorkspaceResourceArgs
-public;Graphic3d
-public;class GraphicalElement2d
-public;GraphicalElement2dIsOfType
-public;class GraphicalElement3d
-public;GraphicalElement3dRepresentsElement
-public;class GraphicalModel2d
-public;class GraphicalModel3d
-public;GraphicalPartition3d
-public;class GraphicalType2d
-public;Group
-public;GroupImpartsToMembers
-public;class GroupInformationElement
-public;class GroupInformationModel
-public;GroupInformationPartition
-public;GroupModel
+public;Graphic3d 
+public;class GraphicalElement2d 
+public;GraphicalElement2dIsOfType 
+public;class GraphicalElement3d 
+public;GraphicalElement3dRepresentsElement 
+public;class GraphicalModel2d 
+public;class GraphicalModel3d 
+public;GraphicalPartition3d 
+public;class GraphicalType2d 
+public;Group 
+public;GroupImpartsToMembers 
+public;class GroupInformationElement 
+public;class GroupInformationModel 
+public;GroupInformationPartition 
+public;GroupModel 
 internal;HubMock
 beta;IModelCloneContext: typeof IModelElementCloneContext
 deprecated;IModelCloneContext: typeof IModelElementCloneContext
 beta;IModelCloneContext = IModelElementCloneContext
 deprecated;IModelCloneContext = IModelElementCloneContext
-public;class IModelDb
+public;class IModelDb 
 public;IModelDb
 internal;TileContentState
 internal;Tiles
 beta;IModelElementCloneContext
 public;IModelHost
-public;IModelHostConfiguration
+public;IModelHostConfiguration 
 public;IModelHostOptions
-public;IModelIdArg
+public;IModelIdArg 
 public;IModelJsFs
 public;IModelJsFsStats
-public;IModelNameArg
-public;class InformationContentElement
-public;class InformationModel
-public;class InformationPartitionElement
-public;class InformationRecordElement
-public;InformationRecordModel
-public;InformationRecordPartition
-public;class InformationReferenceElement
+public;IModelNameArg 
+public;class InformationContentElement 
+public;class InformationModel 
+public;class InformationPartitionElement 
+public;class InformationRecordElement 
+public;InformationRecordModel 
+public;InformationRecordPartition 
+public;class InformationReferenceElement 
 internal;initializeTracing(enableOpenTelemetry?: boolean): void
 beta;InstanceChange
 public;class IpcHandler
@@ -253,17 +253,17 @@ public;IpcHost
 public;IpcHostOpts
 public;ITwinIdArg
 public;KnownLocations
-beta;LayoutTextBlockArgs
-internal;LightLocation
-public;LineStyle
+beta;LayoutTextBlockArgs 
+internal;LightLocation 
+public;LineStyle 
 public;LineStyleDefinition
-public;class LinkElement
-public;LinkModel
-public;LinkPartition
+public;class LinkElement 
+public;LinkModel 
+public;LinkPartition 
 internal;LocalhostIpcHost
 internal;LocalhostIpcHostOpts
 internal;LocalHub
-beta;LockConflict
+beta;LockConflict 
 beta;LockControl
 internal;LockMap = Map
 beta;LockProps
@@ -271,43 +271,43 @@ public;LockState
 internal;LockStatusExclusive
 internal;LockStatusShared
 internal;MetaDataRegistry
-public;Model
-public;ModelSelector
-internal;ModelSelectorRefersToModels
+public;Model 
+public;ModelSelector 
+internal;ModelSelectorRefersToModels 
 public;NativeAppStorage
 public;NativeHost
-public;NativeHostOpts
+public;NativeHostOpts 
 beta;OnAspectArg
-beta;OnAspectIdArg
-beta;OnAspectPropsArg
-beta;OnChildElementArg
-beta;OnChildElementIdArg
-beta;OnChildElementPropsArg
+beta;OnAspectIdArg 
+beta;OnAspectPropsArg 
+beta;OnChildElementArg 
+beta;OnChildElementIdArg 
+beta;OnChildElementPropsArg 
 beta;OnElementArg
-beta;OnElementIdArg
-beta;OnElementInModelIdArg
-beta;OnElementInModelPropsArg
-beta;OnElementPropsArg
+beta;OnElementIdArg 
+beta;OnElementInModelIdArg 
+beta;OnElementInModelPropsArg 
+beta;OnElementPropsArg 
 beta;OnModelArg
-beta;OnModelIdArg
-beta;OnModelPropsArg
-beta;OnSubModelIdArg
-beta;OnSubModelPropsArg
+beta;OnModelIdArg 
+beta;OnModelPropsArg 
+beta;OnSubModelIdArg 
+beta;OnSubModelPropsArg 
 public;OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs & OpenSqliteArgs
-public;OrthographicViewDefinition
+public;OrthographicViewDefinition 
 beta;PartialECChangeUnifier
-public;class PhysicalElement
-public;PhysicalElementAssemblesElements
-public;PhysicalElementFulfillsFunction
-public;PhysicalElementIsOfPhysicalMaterial
-public;PhysicalElementIsOfType
-public;class PhysicalMaterial
-public;PhysicalModel
-public;PhysicalObject
-public;PhysicalPartition
-public;class PhysicalType
-public;PhysicalTypeIsOfPhysicalMaterial
-public;PlanCallout
+public;class PhysicalElement 
+public;PhysicalElementAssemblesElements 
+public;PhysicalElementFulfillsFunction 
+public;PhysicalElementIsOfPhysicalMaterial 
+public;PhysicalElementIsOfType 
+public;class PhysicalMaterial 
+public;PhysicalModel 
+public;PhysicalObject 
+public;PhysicalPartition 
+public;class PhysicalType 
+public;PhysicalTypeIsOfPhysicalMaterial 
+public;PlanCallout 
 public;Platform
 internal;ProcessChangesetOptions
 beta;produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometryArgs): TextBlockGeometryProps
@@ -316,22 +316,22 @@ public;ProgressFunction = (loaded: number, total: number) => ProgressStatus
 public;ProgressStatus
 beta;PropertyStore
 public;PullChangesArgs = ToChangesetArgs &
-public;PushChangesArgs
+public;PushChangesArgs 
 beta;QueryLocalChangesArgs
 beta;QueryWorkspaceResourcesArgs
-beta;class RecipeDefinitionElement
-public;Relationship
+beta;class RecipeDefinitionElement 
+public;Relationship 
 public;Relationships
+public;RenderMaterialElement 
 public;RenderMaterialElement
-public;RenderMaterialElement
-public;RenderMaterialElementParams
-public;RenderMaterialOwnsRenderMaterials
-public;RenderTimeline
-public;RepositoryLink
-public;RepositoryModel
-public;RequestNewBriefcaseArg
-public;class RoleElement
-public;RoleModel
+public;RenderMaterialElementParams 
+public;RenderMaterialOwnsRenderMaterials 
+public;RenderTimeline 
+public;RepositoryLink 
+public;RepositoryModel 
+public;RequestNewBriefcaseArg 
+public;class RoleElement 
+public;RoleModel 
 public;RpcTrace
 public;Schema
 public;SchemaImportOptions
@@ -339,114 +339,114 @@ internal;SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey
 internal;SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType
 public;Schemas
 internal;SchemaSync
-public;SectionCallout
-public;SectionDrawing
-public;SectionDrawingLocation
-public;SectionDrawingModel
+public;SectionCallout 
+public;SectionDrawing 
+public;SectionDrawingLocation 
+public;SectionDrawingModel 
 internal;setMaxEntitiesPerEvent(max: number): number
 beta;Setting = JSONSchemaType
 beta;Setting
 beta;SettingGroupSchema
 beta;SettingName = string
 beta;Settings
-beta;SettingSchema
+beta;SettingSchema 
 beta;SettingsContainer
 beta;SettingsDictionary
-beta;SettingsDictionaryProps
+beta;SettingsDictionaryProps 
 beta;SettingsDictionarySource
 beta;SettingsPriority = number
 beta;SettingsPriority
 beta;SettingsSchemas
-public;Sheet
-public;SheetBorderTemplate
-public;SheetModel
-public;SheetTemplate
-public;SheetViewDefinition
-public;SnapshotDb
+public;Sheet 
+public;SheetBorderTemplate 
+public;SheetModel 
+public;SheetTemplate 
+public;SheetViewDefinition 
+public;SnapshotDb 
 public;SnapshotDbOpenArgs = SnapshotOpenOptions & CloudContainerArgs & OpenSqliteArgs
-public;SpatialCategory
-public;class SpatialElement
-public;SpatialLocation
-public;class SpatialLocationElement
-public;SpatialLocationIsOfType
-public;SpatialLocationModel
-public;SpatialLocationPartition
-public;class SpatialLocationType
-public;class SpatialModel
-public;SpatialViewDefinition
+public;SpatialCategory 
+public;class SpatialElement 
+public;SpatialLocation 
+public;class SpatialLocationElement 
+public;SpatialLocationIsOfType 
+public;SpatialLocationModel 
+public;SpatialLocationPartition 
+public;class SpatialLocationType 
+public;class SpatialModel 
+public;SpatialViewDefinition 
 beta;SqliteChange
 beta;SqliteChangeOp = "Inserted" | "Updated" | "Deleted"
-beta;SqliteChangesetReader
+beta;SqliteChangesetReader 
 beta;SqliteChangesetReaderArgs
 public;SQLiteDb
 public;SQLiteDb
 internal;BlobIO
-public;SqliteStatement
+public;SqliteStatement 
 public;SqliteStatement
 public;SqliteValue
 beta;SqliteValueStage = "Old" | "New"
 public;SqliteValueType
-public;StandaloneDb
+public;StandaloneDb 
 internal;StatementCache
 internal;StringParam
-public;SubCategory
-public;Subject
-public;SubjectOwnsPartitionElements
-public;SubjectOwnsSubjects
-beta;SynchronizationConfigLink
-beta;SynchronizationConfigProcessesSources
-beta;SynchronizationConfigSpecifiesRootSources
-beta;TemplateRecipe2d
-beta;TemplateRecipe3d
-internal;TemplateViewDefinition2d
-internal;TemplateViewDefinition3d
-public;TextAnnotation2d
-public;TextAnnotation3d
-public;Texture
-beta;TextureCreateProps
+public;SubCategory 
+public;Subject 
+public;SubjectOwnsPartitionElements 
+public;SubjectOwnsSubjects 
+beta;SynchronizationConfigLink 
+beta;SynchronizationConfigProcessesSources 
+beta;SynchronizationConfigSpecifiesRootSources 
+beta;TemplateRecipe2d 
+beta;TemplateRecipe3d 
+internal;TemplateViewDefinition2d 
+internal;TemplateViewDefinition3d 
+public;TextAnnotation2d 
+public;TextAnnotation3d 
+public;Texture 
+beta;TextureCreateProps 
 internal;throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction
 beta;TileId
 beta;TileStorage
-public;TitleText
-public;ToChangesetArgs
+public;TitleText 
+public;ToChangesetArgs 
 public;TokenArg
 public;TxnChangedEntities
 public;TxnIdString = string
 public;TxnManager
-public;class TypeDefinitionElement
-public;UpdateModelOptions
+public;class TypeDefinitionElement 
+public;UpdateModelOptions 
 beta;upgradeCustomAttributesToEC3(xmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[]
-public;UrlLink
+public;UrlLink 
 internal;V1CheckpointManager
 internal;V2CheckpointAccessProps
 internal;V2CheckpointManager
 public;ValidationError
-beta;class VersionedSqliteDb
-public;ViewAttachment
-public;ViewAttachmentLabel
-public;class ViewDefinition
-public;ViewDefinition2d
-public;class ViewDefinition3d
+beta;class VersionedSqliteDb 
+public;ViewAttachment 
+public;ViewAttachmentLabel 
+public;class ViewDefinition 
+public;ViewDefinition2d 
+public;class ViewDefinition3d 
 beta;ViewStore
-public;VolumeElement
-public;WebMercatorModel
+public;VolumeElement 
+public;WebMercatorModel 
 beta;Workspace
 beta;Workspace
 beta;WorkspaceContainer
 beta;WorkspaceContainerId = string
-beta;WorkspaceContainerProps
+beta;WorkspaceContainerProps 
 beta;WorkspaceDb
 beta;WorkspaceDbCloudProps = WorkspaceDbProps & WorkspaceContainerProps
 beta;WorkspaceDbFullName = string
-beta;WorkspaceDbLoadError
-beta;WorkspaceDbLoadErrors
+beta;WorkspaceDbLoadError 
+beta;WorkspaceDbLoadErrors 
 beta;WorkspaceDbManifest
 beta;WorkspaceDbName = string
 beta;WorkspaceDbNameAndVersion
-beta;WorkspaceDbProps
+beta;WorkspaceDbProps 
 beta;WorkspaceDbQueryResourcesArgs
 beta;WorkspaceDbQueryResourcesCallback = (resourceNames: Iterable
-beta;WorkspaceDbSettingsProps
+beta;WorkspaceDbSettingsProps 
 beta;WorkspaceDbVersion = string
 beta;WorkspaceDbVersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease"
 beta;WorkspaceDbVersionRange = string

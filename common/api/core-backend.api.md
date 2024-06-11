@@ -1389,6 +1389,9 @@ export interface ComputedProjectExtents {
     outliers?: Id64Array;
 }
 
+// @beta
+export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult;
+
 // @public
 export interface ComputeProjectExtentsOptions {
     reportExtentsWithOutliers?: boolean;
@@ -2897,9 +2900,6 @@ export function getAvailableCoordinateReferenceSystems(args: GetAvailableCoordin
 export interface GetAvailableCoordinateReferenceSystemsArgs {
     extent?: Range2dProps;
 }
-
-// @beta
-export function getLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult;
 
 // @beta
 export interface GetWorkspaceContainerArgs extends WorkspaceContainerProps {
