@@ -55,3 +55,4 @@ public;SelectionScopesManager
 public;SelectionScopesManagerProps
 internal;ToolSelectionSyncHandler 
 internal;TRANSIENT_ELEMENT_CLASSNAME = "/TRANSIENT"
+
