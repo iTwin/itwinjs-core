@@ -11,7 +11,7 @@ import { join } from "path";
 import * as touch from "touch";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType,
+  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult, 
   Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode,
 } from "@itwin/core-bentley";
 import {
@@ -53,16 +53,17 @@ import { Relationships } from "./Relationship";
 import { SchemaSync } from "./SchemaSync";
 import { ServerBasedLocks } from "./ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
-import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotationLayout";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
-import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
-import { Workspace } from "./workspace/Workspace";
+import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from "./workspace/Settings";
+import { Workspace, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbSettingsProps, WorkspaceSettingNames } from "./workspace/Workspace";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotationLayout";
 import { _implementationProhibited, _nativeDb } from "./internal/Internal";
 import { ChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import type { BlobContainer } from "./BlobContainerService";
+import { SettingsImpl } from "./internal/workspace/SettingsImpl";
+import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "./internal/workspace/WorkspaceImpl";
 
 // spell:ignore fontid fontmap
 
