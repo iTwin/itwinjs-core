@@ -141,7 +141,6 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
 
   public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void {
     for (const ref of this._refs) {
-      ref.treeOwner.load();
       const refModelIds = ref.groupModelIds;
       if (refModelIds) {
         for (const modelId of modelIds) {
