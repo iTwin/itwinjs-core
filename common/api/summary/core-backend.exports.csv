@@ -251,7 +251,7 @@ public;IpcHost
 public;IpcHostOpts
 public;ITwinIdArg
 public;KnownLocations
-beta;LayoutTextBlockArgs 
+beta;LayoutTextBlockArgs
 internal;LightLocation 
 public;LineStyle 
 public;LineStyleDefinition
