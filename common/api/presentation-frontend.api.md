@@ -178,6 +178,9 @@ export type GetNodesRequestOptions = HierarchyRequestOptions<IModelConnection, N
 // @public @deprecated
 export function getScopeId(scope: SelectionScope | string | undefined): string;
 
+// @internal (undocumented)
+export const HILITE_RULESET: Ruleset;
+
 // @public
 export interface HiliteSet {
     // (undocumented)

@@ -20,6 +20,7 @@ internal;getFieldInfos: (field: Field) => Set
 public;GetNodesRequestOptions = HierarchyRequestOptions
 public;getScopeId(scope: SelectionScope | string | undefined): string
 deprecated;getScopeId(scope: SelectionScope | string | undefined): string
+internal;HILITE_RULESET: Ruleset
 public;HiliteSet
 public;HiliteSetProvider
 public;HiliteSetProviderProps
