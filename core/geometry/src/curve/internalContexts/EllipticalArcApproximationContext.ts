@@ -89,6 +89,8 @@ export class EllipticalArcApproximationOptions {
   ) {
     if (numSamplesInQuadrant < 2)
       numSamplesInQuadrant = 2;
+    if (maxError < 0)
+      maxError = 0.01;
     return new EllipticalArcApproximationOptions(method, structuredOutput, numSamplesInQuadrant, maxError, remapFunction);
   }
   /** Clone the options. */
@@ -249,8 +251,8 @@ interface EllipticalArcSampler {
  * @internal
  */
 class UniformParameterSampler implements EllipticalArcSampler {
-  protected _context: EllipticalArcApproximationContext;
-  protected _options: EllipticalArcApproximationOptions;
+  private _context: EllipticalArcApproximationContext;
+  private _options: EllipticalArcApproximationOptions;
   private constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
     this._context = c;
     this._options = o;
@@ -352,6 +354,52 @@ class UniformCurvatureSampler extends NonUniformCurvatureSampler implements Elli
     return new UniformCurvatureSampler(context, options);
   }
 };
+/**
+ * Implementation for method `EllipticalArcSampleMethod.SubdivideForChords`
+ * @internal
+ */
+class SubdivideForChordsSampler implements EllipticalArcSampler {
+  private _context: EllipticalArcApproximationContext;
+  private _options: EllipticalArcApproximationOptions;
+  private constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
+    this._context = c;
+    this._options = o;
+  }
+  public static create(context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions): SubdivideForChordsSampler {
+    return new SubdivideForChordsSampler(context, options);
+  }
+  public computeSamplesStrictlyInsideQuadrant1(result?: number[]): number[] {
+    if (!result)
+      result = [];
+    if (this._context.isValidArc) {
+      // TODO:
+    }
+    return result;
+  }
+}
+/**
+ * Implementation for method `EllipticalArcSampleMethod.SubdivideForArcs`
+ * @internal
+ */
+class SubdivideForArcsSampler implements EllipticalArcSampler {
+  private _context: EllipticalArcApproximationContext;
+  private _options: EllipticalArcApproximationOptions;
+  private constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
+    this._context = c;
+    this._options = o;
+  }
+  public static create(context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions): SubdivideForArcsSampler {
+    return new SubdivideForArcsSampler(context, options);
+  }
+  public computeSamplesStrictlyInsideQuadrant1(result?: number[]): number[] {
+    if (!result)
+      result = [];
+    if (this._context.isValidArc) {
+      // TODO:
+    }
+    return result;
+  }
+}
 
 /**
  * Context for sampling a non-circular Arc3d, e.g., to construct an approximation.
@@ -539,7 +587,39 @@ export class EllipticalArcApproximationContext {
       qf.axisAtEnd = Geometry.isAlmostEqualEitherNumber(qf.fractions[qf.fractions.length - 1], qFrac0, qFrac1, Geometry.smallFraction);
       return qf;
     };
-    // Sample the ellipse in strict interior of Quadrant 1
+    const computeStructuredOutput = (anglesInQuadrant1: number[]): QuadrantFractions[] => {
+      const qEndAngles = new OrderedSet<number>(this.arc.sweep.isCCW ? compareRadiansIncreasing : compareRadiansDecreasing);
+      qEndAngles.add(this.arc.sweep.endRadians);
+      for (const qAngle of [0, Angle.piOver2Radians, Angle.piRadians, Angle.pi3Over2Radians, Angle.pi2Radians]) {
+        const shifted = shiftRadiansToSweep(qAngle, this.arc.sweep);
+        if (shifted.inSweep)
+          qEndAngles.add(shifted.angle);
+      }
+      const quadrants = new OrderedSet<QuadrantFractions>(compareQuadrantFractions);
+      let a0 = this.arc.sweep.startRadians;
+      for (const a1 of qEndAngles) {
+        const quadrant = convertQ1RadiansInSweepToQuadrantFractions(anglesInQuadrant1, a0, a1);
+        if (quadrant)
+          quadrants.add(quadrant);
+        a0 = a1;
+      }
+      return [...quadrants];
+    };
+    const computeFlatOutput = (anglesInQuadrant1: number[]): number[] => {
+      // Flat array output: first add quadrant fractions so the set prefers them over nearby interior fractions
+      const fractions = new OrderedSet<number>(compareFractions);
+      fractions.add(0);
+      fractions.add(1);
+      for (const angle of [0, Angle.piOver2Radians, Angle.piRadians, Angle.pi3Over2Radians])
+        convertAndAddRadiansToFractionInRange(fractions, angle, this.arc.sweep);
+      // Add interior Q1 fractions, reflect to the other quadrants, filter by sweep and extant entry
+      for (const angle0 of anglesInQuadrant1) {
+        for (const angle of [angle0, Angle.piRadians - angle0, Angle.piRadians + angle0, Angle.pi2Radians - angle0])
+          convertAndAddRadiansToFractionInRange(fractions, angle, this.arc.sweep);
+      }
+      return [...fractions];
+    };
+    // Sample the (full) ellipse as angles in strict interior of Quadrant 1
     const radiansQ1: number[] = []; // unordered
     switch (options.sampleMethod) {
       case EllipticalArcSampleMethod.UniformParameter: {
@@ -554,41 +634,18 @@ export class EllipticalArcApproximationContext {
         NonUniformCurvatureSampler.create(this, options).computeSamplesStrictlyInsideQuadrant1(radiansQ1);
         break;
       }
-      default: {
-        // TODO: subdivision methods
+      case EllipticalArcSampleMethod.SubdivideForChords: {
+        SubdivideForChordsSampler.create(this, options).computeSamplesStrictlyInsideQuadrant1(radiansQ1);
         break;
       }
-    }
-    if (options.structuredOutput) {
-      const qEndAngles = new OrderedSet<number>(this.arc.sweep.isCCW ? compareRadiansIncreasing : compareRadiansDecreasing);
-      qEndAngles.add(this.arc.sweep.endRadians);
-      for (const qAngle of [0, Angle.piOver2Radians, Angle.piRadians, Angle.pi3Over2Radians, Angle.pi2Radians]) {
-        const shifted = shiftRadiansToSweep(qAngle, this.arc.sweep);
-        if (shifted.inSweep)
-          qEndAngles.add(shifted.angle);
+      case EllipticalArcSampleMethod.SubdivideForArcs: {
+        SubdivideForArcsSampler.create(this, options).computeSamplesStrictlyInsideQuadrant1(radiansQ1);
+        break;
       }
-      const quadrants = new OrderedSet<QuadrantFractions>(compareQuadrantFractions);
-      let a0 = this.arc.sweep.startRadians;
-      for (const a1 of qEndAngles) {
-        const quadrant = convertQ1RadiansInSweepToQuadrantFractions(radiansQ1, a0, a1);
-        if (quadrant)
-          quadrants.add(quadrant);
-        a0 = a1;
-      }
-      return [...quadrants];
+      default:
+        break;
     }
-    // Flat array output: first add quadrant fractions so the set prefers them over nearby interior fractions
-    const fractions = new OrderedSet<number>(compareFractions);
-    fractions.add(0);
-    fractions.add(1);
-    for (const angle of [0, Angle.piOver2Radians, Angle.piRadians, Angle.pi3Over2Radians])
-      convertAndAddRadiansToFractionInRange(fractions, angle, this.arc.sweep);
-    // Add interior Q1 fractions, reflect to the other quadrants, filter by sweep and extant entry
-    for (const angle0 of radiansQ1) {
-      for (const angle of [angle0, Angle.piRadians - angle0, Angle.piRadians + angle0, Angle.pi2Radians - angle0])
-        convertAndAddRadiansToFractionInRange(fractions, angle, this.arc.sweep);
-    }
-    return [...fractions];
+    return options.structuredOutput ? computeStructuredOutput(radiansQ1) : computeFlatOutput(radiansQ1);
   }
   /** Construct a circular arc chain approximation to the elliptical arc. */
   public constructCircularArcChain(_options: EllipticalArcApproximationOptions): CurveChain | undefined {
