@@ -2030,13 +2030,20 @@ export interface SchemaDifferences {
 // @alpha
 export class SchemaEditingError extends Error {
     constructor(errorNumber: ECEditingStatus, identifier: AnyIdentifier, innerError?: AnyEditingError | undefined, ruleViolations?: AnyDiagnostic[], message?: string);
+    get classId(): ClassId;
+    get customAttributeId(): CustomAttributeId;
+    get enumeratorId(): EnumeratorId;
     // (undocumented)
     readonly errorNumber: ECEditingStatus;
     // (undocumented)
     readonly identifier: AnyIdentifier;
     // (undocumented)
     readonly innerError?: AnyEditingError | undefined;
+    get propertyId(): PropertyId;
+    get relationshipConstraintId(): RelationshipConstraintId;
     get ruleViolations(): AnyDiagnostic[] | undefined;
+    get schemaId(): SchemaId;
+    get schemaItemId(): SchemaItemId;
     toDebugString(): string;
 }
 
