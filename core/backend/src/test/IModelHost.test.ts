@@ -252,7 +252,7 @@ describe("IModelHost", () => {
     expect(sha1).equal("2a618664fbba1df7c05f27d7c0e8f58de250003b");
   });
 
-  it.only("should change default GeoCoord asset directory", async () => {
+  it("should change default GeoCoord asset directory", async () => {
     Logger.setLevel("GeoCoord", LogLevel.Trace);
     const logChanged = sinon.spy(Logger as any, "logWarning");
 
@@ -275,7 +275,7 @@ describe("IModelHost", () => {
 
   });
 
-  it.only("should keep default GeoCoord asset directory", async () => {
+  it("should keep default GeoCoord asset directory", async () => {
     Logger.setLevel("GeoCoord", LogLevel.Trace);
     const logChanged = sinon.spy(Logger as any, "logWarning");
 
