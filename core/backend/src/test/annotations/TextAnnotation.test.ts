@@ -229,7 +229,7 @@ describe("layoutTextBlock", () => {
       this.skip();
     }
 
-    const block = TextBlock.create({ styleName: "", width: 3, styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } })
+    const block = TextBlock.create({ styleName: "", width: 3, styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
 
     function expectBlockRange(width: number, height: number): void {
       const layout = doLayout(block);
@@ -247,7 +247,7 @@ describe("layoutTextBlock", () => {
 
     block.width = 8;
     expectBlockRange(8, 1);
-  
+
     block.width = 6;
     expectBlockRange(6, 2);
 
@@ -262,7 +262,7 @@ describe("layoutTextBlock", () => {
       this.skip();
     }
 
-    const block = TextBlock.create({ styleName: "", styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } })
+    const block = TextBlock.create({ styleName: "", styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
 
     function expectBlockRange(width: number, height: number): void {
       const layout = doLayout(block);
@@ -279,14 +279,14 @@ describe("layoutTextBlock", () => {
     block.width = 10;
     expectBlockRange(10, 2);
   });
-    
+
   it("justifies lines", function () {
     if (!isIntlSupported()) {
       this.skip();
     }
-    
+
     const block = TextBlock.create({ styleName: "", styleOverrides: { lineSpacingFactor: 0 } });
-    
+
     function expectBlockRange(width: number, height: number): void {
       const layout = doLayout(block);
       expectRange(width, height, layout.range);

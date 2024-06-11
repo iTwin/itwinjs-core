@@ -61,8 +61,6 @@ internal;FontIndexProps
 public;CodeSpecs
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
-beta;computeTextBlockExtents(args: ComputeTextBlockExtentsArgs): XAndY
-beta;ComputeTextBlockExtentsArgs
 alpha;ConcreteEntity = Element_2 | Model | ElementAspect | Relationship
 alpha;ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps
 beta;convertEC2SchemasToEC3Schemas(ec2XmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[]

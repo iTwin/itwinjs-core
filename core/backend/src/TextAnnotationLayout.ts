@@ -7,7 +7,7 @@
  */
 
 import { BaselineShift, FontId, FractionRun, Paragraph, Run, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
-import { Range2d, XAndY } from "@itwin/core-geometry";
+import { Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 
@@ -298,7 +298,7 @@ export class RunLayout {
       return [];
     }
 
-    const segments = Array.from(segmenter.segment(myText)) as any[];
+    const segments = Array.from(segmenter.segment(myText));
     if (segments.length <= 1) {
       return [this];
     }
@@ -449,7 +449,7 @@ export class TextBlockLayout {
         }
       }
     }
-    
+
     if (curLine.runs.length > 0) {
       this.flushLine(context, curLine);
     }
@@ -461,7 +461,7 @@ export class TextBlockLayout {
     }
 
     // This is the minimum width of the document's bounding box.
-    let docWidth = this.source.width;
+    const docWidth = this.source.width;
 
     let minOffset = Number.MAX_VALUE;
     for (const line of this.lines) {
