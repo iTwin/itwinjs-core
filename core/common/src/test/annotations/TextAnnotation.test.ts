@@ -16,15 +16,15 @@ describe("TextAnnotation", () => {
     }
 
     it("should compute anchor point based on anchor settings and text block dimensions", () => {
-      expectAnchor(0, 0, "left", "top");
-      expectAnchor(0, -10, "left", "bottom");
-      expectAnchor(0, -5, "left", "middle");
-      expectAnchor(20, 0, "right", "top");
-      expectAnchor(20, -10, "right", "bottom");
-      expectAnchor(20, -5, "right", "middle");
-      expectAnchor(10, 0, "center", "top");
-      expectAnchor(10, -10, "center", "bottom");
-      expectAnchor(10, -5, "center", "middle");
+      expectAnchor(0, 10, "left", "top");
+      expectAnchor(0, 0, "left", "bottom");
+      expectAnchor(0, 5, "left", "middle");
+      expectAnchor(20, 10, "right", "top");
+      expectAnchor(20, 0, "right", "bottom");
+      expectAnchor(20, 5, "right", "middle");
+      expectAnchor(10, 10, "center", "top");
+      expectAnchor(10, 0, "center", "bottom");
+      expectAnchor(10, 5, "center", "middle");
     });
   });
 

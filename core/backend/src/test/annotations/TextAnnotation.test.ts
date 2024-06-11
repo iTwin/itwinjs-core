@@ -246,15 +246,15 @@ describe("layoutTextBlock", () => {
     expectBlockRange(4, 2);
 
     block.width = 8;
-    expectBlockRange(7, 1);
+    expectBlockRange(8, 1);
   
     block.width = 6;
-    expectBlockRange(4, 2);
+    expectBlockRange(6, 2);
 
     block.width = 10;
-    expectBlockRange(7, 1);
+    expectBlockRange(10, 1);
     block.appendRun(makeTextRun("hijk"));
-    expectBlockRange(7, 2);
+    expectBlockRange(10, 2);
   });
 
   it("computes range for split runs", function () {
@@ -338,20 +338,20 @@ describe("layoutTextBlock", () => {
 
     block.justification = "right";
     expectBlockRange(4, 2);
-    expectLineOffset(1, 0);
-    expectLineOffset(0, 1);
+    expectLineOffset(-1, 0);
+    expectLineOffset(-2, 1);
 
     block.appendRun(makeTextRun("123456789"));
     expectBlockRange(9, 3);
-    expectLineOffset(6, 0);
-    expectLineOffset(5, 1);
-    expectLineOffset(0, 2);
+    expectLineOffset(-1, 0);
+    expectLineOffset(-2, 1);
+    expectLineOffset(-7, 2);
 
     block.justification = "center";
     expectBlockRange(9, 3);
-    expectLineOffset(3, 0);
-    expectLineOffset(2.5, 1);
-    expectLineOffset(0, 2);
+    expectLineOffset(-0.5, 0);
+    expectLineOffset(-1, 1);
+    expectLineOffset(-3.5, 2);
   });
 
   function expectLines(input: string, width: number, expectedLines: string[]): TextBlockLayout {
