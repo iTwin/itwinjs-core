@@ -62,17 +62,25 @@ export class Logger {
   /** An event raised whenever [[setLevel]] or [[setLevelDefault]] is called. */
   public static readonly onLogLevelChanged = new BeEvent<() => void>();
 
-  /** NOTE: this property is accessed by native code. */
-  private static categoryFilter: {[categoryName: string]: LogLevel} = {};
+  private static _categoryFilter: {[categoryName: string]: LogLevel | undefined} = {};
+
+  /** Maps category names to the least severe level at which messages in that category should be displayed,
+   * or `undefined` if a minimum has not been defined.
+   * @see [[setLevel]] to change the minimum logging level for a category.
+   */
+  public static get categoryFilter(): Readonly<{[categoryName: string]: LogLevel | undefined}> {
+    // NOTE: this property is accessed by native code.
+    return this._categoryFilter;
+  }
 
   private static _minLevel: LogLevel | undefined;
 
-  // NOTE: the `minLevel` property is accessed by native code. */
   /** The least severe level at which messages should be displayed by default.
    * @see [[setLevelDefault]] to change this default.
    * @see [[setLevel]] to override this default for specific categories.
    */
   public static get minLevel(): LogLevel | undefined {
+    // NOTE: this property is accessed by native code. */
     return this._minLevel;
   }
 
@@ -125,7 +133,7 @@ export class Logger {
    * specified category should be displayed.
    */
   public static setLevel(category: string, minLevel: LogLevel) {
-    Logger.categoryFilter[category] = minLevel;
+    Logger._categoryFilter[category] = minLevel;
     this.onLogLevelChanged.raiseEvent();
   }
 
@@ -209,7 +217,7 @@ export class Logger {
   /** Turns off all category level filters previously defined with [[Logger.setLevel]].
    */
   public static turnOffCategories(): void {
-    Logger.categoryFilter = {};
+    Logger._categoryFilter = {};
   }
 
   /** Check if messages in the specified category should be displayed at this level of severity. */
