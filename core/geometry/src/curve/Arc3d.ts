@@ -29,6 +29,7 @@ import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimi
 import { GeometryQuery } from "./GeometryQuery";
 import { CurveOffsetXYHandler } from "./internalContexts/CurveOffsetXYHandler";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
+import { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
 import { OffsetOptions } from "./OffsetOptions";
 import { StrokeOptions } from "./StrokeOptions";
@@ -236,7 +237,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param result optional preallocated result
    * @returns elliptical arc, or undefined if construction impossible.
    */
-  public static createStartMiddleEnd(point0: XYAndZ, point1: XYAndZ, point2: XYAndZ, sweep?: AngleSweep, result?: Arc3d): Arc3d | undefined {
+  public static createStartMiddleEnd(
+    point0: XYAndZ, point1: XYAndZ, point2: XYAndZ, sweep?: AngleSweep, result?: Arc3d,
+  ): Arc3d | undefined {
     const center = Point3d.createAdd2Scaled(point0, 0.5, point2, 0.5);
     const vector0 = Vector3d.createStartEnd(center, point0);
     const vector1 = Vector3d.createStartEnd(center, point1);
@@ -253,6 +256,39 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       return undefined;
     vector90.scaleInPlace(v90Len);
     return Arc3d.create(center, vector0, vector90, sweep, result);
+  }
+  /**
+ * Create a circular arc defined by start point, tangent at start point, and end point.
+ * If tangent is parallel to line segment from start to end, return the line segment.
+ */
+  public static createCircularStartTangentEnd(
+    start: Point3d, tangentAtStart: Vector3d, end: Point3d, result?: Arc3d,
+  ): Arc3d | LineSegment3d {
+    // To find the circle passing through start and end with tangentAtStart at start:
+    //      - find line 1: the perpendicular bisector of the line from start to end.
+    //      - find line 2: the perpendicular to the tangentAtStart.
+    //      - intersection of the two lines would be the circle center.
+    const vector = Vector3d.createStartEnd(start, end);
+    const normal = tangentAtStart.crossProduct(vector).normalize();
+    if (normal) {
+      const vectorPerp = normal.crossProduct(vector);
+      const tangentPerp = normal.crossProduct(tangentAtStart);
+      const midPoint = start.plusScaled(vector, 0.5);
+
+      const lineSeg1 = LineSegment3d.create(start, start.plusScaled(tangentPerp, 1));
+      const lineSeg2 = LineSegment3d.create(midPoint, midPoint.plusScaled(vectorPerp, 1));
+      const intersection = LineSegment3d.closestApproach(lineSeg1, true, lineSeg2, true);
+
+      if (intersection) {
+        const center = intersection.detailA.point;
+        const vector0 = Vector3d.createStartEnd(center, start);
+        const vector90 = normal.crossProduct(vector0);
+        const endVector = Vector3d.createStartEnd(center, end);
+        const sweep = AngleSweep.create(vector0.signedAngleTo(endVector, normal));
+        return Arc3d.create(center, vector0, vector90, sweep, result);
+      }
+    }
+    return LineSegment3d.create(start, end);
   }
   /**
    * Return a clone of this arc, projected to given z value.
@@ -826,13 +862,15 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const angleData = Angle.dotProductsToHalfAngleTrigValues(
       this._matrix.columnXMagnitudeSquared(),
       this._matrix.columnYMagnitudeSquared(),
-      this._matrix.columnXDotColumnY(), true);
+      this._matrix.columnXDotColumnY(),
+      true,
+    );
     const vector0A = this._matrix.multiplyXY(angleData.c, angleData.s);
     const vector90A = this._matrix.multiplyXY(-angleData.s, angleData.c);
     const axes = Matrix3d.createRigidFromColumns(vector0A, vector90A, AxisOrder.XYZ);
     return {
-      axes: (axes ? axes : Matrix3d.createIdentity()),
       center: this._center,
+      axes: (axes ? axes : Matrix3d.createIdentity()),
       r0: vector0A.magnitude(),
       r90: vector90A.magnitude(),
       sweep: this.sweep.cloneMinusRadians(angleData.radians),

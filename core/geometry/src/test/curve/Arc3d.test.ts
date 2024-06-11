@@ -674,7 +674,7 @@ describe("Arc3d", () => {
     const arc0 = Arc3d.create(Point3d.createZero(), Vector3d.create(2, 4, -1), Vector3d.create(3, 2, -3));
     arcs.push(arc0);
     const perpData0 = arc0.toScaledMatrix3d();
-    const arc1 = Arc3d.createScaledXYColumns(perpData0.center, perpData0.axes, perpData0.r0, perpData0.r90);  // change the start point
+    const arc1 = Arc3d.createScaledXYColumns(perpData0.center, perpData0.axes, perpData0.r0, perpData0.r90); // change the start point
     arcs.push(arc1);
     const arc2 = arc0.clone();
     arc2.sweep = AngleSweep.createStartEndDegrees(-15, 345);  // negative sweep
@@ -682,7 +682,9 @@ describe("Arc3d", () => {
     const arc3 = arc0.clone();
     arc3.sweep = AngleSweep.createStartEndDegrees(100, 120);  // tiny sweep
     arcs.push(arc3);
-    const arc4 = Arc3d.createStartMiddleEnd(Point3d.create(-1, -1, -2), Point3d.create(0.5, 0.5, 1.7), Point3d.create(1, 1, 2));
+    const arc4 = Arc3d.createStartMiddleEnd(
+      Point3d.create(-1, -1, -2), Point3d.create(0.5, 0.5, 1.7), Point3d.create(1, 1, 2),
+    );
     if (ck.testDefined(arc4, "use new ctor"))
       arcs.push(arc4);
 
@@ -691,8 +693,9 @@ describe("Arc3d", () => {
     const fPiecewiseLinearUnder = (x: number): number => {
       const breakFraction = 0.6;
       const slope = (1 - breakFraction) / breakFraction;
-      return (x <= breakFraction) ? slope * x : slope * breakFraction + ((1 - slope * breakFraction) / (1 - breakFraction)) * (x - breakFraction);
-      };
+      return (x <= breakFraction) ?
+        slope * x : slope * breakFraction + ((1 - slope * breakFraction) / (1 - breakFraction)) * (x - breakFraction);
+    };
     const fSqrtCubed = (x: number) => Math.pow(x, 1.5);
     const fQuadratic = (x: number) => x * x;
     const fCubic = (x: number) => x * x * x;
@@ -700,15 +703,24 @@ describe("Arc3d", () => {
     const fSqrt = (x: number) => Math.sqrt(x);
     const remaps: FractionMapper[] = [fIdentity, fPiecewiseLinearUnder, fSqrtCubed, fQuadratic, fCubic, fQuartic, fSqrt];
 
-    const displaySamples = (arc: Arc3d, samples: QuadrantFractions[] | number[], options: EllipticalArcApproximationOptions, x?: number, y?: number, z?: number): void => {
+    const displaySamples = (
+      arc: Arc3d,
+      samples: QuadrantFractions[] | number[],
+      options: EllipticalArcApproximationOptions,
+      x?: number, y?: number, z?: number,
+    ): void => {
       if (options.structuredOutput) {
         ck.testType(samples[0], QuadrantFractions, "output is structured");
         for (let i = 0; i < samples.length; ++i) {
           const quadrant = samples[i] as QuadrantFractions;
           for (let j = 0; j < quadrant.fractions.length - 1; ++j) // skip last fraction...
-            GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, arc.fractionToPoint(quadrant.fractions[j]), 0.1, x, y, z);
+            GeometryCoreTestIO.createAndCaptureXYCircle(
+              allGeometry, arc.fractionToPoint(quadrant.fractions[j]), 0.1, x, y, z,
+            );
           if (i === samples.length - 1 && !arc.sweep.isFullCircle) // ...unless last fraction of last quadrant of open arc
-            GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, arc.fractionToPoint(quadrant.fractions[quadrant.fractions.length - 1]), 0.1, x, y, z);
+            GeometryCoreTestIO.createAndCaptureXYCircle(
+              allGeometry, arc.fractionToPoint(quadrant.fractions[quadrant.fractions.length - 1]), 0.1, x, y, z,
+            );
         }
       } else {
         ck.testIsFinite(samples[0], "output is number array");
@@ -721,13 +733,19 @@ describe("Arc3d", () => {
         return [];
       if (Number.isFinite(array[0]))
         return array as number[];
-      const set = new OrderedSet<number>((s0: number, s1: number) => { return s0 < s1 ? -1 : (s0 > s1 ? 1 : 0); });
+      const set = new OrderedSet<number>((s0: number, s1: number) => {
+        return s0 < s1 ? -1 : (s0 > s1 ? 1 : 0);
+      });
       for (const q of array as QuadrantFractions[])
         for (const f of q.fractions)
           set.add(f);
       return [...set];
     };
-    const compareOutputFormats = (samples: QuadrantFractions[] | number[], context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions): void => {
+    const compareOutputFormats = (
+      samples: QuadrantFractions[] | number[],
+      context: EllipticalArcApproximationContext,
+      options: EllipticalArcApproximationOptions,
+    ): void => {
       const options2 = options.clone();
       options2.structuredOutput = !options2.structuredOutput;
       const samples2 = context.sampleFractions(options2);
@@ -739,7 +757,9 @@ describe("Arc3d", () => {
     };
     const testArc = (arc: Arc3d, options: EllipticalArcApproximationOptions, x?: number, y?: number, z?: number): number => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, x, y, z);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arc.center.plus(arc.vector0), arc.center, arc.center.plus(arc.vector90)], x, y, z);
+      GeometryCoreTestIO.captureCloneGeometry(
+        allGeometry, [arc.center.plus(arc.vector0), arc.center, arc.center.plus(arc.vector90)], x, y, z,
+      );
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arc.center, arc.startPoint()], x, y, z);
 
       const context = EllipticalArcApproximationContext.create(arc);
@@ -772,12 +792,16 @@ describe("Arc3d", () => {
       let minErrorRemapIndex = -1;
       for (const numQuadrantSamples of [3, 4, 5, 6, 10, 20]) {
         // naive method
-        let options = EllipticalArcApproximationOptions.create(EllipticalArcSampleMethod.UniformParameter, false, numQuadrantSamples);
+        let options = EllipticalArcApproximationOptions.create(
+          EllipticalArcSampleMethod.UniformParameter, false, numQuadrantSamples,
+        );
         minError = testArc(arc, options, x0, y0);
         y0 += yDelta(yWidth);
         // curvature interpolation methods
         for (let iRemap = 0; iRemap < remaps.length; ++iRemap) {
-          options = EllipticalArcApproximationOptions.create(EllipticalArcSampleMethod.NonUniformCurvature, false, numQuadrantSamples, undefined, remaps[iRemap]);
+          options = EllipticalArcApproximationOptions.create(
+            EllipticalArcSampleMethod.NonUniformCurvature, false, numQuadrantSamples, undefined, remaps[iRemap],
+          );
           const error = testArc(arc, options, x0, y0);
           if (minError > error) {
             minError = error;
@@ -789,13 +813,83 @@ describe("Arc3d", () => {
         // if we can get an approximation with fewer points.
 
         if (minError < Geometry.largeCoordinateResult)
-          GeometryCoreTestIO.consoleLog(`Arc ${iArc} min error is ${minError} using remap #${minErrorRemapIndex} on ${numQuadrantSamples} Q1 samples.`);
+          GeometryCoreTestIO.consoleLog(
+            `Arc ${iArc} min error is ${minError} using remap #${minErrorRemapIndex} on ${numQuadrantSamples} Q1 samples.`,
+          );
         x0 += xDelta(xWidth);
         y0 = 0;
       }
       x0 += 2 * xDelta(xWidth);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "EllipseSampler");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("createCircularStartTangentEnd", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    let dx = 0;
+    const start1 = Point3d.create(1, 3, 0);
+    const end1 = Point3d.create(5, 3, 0);
+    const tangent1 = Vector3d.create(-1, 1, 0);
+    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, start1, 0.1, dx);
+    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, end1, 0.1, dx);
+    const circularArc1 = Arc3d.createCircularStartTangentEnd(start1, tangent1, end1) as Arc3d;
+    const circle1 = Arc3d.create(
+      circularArc1.center, circularArc1.vector0, circularArc1.vector90, AngleSweep.createStartEndDegrees(0, 360),
+    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, circularArc1, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, circle1, dx);
+    ck.testPoint3d(circularArc1.startPoint(), start1);
+    ck.testPoint3d(circularArc1.endPoint(), end1);
+    ck.testPoint3d(circularArc1.center, Point3d.create(3, 5, 0));
+
+    dx += 10;
+    const start2 = Point3d.create(1, 4, 0);
+    const end2 = Point3d.create(5, 4, 0);
+    const tangent2 = Vector3d.create(1, 0, 0);
+    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, start2, 0.1, dx);
+    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, end2, 0.1, dx);
+    const tangentLineSeg = LineSegment3d.create(start2, start2.plusScaled(tangent2, 1));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, tangentLineSeg, dx);
+    const lineSeg = Arc3d.createCircularStartTangentEnd(start2, tangent2, end2) as LineSegment3d;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineSeg, dx);
+    ck.testPoint3d(lineSeg.startPoint(), start2);
+    ck.testPoint3d(lineSeg.endPoint(), end2);
+
+    dx += 10;
+    const start3 = Point3d.create(2, 0, 0);
+    const end3 = Point3d.create(0, 2, 0);
+    const tangent3 = Vector3d.create(0, 1, 0);
+    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, start3, 0.1, dx);
+    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, end3, 0.1, dx);
+    const circularArc3 = Arc3d.createCircularStartTangentEnd(start3, tangent3, end3) as Arc3d;
+    const circle3 = Arc3d.create(
+      circularArc3.center, circularArc3.vector0, circularArc3.vector90, AngleSweep.createStartEndDegrees(0, 360),
+    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, circularArc3, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, circle3, dx);
+    ck.testPoint3d(circularArc3.startPoint(), start3);
+    ck.testPoint3d(circularArc3.endPoint(), end3);
+    ck.testPoint3d(circularArc3.center, Point3d.create());
+
+    dx += 10;
+    const start4 = Point3d.create(0, 0, 0);
+    const end4 = Point3d.create(1, 1, 1);
+    const tangent4 = Vector3d.create(0, -1, 0);
+    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, start4, 0.1, dx);
+    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, end4, 0.1, dx);
+    const circularArc4 = Arc3d.createCircularStartTangentEnd(start4, tangent4, end4) as Arc3d;
+    const circle4 = Arc3d.create(
+      circularArc4.center, circularArc4.vector0, circularArc4.vector90, AngleSweep.createStartEndDegrees(0, 360),
+    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, circularArc4, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, circle4, dx);
+    ck.testPoint3d(circularArc4.startPoint(), start4);
+    ck.testPoint3d(circularArc4.endPoint(), end4);
+    ck.testPoint3d(circularArc4.center, Point3d.create(0.75, 0, 0.75));
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "createCircularStartTangentEnd");
     expect(ck.getNumErrors()).equals(0);
   });
 });

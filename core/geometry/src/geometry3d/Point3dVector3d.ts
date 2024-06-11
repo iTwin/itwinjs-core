@@ -1242,8 +1242,7 @@ export class Vector3d extends XYZ {
     return this.crossProduct(vectorB, result).normalize(result);
   }
   /**
-   * Compute the cross product of this vector with `vectorB`.   Normalize it, using given xyz as
-   * default if length is zero.
+   * Compute the cross product of this vector with `vectorB`. Normalize it, using given xyz as default if length is zero.
    * @param vectorB second vector of cross product
    * @param x x value for default result
    * @param y y value for default result
