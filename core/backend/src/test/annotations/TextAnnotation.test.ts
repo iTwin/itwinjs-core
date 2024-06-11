@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
+import { ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
 import { Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontMap, FractionRun, LineBreakRun, Run, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextBlockGeometryPropsEntry, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, FontMap, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextBlockGeometryPropsEntry, TextRun, TextStyleSettings } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { TextAnnotation2d, TextAnnotation3d } from "../../TextAnnotationElement";
 import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry";
@@ -691,6 +691,122 @@ describe("layoutTextBlock", () => {
       expect(r1.layout.xLength()).lessThan(r2.layout.xLength());
       expect(r1.justification.xLength()).to.equal(r2.justification.xLength());
     });
+  });
+
+  it("should have the same data when converted to a layout result", function () {
+    if (!isIntlSupported()) {
+      this.skip();
+    }
+
+    // Initialize a new TextBlockLayout object
+    const textBlock = TextBlock.create({ width: 50, styleName: "", styleOverrides: { widthFactor: 34, color: 0x00ff00, fontName: "arial" }});
+    const run0 = TextRun.create({
+      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus pretium mi sit amet magna malesuada, at venenatis ante eleifend.",
+      styleName: "",
+      styleOverrides: { lineHeight: 56, color: 0xff0000 },
+    });
+    const run1 = TextRun.create({
+      content: "Donec sit amet semper sapien. Nullam commodo, libero a accumsan lacinia, metus enim pharetra lacus, eu facilisis sem nisi eu dui.",
+      styleName: "",
+      styleOverrides: { widthFactor: 78, fontName: "run1" },
+    });
+    const run2 = TextRun.create({
+      content: "Duis dui quam, suscipit quis feugiat id, fermentum ut augue. Mauris iaculis odio rhoncus lorem eleifend, posuere viverra turpis elementum.",
+      styleName: "",
+      styleOverrides: {},
+    });
+    const fractionRun = FractionRun.create({ numerator: "num", denominator: "denom", styleName: "", styleOverrides: {} });
+    textBlock.appendRun(run0);
+    textBlock.appendRun(fractionRun);
+    textBlock.appendParagraph();
+    textBlock.appendRun(run1);
+    textBlock.appendRun(run2);
+
+    // Call the toResult() method
+    const textBlockLayout = doLayout(
+      textBlock,
+      {
+        findFontId: (fontName: string) => {
+          if (fontName === "arial") {
+            return 1;
+          } else if (fontName === "run1") {
+            return 2;
+          }
+          return 0;
+        },
+      });
+    const result = textBlockLayout.toResult();
+
+    // Assert that the result object has the same data as the original TextBlockLayout object
+    expect(result.range).to.deep.equal(textBlockLayout.range.toJSON());
+    expect(result.lines.length).to.equal(textBlockLayout.lines.length);
+
+    // Loop through each line in the result and the original object
+    for(let i = 0; i < result.lines.length; i++) {
+      const resultLine: LineLayoutResult = result.lines[i];
+      const originalLine: LineLayout = textBlockLayout.lines[i];
+
+      // Source paragraph index matches
+      expect(resultLine.sourceParagraphIndex).to.equal(textBlock.paragraphs.indexOf(originalLine.source));
+      // Ranges match
+      expect(resultLine.range).to.deep.equal(originalLine.range.toJSON());
+      expect(resultLine.justificationRange).to.deep.equal(originalLine.justificationRange.toJSON());
+      // Offset matches
+      expect(resultLine.offsetFromDocument).to.deep.equal(originalLine.offsetFromDocument);
+
+      for(let j = 0; j < resultLine.runs.length; j++) {
+        const resultRun: RunLayoutResult = resultLine.runs[j];
+        const originalRun: RunLayout = originalLine.runs[j];
+
+        // Source run index matches
+        expect(resultRun.sourceRunIndex).to.equal(textBlock.paragraphs[resultLine.sourceParagraphIndex].runs.indexOf(originalRun.source));
+        // FontId matches
+        expect(resultRun.fontId).to.equal(originalRun.fontId);
+        // Offsets match
+        expect(resultRun.characterOffset).to.equal(originalRun.charOffset);
+        expect(resultRun.characterCount).to.equal(originalRun.numChars);
+        expect(resultRun.offsetFromLine).to.deep.equal(originalRun.offsetFromLine);
+        // Range matches
+        expect(resultRun.range).to.deep.equal(originalRun.range.toJSON());
+        // Text style matches
+        expect(resultRun.textStyle).to.deep.equal(originalRun.style.toJSON());
+        // Optional values match existence and values
+        if (resultRun.justificationRange) {
+          expect(originalRun.justificationRange);
+        }
+        if (originalRun.justificationRange) {
+          expect(resultRun.justificationRange);
+        }
+        if (resultRun.justificationRange && originalRun.justificationRange) {
+          expect(resultRun.justificationRange).to.deep.equal(originalRun.justificationRange.toJSON());
+        }
+        if (resultRun.numeratorRange) {
+          expect(originalRun.numeratorRange);
+        }
+        if (originalRun.numeratorRange) {
+          expect(resultRun.numeratorRange);
+        }
+        if (resultRun.numeratorRange && originalRun.numeratorRange) {
+          expect(resultRun.numeratorRange).to.deep.equal(originalRun.numeratorRange.toJSON());
+        }
+        if (resultRun.denominatorRange) {
+          expect(originalRun.denominatorRange);
+        }
+        if (originalRun.denominatorRange) {
+          expect(resultRun.denominatorRange);
+        }
+        if (resultRun.denominatorRange && originalRun.denominatorRange) {
+          expect(resultRun.denominatorRange).to.deep.equal(originalRun.denominatorRange.toJSON());
+        }
+        // Check that the result string matches what we expect
+        const inputRun = textBlock.paragraphs[resultLine.sourceParagraphIndex].runs[resultRun.sourceRunIndex].clone();
+        if (inputRun.type === "text") {
+          const resultText = inputRun.content.substring(resultRun.characterOffset, resultRun.characterOffset + resultRun.characterCount);
+          const originalText = inputRun.content.substring(originalRun.charOffset, originalRun.charOffset + originalRun.numChars);
+          expect(resultText).to.equal(originalText);
+        }
+      }
+    }
   });
 });
 
