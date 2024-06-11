@@ -510,8 +510,8 @@ export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
   detachFromViewport(): void;
   /** See SpatialViewState.collectMaskRefs */
   collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void;
-  /** See SpatialViewState.getMaskModels */
-  getMaskModels(models: OrderedId64Iterable | undefined, useVisible: boolean): Map<Id64String, boolean> | undefined;
+  /** See SpatialViewState.getModelsNotInMask */
+  getModelsNotInMask(maskModels: OrderedId64Iterable | undefined, useVisible: boolean): Id64String[] | undefined;
 }
 
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]] and
@@ -685,7 +685,7 @@ class SpatialRefs implements SpatialTileTreeReferences {
     }
   }
 
-  public getMaskModels(_models: OrderedId64Iterable | undefined, _useVisible: boolean): Map<Id64String, boolean> | undefined { return undefined; }
+  public getModelsNotInMask(_maskModels: OrderedId64Iterable | undefined, _useVisible: boolean): Id64String[] | undefined { return undefined; }
 
   private load(): void {
     if (!this._allLoaded) {

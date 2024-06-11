@@ -155,24 +155,23 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
     this._excludedRefs.collectMaskRefs(modelIds, maskTreeRefs);
   }
 
-  public getMaskModels(models: OrderedId64Iterable | undefined, useVisible: boolean): Map<Id64String, boolean> | undefined {
-    const maskModels = new Map<Id64String, boolean>();
-    const includedModels = new Set(this._spec.models.keys());
+  // Returns a list of the models that are NOT in the mask.
+  public getModelsNotInMask(maskModels: OrderedId64Iterable | undefined, useVisible: boolean): Id64String[] | undefined {
+    const modelsNotInMask: Id64String[] = [];
+    const includedModels = this._spec.models.keys();
     if (useVisible) {
       for (const modelId of includedModels) {
-        const isViewed = this._models.views(modelId);
-        maskModels.set(modelId, isViewed);
+        if (!this._models.views(modelId))
+          modelsNotInMask.push(modelId);
       }
     } else {
-      for (const modelId of includedModels)
-        maskModels.set(modelId, false);
-      if (models) {
-        for (const modelId of models) {
-          maskModels.set(modelId, true);
-        }
+      const maskModelSet = new Set(maskModels);
+      for (const modelId of includedModels) {
+        if (!maskModelSet.has(modelId))
+          modelsNotInMask.push(modelId);
       }
     }
-    return maskModels.size > 0 ? maskModels : undefined;
+    return modelsNotInMask.length > 0 ? modelsNotInMask : undefined;
   }
 
   // _view.models
@@ -273,9 +272,9 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
     this._impl?.collectMaskRefs(modelIds, maskTreeRefs);
   }
 
-  public getMaskModels(models: OrderedId64Iterable | undefined, useVisible: boolean): Map<Id64String, boolean> | undefined {
+  public getModelsNotInMask(maskModels: OrderedId64Iterable | undefined, useVisible: boolean): Id64String[] | undefined {
     if (this._impl)
-      return this._impl.getMaskModels(models, useVisible);
+      return this._impl.getModelsNotInMask(maskModels, useVisible);
     else
       return undefined;
   }

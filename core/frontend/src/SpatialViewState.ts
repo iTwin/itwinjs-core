@@ -265,13 +265,13 @@ export class SpatialViewState extends ViewState3d {
     this._treeRefs.collectMaskRefs(modelIds, maskTreeRefs);
   }
 
-  /** For getting a Map of modelIds and a flag for whether to participate in masking, for planar classification.
-   * @param models mask models to set flag by when useVisible is false
+  /** For getting a Map of modelIds which do not participate in masking, for planar classification.
+   * @param maskModels models which DO participate in planar clip masking
    * @param useVisible when true, use visible models to set flag
    * @internal
    */
-  public getMaskModels(models: OrderedId64Iterable | undefined, useVisible: boolean): Map<Id64String, boolean> | undefined {
-    return this._treeRefs.getMaskModels(models, useVisible);
+  public getModelsNotInMask(maskModels: OrderedId64Iterable | undefined, useVisible: boolean): Id64String[] | undefined {
+    return this._treeRefs.getModelsNotInMask(maskModels, useVisible);
   }
 
   private registerModelSelectorListeners(): void {

@@ -65,7 +65,7 @@ export class PlanarClipMaskState {
   }
 
   public getPlanarClipMaskSymbologyOverrides(view: SpatialViewState, context: SceneContext): FeatureSymbology.Overrides | undefined {
-    const overrideModels = view.getMaskModels(this.settings.modelIds, PlanarClipMaskMode.Priority === this.settings.mode);
+    const overrideModels = view.getModelsNotInMask(this.settings.modelIds, PlanarClipMaskMode.Priority === this.settings.mode);
 
     const noSubCategoryOrElementIds = !this.settings.subCategoryOrElementIds;
     if (noSubCategoryOrElementIds && !overrideModels)
@@ -80,16 +80,14 @@ export class PlanarClipMaskState {
       if (PlanarClipMaskMode.Priority === this.settings.mode || PlanarClipMaskMode.Models === this.settings.mode || noSubCategoryOrElementIds) {
         const curOverrides = new FeatureSymbology.Overrides(context.viewport);
         curOverrides.addInvisibleElementOverridesToNeverDrawn();  // need this for fully trans element overrides to not participate in mask
-        overrideModels.forEach((use: boolean, modelId: string) => {
-          if (!use)
-            curOverrides.override({ modelId, appearance: appOff, onConflict: "replace" });
+        overrideModels.forEach((modelId: string) => {
+          curOverrides.override({ modelId, appearance: appOff, onConflict: "replace" });
         });
         return curOverrides;
       }
       // Otherwise, we just start with a default overrides and modify it.
-      overrideModels.forEach((use: boolean, modelId: string) => {
-        if (!use)
-          overrides.override({ modelId, appearance: appOff, onConflict: "replace" });
+      overrideModels.forEach((modelId: string) => {
+        overrides.override({ modelId, appearance: appOff, onConflict: "replace" });
       });
     }
 
