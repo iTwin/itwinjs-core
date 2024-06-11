@@ -24,50 +24,6 @@
         "cat 2",
         "vital2"
     ],
-    "cloud/containers": [
-        {
-            "name": "gcs/container",
-            "containerId": "gcs",
-            "baseUri": "http://127.0.0.1:10000/gcs-data",
-            "storageType": "azure"
-        },
-        {
-            "name": "fonts/public",
-            "containerId": "fonts",
-            "baseUri": "http://127.0.0.1:10000/other/data",
-            "storageType": "azure"
-        }
-    ],
-    "workspace/databases": [
-        {
-            "name": "gcs/base",
-            "dbName": "base",
-            "containerName": "gcs/container",
-            "version": "^1"
-        },
-        {
-            "name": "gcs/entire-world",
-            "dbName": "entireEarth",
-            "containerName": "gcs/container",
-            "version": "^1"
-        },
-        {
-            "name": "fonts/public-fonts",
-            "dbName": "fonts",
-            "version": "^1",
-            "containerName": "fonts/public"
-        },
-        {
-            "name": "fonts/more-fonts",
-            "dbName": "fonts2",
-            "version": "^1",
-            "containerName": "fonts/public"
-        }
-    ],
-    "workspace/fontDbs": [
-        "fonts/public-fonts",
-        "fonts/more-fonts"
-    ],
     "editor/tokenColorCustomizations": {
         "Default High Contrast": {
             "comments": "#FF0000"
