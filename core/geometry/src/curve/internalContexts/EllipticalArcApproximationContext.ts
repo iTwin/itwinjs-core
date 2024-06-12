@@ -16,6 +16,8 @@ import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
 import { Loop } from "../Loop";
 import { Path } from "../Path";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+
 
 /** @packageDocumentation
  * @module Curve
@@ -682,11 +684,33 @@ export class EllipticalArcApproximationContext {
     if (!this.isValidArc)
       return undefined;
     const chain = this.arc.sweep.isFullCircle ? Loop.create() : Path.create();
-    const _fractions = this.sampleFractions(options, true);
+    const quadrants = this.sampleFractions(options, true) as QuadrantFractions[];
 
-    // TODO: use QuadrantFractions[] to generate arcs
-    // const points: Point3d[] = [];
-
+    for (const quadrant of quadrants) {
+      const n = quadrant.fractions.length;
+      const points: Point3d[] = [];
+      for (let i = 0; i < n; ++i)
+        points.push(this._arc.fractionToPoint(quadrant.fractions[i]));
+      // first partial circle
+      const startTangent = this._arc.fractionToPointAndDerivative(quadrant.fractions[0]).direction;
+      const firstPartialCircle = Arc3d.createCircularStartTangentEnd(points[0], startTangent, points[1])
+      chain.tryAddChild(firstPartialCircle);
+      // middle partial circles
+      for (let i = 2; i < n - 1; i++) {
+        const partialCircle = Arc3d.createCircularStartMiddleEnd(points[i - 1], points[i], points[i + 1]);
+        if (partialCircle) {
+          const frac = partialCircle.closestPoint(points[i], false)!.fraction;
+          chain.tryAddChild(partialCircle.clonePartialCurve(0, frac));
+        }
+      }
+      // last partial circle
+      if (n > 2) {
+        const endTangent = this._arc.fractionToPointAndDerivative(quadrant.fractions[n - 1]).direction;
+        const lastPartialCircle = Arc3d.createCircularStartTangentEnd(points[n - 1], endTangent, points[n - 2]);
+        lastPartialCircle.reverseInPlace();
+        chain.tryAddChild(lastPartialCircle);
+      }
+    }
     return chain;
   }
 }
