@@ -44,7 +44,7 @@ describe("TextAnnotation", () => {
             const anchor = annotation.computeAnchorPoint(extents);
             const transformed = transform.multiplyPoint3d(anchor);
             const expected = annotation.offset;
-            expect(transformed.isAlmostEqual(expected)).to.equal(true, `expected ${transformed.toJSON()} to equal ${expected.toJSON()}`);
+            expect(transformed.isAlmostEqual(expected)).to.equal(true, `expected ${JSON.stringify(transformed.toJSON())} to equal ${JSON.stringify(expected.toJSON())}`);
           };
 
           // No offset nor rotation
@@ -81,9 +81,18 @@ describe("TextAnnotation", () => {
       const dimensions = { x: 20, y: 10 };
       const extents = new Range3d(0, -dimensions.y, 0, dimensions.x, 0, 0);
       const transform = annotation.computeTransform(new Range2d(0, -dimensions.y, dimensions.x, 0));
-      const expected = Range3d.createRange2d(new Range2d(expectedRange[0], expectedRange[1], expectedRange[2], expectedRange[3]));
-      const actual = transform.multiplyRange(extents);
 
+      // The anchor point is aligned with the origin (prior to translating by offset).
+      // Our tests were written before that was implemented.
+      // Keep the tests simple by subtracting the anchor from our expected range.
+      const anchor = annotation.computeAnchorPoint(new Range2d(0, -dimensions.y, dimensions.x, 0));
+      const expected = Range3d.createRange2d(new Range2d(expectedRange[0], expectedRange[1], expectedRange[2], expectedRange[3]));
+      expected.low.x -= anchor.x;
+      expected.high.x -= anchor.x;
+      expected.low.y -= anchor.y;
+      expected.high.y -= anchor.y;
+
+      const actual = transform.multiplyRange(extents);
       expect(actual.isAlmostEqual(expected)).to.equal(true, `expected ${JSON.stringify(expected)} actual ${JSON.stringify(actual)}`);
     }
 
