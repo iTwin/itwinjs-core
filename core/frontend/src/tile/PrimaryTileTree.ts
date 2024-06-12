@@ -674,6 +674,11 @@ class SpatialRefs implements SpatialTileTreeReferences {
       this._refs.get(modelId)?.setDeactivated(deactivated, refs);
   }
 
+  /** For getting the [TileTreeReference]s that are in the modelIds, for planar classification.
+   * @param modelIds modelIds for which to get the TileTreeReferences
+   * @param maskTreeRefs where to store the TileTreeReferences
+   * @internal
+   */
   public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void {
     for (const modelId of modelIds) {
       if (!this._excludedModels?.has(modelId)) {
@@ -685,6 +690,10 @@ class SpatialRefs implements SpatialTileTreeReferences {
     }
   }
 
+  /** For getting a list of modelIds which do not participate in masking, for planar classification.
+   * For non-batched tile trees this is not needed, so just return undefined.
+   * @internal
+   */
   public getModelsNotInMask(_maskModels: OrderedId64Iterable | undefined, _useVisible: boolean): Id64String[] | undefined { return undefined; }
 
   private load(): void {

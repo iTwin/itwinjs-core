@@ -39,8 +39,10 @@ export class PlanarClipMaskState {
       this._tileTreeRefs.forEach((treeRef) => treeRef.discloseTileTrees(trees));
   }
 
+  // Returns the TileTreeReferences for the models that need to be drawn to create the planar clip mask.
   public getTileTrees(view: SpatialViewState, classifiedModelId: Id64String): TileTreeReference[] | undefined {
     if (this.settings.mode === PlanarClipMaskMode.Priority) {
+      // For priority mode we simply want refs for all viewed models if the priority is higher than the mask priority.
       const viewTrees = new Array<TileTreeReference>();
       const thisPriority = this.settings.priority === undefined ? PlanarClipMaskPriority.RealityModel : this.settings.priority;
       view.forEachTileTreeRef((ref) => {
@@ -52,6 +54,7 @@ export class PlanarClipMaskState {
       return viewTrees;
     }
 
+    // For all other modes we need to let the tree refs in the view state decide which refs need to be drawn
     if (!this._tileTreeRefs) {
       this._tileTreeRefs = new Array<TileTreeReference>();
       if (this.settings.modelIds)
@@ -64,7 +67,9 @@ export class PlanarClipMaskState {
     return this._allLoaded ? this._tileTreeRefs : undefined;
   }
 
+  // Returns any potential FeatureSymbology overrides for drawing the planar clip mask.
   public getPlanarClipMaskSymbologyOverrides(view: SpatialViewState, context: SceneContext): FeatureSymbology.Overrides | undefined {
+    // First obtain a list of models that will need to be turned off for drawing the planar clip mask (only used for batched tile trees).
     const overrideModels = view.getModelsNotInMask(this.settings.modelIds, PlanarClipMaskMode.Priority === this.settings.mode);
 
     const noSubCategoryOrElementIds = !this.settings.subCategoryOrElementIds;
@@ -74,7 +79,8 @@ export class PlanarClipMaskState {
     const overrides = new FeatureSymbology.Overrides();
 
     if (overrideModels) {
-      // overrideModels is used for batched models.  For those, we need to create model overrides for visibility (using transparency).
+      // overrideModels is used for batched models.  For those, we need to create model overrides to turn off models that are
+      // not wanted in the mask (using transparency) no matter what mask mode is being used.
       const appOff = FeatureAppearance.fromTransparency(1.0);
       // For Priority or Models mode, we need to start with the current overrides and modify them
       if (PlanarClipMaskMode.Priority === this.settings.mode || PlanarClipMaskMode.Models === this.settings.mode || noSubCategoryOrElementIds) {
@@ -91,6 +97,7 @@ export class PlanarClipMaskState {
       });
     }
 
+    // Turn things on or off based on the subcategories or elements in the mask settings.
     switch (this.settings.mode) {
       case PlanarClipMaskMode.IncludeElements: {
         overrides.setAlwaysDrawnSet(this.settings.subCategoryOrElementIds!, true);
