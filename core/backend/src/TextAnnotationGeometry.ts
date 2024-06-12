@@ -193,7 +193,7 @@ export interface ProduceTextAnnotationGeometryArgs {
   findFontId?: FindFontId;
 }
 
-/** Produce a geometric representation of a text annotation.
+/** Produce a geometric representation of a text annotation, with the annotation's anchor point at the origin.
  * The result can be supplied to [GeometryStreamBuilder.appendTextBlock]($common).
  * @see [[TextAnnotation2d.setAnnotation]] and [[TextAnnotation3d.setAnnotation]] to update the annotation, geometry, and placement of an annotation element.
  * @beta
