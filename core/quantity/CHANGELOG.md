@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-quantity
 
-This log was last generated on Sat, 08 Jun 2024 00:53:21 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Jun 2024 18:03:49 GMT and should not be manually modified.
+
+## 4.7.0
+Wed, 12 Jun 2024 18:02:16 GMT
+
+### Updates
+
+- Fix an flaw in the parser logic where purposefully ignoring a token would end up parsing the value as meters even if the formatter spec had unit information.
 
 ## 4.6.2
 Sat, 08 Jun 2024 00:50:25 GMT
