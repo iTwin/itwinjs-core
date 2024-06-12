@@ -154,7 +154,7 @@ export class TextAnnotation {
     const matrix = this.orientation.toMatrix3d();
 
     const rotation = Transform.createFixedPointAndMatrix(anchorPt, matrix);
-    const translation = Transform.createTranslation(this.offset);
+    const translation = Transform.createTranslation(this.offset.minus(anchorPt));
     return translation.multiplyTransformTransform(rotation, rotation);
   }
 
