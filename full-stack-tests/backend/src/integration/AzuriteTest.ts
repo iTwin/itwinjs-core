@@ -10,6 +10,7 @@ import * as azureBlob from "@azure/storage-blob";
 import { BlobContainer, CloudSqlite, IModelHost, SettingObject } from "@itwin/core-backend";
 import { AccessToken, Guid } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
+import * as crypto from "crypto";
 
 // spell:ignore imodelid itwinid mkdirs devstoreaccount racwdl
 
@@ -32,6 +33,25 @@ export namespace AzuriteTest {
   }
   export namespace Sqlite {
     export type TestContainer = CloudSqlite.CloudContainer;
+
+    export const uploadDummyBlock = async (container: CloudSqlite.CloudContainer, blockNameSize: number): Promise<string> => {
+      const generateRandomHexString = (length: number) => {
+        const bytes = crypto.randomBytes(length);
+        const hexString = bytes.toString("hex");
+        return hexString.toUpperCase();
+      };
+      const azClient = createAzClient(container.containerId);
+      const blockName = `${generateRandomHexString(blockNameSize)}.bcv`;
+      const blobClient = azClient.getBlockBlobClient(blockName);
+      await blobClient.uploadData(Buffer.alloc(0));
+      return blockName;
+    };
+
+    export const checkBlockExists = async (container: CloudSqlite.CloudContainer, blockName: string): Promise<boolean> => {
+      const azClient = createAzClient(container.containerId);
+      const blobClient = azClient.getBlockBlobClient(blockName);
+      return blobClient.exists();
+    };
 
     export const setSasToken = async (container: CloudSqlite.CloudContainer, accessLevel: BlobContainer.RequestAccessLevel) => {
       container.accessToken = await CloudSqlite.requestToken({ baseUri, containerId: container.containerId, accessLevel });
