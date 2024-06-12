@@ -267,7 +267,7 @@ export type AnyDb = IModelDb | ECDb;
 // @public
 export abstract class AuxCoordSystem extends DefinitionElement {
     constructor(props: AuxCoordSystemProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     description?: string;
@@ -280,7 +280,7 @@ export class AuxCoordSystem2d extends AuxCoordSystem {
     constructor(props: AuxCoordSystem2dProps, iModel: IModelDb);
     // (undocumented)
     angle: number;
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
@@ -290,7 +290,7 @@ export class AuxCoordSystem2d extends AuxCoordSystem {
 // @public
 export class AuxCoordSystem3d extends AuxCoordSystem {
     constructor(props: AuxCoordSystem3dProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
@@ -305,7 +305,7 @@ export class AuxCoordSystem3d extends AuxCoordSystem {
 
 // @public
 export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
 }
@@ -585,7 +585,7 @@ export class CategoryOwnsSubCategories extends ElementOwnsChildElements {
 export class CategorySelector extends DefinitionElement {
     protected constructor(props: CategorySelectorProps, iModel: IModelDb);
     categories: Id64String[];
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
@@ -1704,7 +1704,7 @@ export class DrawingModel extends GraphicalModel2d {
 // @public
 export class DrawingViewDefinition extends ViewDefinition2d {
     protected constructor(props: ViewDefinition2dProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): DrawingViewDefinition;
     static fromJSON(props: Omit<ViewDefinition2dProps, "classFullName">, iModel: IModelDb): DrawingViewDefinition;
@@ -4111,7 +4111,7 @@ export class Model extends Entity {
 // @public
 export class ModelSelector extends DefinitionElement {
     protected constructor(props: ModelSelectorProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
@@ -4274,7 +4274,7 @@ export type OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs & OpenSq
 // @public
 export class OrthographicViewDefinition extends SpatialViewDefinition {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex): OrthographicViewDefinition;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex): Id64String;
@@ -4963,7 +4963,7 @@ export class SheetTemplate extends Document_2 {
 
 // @public
 export class SheetViewDefinition extends ViewDefinition2d {
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -5069,7 +5069,7 @@ export abstract class SpatialModel extends GeometricModel3d {
 // @public
 export class SpatialViewDefinition extends ViewDefinition3d {
     protected constructor(props: SpatialViewDefinitionProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
@@ -5780,7 +5780,7 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
 // @public
 export class ViewAttachment extends GraphicalElement2d {
     constructor(props: ViewAttachmentProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
@@ -5799,7 +5799,7 @@ export class ViewAttachmentLabel extends DetailingSymbol {
 export abstract class ViewDefinition extends DefinitionElement {
     protected constructor(props: ViewDefinitionProps, iModel: IModelDb);
     categorySelectorId: Id64String;
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
@@ -5813,7 +5813,7 @@ export abstract class ViewDefinition extends DefinitionElement {
     isView3d(): this is ViewDefinition3d;
     loadCategorySelector(): CategorySelector;
     loadDisplayStyle(): DisplayStyle;
-    // @internal (undocumented)
+    // @beta (undocumented)
     protected static onCloned(context: IModelElementCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void;
     // @beta (undocumented)
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
@@ -5829,7 +5829,7 @@ export class ViewDefinition2d extends ViewDefinition {
     protected constructor(props: ViewDefinition2dProps, iModel: IModelDb);
     angle: Angle;
     baseModelId: Id64String;
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
@@ -5847,7 +5847,7 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     angles: YawPitchRollAngles;
     camera: Camera;
     cameraOn: boolean;
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     get details(): ViewDetails3d;
     extents: Vector3d;
