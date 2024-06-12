@@ -7,7 +7,7 @@ import { expect, use } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import { IModelApp } from "@itwin/core-frontend";
-import { GraphicRepresentationFormat, obtainGraphicRepresentationUrl, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/GraphicRepresentationProvider";
+import { obtainGraphicRepresentationUrl, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/GraphicRepresentationProvider";
 
 use(chaiAsPromised);
 
@@ -120,7 +120,7 @@ const testArgs = {
     changeId: undefined,
     type: "srcType",
   },
-  format: GraphicRepresentationFormat.IMDL,
+  format: "IMDL",
 };
 
 describe("queryGraphicsDataSources", () => {
@@ -212,7 +212,7 @@ describe("obtainGraphicsDataSourceUrl", () => {
             changeId: args.versionId,
             type: "srcType",
           },
-          format: GraphicRepresentationFormat.IMDL,
+          format: "IMDL",
           requireExactVersion: args.exact,
         });
 

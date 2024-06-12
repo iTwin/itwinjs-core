@@ -5,7 +5,7 @@
 
 import { IModelApp, IModelConnection, SpatialTileTreeReferences, SpatialViewState } from "@itwin/core-frontend";
 import { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTreeRefs";
-import { GraphicRepresentationFormat, queryGraphicRepresentations } from "./GraphicsProvider/GraphicRepresentationProvider";
+import { queryGraphicRepresentations } from "./GraphicsProvider/GraphicRepresentationProvider";
 import { AccessToken } from "@itwin/core-bentley";
 import { obtainIModelTilesetUrl, ObtainIModelTilesetUrlArgs} from "./GraphicsProvider/GraphicsProvider";
 
@@ -90,7 +90,7 @@ export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterab
       changeId: args.changesetId,
       type: "IMODEL",
     },
-    format: GraphicRepresentationFormat.IMDL,
+    format: "IMDL",
     urlPrefix: args.urlPrefix,
     enableCDN: args.enableCDN,
   };

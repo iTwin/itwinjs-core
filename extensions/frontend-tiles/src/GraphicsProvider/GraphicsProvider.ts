@@ -5,7 +5,7 @@
 
 import { AccessToken, Logger} from "@itwin/core-bentley";
 import { IModelApp, IModelConnection} from "@itwin/core-frontend";
-import { GraphicRepresentationFormat, obtainGraphicRepresentationUrl} from "./GraphicRepresentationProvider";
+import { obtainGraphicRepresentationUrl} from "./GraphicRepresentationProvider";
 import { loggerCategory} from "../LoggerCategory";
 
 /** Arguments supplied  to [[obtainMeshExportTilesetUrl]].
@@ -53,7 +53,7 @@ Promise<URL|undefined> {
       changeId: args.iModel.changeset.id,
       type: "IMODEL",
     },
-    format: GraphicRepresentationFormat.IMDL,
+    format: "IMDL",
     urlPrefix: args.urlPrefix,
     requireExactVersion: args.requireExactChangeset,
     enableCDN: args.enableCDN,

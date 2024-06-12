@@ -6,13 +6,11 @@
 import { AccessToken, Logger} from "@itwin/core-bentley";
 import { loggerCategory} from "../LoggerCategory";
 
-/** The format of the Graphic Representation
+/** The expected format of the Graphic Representation
  * @beta
  */
-export enum GraphicRepresentationFormat {
-  IMDL = "IMDL",
-  Tiles3D = "3DTILES",
-}
+/* eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents */
+export type GraphicRepresentationFormat = "IMDL" | "3DTILES" | string;
 
 /** Graphic representations are generated from Data Sources.
  * The status of a Graphic Representation indicates the progress of that generation process.
@@ -32,35 +30,43 @@ export enum GraphicRepresentationStatus {
  * @beta
  */
 export interface DataSource {
-  /** The iTwinId associated with th data source */
+  /** The iTwinId associated with the DataSource */
   iTwinId: string;
-  /** The id of the data source */
+  /** The unique identifier of a DataSource.
+   * For example, a DataSource of type "IMODEL" has an iModelId which would be attributed to this value.
+   */
   id: string;
-  /** The change id of the data source */
+  /** The unique identifier for a specific version of a DataSource.
+   * For example, if a specific version of an iModel is desired, the iModel's changesetId would be attributed to this value.
+  */
   changeId?: string;
-  /** The type of the data source */
+  /** The type of the data source. For example, a DataSource can be of type "IMODEL" or "RealityData" */
   type: string;
 }
 
 /** represents a visual representation of data from a data source.
  * This could be a 3D model, a map, or any other kind of graphical data.
- * @see [[queryGraphicsDataSources]].
+ * @see [[queryGraphicsDataSources]] for its construction as a representation of the data produced by a query of data sources.
  * @beta
  */
 export interface GraphicRepresentation {
-  /** The displayName of the Graphic Representation */
+  /** The display name of the Graphic Representation */
   displayName: string;
-  /** The Id of the Graphic Representation */
+  /** The unique identifier for the Graphic Representation */
   representationId: string;
-  /** The status of the query from the Graphics Provider for the Graphic Representation */
+  /** The status of the generation of the Graphic Representation from its Data Source.
+   * @see [[GraphicRepresentationStatus]] for possible values.
+   */
   status: GraphicRepresentationStatus;
-  /** The format of the Graphic Representation*/
-  format: GraphicRepresentationFormat;
+  /** The expected format of the Graphic Representation
+   * @see [[GraphicRepresentationFormat]] for possible values.
+   */
+  format:  GraphicRepresentationFormat;
   /** The url of the Graphic Representation */
   url?: string;
   /** The data source that the representation originates from.
-  * For example, a GraphicRepresentation in the 3D Tiles format might have a dataSource that is a specific iModel changeset.
-  */
+   * For example, a GraphicRepresentation in the 3D Tiles format might have a dataSource that is a specific iModel changeset.
+   */
   dataSource: DataSource;
 }
 
@@ -83,14 +89,18 @@ function createGraphicRepresentationsQueryUrl(args: { sourceId: string, urlPrefi
  * @beta
  */
 export interface QueryGraphicRepresentationsArgs {
-  /** The token used to access the mesh export service. */
+  /** The token used to access the data source provider. */
   accessToken: AccessToken;
-  /** The Session Id */
+  /** The unique identifier for the session in which this data source was queried.
+   * A possible value is IModelApp.sessionId.
+   */
   sessionId: string;
-  /** The Data Source for which to query */
+  /** The Data Source for which to query the graphic representations */
   dataSource: DataSource;
-  /** The format of the Graphics Data Source */
-  format: GraphicRepresentationFormat;
+  /** The expected format of the graphic representations
+   * @see [[GraphicRepresentationFormat]] for possible values.
+   */
+  format:  GraphicRepresentationFormat;
   /** Chiefly used in testing environments. */
   urlPrefix?: string;
   /** If true, exports whose status is not "Complete" (indicating the export successfully finished) will be included in the results */
@@ -99,8 +109,7 @@ export interface QueryGraphicRepresentationsArgs {
   enableCDN?: boolean;
 }
 
-/** Query Graphic Representations for representations matching the specified criteria.
- * The representations are sorted from most-recently- to least-recently-produced.
+/** Query Graphic Representations matching the specified criteria, sorted from most-recently- to least-recently-produced.
  * @beta
  */
 export async function* queryGraphicRepresentations(args: QueryGraphicRepresentationsArgs): AsyncIterableIterator<GraphicRepresentation> {
@@ -187,12 +196,16 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
 export interface ObtainGraphicRepresentationUrlArgs {
   /** The token used to access the mesh export service. */
   accessToken: AccessToken;
-  /** The Session Id */
+  /** The unique identifier for the session in which this data source was queried.
+   * A possible value is IModelApp.sessionId.
+   */
   sessionId: string;
-  /** The data source for which to query */
+  /** The data source for which to query the graphic representations */
   dataSource: DataSource;
-  /** The format of the Graphics Data Source */
-  format: GraphicRepresentationFormat;
+  /** The expected format of the graphic representations
+   * @see [[GraphicRepresentationFormat]] for possible values.
+   */
+  format:  GraphicRepresentationFormat;
   /** Chiefly used in testing environments. */
   urlPrefix?: string;
   /** If true, only Graphics Data produced for a specific version will be considered; otherwise, if no Graphics Data Sources are found for the version,
@@ -218,12 +231,7 @@ export async function obtainGraphicRepresentationUrl(args: ObtainGraphicRepresen
   const queryArgs: QueryGraphicRepresentationsArgs = {
     accessToken: args.accessToken,
     sessionId: args.sessionId,
-    dataSource: {
-      iTwinId: args.dataSource.iTwinId,
-      id: args.dataSource.id,
-      changeId: args.dataSource.changeId,
-      type: args.dataSource.type,
-    },
+    dataSource: args.dataSource,
     format: args.format,
     urlPrefix: args.urlPrefix,
     enableCDN: args.enableCDN,
