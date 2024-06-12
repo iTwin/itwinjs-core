@@ -1,6 +1,16 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Sat, 08 Jun 2024 00:53:21 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Jun 2024 18:03:49 GMT and should not be manually modified.
+
+## 4.7.0
+Wed, 12 Jun 2024 18:02:16 GMT
+
+### Updates
+
+- Add SchemaSync as new changeset type.
+- Fix failed HTTP RPC request not being rejected if `X-Protocol-Version` is not available.
+- Added TextAnnotation.offset.
+- Promote QPoint2dBufferBuilderOptions and QPoint3dBufferBuilderOptions from beta to public
 
 ## 4.6.2
 Sat, 08 Jun 2024 00:50:25 GMT
