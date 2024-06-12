@@ -33,10 +33,10 @@ import { StrokeCountMap } from "./Query/StrokeCountMap";
 import { StrokeOptions } from "./StrokeOptions";
 
 /**
- * Starting with baseIndex and moving index by stepDirection:
- * If the vector from baseIndex to baseIndex +1 crossed with vectorA can be normalized, accumulate it (scaled) to normal.
- * Return when successful.
- * (Do nothing if everything is parallel through limits of the array)
+ * Starting with the segment at (baseIndex, baseIndex + 1):
+ * * If the segment vector and vectorA determine a normal, accumulate it (scaled) to normal, and return.
+ * * Otherwise move to next/previous segment if stepDirection is positive/negative and repeat.
+ * * Do nothing if everything is parallel through the end of the array.
  */
 function accumulateGoodUnitPerpendicular(
   points: GrowableXYZArray,
@@ -54,6 +54,8 @@ function accumulateGoodUnitPerpendicular(
       vectorA.crossProduct(workVector, workVector);
       if (workVector.normalizeInPlace()) {
         normal.addScaledInPlace(workVector, weight);
+        if (normal.isAlmostEqualXYZ(0, 0, 0, Geometry.smallFraction))
+          workVector.scale(-weight, normal); // Concavity changed! Revert to previous
         return true;
       }
     }
@@ -65,6 +67,8 @@ function accumulateGoodUnitPerpendicular(
       workVector.crossProduct(vectorA, workVector);
       if (workVector.normalizeInPlace()) {
         normal.addScaledInPlace(workVector, weight);
+        if (normal.isAlmostEqualXYZ(0, 0, 0, Geometry.smallFraction))
+          workVector.scale(-weight, normal); // Concavity changed! Revert to previous
         return true;
       }
     }
