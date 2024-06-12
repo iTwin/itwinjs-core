@@ -5,7 +5,7 @@ beta;DataSource
 beta;FrontendTilesOptions
 internal;frontendTilesOptions:
 beta;GraphicRepresentation
-beta;GraphicRepresentationFormat
+beta;GraphicRepresentationFormat = "IMDL" | "3DTILES" | string
 beta;GraphicRepresentationStatus
 beta;initializeFrontendTiles(options: FrontendTilesOptions): void
 beta;MeshExport

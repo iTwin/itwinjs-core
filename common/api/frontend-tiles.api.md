@@ -47,12 +47,7 @@ export interface GraphicRepresentation {
 }
 
 // @beta
-export enum GraphicRepresentationFormat {
-    // (undocumented)
-    IMDL = "IMDL",
-    // (undocumented)
-    Tiles3D = "3DTILES"
-}
+export type GraphicRepresentationFormat = "IMDL" | "3DTILES" | string;
 
 // @beta
 export enum GraphicRepresentationStatus {
