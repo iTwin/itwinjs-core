@@ -46,7 +46,7 @@ export interface DataSource {
 
 /** represents a visual representation of data from a data source.
  * This could be a 3D model, a map, or any other kind of graphical data.
- * @see [[queryGraphicsDataSources]] for its construction as a representation of the data produced by a query of data sources.
+ * @see [[queryGraphicRepresentations]] for its construction as a representation of the data produced by a query of data sources.
  * @beta
  */
 export interface GraphicRepresentation {
@@ -85,7 +85,7 @@ function createGraphicRepresentationsQueryUrl(args: { sourceId: string, urlPrefi
   return url;
 }
 
-/** Arguments supplied to [[queryGraphicsDataSources]].
+/** Arguments supplied to [[queryGraphicRepresentations]].
  * @beta
  */
 export interface QueryGraphicRepresentationsArgs {
@@ -208,8 +208,8 @@ export interface ObtainGraphicRepresentationUrlArgs {
   format:  GraphicRepresentationFormat;
   /** Chiefly used in testing environments. */
   urlPrefix?: string;
-  /** If true, only Graphics Data produced for a specific version will be considered; otherwise, if no Graphics Data Sources are found for the version,
-  * the most recent source for any version will be used.
+  /** If true, only graphics data produced for a specific data source version will be considered; otherwise, if no data source is found to match the specified version,
+  * the most recent data source version will be used.
    */
   requireExactVersion?: boolean;
   /** If true, enables a CDN (content delivery network) to access tiles faster. */
