@@ -257,7 +257,7 @@ export interface AcquireNewBriefcaseIdArg extends IModelIdArg {
 // @public
 export class AnnotationElement2d extends GraphicalElement2d {
     protected constructor(props: GeometricElement2dProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -1416,7 +1416,7 @@ export interface CreateNewWorkspaceDbVersionArgs {
 
 // @public
 export class DefinitionContainer extends DefinitionSet {
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): DefinitionContainer;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String;
@@ -1425,7 +1425,7 @@ export class DefinitionContainer extends DefinitionSet {
 // @public
 export abstract class DefinitionElement extends InformationContentElement {
     protected constructor(props: DefinitionElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     isPrivate: boolean;
     // (undocumented)
@@ -1434,7 +1434,7 @@ export abstract class DefinitionElement extends InformationContentElement {
 
 // @public
 export class DefinitionGroup extends DefinitionSet {
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): DefinitionGroup;
 }
@@ -1454,13 +1454,13 @@ export class DefinitionModel extends InformationModel {
 
 // @public
 export class DefinitionPartition extends InformationPartitionElement {
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
 // @public
 export abstract class DefinitionSet extends DefinitionElement {
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -1597,7 +1597,7 @@ export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettings
 // @public
 abstract class Document_2 extends InformationContentElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 export { Document_2 as Document }
@@ -1611,7 +1611,7 @@ export class DocumentListModel extends InformationModel {
 
 // @public
 export class DocumentPartition extends InformationPartitionElement {
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -1657,10 +1657,9 @@ export class Downloads {
 // @public
 export class Drawing extends Document_2 {
     protected constructor(props: ElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
-    // @internal
     protected static get drawingModelFullClassName(): string;
     static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string): Id64String;
 }
@@ -1680,7 +1679,7 @@ export class DrawingCategory extends Category {
 // @public
 export class DrawingGraphic extends GraphicalElement2d {
     protected constructor(props: GeometricElement2dProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -1715,7 +1714,7 @@ export class DrawingViewDefinition extends ViewDefinition2d {
 // @beta
 export abstract class DriverBundleElement extends InformationContentElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -1963,7 +1962,7 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
 // @public
 class Element_2 extends Entity {
     protected constructor(props: ElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     code: Code;
     // @beta @deprecated
@@ -2249,7 +2248,7 @@ export class ElevationCallout extends Callout {
 
 // @public
 export class EmbeddedFileLink extends LinkElement {
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -2577,7 +2576,7 @@ export class FolderContainsRepositories extends ElementOwnsChildElements {
 
 // @alpha
 export class FolderLink extends UrlLink {
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -2730,7 +2729,7 @@ export abstract class GeometricElement extends Element_2 {
     // (undocumented)
     calculateRange3d(): AxisAlignedBox3d;
     category: Id64String;
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
@@ -2752,7 +2751,7 @@ export abstract class GeometricElement extends Element_2 {
 // @public
 export abstract class GeometricElement2d extends GeometricElement {
     protected constructor(props: GeometricElement2dProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
@@ -2774,7 +2773,7 @@ export class GeometricElement2dHasTypeDefinition extends TypeDefinition {
 // @public
 export abstract class GeometricElement3d extends GeometricElement {
     protected constructor(props: GeometricElement3dProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
@@ -2831,7 +2830,7 @@ export class GeometryPart extends DefinitionElement {
     protected constructor(props: GeometryPartProps, iModel: IModelDb);
     // (undocumented)
     bbox: ElementAlignedBox3d;
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // @beta
@@ -2871,7 +2870,7 @@ export class Graphic3d extends GraphicalElement3d {
 // @public
 export abstract class GraphicalElement2d extends GeometricElement2d {
     protected constructor(props: GeometricElement2dProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -2885,7 +2884,7 @@ export class GraphicalElement2dIsOfType extends GeometricElement2dHasTypeDefinit
 // @public
 export abstract class GraphicalElement3d extends GeometricElement3d {
     protected constructor(props: GeometricElement3dProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -2909,14 +2908,14 @@ export abstract class GraphicalModel3d extends GeometricModel3d {
 
 // @public
 export class GraphicalPartition3d extends InformationPartitionElement {
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
 // @public
 export abstract class GraphicalType2d extends TypeDefinitionElement {
     protected constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
 }
@@ -2936,7 +2935,7 @@ export class GroupImpartsToMembers extends ElementGroupsMembers {
 
 // @public
 export abstract class GroupInformationElement extends InformationReferenceElement {
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -2948,7 +2947,7 @@ export abstract class GroupInformationModel extends InformationModel {
 
 // @public
 export class GroupInformationPartition extends InformationPartitionElement {
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -3527,7 +3526,7 @@ export interface IModelNameArg extends TokenArg, ITwinIdArg {
 // @public
 export abstract class InformationContentElement extends Element_2 {
     protected constructor(props: ElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -3540,7 +3539,7 @@ export abstract class InformationModel extends Model {
 // @public
 export abstract class InformationPartitionElement extends InformationContentElement {
     protected constructor(props: InformationPartitionElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, parentSubjectId: CodeScopeProps, codeValue: string): Code;
     description?: string;
@@ -3551,7 +3550,7 @@ export abstract class InformationPartitionElement extends InformationContentElem
 // @public
 export abstract class InformationRecordElement extends InformationContentElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -3564,14 +3563,14 @@ export class InformationRecordModel extends InformationModel {
 
 // @public
 export class InformationRecordPartition extends InformationPartitionElement {
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
 // @public
 export abstract class InformationReferenceElement extends InformationContentElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -3669,7 +3668,7 @@ export class LightLocation extends SpatialLocationElement {
 // @public
 export class LineStyle extends DefinitionElement {
     protected constructor(props: LineStyleProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
@@ -3831,7 +3830,7 @@ export namespace LineStyleDefinition {
 
 // @public
 export abstract class LinkElement extends InformationReferenceElement {
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
 }
@@ -3844,7 +3843,7 @@ export class LinkModel extends InformationModel {
 
 // @public
 export class LinkPartition extends InformationPartitionElement {
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -4292,7 +4291,7 @@ export class PartialECChangeUnifier {
 // @public
 export abstract class PhysicalElement extends SpatialElement {
     protected constructor(props: PhysicalElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     physicalMaterial?: RelatedElement;
     // (undocumented)
@@ -4350,14 +4349,14 @@ export class PhysicalObject extends PhysicalElement {
 
 // @public
 export class PhysicalPartition extends InformationPartitionElement {
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
 // @public
 export abstract class PhysicalType extends TypeDefinitionElement {
     protected constructor(props: PhysicalTypeProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     physicalMaterial?: RelatedElement;
@@ -4529,7 +4528,7 @@ export type QueryWorkspaceResourcesCallback = (resources: Iterable<{
 // @beta
 export abstract class RecipeDefinitionElement extends DefinitionElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -4622,7 +4621,7 @@ export class RenderMaterialOwnsRenderMaterials extends ElementOwnsChildElements 
 // @public
 export class RenderTimeline extends InformationRecordElement {
     protected constructor(props: RenderTimelineProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(ids: EntityReferenceSet): void;
@@ -4631,7 +4630,7 @@ export class RenderTimeline extends InformationRecordElement {
     static fromJSON(props: RenderTimelineProps, iModel: IModelDb): RenderTimeline;
     // @alpha (undocumented)
     protected static onCloned(context: IModelElementCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): void;
-    // @internal
+    // @beta
     static remapScript(context: IModelElementCloneContext, input: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps;
     scriptProps: RenderSchedule.ScriptProps;
     // (undocumented)
@@ -4641,7 +4640,7 @@ export class RenderTimeline extends InformationRecordElement {
 // @public
 export class RepositoryLink extends UrlLink {
     protected constructor(props: RepositoryLinkProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     format?: string;
     // (undocumented)
@@ -4663,7 +4662,7 @@ export interface RequestNewBriefcaseArg extends TokenArg, RequestNewBriefcasePro
 
 // @public
 export abstract class RoleElement extends Element_2 {
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -4754,11 +4753,11 @@ export class SectionCallout extends Callout {
 // @public
 export class SectionDrawing extends Drawing {
     protected constructor(props: SectionDrawingProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     displaySpatialView: boolean;
     drawingBoundaryClip?: ClipVector;
-    // @internal (undocumented)
+    // (undocumented)
     protected static get drawingModelFullClassName(): string;
     drawingToSpatialTransform?: Transform;
     sectionType: SectionType;
@@ -4771,7 +4770,7 @@ export class SectionDrawing extends Drawing {
 // @public
 export class SectionDrawingLocation extends SpatialLocationElement {
     constructor(props: SectionDrawingLocationProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     sectionView: RelatedElement;
     // (undocumented)
@@ -4915,7 +4914,7 @@ export interface SettingsSchemas {
 // @public
 export class Sheet extends Document_2 {
     protected constructor(props: SheetProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
@@ -4933,7 +4932,7 @@ export class Sheet extends Document_2 {
 // @public
 export class SheetBorderTemplate extends Document_2 {
     protected constructor(props: SheetBorderTemplateProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     height?: number;
@@ -4952,7 +4951,7 @@ export class SheetTemplate extends Document_2 {
     protected constructor(props: SheetTemplateProps, iModel: IModelDb);
     // (undocumented)
     border?: Id64String;
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
@@ -5015,7 +5014,7 @@ export class SpatialCategory extends Category {
 // @public
 export abstract class SpatialElement extends GeometricElement3d {
     protected constructor(props: GeometricElement3dProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -5029,7 +5028,7 @@ export class SpatialLocation extends SpatialLocationElement {
 // @public
 export abstract class SpatialLocationElement extends SpatialElement {
     protected constructor(props: GeometricElement3dProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -5049,14 +5048,14 @@ export class SpatialLocationModel extends SpatialModel {
 
 // @public
 export class SpatialLocationPartition extends InformationPartitionElement {
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
 // @public
 export abstract class SpatialLocationType extends TypeDefinitionElement {
     protected constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
 }
@@ -5411,7 +5410,7 @@ export class SubCategory extends DefinitionElement {
 // @public
 export class Subject extends InformationReferenceElement {
     protected constructor(props: SubjectProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     static create(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Subject;
     static createCode(iModelDb: IModelDb, parentSubjectId: CodeScopeProps, codeValue: string): Code;
@@ -5461,7 +5460,7 @@ export class SynchronizationConfigSpecifiesRootSources extends SynchronizationCo
 // @beta
 export class TemplateRecipe2d extends RecipeDefinitionElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): TemplateRecipe2d;
     static createCode(iModelDb: IModelDb, definitionModelId: CodeScopeProps, codeValue: string): Code;
@@ -5471,7 +5470,7 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
 // @beta
 export class TemplateRecipe3d extends RecipeDefinitionElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): TemplateRecipe3d;
     static createCode(iModelDb: IModelDb, definitionModelId: CodeScopeProps, codeValue: string): Code;
@@ -5678,7 +5677,7 @@ export class TxnManager {
 // @public
 export abstract class TypeDefinitionElement extends DefinitionElement {
     protected constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
@@ -5698,7 +5697,7 @@ export function upgradeCustomAttributesToEC3(xmlSchemas: string[], schemaContext
 // @public
 export class UrlLink extends LinkElement {
     protected constructor(props: UrlLinkProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     // (undocumented)
     description?: string;
@@ -6323,7 +6322,7 @@ export namespace ViewStore {
 // @public
 export class VolumeElement extends SpatialLocationElement {
     protected constructor(props: GeometricElement3dProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
