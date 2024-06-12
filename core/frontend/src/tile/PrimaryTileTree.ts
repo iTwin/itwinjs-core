@@ -8,6 +8,7 @@
 
 import {
   assert, comparePossiblyUndefined, compareStrings, Id64String,
+  OrderedId64Iterable,
 } from "@itwin/core-bentley";
 import {
   BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, ModelMapLayerSettings,
@@ -507,6 +508,10 @@ export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
   attachToViewport(args: AttachToViewportArgs): void;
   /** See SpatialViewState.detachFromViewport. */
   detachFromViewport(): void;
+  /** See SpatialViewState.collectMaskRefs */
+  collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void;
+  /** See SpatialViewState.getModelsNotInMask */
+  getModelsNotInMask(maskModels: OrderedId64Iterable | undefined, useVisible: boolean): Id64String[] | undefined;
 }
 
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]] and
@@ -668,6 +673,28 @@ class SpatialRefs implements SpatialTileTreeReferences {
     for (const modelId of modelIds)
       this._refs.get(modelId)?.setDeactivated(deactivated, refs);
   }
+
+  /** For getting the [TileTreeReference]s that are in the modelIds, for planar classification.
+   * @param modelIds modelIds for which to get the TileTreeReferences
+   * @param maskTreeRefs where to store the TileTreeReferences
+   * @internal
+   */
+  public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void {
+    for (const modelId of modelIds) {
+      if (!this._excludedModels?.has(modelId)) {
+        const model = this._view.iModel.models.getLoaded(modelId);
+        assert(model !== undefined);   // Models should be loaded by RealityModelTileTree
+        if (model?.asGeometricModel)
+          maskTreeRefs.push(createMaskTreeReference(this._view, model.asGeometricModel));
+      }
+    }
+  }
+
+  /** For getting a list of modelIds which do not participate in masking, for planar classification.
+   * For non-batched tile trees this is not needed, so just return undefined.
+   * @internal
+   */
+  public getModelsNotInMask(_maskModels: OrderedId64Iterable | undefined, _useVisible: boolean): Id64String[] | undefined { return undefined; }
 
   private load(): void {
     if (!this._allLoaded) {
