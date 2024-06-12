@@ -358,6 +358,12 @@ describe("RenderMaterialElement", () => {
         UnknownTexture: { TextureId: "CLONED" },
         NoTextureId: { OtherProp: 1 },
       });
+
+      jsonProps.materialAssets.renderMaterial.Map = {"Pattern": undefined};
+      material.update();
+      RenderMaterialElement["onCloned"](context, sourceProps, targetProps);
+      // keep the sourceMap the same in targetProps
+      expect(targetProps.jsonProperties?.materialAssets?.renderMaterial?.Map?.Pattern).to.be.undefined;
     });
   });
 });
