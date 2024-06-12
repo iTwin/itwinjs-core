@@ -55,6 +55,7 @@ export class PlanarClipMaskState {
     }
 
     // For all other modes we need to let the tree refs in the view state decide which refs need to be drawn
+    // since batched tiles cannot turn on/off individual models just by their tile tree refs.
     if (!this._tileTreeRefs) {
       this._tileTreeRefs = new Array<TileTreeReference>();
       if (this.settings.modelIds)
