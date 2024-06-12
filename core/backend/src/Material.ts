@@ -21,7 +21,6 @@ import { IModelElementCloneContext } from "./IModelElementCloneContext";
  * @public
  */
 export abstract class PhysicalMaterial extends DefinitionElement {
-  /** @internal */
   public static override get className(): string { return "PhysicalMaterial"; }
   /** Create a Code for a PhysicalMaterial given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -54,7 +53,6 @@ export abstract class PhysicalMaterial extends DefinitionElement {
  * @public
  */
 export class RenderMaterialElement extends DefinitionElement {
-  /** @internal */
   public static override get className(): string { return "RenderMaterial"; }
 
   /** The name of a palette that can be used to categorize multiple materials. */
@@ -186,7 +184,7 @@ export class RenderMaterialElement extends DefinitionElement {
     return iModelDb.elements.insertElement(renderMaterial.toJSON());
   }
 
-  /** @internal */
+  /** @beta */
   protected static override onCloned(context: IModelElementCloneContext, sourceProps: ElementProps, targetProps: ElementProps) {
     super.onCloned(context, sourceProps, targetProps);
     for (const mapName in sourceProps.jsonProperties?.materialAssets?.renderMaterial?.Map ?? {}) {
