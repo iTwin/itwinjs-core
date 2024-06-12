@@ -196,7 +196,7 @@ export class RenderMaterialElement extends DefinitionElement {
       // sourceMap could be null/undefined, keep it the same in targetProps
       if (!sourceMap) {
         targetProps.jsonProperties.materialAssets.renderMaterial.Map[mapName] = sourceMap;
-        return;
+        continue;
       }
       if (!Id64.isValid(sourceMap.TextureId) || sourceMap.TextureId === undefined)
         continue;
