@@ -256,6 +256,7 @@ describe("IModelHost", () => {
 
 describe("GeoCoord Asset Directory", () => {
   before(async () => {
+    // Set Log level to trace so the spy can capture the log messages
     Logger.setLevel("GeoCoord", LogLevel.Trace);
     const gcsSettings = {
       "gcs/disableWorkspaces": true,
@@ -264,7 +265,9 @@ describe("GeoCoord Asset Directory", () => {
   });
 
   after(async () => {
+    // Set Log level back to error so that it doesn't pollute the console
     Logger.setLevel("GeoCoord", LogLevel.Error);
+    // renable workspaces otherwise future tests will fail
     const gcsSettings = {
       "gcs/disableWorkspaces": false,
     };
@@ -292,6 +295,7 @@ describe("GeoCoord Asset Directory", () => {
     imodel.getIModelProps();
     imodel.closeFile();
 
+    // When no GCS data is found, two warning messages are logged
     expect(logChanged.callCount).eq(2);
     const call = logChanged.getCalls()[0];
     expect(call.lastArg === "Unable to find GCS file assets\\coordsys.dty in Workspace or D:\\test\\geoCoordAssets\\coordsys.dty").equals(true);
@@ -309,6 +313,7 @@ describe("GeoCoord Asset Directory", () => {
     imodel.getIModelProps();
     imodel.closeFile();
 
+    // When no GCS data is found, two warning messages are logged
     expect(logChanged.callCount).eq(2);
     const call = logChanged.getCalls()[0];
     expect(call.lastArg === "Unable to find GCS file assets\\coordsys.dty in Workspace or D:\\imodel-native\\out\\Winx64\\imodeljsnodeaddon_pkgs\\imodeljs-win32-x64\\Assets\\coordsys.dty").equals(true);
