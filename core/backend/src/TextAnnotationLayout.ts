@@ -231,7 +231,7 @@ export function split(source: string): Segment[] {
 
   let index = 0;
   const segments: Segment[] = [];
-  const breaker = new (LineBreaker as any)(source);
+  const breaker = new LineBreaker(source);
   for (let brk = breaker.nextBreak(); brk; brk = breaker.nextBreak()) {
     segments.push({
       segment: source.slice(index, brk.position),
