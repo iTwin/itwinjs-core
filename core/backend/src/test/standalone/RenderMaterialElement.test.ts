@@ -359,8 +359,9 @@ describe("RenderMaterialElement", () => {
         NoTextureId: { OtherProp: 1 },
       });
 
-      jsonProps.materialAssets.renderMaterial.Map = {"Pattern": undefined};
+      jsonProps.materialAssets.renderMaterial.Map = {Pattern: undefined};
       material.update();
+      // eslint-disable-next-line @typescript-eslint/dot-notation
       RenderMaterialElement["onCloned"](context, sourceProps, targetProps);
       // keep the sourceMap the same in targetProps
       expect(targetProps.jsonProperties?.materialAssets?.renderMaterial?.Map?.Pattern).to.be.undefined;
