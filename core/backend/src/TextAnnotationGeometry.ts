@@ -155,7 +155,7 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
     const ly = layout.range.low.y - debugAnchorPt.y;
     const hx = layout.range.high.x - debugAnchorPt.x;
     const hy = layout.range.high.y - debugAnchorPt.y;
-    
+
     context.entries.push({
       separator: {
         startPoint: [lx, 0, 0],
