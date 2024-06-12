@@ -345,7 +345,7 @@ export class TestRunner {
     }
   }
 
-  private async runTest(context: TestContext): Promise<TestResult | undefined> {    
+  private async runTest(context: TestContext): Promise<TestResult | undefined> {
     // Reset the title bar to include the current model and view name
     const testConfig = this.curConfig;
     document.title = "Display Performance Test App:  ".concat(testConfig.iModelName ?? "", "  [", testConfig.viewName ?? "", "]");
