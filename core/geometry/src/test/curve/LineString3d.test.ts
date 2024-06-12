@@ -6,10 +6,10 @@
 import { expect } from "chai";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { Arc3d } from "../../curve/Arc3d";
-import { AnyCurve } from "../../curve/CurveTypes";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { CurveOps } from "../../curve/CurveOps";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { AnyCurve } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -17,6 +17,7 @@ import { Loop } from "../../curve/Loop";
 import { Path } from "../../curve/Path";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -311,8 +312,35 @@ describe("LineString3d", () => {
     ck.testExactNumber(numAnnounce, 2);
     expect(ck.getNumErrors()).equals(0);
   });
+  it("FrenetFrame", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    // data from iModel ("fdt inspect element" outputs world coords)
+    const ls = LineString3d.createPoints([
+      Point3d.create(0, 0, 1),
+      Point3d.create(10, 0, 1),
+      Point3d.create(0, -10, 1),
+      Point3d.create(10, -10, 1),
+    ]);
+    const rotation = Matrix3d.createRotationAroundVector(Vector3d.create(1,1,1), Angle.createDegrees(31));
+    const transform = Transform.createOriginAndMatrix(ls.startPoint(), rotation);
+    ls.tryTransformInPlace(transform);  // make things interesting
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls);
 
+    // With a change in concavity before and after the segment AND fraction 0.5, we used to return identity incorrectly
+    const fraction = 0.5;
+    const frame = ls.fractionToFrenetFrame(fraction);
+    GeometryCoreTestIO.captureTransformAsFrame(allGeometry, frame, 0.01);
+
+    ck.testVector3d(frame.matrix.columnX(), ls.fractionToPointAndUnitTangent(fraction).direction, "frame x-axis matches tangent");
+    ck.testVector3d(frame.matrix.columnZ(), ls.quickUnitNormal()!, "frame z-axis matches normal");
+    ck.testPoint3d(frame.getOrigin(), ls.fractionToPoint(fraction), "frame origin matches point");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "LineString3d", "FrenetFrame");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
+
 /**
  * Class to act as an iterator over points in a linestring.
  * * Internal data is:
