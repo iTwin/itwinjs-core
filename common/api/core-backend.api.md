@@ -555,7 +555,7 @@ export class BriefcaseManager {
 // @public
 export abstract class Callout extends DetailingSymbol {
     constructor(props: CalloutProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -1473,14 +1473,14 @@ export function deleteElementTree(iModel: IModelDb, topElement: Id64String): voi
 // @public
 export class DetailCallout extends Callout {
     constructor(props: CalloutProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
 // @public
 export abstract class DetailingSymbol extends GraphicalElement2d {
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -1691,7 +1691,7 @@ export class DrawingGraphicRepresentsElement extends ElementRefersToElements {
 
 // @public
 export class DrawingGraphicRepresentsFunctionalElement extends DrawingGraphicRepresentsElement {
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -2242,7 +2242,7 @@ export class ElementUniqueAspect extends ElementAspect {
 // @public
 export class ElevationCallout extends Callout {
     constructor(props: CalloutProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -2583,28 +2583,28 @@ export class FolderLink extends UrlLink {
 // @public
 export abstract class FunctionalBreakdownElement extends FunctionalElement {
     protected constructor(props: FunctionalElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
 // @public
 export abstract class FunctionalComponentElement extends FunctionalElement {
     protected constructor(props: FunctionalElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
 // @public (undocumented)
 export class FunctionalComposite extends FunctionalBreakdownElement {
     protected constructor(props: FunctionalElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
 // @public
 export abstract class FunctionalElement extends RoleElement {
     protected constructor(props: FunctionalElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -2613,14 +2613,14 @@ export class FunctionalElementIsOfType extends RelatedElement {
     constructor(id: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
 // @public
 export class FunctionalModel extends RoleModel {
     constructor(props: ModelProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
@@ -2628,7 +2628,7 @@ export class FunctionalModel extends RoleModel {
 // @public
 export class FunctionalPartition extends InformationPartitionElement {
     protected constructor(props: InformationPartitionElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -2647,7 +2647,7 @@ export class FunctionalSchema extends Schema {
 // @public
 export abstract class FunctionalType extends TypeDefinitionElement {
     protected constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -2663,14 +2663,14 @@ export function generateElementGraphics(request: ElementGraphicsRequestProps, iM
 // @public
 export class GenericDocument extends Document_2 {
     constructor(props: ElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
 // @public
 export class GenericGraphicalModel3d extends GraphicalModel3d {
     constructor(props: GeometricModel3dProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
 }
@@ -2678,21 +2678,21 @@ export class GenericGraphicalModel3d extends GraphicalModel3d {
 // @public
 export class GenericGraphicalType2d extends GraphicalType2d {
     constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
 // @public
 export class GenericPhysicalMaterial extends PhysicalMaterial {
     constructor(props: DefinitionElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
 // @public
 export class GenericPhysicalType extends PhysicalType {
     constructor(props: PhysicalTypeProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -2863,7 +2863,7 @@ export interface GetWorkspaceResourceArgs {
 // @public
 export class Graphic3d extends GraphicalElement3d {
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -2923,7 +2923,7 @@ export abstract class GraphicalType2d extends TypeDefinitionElement {
 // @public
 export class Group extends GroupInformationElement {
     constructor(props: ElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -2954,7 +2954,7 @@ export class GroupInformationPartition extends InformationPartitionElement {
 // @public
 export class GroupModel extends GroupInformationModel {
     constructor(props: ModelProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
@@ -4307,7 +4307,7 @@ export class PhysicalElementAssemblesElements extends ElementOwnsChildElements {
 
 // @public
 export class PhysicalElementFulfillsFunction extends ElementRefersToElements {
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -4343,7 +4343,7 @@ export class PhysicalModel extends SpatialModel {
 // @public
 export class PhysicalObject extends PhysicalElement {
     constructor(props: PhysicalElementProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -4374,7 +4374,7 @@ export class PhysicalTypeIsOfPhysicalMaterial extends RelatedElement {
 // @public
 export class PlanCallout extends Callout {
     constructor(props: CalloutProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -4746,7 +4746,7 @@ export namespace SchemaSync {
 // @public
 export class SectionCallout extends Callout {
     constructor(props: CalloutProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -5021,7 +5021,7 @@ export abstract class SpatialElement extends GeometricElement3d {
 // @public
 export class SpatialLocation extends SpatialLocationElement {
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -5569,7 +5569,7 @@ export class TileStorage {
 // @public
 export class TitleText extends DetailingSymbol {
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
@@ -5791,7 +5791,7 @@ export class ViewAttachment extends GraphicalElement2d {
 // @public
 export class ViewAttachmentLabel extends DetailingSymbol {
     constructor(props: ViewAttachmentLabelProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static get className(): string;
 }
 
