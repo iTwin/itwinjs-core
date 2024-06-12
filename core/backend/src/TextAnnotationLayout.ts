@@ -10,6 +10,7 @@ import { BaselineShift, FontId, FractionRun, LineLayoutResult, Paragraph, Run, R
 import { Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
+import *  as LineBreaker from "linebreak";
 
 /** @internal */
 export interface TextLayoutRanges {
@@ -223,13 +224,29 @@ interface Segment {
   index: number;
 }
 
-function split(source: string): Segment[] {
+export function split(source: string): Segment[] {
   if (source.length === 0) {
     return [];
   }
 
+  let index = 0;
+  const segments: Segment[] = [];
+  const breaker = new (LineBreaker as any)(source);
+  for (let brk = breaker.nextBreak(); brk; brk = breaker.nextBreak()) {
+    segments.push({
+      segment: source.slice(index, brk.position),
+      index,
+    });
+
+    index = brk.position;
+  }
+
+  return segments;
+
+  /*
   const segmenter = new (global as any).Intl.Segmenter(undefined, { granularity: "word" });
   return Array.from(segmenter.segment(source));
+  */
 }
 
 /** @internal */

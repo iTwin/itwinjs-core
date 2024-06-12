@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
+import { split, ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
 import { Range2d } from "@itwin/core-geometry";
 import { ColorDef, FontMap, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextBlockGeometryPropsEntry, TextRun, TextStyleSettings } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
@@ -46,6 +46,12 @@ function isIntlSupported(): boolean {
 }
 
 describe.only("layoutTextBlock", () => {
+  it("splits", () => {
+    const segments = split("The quick, brown fox jumped over the lazy, good-for-nothing, 1.5 meter long, 0.25-inch tall dog.");
+    console.log(JSON.stringify(segments.map((x) => x.segment)));
+    expect(segments).to.deep.equal("");
+  });
+
   it("resolves TextStyleSettings from combination of TextBlock and Run", () => {
     const textBlock = TextBlock.create({ styleName: "block", styleOverrides: { widthFactor: 34, color: 0x00ff00 }});
     const run0 = TextRun.create({ content: "run0", styleName: "run", styleOverrides: { lineHeight: 56, color: 0xff0000 }});
@@ -485,7 +491,7 @@ describe.only("layoutTextBlock", () => {
 
     test(50, ["The quick brown fox jumped over the lazy dog"]);
     test(40, [
-      //        1         2         3         4
+      //         1         2         3         4
       // 234567890123456789012345678901234567890
       "The quick brown fox jumped over the lazy",
       " dog",
