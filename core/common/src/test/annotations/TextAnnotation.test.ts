@@ -28,7 +28,24 @@ describe("TextAnnotation", () => {
     });
   });
 
-  describe("computeTransform", () => {
+  describe.only("computeTransform", () => {
+    const verticals = ["top", "middle", "bottom"] as const;
+    const horizontals = ["left", "center", "right"] as const;
+
+    it("puts anchor point at origin", () => {
+      const extents = new Range2d(0, 0, 20, 10);
+
+      for (const horizontal of horizontals) {
+        for (const vertical of verticals) {
+          const annotation = TextAnnotation.fromJSON({ anchor: { horizontal, vertical } });
+          const transform = annotation.computeTransform(extents);
+          const anchor = annotation.computeAnchorPoint(extents);
+          const transformed = transform.multiplyPoint3d(anchor);
+          expect(transformed.isAlmostZero).to.equal(true, `${transformed.toJSON()}`);
+        }
+      }
+    });
+
     function expectTransformedRange(expectedRange: [number, number, number, number], options?: {
       anchor?: TextAnnotationAnchor;
       origin?: number[];
@@ -69,9 +86,6 @@ describe("TextAnnotation", () => {
 
       expect(actual.isAlmostEqual(expected)).to.equal(true, `expected ${JSON.stringify(expected)} actual ${JSON.stringify(actual)}`);
     }
-
-    const verticals = ["top", "middle", "bottom"] as const;
-    const horizontals = ["left", "center", "right"] as const;
 
     it("should produce identity transform for identity orientation and zero origin", () => {
       for (const vertical of verticals) {
