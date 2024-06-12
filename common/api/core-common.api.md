@@ -63,6 +63,7 @@ import { PolyfaceVisitor } from '@itwin/core-geometry';
 import { Range1d } from '@itwin/core-geometry';
 import { Range1dProps } from '@itwin/core-geometry';
 import { Range2d } from '@itwin/core-geometry';
+import { Range2dProps } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import type { Readable } from 'stream';
@@ -5404,6 +5405,15 @@ export interface LineBreakRunProps extends TextBlockComponentProps {
     readonly type: "linebreak";
 }
 
+// @beta
+export interface LineLayoutResult {
+    justificationRange: Range2dProps;
+    offsetFromDocument: XAndY;
+    range: Range2dProps;
+    runs: RunLayoutResult[];
+    sourceParagraphIndex: number;
+}
+
 // @public
 export enum LinePixels {
     Code0 = 0,
@@ -8774,6 +8784,20 @@ export namespace Run {
 }
 
 // @beta
+export interface RunLayoutResult {
+    characterCount: number;
+    characterOffset: number;
+    denominatorRange?: Range2dProps;
+    fontId: FontId;
+    justificationRange?: Range2dProps;
+    numeratorRange?: Range2dProps;
+    offsetFromLine: XAndY;
+    range: Range2dProps;
+    sourceRunIndex: number;
+    textStyle: TextStyleSettingsProps;
+}
+
+// @beta
 export type RunProps = TextRunProps | FractionRunProps | LineBreakRunProps;
 
 // @beta
@@ -9459,8 +9483,8 @@ export class TestRpcManager {
 // @beta
 export class TextAnnotation {
     anchor: TextAnnotationAnchor;
-    computeAnchorPoint(textBlockDimensions: XAndY): Point3d;
-    computeTransform(textBlockDimensions: XAndY): Transform;
+    computeAnchorPoint(boundingBox: Range2d): Point3d;
+    computeTransform(boundingBox: Range2d): Transform;
     static create(args?: TextAnnotationCreateArgs): TextAnnotation;
     equals(other: TextAnnotation): boolean;
     static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation;
@@ -9578,6 +9602,12 @@ export type TextBlockGeometryPropsEntry = {
 
 // @beta
 export type TextBlockJustification = "left" | "center" | "right";
+
+// @beta
+export interface TextBlockLayoutResult {
+    lines: LineLayoutResult[];
+    range: Range2dProps;
+}
 
 // @beta
 export interface TextBlockProps extends TextBlockComponentProps {

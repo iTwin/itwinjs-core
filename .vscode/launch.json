@@ -685,17 +685,15 @@
       "program": "${workspaceFolder}/utils/workspace-editor/lib/WorkspaceEditor.js",
       "args": [
         "listDb",
-        "allEarth",
-        "--prefetch",
-        "--logging",
-        "--config=s:/realAzure.json"
+        "base",
+        "--config=o:/queryDbs.json"
       ],
       "outFiles": [
         "${workspaceFolder}/utils/workspace-editor/lib/**/*.js",
         "${workspaceFolder}/core/*/lib/**/*.js",
       ],
       "env": {
-        "WORKSPACE_EDITOR_LOGGING": "true",
+        "WORKSPACE_EDITOR_LOGGING": "false",
       }
     },
     {
