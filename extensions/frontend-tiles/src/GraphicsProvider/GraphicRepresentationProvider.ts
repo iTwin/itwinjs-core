@@ -44,8 +44,8 @@ export interface DataSource {
   type: string;
 }
 
-/** represents a visual representation of data from a data source.
- * This could be a 3D model, a map, or any other kind of graphical data.
+/** Represents a visual representation of a data source, for example a 3d tileset.
+ * A data source can be an iModel, reality data, or other kind of graphical data.
  * @see [[queryGraphicsDataSources]] for its construction as a representation of the data produced by a query of data sources.
  * @beta
  */

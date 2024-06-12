@@ -2,6 +2,27 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "4.7.0",
+      "tag": "@itwin/core-common_v4.7.0",
+      "date": "Wed, 12 Jun 2024 18:02:16 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add SchemaSync as new changeset type."
+          },
+          {
+            "comment": "Fix failed HTTP RPC request not being rejected if `X-Protocol-Version` is not available."
+          },
+          {
+            "comment": "Added TextAnnotation.offset."
+          },
+          {
+            "comment": "Promote QPoint2dBufferBuilderOptions and QPoint3dBufferBuilderOptions from beta to public"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.6.2",
       "tag": "@itwin/core-common_v4.6.2",
       "date": "Sat, 08 Jun 2024 00:50:25 GMT",
