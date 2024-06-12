@@ -14,6 +14,9 @@ import { CurveChain } from "../CurveCollection";
 import { CurveCurve } from "../CurveCurve";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
+import { Path } from "../Path";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { NumberArray } from "../../core-geometry";
 
 /** @packageDocumentation
  * @module Curve
@@ -65,7 +68,13 @@ export class EllipticalArcApproximationOptions {
   private _maxError: number;
   private _remapFunction: FractionMapper;
 
-  private constructor(method: EllipticalArcSampleMethod, structuredOutput: boolean, numSamplesInQuadrant: number, maxError: number, remapFunction: FractionMapper) {
+  private constructor(
+    method: EllipticalArcSampleMethod,
+    structuredOutput: boolean,
+    numSamplesInQuadrant: number,
+    maxError: number,
+    remapFunction: FractionMapper,
+  ) {
     this._sampleMethod = method;
     this._structuredOutput = structuredOutput;
     this._numSamplesInQuadrant = numSamplesInQuadrant;
@@ -78,7 +87,8 @@ export class EllipticalArcApproximationOptions {
    * @param structuredOutput output format, default false.
    * @param numSamplesInQuadrant samples in each full quadrant for interpolation methods, default 4.
    * @param maxError max distance to ellipse for subdivision methods, default 1cm.
-   * @param remapFunction optional callback to remap fraction space for [[EllipticalArcSampleMethod.NonUniformCurvature]], default identity.
+   * @param remapFunction optional callback to remap fraction space for [[EllipticalArcSampleMethod.NonUniformCurvature]],
+   * default identity.
    */
   public static create(
     method: EllipticalArcSampleMethod = EllipticalArcSampleMethod.UniformParameter,
@@ -95,7 +105,9 @@ export class EllipticalArcApproximationOptions {
   }
   /** Clone the options. */
   public clone(): EllipticalArcApproximationOptions {
-    return new EllipticalArcApproximationOptions(this.sampleMethod, this.structuredOutput, this.numSamplesInQuadrant, this.maxError, this.remapFunction);
+    return new EllipticalArcApproximationOptions(
+      this.sampleMethod, this.structuredOutput, this.numSamplesInQuadrant, this.maxError, this.remapFunction,
+    );
   }
 
   /** Method used to sample the elliptical arc. */
@@ -160,18 +172,20 @@ export class EllipticalArcApproximationOptions {
  * @internal
 */
 export class QuadrantFractions {
-  private _quadrant: 1|2|3|4;
+  private _quadrant: 1 | 2 | 3 | 4;
   private _fractions: number[];
   private _axisAtStart: boolean;
   private _axisAtEnd: boolean;
-  private constructor(quadrant: 1|2|3|4, fractions: number[], axisAtStart: boolean, axisAtEnd: boolean) {
+  private constructor(quadrant: 1 | 2 | 3 | 4, fractions: number[], axisAtStart: boolean, axisAtEnd: boolean) {
     this._quadrant = quadrant;
     this._fractions = fractions;
     this._axisAtStart = axisAtStart;
     this._axisAtEnd = axisAtEnd;
   }
   /** Constructor, captures the array. */
-  public static create(quadrant: 1|2|3|4, fractions: number[] = [], axisAtStart: boolean = false, axisAtEnd: boolean = false): QuadrantFractions {
+  public static create(
+    quadrant: 1 | 2 | 3 | 4, fractions: number[] = [], axisAtStart: boolean = false, axisAtEnd: boolean = false,
+  ): QuadrantFractions {
     return new QuadrantFractions(quadrant, fractions, axisAtStart, axisAtEnd);
   }
   /**
@@ -181,7 +195,7 @@ export class QuadrantFractions {
    * * For purposes of angle classification, quadrants are half-open intervals, closed at their start angle,
    * as determined by the ellipse's sweep direction.
    */
-  public get quadrant(): 1|2|3|4 {
+  public get quadrant(): 1 | 2 | 3 | 4 {
     return this._quadrant;
   }
   /** Sample locations in this quadrant of the elliptical arc, as fractions of its sweep. */
@@ -215,17 +229,24 @@ export class QuadrantFractions {
    * Compute quadrant data for the given angles.
    * @param radians0 first radian angle
    * @param radians1 second radian angle
-   * @return quadrant number and start/end radian angles for the quadrant that contains both input angles, or undefined if no such quadrant.
+   * @return quadrant number and start/end radian angles for the quadrant that contains both input angles, or
+   * undefined if no such quadrant.
    * * The returned sweep is always counterclockwise: angle0 < angle1.
    */
-  public static getQuadrantRadians(radians0: number, radians1: number): { quadrant: 1|2|3|4, angle0: number, angle1: number} | undefined {
-    if (AngleSweep.isRadiansInStartEnd(radians0, 0, Angle.piOver2Radians) && AngleSweep.isRadiansInStartEnd(radians1, 0, Angle.piOver2Radians))
-      return { quadrant: 1, angle0: 0, angle1: Angle.piOver2Radians};
-    if (AngleSweep.isRadiansInStartEnd(radians0, Angle.piOver2Radians, Angle.piRadians) && AngleSweep.isRadiansInStartEnd(radians1, Angle.piOver2Radians, Angle.piRadians))
+  public static getQuadrantRadians(
+    radians0: number, radians1: number,
+  ): { quadrant: 1 | 2 | 3 | 4, angle0: number, angle1: number } | undefined {
+    if (AngleSweep.isRadiansInStartEnd(radians0, 0, Angle.piOver2Radians)
+      && AngleSweep.isRadiansInStartEnd(radians1, 0, Angle.piOver2Radians))
+      return { quadrant: 1, angle0: 0, angle1: Angle.piOver2Radians };
+    if (AngleSweep.isRadiansInStartEnd(radians0, Angle.piOver2Radians, Angle.piRadians)
+      && AngleSweep.isRadiansInStartEnd(radians1, Angle.piOver2Radians, Angle.piRadians))
       return { quadrant: 2, angle0: Angle.piOver2Radians, angle1: Angle.piRadians };
-    if (AngleSweep.isRadiansInStartEnd(radians0, Angle.piRadians, Angle.pi3Over2Radians) && AngleSweep.isRadiansInStartEnd(radians1, Angle.piRadians, Angle.pi3Over2Radians))
+    if (AngleSweep.isRadiansInStartEnd(radians0, Angle.piRadians, Angle.pi3Over2Radians)
+      && AngleSweep.isRadiansInStartEnd(radians1, Angle.piRadians, Angle.pi3Over2Radians))
       return { quadrant: 3, angle0: Angle.piRadians, angle1: Angle.pi3Over2Radians };
-    if (AngleSweep.isRadiansInStartEnd(radians0, Angle.pi3Over2Radians, Angle.pi2Radians) && AngleSweep.isRadiansInStartEnd(radians1, Angle.pi3Over2Radians, Angle.pi2Radians))
+    if (AngleSweep.isRadiansInStartEnd(radians0, Angle.pi3Over2Radians, Angle.pi2Radians)
+      && AngleSweep.isRadiansInStartEnd(radians1, Angle.pi3Over2Radians, Angle.pi2Radians))
       return { quadrant: 4, angle0: Angle.pi3Over2Radians, angle1: Angle.pi2Radians };
     return undefined;
   }
@@ -257,7 +278,9 @@ class UniformParameterSampler implements EllipticalArcSampler {
     this._context = c;
     this._options = o;
   }
-  public static create(context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions): UniformParameterSampler {
+  public static create(
+    context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions,
+  ): UniformParameterSampler {
     return new UniformParameterSampler(context, options);
   }
   public computeSamplesStrictlyInsideQuadrant1(result?: number[]): number[] {
@@ -289,7 +312,9 @@ class NonUniformCurvatureSampler implements EllipticalArcSampler {
     // extreme curvatures occur at the axis points
     this._curvatureRange = Range1d.createXX(Math.sqrt(this._xMag2) / this._yMag2, Math.sqrt(this._yMag2) / this._xMag2);
   }
-  public static create(context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions): NonUniformCurvatureSampler {
+  public static create(
+    context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions,
+  ): NonUniformCurvatureSampler {
     return new NonUniformCurvatureSampler(context, options);
   }
   /**
@@ -350,7 +375,9 @@ class UniformCurvatureSampler extends NonUniformCurvatureSampler implements Elli
     super(c, o.clone());
     this._options.remapFunction = (f: number) => f;
   }
-  public static override create(context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions): UniformCurvatureSampler {
+  public static override create(
+    context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions,
+  ): UniformCurvatureSampler {
     return new UniformCurvatureSampler(context, options);
   }
 };
@@ -365,7 +392,9 @@ class SubdivideForChordsSampler implements EllipticalArcSampler {
     this._context = c;
     this._options = o;
   }
-  public static create(context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions): SubdivideForChordsSampler {
+  public static create(
+    context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions,
+  ): SubdivideForChordsSampler {
     return new SubdivideForChordsSampler(context, options);
   }
   public computeSamplesStrictlyInsideQuadrant1(result?: number[]): number[] {
@@ -388,7 +417,9 @@ class SubdivideForArcsSampler implements EllipticalArcSampler {
     this._context = c;
     this._options = o;
   }
-  public static create(context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions): SubdivideForArcsSampler {
+  public static create(
+    context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions,
+  ): SubdivideForArcsSampler {
     return new SubdivideForArcsSampler(context, options);
   }
   public computeSamplesStrictlyInsideQuadrant1(result?: number[]): number[] {
@@ -412,7 +443,9 @@ export class EllipticalArcApproximationContext {
   /** captures input */
   private constructor(arc: Arc3d) {
     const scaledData = arc.toScaledMatrix3d();
-    this._arc = Arc3d.createScaledXYColumns(scaledData.center, scaledData.axes, scaledData.r0, scaledData.r90, scaledData.sweep);
+    this._arc = Arc3d.createScaledXYColumns(
+      scaledData.center, scaledData.axes, scaledData.r0, scaledData.r90, scaledData.sweep,
+    );
     this._toPlane = Transform.createIdentity();
     this._isValidArc = false;
     if (this._arc.sweep.isEmpty)
@@ -526,7 +559,9 @@ export class EllipticalArcApproximationContext {
         return 0;
       return a0 < a1 ? 1 : -1;
     };
-    const compareQuadrantFractions: OrderedComparator<QuadrantFractions> = (q0: QuadrantFractions, q1: QuadrantFractions): number => {
+    const compareQuadrantFractions: OrderedComparator<QuadrantFractions> = (
+      q0: QuadrantFractions, q1: QuadrantFractions,
+    ): number => {
       // ASSUME QuadrantFractions.fractions arrays are sorted (increasing) and have only trivial overlap
       if (compareFractions(q0.fractions[q0.fractions.length - 1], q1.fractions[0]) <= 0)
         return -1;
@@ -543,7 +578,9 @@ export class EllipticalArcApproximationContext {
       }
       return { angle, inSweep };
     };
-    const convertAndAddRadiansToFractionInRange = (dest: OrderedSet<number>, radians: number, sweep: AngleSweep, f0?: number, f1?: number): number | undefined => {
+    const convertAndAddRadiansToFractionInRange = (
+      dest: OrderedSet<number>, radians: number, sweep: AngleSweep, f0?: number, f1?: number,
+    ): number | undefined => {
       if (undefined === f0)
         f0 = 0;
       if (undefined === f1)
@@ -557,7 +594,9 @@ export class EllipticalArcApproximationContext {
       dest.add(fraction);
       return fraction;
     };
-    const convertQ1RadiansInSweepToQuadrantFractions = (anglesInQuadrant1: number[], angle0: number, angle1: number): QuadrantFractions | undefined => {
+    const convertQ1RadiansInSweepToQuadrantFractions = (
+      anglesInQuadrant1: number[], angle0: number, angle1: number,
+    ): QuadrantFractions | undefined => {
       if (angle0 > angle1)
         return convertQ1RadiansInSweepToQuadrantFractions(anglesInQuadrant1, angle1, angle0);
       if (Angle.isAlmostEqualRadiansNoPeriodShift(angle0, angle1))
@@ -584,7 +623,9 @@ export class EllipticalArcApproximationContext {
       const qFrac0 = this.arc.sweep.radiansToSignedPeriodicFraction(qData.angle0);
       const qFrac1 = this.arc.sweep.radiansToSignedPeriodicFraction(qData.angle1);
       qf.axisAtStart = Geometry.isAlmostEqualEitherNumber(qf.fractions[0], qFrac0, qFrac1, Geometry.smallFraction);
-      qf.axisAtEnd = Geometry.isAlmostEqualEitherNumber(qf.fractions[qf.fractions.length - 1], qFrac0, qFrac1, Geometry.smallFraction);
+      qf.axisAtEnd = Geometry.isAlmostEqualEitherNumber(
+        qf.fractions[qf.fractions.length - 1], qFrac0, qFrac1, Geometry.smallFraction,
+      );
       return qf;
     };
     const computeStructuredOutput = (anglesInQuadrant1: number[]): QuadrantFractions[] => {
@@ -651,7 +692,11 @@ export class EllipticalArcApproximationContext {
   public constructCircularArcChain(_options: EllipticalArcApproximationOptions): CurveChain | undefined {
     if (!this.isValidArc)
       return undefined;
-    // TODO: call sampleFractions, generate Path/Loop
-    return undefined;
+    let path = Path.create();
+    const fractions = this.sampleFractions(_options, true);
+    const points: Point3d[] = [];
+    // TODO: use QuadrantFractions[] to generate Path
+
+    return path;
   }
 }
