@@ -1,6 +1,13 @@
 # Change Log - @itwin/map-layers-formats
 
-This log was last generated on Sat, 08 Jun 2024 00:52:00 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Jun 2024 18:02:16 GMT and should not be manually modified.
+
+## 4.7.0
+Wed, 12 Jun 2024 18:02:16 GMT
+
+### Updates
+
+- Improved MapFeatureInfo decorator to display properly highlight geometries when terrain is enabled.
 
 ## 4.6.2
 Sat, 08 Jun 2024 00:50:25 GMT
