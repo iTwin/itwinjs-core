@@ -218,6 +218,20 @@ class LayoutContext {
   }
 }
 
+interface Segment {
+  segment: string;
+  index: number;
+}
+
+function split(source: string): Segment[] {
+  if (source.length === 0) {
+    return [];
+  }
+
+  const segmenter = new (global as any).Intl.Segmenter(undefined, { granularity: "word" });
+  return Array.from(segmenter.segment(source));
+}
+
 /** @internal */
 export class RunLayout {
   public source: Run;
@@ -307,13 +321,9 @@ export class RunLayout {
       return [this];
     }
 
-    const segmenter = new (global as any).Intl.Segmenter(undefined, { granularity: "word" });
     const myText = this.source.content.substring(this.charOffset, this.charOffset + this.numChars);
-    if (myText.length === 0) {
-      return [];
-    }
+    const segments = split(myText);
 
-    const segments = Array.from(segmenter.segment(myText));
     if (segments.length <= 1) {
       return [this];
     }

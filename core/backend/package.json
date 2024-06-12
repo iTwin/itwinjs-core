@@ -107,6 +107,7 @@
     "fs-extra": "^8.1.0",
     "inversify": "~6.0.1",
     "json5": "^2.2.3",
+    "linebreak": "^1.1.0",
     "multiparty": "^4.2.1",
     "reflect-metadata": "^0.1.13",
     "semver": "^7.3.5",

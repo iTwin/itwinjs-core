@@ -45,7 +45,7 @@ function isIntlSupported(): boolean {
   return !ProcessDetector.isMobileAppBackend;
 }
 
-describe("layoutTextBlock", () => {
+describe.only("layoutTextBlock", () => {
   it("resolves TextStyleSettings from combination of TextBlock and Run", () => {
     const textBlock = TextBlock.create({ styleName: "block", styleOverrides: { widthFactor: 34, color: 0x00ff00 }});
     const run0 = TextRun.create({ content: "run0", styleName: "run", styleOverrides: { lineHeight: 56, color: 0xff0000 }});
@@ -820,7 +820,7 @@ function mockIModel(): IModelDb {
   return iModel as IModelDb;
 }
 
-describe("produceTextAnnotationGeometry", () => {
+describe.only("produceTextAnnotationGeometry", () => {
   type Color = ColorDef | "subcategory";
 
   function makeText(color?: Color): TextRun {
@@ -920,7 +920,7 @@ describe("produceTextAnnotationGeometry", () => {
   });
 });
 
-describe("TextAnnotation element", () => {
+describe.only("TextAnnotation element", () => {
   function makeElement(props?: Partial<TextAnnotation2dProps>): TextAnnotation2d {
     return TextAnnotation2d.fromJSON({
       category: "0x12",
