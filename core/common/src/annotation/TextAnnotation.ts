@@ -13,7 +13,7 @@ import { TextBlock, TextBlockProps } from "./TextBlock";
  * The anchor point is a point on or inside of the 2d bounding box enclosing the contents of the annotation's [[TextBlock]].
  * The annotation can be rotated and translated relative to the anchor point. The anchor point also serves as the snap point
  * when [AccuSnap]($frontend) is set to [SnapMode.Origin]($frontend).
- * [produceTextAnnotationGeometry]($backend) will align the anchor point with (0, 0).
+ * [[TextAnnotation.computeTransform]] will align the anchor point with (0, 0).
  * @see [[TextAnnotation]] for a description of how the anchor point is computed.
  * @beta
  */
