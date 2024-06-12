@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "produceTextAnnotationGeometry aligns the anchor point with the origin.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
