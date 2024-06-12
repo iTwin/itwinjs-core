@@ -97,7 +97,7 @@ export class PlanarClipMaskState {
       });
     }
 
-    // Turn things on or off based on the subcategories or elements in the mask settings.
+    // Add overrides to turn things on or off based on the subcategories or elements in the mask settings.
     switch (this.settings.mode) {
       case PlanarClipMaskMode.IncludeElements: {
         overrides.setAlwaysDrawnSet(this.settings.subCategoryOrElementIds!, true);
