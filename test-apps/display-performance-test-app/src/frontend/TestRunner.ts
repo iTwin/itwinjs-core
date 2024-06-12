@@ -257,8 +257,8 @@ export class TestRunner {
       /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
       baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
     };
-      
-    let context: TestContext | undefined = undefined;
+
+    let context: TestContext | undefined;
 
     // Perform all the tests for this iModel. If the iModel name contains an asterisk,
     // treat it as a wildcard and run tests for each iModel that matches the given wildcard.
@@ -290,14 +290,14 @@ export class TestRunner {
 
       for (const iModelName of iModelNames) {
         this.curConfig.iModelName = iModelName;
-        this.curConfig.viewName = originalViewName;        
+        this.curConfig.viewName = originalViewName;
         const iModelKey = this.curConfig.iModelId ? this.curConfig.iModelId : `${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`;
 
         try {
-          const reuseContext = context && set.reuseContext && context.iModelKey == iModelKey;
-          if(!reuseContext){
-            if(context){
-              context?.iModel.close();
+          const reuseContext = context && set.reuseContext && context.iModelKey === iModelKey;
+          if (!reuseContext) {
+            if (context) {
+              await context?.iModel.close();
             }
             context = await this.openIModel();
           }
@@ -306,20 +306,19 @@ export class TestRunner {
           continue;
         }
 
-        try {              
-          if(context){
+        try {
+          if (context) {
             await this.runTests(context);
-          }
-          else{
+          } else {
             await this.logError(`Invalid test context on iModel ${iModelName}`);
           }
         } catch {
           await this.logError(`Failed to run tests on iModel ${iModelName}`);
-        } 
+        }
       }
       this._config.pop();
     }
-      
+
     await context?.iModel.close();
     this._config.pop();
   }
