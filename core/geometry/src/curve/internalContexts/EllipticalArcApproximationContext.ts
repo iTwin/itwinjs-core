@@ -14,9 +14,8 @@ import { CurveChain } from "../CurveCollection";
 import { CurveCurve } from "../CurveCurve";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
+import { Loop } from "../Loop";
 import { Path } from "../Path";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { NumberArray } from "../../core-geometry";
 
 /** @packageDocumentation
  * @module Curve
@@ -58,25 +57,22 @@ export enum EllipticalArcSampleMethod {
 export type FractionMapper = (f: number) => number;
 
 /**
- * Options for [[EllipticalArcApproximationContext.sampleFractions]]
+ * Options for approximating an elliptical arc.
  * @internal
  */
 export class EllipticalArcApproximationOptions {
   private _sampleMethod: EllipticalArcSampleMethod;
-  private _structuredOutput: boolean;
   private _numSamplesInQuadrant: number;
   private _maxError: number;
   private _remapFunction: FractionMapper;
 
   private constructor(
     method: EllipticalArcSampleMethod,
-    structuredOutput: boolean,
     numSamplesInQuadrant: number,
     maxError: number,
     remapFunction: FractionMapper,
   ) {
     this._sampleMethod = method;
-    this._structuredOutput = structuredOutput;
     this._numSamplesInQuadrant = numSamplesInQuadrant;
     this._maxError = maxError;
     this._remapFunction = remapFunction;
@@ -92,7 +88,6 @@ export class EllipticalArcApproximationOptions {
    */
   public static create(
     method: EllipticalArcSampleMethod = EllipticalArcSampleMethod.UniformParameter,
-    structuredOutput: boolean = false,
     numSamplesInQuadrant: number = 4,
     maxError: number = 0.01,
     remapFunction: FractionMapper = (f: number) => f,
@@ -101,12 +96,12 @@ export class EllipticalArcApproximationOptions {
       numSamplesInQuadrant = 2;
     if (maxError < 0)
       maxError = 0.01;
-    return new EllipticalArcApproximationOptions(method, structuredOutput, numSamplesInQuadrant, maxError, remapFunction);
+    return new EllipticalArcApproximationOptions(method, numSamplesInQuadrant, maxError, remapFunction);
   }
   /** Clone the options. */
   public clone(): EllipticalArcApproximationOptions {
     return new EllipticalArcApproximationOptions(
-      this.sampleMethod, this.structuredOutput, this.numSamplesInQuadrant, this.maxError, this.remapFunction,
+      this.sampleMethod, this.numSamplesInQuadrant, this.maxError, this.remapFunction,
     );
   }
 
@@ -116,22 +111,6 @@ export class EllipticalArcApproximationOptions {
   }
   public set sampleMethod(method: EllipticalArcSampleMethod) {
     this._sampleMethod = method;
-  }
-  /**
-   * Whether to return sample fractions grouped by quadrant.
-   * * If false (default), return all fractions in one sorted, deduplicated array. Full ellipse includes both 0 and 1.
-   * * If true, fractions are assembled by quadrants:
-   * * * Each [[QuadrantFractions]] object holds sorted fractions in a specified quadrant of the arc.
-   * * * The `QuadrantFractions` objects themselves are sorted by increasing fraction order.
-   * * * If the arc sweep spans adjacent quadrants, the fraction bordering the quadrants appears in both `QuadrantFractions`.
-   * * * If the arc starts and ends in the same quadrant, two `QuadrantFractions` objects can be returned.
-   * * * This means there are between 1 and 5 objects in the `QuadrantFractions` array.
-   */
-  public get structuredOutput(): boolean {
-    return this._structuredOutput;
-  }
-  public set structuredOutput(flag: boolean) {
-    this._structuredOutput = flag;
   }
   /**
    * Number of samples to return in each full quadrant, including endpoint(s).
@@ -322,7 +301,7 @@ class NonUniformCurvatureSampler implements EllipticalArcSampler {
    * * The elliptical arc is assumed to be non-circular and have perpendicular axes of positive length; its sweep is ignored.
    * * This is a scaled inverse of [[Arc3d.fractionToCurvature]] restricted to fractions in [0, 1/4].
    * @return radian angle in [0, pi/2] or undefined if the ellipse is invalid, or does not attain the given curvature.
-  */
+   */
   private curvatureToRadians(curvature: number): number | undefined {
     /*
     Let the elliptical arc be parameterized with axes u,v of different length and u.v = 0:
@@ -540,8 +519,18 @@ export class EllipticalArcApproximationContext {
       return Geometry.largeCoordinateResult;  // no children in chain?
     return EllipticalArcApproximationContext.computeErrorXY(arcXY, approxXY as Arc3d | LineString3d | CurveChain);
   }
-  /** Compute samples for the elliptical arc as fraction parameters. */
-  public sampleFractions(options: EllipticalArcApproximationOptions): QuadrantFractions[] | number[] {
+  /**
+   * Compute samples for the elliptical arc as fraction parameters.
+   * @param options approximation options
+   * @param structuredOutput if false (default), return all fractions in one sorted (increasing), deduplicated array
+   * (a full ellipse includes both 0 and 1). If true, fractions are assembled by quadrants:
+   * * Each [[QuadrantFractions]] object holds sorted (increasing), deduplicated fractions in a specified quadrant of the arc.
+   * * The `QuadrantFractions` objects themselves are sorted by increasing order of the fractions they contain.
+   * * If the arc sweep spans adjacent quadrants, the fraction bordering the quadrants appears in both `QuadrantFractions`.
+   * * If the arc starts and ends in the same quadrant, two `QuadrantFractions` objects can be returned.
+   * * This means there are between 1 and 5 objects in the `QuadrantFractions` array.
+   */
+  public sampleFractions(options: EllipticalArcApproximationOptions, structuredOutput: boolean = false): QuadrantFractions[] | number[] {
     if (!this.isValidArc)
       return [];
     const compareFractions: OrderedComparator<number> = (f0: number, f1: number): number => {
@@ -686,17 +675,18 @@ export class EllipticalArcApproximationContext {
       default:
         break;
     }
-    return options.structuredOutput ? computeStructuredOutput(radiansQ1) : computeFlatOutput(radiansQ1);
+    return structuredOutput ? computeStructuredOutput(radiansQ1) : computeFlatOutput(radiansQ1);
   }
   /** Construct a circular arc chain approximation to the elliptical arc. */
-  public constructCircularArcChain(_options: EllipticalArcApproximationOptions): CurveChain | undefined {
+  public constructCircularArcChain(options: EllipticalArcApproximationOptions): CurveChain | undefined {
     if (!this.isValidArc)
       return undefined;
-    let path = Path.create();
-    const fractions = this.sampleFractions(_options, true);
-    const points: Point3d[] = [];
-    // TODO: use QuadrantFractions[] to generate Path
+    const chain = this.arc.sweep.isFullCircle ? Loop.create() : Path.create();
+    const _fractions = this.sampleFractions(options, true);
 
-    return path;
+    // TODO: use QuadrantFractions[] to generate arcs
+    // const points: Point3d[] = [];
+
+    return chain;
   }
 }

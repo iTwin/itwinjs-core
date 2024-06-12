@@ -706,11 +706,9 @@ describe("Arc3d", () => {
     const displaySamples = (
       arc: Arc3d,
       samples: QuadrantFractions[] | number[],
-      options: EllipticalArcApproximationOptions,
       x?: number, y?: number, z?: number,
     ): void => {
-      if (options.structuredOutput) {
-        ck.testType(samples[0], QuadrantFractions, "output is structured");
+      if (samples[0] instanceof QuadrantFractions) {
         for (let i = 0; i < samples.length; ++i) {
           const quadrant = samples[i] as QuadrantFractions;
           for (let j = 0; j < quadrant.fractions.length - 1; ++j) // skip last fraction...
@@ -723,7 +721,6 @@ describe("Arc3d", () => {
             );
         }
       } else {
-        ck.testIsFinite(samples[0], "output is number array");
         for (const fraction of samples as number[])
           GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, arc.fractionToPoint(fraction), 0.1, x, y, z);
       }
@@ -742,17 +739,14 @@ describe("Arc3d", () => {
       return [...set];
     };
     const compareOutputFormats = (
-      samples: QuadrantFractions[] | number[],
+      flatArray: number[],
       context: EllipticalArcApproximationContext,
       options: EllipticalArcApproximationOptions,
     ): void => {
-      const options2 = options.clone();
-      options2.structuredOutput = !options2.structuredOutput;
-      const samples2 = context.sampleFractions(options2);
-      if (ck.testTrue(samples2.length > 0, "other output format has samples")) {
-        const flatArray = convertToFlatArray(samples);
-        const flatArray2 = convertToFlatArray(samples2);
-        ck.testFractionArray(flatArray, flatArray2, "structured output equivalent to flat array");
+      const samples = context.sampleFractions(options, true);
+      if (ck.testTrue(samples.length > 0, "structured output format has samples")) {
+        const flatArray2 = convertToFlatArray(samples);
+        ck.testFractionArray(flatArray, flatArray2, "structured output equivalent to flat array output");
       }
     };
     const testArc = (arc: Arc3d, options: EllipticalArcApproximationOptions, x?: number, y?: number, z?: number): number => {
@@ -767,9 +761,9 @@ describe("Arc3d", () => {
         return Geometry.largeCoordinateResult;
 
       // test the sample points
-      const samples = context.sampleFractions(options);
-      if (ck.testTrue(samples.length > 0, "result has samples")) {
-        displaySamples(arc, samples, options, x, y, z);
+      const samples = context.sampleFractions(options) as number[];
+      if (ck.testTrue(samples.length > 0, "flat output format has samples")) {
+        displaySamples(arc, samples, x, y, z);
         compareOutputFormats(samples, context, options);
       }
 
@@ -793,14 +787,14 @@ describe("Arc3d", () => {
       for (const numQuadrantSamples of [3, 4, 5, 6, 10, 20]) {
         // naive method
         let options = EllipticalArcApproximationOptions.create(
-          EllipticalArcSampleMethod.UniformParameter, false, numQuadrantSamples,
+          EllipticalArcSampleMethod.UniformParameter, numQuadrantSamples,
         );
         minError = testArc(arc, options, x0, y0);
         y0 += yDelta(yWidth);
         // curvature interpolation methods
         for (let iRemap = 0; iRemap < remaps.length; ++iRemap) {
           options = EllipticalArcApproximationOptions.create(
-            EllipticalArcSampleMethod.NonUniformCurvature, false, numQuadrantSamples, undefined, remaps[iRemap],
+            EllipticalArcSampleMethod.NonUniformCurvature, numQuadrantSamples, undefined, remaps[iRemap],
           );
           const error = testArc(arc, options, x0, y0);
           if (minError > error) {
