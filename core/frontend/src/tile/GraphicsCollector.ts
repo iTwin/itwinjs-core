@@ -39,8 +39,11 @@ export class GraphicsCollectorDrawArgs extends TileDrawArgs {
   }
 
   public override drawGraphics(): void {
-    if (!this.graphics.isEmpty)
-      this._collector.addGraphic(this.context.createBranch(this.graphics, this.location));
+    if (!this.graphics.isEmpty) {
+      const graphics = this.produceGraphics();
+      if (undefined !== graphics)
+        this._collector.addGraphic(graphics);
+    }
   }
 
   public static create(context: SceneContext, collector: GraphicsCollector, ref: TileTreeReference, planes: FrustumPlanes, worldToViewMap: Map4d): TileDrawArgs | undefined {
