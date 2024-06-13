@@ -6,13 +6,10 @@
  * @module SQLiteDb
  */
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { DbOpcode, DbResult, Id64String, IDisposable, InternalUseOnly } from "@itwin/core-bentley";
+import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String, IDisposable } from "@itwin/core-bentley";
 import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const { DbChangeStage } = InternalUseOnly;
 
 /** Changed value type
  * @beta
@@ -194,8 +191,8 @@ export class SqliteChangesetReader implements IDisposable {
    * @returns value for changed column
    * @beta
    */
-  public getChangeValueType(columnIndex: number, stage: SqliteValueStage): InternalUseOnly.DbValueType | undefined {
-    return this._nativeReader.getColumnValueType(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old) as InternalUseOnly.DbValueType;
+  public getChangeValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined {
+    return this._nativeReader.getColumnValueType(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old) as DbValueType;
   }
 
   /**
@@ -271,8 +268,8 @@ export class SqliteChangesetReader implements IDisposable {
    * @returns change value type
    * @beta
    */
-  public getColumnValueType(columnIndex: number, stage: SqliteValueStage): InternalUseOnly.DbValueType | undefined {
-    return this._nativeReader.getColumnValueType(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old) as InternalUseOnly.DbValueType | undefined;
+  public getColumnValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined {
+    return this._nativeReader.getColumnValueType(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old) as DbValueType | undefined;
   }
 
   /**

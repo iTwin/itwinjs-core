@@ -11,8 +11,8 @@ import { join } from "path";
 import * as touch from "touch";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult,
-  Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, InternalUseOnly, JsonUtils, Logger, LogLevel, OpenMode,
+  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult,
+  Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode,
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
@@ -64,9 +64,6 @@ import { SettingsImpl } from "./internal/workspace/SettingsImpl";
 import { ChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 
 import type { BlobContainer } from "./BlobContainerService";
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const { DbConflictCause, DbConflictResolution, DbChangeStage } = InternalUseOnly;
 
 // spell:ignore fontid fontmap
 
@@ -2817,11 +2814,11 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /**  This is called by native code when applying a changeset */
-  private onChangesetConflict(args: ChangesetConflictArgs): InternalUseOnly.DbConflictResolution | undefined {
+  private onChangesetConflict(args: ChangesetConflictArgs): DbConflictResolution | undefined {
     // returning undefined will result in native handler to resolve conflict
 
     const category = "DgnCore";
-    const interpretConflictCause = (cause: InternalUseOnly.DbConflictCause) => {
+    const interpretConflictCause = (cause: DbConflictCause) => {
       switch (cause) {
         case DbConflictCause.Data:
           return "data";

@@ -3,11 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbOpcode, Id64String, InternalUseOnly } from "@itwin/core-bentley";
-
-type DbConflictCause = InternalUseOnly.DbConflictCause;
-type DbValueType = InternalUseOnly.DbValueType;
-type DbChangeStage = InternalUseOnly.DbChangeStage;
+import { DbChangeStage, DbConflictCause, DbValueType, DbOpcode, Id64String } from "@itwin/core-bentley";
 
 export interface ChangesetConflictArgs {
   cause: DbConflictCause;

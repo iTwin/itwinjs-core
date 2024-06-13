@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbOpcode, DbResult, Guid, GuidString, Id64String, InternalUseOnly, Logger, LogLevel } from "@itwin/core-bentley";
+import { DbChangeStage, DbConflictCause, DbConflictResolution, DbValueType, DbOpcode, DbResult, Guid, GuidString, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import {
   ElementAspectProps,
   FilePropertyProps,
@@ -26,9 +26,6 @@ import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { ChangesetConflictArgs } from "../../internal/ChangesetConflictArgs";
 chai.use(chaiAsPromised);
 import sinon = require("sinon");
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const { DbChangeStage, DbValueType, DbConflictCause, DbConflictResolution } = InternalUseOnly;
 
 async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
   try {
@@ -160,8 +157,8 @@ describe("Changeset conflict handler", () => {
     }
   });
 
-  async function spyChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, test: (s: sinon.SinonSpy<ChangesetConflictArgs[], InternalUseOnly.DbConflictResolution>) => void) {
-    const s1 = sinon.spy(b, "onChangesetConflict" as any) as sinon.SinonSpy<ChangesetConflictArgs[], InternalUseOnly.DbConflictResolution>;
+  async function spyChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, test: (s: sinon.SinonSpy<ChangesetConflictArgs[], DbConflictResolution>) => void) {
+    const s1 = sinon.spy(b, "onChangesetConflict" as any) as sinon.SinonSpy<ChangesetConflictArgs[], DbConflictResolution>;
     try {
       await cb();
     } finally {
@@ -170,17 +167,17 @@ describe("Changeset conflict handler", () => {
     }
   }
 
-  async function stubChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, test: (s: sinon.SinonStub<ChangesetConflictArgs[], InternalUseOnly.DbConflictResolution>) => void) {
+  async function stubChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, test: (s: sinon.SinonStub<ChangesetConflictArgs[], DbConflictResolution>) => void) {
     const s1 = sinon.stub(b as any, "onChangesetConflict" as any);
     try {
-      test(s1 as sinon.SinonStub<ChangesetConflictArgs[], InternalUseOnly.DbConflictResolution>);
+      test(s1 as sinon.SinonStub<ChangesetConflictArgs[], DbConflictResolution>);
       await cb();
     } finally {
       s1.restore();
     }
   }
-  async function fakeChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, interceptMethod: (arg: ChangesetConflictArgs) => InternalUseOnly.DbConflictResolution | undefined) {
-    const s1 = sinon.stub<ChangesetConflictArgs[], InternalUseOnly.DbConflictResolution>(b as any, "onChangesetConflict" as any);
+  async function fakeChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, interceptMethod: (arg: ChangesetConflictArgs) => DbConflictResolution | undefined) {
+    const s1 = sinon.stub<ChangesetConflictArgs[], DbConflictResolution>(b as any, "onChangesetConflict" as any);
     s1.callsFake(interceptMethod);
     try {
       await cb();
