@@ -451,6 +451,7 @@ public;LightSettings
 public;LightSettingsProps
 beta;LineBreakRun 
 beta;LineBreakRunProps 
+beta;LineLayoutResult
 public;LinePixels
 public;LineStyle
 public;LineStyleProps 
@@ -739,6 +740,7 @@ internal;RpcSerializedValue
 internal;RpcSessionInvocation 
 beta;Run = TextRun | FractionRun | LineBreakRun
 beta;Run
+beta;RunLayoutResult
 beta;RunProps = TextRunProps | FractionRunProps | LineBreakRunProps
 beta;SchemaState
 public;SectionDrawingLocationProps 
@@ -815,6 +817,7 @@ beta;TextBlockComponentProps
 beta;TextBlockGeometryProps
 beta;TextBlockGeometryPropsEntry =
 beta;TextBlockJustification = "left" | "center" | "right"
+beta;TextBlockLayoutResult
 beta;TextBlockProps 
 beta;TextBlockStringifyOptions
 beta;TextRun 

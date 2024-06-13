@@ -7,6 +7,7 @@ export * from "./AnalysisStyle";
 export * from "./annotation/TextAnnotation";
 export * from "./annotation/TextBlock";
 export * from "./annotation/TextBlockGeometryProps";
+export * from "./annotation/TextBlockLayoutResult";
 export * from "./annotation/TextStyle";
 export * from "./Atmosphere";
 export * from "./AuthorizationClient";

@@ -1,6 +1,18 @@
 # Change Log - @itwin/ecschema-editing
 
-This log was last generated on Wed, 29 May 2024 14:36:43 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Jun 2024 18:03:49 GMT and should not be manually modified.
+
+## 4.7.0
+Wed, 12 Jun 2024 18:02:16 GMT
+
+### Updates
+
+- Schema editing errors are now handled by throwing SchemaEditError instances rather than returning edit result objects.
+
+## 4.6.2
+Sat, 08 Jun 2024 00:50:25 GMT
+
+_Version update only_
 
 ## 4.6.1
 Wed, 29 May 2024 14:35:17 GMT

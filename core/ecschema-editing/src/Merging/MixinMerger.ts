@@ -14,7 +14,7 @@ import { modifyClass } from "./ClassMerger";
 export const mixinClassMerger: SchemaItemMergerHandler<MixinClassDifference> = {
   async add(context, change) {
     if (change.difference.appliesTo === undefined) {
-      return { errorMessage: "Mixin must define appliesTo" };
+      throw new Error("Mixin must define appliesTo");
     }
     return context.editor.mixins.createFromProps(context.targetSchemaKey, {
       ...change.difference,
@@ -28,7 +28,7 @@ export const mixinClassMerger: SchemaItemMergerHandler<MixinClassDifference> = {
       const appliesTo = await updateSchemaItemKey(context, change.difference.appliesTo);
       const currentValue = await item.appliesTo;
       if (currentValue !== undefined && !appliesTo.matches(currentValue.key)) {
-        return { errorMessage: `Changing the mixin '${itemKey.name}' appliesTo is not supported.` };
+        throw new Error(`Changing the mixin '${itemKey.name}' appliesTo is not supported.`);
       }
     }
     return modifyClass(context, change, itemKey, item);
