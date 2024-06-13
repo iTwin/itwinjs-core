@@ -6,6 +6,7 @@
  * @module ElementGeometry
  */
 
+/** @internal */
 declare module "linebreak" {
   export = LineBreaker;
 
