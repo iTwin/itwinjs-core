@@ -7,3 +7,5 @@
  */
 
 export const _implementationProhibited = Symbol.for("Implementations of this interface can only be obtained from the containing package");
+
+export const _verifyChannel = Symbol.for("verifyChannel");
