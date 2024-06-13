@@ -583,10 +583,11 @@ export namespace CloudSqlite {
   }
 
   /**
-   * Clean any unused deleted blocks from cloud storage. When a database is written, a subset of its blocks are replaced
-   * by new versions, sometimes leaving the originals unused. In this case, they are not deleted immediately.
-   * Instead, they are scheduled for deletion at some later time. Calling this method deletes all blocks in the cloud container
-   * for which the scheduled deletion time has passed.
+   * Clean any unused deleted blocks from cloud storage. Unused deleted blocks can accumulate in cloud storage in a couple of ways:
+   * 1) When a database is updated, a subset of its blocks are replaced by new versions, sometimes leaving the originals unused.
+   * 2) A database is deleted with [[CloudContainer.deleteDatabase]]
+   * In both cases, the blocks are not deleted immediately. Instead, they are scheduled for deletion at some later time.
+   * Calling this method deletes all blocks in the cloud container for which the scheduled deletion time has passed.
    * @param container the CloudContainer to be cleaned. Must be connected and hold the write lock.
    * @param options options for the cleanup operation. @see CleanDeletedBlocksOptions
    */
