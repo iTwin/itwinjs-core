@@ -49,7 +49,7 @@ export interface DataSource {
  * @see [[queryGraphicRepresentations]] for its construction as a representation of the data produced by a query of data sources.
  * @beta
  */
-export interface GraphicRepresentation {
+export type GraphicRepresentation = {
   /** The display name of the Graphic Representation */
   displayName: string;
   /** The unique identifier for the Graphic Representation */
@@ -62,13 +62,21 @@ export interface GraphicRepresentation {
    * @see [[GraphicRepresentationFormat]] for possible values.
    */
   format:  GraphicRepresentationFormat;
-  /** The url of the Graphic Representation */
-  url?: string;
   /** The data source that the representation originates from.
    * For example, a GraphicRepresentation in the 3D Tiles format might have a dataSource that is a specific iModel changeset.
    */
   dataSource: DataSource;
-}
+  /** The url of the graphic representation
+   * @note The url can only be guaranteed to be valid if the status is complete.
+   * Therefore, the url is optional if the status is not complete, and required if the status is complete.
+   */
+} & ({
+  status: Omit<GraphicRepresentationStatus, GraphicRepresentationStatus.Complete>;
+  url?: string;
+} | {
+  status: GraphicRepresentationStatus.Complete;
+  url: string;
+});
 
 /** Creates a URL used to query for Graphic Representations */
 function createGraphicRepresentationsQueryUrl(args: { sourceId: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean }): string {
