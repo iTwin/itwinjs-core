@@ -11,7 +11,6 @@ beta;AvailableCoordinateReferenceSystemProps
 beta;AzureBlobStorageCredentials
 internal;BackendHubAccess
 public;BackendLoggerCategory
-internal;BaseSettings 
 public;BindParameter = number | string
 public;BisCoreSchema 
 beta;BlobContainer
@@ -60,9 +59,8 @@ internal;BisCodeSpecIndexProps
 internal;FontIndexProps
 public;CodeSpecs
 public;ComputedProjectExtents
+beta;computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult
 public;ComputeProjectExtentsOptions
-beta;computeTextBlockExtents(args: ComputeTextBlockExtentsArgs): XAndY
-beta;ComputeTextBlockExtentsArgs
 alpha;ConcreteEntity = Element_2 | Model | ElementAspect | Relationship
 alpha;ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps
 beta;convertEC2SchemasToEC3Schemas(ec2XmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[]
@@ -70,6 +68,8 @@ internal;CrashReportingConfig
 internal;CrashReportingConfigNameValuePair
 beta;CreateChangeSummaryArgs 
 public;CreateNewIModelProps 
+beta;CreateNewWorkspaceContainerArgs
+beta;CreateNewWorkspaceDbVersionArgs
 public;DefinitionContainer 
 public;class DefinitionElement 
 public;DefinitionGroup 
@@ -87,7 +87,6 @@ internal;DevToolsProcessStats
 internal;DevToolsStats
 internal;DevToolsStatsFormatter
 public;DictionaryModel 
-beta;DictionaryName = string
 public;class DisplayStyle 
 public;DisplayStyle2d 
 public;DisplayStyle3d 
@@ -118,8 +117,8 @@ public;ECSqlInsertResult
 public;ECSqlStatement 
 public;ECSqlValue
 public;ECSqlValueIterator 
+beta;EditableWorkspaceContainer 
 beta;EditableWorkspaceDb 
-beta;EditableWorkspaceDb
 public;ElementAspect 
 beta;ElementDrivesElement 
 beta;ElementDrivesElementProps 
@@ -184,6 +183,7 @@ public;FunctionalModel
 public;FunctionalPartition 
 public;FunctionalSchema 
 public;class FunctionalType 
+internal;GcsDbProps 
 internal;generateElementGraphics(request: ElementGraphicsRequestProps, iModel: IModelDb): Promise
 public;GenericDocument 
 public;GenericGraphicalModel3d 
@@ -203,6 +203,8 @@ public;class GeometricModel3d
 public;GeometryPart 
 beta;getAvailableCoordinateReferenceSystems(args: GetAvailableCoordinateReferenceSystemsArgs): Promise
 beta;GetAvailableCoordinateReferenceSystemsArgs
+beta;GetWorkspaceContainerArgs 
+beta;GetWorkspaceResourceArgs
 public;Graphic3d 
 public;class GraphicalElement2d 
 public;GraphicalElement2dIsOfType 
@@ -249,6 +251,7 @@ public;IpcHost
 public;IpcHostOpts
 public;ITwinIdArg
 public;KnownLocations
+beta;LayoutTextBlockArgs
 internal;LightLocation 
 public;LineStyle 
 public;LineStyleDefinition
@@ -313,6 +316,7 @@ beta;PropertyStore
 public;PullChangesArgs = ToChangesetArgs &
 public;PushChangesArgs 
 beta;QueryLocalChangesArgs
+beta;QueryWorkspaceResourcesArgs
 beta;class RecipeDefinitionElement 
 public;Relationship 
 public;Relationships
@@ -338,17 +342,19 @@ public;SectionDrawing
 public;SectionDrawingLocation 
 public;SectionDrawingModel 
 internal;setMaxEntitiesPerEvent(max: number): number
-beta;SettingDictionary = SettingObject
-beta;SettingInspector
+beta;Setting = JSONSchemaType
+beta;Setting
+beta;SettingGroupSchema
 beta;SettingName = string
-beta;SettingObject
-beta;SettingResolver
 beta;Settings
 beta;SettingSchema 
-beta;SettingSchemaGroup
+beta;SettingsContainer
+beta;SettingsDictionary
+beta;SettingsDictionaryProps 
+beta;SettingsDictionarySource
+beta;SettingsPriority = number
 beta;SettingsPriority
 beta;SettingsSchemas
-beta;SettingType = JSONSchemaType
 public;Sheet 
 public;SheetBorderTemplate 
 public;SheetModel 
@@ -424,13 +430,26 @@ public;VolumeElement
 public;WebMercatorModel 
 beta;Workspace
 beta;Workspace
-internal;construct(settings: Settings, opts?: WorkspaceOpts): Workspace
-beta;WorkspaceCloudCacheProps 
 beta;WorkspaceContainer
-internal;validateVersion(version?: WorkspaceDb.Version): string
-beta;WorkspaceContainer
+beta;WorkspaceContainerId = string
+beta;WorkspaceContainerProps 
 beta;WorkspaceDb
-beta;WorkspaceDb
+beta;WorkspaceDbCloudProps = WorkspaceDbProps & WorkspaceContainerProps
+beta;WorkspaceDbFullName = string
+beta;WorkspaceDbLoadError 
+beta;WorkspaceDbLoadErrors 
+beta;WorkspaceDbManifest
+beta;WorkspaceDbName = string
+beta;WorkspaceDbNameAndVersion
+beta;WorkspaceDbProps 
+beta;WorkspaceDbQueryResourcesArgs
+beta;WorkspaceDbQueryResourcesCallback = (resourceNames: Iterable
+beta;WorkspaceDbSettingsProps 
+beta;WorkspaceDbVersion = string
+beta;WorkspaceDbVersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease"
+beta;WorkspaceDbVersionRange = string
+beta;WorkspaceEditor
+beta;WorkspaceEditor
 beta;WorkspaceOpts
-beta;WorkspaceResource
-beta;WorkspaceSetting:
+beta;WorkspaceResourceName = string
+beta;WorkspaceSettingNames

@@ -1,6 +1,18 @@
 # Change Log - @itwin/build-tools
 
-This log was last generated on Wed, 29 May 2024 14:36:43 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Jun 2024 18:03:49 GMT and should not be manually modified.
+
+## 4.7.0
+Wed, 12 Jun 2024 18:02:16 GMT
+
+### Updates
+
+- Bump `typedoc-plugin-merge-modules` dependency to `^5.1.0` that's compatible with `typedoc` version that we use.
+
+## 4.6.2
+Sat, 08 Jun 2024 00:50:25 GMT
+
+_Version update only_
 
 ## 4.6.1
 Wed, 29 May 2024 14:35:17 GMT

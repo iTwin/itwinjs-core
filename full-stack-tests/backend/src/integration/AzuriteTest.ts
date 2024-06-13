@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { emptyDirSync, mkdirsSync } from "fs-extra";
 import { join } from "path";
 import * as azureBlob from "@azure/storage-blob";
-import { BlobContainer, CloudSqlite, IModelHost, SettingObject } from "@itwin/core-backend";
+import { BlobContainer, CloudSqlite, IModelHost, SettingsContainer } from "@itwin/core-backend";
 import { AccessToken, Guid } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import * as crypto from "crypto";
@@ -196,7 +196,7 @@ export namespace AzuriteTest {
         json: metadata.json ? JSON.parse(metadata.json) : undefined,
       };
     },
-    updateJson: async (container: BlobContainer.AccessContainerProps, props: SettingObject): Promise<void> => {
+    updateJson: async (container: BlobContainer.AccessContainerProps, props: SettingsContainer): Promise<void> => {
       const client = createAzClient(container.containerId);
       const metadata = (await client.getProperties()).metadata!;
       metadata.json = JSON.stringify(props);
