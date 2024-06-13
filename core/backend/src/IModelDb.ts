@@ -67,6 +67,7 @@ import { LockControl } from "./LockControl";
 
 import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
+import { _close, _releaseAllLocks } from "./internal/Symbols";
 
 // spell:ignore fontid fontmap
 
@@ -323,7 +324,7 @@ export abstract class IModelDb extends IModel {
     this.beforeClose();
     IModelDb._openDbs.delete(this._fileKey);
     this._workspace?.close();
-    this.locks.close();
+    this.locks[_close]();
     this._locks = undefined;
     this._codeService?.close();
     this._codeService = undefined;
@@ -2674,7 +2675,7 @@ export class BriefcaseDb extends IModelDb {
           await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade, schemaLockHeld: true }, "Upgraded profile");
           await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
         } finally {
-          await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
+          await withBriefcaseDb(briefcase, async (db) => db.locks[_releaseAllLocks]());
         }
         return;
       }
@@ -2689,7 +2690,7 @@ export class BriefcaseDb extends IModelDb {
           await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
           await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
         } finally {
-          await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
+          await withBriefcaseDb(briefcase, async (db) => db.locks[_releaseAllLocks]());
         }
       }
       throw error;
@@ -2906,7 +2907,7 @@ export class BriefcaseDb extends IModelDb {
     } finally {
       if (isReadonly) {
         if (locks !== this._locks) { // did we have to create a ServerBasedLocks?
-          this.locks.close(); // yes, close it and reset back to previous
+          this.locks[_close](); // yes, close it and reset back to previous
           this._locks = locks;
         }
         this.closeAndReopen(OpenMode.Readonly, fileName);

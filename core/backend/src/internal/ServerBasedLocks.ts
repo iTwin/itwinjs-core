@@ -14,6 +14,7 @@ import { BriefcaseDb } from "../IModelDb";
 import { LockControl } from "../LockControl";
 import { IModelHost } from "../IModelHost";
 import { SQLiteDb } from "../SQLiteDb";
+import { _close, _elementWasCreated, _implementationProhibited, _releaseAllLocks } from "./Symbols";
 
 /**
  * Both the Model and Parent of an element are considered "owners" of their member elements. That means:
@@ -33,6 +34,8 @@ const enum LockOrigin {
 }
 
 export class ServerBasedLocks implements LockControl {
+  public readonly [_implementationProhibited] = undefined;
+  
   public get isServerBased() { return true; }
   protected readonly lockDb = new SQLiteDb();
   protected readonly briefcase: BriefcaseDb;
@@ -49,7 +52,7 @@ export class ServerBasedLocks implements LockControl {
     }
   }
 
-  public close() {
+  public [_close]() {
     if (this.lockDb.isOpen)
       this.lockDb.closeDb();
   }
@@ -89,7 +92,7 @@ export class ServerBasedLocks implements LockControl {
     });
   }
 
-  public async releaseAllLocks(): Promise<void> {
+  public async [_releaseAllLocks](): Promise<void> {
     await IModelHost.hubAccess.releaseAllLocks(this.briefcase); // throws if unsuccessful
     this.clearAllLocks();
   }
@@ -190,7 +193,7 @@ export class ServerBasedLocks implements LockControl {
   }
 
   /** When an element is newly created in a session, we hold the lock on it implicitly. Save that fact. */
-  public elementWasCreated(id: Id64String) {
+  public [_elementWasCreated](id: Id64String) {
     this.insertLock(id, LockState.Exclusive, LockOrigin.NewElement);
     this.lockDb.saveChanges();
   }

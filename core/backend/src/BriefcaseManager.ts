@@ -23,6 +23,7 @@ import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { SchemaSync } from "./SchemaSync";
+import { _releaseAllLocks } from "./internal/Symbols";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -479,7 +480,7 @@ export class BriefcaseManager {
         db.nativeDb.completeCreateChangeset({ index });
         db.changeset = db.nativeDb.getCurrentChangeset();
         if (!arg.retainLocks)
-          await db.locks.releaseAllLocks();
+          await db.locks[_releaseAllLocks]();
 
         return;
       } catch (err: any) {

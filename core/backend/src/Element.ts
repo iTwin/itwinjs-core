@@ -21,7 +21,7 @@ import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
-import { _verifyChannel } from "./internal/Symbols";
+import { _elementWasCreated, _verifyChannel } from "./internal/Symbols";
 
 /** Argument for the `Element.onXxx` static methods
  * @beta
@@ -168,7 +168,7 @@ export class Element extends Entity {
   protected static onInserted(arg: OnElementIdArg): void {
     const locks = arg.iModel.locks;
     if (locks && !locks.holdsExclusiveLock(arg.model))
-      locks.elementWasCreated(arg.id);
+      locks[_elementWasCreated](arg.id);
   }
 
   /** Called before an Element is updated.
