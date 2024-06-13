@@ -373,7 +373,6 @@ export namespace CloudSqlite {
      * Return any other non-0 value to abort the transfer without saving progress.
      */
     onProgress?: (nDeleted: number, nTotalToDelete: number) => number;
-
   }
 
   /**
@@ -511,15 +510,6 @@ export namespace CloudSqlite {
     uploadChanges(): Promise<void>;
 
     /**
-     * Clean any unused deleted blocks from cloud storage. When a database is written, a subset of its blocks are replaced
-     * by new versions, sometimes leaving the originals unused. In this case, they are not deleted immediately.
-     * Instead, they are scheduled for deletion at some later time. Calling this method deletes all blocks in the cloud container
-     * for which the scheduled deletion time has passed.
-     * @param options options which influence the behavior of cleanDeletedBlocks. @see CleanDeletedBlocksOptions
-     */
-    cleanDeletedBlocks(options?: CleanDeletedBlocksOptions): Promise<void>;
-
-    /**
      * Create a copy of an existing database within this CloudContainer with a new name.
      * @note CloudSqlite uses copy-on-write semantics for this operation. That is, this method merely makes a
      * new entry in the manifest with the new name that *shares* all of its blocks with the original database.
@@ -528,7 +518,7 @@ export namespace CloudSqlite {
     copyDatabase(dbName: string, toAlias: string): Promise<void>;
 
     /** Remove a database from this CloudContainer, moving all of its no longer used blocks to the delete list in the manifest.
-     * @see cleanDeletedBlocks
+     * @see [[CloudSqlite.cleanDeletedBlocks]] to actually delete the blocks from the delete list.
      */
     deleteDatabase(dbName: string): Promise<void>;
 
@@ -588,10 +578,18 @@ export namespace CloudSqlite {
     promise: Promise<boolean>;
   }
 
-  export async function cleanDeletedBlocks(container: CloudContainer, options?: CleanDeletedBlocksOptions): Promise<void> {
+  /**
+   * Clean any unused deleted blocks from cloud storage. When a database is written, a subset of its blocks are replaced
+   * by new versions, sometimes leaving the originals unused. In this case, they are not deleted immediately.
+   * Instead, they are scheduled for deletion at some later time. Calling this method deletes all blocks in the cloud container
+   * for which the scheduled deletion time has passed.
+   * @param container the CloudContainer to be cleaned. Must be connected and hold the write lock.
+   * @param options options for the cleanup operation. @see CleanDeletedBlocksOptions
+   */
+  export async function cleanDeletedBlocks(container: CloudContainer, options: CleanDeletedBlocksOptions): Promise<void> {
     let timer: NodeJS.Timeout | undefined;
     try {
-      const cleanJob = new NativeLibrary.nativeLib.CleanDeletedBlocksJob(container, options);
+      const cleanJob = new NativeLibrary.nativeLib.CancellableCloudSqliteJob("cleanup", container, options);
       let total = 0;
       const onProgress = options?.onProgress;
       if (onProgress) {
@@ -625,7 +623,7 @@ export namespace CloudSqlite {
 
     let timer: NodeJS.Timeout | undefined;
     try {
-      const transfer = new NativeLibrary.nativeLib.CloudDbTransfer(direction, container, props);
+      const transfer = new NativeLibrary.nativeLib.CancellableCloudSqliteJob(direction, container, props);
       let total = 0;
       const onProgress = props.onProgress;
       if (onProgress) {

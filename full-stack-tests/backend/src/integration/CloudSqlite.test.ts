@@ -335,14 +335,14 @@ describe("CloudSqlite", () => {
     await azSqlite.setSasToken(contain1, "read"); // don't ask for delete permission
     contain1.connect(caches[1]);
     await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => {
-      await expect(contain1.cleanDeletedBlocks()).eventually.rejectedWith("not authorized").property("errorNumber", 403);
+      await expect(CloudSqlite.cleanDeletedBlocks(contain1, {})).eventually.rejectedWith("not authorized").property("errorNumber", 403);
     });
 
     contain1.disconnect();
     await azSqlite.setSasToken(contain1, "admin"); // now ask for delete permission
     contain1.connect(caches[1]);
 
-    await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => contain1.cleanDeletedBlocks());
+    await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => CloudSqlite.cleanDeletedBlocks(contain1, {}));
     expect(contain1.garbageBlocks).equals(0); // should successfully purge
 
     // should be connected
@@ -445,7 +445,7 @@ describe("CloudSqlite", () => {
     newCache2.destroy();
   });
 
-  it.only("should be able to interrupt cleanDeletedBlocks operation", async () => {
+  it("should be able to interrupt cleanDeletedBlocks operation", async () => {
     Logger.initializeToConsole();
     Logger.setLevel("CloudSqlite", LogLevel.Trace);
     const cache = azSqlite.makeCache("clean-blocks-cache");
@@ -482,7 +482,7 @@ describe("CloudSqlite", () => {
     const garbageBlocksPrev = container.garbageBlocks;
 
     // cleanDeletedBlocks defaults to an nSeconds of 3600, so we expect to keep our garbage blocks, because they are less than 3600 seconds old.
-    await CloudSqlite.cleanDeletedBlocks(container);
+    await CloudSqlite.cleanDeletedBlocks(container, {});
     expect(container.garbageBlocks).to.be.equal(garbageBlocksPrev);
 
     // Upload dummy block to simulate an orphaned block.
