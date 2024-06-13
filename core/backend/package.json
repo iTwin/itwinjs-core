@@ -12,7 +12,7 @@
     "build": "npm run -s build:cjs && npm run -s copy:assets && npm run -s copy:test-assets",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json  ../../tools/internal/ios/core-test-runner/build ../../tools/internal/lib",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-backend/file.json --tsIndexFile=./core-backend.ts --onlyJson",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-backend/file.json --tsIndexFile=./core-backend.ts --onlyJson --excludes=linebreak.d.ts",
     "copy:assets": "cpx \"./src/assets/**/*\" ./lib/cjs/assets",
     "copy:config": "internal-tools copy-config",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
