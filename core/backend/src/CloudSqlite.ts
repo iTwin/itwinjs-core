@@ -360,12 +360,12 @@ export namespace CloudSqlite {
      * a 404 error. Default is 1 hour.
      */
     nSeconds?: number;
-    /** if enabled, outputs verbose logs about the cleanup process. These would include outputting blocks which are determined as eligible for deletion.
+    /** if enabled, outputs verbose logs about the cleanup process. Output includes blocks determined eligible for deletion.
      * @default false
     */
     debugLogging?: boolean;
     /** If true, iterates over all blobs in the cloud container to add blocks that are 'orphaned' to the delete list in the manifest.
-     * Orphaned blocks are created when a client abruptly halts, is disconnected or encounters an error while uploading a change.
+     * Orphaned blocks are created when a client abruptly halts, is disconnected, or encounters an error while uploading a change.
      * If false, the search for 'orphaned' blocks is skipped and only any blocks which are already on the delete list are deleted.
      * @default true
      */
@@ -521,7 +521,7 @@ export namespace CloudSqlite {
      */
     copyDatabase(dbName: string, toAlias: string): Promise<void>;
 
-    /** Remove a database from this CloudContainer, moving all of its no longer used blocks to the delete list in the manifest.
+    /** Remove a database from this CloudContainer. Unused blocks are moved to the delete list in the manifest.
      * @see [[CloudSqlite.cleanDeletedBlocks]] to actually delete the blocks from the delete list.
      */
     deleteDatabase(dbName: string): Promise<void>;
