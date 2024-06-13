@@ -659,6 +659,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "linebreak",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "lodash",
       "allowedCategories": [ "backend", "tools" ]
     },
