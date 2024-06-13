@@ -10,7 +10,7 @@ import { BaselineShift, FontId, FractionRun, LineLayoutResult, Paragraph, Run, R
 import { Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
-import *  as LineBreaker from "linebreak";
+import * as LineBreaker from "linebreak";
 
 /** @internal */
 export interface TextLayoutRanges {

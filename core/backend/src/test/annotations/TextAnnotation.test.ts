@@ -364,7 +364,6 @@ describe("layoutTextBlock", () => {
     expect(layout.lines.every((line) => line.runs.every((r) => r.source === run))).to.be.true;
 
     const actual = layout.lines.map((line) => line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars)).join(""));
-    console.log(JSON.stringify(actual));
     expect(actual).to.deep.equal(expectedLines);
 
     return layout;
