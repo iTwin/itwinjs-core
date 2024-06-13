@@ -953,7 +953,6 @@ export namespace CloudSqlite {
         name: string;
         rootDir: string;
     }
-    // (undocumented)
     export function cleanDeletedBlocks(container: CloudContainer, options: CleanDeletedBlocksOptions): Promise<void>;
     // (undocumented)
     export interface CleanDeletedBlocksOptions {
