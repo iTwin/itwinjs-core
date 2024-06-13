@@ -296,7 +296,7 @@ describe("RenderMaterialElement", () => {
   });
 
   describe("clone", () => {
-    it.only("clone maps", () => {
+    it("clone maps", () => {
       const textureId = insertTexture();
       const unknownTextureId = "0xffffff";
 
