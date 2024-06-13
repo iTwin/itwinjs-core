@@ -14,7 +14,7 @@ import { PhysicalElement } from "../../Element";
 import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { ElementOwnsChildElements } from "../../NavigationRelationship";
-import { ServerBasedLocks } from "../../ServerBasedLocks";
+import { ServerBasedLocks } from "../../internal/ServerBasedLocks";
 import { HubMock } from "../../HubMock";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";

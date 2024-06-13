@@ -52,7 +52,7 @@ import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";
 import { Relationships } from "./Relationship";
 import { SchemaSync } from "./SchemaSync";
-import { ServerBasedLocks } from "./ServerBasedLocks";
+import { createServerBasedLocks } from "./internal/ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotationLayout";
 import { TxnManager } from "./TxnManager";
@@ -63,8 +63,10 @@ import { Workspace, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbSett
 import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "./internal/workspace/WorkspaceImpl";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
 import { ChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
+import { LockControl } from "./LockControl";
 
 import type { BlobContainer } from "./BlobContainerService";
+import { createNoOpLockControl } from "./internal/NoLocks";
 
 // spell:ignore fontid fontmap
 
@@ -104,66 +106,6 @@ export interface ComputedProjectExtents {
 }
 
 /**
- * Interface for acquiring element locks to coordinate simultaneous edits from multiple briefcases.
- * @beta
- */
-export interface LockControl {
-  /**
-   * true if this LockControl uses a server-based concurrency approach.
-   */
-  readonly isServerBased: boolean;
-  /**
-   * Close the local lock control database
-   * @internal
-   */
-  close(): void;
-  /**
-   * Notification that a new element was just created. Called by [[Element.onInserted]]
-   * @internal
-   */
-  elementWasCreated(id: Id64String): void;
-  /**
-   * Throw if locks are required and the exclusive lock is not held on the supplied element.
-   * Note: there is no need to check the shared locks on parents/models since an element cannot hold the exclusive lock without first obtaining them.
-   * Called by [[Element.onUpdate]], [[Element.onDelete]], etc.
-   * @internal
-   */
-  checkExclusiveLock(id: Id64String, type: string, operation: string): void;
-  /**
-   * Throw if locks are required and a shared lock is not held on the supplied element.
-   * Called by [[Element.onInsert]] to ensure shared lock is held on model and parent.
-   * @internal
-   */
-  checkSharedLock(id: Id64String, type: string, operation: string): void;
-  /**
-   * Determine whether the supplied element currently holds the exclusive lock
-   */
-  holdsExclusiveLock(id: Id64String): boolean;
-  /**
-   * Determine whether the supplied element currently holds a shared lock
-   */
-  holdsSharedLock(id: Id64String): boolean;
-  /**
-   * Acquire locks on one or more elements from the lock server, if required and not already held.
-   * If any required lock is not available, this method throws an exception and *none* of the requested locks are acquired.
-   * > Note: acquiring the exclusive lock on an element requires also obtaining a shared lock on all its owner elements. This method will
-   * attempt to acquire all necessary locks for both sets of input ids.
-   */
-  acquireLocks(arg: {
-    /** if present, one or more elements to obtain shared lock */
-    shared?: Id64Arg;
-    /** if present, one or more elements to obtain exclusive lock */
-    exclusive?: Id64Arg;
-  }): Promise<void>;
-  /**
-   * Release all locks currently held by this Briefcase from the lock server.
-   * Not possible to release locks unless push or abandon all changes. Should only be called internally.
-   * @internal
-   */
-  releaseAllLocks(): Promise<void>;
-}
-
-/**
  * Options for the importing of schemas
  * @public
  */
@@ -174,20 +116,6 @@ export interface SchemaImportOptions {
    * @internal
    */
   ecSchemaXmlContext?: ECSchemaXmlContext;
-}
-
-/** A null-implementation of LockControl that does not attempt to limit access between briefcases. This relies on change-merging to resolve conflicts. */
-class NoLocks implements LockControl {
-  public get isServerBased() { return false; }
-  public close(): void { }
-  public clearAllLocks(): void { }
-  public holdsExclusiveLock(): boolean { return false; }
-  public holdsSharedLock(): boolean { return false; }
-  public checkExclusiveLock(): void { }
-  public checkSharedLock(): void { }
-  public elementWasCreated(): void { }
-  public async acquireLocks() { }
-  public async releaseAllLocks(): Promise<void> { }
 }
 
 /** @internal */
@@ -249,7 +177,7 @@ export abstract class IModelDb extends IModel {
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
   /** @internal */
-  protected _locks?: LockControl = new NoLocks();
+  protected _locks?: LockControl = createNoOpLockControl();
 
   /** @internal */
   protected _codeService?: CodeService;
@@ -2676,7 +2604,7 @@ export class BriefcaseDb extends IModelDb {
   // if the iModel uses a lock server, create a ServerBasedLocks LockControl for this BriefcaseDb.
   protected makeLockControl() {
     if (this.useLockServer)
-      this._locks = new ServerBasedLocks(this);
+      this._locks = createServerBasedLocks(this);
   }
 
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, openMode: OpenMode, briefcaseId: number }) {

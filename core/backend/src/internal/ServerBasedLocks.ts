@@ -9,18 +9,18 @@
 
 import { DbResult, Id64, Id64Arg, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { IModel, IModelError } from "@itwin/core-common";
-import { LockMap, LockState } from "./BackendHubAccess";
-import { BriefcaseDb, LockControl } from "./IModelDb";
-import { IModelHost } from "./IModelHost";
-import { SQLiteDb } from "./SQLiteDb";
+import { LockMap, LockState } from "../BackendHubAccess";
+import { BriefcaseDb } from "../IModelDb";
+import { LockControl } from "../LockControl";
+import { IModelHost } from "../IModelHost";
+import { SQLiteDb } from "../SQLiteDb";
 
 /**
  * Both the Model and Parent of an element are considered "owners" of their member elements. That means:
  * 1) they must hold at least a shared lock before an exclusive lock can be acquired for their members
  * 2) if they hold an exclusive lock, then all of their members are exclusively locked implicitly.
- * @internal
  */
-export interface ElementOwners {
+interface ElementOwners {
   readonly modelId: Id64String;
   readonly parentId: Id64String | undefined;
 }
@@ -32,7 +32,6 @@ const enum LockOrigin {
   Discovered = 2,
 }
 
-/** @internal */
 export class ServerBasedLocks implements LockControl {
   public get isServerBased() { return true; }
   protected readonly lockDb = new SQLiteDb();
@@ -213,3 +212,6 @@ export class ServerBasedLocks implements LockControl {
 
 }
 
+export function createServerBasedLocks(iModel: BriefcaseDb): LockControl {
+  return new ServerBasedLocks(iModel);
+}
