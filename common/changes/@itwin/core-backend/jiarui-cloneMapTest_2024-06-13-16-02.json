@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "add a special case where Pattern is null in clone maps test",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
