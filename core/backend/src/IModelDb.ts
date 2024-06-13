@@ -17,14 +17,15 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode, ElementGeometryRequest,
-  ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
-  GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometryStreamBuilder, GeometryStreamProps, IModel, IModelCoordinatesRequestProps,
-  IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, mapNativeElementProps, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, OpenCheckpointArgs, OpenSqliteArgs,
-  ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps,
-  SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps,
-  UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
+  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode,
+  ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType,
+  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometryStreamBuilder, GeometryStreamProps, IModel,
+  IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, mapNativeElementProps,
+  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
+  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState,
+  SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
+  TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
+  ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
 import { Range2d, Range3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -1778,8 +1779,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see tryGetElementJson
      * @internal
      */
-    public getElementJson<T extends ElementProps>(elementId: ElementLoadProps, old = false): T {
-      const elementProps = old ? this.tryGetElementJsonOld<T>(elementId) : this.tryGetElementJson<T>(elementId);
+    public getElementJson<T extends ElementProps>(elementId: ElementLoadProps): T {
+      const elementProps = this.tryGetElementJson<T>(elementId);
       if (undefined === elementProps)
         throw new IModelError(IModelStatus.NotFound, `reading element={id: ${elementId.id} federationGuid: ${elementId.federationGuid}, code: ${elementId.code}}`);
       return elementProps;
@@ -1869,32 +1870,18 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return elementProps;
     }
 
-    /** Read element data from the iModel as JSON
-     * @param loadProps - a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
-     * @returns The JSON properties of the element or `undefined` if the element is not found.
-     * @throws [[IModelError]] if the element exists, but cannot be loaded.
-     * @see getElementJson
-     */
-    private tryGetElementJsonOld<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
-      try {
-        return this._iModel.nativeDb.getElement(loadProps) as T;
-      } catch (err: any) {
-        return undefined;
-      }
-    }
-
     /** Get properties of an Element by Id, FederationGuid, or Code
      * @throws [[IModelError]] if the element is not found or cannot be loaded.
      * @see tryGetElementProps
      */
-    public getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps, old = false): T {
+    public getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T {
       if (typeof props === "string") {
         props = Id64.isId64(props) ? { id: props } : { federationGuid: props };
       } else if (props instanceof Code) {
         props = { code: props };
       }
 
-      const elementProps =  this.tryGetElementProps<T>(props, old);
+      const elementProps =  this.tryGetElementProps<T>(props);
       if (elementProps === undefined)
         throw new IModelError(IModelStatus.NotFound, `reading element={id: ${props.id} federationGuid: ${props.federationGuid}, code: ${props.code}}`);
 
@@ -1907,13 +1894,13 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @note Useful for cases when an element may or may not exist and throwing an `Error` would be overkill.
      * @see getElementProps
      */
-    public tryGetElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps, old = false): T | undefined {
+    public tryGetElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined {
       if (typeof elementId === "string") {
         elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
       } else if (elementId instanceof Code) {
         elementId = { code: elementId };
       }
-      return old ? this.tryGetElementJsonOld<T>(elementId) : this.tryGetElementJson<T>(elementId);
+      return this.tryGetElementJson<T>(elementId);
     }
 
     /** Get an element by Id, FederationGuid, or Code
@@ -1922,8 +1909,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if the element is not found, cannot be loaded, or fails validation when `elementClass` is specified.
      * @see tryGetElement
      */
-    public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>, old = false): T {
-      const element = this.tryGetElement<T>(elementId, elementClass, old);
+    public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T {
+      const element = this.tryGetElement<T>(elementId, elementClass);
       if (undefined === element) {
         if (typeof elementId === "string" || elementId instanceof Code)
           throw new IModelError(IModelStatus.NotFound, `Element=${elementId}`);
@@ -1941,7 +1928,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @note Useful for cases when an element may or may not exist and throwing an `Error` would be overkill.
      * @see getElement
      */
-    public tryGetElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>, old = false): T | undefined {
+    public tryGetElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T | undefined {
       if (typeof elementId === "string")
         elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
       else if (elementId instanceof Code)
@@ -1949,7 +1936,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       else
         elementId.onlyBaseProperties = false; // we must load all properties to construct the element.
 
-      const elementProps = old ? this.tryGetElementJsonOld(elementId) : this.tryGetElementJson(elementId);
+      const elementProps = this.tryGetElementJson(elementId);
       if (undefined === elementProps)
         return undefined; // no Element with that elementId found
 

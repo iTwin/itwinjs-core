@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* eslint-disable no-console */
 import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
@@ -171,7 +170,7 @@ describe("PerformanceElementsTests", () => {
     await IModelHost.shutdown();
   });
 
-  it.skip("ElementsInsert", async () => {
+  it("ElementsInsert", async () => {
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
         const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", `Performance_seed_${name}_${size}.bim`);
@@ -206,7 +205,7 @@ describe("PerformanceElementsTests", () => {
     }
   });
 
-  it.skip("ElementsDelete", async () => {
+  it("ElementsDelete", async () => {
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
         const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", `Performance_seed_${name}_${size}.bim`);
@@ -254,53 +253,19 @@ describe("PerformanceElementsTests", () => {
           const startTime = new Date().getTime();
           for (let i = 0; i < opCount; ++i) {
             const elId = minId + elementIdIncrement * i;
-            perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0), undefined, true);
+            perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
           }
           const endTime = new Date().getTime();
 
-          const startTime1 = new Date().getTime();
+          // Verify values after the timing portion to ensure everything is loaded correctly.
+          // This is performed afterwards to avoid including the extra noise in the perf numbers.
           for (let i = 0; i < opCount; ++i) {
             const elId = minId + elementIdIncrement * i;
-            perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
+            const elemFound: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
+            verifyProps(elemFound as any);
           }
-          const endTime1 = new Date().getTime();
 
-          const startTime11 = new Date().getTime();
-          for (let i = 0; i < opCount; ++i) {
-            const elId = minId + elementIdIncrement * i;
-
-            perfimodel.withPreparedStatement("SELECT $ FROM Bis.Element WHERE ECInstanceId=? OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB", (statement: ECSqlStatement) => {
-              statement.bindId(1, Id64.fromLocalAndBriefcaseIds(elId, 0));
-
-              if (statement.step() !== DbResult.BE_SQLITE_ROW)
-                return undefined;
-
-              return statement.getValue(0).getString();
-            });
-          }
-          const endTime11 = new Date().getTime();
-
-          const startTime12 = new Date().getTime();
-          for (let i = 0; i < opCount; ++i) {
-            const elId = minId + elementIdIncrement * i;
-
-            perfimodel.withPreparedStatement("SELECT $ FROM Bis.Element WHERE ECInstanceId=? OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB", (statement: ECSqlStatement) => {
-              statement.bindId(1, Id64.fromLocalAndBriefcaseIds(elId, 0));
-
-              if (statement.step() !== DbResult.BE_SQLITE_ROW)
-                return undefined;
-
-              return JSON.parse(statement.getValue(0).getString());
-            });
-          }
-          const endTime12 = new Date().getTime();
-
-          const elapsedTime = endTime - startTime;
-          const elapsedTime1 = endTime1 - startTime1;
-          const elapsedTime11 = endTime11 - startTime11;
-          const elapsedTime12 = endTime12 - startTime12;
-          console.log(elapsedTime, elapsedTime11, elapsedTime12, elapsedTime1);
-
+          const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("PerformanceElementsTests", "ElementsRead", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount, CoreVersion: CORE_MAJ_MIN });
           perfimodel.close();
         }
@@ -308,7 +273,7 @@ describe("PerformanceElementsTests", () => {
     }
   });
 
-  it.skip("ElementsUpdate", async () => {
+  it("ElementsUpdate", async () => {
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
         const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", `Performance_seed_${name}_${size}.bim`);
@@ -419,7 +384,7 @@ describe("PerformanceElementsTests2d", () => {
     await IModelHost.shutdown();
   });
 
-  it.skip("ElementsInsert2d", async () => {
+  it("ElementsInsert2d", async () => {
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
         const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d", `Performance2d_seed_${name}_${size}.bim`);
@@ -456,7 +421,7 @@ describe("PerformanceElementsTests2d", () => {
     }
   });
 
-  it.skip("ElementsDelete2d", async () => {
+  it("ElementsDelete2d", async () => {
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
         const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d", `Performance2d_seed_${name}_${size}.bim`);
@@ -488,7 +453,7 @@ describe("PerformanceElementsTests2d", () => {
     }
   });
 
-  it.skip("ElementsRead2d", async () => {
+  it("ElementsRead2d", async () => {
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
         const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d", `Performance2d_seed_${name}_${size}.bim`);
@@ -504,55 +469,19 @@ describe("PerformanceElementsTests2d", () => {
           const startTime = new Date().getTime();
           for (let i = 0; i < opCount; ++i) {
             const elId = minId + elementIdIncrement * i;
-            perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0), undefined, true);
+            perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
           }
           const endTime = new Date().getTime();
 
-          const startTime1 = new Date().getTime();
+          // Verify values after the timing portion to ensure everything is loaded correctly.
+          // This is performed afterwards to avoid including the extra noise in the perf numbers.
           for (let i = 0; i < opCount; ++i) {
             const elId = minId + elementIdIncrement * i;
-            perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
+            const elemFound: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
+            verifyProps(elemFound as any);
           }
-          const endTime1 = new Date().getTime();
 
-          const startTime11 = new Date().getTime();
-          for (let i = 0; i < opCount; ++i) {
-            const elId = minId + elementIdIncrement * i;
-
-            perfimodel.withPreparedStatement("SELECT $ FROM Bis.Element WHERE ECInstanceId=? OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB", (statement: ECSqlStatement) => {
-              statement.bindId(1, Id64.fromLocalAndBriefcaseIds(elId, 0));
-
-              if (statement.step() !== DbResult.BE_SQLITE_ROW)
-                return undefined;
-
-              return statement.getValue(0).getString();
-            });
-          }
-          const endTime11 = new Date().getTime();
-
-          const startTime12 = new Date().getTime();
-          for (let i = 0; i < opCount; ++i) {
-            const elId = minId + elementIdIncrement * i;
-
-            perfimodel.withPreparedStatement("SELECT $ FROM Bis.Element WHERE ECInstanceId=? OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB", (statement: ECSqlStatement) => {
-              statement.bindId(1, Id64.fromLocalAndBriefcaseIds(elId, 0));
-
-              if (statement.step() !== DbResult.BE_SQLITE_ROW)
-                return undefined;
-
-              return JSON.parse(statement.getValue(0).getString());
-            });
-          }
-          const endTime12 = new Date().getTime();
-
-          verifyProps;
-
-          const elapsedTime = endTime - startTime;
-          const elapsedTime1 = endTime1 - startTime1;
-          const elapsedTime11 = endTime11 - startTime11;
-          const elapsedTime12 = endTime12 - startTime12;
-          console.log(elapsedTime, elapsedTime11, elapsedTime12, elapsedTime1);
-
+          const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("PerformanceElementsTests2d", "ElementsRead2d", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount, CoreVersion: CORE_MAJ_MIN });
           perfimodel.close();
         }
@@ -560,7 +489,7 @@ describe("PerformanceElementsTests2d", () => {
     }
   });
 
-  it.skip("ElementsUpdate2d", async () => {
+  it("ElementsUpdate2d", async () => {
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
         const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d", `Performance2d_seed_${name}_${size}.bim`);
