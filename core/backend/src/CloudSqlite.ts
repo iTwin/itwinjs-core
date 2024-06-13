@@ -365,7 +365,7 @@ export namespace CloudSqlite {
     */
     debugLogging?: boolean;
     /** If true, iterates over all blobs in the cloud container to add blocks that are 'orphaned' to the delete list in the manifest.
-     * Orphaned blocks are created when a client abruptly halts, is disconnected or encounters an error while uploading a change.
+     * Orphaned blocks are created when a client abruptly halts, is disconnected, or encounters an error while uploading a change.
      * If false, the search for 'orphaned' blocks is skipped and only any blocks which are already on the delete list are deleted.
      * @default true
      */
