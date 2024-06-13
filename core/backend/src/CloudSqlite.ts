@@ -521,7 +521,7 @@ export namespace CloudSqlite {
      */
     copyDatabase(dbName: string, toAlias: string): Promise<void>;
 
-    /** Remove a database from this CloudContainer, moving all of its no longer used blocks to the delete list in the manifest.
+    /** Remove a database from this CloudContainer. Unused blocks are moved to the delete list in the manifest.
      * @see [[CloudSqlite.cleanDeletedBlocks]] to actually delete the blocks from the delete list.
      */
     deleteDatabase(dbName: string): Promise<void>;
