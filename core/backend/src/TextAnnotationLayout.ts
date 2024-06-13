@@ -224,7 +224,7 @@ interface Segment {
   index: number;
 }
 
-export function split(source: string): Segment[] {
+function split(source: string): Segment[] {
   if (source.length === 0) {
     return [];
   }
@@ -242,11 +242,6 @@ export function split(source: string): Segment[] {
   }
 
   return segments;
-
-  /*
-  const segmenter = new (global as any).Intl.Segmenter(undefined, { granularity: "word" });
-  return Array.from(segmenter.segment(source));
-  */
 }
 
 /** @internal */

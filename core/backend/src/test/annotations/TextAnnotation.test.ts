@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { split, ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
+import { ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
 import { Range2d } from "@itwin/core-geometry";
 import { ColorDef, FontMap, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextBlockGeometryPropsEntry, TextRun, TextStyleSettings } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
@@ -45,13 +45,7 @@ function isIntlSupported(): boolean {
   return !ProcessDetector.isMobileAppBackend;
 }
 
-describe.only("layoutTextBlock", () => {
-  it("splits", () => {
-    const segments = split("The quick, brown fox jumped over the lazy, good-for-nothing, 1.5 meter long, 0.25-inch tall dog.");
-    console.log(JSON.stringify(segments.map((x) => x.segment)));
-    expect(segments).to.deep.equal("");
-  });
-
+describe("layoutTextBlock", () => {
   it("resolves TextStyleSettings from combination of TextBlock and Run", () => {
     const textBlock = TextBlock.create({ styleName: "block", styleOverrides: { widthFactor: 34, color: 0x00ff00 }});
     const run0 = TextRun.create({ content: "run0", styleName: "run", styleOverrides: { lineHeight: 56, color: 0xff0000 }});
@@ -370,6 +364,7 @@ describe.only("layoutTextBlock", () => {
     expect(layout.lines.every((line) => line.runs.every((r) => r.source === run))).to.be.true;
 
     const actual = layout.lines.map((line) => line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars)).join(""));
+    console.log(JSON.stringify(actual));
     expect(actual).to.deep.equal(expectedLines);
 
     return layout;
@@ -384,33 +379,31 @@ describe.only("layoutTextBlock", () => {
       "a bc ",
       "def ",
       "ghij ",
-      "klmno",
-      " ",
-      "pqrstu",
-      " ",
+      "klmno ",
+      "pqrstu ",
       "vwxyz",
     ]);
 
     const fox = "The quick brown fox jumped over the lazy dog";
     expectLines(fox, 50, [fox]);
     expectLines(fox, 40, [
-      //        1         2         3         4
-      // 234567890123456789012345678901234567890
-      "The quick brown fox jumped over the lazy",
-      " dog",
+      //       1         2         3         4
+      // 34567890123456789012345678901234567890
+      "The quick brown fox jumped over the ",
+      "lazy dog",
     ]);
     expectLines(fox, 30, [
-      //        1         2         3
-      // 23456789012345678901234567890
+      //       1         2         3
+      // 3456789012345678901234567890
       "The quick brown fox jumped ",
       "over the lazy dog",
     ]);
     expectLines(fox, 20, [
-      //        1         2
-      // 2345678901234567890
+      //       1         2
+      // 345678901234567890
       "The quick brown fox ",
-      "jumped over the lazy",
-      " dog",
+      "jumped over the ",
+      "lazy dog",
     ]);
     expectLines(fox, 10, [
       //        1
@@ -423,31 +416,28 @@ describe.only("layoutTextBlock", () => {
     ]);
   });
 
-  it("considers consecutive whitespace a single 'word'", function () {
+  it("considers consecutive whitespace part of a single 'word'", function () {
     if (!isIntlSupported()) {
       this.skip();
     }
 
     expectLines("a b  c   d    e     f      ", 3, [
-      "a b",
-      "  c",
-      "   ",
-      "d",
-      "    ",
-      "e",
-      "     ",
-      "f",
-      "      ",
+      "a ",
+      "b  ",
+      "c   ",
+      "d    ",
+      "e     ",
+      "f      ",
     ]);
   });
 
-  it("performs word-wrapping on Japanese text", function () {
+  it("wraps Japanese text", function () {
     if (!isIntlSupported()) {
       this.skip();
     }
 
     // "I am a cat. The name is Tanuki."
-    expectLines("吾輩は猫である。名前はたぬき。", 1, ["吾輩", "は", "猫", "で", "ある", "。", "名前", "は", "たぬき", "。"]);
+    expectLines("吾輩は猫である。名前はたぬき。", 1, ["吾","輩","は","猫","で","あ","る。","名","前","は","た","ぬ","き。"]);
   });
 
   it("performs word-wrapping with punctuation", function () {
@@ -455,20 +445,18 @@ describe.only("layoutTextBlock", () => {
       this.skip();
     }
 
-    expectLines("1.24 56.7 8,910", 1, ["1.24", " ", "56.7", " ", "8,910"]);
+    expectLines("1.24 56.7 8,910", 1, ["1.24 ", "56.7 ", "8,910"]);
 
-    // NOTE: Chrome splits a.bc and de.f on the periods. Safari and electron do not.
-    // Since text layout is done in the backend, we're going to assume electron is right, and if not, that it's their responsibility to fix it.
-    expectLines("a.bc de.f g,hij", 1, ["a.bc", " ", "de.f", " ", "g", ",", "hij"]);
+    expectLines("a.bc de.f g,hij", 1, ["a.bc ", "de.f ", "g,hij"]);
 
-    expectLines("Let's see...can you (or anyone) predict?!", 1, [
-      "Let's", " ",
-      "see",
-      ".", ".", ".",
-      "can", " ",
-      "you", " ",
-      "(", "or", " ", "anyone", ")", " ",
-      "predict", "?", "!",
+    expectLines("Let's see... can you (or anyone) predict?!", 1, [
+      "Let's ",
+      "see... ",
+      "can ",
+      "you ",
+      "(or ",
+      "anyone) ",
+      "predict?!",
     ]);
   });
 
@@ -491,27 +479,27 @@ describe.only("layoutTextBlock", () => {
 
     test(50, ["The quick brown fox jumped over the lazy dog"]);
     test(40, [
-      //         1         2         3         4
-      // 234567890123456789012345678901234567890
-      "The quick brown fox jumped over the lazy",
-      " dog",
+      //        1         2         3         4
+      // 34567890123456789012345678901234567890
+      "The quick brown fox jumped over the ",
+      "lazy dog",
     ]);
     test(30, [
       //        1         2         3
-      // 23456789012345678901234567890
+      // 3456789012345678901234567890
       "The quick brown fox jumped ",
       "over the lazy dog",
     ]);
     test(20, [
       //        1         2
-      // 2345678901234567890
+      // 345678901234567890
       "The quick brown fox ",
-      "jumped over the lazy",
-      " dog",
+      "jumped over the ",
+      "lazy dog",
     ]);
     test(10, [
       //        1
-      // 234567890
+      // 34567890
       "The quick ",
       "brown fox ",
       "jumped ",
@@ -540,25 +528,25 @@ describe.only("layoutTextBlock", () => {
     expectLayout(22, "aabb ccc d eeff ggg h");
     expectLayout(21, "aabb ccc d eeff ggg h");
     expectLayout(20, "aabb ccc d eeff ggg \nh");
-    expectLayout(19, "aabb ccc d eeff ggg\n h");
+    expectLayout(19, "aabb ccc d eeff \nggg h");
     expectLayout(18, "aabb ccc d eeff \nggg h");
     expectLayout(17, "aabb ccc d eeff \nggg h");
     expectLayout(16, "aabb ccc d eeff \nggg h");
-    expectLayout(15, "aabb ccc d eeff\n ggg h");
+    expectLayout(15, "aabb ccc d ee\nff ggg h");
     expectLayout(14, "aabb ccc d ee\nff ggg h");
     expectLayout(13, "aabb ccc d ee\nff ggg h");
     expectLayout(12, "aabb ccc d \neeff ggg h");
     expectLayout(11, "aabb ccc d \neeff ggg h");
-    expectLayout(10, "aabb ccc d\n eeff ggg \nh");
+    expectLayout(10, "aabb ccc \nd eeff \nggg h");
     expectLayout(9, "aabb ccc \nd eeff \nggg h");
-    expectLayout(8, "aabb ccc\n d eeff \nggg h");
+    expectLayout(8, "aabb \nccc d ee\nff ggg h");
     expectLayout(7, "aabb \nccc d \neeff \nggg h");
     expectLayout(6, "aabb \nccc d \neeff \nggg h");
-    expectLayout(5, "aabb \nccc d\n eeff\n ggg \nh");
-    expectLayout(4, "aabb\n ccc\n d \neeff\n ggg\n h");
-    expectLayout(3, "aa\nbb \nccc\n d \nee\nff \nggg\n h");
-    expectLayout(2, "aa\nbb\n \nccc\n d\n \nee\nff\n \nggg\n h");
-    expectLayout(1, "aa\nbb\n \nccc\n \nd\n \nee\nff\n \nggg\n \nh");
+    expectLayout(5, "aabb \nccc \nd ee\nff \nggg h");
+    expectLayout(4, "aa\nbb \nccc \nd ee\nff \nggg \nh");
+    expectLayout(3, "aa\nbb \nccc \nd \nee\nff \nggg \nh");
+    expectLayout(2, "aa\nbb \nccc \nd \nee\nff \nggg \nh");
+    expectLayout(1, "aa\nbb \nccc \nd \nee\nff \nggg \nh");
     expectLayout(0, "aabb ccc d eeff ggg h");
     expectLayout(-1, "aabb ccc d eeff ggg h");
     expectLayout(-2, "aabb ccc d eeff ggg h");
@@ -826,7 +814,7 @@ function mockIModel(): IModelDb {
   return iModel as IModelDb;
 }
 
-describe.only("produceTextAnnotationGeometry", () => {
+describe("produceTextAnnotationGeometry", () => {
   type Color = ColorDef | "subcategory";
 
   function makeText(color?: Color): TextRun {
@@ -926,7 +914,7 @@ describe.only("produceTextAnnotationGeometry", () => {
   });
 });
 
-describe.only("TextAnnotation element", () => {
+describe("TextAnnotation element", () => {
   function makeElement(props?: Partial<TextAnnotation2dProps>): TextAnnotation2d {
     return TextAnnotation2d.fromJSON({
       category: "0x12",
