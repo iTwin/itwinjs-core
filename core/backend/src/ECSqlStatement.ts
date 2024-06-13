@@ -8,7 +8,7 @@
 
 import { assert, DbResult, GuidString, Id64String, IDisposable, StatusCodeWithMessage } from "@itwin/core-bentley";
 import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@itwin/core-geometry";
-import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue } from "@itwin/core-common";
+import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue, PropertyMetaDataMap, QueryRowFormat } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { ECDb } from "./ECDb";
 import { IModelHost } from "./IModelHost";
@@ -54,6 +54,7 @@ export class ECSqlInsertResult {
 export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private _stmt: IModelJsNative.ECSqlStatement | undefined;
   private _sql: string | undefined;
+  private _props = new PropertyMetaDataMap([]);
 
   public get sql() { return this._sql!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
@@ -94,6 +95,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   public reset(): void {
     assert(undefined !== this._stmt);
     this._stmt.reset();
+    this._props = new PropertyMetaDataMap([]);
   }
 
   /** Get the Native SQL statement
@@ -320,19 +322,44 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * - [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned row.
    * - [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
    */
-  public getRow(): any {
-    const colCount: number = this.getColumnCount();
-    const row: object = {};
-    const duplicatePropNames = new Map<string, number>();
-    for (let i = 0; i < colCount; i++) {
-      const ecsqlValue = this.getValue(i);
-      if (!ecsqlValue.isNull) {
-        const propName: string = ECSqlStatement.determineResultRowPropertyName(duplicatePropNames, ecsqlValue);
-        const val: any = ecsqlValue.value;
-        Object.defineProperty(row, propName, { enumerable: true, configurable: true, writable: true, value: val });
+  public getRow(args?: IModelJsNative.ECSqlRowArg): any {
+    if (!args) {
+      args = { abbreviateBlobs: false, convertClassIdsToClassNames: true, rowFormat: QueryRowFormat.UseJsPropertyNames, includeMetaData: this._props.length === 0 };
+    }
+    const resp = this._stmt!.toRow(args);
+    return this.formatCurrentRow(args.rowFormat, resp);
+  }
+
+  /**
+   * @internal
+   */
+  public formatCurrentRow(rowFormat: QueryRowFormat = QueryRowFormat.UseECSqlPropertyNames, currentRespStr: string ): any[] | object {
+    const currentResp = JSON.parse(currentRespStr);
+    if (this._props.length === 0 && currentResp.meta.length > 0) {
+      this._props = new PropertyMetaDataMap(currentResp.meta);
+    }
+    const formattedRow = {};
+    const uniqueNames = new Map<string, number>();
+    for (const prop of this._props) {
+      const propName = rowFormat === QueryRowFormat.UseJsPropertyNames ? prop.jsonName : prop.name;
+      const val = currentResp.data[prop.index];
+      if (typeof val !== "undefined" && val !== null) {
+        let uniquePropName = propName;
+        if (uniqueNames.has(propName)) {
+          uniqueNames.set(propName, uniqueNames.get(propName)! + 1);
+          uniquePropName = `${propName}_${uniqueNames.get(propName)!}`;
+        } else {
+          uniqueNames.set(propName,0);
+        }
+
+        Object.defineProperty(formattedRow, uniquePropName, {
+          value: val,
+          enumerable: true,
+          writable: true,
+        });
       }
     }
-    return row;
+    return formattedRow;
   }
 
   private static determineResultRowPropertyName(duplicatePropNames: Map<string, number>, ecsqlValue: ECSqlValue): string {
