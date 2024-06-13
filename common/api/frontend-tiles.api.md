@@ -11,6 +11,14 @@ import { IModelConnection } from '@itwin/core-frontend';
 export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
 
 // @beta
+export interface DataSource {
+    changeId?: string;
+    id: string;
+    iTwinId: string;
+    type: string;
+}
+
+// @beta
 export interface FrontendTilesOptions {
     computeSpatialTilesetBaseUrl?: ComputeSpatialTilesetBaseUrl;
     enableCDN?: boolean;
@@ -27,6 +35,36 @@ export const frontendTilesOptions: {
     enableEdges: boolean;
     useIndexedDBCache: boolean;
 };
+
+// @beta
+export type GraphicRepresentation = {
+    displayName: string;
+    representationId: string;
+    status: GraphicRepresentationStatus;
+    format: GraphicRepresentationFormat;
+    dataSource: DataSource;
+} & ({
+    status: Omit<GraphicRepresentationStatus, GraphicRepresentationStatus.Complete>;
+    url?: string;
+} | {
+    status: GraphicRepresentationStatus.Complete;
+    url: string;
+});
+
+// @beta
+export type GraphicRepresentationFormat = "IMDL" | "3DTILES" | string;
+
+// @beta
+export enum GraphicRepresentationStatus {
+    // (undocumented)
+    Complete = "Complete",
+    // (undocumented)
+    Failed = "Failed",
+    // (undocumented)
+    InProgress = "In progress",
+    // (undocumented)
+    NotStarted = "Not started"
+}
 
 // @beta
 export function initializeFrontendTiles(options: FrontendTilesOptions): void;
@@ -68,14 +106,48 @@ export interface MeshExports {
 }
 
 // @beta
-export function obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise<URL | undefined>;
+export function obtainGraphicRepresentationUrl(args: ObtainGraphicRepresentationUrlArgs): Promise<URL | undefined>;
 
 // @beta
-export interface ObtainMeshExportTilesetUrlArgs {
+export interface ObtainGraphicRepresentationUrlArgs {
+    accessToken: AccessToken;
+    dataSource: DataSource;
+    enableCDN?: boolean;
+    format: GraphicRepresentationFormat;
+    requireExactVersion?: boolean;
+    sessionId: string;
+    urlPrefix?: string;
+}
+
+// @beta
+export function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs): Promise<URL | undefined>;
+
+// @beta
+export interface ObtainIModelTilesetUrlArgs {
     accessToken: AccessToken;
     enableCDN?: boolean;
     iModel: IModelConnection;
     requireExactChangeset?: boolean;
+    urlPrefix?: string;
+}
+
+// @beta
+export function obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise<URL | undefined>;
+
+// @beta
+export type ObtainMeshExportTilesetUrlArgs = ObtainIModelTilesetUrlArgs;
+
+// @beta
+export function queryGraphicRepresentations(args: QueryGraphicRepresentationsArgs): AsyncIterableIterator<GraphicRepresentation>;
+
+// @beta
+export interface QueryGraphicRepresentationsArgs {
+    accessToken: AccessToken;
+    dataSource: DataSource;
+    enableCDN?: boolean;
+    format: GraphicRepresentationFormat;
+    includeIncomplete?: boolean;
+    sessionId: string;
     urlPrefix?: string;
 }
 
@@ -89,6 +161,7 @@ export interface QueryMeshExportsArgs {
     enableCDN?: boolean;
     iModelId: string;
     includeIncomplete?: boolean;
+    iTwinId: string;
     urlPrefix?: string;
 }
 

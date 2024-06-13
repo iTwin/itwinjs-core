@@ -2,8 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+declare module "linebreak" {
+  export = LineBreaker;
 
-export * from "./FrontendTiles";
-export * from "./GraphicsProvider/GraphicRepresentationProvider";
-export * from "./GraphicsProvider/GraphicsProvider";
+  export declare class LineBreaker {
+    public constructor(str: string);
+    public nextBreak(): { position: number, required: boolean };
+  }
+}
 
