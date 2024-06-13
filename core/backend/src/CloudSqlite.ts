@@ -360,7 +360,7 @@ export namespace CloudSqlite {
      * a 404 error. Default is 1 hour.
      */
     nSeconds?: number;
-    /** if enabled, outputs verbose logs about the cleanup process. These would include outputting blocks which are determined as eligible for deletion.
+    /** if enabled, outputs verbose logs about the cleanup process. Output includes blocks determined eligible for deletion.
      * @default false
     */
     debugLogging?: boolean;
