@@ -37,8 +37,10 @@ export namespace CloudSqlite {
    * If the service is unavailable or returns an error, an empty token is returned.
    */
   export async function requestToken(args: RequestTokenArgs): Promise<AccessToken> {
-    // allow the userToken to be supplied via Rpc. If not supplied, or blank, use the backend's accessToken.
-    const userToken = args.userToken ? args.userToken : (await IModelHost.getAccessToken());
+    // allow the userToken to be supplied via args. If not supplied, or blank, use the backend's accessToken. If that fails, use the value from the current RPC request
+    let userToken = args.userToken ? args.userToken : await IModelHost.getAccessToken();
+    if (userToken === "")
+      userToken = RpcTrace.currentActivity?.accessToken ?? "";
     if (BlobContainer.service === undefined) {
       throw new Error(`BlobContainer.service is not defined`);
     }
@@ -103,31 +105,33 @@ export namespace CloudSqlite {
   }
   export interface ContainerProps {
     /** The type of storage provider. */
-    storageType: "azure" | "google";
+    readonly storageType: "azure" | "google";
     /** The base URI for the container. */
-    baseUri: string;
+    readonly baseUri: string;
     /** The name of the container. */
-    containerId: string;
+    readonly containerId: string;
     /** true if the container is public (doesn't require authorization) */
-    isPublic?: boolean;
+    readonly isPublic?: boolean;
+    /** access token for container. If not present uses `CloudSqlite.requestToken` */
+    accessToken?: string;
   }
 
   /** Properties to access a CloudContainer. */
   export interface ContainerAccessProps extends ContainerProps {
     /** an alias for the container. Defaults to `containerId` */
-    alias?: string;
+    readonly alias?: string;
     /** SAS token that grants access to the container. */
     accessToken: string;
     /** if true, container is allowed to request the write lock. */
-    writeable?: boolean;
+    readonly writeable?: boolean;
     /** if true, container is attached in "secure" mode (blocks are encrypted). Only supported in daemon mode. */
-    secure?: boolean;
+    readonly secure?: boolean;
     /** string attached to log messages from CloudSQLite. This is most useful for identifying usage from daemon mode. */
-    logId?: string;
+    readonly logId?: string;
     /** Duration for holding write lock, in seconds. After this time the write lock expires if not refreshed. Default is one hour. */
-    lockExpireSeconds?: number;
+    readonly lockExpireSeconds?: number;
     /** number of seconds between auto-refresh of access token. If <=0 no auto-refresh. Default is 1 hour (60*60) */
-    tokenRefreshSeconds?: number;
+    readonly tokenRefreshSeconds?: number;
   }
 
   /** Returned from `CloudContainer.queryDatabase` describing one database in the container */
@@ -877,21 +881,39 @@ export namespace CloudSqlite {
     }
 
     /**
-     * Initialize a cloud container to hold a Cloud SQliteDb. The container must first be created via its storage supplier api (e.g. Azure, or Google).
-     * A valid sasToken that grants write access must be supplied. This function creates and uploads an empty database into the container.
+     * Initialize a cloud container to hold VersionedSqliteDbs. The container must first be created by [[createBlobContainer]].
+     * This function creates and uploads an empty database into the container.
      * @note this deletes any existing content in the container.
      */
-    protected static async _initializeDb(args: { dbType: typeof VersionedSqliteDb, props: ContainerAccessProps, dbName: string, blockSize?: "64K" | "4M" }) {
-      const container = createCloudContainer({ ...args.props, writeable: true });
+    protected static async _initializeDb(args: { dbType: typeof VersionedSqliteDb, props: ContainerProps, dbName: string, blockSize?: "64K" | "4M" }) {
+      const container = createCloudContainer({ ...args.props, writeable: true, accessToken: args.props.accessToken ?? await CloudSqlite.requestToken(args.props) });
       container.initializeContainer({ blockSize: args.blockSize === "4M" ? 4 * 1024 * 1024 : 64 * 1024 });
       container.connect(CloudCaches.getCache({ cacheName: this._cacheName }));
       await withWriteLock({ user: "initialize", container }, async () => {
         const localFileName = join(KnownLocations.tmpdir, "blank.db");
-        args.dbType.createNewDb(localFileName);
+        args.dbType.createNewDb(localFileName, args);
         await transferDb("upload", container, { dbName: args.dbName, localFileName });
         unlinkSync(localFileName);
       });
       container.disconnect({ detach: true });
+    }
+
+    /**
+     * Create a new BlobContainer from the BlobContainer service to hold one or more VersionedSqliteDbs.
+     * @returns A ContainerProps that describes the newly created container.
+     * @note the current user must have administrator rights to create containers.
+     */
+    protected static async createBlobContainer(args: Omit<BlobContainer.CreateNewContainerProps, "userToken">): Promise<CloudSqlite.ContainerProps> {
+      const service = BlobContainer.service;
+      if (undefined === service)
+        throw new Error("no BlobContainer service available");
+      const auth = IModelHost.authorizationClient;
+      if (undefined === auth)
+        throw new Error("no authorization client available");
+
+      const userToken = await auth.getAccessToken();
+      const cloudContainer = await service.create({ scope: args.scope, metadata: { ...args.metadata, containerType: "property-store" }, userToken });
+      return { baseUri: cloudContainer.baseUri, containerId: cloudContainer.containerId, storageType: cloudContainer.provider };
     }
 
     /**

@@ -638,7 +638,7 @@ describe("Relationship tests from an existing schema", () => {
     } catch(e: any) {
       expect(e).to.have.property("errorNumber", ECEditingStatus.AddConstraintClass);
       expect(e).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
-      expect(e).to.have.nested.property("innerError.message", `Rule violations occurred from constraint ${relClass.source.fullName} of RelationshipClass ${relClassResult.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`);
+      expect(e).to.have.nested.property("innerError.message", `Rule violations occurred from Source constraint of RelationshipClass ${relClassResult.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`);
       const violations = e.innerError.ruleViolations as AnyDiagnostic[];
       expect(violations[0]).to.deep.equal(new Diagnostics.AbstractConstraintMustExistWithMultipleConstraints(relClass.source, ["Source", relClass.fullName]));
       expect(relClass.source.constraintClasses?.length).to.eq(1);
@@ -678,7 +678,7 @@ describe("Relationship tests from an existing schema", () => {
     } catch(e: any) {
       expect(e).to.have.property("errorNumber", ECEditingStatus.RemoveConstraintClass);
       expect(e).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
-      expect(e).to.have.nested.property("innerError.message", `Rule violations occurred from constraint ${relClass.target.fullName} of RelationshipClass ${relClassResult.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`);
+      expect(e).to.have.nested.property("innerError.message", `Rule violations occurred from Target constraint of RelationshipClass ${relClassResult.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`);
       const violations = e.innerError.ruleViolations as AnyDiagnostic[];
       expect(violations[0]).to.deep.equal(new Diagnostics.AtLeastOneConstraintClassDefined(relClass.target, ["Target", relClass.fullName]));
       expect(relClass.target.constraintClasses?.length).to.eq(1);
@@ -720,7 +720,7 @@ describe("Relationship tests from an existing schema", () => {
       expect((await relClass.source.constraintClasses![0]).fullName).eq("TestSchema.TestSourceEntity");
       expect(e).to.have.property("errorNumber", ECEditingStatus.SetAbstractConstraint);
       expect(e).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
-      expect(e).to.have.nested.property("innerError.message", `Rule violations occurred from constraint ${relClass.source.fullName} of RelationshipClass ${relClassResult.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`);
+      expect(e).to.have.nested.property("innerError.message", `Rule violations occurred from Source constraint of RelationshipClass ${relClassResult.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`);
       const violations = e.innerError.ruleViolations as AnyDiagnostic[];
       expect(violations[0]).to.deep.equal(new Diagnostics.AbstractConstraintMustExistWithMultipleConstraints(relClass.source, ["Source", relClass.fullName]));
       expect((await relClass.source.constraintClasses![0]).fullName).eq("TestSchema.TestSourceEntity");

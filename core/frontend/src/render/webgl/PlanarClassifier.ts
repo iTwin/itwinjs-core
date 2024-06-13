@@ -15,7 +15,6 @@ import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@itwi
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { GraphicsCollectorDrawArgs, SpatialClassifierTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
-import { ViewState3d } from "../../ViewState";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
@@ -391,8 +390,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (undefined === context.viewingSpace)
       return;
 
-    const viewState = context.viewingSpace.view as ViewState3d;
-    if (undefined === viewState)
+    const viewState = context.viewingSpace.view;
+    if (!viewState.isSpatialView())
       return;
 
     const requiredHeight = context.target.viewRect.height;
@@ -418,7 +417,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._projectionMatrix = projection.projectionMatrix;
     this._frustum = projection.textureFrustum;
     this._debugFrustum = projection.debugFrustum;
-    this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides();
+    this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides(viewState, context);
 
     const drawTree = (treeRef: TileTreeReference, graphics: RenderGraphic[]) => {
       this._graphics = graphics;

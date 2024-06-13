@@ -1,6 +1,21 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Wed, 29 May 2024 14:36:43 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Jun 2024 18:03:49 GMT and should not be manually modified.
+
+## 4.7.0
+Wed, 12 Jun 2024 18:02:16 GMT
+
+### Updates
+
+- Fixed various issues related to terrain tile collecting.
+- Fix failed HTTP RPC request not being rejected if `X-Protocol-Version` is not available.
+- Increase maximum number of categories passed into querySubCategories
+- Reduce coupling between project extents and tile cache, so that cached tiles can remain valid after adjusting the project extents by less than an order of magnitude.
+
+## 4.6.2
+Sat, 08 Jun 2024 00:50:25 GMT
+
+_Version update only_
 
 ## 4.6.1
 Wed, 29 May 2024 14:35:17 GMT

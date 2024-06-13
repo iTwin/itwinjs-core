@@ -1,6 +1,23 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Wed, 29 May 2024 14:36:43 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Jun 2024 18:03:49 GMT and should not be manually modified.
+
+## 4.7.0
+Wed, 12 Jun 2024 18:02:16 GMT
+
+### Updates
+
+- schemaUpgrade() now push change to schema sync
+- Remove @alpha BackendLoggerCategory.Editing
+- Added getAvailableCoordinateReferenceSystems.
+- Brotli compression enabled for RPC requests.
+- Increase restrictions on native app storage name.
+- Added computeTextBlockExtents
+
+## 4.6.2
+Sat, 08 Jun 2024 00:50:25 GMT
+
+_Version update only_
 
 ## 4.6.1
 Wed, 29 May 2024 14:35:17 GMT
