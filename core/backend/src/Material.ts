@@ -59,8 +59,8 @@ export class RenderMaterialElement extends DefinitionElement {
   public paletteName: string;
   /** An optional description of the material. */
   public description?: string;
-  /** @internal */
-  constructor(props: RenderMaterialProps, iModel: IModelDb) {
+
+  private constructor(props: RenderMaterialProps, iModel: IModelDb) {
     super(props, iModel);
     this.paletteName = props.paletteName;
     this.description = props.description;
