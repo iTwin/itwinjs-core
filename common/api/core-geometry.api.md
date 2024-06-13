@@ -1699,6 +1699,7 @@ export class CurveLocationDetail {
     setFR(fraction: number, ray: Ray3d, a?: number): void;
     setIntervalRole(value: CurveIntervalRole): void;
     swapFractionsAndPoints(): void;
+    tryTransformInPlace(transform: Transform): boolean;
     updateIfCloserCurveFractionPointDistance(curve: CurvePrimitive, fraction: number, point: Point3d, a: number): boolean;
     vectorInCurveLocationDetail?: Vector3d;
 }
@@ -1722,6 +1723,7 @@ export class CurveLocationDetailPair {
     // @internal
     static removeAdjacentDuplicates(pairs: CurveLocationDetailPair[], index0?: number): CurveLocationDetailPair[];
     swapDetails(): void;
+    tryTransformInPlace(transform: Transform): boolean;
 }
 
 // @public
