@@ -369,8 +369,8 @@ export namespace CloudSqlite {
     /**
      * a user-supplied progress function called during the cleanup operation. While the search for orphaned blocks occurs, nDeleted will be 0 and nTotalToDelete will be 1.
      * Once the search is complete and orphaned blocks begin being deleted, nDeleted will be the number of blocks deleted and nTotalToDelete will be the total number of blocks to delete.
-     * If the return value is 1, the job will be cancelled. If one or more blocks have already been deleted, then a new manifest file is uploaded saving the progress of the delete job.
-     * Return any other non-0 value to abort the transfer without saving progress.
+     * If the return value is 1, the job will be cancelled and progress will be saved. If one or more blocks have already been deleted, then a new manifest file is uploaded saving the progress of the delete job.
+     * Return any other non-0 value to cancel the job without saving progress.
      */
     onProgress?: (nDeleted: number, nTotalToDelete: number) => number;
   }
