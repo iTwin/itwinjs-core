@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "linestring global->local fraction map fix",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
