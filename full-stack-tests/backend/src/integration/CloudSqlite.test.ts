@@ -8,7 +8,7 @@ import * as chaiAsPromised from "chai-as-promised";
 import { existsSync, removeSync } from "fs-extra";
 import { join } from "path";
 import * as sinon from "sinon";
-import { BlobContainer, BriefcaseDb, CloudSqlite, IModelHost, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
+import { BlobContainer, BriefcaseDb, CloudSqlite, IModelHost, IModelJsFs, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { assert, BeDuration, DbResult, Guid, GuidString, OpenMode } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
@@ -335,14 +335,15 @@ describe("CloudSqlite", () => {
     await azSqlite.setSasToken(contain1, "read"); // don't ask for delete permission
     contain1.connect(caches[1]);
     await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => {
-      await expect(contain1.cleanDeletedBlocks()).eventually.rejectedWith("not authorized").property("errorNumber", 403);
+      // need nSeconds 0 or the blocks of the database we just deleted won't be deleted.
+      await expect(CloudSqlite.cleanDeletedBlocks(contain1, { nSeconds: 0 })).eventually.rejectedWith("delete block failed (403)");
     });
 
     contain1.disconnect();
     await azSqlite.setSasToken(contain1, "admin"); // now ask for delete permission
     contain1.connect(caches[1]);
 
-    await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => contain1.cleanDeletedBlocks());
+    await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => CloudSqlite.cleanDeletedBlocks(contain1, {nSeconds: 0}));
     expect(contain1.garbageBlocks).equals(0); // should successfully purge
 
     // should be connected
@@ -443,6 +444,94 @@ describe("CloudSqlite", () => {
     expect(newCache1.guid).not.equals(newCache2.guid);
     newCache1.destroy();
     newCache2.destroy();
+  });
+
+  it("should be able to interrupt cleanDeletedBlocks operation", async () => {
+    const cache = azSqlite.makeCache("clean-blocks-cache");
+    const container = testContainers[0];
+
+    const dbName = "testBimForCleaningBlocks";
+
+    const pathToCopy = join(KnownLocations.tmpdir, `${dbName}`);
+
+    if (IModelJsFs.existsSync(pathToCopy))
+      IModelJsFs.removeSync(pathToCopy);
+    const sqliteDb = new SQLiteDb();
+    sqliteDb.createDb(pathToCopy, undefined, { rawSQLite: true });
+    sqliteDb.executeSQL("CREATE TABLE TestData(id INTEGER PRIMARY KEY,val BLOB)");
+    // Insert 16mb so we have some data to delete.
+    sqliteDb.executeSQL(`INSERT INTO TestData(id,val) VALUES (1, randomblob(1024*1024*16))`);
+
+    sqliteDb.saveChanges();
+    sqliteDb.closeDb();
+    await azSqlite.setSasToken(container, "write"); // get a write token to be able to upload.
+    await azSqlite.uploadFile(container, cache, dbName, pathToCopy);
+
+    container.connect(cache);
+    const dbs = container.queryDatabases();
+    expect(dbs.length).to.be.greaterThanOrEqual(1);
+    const db = container.queryDatabase(dbName);
+    expect(db !== undefined).to.be.true;
+
+    expect(container.garbageBlocks).to.be.equal(0);
+    container.acquireWriteLock("testuser");
+    await container.deleteDatabase(dbName);
+    await container.uploadChanges();
+    expect(container.queryDatabase(dbName)).to.be.undefined;
+
+    expect(container.garbageBlocks).to.be.greaterThan(0);
+    const garbageBlocksPrev = container.garbageBlocks;
+
+    // cleanDeletedBlocks defaults to an nSeconds of 3600, so we expect to keep our garbage blocks, because they are less than 3600 seconds old.
+    await CloudSqlite.cleanDeletedBlocks(container, {});
+    expect(container.garbageBlocks).to.be.equal(garbageBlocksPrev);
+
+    // Upload dummy block to simulate an orphaned block.
+    const blockName = await azSqlite.uploadDummyBlock(container, 24);
+    // findOrphanedBlocks is false, so we expect to keep our dummy block.
+    await CloudSqlite.cleanDeletedBlocks(container, {findOrphanedBlocks: false});
+    await expect(azSqlite.checkBlockExists(container, blockName)).to.eventually.become(true);
+    // findOrphanedBlocks is true, so we expect to remove our dummy block.
+    await CloudSqlite.cleanDeletedBlocks(container, {findOrphanedBlocks: true});
+    await expect(azSqlite.checkBlockExists(container, blockName)).to.eventually.become(false);
+
+    expect(container.garbageBlocks).to.be.equal(garbageBlocksPrev);
+
+    const onProgress = sinon.stub();
+    onProgress.onFirstCall().returns(2);
+
+    // Faking the interval setup in cleanDeletedBlocks.
+    const clock = sinon.useFakeTimers({toFake: ["setInterval"], shouldAdvanceTime: true, advanceTimeDelta: 1});
+    let resolved = false;
+    CloudSqlite.cleanDeletedBlocks(container, {nSeconds: 0, findOrphanedBlocks: true, onProgress}).then(() => {
+      resolved = true;
+    }).catch(() => {
+      resolved = true;
+    });
+
+    while (!resolved) {
+      await clock.tickAsync(250);
+      await new Promise((resolve) => clock.setTimeout(resolve, 1));
+    }
+    container.checkForChanges();
+
+    expect(onProgress.called).to.be.true;
+    // We aborted our cleanup, so expect no progress to be shown.
+    expect(container.garbageBlocks).to.be.equal(garbageBlocksPrev);
+
+    resolved = false;
+    clock.reset();
+    clock.restore();
+
+    onProgress.reset();
+    onProgress.returns(0);
+    // One final clean that we don't interrupt ( because we always return 0 from onProgress)
+    await CloudSqlite.cleanDeletedBlocks(container, {nSeconds: 0, onProgress});
+    container.checkForChanges();
+    expect(container.garbageBlocks).to.be.equal(0);
+
+    container.releaseWriteLock();
+    container.disconnect({detach: true});
   });
 
   /** make sure that the auto-refresh for container tokens happens every hour */
