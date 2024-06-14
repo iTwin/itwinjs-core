@@ -144,7 +144,7 @@ describe("Checkpoints", () => {
   });
 
   it("should start prefetch", async () => {
-    IModelHost.appWorkspace.settings.addDictionary("prefetch", SettingsPriority.application, {
+    IModelHost.appWorkspace.settings.addDictionary({ name: "prefetch", priority: SettingsPriority.application }, {
       "Checkpoints/prefetch": true,
       "Checkpoints/prefetch/maxBlocks": 5000,
       "Checkpoints/prefetch/minRequests": 1,
@@ -156,7 +156,7 @@ describe("Checkpoints", () => {
     expect(prefetchSpy.callCount).to.equal(1);
     expect(settingsSpy.callCount).to.equal(1);
     sinon.restore();
-    IModelHost.appWorkspace.settings.dropDictionary("prefetch");
+    IModelHost.appWorkspace.settings.dropDictionary({ name: "prefetch" });
   });
 
   it("should be able to open and read checkpoints from Ipc ", async () => {
@@ -248,7 +248,7 @@ describe("Checkpoints", () => {
     });
 
     it("should start prefetch", async () => {
-      IModelHost.appWorkspace.settings.addDictionary("prefetch", SettingsPriority.application, {
+      IModelHost.appWorkspace.settings.addDictionary({ name: "prefetch", priority: SettingsPriority.application }, {
         "Checkpoints/prefetch": true,
         "Checkpoints/prefetch/maxBlocks": 5000,
         "Checkpoints/prefetch/minRequests": 1,
@@ -272,7 +272,7 @@ describe("Checkpoints", () => {
       expect(settingsSpy.callCount).equal(2);
 
       sinon.restore();
-      IModelHost.appWorkspace.settings.dropDictionary("prefetch");
+      IModelHost.appWorkspace.settings.dropDictionary({ name: "prefetch" });
     });
 
     it("should query bcv stat table", async () => {

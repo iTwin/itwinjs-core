@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fix bugs with TextAnnotation wrapping and justification.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

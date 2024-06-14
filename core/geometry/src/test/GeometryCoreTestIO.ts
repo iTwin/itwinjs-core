@@ -7,6 +7,7 @@ import { Arc3d } from "../curve/Arc3d";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { CurveChainWireOffsetContext } from "../curve/internalContexts/PolygonOffsetContext";
+import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { Geometry } from "../Geometry";
@@ -496,6 +497,14 @@ export class GeometryCoreTestIO {
       this.captureCurveLocationDetails(collection, data.detailA, markerSize, dx, dy, dz);
       this.captureCurveLocationDetails(collection, data.detailB, markerSize * 0.75, dx, dy, dz);
     }
+  }
+  /** Draw the scaled columns and origin to depict e.g., a Frenet frame. */
+  public static captureTransformAsFrame(collection: GeometryQuery[], frame: Transform, radius: number, axisLength: number = 1, x?: number, y?: number, z?: number): void {
+    const origin = Arc3d.createCenterNormalRadius(frame.getOrigin(), frame.matrix.columnZ(), radius);
+    const xAxis = LineSegment3d.create(frame.getOrigin(), frame.getOrigin().plusScaled(frame.matrix.columnX().normalizeWithDefault(0, 0, 0), axisLength));
+    const yAxis = LineSegment3d.create(frame.getOrigin(), frame.getOrigin().plusScaled(frame.matrix.columnY().normalizeWithDefault(0, 0, 0), axisLength));
+    const zAxis = LineSegment3d.create(frame.getOrigin(), frame.getOrigin().plusScaled(frame.matrix.columnZ().normalizeWithDefault(0, 0, 0), axisLength));
+    this.captureGeometry(collection, [origin, xAxis, yAxis, zAxis], x, y, z);
   }
 
   /** Read a flatbuffer file and interpret as GeometryQuery(s) */
