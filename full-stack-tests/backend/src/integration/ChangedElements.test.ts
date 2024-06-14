@@ -5,9 +5,10 @@
 
 import { AccessToken, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
 import { IModelError, IModelVersion } from "@itwin/core-common";
+import { Range3d } from "@itwin/core-geometry";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { assert } from "chai";
-import { BriefcaseManager, ChangedElementsDb, IModelHost, IModelJsFs, ProcessChangesetOptions, SnapshotDb } from "@itwin/core-backend";
+import { BriefcaseManager, ChangedElementsDb, IModelDb, IModelHost, IModelJsFs, ProcessChangesetOptions, SnapshotDb } from "@itwin/core-backend";
 import { ChangedElementsManager } from "@itwin/core-backend/lib/cjs/ChangedElementsManager";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { HubUtility } from "../HubUtility";
@@ -56,7 +57,6 @@ describe("ChangedElements", () => {
       endChangesetId,
       wantParents: true,
       wantPropertyChecksums: true,
-      wantBoundingBoxes: true,
     };
     const result = await cache.processChangesets(accessToken, iModel, options);
 
@@ -299,5 +299,89 @@ describe("ChangedElements", () => {
     ChangedElementsManager.cleanUp();
 
     newIModel.closeFile();
+  });
+
+  it("Test processing with and without bounding boxes", async () => {
+    const cacheFilePath: string = BriefcaseManager.getChangeCachePathName(testIModelId);
+    if (IModelJsFs.existsSync(cacheFilePath))
+      IModelJsFs.removeSync(cacheFilePath);
+
+    let iModel: IModelDb = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
+    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
+    const startChangesetId = changesets[0].id;
+    const endChangesetId = changesets[changesets.length - 1].id;
+    assert.exists(iModel);
+
+    const filePath = ChangedElementsManager.getChangedElementsPathName(iModel.iModelId);
+    if (IModelJsFs.existsSync(filePath))
+      IModelJsFs.removeSync(filePath);
+
+    let cache = ChangedElementsDb.createDb(iModel, filePath);
+    assert.isDefined(cache);
+    // Check that the changesets have not been processed yet
+    assert.isFalse(cache.isProcessed(startChangesetId));
+    assert.isFalse(cache.isProcessed(endChangesetId));
+
+    // Try getting changed elements, should fail because we haven't processed the changesets
+    assert.throws(() => cache.getChangedElements(startChangesetId, endChangesetId), IModelError);
+
+    // Test processing with wantBoundingBoxes = true
+    const options: ProcessChangesetOptions = {
+      rulesetId: "Items",
+      startChangesetId,
+      endChangesetId,
+      wantParents: true,
+      wantPropertyChecksums: true,
+      wantRelationshipCaching: true,
+      wantBoundingBoxes: true,
+    };
+    // Keep path name for re-opening later
+    const iModelPathName = iModel.pathName;
+    // When processing multiple changesets, native side creates a clone to do the rolling on
+    let result = await cache.processChangesetsAndRoll(accessToken, iModel, options);
+
+    assert.equal(result, DbResult.BE_SQLITE_OK);
+    // Check that the changesets should have been processed now
+    assert.isTrue(cache.isProcessed(startChangesetId));
+    assert.isTrue(cache.isProcessed(endChangesetId));
+    // Try getting changed models
+    let models = cache.getChangedModels(startChangesetId, endChangesetId);
+    assert.isTrue(models !== undefined);
+    assert.isTrue(models!.modelIds.length !== 0);
+    assert.isTrue(models!.modelIds.length === models!.bboxes.length);
+    // We should be able to find some bounding boxes for geometric models that are not [0,0,0] due to wantBoundingBoxes = true
+    assert.isTrue(models!.bboxes.filter((bbox) => {
+      const range = Range3d.fromJSON(bbox);
+      return !range.isAlmostZeroX || !range.isAlmostZeroY || !range.isAlmostZeroZ;
+    }).length > 0);
+
+    // Re-open iModel
+    iModel = SnapshotDb.openFile(iModelPathName);
+    // Delete processed changed elements db and re-create fresh
+    cache.closeDb();
+    IModelJsFs.removeSync(filePath);
+    cache = ChangedElementsDb.createDb(iModel, filePath);
+
+    // Test processing with wantBoundingBoxes = false
+    // When processing multiple changesets, native side creates a clone to do the rolling on
+    result = await cache.processChangesetsAndRoll(accessToken, iModel, { ...options, wantBoundingBoxes: false });
+    // Check that the changesets are processed
+    assert.isTrue(cache.isProcessed(startChangesetId));
+    assert.isTrue(cache.isProcessed(endChangesetId));
+    // Try getting changed models
+    models = cache.getChangedModels(startChangesetId, endChangesetId);
+    assert.isTrue(models !== undefined);
+    assert.isTrue(models!.modelIds.length !== 0);
+    assert.isTrue(models!.modelIds.length === models!.bboxes.length);
+    // Bounding boxes should be [0,0,0] for all elements when processing with wantBoundingBoxes = false
+    assert.isTrue(models!.bboxes.every((bbox) => {
+      const range = Range3d.fromJSON(bbox);
+      return range.isAlmostZeroX && range.isAlmostZeroY && range.isAlmostZeroZ;
+    }));
+
+    // Destroy the cache
+    cache.closeDb();
+    cache.cleanCaches();
+    ChangedElementsManager.cleanUp();
   });
 });
