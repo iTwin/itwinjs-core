@@ -121,7 +121,6 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
   public override inflateToken(tokenFromBody: IModelRpcProps, request: SerializedRpcRequest): IModelRpcProps {
     const urlPathComponents = request.path.split("/");
 
-    const iModelKey = tokenFromBody.key;
     let iModelId = tokenFromBody.iModelId;
     let iTwinId = tokenFromBody.iTwinId;
     const changeset = { id: tokenFromBody.changeset?.id ?? "0", index: tokenFromBody.changeset?.index };
@@ -139,11 +138,12 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
         ++i;
       } else if (key === "changeset") {
         changeset.id = (value === "0") ? "" : value;
+        delete changeset.index;
         ++i;
       }
     }
 
-    return { key: iModelKey, iTwinId, iModelId, changeset };
+    return { key: `${iModelId}:${changeset.id}`, iTwinId, iModelId, changeset };
   }
 
   /** Returns the OpenAPI-compatible URI path parameters for an RPC operation.
