@@ -589,7 +589,7 @@ export namespace CloudSqlite {
    * In both cases, the blocks are not deleted immediately. Instead, they are scheduled for deletion at some later time.
    * Calling this method deletes all blocks in the cloud container for which the scheduled deletion time has passed.
    * @param container the CloudContainer to be cleaned. Must be connected and hold the write lock.
-   * @param options options for the cleanup operation. @see CleanDeletedBlocksOptions
+   * @param options options for the cleanup operation. @see CloudSqlite.CleanDeletedBlocksOptions
    */
   export async function cleanDeletedBlocks(container: CloudContainer, options: CleanDeletedBlocksOptions): Promise<void> {
     let timer: NodeJS.Timeout | undefined;
