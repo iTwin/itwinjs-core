@@ -16,6 +16,7 @@ export * from "./Validation/SchemaChanges";
 export * from "./Validation/SchemaComparer";
 export * from "./Validation/SchemaCompareReporter";
 export * from "./Editing/Editor";
+export * from "./Editing/Exception";
 export { ISuppressionRule, IRuleSuppressionSet, IRuleSuppressionMap } from "./Validation/RuleSuppressionSet";
 export { SchemaValidater } from "./Validation/SchemaValidater";
 export { SchemaMerger } from "./Merging/SchemaMerger";
