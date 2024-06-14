@@ -360,8 +360,23 @@ export namespace CloudSqlite {
      * a 404 error. Default is 1 hour.
      */
     nSeconds?: number;
-    /** if enabled, outputs verbose logs about the cleanup process. These would include outputting blocks which are determined as eligible for deletion. */
+    /** if enabled, outputs verbose logs about the cleanup process. Output includes blocks determined eligible for deletion.
+     * @default false
+    */
     debugLogging?: boolean;
+    /** If true, iterates over all blobs in the cloud container to add blocks that are 'orphaned' to the delete list in the manifest.
+     * Orphaned blocks are created when a client abruptly halts, is disconnected, or encounters an error while uploading a change.
+     * If false, the search for 'orphaned' blocks is skipped and only any blocks which are already on the delete list are deleted.
+     * @default true
+     */
+    findOrphanedBlocks?: boolean;
+    /**
+     * a user-supplied progress function called during the cleanup operation. While the search for orphaned blocks occurs, nDeleted will be 0 and nTotalToDelete will be 1.
+     * Once the search is complete and orphaned blocks begin being deleted, nDeleted will be the number of blocks deleted and nTotalToDelete will be the total number of blocks to delete.
+     * If the return value is 1, the job will be cancelled and progress will be saved. If one or more blocks have already been deleted, then a new manifest file is uploaded saving the progress of the delete job.
+     * Return any other non-0 value to cancel the job without saving progress.
+     */
+    onProgress?: (nDeleted: number, nTotalToDelete: number) => number;
   }
 
   /**
@@ -499,15 +514,6 @@ export namespace CloudSqlite {
     uploadChanges(): Promise<void>;
 
     /**
-     * Clean any unused deleted blocks from cloud storage. When a database is written, a subset of its blocks are replaced
-     * by new versions, sometimes leaving the originals unused. In this case, they are not deleted immediately.
-     * Instead, they are scheduled for deletion at some later time. Calling this method deletes all blocks in the cloud container
-     * for which the scheduled deletion time has passed.
-     * @param options options which influence the behavior of cleanDeletedBlocks. @see CleanDeletedBlocksOptions
-     */
-    cleanDeletedBlocks(options?: CleanDeletedBlocksOptions): Promise<void>;
-
-    /**
      * Create a copy of an existing database within this CloudContainer with a new name.
      * @note CloudSqlite uses copy-on-write semantics for this operation. That is, this method merely makes a
      * new entry in the manifest with the new name that *shares* all of its blocks with the original database.
@@ -515,8 +521,8 @@ export namespace CloudSqlite {
      */
     copyDatabase(dbName: string, toAlias: string): Promise<void>;
 
-    /** Remove a database from this CloudContainer.
-     * @see cleanDeletedBlocks
+    /** Remove a database from this CloudContainer. Unused blocks are moved to the delete list in the manifest.
+     * @see [[CloudSqlite.cleanDeletedBlocks]] to actually delete the blocks from the delete list.
      */
     deleteDatabase(dbName: string): Promise<void>;
 
@@ -576,6 +582,46 @@ export namespace CloudSqlite {
     promise: Promise<boolean>;
   }
 
+  /**
+   * Clean any unused deleted blocks from cloud storage. Unused deleted blocks can accumulate in cloud storage in a couple of ways:
+   * 1) When a database is updated, a subset of its blocks are replaced by new versions, sometimes leaving the originals unused.
+   * 2) A database is deleted with [[CloudContainer.deleteDatabase]]
+   * In both cases, the blocks are not deleted immediately. Instead, they are scheduled for deletion at some later time.
+   * Calling this method deletes all blocks in the cloud container for which the scheduled deletion time has passed.
+   * @param container the CloudContainer to be cleaned. Must be connected and hold the write lock.
+   * @param options options for the cleanup operation. @see CloudSqlite.CleanDeletedBlocksOptions
+   */
+  export async function cleanDeletedBlocks(container: CloudContainer, options: CleanDeletedBlocksOptions): Promise<void> {
+    let timer: NodeJS.Timeout | undefined;
+    try {
+      const cleanJob = new NativeLibrary.nativeLib.CancellableCloudSqliteJob("cleanup", container, options);
+      let total = 0;
+      const onProgress = options?.onProgress;
+      if (onProgress) {
+        timer = setInterval(async () => { // set an interval timer to show progress every 250ms
+          const progress = cleanJob.getProgress();
+          total = progress.total;
+          const result = onProgress(progress.loaded, progress.total);
+          if (result === 1)
+            cleanJob.stopAndSaveProgress();
+          else if (result !== 0)
+            cleanJob.cancelTransfer();
+        }, 250);
+      }
+      await cleanJob.promise;
+      onProgress?.(total, total); // make sure we call progress func one last time when download completes
+      container.checkForChanges(); // re-read the manifest so the number of garbage blocks is updated.
+    } catch (err: any) {
+      if (err.message === "cancelled")
+        err.errorNumber = BriefcaseStatus.DownloadCancelled;
+
+      throw err;
+    } finally {
+      if (timer)
+        clearInterval(timer);
+    }
+  }
+
   /** @internal */
   export async function transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps) {
     if (direction === "download")
@@ -583,7 +629,7 @@ export namespace CloudSqlite {
 
     let timer: NodeJS.Timeout | undefined;
     try {
-      const transfer = new NativeLibrary.nativeLib.CloudDbTransfer(direction, container, props);
+      const transfer = new NativeLibrary.nativeLib.CancellableCloudSqliteJob(direction, container, props);
       let total = 0;
       const onProgress = props.onProgress;
       if (onProgress) {
@@ -604,6 +650,7 @@ export namespace CloudSqlite {
     } finally {
       if (timer)
         clearInterval(timer);
+
     }
   }
 
