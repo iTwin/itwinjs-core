@@ -610,6 +610,7 @@ export namespace CloudSqlite {
       }
       await cleanJob.promise;
       onProgress?.(total, total); // make sure we call progress func one last time when download completes
+      container.checkForChanges(); // re-read the manifest so the number of garbage blocks is updated.
     } catch (err: any) {
       if (err.message === "cancelled")
         err.errorNumber = BriefcaseStatus.DownloadCancelled;
@@ -649,6 +650,7 @@ export namespace CloudSqlite {
     } finally {
       if (timer)
         clearInterval(timer);
+
     }
   }
 

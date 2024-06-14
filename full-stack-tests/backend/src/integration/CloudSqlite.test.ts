@@ -10,7 +10,7 @@ import { join } from "path";
 import * as sinon from "sinon";
 import { BlobContainer, BriefcaseDb, CloudSqlite, IModelHost, IModelJsFs, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { assert, BeDuration, DbResult, Guid, GuidString, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { assert, BeDuration, DbResult, Guid, GuidString, OpenMode } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
@@ -335,14 +335,15 @@ describe("CloudSqlite", () => {
     await azSqlite.setSasToken(contain1, "read"); // don't ask for delete permission
     contain1.connect(caches[1]);
     await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => {
-      await expect(CloudSqlite.cleanDeletedBlocks(contain1, {})).eventually.rejectedWith("not authorized").property("errorNumber", 403);
+      // need nSeconds 0 or blocks we just deleted won't be attempted to be deleted.
+      await expect(CloudSqlite.cleanDeletedBlocks(contain1, { nSeconds: 0 })).eventually.rejectedWith("delete block failed (403)");
     });
 
     contain1.disconnect();
     await azSqlite.setSasToken(contain1, "admin"); // now ask for delete permission
     contain1.connect(caches[1]);
 
-    await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => CloudSqlite.cleanDeletedBlocks(contain1, {}));
+    await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => CloudSqlite.cleanDeletedBlocks(contain1, {nSeconds: 0}));
     expect(contain1.garbageBlocks).equals(0); // should successfully purge
 
     // should be connected
@@ -446,10 +447,9 @@ describe("CloudSqlite", () => {
   });
 
   it("should be able to interrupt cleanDeletedBlocks operation", async () => {
-    Logger.initializeToConsole();
-    Logger.setLevel("CloudSqlite", LogLevel.Trace);
     const cache = azSqlite.makeCache("clean-blocks-cache");
     const container = testContainers[0];
+
     const dbName = "testBimForCleaningBlocks";
 
     const pathToCopy = join(KnownLocations.tmpdir, `${dbName}`);
@@ -459,11 +459,12 @@ describe("CloudSqlite", () => {
     const sqliteDb = new SQLiteDb();
     sqliteDb.createDb(pathToCopy, undefined, { rawSQLite: true });
     sqliteDb.executeSQL("CREATE TABLE TestData(id INTEGER PRIMARY KEY,val BLOB)");
-    // Insert 4mb so we have some data to delete.
-    sqliteDb.executeSQL(`INSERT INTO TestData(id,val) VALUES (1, randomblob(1024*1024*4))`);
+    // Insert 16mb so we have some data to delete.
+    sqliteDb.executeSQL(`INSERT INTO TestData(id,val) VALUES (1, randomblob(1024*1024*16))`);
 
     sqliteDb.saveChanges();
     sqliteDb.closeDb();
+    await azSqlite.setSasToken(container, "write"); // get a write token to be able to upload.
     await azSqlite.uploadFile(container, cache, dbName, pathToCopy);
 
     container.connect(cache);
@@ -502,7 +503,7 @@ describe("CloudSqlite", () => {
     // Faking the interval setup in cleanDeletedBlocks.
     const clock = sinon.useFakeTimers({toFake: ["setInterval"], shouldAdvanceTime: true, advanceTimeDelta: 1});
     let resolved = false;
-    CloudSqlite.cleanDeletedBlocks(container, {debugLogging: true, nSeconds: 0, findOrphanedBlocks: true, onProgress}).then(() => {
+    CloudSqlite.cleanDeletedBlocks(container, {nSeconds: 0, findOrphanedBlocks: true, onProgress}).then(() => {
       resolved = true;
     }).catch(() => {
       resolved = true;
@@ -524,7 +525,7 @@ describe("CloudSqlite", () => {
     // Return 1 to stop and save progress.
     onProgress.onSecondCall().returns(1);
 
-    CloudSqlite.cleanDeletedBlocks(container, {debugLogging: true, nSeconds: 0, findOrphanedBlocks: true, onProgress}).then(() => {
+    CloudSqlite.cleanDeletedBlocks(container, {nSeconds: 0, findOrphanedBlocks: true, onProgress}).then(() => {
       resolved = true;
     }).catch(() => {
       resolved = true;
