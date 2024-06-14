@@ -596,16 +596,18 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   /**
    * Convert a segment index and local fraction to a global linestring fraction.
    * @param index index of segment being evaluated
-   * @param localFraction local fraction in [0,1] within the segment
-   * @return global fraction f in [0,1] such that the segment is parameterized by index/N <= f <= (index+1)/N.
+   * @param localFraction local fraction relative to the segment, typically in [0,1]. Fraction may be negative (or greater than 1) to represent extension of the first (or last) segment.
+   * @return global fraction f such that the segment is parameterized by index/N <= f <= (index+1)/N.
    */
   public segmentIndexAndLocalFractionToGlobalFraction(index: number, localFraction: number): number {
     return LineString3d.mapLocalToGlobalFraction(index, localFraction, this._points.length - 1);
   }
   /**
-   * Convert a global fraction to a segment index and local fraction.
-   * @param globalFraction a fraction f in [0,1] in the linestring parameterization, where the i_th segment
-   * (0 <= i < N) is parameterized by i/N <= f <= (i+1)/N.
+   * Convert a global linestring fraction to a segment index and local fraction.
+   * @param globalFraction a fraction f in the linestring parameterization, where the i_th segment
+   * (0 <= i < N) is parameterized by i/N <= f <= (i+1)/N. If `globalFraction` is negative (or greater than 1),
+   * so is the returned local fraction, which corresponds to the first (last) segment.
+   * @param numSegment number N of segments in the linestring
    * @returns segment index and local fraction
    */
   public static mapGlobalToLocalFraction(globalFraction: number, numSegment: number): { index: number, fraction: number } {
@@ -613,9 +615,9 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       return { index: 0, fraction: 0.0 };
     const scaledGlobalFraction = globalFraction * numSegment;
     let segmentIndex: number;
-    if (globalFraction < 0)
+    if (globalFraction <= 0)
       segmentIndex = 0;
-    else if (globalFraction > 1)
+    else if (globalFraction >= 1)
       segmentIndex = numSegment - 1;
     else  // globalFraction in [0,1]
       segmentIndex = Math.floor(scaledGlobalFraction);
@@ -623,9 +625,9 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /**
    * Convert a global linestring fraction to a segment index and local fraction.
-   * @param globalFraction a fraction f in [0,1] in the linestring parameterization, where the i_th segment
-   * (0 <= i < N) is parameterized by i/N <= f <= (i+1)/N.
-   * @param numSegment number N of segments in the linestring
+   * @param globalFraction a fraction f in the linestring parameterization, where the i_th segment
+   * (0 <= i < N) is parameterized by i/N <= f <= (i+1)/N. If `globalFraction` is negative (or greater than 1),
+   * so is the returned local fraction, which corresponds to the first (last) segment.
    * @returns segment index and local fraction
    */
   public globalFractionToSegmentIndexAndLocalFraction(globalFraction: number): { index: number, fraction: number } {
