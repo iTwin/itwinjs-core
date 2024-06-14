@@ -8,6 +8,7 @@ import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { BentleyLoggerCategory, IDisposable, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelHost, IModelHostOptions } from "../IModelHost";
+import { NativePlatform } from "../internal/NativePlatform";
 
 /** Class for simple test timing */
 export class Timer {
@@ -36,7 +37,7 @@ export class DisableNativeAssertions implements IDisposable {
   private _native: IModelJsNative.DisableNativeAssertions | undefined;
 
   constructor() {
-    this._native = new IModelHost.platform.DisableNativeAssertions();
+    this._native = new NativePlatform.DisableNativeAssertions();
   }
 
   public dispose(): void {

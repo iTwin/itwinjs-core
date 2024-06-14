@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
 import { Matrix4d } from "@itwin/core-geometry";
-import { IModelHost } from "../../IModelHost";
+import { NativePlatform } from "../../internal/NativePlatform";
 import { StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -32,7 +32,7 @@ describe("DgnDbWorker", () => {
     private readonly _worker: IModelJsNative.TestWorker;
 
     public constructor() {
-      this._worker = new IModelHost.platform.TestWorker(imodel.nativeDb);
+      this._worker = new NativePlatform.TestWorker(imodel.nativeDb);
     }
 
     public queue() { this.promise = this._worker.queue(); }

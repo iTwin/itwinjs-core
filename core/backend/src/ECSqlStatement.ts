@@ -11,7 +11,7 @@ import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@itwin/core-geometry
 import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { ECDb } from "./ECDb";
-import { IModelHost } from "./IModelHost";
+import { NativePlatform } from "./internal/NativePlatform";
 
 /** The result of an **ECSQL INSERT** statement as returned from [ECSqlStatement.stepForInsert]($backend).
  *
@@ -86,7 +86,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     if (this.isPrepared)
       throw new Error("ECSqlStatement is already prepared");
     this._sql = ecsql;
-    this._stmt = new IModelHost.platform.ECSqlStatement();
+    this._stmt = new NativePlatform.ECSqlStatement();
     return this._stmt.prepare(db, ecsql, logErrors);
   }
 

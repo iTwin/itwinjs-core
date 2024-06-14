@@ -9,7 +9,7 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String, IDisposable } from "@itwin/core-bentley";
 import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
-import { IModelHost } from "./IModelHost";
+import { NativePlatform } from "./internal/NativePlatform";
 
 /** Changed value type
  * @beta
@@ -86,7 +86,7 @@ export interface SqliteChange {
  * @beta
  */
 export class SqliteChangesetReader implements IDisposable {
-  private readonly _nativeReader = new IModelHost.platform.ChangesetReader();
+  private readonly _nativeReader = new NativePlatform.ChangesetReader();
   private _schemaCache = new Map<string, string[]>();
   private _disableSchemaCheck = false;
   private _changeIndex = 0;

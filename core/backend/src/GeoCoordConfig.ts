@@ -11,6 +11,7 @@ import { CloudSqlite } from "./CloudSqlite";
 import { IModelHost } from "./IModelHost";
 import { Settings } from "./workspace/Settings";
 import { WorkspaceDbCloudProps } from "./workspace/Workspace";
+import { NativePlatform } from "./internal/NativePlatform";
 
 const loggerCat = "GeoCoord";
 
@@ -52,7 +53,7 @@ export class GeoCoordConfig {
       if (undefined === gcsDbProps)
         throw new Error(`database "${gcsDbName}" not found in container "${dbProps.containerId}"`);
 
-      if (!IModelHost.platform.addGcsWorkspaceDb(gcsDbName, cloudContainer, dbProps.priority))
+      if (!NativePlatform.addGcsWorkspaceDb(gcsDbName, cloudContainer, dbProps.priority))
         return; // already had this db
 
       Logger.logInfo(loggerCat, `loaded gcsDb "${gcsDbName}", from "${dbProps.baseUri}/${dbProps.containerId}" size=${gcsDbProps.totalBlocks}, local=${gcsDbProps.localBlocks}`);

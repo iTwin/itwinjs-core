@@ -13,7 +13,7 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 import { DbResult, OpenMode } from "@itwin/core-bentley";
 import { LocalFileName } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
-import { IModelHost } from "./IModelHost";
+import { NativePlatform } from "./internal/NativePlatform";
 import { IModelJsFs } from "./IModelJsFs";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 
@@ -27,12 +27,12 @@ import { SqliteStatement, StatementCache } from "./SqliteStatement";
  */
 export class SQLiteDb {
   /** @internal */
-  public readonly nativeDb = new IModelHost.platform.SQLiteDb();
+  public readonly nativeDb = new NativePlatform.SQLiteDb();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
 
   /** @internal */
   public static createBlobIO(): SQLiteDb.BlobIO {
-    return new IModelHost.platform.BlobIO();
+    return new NativePlatform.BlobIO();
   }
 
   /** alias for closeDb.

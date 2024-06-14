@@ -17,6 +17,7 @@ import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostOptions } from "./IModelHost";
 import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
+import { NativePlatform } from "./internal/NativePlatform";
 
 /**
   * Options for [[IpcHost.startup]]
@@ -305,7 +306,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   }
 
   public async queryConcurrency(pool: "io" | "cpu"): Promise<number> {
-    return IModelHost.platform.queryConcurrency(pool);
+    return NativePlatform.queryConcurrency(pool);
   }
 }
 

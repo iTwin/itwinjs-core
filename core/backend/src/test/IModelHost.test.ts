@@ -16,6 +16,7 @@ import { ServerStorage } from "@itwin/object-storage-core";
 import { TestUtils } from "./TestUtils";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
+import { overrideSyncNativeLogLevels } from "../internal/NativePlatform";
 
 describe("IModelHost", () => {
   const opts = { cacheDir: TestUtils.getCacheDir() };
@@ -59,11 +60,13 @@ describe("IModelHost", () => {
   });
 
   it("should call logger sync function", async () => {
-    const logChanged = sinon.spy(IModelHost as any, "syncNativeLogLevels");
+    let nSyncCalls = 0;
+    overrideSyncNativeLogLevels(() => ++nSyncCalls);
     await IModelHost.startup(opts);
-    expect(logChanged.callCount).eq(0);
+    expect(nSyncCalls).to.equal(0);
     Logger.setLevel("test-cat", LogLevel.Warning);
-    expect(logChanged.callCount).eq(1);
+    expect(nSyncCalls).to.equal(1);
+    overrideSyncNativeLogLevels(undefined);
   });
 
   it("should raise onAfterStartup events", async () => {
