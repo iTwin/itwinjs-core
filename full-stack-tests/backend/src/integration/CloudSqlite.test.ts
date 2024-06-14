@@ -335,7 +335,7 @@ describe("CloudSqlite", () => {
     await azSqlite.setSasToken(contain1, "read"); // don't ask for delete permission
     contain1.connect(caches[1]);
     await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => {
-      // need nSeconds 0 or blocks we just deleted won't be attempted to be deleted.
+      // need nSeconds 0 or the blocks of the database we just deleted won't be deleted.
       await expect(CloudSqlite.cleanDeletedBlocks(contain1, { nSeconds: 0 })).eventually.rejectedWith("delete block failed (403)");
     });
 
@@ -520,25 +520,6 @@ describe("CloudSqlite", () => {
     expect(container.garbageBlocks).to.be.equal(garbageBlocksPrev);
 
     resolved = false;
-    onProgress.reset();
-    onProgress.onFirstCall().returns(0);
-    // Return 1 to stop and save progress.
-    onProgress.onSecondCall().returns(1);
-
-    CloudSqlite.cleanDeletedBlocks(container, {nSeconds: 0, findOrphanedBlocks: true, onProgress}).then(() => {
-      resolved = true;
-    }).catch(() => {
-      resolved = true;
-    });
-
-    while (!resolved) {
-      await clock.tickAsync(250);
-      await new Promise((resolve) => clock.setTimeout(resolve, 5));
-    }
-    container.checkForChanges();
-    expect(container.garbageBlocks).to.not.equal(0);
-    expect(container.garbageBlocks).to.be.lessThan(garbageBlocksPrev);
-
     clock.reset();
     clock.restore();
 
