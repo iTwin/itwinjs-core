@@ -40,7 +40,8 @@ steps:
       stagingDir: ${{ parameters.stagingDir }}
       pipelineId: 8594 # iTwin AppUI/AppUI Docs CI
       artifactName: AppUI Docs
-      buildTag: hasDocs
+      # buildTag: hasDocs
+      specificBuild: 2955570
       useCurrentDocsArtifact: ${{ parameters.useCurrentAppUIDocsArtifact }}
 
   # BIS
