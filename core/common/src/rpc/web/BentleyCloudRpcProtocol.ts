@@ -138,7 +138,6 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
         ++i;
       } else if (key === "changeset") {
         changeset.id = (value === "0") ? "" : value;
-        delete changeset.index;
         ++i;
       }
     }
