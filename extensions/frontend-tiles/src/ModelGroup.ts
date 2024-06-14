@@ -18,6 +18,8 @@ export interface PlanProjectionInfo {
   transparency: number;
   /** If true, the graphics are drawn as overlays with no depth test. */
   overlay: boolean;
+  /** If true, the graphics should be split up into separate nodes based on subcategory Id so that draw order can be controlled by subcategory display priority. */
+  enforceDisplayPriority: boolean;
 }
 
 /** Display settings to be applied to a group of models.
@@ -60,11 +62,12 @@ function createPlanProjectionInfo(modelId: Id64String, context: ModelGroupingCon
     elevation: settings.elevation ?? context.getDefaultElevation(modelId),
     transparency: settings.transparency ?? 0,
     overlay: settings.overlay,
+    enforceDisplayPriority: !!settings.enforceDisplayPriority,
   };
 }
 
 function equalPlanProjections(a: PlanProjectionInfo, b: PlanProjectionInfo): boolean {
-  return a.elevation === b.elevation && a.overlay === b.overlay && a.transparency === b.transparency;
+  return a.enforceDisplayPriority === b.enforceDisplayPriority && a.elevation === b.elevation && a.overlay === b.overlay && a.transparency === b.transparency;
 }
 
 function createModelGroupInfo(context: ModelGroupingContext, modelId: Id64String): ModelGroupInfo {

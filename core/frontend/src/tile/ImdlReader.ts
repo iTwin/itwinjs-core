@@ -18,7 +18,7 @@ import { RenderGraphic } from "../render/RenderGraphic";
 import { BatchOptions } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
 import { ImdlModel } from "../common/imdl/ImdlModel";
-import { convertFeatureTable, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../common/imdl/ParseImdlDocument";
+import { convertFeatureTable, ImdlModelGroup, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../common/imdl/ParseImdlDocument";
 import { decodeImdlGraphics, IModelTileContent } from "./internal";
 
 /* eslint-disable no-restricted-syntax */
@@ -67,7 +67,7 @@ export interface ImdlReaderCreateArgs {
   containsTransformNodes?: boolean; // default false
   /** Supplied if the graphics in the tile are to be split up based on the nodes in the timeline. */
   timeline?: ImdlTimeline;
-  modelGroups?: Id64Set[];
+  modelGroups?: ImdlModelGroup[];
 }
 
 /** @internal */

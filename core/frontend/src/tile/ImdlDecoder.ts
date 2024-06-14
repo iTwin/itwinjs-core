@@ -11,7 +11,7 @@ import { BatchType } from "@itwin/core-common";
 import type { IModelConnection } from "../IModelConnection";
 import { BatchOptions } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
-import type { ImdlTimeline } from "../common/imdl/ParseImdlDocument";
+import type { ImdlModelGroup, ImdlTimeline } from "../common/imdl/ParseImdlDocument";
 import { acquireImdlParser, ImdlReaderResult, readImdlContent } from "./internal";
 
 /** Arguments supplied to [[ImdlDecoder.decode]].
@@ -29,7 +29,7 @@ export interface ImdlDecodeArgs {
   /** An array of model groups. If supplied, the graphics associated with each group of models will be decoded into a separate GraphciBranch
    * with [[GraphicBranch.groupNodeId]] set to the index of the group to which the model belongs.
    */
-  modelGroups?: Id64Set[];
+  modelGroups?: ImdlModelGroup[];
 }
 
 /** An object that can decode graphics in iMdl format.
