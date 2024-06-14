@@ -300,6 +300,8 @@ export class TestRunner {
               await context?.iModel.close();
             }
             context = await this.openIModel();
+          } else {
+            context?.iModel.selectionSet.emptyAll();
           }
         } catch (e: any) {
           await this.logError(`Failed to open iModel ${iModelName}: ${(e as Error).message}`);
