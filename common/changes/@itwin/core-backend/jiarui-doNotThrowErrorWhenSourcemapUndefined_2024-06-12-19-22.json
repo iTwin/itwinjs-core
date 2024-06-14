@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "keep sourceMap undefined/null in targetProps",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
