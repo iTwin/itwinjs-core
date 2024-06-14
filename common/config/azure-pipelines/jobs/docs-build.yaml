@@ -49,11 +49,17 @@ parameters:
 
 jobs:
   - job: DocsBuild
+    strategy:
+      matrix:
+        windows:
+          poolDemands: Agent.OS -equals Windows_NT
+        mac:
+          poolDemands: Agent.OS -equals Darwin
     workspace:
       clean: all
     pool:
       name: iModelTechCI
-      demands: Agent.OS -equals Darwin
+      demands: $(poolDemands)
     steps:
       - checkout: ${{ parameters.checkout }}
         path: itwinjs-core
