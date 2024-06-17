@@ -345,10 +345,10 @@ describe("IModelWriteTest", () => {
     };
     const briefcaseDb = await BriefcaseDb.open({ fileName: briefcaseProps.fileName});
     briefcaseDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    let firstElement = {id:undefined, codeValue: "test"};
-    briefcaseDb.withPreparedStatement("SELECT * from Bis.Element LIMIT 1", (stmt: ECSqlStatement) => {
+    let firstNonRootElement = {id:undefined, codeValue: "test"};
+    briefcaseDb.withPreparedStatement("SELECT * from Bis.Element LIMIT 1 OFFSET 1", (stmt: ECSqlStatement) => {
       if (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        firstElement = stmt.getRow();
+        firstNonRootElement = stmt.getRow();
       }
     });
     // make change to the briefcaseDb that does not affect code, e.g., save file property
@@ -356,16 +356,28 @@ describe("IModelWriteTest", () => {
     expect(() => briefcaseDb.saveFileProperty({ name: "codeServiceProp", namespace: "codeService", id: 1, subId: 1 }, "codeService test")).to.not.throw();
     // make change to the briefcaseDb that affects code that will invoke verifyCode, e.g., update an element with a non-null code
     // expect error from verifyCode
-    let newProps = { id: firstElement.id, code: {...Code.createEmpty(), value:firstElement.codeValue}, classFullName: undefined, model: undefined };
-    await briefcaseDb.locks.acquireLocks({exclusive: firstElement.id});
+    let newProps = { id: firstNonRootElement.id, code: {...Code.createEmpty(), value:firstNonRootElement.codeValue}, classFullName: undefined, model: undefined };
+    await briefcaseDb.locks.acquireLocks({exclusive: firstNonRootElement.id});
     expect(() => briefcaseDb.elements.updateElement(newProps)).to.throw(CodeService.Error);
     // make change to the briefcaseDb that will invoke verifyCode with a null(empty) code, e.g., update an element with a null(empty) code
     // expect no error from verifyCode
-    newProps = { id: firstElement.id, code: Code.createEmpty(), classFullName: undefined, model: undefined };
+    newProps = { id: firstNonRootElement.id, code: Code.createEmpty(), classFullName: undefined, model: undefined };
     expect(() => briefcaseDb.elements.updateElement(newProps)).to.not.throw();
+    briefcaseDb.close();
+    // throw "NoCodeIndex"
+    CodeService.createForIModel = async () => {
+      throw new CodeService.Error("NoCodeIndex", 0x10000 + 1, " ");
+    };
+    const briefcaseDb2 = await BriefcaseDb.open({ fileName: briefcaseProps.fileName});
+    briefcaseDb2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    await briefcaseDb2.locks.acquireLocks({exclusive: firstNonRootElement.id});
+    newProps = { id: firstNonRootElement.id, code: {...Code.createEmpty(), value:firstNonRootElement.codeValue}, classFullName: undefined, model: undefined };
+    // make change to the briefcaseDb that affects code that will invoke verifyCode, e.g., update an element with a non-null code
+    // expect no error from verifyCode
+    expect(() => briefcaseDb2.elements.updateElement(newProps)).to.not.throw();
     // clean up
     CodeService.createForIModel = originalCreateForIModel;
-    briefcaseDb.close();
+    briefcaseDb2.close();
   });
 
   it("clear cache on schema changes", async () => {
