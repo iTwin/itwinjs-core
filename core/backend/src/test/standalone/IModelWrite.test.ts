@@ -374,6 +374,9 @@ describe("IModelWriteTest", () => {
     // make change to the briefcaseDb that affects code that will invoke verifyCode, e.g., update an element with a non-null code
     // expect no error from verifyCode
     expect(() => briefcaseDb2.elements.updateElement(newProps)).to.not.throw();
+    // expect no error from verifyCode for empty code
+    newProps = { id: firstNonRootElement.id, code: Code.createEmpty(), classFullName: undefined, model: undefined };
+    expect(() => briefcaseDb2.elements.updateElement(newProps)).to.not.throw();
     // clean up
     CodeService.createForIModel = originalCreateForIModel;
     briefcaseDb2.close();
