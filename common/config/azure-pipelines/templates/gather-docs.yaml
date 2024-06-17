@@ -41,7 +41,7 @@ steps:
       pipelineId: 8594 # iTwin AppUI/AppUI Docs CI
       artifactName: AppUI Docs
       # buildTag: hasDocs
-      specificBuild: 2955842
+      specificBuild: 2959617 # temporarily until appui pr merged and new docs produced.
       useCurrentDocsArtifact: ${{ parameters.useCurrentAppUIDocsArtifact }}
 
   # BIS
