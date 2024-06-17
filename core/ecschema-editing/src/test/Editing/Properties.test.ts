@@ -1,4 +1,4 @@
-import { ECClassModifier, EntityClass, Enumeration, EnumerationProperty, PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, PropertyCategory, Schema, SchemaContext, SchemaItemKey, SchemaKey, StructClass, UnitSystem } from "@itwin/ecschema-metadata";
+import { ECClassModifier, EntityClass, Enumeration, EnumerationProperty, PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, PropertyCategory, Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaKey, StructClass, UnitSystem } from "@itwin/ecschema-metadata";
 import { expect } from "chai";
 import { SchemaContextEditor } from "../../ecschema-editing";
 import { ECEditingStatus } from "../../Editing/Exception";
@@ -229,6 +229,29 @@ describe("Properties editing tests", () => {
       const property = await entity?.getProperty("testProperty") as PrimitiveProperty;
       const category = await testEditor.schemaContext.getSchemaItem(catResult) as PropertyCategory;
       expect(await property.category).to.eql(category);
+    });
+
+    it("try setting property category to a different type, throws error", async () => {
+      const notACategory = await testEditor.entities.create(testKey, "notACategory", ECClassModifier.None);
+      await testEditor.entities.createPrimitiveProperty(entityKey, "testProperty", PrimitiveType.String);
+
+      await expect(testEditor.entities.properties.setCategory(entityKey, "testProperty", notACategory)).to.be.eventually.rejected.then(function (error) {
+        expect(error).to.have.property("errorNumber", ECEditingStatus.SetCategory);
+        expect(error).to.have.nested.property("innerError.message", `Expected ${notACategory.fullName} to be of type PropertyCategory.`);
+        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidSchemaItemType);
+      });
+    });
+
+    it("try setting property category to an unknown category, throws error", async () => {
+      const unknownCategory = new SchemaItemKey("unknownCategory", testKey);
+      await testEditor.entities.createPrimitiveProperty(entityKey, "testProperty", PrimitiveType.String);
+
+      await expect(testEditor.entities.properties.setCategory(entityKey, "testProperty", unknownCategory)).to.be.eventually.rejected.then(function (error) {
+        expect(error).to.have.property("errorNumber", ECEditingStatus.SetCategory);
+
+        expect(error).to.have.nested.property("innerError.message", `PropertyCategory ${unknownCategory.fullName} could not be found in the schema ${testKey.name}.`);
+        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+      });
     });
 
     it("CustomAttribute defined in same schema, instance added to property successfully.", async () => {

@@ -135,14 +135,12 @@ export class Properties {
         throw new SchemaEditingError(ECEditingStatus.SetCategory, new PropertyId(this.ecClassType, classKey, propertyName), e);
       });
 
-    const category = await property.class.schema.lookupItem<PropertyCategory>(categoryKey);
-    if (category === undefined) {
-      throw new SchemaEditingError(ECEditingStatus.SetCategory, new PropertyId(this.ecClassType, classKey, propertyName),
-        new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new SchemaItemId(SchemaItemType.PropertyCategory, categoryKey)));
-    }
+    const category = await this._schemaEditor.lookupSchemaItem<PropertyCategory>(property.class.schema, categoryKey, SchemaItemType.PropertyCategory)
+      .catch((e: any) => {
+        throw new SchemaEditingError(ECEditingStatus.SetCategory, new PropertyId(this.ecClassType, classKey, propertyName), e);
+      });
 
     property.setCategory(new DelayedPromiseWithProps<SchemaItemKey, PropertyCategory>(categoryKey, async () => category));
-    return { itemKey: classKey, propertyName };
   }
 
   /**
