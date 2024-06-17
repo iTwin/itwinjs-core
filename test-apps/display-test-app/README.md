@@ -202,7 +202,7 @@ You can use these environment variables to alter the default behavior of various
   * If defined, the scope to be used for OIDC auth.
 * IMJS_OIDC_REDIRECT_URI
   * If defined, the redirect URI to be used for OIDC auth.
-    * NOTE: as long as IMJS_OIDC_HEADLESS is not defined, OIDC auth will default to using "http://localhost:3000/signin-callback" for this.
+    * NOTE: as long as IMJS_OIDC_HEADLESS is not defined, OIDC auth will default to using "<http://localhost:3000/signin-callback>" for this.
 * IMJS_OIDC_CLIENT_SECRET
   * If defined in iOS, the client secret to be used for OIDC auth.
 * IMJS_BRIEFCASE_CACHE_LOCATION
@@ -236,6 +236,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 * `win dock` dock *windowId* - dock the specified or focused window. `dock` is a 1- or 2-character combination of the characters `t`, `l`, `r`, and `b`. e.g., to dock the focused window into the bottom-left corner, execute `win dock bl`.
 * `win restore` *windowId* - restore (un-dock) the specified or focused window.
 * `win close` *windowId* - close the specified or focused window.
+* `webgpu create` - open an experimental WebGPU window.
 * `vp clone` *viewportId* - create a new viewport looking at the same view as the specified or currently-selected viewport.
 * `dta gltf` *assetUrl* - load a glTF asset from the specified URL and display it at the center of the project extents in the currently-selected viewport. If no URL is provided, a file picker allows selection of an asset from the local file system; in this case the asset must be fully self-contained (no references to other files).
 * `dta text` *command* *args* - an extremely basic text editing system that allows you to build up a TextAnnotation to be displayed as a decoration graphic in the current viewport. Start it using `dta text init <categoryId>`. Then use commands like `dta text fraction "numerator" "denominator"`, `dta text height <height>`, `dta text color <color>`, etc to build up the annotation. Use `dta text clear` to delete the decoration and reset all state to defaults. See TextDecoration.ts for the full set of commands.

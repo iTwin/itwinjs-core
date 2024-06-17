@@ -579,6 +579,27 @@ export class DockWindowTool extends Tool {
   }
 }
 
+export class CreateWebGPUWindowTool extends Tool {
+  public static override toolId = "CreateWebGPUWindow";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+
+  public override async run(): Promise<boolean> {
+    const props: NamedWindowProps = {
+      id: "WebGPU",
+      title: "WebGPU",
+      width: 800,
+      height: 600,
+    };
+    DisplayTestApp.surface.createNamedWindow(props);
+    return true;
+  }
+
+  public override async parseAndRun(..._args: string[]): Promise<boolean> {
+    return this.run();
+  }
+}
+
 export class CloneViewportTool extends Tool {
   public static override toolId = "CloneViewport";
   public static override get minArgs() { return 0; }

@@ -56,6 +56,7 @@ import { UserPreferencesAccess } from "./UserPreferences";
 import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
 import "./IModeljs-css";
+import { WebGPUSystem } from "./render/webgpu/System";
 
 // cSpell:ignore noopener noreferrer gprid forin nbsp csrf xsrf
 
@@ -194,6 +195,7 @@ export class IModelApp {
   private static _notifications: NotificationManager;
   private static _quantityFormatter: QuantityFormatter;
   private static _renderSystem?: RenderSystem;
+  private static _wgRenderSystem?: RenderSystem;
   private static _userPreferences?: UserPreferencesAccess;
   private static _tentativePoint: TentativePoint;
   private static _tileAdmin: TileAdmin;
@@ -238,6 +240,8 @@ export class IModelApp {
   public static get realityDataSourceProviders(): RealityDataSourceProviderRegistry { return this._realityDataSourceProviders; }
   /** The [[RenderSystem]] for this session. */
   public static get renderSystem(): RenderSystem { return this._renderSystem!; }
+  /** The alternate [[RenderSystem]] for this session. */
+  public static get wgRenderSystem(): RenderSystem { return this._wgRenderSystem!; }
   /** The [[ViewManager]] for this session. */
   public static get viewManager(): ViewManager { return this._viewManager; }
   /** The [[NotificationManager]] for this session. */
@@ -400,6 +404,7 @@ export class IModelApp {
     ].forEach((module) => this.registerModuleEntities(module));
 
     this._renderSystem = (opts.renderSys instanceof RenderSystem) ? opts.renderSys : this.createRenderSys(opts.renderSys);
+    this._wgRenderSystem = this.wgCreateRenderSys();
     if (opts.userPreferences)
       this._userPreferences = opts.userPreferences;
     this._viewManager = opts.viewManager ?? new ViewManager();
@@ -558,6 +563,9 @@ export class IModelApp {
 
   /** @internal */
   public static createRenderSys(opts?: RenderSystem.Options): RenderSystem { return System.create(opts); }
+
+  /** @internal */
+  public static wgCreateRenderSys(opts?: RenderSystem.Options): RenderSystem { return WebGPUSystem.create(opts); }
 
   private static _setupRpcRequestContext() {
     RpcConfiguration.requestContext.getId = (_request: RpcRequest): string => {

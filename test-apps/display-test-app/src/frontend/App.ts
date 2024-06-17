@@ -46,7 +46,7 @@ import { TextDecorationTool } from "./TextDecoration";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
 import { signIn, signOut } from "./signIn";
 import {
-  CloneViewportTool, CloseIModelTool, CloseWindowTool, CreateWindowTool, DockWindowTool, FocusWindowTool, MaximizeWindowTool, OpenIModelTool,
+  CloneViewportTool, CloseIModelTool, CloseWindowTool, CreateWebGPUWindowTool, CreateWindowTool, DockWindowTool, FocusWindowTool, MaximizeWindowTool, OpenIModelTool,
   ReopenIModelTool, ResizeWindowTool, RestoreWindowTool, Surface,
 } from "./Surface";
 import { CreateSectionDrawingTool } from "./CreateSectionDrawingTool";
@@ -319,6 +319,7 @@ export class DisplayTestApp {
       CloseIModelTool,
       CloseWindowTool,
       CreateSectionDrawingTool,
+      CreateWebGPUWindowTool,
       CreateWindowTool,
       DisableModelTransformsTool,
       DockWindowTool,

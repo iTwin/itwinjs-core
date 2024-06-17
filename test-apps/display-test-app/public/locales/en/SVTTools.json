@@ -28,6 +28,9 @@
     "RefreshTiles": {
       "keyin": "dta refresh tiles"
     },
+    "CreateWebGPUWindow": {
+      "keyin": "webgpu create"
+    },
     "CreateWindow": {
       "keyin": "win create"
     },
