@@ -203,12 +203,9 @@ export class SchemaContextEditor {
   }
 
   public async lookupSchemaItem<T extends SchemaItem>(schemaOrKey: Schema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T>{
-    let schema: Schema;
-    if (schemaOrKey instanceof SchemaKey) {
-      schema = await this.getSchema(schemaOrKey);
-    } else {
-      schema = schemaOrKey;
-    }
+    const schema = Schema.isSchema(schemaOrKey)
+      ? schemaOrKey
+      : await this.getSchema(schemaOrKey);
 
     const schemaItem = await schema.lookupItem<T>(schemaItemKey);
     if (schemaItem === undefined)
