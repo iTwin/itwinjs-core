@@ -80,33 +80,29 @@ The top of the information hierarchy is strictly controlled and is very similar 
 
 ## Typical Repository Organization
 
-Two examples of repository organizations are described below. It should be noted that a single BIS repository may have multiple uses. When that occurs each use (often corresponding to an application) adds the hierarchy; the resulting hierarchy is similar to a union of the uses' hierarchies.
+Two examples of repository organizations are described below. It should be noted that a single BIS repository may have multiple uses. When that occurs each use (often corresponding to an application) adds its hierarchy on a corresponding [Editing Channel](../../../learning/backend/Channel.md) within the BIS repository. The resulting total hierarchy for the single BIS repository is then the union of the uses' hierarchies.
 
 ## Example Information Hierarchy
 
-The following instance-diagram depicts the information hierarchy for an hypothetical campus. It shows the organization of data in two modeling perspectives: Physical and Functional, as well as catalog-data in Definition models. See [Instance-diagram Conventions](../references/instance-diagram-conventions.md) for details about the conventions used.
+The following instance-diagram depicts the information hierarchy for an hypothetical campus. The data is assumed to have been written by a single application, thus, it is organized into a one `Editing Channel`. It shows the organization of data in two main modeling perspectives: Physical and Functional, as well as catalog-data in Definition models and associated Drawings under a Document perspective. See [Instance-diagram Conventions](../references/instance-diagram-conventions.md) for details about the conventions used.
 
 &nbsp;
-![Information Hierarchy](../media/information-hierarchy.webp)
+![Information Hierarchy](../media/information-hierarchy.png)
 &nbsp;
 
 ### iModel Connector Repository Organization
 
 iModel Connectors transform data in an external format into an iModel. As part of that job, they need to organize the resulting data in a way that is comprehensible by both humans and software.
 
-The following instance diagram depicts the organization of information in one iModel target by three iModel Connectors: IFC, OpenBuilding Designer and Bentley Civil. The last two are shown with more detail, including their parallel `Model`, `ExternalSource` and `SpatialComposition` hierarchies. The sample iModel shows data synchronized from three different datasets, two .dgn-based and one .ifc.
+The following instance diagram depicts the organization of information in one iModel targeted by three iModel Connectors: IFC, OpenBuilding Designer and Bentley Civil, which synchronized data from three different datasets, two .dgn-based and one .ifc. The last two are shown with more detail, including their parallel `Model`, `ExternalSource` and `SpatialComposition` hierarchies. As a result, the resulting hierarchy of the BIS repository is organized into three `Editing Channels`.
 
 &nbsp;
-![iModel Connector Repository Organization](../media/imodel-connector-repository-organization.webp)
+![iModel Connector Repository Organization](../media/imodel-connector-repository-organization.png)
 &nbsp;
 
 Since iModel Connectors run headless without user-input, they need to organize data they write into iModels based on their understanding about it. In the example above, data synchronized by each iModel Connector is stored under a specific branch of the Subject hierarchy. Each iModel Connector lays out the next levels according to the structure and discoverable semantics about the data on the source. In the case of dgn files, both the OpenBuilding Designer and Bentley Civil iModel Connectors create child Subjects for every referenced dgn & model on the external dataset, mirroring the division of labor among teams and disciplines that drive the organization of data in those external products.
 
 See [iModel Connectors](../../../learning/imodel-connectors.md) for more details.
-
-<!-- TODO:
-### Editing Application Repository Organization
--->
 
 ---
 | Next: [Modeling Perspectives](./modeling-perspectives.md)

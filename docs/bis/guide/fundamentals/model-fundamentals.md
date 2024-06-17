@@ -14,18 +14,28 @@ The Model contents are driven by:
 
 ## Core Model Types
 
+The following table shows the most common core model types, as well as the allowed type of elements that they can contain.
+
 | Model subclass            | Type of Elements contained        |
 |---------------------------|-----------------------------------------------|
 | `PhysicalModel`           | PhysicalElements, SpatialLocationElements, GraphicalElement3d and InformationContentElements |
-| `SpatialLocationModel`    | SpatialLocationElements, GraphicalElement3d and InformationContentElements |
-| `DrawingModel`            | GeometricElement2d elements                       |
-| `GraphicalModel3d`        | GraphicalElement3d elements                       |
+| `FunctionalModel` subclass| FunctionalElements and InformationContentElements |
+| `AnalyticalModel` subclass| AnalyticalElements and InformationContentElements |
 | `DefinitionModel`         | DefinitionElements and InformationContentElements |
-| `InformationRecordModel`  | InformationRecordElements                         |
-| `GroupInformationModel`   | GroupInformationElements                          |
 | `DocumentListModel`       | Document elements                                 |
+| `DrawingModel`            | GeometricElement2d elements                       |
+| `SheetModel`              | GeometricElement2d elements                       |
+
+The following table shows additional core model types, typically considered as specialized.
+
+| Model subclass            | Type of Elements contained        |
+|---------------------------|-----------------------------------------------|
+| `GraphicalModel3d`        | GraphicalElement3d elements                       |
+| `GroupInformationModel`   | GroupInformationElements                          |
+| `InformationRecordModel`  | InformationRecordElements                         |
+| `LinkModel`               | LinkElements                                      |
 | `PhysicalSystemModel`     | PhysicalSystem elements                           |
-| `RoleModel`               | RoleElements and InformationContentElements       |
+| `SpatialLocationModel`    | SpatialLocationElements, GraphicalElement3d and InformationContentElements |
 
 ### Model Identity
 

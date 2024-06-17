@@ -1,10 +1,13 @@
 # Categories
 
-A `Category` is a property of a `GeometricElement` that *categorizes* its geometry. That is, every GeometricElement is *in* one and only one Category.
+A `Category` is a property of a `GeometricElement` that classifies its geometry for display purposes. That is, every GeometricElement is *in* one and only one Category. Furthermore, Categories are not hierarchical, that is, it not allowed to define a Category as the parent of another Category.
 
 The visibility (on/off) of a category may be controlled per-view.
 
-Categories are similar to *levels* in DGN, *layers* in DWG, and *categories* in RVT.
+Categories are similar to *levels* in DGN and *layers* in DWG, as geometry-classification constructs.
+Categories are similar to *categories* in RVT as being the parent concept of the construct that enables visibility and styling control over portions of geometry - i.e. SubCategory.
+
+For more information about semantics vs. geometry classification in BIS, see [Classifying Elements](./data-classification.md).
 
 ## Category Classes
 
@@ -29,13 +32,15 @@ A `SubCategory` is a *subdivision* of a `Category`. SubCategories allow Geometri
 
 A `SubCategory` always subdivides a single `Category`. This relationship is defined by the `CategoryOwnsSubCategories` relationship. Every Category has one SubCategory called the *default* SubCategory.
 
-An example of a Category is "Window". The "Window" Category might contain SubCategories "Pane", "Mullion" and "Hardware". If the Window Category is displayed, the Pane SubCategory may be displayed while the Mullion SubCategory may be turned off.
+SubCategories are similar to *levels* in DGN, *layers* in DWG and *subcategories* in RVT as being the construct directly involved in visibility and styling of geometry.
+
+An example of a Category is "Window". The "Window" Category might contain SubCategories "Pane", "Mullion" and "Hardware". If the Window Category is displayed, the "Pane" SubCategory may be displayed while the "Mullion" SubCategory may be turned off.
 
 **Note:** If a GeometricElement's Category is off, the element is not displayed, period. SubCategory is only relevant when the Category of the element *is* displayed.
 
-## Category Rank
+## Category and SubCategory Rank
 
-Categories have a property called `Rank` that is defined by this enum:
+Categories and SubCategories have a property called `Rank` that is defined by the following enum. It is meant to capture at what level a given Category or SubCategory was proposed. Applications can rely on the `Rank` property to understand the purpose of a given Category or SubCategory, when applicable.
 
 ```cpp
 enum class Rank
@@ -70,28 +75,24 @@ The `CodeScope` of a `SubCategory` is always its parent `Category`. That is, Sub
 Every `GeometricElement2d` and `GeometricElement3d` has a `Category`. They also have a `GeometryStream` property that defines the geometry of the `Element`. Within that GeometryStream, 0..N references can be made to SubCategoryIds *of the element's Category* to control the visibility and style of
 entries within the GeometryStream. Any reference to a SubCategoryId that is not a SubCategory of the element's Category is rejected.
 
-## Domain Standardization of SpatialCategories
+## Data-writing applications and Categories
 
-Every Domain should provide standard Categories for the GeometricElements that it creates. Categories will often correspond to classes in the Domain ("Door", "Window", "Beam", etc.). SubCategories within each Category may correspond to portions of the GeometricElement ("Hardware") or to important geometric aspects of the GeometricElement ("CenterLine").
+Each application synchronizing external data or authoring it directly on a BIS repository shall store its Categories on its own [Editing Channel](./../data-organization/top-of-the-world.md#editing-channels). That way each application can have its own set of Categories without risk of name collision with each other.
 
-Every `SpatialElement` subclass does **not** need its own `SpatialCategory`. Two common SpatialCategory patterns are:
+Applications should consider the SpatialCategories proposed by Standard BIS Domains, when applicable.
 
-   1. A SpatialCategory is used for a class and all its descendent classes.
-   2. A SpatialCategory is used for a set of unrelated classes that have some conceptual similarity but do not fit rule 1.
+## Standardization of Categories
+
+Categories are ultimately under the control of the user. Users may be interested in eventually standardizing the list of Categories and Subcategories used in a BIS repository, especially when its data is created by different applications. Standard BIS Domains as well as Applications may suggest *default* Categories to certain GeometricElements in order to aid towards that goal.
+
+Categories proposed as defaults may correspond to one or more classes in the Domain ("Door", "Pavement", "Beam", etc.).
+
+Every `GeometricElement` subclass does **not** need its own default `Category`. Two common Category patterns are:
+
+   1. A Category is used for a class and all its descendent classes.
+   2. A Category is used for a set of unrelated classes that have some conceptual similarity but do not fit rule 1.
 
 <!-- TODO: Clarify how/where the Domain authors document the Categories. -->
-
-## User Control of DrawingCategories
-
-DrawingCategories are similar to drawing layer/level standards and are ultimately under the control of the user. It is intended that DrawingCategories will be distributed via catalogs in the future.
-
-<!-- TODO: Elaborate on how user can (or will be able to) control drawing standards in the future. They won't be manually changing GeometricElement2dIsInCategory? -->
-
-## iModel Connectors and Categories
-
-Each iModel Connector job should create a `DefinitionModel` for its Categories. That way each connector can have its own set of Categories without risk of name collision with other jobs.
-
-iModel Connectors should respect and use the standard SpatialCategories defined by the Domains.
 
 ---
 | Next: [Information Hierarchy](../data-organization/information-hierarchy.md)
