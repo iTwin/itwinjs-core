@@ -358,6 +358,17 @@ describe("RenderMaterialElement", () => {
         UnknownTexture: { TextureId: "CLONED" },
         NoTextureId: { OtherProp: 1 },
       });
+
+      jsonProps.materialAssets.renderMaterial.Map = {Pattern: undefined};
+      // eslint-disable-next-line @typescript-eslint/dot-notation
+      RenderMaterialElement["onCloned"](context, sourceProps, targetProps);
+      // keep the sourceMap the same in targetProps
+      expect(targetProps.jsonProperties?.materialAssets?.renderMaterial?.Map).to.have.property("Pattern").that.is.undefined;
+      jsonProps.materialAssets.renderMaterial.Map = {Pattern: null as any};
+      // eslint-disable-next-line @typescript-eslint/dot-notation
+      RenderMaterialElement["onCloned"](context, sourceProps, targetProps);
+      // keep the sourceMap the same in targetProps
+      expect(targetProps.jsonProperties?.materialAssets?.renderMaterial?.Map).to.have.property("Pattern").that.is.null;
     });
   });
 });
