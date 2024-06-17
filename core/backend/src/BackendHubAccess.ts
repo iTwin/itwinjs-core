@@ -232,6 +232,7 @@ export interface BackendHubAccess {
   /**
    * acquire one or more locks. Throws if unsuccessful. If *any* lock cannot be obtained, no locks are acquired
    * @internal
+   * @throws ConflictingLocksError
    */
   acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
 

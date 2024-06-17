@@ -7,7 +7,7 @@
  */
 
 import {
-  BentleyError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, IModelStatus, LoggingMetaData, RepositoryStatus,
+  BentleyError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, IModelHubStatus, IModelStatus, LoggingMetaData, RepositoryStatus,
 } from "@itwin/core-bentley";
 
 export {
@@ -30,6 +30,43 @@ export class IModelError extends BentleyError {
   public constructor(errorNumber: IModelErrorNumber | number, message: string, getMetaData?: LoggingMetaData) {
     super(errorNumber, message, getMetaData);
   }
+}
+
+/** Detailed information about a particular object Lock that is causing the Lock update conflict.
+ * @public
+*/
+export interface ConflictingLock {
+  /** Id of the object that is causing conflict. */
+  objectId: string;
+  /**
+     * The level of conflicting lock. Possible values are {@link LockLevel.Shared}, {@link LockLevel.Exclusive}.
+     * See {@link LockLevel}.
+     */
+  lockLevel: LockLevel;
+  /** An array of Briefcase ids that hold this lock. */
+  briefcaseIds: number[];
+}
+
+/** Supported Lock levels.
+ * @public
+*/
+export enum LockLevel {
+  /** Objects are not locked. This level is used for releasing already acquired locks. */
+  None = "none",
+  /** Multiple Briefcases can acquire a shared lock on the same object. */
+  Shared = "shared",
+  /** Only one Briefcase can acquire an exclusive lock on a given object at a time. */
+  Exclusive = "exclusive"
+}
+
+/** @public */
+export class ConflictingLocksError extends IModelError {
+  public conflictingLocks?: ConflictingLock[];
+  constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]) {
+    super(IModelHubStatus.LockOwnedByAnotherBriefcase, message, getMetaData);
+    this.conflictingLocks = conflictingLocks;
+  }
+
 }
 
 /** @public */
