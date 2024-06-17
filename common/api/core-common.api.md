@@ -1640,6 +1640,20 @@ export namespace ConcreteEntityTypes {
     export function toBisCoreRootClassFullName(type: ConcreteEntityTypes): string;
 }
 
+// @public
+export interface ConflictingLock {
+    briefcaseIds: number[];
+    lockLevel: LockLevel;
+    objectId: string;
+}
+
+// @public (undocumented)
+export class ConflictingLocksError extends IModelError {
+    constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]);
+    // (undocumented)
+    conflictingLocks?: ConflictingLock[];
+}
+
 // @alpha
 export enum ContentFlags {
     // (undocumented)
@@ -5531,6 +5545,13 @@ export interface Localization {
     initialize(namespaces: string[]): Promise<void>;
     registerNamespace(namespace: string): Promise<void>;
     unregisterNamespace(namespace: string): void;
+}
+
+// @public
+export enum LockLevel {
+    Exclusive = "exclusive",
+    None = "none",
+    Shared = "shared"
 }
 
 export { LogFunction }
