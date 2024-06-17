@@ -10,6 +10,7 @@ import { BaselineShift, FontId, FractionRun, LineLayoutResult, Paragraph, Run, R
 import { Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
+import * as LineBreaker from "linebreak";
 
 /** @internal */
 export interface TextLayoutRanges {
@@ -218,6 +219,31 @@ class LayoutContext {
   }
 }
 
+interface Segment {
+  segment: string;
+  index: number;
+}
+
+function split(source: string): Segment[] {
+  if (source.length === 0) {
+    return [];
+  }
+
+  let index = 0;
+  const segments: Segment[] = [];
+  const breaker = new LineBreaker(source);
+  for (let brk = breaker.nextBreak(); brk; brk = breaker.nextBreak()) {
+    segments.push({
+      segment: source.slice(index, brk.position),
+      index,
+    });
+
+    index = brk.position;
+  }
+
+  return segments;
+}
+
 /** @internal */
 export class RunLayout {
   public source: Run;
@@ -307,13 +333,9 @@ export class RunLayout {
       return [this];
     }
 
-    const segmenter = new (global as any).Intl.Segmenter(undefined, { granularity: "word" });
     const myText = this.source.content.substring(this.charOffset, this.charOffset + this.numChars);
-    if (myText.length === 0) {
-      return [];
-    }
+    const segments = split(myText);
 
-    const segments = Array.from(segmenter.segment(myText));
     if (segments.length <= 1) {
       return [this];
     }
