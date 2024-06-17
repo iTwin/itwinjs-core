@@ -37,7 +37,7 @@
     "@types/yargs": "17.0.19",
     "@types/glob": "^5.0.35",
     "eslint": "^8.56.0",
-    "mocha": "^10.2.0",
+    "mocha": "^10.4.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.3.3"
   }
