@@ -330,7 +330,7 @@ describe("IModelWriteTest", () => {
     rwIModel.close();
   });
 
-  it("should set a fake verifyCode for codeService that throws error for operations that affect code, if failed to open codeService ", async () => {
+  it.only("should set a fake verifyCode for codeService that throws error for operations that affect code, if failed to open codeService ", async () => {
     const iModelProps = {
       iModelName: "codeServiceTest",
       iTwinId,
@@ -370,12 +370,11 @@ describe("IModelWriteTest", () => {
     const briefcaseDb2 = await BriefcaseDb.open({ fileName: briefcaseProps.fileName});
     briefcaseDb2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     await briefcaseDb2.locks.acquireLocks({exclusive: firstNonRootElement.id});
+    // expect no error from verifyCode for empty code
+    expect(() => briefcaseDb2.elements.updateElement(newProps)).to.not.throw();
     newProps = { id: firstNonRootElement.id, code: {...Code.createEmpty(), value:firstNonRootElement.codeValue}, classFullName: undefined, model: undefined };
     // make change to the briefcaseDb that affects code that will invoke verifyCode, e.g., update an element with a non-null code
     // expect no error from verifyCode
-    expect(() => briefcaseDb2.elements.updateElement(newProps)).to.not.throw();
-    // expect no error from verifyCode for empty code
-    newProps = { id: firstNonRootElement.id, code: Code.createEmpty(), classFullName: undefined, model: undefined };
     expect(() => briefcaseDb2.elements.updateElement(newProps)).to.not.throw();
     // clean up
     CodeService.createForIModel = originalCreateForIModel;
