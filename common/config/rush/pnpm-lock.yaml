@@ -33,7 +33,7 @@ importers:
       '@types/semver': 7.3.10
       '@types/sinon': ^17.0.2
       '@types/touch': ^3.1.2
-      '@types/ws': ^7.0.0
+      '@types/ws': ^8.5.10
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
@@ -60,7 +60,7 @@ importers:
       ts-node: ^10.8.2
       typescript: ~5.3.3
       webpack: ^5.76.0
-      ws: ^7.5.3
+      ws: ^8.17.1
     dependencies:
       '@bentley/imodeljs-native': 4.8.6
       '@itwin/cloud-agnostic-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
@@ -76,7 +76,7 @@ importers:
       reflect-metadata: 0.1.13
       semver: 7.3.5
       touch: 3.1.0
-      ws: 7.5.3
+      ws: 8.17.1
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
@@ -95,7 +95,7 @@ importers:
       '@types/semver': 7.3.10
       '@types/sinon': 17.0.2
       '@types/touch': 3.1.2
-      '@types/ws': 7.2.0
+      '@types/ws': 8.5.10
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       cpx2: 3.0.0
@@ -873,7 +873,7 @@ importers:
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
       '@types/superagent': ^8.1.6
-      '@types/ws': ^7.0.0
+      '@types/ws': ^8.5.10
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       dotenv: ^10.0.0
@@ -884,11 +884,11 @@ importers:
       rimraf: ^3.0.2
       superagent: ^9.0.1
       typescript: ~5.3.3
-      ws: ^7.5.3
+      ws: ^8.17.1
     dependencies:
       lodash: 4.17.21
       superagent: 9.0.1
-      ws: 7.5.3
+      ws: 8.17.1
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-backend': link:../backend
@@ -902,7 +902,7 @@ importers:
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
       '@types/superagent': 8.1.6
-      '@types/ws': 7.2.0
+      '@types/ws': 8.5.10
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       dotenv: 10.0.0
@@ -4993,7 +4993,7 @@ packages:
     dependencies:
       '@types/express': 4.17.20
       '@types/express-serve-static-core': 4.17.41
-      '@types/ws': 7.2.0
+      '@types/ws': 8.5.10
     dev: true
 
   /@types/express/4.17.20:
@@ -5247,8 +5247,8 @@ packages:
     resolution: {integrity: sha512-c/hzNDBh7eRF+KbCf+OoZxKbnkpaK/cKp9iLQWqB7muXtM+MtL9SUUH8vCFcLn6dH1Qm05jiexK0ofWY7TfOhQ==}
     dev: false
 
-  /@types/ws/7.2.0:
-    resolution: {integrity: sha512-HnqczxiZ828df9FUh9OyY7vSOelpQNaj+SLEnDvU74rYijp61ggV7dhmDlMky0oYXKLdVuIG4KvExk8DEqzJgQ==}
+  /@types/ws/8.5.10:
+    resolution: {integrity: sha512-vmQSUcfalpIq0R9q7uTo2lXs6eGIpt9wtnLdMv9LVpIjCA/+ufZRozlVoVelIYixx1ugCBKDhn89vnsEGOCx9A==}
     dependencies:
       '@types/node': 18.16.20
     dev: true
@@ -9556,7 +9556,7 @@ packages:
       whatwg-encoding: 2.0.0
       whatwg-mimetype: 3.0.0
       whatwg-url: 10.0.0
-      ws: 8.16.0
+      ws: 8.17.1
       xml-name-validator: 4.0.0
     transitivePeerDependencies:
       - bufferutil
@@ -13559,8 +13559,8 @@ packages:
       utf-8-validate:
         optional: true
 
-  /ws/8.16.0:
-    resolution: {integrity: sha512-HS0c//TP7Ina87TfiPUz1rQzMhHrl/SG2guqRcTOIUYD2q8uhUdNHZYJUaQ8aTGPzCh+c6oawMKW35nFl1dxyQ==}
+  /ws/8.17.1:
+    resolution: {integrity: sha512-6XQFvXTkbfUOZOKKILFG1PDK2NDQs4azKQl26T0YS5CxqWLgXajbPZ+h4gZekJyRqFU8pvnbAbbs/3TgRPy+GQ==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -13570,7 +13570,6 @@ packages:
         optional: true
       utf-8-validate:
         optional: true
-    dev: true
 
   /ws/8.5.0:
     resolution: {integrity: sha512-BWX0SWVgLPzYwF8lTzEy1egjhS4S4OEAHfsO8o65WOVsrnSRGaSiUaa9e0ggGlkMTtBlmOpEXiie9RUcBO86qg==}
