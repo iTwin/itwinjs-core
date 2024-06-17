@@ -363,7 +363,7 @@ describe("IModelWriteTest", () => {
     newProps = { id: firstNonRootElement.id, code: Code.createEmpty(), classFullName: undefined, model: undefined };
     expect(() => briefcaseDb.elements.updateElement(newProps)).to.not.throw();
     briefcaseDb.close();
-    // throw "NoCodeIndex"
+    // throw "NoCodeIndex", this error should get ignored because it means the iModel isn't enforcing codes. updating an element with an empty code and a non empty code should work without issue.
     CodeService.createForIModel = async () => {
       throw new CodeService.Error("NoCodeIndex", 0x10000 + 1, " ");
     };
