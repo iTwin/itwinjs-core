@@ -1803,16 +1803,16 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       if (id !== undefined) {
         elementId = id;
       } else if (federationGuid !== undefined) {
-        elementId = this._iModel.withPreparedSqliteStatement("SELECT Id FROM bis_Element WHERE FederationGuid=?", (stmt: SqliteStatement) => {
+        elementId = this._iModel.withPreparedStatement("SELECT Id FROM Bis.Element WHERE FederationGuid=?", (stmt: ECSqlStatement) => {
           stmt.bindGuid(1, federationGuid);
-          return stmt.nextRow() ? stmt.getValueId(0) : undefined;
+          return stmt.step() === DbResult.BE_SQLITE_ROW ? stmt.getValue(0).getId() : undefined;
         });
       } else if (code !== undefined) {
-        elementId = this._iModel.withPreparedSqliteStatement("SELECT Id FROM bis_Element WHERE CodeSpecId=? AND CodeScopeId=? AND CodeValue=? LIMIT 1", (stmt: SqliteStatement) => {
+        elementId = this._iModel.withPreparedStatement("SELECT Id FROM Bis.Element WHERE CodeSpecId=? AND CodeScopeId=? AND CodeValue=? LIMIT 1", (stmt: ECSqlStatement) => {
           stmt.bindId(1, code.spec);
           stmt.bindId(2, code.scope);
           code.value !== undefined ? stmt.bindString(3, code.value) : stmt.bindNull(3);
-          return stmt.nextRow() ? stmt.getValueId(0) : undefined;
+          return stmt.step() === DbResult.BE_SQLITE_ROW ? stmt.getValue(0).getId() : undefined;
         });
       }
 
