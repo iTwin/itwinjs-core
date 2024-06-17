@@ -7,8 +7,7 @@
   },
   "globalOverrides": {
     "braces": "^3.0.3", // https://github.com/advisories/GHSA-grv7-fg5c-xmjg mocha>chokidar>braces, webpack-core>copy-webpack-plugin>fast-glob>micromatch>braces,
-    "ws@7": "^7.5.10", // https://github.com/advisories/GHSA-3h5v-q93c-6h6q core/express-server > express-ws@5.0.2 > ws@7.5.3
-    "ws@8": "^8.17.1" // https://github.com/advisories/GHSA-3h5v-q93c-6h6q @itwin/oidc-signin-tool@3.6.0 > @itwin/certa@3.8.0 > puppeteer@15.5.0 > ws@8.8.
+    "ws@7": "^7.5.10" // https://github.com/advisories/GHSA-3h5v-q93c-6h6q core/express-server > express-ws@5.0.2 > ws@7.5.3
   },
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
