@@ -2983,7 +2983,7 @@ export class BriefcaseDb extends IModelDb {
    * Execute the supplied function.
    * If the briefcase was read-only, reopen the native briefcase as read-only.
    * @note this._openMode is not changed from its initial value.
-   * @internal Exported strictly for tests and for use by the iTwinStudio ViewSync application.
+   * @internal Exported strictly for tests
    */
   public async executeWritable(func: () => Promise<void>): Promise<void> {
     const fileName = this.pathName;
