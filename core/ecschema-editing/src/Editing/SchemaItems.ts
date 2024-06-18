@@ -29,6 +29,38 @@ export abstract class SchemaItems {
   }
 
   /**
+   * Sets the name of the SchemaItem.
+   * @param itemKey The SchemaItemKey of the SchemaItem.
+   * @param name The new name of the SchemaItem.
+   * @throws ECObjectsError if `name` does not meet the criteria for a valid EC name
+   */
+  public async setName(itemKey: SchemaItemKey, name: string): Promise<SchemaItemKey> {
+    try {
+      const schema = await this.getSchema(itemKey.schemaKey);
+      const ecClass = await schema.getItem<MutableSchemaItem>(name);
+      if (ecClass !== undefined)
+        throw new SchemaEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, new SchemaItemId(this.schemaItemType, name, schema.schemaKey));
+
+      const mutableItem = await this.getSchemaItem<MutableSchemaItem>(itemKey);
+
+      const existingName = itemKey.name;
+      mutableItem.setName(name);
+
+      // Must reset in schema item map
+      await schema.deleteSchemaItem(existingName);
+      schema.addItem(mutableItem);
+      return mutableItem.key;
+    } catch(e: any) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.InvalidECName) {
+        throw new SchemaEditingError(ECEditingStatus.SetClassName, new SchemaItemId(this.schemaItemType, itemKey),
+          new SchemaEditingError(ECEditingStatus.InvalidECName, new SchemaItemId(this.schemaItemType, itemKey)));
+      }
+
+      throw new SchemaEditingError(ECEditingStatus.SetClassName, new SchemaItemId(this.schemaItemType, itemKey), e);
+    }
+  }
+
+  /**
    * Sets the SchemaItem description.
    * @param schemaItemKey The SchemaItemKey of the SchemaItem
    * @param description The new description to set.

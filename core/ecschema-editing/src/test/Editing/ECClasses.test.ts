@@ -46,6 +46,9 @@ describe("ECClass tests", () => {
       expect(error).to.have.nested.property("innerError.message", `Could not rename class ${result1.fullName} because the specified name is not a valid ECName.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidECName);
     });
+
+    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result1);
+    expect(testEntity, "originally named EntityClass should exist in the schema").to.not.be.undefined;
   });
 
   it("try changing class name to existing name in the schema, returns error", async () => {
@@ -56,6 +59,9 @@ describe("ECClass tests", () => {
       expect(error).to.have.nested.property("innerError.message", `EntityClass TestSchema.testEntity2 already exists in the schema ${testKey.name}.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);
     });
+
+    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result1);
+    expect(testEntity, "originally named EntityClass should exist in the schema").to.not.be.undefined;
   });
 
   describe("Property creation tests", () => {
