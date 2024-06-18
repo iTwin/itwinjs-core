@@ -10,7 +10,7 @@ import { MutableSchema } from "../Editing/Mutable/MutableSchema";
 import { Schema, type SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../Editing/Editor";
 import { SchemaConflictsError } from "../Differencing/Errors";
-import { SchemaDifference, SchemaDifferenceResult, SchemaDifferences } from "../Differencing/SchemaDifference";
+import { getSchemaDifferences, SchemaDifference, SchemaDifferenceResult } from "../Differencing/SchemaDifference";
 import { mergeCustomAttribute } from "./CustomAttributeMerger";
 import { mergeSchemaItems } from "./SchemaItemMerger";
 import { mergeSchemaReferences } from "./SchemaReferenceMerger";
@@ -51,7 +51,7 @@ export class SchemaMerger {
    * @returns             The merged target schema.
    */
   public async mergeSchemas(targetSchema: Schema, sourceSchema: Schema): Promise<Schema> {
-    return this.merge(await SchemaDifferences.fromSchemas(targetSchema, sourceSchema));
+    return this.merge(await getSchemaDifferences(targetSchema, sourceSchema));
   }
 
   /**

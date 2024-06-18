@@ -5,7 +5,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ConflictCode } from "../../Differencing/SchemaConflicts";
 import { Schema, SchemaContext, SchemaProps } from "@itwin/ecschema-metadata";
-import { SchemaDifferenceResult, SchemaDifferences } from "../../Differencing/SchemaDifference";
+import { SchemaDifferenceResult, getSchemaDifferences } from "../../Differencing/SchemaDifference";
 import { expect } from "chai";
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -24,7 +24,7 @@ describe("Difference Conflict Reporting", () => {
     const targetContext = new SchemaContext();
     const targetSchema = await Schema.fromJson(targetSchemaJson, targetContext);
 
-    return SchemaDifferences.fromSchemas(targetSchema, sourceSchema);
+    return getSchemaDifferences(targetSchema, sourceSchema);
   }
 
   const schemaHeader = {

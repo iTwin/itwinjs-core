@@ -388,49 +388,33 @@ export interface RelationshipConstraintClassDifference {
 }
 
 /**
+ * Creates a [[SchemaDifferenceResult]] for two given schemas.
+ * @param targetSchema  The schema the differences gets merged into.
+ * @param sourceSchema  The schema to get merged in the target.
+ * @returns             An [[SchemaDifferenceResult]] object.
  * @alpha
  */
-export namespace SchemaDifferences {
-  /**
-   * Creates a [[SchemaDifference]] for two given schemas.
-   * @param targetSchema  The schema the differences gets merged into.
-   * @param sourceSchema  The schema to get merged in the target.
-   * @returns             An [[SchemaDifference]] object.
-   * @alpha
-   */
-  export async function fromSchemas(targetSchema: Schema, sourceSchema: Schema): Promise<SchemaDifferenceResult> {
-    const changesList: SchemaChanges[] = [];
-    const schemaComparer = new SchemaComparer({ report: changesList.push.bind(changesList) });
-    await schemaComparer.compareSchemas(sourceSchema, targetSchema);
+export async function getSchemaDifferences(targetSchema: Schema, sourceSchema: Schema): Promise<SchemaDifferenceResult> {
+  const changesList: SchemaChanges[] = [];
+  const schemaComparer = new SchemaComparer({ report: changesList.push.bind(changesList) });
+  await schemaComparer.compareSchemas(sourceSchema, targetSchema);
 
-    return fromSchemaChanges(targetSchema, changesList[0]);
+  const visitor = new SchemaDiagnosticVisitor();
+  for (const diagnostic of changesList[0].allDiagnostics) {
+    visitor.visit(diagnostic);
   }
 
-  /**
-   * Creates a [[SchemaDifference]] for a given [[SchemaChanges]] report.
-   * @param targetSchema
-   * @param schemaChanges   A changes report of two schemas.
-   * @returns               An [[SchemaDifference]] object.
-   * @internal
-   */
-  export async function fromSchemaChanges(targetSchema: Schema, schemaChanges: SchemaChanges): Promise<SchemaDifferenceResult> {
-    const visitor = new SchemaDiagnosticVisitor();
-    for (const diagnostic of schemaChanges.allDiagnostics) {
-      visitor.visit(diagnostic);
-    }
+  const differences: AnySchemaDifference[] = [
+    ...visitor.schemaDifferences,
+    ...visitor.schemaItemDifferences,
+    ...visitor.schemaItemPathDifferences,
+    ...visitor.customAttributeDifferences,
+  ];
 
-    const differences: AnySchemaDifference[] = [
-      ...visitor.schemaDifferences,
-      ...visitor.schemaItemDifferences,
-      ...visitor.schemaItemPathDifferences,
-      ...visitor.customAttributeDifferences,
-    ];
-
-    return {
-      sourceSchemaName: schemaChanges.schema.schemaKey.toString(),
-      targetSchemaName: targetSchema.schemaKey.toString(),
-      conflicts: visitor.conflicts.length > 0 ? visitor.conflicts : undefined,
-      differences,
-    };
-  }
+  return {
+    sourceSchemaName: sourceSchema.schemaKey.toString(),
+    targetSchemaName: targetSchema.schemaKey.toString(),
+    conflicts: visitor.conflicts.length > 0 ? visitor.conflicts : undefined,
+    differences,
+  };
 }

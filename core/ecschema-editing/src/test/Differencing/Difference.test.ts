@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { DifferenceType, SchemaDifferenceResult, SchemaDifferences, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { DifferenceType, getSchemaDifferences, SchemaDifferenceResult, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { expect } from "chai";
 
 import sourceJson from "./sourceSchema.json";
@@ -93,7 +93,7 @@ describe("Schema Difference Reporting", () => {
     await Schema.fromJson(customAttributeSchemaJson, targetContext);
     const targetSchema = await Schema.fromJson(targetJson, targetContext);
 
-    differenceResult = await SchemaDifferences.fromSchemas(targetSchema, sourceSchema);
+    differenceResult = await getSchemaDifferences(targetSchema, sourceSchema);
     expect(differenceResult.conflicts).equals(undefined, "This test suite should not have conflicts.");
     expect(differenceResult.differences).has.a.lengthOf(27, "Unexpected count of differences.");
   });
@@ -128,7 +128,7 @@ describe("Schema Difference Reporting", () => {
       alias: "target",
     }, new SchemaContext());
 
-    const differences = await SchemaDifferences.fromSchemas(targetSchema, sourceSchema);
+    const differences = await getSchemaDifferences(targetSchema, sourceSchema);
     expect(differences.differences).has.lengthOf(0, "This test should not have differences.");
     expect(differences.conflicts).equals(undefined, "This test should not have conflicts.");
   });
