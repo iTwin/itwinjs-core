@@ -5,10 +5,7 @@
   "globalPeerDependencyRules": {
     "ignoreMissing": ["@babel/core", "@types/node", "@typescript-eslint/parser"]
   },
-  "globalOverrides": {
-    "braces": "^3.0.3", // https://github.com/advisories/GHSA-grv7-fg5c-xmjg mocha>chokidar>braces, webpack-core>copy-webpack-plugin>fast-glob>micromatch>braces,
-    "ws@7": "^7.5.10" // https://github.com/advisories/GHSA-3h5v-q93c-6h6q core/express-server > express-ws@5.0.2 > ws@7.5.3
-  },
+  "globalOverrides": {},
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
   // for development dependencies only.
