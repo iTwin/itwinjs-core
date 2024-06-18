@@ -1643,8 +1643,8 @@ export namespace ConcreteEntityTypes {
 // @public
 export interface ConflictingLock {
     briefcaseIds: number[];
-    lockLevel: LockState;
     objectId: string;
+    state: LockState;
 }
 
 // @public
