@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "3-pt ellipse constructor",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

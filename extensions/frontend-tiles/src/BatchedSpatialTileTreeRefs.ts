@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Logger } from "@itwin/core-bentley";
+import { Id64String, Logger, OrderedId64Iterable } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 import {
   AnimationNodeId,
@@ -139,6 +139,46 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
     }
   }
 
+  // Collects the TileTreeReferences for the models that need to be drawn to create the planar clip mask.
+  public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void {
+    for (const ref of this._refs) {
+      // For each ref, check to see whether one of the models that are needed are in its group's list of models.
+      const refModelIds = ref.groupModelIds;
+      if (refModelIds) {
+        for (const modelId of modelIds) {
+          if (refModelIds.has(modelId)) {
+            maskTreeRefs.push(ref);
+            break;
+          }
+        }
+      }
+    }
+    // Also need to collect refs from other tile trees which are not in the batched tile tree refs.
+    this._excludedRefs.collectMaskRefs(modelIds, maskTreeRefs);
+  }
+
+  // Returns a list of the models that are NOT in the planar clip mask.
+  public getModelsNotInMask(maskModels: OrderedId64Iterable | undefined, useVisible: boolean): Id64String[] | undefined {
+    const modelsNotInMask: Id64String[] = [];
+    const includedModels = this._spec.models.keys();
+    if (useVisible) {
+      // All viewed models are in the mask, so get a list of all models which are not viewed.
+      for (const modelId of includedModels) {
+        if (!this._models.views(modelId))
+          modelsNotInMask.push(modelId);
+      }
+    } else {
+      // Get a list of all model which are NOT in the maskModels list.
+      const maskModelSet = new Set(maskModels);
+      for (const modelId of includedModels) {
+        if (!maskModelSet.has(modelId))
+          modelsNotInMask.push(modelId);
+      }
+    }
+    return modelsNotInMask.length > 0 ? modelsNotInMask : undefined;
+  }
+
+  // _view.models
   public setDeactivated(): void {
     // Used for debugging. Unimplemented here.
   }
@@ -230,6 +270,17 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
     } else {
       yield this._proxyRef;
     }
+  }
+
+  public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void {
+    this._impl?.collectMaskRefs(modelIds, maskTreeRefs);
+  }
+
+  public getModelsNotInMask(maskModels: OrderedId64Iterable | undefined, useVisible: boolean): Id64String[] | undefined {
+    if (this._impl)
+      return this._impl.getModelsNotInMask(maskModels, useVisible);
+    else
+      return undefined;
   }
 }
 
