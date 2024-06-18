@@ -32,7 +32,7 @@ export class IModelError extends BentleyError {
   }
 }
 
-/** The state of a lock.
+/** The state of a lock. See [Acquiring locks on elements.]($docs/learning/backend/ConcurrencyControl.md#acquiring-locks-on-elements).
  * @public
  */
 export enum LockState {
@@ -47,6 +47,7 @@ export enum LockState {
 }
 
 /** Detailed information about a particular object Lock that is causing the Lock update conflict.
+ * An example of a lock update conflict would be attempting to use [LockControl.acquireLocks]($backend) on an object that is already locked by another Briefcase.
  * @public
 */
 export interface ConflictingLock {
@@ -61,7 +62,11 @@ export interface ConflictingLock {
   briefcaseIds: number[];
 }
 
-/** @public */
+/**
+ * An error raised when there is a lock conflict detected.
+ * Typically this error would be thrown by [LockControl.acquireLocks]($backend) when you are requesting a lock on an element that is already held by another briefcase.
+ * @public
+ */
 export class ConflictingLocksError extends IModelError {
   public conflictingLocks?: ConflictingLock[];
   constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]) {

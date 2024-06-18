@@ -167,6 +167,7 @@ export interface LockControl {
    * If any required lock is not available, this method throws an exception and *none* of the requested locks are acquired.
    * > Note: acquiring the exclusive lock on an element requires also obtaining a shared lock on all its owner elements. This method will
    * attempt to acquire all necessary locks for both sets of input ids.
+   * @throws ConflictingLocksError if one or more requested locks are held by other briefcases.
    */
   acquireLocks(arg: {
     /** if present, one or more elements to obtain shared lock */
