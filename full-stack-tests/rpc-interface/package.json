@@ -45,7 +45,7 @@
     "@itwin/core-quantity": "workspace:*",
     "@itwin/certa": "workspace:*",
     "@itwin/eslint-plugin": "^4.0.2",
-    "@itwin/oidc-signin-tool": "~3.6.0",
+    "@itwin/oidc-signin-tool": "^4.3.5",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
     "@itwin/service-authorization": "^1.0.0",
