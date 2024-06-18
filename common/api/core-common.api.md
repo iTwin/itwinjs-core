@@ -1647,7 +1647,7 @@ export interface ConflictingLock {
     objectId: string;
 }
 
-// @public (undocumented)
+// @public
 export class ConflictingLocksError extends IModelError {
     constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]);
     // (undocumented)
