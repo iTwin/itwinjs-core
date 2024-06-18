@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 export { IModelJsNative, NativeCloudSqlite, NativeLoggerCategory } from "@bentley/imodeljs-native";
-
+export { LockState } from "@itwin/core-common";
 export * from "./BackendHubAccess";
 export * from "./BackendLoggerCategory";
 export * from "./BisCoreSchema";

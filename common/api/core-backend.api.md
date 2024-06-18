@@ -4058,6 +4058,8 @@ export interface LockProps {
     readonly state: LockState;
 }
 
+export { LockState }
+
 // @internal
 export interface LockStatusExclusive {
     // (undocumented)
