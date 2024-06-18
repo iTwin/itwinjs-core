@@ -458,7 +458,7 @@ async function initializeWorkspace(args: InitializeOpts) {
 async function purgeWorkspace(args: EditorOpts) {
   const container = getCloudContainer(args);
   const nGarbage = container.garbageBlocks;
-  await CloudSqlite.withWriteLock({ ...args, container }, async () => container.cleanDeletedBlocks());
+  await CloudSqlite.withWriteLock({ ...args, container }, async () => CloudSqlite.cleanDeletedBlocks(container, {}));
   container.checkForChanges(); // re-read manifest to get current garbage count
   showMessage(`purged ${sayContainer(args)}. ${nGarbage - container.garbageBlocks} garbage blocks cleaned`);
 }

@@ -151,16 +151,21 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
       color: ColorDef.red.toJSON(),
     });
 
+    const lx = layout.range.low.x - debugAnchorPt.x;
+    const ly = layout.range.low.y - debugAnchorPt.y;
+    const hx = layout.range.high.x - debugAnchorPt.x;
+    const hy = layout.range.high.y - debugAnchorPt.y;
+
     context.entries.push({
       separator: {
-        startPoint: [layout.range.low.x, debugAnchorPt.y, 0],
-        endPoint: [layout.range.high.x, debugAnchorPt.y, 0],
+        startPoint: [lx, 0, 0],
+        endPoint: [hx, 0, 0],
       },
     });
     context.entries.push({
       separator: {
-        startPoint: [debugAnchorPt.x, layout.range.low.y, 0],
-        endPoint: [debugAnchorPt.x, layout.range.high.y, 0],
+        startPoint: [0, ly, 0],
+        endPoint: [0, hy, 0],
       },
     });
   }
@@ -188,7 +193,7 @@ export interface ProduceTextAnnotationGeometryArgs {
   findFontId?: FindFontId;
 }
 
-/** Produce a geometric representation of a text annotation.
+/** Produce a geometric representation of a text annotation, with the annotation's anchor point at the origin.
  * The result can be supplied to [GeometryStreamBuilder.appendTextBlock]($common).
  * @see [[TextAnnotation2d.setAnnotation]] and [[TextAnnotation3d.setAnnotation]] to update the annotation, geometry, and placement of an annotation element.
  * @beta

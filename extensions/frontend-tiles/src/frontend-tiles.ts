@@ -4,3 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./FrontendTiles";
+export * from "./GraphicsProvider/GraphicRepresentationProvider";
+export * from "./GraphicsProvider/GraphicsProvider";
+
