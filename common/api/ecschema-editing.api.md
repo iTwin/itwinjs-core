@@ -1049,6 +1049,9 @@ export class FormatUnitChanges extends BaseSchemaChanges {
 }
 
 // @alpha
+export function getSchemaDifferences(targetSchema: Schema, sourceSchema: Schema): Promise<SchemaDifferenceResult>;
+
+// @alpha
 export interface IClassIdentifier extends ISchemaTypeIdentifier {
     // (undocumented)
     readonly schemaItemKey: SchemaItemKey;
@@ -2056,13 +2059,6 @@ export interface SchemaDifferenceResult {
     readonly differences: AnySchemaDifference[];
     readonly sourceSchemaName: string;
     readonly targetSchemaName: string;
-}
-
-// @alpha (undocumented)
-export namespace SchemaDifferences {
-    // @internal
-    export function fromSchemaChanges(targetSchema: Schema, schemaChanges: SchemaChanges): Promise<SchemaDifferenceResult>;
-    export function fromSchemas(targetSchema: Schema, sourceSchema: Schema): Promise<SchemaDifferenceResult>;
 }
 
 // @alpha

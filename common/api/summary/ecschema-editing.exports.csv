@@ -63,6 +63,7 @@ beta;class FormatDiagnosticReporter
 alpha;FormatDifference 
 alpha;FormatUnitChange 
 alpha;FormatUnitChanges 
+alpha;getSchemaDifferences(targetSchema: Schema, sourceSchema: Schema): Promise
 alpha;IClassIdentifier 
 alpha;ICustomAttributeIdentifier 
 beta;IDiagnostic
@@ -134,8 +135,6 @@ beta;class SchemaDiagnostic
 alpha;SchemaDifference
 alpha;SchemaDifferenceConflict
 alpha;SchemaDifferenceResult
-alpha;SchemaDifferences
-internal;fromSchemaChanges(targetSchema: Schema, schemaChanges: SchemaChanges): Promise
 alpha;SchemaEditingError 
 alpha;SchemaId 
 alpha;class SchemaItemChange 
