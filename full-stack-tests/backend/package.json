@@ -16,7 +16,7 @@
     "docs": "",
     "test:integration": "run-s test:integration:azurite",
     "test:integration:azurite": "run-p -r azurite:setup test:integration:core",
-    "test:integration:core": "mocha \"./lib/cjs/integration/**/*.test.js\"",
+    "test:integration:core": "mocha \"./lib/cjs/integration/**/*.test.js\" --check-leaks --global _playwrightInstance",
     "perftest:pre": "cpx \"./src/perftest/*.json\" ./lib/cjs/perftest",
     "perftest": "npm run -s perftest:crud && npm run -s perftest:cs && npm run -s perftest:elAspect && npm run -s perftest:schema",
     "perftest:crud": "npm run -s perftest:pre && mocha --timeout=999999999 --grep PerformanceElementsTests \"./lib/cjs/perftest/**/*.test.js\"",
