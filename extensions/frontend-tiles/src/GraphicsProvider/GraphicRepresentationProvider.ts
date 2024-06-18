@@ -112,7 +112,7 @@ export interface QueryGraphicRepresentationsArgs {
 /** Query Graphic Representations matching the specified criteria, sorted from most-recently- to least-recently-produced.
  * @beta
  */
-export async function* queryGraphicRepresentations(args: QueryGraphicRepresentationsArgs): AsyncIterableIterator<GraphicRepresentation> {
+export async function* queryMeshExportService(args: QueryGraphicRepresentationsArgs): AsyncIterableIterator<GraphicRepresentation> {
   interface ServiceJsonResponse {
     id: string;
     displayName: string;
@@ -187,6 +187,31 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
     }
 
     url = result._links.next?.href;
+  }
+}
+
+/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+export async function* queryGeoScienceService(args: QueryGraphicRepresentationsArgs): AsyncIterableIterator<any> {
+  const headers = {
+    /* eslint-disable-next-line @typescript-eslint/naming-convention */
+    Authorization: args.accessToken,
+  };
+
+  const BASE_URL = "https://351mt.api.integration.seequent.com";
+  const ORG = "72adad30-c07c-465d-a1fe-2f2dfac950a4";
+  const WORKSPACE = "9f123308-e4b9-4082-b68f-d261ce02da3c";
+  const GEOSCIENCE_OBJECT = "a0c4d7c6-d09d-4fff-8bf9-094ef5210eda";
+  const url = `${BASE_URL}/visualization/orgs/${ORG}/workspaces/${WORKSPACE}/geoscience-object/${GEOSCIENCE_OBJECT}`;
+  const response = await fetch(url, { headers });
+  const result = await response.json();
+  yield result;
+}
+
+export async function* queryGraphicRepresentations(args: QueryGraphicRepresentationsArgs): AsyncIterableIterator<GraphicRepresentation> {
+  if (args.dataSource.type === "geoscience") {
+    return queryGeoScienceService(args);
+  } else {
+    return queryMeshExportService(args);
   }
 }
 

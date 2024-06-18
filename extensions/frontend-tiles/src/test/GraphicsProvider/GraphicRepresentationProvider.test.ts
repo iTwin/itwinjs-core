@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import * as util from "util";
 import { expect, use } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import { IModelApp } from "@itwin/core-frontend";
-import { obtainGraphicRepresentationUrl, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/GraphicRepresentationProvider";
+import { obtainGraphicRepresentationUrl, queryGeoScienceService, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/GraphicRepresentationProvider";
 
 use(chaiAsPromised);
 
@@ -234,5 +235,27 @@ describe("obtainGraphicsDataSourceUrl", () => {
 
   it("returns undefined if no Graphics Data Source matches the source version Id and caller requires an exact version match", async () => {
     await expectUrl(undefined, { versionId: "bbbbbb", exact: true });
+  });
+});
+
+describe("GeoScienceService", () => {
+  it.only("queryGeoScienceService", async () => {
+    const token = "";
+    const args = {
+      accessToken: token,
+      sessionId: "testSession",
+      dataSource: {
+        iTwinId: "iTwinId",
+        id: "srcId",
+        changeId: undefined,
+        type: "geoscience",
+      },
+      format: "IMDL",
+    };
+
+    for await (const src of queryGeoScienceService(args)) {
+      console.log(util.inspect(src, {showHidden: false, depth: null, colors: true}));
+      expect(src).to.not.be.undefined;
+    }
   });
 });
