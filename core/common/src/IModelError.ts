@@ -57,7 +57,7 @@ export interface ConflictingLock {
      * The level of conflicting lock. Possible values are {@link LockState.Shared}, {@link LockState.Exclusive}.
      * See {@link LockState}.
      */
-  lockLevel: LockState;
+  state: LockState;
   /** An array of Briefcase ids that hold this lock. */
   briefcaseIds: number[];
 }
