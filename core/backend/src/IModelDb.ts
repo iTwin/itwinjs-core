@@ -235,9 +235,9 @@ class IModelSettings extends SettingsImpl {
       throw new Error("Use IModelHost.appSettings to access settings of priority 'application' or lower");
   }
 
-  public override * getSettingEntries<T extends Setting>(name: string): Iterable<{ value: T, dictionary: SettingsDictionary}> {
-    yield * super.getSettingEntries(name);
-    yield * IModelHost.appWorkspace.settings.getSettingEntries(name);
+  public override * getSettingEntries<T extends Setting>(name: string): Iterable<{ value: T, dictionary: SettingsDictionary }> {
+    yield* super.getSettingEntries(name);
+    yield* IModelHost.appWorkspace.settings.getSettingEntries(name);
   }
 }
 
@@ -503,7 +503,7 @@ export abstract class IModelDb extends IModel {
    * @public
    */
   public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
-    const stmt = this._statementCache.findAndRemove(ecsql) ?? this.prepareStatement(ecsql, logErrors);
+    const stmt = this._statementCache.findAndRemove(ecsql) ?? this.prepareStatement(ecsql, logErrors, true);
     const release = () => this._statementCache.addOrDispose(stmt);
     try {
       const val = callback(stmt);
@@ -651,7 +651,7 @@ export abstract class IModelDb extends IModel {
    * @public
    */
   public withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors = true): T {
-    const stmt = this._sqliteStatementCache.findAndRemove(sql) ?? this.prepareSqliteStatement(sql, logErrors);
+    const stmt = this._sqliteStatementCache.findAndRemove(sql) ?? this.prepareSqliteStatement(sql, logErrors, true);
     const release = () => this._sqliteStatementCache.addOrDispose(stmt);
     try {
       const val: T = callback(stmt);
@@ -696,12 +696,13 @@ export abstract class IModelDb extends IModel {
 
   /** Prepare an SQL statement.
    * @param sql The SQL statement to prepare
+   * @param persistent Should be true if this statement will be cached and used multiple times.
    * @throws [[IModelError]] if there is a problem preparing the statement.
    * @internal
    */
-  public prepareSqliteStatement(sql: string, logErrors = true): SqliteStatement {
+  public prepareSqliteStatement(sql: string, logErrors = true, persistent = false): SqliteStatement {
     const stmt = new SqliteStatement(sql);
-    stmt.prepare(this.nativeDb, logErrors);
+    stmt.prepare(this.nativeDb, logErrors, persistent);
     return stmt;
   }
 
@@ -1101,11 +1102,12 @@ export abstract class IModelDb extends IModel {
   /** Prepare an ECSQL statement.
    * @param sql The ECSQL statement to prepare
    * @param logErrors Determines if error will be logged if statement fail to prepare
+   * @param persistent Should be true if this statement will be cached and used multiple times.
    * @throws [[IModelError]] if there is a problem preparing the statement.
    */
-  public prepareStatement(sql: string, logErrors = true): ECSqlStatement {
+  public prepareStatement(sql: string, logErrors = true, persistent = false): ECSqlStatement {
     const stmt = new ECSqlStatement();
-    stmt.prepare(this.nativeDb, sql, logErrors);
+    stmt.prepare(this.nativeDb, sql, logErrors, persistent);
     return stmt;
   }
 
@@ -1113,9 +1115,9 @@ export abstract class IModelDb extends IModel {
    * @param sql The ECSQL statement to prepare
    * @returns `undefined` if there is a problem preparing the statement.
    */
-  public tryPrepareStatement(sql: string): ECSqlStatement | undefined {
+  public tryPrepareStatement(sql: string, persistent = false): ECSqlStatement | undefined {
     const statement = new ECSqlStatement();
-    const result = statement.tryPrepare(this.nativeDb, sql);
+    const result = statement.tryPrepare(this.nativeDb, sql, undefined, persistent);
     return DbResult.BE_SQLITE_OK === result.status ? statement : undefined;
   }
 
