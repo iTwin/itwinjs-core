@@ -1917,7 +1917,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     get isPrepared(): boolean;
     next(): IteratorResult<any>;
     // @internal
-    prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors?: boolean): void;
+    prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors?: boolean, persistent?: boolean): void;
     reset(): void;
     // (undocumented)
     get sql(): string;
@@ -1926,7 +1926,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     stepAsync(): Promise<DbResult>;
     stepForInsert(): ECSqlInsertResult;
     // @internal
-    tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors?: boolean): StatusCodeWithMessage<DbResult>;
+    tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors?: boolean, persistent?: boolean): StatusCodeWithMessage<DbResult>;
 }
 
 // @public
@@ -3175,8 +3175,8 @@ export abstract class IModelDb extends IModel {
     get pathName(): LocalFileName;
     performCheckpoint(): void;
     // @internal
-    prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
-    prepareStatement(sql: string, logErrors?: boolean): ECSqlStatement;
+    prepareSqliteStatement(sql: string, logErrors?: boolean, persistent?: boolean): SqliteStatement;
+    prepareStatement(sql: string, logErrors?: boolean, persistent?: boolean): ECSqlStatement;
     // @deprecated
     query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Id64Set;
@@ -3213,7 +3213,7 @@ export abstract class IModelDb extends IModel {
     readonly tiles: IModelDb.Tiles;
     static tryFindByKey(key: string): IModelDb | undefined;
     tryGetMetaData(classFullName: string): EntityMetaData | undefined;
-    tryPrepareStatement(sql: string): ECSqlStatement | undefined;
+    tryPrepareStatement(sql: string, persistent?: boolean): ECSqlStatement | undefined;
     updateEcefLocation(ecef: EcefLocation): void;
     updateIModelProps(): void;
     updateProjectExtents(newExtents: AxisAlignedBox3d): void;
@@ -5339,7 +5339,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     maybeBindString(parameter: BindParameter, val?: string): void;
     next(): IteratorResult<any>;
     nextRow(): boolean;
-    prepare(db: IModelJsNative.AnyDb, logErrors?: boolean): void;
+    prepare(db: IModelJsNative.AnyDb, logErrors?: boolean, persistent?: boolean): void;
     reset(): void;
     // (undocumented)
     get sql(): string;
