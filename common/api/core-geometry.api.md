@@ -230,7 +230,7 @@ export type AnySolidPrimitive = Box | Cone | Sphere | LinearSweep | RotationalSw
 
 // @public
 export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
-    allPerpendicularAngles(spacePoint: Point3d, _extend?: boolean, _endpoints?: boolean): number[];
+    allPerpendicularAngles(spacePoint: Point3d, _extend?: boolean, endpoints?: boolean): number[];
     angleToPointAndDerivative(theta: Angle, result?: Ray3d): Ray3d;
     announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number;
