@@ -6,8 +6,6 @@
     "ignoreMissing": ["@babel/core", "@types/node", "@typescript-eslint/parser"]
   },
   "globalOverrides": {
-    "mysql2": "^3.9.8", // https://github.com/advisories/GHSA-pmh2-wpjm-fj45 > azurite>mysql2
-    "braces": "^3.0.3", // https://github.com/advisories/GHSA-grv7-fg5c-xmjg > mocha>chokidar>braces, webpack-core>copy-webpack-plugin>fast-glob>micromatch>braces
     "jsdom@19>ws": "^8.17.1" // https://github.com/advisories/GHSA-3h5v-q93c-6h6q > jsdom@19.0.0 > ws@8.16.0
   },
   // A list of temporary advisories excluded from the High and Critical list.
