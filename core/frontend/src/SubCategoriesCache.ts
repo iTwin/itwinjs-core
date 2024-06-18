@@ -43,6 +43,7 @@ export class SubCategoriesCache {
 
   /** Request that the subcategory information for all of the specified categories is loaded.
    * If all such information has already been loaded, returns undefined.
+   * If no categories are specified, dispatches an asynchronous request to load all subcategories and returns a cancellable request object
    * Otherwise, dispatches an asynchronous request to load those categories which are not already loaded and returns a cancellable request object
    * containing the corresponding promise and the set of categories still to be loaded.
    */
@@ -58,7 +59,6 @@ export class SubCategoriesCache {
 
       return !request.wasCanceled;
     });
-
     return {
       missingCategoryIds: missing,
       promise,
@@ -66,6 +66,11 @@ export class SubCategoriesCache {
     };
   }
 
+  public async loadAllSubCategories(): Promise<void> {
+    const results = await this._imodel.querySubCategories();
+    if (undefined !== results)
+      this.processResults(results, new Set<string>());
+  }
   /** Given categoryIds, return which of these are not cached. */
   private getMissing(categoryIds: Id64Arg): Id64Set | undefined {
     let missing: Id64Set | undefined;
