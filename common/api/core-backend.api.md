@@ -138,6 +138,7 @@ import { LineStyleProps } from '@itwin/core-common';
 import { LocalBriefcaseProps } from '@itwin/core-common';
 import { LocalDirName } from '@itwin/core-common';
 import { LocalFileName } from '@itwin/core-common';
+import { LockState } from '@itwin/core-common';
 import { LogLevel } from '@itwin/core-bentley';
 import { LowAndHighXYZ } from '@itwin/core-geometry';
 import { MarkRequired } from '@itwin/core-bentley';
@@ -4055,13 +4056,6 @@ export type LockMap = Map<Id64String, LockState>;
 export interface LockProps {
     readonly id: Id64String;
     readonly state: LockState;
-}
-
-// @public
-export enum LockState {
-    Exclusive = 2,
-    None = 0,
-    Shared = 1
 }
 
 // @internal

@@ -1643,7 +1643,7 @@ export namespace ConcreteEntityTypes {
 // @public
 export interface ConflictingLock {
     briefcaseIds: number[];
-    lockLevel: LockLevel;
+    lockLevel: LockState;
     objectId: string;
 }
 
@@ -5548,10 +5548,10 @@ export interface Localization {
 }
 
 // @public
-export enum LockLevel {
-    Exclusive = "exclusive",
-    None = "none",
-    Shared = "shared"
+export enum LockState {
+    Exclusive = 2,
+    None = 0,
+    Shared = 1
 }
 
 export { LogFunction }

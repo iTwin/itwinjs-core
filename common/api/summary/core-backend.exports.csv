@@ -265,7 +265,6 @@ beta;LockConflict
 beta;LockControl
 internal;LockMap = Map
 beta;LockProps
-public;LockState
 internal;LockStatusExclusive
 internal;LockStatusShared
 internal;MetaDataRegistry

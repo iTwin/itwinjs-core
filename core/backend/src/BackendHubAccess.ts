@@ -10,23 +10,10 @@ import { AccessToken, GuidString, Id64String, IModelHubStatus } from "@itwin/cor
 import {
   BriefcaseId, ChangesetFileProps, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexAndId, ChangesetIndexOrId, ChangesetProps, ChangesetRange,
   IModelError, IModelVersion, LocalDirName, LocalFileName,
+  LockState,
 } from "@itwin/core-common";
 import { CheckpointProps, DownloadRequest, ProgressFunction } from "./CheckpointManager";
 import type { TokenArg } from "./IModelDb";
-
-/** The state of a lock.
- * @public
- */
-export enum LockState {
-  /** The element is not locked */
-  None = 0,
-  /** Holding a shared lock on an element blocks other users from acquiring the Exclusive lock it. More than one user may acquire the shared lock. */
-  Shared = 1,
-  /** A Lock that permits modifications to an element and blocks other users from making modifications to it.
-   * Holding an exclusive lock on an "owner" (a model or a parent element), implicitly exclusively locks all its members.
-   */
-  Exclusive = 2,
-}
 
 /** Exception thrown if lock cannot be acquired.
  * @beta

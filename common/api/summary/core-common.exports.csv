@@ -462,7 +462,7 @@ public;LocalBriefcaseProps
 public;LocalDirName = string
 public;LocalFileName = string
 public;Localization
-public;LockLevel
+public;LockState
 public;MapImageryProps
 public;MapImagerySettings
 public;MapLayerKey

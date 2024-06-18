@@ -32,6 +32,20 @@ export class IModelError extends BentleyError {
   }
 }
 
+/** The state of a lock.
+ * @public
+ */
+export enum LockState {
+  /** The element is not locked */
+  None = 0,
+  /** Holding a shared lock on an element blocks other users from acquiring the Exclusive lock it. More than one user may acquire the shared lock. */
+  Shared = 1,
+  /** A Lock that permits modifications to an element and blocks other users from making modifications to it.
+   * Holding an exclusive lock on an "owner" (a model or a parent element), implicitly exclusively locks all its members.
+   */
+  Exclusive = 2,
+}
+
 /** Detailed information about a particular object Lock that is causing the Lock update conflict.
  * @public
 */
@@ -39,10 +53,10 @@ export interface ConflictingLock {
   /** Id of the object that is causing conflict. */
   objectId: string;
   /**
-     * The level of conflicting lock. Possible values are {@link LockLevel.Shared}, {@link LockLevel.Exclusive}.
-     * See {@link LockLevel}.
+     * The level of conflicting lock. Possible values are {@link LockState.Shared}, {@link LockState.Exclusive}.
+     * See {@link LockState}.
      */
-  lockLevel: LockLevel;
+  lockLevel: LockState;
   /** An array of Briefcase ids that hold this lock. */
   briefcaseIds: number[];
 }
