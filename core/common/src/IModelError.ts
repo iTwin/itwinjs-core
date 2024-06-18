@@ -47,18 +47,6 @@ export interface ConflictingLock {
   briefcaseIds: number[];
 }
 
-/** Supported Lock levels.
- * @public
-*/
-export enum LockLevel {
-  /** Objects are not locked. This level is used for releasing already acquired locks. */
-  None = "none",
-  /** Multiple Briefcases can acquire a shared lock on the same object. */
-  Shared = "shared",
-  /** Only one Briefcase can acquire an exclusive lock on a given object at a time. */
-  Exclusive = "exclusive"
-}
-
 /** @public */
 export class ConflictingLocksError extends IModelError {
   public conflictingLocks?: ConflictingLock[];
