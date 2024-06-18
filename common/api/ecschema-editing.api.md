@@ -1936,15 +1936,16 @@ export class SchemaContextEditor {
     finish(): Promise<SchemaContext>;
     // (undocumented)
     readonly formats: Formats;
+    // @internal
     getSchema(schemaKey: SchemaKey): Promise<MutableSchema>;
-    // (undocumented)
+    // @internal (undocumented)
     getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T>;
     incrementMinorVersion(schemaKey: SchemaKey): Promise<SchemaKey>;
     // (undocumented)
     readonly invertedUnits: InvertedUnits;
     // (undocumented)
     readonly kindOfQuantities: KindOfQuantities;
-    // (undocumented)
+    // @internal (undocumented)
     lookupSchemaItem<T extends SchemaItem>(schemaOrKey: Schema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T>;
     // (undocumented)
     readonly mixins: Mixins;
