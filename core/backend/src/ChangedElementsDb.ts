@@ -30,6 +30,7 @@ export interface ProcessChangesetOptions {
   wantRelationshipCaching?: boolean;
   relationshipCacheSize?: number;
   wantChunkTraversal?: boolean;
+  wantBoundingBoxes?: boolean;
 }
 
 /** An ChangedElementsDb file
@@ -155,6 +156,7 @@ export class ChangedElementsDb implements IDisposable {
       options.wantRelationshipCaching,
       options.relationshipCacheSize,
       options.wantChunkTraversal,
+      options.wantBoundingBoxes,
     );
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to process changesets");

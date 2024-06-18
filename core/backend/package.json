@@ -98,7 +98,7 @@
     "webpack": "^5.76.0"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "4.8.6",
+    "@bentley/imodeljs-native": "4.8.7",
     "@itwin/cloud-agnostic-core": "^2.1.0",
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/object-storage-azure": "^2.2.2",
@@ -112,7 +112,7 @@
     "reflect-metadata": "^0.1.13",
     "semver": "^7.3.5",
     "touch": "^3.1.0",
-    "ws": "^7.5.3"
+    "ws": "^7.5.10"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"
