@@ -613,7 +613,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       segmentIndex = 0;
     else if (globalFraction > 1)
       segmentIndex = numSegment - 1;
-    else  // globalFraction in [0,1]
+    else  // globalFraction in (0,1)
       segmentIndex = Math.floor(scaledGlobalFraction);
     return { index: segmentIndex, fraction: scaledGlobalFraction - segmentIndex };
   }

@@ -355,7 +355,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
         0.5 * ab2, // vectorToCenter DOT vectorAB = 0.5 * vectorAB DOT vectorAB (Rayleigh quotient)
         0.5 * ac2, // vectorToCenter DOT vectorAC = 0.5 * vectorAC DOT vectorAC (Rayleigh quotient)
       );
-      if (vectorToCenter) {
+      if (vectorToCenter) { // i.e., the negative of vectorX
         const center = Point3d.create(pointA.x, pointA.y, pointA.z).plus(vectorToCenter);
         const vectorX = Vector3d.createStartEnd(center, pointA);
         const vectorY = Vector3d.createRotateVectorAroundVector(vectorX, normal, Angle.createDegrees(90));
@@ -595,12 +595,12 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       result);
   }
   /**
-   * Return all angles (in radians) where the ellipse tangent is perpendicular to the vector to a spacePoint.
+   * Return all radian angles where the ellipse tangent is perpendicular to the vector to a spacePoint.
    * @param spacePoint point of origin of vectors to the ellipse
-   * @param _extend (NOT SUPPORTED -- ALWAYS ACTS AS "true")
-   * @param _endpoints if true, force the end radians into the result.
+   * @param _extend always true. Sweep is ignored: perpendiculars for the full ellipse are returned.
+   * @param endpoints if true, force the end radians into the result.
    */
-  public allPerpendicularAngles(spacePoint: Point3d, _extend: boolean = true, _endpoints: boolean = false): number[] {
+  public allPerpendicularAngles(spacePoint: Point3d, _extend: boolean = true, endpoints: boolean = false): number[] {
     const radians: number[] = [];
     const vectorQ = spacePoint.vectorTo(this.center);
     const uu = this._matrix.columnXMagnitudeSquared();
@@ -615,7 +615,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       0.0,
       radians,
     );
-    if (_endpoints) {
+    if (endpoints) {
       radians.push(this.sweep.startRadians);
       radians.push(this.sweep.endRadians);
     }
