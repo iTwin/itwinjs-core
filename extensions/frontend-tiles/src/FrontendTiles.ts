@@ -61,7 +61,7 @@ export interface MeshExports {
 export interface QueryMeshExportsArgs {
   /** The token used to access the mesh export service. */
   accessToken: AccessToken;
-  /** If defined, the iTwinId associated with the Mesh Export */
+  /** The iTwinId associated with the Mesh Export */
   iTwinId: string;
   /** The Id of the iModel for which to query exports. */
   iModelId: string;

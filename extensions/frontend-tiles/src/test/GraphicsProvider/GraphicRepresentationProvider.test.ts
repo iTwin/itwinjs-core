@@ -124,7 +124,7 @@ const testArgs = {
   format: "IMDL",
 };
 
-describe("queryGraphicsDataSources", () => {
+describe("queryGraphicRepresentations", () => {
 
   it("returns no results upon error", async () => {
     await mockFetch(
@@ -160,7 +160,7 @@ describe("queryGraphicsDataSources", () => {
       async () => expectSources(["a", "b", "c", "d"], testArgs));
   });
 
-  it("includes only completed Graphics Data Sources unless otherwise specified", async () => {
+  it("includes only completed Data Sources unless otherwise specified", async () => {
     await mockFetch(
       async () => makeSourcesResponse({ exports: [ { id: "a", status: "Complete" }, { id: "b", status: "Feeling Blessed" } ] }),
       async () => {
@@ -172,7 +172,7 @@ describe("queryGraphicsDataSources", () => {
   });
 });
 
-describe("obtainGraphicsDataSourceUrl", () => {
+describe("obtainGraphicRepresentationUrl", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
@@ -222,18 +222,18 @@ describe("obtainGraphicsDataSourceUrl", () => {
     );
   }
 
-  it("selects the first Graphics Data Source matching the source version Id", async () => {
+  it("selects the first Data Source matching the source version Id", async () => {
     await expectUrl("http://tiles.com/a/tileset.json", { versionId: "aaa" });
     await expectUrl("http://tiles.com/b/tileset.json", { versionId: "bbb" });
     await expectUrl("http://tiles.com/c/tileset.json", { versionId: "ccc" });
   });
 
-  it("selects the first Graphcis Data Source if no Graphics Data Source matches the source version Id", async () => {
+  it("selects the first Graphcis Data Source if no Data Source matches the source version Id", async () => {
     await expectUrl("http://tiles.com/a/tileset.json", { versionId: "bbbbbb" });
     await expectUrl("http://tiles.com/a/tileset.json", { versionId: "bbbbbb", exact: false });
   });
 
-  it("returns undefined if no Graphics Data Source matches the source version Id and caller requires an exact version match", async () => {
+  it("returns undefined if no Data Source matches the source version Id and caller requires an exact version match", async () => {
     await expectUrl(undefined, { versionId: "bbbbbb", exact: true });
   });
 });

@@ -37,14 +37,19 @@ export const frontendTilesOptions: {
 };
 
 // @beta
-export interface GraphicRepresentation {
-    dataSource: DataSource;
+export type GraphicRepresentation = {
     displayName: string;
-    format: GraphicRepresentationFormat;
     representationId: string;
     status: GraphicRepresentationStatus;
+    format: GraphicRepresentationFormat;
+    dataSource: DataSource;
+} & ({
+    status: Omit<GraphicRepresentationStatus, GraphicRepresentationStatus.Complete>;
     url?: string;
-}
+} | {
+    status: GraphicRepresentationStatus.Complete;
+    url: string;
+});
 
 // @beta
 export type GraphicRepresentationFormat = "IMDL" | "3DTILES" | string;
