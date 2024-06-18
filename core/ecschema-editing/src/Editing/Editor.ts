@@ -70,6 +70,7 @@ export class SchemaContextEditor {
   /**
    * Helper method for retrieving a schema, previously added, from the SchemaContext.
    * @param schemaKey The SchemaKey identifying the schema.
+   * @internal
   */
   public async getSchema(schemaKey: SchemaKey): Promise<MutableSchema> {
     const schema = await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Latest);
@@ -181,6 +182,35 @@ export class SchemaContextEditor {
     }
   }
 
+  /** @internal */
+  public async lookupSchemaItem<T extends SchemaItem>(schemaOrKey: Schema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T>{
+    const schema = Schema.isSchema(schemaOrKey)
+      ? schemaOrKey
+      : await this.getSchema(schemaOrKey);
+
+    const schemaItem = await schema.lookupItem<T>(schemaItemKey);
+    if (schemaItem === undefined)
+      throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new SchemaItemId(schemaItemType, schemaItemKey));
+
+    if (schemaItemType !== schemaItem.schemaItemType)
+      throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new SchemaItemId(schemaItemType, schemaItemKey));
+
+    return schemaItem;
+  }
+
+  /** @internal */
+  public async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T>{
+    const schemaItem =  await this.schemaContext.getSchemaItem<T>(schemaItemKey);
+    if (!schemaItem) {
+      throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(schemaItemType, schemaItemKey));
+    }
+
+    if (schemaItemType !== schemaItem.schemaItemType)
+      throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new SchemaItemId(schemaItemType, schemaItemKey));
+
+    return schemaItem;
+  }
+
   private removeReference(schema: Schema, refSchema: Schema) {
     const index: number = schema.references.indexOf(refSchema);
     if (index !== -1) {
@@ -200,33 +230,6 @@ export class SchemaContextEditor {
       throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, new SchemaId(schemaKey));
 
     return schema;
-  }
-
-  public async lookupSchemaItem<T extends SchemaItem>(schemaOrKey: Schema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T>{
-    const schema = Schema.isSchema(schemaOrKey)
-      ? schemaOrKey
-      : await this.getSchema(schemaOrKey);
-
-    const schemaItem = await schema.lookupItem<T>(schemaItemKey);
-    if (schemaItem === undefined)
-      throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new SchemaItemId(schemaItemType, schemaItemKey));
-
-    if (schemaItemType !== schemaItem.schemaItemType)
-      throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new SchemaItemId(schemaItemType, schemaItemKey));
-
-    return schemaItem;
-  }
-
-  public async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T>{
-    const schemaItem =  await this.schemaContext.getSchemaItem<T>(schemaItemKey);
-    if (!schemaItem) {
-      throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(schemaItemType, schemaItemKey));
-    }
-
-    if (schemaItemType !== schemaItem.schemaItemType)
-      throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new SchemaItemId(schemaItemType, schemaItemKey));
-
-    return schemaItem;
   }
 }
 
