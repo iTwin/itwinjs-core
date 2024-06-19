@@ -947,6 +947,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       Object.assign(actualValue, {
         ...actualValue,
         st: null,
+        array_b: null,
         array_i: [null, null],
         array_st: [null, { i: null, d: null, b: null } ],
       });
@@ -957,6 +958,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
       Object.assign(actualValue, {
         ...actualValue,
+        array_b: [],
         array_i: [],
         array_st: [], // no elements should exist in the arrays, as the second element has all its properties set to null as well
       });
