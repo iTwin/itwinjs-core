@@ -1996,12 +1996,17 @@ export class SchemaContextEditor {
     finish(): Promise<SchemaContext>;
     // (undocumented)
     readonly formats: Formats;
-    getSchema(schemaKey: SchemaKey): Promise<MutableSchema | undefined>;
+    // @internal
+    getSchema(schemaKey: SchemaKey): Promise<MutableSchema>;
+    // @internal (undocumented)
+    getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T>;
     incrementMinorVersion(schemaKey: SchemaKey): Promise<SchemaKey>;
     // (undocumented)
     readonly invertedUnits: InvertedUnits;
     // (undocumented)
     readonly kindOfQuantities: KindOfQuantities;
+    // @internal (undocumented)
+    lookupSchemaItem<T extends SchemaItem>(schemaOrKey: Schema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T>;
     // (undocumented)
     readonly mixins: Mixins;
     // (undocumented)
@@ -2192,8 +2197,6 @@ export enum SchemaTypeIdentifiers {
     ClassIdentifier = "Class",
     // (undocumented)
     CustomAttributeIdentifier = "CustomAttribute",
-    // (undocumented)
-    EnumerationIdentifier = "Enumeration",
     // (undocumented)
     EnumeratorIdentifier = "Enumerator",
     // (undocumented)
