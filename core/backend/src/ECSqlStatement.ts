@@ -327,14 +327,13 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
       args = { abbreviateBlobs: false, convertClassIdsToClassNames: true, rowFormat: QueryRowFormat.UseJsPropertyNames, includeMetaData: this._props.length === 0 };
     }
     const resp = this._stmt!.toRow(args);
-    return this.formatCurrentRow(args.rowFormat, resp);
+    return this.formatCurrentRow(resp, args.rowFormat);
   }
 
   /**
    * @internal
    */
-  public formatCurrentRow(rowFormat: QueryRowFormat = QueryRowFormat.UseECSqlPropertyNames, currentRespStr: string ): any[] | object {
-    const currentResp = JSON.parse(currentRespStr);
+  public formatCurrentRow(currentResp: any, rowFormat: QueryRowFormat = QueryRowFormat.UseECSqlPropertyNames): any[] | object {
     if (this._props.length === 0 && currentResp.meta.length > 0) {
       this._props = new PropertyMetaDataMap(currentResp.meta);
     }
