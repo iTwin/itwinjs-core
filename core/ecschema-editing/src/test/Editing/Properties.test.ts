@@ -1,4 +1,4 @@
-import { ECClassModifier, EntityClass, Enumeration, EnumerationProperty, PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, PropertyCategory, Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaKey, StructClass, UnitSystem } from "@itwin/ecschema-metadata";
+import { ECClassModifier, EntityClass, Enumeration, EnumerationProperty, PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, PropertyCategory, Schema, SchemaContext, SchemaItemKey, SchemaKey, StructClass, UnitSystem } from "@itwin/ecschema-metadata";
 import { expect } from "chai";
 import { SchemaContextEditor } from "../../ecschema-editing";
 import { ECEditingStatus } from "../../Editing/Exception";
@@ -58,8 +58,8 @@ describe("Properties editing tests", () => {
       await testEditor.entities.createPrimitiveProperty(childResult, "TestPropertyName", PrimitiveType.Double);
       await testEditor.entities.createPrimitiveProperty(grandChildResult, "TestPropertyName", PrimitiveType.Double);
 
-      const childEntity = await (await testEditor.getSchema(testKey))!.getItem<EntityClass>("testEntityChild");
-      const grandChildEntity = await (await testEditor.getSchema(testKey))!.getItem<EntityClass>("testEntityGrandChild");
+      const childEntity = await (await testEditor.getSchema(testKey)).getItem<EntityClass>("testEntityChild");
+      const grandChildEntity = await (await testEditor.getSchema(testKey)).getItem<EntityClass>("testEntityGrandChild");
 
       const childProperty = await childEntity?.getProperty("TestPropertyName") as PrimitiveProperty;
       const grandChildProperty = await grandChildEntity?.getProperty("TestPropertyName") as PrimitiveProperty;
@@ -518,7 +518,7 @@ describe("Properties editing tests", () => {
   describe("Enumeration property editing tests", () => {
     it("should successfully set extendedTypeName", async () => {
       const schema = await testEditor.getSchema(testKey);
-      const testEnum = new Enumeration(schema!, "TestEnumeration");
+      const testEnum = new Enumeration(schema, "TestEnumeration");
       await testEditor.entities.createEnumerationProperty(entityKey, "TestProperty", testEnum);
 
       const property = await entity?.getProperty("TestProperty") as EnumerationProperty;
@@ -531,7 +531,7 @@ describe("Properties editing tests", () => {
 
     it("should successfully set minLength", async () => {
       const schema = await testEditor.getSchema(testKey);
-      const testEnum = new Enumeration(schema!, "TestEnumeration");
+      const testEnum = new Enumeration(schema, "TestEnumeration");
       await testEditor.entities.createEnumerationProperty(entityKey, "TestProperty", testEnum);
 
       const property = await entity?.getProperty("TestProperty") as EnumerationProperty;
@@ -544,7 +544,7 @@ describe("Properties editing tests", () => {
 
     it("should successfully set maxLength", async () => {
       const schema = await testEditor.getSchema(testKey);
-      const testEnum = new Enumeration(schema!, "TestEnumeration");
+      const testEnum = new Enumeration(schema, "TestEnumeration");
       await testEditor.entities.createEnumerationProperty(entityKey, "TestProperty", testEnum);
 
       const property = await entity?.getProperty("TestProperty") as EnumerationProperty;
@@ -557,7 +557,7 @@ describe("Properties editing tests", () => {
 
     it("should successfully set minValue", async () => {
       const schema = await testEditor.getSchema(testKey);
-      const testEnum = new Enumeration(schema!, "TestEnumeration");
+      const testEnum = new Enumeration(schema, "TestEnumeration");
       await testEditor.entities.createEnumerationProperty(entityKey, "TestProperty", testEnum);
 
       const property = await entity?.getProperty("TestProperty") as EnumerationProperty;
@@ -570,7 +570,7 @@ describe("Properties editing tests", () => {
 
     it("should successfully set maxValue", async () => {
       const schema = await testEditor.getSchema(testKey);
-      const testEnum = new Enumeration(schema!, "TestEnumeration");
+      const testEnum = new Enumeration(schema, "TestEnumeration");
       await testEditor.entities.createEnumerationProperty(entityKey, "TestProperty", testEnum);
 
       const property = await entity?.getProperty("TestProperty") as EnumerationProperty;
@@ -607,7 +607,7 @@ describe("Properties editing tests", () => {
   describe("Struct property editing tests", () => {
     it("editing a property through structProperties that is not a StructProperty, rejected with error", async () =>  {
       const schema = await testEditor.getSchema(testKey);
-      const testEnum = new Enumeration(schema!, "TestEnumeration");
+      const testEnum = new Enumeration(schema, "TestEnumeration");
       await testEditor.entities.createEnumerationProperty(entityKey, "TestProperty", testEnum);
       await expect(testEditor.entities.structProperties.setName(entityKey, "TestProperty", "testName")).to.be.eventually.rejected.then(function (error) {
         expect(error).to.have.property("errorNumber", ECEditingStatus.SetPropertyName);
