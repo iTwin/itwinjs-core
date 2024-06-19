@@ -118,7 +118,6 @@ export enum SchemaTypeIdentifiers {
   SchemaItemIdentifier = "SchemaItem",
   ClassIdentifier = "Class",
   PropertyIdentifier = "Property",
-  EnumerationIdentifier = "Enumeration",
   EnumeratorIdentifier = "Enumerator",
   CustomAttributeIdentifier = "CustomAttribute",
   RelationshipConstraintIdentifier = "RelationshipConstraint"
