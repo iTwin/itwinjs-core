@@ -166,7 +166,7 @@ export class KindOfQuantity extends SchemaItem {
           if (undefined === unit)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
 
-          unitAndLabels.push([unit, unitOverride[1]]);
+          unitAndLabels.push([unit, (unitOverride[1] === undefined || unitOverride[1] === "") ? unit.label : unitOverride[1]]);
         }
       }
 
@@ -200,7 +200,7 @@ export class KindOfQuantity extends SchemaItem {
           if (undefined === unit)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
 
-          unitAndLabels.push([unit, unitOverride[1]]);
+          unitAndLabels.push([unit, (unitOverride[1] === undefined || unitOverride[1] === "") ? unit.label : unitOverride[1]]);
         }
       }
 

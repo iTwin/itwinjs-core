@@ -16,6 +16,7 @@ import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName
 import { SchemaReadHelper } from "../../Deserialization/Helper";
 import { XmlParser } from "../../Deserialization/XmlParser";
 import { SchemaKey } from "../../SchemaKey";
+import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 describe("Schema", () => {
@@ -1548,6 +1549,89 @@ describe("Schema", () => {
         prop2 = structs[1].getElementsByTagName("String");
         expect(prop2.length).to.equal(1);
         expect(prop2[0].textContent).to.equal("test2");
+      });
+
+      async function serialize(schemaJson: any): Promise<string> {
+        const context = new SchemaContext();
+        const testSchema = await Schema.fromJson(schemaJson, context);
+        expect(testSchema).to.exist;
+
+        const xmlDom = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "text/xml");
+        await testSchema.toXml(xmlDom);
+        return new XMLSerializer().serializeToString(xmlDom);
+      }
+
+      async function testKoQSerialization(presentationUnit: any): Promise<string> {
+        const testSchemaJson = {
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          name: "TestSchema",
+          version: "1.0.0",
+          alias: "ts",
+          description: "Test serialization",
+          items: {
+            SI: { schemaItemType: "UnitSystem" },
+            LENGTH: { schemaItemType: "Phenomenon", label: "Length", definition: "LENGTH" },
+            M: { schemaItemType: "Unit", label: "m", phenomenon: "TestSchema.LENGTH", unitSystem: "TestSchema.SI", definition: "M" },
+            MM: { schemaItemType: "Unit", label: "mm", phenomenon: "TestSchema.LENGTH", unitSystem: "TestSchema.SI", definition: "MM" },
+            FT: { schemaItemType: "Unit", label: "ft", phenomenon: "TestSchema.LENGTH", unitSystem: "TestSchema.SI", definition: "IN" },
+
+            TestFormat: { schemaItemType:"Format", label:"testFormat", type:"Decimal", precision:6, formatTraits:["KeepSingleZero", "KeepDecimalPoint", "ShowUnitLabel"]},
+            TestKoq: { schemaItemType:"KindOfQuantity", label:"testKoq", relativeError:0.00001, persistenceUnit:"TestSchema.M", ...presentationUnit},
+          },
+        };
+
+        const matches = (await serialize(testSchemaJson)).match(/presentationUnits="(.+?)"/);
+        if (!matches)
+          assert(false);
+        return matches[0];
+      }
+
+      it("KoQ serialization with overriden formats", async () => {
+        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M][TestSchema.MM][TestSchema.FT]"]}), `presentationUnits="TestFormat(4)[M|m][MM|mm][FT|ft]"`);
+        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M][TestSchema.MM][TestSchema.FT|]"]}), `presentationUnits="TestFormat(4)[M|m][MM|mm][FT|ft]"`);
+        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM][TestSchema.FT|]"]}), `presentationUnits="TestFormat(4)[M|alpha][MM|mm][FT|ft]"`);
+        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM|bravo][TestSchema.FT]"]}), `presentationUnits="TestFormat(4)[M|alpha][MM|bravo][FT|ft]"`);
+        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM|bravo][TestSchema.FT|]"]}), `presentationUnits="TestFormat(4)[M|alpha][MM|bravo][FT|ft]"`);
+        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM|bravo][TestSchema.FT|charlie]"]}), `presentationUnits="TestFormat(4)[M|alpha][MM|bravo][FT|charlie]"`);
+      });
+
+      async function testCompositeFormatSerialization(compositeFormat: any): Promise<string> {
+        const testSchemaJson = {
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          name: "TestSchema",
+          version: "1.0.0",
+          alias: "ts",
+          description: "Test serialization",
+          items: {
+            SI: { schemaItemType: "UnitSystem" },
+            LENGTH: { schemaItemType: "Phenomenon", label: "Length", definition: "LENGTH" },
+            M: { schemaItemType: "Unit", label: "m", phenomenon: "TestSchema.LENGTH", unitSystem: "TestSchema.SI", definition: "M" },
+            MM: { schemaItemType: "Unit", label: "mm", phenomenon: "TestSchema.LENGTH", unitSystem: "TestSchema.SI", definition: "MM" },
+            FT: { schemaItemType: "Unit", label: "ft", phenomenon: "TestSchema.LENGTH", unitSystem: "TestSchema.SI", definition: "IN" },
+
+            TestFormat: { schemaItemType:"Format", label:"testFormat", type:"Decimal", precision:6, formatTraits:["KeepSingleZero", "KeepDecimalPoint", "ShowUnitLabel"], composite:{...compositeFormat}},
+          },
+        };
+
+        const str = await serialize(testSchemaJson);
+        const matches = str.match(/<Composite ([^]+?)\/Composite>/g);
+        if (!matches)
+          assert(false);
+        return matches[0];
+      }
+
+      it("Composite format serialization with overriden formats", async () => {
+        assert.deepEqual(await testCompositeFormatSerialization({units:[{name:"TestSchema.M"},{name:"TestSchema.MM"},{name:"TestSchema.FT"}]}),
+          `<Composite spacer=" " includeZero="true"><Unit>M</Unit><Unit>MM</Unit><Unit>FT</Unit></Composite>`);
+
+        assert.deepEqual(await testCompositeFormatSerialization({units:[{name:"TestSchema.M",label:"metre"},{name:"TestSchema.MM"},{name:"TestSchema.FT"}]}),
+          `<Composite spacer=" " includeZero="true"><Unit label="metre">M</Unit><Unit>MM</Unit><Unit>FT</Unit></Composite>`);
+
+        assert.deepEqual(await testCompositeFormatSerialization({units:[{name:"TestSchema.M",label:"metre"},{name:"TestSchema.MM", label:""},{name:"TestSchema.FT"}]}),
+          `<Composite spacer=" " includeZero="true"><Unit label="metre">M</Unit><Unit label="">MM</Unit><Unit>FT</Unit></Composite>`);
+
+        assert.deepEqual(await testCompositeFormatSerialization({units:[{name:"TestSchema.M",label:"metre"},{name:"TestSchema.MM", label:""},{name:"TestSchema.FT", label: "\""}]}),
+          `<Composite spacer=" " includeZero="true"><Unit label="metre">M</Unit><Unit label="">MM</Unit><Unit label="&quot;">FT</Unit></Composite>`);
       });
     });
   }); // Schema tests
