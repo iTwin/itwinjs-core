@@ -5,7 +5,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ConflictCode } from "../../Differencing/SchemaConflicts";
 import { Schema, SchemaContext, SchemaProps } from "@itwin/ecschema-metadata";
-import { SchemaDifferenceResult, getSchemaDifferences } from "../../Differencing/SchemaDifference";
+import { getSchemaDifferences, SchemaDifferenceResult } from "../../Differencing/SchemaDifference";
 import { expect } from "chai";
 /* eslint-disable @typescript-eslint/naming-convention */
 

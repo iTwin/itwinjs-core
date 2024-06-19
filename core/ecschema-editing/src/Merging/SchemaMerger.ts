@@ -63,7 +63,6 @@ export class SchemaMerger {
     return this.mergeDifferences(differenceResult);
   }
 
-
   /**
    * Merges the schema differences in the target schema. The target schema is defined
    * in the given differences object.
