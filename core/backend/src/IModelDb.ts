@@ -1936,7 +1936,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       else
         elementId.onlyBaseProperties = false; // we must load all properties to construct the element.
 
-      const elementProps = this.tryGetElementJson(elementId);
+      const elementProps = this.tryGetElementJson<ElementProps>(elementId);
       if (undefined === elementProps)
         return undefined; // no Element with that elementId found
 
