@@ -139,6 +139,7 @@ export class ViewingSpace {
 
   private static _minDepth = 1; // Allowing very small depth will cause frustum calculations to fail.
 
+  /** Compute the bounding box of this viewing space in [[CoordSystem.World]] coordinates, including the extents of any [[TiledGraphicsProvider]]s registered with the [[Viewport]]. */
   public readonly getViewedExtents: () => AxisAlignedBox3d;
 
   /** Adjust the front and back planes to encompass the entire viewed volume */
