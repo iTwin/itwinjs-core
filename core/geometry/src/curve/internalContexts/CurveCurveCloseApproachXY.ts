@@ -638,11 +638,11 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   private solveArcArcNewton(
     curveP: Arc3d, curveQ: Arc3d, reversed: boolean, newtonEvaluator: NewtonEvaluatorRRtoRRD,
   ): void {
-    const seedsU = [0.2, 0.4, 0.6, 0.8];  // HEURISTIC: 2 arcs have up to 4 perpendiculars/intersections
-    const seedsV = [0.2, 0.4, 0.6, 0.8];
+    const seedDelta = 1 / 11; // HEURISTIC: 2 ellipses have up to 8 perpendiculars and up to 4 intersections
+    const seedStart = seedDelta / 2;
     const newtonSearcher = new Newton2dUnboundedWithDerivative(newtonEvaluator);
-    for (const seedU of seedsU) {
-      for (const seedV of seedsV) {
+    for (let seedU = seedStart; seedU < 1; seedU += seedDelta) {
+      for (let seedV = seedStart; seedV < 1; seedV += seedDelta) {
         newtonSearcher.setUV(seedU, seedV);
         if (newtonSearcher.runIterations()) {
           const curvePFraction = newtonSearcher.getU();
