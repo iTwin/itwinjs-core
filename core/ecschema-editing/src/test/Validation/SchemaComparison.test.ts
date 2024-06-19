@@ -806,7 +806,7 @@ describe("Schema comparison tests for comparing schemas with different names", (
         expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.BaseClassDelta, "SchemaA.testBaseClass", "SchemaB.testBaseClass")).to.be.undefined;
       });
 
-      it.only("should not report baseClass delta when the base class has the same name with different case and is defined in comparable schemas", async () => {
+      it("should not report baseClass delta when the base class has the same name with different case and is defined in comparable schemas", async () => {
         const schemaA = await Schema.fromJson({
           ...schemaAJson,
           items: {
