@@ -1587,11 +1587,11 @@ describe("Schema", () => {
       }
 
       it("KoQ serialization with overriden formats", async () => {
-        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M][TestSchema.MM][TestSchema.FT]"]}), `presentationUnits="TestFormat(4)[M|m][MM|mm][FT|ft]"`);
-        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M][TestSchema.MM][TestSchema.FT|]"]}), `presentationUnits="TestFormat(4)[M|m][MM|mm][FT|ft]"`);
-        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM][TestSchema.FT|]"]}), `presentationUnits="TestFormat(4)[M|alpha][MM|mm][FT|ft]"`);
-        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM|bravo][TestSchema.FT]"]}), `presentationUnits="TestFormat(4)[M|alpha][MM|bravo][FT|ft]"`);
-        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM|bravo][TestSchema.FT|]"]}), `presentationUnits="TestFormat(4)[M|alpha][MM|bravo][FT|ft]"`);
+        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M][TestSchema.MM][TestSchema.FT]"]}), `presentationUnits="TestFormat(4)[M][MM][FT]"`);
+        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M][TestSchema.MM][TestSchema.FT|]"]}), `presentationUnits="TestFormat(4)[M][MM][FT|]"`);
+        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM][TestSchema.FT|]"]}), `presentationUnits="TestFormat(4)[M|alpha][MM][FT|]"`);
+        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM|bravo][TestSchema.FT]"]}), `presentationUnits="TestFormat(4)[M|alpha][MM|bravo][FT]"`);
+        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM|bravo][TestSchema.FT|]"]}), `presentationUnits="TestFormat(4)[M|alpha][MM|bravo][FT|]"`);
         assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM|bravo][TestSchema.FT|charlie]"]}), `presentationUnits="TestFormat(4)[M|alpha][MM|bravo][FT|charlie]"`);
       });
 

@@ -74,8 +74,8 @@ describe("KindOfQuantity", () => {
       expect(testKoq!.presentationFormats).exist;
       expect(testKoq!.presentationFormats.length).eq(1);
 
-      expect(testKoq!.defaultPresentationFormat!.name).eq("Formats.DefaultReal[Formats.IN|inch]");
-      expect(testKoq!.presentationFormats[0].name).eq("Formats.DefaultReal[Formats.IN|inch]");
+      expect(testKoq!.defaultPresentationFormat!.name).eq("Formats.DefaultReal[Formats.IN]");
+      expect(testKoq!.presentationFormats[0].name).eq("Formats.DefaultReal[Formats.IN]");
     });
 
     const koqNoPresUnits = {
@@ -290,13 +290,13 @@ describe("KindOfQuantity", () => {
       expect(defaultOverrideFormat.precision).to.be.equal(defaultOverrideFormat.parent.precision);
 
       const expectedJson = {
-        name: "Formats.DefaultReal[Formats.IN|inch]",
+        name: "Formats.DefaultReal[Formats.IN]",
         parent: "Formats.DefaultReal",
         schemaItemType: "Format",
         type: "Decimal",
         precision: 6,
         composite: {
-          units: [{ name: "Formats.IN", label: "inch" }],
+          units: [{ name: "Formats.IN" }],
         },
       };
       expect(JSON.parse(JSON.stringify((defaultFormat as OverrideFormat)?.getFormatProps()))).to.be.deep.equal(expectedJson);
@@ -319,13 +319,13 @@ describe("KindOfQuantity", () => {
       assert.strictEqual(unitOverride[0], unitFromSchema);
 
       const expectedJson = {
-        name: "Formats.DefaultReal[Formats.IN|inch]",
+        name: "Formats.DefaultReal[Formats.IN]",
         parent: "Formats.DefaultReal",
         schemaItemType: "Format",
         type: "Decimal",
         precision: 6,
         composite: {
-          units: [{ name: "Formats.IN", label: "inch" }],
+          units: [{ name: "Formats.IN" }],
         },
       };
       expect(JSON.parse(JSON.stringify((defaultFormat as OverrideFormat)?.getFormatProps()))).to.be.deep.equal(expectedJson);
@@ -406,14 +406,14 @@ describe("KindOfQuantity", () => {
 
     const expectedOutputJson = {
       schemaItemType:"Format",
-      name:"Formats.QuadUnitFormat[Formats.MILE|mile][Formats.YRD|yard][Formats.FT|'][Formats.IN|in]",
+      name:"Formats.QuadUnitFormat[Formats.MILE][Formats.YRD|][Formats.FT|'][Formats.IN|in]",
       parent:"Formats.QuadUnitFormat",
       type:"Decimal",
       precision:6,
       composite: {
         spacer: "-",
         includeZero: false,
-        units: [{ name: "Formats.MILE", label: "mile"},{ name: "Formats.YRD", label: "yard" },{ name: "Formats.FT", label: "'" },{ name: "Formats.IN", label: "in" }],
+        units: [{ name: "Formats.MILE"},{ name: "Formats.YRD", label: "" },{ name: "Formats.FT", label: "'" },{ name: "Formats.IN", label: "in" }],
       },
     };
     it("async - null or empty unit label override", async () => {
@@ -428,7 +428,7 @@ describe("KindOfQuantity", () => {
       assert.isDefined(defaultFormat!.units);
       expect(defaultFormat!.units!.length).to.eq(4);
 
-      const expectedOverrides = ["mile", "yard", "'", "in"];
+      const expectedOverrides = [undefined, "", "'", "in"];
       let index = 0;
       while (index < 4) {
         const unitOverride = defaultFormat!.units![index];
@@ -452,7 +452,7 @@ describe("KindOfQuantity", () => {
       assert.isDefined(defaultFormat!.units);
       expect(defaultFormat!.units!.length).to.eq(4);
 
-      const expectedOverrides = ["mile", "yard", "'", "in"];
+      const expectedOverrides = [undefined, "", "'", "in"];
       let index = 0;
       while (index < 4) {
         const unitOverride = defaultFormat!.units![index];
@@ -510,7 +510,7 @@ describe("KindOfQuantity", () => {
         relativeError: 1.234,
         persistenceUnit: "Formats.IN",
         presentationUnits: [
-          "Formats.DefaultReal[Formats.IN|inch]",
+          "Formats.DefaultReal[Formats.IN]",
         ],
       };
       schema = await Schema.fromJson(createSchemaJson(koqJson), context);
@@ -531,7 +531,7 @@ describe("KindOfQuantity", () => {
         relativeError: 1.234,
         persistenceUnit: "Formats.IN",
         presentationUnits: [
-          "Formats.DefaultReal[Formats.IN|inch]",
+          "Formats.DefaultReal[Formats.IN]",
         ],
       };
       schema = await Schema.fromJson(createSchemaJson(koqJson), context);
@@ -543,7 +543,7 @@ describe("KindOfQuantity", () => {
         relativeError: 1.234,
         persistenceUnit: "Formats.IN",
         presentationUnits: [
-          "Formats.DefaultReal[Formats.IN|inch]",
+          "Formats.DefaultReal[Formats.IN]",
         ],
       };
       expect(testKoq).to.exist;
