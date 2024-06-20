@@ -107,7 +107,7 @@ describe("Schema reference merging tests", () => {
     }, targetSchemaContext);
 
     const merger = new SchemaMerger(targetSchema.context);
-    const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+    const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema);
     const bisCoreReference = await mergedSchema.getReference("BisCore");
     expect(bisCoreReference?.schemaKey.toString()).equals("BisCore.01.00.16");
   });
@@ -152,7 +152,7 @@ describe("Schema reference merging tests", () => {
     }, targetSchemaContext);
 
     const merger = new SchemaMerger(targetSchema.context);
-    const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+    const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema);
     const bisCoreReference = await mergedSchema.getReference("BisCore");
     expect(bisCoreReference?.schemaKey.toString()).equals("BisCore.01.00.16");
   });
@@ -197,6 +197,6 @@ describe("Schema reference merging tests", () => {
     }, targetSchemaContext);
 
     const merger = new SchemaMerger(targetSchema.context);
-    await expect(merger.merge(targetSchema, sourceSchema)).to.eventually.rejectedWith("Schemas references of BisCore have incompatible versions: 01.00.15 and 01.01.01");
+    await expect(merger.mergeSchemas(targetSchema, sourceSchema)).to.eventually.rejectedWith("Schemas references of BisCore have incompatible versions: 01.00.15 and 01.01.01");
   });
 });

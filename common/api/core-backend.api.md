@@ -4446,6 +4446,8 @@ export interface ProcessChangesetOptions {
     // (undocumented)
     tempDir?: string;
     // (undocumented)
+    wantBoundingBoxes?: boolean;
+    // (undocumented)
     wantChunkTraversal?: boolean;
     // (undocumented)
     wantParents?: boolean;
