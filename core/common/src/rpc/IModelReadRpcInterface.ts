@@ -84,7 +84,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface { // eslint-di
   public static readonly interfaceName = "IModelReadRpcInterface";
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "3.6.0";
+  public static interfaceVersion = "3.7.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
