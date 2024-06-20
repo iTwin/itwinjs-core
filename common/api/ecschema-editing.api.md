@@ -1049,6 +1049,9 @@ export class FormatUnitChanges extends BaseSchemaChanges {
 }
 
 // @alpha
+export function getSchemaDifferences(targetSchema: Schema, sourceSchema: Schema): Promise<SchemaDifferenceResult>;
+
+// @alpha
 export interface IClassIdentifier extends ISchemaTypeIdentifier {
     // (undocumented)
     readonly schemaItemKey: SchemaItemKey;
@@ -1287,6 +1290,63 @@ export interface ISchemaTypeIdentifier {
     // (undocumented)
     readonly typeIdentifier: SchemaTypeIdentifiers;
 }
+
+// @alpha
+export function isClassPropertyDifference(difference: AnySchemaDifference): difference is ClassPropertyDifference;
+
+// @alpha
+export function isConstantDifference(difference: AnySchemaDifference): difference is ConstantDifference;
+
+// @alpha
+export function isCustomAttributeClassDifference(difference: AnySchemaDifference): difference is CustomAttributeClassDifference;
+
+// @alpha
+export function isCustomAttributeDifference(difference: AnySchemaDifference): difference is CustomAttributeDifference;
+
+// @alpha
+export function isEntityClassDifference(difference: AnySchemaDifference): difference is EntityClassDifference;
+
+// @alpha
+export function isEntityClassMixinDifference(difference: AnySchemaDifference): difference is EntityClassMixinDifference;
+
+// @alpha
+export function isEnumerationDifference(difference: AnySchemaDifference): difference is EnumerationDifference;
+
+// @alpha
+export function isEnumeratorDifference(difference: AnySchemaDifference): difference is EnumeratorDifference;
+
+// @alpha
+export function isKindOfQuantityDifference(difference: AnySchemaDifference): difference is KindOfQuantityDifference;
+
+// @alpha
+export function isMixinClassDifference(difference: AnySchemaDifference): difference is MixinClassDifference;
+
+// @alpha
+export function isPhenomenonDifference(difference: AnySchemaDifference): difference is PhenomenonDifference;
+
+// @alpha
+export function isPropertyCategoryDifference(difference: AnySchemaDifference): difference is PropertyCategoryDifference;
+
+// @alpha
+export function isRelationshipClassDifference(difference: AnySchemaDifference): difference is RelationshipClassDifference;
+
+// @alpha
+export function isRelationshipConstraintClassDifference(difference: AnySchemaDifference): difference is RelationshipConstraintClassDifference;
+
+// @alpha
+export function isRelationshipConstraintDifference(difference: AnySchemaDifference): difference is RelationshipConstraintDifference;
+
+// @alpha
+export function isSchemaDifference(difference: AnySchemaDifference): difference is SchemaDifference;
+
+// @alpha
+export function isSchemaReferenceDifference(difference: AnySchemaDifference): difference is SchemaReferenceDifference;
+
+// @alpha
+export function isStructClassDifference(difference: AnySchemaDifference): difference is StructClassDifference;
+
+// @alpha
+export function isUnitSystemDifference(difference: AnySchemaDifference): difference is UnitSystemDifference;
 
 // @beta
 export type ISuppressionRule<T extends AnyECType, U = {}> = (diagnostic: AnyDiagnostic, ecDefinition: T, ...args: U[]) => Promise<boolean>;
@@ -1936,12 +1996,17 @@ export class SchemaContextEditor {
     finish(): Promise<SchemaContext>;
     // (undocumented)
     readonly formats: Formats;
-    getSchema(schemaKey: SchemaKey): Promise<MutableSchema | undefined>;
+    // @internal
+    getSchema(schemaKey: SchemaKey): Promise<MutableSchema>;
+    // @internal (undocumented)
+    getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T>;
     incrementMinorVersion(schemaKey: SchemaKey): Promise<SchemaKey>;
     // (undocumented)
     readonly invertedUnits: InvertedUnits;
     // (undocumented)
     readonly kindOfQuantities: KindOfQuantities;
+    // @internal (undocumented)
+    lookupSchemaItem<T extends SchemaItem>(schemaOrKey: Schema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T>;
     // (undocumented)
     readonly mixins: Mixins;
     // (undocumented)
@@ -1969,32 +2034,6 @@ export abstract class SchemaDiagnostic<ARGS extends any[]> extends BaseDiagnosti
     get schema(): Schema;
 }
 
-// @alpha (undocumented)
-export namespace SchemaDifference {
-    // @internal
-    export function fromSchemaChanges(targetSchema: Schema, schemaChanges: SchemaChanges): Promise<SchemaDifferences>;
-    export function fromSchemas(targetSchema: Schema, sourceSchema: Schema): Promise<SchemaDifferences>;
-    export function isClassPropertyDifference(difference: AnySchemaDifference): difference is ClassPropertyDifference;
-    export function isConstantDifference(difference: AnySchemaDifference): difference is ConstantDifference;
-    export function isCustomAttributeClassDifference(difference: AnySchemaDifference): difference is CustomAttributeClassDifference;
-    export function isCustomAttributeDifference(difference: AnySchemaDifference): difference is CustomAttributeDifference;
-    export function isEntityClassDifference(difference: AnySchemaDifference): difference is EntityClassDifference;
-    export function isEntityClassMixinDifference(difference: AnySchemaDifference): difference is EntityClassMixinDifference;
-    export function isEnumerationDifference(difference: AnySchemaDifference): difference is EnumerationDifference;
-    export function isEnumeratorDifference(difference: AnySchemaDifference): difference is EnumeratorDifference;
-    export function isKindOfQuantityDifference(difference: AnySchemaDifference): difference is KindOfQuantityDifference;
-    export function isMixinClassDifference(difference: AnySchemaDifference): difference is MixinClassDifference;
-    export function isPhenomenonDifference(difference: AnySchemaDifference): difference is PhenomenonDifference;
-    export function isPropertyCategoryDifference(difference: AnySchemaDifference): difference is PropertyCategoryDifference;
-    export function isRelationshipClassDifference(difference: AnySchemaDifference): difference is RelationshipClassDifference;
-    export function isRelationshipConstraintClassDifference(difference: AnySchemaDifference): difference is RelationshipConstraintClassDifference;
-    export function isRelationshipConstraintDifference(difference: AnySchemaDifference): difference is RelationshipConstraintDifference;
-    export function isSchemaDifference(difference: AnySchemaDifference): difference is SchemaDifference;
-    export function isSchemaReferenceDifference(difference: AnySchemaDifference): difference is SchemaReferenceDifference;
-    export function isStructClassDifference(difference: AnySchemaDifference): difference is StructClassDifference;
-    export function isUnitSystemDifference(difference: AnySchemaDifference): difference is UnitSystemDifference;
-}
-
 // @alpha
 export interface SchemaDifference {
     // (undocumented)
@@ -2020,7 +2059,7 @@ export interface SchemaDifferenceConflict {
 }
 
 // @alpha
-export interface SchemaDifferences {
+export interface SchemaDifferenceResult {
     readonly conflicts?: SchemaDifferenceConflict[];
     readonly differences: AnySchemaDifference[];
     readonly sourceSchemaName: string;
@@ -2100,9 +2139,9 @@ export class SchemaItemMissing extends SchemaItemChange {
 // @beta
 export class SchemaMerger {
     constructor(editingContext: SchemaContext);
-    merge(targetSchema: Schema, sourceSchema: Schema): Promise<Schema>;
     // @alpha
-    merge(differences: SchemaDifferences): Promise<Schema>;
+    merge(differenceResult: SchemaDifferenceResult): Promise<Schema>;
+    mergeSchemas(targetSchema: Schema, sourceSchema: Schema): Promise<Schema>;
 }
 
 // @alpha
@@ -2158,8 +2197,6 @@ export enum SchemaTypeIdentifiers {
     ClassIdentifier = "Class",
     // (undocumented)
     CustomAttributeIdentifier = "CustomAttribute",
-    // (undocumented)
-    EnumerationIdentifier = "Enumeration",
     // (undocumented)
     EnumeratorIdentifier = "Enumerator",
     // (undocumented)
