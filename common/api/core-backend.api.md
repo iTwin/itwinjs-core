@@ -138,7 +138,7 @@ import { LineStyleProps } from '@itwin/core-common';
 import { LocalBriefcaseProps } from '@itwin/core-common';
 import { LocalDirName } from '@itwin/core-common';
 import { LocalFileName } from '@itwin/core-common';
-import { LockState } from '@itwin/core-common';
+import { LockState as LockState_2 } from '@itwin/core-common';
 import { LogLevel } from '@itwin/core-bentley';
 import { LowAndHighXYZ } from '@itwin/core-geometry';
 import { MarkRequired } from '@itwin/core-bentley';
@@ -4050,15 +4050,20 @@ export interface LockControl {
 }
 
 // @internal (undocumented)
-export type LockMap = Map<Id64String, LockState>;
+export type LockMap = Map<Id64String, LockState_2>;
 
 // @beta
 export interface LockProps {
     readonly id: Id64String;
-    readonly state: LockState;
+    readonly state: LockState_2;
 }
 
-export { LockState }
+// @public @deprecated
+export enum LockState {
+    Exclusive = 2,
+    None = 0,
+    Shared = 1
+}
 
 // @internal
 export interface LockStatusExclusive {
@@ -4067,7 +4072,7 @@ export interface LockStatusExclusive {
     // (undocumented)
     lastCsIndex?: ChangesetIndex;
     // (undocumented)
-    state: LockState.Exclusive;
+    state: LockState_2.Exclusive;
 }
 
 // @internal
@@ -4077,7 +4082,7 @@ export interface LockStatusShared {
     // (undocumented)
     sharedBy: Set<BriefcaseId>;
     // (undocumented)
-    state: LockState.Shared;
+    state: LockState_2.Shared;
 }
 
 // @internal

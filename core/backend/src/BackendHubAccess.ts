@@ -9,8 +9,8 @@
 import { AccessToken, GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
 import {
   BriefcaseId, ChangesetFileProps, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexAndId, ChangesetIndexOrId, ChangesetProps, ChangesetRange,
-  IModelError, IModelVersion, LocalDirName, LocalFileName,
-  LockState,
+  LockState as CommonLockState, IModelError, IModelVersion,
+  LocalDirName, LocalFileName,
 } from "@itwin/core-common";
 import { CheckpointProps, DownloadRequest, ProgressFunction } from "./CheckpointManager";
 import type { TokenArg } from "./IModelDb";
@@ -28,6 +28,21 @@ export class LockConflict extends IModelError {
   ) {
     super(IModelHubStatus.LockOwnedByAnotherBriefcase, msg);
   }
+}
+
+/** The state of a lock. See [Acquiring locks on elements.]($docs/learning/backend/ConcurrencyControl.md#acquiring-locks-on-elements).
+ * @deprecated in 4.7 Use [LockState]($common)
+ * @public
+ */
+export enum LockState {
+  /** The element is not locked */
+  None = 0,
+  /** Holding a shared lock on an element blocks other users from acquiring the Exclusive lock it. More than one user may acquire the shared lock. */
+  Shared = 1,
+  /** A Lock that permits modifications to an element and blocks other users from making modifications to it.
+   * Holding an exclusive lock on an "owner" (a model or a parent element), implicitly exclusively locks all its members.
+   */
+  Exclusive = 2,
 }
 
 /**
@@ -48,7 +63,7 @@ export interface V2CheckpointAccessProps {
 }
 
 /** @internal */
-export type LockMap = Map<Id64String, LockState>;
+export type LockMap = Map<Id64String, CommonLockState>;
 
 /**
  * The properties of a lock that may be obtained from a lock server.
@@ -58,7 +73,7 @@ export interface LockProps {
   /** The elementId for the lock */
   readonly id: Id64String;
   /** the lock state */
-  readonly state: LockState;
+  readonly state: CommonLockState;
 }
 
 /**
