@@ -863,8 +863,8 @@ export class SchemaComparer {
     topLevelSchemaNameA: string,
     topLevelSchemaNameB: string | undefined ): boolean {
 
-    const nameA = itemKeyA ? itemKeyA.name : undefined;
-    const nameB = itemKeyB ? itemKeyB.name : undefined;
+    const nameA = itemKeyA ? itemKeyA.name.toUpperCase() : undefined;
+    const nameB = itemKeyB ? itemKeyB.name.toUpperCase() : undefined;
 
     const schemaNameA = itemKeyA
       ? SchemaItem.isSchemaItem(itemKeyA)
