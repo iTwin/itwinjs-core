@@ -121,7 +121,7 @@ describe("ECClass tests", () => {
 
     it("should successfully delete an EnumerationProperty from class", async () => {
       const schema = await testEditor.getSchema(testKey);
-      const testEnum = new Enumeration(schema!, "TestEnumeration");
+      const testEnum = new Enumeration(schema, "TestEnumeration");
       await testEditor.entities.createEnumerationProperty(entityKey, "TestProperty", testEnum);
       let property = await entity?.getProperty("TestProperty") as EnumerationProperty;
       expect(await property.enumeration).to.eql(testEnum);
@@ -160,7 +160,7 @@ describe("ECClass tests", () => {
 
     it("should successfully delete EnumerationArrayProperty from class", async () => {
       const schema = await testEditor.getSchema(testKey);
-      const enumeration = new Enumeration(schema!, "TestEnumeration");
+      const enumeration = new Enumeration(schema, "TestEnumeration");
       await testEditor.entities.createEnumerationArrayProperty(entityKey, "TestProperty", enumeration);
       let property = await entity?.getProperty("TestProperty") as EnumerationArrayProperty;
       expect(await property.enumeration).to.eql(enumeration);
@@ -236,7 +236,7 @@ describe("ECClass tests", () => {
 
     it("should successfully delete a NavigationProperty from class", async () => {
       const schema = await testEditor.getSchema(testKey);
-      const relationship = new RelationshipClass(schema!, "TestRelationship");
+      const relationship = new RelationshipClass(schema, "TestRelationship");
       await testEditor.entities.createNavigationProperty(entityKey, "TestProperty", relationship, StrengthDirection.Forward);
       let property = await entity?.getProperty("TestProperty") as NavigationProperty;
       expect(await property.relationshipClass).to.eql(relationship);

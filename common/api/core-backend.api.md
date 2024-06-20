@@ -218,7 +218,9 @@ import { SynchronizationConfigLinkProps } from '@itwin/core-common';
 import { TextAnnotation } from '@itwin/core-common';
 import { TextAnnotation2dProps } from '@itwin/core-common';
 import { TextAnnotation3dProps } from '@itwin/core-common';
+import { TextBlock } from '@itwin/core-common';
 import { TextBlockGeometryProps } from '@itwin/core-common';
+import { TextBlockLayoutResult } from '@itwin/core-common';
 import { TextStyleSettings } from '@itwin/core-common';
 import { TextureData } from '@itwin/core-common';
 import { TextureLoadProps } from '@itwin/core-common';
@@ -951,10 +953,13 @@ export namespace CloudSqlite {
         name: string;
         rootDir: string;
     }
+    export function cleanDeletedBlocks(container: CloudContainer, options: CleanDeletedBlocksOptions): Promise<void>;
     // (undocumented)
     export interface CleanDeletedBlocksOptions {
         debugLogging?: boolean;
+        findOrphanedBlocks?: boolean;
         nSeconds?: number;
+        onProgress?: (nDeleted: number, nTotalToDelete: number) => number;
     }
     export interface CloudCache {
         // @internal
@@ -984,7 +989,6 @@ export namespace CloudSqlite {
         // (undocumented)
         readonly cache?: CloudCache;
         checkForChanges(): void;
-        cleanDeletedBlocks(options?: CleanDeletedBlocksOptions): Promise<void>;
         clearWriteLock(): void;
         connect(cache: CloudCache): void;
         get containerId(): string;
@@ -1386,6 +1390,9 @@ export interface ComputedProjectExtents {
     extentsWithOutliers?: Range3d;
     outliers?: Id64Array;
 }
+
+// @beta
+export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult;
 
 // @public
 export interface ComputeProjectExtentsOptions {
@@ -3683,6 +3690,18 @@ export class KnownLocations {
     static get tmpdir(): LocalDirName;
 }
 
+// @beta
+export interface LayoutTextBlockArgs {
+    // @internal
+    computeTextRange?: ComputeRangesForTextLayout;
+    // @internal
+    findFontId?: FindFontId;
+    // @internal
+    findTextStyle?: FindTextStyle;
+    iModel: IModelDb;
+    textBlock: TextBlock;
+}
+
 // @internal
 export class LightLocation extends SpatialLocationElement {
     protected constructor(props: LightLocationProps, iModel: IModelDb);
@@ -4425,6 +4444,8 @@ export interface ProcessChangesetOptions {
     startChangesetId: string;
     // (undocumented)
     tempDir?: string;
+    // (undocumented)
+    wantBoundingBoxes?: boolean;
     // (undocumented)
     wantChunkTraversal?: boolean;
     // (undocumented)

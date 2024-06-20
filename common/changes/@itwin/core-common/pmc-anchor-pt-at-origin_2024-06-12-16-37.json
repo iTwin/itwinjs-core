@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "TextAnnotation.computeTransform aligns the anchor point with the origin.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
