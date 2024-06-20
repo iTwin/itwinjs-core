@@ -28,7 +28,10 @@ export class Formats extends SchemaItems {
 
       if (units !== undefined) {
         for (const unit of units) {
-          const unitItem = await this.getSchemaItem<Unit | InvertedUnit>(unit, null);
+          const unitItem =  await this.schemaEditor.schemaContext.getSchemaItem<Unit | InvertedUnit>(unit);
+          if (!unitItem) {
+            throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(SchemaItemType.Unit, unit));
+          }
 
           if (unitItem.schemaItemType !== SchemaItemType.Unit && unitItem.schemaItemType !== SchemaItemType.InvertedUnit)
             throw new SchemaEditingError(ECEditingStatus.InvalidFormatUnitsSpecified, new SchemaItemId((unitItem as SchemaItem).schemaItemType, (unitItem as SchemaItem).key));
