@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-editing",
+      "comment": "Removed SchemaDifference namspace; difference method and typeguards are now exported functions of the package. SchemaDifferences has been renamed to SchemaDifferenceResult",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-editing"
+}
