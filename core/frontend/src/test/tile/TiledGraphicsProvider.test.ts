@@ -91,6 +91,7 @@ class TestSupplier implements TileTreeSupplier {
 class TestRef extends TileTreeReference {
   private readonly _owner: TileTreeOwner;
   public loadingComplete = false;
+  public extents?: Range3d;
 
   public constructor(tree: TestTree) {
     super();
@@ -103,6 +104,12 @@ class TestRef extends TileTreeReference {
 
   protected override get _isLoadingComplete(): boolean {
     return this.loadingComplete;
+  }
+
+  public override unionFitRange(range: Range3d): void {
+    if (this.extents) {
+      range.extendRange(this.extents);
+    }
   }
 }
 
@@ -192,5 +199,50 @@ describe("TiledGraphicsProvider", () => {
 
     ref2.loadingComplete = true;
     expect(viewport.areAllTileTreesLoaded).to.be.true;
+  });
+
+  it("is included in ViewingSpace extents", async () => {
+    function expectExtents(expected: Range3d): void {
+      const actual = viewport.viewingSpace.getViewedExtents();
+
+      expect(Math.round(actual.low.x)).to.equal(Math.round(expected.low.x));
+      expect(Math.round(actual.low.y)).to.equal(Math.round(expected.low.y));
+      expect(Math.round(actual.low.y)).to.equal(Math.round(expected.low.y));
+      expect(Math.round(actual.high.x)).to.equal(Math.round(expected.high.x));
+      expect(Math.round(actual.high.y)).to.equal(Math.round(expected.high.y));
+      expect(Math.round(actual.high.y)).to.equal(Math.round(expected.high.y));
+    }
+
+    const projExtents = viewport.iModel.projectExtents;
+    expectExtents(projExtents);
+
+    const provider = new TestProvider();
+    viewport.addTiledGraphicsProvider(provider);
+    expectExtents(projExtents);
+
+    const tree = new TestTree(imodel);
+    const ref = new TestRef(tree);
+    provider.refs.push(ref);
+    expect(viewport.areAllTileTreesLoaded).to.be.false;
+    expectExtents(projExtents);
+
+    await tree.setReady();
+    ref.loadingComplete = true;
+    expect(viewport.areAllTileTreesLoaded).to.be.true;
+    expectExtents(projExtents);
+
+    ref.extents = projExtents.clone();
+    ref.extents.scaleAboutCenterInPlace(0.5);
+    expectExtents(projExtents);
+
+    ref.extents = projExtents.clone();
+    ref.extents.scaleAboutCenterInPlace(2.0);
+    expectExtents(ref.extents);
+
+    ref.extents = new Range3d(projExtents.low.x - 10, projExtents.low.y + 20, projExtents.low.z,
+      projExtents.high.x + 30, projExtents.high.y - 40, projExtents.high.z * 50);
+
+    expectExtents(new Range3d(projExtents.low.x - 10, projExtents.low.y, projExtents.low.z,
+      projExtents.high.x + 30, projExtents.high.y, projExtents.high.z * 50));
   });
 });
