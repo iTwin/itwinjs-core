@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { ECObjectsError, ECObjectsStatus, Schema, SchemaItem, SchemaItemKey, SchemaItemProps, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
+import { ECObjectsError, ECObjectsStatus, SchemaItem, SchemaItemKey, SchemaItemProps, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
 import { ECEditingStatus, SchemaEditingError, SchemaId, SchemaItemId } from "./Exception";
 import { MutableSchema } from "./Mutable/MutableSchema";
@@ -94,40 +94,14 @@ export abstract class SchemaItems {
     return schema;
   }
 
-  protected async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey, schemaItemType?: SchemaItemType | null): Promise<T>{
-    const schemaItem =  await this.schemaEditor.schemaContext.getSchemaItem<T>(schemaItemKey);
-    schemaItemType = schemaItemType === null ? undefined : schemaItemType ?? this.schemaItemType;
-
-    if (!schemaItem) {
-      throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(schemaItemType ?? this.schemaItemType, schemaItemKey));
-    }
-
-    if (schemaItemType && schemaItemType !== schemaItem.schemaItemType) {
-      throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new SchemaItemId(schemaItemType ?? this.schemaItemType, schemaItemKey));
-    }
-
-    return schemaItem;
+  protected async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey, schemaItemType?: SchemaItemType): Promise<T>{
+    schemaItemType = schemaItemType ?? this.schemaItemType;
+    return this.schemaEditor.getSchemaItem<T>(schemaItemKey, schemaItemType);
   }
 
-  protected async lookupSchemaItem<T extends SchemaItem>(schemaOrKey: MutableSchema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType?: SchemaItemType | null): Promise<T>{
-    schemaItemType = schemaItemType === null ? undefined : schemaItemType ?? this.schemaItemType;
-
-    let schema: Schema;
-    if (schemaOrKey instanceof SchemaKey) {
-      schema = await this.getSchema(schemaOrKey);
-    } else {
-      schema = schemaOrKey;
-    }
-
-    const schemaItem = await schema.lookupItem<T>(schemaItemKey);
-    if (schemaItem === undefined)
-      throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new SchemaItemId(schemaItemType ?? this.schemaItemType, schemaItemKey));
-
-    if (schemaItemType && schemaItemType !== schemaItem.schemaItemType) {
-      throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new SchemaItemId(schemaItemType ?? this.schemaItemType, schemaItemKey));
-    }
-
-    return schemaItem;
+  protected async lookupSchemaItem<T extends SchemaItem>(schemaOrKey: MutableSchema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType?: SchemaItemType): Promise<T>{
+    schemaItemType = schemaItemType ?? this.schemaItemType;
+    return this.schemaEditor.lookupSchemaItem(schemaOrKey, schemaItemKey, schemaItemType);
   }
 
   protected async createSchemaItem<T extends SchemaItem>(schemaKey: SchemaKey, type: SchemaItemType, create: CreateSchemaItem<T>, name: string, ...args: any[]): Promise<T> {
