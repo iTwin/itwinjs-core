@@ -16419,6 +16419,7 @@ export class ViewingSpace {
     getTerrainHeightRange(): Range1d | undefined;
     // (undocumented)
     getViewCorners(): Range3d;
+    readonly getViewedExtents: () => AxisAlignedBox3d;
     // @internal
     static nearScaleLog24: number;
     // @internal
