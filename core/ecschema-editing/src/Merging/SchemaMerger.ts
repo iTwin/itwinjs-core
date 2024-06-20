@@ -6,13 +6,13 @@
  * @module Merging
  */
 
-import { MutableSchema } from "../Editing/Mutable/MutableSchema";
 import { Schema, type SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../Editing/Editor";
+import { SchemaEditingError } from "../Editing/Exception";
 import { SchemaConflictsError } from "../Differencing/Errors";
-import { getSchemaDifferences, SchemaDifference, SchemaDifferenceResult } from "../Differencing/SchemaDifference";
+import { getSchemaDifferences, type SchemaDifference, type SchemaDifferenceResult } from "../Differencing/SchemaDifference";
 import { mergeCustomAttribute } from "./CustomAttributeMerger";
-import { mergeSchemaItems } from "./SchemaItemMerger";
+import { filterSchemaItems } from "./SchemaItemMerger";
 import { mergeSchemaReferences } from "./SchemaReferenceMerger";
 import * as Utils from "../Differencing/Utils";
 
@@ -26,6 +26,15 @@ export interface SchemaMergeContext {
   readonly sourceSchemaKey: SchemaKey;
   readonly editor: SchemaContextEditor;
 }
+
+interface EditingErrorReporter {
+  report(error: SchemaEditingError): void;
+}
+
+/**
+ * @internal
+ */
+export type MergeFn = (context: SchemaMergeContext) => Promise<void>;
 
 /**
  * Class to merge two schemas together.
@@ -49,6 +58,7 @@ export class SchemaMerger {
    * @param targetSchema  The schema the SchemaItems gets merged to.
    * @param sourceSchema  The schema the SchemaItems gets copied from.
    * @returns             The merged target schema.
+   * @alpha
    */
   public async mergeSchemas(targetSchema: Schema, sourceSchema: Schema): Promise<Schema> {
     return this.merge(await getSchemaDifferences(targetSchema, sourceSchema));
@@ -60,16 +70,6 @@ export class SchemaMerger {
    * @alpha
    */
   public async merge(differenceResult: SchemaDifferenceResult): Promise<Schema> {
-    return this.mergeDifferences(differenceResult);
-  }
-
-  /**
-   * Merges the schema differences in the target schema. The target schema is defined
-   * in the given differences object.
-   * @param differenceResult   The differences between a source schema and the target schema.
-   * @returns                  The modified Schema.
-   */
-  private async mergeDifferences(differenceResult: SchemaDifferenceResult): Promise<Schema> {
     const targetSchemaKey = SchemaKey.parseString(differenceResult.targetSchemaName);
     const sourceSchemaKey = SchemaKey.parseString(differenceResult.sourceSchemaName);
 
@@ -99,27 +99,48 @@ export class SchemaMerger {
       sourceSchemaKey,
     };
 
+    const errors: SchemaEditingError[] = [];
+    await this.mergeSchema(context, differenceResult, {
+      report: (error) => errors.push(error),
+    });
+
+    if (errors.length > 0) {
+      throw new SchemaMergeError("Schemas couldn't be merged successfully.", errors);
+    }
+
+    return schema;
+  }
+
+  /**
+   * Merges the differences into the target schema.
+   */
+  private async mergeSchema(context: SchemaMergeContext, { differences }: SchemaDifferenceResult, errorReporter: EditingErrorReporter) {
+    const errorHandler = (error: unknown) => {
+      if (error instanceof SchemaEditingError) {
+        return errorReporter.report(error);
+      }
+      throw error;
+    };
+
     for (const referenceChange of differences.filter(Utils.isSchemaReferenceDifference)) {
-      await mergeSchemaReferences(context, referenceChange);
+      await mergeSchemaReferences(context, referenceChange).catch(errorHandler);
     }
 
-    const schemaDifference = differences.find(Utils.isSchemaDifference);
-    if (schemaDifference !== undefined) {
-      await mergeSchemaProperties(schema, schemaDifference);
+    for (const schemaDifference of differences.filter(Utils.isSchemaDifference)) {
+      await mergeSchemaProperties(context, schemaDifference).catch(errorHandler);
     }
 
-    // Filter a list of possible schema item changes. This list gets filtered and order in the
-    // mergeSchemaItems method.
-    for await (const _mergeResult of mergeSchemaItems(context, differences)) {
+    // Filter a list of possible schema item changes. This list gets filtered and ordered in dependency
+    // order to avoid conflicts when merging items that refer to others.
+    for await (const itemMerger of filterSchemaItems(differences)) {
+      await itemMerger(context).catch(errorHandler);
     }
 
     // At last the custom attributes gets merged because it could be that the CustomAttributes
     // depend on classes that has to get merged in as items before.
     for (const customAttributeChange of differences.filter(Utils.isCustomAttributeDifference)) {
-      await mergeCustomAttribute(context, customAttributeChange);
+      await mergeCustomAttribute(context, customAttributeChange).catch(errorHandler);
     }
-
-    return schema;
   }
 }
 
@@ -127,11 +148,25 @@ export class SchemaMerger {
  * Sets the editable properties of a Schema.
  * @internal
  */
-async function mergeSchemaProperties(schema: MutableSchema, { difference }: SchemaDifference) {
+async function mergeSchemaProperties(context: SchemaMergeContext, { difference }: SchemaDifference) {
   if (difference.label !== undefined) {
-    schema.setDisplayLabel(difference.label);
+    context.editor.setDisplayLabel(context.targetSchemaKey, difference.label);
   }
   if (difference.description !== undefined) {
-    schema.setDescription(difference.description);
+    context.editor.setDescription(context.targetSchemaKey, difference.description);
+  }
+}
+
+/**
+ *
+ */
+export class SchemaMergeError extends Error {
+  public readonly errors: ReadonlyArray<SchemaEditingError>;
+  /**
+   *
+   */
+  constructor(message: string, errors: ReadonlyArray<SchemaEditingError>) {
+    super(message);
+    this.errors = errors;
   }
 }

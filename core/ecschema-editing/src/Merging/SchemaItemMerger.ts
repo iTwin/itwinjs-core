@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { SchemaMergeContext } from "./SchemaMerger";
+import type { MergeFn, SchemaMergeContext } from "./SchemaMerger";
 import { AnySchemaDifference, AnySchemaItemDifference, AnySchemaItemPathDifference } from "../Differencing/SchemaDifference";
 import { ECObjectsError, ECObjectsStatus, SchemaContext, SchemaItem, SchemaItemKey } from "@itwin/ecschema-metadata";
+import { filterClassItems } from "./ClassMerger";
 import { enumerationMerger, enumeratorMerger } from "./EnumerationMerger";
 import { phenomenonMerger } from "./PhenomenonMerger";
 import { propertyCategoryMerger } from "./PropertyCategoryMerger";
 import { unitSystemMerger } from "./UnitSystemMerger";
 import { kindOfQuantityMerger } from "./KindOfQuantityMerger";
 import { constantMerger } from "./ConstantMerger";
-import { mergeClassItems } from "./ClassMerger";
 import * as Utils from "../Differencing/Utils";
 
 /**
@@ -61,25 +61,25 @@ export async function locateSchemaItem(context: SchemaMergeContext, itemName: st
  * @returns             An async iterable with the merge result for each schema item.
  * @internal
  */
-export async function* mergeSchemaItems(context: SchemaMergeContext, differences: AnySchemaDifference[]) {
+export function* filterSchemaItems(differences: AnySchemaDifference[]): Iterable<MergeFn> {
   for (const difference of differences.filter(Utils.isUnitSystemDifference)) {
-    yield await mergeSchemaItem(context, difference, unitSystemMerger);
+    yield async (context) => await mergeSchemaItem(context, difference, unitSystemMerger);
   }
 
   for (const difference of differences.filter(Utils.isPropertyCategoryDifference)) {
-    yield await mergeSchemaItem(context, difference, propertyCategoryMerger);
+    yield async (context) => await mergeSchemaItem(context, difference, propertyCategoryMerger);
   }
 
   for (const difference of differences.filter(Utils.isEnumerationDifference)) {
-    yield await mergeSchemaItem(context, difference, enumerationMerger);
+    yield async (context) => await mergeSchemaItem(context, difference, enumerationMerger);
   }
 
   for (const difference of differences.filter(Utils.isEnumeratorDifference)) {
-    yield await mergeSchemaItem(context, difference, enumeratorMerger);
+    yield async (context) => await mergeSchemaItem(context, difference, enumeratorMerger);
   }
 
   for (const difference of differences.filter(Utils.isPhenomenonDifference)) {
-    yield await mergeSchemaItem(context, difference, phenomenonMerger);
+    yield async (context) => await mergeSchemaItem(context, difference, phenomenonMerger);
   }
 
   // TODO:
@@ -89,17 +89,17 @@ export async function* mergeSchemaItems(context: SchemaMergeContext, differences
   // - Format
 
   for (const difference of differences.filter(Utils.isKindOfQuantityDifference)) {
-    yield await mergeSchemaItem(context, difference, kindOfQuantityMerger);
+    yield async (context) => await mergeSchemaItem(context, difference, kindOfQuantityMerger);
   }
 
   for (const difference of differences.filter(Utils.isConstantDifference)) {
-    yield await mergeSchemaItem(context, difference, constantMerger);
+    yield async (context) => await mergeSchemaItem(context, difference, constantMerger);
   }
 
   // Classes are slightly differently merged, since they can refer each other the process
   // uses several stages to merge.
-  for await (const classMergeResult of mergeClassItems(context, differences)) {
-    yield classMergeResult;
+  for (const classMerger of filterClassItems(differences)) {
+    yield classMerger;
   }
 }
 

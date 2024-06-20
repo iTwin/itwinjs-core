@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { CustomAttributeClass, EntityClass, Mixin, Schema, SchemaContext, SchemaItemType, StructClass } from "@itwin/ecschema-metadata";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
+import { SchemaMergeError, SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { ECEditingStatus } from "../../Editing/Exception";
@@ -646,10 +646,10 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
-      expect(error).to.have.nested.property("innerError.message", `Base class TargetSchema.TestBase must derive from TargetSchema.TargetBase.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
+    await expect(merge).to.be.eventually.rejectedWith(SchemaMergeError).then(function (error) {
+      expect(error.errors[0]).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
+      expect(error.errors[0]).to.have.nested.property("innerError.message", `Base class TargetSchema.TestBase must derive from TargetSchema.TargetBase.`);
+      expect(error.errors[0]).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
     });
   });
 
@@ -842,10 +842,10 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.AddMixin);
-      expect(error).to.have.nested.property("innerError.message", `Mixin TargetSchema.NotExistingMixin could not be found in the schema context.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
+    await expect(merge).to.be.eventually.rejectedWith(SchemaMergeError).then(function (error) {
+      expect(error.errors[0]).to.have.property("errorNumber", ECEditingStatus.AddMixin);
+      expect(error.errors[0]).to.have.nested.property("innerError.message", `Mixin TargetSchema.NotExistingMixin could not be found in the schema context.`);
+      expect(error.errors[0]).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
     });
   });
 
@@ -928,10 +928,10 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
-      expect(error).to.have.nested.property("innerError.message", `Base class TargetSchema.TestBase must derive from TargetSchema.BaseMixin.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
+    await expect(merge).to.be.eventually.rejectedWith(SchemaMergeError).then(function (error) {
+      expect(error.errors[0]).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
+      expect(error.errors[0]).to.have.nested.property("innerError.message", `Base class TargetSchema.TestBase must derive from TargetSchema.BaseMixin.`);
+      expect(error.errors[0]).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
     });
   });
 
@@ -1022,10 +1022,10 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
-      expect(error).to.have.nested.property("innerError.message", `Base class TargetSchema.TestBase must derive from TargetSchema.TargetBase.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
+    await expect(merge).to.be.eventually.rejectedWith(SchemaMergeError).then(function (error) {
+      expect(error.errors[0]).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
+      expect(error.errors[0]).to.have.nested.property("innerError.message", `Base class TargetSchema.TestBase must derive from TargetSchema.TargetBase.`);
+      expect(error.errors[0]).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
     });
   });
 });
