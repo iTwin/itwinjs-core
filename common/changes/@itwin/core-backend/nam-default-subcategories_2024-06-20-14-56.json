@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Update querySubCategories to fetch all subcategories when no categoryId iterable is passed in.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

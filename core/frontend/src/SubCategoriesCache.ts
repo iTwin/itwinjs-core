@@ -66,6 +66,7 @@ export class SubCategoriesCache {
     };
   }
 
+  /** Load all subcategories of the iModel into the cache. */
   public async loadAllSubCategories(): Promise<void> {
     const results = await this._imodel.querySubCategories();
     if (undefined !== results)
