@@ -2824,8 +2824,23 @@ export class BriefcaseDb extends IModelDb {
         briefcaseDb._codeService = await CodeService.createForIModel(briefcaseDb);
         this.onCodeServiceCreated.raiseEvent(briefcaseDb);
       } catch (e: any) {
-        if ((e as CodeService.Error).errorId !== "NoCodeIndex") // no code index means iModel isn't enforcing codes.
-          throw e;
+        if ((e as CodeService.Error).errorId !== "NoCodeIndex") { // no code index means iModel isn't enforcing codes.
+          Logger.logWarning(loggerCategory, `The CodeService is not available for this briefcase: errorId: ${(e as CodeService.Error).errorId}, errorMessage; ${e.message}. Proceeding with BriefcaseDb.open(), but all operations involving codes will fail.`);
+          briefcaseDb._codeService = {
+            verifyCode: (props: CodeService.ElementCodeProps) => {
+              if (!Code.isEmpty(props.props.code)) {
+                e.message = `The CodeService is not available for this briefcase: errorId: ${(e as CodeService.Error).errorId}, errorMessage; ${e.message}.`;
+                throw e;
+              }
+            },
+            appParams:{
+              author: { name: "unknown" },
+              origin: { name: "unknown" },
+            },
+            close: () => {},
+            initialize: async () => {},
+          };
+        }
       }
     }
 
