@@ -13,13 +13,13 @@ import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Arc3d } from "../Arc3d";
 import { CurveChain } from "../CurveCollection";
-import { CurveCurve } from "../CurveCurve";
 import { CurveLocationDetailPair } from "../CurveLocationDetail";
 import { CurveOps } from "../CurveOps";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
 import { Loop } from "../Loop";
 import { Path } from "../Path";
+import { CurveCurveCloseApproachXY } from "./CurveCurveCloseApproachXY";
 
 /** @packageDocumentation
  * @module Curve
@@ -469,11 +469,16 @@ class ErrorProcessor extends QuadrantFractionsProcessor {
    * * `a` is the distance between the points.
    */
   private static computePrimitiveErrorXY(arc: Arc3d, approximation: Arc3d | LineSegment3d): CurveLocationDetailPair | undefined {
-    const maxProjDist = approximation.quickLength() / 2;
-    // TODO: There are only 3 perps and 2 of them are the endpoint intersections. Can we roll our own Newton, with seed 0.5?
-    const details = CurveCurve.closeApproachProjectedXYPairs(arc, approximation, maxProjDist);
+    const handler = new CurveCurveCloseApproachXY();
+    handler.maxDistanceToAccept = approximation.quickLength() / 2;
+    // we expect only one perpendicular, not near an endpoint
+    // TODO: if performance is a problem, refactor to use fewer seeds in Newton
+    if (approximation instanceof Arc3d)
+      handler.allPerpendicularsArcArcBounded(arc, approximation);
+    else
+      handler.allPerpendicularsSegmentArcBounded(approximation, approximation.point0Ref, 0, approximation.point1Ref, 1, arc);
     let maxPerp: CurveLocationDetailPair | undefined;
-    for (const approach of details) {
+    for (const approach of handler.grabPairedResults()) {
       if (Geometry.isAlmostEqualEitherNumber(approach.detailA.fraction, 0, 1, Geometry.smallFraction))
         continue; // rule out perpendiculars on arc ends
       if (Geometry.isAlmostEqualEitherNumber(approach.detailB.fraction, 0, 1, Geometry.smallFraction))
@@ -563,7 +568,9 @@ class ArcChainConstructionProcessor extends ConstructionProcessor {
     super(ellipticalArc);
   }
   public override announceArc(arc: Arc3d, _f0: number, _f1: number): void {
-    this._quadrantChain?.tryAddChild(arc);
+    if (!this._quadrantChain)
+      this._quadrantChain = Path.create();
+    this._quadrantChain.tryAddChild(arc);
   }
 };
 /**
@@ -589,7 +596,9 @@ class LineStringConstructionProcessor extends ConstructionProcessor {
   }
   public override announceChord(pt0: Point3d, pt1: Point3d, _f0: number, _f1: number): void {
     const seg = LineSegment3d.create(pt0, pt1, LineStringConstructionProcessor._workSegment);
-    this._quadrantChain?.tryAddChild(seg);
+    if (!this._quadrantChain)
+      this._quadrantChain = Path.create();
+    this._quadrantChain.tryAddChild(seg);
   }
 };
 

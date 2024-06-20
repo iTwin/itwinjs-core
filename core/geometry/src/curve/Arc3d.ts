@@ -443,7 +443,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     return result;
   }
   /**
-   * Evaluate the point and derivative with respect to the angle (in radians)
+   * Evaluate the point with respect to the angle (in radians)
    * @param radians angular position
    * @param result optional preallocated ray.
    */

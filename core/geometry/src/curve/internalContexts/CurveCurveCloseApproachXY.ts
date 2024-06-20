@@ -46,19 +46,8 @@ import { LineString3d } from "../LineString3d";
  */
 export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   private _geometryB: AnyCurve | undefined;
-  private _circularArcB: Arc3d | undefined;
-  private _circularRadiusB: number | undefined;
   private setGeometryB(geometryB: AnyCurve | undefined) {
     this._geometryB = geometryB;
-    this._circularArcB = undefined;
-    this._circularRadiusB = undefined;
-    if (geometryB instanceof Arc3d) {
-      const r = geometryB.circularRadiusXY();
-      if (r !== undefined) {
-        this._circularRadiusB = r;
-        this._circularArcB = geometryB;
-      }
-    }
   }
   /**
    * Maximum XY distance (z is ignored). Approach larger than this is not interesting.
@@ -83,7 +72,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * Constructor.
    * @param geometryB second curve for intersection. Saved for reference by specific handler methods.
    */
-  public constructor(geometryB: AnyCurve | undefined) {
+  public constructor(geometryB?: AnyCurve) {
     super();
     this.setGeometryB(geometryB);
     this._maxDistanceSquared = Geometry.smallMetricDistanceSquared;
@@ -552,6 +541,33 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     );
   }
   /**
+   * Compute the perpendiculars between a line segment and an arc, without extending either curve.
+   * * One or two perpendiculars will be found.
+   * * Each perpendicular segment starts or ends on the arc where the arc tangent is parallel to the line tangent.
+   * * Perpendiculars from an endpoint are not explicitly computed.
+   * @param cpA line segment or line string; if it is a line string, then the fractions must specify a segment
+   * @param pointA0 start point of the segment
+   * @param fractionA0 fraction of the start of the segment
+   * @param pointA1 end point of the segment
+   * @param fractionA1 fraction of the end of the segment
+   * @param arc the arc
+   * @param reversed swap the details in the recorded pair (default: false)
+   */
+  public allPerpendicularsSegmentArcBounded(cpA: CurvePrimitive, pointA0: Point3d, fractionA0: number, pointA1: Point3d, fractionA1: number, arc: Arc3d, reversed: boolean = false): void {
+    const dotUT = arc.vector0.crossProductStartEndXY(pointA0, pointA1);
+    const dotVT = arc.vector90.crossProductStartEndXY(pointA0, pointA1);
+    const parallelRadians = Math.atan2(dotVT, dotUT);
+    for (const radians1 of [parallelRadians, parallelRadians + Math.PI]) {
+      const arcPoint = arc.radiansToPoint(radians1);
+      const fArc = arc.sweep.radiansToSignedPeriodicFraction(radians1);
+      const fLine = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0, pointA1, arcPoint);
+      // only add if the point is within the start and end fractions of both line segment and arc
+      if (fLine !== undefined && this.acceptFraction(fLine) && this.acceptFraction(fArc)) {
+        this.recordPointWithLocalFractions(fLine, cpA, fractionA0, fractionA1, fArc, arc, 0, 1, reversed);
+      }
+    }
+  }
+  /**
    * Low level dispatch of line segment with arc.
    * Find close approaches within maxDistance between a line segments (pointA0, pointA1) and an arc.
    * To consider:
@@ -618,28 +634,15 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     // 3) arc tangent parallel to line segment (or string).
     // If line does not intersect the arc, then the closest (and/or the furthest) point on arc to the line is a
     // point where the tangent line on arc at that point is parallel to the line.
-    const dotUT = data.vector0.crossProductStartEndXY(pointA0, pointA1);
-    const dotVT = data.vector90.crossProductStartEndXY(pointA0, pointA1);
-    const parallelRadians = Math.atan2(dotVT, dotUT);
-    for (const radians1 of [parallelRadians, parallelRadians + Math.PI]) {
-      const arcPoint = data.center.plus2Scaled(data.vector0, Math.cos(radians1), data.vector90, Math.sin(radians1));
-      const arcFraction = data.sweep.radiansToSignedPeriodicFraction(radians1);
-      const lineFraction = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0Local, pointA1Local, arcPoint);
-      // only add if the point is within the start and end fractions of both line segment and arc
-      if (lineFraction !== undefined && this.acceptFraction(lineFraction) && this.acceptFraction(arcFraction)) {
-        this.recordPointWithLocalFractions(
-          lineFraction, cpA, fractionA0, fractionA1, arcFraction, arc, 0, 1, reversed,
-        );
-      }
-    }
+    this.allPerpendicularsSegmentArcBounded(cpA, pointA0, fractionA0, pointA1, fractionA1, arc, reversed);
   }
   /**
-   * Compute segments perpendicular to two ellipses interior to their sweeps.
-   * * Perpendiculars from endpoints are not explicitly computed, but may still be found.
-   * * Intersections are reported as zero-length segments.
-   * @param reversed swap the details in the recorded pair
+   * Compute segments perpendicular to two elliptical arcs, without extending either curve.
+   * * Perpendiculars from an endpoint are not explicitly computed.
+   * * Intersections are also found by this search: they are reported as zero-length segments.
+   * @param reversed swap the details in the recorded pair (default: false)
    */
-  private allPerpendicularsBoundedArcs(arc0: Arc3d, arc1: Arc3d, reversed: boolean): void {
+  public allPerpendicularsArcArcBounded(arc0: Arc3d, arc1: Arc3d, reversed: boolean = false): void {
     const newtonEvaluator = new CurveCurveCloseApproachXYRRtoRRD(arc0, arc1);
     const seedsU = [0.2, 0.4, 0.6, 0.8];  // HEURISTIC: 2 ellipses have up to 8 perpendiculars and up to 4 intersections
     const seedsV = [0.2, 0.4, 0.6, 0.8];
@@ -667,7 +670,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     // 1) endpoints to endpoints or endpoints projection to the other curve
     this.testAndRecordFractionalPairApproach(cpA, 0, 1, true, cpB, 0, 1, true, reversed);
     // 2) perpendicular line between 2 arcs (includes intersections)
-    this.allPerpendicularsBoundedArcs(cpA, cpB, reversed);
+    this.allPerpendicularsArcArcBounded(cpA, cpB, reversed);
   }
   /** Low level dispatch of arc with (beziers of) a bspline curve */
   private dispatchArcBsplineCurve3d(cpA: Arc3d, cpB: BSplineCurve3d, reversed: boolean): void {
