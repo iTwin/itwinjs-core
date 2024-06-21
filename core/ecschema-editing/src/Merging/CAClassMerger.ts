@@ -15,7 +15,7 @@ import { modifyClass } from "./ClassMerger";
 export const customAttributeClassMerger: SchemaItemMergerHandler<CustomAttributeClassDifference> = {
   async add(context, change) {
     if (change.difference.appliesTo === undefined) {
-      return { errorMessage: "appliesTo is a required property of a CustomAttributeClass but it is not set" };
+      throw new Error("appliesTo is a required property of a CustomAttributeClass but it is not set");
     }
 
     return context.editor.customAttributes.createFromProps(context.targetSchemaKey, {
@@ -31,7 +31,7 @@ export const customAttributeClassMerger: SchemaItemMergerHandler<CustomAttribute
       if (currentValue !== "" && change.difference.appliesTo !== currentValue) {
         const containerType = parseCustomAttributeContainerType(`${currentValue}, ${change.difference.appliesTo}`);
         if (containerType === undefined) {
-          return { errorMessage: "An invalid custom attribute class containerType has been provided." };
+          throw new Error("An invalid custom attribute class containerType has been provided.");
         }
         item.setContainerType(containerType);
       }

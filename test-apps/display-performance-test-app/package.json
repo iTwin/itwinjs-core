@@ -50,12 +50,12 @@
     "@itwin/electron-authorization": "^0.14.1",
     "@itwin/hypermodeling-frontend": "workspace:*",
     "@itwin/frontend-tiles": "workspace:*",
-    "@itwin/imodels-access-backend": "^5.0.1",
-    "@itwin/imodels-access-frontend": "^5.0.1",
-    "@itwin/imodels-client-authoring": "^5.1.0",
-    "@itwin/imodels-client-management": "^5.1.0",
+    "@itwin/imodels-access-backend": "^5.1.2",
+    "@itwin/imodels-access-frontend": "^5.1.2",
+    "@itwin/imodels-client-authoring": "^5.6.0",
+    "@itwin/imodels-client-management": "^5.6.0",
     "@itwin/reality-data-client": "^1.2.1",
-    "@itwin/oidc-signin-tool": "~3.6.0",
+    "@itwin/oidc-signin-tool": "^4.3.5",
     "body-parser": "^1.20.2"
   },
   "devDependencies": {

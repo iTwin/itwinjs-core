@@ -10,10 +10,11 @@ import { MutableSchema } from "../Editing/Mutable/MutableSchema";
 import { Schema, type SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../Editing/Editor";
 import { SchemaConflictsError } from "../Differencing/Errors";
-import { SchemaDifference, SchemaDifferences } from "../Differencing/SchemaDifference";
+import { getSchemaDifferences, SchemaDifference, SchemaDifferenceResult } from "../Differencing/SchemaDifference";
 import { mergeCustomAttribute } from "./CustomAttributeMerger";
 import { mergeSchemaItems } from "./SchemaItemMerger";
 import { mergeSchemaReferences } from "./SchemaReferenceMerger";
+import * as Utils from "../Differencing/Utils";
 
 /**
  * Defines the context of a Schema merging run.
@@ -49,49 +50,33 @@ export class SchemaMerger {
    * @param sourceSchema  The schema the SchemaItems gets copied from.
    * @returns             The merged target schema.
    */
-  public merge(targetSchema: Schema, sourceSchema: Schema): Promise<Schema>;
+  public async mergeSchemas(targetSchema: Schema, sourceSchema: Schema): Promise<Schema> {
+    return this.merge(await getSchemaDifferences(targetSchema, sourceSchema));
+  }
 
   /**
    * Merges the schema differences into the target schema context.
-   * @param differences   The changes that shall be applied to the target schema.
+   * @param differenceResult The differences that shall be applied to the target schema.
    * @alpha
    */
-  public merge(differences: SchemaDifferences): Promise<Schema>;
-
-  /**
-   * Merges the source and the target. If the target is a SchemaDifference, the
-   * source parameter must not be set. If it's a schema, it'll internally call
-   * the Differencing api and recall itself with the difference argument overload.
-   * @param input   The methods input either a schema or a SchemaDifferences
-   * @param source  A source schema.
-   * @returns       The merged schema.
-   * @alpha
-   */
-  public async merge(input: SchemaDifferences | Schema, source?: Schema): Promise<Schema> {
-    if(Schema.isSchema(input)) {
-      if(source === undefined) {
-        throw new Error("When merging two schemas, source must not be undefined.");
-      }
-      return this.merge(await SchemaDifference.fromSchemas(input, source));
-    }
-
-    return this.mergeSchemas(input);
+  public async merge(differenceResult: SchemaDifferenceResult): Promise<Schema> {
+    return this.mergeDifferences(differenceResult);
   }
 
   /**
    * Merges the schema differences in the target schema. The target schema is defined
    * in the given differences object.
-   * @param differences   The differences between a source schema and the target schema.
-   * @returns             The modified Schema.
+   * @param differenceResult   The differences between a source schema and the target schema.
+   * @returns                  The modified Schema.
    */
-  private async mergeSchemas(differences: SchemaDifferences): Promise<Schema> {
-    const targetSchemaKey = SchemaKey.parseString(differences.targetSchemaName);
-    const sourceSchemaKey = SchemaKey.parseString(differences.sourceSchemaName);
+  private async mergeDifferences(differenceResult: SchemaDifferenceResult): Promise<Schema> {
+    const targetSchemaKey = SchemaKey.parseString(differenceResult.targetSchemaName);
+    const sourceSchemaKey = SchemaKey.parseString(differenceResult.sourceSchemaName);
 
-    if(differences.conflicts && differences.conflicts.length > 0) {
+    if (differenceResult.conflicts && differenceResult.conflicts.length > 0) {
       throw new SchemaConflictsError(
         "Schema's can't be merged if there are unresolved conflicts.",
-        differences.conflicts,
+        differenceResult.conflicts,
         sourceSchemaKey,
         targetSchemaKey,
       );
@@ -102,7 +87,8 @@ export class SchemaMerger {
       throw new Error(`The target schema '${targetSchemaKey.name}' could not be found in the editing context.`);
     }
 
-    if(differences.differences === undefined || differences.differences.length === 0) {
+    const { differences } = differenceResult;
+    if (differences === undefined || differences.length === 0) {
       return schema;
     }
 
@@ -113,30 +99,24 @@ export class SchemaMerger {
       sourceSchemaKey,
     };
 
-    for (const referenceChange of differences.differences.filter(SchemaDifference.isSchemaReferenceDifference)) {
+    for (const referenceChange of differences.filter(Utils.isSchemaReferenceDifference)) {
       await mergeSchemaReferences(context, referenceChange);
     }
 
-    const schemaDifference = differences.differences.find(SchemaDifference.isSchemaDifference);
-    if(schemaDifference !== undefined) {
+    const schemaDifference = differences.find(Utils.isSchemaDifference);
+    if (schemaDifference !== undefined) {
       await mergeSchemaProperties(schema, schemaDifference);
     }
 
     // Filter a list of possible schema item changes. This list gets filtered and order in the
     // mergeSchemaItems method.
-    for await (const mergeResult of mergeSchemaItems(context, differences.differences)) {
-      if(mergeResult.errorMessage) {
-        throw new Error(mergeResult.errorMessage);
-      }
+    for await (const _mergeResult of mergeSchemaItems(context, differences)) {
     }
 
     // At last the custom attributes gets merged because it could be that the CustomAttributes
     // depend on classes that has to get merged in as items before.
-    for (const customAttributeChange of differences.differences.filter(SchemaDifference.isCustomAttributeDifference)) {
-      const mergeResult = await mergeCustomAttribute(context, customAttributeChange);
-      if(mergeResult.errorMessage) {
-        throw new Error(mergeResult.errorMessage);
-      }
+    for (const customAttributeChange of differences.filter(Utils.isCustomAttributeDifference)) {
+      await mergeCustomAttribute(context, customAttributeChange);
     }
 
     return schema;
@@ -147,11 +127,11 @@ export class SchemaMerger {
  * Sets the editable properties of a Schema.
  * @internal
  */
-async function mergeSchemaProperties(schema: MutableSchema, changes: SchemaDifference) {
-  if(changes.difference.label !== undefined) {
-    schema.setDisplayLabel(changes.difference.label);
+async function mergeSchemaProperties(schema: MutableSchema, { difference }: SchemaDifference) {
+  if (difference.label !== undefined) {
+    schema.setDisplayLabel(difference.label);
   }
-  if(changes.difference.description !== undefined) {
-    schema.setDescription(changes.difference.description);
+  if (difference.description !== undefined) {
+    schema.setDescription(difference.description);
   }
 }

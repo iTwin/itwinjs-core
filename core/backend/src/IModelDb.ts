@@ -11,20 +11,21 @@ import { join } from "path";
 import * as touch from "touch";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
-  IModelStatus, JsonUtils, Logger, LogLevel, OpenMode, UnexpectedErrors,
+  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType,
+  Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode,
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps,
-  ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
-  GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
-  IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, OpenCheckpointArgs, OpenSqliteArgs,
-  ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps,
-  SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps,
-  UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
+  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps,
+  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType,
+  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
+  IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
+  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
+  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState,
+  SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
+  TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
+  ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
 import { Range2d, Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -52,14 +53,17 @@ import { Relationships } from "./Relationship";
 import { SchemaSync } from "./SchemaSync";
 import { ServerBasedLocks } from "./ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
+import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotationLayout";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
-import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
-import { Workspace } from "./workspace/Workspace";
-import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotationLayout";
+import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from "./workspace/Settings";
+import { Workspace, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbSettingsProps, WorkspaceSettingNames } from "./workspace/Workspace";
+import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "./internal/workspace/WorkspaceImpl";
+import { SettingsImpl } from "./internal/workspace/SettingsImpl";
 
 import type { BlobContainer } from "./BlobContainerService";
+
 /** @internal */
 export interface ChangesetConflictArgs {
   cause: DbConflictCause;
@@ -223,17 +227,17 @@ const withBriefcaseDb = async (briefcase: OpenBriefcaseArgs, fn: (_db: Briefcase
 
 /**
  * Settings for an individual iModel. May only include settings priority for iModel, iTwin and organization.
- * @note if there is more than one iModel for an iTwin or organization, they will *each* hold a copy of the settings for those priorities.
+ * @note if there is more than one iModel for an iTwin or organization, they will *each* hold an independent copy of the settings for those priorities.
  */
-class IModelSettings extends BaseSettings {
+class IModelSettings extends SettingsImpl {
   protected override verifyPriority(priority: SettingsPriority) {
     if (priority <= SettingsPriority.application)
-      throw new Error("Use IModelHost.appSettings");
+      throw new Error("Use IModelHost.appSettings to access settings of priority 'application' or lower");
   }
 
-  // attempt to resolve a setting from this iModel's settings, otherwise use appWorkspace's settings, otherwise defaultValue.
-  public override resolveSetting<T extends SettingType>(name: SettingName, resolver: SettingResolver<T>, defaultValue?: T): T | undefined {
-    return super.resolveSetting(name, resolver) ?? IModelHost.appWorkspace.settings.resolveSetting(name, resolver, defaultValue);
+  public override * getSettingEntries<T extends Setting>(name: string): Iterable<{ value: T, dictionary: SettingsDictionary }> {
+    yield* super.getSettingEntries(name);
+    yield* IModelHost.appWorkspace.settings.getSettingEntries(name);
   }
 }
 
@@ -260,8 +264,7 @@ export abstract class IModelDb extends IModel {
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
   protected _fontMap?: FontMap;
-  /** @internal */
-  private _workspace?: Workspace;
+  private _workspace?: OwnedWorkspace;
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
   /** @internal */
@@ -285,7 +288,8 @@ export abstract class IModelDb extends IModel {
    */
   public get workspace(): Workspace {
     if (undefined === this._workspace)
-      this._workspace = Workspace.construct(new IModelSettings());
+      this._workspace = constructWorkspace(new IModelSettings());
+
     return this._workspace;
   }
 
@@ -384,7 +388,7 @@ export abstract class IModelDb extends IModel {
 
     this.nativeDb.setIModelDb(this);
 
-    this.loadSettingDictionaries();
+    this.loadIModelSettings();
     GeoCoordConfig.loadForImodel(this.workspace.settings); // load gcs data specified by iModel's settings dictionaries, must be done before calling initializeIModelDb
 
     this.initializeIModelDb();
@@ -1425,7 +1429,7 @@ export abstract class IModelDb extends IModel {
    * @note All saved `SettingDictionary`s are loaded into [[workspace.settings]] every time an iModel is opened.
    * @beta
    */
-  public saveSettingDictionary(name: string, dict: SettingDictionary) {
+  public saveSettingDictionary(name: string, dict: SettingsContainer) {
     this.withSqliteStatement("REPLACE INTO be_Prop(id,SubId,TxnMode,Namespace,Name,strData) VALUES(0,0,0,?,?,?)", (stmt) => {
       stmt.bindString(1, IModelDb._settingPropNamespace);
       stmt.bindString(2, name);
@@ -1449,7 +1453,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Load all setting dictionaries in this iModel into `this.workspace.settings` */
-  private loadSettingDictionaries() {
+  private loadIModelSettings() {
     if (!this.nativeDb.isOpen())
       return;
 
@@ -1457,17 +1461,47 @@ export abstract class IModelDb extends IModel {
       stmt.bindString(1, IModelDb._settingPropNamespace);
       while (stmt.nextRow()) {
         try {
-          const dict = JSON.parse(stmt.getValueString(1));
-          this.workspace.settings.addDictionary(stmt.getValueString(0), SettingsPriority.iModel, dict);
+          const settings = JSON.parse(stmt.getValueString(1));
+          this.workspace.settings.addDictionary({ name: stmt.getValueString(0), priority: SettingsPriority.iModel }, settings);
         } catch (e) {
-          UnexpectedErrors.handle(e);
+          Workspace.exceptionDiagnosticFn(e as WorkspaceDbLoadError);
         }
       }
     });
   }
 
+  /** @internal */
+  protected async loadWorkspaceSettings() {
+    try {
+      const problems: WorkspaceDbLoadError[] = [];
+      const settingProps: WorkspaceDbSettingsProps[] = [];
+      // Note: we can't use `getArray` here because we only look at dictionaries in the iModel's workspace, not appWorkspace.
+      // Also, we must concatenate all entries in all of the dictionaries stored in the iModel into a single array *before*
+      // calling `loadSettingsDictionary` since that function will add new dictionaries to the workspace.
+      for (const dict of this.workspace.settings.dictionaries) {
+        try {
+          const props = dict.getSetting<WorkspaceDbSettingsProps[]>(WorkspaceSettingNames.settingsWorkspaces);
+          if (props)
+            settingProps.push(...IModelHost.settingsSchemas.validateSetting(props, WorkspaceSettingNames.settingsWorkspaces));
+        } catch (e) {
+          problems.push(e as WorkspaceDbLoadError); // something wrong with the setting stored in the iModel
+        }
+      }
+      if (settingProps.length > 0)
+        await this.workspace.loadSettingsDictionary(settingProps, problems);
+
+      if (problems.length > 0)
+        throwWorkspaceDbLoadErrors(`attempting to load workspace settings for iModel '${this.name}':`, problems);
+    } catch (e) {
+      // we don't want to throw exceptions when attempting to load Dictionaries. Call the diagnostics function instead.
+      Workspace.exceptionDiagnosticFn(e as WorkspaceDbLoadErrors);
+    }
+  }
+
   /**
-   * Controls how [Code]($common)s are copied from this iModel into another iModel, to work around problems with iModels created by older connectors. The [imodel-transformer](https://github.com/iTwin/imodel-transformer) sets this appropriately on your behalf - you should never need to set or interrogate this property yourself.
+   * Controls how [Code]($common)s are copied from this iModel into another iModel, to work around problems with iModels
+   * created by older connectors. The [imodel-transformer](https://github.com/iTwin/imodel-transformer) sets this appropriately
+   * on your behalf - you should never need to set or interrogate this property yourself.
    * @public
    */
   public get codeValueBehavior(): "exact" | "trim-unicode-whitespace" {
@@ -2278,7 +2312,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       this._viewStore = viewStore;
     }
     /** @beta */
-    public async accessViewStore(args: { userToken?: AccessToken, props?: CloudSqlite.ContainerProps, accessLevel?: BlobContainer.RequestAccessLevel }): Promise<ViewStore.CloudAccess> {
+    public async accessViewStore(args: { props?: CloudSqlite.ContainerProps, accessLevel?: BlobContainer.RequestAccessLevel }): Promise<ViewStore.CloudAccess> {
       let props = args.props;
       if (undefined === props) {
         const propsString = this._iModel.queryFilePropertyString(Views.viewStoreProperty);
@@ -2289,7 +2323,6 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       }
       const accessToken = await CloudSqlite.requestToken({
         ...props,
-        userToken: args.userToken,
         accessLevel: args.accessLevel,
       });
       if (!this._viewStore)
@@ -2783,13 +2816,31 @@ export class BriefcaseDb extends IModelDb {
       });
     }
 
+    // load all of the settings from workspaces
+    await briefcaseDb.loadWorkspaceSettings();
+
     if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {
       try {
         briefcaseDb._codeService = await CodeService.createForIModel(briefcaseDb);
         this.onCodeServiceCreated.raiseEvent(briefcaseDb);
       } catch (e: any) {
-        if ((e as CodeService.Error).errorId !== "NoCodeIndex") // no code index means iModel isn't enforcing codes.
-          throw e;
+        if ((e as CodeService.Error).errorId !== "NoCodeIndex") { // no code index means iModel isn't enforcing codes.
+          Logger.logWarning(loggerCategory, `The CodeService is not available for this briefcase: errorId: ${(e as CodeService.Error).errorId}, errorMessage; ${e.message}. Proceeding with BriefcaseDb.open(), but all operations involving codes will fail.`);
+          briefcaseDb._codeService = {
+            verifyCode: (props: CodeService.ElementCodeProps) => {
+              if (!Code.isEmpty(props.props.code)) {
+                e.message = `The CodeService is not available for this briefcase: errorId: ${(e as CodeService.Error).errorId}, errorMessage; ${e.message}.`;
+                throw e;
+              }
+            },
+            appParams:{
+              author: { name: "unknown" },
+              origin: { name: "unknown" },
+            },
+            close: () => {},
+            initialize: async () => {},
+          };
+        }
       }
     }
 
@@ -2797,8 +2848,10 @@ export class BriefcaseDb extends IModelDb {
     return briefcaseDb;
   }
 
-  /* This is called by native code when applying a changeset */
-  private onChangesetConflict(args: ChangesetConflictArgs): DbConflictResolution | undefined {
+  /**  This is called by native code when applying a changeset
+   * @internal
+   */
+  public onChangesetConflict(args: ChangesetConflictArgs): DbConflictResolution | undefined {
     // returning undefined will result in native handler to resolve conflict
 
     const category = "DgnCore";
@@ -2934,7 +2987,6 @@ export class BriefcaseDb extends IModelDb {
      * + Also see comments in TxnManager::MergeDataChanges()
      */
     if (Logger.isEnabled(category, LogLevel.Info)) {
-      Logger.logInfo(category, "------------------------------------------------------------------");
       Logger.logInfo(category, `Conflict detected - Cause: ${interpretConflictCause(args.cause)}`);
       args.dump();
       Logger.logInfo(category, "Conflicting resolved by replacing the existing entry with the change");
@@ -2946,7 +2998,7 @@ export class BriefcaseDb extends IModelDb {
    * Execute the supplied function.
    * If the briefcase was read-only, reopen the native briefcase as read-only.
    * @note this._openMode is not changed from its initial value.
-   * @internal Exported strictly for tests.
+   * @internal Exported strictly for tests
    */
   public async executeWritable(func: () => Promise<void>): Promise<void> {
     const fileName = this.pathName;
@@ -2980,6 +3032,13 @@ export class BriefcaseDb extends IModelDb {
 
     // Restore the native db's pointer to this JavaScript object.
     this.nativeDb.setIModelDb(this);
+
+    // refresh cached properties that could have been changed by another process writing to the same briefcase
+    this.changeset = this.nativeDb.getCurrentChangeset();
+
+    // assert what should never change
+    if (this.iModelId !== this.nativeDb.getIModelId() || this.iTwinId !== this.nativeDb.getITwinId())
+      throw new Error("closeAndReopen detected change in iModelId and/or iTwinId");
   }
 
   /** Pull and apply changesets from iModelHub */
@@ -3192,7 +3251,9 @@ export class SnapshotDb extends IModelDb {
   private static async attachAndOpenCheckpoint(checkpoint: CheckpointProps): Promise<SnapshotDb> {
     const { dbName, container } = await V2CheckpointManager.attach(checkpoint);
     const key = CheckpointManager.getKey(checkpoint);
-    return SnapshotDb.openFile(dbName, { key, container });
+    const db = SnapshotDb.openFile(dbName, { key, container });
+    await db.loadWorkspaceSettings();
+    return db;
   }
 
   /** @internal */

@@ -716,7 +716,7 @@ export abstract class InformationReferenceElement extends InformationContentElem
 }
 
 /** A Subject is an information element that describes what this repository (or part thereof) is about.
- * See [how to create a Subject element]$(docs/learning/backend/CreateElements.md#Subject).
+ * See [how to create a Subject element]($docs/learning/backend/CreateElements.md#Subject).
  * @public
  */
 export class Subject extends InformationReferenceElement {

@@ -31,5 +31,5 @@ export class DtaRpcInterface extends RpcInterface { // eslint-disable-line depre
   public async terminate(): Promise<void> { return this.forward(arguments); }
   public async getEnvConfig(): Promise<DtaConfiguration> { return this.forward(arguments); }
   public async getAccessToken(): Promise<string> { return this.forward(arguments); }
-  public async produceTextAnnotationGeometry(_iModelToken: IModelRpcProps, _annotation: TextAnnotationProps): Promise<TextBlockGeometryProps> { return this.forward(arguments); }
+  public async produceTextAnnotationGeometry(_iModelToken: IModelRpcProps, _annotation: TextAnnotationProps, _debugAnchorPointAndRange?: boolean): Promise<TextBlockGeometryProps> { return this.forward(arguments); }
 }
