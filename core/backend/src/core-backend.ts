@@ -39,6 +39,7 @@ export * from "./ExternalSource";
 export * from "./GeoCoordConfig";
 export * from "./GeographicCRSServices";
 export * from "./HubMock";
+export * from "./ImageConversion";
 export * from "./IModelCloneContext";
 export * from "./IModelDb";
 export * from "./IModelElementCloneContext";
@@ -128,6 +129,11 @@ export * from "./ChangesetECAdaptor";
 /**
  * @docs-group-description HubAccess
  * APIs for working with IModelHub
+ */
+
+/**
+ * @docs-group-description Images
+ * APIs for converting between compressed and uncompressed image formats.
  */
 
 /**
