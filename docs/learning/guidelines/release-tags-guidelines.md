@@ -68,6 +68,7 @@ iTwin.js is a collection of libraries designed to enable application developers.
 - Adhering to [SOLID](https://en.wikipedia.org/wiki/SOLID) principles.
 - Writing functions that accept arguments as a single `object` to which new optional arguments can be added in the future.
 - Avoiding exhaustively enumerated types (e.g., string unions or `enum`s) if new types are likely to be added in the future.
+- Using the `_implementationProhibited` symbol for interfaces whose implementations should only be acquired from the package defining the interface, enabling new required fields to be added in the future (see, e.g., [WorkspaceDb]($backend)).
 
 When introducing a brand-new API intended for use outside of the itwinjs-core repository, choose `@public` if the API is relatively simple and unlikely to require breaking changes. Otherwise, choose `@beta` to enable the API to evolve in response to feedback, but keep in mind the eventual goal of promoting the API to `@public`.
 
