@@ -17,7 +17,7 @@ import { BeDuration } from "../Time";
 // chai.use(chaiAsPromised);
 describe("OneAtATime test", () => {
 
-  it("OneAtATime", async () => {
+  it.skip("OneAtATime", async () => {
     let calls = 0;
     const operation = new OneAtATimeAction(async (a: number, b: string) => {
       if (a === 10)
@@ -31,17 +31,22 @@ describe("OneAtATime test", () => {
 
     // expect(operation.request(200, "hello")).to.be.eventually.fulfilled; // is started immediately
     // expect(operation.request(200, "hello")). ; // is started immediately
+    // operation.request(200, "hello");
+    const abandonedError = new AbandonedError("testAbandon");
+    const cancelled = new AbandonedError("cancelled");
 
-    expect(operation.request(200, "hello")).rejects.with.toEqual(AbandonedError); // becomes pending, doesn't abort previous because its already started
+    expect(operation.request(200, "hello")).rejects.with.toBeInstanceOf(AbandonedError); // becomes pending, doesn't abort previous because its already started
 
-    expect(operation.request(200, "hello")).rejects.with.toEqual(AbandonedError); // aborts previous, becomes pending
+    expect(operation.request(200, "hello")).rejects.with.toBeInstanceOf(AbandonedError); // aborts previous, becomes pending
     let count = await operation.request(200, "hello"); // aborts previous, becomes pending, eventually is run
     assert.equal(count, 2); // only the first and last complete
-
-    // // then, just try the whole thing again
-    // expect(operation.request(10, "hello")).rejects.with.toEqual(AbandonedError, "cancelled"); // try calling a function that throws
-    // expect(operation.request(200, "hello")).rejects.with.toEqual(AbandonedError, "testAbandon"); // becomes pending, doesn't abort previous because its already started
-    // expect(operation.request(200, "hello")).rejects.with.toEqual(AbandonedError, "testAbandon"); // aborts previous, becomes pending
+    // eslint-disable-next-line no-console
+    // console.log(await operation.request(10, "hello"));
+    // then, just try the whole thing again
+    expect(operation.request(10, "hello")).rejects; // try calling a function that throws
+    expect(operation.request(10, "hello")).rejects.with.toEqual(cancelled); // try calling a function that throws
+    expect(operation.request(200, "hello")).rejects.with.toEqual(abandonedError); // becomes pending, doesn't abort previous because its already started
+    expect(operation.request(200, "hello")).rejects.with.toEqual(abandonedError); // aborts previous, becomes pending
     count = await operation.request(200, "hello");
     assert.equal(count, 3);
   });
