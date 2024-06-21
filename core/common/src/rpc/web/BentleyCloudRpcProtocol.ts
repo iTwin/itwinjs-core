@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus } from "@itwin/core-bentley";
+import { BentleyStatus, Guid } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcConfiguration } from "../core/RpcConfiguration";
@@ -142,7 +142,9 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
       }
     }
 
-    return { key: `${iModelId}:${changeset.id}`, iTwinId, iModelId, changeset };
+    // Overwrite the key if it includes a : because its most likely a guid. We know what it should be based off of the url.
+    // Leave it alone if its a non guid key.
+    return { key: tokenFromBody.key.includes(":") ? `${iModelId}:${changeset.id}` : tokenFromBody.key, iTwinId, iModelId, changeset };
   }
 
   /** Returns the OpenAPI-compatible URI path parameters for an RPC operation.
