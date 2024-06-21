@@ -2018,6 +2018,8 @@ export class SchemaContextEditor {
     removeCustomAttribute(schema: Schema, customAttribute: CustomAttribute): void;
     removeReference(schema: Schema, refSchema: Schema): void;
     get schemaContext(): SchemaContext;
+    setDescription(schemaKey: SchemaKey, description: string): Promise<void>;
+    setDisplayLabel(schemaKey: SchemaKey, label: string): Promise<void>;
     setVersion(schemaKey: SchemaKey, readVersion?: number, writeVersion?: number, minorVersion?: number): Promise<SchemaKey>;
     // (undocumented)
     readonly structs: Structs;
