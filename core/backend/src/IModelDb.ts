@@ -145,9 +145,9 @@ class IModelSettings extends SettingsImpl {
       throw new Error("Use IModelHost.appSettings to access settings of priority 'application' or lower");
   }
 
-  public override * getSettingEntries<T extends Setting>(name: string): Iterable<{ value: T, dictionary: SettingsDictionary}> {
-    yield * super.getSettingEntries(name);
-    yield * IModelHost.appWorkspace.settings.getSettingEntries(name);
+  public override * getSettingEntries<T extends Setting>(name: string): Iterable<{ value: T, dictionary: SettingsDictionary }> {
+    yield* super.getSettingEntries(name);
+    yield* IModelHost.appWorkspace.settings.getSettingEntries(name);
   }
 }
 
@@ -2734,8 +2734,23 @@ export class BriefcaseDb extends IModelDb {
         briefcaseDb._codeService = await CodeService.createForIModel(briefcaseDb);
         this.onCodeServiceCreated.raiseEvent(briefcaseDb);
       } catch (e: any) {
-        if ((e as CodeService.Error).errorId !== "NoCodeIndex") // no code index means iModel isn't enforcing codes.
-          throw e;
+        if ((e as CodeService.Error).errorId !== "NoCodeIndex") { // no code index means iModel isn't enforcing codes.
+          Logger.logWarning(loggerCategory, `The CodeService is not available for this briefcase: errorId: ${(e as CodeService.Error).errorId}, errorMessage; ${e.message}. Proceeding with BriefcaseDb.open(), but all operations involving codes will fail.`);
+          briefcaseDb._codeService = {
+            verifyCode: (props: CodeService.ElementCodeProps) => {
+              if (!Code.isEmpty(props.props.code)) {
+                e.message = `The CodeService is not available for this briefcase: errorId: ${(e as CodeService.Error).errorId}, errorMessage; ${e.message}.`;
+                throw e;
+              }
+            },
+            appParams:{
+              author: { name: "unknown" },
+              origin: { name: "unknown" },
+            },
+            close: () => {},
+            initialize: async () => {},
+          };
+        }
       }
     }
 
@@ -2891,7 +2906,7 @@ export class BriefcaseDb extends IModelDb {
    * Execute the supplied function.
    * If the briefcase was read-only, reopen the native briefcase as read-only.
    * @note this._openMode is not changed from its initial value.
-   * @internal Exported strictly for tests.
+   * @internal Exported strictly for tests
    */
   public async executeWritable(func: () => Promise<void>): Promise<void> {
     const fileName = this.pathName;
@@ -2925,6 +2940,13 @@ export class BriefcaseDb extends IModelDb {
 
     // Restore the native db's pointer to this JavaScript object.
     this.nativeDb.setIModelDb(this);
+
+    // refresh cached properties that could have been changed by another process writing to the same briefcase
+    this.changeset = this.nativeDb.getCurrentChangeset();
+
+    // assert what should never change
+    if (this.iModelId !== this.nativeDb.getIModelId() || this.iTwinId !== this.nativeDb.getITwinId())
+      throw new Error("closeAndReopen detected change in iModelId and/or iTwinId");
   }
 
   /** Pull and apply changesets from iModelHub */

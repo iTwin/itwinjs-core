@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Include the extents of all TiledGraphicsProviders when computing ViewingSpace extents.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
