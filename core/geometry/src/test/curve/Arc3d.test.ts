@@ -691,7 +691,7 @@ describe("Arc3d", () => {
     // Remap functions for curvature interpolation
     const fIdentity = (x: number) => x;
     const fPiecewiseLinearUnder = (x: number): number => {
-      const breakFraction = 0.6;
+      const breakFraction = 0.6;  // this could possibly be improved by dependence on eccentricity...
       const slope = (1 - breakFraction) / breakFraction;
       return (x <= breakFraction) ?
         slope * x : slope * breakFraction + ((1 - slope * breakFraction) / (1 - breakFraction)) * (x - breakFraction);
@@ -702,6 +702,18 @@ describe("Arc3d", () => {
     const fQuartic = (x: number) => x * x * x * x;
     const fSqrt = (x: number) => Math.sqrt(x);
     const remaps: FractionMapper[] = [fIdentity, fPiecewiseLinearUnder, fSqrtCubed, fQuadratic, fCubic, fQuartic, fSqrt];
+    const iMethodToString = (iMethod: number): string => {
+      switch (iMethod) {
+        case 0: return "Identity";
+        case 1: return "PwLinear";
+        case 2: return "SqrtCubed";
+        case 3: return "Quadratic";
+        case 4: return "Cubic";
+        case 5: return "Quartic";
+        case 6: return "Sqrt";
+        default: return iMethod < 0 ? "Naive" : "Undefined";
+      }
+    };
 
     const displaySamples = (
       arc: Arc3d,
@@ -733,19 +745,23 @@ describe("Arc3d", () => {
       const set = new OrderedSet<number>((s0: number, s1: number) => {
         return s0 < s1 ? -1 : (s0 > s1 ? 1 : 0);
       });
-      for (const q of array as QuadrantFractions[])
+      for (const q of array as QuadrantFractions[]) {
         for (const f of q.fractions)
           set.add(f);
+      }
       return [...set];
     };
     const testAndCompareSamples = (flat: number[], structured: QuadrantFractions[]): void => {
       ck.testTrue(flat.length > 0, "flat output format has samples");
       ck.testTrue(structured.length > 0, "structured output format has quadrants");
-      for (const q of structured) {
-        ck.testLE(2, q.fractions.length, "at least 2 samples per quadrant");
-        ck.testTrue(q.fractions.length > 2 || q.axisAtEnd || q.axisAtStart, "if there are only 2 samples, at least one is on an ellipse axis");
-      }
       const flat2 = convertToFlatArray(structured);
+      for (const q of structured) {
+        ck.testLE(3, q.fractions.length, "at least 3 samples per quadrant");
+        if (q.averageAdded) {
+          flat.push(q.fractions[1]); // flat doesn't contain this extra sample
+          flat.sort();
+        }
+      }
       ck.testFractionArray(flat, flat2, "flat output equivalent to structured output");
     };
     const testArc = (arc: Arc3d, options: EllipticalArcApproximationOptions, x?: number, y?: number, z?: number): number | undefined => {
@@ -759,33 +775,32 @@ describe("Arc3d", () => {
       if (!ck.testTrue(context.isValidArc, "context accepted arc"))
         return Geometry.largeCoordinateResult;
 
-      // test the sample points
+      // test sampler
       const flatSamples = context.sampleFractions(options, false) as number[];
       const samples = context.sampleFractions(options, true) as QuadrantFractions[];
       displaySamples(arc, flatSamples, x, y, z);
       testAndCompareSamples(flatSamples, samples);
 
-      // test the construction methods
-      const chain = context.constructCircularArcChain(options);
+      // test construction methods
+      const chain = context.constructCircularArcChainApproximation(options);
       if (ck.testDefined(chain, "constructed arc chain approximation"))
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x, y, z);
-      const ls = context.constructLineString(options);
+      const ls = context.constructLineStringApproximation(options);
       if (ck.testDefined(ls, "constructed linestring approximation"))
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, x, y, z);
-      const range = chain ? chain.range() : (ls ? ls.range() : undefined);
 
-      // compute and return max error of this arc chain
+      // test error computation
       const strokeError = context.computeApproximationError(samples, false);
-      ck.testDefined(strokeError, "cover linestring approximation error computation");
-      const chainError = context.computeApproximationError(samples, true);
-      if (!ck.testDefined(chainError, "arc chain approximation error successfully computed")) {
-        context.computeApproximationError(samples, true);  // redo to debug
-        GeometryCoreTestIO.captureRangeEdges(allGeometry, range, x, y, z);  // box the failure
-        return undefined;
+      if (ck.testDefined(strokeError, "cover linestring approximation error computation") &&
+        ck.testTrue(strokeError.detailA.a > Geometry.smallFraction, "computed a nonzero linestring approximation error")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [strokeError.detailA.point, strokeError.detailB.point], x, y, z);
       }
-      const perpSeg = [chainError.detailA.point, chainError.detailB.point];
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, perpSeg, x, y, z);
-      return chainError.detailA.a;
+      const chainError = context.computeApproximationError(samples, true);
+      if (ck.testDefined(chainError, "cover arc chain approximation error computation") &&
+        ck.testTrue(chainError.detailA.a > Geometry.smallFraction, "computed a nonzero arc chain approximation error")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [chainError.detailA.point, chainError.detailB.point], x, y, z);
+      }
+      return chainError ? chainError.detailA.a : undefined;
     };
 
     for (let iArc = 0; iArc < arcs.length; ++iArc) {
@@ -818,7 +833,7 @@ describe("Arc3d", () => {
         // if we can get an approximation with fewer points.
 
         if (undefined !== eMin)
-          GeometryCoreTestIO.consoleLog(`Arc ${iArc} min error is ${eMin} using remap #${iMin} on ${n} Q1 samples.`);
+          GeometryCoreTestIO.consoleLog(`Arc ${iArc} min error is ${eMin} using ${iMethodToString(iMin)} on ${n} Q1 samples.`);
         x0 += xDelta(xWidth);
         y0 = 0;
       }

@@ -560,10 +560,10 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     for (const radians1 of [parallelRadians, parallelRadians + Math.PI]) {
       const arcPoint = arc.radiansToPoint(radians1);
       const fArc = arc.sweep.radiansToSignedPeriodicFraction(radians1);
-      const fLine = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0, pointA1, arcPoint);
-      // only add if the point is within the start and end fractions of both line segment and arc
-      if (fLine !== undefined && this.acceptFraction(fLine) && this.acceptFraction(fArc)) {
-        this.recordPointWithLocalFractions(fLine, cpA, fractionA0, fractionA1, fArc, arc, 0, 1, reversed);
+      if (this.acceptFraction(fArc)) { // reject solution outside arc sweep
+        const fLine = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0, pointA1, arcPoint);
+        if (fLine !== undefined && this.acceptFraction(fLine))
+          this.recordPointWithLocalFractions(fLine, cpA, fractionA0, fractionA1, fArc, arc, 0, 1, reversed);
       }
     }
   }
