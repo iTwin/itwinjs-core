@@ -908,10 +908,13 @@ export namespace CloudSqlite {
         name: string;
         rootDir: string;
     }
+    export function cleanDeletedBlocks(container: CloudContainer, options: CleanDeletedBlocksOptions): Promise<void>;
     // (undocumented)
     export interface CleanDeletedBlocksOptions {
         debugLogging?: boolean;
+        findOrphanedBlocks?: boolean;
         nSeconds?: number;
+        onProgress?: (nDeleted: number, nTotalToDelete: number) => number;
     }
     export interface CloudCache {
         // @internal
@@ -941,7 +944,6 @@ export namespace CloudSqlite {
         // (undocumented)
         readonly cache?: CloudCache;
         checkForChanges(): void;
-        cleanDeletedBlocks(options?: CleanDeletedBlocksOptions): Promise<void>;
         clearWriteLock(): void;
         connect(cache: CloudCache): void;
         get containerId(): string;
@@ -4399,6 +4401,8 @@ export interface ProcessChangesetOptions {
     startChangesetId: string;
     // (undocumented)
     tempDir?: string;
+    // (undocumented)
+    wantBoundingBoxes?: boolean;
     // (undocumented)
     wantChunkTraversal?: boolean;
     // (undocumented)

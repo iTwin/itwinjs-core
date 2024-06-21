@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "set a fake codeService that always throws for verifyCode if code is not null if codeServiceDb is not available",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -9,7 +9,7 @@
 import {
   AxisOrder, ClipPlaneContainment, Constant, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ,
 } from "@itwin/core-geometry";
-import { Frustum, GridOrientationType, Npc, NpcCorners } from "@itwin/core-common";
+import { AxisAlignedBox3d, Frustum, GridOrientationType, Npc, NpcCorners } from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { CoordSystem } from "./CoordSystem";
 import { Viewport } from "./Viewport";
@@ -139,6 +139,9 @@ export class ViewingSpace {
 
   private static _minDepth = 1; // Allowing very small depth will cause frustum calculations to fail.
 
+  /** Compute the bounding box of this viewing space in [[CoordSystem.World]] coordinates, including the extents of any [[TiledGraphicsProvider]]s registered with the [[Viewport]]. */
+  public readonly getViewedExtents: () => AxisAlignedBox3d;
+
   /** Adjust the front and back planes to encompass the entire viewed volume */
   private adjustZPlanes(origin: Point3d, delta: Vector3d): void {
     const view = this.view;
@@ -147,7 +150,7 @@ export class ViewingSpace {
 
     delta.z = Math.max(delta.z, ViewingSpace._minDepth);
 
-    const extents = view.getViewedExtents();
+    const extents = this.getViewedExtents();
     const frustum = new Frustum();
     const worldToNpc = this.view.computeWorldToNpc(this.rotation, this.viewOrigin, this.viewDelta, false).map as Map4d;
 
@@ -271,6 +274,17 @@ export class ViewingSpace {
     const delta = view.getExtents().clone();
     this.rotation.setFrom(view.getRotation());
 
+    this.getViewedExtents = () => {
+      const extents = this._view.getViewedExtents();
+      vp.forEachTiledGraphicsProvider((provider) => {
+        provider.forEachTileTreeRef(vp, (ref) => {
+          ref.unionFitRange(extents);
+        });
+      });
+
+      return extents;
+    };
+
     // first, make sure none of the deltas are negative
     delta.x = Math.abs(delta.x);
     delta.y = Math.abs(delta.y);
@@ -288,7 +302,7 @@ export class ViewingSpace {
         // we're in a "2d" view of a physical model. That means that we must have our orientation with z out of the screen with z=0 at the center.
         this.alignWithRootZ(); // make sure we're in a z Up view
 
-        const extents = view.getViewedExtents();
+        const extents = this.getViewedExtents();
         if (extents.isNull) {
           extents.low.z = Frustum2d.minimumZExtents.low;
           extents.high.z = Frustum2d.minimumZExtents.high;

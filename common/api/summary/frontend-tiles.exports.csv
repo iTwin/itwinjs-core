@@ -1,12 +1,22 @@
 sep=;
 Release Tag;API Item
 beta;ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise
+beta;DataSource
 beta;FrontendTilesOptions
 internal;frontendTilesOptions:
+beta;GraphicRepresentation =
+beta;GraphicRepresentationFormat = "IMDL" | "3DTILES" | string
+beta;GraphicRepresentationStatus
 beta;initializeFrontendTiles(options: FrontendTilesOptions): void
 beta;MeshExport
 internal;MeshExports
+beta;obtainGraphicRepresentationUrl(args: ObtainGraphicRepresentationUrlArgs): Promise
+beta;ObtainGraphicRepresentationUrlArgs
+beta;obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs): Promise
+beta;ObtainIModelTilesetUrlArgs
 beta;obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise
-beta;ObtainMeshExportTilesetUrlArgs
+beta;ObtainMeshExportTilesetUrlArgs = ObtainIModelTilesetUrlArgs
+beta;queryGraphicRepresentations(args: QueryGraphicRepresentationsArgs): AsyncIterableIterator
+beta;QueryGraphicRepresentationsArgs
 beta;queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator
 beta;QueryMeshExportsArgs
