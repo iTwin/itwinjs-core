@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { OrderedSet } from "@itwin/core-bentley";
+import { Dictionary, OrderedSet } from "@itwin/core-bentley";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
@@ -682,10 +682,8 @@ describe("Arc3d", () => {
     const arc3 = arc0.clone();
     arc3.sweep = AngleSweep.createStartEndDegrees(100, 120);  // tiny sweep
     arcs.push(arc3);
-    const arc4 = Arc3d.createStartMiddleEnd(
-      Point3d.create(-1, -1, -2), Point3d.create(0.5, 0.5, 1.7), Point3d.create(1, 1, 2),
-    );
-    if (ck.testDefined(arc4, "use new ctor"))
+    const arc4 = Arc3d.createStartMiddleEnd(Point3d.create(-1, -1, -2), Point3d.create(0.5, 0.5, 1.7), Point3d.create(1, 1, 2));
+    if (ck.testDefined(arc4, "use 3pt elliptical arc ctor"))
       arcs.push(arc4);
 
     // Remap functions for curvature interpolation
@@ -803,6 +801,9 @@ describe("Arc3d", () => {
       return chainError ? chainError.detailA.a : undefined;
     };
 
+    const numSamples = [3, 4, 5, 6, 10, 20];
+    const methodWins = new Map<number, number>(); // <iMethod, winCount>
+
     for (let iArc = 0; iArc < arcs.length; ++iArc) {
       const arc = arcs[iArc];
       const perpData = arc.toScaledMatrix3d();
@@ -810,7 +811,7 @@ describe("Arc3d", () => {
       const yWidth = perpData.r90;
       let eMin: number | undefined;
       let iMin = -1;
-      for (const n of [3, 4, 5, 6, 10, 20]) {
+      for (const n of numSamples) {
         let method = EllipticalArcSampleMethod.UniformParameter;
         let options = EllipticalArcApproximationOptions.create(method, n);
         eMin = testArc(arc, options, x0, y0);
@@ -829,16 +830,23 @@ describe("Arc3d", () => {
           y0 += yDelta(yWidth);
         }
 
-        // TODO: subdivision methods. For valid comparisons, maybe pass in the current minError and see
+        // TODO: subdivision methods. For valid comparisons, maybe pass in the current eMin error and see
         // if we can get an approximation with fewer points.
 
-        if (undefined !== eMin)
+        if (ck.testDefined(eMin, "Found a minimum-error method")) {
           GeometryCoreTestIO.consoleLog(`Arc ${iArc} min error is ${eMin} using ${iMethodToString(iMin)} on ${n} Q1 samples.`);
+          const numWins = methodWins.get(iMin) ?? 0;
+          methodWins.set(iMin, numWins + 1);
+        }
         x0 += xDelta(xWidth);
         y0 = 0;
       }
       x0 += 2 * xDelta(xWidth);
     }
+    const nTrials = numSamples.length * arcs.length;
+    const histogram = new Dictionary<number, number>((c0: number, c1: number) => c0 < c1 ? -1 : (c0 > c1 ? 1 : 0)); // <winCount, iMethod>
+    methodWins.forEach((winCount: number, iMethod: number) => histogram.set(winCount, iMethod));  // key,value -> value,key
+    histogram.forEach((winCount: number, iMethod: number) => GeometryCoreTestIO.consoleLog(`Method ${iMethodToString(iMethod)} won ${winCount} times (${winCount/nTrials}%).`));
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "EllipseSampler");
     expect(ck.getNumErrors()).equals(0);
   });

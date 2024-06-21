@@ -83,18 +83,16 @@ export class EllipticalArcApproximationOptions {
   }
   /**
    * Construct options with optional defaults.
-   * @param method sample method, default [[EllipticalArcSampleMethod.UniformParameter]].
-   * @param structuredOutput output format, default false.
+   * @param method sample method, default [[EllipticalArcSampleMethod.NonUniformCurvature]].
    * @param numSamplesInQuadrant samples in each full quadrant for interpolation methods, default 4.
    * @param maxError max distance to ellipse for subdivision methods, default 1cm.
-   * @param remapFunction optional callback to remap fraction space for [[EllipticalArcSampleMethod.NonUniformCurvature]],
-   * default identity.
+   * @param remapFunction optional callback to remap fraction space for [[EllipticalArcSampleMethod.NonUniformCurvature]], default quadratic.
    */
   public static create(
-    method: EllipticalArcSampleMethod = EllipticalArcSampleMethod.UniformParameter,
+    method: EllipticalArcSampleMethod = EllipticalArcSampleMethod.NonUniformCurvature,
     numSamplesInQuadrant: number = 4,
     maxError: number = 0.01,
-    remapFunction: FractionMapper = (f: number) => f,
+    remapFunction: FractionMapper = (x: number) => x * x,
   ) {
     if (numSamplesInQuadrant < 2)
       numSamplesInQuadrant = 2;
@@ -368,7 +366,7 @@ class NonUniformCurvatureSampler implements EllipticalArcSampler {
 class UniformCurvatureSampler extends NonUniformCurvatureSampler implements EllipticalArcSampler {
   private constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
     super(c, o.clone());
-    this._options.remapFunction = (f: number) => f;
+    this._options.remapFunction = (x: number) => x; // identity map
   }
   public static override create(
     context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions,
