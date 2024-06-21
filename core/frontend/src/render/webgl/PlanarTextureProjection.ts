@@ -23,7 +23,7 @@ const scratchRange = Range3d.createNull();
 const scratchMap4d = Map4d.createIdentity();
 const scratchMatrix4d = Matrix4d.createIdentity();
 export class PlanarTextureProjection {
-  private static _postProjectionMatrixNpc = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, 1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
+  private static _postProjectionMatrixNpc = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 2 */ 0, 0, 1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
 
   public static computePlanarTextureProjection(
     texturePlane: Plane3dByOriginAndUnitNormal,
@@ -33,7 +33,7 @@ export class PlanarTextureProjection {
     viewState: ViewState3d,
     textureWidth: number,
     textureHeight: number,
-    _heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4d, debugFrustum?: Frustum, zValue?: number } {
+    _heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4d, debugFrustum?: Frustum, debugFrustum2?: Frustum, zValue?: number } {
     const textureZ = texturePlane.getNormalRef();
     const viewingSpace = sceneContext.viewingSpace;
     const viewX = viewingSpace.rotation.rowX();
@@ -85,7 +85,9 @@ export class PlanarTextureProjection {
         textureRange.low.x = Math.min(textureRange.low.x, heightRange.low);
         textureRange.high.x = Math.max(textureRange.high.x, heightRange.high);
       } else {
-        const contentRange = textureTransform.multiplyRange(drapeRef.computeWorldContentRange());
+        const r = Range3d.createNull();
+        drapeRef.unionFitRange(r);
+        const contentRange = textureTransform.multiplyRange(r);
         if (!contentRange.isNull)
           drapeRange.extendRange(contentRange);
       }
@@ -111,9 +113,10 @@ export class PlanarTextureProjection {
     textureTransform.multiplyInversePoint3dArray(debugFrustum.points, debugFrustum.points);
 
     if (viewState.isCameraOn) {
-      const eyeHeight = (textureRange.low.x + textureRange.high.x) / 2.0;
-      const eyePlane = Plane3dByOriginAndUnitNormal.create(Point3d.createScale(textureZ, eyeHeight), textureZ);    // Centered in range - parallel to texture.
+      const eyePlane = Plane3dByOriginAndUnitNormal.create(Point3d.createScale(textureZ, textureRange.low.x), textureZ);    // at bottom of range - parallel to texture.
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       const projectionRay = Ray3d.create(viewState.getEyePoint(), viewZ.crossProduct(textureX).normalize()!);
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       let projectionDistance = projectionRay.intersectionWithPlane(eyePlane!);
       const minNearToFarRatio = .01;  // Smaller value allows texture projection to conform tightly to view frustum.
       if (undefined !== projectionDistance) {
@@ -147,6 +150,7 @@ export class PlanarTextureProjection {
             farRange.high.y = Math.max(farRange.high.y, farY);
           });
         });
+        // Set NPC from results.
         textureFrustum.points[Npc._000].set(farRange.low.x, farRange.low.y, eyePoint.z - far);
         textureFrustum.points[Npc._100].set(farRange.high.x, farRange.low.y, eyePoint.z - far);
         textureFrustum.points[Npc._010].set(farRange.low.x, farRange.high.y, eyePoint.z - far);
@@ -172,7 +176,12 @@ export class PlanarTextureProjection {
     const worldToNpcMap = Map4d.createRefs(worldToNpc, npcToWorld);
     const worldToViewMap = npcToView.multiplyMapMap(worldToNpcMap);
 
-    return { textureFrustum, projectionMatrix: worldToNpc, worldToViewMap, debugFrustum };
+    let debugFrustum2;
+    if (false) {
+      debugFrustum2 = textureFrustum.clone();
+      debugFrustum2.multiply(PlanarTextureProjection._postProjectionMatrixNpc.asTransform!);
+    }
+    return { textureFrustum, worldToViewMap, projectionMatrix: worldToNpc, debugFrustum, debugFrustum2 };
   }
 
   public static getTextureDrawingParams(target: Target) {
