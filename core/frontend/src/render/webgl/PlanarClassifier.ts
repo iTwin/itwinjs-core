@@ -268,7 +268,6 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     1, 0, 0, 0,
     0, 0, 0, 1);
   private _debugFrustum?: Frustum;
-  private _debugFrustum2?: Frustum;
   private _doDebugFrustum = false;
   private _debugFrustumGraphic?: RenderGraphic = undefined;
   private _isClassifyingPointCloud?: boolean; // we will detect this the first time we draw
@@ -421,7 +420,6 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._projectionMatrix = projection.projectionMatrix;
     this._frustum = projection.textureFrustum;
     this._debugFrustum = projection.debugFrustum;
-    this._debugFrustum2 = projection.debugFrustum2;
     this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides(viewState, context);
 
     const drawTree = (treeRef: TileTreeReference, graphics: RenderGraphic[]) => {
@@ -454,11 +452,6 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       builder.addFrustum(this._debugFrustum!);
       builder.setSymbology(ColorDef.blue, ColorDef.blue, 2);
       builder.addFrustum(this._frustum);
-      if (undefined !== this._debugFrustum2) {
-        builder.setSymbology(ColorDef.from(255,255,0,0), ColorDef.from(255,255,0,0), 2);
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-        builder.addFrustum(this._debugFrustum2!);
-      }
 
       builder.setSymbology(ColorDef.from(0,200,0,222), ColorDef.from(0,200,0,222), 2);
       builder.addFrustumShapes(context.viewingSpace.getFrustum());
@@ -467,11 +460,6 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       builder.addFrustumShapes(this._debugFrustum!);
       builder.setSymbology(ColorDef.from(0,0,200,222), ColorDef.from(0,0,200,222), 2);
       builder.addFrustumShapes(this._frustum);
-      if (undefined !== this._debugFrustum2) {
-        builder.setSymbology(ColorDef.from(255,255,0,222), ColorDef.from(255,255,0,222), 2);
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-        builder.addFrustumShapes(this._debugFrustum2!);
-      }
       this._debugFrustumGraphic = builder.finish();
       context.outputGraphic(this._debugFrustumGraphic);
     }

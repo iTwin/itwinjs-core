@@ -33,7 +33,7 @@ export class PlanarTextureProjection {
     viewState: ViewState3d,
     textureWidth: number,
     textureHeight: number,
-    _heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4d, debugFrustum?: Frustum, debugFrustum2?: Frustum, zValue?: number } {
+    _heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4d, debugFrustum?: Frustum, zValue?: number } {
     const textureZ = texturePlane.getNormalRef();
     const viewingSpace = sceneContext.viewingSpace;
     const viewX = viewingSpace.rotation.rowX();
@@ -176,12 +176,7 @@ export class PlanarTextureProjection {
     const worldToNpcMap = Map4d.createRefs(worldToNpc, npcToWorld);
     const worldToViewMap = npcToView.multiplyMapMap(worldToNpcMap);
 
-    let debugFrustum2;
-    if (false) {
-      debugFrustum2 = textureFrustum.clone();
-      debugFrustum2.multiply(PlanarTextureProjection._postProjectionMatrixNpc.asTransform!);
-    }
-    return { textureFrustum, worldToViewMap, projectionMatrix: worldToNpc, debugFrustum, debugFrustum2 };
+    return { textureFrustum, worldToViewMap, projectionMatrix: worldToNpc, debugFrustum };
   }
 
   public static getTextureDrawingParams(target: Target) {
