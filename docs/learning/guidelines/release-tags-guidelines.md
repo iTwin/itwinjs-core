@@ -133,6 +133,7 @@ When evaluating an existing or new `@internal` API, apply the following policies
 Imagine we have the following `@internal` API that we want to make inaccessible to code outside of itwinjs-core:
 
 ```ts
+/** @public */
 export class Thing {
   /** @internal */
   public close(): void {
@@ -151,6 +152,7 @@ export const _close = Symbol.for("close_INTERNAL_ONLY_DO_NOT_USE");
 Update `Thing` to rename `close` to use the symbol, and deprecate the existing `close` method:
 
 ```ts
+/** @public */
 export class Thing {
   /** @internal */
   public [_close]: () => void {
