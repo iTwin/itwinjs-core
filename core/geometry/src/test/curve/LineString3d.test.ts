@@ -6,10 +6,10 @@
 import { expect } from "chai";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { Arc3d } from "../../curve/Arc3d";
-import { AnyCurve } from "../../curve/CurveTypes";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { CurveOps } from "../../curve/CurveOps";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { AnyCurve } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -17,6 +17,7 @@ import { Loop } from "../../curve/Loop";
 import { Path } from "../../curve/Path";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -311,8 +312,71 @@ describe("LineString3d", () => {
     ck.testExactNumber(numAnnounce, 2);
     expect(ck.getNumErrors()).equals(0);
   });
+  it("FrenetFrame", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const ls = LineString3d.createPoints([
+      Point3d.create(0, 0, 1),
+      Point3d.create(10, 0, 1),
+      Point3d.create(0, -10, 1),
+      Point3d.create(10, -10, 1),
+    ]);
+    const rotation = Matrix3d.createRotationAroundVector(Vector3d.create(1,1,1), Angle.createDegrees(31));
+    const transform = Transform.createOriginAndMatrix(ls.startPoint(), rotation);
+    ls.tryTransformInPlace(transform);  // make things interesting
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls);
 
+    // With a change in concavity before and after the segment AND fraction 0.5, we used to return identity incorrectly
+    const fraction = 0.5;
+    const frame = ls.fractionToFrenetFrame(fraction);
+    GeometryCoreTestIO.captureTransformAsFrame(allGeometry, frame, 0.01);
+
+    ck.testVector3d(frame.matrix.columnX(), ls.fractionToPointAndUnitTangent(fraction).direction, "frame x-axis matches tangent");
+    ck.testVector3d(frame.matrix.columnZ(), ls.quickUnitNormal()!, "frame z-axis matches normal");
+    ck.testPoint3d(frame.getOrigin(), ls.fractionToPoint(fraction), "frame origin matches point");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "LineString3d", "FrenetFrame");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("FractionMap", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const ls = LineString3d.createPoints([
+      Point3d.create(0, 0, 0),
+      Point3d.create(10, 0, 1),
+      Point3d.create(0, -10, 0),
+      Point3d.create(10, -10, -1),
+    ]);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls);
+    const numSegments = ls.numEdges();
+    const eps = Geometry.smallFraction;
+    for (const globalFraction of [-1, -0.5, -eps, 0, eps, 0.25, 0.5, 2/3, 1 - eps, 1, 1 + eps, 4/3, 2]) {
+      const local = ls.globalFractionToSegmentIndexAndLocalFraction(globalFraction);
+      const globalFractionRoundTrip = ls.segmentIndexAndLocalFractionToGlobalFraction(local.index, local.fraction);
+      ck.testExactNumber(globalFraction, globalFractionRoundTrip, "global fraction roundtrips thru local");
+      const localPt = ls.getIndexedSegment(local.index)!.fractionToPoint(local.fraction);
+      const globalPt = ls.fractionToPoint(globalFraction);
+      ck.testPoint3d(localPt, globalPt, "same point resolved by local and global params");
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, globalPt, 0.05);
+      if (globalFraction <= 0) {
+        ck.testExactNumber(local.index, 0, "nonpositive global fraction maps to first segment");
+        ck.testLE(local.fraction, 0, "nonpositive global fraction maps to nonpositive local fraction");
+      } else if (globalFraction >= 1) {
+        ck.testExactNumber(local.index, numSegments - 1, "global fraction greater than 1 maps to last segment");
+        ck.testLE(1, local.fraction, "global fraction >= 1 maps to local fraction >= 1");
+      }
+      ck.testLE(0, local.index, "local index is nonnegative");
+      ck.testLE(local.index, numSegments - 1, "local index is not too large");
+      if (Geometry.isIn01(globalFraction)) {
+        ck.testLE(0, local.fraction, "global fraction in [0,1] results in nonnegative local fraction");
+        ck.testLE(local.fraction, 1, "global fraction in [0,1] results in local fraction that's not too large");
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "LineString3d", "FractionMap");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
+
 /**
  * Class to act as an iterator over points in a linestring.
  * * Internal data is:

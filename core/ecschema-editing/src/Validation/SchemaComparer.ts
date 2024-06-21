@@ -863,8 +863,8 @@ export class SchemaComparer {
     topLevelSchemaNameA: string,
     topLevelSchemaNameB: string | undefined ): boolean {
 
-    const nameA = itemKeyA ? itemKeyA.name : undefined;
-    const nameB = itemKeyB ? itemKeyB.name : undefined;
+    const nameA = itemKeyA ? itemKeyA.name.toUpperCase() : undefined;
+    const nameB = itemKeyB ? itemKeyB.name.toUpperCase() : undefined;
 
     const schemaNameA = itemKeyA
       ? SchemaItem.isSchemaItem(itemKeyA)
@@ -890,23 +890,51 @@ export class SchemaComparer {
    */
   private containerHasClass(attributeA: CustomAttribute, containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps): boolean {
     if (containerB && containerB.customAttributes) {
-      for (const caB of containerB.customAttributes) {
-        const attributeB = caB[1];
+      for (const [_className, attributeB] of containerB.customAttributes) {
         const classItemKeyA = containerA.schema.getSchemaItemKey(attributeA.className);
         const classItemKeyB = containerB.schema.getSchemaItemKey(attributeB.className);
+
         if (this.areItemsSameByName(classItemKeyA, classItemKeyB, containerA.schema.name, containerB.schema.name)) {
-          return Object.keys(attributeA).every((property: any) => {
-            const propertyName = property.toString();
+          return Object.keys(attributeA).every((propertyName) => {
             const valueA = attributeA[propertyName];
             const valueB = attributeB[propertyName];
-            return propertyName === "className"
-              || valueA === valueB
-              || Array.isArray(valueA) &&  Array.isArray(valueB) && valueA.length === valueB.length
-                && valueA.every((val: any, idx: number) => val === valueB[idx]);
+
+            // If propertyName is class name, they don't need to be compared as this has been done
+            // in the areItemsSameByName function.
+            if(propertyName === "className")
+              return true;
+
+            return deepEquals(valueA, valueB);
           });
         }
       }
     }
     return false;
   }
+}
+
+/**
+ * Compares two values on their deep equality.
+ * @param a   left side to compare
+ * @param b   right side to compare
+ * @returns   true if they are deeply equal, otherwise false.
+ */
+function deepEquals(a: unknown, b: unknown): boolean {
+  if(Array.isArray(a) && Array.isArray(b)) {
+    return a.length === b.length && a.every((value, index) => {
+      return deepEquals(value, b[index]);
+    });
+  }
+  if(isObject(a) && isObject(b)) {
+    const propertiesA = Object.keys(a);
+    const propertiesB = Object.keys(b);
+    return propertiesA.length === propertiesB.length && propertiesA.every((propertyName) => {
+      return deepEquals(a[propertyName], b[propertyName]);
+    });
+  }
+  return a === b;
+}
+
+function isObject(value: unknown): value is { [property: string]: unknown } {
+  return typeof value === "object";
 }

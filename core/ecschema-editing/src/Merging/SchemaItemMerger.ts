@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import type { SchemaMergeContext } from "./SchemaMerger";
-import type { SchemaEditResults, SchemaItemEditResults } from "../Editing/Editor";
-import { AnySchemaDifference, AnySchemaItemDifference, AnySchemaItemPathDifference, SchemaDifference } from "../Differencing/SchemaDifference";
+import { AnySchemaDifference, AnySchemaItemDifference, AnySchemaItemPathDifference } from "../Differencing/SchemaDifference";
 import { ECObjectsError, ECObjectsStatus, SchemaContext, SchemaItem, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { enumerationMerger, enumeratorMerger } from "./EnumerationMerger";
 import { phenomenonMerger } from "./PhenomenonMerger";
@@ -13,30 +12,32 @@ import { unitSystemMerger } from "./UnitSystemMerger";
 import { kindOfQuantityMerger } from "./KindOfQuantityMerger";
 import { constantMerger } from "./ConstantMerger";
 import { mergeClassItems } from "./ClassMerger";
+import * as Utils from "../Differencing/Utils";
 
 /**
  * @internal
  */
 export interface SchemaItemMergerHandler<T extends AnySchemaItemDifference | AnySchemaItemPathDifference> {
-  add:    (context: SchemaMergeContext, change: T) => Promise<SchemaItemEditResults>;
-  modify: (context: SchemaMergeContext, change: T, itemKey: SchemaItemKey, item: any) => Promise<SchemaItemEditResults>;
+  add: (context: SchemaMergeContext, difference: T) => Promise<SchemaItemKey>;
+  modify: (context: SchemaMergeContext, difference: T, itemKey: SchemaItemKey, item: any) => Promise<void>;
 }
 
 /**
  * Handles the merging logic for everything that is same for all schema items such as labels or descriptions
  * @internal
  */
-async function mergeSchemaItem<T extends AnySchemaItemDifference|AnySchemaItemPathDifference>(context: SchemaMergeContext, change: T, merger: SchemaItemMergerHandler<T>): Promise<SchemaEditResults> {
-  if(change.changeType === "add") {
-    return merger.add(context, change);
+async function mergeSchemaItem<T extends AnySchemaItemDifference | AnySchemaItemPathDifference>(context: SchemaMergeContext, difference: T, merger: SchemaItemMergerHandler<T>): Promise<void> {
+  if (difference.changeType === "add") {
+    await merger.add(context, difference);
+    return;
   }
 
-  if(change.changeType === "modify") {
-    const schemaItem = await locateSchemaItem(context, change.itemName, change.schemaType);
-    return merger.modify(context, change, schemaItem.key, schemaItem);
+  if (difference.changeType === "modify") {
+    const schemaItem = await locateSchemaItem(context, difference.itemName, difference.schemaType);
+    return merger.modify(context, difference, schemaItem.key, schemaItem);
   }
 
-  return { errorMessage: `The merger does not support ${change.changeType} of ${change.schemaType}.` };
+  throw new Error(`The merger does not support ${difference.changeType} of ${difference.schemaType}.`);
 }
 
 /**
@@ -56,28 +57,28 @@ export async function locateSchemaItem(context: SchemaMergeContext, itemName: st
  * Merges the given set of schema items. As schema items may depend or relate with other
  * schema items, the list gets filtered to ensure the items get merged in a certain order.
  * @param context       The current merging context.
- * @param itemChanges   Set of schema item that differed.
+ * @param differences   Set of schema item that differed.
  * @returns             An async iterable with the merge result for each schema item.
  * @internal
  */
-export async function* mergeSchemaItems(context: SchemaMergeContext, itemChanges: AnySchemaDifference[]) {
-  for (const difference of itemChanges.filter(SchemaDifference.isUnitSystemDifference)) {
+export async function* mergeSchemaItems(context: SchemaMergeContext, differences: AnySchemaDifference[]) {
+  for (const difference of differences.filter(Utils.isUnitSystemDifference)) {
     yield await mergeSchemaItem(context, difference, unitSystemMerger);
   }
 
-  for (const difference of itemChanges.filter(SchemaDifference.isPropertyCategoryDifference)) {
+  for (const difference of differences.filter(Utils.isPropertyCategoryDifference)) {
     yield await mergeSchemaItem(context, difference, propertyCategoryMerger);
   }
 
-  for (const difference of itemChanges.filter(SchemaDifference.isEnumerationDifference)) {
+  for (const difference of differences.filter(Utils.isEnumerationDifference)) {
     yield await mergeSchemaItem(context, difference, enumerationMerger);
   }
 
-  for (const difference of itemChanges.filter(SchemaDifference.isEnumeratorDifference)) {
+  for (const difference of differences.filter(Utils.isEnumeratorDifference)) {
     yield await mergeSchemaItem(context, difference, enumeratorMerger);
   }
 
-  for (const difference of itemChanges.filter(SchemaDifference.isPhenomenonDifference)) {
+  for (const difference of differences.filter(Utils.isPhenomenonDifference)) {
     yield await mergeSchemaItem(context, difference, phenomenonMerger);
   }
 
@@ -87,17 +88,17 @@ export async function* mergeSchemaItems(context: SchemaMergeContext, itemChanges
   // - Inverted Unit
   // - Format
 
-  for (const difference of itemChanges.filter(SchemaDifference.isKindOfQuantityDifference)) {
+  for (const difference of differences.filter(Utils.isKindOfQuantityDifference)) {
     yield await mergeSchemaItem(context, difference, kindOfQuantityMerger);
   }
 
-  for (const difference of itemChanges.filter(SchemaDifference.isConstantDifference)) {
+  for (const difference of differences.filter(Utils.isConstantDifference)) {
     yield await mergeSchemaItem(context, difference, constantMerger);
   }
 
   // Classes are slightly differently merged, since they can refer each other the process
   // uses several stages to merge.
-  for await (const classMergeResult of mergeClassItems(context, itemChanges)) {
+  for await (const classMergeResult of mergeClassItems(context, differences)) {
     yield classMergeResult;
   }
 }

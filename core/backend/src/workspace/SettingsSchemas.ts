@@ -6,223 +6,141 @@
  * @module Workspace
  */
 
-import * as fs from "fs-extra";
-import { parse } from "json5";
-import { extname, join } from "path";
-import { BeEvent, JSONSchema, JSONSchemaType, JSONSchemaTypeName, Mutable } from "@itwin/core-bentley";
+import { BeEvent, JSONSchema, JSONSchemaTypeName } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
-import { IModelJsFs } from "../IModelJsFs";
+import { implementationProhibited } from "../internal/ImplementationProhibited";
+import { SettingName } from "./Settings";
 
-/**
- * The properties of a single Setting, used by the settings editor. This interface also includes the
- * default value if it is not specified in any Settings file.
- * This interface includes all members of [JSONSchema]($bentley) with the extensions added by VSCode.
- * @note the `type` member is marked optional in JSONSchema but is required for Settings.
- * @beta
- */
+/** Metadata describing a single [[Setting]] as part of a [[SettingGroupSchema]].
+  * Every setting has a [[type]], which can be one of the following:
+  * - A primitive type like `string` or `number`;
+  * - An object containing any number of named properties, each with their own types; or
+  * - An array of elements, all of the same type.
+  * This metadata is used to validate setting values against the schema, and to enable user interfaces by which
+  * users can view and modify their settings.
+  * @beta
+  */
 export interface SettingSchema extends Readonly<JSONSchema> {
-  readonly items?: SettingSchema; // must be single object, not array
-  readonly type: JSONSchemaTypeName; // type is required for settings
-  readonly properties?: { [name: string]: SettingSchema };
-
-  /** whether the setting replaces lower priority entries with the same name or combines with them. */
-  readonly cumulative?: true;
+  /** For arrays only, the metadata describing every element in the array. */
+  readonly items?: SettingSchema;
+  /** The name of the [[Setting]]'s data type. */
+  readonly type: JSONSchemaTypeName;
+  /** For objects and arrays only, the name of a [[SettingSchema]] that provides a base definition for this type.
+   * The name is expected to refer to a type definition registered with [[SettingsSchema.typeDefs]].
+   * Therefore, it must be the full name, including the [[SettingGroupSchema.schemaPrefix]].
+   */
+  readonly extends?: string;
+  /** For objects only, the name and metadata of each of the object's properties. */
+  readonly properties?: { [name: SettingName]: SettingSchema };
+  /** For arrays only, specifies how [[SettingsDictionary.getArray]] resolves the value of the setting.
+   * By default, like other types of settings, the setting uses the value of the setting from the highest-priority dictionary.
+   * If `combineArray` is `true`, then the value of the setting is computed by combining the elements of every array from every dictionary,
+   * ordered by priority and eliminating duplicate elements.
+   * Two elements are considered duplicates of one another if [[Setting.areEqual]] returns `true`.
+   */
+  readonly combineArray?: boolean;
 }
 
-/**
- * The properties of a group of [[SettingSchema]]s for an application. Groups can be added and removed from [[SettingsSchemas]]
- * and are identified by their (required) `groupName` member
- * @beta
- */
-export interface SettingSchemaGroup {
-  readonly groupName: string;
-  readonly properties: { [name: string]: SettingSchema };
+/** Metadata describing a group of related [[SettingSchema]]s. You can register setting schema groups via [[SettingsSchemas.addGroup]] and
+  * remove them via [[SettingsSchemas.removeGroup]].
+  *
+  * All of the settings share the same [[schemaPrefix]], which must be unique amongst all other groups.
+  * The prefix is combined with the name of each [[SettingSchema]] in the group to form the fully-qualified name used to refer
+  * to the setting outside of the group, e.g., when accessing [[SettingsSchemas.settingDefs]] or in [[SettingSchema.extends]].
+  * In the following example, the fully-qualified name of the setting named "metric" is "format/units/metric".
+  *
+  * ```json
+  *  {
+  *    "schemaPrefix": "format/units",
+  *    "settingDefs": {
+  *      "metric": { "type": "boolean" }
+  *    }
+  *  }
+  * ```
+  *
+  * A group can also define [[SettingSchema]]s that, rather than describing actual [[Setting]]s, instead describe types that can be extended by [[Setting]]s via
+  * [[SettingSchema.extends]]. A [[SettingSchema]] can refer to type definitions defined in its own group or any other group.
+  * @beta
+  */
+export interface SettingGroupSchema {
+  /** Uniquely identifies this group amongst all other groups.
+   * The prefix can use forward-slashes to define logical subgroups - for example, two related groups with the prefixes "units/metric" and "units/imperial".
+   * The user interface may parse these prefixes to display both groups under a "units" tab or expandable tree view node.
+   *
+   * @note Schema prefixes beginning with "itwin" are reserved for use by iTwin.js.
+   */
+  readonly schemaPrefix: string;
+  /** Metadata for each [[Setting]] in this group. */
+  readonly settingDefs?: { [name: string]: SettingSchema | undefined };
+  /** Metadata for types that can be extended by other [[Setting]]s via [[SettingSchema.extends]]. */
+  readonly typeDefs?: { [name: string]: SettingSchema | undefined };
+  /** An integer used when displaying a list of schemas in a user interface, to sort schemas with a lower `order` before those with a `higher` order. */
   readonly order?: number;
-  readonly title?: string;
-  readonly description?: string;
-  readonly extensionId?: string;
+  /** A description of this group suitable for displaying to a user. */
+  readonly description: string;
 }
 
 /**
- * The registry of available [[SettingSchemaGroup]]s.
+ * The registry of available [[SettingGroupSchema]]s.
  * The registry is used for editing Settings files and for finding default values for settings.
  * @beta
  */
-export class SettingsSchemas {
-  private constructor() { } // singleton
-  private static readonly _allGroups = new Map<string, SettingSchemaGroup>();
-  /** a map of all registered [[SettingSchema]]s */
-  public static readonly allSchemas = new Map<string, SettingSchema>();
-  /** event that signals that the values in [[allSchemas]] have changed in some way. */
-  public static readonly onSchemaChanged = new BeEvent<() => void>();
 
+/** The registry of metadata describing groups of [[SettingSchema]]s available to the current session.
+  * The schemas are used to look up the default values of [[Setting]]s, validate that their values are of the type dictated by the schema, and
+  * query metadata like [[SettingsSchema.combineArray]] that modify their behavior.
+  * They can also be used to drive a user interface that enables end users to edit [[Settings]].
+  *
+  * When [[IModelHost.startup]] is invoked at the beginning of a session, schemas delivered with the application - like those describing
+  * [[Workspace]]s - are automatically loaded.
+  * The application can manually register additional schemas using methods like [[addGroup]], [[addFile]], [[addDirectory]], and [[addJson]].
+  * When [[IModelHost.shutdown]] is invoked at the end of a session, all registered schemas are unregistered.
+  *
+  * See the [learning article]($docs/learning/backend/Workspace) for a detailed overiew and examples.
+  *
+  * @see [[IModelHost.settingsSchemas]] to access the registry for the current session.
+  * @beta
+  */
+export interface SettingsSchemas {
   /** @internal */
-  public static validateArrayObject<T>(val: T, schemaName: string, msg: string): T {
-    const schema = this.allSchemas.get(schemaName);
-    const items = schema?.items;
-    if (undefined === items)
-      return val;
-    const required = items.required;
-    const properties = items.properties;
-    if (undefined === required || undefined === properties)
-      return val;
+  readonly [implementationProhibited]: unknown;
 
-    for (const entry of required) {
-      const entryType = properties[entry].type;
-      const value = (val as any)[entry];
-      if (entryType === "array" && Array.isArray(value))
-        continue;
-      if (typeof value !== entryType)
-        throw new Error(`invalid "${schemaName}" setting entry for "${msg}": ${entry} is ${value}`);
-    }
-    return val;
-  }
+  /** The map of each individual registered [[SettingSchema]] defining a [[Setting]], accessed by its fully-qualified name (including its [[SettingGroupSchema.schemaPrefix]]). */
+  readonly settingDefs: ReadonlyMap<SettingName, SettingSchema>;
+
+  /** The map of each individual registered [[SettingSchema]] defining a type that can be extended by other [[SettingSchema]]s via [[SettingSchema.extends]],
+   * accessed by its fully-qualified name (including its [[SettingGroupSchema.schemaPrefix]]).
+   */
+  readonly typeDefs: ReadonlyMap<SettingName, SettingSchema>;
+
+  /** An event raised whenever schemas are added or removed. */
+  readonly onSchemaChanged: BeEvent<() => void>;
 
   /**
-   * Add one or more [[SettingSchemaGroup]]s. `SettingSchemaGroup`s must include a `groupName` member that is used
-   * to identify the group. If a group with the same name is already registered, the old values are first removed and then the new group is added.
+   * Ensure that the setting value supplied is valid according to its [[SettingSchema]].
+   * If no schema has been registered for the setting, no validation is performed.
+   * @param value The value of the setting to validate against the schema.
+   * @param settingName The fully-qualified setting name.
+   * @returns `value` if `value` matches the schema corresponding to `settingName`, or if no such schema has been registered.
+   * @throws Error if `value` is invalid according to the schema.
    */
-  public static addGroup(settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]): void {
-    if (!Array.isArray(settingsGroup))
-      settingsGroup = [settingsGroup];
+  validateSetting<T>(value: T, settingName: SettingName): T;
 
-    this.doAdd(settingsGroup);
-    this.onSchemaChanged.raiseEvent();
-  }
+  /** Register one or more [[SettingGroupSchema]]s.
+   * If a group with the same [[SettingGroupSchema.prefix]] was previously registered, it will be replaced.
+   * Each [[SettingSchema]] in the group will be added to [[settingDefs]] or [[typeDefs]].
+   */
+  addGroup(settingsGroup: SettingGroupSchema | SettingGroupSchema[]): void;
 
-  /** Add a [[SettingSchemaGroup]] from stringified json5. */
-  public static addJson(settingSchema: string): void {
-    this.addGroup(parse(settingSchema));
-  }
+  /** Invokes [[addGroup]] for a [[SettingGroupSchema]] supplied as stringified json5. */
+  addJson(settingSchema: string): void;
 
-  /** Add a [[SettingSchemaGroup]] from a json5 file. */
-  public static addFile(fileName: LocalFileName): void {
-    try {
-      this.addJson(fs.readFileSync(fileName, "utf-8"));
-    } catch (e: any) {
-      throw new Error(`parsing SettingSchema file "${fileName}": ${e.message}"`);
-    }
-  }
+  /** Invokes [[addGroup]] for a json5 file containiner a [[SettingGroupSchema]]. */
+  addFile(fileName: LocalFileName): void;
 
-  /** Add all files with a either ".json" or ".json5" extension from a supplied directory. */
-  public static addDirectory(dirName: LocalDirName) {
-    for (const fileName of IModelJsFs.readdirSync(dirName)) {
-      const ext = extname(fileName);
-      if (ext === ".json5" || ext === ".json")
-        this.addFile(join(dirName, fileName));
-    }
-  }
+  /** Invokes [[addFile]] for every json and json5 file in the specified directory. */
+  addDirectory(dirName: LocalDirName): void;
 
-  /** Remove a previously added [[SettingSchemaGroup]] by groupName */
-  public static removeGroup(groupName: string): void {
-    this.doRemove(groupName);
-    this.onSchemaChanged.raiseEvent();
-  }
-
-  private static doAdd(settingsGroup: SettingSchemaGroup[]) {
-    settingsGroup.forEach((group) => {
-      if (undefined === group.groupName)
-        throw new Error(`settings group has no "groupName" member`);
-
-      this.doRemove(group.groupName);
-      this.validateAndAdd(group);
-      this._allGroups.set(group.groupName, group);
-    });
-  }
-
-  private static doRemove(groupName: string) {
-    const group = this._allGroups.get(groupName);
-    if (undefined !== group?.properties) {
-      for (const key of Object.keys(group.properties))
-        this.allSchemas.delete(key);
-    }
-    this._allGroups.delete(groupName);
-  }
-
-  private static validateName(name: string) {
-    if (!name.trim())
-      throw new Error(`empty property name`);
-    if (this.allSchemas.has(name))
-      throw new Error(`property "${name}" is already defined`);
-  }
-
-  private static validateProperty(name: string, property: SettingSchema | undefined) {
-    if (!property)
-      throw new Error(`missing required property ${name}`);
-
-    if (!property.type)
-      throw new Error(`property ${name} has no type`);
-
-    switch (property.type) {
-      case "boolean":
-      case "integer":
-      case "null":
-      case "number":
-      case "string":
-        return;
-
-      case "object":
-        const required = property.required;
-        const props = property.properties;
-        if (required && props) {
-          for (const entry of required)
-            this.validateProperty(entry, props[entry]);
-        }
-        if (props) {
-          for (const key of Object.keys(props))
-            try {
-              this.validateProperty(key, props[key]);
-            } catch (e: any) {
-              throw new Error(`property ${key} of ${name}: ${e.message}`);
-            }
-        }
-        return;
-
-      case "array":
-        if (typeof property.items !== "object")
-          throw new Error(`array property ${name} has no items member`);
-        try {
-          this.validateProperty("items", property.items);
-        } catch (e: any) {
-          throw new Error(`array property ${name}: ${e.message}`);
-        }
-        return;
-
-      default:
-        throw new Error(`property ${name} has illegal type "${property.type}"`);
-    }
-  }
-
-  private static validateAndAdd(group: SettingSchemaGroup) {
-    const properties = group.properties;
-    if (undefined === properties)
-      throw new Error(`group ${group.groupName} has no properties`);
-
-    for (const key of Object.keys(properties)) {
-      this.validateName(key);
-      this.validateProperty(key, properties[key]);
-      const property: Mutable<SettingSchema> = properties[key];
-      property.default = property.default ?? this.getDefaultValue(property.type);
-      this.allSchemas.set(key, property);
-    }
-  }
-
-  private static getDefaultValue(type: JSONSchemaTypeName | JSONSchemaTypeName[]): JSONSchemaType | undefined {
-    type = Array.isArray(type) ? type[0] : type;
-    switch (type) {
-      case "boolean":
-        return false;
-      case "integer":
-      case "number":
-        return 0;
-      case "string":
-        return "";
-      case "array":
-        return [];
-      case "object":
-        return {};
-      default:
-        return undefined;
-    }
-  }
+  /** Unregisters all [[settingDefs]] and [[typeDefs]] with the specified [[SettingGroupSchema.schemaPrefix]]. */
+  removeGroup(schemaPrefix: string): void;
 }

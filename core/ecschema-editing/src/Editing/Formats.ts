@@ -6,45 +6,49 @@
  * @module Editing
  */
 
-import { InvertedUnit, SchemaItem, SchemaItemFormatProps, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
+import { Format, InvertedUnit, SchemaItem, SchemaItemFormatProps, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
 import { FormatType } from "@itwin/core-quantity";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import { SchemaContextEditor } from "./Editor";
 import { MutableFormat } from "./Mutable/MutableFormat";
+import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
+import { SchemaItems } from "./SchemaItems";
 
 /**
  * @alpha
  * A class allowing you to create schema items of type Format.
  */
-export class Formats {
-  public constructor(protected _schemaEditor: SchemaContextEditor) { }
-  public async create(schemaKey: SchemaKey, name: string, formatType: FormatType, displayLabel?: string, units?: SchemaItemKey[]): Promise<SchemaItemEditResults> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+export class Formats extends SchemaItems {
+  public constructor(schemaEditor: SchemaContextEditor) {
+    super(SchemaItemType.Format, schemaEditor);
+  }
 
-    const newFormat = (await schema.createFormat(name)) as MutableFormat;
-    if (newFormat === undefined) {
-      return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
-    }
+  public async create(schemaKey: SchemaKey, name: string, formatType: FormatType, displayLabel?: string, units?: SchemaItemKey[]): Promise<SchemaItemKey> {
+    try {
+      const newFormat = await this.createSchemaItem<Format>(schemaKey, this.schemaItemType, (schema) => schema.createFormat.bind(schema), name) as MutableFormat;
 
-    if (units !== undefined) {
-      for (const unit of units) {
-        const unitItem = await this._schemaEditor.schemaContext.getSchemaItem<Unit | InvertedUnit>(unit);
-        if (unitItem === undefined) {
-          return { errorMessage: `Failed to locate unit ${unit.name} in Schema Context.` };
+      if (units !== undefined) {
+        for (const unit of units) {
+          const unitItem =  await this.schemaEditor.schemaContext.getSchemaItem<Unit | InvertedUnit>(unit);
+          if (!unitItem) {
+            throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(SchemaItemType.Unit, unit));
+          }
+
+          if (unitItem.schemaItemType !== SchemaItemType.Unit && unitItem.schemaItemType !== SchemaItemType.InvertedUnit)
+            throw new SchemaEditingError(ECEditingStatus.InvalidFormatUnitsSpecified, new SchemaItemId((unitItem as SchemaItem).schemaItemType, (unitItem as SchemaItem).key));
+
+          newFormat.addUnit(unitItem);
         }
-
-        if (unitItem.schemaItemType !== SchemaItemType.Unit && unitItem.schemaItemType !== SchemaItemType.InvertedUnit)
-          return { errorMessage: `${(unitItem as SchemaItem).fullName} is not of type Unit or InvertedUnit.` };
-        newFormat.addUnit(unitItem);
       }
-    }
-    if (displayLabel)
-      newFormat.setDisplayLabel(displayLabel);
 
-    // TODO: Handle the setting of format traits, separators, etc....
-    newFormat.setFormatType(formatType);
-    return { itemKey: newFormat.key };
+      if (displayLabel)
+        newFormat.setDisplayLabel(displayLabel);
+
+      // TODO: Handle the setting of format traits, separators, etc....
+      newFormat.setFormatType(formatType);
+      return newFormat.key;
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
+    }
   }
 
   /**
@@ -52,19 +56,12 @@ export class Formats {
    * @param schemaKey a SchemaKey of the Schema that will house the new object.
    * @param relationshipProps a json object that will be used to populate the new RelationshipClass. Needs a name value passed in.
    */
-  public async createFromProps(schemaKey: SchemaKey, formatProps: SchemaItemFormatProps): Promise<SchemaItemEditResults> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
-
-    if (formatProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
-
-    const newFormat = (await schema.createFormat(formatProps.name)) as MutableFormat;
-    if (newFormat === undefined)
-      return { errorMessage: `Failed to create class ${formatProps.name} in schema ${schemaKey.toString(true)}.` };
-
-    await newFormat.fromJSON(formatProps);
-    return { itemKey: newFormat.key };
+  public async createFromProps(schemaKey: SchemaKey, formatProps: SchemaItemFormatProps): Promise<SchemaItemKey> {
+    try {
+      const newFormat = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createFormat.bind(schema), formatProps);
+      return newFormat.key;
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, formatProps.name!, schemaKey), e);
+    }
   }
 }
