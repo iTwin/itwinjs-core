@@ -395,6 +395,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (!viewState.isSpatialView())
       return;
 
+    this._doDebugFrustum = context.target.debugControl?.displayMaskFrustum ?? false;
+
     const maxTextureSize = System.instance.maxTexSizeAllow;
     const requiredHeight = maxTextureSize;
     const requiredWidth = maxTextureSize;
