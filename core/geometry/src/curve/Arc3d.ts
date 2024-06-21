@@ -340,7 +340,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    */
   public static createCircularStartMiddleEnd(
     pointA: XYAndZ, pointB: XYAndZ, pointC: XYAndZ, result?: Arc3d,
-  ): Arc3d | LineString3d | undefined {
+  ): Arc3d | LineString3d {
     const vectorAB = Vector3d.createStartEnd(pointA, pointB);
     const vectorAC = Vector3d.createStartEnd(pointA, pointC);
     const ab2 = vectorAB.magnitudeSquared();
