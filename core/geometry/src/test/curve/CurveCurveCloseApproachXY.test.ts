@@ -902,7 +902,6 @@ describe("CurveCurveCloseApproachXY", () => {
           return true;
       return false;
     };
-
     const existsInApproachSetWithTolerance = (
       set: Set<[Point3d, Point3d]>, point0: Point3d, point1: Point3d, tolerance: number = 1e-6,
     ): boolean => {

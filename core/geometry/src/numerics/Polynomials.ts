@@ -1667,7 +1667,7 @@ export class SmallSystem {
    * @param cy right hand side row 1 coefficient
    * @param cz right hand side row 2 coefficient
    * @param result optional result.
-   * @returns solution vector (u,v,w) or `undefined` is system is singular.
+   * @returns solution vector (u,v,w) or `undefined` if system is singular.
    */
   public static linearSystem3d(
     axx: number, axy: number, axz: number, // first row of matrix
