@@ -69,6 +69,7 @@ export class EllipticalArcApproximationOptions {
   private _numSamplesInQuadrant: number;
   private _maxError: number;
   private _remapFunction: FractionMapper;
+  // TODO: option to force Path in case they never want the chain to draw filled even if physically closed
 
   private constructor(
     method: EllipticalArcSampleMethod,
@@ -924,18 +925,22 @@ export class EllipticalArcApproximationContext {
     return structuredOutput ? computeStructuredOutput(radiansQ1) : computeFlatOutput(radiansQ1);
   }
   /** Construct a linestring approximation to the elliptical arc. */
-  public constructLineStringApproximation(options: EllipticalArcApproximationOptions): CurveChain | undefined {
+  public constructLineStringApproximation(options?: EllipticalArcApproximationOptions): CurveChain | undefined {
     if (!this.isValidArc)
       return undefined;
+    if (!options)
+      options = EllipticalArcApproximationOptions.create();
     const processor = new LineStringConstructionProcessor(this.arc);
     const samples = this.sampleFractions(options, true) as QuadrantFractions[];
     EllipticalArcApproximationContext.processQuadrantFractions(this.arc, samples, processor);
     return processor.chain;
   }
   /** Construct a circular arc chain approximation to the elliptical arc. */
-  public constructCircularArcChainApproximation(options: EllipticalArcApproximationOptions): CurveChain | undefined {
+  public constructCircularArcChainApproximation(options?: EllipticalArcApproximationOptions): CurveChain | undefined {
     if (!this.isValidArc)
       return undefined;
+    if (!options)
+      options = EllipticalArcApproximationOptions.create();
     const processor = new ArcChainConstructionProcessor(this.arc);
     const samples = this.sampleFractions(options, true) as QuadrantFractions[];
     EllipticalArcApproximationContext.processQuadrantFractions(this.arc, samples, processor);
