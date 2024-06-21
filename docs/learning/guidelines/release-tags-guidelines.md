@@ -179,18 +179,20 @@ In iTwin.js 5.0, we will be able to begin enforcing the internal API policy with
 Currently, iTwin.js publishes both CommonJS modules (`/lib/cjs/`) and ESModules (`/lib/esm/`), which prevents one package from importing a top-level API from another package using a relative path because it can't know which type of module it should import from. Also, some top-level `@internal` APIs are known or suspected to be used by code outside of itwinjs-core.
 
 - In 4.x (using the `core-backend` example above), we will export the contents of `cross-package.ts` from `core-backend.ts`.
-- In 5.x, we will standardize on ESModules, allowing, e.g., core-backend to import `InternalApi` from core-common using `import { InternalApi } from "@itwin/core-common/lib/InternalApi";`. We can then delete `cross-package.ts`.
+- In 5.0, we will standardize on ESModules, allowing, e.g., core-backend to import `InternalApi` from core-common using `import { InternalApi } from "@itwin/core-common/lib/InternalApi";`. We can then delete `cross-package.ts`.
 
 Currently, it's possible for an app to (mis)configure their dependencies such that they end up with multiple versions of single core package - and hence, multiple independent copies of each `Symbol` defined in `Symbols.ts`.
 - In 4.x, we use `Symbol.for` to define those symbols so that they are looked up by name in a global registry, preventing duplication.
-- In 5.x, we will prohibit taking a dependency on multiple versions of the same core package (which can lead to all sorts of other problems), and switch to using the `Symbol` constructor, which does not register the symbol in the global registry. This will make it impossible for anyone outside the package to look up the symbol by its name.
+- In 5.0, we will prohibit taking a dependency on multiple versions of the same core package (which can lead to all sorts of other problems), and switch to using the `Symbol` constructor, which does not register the symbol in the global registry. This will make it impossible for anyone outside the package to look up the symbol by its name.
 
 Some nested `@internal` APIs are known or suspected to be used by code outside of itwinjs-core.
 
 - In 4.x, we will preserve (and deprecate) those APIs in favor of `@internal` APIs identified by `Symbol`s.
-- In 5.x, we can delete all of the deprecated `@internal` APIs.
+- In 5.0, we can delete all of the deprecated `@internal` APIs.
 
-In 5.x, the only APIs tagged as `@internal` should be nested APIs identified by a `Symbol`. Top-level internal APIs will not require a release tag, because they will not be exported from the package's barrel file.
+In 5.0, the only APIs tagged as `@internal` should be nested APIs identified by a `Symbol`. Top-level internal APIs will not require a release tag, because they will not be exported from the package's barrel file.
+
+In 5.0, we will attempt to make the internal APIs inside a package's `lib/` folder inaccessible to consumers of the published packages (i.e., outside of itwinjs-core).
 
 ## Reviewing release tags
 
