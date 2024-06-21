@@ -144,7 +144,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
 
     // Overwrite the key if it includes a : because its most likely a guid. We know what it should be based off of the url.
     // Leave it alone if its a non guid key.
-    return { key: tokenFromBody.key.includes(":") ? `${iModelId}:${changeset.id}` : tokenFromBody.key, iTwinId, iModelId, changeset };
+    return { key: tokenFromBody.key === undefined || tokenFromBody.key.includes(":") ? `${iModelId}:${changeset.id}` : tokenFromBody.key, iTwinId, iModelId, changeset };
   }
 
   /** Returns the OpenAPI-compatible URI path parameters for an RPC operation.
