@@ -78,7 +78,9 @@ export class OverrideFormat {
     for (const [unit, unitLabel] of this._units) {
       fullName += "[";
       fullName += XmlSerializationUtils.createXmlTypedName(koqSchema, unit.schema, unit.name);
-      fullName += `|${unitLabel}]`;
+      if (unitLabel !== undefined)
+        fullName += `|${unitLabel}`;
+      fullName += `]`;
     }
     return fullName;
   }
