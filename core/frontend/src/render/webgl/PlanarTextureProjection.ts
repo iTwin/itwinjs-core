@@ -108,7 +108,7 @@ export class PlanarTextureProjection {
     textureRange.low.x -= epsilon;
     textureRange.high.x += epsilon;
 
-    const textureFrustum = Frustum.fromRange(textureRange);
+    let textureFrustum = Frustum.fromRange(textureRange);
     const debugFrustum = textureFrustum.clone();
     textureTransform.multiplyInversePoint3dArray(debugFrustum.points, debugFrustum.points);
 
@@ -163,6 +163,7 @@ export class PlanarTextureProjection {
     }
     textureMatrix.transposeInPlace();
     textureMatrix.multiplyVectorArrayInPlace(textureFrustum.points);
+    textureFrustum = debugFrustum.clone(); // qqq test
     const frustumMap = textureFrustum.toMap4d();
     if (undefined === frustumMap) {
       return {};
