@@ -169,6 +169,8 @@ Update all callers of `close` in itwinjs-core to use `[_close]` instead.
 
 The symbols in `Symbols.ts` are not exported from `core-backend.ts`, so they are inaccessible to packages outside of itwinjs-core. We preserve the original `@internal` API to avoid introducing a breaking API change for external callers (who should not be using it in the first place). The deprecation tag will warn them to fix their code to remove their dependency on the internal API. If we were reasonably certain no one was depending on the `close` method, we could simply delete it.
 
+### Transition plan
+
 In iTwin.js 5.0, we will be able to begin enforcing the internal API policy without regard for breaking changes.
 
 - Currently, iTwin.js publishes both CommonJS modules (`/lib/cjs/`) and ESModules (`/lib/esm/`), which prevents one package from importing an API from another package using a relative path because it can't know which type of module it should import from. In 4.x (using the `core-backend` example above), we will export the contents of `cross-package.ts` from `core-backend.ts` In 5.x, we will standardize on ESModules, allowing, e.g., core-backend to import `InternalApi` from core-common using `import { InternalApi } from "@itwin/core-common/lib/InternalApi";`. We can then delete `cross-package.ts`.
