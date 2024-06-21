@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { Angle } from "../../core-geometry";
 import { Arc3d } from "../../curve/Arc3d";
 import { BagOfCurves } from "../../curve/CurveCollection";
 import { CurveCurve } from "../../curve/CurveCurve";
@@ -18,6 +17,7 @@ import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
 import { UnionRegion } from "../../curve/UnionRegion";
 import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -947,8 +947,8 @@ describe("CurveCurveCloseApproachXY", () => {
               Math.sqrt(lenSqr), maxDistance, undefined, undefined, "approach length must be smaller than maxDistance",
             );
             const vec1 = Vector3d.createStartEnd(start, end);
-            const vec2 = geometryA.fractionToPointAnd2Derivatives(ap.detailA.fraction).vectorU;
-            const vec3 = geometryB.fractionToPointAnd2Derivatives(ap.detailB.fraction).vectorU;
+            const vec2 = geometryA.fractionToPointAndDerivative(ap.detailA.fraction).direction;
+            const vec3 = geometryB.fractionToPointAndDerivative(ap.detailB.fraction).direction;
             GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment, 0, dy);
             if (vec1.isPerpendicularTo(vec2) && vec1.isPerpendicularTo(vec3) &&
               !existsInApproachSetWithTolerance(approachSet, start, end, 1e-6)) {
@@ -977,8 +977,8 @@ describe("CurveCurveCloseApproachXY", () => {
   it("2EllipsesWithoutIntersection", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const geometryA = Arc3d.create(Point3d.create(0, 0), Vector3d.create(10, 0), Vector3d.create(0, 5));
-    const geometryB = Arc3d.create(Point3d.create(0, 0), Vector3d.create(2, 0), Vector3d.create(0, 4));
+    const geometryA = Arc3d.create(Point3d.create(0, 0), Vector3d.create(15, 0), Vector3d.create(0, 10));
+    const geometryB = Arc3d.create(Point3d.create(0, 0), Vector3d.create(5, 0), Vector3d.create(0, 8));
     const numExpectedIntersections = 0;
     const numExpectedPerpCloseApproach = 8;
     test2Ellipses(ck, allGeometry, geometryA, geometryB, numExpectedIntersections, numExpectedPerpCloseApproach);
