@@ -1,6 +1,14 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 13 Jun 2024 22:47:31 GMT and should not be manually modified.
+This log was last generated on Sat, 22 Jun 2024 01:09:54 GMT and should not be manually modified.
+
+## 4.7.2
+Sat, 22 Jun 2024 01:09:54 GMT
+
+### Updates
+
+- Fixed planar masks when using new tiles
+- Include the extents of all TiledGraphicsProviders when computing ViewingSpace extents.
 
 ## 4.7.1
 Thu, 13 Jun 2024 22:47:31 GMT
