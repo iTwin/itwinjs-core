@@ -1,5 +1,4 @@
 {
-  "originHash" : "0ae447e8f7f1402540a78ecfef8233159b3822ce7f14cc0b6b98d9f5822b767e",
   "pins" : [
     {
       "identity" : "mobile-native-ios",
@@ -11,5 +10,5 @@
       }
     }
   ],
-  "version" : 3
+  "version" : 2
 }
