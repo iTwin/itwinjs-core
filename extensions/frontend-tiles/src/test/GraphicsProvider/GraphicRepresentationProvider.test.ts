@@ -241,16 +241,18 @@ describe("obtainGraphicRepresentationUrl", () => {
 describe("GeoScienceService", () => {
   it.only("queryGeoScienceService", async () => {
     const token = "";
+    const workspaceId = "9f123308-e4b9-4082-b68f-d261ce02da3c";
+    const geoscienceObjId = "a0c4d7c6-d09d-4fff-8bf9-094ef5210eda";
     const args = {
       accessToken: token,
       sessionId: "testSession",
       dataSource: {
-        iTwinId: "iTwinId",
-        id: "srcId",
+        iTwinId: workspaceId,
+        id: geoscienceObjId,
         changeId: undefined,
         type: "geoscience",
       },
-      format: "IMDL",
+      format: "CESIUM",
     };
 
     for await (const src of queryGeoScienceService(args)) {

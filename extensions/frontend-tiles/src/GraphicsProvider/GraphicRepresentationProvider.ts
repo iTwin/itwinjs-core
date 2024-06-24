@@ -205,11 +205,11 @@ export async function* queryGeoScienceService(args: QueryGraphicRepresentationsA
     Authorization: args.accessToken,
   };
 
-  const BASE_URL = "https://351mt.api.integration.seequent.com";
-  const ORG = "72adad30-c07c-465d-a1fe-2f2dfac950a4";
-  const WORKSPACE = "9f123308-e4b9-4082-b68f-d261ce02da3c";
-  const GEOSCIENCE_OBJECT = "a0c4d7c6-d09d-4fff-8bf9-094ef5210eda";
-  const url = `${BASE_URL}/visualization/orgs/${ORG}/workspaces/${WORKSPACE}/geoscience-object/${GEOSCIENCE_OBJECT}`;
+  const baseUrl = "https://351mt.api.integration.seequent.com";
+  const orgId = "72adad30-c07c-465d-a1fe-2f2dfac950a4";
+
+  // iTwin ID being passed is assumed to be workspace ID
+  const url = `${baseUrl}/visualization/orgs/${orgId}/workspaces/${args.dataSource.iTwinId}/geoscience-object/${args.dataSource.id}`;
   const response = await fetch(url, { headers });
   const result = await response.json();
   yield result;
