@@ -149,6 +149,8 @@ import { ModelProps } from '@itwin/core-common';
 import { ModelSelectorProps } from '@itwin/core-common';
 import { Mutable } from '@itwin/core-bentley';
 import { NativeAppNotifications } from '@itwin/core-common';
+import { NativeCloudSqlite } from '@bentley/imodeljs-native';
+import { NativeLoggerCategory } from '@bentley/imodeljs-native';
 import { NavigationBindingValue } from '@itwin/core-common';
 import { NavigationValue } from '@itwin/core-common';
 import { NormalMapProps } from '@itwin/core-common';
@@ -3489,6 +3491,8 @@ export class IModelJsFsStats {
     size: number;
 }
 
+export { IModelJsNative }
+
 // @public
 export interface IModelNameArg extends TokenArg, ITwinIdArg {
     // (undocumented)
@@ -4106,6 +4110,8 @@ export class NativeAppStorage {
     setData(key: string, value: StorageValue): void;
 }
 
+export { NativeCloudSqlite }
+
 // @public
 export class NativeHost {
     // (undocumented)
@@ -4130,6 +4136,8 @@ export interface NativeHostOpts extends IpcHostOpts {
         applicationName?: string;
     };
 }
+
+export { NativeLoggerCategory }
 
 // @beta
 export interface OnAspectArg {
