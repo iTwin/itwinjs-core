@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { IModelHost, IModelJsFs, IModelJsNative, NativePlatform } from "@itwin/core-backend";
+import { IModelHost, IModelJsFs, IModelJsNative } from "@itwin/core-backend";
 import { AccessToken, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
 import { ChangesetFileProps, ChangesetType } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
@@ -58,7 +58,7 @@ async function validateAllChangesetOperationsOnDisk(iModelDir: string) {
   Logger.logInfo(HubUtility.logCategory, "Making a local copy of the seed");
   HubUtility.copyIModelFromSeed(briefcasePathname, iModelDir, true /* =overwrite */);
 
-  const nativeDb = new NativePlatform.DgnDb();
+  const nativeDb = new IModelHost.platform.DgnDb();
   nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
   const changesets = HubUtility.readChangesets(iModelDir);
 
