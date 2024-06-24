@@ -1,8 +1,7 @@
 lockfileVersion: 5.4
 
 overrides:
-  mysql2: ^3.9.8
-  braces: ^3.0.3
+  jsdom@19>ws: ^8.17.1
 
 importers:
 
@@ -11,7 +10,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.8.7
+      '@bentley/imodeljs-native': 4.8.11
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.1.0
       '@itwin/core-bentley': workspace:*
@@ -62,7 +61,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.10
     dependencies:
-      '@bentley/imodeljs-native': 4.8.7
+      '@bentley/imodeljs-native': 4.8.11
       '@itwin/cloud-agnostic-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.2.2_scz6qrwecfbbxg4vskopkl3a7u
@@ -3792,8 +3791,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.8.7:
-    resolution: {integrity: sha512-JH/ahgyzP9g/upFO41KFQvjbV5VWdRiqs5xxfSs6Bb5KyLRUhY4RxnKatY0qYkHaGkj9BhzsKSkbT7nMe/MyYw==}
+  /@bentley/imodeljs-native/4.8.11:
+    resolution: {integrity: sha512-C/3h7ZgX/38oa9Zngckb5SLO0948WjUzUpENyNrObO1ceRbAO5OnhxyLw1LxXH7wdCwMmtCZIQe4GY5lQAXTwA==}
     requiresBuild: true
     dev: false
 
@@ -9564,7 +9563,7 @@ packages:
       whatwg-encoding: 2.0.0
       whatwg-mimetype: 3.0.0
       whatwg-url: 10.0.0
-      ws: 8.16.0
+      ws: 8.17.1
       xml-name-validator: 4.0.0
     transitivePeerDependencies:
       - bufferutil
@@ -13536,8 +13535,8 @@ packages:
       utf-8-validate:
         optional: true
 
-  /ws/8.16.0:
-    resolution: {integrity: sha512-HS0c//TP7Ina87TfiPUz1rQzMhHrl/SG2guqRcTOIUYD2q8uhUdNHZYJUaQ8aTGPzCh+c6oawMKW35nFl1dxyQ==}
+  /ws/8.17.1:
+    resolution: {integrity: sha512-6XQFvXTkbfUOZOKKILFG1PDK2NDQs4azKQl26T0YS5CxqWLgXajbPZ+h4gZekJyRqFU8pvnbAbbs/3TgRPy+GQ==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
