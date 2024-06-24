@@ -3338,7 +3338,7 @@ export class IModelHost {
     static readonly onAfterStartup: BeEvent<() => void>;
     static readonly onBeforeShutdown: BeEvent<() => void>;
     static readonly onWorkspaceStartup: BeEvent<() => void>;
-    // @internal @deprecated (undocumented)
+    // @internal
     static get platform(): typeof IModelJsNative;
     // @beta
     static get profileDir(): LocalDirName;

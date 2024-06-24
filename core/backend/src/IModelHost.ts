@@ -289,7 +289,8 @@ export class IModelHost {
   private static _settingsSchemas?: SettingsSchemas;
   private static _appWorkspace?: OwnedWorkspace;
 
-  /** @deprecated in 4.8 use NativePlatform but please tell us what you're using this for.
+  /** This is supposed to be deprecated and replaced with NativePlatform but api-extractor doesn't like NativePlatform.
+   * Nobody's supposed to use IModelJsNative outside of core-backend.
    * @internal
    */
   public static get platform(): typeof IModelJsNative { return NativePlatform; }
