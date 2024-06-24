@@ -1,6 +1,14 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Thu, 13 Jun 2024 22:48:58 GMT and should not be manually modified.
+This log was last generated on Sat, 22 Jun 2024 01:11:18 GMT and should not be manually modified.
+
+## 4.7.2
+Sat, 22 Jun 2024 01:09:54 GMT
+
+### Updates
+
+- Update changed elements process options for bounding box calculations
+- BriefcaseDb.closeAndReopen now refreshes the changeset property in case another process pulled changes
 
 ## 4.7.1
 Thu, 13 Jun 2024 22:47:31 GMT

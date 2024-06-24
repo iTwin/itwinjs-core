@@ -8,8 +8,8 @@
  */
 
 import { DbResult, Id64, Id64Arg, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
-import { IModel, IModelError } from "@itwin/core-common";
-import { LockMap, LockState } from "../BackendHubAccess";
+import { IModel, IModelError, LockState } from "@itwin/core-common";
+import { LockMap } from "../BackendHubAccess";
 import { BriefcaseDb } from "../IModelDb";
 import { LockControl } from "../LockControl";
 import { IModelHost } from "../IModelHost";
