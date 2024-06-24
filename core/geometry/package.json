@@ -15,7 +15,7 @@
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json ./src/test/output",
     "watch": "tsc --watch",
-    "test": "mocha",
+    "test": "vitest --run --dir=src",
     "extract-api": "betools extract-api --entry=core-geometry",
     "extract-api-test": "betools extract-api --entry=core-geometry",
     "docs": "betools docs --tsIndexFile=./core-geometry.ts --json=../../generated-docs/core/core-geometry/file.json --onlyJson",
@@ -39,17 +39,14 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "^4.0.2",
-    "@types/chai": "4.3.1",
     "@types/flatbuffers": "~1.10.0",
-    "@types/mocha": "^10.0.6",
     "@types/node": "~18.16.20",
-    "chai": "^4.3.10",
     "debug": "^2.6.9",
     "eslint": "^8.56.0",
-    "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "typescript": "~5.3.3"
+    "typescript": "~5.3.3",
+    "vitest": "^1.6.0"
   },
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",

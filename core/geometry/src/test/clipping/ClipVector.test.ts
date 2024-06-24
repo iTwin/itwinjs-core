@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { beforeEach, describe, expect, it } from "vitest";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipPrimitiveShapeProps, ClipShape } from "../../clipping/ClipPrimitive";
 import { ClipUtilities } from "../../clipping/ClipUtils";
@@ -123,7 +123,7 @@ describe("ClipVector", () => {
    *                                   (2,-7)   (6.5,-7)\  /
    *                                                     \/(7,-8)
    */
-  before(() => {
+  beforeEach(() => {
     clipShape0 = ClipShape.createBlock(Range3d.createXYZXYZ(-5, -4, -50, -3, -2, 50), ClipMaskXYZRangePlanes.All);
     clipShape1 = ClipShape.createShape([Point3d.create(4.5, 1), Point3d.create(6, 3), Point3d.create(3, 3)])!;
     clipShape2 = ClipShape.createShape([

@@ -16,7 +16,7 @@
     "extract-extension-api": "eslint --no-inline-config -c extraction.eslint.config.js  \"./src/**/*.ts\" 1>&2",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "mocha",
+    "test": "vitest --run --dir=src",
     "cover": "nyc npm -s test"
   },
   "repository": {
@@ -49,16 +49,13 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/eslint-plugin": "^4.0.2",
     "@itwin/object-storage-core": "^2.2.2",
-    "@types/chai": "4.3.1",
     "@types/flatbuffers": "~1.10.0",
-    "@types/mocha": "^10.0.6",
     "@types/node": "~18.16.20",
-    "chai": "^4.3.10",
     "eslint": "^8.56.0",
-    "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "typescript": "~5.3.3"
+    "typescript": "~5.3.3",
+    "vitest": "^1.6.0"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { beforeEach, describe, expect, it } from "vitest";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipShape } from "../../clipping/ClipPrimitive";
 import { ClipUtilities } from "../../clipping/ClipUtils";
@@ -320,7 +320,7 @@ describe("ClipPrimitive", () => {
   let polygonB: Point3d[];
   let polygonC: Point3d[];
 
-  before(() => {
+  beforeEach(() => {
     clipPointsA = [
       Point3d.create(0, 0, 0),
       Point3d.create(100, 0, 0),
