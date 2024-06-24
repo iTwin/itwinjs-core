@@ -6,7 +6,9 @@
  * @module Errors
  */
 
-/** Return codes for methods which perform repository management operations. */
+/** Return codes for methods which perform repository management operations.
+ * @internal
+ */
 export enum RepositoryStatus {
   Success = 0,
   /** The repository server did not respond to a request */

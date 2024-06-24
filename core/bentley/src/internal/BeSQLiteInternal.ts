@@ -6,11 +6,13 @@
  * @module BeSQLite
  */
 
+ /** @internal */
 export enum DbChangeStage {
   Old = 0,
   New = 1
 }
 
+/** @internal */
 export enum DbValueType {
   IntegerVal = 1,
   FloatVal = 2,
@@ -19,7 +21,9 @@ export enum DbValueType {
   NullVal = 5
 }
 
-/** Cause of conflict when applying a changeset. */
+/** Cause of conflict when applying a changeset.
+ * @internal
+ */
 export enum DbConflictCause {
   Data = 1,
   NotFound = 2,
@@ -28,6 +32,7 @@ export enum DbConflictCause {
   ForeignKey = 5,
 }
 
+/** @internal */
 export enum DbConflictResolution {
   /** Skip incoming change */
   Skip = 0,

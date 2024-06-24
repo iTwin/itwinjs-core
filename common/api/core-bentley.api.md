@@ -277,16 +277,16 @@ export type ComputePriorityFunction<T> = (value: T) => number;
 // @public
 export type Constructor<T> = new (...args: any[]) => T;
 
-// @public
-enum DbChangeStage {
+// @internal (undocumented)
+export enum DbChangeStage {
     // (undocumented)
     New = 1,
     // (undocumented)
     Old = 0
 }
 
-// @public
-enum DbConflictCause {
+// @internal
+export enum DbConflictCause {
     // (undocumented)
     Conflict = 3,
     // (undocumented)
@@ -299,8 +299,8 @@ enum DbConflictCause {
     NotFound = 2
 }
 
-// @public (undocumented)
-enum DbConflictResolution {
+// @internal (undocumented)
+export enum DbConflictResolution {
     Abort = 2,
     Replace = 1,
     Skip = 0
@@ -453,8 +453,8 @@ export enum DbResult {
     BE_SQLITE_TOOBIG = 18
 }
 
-// @public (undocumented)
-enum DbValueType {
+// @internal (undocumented)
+export enum DbValueType {
     // (undocumented)
     BlobVal = 4,
     // (undocumented)
@@ -1009,17 +1009,6 @@ export class IndexMap<T> {
     toArray(): T[];
 }
 
-declare namespace InternalUseOnly {
-    export {
-        staticLoggerMetadata,
-        RepositoryStatus,
-        DbChangeStage,
-        DbConflictCause,
-        DbConflictResolution,
-        DbValueType
-    }
-}
-
 // @public
 export function isIDisposable(obj: unknown): obj is IDisposable;
 
@@ -1527,8 +1516,8 @@ export enum RealityDataStatus {
     Success = 0
 }
 
-// @public
-enum RepositoryStatus {
+// @internal
+export enum RepositoryStatus {
     CannotCreateChangeSet = 86023,
     ChangeSetRequired = 86025,
     ChannelConstraintViolation = 86031,
@@ -1589,8 +1578,8 @@ export enum SpanKind {
     SERVER = 1
 }
 
-// @public
-const staticLoggerMetadata: Map<String, LoggingMetaData>;
+// @internal
+export const staticLoggerMetadata: Map<String, LoggingMetaData>;
 
 // @alpha
 export abstract class StatusCategory {

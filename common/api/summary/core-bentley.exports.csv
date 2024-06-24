@@ -32,8 +32,12 @@ public;CompressedId64Set = string
 public;CompressedId64Set
 public;ComputePriorityFunction
 public;Constructor
+internal;DbChangeStage
+internal;DbConflictCause
+internal;DbConflictResolution
 public;DbOpcode
 public;DbResult
+internal;DbValueType
 public;Dictionary
 public;DictionaryEntry
 public;DisposableList 
@@ -107,12 +111,14 @@ public;PromiseReturnType
 public;ReadonlyOrderedSet
 public;ReadonlySortedArray
 alpha;RealityDataStatus
+internal;RepositoryStatus
 public;RequireAtLeastOne
 beta;RpcInterfaceStatus
 public;shallowClone
 public;SortedArray
 public;SpanKind
 deprecated;SpanKind
+internal;staticLoggerMetadata: Map
 alpha;class StatusCategory
 alpha;StatusCategoryHandler = (error: Error) => StatusCategory | undefined
 public;StopWatch
