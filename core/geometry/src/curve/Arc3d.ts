@@ -351,9 +351,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
         normal.x, normal.y, normal.z,
         vectorAB.x, vectorAB.y, vectorAB.z,
         vectorAC.x, vectorAC.y, vectorAC.z,
-        0,         // vectorToCenter DOT normal = 0
-        0.5 * ab2, // vectorToCenter DOT vectorAB = 0.5 * vectorAB DOT vectorAB (Rayleigh quotient)
-        0.5 * ac2, // vectorToCenter DOT vectorAC = 0.5 * vectorAC DOT vectorAC (Rayleigh quotient)
+        0,         // vectorToCenter DOT normal = 0 (ensure normal is perp tp the plane of the 3 points)
+        0.5 * ab2, // vectorToCenter DOT vectorAB = ab2 / 2 (ensure the projection of vectorToCenter on AB bisects AB)
+        0.5 * ac2, // vectorToCenter DOT vectorAC = ac2 / 2 (ensure the projection of vectorToCenter on AC bisects AC)
       );
       if (vectorToCenter) { // i.e., the negative of vectorX
         const center = Point3d.create(pointA.x, pointA.y, pointA.z).plus(vectorToCenter);
