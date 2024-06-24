@@ -220,11 +220,11 @@ export class QuadrantFractions {
     this._axisAtEnd = onAxis;
   }
   /**
-   * Whether the average fraction was added to produce a fractions array of length 3.
-   * * Some sample methods and elliptical arcs may not yield enough samples in a quadrant.
-   * * This flag is set if an extra (average) fraction was added to a 2-fraction array to satisfy
-   * the minimum 3-sample requirement that allows both axis/endpoints in the quadrant to be interpolated
-   * by [[EllipticalArcApproximationContext.constructCircularArcChainApproximation]].
+   * Whether the average of the first and last fractions was added to satisfy a minimum fractions array length of three.
+   * * There are always at least two fractions per quadrant, but three are needed to interpolate both end tangents
+   * with circular arcs.
+   * * This flag is set if a given sample method/arc yielded only two fractions, so their average was inserted in the
+   * fractions array to meet this minimum three-sample requirement.
   */
   public get averageAdded(): boolean {
     return this._fractions.length === 3 ? this._averageAdded : false;
@@ -256,204 +256,6 @@ export class QuadrantFractions {
       && AngleSweep.isRadiansInStartEnd(radians1, Angle.pi3Over2Radians, Angle.pi2Radians))
       return { quadrant: 4, angle0: Angle.pi3Over2Radians, angle1: Angle.pi2Radians };
     return undefined;
-  }
-};
-
-/**
- * Interface implemented by sampler classes.
- * * Implementation constructors are assumed to supply the sampler with the ellipse and relevant parameters.
- * @internal
- */
-interface EllipticalArcSampler {
-  /**
-   * Return samples interior to the first quadrant of the (full) ellipse.
-   * * Samples are returned as an unordered array of radian angles in the open interval (0, pi/2).
-   * @param result optional preallocated array to populate and return
-   * @return array of radian angles
-   */
-  computeRadiansStrictlyInsideQuadrant1(result?: number[]): number[];
-};
-
-/**
- * Implementation for method `EllipticalArcSampleMethod.UniformParameter`
- * @internal
- */
-class UniformParameterSampler implements EllipticalArcSampler {
-  private _context: EllipticalArcApproximationContext;
-  private _options: EllipticalArcApproximationOptions;
-  private constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
-    this._context = c;
-    this._options = o;
-  }
-  public static create(
-    context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions,
-  ): UniformParameterSampler {
-    return new UniformParameterSampler(context, options);
-  }
-  public computeRadiansStrictlyInsideQuadrant1(result?: number[]): number[] {
-    if (!result)
-      result = [];
-    if (this._context.isValidArc) {
-      const aDelta = Angle.piOver2Radians / (this._options.numSamplesInQuadrant - 1);
-      for (let i = 1; i < this._options.numSamplesInQuadrant - 1; ++i)
-        result.push(i * aDelta);
-    }
-    return result;
-  }
-};
-
-/**
- * Implementation for method `EllipticalArcSampleMethod.NonUniformCurvature`
- * @internal
- */
-class NonUniformCurvatureSampler implements EllipticalArcSampler {
-  protected _context: EllipticalArcApproximationContext;
-  protected _options: EllipticalArcApproximationOptions;
-  private _xMag2: number;
-  private _yMag2: number;
-  private _curvatureRange: Range1d;
-  protected constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
-    this._context = c;
-    this._options = o;
-    this._xMag2 = c.arc.matrixRef.columnXMagnitudeSquared();
-    this._yMag2 = c.arc.matrixRef.columnYMagnitudeSquared();
-    // extreme curvatures occur at the axis points
-    this._curvatureRange = Range1d.createXX(Math.sqrt(this._xMag2) / this._yMag2, Math.sqrt(this._yMag2) / this._xMag2);
-  }
-  public static create(
-    context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions,
-  ): NonUniformCurvatureSampler {
-    return new NonUniformCurvatureSampler(context, options);
-  }
-  /**
-   * Compute the angle corresponding to the point in the ellipse's first quadrant with the given curvature.
-   * * The elliptical arc is assumed to be non-circular and have perpendicular axes of positive length; its sweep is ignored.
-   * * This is a scaled inverse of [[Arc3d.fractionToCurvature]] restricted to fractions in [0, 1/4].
-   * @return radian angle in [0, pi/2] or undefined if the ellipse is invalid, or does not attain the given curvature.
-   */
-  private curvatureToRadians(curvature: number): number | undefined {
-    /*
-    Let the elliptical arc be parameterized with axes u,v of different length and u.v = 0:
-      f(t) = c + u cos(t) + v sin(t),
-      f'(t) = -u sin(t) + v cos(t),
-      f"(t) = -u cos(t) - v sin(t)
-    We seek a formula for t(K), the inverse of the standard curvature formula
-      K(t) := ||f'(t) x f"(t)||/||f'(t)||^3
-    for a parametric function f(t):R->R^3. We'll restrict K to Q1 (i.e., t in [0, pi/2]), where K is monotonic.
-    By linearity of the cross product and the above formulas, the numerator of K(t) reduces to ||u x v||, and so:
-      cbrt(||u x v||/K) = ||f'(t)|| = sqrt(f'(t).f'(t))
-    Leveraging u,v perpendicularity we can define:
-      lambda(K) := (||u x v||/K)^(2/3) = (||u|| ||v|| / K)^(2/3) = cbrt(u.u v.v / K^2)
-    Then substituting and using perpendicularity again:
-      lambda(K) = f'(t).f'(t)
-        = sin^2(t)u.u + cos^2(t)v.v - 2sin(t)cos(t)u.v
-        = u.u + cos^2(t)(v.v - u.u)
-    Taking the positive root because cos(t)>=0 in Q1, and relying on u,v having different lengths:
-      cos(t) = sqrt((lambda(K) - u.u)/(v.v - u.u))
-    Solving for t yields the formula for t(K).
-    */
-    if (!this._curvatureRange.containsX(curvature))
-      return undefined; // ellipse does not attain this curvature
-    const lambda = Math.cbrt((this._xMag2 * this._yMag2) / (curvature * curvature));
-    const cosTheta = Math.sqrt(Math.abs((lambda - this._xMag2) / (this._yMag2 - this._xMag2)));
-    return Math.acos(cosTheta);
-  }
-  public computeRadiansStrictlyInsideQuadrant1(result?: number[]): number[] {
-    if (!result)
-      result = [];
-    if (this._context.isValidArc) {
-      const tDelta = 1.0 / (this._options.numSamplesInQuadrant - 1);
-      for (let i = 1; i < this._options.numSamplesInQuadrant - 1; ++i) {
-        const j = this._options.remapFunction(i * tDelta);
-        const curvature = (1 - j) * this._curvatureRange.low + j * this._curvatureRange.high;
-        const angle = this.curvatureToRadians(curvature);
-        if (undefined !== angle)
-          result.push(angle);
-      }
-    }
-    return result;
-  }
-};
-
-/**
- * Implementation for method `EllipticalArcSampleMethod.UniformCurvature`
- * @internal
- */
-class UniformCurvatureSampler extends NonUniformCurvatureSampler implements EllipticalArcSampler {
-  private constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
-    super(c, o.clone());
-    this._options.remapFunction = (x: number) => x; // identity map
-  }
-  public static override create(
-    context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions,
-  ): UniformCurvatureSampler {
-    return new UniformCurvatureSampler(context, options);
-  }
-};
-
-/**
- * Intermediate class for subdivision sampler implementations.
- * @internal
- */
-abstract class SubdivisionSampler implements EllipticalArcSampler {
-  protected _context: EllipticalArcApproximationContext;
-  protected _options: EllipticalArcApproximationOptions;
-  protected _fullArcXY: Arc3d;
-  private static maxIters = 10;
-  protected constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
-    this._context = c;
-    this._options = o;
-    this._fullArcXY = c.isValidArc ? c.cloneLocalArc(true) : Arc3d.createUnitCircle();
-  }
-  protected get fullArcXY(): Arc3d {
-    return this._fullArcXY;
-  }
-  protected abstract createErrorProcessor(): SubdivisionErrorProcessor;
-  public computeRadiansStrictlyInsideQuadrant1(result?: number[]): number[] {
-    if (!result)
-      result = [];
-    if (this._context.isValidArc) {
-      const q = [QuadrantFractions.create(1, [0, 0.125, 0.25], true, true)];
-      const processor = this.createErrorProcessor();
-      let iters = 0;
-      do {
-        EllipticalArcApproximationContext.processQuadrantFractions(this.fullArcXY, q, processor);
-      } while (processor.isRefined && ++iters <= SubdivisionSampler.maxIters);
-      processor.getRefinedAngles(result);
-    }
-    return result;
-  }
-};
-
-/**
- * Implementation for method `EllipticalArcSampleMethod.SubdivideForChords`
- * @internal
- */
-class SubdivideForChordsSampler extends SubdivisionSampler {
-  private constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
-    super(c, o);
-  }
-  public static create(context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions): SubdivideForChordsSampler {
-    return new SubdivideForChordsSampler(context, options);
-  }
-  public override createErrorProcessor(): SubdivisionErrorProcessor {
-    return new LineStringSubdivisionErrorProcessor(this.fullArcXY, this._options.maxError);
-  }
-};
-
-/**
- * Implementation for method `EllipticalArcSampleMethod.SubdivideForArcs`
- * @internal
- */
-class SubdivideForArcsSampler extends SubdivisionSampler {
-  private constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
-    super(c, o);
-  }
-  public static create(context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions): SubdivideForArcsSampler {
-    return new SubdivideForArcsSampler(context, options);
-  }
-  public override createErrorProcessor(): SubdivisionErrorProcessor {
-    return new ArcChainSubdivisionErrorProcessor(this.fullArcXY, this._options.maxError);
   }
 };
 
@@ -507,7 +309,7 @@ class ErrorProcessor extends QuadrantFractionsProcessor {
    * Compute the maximum xy-distance between an elliptical arc and its approximation.
    * * Inputs should be in horizontal plane(s), as z-coordinates are ignored.
    * @param arc elliptical arc being approximated. Sweep outside the extents of the approximation is ignored.
-   * @param approximation circular arc, or segment approximant. Assumed to start and end on the elliptical arc.
+   * @param approximation circular arc, or chord approximant. Assumed to start and end on the elliptical arc.
    * @return details of the perpendicular measuring the max approximation error, or undefined if no such perpendicular.
    * For each of `detailA` (corresponding to `arc`) and `detailB` (corresponding to `approximation`):
    * * `point` is the end of the perpendicular on each curve
@@ -599,7 +401,16 @@ class LineStringErrorProcessor extends ChainErrorProcessor {
 }
 
 /**
- * Intermediate processor class for computing samples for a subdivision-based approximation.
+ * Intermediate processor class for an approximation based on samples obtained by adaptive subdivision.
+ * * The basic idea is to build a refinement of `q.fractions` during the processing of QuadrantFractions `q`.
+ *   * Start off the refinement with a copy of `q.fractions`.
+ *   * When an announced arc/chord exceeds a given maximum approximation error, the midpoint of its associated
+ * fraction span is added to the refinement.
+ *   * If the announced arc/chord does not exceed the maxError, its associated fraction span remains as-is---no
+ * additional samples are needed to decrease approximation error.
+ *   * After `q` processing completes, `q.fractions` is updated in place with the computed refinement.
+ *   * The caller typically re-processes `q` until `isRefined` returns false, at which point construction of an
+ * approximation that is guaranteed not to exceed the desired error can commence.
  * @internal
  */
 class SubdivisionErrorProcessor extends ErrorProcessor {
@@ -629,11 +440,15 @@ class SubdivisionErrorProcessor extends ErrorProcessor {
   public override announceQuadrantEnd(q: QuadrantFractions, _wasReversed: boolean): void {
     q.fractions = [...this._refinement];
   }
-  /** Whether the processor refined the sample set to decrease the approximation error. */
+  /** Whether the processor refined the current `QuadrantFractions` fractions array to decrease approximation error. */
   public get isRefined(): boolean {
     return this._originalRefinementCount < this._refinement.size;
   }
-  public getRefinedAngles(result?: number[]): number[] {
+  /**
+   * Return the refinement of the current `QuadrantFractions` fractions array, as radians, sans start/end angles.
+   * * Output is suitable to return from an implementation of [[EllipticalArcSampler.computeRadiansStrictlyInsideQuadrant1]].
+   */
+  public getRefinedInteriorAngles(result?: number[]): number[] {
     if (!result)
       result = [];
     else
@@ -671,6 +486,205 @@ class LineStringSubdivisionErrorProcessor extends SubdivisionErrorProcessor {
     this.updateFractionSet(LineSegment3d.create(pt0, pt1), f0, f1);
   }
 }
+
+/**
+ * Interface implemented by sampler classes.
+ * * Implementation constructors are assumed to supply the sampler with the ellipse and relevant parameters.
+ * @internal
+ */
+interface EllipticalArcSampler {
+  /**
+   * Return samples interior to the first quadrant of the (full) ellipse.
+   * * Samples are returned as an unordered array of radian angles in the open interval (0, pi/2).
+   * @param result optional preallocated array to populate and return
+   * @return array of radian angles
+   */
+  computeRadiansStrictlyInsideQuadrant1(result?: number[]): number[];
+};
+
+/**
+ * Implementation for method `EllipticalArcSampleMethod.UniformParameter`
+ * @internal
+ */
+class UniformParameterSampler implements EllipticalArcSampler {
+  private _context: EllipticalArcApproximationContext;
+  private _options: EllipticalArcApproximationOptions;
+  private constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
+    this._context = c;
+    this._options = o;
+  }
+  public static create(
+    context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions,
+  ): UniformParameterSampler {
+    return new UniformParameterSampler(context, options);
+  }
+  public computeRadiansStrictlyInsideQuadrant1(result?: number[]): number[] {
+    if (!result)
+      result = [];
+    if (this._context.isValidArc) {
+      const aDelta = Angle.piOver2Radians / (this._options.numSamplesInQuadrant - 1);
+      for (let i = 1; i < this._options.numSamplesInQuadrant - 1; ++i)
+        result.push(i * aDelta);
+    }
+    return result;
+  }
+};
+
+/**
+ * Implementation for method `EllipticalArcSampleMethod.NonUniformCurvature`
+ * @internal
+ */
+class NonUniformCurvatureSampler implements EllipticalArcSampler {
+  protected _context: EllipticalArcApproximationContext;
+  protected _options: EllipticalArcApproximationOptions;
+  private _xMag2: number;
+  private _yMag2: number;
+  private _curvatureRange: Range1d;
+  protected constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
+    this._context = c;
+    this._options = o;
+    this._xMag2 = c.arc.matrixRef.columnXMagnitudeSquared();
+    this._yMag2 = c.arc.matrixRef.columnYMagnitudeSquared();
+    // extreme curvatures occur at the ellipse's axis points because its axes are perpendicular
+    this._curvatureRange = Range1d.createXX(Math.sqrt(this._xMag2) / this._yMag2, Math.sqrt(this._yMag2) / this._xMag2);
+  }
+  public static create(
+    context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions,
+  ): NonUniformCurvatureSampler {
+    return new NonUniformCurvatureSampler(context, options);
+  }
+  /**
+   * Compute the angle corresponding to the point in the ellipse's first quadrant with the given curvature.
+   * * The elliptical arc is assumed to be non-circular and have perpendicular axes of positive length; its sweep is ignored.
+   * * This is a scaled inverse of [[Arc3d.fractionToCurvature]] restricted to fractions in [0, 1/4].
+   * @return radian angle in [0, pi/2] or undefined if the ellipse is invalid, or does not attain the given curvature.
+   */
+  private curvatureToRadians(curvature: number): number | undefined {
+    /*
+    Let the elliptical arc be parameterized with axes u,v of different length and u.v = 0:
+      f(t) = c + u cos(t) + v sin(t),
+      f'(t) = -u sin(t) + v cos(t),
+      f"(t) = -u cos(t) - v sin(t)
+    We seek a formula for t(K), the inverse of the standard curvature formula
+      K(t) := ||f'(t) x f"(t)|| / ||f'(t)||^3
+    for a parametric function f(t):R->R^3. We'll restrict K to Q1 (i.e., t in [0, pi/2]), where K is monotonic.
+    By linearity of the cross product and the above formulas, the numerator of K(t) reduces to ||u x v||, and so:
+      cbrt(||u x v||/K) = ||f'(t)|| = sqrt(f'(t).f'(t))
+    Leveraging u,v perpendicularity we can define:
+      lambda(K) := (||u x v||/K)^(2/3) = (||u|| ||v|| / K)^(2/3) = cbrt(u.u v.v / K^2)
+    Then substituting and using perpendicularity again:
+      lambda(K) = f'(t).f'(t)
+        = sin^2(t)u.u + cos^2(t)v.v - 2sin(t)cos(t)u.v
+        = u.u + cos^2(t)(v.v - u.u)
+    Taking the positive root because cos(t)>=0 in Q1, and relying on u,v having different lengths:
+      cos(t) = sqrt((lambda(K) - u.u)/(v.v - u.u))
+    Solving for t yields the formula for t(K).
+    */
+    if (!this._curvatureRange.containsX(curvature))
+      return undefined; // ellipse does not attain this curvature
+    const lambda = Math.cbrt((this._xMag2 * this._yMag2) / (curvature * curvature));
+    const cosTheta = Math.sqrt(Math.abs((lambda - this._xMag2) / (this._yMag2 - this._xMag2)));
+    return Math.acos(cosTheta);
+  }
+  public computeRadiansStrictlyInsideQuadrant1(result?: number[]): number[] {
+    if (!result)
+      result = [];
+    if (this._context.isValidArc) {
+      const tDelta = 1.0 / (this._options.numSamplesInQuadrant - 1);
+      for (let i = 1; i < this._options.numSamplesInQuadrant - 1; ++i) {
+        const j = this._options.remapFunction(i * tDelta);
+        const curvature = (1 - j) * this._curvatureRange.low + j * this._curvatureRange.high;
+        const angle = this.curvatureToRadians(curvature);
+        if (undefined !== angle)
+          result.push(angle);
+      }
+    }
+    return result;
+  }
+};
+
+/**
+ * Implementation for method `EllipticalArcSampleMethod.UniformCurvature`.
+ * * Basically this is just `NonUniformCurvature` method with uniformity preserved via identity remap function.
+ * @internal
+ */
+class UniformCurvatureSampler extends NonUniformCurvatureSampler implements EllipticalArcSampler {
+  private constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
+    super(c, o.clone());
+    this._options.remapFunction = (x: number) => x; // identity map
+  }
+  public static override create(
+    context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions,
+  ): UniformCurvatureSampler {
+    return new UniformCurvatureSampler(context, options);
+  }
+};
+
+/**
+ * Intermediate class for subdivision sampler implementations.
+ * @internal
+ */
+abstract class SubdivisionSampler implements EllipticalArcSampler {
+  protected _context: EllipticalArcApproximationContext;
+  protected _options: EllipticalArcApproximationOptions;
+  protected _fullArcXY: Arc3d;
+  private static maxIters = 10;
+  protected constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
+    this._context = c;
+    this._options = o;
+    this._fullArcXY = c.isValidArc ? c.cloneLocalArc(true) : Arc3d.createUnitCircle();
+  }
+  protected get fullArcXY(): Arc3d {
+    return this._fullArcXY;
+  }
+  protected abstract createErrorProcessor(): SubdivisionErrorProcessor;
+  public computeRadiansStrictlyInsideQuadrant1(result?: number[]): number[] {
+    if (!result)
+      result = [];
+    if (this._context.isValidArc) {
+      const q = [QuadrantFractions.create(1, [0, 0.125, 0.25], true, true)];
+      const processor = this.createErrorProcessor();
+      let iters = 0;
+      do {
+        EllipticalArcApproximationContext.processQuadrantFractions(this.fullArcXY, q, processor);
+      } while (processor.isRefined && ++iters <= SubdivisionSampler.maxIters);
+      processor.getRefinedInteriorAngles(result);
+    }
+    return result;
+  }
+};
+
+/**
+ * Implementation for method `EllipticalArcSampleMethod.SubdivideForChords`
+ * @internal
+ */
+class SubdivideForChordsSampler extends SubdivisionSampler {
+  private constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
+    super(c, o);
+  }
+  public static create(context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions): SubdivideForChordsSampler {
+    return new SubdivideForChordsSampler(context, options);
+  }
+  public override createErrorProcessor(): SubdivisionErrorProcessor {
+    return new LineStringSubdivisionErrorProcessor(this.fullArcXY, this._options.maxError);
+  }
+};
+
+/**
+ * Implementation for method `EllipticalArcSampleMethod.SubdivideForArcs`
+ * @internal
+ */
+class SubdivideForArcsSampler extends SubdivisionSampler {
+  private constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
+    super(c, o);
+  }
+  public static create(context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions): SubdivideForArcsSampler {
+    return new SubdivideForArcsSampler(context, options);
+  }
+  public override createErrorProcessor(): SubdivisionErrorProcessor {
+    return new ArcChainSubdivisionErrorProcessor(this.fullArcXY, this._options.maxError);
+  }
+};
 
 /**
  * Intermediate class for constructing a sample-based approximation.
