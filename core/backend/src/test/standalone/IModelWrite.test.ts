@@ -6,7 +6,7 @@
 import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
   Code, ColorDef,
-  GeometricElement2dProps, GeometryStreamProps, IModel, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
+  GeometricElement2dProps, GeometryStreamProps, IModel, LockState, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
 import * as chai from "chai";
@@ -23,7 +23,12 @@ import {
   BriefcaseDb,
   BriefcaseManager,
   ChannelControl,
+<<<<<<< HEAD
   DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, LockState, OpenBriefcaseArgs, SpatialCategory, Subject,
+=======
+  CodeService,
+  DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, OpenBriefcaseArgs, SpatialCategory, Subject,
+>>>>>>> 20cd3cdcca (Add ConflictingLocksError class (#6852))
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { ServerBasedLocks } from "../../ServerBasedLocks";
