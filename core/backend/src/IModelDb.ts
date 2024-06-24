@@ -3242,7 +3242,11 @@ export class SnapshotDb extends IModelDb {
   public static openFile(path: LocalFileName, opts?: SnapshotDbOpenArgs): SnapshotDb {
     this.onOpen.raiseEvent(path, opts);
     const file = { path, key: opts?.key };
+    const wasKeyUndefined = opts?.key === undefined;
     const nativeDb = this.openDgnDb(file, OpenMode.Readonly, undefined, opts);
+    if (wasKeyUndefined) {
+      file.key = `${nativeDb.getIModelId()}:${nativeDb.getCurrentChangeset().id}`;
+    }
     assert(undefined !== file.key);
     const db = new SnapshotDb(nativeDb, file.key);
     this.onOpened.raiseEvent(db);
