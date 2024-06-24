@@ -35,7 +35,7 @@ const enum LockOrigin {
 
 export class ServerBasedLocks implements LockControl {
   public readonly [_implementationProhibited] = undefined;
-  
+
   public get isServerBased() { return true; }
   protected readonly lockDb = new SQLiteDb();
   protected readonly briefcase: BriefcaseDb;

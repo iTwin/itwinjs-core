@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbChangeStage, DbConflictCause, DbConflictResolution, DbValueType, DbOpcode, DbResult, Guid, GuidString, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
+import { DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType, Guid, GuidString, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import {
   ElementAspectProps,
   FilePropertyProps,

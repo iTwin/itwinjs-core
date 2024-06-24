@@ -6,7 +6,7 @@
  * @module BeSQLite
  */
 
- /** @internal */
+/** @internal */
 export enum DbChangeStage {
   Old = 0,
   New = 1

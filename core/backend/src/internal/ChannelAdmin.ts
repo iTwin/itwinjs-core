@@ -12,7 +12,7 @@ import { Subject } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { ChannelControl, ChannelKey } from "../ChannelControl";
-import { _implementationProhibited, _verifyChannel } from "./Symbols"; 
+import { _implementationProhibited, _verifyChannel } from "./Symbols";
 
 class ChannelAdmin implements ChannelControl {
   public static readonly channelClassName = "bis:ChannelRootAspect";

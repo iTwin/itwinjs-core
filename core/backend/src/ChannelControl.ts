@@ -23,7 +23,7 @@ export type ChannelKey = string;
 export interface ChannelControl {
   /** @internal */
   readonly [_implementationProhibited]: unknown;
-  
+
   /** Add a new channel to the list of allowed channels of the [[IModelDb]] for this session.
    * @param channelKey The key for the channel to become editable in this session.
    */

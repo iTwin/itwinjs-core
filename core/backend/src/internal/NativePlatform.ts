@@ -22,6 +22,7 @@ function syncNativeLogLevels() {
 }
 
 class NativePlatformModule {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   public get NativePlatform(): typeof IModelJsNative {
     if (undefined === nativePlatform) {
       throw new Error("IModelHost.startup must be called first");

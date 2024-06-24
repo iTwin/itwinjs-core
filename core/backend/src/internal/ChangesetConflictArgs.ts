@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbChangeStage, DbConflictCause, DbValueType, DbOpcode, Id64String } from "@itwin/core-bentley";
+import { DbChangeStage, DbConflictCause, DbOpcode, DbValueType, Id64String } from "@itwin/core-bentley";
 
 export interface ChangesetConflictArgs {
   cause: DbConflictCause;
