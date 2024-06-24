@@ -53,6 +53,7 @@ import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
 import { DbResult } from '@itwin/core-bentley';
+import { DbValueType } from '@itwin/core-bentley';
 import { DefinitionElementProps } from '@itwin/core-common';
 import { DisplayStyle3dProps } from '@itwin/core-common';
 import { DisplayStyle3dSettings } from '@itwin/core-common';
@@ -119,7 +120,6 @@ import { IModelTileTreeProps } from '@itwin/core-common';
 import { IModelVersion } from '@itwin/core-common';
 import { IndexedPolyface } from '@itwin/core-geometry';
 import { InformationPartitionElementProps } from '@itwin/core-common';
-import { InternalUseOnly } from '@itwin/core-bentley';
 import { InternetConnectivityStatus } from '@itwin/core-common';
 import { IpcAppNotifications } from '@itwin/core-common';
 import { IpcListener } from '@itwin/core-common';
@@ -734,37 +734,12 @@ export class ChangeSummaryManager {
     static queryInstanceChange(iModel: BriefcaseDb, instanceChangeId: Id64String): InstanceChange;
 }
 
-// @internal (undocumented)
-export class ChannelAdmin implements ChannelControl {
-    constructor(_iModel: IModelDb);
-    // (undocumented)
-    addAllowedChannel(channelKey: ChannelKey): void;
-    // (undocumented)
-    static readonly channelClassName = "bis:ChannelRootAspect";
-    // (undocumented)
-    getChannelKey(elementId: Id64String): ChannelKey;
-    // (undocumented)
-    insertChannelSubject(args: {
-        subjectName: string;
-        channelKey: ChannelKey;
-        parentSubjectId?: Id64String;
-        description?: string;
-    }): Id64String;
-    // (undocumented)
-    makeChannelRoot(args: {
-        elementId: Id64String;
-        channelKey: ChannelKey;
-    }): void;
-    // (undocumented)
-    queryChannelRoot(channelKey: ChannelKey): Id64String | undefined;
-    // (undocumented)
-    removeAllowedChannel(channelKey: ChannelKey): void;
-    // (undocumented)
-    verifyChannel(modelId: Id64String): void;
-}
-
 // @beta
 export interface ChannelControl {
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+    // @internal (undocumented)
+    [_verifyChannel]: (modelId: Id64String) => void;
     addAllowedChannel(channelKey: ChannelKey): void;
     getChannelKey(elementId: Id64String): ChannelKey;
     insertChannelSubject(args: {
@@ -779,8 +754,6 @@ export interface ChannelControl {
     }): void;
     queryChannelRoot(channelKey: ChannelKey): Id64String | undefined;
     removeAllowedChannel(channelKey: ChannelKey): void;
-    // @internal (undocumented)
-    verifyChannel(modelId: Id64String): void;
 }
 
 // @beta (undocumented)
@@ -3365,7 +3338,7 @@ export class IModelHost {
     static readonly onAfterStartup: BeEvent<() => void>;
     static readonly onBeforeShutdown: BeEvent<() => void>;
     static readonly onWorkspaceStartup: BeEvent<() => void>;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     static get platform(): typeof IModelJsNative;
     // @beta
     static get profileDir(): LocalDirName;
@@ -3985,27 +3958,6 @@ export class LockConflict extends IModelError {
     readonly briefcaseId: BriefcaseId;
 }
 
-// @beta
-export interface LockControl {
-    acquireLocks(arg: {
-        shared?: Id64Arg;
-        exclusive?: Id64Arg;
-    }): Promise<void>;
-    // @internal
-    checkExclusiveLock(id: Id64String, type: string, operation: string): void;
-    // @internal
-    checkSharedLock(id: Id64String, type: string, operation: string): void;
-    // @internal
-    close(): void;
-    // @internal
-    elementWasCreated(id: Id64String): void;
-    holdsExclusiveLock(id: Id64String): boolean;
-    holdsSharedLock(id: Id64String): boolean;
-    readonly isServerBased: boolean;
-    // @internal
-    releaseAllLocks(): Promise<void>;
-}
-
 // @internal (undocumented)
 export type LockMap = Map<Id64String, LockState_2>;
 
@@ -4575,8 +4527,6 @@ export class Relationships {
 
 // @public
 export class RenderMaterialElement extends DefinitionElement {
-    // @internal
-    constructor(props: RenderMaterialProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): RenderMaterialElement;
@@ -4819,7 +4769,7 @@ export type SettingName = string;
 // @beta
 export interface Settings {
     // @internal (undocumented)
-    [implementationProhibited]: unknown;
+    [_implementationProhibited]: unknown;
     addDictionary(props: SettingsDictionaryProps, settings: SettingsContainer): void;
     addDirectory(directory: LocalDirName, priority: SettingsPriority): void;
     addFile(fileName: LocalFileName, priority: SettingsPriority): void;
@@ -4872,7 +4822,7 @@ export interface SettingsContainer {
 // @beta
 export interface SettingsDictionary {
     // @internal (undocumented)
-    [implementationProhibited]: unknown;
+    [_implementationProhibited]: unknown;
     getSetting<T extends Setting>(settingName: SettingName): T | undefined;
     readonly props: SettingsDictionaryProps;
 }
@@ -4904,7 +4854,7 @@ export namespace SettingsPriority {
 // @beta
 export interface SettingsSchemas {
     // @internal (undocumented)
-    readonly [implementationProhibited]: unknown;
+    readonly [_implementationProhibited]: unknown;
     addDirectory(dirName: LocalDirName): void;
     addFile(fileName: LocalFileName): void;
     addGroup(settingsGroup: SettingGroupSchema | SettingGroupSchema[]): void;
@@ -5120,9 +5070,9 @@ export class SqliteChangesetReader implements IDisposable {
     getChangeValuesArray(stage: SqliteValueStage): SqliteValueArray | undefined;
     getChangeValuesObject(stage: SqliteValueStage, args?: ChangeFormatArgs): SqliteChange | undefined;
     getChangeValueText(columnIndex: number, stage: SqliteValueStage): string | null | undefined;
-    getChangeValueType(columnIndex: number, stage: SqliteValueStage): InternalUseOnly.DbValueType | undefined;
+    getChangeValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined;
     getColumnNames(tableName: string): string[];
-    getColumnValueType(columnIndex: number, stage: SqliteValueStage): InternalUseOnly.DbValueType | undefined;
+    getColumnValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined;
     getPrimaryKeyColumnNames(): string[];
     get hasRow(): boolean;
     isColumnValueNull(columnIndex: number, stage: SqliteValueStage): boolean | undefined;
@@ -6340,7 +6290,7 @@ export class WebMercatorModel extends SpatialModel {
 // @beta
 export interface Workspace {
     // @internal (undocumented)
-    [implementationProhibited]: unknown;
+    [_implementationProhibited]: unknown;
     // @internal
     readonly containerDir: LocalDirName;
     // @internal
@@ -6388,7 +6338,7 @@ export namespace Workspace {
 // @beta
 export interface WorkspaceContainer {
     // @internal (undocumented)
-    [implementationProhibited]: unknown;
+    [_implementationProhibited]: unknown;
     // @internal (undocumented)
     addWorkspaceDb(toAdd: WorkspaceDb): void;
     // @internal
@@ -6415,7 +6365,7 @@ export interface WorkspaceContainerProps extends Optional<CloudSqlite.ContainerA
 // @beta
 export interface WorkspaceDb {
     // @internal (undocumented)
-    [implementationProhibited]: unknown;
+    [_implementationProhibited]: unknown;
     close(): void;
     readonly container: WorkspaceContainer;
     readonly dbFileName: string;
@@ -6518,7 +6468,7 @@ export namespace WorkspaceEditor {
 // @beta
 export interface WorkspaceEditor {
     // @internal (undocumented)
-    [implementationProhibited]: unknown;
+    [_implementationProhibited]: unknown;
     close(): void;
     createNewCloudContainer(args: CreateNewWorkspaceContainerArgs): Promise<EditableWorkspaceContainer>;
     getContainer(args: GetWorkspaceContainerArgs): EditableWorkspaceContainer;

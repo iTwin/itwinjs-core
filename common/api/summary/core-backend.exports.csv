@@ -34,7 +34,6 @@ internal;ChangesetIndexArg
 public;ChangesetRangeArg 
 beta;ChangeSummary
 beta;ChangeSummaryManager
-internal;ChannelAdmin 
 beta;ChannelControl
 beta;ChannelControl
 beta;ChannelKey = string
@@ -261,7 +260,6 @@ internal;LocalhostIpcHost
 internal;LocalhostIpcHostOpts
 internal;LocalHub
 beta;LockConflict 
-beta;LockControl
 internal;LockMap = Map
 beta;LockProps
 public;LockState
