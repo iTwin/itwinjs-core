@@ -108,12 +108,20 @@ export class PlanarTextureProjection {
     textureRange.low.x -= epsilon;
     textureRange.high.x += epsilon;
 
-    let textureFrustum = Frustum.fromRange(textureRange);
+    const textureFrustum = Frustum.fromRange(textureRange);
     const debugFrustum = textureFrustum.clone();
     textureTransform.multiplyInversePoint3dArray(debugFrustum.points, debugFrustum.points);
 
-    if (viewState.isCameraOn) {
-      const eyePlane = Plane3dByOriginAndUnitNormal.create(Point3d.createScale(textureZ, textureRange.low.x), textureZ);    // at bottom of range - parallel to texture.
+    // if (viewState.isCameraOn) {
+    const viewZVecZ = viewState.getRotation().rowZ().z;
+    // console.log (`ViewZVecZ = ${viewZVecZ} deg = ${Math.asin(viewZVecZ) * 180.0 / Math.PI}`);
+    // limit this code to a view that is looking down between ~ 15 and 26 degrees.
+    // negative is looking up, positive is looking down.
+    if (viewState.isCameraOn && viewZVecZ > 0.3 && viewZVecZ < 0.44) {
+      // console.log (` - using camera on test}`);
+      const eyeHeight = (textureRange.low.x + textureRange.high.x) / 2.0;
+      const eyePlane = Plane3dByOriginAndUnitNormal.create(Point3d.createScale(textureZ, eyeHeight), textureZ);    // Centered in range - parallel to texture.
+      // const eyePlane = Plane3dByOriginAndUnitNormal.create(Point3d.createScale(textureZ, textureRange.low.x), textureZ);    // at bottom of range - parallel to texture.
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       const projectionRay = Ray3d.create(viewState.getEyePoint(), viewZ.crossProduct(textureX).normalize()!);
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
@@ -163,7 +171,7 @@ export class PlanarTextureProjection {
     }
     textureMatrix.transposeInPlace();
     textureMatrix.multiplyVectorArrayInPlace(textureFrustum.points);
-    textureFrustum = debugFrustum.clone(); // qqq test
+    // textureFrustum = debugFrustum.clone(); // qqq test
     const frustumMap = textureFrustum.toMap4d();
     if (undefined === frustumMap) {
       return {};
