@@ -6,8 +6,8 @@
 import { assert, expect } from "chai";
 import { join } from "path";
 import { AccessToken, Guid, Mutable } from "@itwin/core-bentley";
-import { ChangesetFileProps, ChangesetType } from "@itwin/core-common";
-import { LockProps, LockState } from "../../BackendHubAccess";
+import { ChangesetFileProps, ChangesetType, LockState } from "@itwin/core-common";
+import { LockProps } from "../../BackendHubAccess";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";

@@ -138,6 +138,8 @@ internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreen
 alpha;ConcreteEntityTypes
 alpha;ConcreteEntityTypes
 internal;toBisCoreRootClassFullName(type: ConcreteEntityTypes): string
+public;ConflictingLock
+public;ConflictingLocksError 
 alpha;ContentFlags
 internal;class ContentIdProvider
 public;ContextRealityModel
@@ -460,6 +462,7 @@ public;LocalBriefcaseProps
 public;LocalDirName = string
 public;LocalFileName = string
 public;Localization
+public;LockState
 public;MapImageryProps
 public;MapImagerySettings
 public;MapLayerKey
