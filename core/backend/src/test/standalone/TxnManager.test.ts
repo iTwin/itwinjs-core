@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BeDuration, BeEvent, DbResult, Guid, GuidString, Id64, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import { BeDuration, BeEvent, DbResult, Guid, GuidString, Id64, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   Code, ColorByName, DomainOptions, EntityIdAndClassId, EntityIdAndClassIdIterable, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
@@ -955,6 +955,9 @@ describe.only("TxnManager PushPullMerge", () => {
   before(() => {
     HubMock.startup("MergeConflictTest", KnownTestLocations.outputDir);
     iTwinId = HubMock.iTwinId;
+
+    Logger.initializeToConsole();
+    Logger.setLevel("TxnManager", LogLevel.Trace);
   });
 
   after(() => HubMock.shutdown());
@@ -1010,13 +1013,19 @@ describe.only("TxnManager PushPullMerge", () => {
     IModelTestUtils.createAndInsertPhysicalPartitionAndModel(briefcases[2], IModelTestUtils.getUniqueModelCode(briefcases[2], "localPhysicalModel"), false);
     briefcases[2].saveChanges("inserted local model");
     assertTxnStates(txns[2], true, false, true, true, false, "briefcase 2 with saved local changes");
+    assert.strictEqual(txns[2].getUndoString(), "inserted local model");
+
     await briefcases[2].pullChanges();
+    assert.strictEqual(txns[2].getUndoString(), "Merged");
     assertTxnStates(txns[2], true, false, true, true, false, "briefcase 2 after pull");
     assert.strictEqual(2, getCount(briefcases[2], PhysicalModel.classFullName)); // the pulled and local models
+
     // undo and redo after pull
     assert.strictEqual(txns[2].reverseTxns(1), IModelStatus.Success);
-    assertTxnStates(txns[2], false, false, false, false, true, "briefcase 2 after undo");
+    assert.strictEqual(txns[2].getUndoString(), "inserted local model");
+    assertTxnStates(txns[2], true, false, true, true, true, "briefcase 2 after undo");
     assert.strictEqual(1, getCount(briefcases[2], PhysicalModel.classFullName)); // the pulled models
+
     assert.strictEqual(txns[2].reinstateTxn(), IModelStatus.Success);
     assert.strictEqual(2, getCount(briefcases[2], PhysicalModel.classFullName)); // the pulled and local models
     assertTxnStates(txns[2], true, true, false, true, false, "briefcase 2 after redo");
@@ -1027,7 +1036,7 @@ describe.only("TxnManager PushPullMerge", () => {
     await assertThrowsAsync(async () => briefcases[3].pullChanges(), "unsaved changes present");
     assertTxnStates(txns[3], true, true, false, false, false, "briefcase 3 after pull with unsaved changes");
 
-    // reverse the changes and then pull
+    // fourth model: save, undo, pull and redo
     briefcases[3].saveChanges("Temporarily save changes");
     assertTxnStates(txns[3], true, false, true, true, false, "briefcase 3 with saved local changes");
     assert.strictEqual(1, getCount(briefcases[3], PhysicalModel.classFullName)); // the local model
