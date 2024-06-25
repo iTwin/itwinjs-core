@@ -2015,8 +2015,6 @@ export class SchemaContextEditor {
     readonly propertyCategories: PropertyCategories;
     // (undocumented)
     readonly relationships: RelationshipClasses;
-    removeCustomAttribute(schema: Schema, customAttribute: CustomAttribute): void;
-    removeReference(schema: Schema, refSchema: Schema): void;
     get schemaContext(): SchemaContext;
     setDescription(schemaKey: SchemaKey, description: string): Promise<void>;
     setDisplayLabel(schemaKey: SchemaKey, label: string): Promise<void>;
