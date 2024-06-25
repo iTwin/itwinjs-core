@@ -27,7 +27,7 @@ export abstract class ECSchemaRpcInterface extends RpcInterface {
     static version: string;
 }
 
-// @alpha
+// @beta
 export class ECSchemaRpcLocater implements ISchemaLocater {
     constructor(token: IModelRpcProps);
     getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;

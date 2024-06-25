@@ -1,18 +1,18 @@
 ---
 publish: false
 ---
+
 # NextVersion
 
 Table of contents:
-- [Geometry](#geometry)
-  - [Convex check using dihedral angles](#convex-check-using-dihedral-angles)
 
-## Geometry
+- [Workspaces](#workspaces)
+- [Electron 31 support](#electron-31-support)
 
-### Convex check using dihedral angles
+## Workspaces
 
-The old behavior of [PolyfaceQuery.dihedralAngleSummary]($core-geometry) was to return `1` with planar input mesh and `ignoreBoundaries===true`. Its wrapper [PolyfaceQuery.isConvexByDihedralAngleCount]($core-geometry) used to return `true` in this case, but callers generally don't expect to classify a planar mesh as enclosing a convex volume.
+The `beta` [Workspace]($backend) and [Settings]($backend) APIs have been updated to make them easier to use, including the addition of the [WorkspaceEditor]($backend) API for creating new [WorkspaceDb]($backend)s to hold workspace resources. Consult the [learning article](../learning/backend/Workspace) for a comprehensive overview with examples.
 
-To address this error, we changed the behavior of the underlying method `PolyfaceQuery.dihedralAngleSummary` so that it now returns `0` for the aforementioned input. As such, `PolyfaceQuery.isConvexByDihedralAngleCount` now correctly returns `false` for planar input mesh and `ignoreBoundaries===true`; callers that pass `undefined` or `false` for `ignoreBoundaries` are unaffected.
+## Electron 31 support
 
-Full changes to the iTwinjs 4.0 method `PolyfaceQuery.dihedralAngleSummary` are as follows. When all dihedral angles are zero (and `ignoreBoundaries===true`), this method used to return 1 but now returns 0. When the signs of the dihedral angles are mixed, or a non-manifold condition or undefined normal is detected, this method used to return 0 but now returns -2.
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 31](https://www.electronjs.org/blog/electron-31-0).

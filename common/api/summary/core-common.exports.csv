@@ -138,6 +138,8 @@ internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreen
 alpha;ConcreteEntityTypes
 alpha;ConcreteEntityTypes
 internal;toBisCoreRootClassFullName(type: ConcreteEntityTypes): string
+public;ConflictingLock
+public;ConflictingLocksError 
 alpha;ContentFlags
 internal;class ContentIdProvider
 public;ContextRealityModel
@@ -451,6 +453,7 @@ public;LightSettings
 public;LightSettingsProps
 beta;LineBreakRun 
 beta;LineBreakRunProps 
+beta;LineLayoutResult
 public;LinePixels
 public;LineStyle
 public;LineStyleProps 
@@ -459,6 +462,7 @@ public;LocalBriefcaseProps
 public;LocalDirName = string
 public;LocalFileName = string
 public;Localization
+public;LockState
 public;MapImageryProps
 public;MapImagerySettings
 public;MapLayerKey
@@ -737,6 +741,7 @@ internal;RpcSerializedValue
 internal;RpcSessionInvocation 
 beta;Run = TextRun | FractionRun | LineBreakRun
 beta;Run
+beta;RunLayoutResult
 beta;RunProps = TextRunProps | FractionRunProps | LineBreakRunProps
 beta;SchemaState
 public;SectionDrawingLocationProps 
@@ -813,6 +818,7 @@ beta;TextBlockComponentProps
 beta;TextBlockGeometryProps
 beta;TextBlockGeometryPropsEntry =
 beta;TextBlockJustification = "left" | "center" | "right"
+beta;TextBlockLayoutResult
 beta;TextBlockProps 
 beta;TextBlockStringifyOptions
 beta;TextRun 

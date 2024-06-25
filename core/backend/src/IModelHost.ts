@@ -33,11 +33,14 @@ import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { TileStorage } from "./TileStorage";
-import { BaseSettings, SettingDictionary, SettingsPriority } from "./workspace/Settings";
+import { SettingsContainer, SettingsPriority } from "./workspace/Settings";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
 import { Workspace, WorkspaceOpts } from "./workspace/Workspace";
 import { Container } from "inversify";
 import { join, normalize as normalizeDir } from "path";
+import { constructWorkspace, OwnedWorkspace } from "./internal/workspace/WorkspaceImpl";
+import { SettingsImpl } from "./internal/workspace/SettingsImpl";
+import { constructSettingsSchemas } from "./internal/workspace/SettingsSchemasImpl";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -112,7 +115,7 @@ export interface IModelHostOptions {
   appAssetsDir?: LocalDirName;
 
   /**
-   * Options for creating the [[Workspace]]
+   * Options for creating the [[IModelHost.appWorkspace]]
    * @beta
    */
   workspace?: WorkspaceOpts;
@@ -240,24 +243,24 @@ export class IModelHostConfiguration implements IModelHostOptions {
  * Settings for `IModelHost.appWorkspace`.
  * @note this includes the default dictionary from the SettingsSpecRegistry
  */
-class ApplicationSettings extends BaseSettings {
+class ApplicationSettings extends SettingsImpl {
   private _remove?: VoidFunction;
   protected override verifyPriority(priority: SettingsPriority) {
-    if (priority >= SettingsPriority.iModel) // iModel settings may not appear in ApplicationSettings
+    if (priority > SettingsPriority.application) // only application or lower may appear in ApplicationSettings
       throw new Error("Use IModelSettings");
   }
   private updateDefaults() {
-    const defaults: SettingDictionary = {};
-    for (const [schemaName, val] of SettingsSchemas.allSchemas) {
+    const defaults: SettingsContainer = {};
+    for (const [schemaName, val] of IModelHost.settingsSchemas.settingDefs) {
       if (val.default)
         defaults[schemaName] = val.default;
     }
-    this.addDictionary("_default_", 0 as SettingsPriority, defaults);
+    this.addDictionary({ name: "_default_", priority: 0 }, defaults);
   }
 
   public constructor() {
     super();
-    this._remove = SettingsSchemas.onSchemaChanged.addListener(() => this.updateDefaults());
+    this._remove = IModelHost.settingsSchemas.onSchemaChanged.addListener(() => this.updateDefaults());
     this.updateDefaults();
   }
 
@@ -268,6 +271,12 @@ class ApplicationSettings extends BaseSettings {
     }
   }
 }
+
+const definedInStartup = <T>(obj: T | undefined): T => {
+  if (obj === undefined)
+    throw new Error("IModelHost.startup must be called first");
+  return obj;
+};
 
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
  * See [the learning article]($docs/learning/backend/IModelHost.md)
@@ -282,15 +291,12 @@ export class IModelHost {
   public static backendVersion = "";
   private static _profileName: string;
   private static _cacheDir = "";
-  private static _appWorkspace?: Workspace;
+  private static _settingsSchemas?: SettingsSchemas;
+  private static _appWorkspace?: OwnedWorkspace;
 
   private static _platform?: typeof IModelJsNative;
   /** @internal */
-  public static get platform(): typeof IModelJsNative {
-    if (this._platform === undefined)
-      throw new Error("IModelHost.startup must be called first");
-    return this._platform;
-  }
+  public static get platform(): typeof IModelJsNative { return definedInStartup(this._platform); }
 
   public static configuration?: IModelHostOptions;
 
@@ -353,7 +359,13 @@ export class IModelHost {
    * attempting to add them to this Workspace will fail.
    * @beta
    */
-  public static get appWorkspace(): Workspace { return this._appWorkspace!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  public static get appWorkspace(): Workspace { return definedInStartup(this._appWorkspace); }
+
+  /** The registry of schemas describing the [[Setting]]s for the application session.
+   * Applications should register their schemas via methods like [[SettingsSchemas.addGroup]].
+   * @beta
+   */
+  public static get settingsSchemas(): SettingsSchemas { return definedInStartup(this._settingsSchemas); }
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
   public static snapshotFileNameResolver?: FileNameResolver;
@@ -432,8 +444,9 @@ export class IModelHost {
 
   private static initializeWorkspace(configuration: IModelHostOptions) {
     const settingAssets = join(KnownLocations.packageAssetsDir, "Settings");
-    SettingsSchemas.addDirectory(join(settingAssets, "Schemas"));
-    this._appWorkspace = Workspace.construct(new ApplicationSettings(), configuration.workspace);
+    this._settingsSchemas = constructSettingsSchemas();
+    this._settingsSchemas.addDirectory(join(settingAssets, "Schemas"));
+    this._appWorkspace = constructWorkspace(new ApplicationSettings(), configuration.workspace);
 
     // Create the CloudCache for Workspaces. This will fail if another process is already using the same profile.
     try {
@@ -535,10 +548,13 @@ export class IModelHost {
 
     this._isValid = false;
     this.onBeforeShutdown.raiseEvent();
+
     this.configuration = undefined;
     this.tileStorage = undefined;
+
     this._appWorkspace?.close();
     this._appWorkspace = undefined;
+    this._settingsSchemas = undefined;
 
     CloudSqlite.CloudCaches.destroy();
     process.removeListener("beforeExit", IModelHost.shutdown);

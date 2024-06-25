@@ -133,7 +133,7 @@ beta;SchemaProps
 beta;SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined
 internal;SchemaReadHelper
 beta;SchemaReferenceProps
-alpha;SchemaUnitProvider 
+beta;SchemaUnitProvider 
 internal;SchemaWalker
 beta;StrengthDirection
 beta;strengthDirectionToString(direction: StrengthDirection): string

@@ -1,9 +1,12 @@
 sep=;
 Release Tag;API Item
 beta;AnyDiagnostic = IDiagnostic
+alpha;AnyEditingError = SchemaEditingError | Error
+alpha;AnyIdentifier = ISchemaIdentifier | ISchemaItemIdentifier | IClassIdentifier | IPropertyIdentifier | ICustomAttributeIdentifier | IRelationshipConstraintIdentifier | IEnumeratorIdentifier
 alpha;AnySchemaDifference = SchemaDifference | SchemaReferenceDifference | AnySchemaItemDifference | AnySchemaItemPathDifference | CustomAttributeDifference
 alpha;AnySchemaItemDifference = ClassItemDifference | ConstantDifference | EnumerationDifference | EntityClassMixinDifference | FormatDifference | KindOfQuantityDifference | InvertedUnitDifference | PhenomenonDifference | PropertyCategoryDifference | UnitDifference | UnitSystemDifference
 alpha;AnySchemaItemPathDifference = RelationshipConstraintDifference | RelationshipConstraintClassDifference | CustomAttributePropertyDifference | EnumeratorDifference | ClassPropertyDifference
+alpha;AnySchemaItemTypeIdentifier = SchemaTypeIdentifiers.SchemaItemIdentifier | SchemaTypeIdentifiers.ClassIdentifier
 alpha;BaseClassDelta 
 beta;class BaseDiagnostic
 beta;BaseRule
@@ -12,6 +15,7 @@ alpha;class BaseSchemaChanges
 alpha;ChangeType
 alpha;ClassChanges 
 beta;class ClassDiagnostic
+alpha;ClassId 
 alpha;ClassItemDifference = EntityClassDifference | MixinClassDifference | StructClassDifference | CustomAttributeClassDifference | RelationshipClassDifference
 alpha;ClassPropertyDifference
 alpha;ConflictCode
@@ -27,6 +31,7 @@ alpha;CustomAttributeContainerChange
 alpha;CustomAttributeContainerChanges 
 beta;class CustomAttributeContainerDiagnostic
 alpha;CustomAttributeDifference = CustomAttributeSchemaDifference | CustomAttributeSchemaItemDifference | CustomAttributePropertyDifference | CustomAttributeRelationshipConstraintDifference
+alpha;CustomAttributeId 
 alpha;CustomAttributePropertyDifference
 alpha;CustomAttributeRelationshipConstraintDifference
 alpha;CustomAttributeSchemaDifference
@@ -38,6 +43,8 @@ beta;Diagnostics:
 beta;DiagnosticType
 beta;diagnosticTypeToString(type: DiagnosticType): "CustomAttributeContainer" | "None" | "Property" | "RelationshipConstraint" | "Schema" | "SchemaItem"
 alpha;DifferenceType = "add" | "modify"
+alpha;ECClassSchemaItems = SchemaItemType.EntityClass | SchemaItemType.StructClass | SchemaItemType.RelationshipClass | SchemaItemType.Mixin | SchemaItemType.CustomAttributeClass
+alpha;ECEditingStatus
 beta;ECRuleSet: IRuleSet
 alpha;EntityClassChanges 
 alpha;EntityClassDifference 
@@ -49,15 +56,21 @@ alpha;EnumerationDifference
 alpha;EnumeratorChanges 
 alpha;EnumeratorDelta 
 alpha;EnumeratorDifference
+alpha;EnumeratorId 
 alpha;EnumeratorMissing 
 alpha;FormatChanges 
 beta;class FormatDiagnosticReporter 
 alpha;FormatDifference 
 alpha;FormatUnitChange 
 alpha;FormatUnitChanges 
+alpha;getSchemaDifferences(targetSchema: Schema, sourceSchema: Schema): Promise
+alpha;IClassIdentifier 
+alpha;ICustomAttributeIdentifier 
 beta;IDiagnostic
 beta;IDiagnosticReporter
 alpha;InvertedUnitDifference 
+alpha;IPropertyIdentifier 
+alpha;IRelationshipConstraintIdentifier 
 beta;IRule
 beta;IRuleSet
 beta;IRuleSuppressionMap
@@ -66,6 +79,28 @@ alpha;ISchemaChange
 alpha;ISchemaChanges
 alpha;ISchemaComparer
 alpha;ISchemaCompareReporter
+alpha;ISchemaIdentifier 
+alpha;ISchemaItemIdentifier 
+alpha;ISchemaTypeIdentifier
+alpha;isClassPropertyDifference(difference: AnySchemaDifference): difference is ClassPropertyDifference
+alpha;isConstantDifference(difference: AnySchemaDifference): difference is ConstantDifference
+alpha;isCustomAttributeClassDifference(difference: AnySchemaDifference): difference is CustomAttributeClassDifference
+alpha;isCustomAttributeDifference(difference: AnySchemaDifference): difference is CustomAttributeDifference
+alpha;isEntityClassDifference(difference: AnySchemaDifference): difference is EntityClassDifference
+alpha;isEntityClassMixinDifference(difference: AnySchemaDifference): difference is EntityClassMixinDifference
+alpha;isEnumerationDifference(difference: AnySchemaDifference): difference is EnumerationDifference
+alpha;isEnumeratorDifference(difference: AnySchemaDifference): difference is EnumeratorDifference
+alpha;isKindOfQuantityDifference(difference: AnySchemaDifference): difference is KindOfQuantityDifference
+alpha;isMixinClassDifference(difference: AnySchemaDifference): difference is MixinClassDifference
+alpha;isPhenomenonDifference(difference: AnySchemaDifference): difference is PhenomenonDifference
+alpha;isPropertyCategoryDifference(difference: AnySchemaDifference): difference is PropertyCategoryDifference
+alpha;isRelationshipClassDifference(difference: AnySchemaDifference): difference is RelationshipClassDifference
+alpha;isRelationshipConstraintClassDifference(difference: AnySchemaDifference): difference is RelationshipConstraintClassDifference
+alpha;isRelationshipConstraintDifference(difference: AnySchemaDifference): difference is RelationshipConstraintDifference
+alpha;isSchemaDifference(difference: AnySchemaDifference): difference is SchemaDifference
+alpha;isSchemaReferenceDifference(difference: AnySchemaDifference): difference is SchemaReferenceDifference
+alpha;isStructClassDifference(difference: AnySchemaDifference): difference is StructClassDifference
+alpha;isUnitSystemDifference(difference: AnySchemaDifference): difference is UnitSystemDifference
 beta;ISuppressionRule
 alpha;KindOfQuantityChanges 
 alpha;KindOfQuantityDifference 
@@ -77,7 +112,9 @@ alpha;PresentationUnitChanges
 alpha;PropertyCategoryDifference 
 alpha;PropertyChanges 
 beta;class PropertyDiagnostic
+alpha;PropertyId 
 alpha;PropertyMissing 
+alpha;PropertyTypeName
 alpha;PropertyValueChange 
 alpha;RelationshipClassChanges 
 alpha;RelationshipClassDifference 
@@ -86,6 +123,7 @@ alpha;RelationshipConstraintClassChange
 alpha;RelationshipConstraintClassDifference
 beta;class RelationshipConstraintDiagnostic
 alpha;RelationshipConstraintDifference
+alpha;RelationshipConstraintId 
 alpha;SchemaChanges 
 beta;SchemaCompareCodes:
 beta;SchemaCompareDiagnostics:
@@ -95,13 +133,14 @@ alpha;SchemaConflictsError
 alpha;SchemaContextEditor
 beta;class SchemaDiagnostic
 alpha;SchemaDifference
-internal;fromSchemaChanges(targetSchema: Schema, schemaChanges: SchemaChanges): Promise
-alpha;SchemaDifference
 alpha;SchemaDifferenceConflict
-alpha;SchemaDifferences
+alpha;SchemaDifferenceResult
+alpha;SchemaEditingError 
+alpha;SchemaId 
 alpha;class SchemaItemChange 
 alpha;SchemaItemChanges 
 beta;class SchemaItemDiagnostic
+alpha;SchemaItemId 
 alpha;SchemaItemMissing 
 beta;SchemaMerger
 alpha;SchemaOtherTypes
@@ -109,6 +148,7 @@ alpha;SchemaReferenceDelta
 alpha;SchemaReferenceDifference
 alpha;SchemaReferenceMissing 
 alpha;SchemaType = SchemaOtherTypes | SchemaItemType
+alpha;SchemaTypeIdentifiers
 beta;SchemaValidater
 beta;SchemaValidationVisitor 
 internal;SchemaWalker
