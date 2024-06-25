@@ -68,9 +68,14 @@ export class SubCategoriesCache {
 
   /** Load all subcategories of the iModel into the cache. */
   public async loadAllSubCategories(): Promise<void> {
-    const results = await this._imodel.querySubCategories();
-    if (undefined !== results)
-      this.processResults(results, new Set<string>());
+    try {
+      const results = await this._imodel.querySubCategories();
+      if (undefined !== results)
+        this.processResults(results, new Set<string>());
+    } catch {
+      // In case of a truncated response, gracefully handle the error and exit.
+    }
+
   }
   /** Given categoryIds, return which of these are not cached. */
   private getMissing(categoryIds: Id64Arg): Id64Set | undefined {
