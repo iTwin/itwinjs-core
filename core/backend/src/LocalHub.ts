@@ -7,9 +7,9 @@ import { join } from "path";
 import { DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
   BriefcaseId, BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps,
-  ChangesetRange, IModelError, LocalDirName, LocalFileName,
+  ChangesetRange, IModelError, LocalDirName, LocalFileName, LockState,
 } from "@itwin/core-common";
-import { LockConflict, LockMap, LockProps, LockState } from "./BackendHubAccess";
+import { LockConflict, LockMap, LockProps } from "./BackendHubAccess";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { BriefcaseLocalValue, IModelDb, SnapshotDb } from "./IModelDb";
 import { IModelJsFs } from "./IModelJsFs";

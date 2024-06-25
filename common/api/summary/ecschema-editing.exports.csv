@@ -63,6 +63,7 @@ beta;class FormatDiagnosticReporter
 alpha;FormatDifference 
 alpha;FormatUnitChange 
 alpha;FormatUnitChanges 
+alpha;getSchemaDifferences(targetSchema: Schema, sourceSchema: Schema): Promise
 alpha;IClassIdentifier 
 alpha;ICustomAttributeIdentifier 
 beta;IDiagnostic
@@ -81,6 +82,25 @@ alpha;ISchemaCompareReporter
 alpha;ISchemaIdentifier 
 alpha;ISchemaItemIdentifier 
 alpha;ISchemaTypeIdentifier
+alpha;isClassPropertyDifference(difference: AnySchemaDifference): difference is ClassPropertyDifference
+alpha;isConstantDifference(difference: AnySchemaDifference): difference is ConstantDifference
+alpha;isCustomAttributeClassDifference(difference: AnySchemaDifference): difference is CustomAttributeClassDifference
+alpha;isCustomAttributeDifference(difference: AnySchemaDifference): difference is CustomAttributeDifference
+alpha;isEntityClassDifference(difference: AnySchemaDifference): difference is EntityClassDifference
+alpha;isEntityClassMixinDifference(difference: AnySchemaDifference): difference is EntityClassMixinDifference
+alpha;isEnumerationDifference(difference: AnySchemaDifference): difference is EnumerationDifference
+alpha;isEnumeratorDifference(difference: AnySchemaDifference): difference is EnumeratorDifference
+alpha;isKindOfQuantityDifference(difference: AnySchemaDifference): difference is KindOfQuantityDifference
+alpha;isMixinClassDifference(difference: AnySchemaDifference): difference is MixinClassDifference
+alpha;isPhenomenonDifference(difference: AnySchemaDifference): difference is PhenomenonDifference
+alpha;isPropertyCategoryDifference(difference: AnySchemaDifference): difference is PropertyCategoryDifference
+alpha;isRelationshipClassDifference(difference: AnySchemaDifference): difference is RelationshipClassDifference
+alpha;isRelationshipConstraintClassDifference(difference: AnySchemaDifference): difference is RelationshipConstraintClassDifference
+alpha;isRelationshipConstraintDifference(difference: AnySchemaDifference): difference is RelationshipConstraintDifference
+alpha;isSchemaDifference(difference: AnySchemaDifference): difference is SchemaDifference
+alpha;isSchemaReferenceDifference(difference: AnySchemaDifference): difference is SchemaReferenceDifference
+alpha;isStructClassDifference(difference: AnySchemaDifference): difference is StructClassDifference
+alpha;isUnitSystemDifference(difference: AnySchemaDifference): difference is UnitSystemDifference
 beta;ISuppressionRule
 alpha;KindOfQuantityChanges 
 alpha;KindOfQuantityDifference 
@@ -113,10 +133,8 @@ alpha;SchemaConflictsError
 alpha;SchemaContextEditor
 beta;class SchemaDiagnostic
 alpha;SchemaDifference
-internal;fromSchemaChanges(targetSchema: Schema, schemaChanges: SchemaChanges): Promise
-alpha;SchemaDifference
 alpha;SchemaDifferenceConflict
-alpha;SchemaDifferences
+alpha;SchemaDifferenceResult
 alpha;SchemaEditingError 
 alpha;SchemaId 
 alpha;class SchemaItemChange 
