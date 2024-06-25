@@ -60,13 +60,13 @@ import { Workspace } from "./workspace/Workspace";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotationLayout";
 
 import type { BlobContainer } from "./BlobContainerService";
+
 /** @internal */
 export interface ChangesetConflictArgs {
   cause: DbConflictCause;
   opcode: DbOpcode;
   indirect: boolean;
   tableName: string;
-  changesetFile?: string;
   columnCount: number;
   getForeignKeyConflicts: () => number;
   dump: () => void;
@@ -81,6 +81,10 @@ export interface ChangesetConflictArgs {
   isValueNull: (columnIndex: number, stage: DbChangeStage) => boolean | undefined;
 }
 
+/** @internal */
+export interface MergeChangesetConflictArgs extends ChangesetConflictArgs {
+  changesetFile?: string;
+}
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -2606,6 +2610,8 @@ export class BriefcaseDb extends IModelDb {
   /* the BriefcaseId of the briefcase opened with this BriefcaseDb */
   public readonly briefcaseId: BriefcaseId;
 
+  /** @internal */
+  public pullMergeMethod = IModelHost.pullMergeMethod;
   /**
    * Event raised just before a BriefcaseDb is opened. Supplies the arguments that will be used to open the BriefcaseDb.
    * Throw an exception to stop the open.
@@ -2796,9 +2802,8 @@ export class BriefcaseDb extends IModelDb {
     this.onOpened.raiseEvent(briefcaseDb, args);
     return briefcaseDb;
   }
-
   /* This is called by native code when applying a changeset */
-  private onChangesetConflict(args: ChangesetConflictArgs): DbConflictResolution | undefined {
+  private onChangesetConflict(args: MergeChangesetConflictArgs): DbConflictResolution | undefined {
     // returning undefined will result in native handler to resolve conflict
 
     const category = "DgnCore";

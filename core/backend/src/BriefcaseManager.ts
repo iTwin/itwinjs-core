@@ -450,12 +450,24 @@ export class BriefcaseManager {
     if (reverse)
       changesets.reverse();
 
+    const pullMergeMethod = db instanceof BriefcaseDb ? db.pullMergeMethod : IModelHost.pullMergeMethod;
+    db.nativeDb.beginPullMerge(pullMergeMethod);
     for (const changeset of changesets) {
       const stopwatch = new StopWatch(`[${changeset.id}]`, true);
       Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
-      await this.applySingleChangeset(db, changeset);
-      Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
+      try {
+        await this.applySingleChangeset(db, changeset);
+        Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
+      } catch (e) {
+        if (e instanceof Error) {
+          Logger.logError(loggerCategory, `Error applying changeset with id ${stopwatch.description}: ${e.message}`);
+        }
+        db.abandonChanges();
+        db.nativeDb.endPullMerge();
+        throw e;
+      }
     }
+    db.nativeDb.endPullMerge();
     // notify listeners
     db.notifyChangesetApplied();
   }
@@ -522,5 +534,4 @@ export class BriefcaseManager {
       }
     }
   }
-
 }
