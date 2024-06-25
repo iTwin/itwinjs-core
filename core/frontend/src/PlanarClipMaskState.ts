@@ -89,12 +89,12 @@ export class PlanarClipMaskState {
       const appOff = FeatureAppearance.fromTransparency(1.0);
       // For Priority or Models mode, we need to start with the current overrides and modify them
       if (PlanarClipMaskMode.Priority === this.settings.mode || PlanarClipMaskMode.Models === this.settings.mode || noSubCategoryOrElementIds) {
+        this._usingViewportOverrides = true; // Set flag to use listener since context.viewport might change afterwards.
         const curOverrides = new FeatureSymbology.Overrides(context.viewport);
         curOverrides.addInvisibleElementOverridesToNeverDrawn();  // need this for fully trans element overrides to not participate in mask
         overrideModels.forEach((modelId: string) => {
           curOverrides.override({ modelId, appearance: appOff, onConflict: "replace" });
         });
-        this._usingViewportOverrides = true;
         return curOverrides;
       }
       // Otherwise, we just start with a default overrides and modify it.
