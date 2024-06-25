@@ -5,6 +5,7 @@
 
 import { AccessToken, Logger} from "@itwin/core-bentley";
 import { loggerCategory} from "../LoggerCategory";
+import { IModelApp, ITWINJS_CORE_VERSION } from "@itwin/core-frontend";
 
 /** The expected format of the Graphic Representation
  * @beta
@@ -79,7 +80,7 @@ export type GraphicRepresentation = {
 });
 
 /** Creates a URL used to query for Graphic Representations */
-function createGraphicRepresentationsQueryUrl(args: { sourceId: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean }): string {
+async function createGraphicRepresentationsQueryUrl(args: { sourceId: string, sourceType: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean }): Promise<string> {
   const prefix = args.urlPrefix ?? "";
   let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.sourceId}&$orderBy=date:desc`;
   if (args.changeId)
@@ -88,7 +89,8 @@ function createGraphicRepresentationsQueryUrl(args: { sourceId: string, urlPrefi
   if (args.enableCDN)
     url = `${url}&cdn=1`;
 
-  url = `${url}&tileVersion=1&exportType=IMODEL`;
+  const tileVersion = IModelApp.tileAdmin.maximumMajorTileFormatVersion.toString();
+  url = `${url}&tileVersion=${tileVersion}&iTwinJS=${ITWINJS_CORE_VERSION}&exportType=${args.sourceType}`;
 
   return url;
 }
@@ -152,6 +154,7 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
     };
   }
 
+  const tileVersion = IModelApp.tileAdmin.maximumMajorTileFormatVersion.toString();
   const headers = {
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
     Authorization: args.accessToken,
@@ -161,9 +164,13 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
     Prefer: "return=representation",
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
     SessionId: args.sessionId,
+    /* eslint-disable-next-line @typescript-eslint/naming-convention */
+    ITwinjsVersion: ITWINJS_CORE_VERSION,
+    /* eslint-disable-next-line @typescript-eslint/naming-convention */
+    TileVersion: tileVersion,
   };
 
-  let url: string | undefined = createGraphicRepresentationsQueryUrl({ sourceId: args.dataSource.id, urlPrefix: args.urlPrefix, changeId: args.dataSource.changeId, enableCDN: args.enableCDN });
+  let url: string | undefined = await createGraphicRepresentationsQueryUrl({ sourceId: args.dataSource.id, sourceType: args.dataSource.type, urlPrefix: args.urlPrefix, changeId: args.dataSource.changeId, enableCDN: args.enableCDN });
   while (url) {
     let result;
     try {
