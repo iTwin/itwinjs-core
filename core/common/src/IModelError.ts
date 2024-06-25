@@ -7,7 +7,7 @@
  */
 
 import {
-  BentleyError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, IModelStatus, LoggingMetaData, RepositoryStatus,
+  BentleyError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, IModelHubStatus, IModelStatus, LoggingMetaData, RepositoryStatus,
 } from "@itwin/core-bentley";
 
 export {
@@ -30,6 +30,50 @@ export class IModelError extends BentleyError {
   public constructor(errorNumber: IModelErrorNumber | number, message: string, getMetaData?: LoggingMetaData) {
     super(errorNumber, message, getMetaData);
   }
+}
+
+/** The state of a lock. See [Acquiring locks on elements.]($docs/learning/backend/ConcurrencyControl.md#acquiring-locks-on-elements).
+ * @public
+ */
+export enum LockState {
+  /** The element is not locked */
+  None = 0,
+  /** Holding a shared lock on an element blocks other users from acquiring the Exclusive lock it. More than one user may acquire the shared lock. */
+  Shared = 1,
+  /** A Lock that permits modifications to an element and blocks other users from making modifications to it.
+   * Holding an exclusive lock on an "owner" (a model or a parent element), implicitly exclusively locks all its members.
+   */
+  Exclusive = 2,
+}
+
+/** Detailed information about a particular object Lock that is causing the Lock update conflict.
+ * An example of a lock update conflict would be attempting to use [LockControl.acquireLocks]($backend) on an object that is already locked by another Briefcase.
+ * @public
+*/
+export interface ConflictingLock {
+  /** Id of the object that is causing conflict. */
+  objectId: string;
+  /**
+     * The level of conflicting lock. Possible values are {@link LockState.Shared}, {@link LockState.Exclusive}.
+     * See {@link LockState}.
+     */
+  state: LockState;
+  /** An array of Briefcase ids that hold this lock. */
+  briefcaseIds: number[];
+}
+
+/**
+ * An error raised when there is a lock conflict detected.
+ * Typically this error would be thrown by [LockControl.acquireLocks]($backend) when you are requesting a lock on an element that is already held by another briefcase.
+ * @public
+ */
+export class ConflictingLocksError extends IModelError {
+  public conflictingLocks?: ConflictingLock[];
+  constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]) {
+    super(IModelHubStatus.LockOwnedByAnotherBriefcase, message, getMetaData);
+    this.conflictingLocks = conflictingLocks;
+  }
+
 }
 
 /** @public */

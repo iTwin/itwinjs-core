@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { type SchemaMergeContext } from "./SchemaMerger";
-import { AnySchemaDifference, AnySchemaItemDifference, AnySchemaItemPathDifference, ClassItemDifference, SchemaDifference, StructClassDifference } from "../Differencing/SchemaDifference";
+import { AnySchemaDifference, AnySchemaItemDifference, AnySchemaItemPathDifference, ClassItemDifference, StructClassDifference } from "../Differencing/SchemaDifference";
 import { locateSchemaItem, SchemaItemMergerHandler, updateSchemaItemKey } from "./SchemaItemMerger";
 import { type MutableClass } from "../Editing/Mutable/MutableClass";
 import { CustomAttribute, ECClass, ECClassModifier, parseClassModifier, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
@@ -13,6 +13,7 @@ import { mixinClassMerger } from "./MixinMerger";
 import { mergeRelationshipClassConstraint, mergeRelationshipConstraint, relationshipClassMerger } from "./RelationshipClassMerger";
 import { mergeClassProperties, mergePropertyDifference } from "./PropertyMerger";
 import { applyCustomAttributes } from "./CustomAttributeMerger";
+import * as Utils from "../Differencing/Utils";
 
 type ClassItemHandler = <T extends AnySchemaItemDifference | AnySchemaItemPathDifference>(change: T, merger: SchemaItemMergerHandler<T>) => Promise<void>;
 
@@ -48,42 +49,42 @@ export async function* mergeClassItems(context: SchemaMergeContext, classChanges
     }
   });
 
-  for (const difference of classChanges.filter(SchemaDifference.isEntityClassMixinDifference)) {
+  for (const difference of classChanges.filter(Utils.isEntityClassMixinDifference)) {
     await mergeClassMixins(context, difference);
   }
 
-  for (const difference of classChanges.filter(SchemaDifference.isRelationshipConstraintDifference)) {
+  for (const difference of classChanges.filter(Utils.isRelationshipConstraintDifference)) {
     await mergeRelationshipConstraint(context, difference);
   }
 
-  for (const difference of classChanges.filter(SchemaDifference.isRelationshipConstraintClassDifference)) {
+  for (const difference of classChanges.filter(Utils.isRelationshipConstraintClassDifference)) {
     await mergeRelationshipClassConstraint(context, difference);
   }
 
   // At last step the properties that are added to existing classes or modified.
-  for (const difference of classChanges.filter(SchemaDifference.isClassPropertyDifference)) {
+  for (const difference of classChanges.filter(Utils.isClassPropertyDifference)) {
     await mergePropertyDifference(context, difference);
   }
 }
 
 async function iterateClassChanges(classChanges: AnySchemaDifference[], handler: ClassItemHandler) {
-  for (const difference of classChanges.filter(SchemaDifference.isCustomAttributeClassDifference)) {
+  for (const difference of classChanges.filter(Utils.isCustomAttributeClassDifference)) {
     await handler(difference, customAttributeClassMerger);
   }
 
-  for (const difference of classChanges.filter(SchemaDifference.isMixinClassDifference)) {
+  for (const difference of classChanges.filter(Utils.isMixinClassDifference)) {
     await handler(difference, mixinClassMerger);
   }
 
-  for (const difference of classChanges.filter(SchemaDifference.isStructClassDifference)) {
+  for (const difference of classChanges.filter(Utils.isStructClassDifference)) {
     await handler(difference, structClassMerger);
   }
 
-  for (const difference of classChanges.filter(SchemaDifference.isEntityClassDifference)) {
+  for (const difference of classChanges.filter(Utils.isEntityClassDifference)) {
     await handler(difference, entityClassMerger);
   }
 
-  for (const difference of classChanges.filter(SchemaDifference.isRelationshipClassDifference)) {
+  for (const difference of classChanges.filter(Utils.isRelationshipClassDifference)) {
     await handler(difference, relationshipClassMerger);
   }
 }

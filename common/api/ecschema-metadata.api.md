@@ -1997,7 +1997,7 @@ export interface SchemaReferenceProps {
     readonly version: string;
 }
 
-// @alpha
+// @beta
 export class SchemaUnitProvider implements UnitsProvider {
     constructor(contextOrLocater: ISchemaLocater, _unitExtraData?: UnitExtraData[]);
     findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;

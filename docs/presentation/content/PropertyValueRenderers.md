@@ -19,7 +19,7 @@ iTwin.js UI and presentation packages register some built-in value renderers tha
 
 The renderer renders nothing when property value is `undefined`. When it's defined, the value is rendered as a clickable text.
 
-The property display value is used for the displayed text. If it is not set, then the [Type Converter](../../learning/ui/components/TypeConverters.md) system is used to calculate displayed string from the raw property value.
+The property display value is used for the displayed text. If it is not set, then the [TypeConverter]($components-react) system is used to calculate displayed string from the raw property value.
 
 When the clickable text clicked on, the available unified selection context is used to replace active selection with the instance key stored in the value by calling [UnifiedSelectionContext.replaceSelection]($presentation-components).
 
@@ -39,9 +39,9 @@ When the clickable text clicked on, the available unified selection context is u
 
 The renderer renders nothing when property value is `undefined`. When it's defined, the value is rendered as a clickable text.
 
-The property value is passed through the [Type Converter](../../learning/ui/components/TypeConverters.md) system to calculate displayed string. When the text clicked on, the user is navigated to the URL set to that text. **Note:** the renderer doesn't validate the text to really be a URL.
+The property value is passed through the [TypeConverter]($components-react) system to calculate displayed string. When the text clicked on, the user is navigated to the URL set to that text. **Note:** the renderer doesn't validate the text to really be a URL.
 
-| Default rendering                                                                                  | `url`  rendering                                                          |
+| Default rendering                                                                                  | `url` rendering                                                           |
 | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
 | ![Default url property value rendering](./media/property-value-renderers/default-url-property.png) | ![Url property value rendering](./media/property-value-renderers/url.png) |
 
@@ -53,7 +53,7 @@ The property value is passed through the [Type Converter](../../learning/ui/comp
 >
 > - Property value is of primitive type.
 
-The renderer renders nothing when property value is `undefined`. When it's defined, the value is passed through the [Type Converter](../../learning/ui/components/TypeConverters.md) system to calculate displayed string. The string is rendered in a single line with ellipsis and is allowed to be expanded into multiple lines to fit the whole string.
+The renderer renders nothing when property value is `undefined`. When it's defined, the value is passed through the [TypeConverter]($components-react) system to calculate displayed string. The string is rendered in a single line with ellipsis and is allowed to be expanded into multiple lines to fit the whole string.
 
 | Default rendering                                                                                        | `multiline` rendering                                                                                                                                                                                             |
 | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
