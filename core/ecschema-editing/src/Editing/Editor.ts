@@ -124,18 +124,6 @@ export class SchemaContextEditor {
   }
 
   /**
-   * Removes a referenced schema from a schema.
-   * @param schema The schema holding the reference.
-   * @param refSchema The reference schema to remove.
-   */
-  public removeReference(schema: Schema, refSchema: Schema) {
-    const index: number = schema.references.indexOf(refSchema);
-    if (index !== -1) {
-      schema.references.splice(index, 1);
-    }
-  }
-
-  /**
    * Adds a CustomAttribute instance to the schema identified by the given SchemaKey
    * @param schemaKey The SchemaKey identifying the schema.
    * @param customAttribute The CustomAttribute instance to add.
@@ -157,17 +145,6 @@ export class SchemaContextEditor {
     } catch(e: any) {
       throw new SchemaEditingError(ECEditingStatus.AddCustomAttributeToClass, new SchemaId(schemaKey), e);
     }
-  }
-
-  /**
-   * Removes a CustomAttribute from a Schema.
-   * @param schema The schema holding the CustomAttribute.
-   * @param customAttribute The CustomAttribute to remove.
-   */
-  public removeCustomAttribute(schema: Schema, customAttribute: CustomAttribute) {
-    assert(schema.customAttributes !== undefined);
-    const map = schema.customAttributes as Map<string, CustomAttribute>;
-    map.delete(customAttribute.className);
   }
 
   /**
@@ -232,6 +209,19 @@ export class SchemaContextEditor {
       throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new SchemaItemId(schemaItemType, schemaItemKey));
 
     return schemaItem;
+  }
+
+  private removeReference(schema: Schema, refSchema: Schema) {
+    const index: number = schema.references.indexOf(refSchema);
+    if (index !== -1) {
+      schema.references.splice(index, 1);
+    }
+  }
+
+  private removeCustomAttribute(schema: Schema, customAttribute: CustomAttribute) {
+    assert(schema.customAttributes !== undefined);
+    const map = schema.customAttributes as Map<string, CustomAttribute>;
+    map.delete(customAttribute.className);
   }
 
   private async lookupSchema(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<MutableSchema> {
