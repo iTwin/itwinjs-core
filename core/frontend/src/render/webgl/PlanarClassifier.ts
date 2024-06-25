@@ -429,6 +429,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     } else if (this._planarClipMask?.usingViewportOverrides && !this._removeMe) {
       this._removeMe = context.viewport.onFeatureOverridesChanged.addListener(() => {
         this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides(viewState, context);
+        context.viewport.requestRedraw();
       });
     }
 
