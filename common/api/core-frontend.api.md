@@ -10587,6 +10587,8 @@ export class PlanarClipMaskState {
     getTileTrees(view: SpatialViewState, classifiedModelId: Id64String): TileTreeReference[] | undefined;
     // (undocumented)
     readonly settings: PlanarClipMaskSettings;
+    // (undocumented)
+    get usingViewportOverrides(): boolean;
 }
 
 // @alpha
