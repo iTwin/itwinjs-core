@@ -535,11 +535,11 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
   it("Roundtrip all type of properties via ElementApi, ConcurrentQuery and ECSqlStatement via insert and update", async () => {
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_correct_data.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
-    const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
+    const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName)!;
     const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
 
     // create element with auto handled properties
-    const expectedValue = initElemProps("TestElement", imodel, newModelId, spatialCategoryId!, {
+    const expectedValue = initElemProps("TestElement", imodel, newModelId, spatialCategoryId, {
       ...primInst1,
       ...primArrInst1,
       st: { ...primArrInst2, ...primInst1 },
@@ -632,11 +632,11 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
   it("Roundtrip all type of properties via ElementAspectApi, ConcurrentQuery and ECSqlStatement via insert and update", async () => {
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_apsect_correct_data.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
-    const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
+    const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName)!;
     const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
 
     // Create an element to use with the ElementAspects
-    const expectedValue = initElemProps("TestElement", imodel, newModelId, spatialCategoryId!, {}) as TestElement;
+    const expectedValue = initElemProps("TestElement", imodel, newModelId, spatialCategoryId, {}) as TestElement;
 
     // Insert an element
     const geomElement = imodel.elements.createElement(expectedValue);
@@ -685,12 +685,12 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
   it("Roundtrip all type of properties via ElementRefersToElements, ConcurrentQuery and ECSqlStatement via insert and update", async () => {
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_relationships_correct_data.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
-    const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
+    const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName)!;
     const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
 
     // create elements to use
-    const element1 = initElemProps("TestElement", imodel, newModelId, spatialCategoryId!, {}) as TestElement;
-    const element2 = initElemProps("TestElement", imodel, newModelId, spatialCategoryId!, {}) as TestElement;
+    const element1 = initElemProps("TestElement", imodel, newModelId, spatialCategoryId, {}) as TestElement;
+    const element2 = initElemProps("TestElement", imodel, newModelId, spatialCategoryId, {}) as TestElement;
 
     const geomElement1 = imodel.elements.createElement(element1);
     const elId1 = imodel.elements.insertElement(geomElement1.toJSON());
@@ -897,11 +897,11 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
   it("Roundtrip updating properties to null", async () => {
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_properties_null_update.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
-    const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
+    const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName)!;
     const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
 
     // Create an element to be used
-    const expectedValue = initElemProps("TestElement", imodel, newModelId, spatialCategoryId!, {
+    const expectedValue = initElemProps("TestElement", imodel, newModelId, spatialCategoryId, {
       ...primInst1,
       ...primArrInst1,
       st: { ...primArrInst2, ...primInst1 },
