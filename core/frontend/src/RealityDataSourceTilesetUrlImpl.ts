@@ -74,7 +74,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
     const sasParts = urlParts[urlParts.length - 1].split("?");
     this._sasToken = `?${sasParts[1]}`;
     urlParts.pop();
-    if (urlParts.length === 0)
+    if ((urlParts.length === 0) || (process.env.KEEP_BASE_URL === "true"))
       this._baseUrl = "";
     else
       this._baseUrl = `${urlParts.join("/")}/`;
