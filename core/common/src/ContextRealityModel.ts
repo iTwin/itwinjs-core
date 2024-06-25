@@ -446,7 +446,6 @@ export class ContextRealityModels {
 
     this._models.push(model);
     this._container.contextRealityModels.push(props);
-
     return model;
   }
 

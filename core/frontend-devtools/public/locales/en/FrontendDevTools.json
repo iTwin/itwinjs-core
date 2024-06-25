@@ -156,6 +156,9 @@
     "ViewportAddRealityModel": {
       "keyin": "fdt attach reality model"
     },
+    "LoadCesium": {
+      "keyin": "fdt load cesium"
+    },
     "ViewportDetachRealityModel": {
       "keyin": "fdt detach reality model"
     },

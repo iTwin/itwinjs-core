@@ -656,6 +656,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': ^4.0.2
+      '@itwin/frontend-tiles': workspace:*
       '@types/file-saver': ^2.0.1
       cpx2: ^3.0.0
       eslint: ^8.56.0
@@ -667,6 +668,7 @@ importers:
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
       '@itwin/core-geometry': link:../geometry
+      '@itwin/frontend-tiles': link:../../extensions/frontend-tiles
       file-saver: 2.0.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build

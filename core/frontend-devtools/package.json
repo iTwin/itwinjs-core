@@ -39,6 +39,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
+    "@itwin/frontend-tiles": "workspace:*",
     "file-saver": "^2.0.2"
   },
   "devDependencies": {

@@ -7,7 +7,6 @@
  */
 import { assert, BentleyStatus, GuidString } from "@itwin/core-bentley";
 import { IModelError, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
-
 import { request } from "./request/Request";
 import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource";
 import { ThreeDTileFormatInterpreter } from "./tile/internal";
@@ -26,6 +25,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   /** For use by all Reality Data. For RD stored on PW Context Share, represents the portion from the root of the Azure Blob Container*/
   private _baseUrl: string = "";
 
+  private _sasToken: string = "";
   /** Construct a new reality data source.
    * @param props JSON representation of the reality data source
    */
@@ -71,6 +71,8 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   // The tile's path root will need to be reinserted for child tiles to return a 200
   private setBaseUrl(url: string): void {
     const urlParts = url.split("/");
+    const sasParts = urlParts[urlParts.length - 1].split("?");
+    this._sasToken = `?${sasParts[1]}`;
     urlParts.pop();
     if (urlParts.length === 0)
       this._baseUrl = "";
@@ -100,7 +102,10 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
    * Returns the tile content. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileContent(name: string): Promise<ArrayBuffer> {
-    const tileUrl = this._baseUrl + name;
+    let tileUrl = this._baseUrl + name;
+    // let tileUrl = name;
+    if (process.env.LOAD_CESIUM === "true")
+      tileUrl += this._sasToken;
 
     return request(tileUrl, "arraybuffer");
   }

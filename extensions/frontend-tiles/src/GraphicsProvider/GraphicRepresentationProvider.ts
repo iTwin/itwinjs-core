@@ -79,16 +79,16 @@ export type GraphicRepresentation = {
 });
 
 /** Creates a URL used to query for Graphic Representations */
-function createGraphicRepresentationsQueryUrl(args: { sourceId: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean }): string {
-  const prefix = args.urlPrefix ?? "";
-  let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.sourceId}&$orderBy=date:desc`;
+function createGraphicRepresentationsQueryUrl(args: { sourceId: string, sourceType: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean }): string {
+  // const prefix = args.urlPrefix ?? "";
+  let url = `https://${args.urlPrefix}api.bentley.com/mesh-export/?iModelId=${args.sourceId}&$orderBy=date:desc`;
   if (args.changeId)
     url = `${url}&changesetId=${args.changeId}`;
 
   if (args.enableCDN)
     url = `${url}&cdn=1`;
 
-  url = `${url}&tileVersion=1&exportType=IMODEL`;
+  url = `${url}&tileVersion=1&exportType=${args.sourceType}`;
 
   return url;
 }
@@ -163,7 +163,7 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
     SessionId: args.sessionId,
   };
 
-  let url: string | undefined = createGraphicRepresentationsQueryUrl({ sourceId: args.dataSource.id, urlPrefix: args.urlPrefix, changeId: args.dataSource.changeId, enableCDN: args.enableCDN });
+  let url: string | undefined = createGraphicRepresentationsQueryUrl({ sourceId: args.dataSource.id, sourceType: args.dataSource.type, urlPrefix: args.urlPrefix, changeId: args.dataSource.changeId, enableCDN: args.enableCDN });
   while (url) {
     let result;
     try {

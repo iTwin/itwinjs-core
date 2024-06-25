@@ -21,7 +21,7 @@ import {
 } from "./tools/PlanarMaskTools";
 import {
   ChangeCameraTool, ChangeEmphasisSettingsTool, ChangeFlashSettingsTool, ChangeHiliteModeTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool,
-  FreezeSceneTool, SetAspectRatioSkewTool, ShowTileVolumesTool, Toggle3dManipulationsTool, ToggleDrawingGraphicsTool, ToggleSectionDrawingSpatialViewTool,
+  FreezeSceneTool, LoadCesium, SetAspectRatioSkewTool, ShowTileVolumesTool, Toggle3dManipulationsTool, ToggleDrawingGraphicsTool, ToggleSectionDrawingSpatialViewTool,
   ToggleTileTreeReferencesTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool, ToggleViewAttachmentsTool, ViewportAddRealityModel,
   ViewportTileSizeModifierTool,
 } from "./tools/ViewportTools";
@@ -206,6 +206,7 @@ export class FrontendDevTools {
       ToggleTerrainTool,
       UnsharpenEffect,
       ViewportAddRealityModel,
+      LoadCesium,
       ViewportTileSizeModifierTool,
       VignetteConfig,
       VignetteEffect,
