@@ -482,8 +482,8 @@ export class LoadCesium extends Tool {
    */
   public override async run(): Promise<boolean> {
 
-    if (!process.env.LOAD_CESIUM_ACCESS_TOKEN || !process.env.LOAD_CESIUM_ITWIN_ID || !process.env.LOAD_CESIUM_IMODEL_ID)
-      return false;
+    // if (!process.env.LOAD_CESIUM_ACCESS_TOKEN || !process.env.LOAD_CESIUM_ITWIN_ID || !process.env.LOAD_CESIUM_IMODEL_ID)
+    //   return false;
 
     const vp = IModelApp.viewManager.selectedView;
 
