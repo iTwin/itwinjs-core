@@ -21,6 +21,7 @@ export class PlanarClipMaskState {
   public readonly settings: PlanarClipMaskSettings;
   private _tileTreeRefs?: TileTreeReference[];
   private _allLoaded = false;
+  private _usingViewportOverrides = false;
 
   private constructor(settings: PlanarClipMaskSettings) {
     this.settings = settings;
@@ -33,6 +34,8 @@ export class PlanarClipMaskState {
   public static fromJSON(props: PlanarClipMaskProps): PlanarClipMaskState {
     return this.create(PlanarClipMaskSettings.fromJSON(props));
   }
+
+  public get usingViewportOverrides(): boolean { return this._usingViewportOverrides; };
 
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     if (this._tileTreeRefs)
@@ -70,6 +73,7 @@ export class PlanarClipMaskState {
 
   // Returns any potential FeatureSymbology overrides for drawing the planar clip mask.
   public getPlanarClipMaskSymbologyOverrides(view: SpatialViewState, context: SceneContext): FeatureSymbology.Overrides | undefined {
+    this._usingViewportOverrides = false;
     // First obtain a list of models that will need to be turned off for drawing the planar clip mask (only used for batched tile trees).
     const overrideModels = view.getModelsNotInMask(this.settings.modelIds, PlanarClipMaskMode.Priority === this.settings.mode);
 
@@ -90,6 +94,7 @@ export class PlanarClipMaskState {
         overrideModels.forEach((modelId: string) => {
           curOverrides.override({ modelId, appearance: appOff, onConflict: "replace" });
         });
+        this._usingViewportOverrides = true;
         return curOverrides;
       }
       // Otherwise, we just start with a default overrides and modify it.
