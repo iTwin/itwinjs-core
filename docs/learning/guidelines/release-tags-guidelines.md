@@ -91,7 +91,7 @@ When introducing a brand-new API intended for use outside of the itwinjs-core re
 A few categories of `@internal` APIs exist:
 
 - Single-package APIs used only within a single package in itwinjs-core - e.g., a function exported by one source file in `@itwin/core-backend` and imported for use in another source file in that same package.
-- Cross-package APIs used by multiple packages in itwinjs-core - e.g., a function exported by `@itwin/core-common` and imported for use in `@itwin/core-common`.
+- Cross-package APIs used by multiple packages in itwinjs-core - e.g., a function exported by `@itwin/core-common` and imported for use in `@itwin/core-backend`.
   - A subset of such APIs are cross-package only because they are consumed by non-published packages like test apps or full-stack tests.
 - Nested APIs that reside inside another API - e.g., class methods and namespace members.
 - Top-level APIs that do not reside inside another API - e.g., functions and classes not defined inside a namespace.
