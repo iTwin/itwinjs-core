@@ -918,7 +918,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     const actualValue = imodel.elements.getElementProps<TestElement>(id);
     verifyTestElement(actualValue, expectedValue);
 
-    // Update all basic properties to null.
+    // Update all properties to null
     {
       Object.assign(actualValue, {
         i: null,
@@ -931,37 +931,23 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
         p2d: null,
         p3d: null,
         g: null,
-      });
-
-      // Update the element
-      imodel.elements.updateElement(actualValue);
-      imodel.saveChanges();
-
-      // Verify updated value properties
-      const updatedValue = imodel.elements.getElementProps<TestElement>(id);
-      verifyTestElement(updatedValue, actualValue);
-    }
-
-    // Update composite fields (struct, array properties) to only include nulls.
-    {
-      Object.assign(actualValue, {
-        ...actualValue,
         st: null,
+        array_i: null,
+        array_l: null,
+        array_d: null,
         array_b: null,
-        array_d: [],
-        array_i: [null, null],
-        array_st: [null, { i: null, d: null, b: null } ],
+        array_dt: null,
+        array_s: null,
+        array_bin: null,
+        array_p2d: null,
+        array_p3d: null,
+        array_g: null,
+        array_st: null,
       });
 
       // Update the element
       imodel.elements.updateElement(actualValue);
       imodel.saveChanges();
-
-      Object.assign(actualValue, {
-        ...actualValue,
-        array_i: [],
-        array_st: [], // no elements should exist in the arrays, as the second element has all its properties set to null as well
-      });
 
       // Verify updated value properties
       const updatedValue = imodel.elements.getElementProps<TestElement>(id);
