@@ -164,10 +164,6 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
     Prefer: "return=representation",
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
     SessionId: args.sessionId,
-    /* eslint-disable-next-line @typescript-eslint/naming-convention */
-    ITwinjsVersion: ITWINJS_CORE_VERSION,
-    /* eslint-disable-next-line @typescript-eslint/naming-convention */
-    TileVersion: tileVersion,
   };
 
   let url: string | undefined = createGraphicRepresentationsQueryUrl({ sourceId: args.dataSource.id, sourceType: args.dataSource.type, urlPrefix: args.urlPrefix, changeId: args.dataSource.changeId, enableCDN: args.enableCDN });
