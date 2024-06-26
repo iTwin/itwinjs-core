@@ -21,6 +21,7 @@ export class PlanarClipMaskState {
   public readonly settings: PlanarClipMaskSettings;
   private _tileTreeRefs?: TileTreeReference[];
   private _allLoaded = false;
+  private _usingViewportOverrides = false;
 
   private constructor(settings: PlanarClipMaskSettings) {
     this.settings = settings;
@@ -33,6 +34,8 @@ export class PlanarClipMaskState {
   public static fromJSON(props: PlanarClipMaskProps): PlanarClipMaskState {
     return this.create(PlanarClipMaskSettings.fromJSON(props));
   }
+
+  public get usingViewportOverrides(): boolean { return this._usingViewportOverrides; };
 
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     if (this._tileTreeRefs)
@@ -70,6 +73,7 @@ export class PlanarClipMaskState {
 
   // Returns any potential FeatureSymbology overrides for drawing the planar clip mask.
   public getPlanarClipMaskSymbologyOverrides(view: SpatialViewState, context: SceneContext): FeatureSymbology.Overrides | undefined {
+    this._usingViewportOverrides = false;
     // First obtain a list of models that will need to be turned off for drawing the planar clip mask (only used for batched tile trees).
     const overrideModels = view.getModelsNotInMask(this.settings.modelIds, PlanarClipMaskMode.Priority === this.settings.mode);
 
@@ -85,6 +89,7 @@ export class PlanarClipMaskState {
       const appOff = FeatureAppearance.fromTransparency(1.0);
       // For Priority or Models mode, we need to start with the current overrides and modify them
       if (PlanarClipMaskMode.Priority === this.settings.mode || PlanarClipMaskMode.Models === this.settings.mode || noSubCategoryOrElementIds) {
+        this._usingViewportOverrides = true; // Set flag to use listener since context.viewport might change afterwards.
         const curOverrides = new FeatureSymbology.Overrides(context.viewport);
         curOverrides.addInvisibleElementOverridesToNeverDrawn();  // need this for fully trans element overrides to not participate in mask
         overrideModels.forEach((modelId: string) => {
