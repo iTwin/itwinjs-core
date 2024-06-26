@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fixed new tiles not updating planar clip mask immediately.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -152,6 +152,14 @@ export abstract class SchemaItem {
    * @alpha
    * Used for schema editing.
    */
+  protected setName(name: string) {
+    this._key = new SchemaItemKey(name, this.schema.schemaKey);
+  }
+
+  /**
+   * @alpha
+   * Used for schema editing.
+   */
   protected setDisplayLabel(displayLabel: string) {
     this._label = displayLabel;
   }
