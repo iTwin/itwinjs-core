@@ -3,12 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as util from "util";
 import { expect, use } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import { IModelApp } from "@itwin/core-frontend";
-import { obtainGraphicRepresentationUrl, queryGeoScienceService, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/GraphicRepresentationProvider";
+import { obtainGraphicRepresentationUrl, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/GraphicRepresentationProvider";
 
 use(chaiAsPromised);
 
@@ -235,29 +234,5 @@ describe("obtainGraphicRepresentationUrl", () => {
 
   it("returns undefined if no Data Source matches the source version Id and caller requires an exact version match", async () => {
     await expectUrl(undefined, { versionId: "bbbbbb", exact: true });
-  });
-});
-
-describe("GeoScienceService", () => {
-  it.only("queryGeoScienceService", async () => {
-    const token = "";
-    const workspaceId = "9f123308-e4b9-4082-b68f-d261ce02da3c";
-    const geoscienceObjId = "a0c4d7c6-d09d-4fff-8bf9-094ef5210eda";
-    const args = {
-      accessToken: token,
-      sessionId: "testSession",
-      dataSource: {
-        iTwinId: workspaceId,
-        id: geoscienceObjId,
-        changeId: undefined,
-        type: "geoscience",
-      },
-      format: "CESIUM",
-    };
-
-    for await (const src of queryGeoScienceService(args)) {
-      console.log(util.inspect(src, {showHidden: false, depth: null, colors: true}));
-      expect(src).to.not.be.undefined;
-    }
   });
 });
