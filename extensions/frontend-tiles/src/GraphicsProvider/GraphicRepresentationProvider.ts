@@ -154,7 +154,6 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
     };
   }
 
-  const tileVersion = IModelApp.tileAdmin.maximumMajorTileFormatVersion.toString();
   const headers = {
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
     Authorization: args.accessToken,
