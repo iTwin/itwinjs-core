@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-    - 'release/*'
+    - 'mikeN/fin-release-commit'
     paths:
     - '**/CHANGELOG.md'
 
