@@ -23,12 +23,8 @@ import {
   BriefcaseDb,
   BriefcaseManager,
   ChannelControl,
-<<<<<<< HEAD
-  DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, LockState, OpenBriefcaseArgs, SpatialCategory, Subject,
-=======
   CodeService,
   DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, OpenBriefcaseArgs, SpatialCategory, Subject,
->>>>>>> 20cd3cdcca (Add ConflictingLocksError class (#6852))
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { ServerBasedLocks } from "../../ServerBasedLocks";
