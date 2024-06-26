@@ -16,7 +16,7 @@ import { ECEditingStatus } from "../../Editing/Exception";
 
 function getRuleViolationMessage(ruleViolations: AnyDiagnostic[]) {
   let violations = "";
-  for (const diagnostic of ruleViolations){
+  for (const diagnostic of ruleViolations) {
     violations += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
   }
   return violations;
@@ -217,7 +217,7 @@ describe("Editor tests", () => {
 
         try {
           await testEditor.addSchemaReference(schemaA.schemaKey, schemaC);
-        } catch(e: any) {
+        } catch (e: any) {
           expect(e).to.have.property("errorNumber", ECEditingStatus.AddSchemaReference);
           expect(e).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
           expect(e).to.have.nested.property("innerError.message", `Rule violations occurred from Schema ${schemaA.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`);
@@ -404,6 +404,40 @@ describe("Editor tests", () => {
         const testEntity = await testSchema.getItem("testClass") as EntityClass;
         expect(await testEntity.getProperty("testProperty")).to.not.eql(undefined);
       });
+    });
+
+    it("setDisplayLabel, label updated successfully", async () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "ValidSchema",
+        version: "1.2.3",
+        alias: "vs",
+      };
+
+      context = new SchemaContext();
+      testSchema = await Schema.fromJson(schemaJson, context);
+      testEditor = new SchemaContextEditor(context);
+
+      await testEditor.setDisplayLabel(testSchema.schemaKey, "NewLabel");
+
+      expect(testSchema.label).to.equal("NewLabel");
+    });
+
+    it("setDescription, description updated successfully", async () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "ValidSchema",
+        version: "1.2.3",
+        alias: "vs",
+      };
+
+      context = new SchemaContext();
+      testSchema = await Schema.fromJson(schemaJson, context);
+      testEditor = new SchemaContextEditor(context);
+
+      await testEditor.setDescription(testSchema.schemaKey, "This is the new description!");
+
+      expect(testSchema.description).to.equal("This is the new description!");
     });
 
     // TODO: Add a test to compare previous SchemaContext with the SchemaContext returned when SchemaEditor.finish() is called.
