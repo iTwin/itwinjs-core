@@ -72,7 +72,7 @@ iTwin.js is a collection of libraries designed to enable application developers.
 
 When introducing a brand-new API intended for use outside of the itwinjs-core repository, choose `@public` if the API is relatively simple and unlikely to require breaking changes. Otherwise, choose `@beta` to enable the API to evolve in response to feedback, but keep in mind the eventual goal of promoting the API to `@public`.
 
-`@alpha` should almost never be used, except perhaps when collaborating with other itwinjs-core developers are on highly experimental API.
+`@alpha` should almost never be used, except perhaps when collaborating with other itwinjs-core developers on highly experimental API.
 
 `@internal` should only be used for an API that meets one or more of the following criteria:
 
