@@ -74,7 +74,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
     const sasParts = urlParts[urlParts.length - 1].split("?");
     this._sasToken = `?${sasParts[1]}`;
     urlParts.pop();
-    if ((urlParts.length === 0) || (process.env.KEEP_BASE_URL === "true"))
+    if ((urlParts.length === 0) || (this._tilesetUrl?.split(":")[0] === "blob"))
       this._baseUrl = "";
     else
       this._baseUrl = `${urlParts.join("/")}/`;
@@ -95,7 +95,9 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
 
     // The following is only if the reality data is not stored on PW Context Share.
     this.setBaseUrl(url);
-    return request(url, "json");
+    const req = await request(url, "json");
+    console.log(req);
+    return req;
   }
 
   /**
@@ -104,7 +106,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   public async getTileContent(name: string): Promise<ArrayBuffer> {
     let tileUrl = this._baseUrl + name;
     // let tileUrl = name;
-    if (process.env.LOAD_CESIUM === "true")
+    if (this._tilesetUrl?.split(":")[0] === "blob")
       tileUrl += this._sasToken;
 
     return request(tileUrl, "arraybuffer");

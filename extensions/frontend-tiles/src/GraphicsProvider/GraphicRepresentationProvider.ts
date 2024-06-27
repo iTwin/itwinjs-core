@@ -81,25 +81,16 @@ export type GraphicRepresentation = {
 
 /** Creates a URL used to query for Graphic Representations */
 function createGraphicRepresentationsQueryUrl(args: { sourceId: string, sourceType: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean }): string {
-<<<<<<< HEAD
-  // const prefix = args.urlPrefix ?? "";
-  let url = `https://${args.urlPrefix}api.bentley.com/mesh-export/?iModelId=${args.sourceId}&$orderBy=date:desc`;
-=======
   const prefix = args.urlPrefix ?? "";
   let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.sourceId}&$orderBy=date:desc`;
->>>>>>> master
   if (args.changeId)
     url = `${url}&changesetId=${args.changeId}`;
 
   if (args.enableCDN)
     url = `${url}&cdn=1`;
 
-<<<<<<< HEAD
-  url = `${url}&tileVersion=1&exportType=${args.sourceType}`;
-=======
   const tileVersion = IModelApp.tileAdmin.maximumMajorTileFormatVersion.toString();
   url = `${url}&tileVersion=${tileVersion}&iTwinJS=${ITWINJS_CORE_VERSION}&exportType=${args.sourceType}`;
->>>>>>> master
 
   return url;
 }
@@ -131,7 +122,7 @@ export interface QueryGraphicRepresentationsArgs {
 /** Query Graphic Representations from the mesh export service matching the specified criteria, sorted from most-recently- to least-recently-produced.
  * @beta
  */
-export async function* queryMeshExportService(args: QueryGraphicRepresentationsArgs): AsyncIterableIterator<GraphicRepresentation> {
+export async function* queryGraphicRepresentations(args: QueryGraphicRepresentationsArgs): AsyncIterableIterator<GraphicRepresentation> {
   interface ServiceJsonResponse {
     id: string;
     displayName: string;
@@ -206,54 +197,6 @@ export async function* queryMeshExportService(args: QueryGraphicRepresentationsA
     }
 
     url = result._links.next?.href;
-  }
-}
-
-/** Query the Seequent EVO visualization service for 3D Tiles graphic representations.
- * @beta
- */
-export async function* queryGeoscienceService(args: QueryGraphicRepresentationsArgs): AsyncIterableIterator<GraphicRepresentation> {
-  const headers = {
-    /* eslint-disable-next-line @typescript-eslint/naming-convention */
-    Authorization: args.accessToken,
-  };
-
-  const baseUrl = "https://351mt.api.integration.seequent.com";
-
-  // Org ID is passed as iTwin ID, workspace ID is passed as data source ID, and geoscience object ID is passed as change ID
-  // TODO a new interface should probably be created to pass these values, as they don't make sense with the DataSource interface
-  const url = `${baseUrl}/visualization/orgs/${args.dataSource.iTwinId}/workspaces/${args.dataSource.id}/geoscience-object/${args.dataSource.changeId}`;
-  const response = await fetch(url, { headers });
-  const result = await response.json();
-  const objUrl = URL.createObjectURL(new Blob([result]));
-
-  // Seequent visualization API only returns the tileset.json, no other ID or name for the object
-  // So we can leave displayName and representationId empty for now
-  const graphicRepresentation = {
-    displayName: "",
-    representationId: "",
-    status: "Complete" as GraphicRepresentationStatus,
-    format: args.format,
-    url: objUrl,
-    dataSource: {
-      iTwinId: args.dataSource.iTwinId,
-      id: args.dataSource.id,
-      versionId: args.dataSource.changeId,
-      type: args.dataSource.type,
-    },
-  };
-
-  yield graphicRepresentation;
-}
-
-/** Query Graphic Representations from the mesh export service or the Seequent EVO visualization service.
- * @beta
- */
-export async function* queryGraphicRepresentations(args: QueryGraphicRepresentationsArgs): AsyncIterableIterator<GraphicRepresentation> {
-  if (args.dataSource.type.toLowerCase() === "geoscience") {
-    return queryGeoscienceService(args);
-  } else {
-    return queryMeshExportService(args);
   }
 }
 
