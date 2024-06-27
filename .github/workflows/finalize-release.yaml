@@ -9,9 +9,9 @@ on:
   workflow_dispatch:
   push:
     branches:
-    - 'release/*'
-    paths:
-    - '**/CHANGELOG.md'
+    - 'mikeN/fin-release-commit'
+    # paths:
+    # - '**/CHANGELOG.md'
 
 jobs:
   finalize:
