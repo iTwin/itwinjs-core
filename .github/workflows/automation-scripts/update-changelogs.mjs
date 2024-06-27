@@ -77,6 +77,7 @@ let commitMessage = versionMatch ? versionMatch[1] : null;
 // remove extra null and new line characters from git cmds
 targetBranch = String(targetBranch).replace(/\n/g, '');
 currentBranch = String(currentBranch).replace(/\n/g, '');
+currentBranch = "origin/release/3.8.x"
 commitMessage = String(commitMessage).replace(/\n/g, '');
 const substring = " Changelogs";
 if (commitMessage.includes(substring)) {
