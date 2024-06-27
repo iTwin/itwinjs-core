@@ -68,6 +68,7 @@ await $`mkdir ${incomingPath}`
 let targetBranch = await $`git branch -a --list "origin/release/[0-9]*.[0-9]*.x" | tail -n1 | sed 's/  remotes\\///'`;
 let currentBranch = await $`git branch --show-current`;
 
+// the version in the commit message can be extracted from the latest tag
 const latestTag = await $`git describe --tags $(git rev-list --tags --max-count=1)`;
 const tag = latestTag.stdout.trim();
 const versionMatch = tag.match(/release\/(\d+\.\d+\.\d+)/);
