@@ -141,7 +141,12 @@ export class Thing {
 Add to `src/internal/Symbols.ts` the following, if a `_close` symbol doesn't already exist (keeping the list of symbols sorted alphabetically):
 
 ```ts
-export const _close = Symbol.for("close_INTERNAL_ONLY_DO_NOT_USE");
+// Create a name for a Symbol incorporating the property name and package name.
+function sym(name: string): string {
+  return `${name}_core-backend_INTERNAL_ONLY_DO_NOT_USE`;
+}
+
+export const _close = Symbol.for(sym("close"));
 ```
 
 Update `Thing` to rename `close` to use the symbol, and deprecate the existing `close` method:
