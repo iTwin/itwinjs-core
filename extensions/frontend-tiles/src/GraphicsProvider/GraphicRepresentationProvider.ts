@@ -119,7 +119,7 @@ export interface QueryGraphicRepresentationsArgs {
   enableCDN?: boolean;
 }
 
-/** Query Graphic Representations from the mesh export service matching the specified criteria, sorted from most-recently- to least-recently-produced.
+/** Query Graphic Representations matching the specified criteria, sorted from most-recently- to least-recently-produced.
  * @beta
  */
 export async function* queryGraphicRepresentations(args: QueryGraphicRepresentationsArgs): AsyncIterableIterator<GraphicRepresentation> {

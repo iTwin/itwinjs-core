@@ -61,7 +61,7 @@ export async function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs): 
   return obtainGraphicRepresentationUrl(graphicsArgs);
 }
 
-/** Arguments supplied  to [[obtainGeoscienceTilesetUrl]].
+/** Arguments supplied to [[obtainGeoscienceTilesetUrl]].
  * @beta
  */
 export interface ObtainGeoscienceTilesetArgs {
@@ -81,8 +81,7 @@ export interface ObtainGeoscienceTilesetArgs {
   enableCDN?: boolean;
 }
 
-export async function obtainGeoscienceTilesetUrl(args: ObtainGeoscienceTilesetArgs):
-Promise<string|undefined> {
+export async function obtainGeoscienceTilesetUrl(args: ObtainGeoscienceTilesetArgs): Promise<string|undefined> {
   const headers = {
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
     Authorization: args.accessToken,
