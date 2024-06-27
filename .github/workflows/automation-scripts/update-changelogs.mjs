@@ -71,7 +71,7 @@ let currentBranch = await $`git branch --show-current`;
 const latestTag = await $`git describe --tags $(git rev-list --tags --max-count=1)`;
 const tag = latestTag.stdout.trim();
 const versionMatch = tag.match(/release\/(\d+\.\d+\.\d+)/);
-const commitMessage = versionMatch ? versionMatch[1] : null;
+let commitMessage = versionMatch ? versionMatch[1] : null;
 
 // remove extra null and new line characters from git cmds
 targetBranch = String(targetBranch).replace(/\n/g, '');
