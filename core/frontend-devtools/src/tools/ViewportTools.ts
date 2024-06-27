@@ -485,43 +485,14 @@ export class SeequentDemo extends Tool {
     if (!process.env.SEEQUENT_ACCESS_TOKEN || !process.env.SEEQUENT_ORGANIZATION_ID || !process.env.SEEQUENT_WORKSPACE_ID || !process.env.SEEQUENT_GEOSCIENCE_OBJECT_ID)
       return false;
 
-    // const vp = IModelApp.viewManager.selectedView;
-
     const args = {
       accessToken: process.env.SEEQUENT_ACCESS_TOKEN,
       organizationId: process.env.SEEQUENT_ORGANIZATION_ID,
       workspaceId: process.env.SEEQUENT_WORKSPACE_ID,
       geoscienceObjectId: process.env.SEEQUENT_GEOSCIENCE_OBJECT_ID,
     };
-    // const obtainUrlArgs = {
-    //   accessToken: process.env.LOAD_CESIUM_ACCESS_TOKEN,
-    //   sessionId: IModelApp.sessionId,
-    //   dataSource: {
-    //     iTwinId: process.env.LOAD_CESIUM_ITWIN_ID,
-    //     id: process.env.LOAD_CESIUM_IMODEL_ID,
-    //     changeId: process.env.LOAD_CESIUM_CHANGESET_ID ?? "",
-    //     type: "CESIUM",
-    //   },
-    //   format: "3DTILES",
-    //   urlPrefix: "qa-",
-    // };
-    // const url = await obtainGraphicRepresentationUrl(obtainUrlArgs);
-    // let urlstr = "";
-    // if (url) {
-    //   urlstr = url.href;
-    // }
-    // const urlstr = '{"asset":{"version":"1.1","tilesetVersion":"triangle-mesh.0.1.0"},"geometricError":1024.0,"root":{"boundingVolume":{"box":[-1638597.0860943792,-3669234.9374902933,4937950.053559612,82.73920249938965,0.0,0.0,0.0,57.6266975402832,0.0,0.0,0.0,77.02031707763672]},"geometricError":512.0,"children":[{"boundingVolume":{"box":[-1638597.0860943792,-3669234.9374902933,4937950.053559612,82.73920249938965,0.0,0.0,0.0,57.6266975402832,0.0,0.0,0.0,77.02031707763672]},"geometricError":0.0,"content":{"uri":"http://localhost:8080/tile_0.glb"}}]}}';
-    // console.log(urlstr);
-    // const blob = new Blob([urlstr]);
-    // const url = URL.createObjectURL(blob);
-    // console.log(url);
-    // console.log("Graphic Representation URL: ", urlstr);
-    // if (undefined !== vp){
-    //   vp.displayStyle.attachRealityModel({ tilesetUrl: url });
-    // }
 
     initializeGeoscienceTiles(args);
-
     return true;
   }
 

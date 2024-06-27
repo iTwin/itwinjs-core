@@ -96,7 +96,6 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
     // The following is only if the reality data is not stored on PW Context Share.
     this.setBaseUrl(url);
     const req = await request(url, "json");
-    console.log(req);
     return req;
   }
 

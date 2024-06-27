@@ -7,7 +7,6 @@ import { AccessToken, Logger} from "@itwin/core-bentley";
 import { IModelApp, IModelConnection} from "@itwin/core-frontend";
 import { obtainGraphicRepresentationUrl} from "./GraphicRepresentationProvider";
 import { loggerCategory} from "../LoggerCategory";
-import * as util from "util";
 
 /** Arguments supplied  to [[obtainMeshExportTilesetUrl]].
  * @beta
@@ -89,17 +88,11 @@ Promise<string|undefined> {
     Authorization: args.accessToken,
   };
 
-  // console.log("Token: ", args.accessToken);
   const baseUrl = "https://351mt.api.integration.seequent.com";
-
   const url = `${baseUrl}/visualization/orgs/${args.organizationId}/workspaces/${args.workspaceId}/geoscience-object/${args.geoscienceObjectId}`;
   const response = await fetch(url, { headers });
-  // console.log("response: ", response);
-  // console.log("util: ", util.inspect(response, {showHidden: false, depth: null, colors: true}));
   const result = await response.json();
-  // console.log("result: ", result);
 
-  // console.log("util: ", util.inspect(result, {showHidden: false, depth: null, colors: true}));
   const objUrl = URL.createObjectURL(new Blob([JSON.stringify(result)], {type: "application/json"}));
   if ((!result) || (!objUrl)) {
     Logger.logInfo(loggerCategory, `No data available for Geoscience Object ${args.geoscienceObjectId}`);
