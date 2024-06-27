@@ -4,12 +4,7 @@ iTwin.js uses [release tags](https://api-extractor.com/pages/tsdoc/doc_comment_s
 
 ## Supported tags
 
-Each API in iTwin.js belongs to one of four API categories as defined by its associated release tag:
-
-- `@public` indicates a stable, production-ready API subject to our documented [stability and deprecation policies](../api-support-policies.md).
-- `@beta` indicates an API undergoing stabilization. Users are encouraged to experiment with it in non-production environments.
-- `@alpha` indicates a highly experimental API that users should not yet experiment with.
-- `@internal` indicates an API that should never be used outside of the itwinjs-core package.
+Each API in iTwin.js belongs to one of four [API categories](../api-support-policies.md#api-categories).
 
 By default, any API is also usable by extensions, with the exception of APIs exported by `@itwin/core-frontend` and `@itwin/core-common`; these must be explicitly tagged as `@extensions` for inclusion in the `@itwin/core-extension` package's API. The `@extensions` tag may only be applied to `@public` APIs, as verified by a lint rule.
 
