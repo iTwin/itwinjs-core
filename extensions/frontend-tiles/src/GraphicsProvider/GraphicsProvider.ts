@@ -100,7 +100,7 @@ Promise<string|undefined> {
   // console.log("result: ", result);
 
   // console.log("util: ", util.inspect(result, {showHidden: false, depth: null, colors: true}));
-  const objUrl = URL.createObjectURL(new Blob([result], {type: "application/json"}));
+  const objUrl = URL.createObjectURL(new Blob([JSON.stringify(result)], {type: "application/json"}));
   if ((!result) || (!objUrl)) {
     Logger.logInfo(loggerCategory, `No data available for Geoscience Object ${args.geoscienceObjectId}`);
     return undefined;

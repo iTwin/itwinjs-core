@@ -104,10 +104,10 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
    * Returns the tile content. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileContent(name: string): Promise<ArrayBuffer> {
-    let tileUrl = this._baseUrl + name;
+    const tileUrl = this._baseUrl + name;
     // let tileUrl = name;
-    if (this._tilesetUrl?.split(":")[0] === "blob")
-      tileUrl += this._sasToken;
+    // if (this._tilesetUrl?.split(":")[0] === "blob")
+    //   tileUrl += this._sasToken;
 
     return request(tileUrl, "arraybuffer");
   }
