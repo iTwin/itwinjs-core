@@ -41,7 +41,7 @@ The iTwin.js team strives to avoid breaking changes whenever possible. We also e
 iTwin.js uses [API Extractor](https://api-extractor.com/) to help manage its APIs. Each API exported by a package is marked with one of four ["release tags"](https://api-extractor.com/pages/tsdoc/doc_comment_syntax/) categorizing its level of maturity.
 
 - ["internal"](https://api-extractor.com/pages/tsdoc/tag_internal/) indicates an API that is intended strictly to be used inside the iTwin.js libraries - never by users.
-- ["alpha"](https://api-extractor.com/pages/tsdoc/tag_alpha/) indicates a highly-experimental API that is not yet ready for testing by users. These are rare in iTwin.js as we are typically interested in early feedback.
+- ["alpha"](https://api-extractor.com/pages/tsdoc/tag_alpha/) indicates a highly-experimental API likely to undergo significant, frequent change and/or abrupt removal. These are rare in iTwin.js as we are typically interested in early feedback.
 - ["beta"](https://api-extractor.com/pages/tsdoc/tag_beta/) indicates an API currently under development. Users are encouraged to experiment with the API and provide feedback, with the understanding that breaking changes may occur at any time.
 - ["public"](https://api-extractor.com/pages/tsdoc/tag_public/) indicates a stable API suitable for use in production, to which breaking changes will only be introduced under the strict policies described in this document.
 
