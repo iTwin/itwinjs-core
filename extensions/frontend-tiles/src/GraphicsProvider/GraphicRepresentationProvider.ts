@@ -5,6 +5,7 @@
 
 import { AccessToken, Logger} from "@itwin/core-bentley";
 import { loggerCategory} from "../LoggerCategory";
+import { IModelApp, ITWINJS_CORE_VERSION } from "@itwin/core-frontend";
 
 /** The expected format of the Graphic Representation
  * @beta
@@ -80,15 +81,25 @@ export type GraphicRepresentation = {
 
 /** Creates a URL used to query for Graphic Representations */
 function createGraphicRepresentationsQueryUrl(args: { sourceId: string, sourceType: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean }): string {
+<<<<<<< HEAD
   // const prefix = args.urlPrefix ?? "";
   let url = `https://${args.urlPrefix}api.bentley.com/mesh-export/?iModelId=${args.sourceId}&$orderBy=date:desc`;
+=======
+  const prefix = args.urlPrefix ?? "";
+  let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.sourceId}&$orderBy=date:desc`;
+>>>>>>> master
   if (args.changeId)
     url = `${url}&changesetId=${args.changeId}`;
 
   if (args.enableCDN)
     url = `${url}&cdn=1`;
 
+<<<<<<< HEAD
   url = `${url}&tileVersion=1&exportType=${args.sourceType}`;
+=======
+  const tileVersion = IModelApp.tileAdmin.maximumMajorTileFormatVersion.toString();
+  url = `${url}&tileVersion=${tileVersion}&iTwinJS=${ITWINJS_CORE_VERSION}&exportType=${args.sourceType}`;
+>>>>>>> master
 
   return url;
 }
