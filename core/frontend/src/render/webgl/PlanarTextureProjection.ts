@@ -25,6 +25,15 @@ const scratchMatrix4d = Matrix4d.createIdentity();
 export class PlanarTextureProjection {
   private static _postProjectionMatrixNpc = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 2 */ 0, 0, 1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
 
+  private static isTileRangeInBounds(tileRange: Range3d, drapeRange: Range3d): boolean {
+    // return false if tile is outside of drapRange, ignoring height (x) for this
+    if (tileRange.low.y > drapeRange.high.y || tileRange.high.y < drapeRange.low.y)
+      return false;
+    if (tileRange.low.z > drapeRange.high.z || tileRange.high.z < drapeRange.low.z)
+      return false;
+    return true;
+  }
+
   public static computePlanarTextureProjection(
     texturePlane: Plane3dByOriginAndUnitNormal,
     sceneContext: SceneContext,
@@ -60,17 +69,9 @@ export class PlanarTextureProjection {
     const viewPlanes = FrustumPlanes.fromFrustum(viewFrustum);
     const viewClipPlanes = ConvexClipPlaneSet.createPlanes(viewPlanes.planes);
 
-    let textureRange = Range3d.createNull();
-    const tileToTexture = textureTransform.multiplyTransformTransform(target.location);
-    for (const tile of target.tiles) {
-      textureRange.extendRange(tileToTexture.multiplyRange(tile.range, scratchRange));
-    }
+    const contentUnBoundedRange = Range3d.createNull();
 
-    if (textureRange.isNull)
-      return {};
-
-    textureRange = ClipUtilities.rangeOfClipperIntersectionWithRange(viewClipPlanes, textureRange);
-
+    // calculate drapeRange from mask references or drape reference.
     const drapeRange = Range3d.createNull();
     for (const drapeRef of drapeRefs) {
       const drapeTree = drapeRef.treeOwner.tileTree;
@@ -82,8 +83,8 @@ export class PlanarTextureProjection {
         if (!heightRange)
           heightRange = ApproximateTerrainHeights.instance.globalHeightRange;
 
-        textureRange.low.x = Math.min(textureRange.low.x, heightRange.low);
-        textureRange.high.x = Math.max(textureRange.high.x, heightRange.high);
+        contentUnBoundedRange.low.x = Math.min(contentUnBoundedRange.low.x, heightRange.low);
+        contentUnBoundedRange.high.x = Math.max(contentUnBoundedRange.high.x, heightRange.high);
       } else {
         const r = Range3d.createNull();
         drapeRef.unionFitRange(r);
@@ -92,6 +93,27 @@ export class PlanarTextureProjection {
           drapeRange.extendRange(contentRange);
       }
     }
+
+    // get range of tiles to be masked or draped onto.
+    let textureRange = Range3d.createNull();
+    const tileToTexture = textureTransform.multiplyTransformTransform(target.location);
+    for (const tile of target.tiles) {
+      tileToTexture.multiplyRange(tile.range, scratchRange);
+      if (drapeRange.isNull || PlanarTextureProjection.isTileRangeInBounds(scratchRange, drapeRange))
+        textureRange.extendRange(scratchRange);
+    }
+
+    if (textureRange.isNull)
+      return {};
+
+    textureRange = ClipUtilities.rangeOfClipperIntersectionWithRange(viewClipPlanes, textureRange);
+
+    if (!contentUnBoundedRange.isNull) {
+      // Union of height
+      textureRange.low.x = Math.min(textureRange.low.x, contentUnBoundedRange.low.x);
+      textureRange.high.x = Math.max(textureRange.high.x, contentUnBoundedRange.high.x);
+    }
+
     if (!drapeRange.isNull) {
       // Union of height
       textureRange.low.x = Math.min(textureRange.low.x, drapeRange.low.x);
@@ -114,14 +136,18 @@ export class PlanarTextureProjection {
 
     // if (viewState.isCameraOn) {
     const viewZVecZ = viewState.getRotation().rowZ().z;
-    // console.log (`ViewZVecZ = ${viewZVecZ} deg = ${Math.asin(viewZVecZ) * 180.0 / Math.PI}`);
-    // limit this code to a view that is looking down between ~ 15 and 26 degrees.
-    // negative is looking up, positive is looking down.
-    if (viewState.isCameraOn && viewZVecZ > 0.3 && viewZVecZ < 0.44) {
+    // console.log (`ViewZVecZ = ${viewZVecZ}  deg = ${Math.asin(viewZVecZ) * 180.0 / Math.PI}  eyeZ ${viewState.getEyePoint().z}  tRngLowX ${textureRange.low.x}`);
+
+    // This code attempts to use a projection frustum similar to the camera in order to get higher resolution in the near field.
+    // Limit its use to views that have an eyepoint above the bottom of the frustm and are looking down at a view angle > 5 degrees, otherwise it causes issues.
+    if (viewState.isCameraOn && viewState.getEyePoint().z > textureRange.low.x && viewZVecZ > 0.09) {
+      // limit this code to a view that is looking down between ~ 15 and 26 degrees.
+      // negative is looking up, positive is looking down.
+      // if (viewState.isCameraOn && viewZVecZ > 0.3 && viewZVecZ < 0.44) {
       // console.log (` - using camera on test}`);
-      const eyeHeight = (textureRange.low.x + textureRange.high.x) / 2.0;
-      const eyePlane = Plane3dByOriginAndUnitNormal.create(Point3d.createScale(textureZ, eyeHeight), textureZ);    // Centered in range - parallel to texture.
-      // const eyePlane = Plane3dByOriginAndUnitNormal.create(Point3d.createScale(textureZ, textureRange.low.x), textureZ);    // at bottom of range - parallel to texture.
+      // const eyeHeight = (textureRange.low.x + textureRange.high.x) / 2.0;
+      // const eyePlane = Plane3dByOriginAndUnitNormal.create(Point3d.createScale(textureZ, eyeHeight), textureZ);    // Centered in range - parallel to texture.
+      const eyePlane = Plane3dByOriginAndUnitNormal.create(Point3d.createScale(textureZ, textureRange.low.x), textureZ);    // at bottom of range - parallel to texture.
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       const projectionRay = Ray3d.create(viewState.getEyePoint(), viewZ.crossProduct(textureX).normalize()!);
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
@@ -171,7 +197,7 @@ export class PlanarTextureProjection {
     }
     textureMatrix.transposeInPlace();
     textureMatrix.multiplyVectorArrayInPlace(textureFrustum.points);
-    // textureFrustum = debugFrustum.clone(); // qqq test
+    // textureFrustum = debugFrustum.clone(); // qqq test bypassing the if camera on code.
     const frustumMap = textureFrustum.toMap4d();
     if (undefined === frustumMap) {
       return {};
