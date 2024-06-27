@@ -74,7 +74,7 @@ const tag = latestTag.stdout.trim();
 const versionMatch = tag.match(/release\/(\d+\.\d+\.\d+)/);
 let commitMessage = versionMatch ? versionMatch[1] : null;
 
-const commitOutput = await $`git log --grep='^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+' --format='%H %s' | awk 'NR==1{print; exit}'`
+const commitOutput = await $`git log --grep='^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+' --format='%s'`
 const commitInfo = commitOutput.stdout.trim()
 console.log(commitInfo)
 
