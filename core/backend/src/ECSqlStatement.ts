@@ -326,7 +326,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     if (!args) {
       args = { abbreviateBlobs: false, convertClassIdsToClassNames: true, rowFormat: QueryRowFormat.UseJsPropertyNames, includeMetaData: this._props.length === 0 };
     }
-    const resp = this._stmt!.toRow(args);
+    const resp = this._stmt!.toRow(args); // eslint-disable-line @typescript-eslint/no-non-null-assertion
     return this.formatCurrentRow(resp, args.rowFormat);
   }
 
@@ -345,8 +345,10 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
       if (typeof val !== "undefined" && val !== null) {
         let uniquePropName = propName;
         if (uniqueNames.has(propName)) {
-          uniqueNames.set(propName, uniqueNames.get(propName)! + 1);
-          uniquePropName = `${propName}_${uniqueNames.get(propName)!}`;
+          let currentValue = uniqueNames.get(propName);
+          currentValue = currentValue ? currentValue + 1 : 1;
+          uniqueNames.set(propName, currentValue);
+          uniquePropName = `${propName}_${currentValue}`;
         } else {
           uniqueNames.set(propName,0);
         }
