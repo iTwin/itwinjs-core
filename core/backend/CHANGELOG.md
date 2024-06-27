@@ -233,7 +233,7 @@ Tue, 17 Oct 2023 15:14:32 GMT
 - Use instance query to get aspects for abstract classes
 - ViewStore.ViewDb.getViewGroups select statement was referring to ParentId when parent was meant
 - Remove `storageType` from `BlobContainer.RequestTokenProps`.
-- Add 'provider' to 'BlobContainer.CreatedContainerProps' 
+- Add 'provider' to 'BlobContainer.CreatedContainerProps'
 - add TileStorage.getCachedTilesGenerator
 
 ## 4.1.9
@@ -1012,7 +1012,7 @@ Mon, 26 Jul 2021 12:21:25 GMT
 
 - Reactivated test that stopped working when a previous PR for ecef dependency to geographicCRS was reverted
 - store changesetIndex on IModelDb
-- Better error checks when creating SpatialViewDefinition-s.
+- Better error checks when creating SpatialViewDefinition-s. 
 - remove internal barrel-import usage
 - throw exception when attempting to download a briefcase on top of an existing file
 - Add case for InterpolationCurve3d
