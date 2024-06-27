@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { RpcRegistry } from "@itwin/core-common";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { SnapshotDb } from "../IModelDb";
-import { IModelHost, IModelHostConfiguration, IModelHostOptions, KnownLocations } from "../IModelHost";
+import { IModelHost, IModelHostOptions, KnownLocations } from "../IModelHost";
 import { Schemas } from "../Schema";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { AzureServerStorage, AzureServerStorageBindings, AzureServerStorageBindingsConfig } from "@itwin/object-storage-azure";
@@ -146,11 +146,6 @@ describe("IModelHost", () => {
       accessKey: "testAccessKey",
     };
 
-    const setMaxTileCacheSizeStub = sinon.stub();
-    sinon.stub(IModelHost, "platform").get(() => ({
-      setMaxTileCacheSize: setMaxTileCacheSizeStub,
-    }));
-
     const storageStub = sinon.createStubInstance(AzureServerStorage) as sinon.SinonStubbedInstance<AzureServerStorage> & AzureServerStorage; // I guess Sinon type definitions don't work well with overloads
     const registerStub = sinon.stub(AzureServerStorageBindings.prototype, "register").callsFake((container) => {
       container.bind(ServerStorage).toConstantValue(storageStub);
@@ -164,23 +159,16 @@ describe("IModelHost", () => {
     assert.equal((registerStub.firstCall.lastArg as AzureServerStorageBindingsConfig).accountName, config.tileCacheAzureCredentials.account);
     assert.equal((registerStub.firstCall.lastArg as AzureServerStorageBindingsConfig).accountKey, config.tileCacheAzureCredentials.accessKey);
     assert.equal((registerStub.firstCall.lastArg as AzureServerStorageBindingsConfig).baseUrl, `https://${config.tileCacheAzureCredentials.account}.blob.core.windows.net`);
-    assert.isTrue(setMaxTileCacheSizeStub.calledOnceWithExactly(0));
   });
 
   it("should set custom cloud storage provider for tile cache", async () => {
     const config: IModelHostOptions = {};
     config.tileCacheStorage = {} as ServerStorage;
 
-    const setMaxTileCacheSizeStub = sinon.stub();
-    sinon.stub(IModelHost, "platform").get(() => ({
-      setMaxTileCacheSize: setMaxTileCacheSizeStub,
-    }));
-
     await IModelHost.startup(config);
 
     assert.isDefined(IModelHost.tileStorage);
     assert.equal(IModelHost.tileStorage!.storage, config.tileCacheStorage);
-    assert.isTrue(setMaxTileCacheSizeStub.calledOnceWithExactly(0));
   });
 
   it("should throw if both tileCacheStorage and tileCacheAzureCredentials are set", async () => {
@@ -195,30 +183,9 @@ describe("IModelHost", () => {
   });
 
   it("should use local cache if cloud storage provider for tile cache is not set", async () => {
-    const setMaxTileCacheSizeStub = sinon.stub();
-    sinon.stub(IModelHost, "platform").get(() => ({
-      setMaxTileCacheSize: setMaxTileCacheSizeStub,
-    }));
-
     await IModelHost.startup(opts);
 
     assert.isUndefined(IModelHost.tileStorage);
-    assert.isTrue(setMaxTileCacheSizeStub.calledOnceWithExactly(IModelHostConfiguration.defaultMaxTileCacheDbSize));
-  });
-
-  it("should use configured size for local cache", async () => {
-    const setMaxTileCacheSizeStub = sinon.stub();
-    sinon.stub(IModelHost, "platform").get(() => ({
-      setMaxTileCacheSize: setMaxTileCacheSizeStub,
-    }));
-
-    const maxTileCacheDbSize = 123456;
-    await IModelHost.startup({
-      ...opts,
-      maxTileCacheDbSize,
-    });
-
-    assert.isTrue(setMaxTileCacheSizeStub.calledOnceWithExactly(maxTileCacheDbSize));
   });
 
   it("should cleanup tileStorage on shutdown", async () => {
