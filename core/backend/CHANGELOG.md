@@ -233,7 +233,7 @@ Tue, 17 Oct 2023 15:14:32 GMT
 - Use instance query to get aspects for abstract classes
 - ViewStore.ViewDb.getViewGroups select statement was referring to ParentId when parent was meant
 - Remove `storageType` from `BlobContainer.RequestTokenProps`.
-- Add 'provider' to 'BlobContainer.CreatedContainerProps'
+- Add 'provider' to 'BlobContainer.CreatedContainerProps' 
 - add TileStorage.getCachedTilesGenerator
 
 ## 4.1.9
