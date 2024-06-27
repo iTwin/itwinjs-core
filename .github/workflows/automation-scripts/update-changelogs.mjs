@@ -94,64 +94,64 @@ if (targetBranch === `origin/${currentBranch}`) {
   console.log(`The current branch is ${currentBranch}, so the target will be ${targetBranch} branch`)
 }
 
-// // copy all changelogs from the current branch to ./temp-incoming-changelogs, the files will be named: package_name_CHANGELOG.json
-// await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-incoming-changelogs/$(echo "{}" | sed "s/^.\\///; s/\\//_/g")"' \\;`;
+// copy all changelogs from the current branch to ./temp-incoming-changelogs, the files will be named: package_name_CHANGELOG.json
+await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-incoming-changelogs/$(echo "{}" | sed "s/^.\\///; s/\\//_/g")"' \\;`;
 
-// // before checking out to target branch
-// // if it is a major or minor release, we need to update `gather-docs.yaml`'s branchName value to be the release branch
-// if (commitMessage.endsWith(".0")) {
-//   const docsYamlPath = "common/config/azure-pipelines/templates/gather-docs.yaml";
-//   editFileInPlaceSynchronously(docsYamlPath, /release\/\d+\.\d+\.\w+/g, currentBranch);
-//   // commit these changes to our release branch
-//   await $`git add ${docsYamlPath}`;
-//   await $`git commit -m "Update gather-docs.yaml's branch name to the release branch"`;
-//   await $`git push origin HEAD:${currentBranch}`;
-// }
+// before checking out to target branch
+// if it is a major or minor release, we need to update `gather-docs.yaml`'s branchName value to be the release branch
+if (commitMessage.endsWith(".0")) {
+  const docsYamlPath = "common/config/azure-pipelines/templates/gather-docs.yaml";
+  editFileInPlaceSynchronously(docsYamlPath, /release\/\d+\.\d+\.\w+/g, currentBranch);
+  // commit these changes to our release branch
+  await $`git add ${docsYamlPath}`;
+  await $`git commit -m "Update gather-docs.yaml's branch name to the release branch"`;
+  await $`git push origin HEAD:${currentBranch}`;
+}
 
-// targetBranch = targetBranch.replace("origin/", "");
-// await $`git checkout ${targetBranch}`;
-// // copy all changelogs from the target branch to ./temp-target-changelogs, the files will be named: package_name_CHANGELOG.json
-// await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-target-changelogs/$(echo "{}" | sed "s/^.\\///; s/\\//_/g")"' \\;`;
+targetBranch = targetBranch.replace("origin/", "");
+await $`git checkout ${targetBranch}`;
+// copy all changelogs from the target branch to ./temp-target-changelogs, the files will be named: package_name_CHANGELOG.json
+await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-target-changelogs/$(echo "{}" | sed "s/^.\\///; s/\\//_/g")"' \\;`;
 
-// const allTargetFiles = fs.readdirSync(targetPath);
-// const incomingFiles = fs.readdirSync(incomingPath);
-// // Only include packages from Current branch if they DO exist in the Incoming branch, ie. new packages in later versions of itwinjs-core.
-// const targetFiles = allTargetFiles.filter((file) => {
-//   if (incomingFiles.includes(file)) {
-//     return file;
-//   }
-//   else {
-//     console.log(`${file} is not a package in ${currentBranch}. Skipping this package.`);
-//   }
-// })
+const allTargetFiles = fs.readdirSync(targetPath);
+const incomingFiles = fs.readdirSync(incomingPath);
+// Only include packages from Current branch if they DO exist in the Incoming branch, ie. new packages in later versions of itwinjs-core.
+const targetFiles = allTargetFiles.filter((file) => {
+  if (incomingFiles.includes(file)) {
+    return file;
+  }
+  else {
+    console.log(`${file} is not a package in ${currentBranch}. Skipping this package.`);
+  }
+})
 
-// fixChangeLogs(targetFiles);
+fixChangeLogs(targetFiles);
 
-// // copy changelogs back to proper file paths and convert names back to: CHANGELOG.json
-// await $`find ./temp-target-changelogs/ -type f -name "*CHANGELOG.json" -exec sh -c 'cp "{}" "$(echo "{}" | sed "s|temp-target-changelogs/\\(.*\\)_|./\\1/|; s|_|/|g")"' \\;`;
-// // delete temps
-// await $`rm -r ${targetPath}`;
-// await $`rm -r ${incomingPath}`;
-// // after already checking out to target branch
-// // copy {release-version}.md to target branch if the commit that triggered this script run is from a major or minor version bump
-// if (commitMessage.endsWith(".0")) {
-//   await $`git checkout ${currentBranch} docs/changehistory/${commitMessage}.md`
+// copy changelogs back to proper file paths and convert names back to: CHANGELOG.json
+await $`find ./temp-target-changelogs/ -type f -name "*CHANGELOG.json" -exec sh -c 'cp "{}" "$(echo "{}" | sed "s|temp-target-changelogs/\\(.*\\)_|./\\1/|; s|_|/|g")"' \\;`;
+// delete temps
+await $`rm -r ${targetPath}`;
+await $`rm -r ${incomingPath}`;
+// after already checking out to target branch
+// copy {release-version}.md to target branch if the commit that triggered this script run is from a major or minor version bump
+if (commitMessage.endsWith(".0")) {
+  await $`git checkout ${currentBranch} docs/changehistory/${commitMessage}.md`
 
-//   // also need to add reference to this new md in leftNav.md
-//   const leftNavMdPath = "docs/changehistory/leftNav.md";
-//   editFileInPlaceSynchronously(leftNavMdPath, "### Versions\n", `### Versions\n\n- [${commitMessage}](./${commitMessage}.md)\n`);
-// }
-// // # regen CHANGELOG.md
-// await $`rush publish --regenerate-changelogs`;
-// /*********************************************************************
-// * Uncomment For Manual runs and fix branch name to appropriate version
-// * the version should match your incoming branch
-// *********************************************************************/
-// // await $`git checkout -b finalize-release-X.X.X`;
-// // targetBranch = "finalize-release-X.X.X"
-// await $`git add .`;
-// await $`git commit -m "${commitMessage} Changelogs"`;
-// await $`rush change --bulk --message "" --bump-type none`;
-// await $`git add .`;
-// await $`git commit --amend --no-edit`;
-// await $`git push origin HEAD:${targetBranch}`;
+  // also need to add reference to this new md in leftNav.md
+  const leftNavMdPath = "docs/changehistory/leftNav.md";
+  editFileInPlaceSynchronously(leftNavMdPath, "### Versions\n", `### Versions\n\n- [${commitMessage}](./${commitMessage}.md)\n`);
+}
+// # regen CHANGELOG.md
+await $`rush publish --regenerate-changelogs`;
+/*********************************************************************
+* Uncomment For Manual runs and fix branch name to appropriate version
+* the version should match your incoming branch
+*********************************************************************/
+// await $`git checkout -b finalize-release-X.X.X`;
+// targetBranch = "finalize-release-X.X.X"
+await $`git add .`;
+await $`git commit -m "${commitMessage} Changelogs"`;
+await $`rush change --bulk --message "" --bump-type none`;
+await $`git add .`;
+await $`git commit --amend --no-edit`;
+await $`git push origin HEAD:${targetBranch}`;
