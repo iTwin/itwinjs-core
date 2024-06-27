@@ -9,7 +9,7 @@
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { assert, BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelRpcProps,
+  ChangesetIndex, ChangesetIndexAndId, ConflictingLocksError, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
   OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
@@ -166,16 +166,32 @@ export abstract class IpcHandler {
 
         return { result: await func.call(impl, ...args) };
       } catch (err: any) {
-        const ret: IpcInvokeReturn = {
-          error: {
-            name: err.hasOwnProperty("name") ? err.name : err.constructor?.name ?? "Unknown Error",
-            message: err.message ?? BentleyError.getErrorMessage(err),
-            errorNumber: err.errorNumber ?? 0,
-          },
-        };
-        if (!IpcHost.noStack)
-          ret.error.stack = BentleyError.getErrorStack(err);
-        return ret;
+        if (err instanceof ConflictingLocksError) {
+
+          const ret2: IpcInvokeReturn =  {
+            constructorName: err.constructor.name,
+            args: [err.message, err.getMetaData(), err.conflictingLocks], // rename conflictingLocks to extraData??? I mean atleast it works...
+          };
+          // I don't know how people would parse this
+          // const ret: IpcInvokeReturn = {
+          //   conflictingLocks: err.conflictingLocks,
+          //   error: err,
+          // };
+          // if (!IpcHost.noStack)
+          //   ret.error.stack = BentleyError.getErrorStack(err);
+          return ret2;
+        } else {
+          const ret: IpcInvokeReturn = {
+            error: {
+              name: err.hasOwnProperty("name") ? err.name : err.constructor?.name ?? "Unknown Error",
+              message: err.message ?? BentleyError.getErrorMessage(err),
+              errorNumber: err.errorNumber ?? 0,
+            },
+          };
+          if (!IpcHost.noStack)
+            ret.error.stack = BentleyError.getErrorStack(err);
+          return ret;
+        }
       }
     });
   }

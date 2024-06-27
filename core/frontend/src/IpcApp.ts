@@ -8,7 +8,7 @@
 
 import { AsyncMethodsOf, PickAsyncMethods, PromiseReturnType } from "@itwin/core-bentley";
 import {
-  BackendError, IModelError, IModelStatus, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend,
+  BackendError, constructors, IModelError, IModelStatus, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend,
   iTwinChannel, RemoveFunction,
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
@@ -93,7 +93,25 @@ export class IpcApp {
    */
   public static async callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any> {
     const retVal = (await this.invoke(channelName, methodName, ...args)) as IpcInvokeReturn;
-    if (undefined !== retVal.error) {
+
+    if ("constructorName" in retVal) {
+      const constructorName = retVal.constructorName;
+      const constructor = constructors[constructorName];
+      if (constructor) {
+        const newObj = new constructor(...retVal.args);
+        throw newObj;
+      }
+    } else if (undefined !== retVal.error) {
+      // retVal.key
+      // if (retVal.error.conflictingLocks !== undefined || retVal.conflictingLocks !== undefined) {
+      //   const err = new ConflictingLocksError(retVal.error.message, undefined, retVal.error.conflictingLocks);
+      //   err.stack = retVal.error.stack;
+      //   throw err;
+      // } else if (retVal.error instanceof ConflictingLocksError) {
+      //   const err = new ConflictingLocksError(retVal.error.message, undefined, retVal.error.conflictingLocks);
+      //   err.stack = retVal.error.stack;
+      //   throw err;
+      // } else {
       const err = new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message);
       err.stack = retVal.error.stack;
       throw err;

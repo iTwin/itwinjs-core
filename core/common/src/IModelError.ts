@@ -66,7 +66,7 @@ export interface ConflictingLock {
  * An error raised when there is a lock conflict detected.
  * Typically this error would be thrown by [LockControl.acquireLocks]($backend) when you are requesting a lock on an element that is already held by another briefcase.
  * @public
- */
+*/
 export class ConflictingLocksError extends IModelError {
   public conflictingLocks?: ConflictingLock[];
   constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]) {
@@ -75,6 +75,10 @@ export class ConflictingLocksError extends IModelError {
   }
 
 }
+
+export const constructors: { [key: string]: new (...args: any[]) => any } = {
+  ConflictingLocksError,
+};
 
 /** @public */
 export class ServerError extends IModelError {
