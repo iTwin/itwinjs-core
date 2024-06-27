@@ -3,6 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/** @packageDocumentation
+ * @module iModels
+ */
+
 import { LockControl } from "../LockControl";
 import { _close, _elementWasCreated, _implementationProhibited, _releaseAllLocks } from "./Symbols";
 
