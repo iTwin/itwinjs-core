@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Sat, 22 Jun 2024 01:11:18 GMT and should not be manually modified.
+This log was last generated on Thu, 27 Jun 2024 21:13:04 GMT and should not be manually modified.
+
+## 4.7.3
+Thu, 27 Jun 2024 21:09:02 GMT
+
+### Updates
+
+- Fixed new tiles not updating planar clip mask immediately.
 
 ## 4.7.2
 Sat, 22 Jun 2024 01:09:54 GMT
