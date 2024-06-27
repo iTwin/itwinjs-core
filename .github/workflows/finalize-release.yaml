@@ -10,8 +10,8 @@ on:
   push:
     branches:
     - 'mikeN/fin-release-commit'
-    paths:
-    - '**/CHANGELOG.md'
+    # paths:
+    # - '**/CHANGELOG.md'
 
 jobs:
   finalize:

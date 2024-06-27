@@ -74,6 +74,10 @@ const tag = latestTag.stdout.trim();
 const versionMatch = tag.match(/release\/(\d+\.\d+\.\d+)/);
 let commitMessage = versionMatch ? versionMatch[1] : null;
 
+const commitOutput = await $`git log --grep='^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+' --format='%H %s' | head -n 1`
+const commitInfo = commitOutput.stdout.trim()
+console.log(commitInfo)
+
 // remove extra null and new line characters from git cmds
 targetBranch = String(targetBranch).replace(/\n/g, '');
 currentBranch = String(currentBranch).replace(/\n/g, '');
