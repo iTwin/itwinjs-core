@@ -13,6 +13,6 @@ function sym(name: string): string {
 }
 
 export const _close = Symbol.for(sym("close"));
-export const _elementWasCreated = Symbol.for(sym("elementWasCreated_INTERNAL_ONLY_DO_NOT_USE"));
-export const _releaseAllLocks = Symbol.for(sym("releaseAllLocks_INTERNAL_ONLY_DO_NOT_USE"));
-export const _verifyChannel = Symbol.for(sym("verifyChannel_INTERNAL_ONLY_DO_NOT_USE"));
+export const _elementWasCreated = Symbol.for(sym("elementWasCreated"));
+export const _releaseAllLocks = Symbol.for(sym("releaseAllLocks"));
+export const _verifyChannel = Symbol.for(sym("verifyChannel"));
