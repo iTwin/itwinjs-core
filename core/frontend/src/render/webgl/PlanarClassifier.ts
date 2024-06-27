@@ -261,6 +261,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _classifierTreeRef?: SpatialClassifierTileTreeReference;
   private _planarClipMaskOverrides?: FeatureSymbology.Overrides;
   private _contentMode: PlanarClassifierContent = PlanarClassifierContent.None;
+  private _removeMe?: () => void;
 
   private static _postProjectionMatrix = Matrix4d.createRowValues(
     0, 1, 0, 0,
@@ -336,6 +337,10 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._maskBuffer = dispose(this._maskBuffer);
     this._classifierCombinedBuffer = dispose(this._classifierCombinedBuffer);
     this._classifierAndMaskCombinedBuffer = dispose(this._classifierAndMaskCombinedBuffer);
+    if (this._removeMe) {
+      this._removeMe();
+      this._removeMe = undefined;
+    }
   }
 
   public get texture(): Texture | undefined {
@@ -418,6 +423,15 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._frustum = projection.textureFrustum;
     this._debugFrustum = projection.debugFrustum;
     this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides(viewState, context);
+    if (!this._planarClipMask?.usingViewportOverrides && this._removeMe) {
+      this._removeMe();
+      this._removeMe = undefined;
+    } else if (this._planarClipMask?.usingViewportOverrides && !this._removeMe) {
+      this._removeMe = context.viewport.onFeatureOverridesChanged.addListener(() => {
+        this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides(viewState, context);
+        context.viewport.requestRedraw();
+      });
+    }
 
     const drawTree = (treeRef: TileTreeReference, graphics: RenderGraphic[]) => {
       this._graphics = graphics;
