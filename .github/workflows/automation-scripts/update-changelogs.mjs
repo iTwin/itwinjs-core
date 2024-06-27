@@ -67,7 +67,7 @@ await $`mkdir ${incomingPath}`
 // find the latest release branch, and make that the target for the changelogs
 let targetBranch = await $`git branch -a --list "origin/release/[0-9]*.[0-9]*.x" | tail -n1 | sed 's/  remotes\\///'`;
 let currentBranch = await $`git branch --show-current`;
-let commitMessage = await $`git log --format=%B -n 1`;
+let commitMessage = await $`git describe --tags $(git rev-list --tags --max-count=1)`;
 
 // remove extra null and new line characters from git cmds
 targetBranch = String(targetBranch).replace(/\n/g, '');
