@@ -18,7 +18,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       await TestUtility.shutdownFrontend();
     });
 
-    it.only("should receive ConflictingLocksError on the frontend", async () => {
+    it("should receive ConflictingLocksError on the frontend", async () => {
       const message = "test";
       const conflictingLocks: ConflictingLock[] = [{ briefcaseIds: [1], objectId: "objectId", state: LockState.Exclusive }];
       const metadata: LoggingMetaData = { category: "test", severity: "error" };
