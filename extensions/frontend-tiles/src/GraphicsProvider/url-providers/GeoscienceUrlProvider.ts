@@ -36,7 +36,7 @@ export interface BaseGeoscienceArgs {
  * Represents the arguments for obtaining a geoscience tileset.
  * @beta
  */
-export interface ObtainGeoscienceTilesetArgs extends BaseGeoscienceArgs {
+export interface GetGeoscienceTilesetArgs extends BaseGeoscienceArgs {
   /**
    * The URL prefix for the tileset.
    */
@@ -52,7 +52,7 @@ export interface ObtainGeoscienceTilesetArgs extends BaseGeoscienceArgs {
  * Obtains the URL for a geoscience tileset.
  * @beta
  */
-export async function obtainGeoscienceTilesetUrl(args: ObtainGeoscienceTilesetArgs): Promise<string | undefined> {
+export async function getGeoscienceTilesetUrl(args: GetGeoscienceTilesetArgs): Promise<string | undefined> {
   const headers = {
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
     Authorization: args.accessToken,

@@ -3,11 +3,12 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { initGeoscienceTileset } from './producers/GeoscienceTileset';
-import { initIModelTiles, initIModelTilesAs3DTiles, obtainIModelTilesetUrl } from './producers/IModelTileset';
+import { createGeoscienceTileset } from './tileset-creators/GeoscienceTileset';
+import { createIModelTileset, createIModelTilesetAs3DTiles, getIModelTilesetUrlFromConnection } from './tileset-creators/IModelTileset';
+import { createRealityModelTilesetFromUrl } from './tileset-creators/RealityModelTileset';
 
-export { InitGeoscienceTilesArgs } from './producers/GeoscienceTileset';
-export { ObtainIModelTilesetUrlArgs, InitIModelTilesArgs } from './producers/IModelTileset';
+export { CreateGeoscienceTilesetArgs } from './tileset-creators/GeoscienceTileset';
+export { GetIModelTilesetUrlFromConnectionArgs, createIModelTilesetArgs } from './tileset-creators/IModelTileset';
 
 /**
  * The GraphicsProvider class is responsible for providing graphics-related functionality.
@@ -18,24 +19,27 @@ export class GraphicsProvider {
 
   private constructor() { /* Private constructor to prevent instantiation */ }
 
-  // The URL of the iModel tileset.
-  public obtainIModelTilesetUrl = obtainIModelTilesetUrl;
-
-  // Initializes the geoscience tileset.
-  public initGeoscienceTileset = initGeoscienceTileset;
-
-  // Initializes the iModel tiles.
-  public initIModelTiles = initIModelTiles;
-
-  // Initializes the iModel tiles as 3D tiles.
-  public initIModelTilesAs3DTiles = initIModelTilesAs3DTiles;
-
   public static getInstance(): GraphicsProvider {
     if (!GraphicsProvider.instance) {
       GraphicsProvider.instance = new GraphicsProvider();
     }
     return GraphicsProvider.instance;
   }
+
+  // The URL of the iModel tileset.
+  public getIModelTilesetUrlFromConnection = getIModelTilesetUrlFromConnection;
+
+  // Creates the geoscience tileset.
+  public createGeoscienceTileset = createGeoscienceTileset;
+
+  // Creates the iModel tiles.
+  public createIModelTileset = createIModelTileset;
+
+  // Creates the iModel tiles as 3D tiles.
+  public createIModelTilesetAs3DTiles = createIModelTilesetAs3DTiles;
+
+  // Creates the reality model tileset from a URL.
+  public createRealityModelTilesetFromUrl = createRealityModelTilesetFromUrl;
 }
 
 export default GraphicsProvider.getInstance();

@@ -8,14 +8,14 @@ import { IModelApp, IModelConnection, SpatialTileTreeReferences, SpatialViewStat
 import { Logger } from "@itwin/core-bentley";
 import { createBatchedSpatialTileTreeReferences } from "../../BatchedSpatialTileTreeRefs";
 import { loggerCategory } from "../../LoggerCategory";
-import { obtainIModelTilesetUrlFromProvider, ObtainIModelTilesetUrlFromProviderArgs, IModelTilesetOptions } from "../providers/IModelTileset";
-import { initRealityDataTilesetFromUrl } from "./RealityModelTileset";
+import { getIModelTilesetUrl, GetIModelTilesetUrlArgs, IModelTilesetOptions } from "../url-providers/IModelUrlProvider";
+import { createRealityModelTilesetFromUrl } from "./RealityModelTileset";
 
 
 /** Arguments supplied  to [[obtainMeshExportTilesetUrl]].
  * @beta
  */
-export interface ObtainIModelTilesetUrlArgs {
+export interface GetIModelTilesetUrlFromConnectionArgs {
   /** The iModel for which to obtain a tileset URl. */
   iModel: IModelConnection;
 
@@ -32,7 +32,7 @@ export interface ObtainIModelTilesetUrlArgs {
  * @returns A URL from which the tileset can be loaded, or `undefined` if no appropriate URL could be obtained.
  * @beta
  */
-export async function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs): Promise<URL | undefined> {
+export async function getIModelTilesetUrlFromConnection(args: GetIModelTilesetUrlFromConnectionArgs): Promise<URL | undefined> {
   if (!args.iModel.iModelId) {
     Logger.logInfo(loggerCategory, "Cannot obtain Graphics Data for an iModel with no iModelId");
     return undefined;
@@ -43,7 +43,7 @@ export async function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs): 
     return undefined;
   }
 
-  const graphicsArgs: ObtainIModelTilesetUrlFromProviderArgs = {
+  const graphicsArgs: GetIModelTilesetUrlArgs = {
     accessToken: args.accessToken,
     dataSource: {
       iTwinId: args.iModel.iTwinId,
@@ -53,7 +53,7 @@ export async function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs): 
     options: args.options,
   };
 
-  return obtainIModelTilesetUrlFromProvider(graphicsArgs);
+  return getIModelTilesetUrl(graphicsArgs);
 }
 
 
@@ -65,10 +65,10 @@ export async function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs): 
  */
 export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
 
-/** Options supplied to [[initIModelTiles]].
+/** Options supplied to [[createIModelTileset]].
  * @beta
  */
-export interface InitIModelTilesArgs {
+export interface createIModelTilesetArgs {
   /** Provide the base URL for the pre-published tileset for a given iModel.
    * If omitted, [[obtainMeshExportTilesetUrl]] will be invoked with default arguments, using the access token provided by [[IModelApp]].
    */
@@ -114,7 +114,7 @@ export const frontendTilesOptions = {
  * Initializes the IModelTiles with the provided options.
  * @beta
  */
-export function initIModelTiles(options: InitIModelTilesArgs): void {
+export function createIModelTileset(options: createIModelTilesetArgs): void {
   if (undefined !== options.maxLevelsToSkip && options.maxLevelsToSkip >= 0)
     frontendTilesOptions.maxLevelsToSkip = options.maxLevelsToSkip;
 
@@ -125,22 +125,22 @@ export function initIModelTiles(options: InitIModelTilesArgs): void {
     frontendTilesOptions.useIndexedDBCache = true;
 
   const computeUrl = options.computeSpatialTilesetBaseUrl ?? (
-    async (iModel: IModelConnection) => obtainIModelTilesetUrl({ iModel, accessToken: await IModelApp.getAccessToken(), options: { enableCDN: options.enableCDN, cesium3DTiles: false } })
+    async (iModel: IModelConnection) => getIModelTilesetUrlFromConnection({ iModel, accessToken: await IModelApp.getAccessToken(), options: { enableCDN: options.enableCDN, cesium3DTiles: false } })
   );
 
   SpatialTileTreeReferences.create = (view: SpatialViewState) => createBatchedSpatialTileTreeReferences(view, computeUrl);
 }
 
-export type InitIModelTilesetUrlArgs = ObtainIModelTilesetUrlArgs;
+export type CreateIModelTilesetArgs = GetIModelTilesetUrlFromConnectionArgs;
 
 /** Initializes the IModelTiles using 3D Tiles format, with the provided options.
  * @beta
  */
-export async function initIModelTilesAs3DTiles(args: InitIModelTilesetUrlArgs): Promise<void> {
+export async function createIModelTilesetAs3DTiles(args: CreateIModelTilesetArgs): Promise<void> {
   try {
-    const url = await obtainIModelTilesetUrl(args);
+    const url = await getIModelTilesetUrlFromConnection(args);
     if (url) {
-      initRealityDataTilesetFromUrl(url.toString());
+      createRealityModelTilesetFromUrl(url.toString());
     } else {
       throw new Error("Failed to obtain tileset URL");
     }

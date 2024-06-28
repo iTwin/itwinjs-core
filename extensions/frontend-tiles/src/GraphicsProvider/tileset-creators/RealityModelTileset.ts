@@ -10,7 +10,7 @@ import { loggerCategory } from "../../LoggerCategory";
 /** Initialize the 3d Tiles Tileset.
  * @beta
  */
-export async function initRealityDataTilesetFromUrl(url: string) {
+export async function createRealityModelTilesetFromUrl(url: string) {
   const vp = IModelApp.viewManager.selectedView;
   if (!vp) {
     Logger.logInfo(loggerCategory, "Reality Model not successfully attached.");

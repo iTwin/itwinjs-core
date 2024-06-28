@@ -5,25 +5,25 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { loggerCategory } from "../../LoggerCategory";
-import { BaseGeoscienceArgs, obtainGeoscienceTilesetUrl } from "../providers/GeoscienceTileset";
-import { initRealityDataTilesetFromUrl } from "./RealityModelTileset";
+import { BaseGeoscienceArgs, getGeoscienceTilesetUrl } from "../url-providers/GeoscienceUrlProvider";
+import { createRealityModelTilesetFromUrl } from "./RealityModelTileset";
 /**
  * Represents the arguments required to initialize geoscience tileset.
  * @beta
  */
-export interface InitGeoscienceTilesArgs extends BaseGeoscienceArgs { };
+export interface CreateGeoscienceTilesetArgs extends BaseGeoscienceArgs { };
 
 /** Initialize the geoscience tileset.
  * @beta
  */
-export async function initGeoscienceTileset(args: InitGeoscienceTilesArgs): Promise<void> {
+export async function createGeoscienceTileset(args: CreateGeoscienceTilesetArgs): Promise<void> {
   try {
-    const url = await obtainGeoscienceTilesetUrl(args);
+    const url = await getGeoscienceTilesetUrl(args);
     if (!url) {
       Logger.logInfo(loggerCategory, `No data available for Geoscience Object ${args.geoscienceObjectId}`);
       return;
     } else {
-      initRealityDataTilesetFromUrl(url);
+      createRealityModelTilesetFromUrl(url);
       return;
     }
   } catch (error) {

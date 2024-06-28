@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { queryGraphicRepresentations } from "./GraphicsProvider/providers/GraphicRepresentation";
+import { queryGraphicRepresentations } from "./GraphicsProvider/url-providers/GraphicUrlProvider";
 import { AccessToken } from "@itwin/core-bentley";
 import { GraphicsProvider, InitIModelTilesArgs, ObtainIModelTilesetUrlArgs } from './GraphicsProvider/GraphicsProvider';
 
@@ -121,7 +121,7 @@ export type ObtainMeshExportTilesetUrlArgs = ObtainIModelTilesetUrlArgs;
  * @beta
  */
 export async function obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise<URL | undefined> {
-  return GraphicsProvider.getInstance().obtainIModelTilesetUrl(args);
+  return GraphicsProvider.getInstance().getIModelTilesetUrlFromConnection(args);
 }
 
 /** Arguments supplied to [[InitIModelTilesArgs]].
@@ -133,5 +133,5 @@ export type FrontendTilesOptions = InitIModelTilesArgs;
  * @beta
  */
 export function initializeFrontendTiles(options: FrontendTilesOptions): void {
-  GraphicsProvider.getInstance().initIModelTiles(options);
+  GraphicsProvider.getInstance().createIModelTileset(options);
 }

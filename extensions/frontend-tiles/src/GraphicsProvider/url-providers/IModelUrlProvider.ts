@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken } from "@itwin/core-bentley";
-import { obtainGraphicRepresentationUrl, ObtainGraphicRepresentationUrlArgs } from "./GraphicRepresentation";
+import { getGraphicRepresentationUrl, GetGraphicRepresentationUrlArgs } from "./GraphicUrlProvider";
 
 /** Represents a data source for an iModel.
  * @beta
@@ -43,7 +43,7 @@ export interface IModelTilesetOptions {
 /** Arguments supplied  to [[obtainMeshExportTilesetUrl]].
  * @beta
  */
-export interface ObtainIModelTilesetUrlFromProviderArgs {
+export interface GetIModelTilesetUrlArgs {
   /** The data source that the representation originates from. For example, a GraphicRepresentation in the 3D Tiles format might have a dataSource that is a specific iModel changeset. */
   dataSource: DataSource;
 
@@ -58,8 +58,8 @@ export interface ObtainIModelTilesetUrlFromProviderArgs {
  * Obtains the URL for an iModel tileset from the provider.
  * @beta
  */
-export async function obtainIModelTilesetUrlFromProvider(args: ObtainIModelTilesetUrlFromProviderArgs): Promise<URL | undefined> {
-  const graphicsArgs: ObtainGraphicRepresentationUrlArgs = {
+export async function getIModelTilesetUrl(args: GetIModelTilesetUrlArgs): Promise<URL | undefined> {
+  const graphicsArgs: GetGraphicRepresentationUrlArgs = {
     accessToken: args.accessToken,
     dataSource: {
       iTwinId: args.dataSource.iTwinId,
@@ -73,5 +73,5 @@ export async function obtainIModelTilesetUrlFromProvider(args: ObtainIModelTiles
     enableCDN: args.options.enableCDN,
   };
 
-  return obtainGraphicRepresentationUrl(graphicsArgs);
+  return getGraphicRepresentationUrl(graphicsArgs);
 }

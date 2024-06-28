@@ -200,10 +200,10 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
   }
 }
 
-/** Arguments supplied  to [[obtainGraphicRepresentationUrl]].
+/** Arguments supplied  to [[getGraphicRepresentationUrl]].
  * @beta
  */
-export interface ObtainGraphicRepresentationUrlArgs {
+export interface GetGraphicRepresentationUrlArgs {
   /** The token used to access the mesh export service. */
   accessToken: AccessToken;
 
@@ -233,7 +233,7 @@ export interface ObtainGraphicRepresentationUrlArgs {
  * @returns A URL from which the tileset can be loaded, or `undefined` if no appropriate URL could be obtained.
  * @beta
  */
-export async function obtainGraphicRepresentationUrl(args: ObtainGraphicRepresentationUrlArgs): Promise<URL | undefined> {
+export async function getGraphicRepresentationUrl(args: GetGraphicRepresentationUrlArgs): Promise<URL | undefined> {
   if (!args.dataSource.id) {
     Logger.logInfo(loggerCategory, "Cannot obtain Graphics Data from a source without an Id");
     return undefined;
