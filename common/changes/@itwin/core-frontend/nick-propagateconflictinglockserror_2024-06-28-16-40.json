@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "When a conflictingLocksError is thrown on the backend during an IPC call, it will be reconstructed on the frontend and thrown again.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
