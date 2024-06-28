@@ -8,7 +8,7 @@ import { IModelApp } from "@itwin/core-frontend";
 import { loggerCategory } from "../../LoggerCategory";
 
 /** Initialize the 3d Tiles Tileset.
- * @beta
+ * @alpha
  */
 export async function createRealityModelTilesetFromUrl(url: string) {
   const vp = IModelApp.viewManager.selectedView;

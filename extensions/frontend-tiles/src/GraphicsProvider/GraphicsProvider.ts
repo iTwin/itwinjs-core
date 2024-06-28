@@ -29,16 +29,22 @@ export class GraphicsProvider {
   // The URL of the iModel tileset.
   public getIModelTilesetUrlFromConnection = getIModelTilesetUrlFromConnection;
 
-  // Creates the geoscience tileset.
+  /** Creates the geoscience tileset.
+   * @alpha
+   */
   public createGeoscienceTileset = createGeoscienceTileset;
 
   // Creates the iModel tiles.
   public createIModelTileset = createIModelTileset;
 
-  // Creates the iModel tiles as 3D tiles.
+  /** Creates the iModel tiles as 3D tiles.
+   * @alpha
+   */
   public createIModelTilesetAs3DTiles = createIModelTilesetAs3DTiles;
 
-  // Creates the reality model tileset from a URL.
+  /** Creates the reality model tileset from a URL.
+   * @alpha
+   */
   public createRealityModelTilesetFromUrl = createRealityModelTilesetFromUrl;
 }
 

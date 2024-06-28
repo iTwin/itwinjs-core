@@ -9,12 +9,12 @@ import { BaseGeoscienceArgs, getGeoscienceTilesetUrl } from "../url-providers/Ge
 import { createRealityModelTilesetFromUrl } from "./RealityModelTileset";
 /**
  * Represents the arguments required to initialize geoscience tileset.
- * @beta
+ * @alpha
  */
 export interface CreateGeoscienceTilesetArgs extends BaseGeoscienceArgs { };
 
 /** Initialize the geoscience tileset.
- * @beta
+ * @alpha
  */
 export async function createGeoscienceTileset(args: CreateGeoscienceTilesetArgs): Promise<void> {
   try {

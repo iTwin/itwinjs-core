@@ -8,7 +8,7 @@ import { loggerCategory } from "../LoggerCategory";
 
 /**
  * Represents the arguments required for geoscience operations.
- * @beta
+ * @alpha
  */
 export interface BaseGeoscienceArgs {
   /**
@@ -34,7 +34,7 @@ export interface BaseGeoscienceArgs {
 
 /**
  * Represents the arguments for obtaining a geoscience tileset.
- * @beta
+ * @alpha
  */
 export interface GetGeoscienceTilesetArgs extends BaseGeoscienceArgs {
   /**
@@ -50,7 +50,7 @@ export interface GetGeoscienceTilesetArgs extends BaseGeoscienceArgs {
 
 /**
  * Obtains the URL for a geoscience tileset.
- * @beta
+ * @alpha
  */
 export async function getGeoscienceTilesetUrl(args: GetGeoscienceTilesetArgs): Promise<string | undefined> {
   const headers = {
