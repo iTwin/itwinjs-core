@@ -6,6 +6,7 @@ import { expect } from "chai";
 import { SubCategoryAppearance } from "@itwin/core-common";
 import { IModelConnection, ScreenViewport, SnapshotConnection, ViewCreator3d} from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
+import sinon = require("sinon");
 
 describe("ViewCreator3d", async () => {
   let imodel: IModelConnection;
@@ -41,8 +42,8 @@ describe("ViewCreator3d", async () => {
     // In a real scenario the visibility would be obtained from the persistent subcategory appearance - our test iModels don't contain any
     // invisible subcategories to test with.
     // The iModel contains one spatial category 0x17 with one subcategory 0x18. We're adding a second pretend subcategory 0x20.
-    imodel.subcategories.add("0x17", "0x18", new SubCategoryAppearance());
-    imodel.subcategories.add("0x17", "0x20", new SubCategoryAppearance());
+    imodel.subcategories.add("0x17", "0x18", new SubCategoryAppearance(), true);
+    imodel.subcategories.add("0x17", "0x20", new SubCategoryAppearance(), true);
 
     const creator = new ViewCreator3d(imodel);
     let view = await creator.createDefaultView();
@@ -55,7 +56,7 @@ describe("ViewCreator3d", async () => {
     expectVisible(true, true);
 
     const invisibleAppearance = new SubCategoryAppearance({ invisible: true });
-    imodel.subcategories.add("0x17", "0x18", invisibleAppearance);
+    imodel.subcategories.add("0x17", "0x18", invisibleAppearance, true);
 
     view = await creator.createDefaultView();
     expectVisible(false, true);
@@ -66,12 +67,38 @@ describe("ViewCreator3d", async () => {
     view = await creator.createDefaultView({ allSubCategoriesVisible: true });
     expectVisible(true, true);
 
-    imodel.subcategories.add("0x17", "0x20", invisibleAppearance);
+    imodel.subcategories.add("0x17", "0x20", invisibleAppearance, true);
     view = await creator.createDefaultView({ allSubCategoriesVisible: true });
     expectVisible(true, true);
 
     view = await creator.createDefaultView();
     expectVisible(false, false);
+  });
+
+  it("when internal logic of loadAllSubCategories throws, should fall back to loading all subcategories through standard paging", async () => {
+    imodel.subcategories.add("0x17", "0x18", new SubCategoryAppearance(), true);
+    imodel.subcategories.add("0x17", "0x20", new SubCategoryAppearance(), true);
+
+    const loadSpy = sinon.spy(imodel.subcategories, "load");
+    const queryStub = sinon.stub(imodel, "querySubCategories");
+    queryStub.callsFake(function () {
+      // Immediately restore the stub to ensure only the first call is thrown.
+      queryStub.restore();
+      // Throw an error for the first call
+      throw new Error("Internal Server Error");
+    });
+
+    const creator = new ViewCreator3d(imodel);
+    const view = await creator.createDefaultView();
+    function expectVisible(subcat18Vis: boolean, subcat20Vis: boolean): void {
+      expect(view.isSubCategoryVisible("0x18")).to.equal(subcat18Vis);
+      expect(view.isSubCategoryVisible("0x20")).to.equal(subcat20Vis);
+    }
+
+    expect(Array.from(view.categorySelector.categories)).to.deep.equal(["0x17"]);
+    expectVisible(true, true);
+    expect(loadSpy).to.be.calledOnce;
+    loadSpy.restore();
   });
 });
 

@@ -70,9 +70,10 @@ export class SubCategoriesCache {
   public async loadAllSubCategories(): Promise<void> {
     try {
       const results = await this._imodel.querySubCategories();
-      if (undefined !== results)
-        this.processResults(results, new Set<string>());
-    } catch {
+      if (undefined !== results){
+        this.processResults(results, new Set<string>(), false);
+      }
+    } catch (e) {
       // In case of a truncated response, gracefully handle the error and exit.
     }
 
@@ -109,9 +110,10 @@ export class SubCategoriesCache {
     return new SubCategoryAppearance(props);
   }
 
-  private processResults(result: SubCategoriesCache.Result, missing: Id64Set): void {
-    for (const row of result)
-      this.add(row.parentId, row.id, SubCategoriesCache.createSubCategoryAppearance(row.appearance));
+  private processResults(result: SubCategoriesCache.Result, missing: Id64Set, override: boolean = true): void {
+    for (const row of result){
+      this.add(row.parentId, row.id, SubCategoriesCache.createSubCategoryAppearance(row.appearance), override);
+    }
 
     // Ensure that any category Ids which returned no results (e.g., non-existent category, invalid Id, etc) are still recorded so they are not repeatedly re-requested
     for (const id of missing)
@@ -122,13 +124,14 @@ export class SubCategoriesCache {
   /** Exposed strictly for tests.
    * @internal
    */
-  public add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance) {
+  public add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance, override: boolean) {
     let set = this._byCategoryId.get(categoryId);
     if (undefined === set)
       this._byCategoryId.set(categoryId, set = new Set<string>());
 
     set.add(subCategoryId);
-    this._appearances.set(subCategoryId, appearance);
+    if (override)
+      this._appearances.set(subCategoryId, appearance);
   }
 
   public async getCategoryInfo(inputCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.CategoryInfo>> {
