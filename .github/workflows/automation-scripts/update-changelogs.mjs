@@ -74,7 +74,7 @@ let currentBranch = await $`git branch --show-current`;
 // const versionMatch = tag.match(/release\/(\d+\.\d+\.\d+)/);
 // let commitMessage = versionMatch ? versionMatch[1] : null;
 
-let commitMessage = await $`git log --grep="^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+\b[^-]*$" -n 1 --pretty=format:%s`;
+let commitMessage = await $`git log --grep="^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+[^-]*$" -n 1 --pretty=format:%s`;
 
 console.log(`commit msg before doing anything: ${commitMessage}`);
 
