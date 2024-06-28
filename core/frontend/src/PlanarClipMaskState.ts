@@ -61,17 +61,16 @@ export class PlanarClipMaskState {
 
     // For all other modes we need to let the tree refs in the view state decide which refs need to be drawn
     // since batched tiles cannot turn on/off individual models just by their tile tree refs.
-    if (!this._tileTreeRefs) {
+    // Keep calling this until loaded so that the range is valid.
+    if (!this._allLoaded) {
       this._tileTreeRefs = new Array<TileTreeReference>();
       if (this.settings.modelIds) {
         view.collectMaskRefs(this.settings.modelIds, this._tileTreeRefs, maskRange);
       }
+      this._allLoaded = this._tileTreeRefs.every((treeRef) => treeRef.treeOwner.load() !== undefined);
       maskRange.clone(this._maskRange);
     } else
       this._maskRange.clone(maskRange);
-
-    if (!this._allLoaded)
-      this._allLoaded = this._tileTreeRefs.every((treeRef) => treeRef.treeOwner.load() !== undefined);
 
     return this._allLoaded ? this._tileTreeRefs : undefined;
   }

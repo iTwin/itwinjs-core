@@ -135,8 +135,11 @@ export class PlanarTextureProjection {
     textureRange.high.x += epsilon;
 
     const textureFrustum = Frustum.fromRange(textureRange);
-    const debugFrustum = textureFrustum.clone();  // debugFrustum as textureRange.
-    // const debugFrustum = Frustum.fromRange(drapeRange);  // debugFrustum as drapeRange.
+    let debugFrustum;
+    if (true)
+      debugFrustum = textureFrustum.clone();  // debugFrustum as textureRange.
+    else
+      debugFrustum = Frustum.fromRange(drapeRange);  // debugFrustum as drapeRange.
     textureTransform.multiplyInversePoint3dArray(debugFrustum.points, debugFrustum.points);
 
     const viewZVecZ = viewState.getRotation().rowZ().z;
