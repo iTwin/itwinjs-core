@@ -167,19 +167,13 @@ export abstract class IpcHandler {
         return { result: await func.call(impl, ...args) };
       } catch (err: any) {
         if (err instanceof ConflictingLocksError) {
-
-          const ret2: IpcInvokeReturn =  {
-            constructorName: err.constructor.name,
-            args: [err.message, err.getMetaData(), err.conflictingLocks], // rename conflictingLocks to extraData??? I mean atleast it works...
+          const ret: IpcInvokeReturn = {
+            errorConstructorName: err.constructor.name,
+            argsForErrorConstructor: [err.message, err.getMetaData(), err.conflictingLocks],
           };
-          // I don't know how people would parse this
-          // const ret: IpcInvokeReturn = {
-          //   conflictingLocks: err.conflictingLocks,
-          //   error: err,
-          // };
-          // if (!IpcHost.noStack)
-          //   ret.error.stack = BentleyError.getErrorStack(err);
-          return ret2;
+          if (!IpcHost.noStack)
+            ret.stack = BentleyError.getErrorStack(err);
+          return ret;
         } else {
           const ret: IpcInvokeReturn = {
             error: {

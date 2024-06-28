@@ -27,6 +27,8 @@ if (ProcessDetector.isElectronAppFrontend) {
       } catch (err) {
         expect(err instanceof ConflictingLocksError).to.be.true;
         const castedError = err as ConflictingLocksError;
+        // Even though we're on the frontend we should make sure our stack trace includes backend code.
+        expect(castedError.stack?.includes("core\\backend")).to.be.true;
         expect(castedError.message).to.equal(message);
         expect(castedError.conflictingLocks).to.deep.equal(conflictingLocks);
         expect(castedError.getMetaData()).to.deep.equal(metadata);

@@ -94,24 +94,16 @@ export class IpcApp {
   public static async callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any> {
     const retVal = (await this.invoke(channelName, methodName, ...args)) as IpcInvokeReturn;
 
-    if ("constructorName" in retVal) {
-      const constructorName = retVal.constructorName;
+    if ("errorConstructorName" in retVal) {
+      const constructorName = retVal.errorConstructorName;
       const constructor = constructors[constructorName];
       if (constructor) {
-        const newObj = new constructor(...retVal.args);
+        const newObj = new constructor(...retVal.argsForErrorConstructor);
+        if (retVal.stack)
+          newObj.stack = retVal.stack;
         throw newObj;
       }
     } else if (undefined !== retVal.error) {
-      // retVal.key
-      // if (retVal.error.conflictingLocks !== undefined || retVal.conflictingLocks !== undefined) {
-      //   const err = new ConflictingLocksError(retVal.error.message, undefined, retVal.error.conflictingLocks);
-      //   err.stack = retVal.error.stack;
-      //   throw err;
-      // } else if (retVal.error instanceof ConflictingLocksError) {
-      //   const err = new ConflictingLocksError(retVal.error.message, undefined, retVal.error.conflictingLocks);
-      //   err.stack = retVal.error.stack;
-      //   throw err;
-      // } else {
       const err = new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message);
       err.stack = retVal.error.stack;
       throw err;
