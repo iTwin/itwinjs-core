@@ -15,7 +15,7 @@ import { IModelHost } from "../IModelHost";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 import { RpcTrace } from "../rpc/tracing";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
-import { NativePlatform } from "../internal/NativePlatform";
+import { IModelNative } from "../internal/NativePlatform";
 
 interface TileRequestProps {
   accessToken?: AccessToken;
@@ -226,7 +226,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   }
 
   public async queryVersionInfo(): Promise<TileVersionInfo> {
-    return NativePlatform.getTileVersionInfo();
+    return IModelNative.platform.getTileVersionInfo();
   }
 
   /** @internal */

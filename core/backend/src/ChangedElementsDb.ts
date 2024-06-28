@@ -13,7 +13,7 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDbOpenMode } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
-import { NativePlatform } from "./internal/NativePlatform";
+import { IModelNative } from "./internal/NativePlatform";
 
 /**
  * Options for processChangesets function
@@ -41,7 +41,7 @@ export class ChangedElementsDb implements IDisposable {
   private _nativeDb: IModelJsNative.ChangedElementsECDb | undefined;
 
   constructor() {
-    this._nativeDb = new NativePlatform.ChangedElementsECDb();
+    this._nativeDb = new IModelNative.platform.ChangedElementsECDb();
   }
 
   public dispose(): void {

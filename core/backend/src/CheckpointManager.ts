@@ -21,7 +21,7 @@ import { CloudSqlite } from "./CloudSqlite";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { SnapshotDb, TokenArg } from "./IModelDb";
-import { NativePlatform } from "./internal/NativePlatform";
+import { IModelNative } from "./internal/NativePlatform";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -425,7 +425,7 @@ export class CheckpointManager {
     if (!IModelJsFs.existsSync(fileName))
       return false;
 
-    const nativeDb = new NativePlatform.DgnDb();
+    const nativeDb = new IModelNative.platform.DgnDb();
     try {
       nativeDb.openIModel(fileName, OpenMode.Readonly);
     } catch (error) {

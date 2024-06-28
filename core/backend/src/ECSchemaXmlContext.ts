@@ -9,7 +9,7 @@
 import { assert } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { NativePlatform } from "./internal/NativePlatform";
+import { IModelNative } from "./internal/NativePlatform";
 
 /** @internal */
 export type SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey;
@@ -30,7 +30,7 @@ export class ECSchemaXmlContext {
 
   /** Construct a context with an empty list of search paths. */
   constructor() {
-    this._nativeContext = new NativePlatform.ECSchemaXmlContext();
+    this._nativeContext = new IModelNative.platform.ECSchemaXmlContext();
   }
 
   /** @internal */

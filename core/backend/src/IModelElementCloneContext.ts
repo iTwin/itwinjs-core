@@ -11,7 +11,7 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 import { SubCategory } from "./Category";
 import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
-import { NativePlatform } from "./internal/NativePlatform";
+import { IModelNative } from "./internal/NativePlatform";
 import { SQLiteDb } from "./SQLiteDb";
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
@@ -32,7 +32,7 @@ export class IModelElementCloneContext {
   public constructor(sourceDb: IModelDb, targetDb?: IModelDb) {
     this.sourceDb = sourceDb;
     this.targetDb = (undefined !== targetDb) ? targetDb : sourceDb;
-    this._nativeContext = new NativePlatform.ImportContext(this.sourceDb.nativeDb, this.targetDb.nativeDb);
+    this._nativeContext = new IModelNative.platform.ImportContext(this.sourceDb.nativeDb, this.targetDb.nativeDb);
   }
 
   /** perform necessary initialization to use a clone context, namely caching the reference types in the source's schemas */

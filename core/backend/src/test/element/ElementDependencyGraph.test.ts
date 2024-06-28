@@ -15,7 +15,7 @@ import {
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { ChannelControl, ElementDrivesElementProps, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
-import { NativePlatform } from "../../internal/NativePlatform";
+import { IModelNative } from "../../internal/NativePlatform";
 
 export function copyFile(newName: string, pathToCopy: string): string {
   const newPath = path.join(path.dirname(pathToCopy), newName);
@@ -142,7 +142,7 @@ describe("ElementDependencyGraph", () => {
   let dbInfo: DbInfo;
 
   const performUpgrade = (pathname: string) => {
-    const nativeDb = new NativePlatform.DgnDb();
+    const nativeDb = new IModelNative.platform.DgnDb();
     const upgradeOptions: UpgradeOptions = {
       domain: DomainOptions.Upgrade,
       schemaLockHeld: true,

@@ -21,30 +21,29 @@ function syncNativeLogLevels() {
   }
 }
 
-class NativePlatformModule {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  public get NativePlatform(): typeof IModelJsNative {
+/** Provides access to the internal APIs defined in @bentley/imodeljs-native.
+ * @internal
+ */
+export class IModelNative {
+  public static get platform(): typeof IModelJsNative {
     if (undefined === nativePlatform) {
       throw new Error("IModelHost.startup must be called first");
     }
 
     return nativePlatform;
   }
+}
 
-  // Strictly to be called by IModelHost.startup.
-  public loadNativePlatform(): void {
-    if (undefined === nativePlatform) {
-      nativePlatform = ProcessDetector.isMobileAppBackend ? (process as any)._linkedBinding("iModelJsNative") as typeof IModelJsNative : NativeLibrary.load();
-      nativePlatform.logger = Logger;
-      Logger.onLogLevelChanged.addListener(() => syncNativeLogLevels());
-    }
-  }
-
-  // Strictly for tests.
-  public overrideSyncNativeLogLevels(func?: () => void): void {
-    syncNativeLogLevelsOverride = func;
+/** @internal Strictly to be called by IModelHost.startup. */
+export function loadNativePlatform(): void {
+  if (undefined === nativePlatform) {
+    nativePlatform = ProcessDetector.isMobileAppBackend ? (process as any)._linkedBinding("iModelJsNative") as typeof IModelJsNative : NativeLibrary.load();
+    nativePlatform.logger = Logger;
+    Logger.onLogLevelChanged.addListener(() => syncNativeLogLevels());
   }
 }
 
-const nativePlatformModule = new NativePlatformModule();
-export = nativePlatformModule;
+/** @internal Strictly for tests. */
+export function overrideSyncNativeLogLevels(func?: () => void): void {
+  syncNativeLogLevelsOverride = func;
+}

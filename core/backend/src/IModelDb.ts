@@ -64,7 +64,7 @@ import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
 import { ChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { LockControl } from "./LockControl";
-import { NativePlatform } from "./internal/NativePlatform";
+import { IModelNative } from "./internal/NativePlatform";
 import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { _close, _releaseAllLocks } from "./internal/Symbols";
@@ -921,7 +921,7 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(IModelStatus.UpgradeFailed, "Cannot upgrade a Readonly Db");
 
     try {
-      const nativeDb = new NativePlatform.DgnDb();
+      const nativeDb = new IModelNative.platform.DgnDb();
       const container = props?.container;
       if (container) {
         // temp files for cloud-based Dbs should be in the profileDir in a subdirectory named for their container
@@ -1212,7 +1212,7 @@ export abstract class IModelDb extends IModel {
   public async requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
     let request = this._snaps.get(sessionId);
     if (undefined === request) {
-      request = new NativePlatform.SnapRequest();
+      request = new IModelNative.platform.SnapRequest();
       this._snaps.set(sessionId, request);
     } else
       request.cancelSnap();
@@ -3086,7 +3086,7 @@ export class SnapshotDb extends IModelDb {
    * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
    */
   public static createEmpty(filePath: LocalFileName, options: CreateEmptySnapshotIModelProps): SnapshotDb {
-    const nativeDb = new NativePlatform.DgnDb();
+    const nativeDb = new IModelNative.platform.DgnDb();
     nativeDb.createIModel(filePath, options);
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
 
@@ -3110,7 +3110,7 @@ export class SnapshotDb extends IModelDb {
     iModelDb.performCheckpoint();
     IModelJsFs.copySync(iModelDb.pathName, snapshotFile);
 
-    const nativeDb = new NativePlatform.DgnDb();
+    const nativeDb = new IModelNative.platform.DgnDb();
     nativeDb.openIModel(snapshotFile, OpenMode.ReadWrite, undefined, options);
     nativeDb.vacuum();
 
@@ -3256,7 +3256,7 @@ export class StandaloneDb extends BriefcaseDb {
    * @param args The parameters that define the new iModel
    */
   public static createEmpty(filePath: LocalFileName, args: CreateEmptyStandaloneIModelProps): StandaloneDb {
-    const nativeDb = new NativePlatform.DgnDb();
+    const nativeDb = new IModelNative.platform.DgnDb();
     nativeDb.createIModel(filePath, args);
     nativeDb.saveLocalValue(BriefcaseLocalValue.StandaloneEdit, args.allowEdit);
     nativeDb.setITwinId(Guid.empty);

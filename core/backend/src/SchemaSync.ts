@@ -13,7 +13,7 @@ import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { DbResult, OpenMode } from "@itwin/core-bentley";
 import { IModelError, LocalFileName } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { NativePlatform } from "./internal/NativePlatform";
+import { IModelNative } from "./internal/NativePlatform";
 
 /** @internal */
 export namespace SchemaSync {
@@ -41,7 +41,7 @@ export namespace SchemaSync {
     if (argIsIModelDb) {
       nativeDb = arg.nativeDb;
     } else {
-      nativeDb = new NativePlatform.DgnDb();
+      nativeDb = new IModelNative.platform.DgnDb();
       nativeDb.openIModel(arg.fileName, OpenMode.Readonly);
     }
 

@@ -24,7 +24,7 @@ import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { SchemaSync } from "./SchemaSync";
 import { _releaseAllLocks } from "./internal/Symbols";
-import { NativePlatform } from "./internal/NativePlatform";
+import { IModelNative } from "./internal/NativePlatform";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -244,7 +244,7 @@ export class BriefcaseManager {
     };
 
     // now open the downloaded checkpoint and reset its BriefcaseId
-    const nativeDb = new NativePlatform.DgnDb();
+    const nativeDb = new IModelNative.platform.DgnDb();
     try {
       nativeDb.openIModel(fileName, OpenMode.ReadWrite);
     } catch (err: any) {

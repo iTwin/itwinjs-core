@@ -9,7 +9,7 @@
 import { assert, BentleyError, DbResult, GuidString, Id64String, IDisposable, LRUMap } from "@itwin/core-bentley";
 import { ECJsNames, IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { NativePlatform } from "./internal/NativePlatform";
+import { IModelNative } from "./internal/NativePlatform";
 
 // spell:ignore julianday
 
@@ -78,7 +78,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     if (this.isPrepared)
       throw new Error("SqliteStatement is already prepared");
     this._db = db;
-    this._stmt = new NativePlatform.SqliteStatement();
+    this._stmt = new IModelNative.platform.SqliteStatement();
     this._stmt.prepare(db, this._sql, logErrors);
   }
 
