@@ -947,7 +947,7 @@ describe("TxnManager", () => {
 });
 
 for (const pullMergeMethod of ["Merge", "Rebase"] as PullMergeMethod[]) {
-  describe.only(`TxnManager Push-Pull-Merge-Rebase (PullMergeMethod: ${pullMergeMethod}) `, () => {
+  describe(`TxnManager Push-Pull-Merge-Rebase (PullMergeMethod: ${pullMergeMethod}) `, () => {
     let iTwinId: GuidString;
     const accessTokens: string[] = [];
     const briefcases: BriefcaseDb[] = [];
