@@ -138,6 +138,7 @@ import { LineStyleProps } from '@itwin/core-common';
 import { LocalBriefcaseProps } from '@itwin/core-common';
 import { LocalDirName } from '@itwin/core-common';
 import { LocalFileName } from '@itwin/core-common';
+import { LockState as LockState_2 } from '@itwin/core-common';
 import { LogLevel } from '@itwin/core-bentley';
 import { LowAndHighXYZ } from '@itwin/core-geometry';
 import { MarkRequired } from '@itwin/core-bentley';
@@ -953,10 +954,13 @@ export namespace CloudSqlite {
         name: string;
         rootDir: string;
     }
+    export function cleanDeletedBlocks(container: CloudContainer, options: CleanDeletedBlocksOptions): Promise<void>;
     // (undocumented)
     export interface CleanDeletedBlocksOptions {
         debugLogging?: boolean;
+        findOrphanedBlocks?: boolean;
         nSeconds?: number;
+        onProgress?: (nDeleted: number, nTotalToDelete: number) => number;
     }
     export interface CloudCache {
         // @internal
@@ -986,7 +990,6 @@ export namespace CloudSqlite {
         // (undocumented)
         readonly cache?: CloudCache;
         checkForChanges(): void;
-        cleanDeletedBlocks(options?: CleanDeletedBlocksOptions): Promise<void>;
         clearWriteLock(): void;
         connect(cache: CloudCache): void;
         get containerId(): string;
@@ -4047,15 +4050,15 @@ export interface LockControl {
 }
 
 // @internal (undocumented)
-export type LockMap = Map<Id64String, LockState>;
+export type LockMap = Map<Id64String, LockState_2>;
 
 // @beta
 export interface LockProps {
     readonly id: Id64String;
-    readonly state: LockState;
+    readonly state: LockState_2;
 }
 
-// @public
+// @public @deprecated
 export enum LockState {
     Exclusive = 2,
     None = 0,
@@ -4069,7 +4072,7 @@ export interface LockStatusExclusive {
     // (undocumented)
     lastCsIndex?: ChangesetIndex;
     // (undocumented)
-    state: LockState.Exclusive;
+    state: LockState_2.Exclusive;
 }
 
 // @internal
@@ -4079,7 +4082,7 @@ export interface LockStatusShared {
     // (undocumented)
     sharedBy: Set<BriefcaseId>;
     // (undocumented)
-    state: LockState.Shared;
+    state: LockState_2.Shared;
 }
 
 // @internal
@@ -4442,6 +4445,8 @@ export interface ProcessChangesetOptions {
     startChangesetId: string;
     // (undocumented)
     tempDir?: string;
+    // (undocumented)
+    wantBoundingBoxes?: boolean;
     // (undocumented)
     wantChunkTraversal?: boolean;
     // (undocumented)

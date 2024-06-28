@@ -46,6 +46,9 @@ describe("ECClass tests", () => {
       expect(error).to.have.nested.property("innerError.message", `Could not rename class ${result1.fullName} because the specified name is not a valid ECName.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidECName);
     });
+
+    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result1);
+    expect(testEntity, "originally named EntityClass should exist in the schema").to.not.be.undefined;
   });
 
   it("try changing class name to existing name in the schema, returns error", async () => {
@@ -56,6 +59,9 @@ describe("ECClass tests", () => {
       expect(error).to.have.nested.property("innerError.message", `EntityClass TestSchema.testEntity2 already exists in the schema ${testKey.name}.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);
     });
+
+    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result1);
+    expect(testEntity, "originally named EntityClass should exist in the schema").to.not.be.undefined;
   });
 
   describe("Property creation tests", () => {
@@ -121,7 +127,7 @@ describe("ECClass tests", () => {
 
     it("should successfully delete an EnumerationProperty from class", async () => {
       const schema = await testEditor.getSchema(testKey);
-      const testEnum = new Enumeration(schema!, "TestEnumeration");
+      const testEnum = new Enumeration(schema, "TestEnumeration");
       await testEditor.entities.createEnumerationProperty(entityKey, "TestProperty", testEnum);
       let property = await entity?.getProperty("TestProperty") as EnumerationProperty;
       expect(await property.enumeration).to.eql(testEnum);
@@ -160,7 +166,7 @@ describe("ECClass tests", () => {
 
     it("should successfully delete EnumerationArrayProperty from class", async () => {
       const schema = await testEditor.getSchema(testKey);
-      const enumeration = new Enumeration(schema!, "TestEnumeration");
+      const enumeration = new Enumeration(schema, "TestEnumeration");
       await testEditor.entities.createEnumerationArrayProperty(entityKey, "TestProperty", enumeration);
       let property = await entity?.getProperty("TestProperty") as EnumerationArrayProperty;
       expect(await property.enumeration).to.eql(enumeration);
@@ -236,7 +242,7 @@ describe("ECClass tests", () => {
 
     it("should successfully delete a NavigationProperty from class", async () => {
       const schema = await testEditor.getSchema(testKey);
-      const relationship = new RelationshipClass(schema!, "TestRelationship");
+      const relationship = new RelationshipClass(schema, "TestRelationship");
       await testEditor.entities.createNavigationProperty(entityKey, "TestProperty", relationship, StrengthDirection.Forward);
       let property = await entity?.getProperty("TestProperty") as NavigationProperty;
       expect(await property.relationshipClass).to.eql(relationship);

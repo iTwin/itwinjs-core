@@ -1,6 +1,36 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Sat, 08 Jun 2024 00:53:21 GMT and should not be manually modified.
+This log was last generated on Thu, 27 Jun 2024 21:13:04 GMT and should not be manually modified.
+
+## 4.7.3
+Thu, 27 Jun 2024 21:09:02 GMT
+
+_Version update only_
+
+## 4.7.2
+Sat, 22 Jun 2024 01:09:54 GMT
+
+### Updates
+
+- Update changed elements process options for bounding box calculations
+- BriefcaseDb.closeAndReopen now refreshes the changeset property in case another process pulled changes
+
+## 4.7.1
+Thu, 13 Jun 2024 22:47:31 GMT
+
+_Version update only_
+
+## 4.7.0
+Wed, 12 Jun 2024 18:02:16 GMT
+
+### Updates
+
+- schemaUpgrade() now push change to schema sync
+- Remove @alpha BackendLoggerCategory.Editing
+- Added getAvailableCoordinateReferenceSystems.
+- Brotli compression enabled for RPC requests.
+- Increase restrictions on native app storage name.
+- Added computeTextBlockExtents
 
 ## 4.6.2
 Sat, 08 Jun 2024 00:50:25 GMT

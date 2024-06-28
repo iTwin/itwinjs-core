@@ -334,8 +334,6 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     protected _properties?: Map<string, Property>;
     // @alpha
     protected setModifier(modifier: ECClassModifier): void;
-    // @alpha
-    protected setName(name: string): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): ClassProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
@@ -1617,6 +1615,10 @@ export class Schema implements CustomAttributeContainerProps {
     protected deleteClass(name: string): Promise<void>;
     // @alpha
     protected deleteClassSync(name: string): void;
+    // @alpha
+    protected deleteSchemaItem(name: string): Promise<void>;
+    // @alpha
+    protected deleteSchemaItemSync(name: string): void;
     // (undocumented)
     get description(): string | undefined;
     // (undocumented)
@@ -1771,6 +1773,8 @@ export abstract class SchemaItem {
     protected setDescription(description: string): void;
     // @alpha
     protected setDisplayLabel(displayLabel: string): void;
+    // @alpha
+    protected setName(name: string): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): SchemaItemProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
@@ -1997,7 +2001,7 @@ export interface SchemaReferenceProps {
     readonly version: string;
 }
 
-// @alpha
+// @beta
 export class SchemaUnitProvider implements UnitsProvider {
     constructor(contextOrLocater: ISchemaLocater, _unitExtraData?: UnitExtraData[]);
     findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;

@@ -13,6 +13,7 @@ import { TextBlock, TextBlockProps } from "./TextBlock";
  * The anchor point is a point on or inside of the 2d bounding box enclosing the contents of the annotation's [[TextBlock]].
  * The annotation can be rotated and translated relative to the anchor point. The anchor point also serves as the snap point
  * when [AccuSnap]($frontend) is set to [SnapMode.Origin]($frontend).
+ * [[TextAnnotation.computeTransform]] will align the anchor point with (0, 0).
  * @see [[TextAnnotation]] for a description of how the anchor point is computed.
  * @beta
  */
@@ -145,7 +146,8 @@ export class TextAnnotation {
   /** Compute the transform that positions and orients this annotation relative to its anchor point, based on the [[textBlock]]'s computed bounding box.
    * The anchor point is computed as specified by this annotation's [[anchor]] setting. For example, if the text block is anchored
    * at the bottom left, then the transform will be relative to the bottom-left corner of `textBlockExtents`.
-   * The text block will be rotated around the fixed anchor point according to [[orientation]], then the anchor point will be translated by [[offset]].
+   * The text block will be rotated around the fixed anchor point according to [[orientation]], then translated by [[offset]].
+   * The anchor point will coincide with (0, 0, 0).
    * @param boundingBox A box fully containing the [[textBlock]].
    * @see [[computeAnchorPoint]] to compute the transform's anchor point.
    */
@@ -154,7 +156,7 @@ export class TextAnnotation {
     const matrix = this.orientation.toMatrix3d();
 
     const rotation = Transform.createFixedPointAndMatrix(anchorPt, matrix);
-    const translation = Transform.createTranslation(this.offset);
+    const translation = Transform.createTranslation(this.offset.minus(anchorPt));
     return translation.multiplyTransformTransform(rotation, rotation);
   }
 
