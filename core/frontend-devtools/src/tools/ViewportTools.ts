@@ -12,6 +12,7 @@ import { Camera, ColorDef, Hilite } from "@itwin/core-common";
 import {
   DrawingViewState, FlashMode, FlashSettings, FlashSettingsOptions, IModelApp, TileBoundingBoxes, Tool, Viewport,
 } from "@itwin/core-frontend";
+import { GraphicsProvider } from "@itwin/frontend-tiles";
 import { parseArgs } from "./parseArgs";
 import { parseToggle } from "./parseToggle";
 
@@ -465,6 +466,41 @@ export class ViewportAddRealityModel extends Tool {
    */
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args[0]);
+  }
+}
+
+/** This tool adds a reality model to the viewport.
+ * @beta
+ */
+export class SeequentDemo extends Tool {
+  public static override toolId = "SeequentDemo";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+
+  /** This method runs the tool, adding a reality model to the viewport
+   * @param url the URL which points to the reality model tileset
+   */
+  public override async run(): Promise<boolean> {
+
+    if (!process.env.SEEQUENT_ACCESS_TOKEN || !process.env.SEEQUENT_ORGANIZATION_ID || !process.env.SEEQUENT_WORKSPACE_ID || !process.env.SEEQUENT_GEOSCIENCE_OBJECT_ID)
+      return false;
+
+    const args = {
+      accessToken: process.env.SEEQUENT_ACCESS_TOKEN,
+      organizationId: process.env.SEEQUENT_ORGANIZATION_ID,
+      workspaceId: process.env.SEEQUENT_WORKSPACE_ID,
+      geoscienceObjectId: process.env.SEEQUENT_GEOSCIENCE_OBJECT_ID,
+    };
+
+    GraphicsProvider.getInstance().createGeoscienceTileset(args);
+    return true;
+  }
+
+  /** Executes this tool's run method with args[0] containing the `url` argument.
+   * @see [[run]]
+   */
+  public override async parseAndRun(): Promise<boolean> {
+    return this.run();
   }
 }
 
