@@ -76,7 +76,13 @@ export class ConflictingLocksError extends IModelError {
 
 }
 
-export const constructors: { [key: string]: new (...args: any[]) => any } = {
+/**
+ * A mapping of the error class name to the actual constructor.
+ * This is used to reconstruct error objects on the frontend.
+ * @beta
+ */
+export const nameOfErrorClassToConstructor: { [key: string]: new (...args: any[]) => any } = {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   ConflictingLocksError,
 };
 
