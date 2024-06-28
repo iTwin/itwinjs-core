@@ -66,8 +66,9 @@ await $`mkdir ${incomingPath}`
 
 // find the latest release branch, and make that the target for the changelogs
 let targetBranch = await $`git branch -a --list "origin/release/[0-9]*.[0-9]*.x" | tail -n1 | sed 's/  remotes\\///'`;
-let currentBranch = await $`git branch --show-current`;
 await `git checkout release/3.8.x`;
+let currentBranch = await $`git branch --show-current`;
+
 // the version in the commit message can be extracted from the latest commit with commit message starting with "X.X.X" (except X.X.X-dev.X)
 let commitMessage = await $`git log --grep="^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+[^-]*$" -n 1 --pretty=format:%s`;
 
