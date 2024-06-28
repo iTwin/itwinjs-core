@@ -74,8 +74,7 @@ let currentBranch = await $`git branch --show-current`;
 // const versionMatch = tag.match(/release\/(\d+\.\d+\.\d+)/);
 // let commitMessage = versionMatch ? versionMatch[1] : null;
 
-const result = await $`git log --grep="^[0-9]+\\.[0-9]+\\.[0-9]+($|\\s.*$)" -n 1 --pretty=format:%s`;
-let commitMessage = result.stdout.trim();
+const commitMessage = await $`git log --grep="^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+\b[^-]*$" -n 1 --pretty=format:%s`;
 
 // remove extra null and new line characters from git cmds
 targetBranch = String(targetBranch).replace(/\n/g, '');
