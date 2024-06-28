@@ -69,18 +69,18 @@ let targetBranch = await $`git branch -a --list "origin/release/[0-9]*.[0-9]*.x"
 let currentBranch = await $`git branch --show-current`;
 
 // the version in the commit message can be extracted from the latest tag
-const latestTag = await $`git describe --tags $(git rev-list --tags --max-count=1)`;
-const tag = latestTag.stdout.trim();
-const versionMatch = tag.match(/release\/(\d+\.\d+\.\d+)/);
-let commitMessage = versionMatch ? versionMatch[1] : null;
+// const latestTag = await $`git describe --tags $(git rev-list --tags --max-count=1)`;
+// const tag = latestTag.stdout.trim();
+// const versionMatch = tag.match(/release\/(\d+\.\d+\.\d+)/);
+// let commitMessage = versionMatch ? versionMatch[1] : null;
 
-const result = await $`git log --grep="^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+\b[^-]*$" -n 1 --pretty=format:%s`
-console.log(result.stdout.trim())
+const result = await $`git log --grep="^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+" -n 1 --pretty=format:%s`;
+let commitMessage = result.stdout.trim();
 
 // remove extra null and new line characters from git cmds
 targetBranch = String(targetBranch).replace(/\n/g, '');
 currentBranch = String(currentBranch).replace(/\n/g, '');
-currentBranch = "origin/release/3.8.x"
+// currentBranch = "origin/release/3.8.x"
 
 commitMessage = String(commitMessage).replace(/\n/g, '');
 const substring = " Changelogs";
