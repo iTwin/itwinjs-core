@@ -166,6 +166,8 @@ export abstract class IpcHandler {
 
         return { result: await func.call(impl, ...args) };
       } catch (err: any) {
+        // Returning the ConflictingLocksError class results in information loss due to the way IPC handles error objects, so we get around this by reconstructing on the frontend using the provided
+        // constructorName and args.
         if (err instanceof ConflictingLocksError) {
           const ret: IpcInvokeReturn = {
             errorConstructorName: err.constructor.name,

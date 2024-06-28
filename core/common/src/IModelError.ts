@@ -78,7 +78,7 @@ export class ConflictingLocksError extends IModelError {
 
 /**
  * A mapping of the error class name to the actual constructor.
- * This is used to reconstruct error objects on the frontend.
+ * This is used to reconstruct more complex error objects on the frontend during IPC calls.
  * @beta
  */
 export const nameOfErrorClassToConstructor: { [key: string]: new (...args: any[]) => any } = {
