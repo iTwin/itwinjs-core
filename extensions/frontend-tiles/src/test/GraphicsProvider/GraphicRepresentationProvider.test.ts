@@ -7,7 +7,7 @@ import { expect, use } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import { IModelApp } from "@itwin/core-frontend";
-import { obtainGraphicRepresentationUrl, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/GraphicRepresentationProvider";
+import { getGraphicRepresentationUrl, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/UrlProviders/GraphicUrlProvider";
 
 use(chaiAsPromised);
 
@@ -203,9 +203,8 @@ describe("obtainGraphicRepresentationUrl", () => {
     await mockFetch(
       async (resource) => fetchSources(resource),
       async () => {
-        const url = await obtainGraphicRepresentationUrl({
+        const url = await getGraphicRepresentationUrl({
           accessToken: "this-is-a-fake-access-token",
-          sessionId: "testSession",
           dataSource: {
             iTwinId: "iTwinId",
             id: "srcId",

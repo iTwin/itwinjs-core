@@ -9,7 +9,7 @@ import { Range3d } from "@itwin/core-geometry";
 import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { BlankConnection, IModelApp } from "@itwin/core-frontend";
 import { MeshExport, MeshExports } from "../../FrontendTiles";
-import { obtainIModelTilesetUrl } from "../../GraphicsProvider/GraphicsProvider";
+import { getIModelTilesetUrlFromConnection } from "../../GraphicsProvider/UrlProviders/IModelUrlProvider";
 
 use(chaiAsPromised);
 
@@ -132,10 +132,12 @@ describe("obtainIModelTilesetUrl", () => {
     await mockFetch(
       async (resource) => fetchExports(resource),
       async () => {
-        const url = await obtainIModelTilesetUrl({
+        const url = await getIModelTilesetUrlFromConnection({
           iModel,
           accessToken,
-          requireExactChangeset: args.exact,
+          options: {
+            requireExactChangeset: args.exact,
+          },
         });
 
         expect(url?.toString()).to.equal(expected);

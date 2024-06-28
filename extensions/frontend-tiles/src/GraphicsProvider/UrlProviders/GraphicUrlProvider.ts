@@ -3,8 +3,8 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, Logger} from "@itwin/core-bentley";
-import { loggerCategory} from "../LoggerCategory";
+import { AccessToken, Logger } from "@itwin/core-bentley";
+import { loggerCategory } from "../../LoggerCategory";
 import { IModelApp, ITWINJS_CORE_VERSION } from "@itwin/core-frontend";
 
 /** The expected format of the Graphic Representation
@@ -33,15 +33,14 @@ export enum GraphicRepresentationStatus {
 export interface DataSource {
   /** The iTwinId associated with the DataSource */
   iTwinId: string;
-  /** The unique identifier of a DataSource.
-   * For example, a DataSource of type "IMODEL" has an iModelId which would be attributed to this value.
-   */
+  /** The unique identifier of a DataSource. For example, a DataSource of type "IModel" has an iModelId which would be attributed to this value. */
   id: string;
   /** The unique identifier for a specific version of a DataSource.
    * For example, if a specific version of an iModel is desired, the iModel's changesetId would be attributed to this value.
   */
   changeId?: string;
-  /** The type of the data source. For example, a DataSource can be of type "IMODEL" or "RealityData" */
+
+  /** The type of the data source. For example, a DataSource can be of type "IModel" or "RealityData" */
   type: string;
 }
 
@@ -62,11 +61,11 @@ export type GraphicRepresentation = {
   /** The expected format of the Graphic Representation
    * @see [[GraphicRepresentationFormat]] for possible values.
    */
-  format:  GraphicRepresentationFormat;
-  /** The data source that the representation originates from.
-   * For example, a GraphicRepresentation in the 3D Tiles format might have a dataSource that is a specific iModel changeset.
-   */
+  format: GraphicRepresentationFormat;
+
+  /** The data source that the representation originates from. For example, a GraphicRepresentation in the 3D Tiles format might have a dataSource that is a specific iModel changeset. */
   dataSource: DataSource;
+
   /** The url of the graphic representation
    * @note The url can only be guaranteed to be valid if the status is complete.
    * Therefore, the url is optional if the status is not complete, and required if the status is complete.
@@ -80,7 +79,7 @@ export type GraphicRepresentation = {
 });
 
 /** Creates a URL used to query for Graphic Representations */
-function createGraphicRepresentationsQueryUrl(args: { sourceId: string, sourceType: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean }): string {
+function createGraphicRepresentationsQueryUrl(args: { sourceId: string, exportType: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean }): string {
   const prefix = args.urlPrefix ?? "";
   let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.sourceId}&$orderBy=date:desc`;
   if (args.changeId)
@@ -89,8 +88,10 @@ function createGraphicRepresentationsQueryUrl(args: { sourceId: string, sourceTy
   if (args.enableCDN)
     url = `${url}&cdn=1`;
 
+  const exportType = args.exportType === "3DTILES" ? "CESIUM" : "IMODEL";
   const tileVersion = IModelApp.tileAdmin.maximumMajorTileFormatVersion.toString();
-  url = `${url}&tileVersion=${tileVersion}&iTwinJS=${ITWINJS_CORE_VERSION}&exportType=${args.sourceType}`;
+  const sessionId = IModelApp.sessionId.toString();
+  url = `${url}&tileVersion=${tileVersion}&iTwinJS=${ITWINJS_CORE_VERSION}&exportType=${exportType}&sessionId=${sessionId}`;
 
   return url;
 }
@@ -101,20 +102,21 @@ function createGraphicRepresentationsQueryUrl(args: { sourceId: string, sourceTy
 export interface QueryGraphicRepresentationsArgs {
   /** The token used to access the data source provider. */
   accessToken: AccessToken;
-  /** The unique identifier for the session in which this data source was queried.
-   * A possible value is IModelApp.sessionId.
-   */
-  sessionId: string;
+
   /** The Data Source for which to query the graphic representations */
   dataSource: DataSource;
+
   /** The expected format of the graphic representations
    * @see [[GraphicRepresentationFormat]] for possible values.
    */
-  format:  GraphicRepresentationFormat;
+  format: GraphicRepresentationFormat;
+
   /** Chiefly used in testing environments. */
   urlPrefix?: string;
+
   /** If true, exports whose status is not "Complete" (indicating the export successfully finished) will be included in the results */
   includeIncomplete?: boolean;
+
   /** If true, enables a CDN (content delivery network) to access tiles faster. */
   enableCDN?: boolean;
 }
@@ -161,11 +163,9 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
     Accept: "application/vnd.bentley.itwin-platform.v1+json",
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
     Prefer: "return=representation",
-    /* eslint-disable-next-line @typescript-eslint/naming-convention */
-    SessionId: args.sessionId,
   };
 
-  let url: string | undefined = createGraphicRepresentationsQueryUrl({ sourceId: args.dataSource.id, sourceType: args.dataSource.type, urlPrefix: args.urlPrefix, changeId: args.dataSource.changeId, enableCDN: args.enableCDN });
+  let url: string | undefined = createGraphicRepresentationsQueryUrl({ sourceId: args.dataSource.id, exportType: args.format, urlPrefix: args.urlPrefix, changeId: args.dataSource.changeId, enableCDN: args.enableCDN });
   while (url) {
     let result;
     try {
@@ -177,7 +177,7 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
       break;
     }
 
-    const foundSources = result.exports.filter((x) => x.request.exportType === args.dataSource.type && (args.includeIncomplete || x.status === GraphicRepresentationStatus.Complete));
+    const foundSources = result.exports.filter((x) => x.request.exportType === args.format && (args.includeIncomplete || x.status === GraphicRepresentationStatus.Complete));
     for (const foundSource of foundSources) {
       const graphicRepresentation = {
         displayName: foundSource.displayName,
@@ -200,28 +200,29 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
   }
 }
 
-/** Arguments supplied  to [[obtainGraphicRepresentationUrl]].
+/** Arguments supplied  to [[getGraphicRepresentationUrl]].
  * @beta
  */
-export interface ObtainGraphicRepresentationUrlArgs {
+export interface GetGraphicRepresentationUrlArgs {
   /** The token used to access the mesh export service. */
   accessToken: AccessToken;
-  /** The unique identifier for the session in which this data source was queried.
-   * A possible value is IModelApp.sessionId.
-   */
-  sessionId: string;
+
   /** The data source for which to query the graphic representations */
   dataSource: DataSource;
+
   /** The expected format of the graphic representations
    * @see [[GraphicRepresentationFormat]] for possible values.
    */
-  format:  GraphicRepresentationFormat;
+  format: GraphicRepresentationFormat;
+
   /** Chiefly used in testing environments. */
   urlPrefix?: string;
+
   /** If true, only data produced for a specific data source version will be considered;
    * otherwise, if no data sources are found with the specified version,the most recent data source version will be used.
    */
   requireExactVersion?: boolean;
+
   /** If true, enables a CDN (content delivery network) to access tiles faster. */
   enableCDN?: boolean;
 }
@@ -232,7 +233,7 @@ export interface ObtainGraphicRepresentationUrlArgs {
  * @returns A URL from which the tileset can be loaded, or `undefined` if no appropriate URL could be obtained.
  * @beta
  */
-export async function obtainGraphicRepresentationUrl(args: ObtainGraphicRepresentationUrlArgs): Promise<URL | undefined> {
+export async function getGraphicRepresentationUrl(args: GetGraphicRepresentationUrlArgs): Promise<URL | undefined> {
   if (!args.dataSource.id) {
     Logger.logInfo(loggerCategory, "Cannot obtain Graphics Data from a source without an Id");
     return undefined;
@@ -240,7 +241,6 @@ export async function obtainGraphicRepresentationUrl(args: ObtainGraphicRepresen
 
   const queryArgs: QueryGraphicRepresentationsArgs = {
     accessToken: args.accessToken,
-    sessionId: args.sessionId,
     dataSource: args.dataSource,
     format: args.format,
     urlPrefix: args.urlPrefix,

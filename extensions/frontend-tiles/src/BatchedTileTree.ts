@@ -10,7 +10,7 @@ import {
 } from "@itwin/core-frontend";
 import { BatchedTile, BatchedTileParams } from "./BatchedTile";
 import { BatchedTilesetReader, ModelMetadata } from "./BatchedTilesetReader";
-import { frontendTilesOptions } from "./FrontendTiles";
+import { frontendTilesOptions } from "./GraphicsProvider/TilesetCreators/IModelTileset";
 
 const defaultViewFlags: ViewFlagOverrides = {
   renderMode: RenderMode.SmoothShade,
