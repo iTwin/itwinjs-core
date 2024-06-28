@@ -42,6 +42,7 @@ export class PlanarTextureProjection {
     viewState: ViewState3d,
     textureWidth: number,
     textureHeight: number,
+    maskRange: Range3d,
     _heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4d, debugFrustum?: Frustum, zValue?: number } {
     const textureZ = texturePlane.getNormalRef();
     const viewingSpace = sceneContext.viewingSpace;
@@ -85,12 +86,15 @@ export class PlanarTextureProjection {
 
         contentUnBoundedRange.low.x = Math.min(contentUnBoundedRange.low.x, heightRange.low);
         contentUnBoundedRange.high.x = Math.max(contentUnBoundedRange.high.x, heightRange.high);
-      } else {
+      } else if (maskRange.isNull) {
         const r = Range3d.createNull();
         drapeRef.unionFitRange(r);
         const contentRange = textureTransform.multiplyRange(r);
         if (!contentRange.isNull)
           drapeRange.extendRange(contentRange);
+      } else {
+        const contentRange = textureTransform.multiplyRange(maskRange);
+        drapeRange.extendRange(contentRange);
       }
     }
 
@@ -131,22 +135,18 @@ export class PlanarTextureProjection {
     textureRange.high.x += epsilon;
 
     const textureFrustum = Frustum.fromRange(textureRange);
-    const debugFrustum = textureFrustum.clone();
+    const debugFrustum = textureFrustum.clone();  // debugFrustum as textureRange.
+    // const debugFrustum = Frustum.fromRange(drapeRange);  // debugFrustum as drapeRange.
     textureTransform.multiplyInversePoint3dArray(debugFrustum.points, debugFrustum.points);
 
-    // if (viewState.isCameraOn) {
     const viewZVecZ = viewState.getRotation().rowZ().z;
     // console.log (`ViewZVecZ = ${viewZVecZ}  deg = ${Math.asin(viewZVecZ) * 180.0 / Math.PI}  eyeZ ${viewState.getEyePoint().z}  tRngLowX ${textureRange.low.x}`);
 
-    // This code attempts to use a projection frustum similar to the camera in order to get higher resolution in the near field.
-    // Limit its use to views that have an eyepoint above the bottom of the frustm and are looking down at a view angle > 5 degrees, otherwise it causes issues.
+    // This code attempts to use a projection frustum that aligns to the camera frustum in order to get higher mask resolution closer to the eye.
+    // Limit its use to views that have an eyepoint above the bottom of the frustum and are looking down at a view angle > 5 degrees, otherwise it causes issues.
+    // viewZVecZ is negative when looking up, positive when looking down.
     if (viewState.isCameraOn && viewState.getEyePoint().z > textureRange.low.x && viewZVecZ > 0.09) {
-      // limit this code to a view that is looking down between ~ 15 and 26 degrees.
-      // negative is looking up, positive is looking down.
-      // if (viewState.isCameraOn && viewZVecZ > 0.3 && viewZVecZ < 0.44) {
       // console.log (` - using camera on test}`);
-      // const eyeHeight = (textureRange.low.x + textureRange.high.x) / 2.0;
-      // const eyePlane = Plane3dByOriginAndUnitNormal.create(Point3d.createScale(textureZ, eyeHeight), textureZ);    // Centered in range - parallel to texture.
       const eyePlane = Plane3dByOriginAndUnitNormal.create(Point3d.createScale(textureZ, textureRange.low.x), textureZ);    // at bottom of range - parallel to texture.
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       const projectionRay = Ray3d.create(viewState.getEyePoint(), viewZ.crossProduct(textureX).normalize()!);

@@ -11,7 +11,7 @@ import { dispose } from "@itwin/core-bentley";
 import {
   ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, TextureTransparency,
 } from "@itwin/core-common";
-import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@itwin/core-geometry";
+import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { GraphicsCollectorDrawArgs, SpatialClassifierTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
@@ -410,7 +410,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     this._width = requiredWidth;
     this._height = requiredHeight;
-    const maskTrees = this._planarClipMask?.getTileTrees(viewState, target.modelId);
+    const maskRange = Range3d.createNull();
+    const maskTrees = this._planarClipMask?.getTileTrees(viewState, target.modelId, maskRange);
     if (!maskTrees && !this._classifierTreeRef)
       return;
 
@@ -418,7 +419,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (this._classifierTreeRef)
       allTrees.push(this._classifierTreeRef);
 
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context, target, allTrees, viewState, this._width, this._height);
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context, target, allTrees, viewState, this._width, this._height, maskRange);
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
       return;
 

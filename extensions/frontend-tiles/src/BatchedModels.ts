@@ -36,6 +36,10 @@ export class BatchedModels {
     this._viewedExtents.intersect(this._projectExtents, this._viewedExtents);
   }
 
+  public getModelExtents(modelId: Id64String): Range3d | undefined {
+    return this._metadata.get(modelId)?.extents;
+  }
+
   public views(modelId: Id64String): boolean {
     return this._viewedModels.has(modelId);
   }

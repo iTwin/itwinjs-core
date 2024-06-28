@@ -509,7 +509,7 @@ export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
   /** See SpatialViewState.detachFromViewport. */
   detachFromViewport(): void;
   /** See SpatialViewState.collectMaskRefs */
-  collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void;
+  collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[], maskRange: Range3d): void;
   /** See SpatialViewState.getModelsNotInMask */
   getModelsNotInMask(maskModels: OrderedId64Iterable | undefined, useVisible: boolean): Id64String[] | undefined;
 }
@@ -679,13 +679,17 @@ class SpatialRefs implements SpatialTileTreeReferences {
    * @param maskTreeRefs where to store the TileTreeReferences
    * @internal
    */
-  public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void {
+  public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[], maskRange: Range3d): void {
     for (const modelId of modelIds) {
       if (!this._excludedModels?.has(modelId)) {
         const model = this._view.iModel.models.getLoaded(modelId);
         assert(model !== undefined);   // Models should be loaded by RealityModelTileTree
-        if (model?.asGeometricModel)
-          maskTreeRefs.push(createMaskTreeReference(this._view, model.asGeometricModel));
+        if (model?.asGeometricModel) {
+          const treeRef = createMaskTreeReference(this._view, model.asGeometricModel);
+          maskTreeRefs.push(treeRef);
+          const range = treeRef.computeWorldContentRange();
+          maskRange.extendRange(range);
+        }
       }
     }
   }
