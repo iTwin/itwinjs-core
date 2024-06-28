@@ -13406,7 +13406,7 @@ export class StrokesPrimitivePointLists extends Array<StrokesPrimitivePointList>
 // @internal
 export class SubCategoriesCache {
     constructor(imodel: IModelConnection);
-    add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance): void;
+    add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance, override: boolean): void;
     // (undocumented)
     clear(): void;
     // (undocumented)
