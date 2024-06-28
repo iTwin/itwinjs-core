@@ -235,6 +235,7 @@ public;IModelIdArg
 public;IModelJsFs
 public;IModelJsFsStats
 public;IModelNameArg 
+internal;IModelNative
 public;class InformationContentElement 
 public;class InformationModel 
 public;class InformationPartitionElement 
