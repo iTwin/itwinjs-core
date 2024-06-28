@@ -63,6 +63,7 @@ import { PolyfaceVisitor } from '@itwin/core-geometry';
 import { Range1d } from '@itwin/core-geometry';
 import { Range1dProps } from '@itwin/core-geometry';
 import { Range2d } from '@itwin/core-geometry';
+import { Range2dProps } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import type { Readable } from 'stream';
@@ -1639,6 +1640,20 @@ export namespace ConcreteEntityTypes {
     export function toBisCoreRootClassFullName(type: ConcreteEntityTypes): string;
 }
 
+// @public
+export interface ConflictingLock {
+    briefcaseIds: number[];
+    objectId: string;
+    state: LockState;
+}
+
+// @public
+export class ConflictingLocksError extends IModelError {
+    constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]);
+    // (undocumented)
+    conflictingLocks?: ConflictingLock[];
+}
+
 // @alpha
 export enum ContentFlags {
     // (undocumented)
@@ -3167,6 +3182,8 @@ export enum FeatureIndexType {
 // @public
 export class FeatureOverrides implements FeatureAppearanceSource {
     constructor();
+    // @internal
+    addInvisibleElementOverridesToNeverDrawn(): void;
     get alwaysDrawn(): Id64.Uint32Set;
     // @internal
     protected readonly _alwaysDrawn: Id64.Uint32Set;
@@ -5404,6 +5421,15 @@ export interface LineBreakRunProps extends TextBlockComponentProps {
     readonly type: "linebreak";
 }
 
+// @beta
+export interface LineLayoutResult {
+    justificationRange: Range2dProps;
+    offsetFromDocument: XAndY;
+    range: Range2dProps;
+    runs: RunLayoutResult[];
+    sourceParagraphIndex: number;
+}
+
 // @public
 export enum LinePixels {
     Code0 = 0,
@@ -5519,6 +5545,13 @@ export interface Localization {
     initialize(namespaces: string[]): Promise<void>;
     registerNamespace(namespace: string): Promise<void>;
     unregisterNamespace(namespace: string): void;
+}
+
+// @public
+export enum LockState {
+    Exclusive = 2,
+    None = 0,
+    Shared = 1
 }
 
 export { LogFunction }
@@ -8774,6 +8807,20 @@ export namespace Run {
 }
 
 // @beta
+export interface RunLayoutResult {
+    characterCount: number;
+    characterOffset: number;
+    denominatorRange?: Range2dProps;
+    fontId: FontId;
+    justificationRange?: Range2dProps;
+    numeratorRange?: Range2dProps;
+    offsetFromLine: XAndY;
+    range: Range2dProps;
+    sourceRunIndex: number;
+    textStyle: TextStyleSettingsProps;
+}
+
+// @beta
 export type RunProps = TextRunProps | FractionRunProps | LineBreakRunProps;
 
 // @beta
@@ -9459,8 +9506,8 @@ export class TestRpcManager {
 // @beta
 export class TextAnnotation {
     anchor: TextAnnotationAnchor;
-    computeAnchorPoint(textBlockDimensions: XAndY): Point3d;
-    computeTransform(textBlockDimensions: XAndY): Transform;
+    computeAnchorPoint(boundingBox: Range2d): Point3d;
+    computeTransform(boundingBox: Range2d): Transform;
     static create(args?: TextAnnotationCreateArgs): TextAnnotation;
     equals(other: TextAnnotation): boolean;
     static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation;
@@ -9578,6 +9625,12 @@ export type TextBlockGeometryPropsEntry = {
 
 // @beta
 export type TextBlockJustification = "left" | "center" | "right";
+
+// @beta
+export interface TextBlockLayoutResult {
+    lines: LineLayoutResult[];
+    range: Range2dProps;
+}
 
 // @beta
 export interface TextBlockProps extends TextBlockComponentProps {

@@ -8,7 +8,7 @@ import { ECSchemaRpcInterface } from "./ECSchemaRpcInterface";
 
 /**
  * Defines a schema locater that retrieves schemas using an RPC interface.
- * @alpha
+ * @beta
  */
 export class ECSchemaRpcLocater implements ISchemaLocater {
   public readonly token: IModelRpcProps;

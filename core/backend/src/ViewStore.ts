@@ -19,6 +19,7 @@ import { IModelDb } from "./IModelDb";
 import { Category } from "./Category";
 import { Model } from "./Model";
 import { Entity } from "./Entity";
+import { BlobContainer } from "./BlobContainerService";
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
@@ -1383,15 +1384,35 @@ export namespace ViewStore {
   /** arguments to construct a `ViewStore.CloudAccess` */
   export type ViewStoreCtorProps = CloudSqlite.ContainerAccessProps & ViewDbCtorArgs;
 
+  export interface CreateNewContainerProps {
+    scope: BlobContainer.Scope;
+    metadata: Omit<BlobContainer.Metadata, "containerType">;
+  }
+
   /** Provides access to a cloud-based `ViewDb` */
   export class CloudAccess extends CloudSqlite.DbAccess<ViewDb, ReadMethods, ViewStoreRpc.Writer> {
     public constructor(props: ViewStoreCtorProps) {
       super({ dbType: ViewDb, props, dbName: viewDbName });
     }
 
-    /** Initialize a cloud container for use as a ViewDb. */
-    public static async initializeDb(props: CloudSqlite.ContainerAccessProps) {
+    /**
+     * Initialize a cloud container for use as a ViewDb. This method is called by [[createNewContainer]].
+     * It is only necessary to convert an existing container to a ViewStore container.
+     * @note this deletes any existing content in the container.
+     * @internal
+     */
+    public static async initializeDb(props: CloudSqlite.ContainerProps) {
       return super._initializeDb({ props, dbType: ViewDb, dbName: viewDbName });
     }
+
+    /** Create and initialize a new BlobContainer to hold a ViewStore
+     * @note the current user must have administrator rights to create containers.
+     */
+    public static async createNewContainer(args: CreateNewContainerProps): Promise<CloudSqlite.ContainerProps> {
+      const props = await this.createBlobContainer({ scope: args.scope, metadata: { ...args.metadata, containerType: "viewstore" } });
+      await this.initializeDb(props);
+      return props;
+    }
+
   }
 }

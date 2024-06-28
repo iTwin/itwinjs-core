@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "BriefcaseDb.closeAndReopen now refreshes the changeset property in case another process pulled changes",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

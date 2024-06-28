@@ -6,7 +6,7 @@
 import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
   Code, ColorDef,
-  GeometricElement2dProps, GeometryStreamProps, IModel, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
+  GeometricElement2dProps, GeometryStreamProps, IModel, LockState, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
 import * as chai from "chai";
@@ -23,7 +23,8 @@ import {
   BriefcaseDb,
   BriefcaseManager,
   ChannelControl,
-  DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, LockState, OpenBriefcaseArgs, PullMergeMethod, SpatialCategory, Subject,
+  CodeService,
+  DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, OpenBriefcaseArgs, PullMergeMethod, SpatialCategory, Subject,
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { ServerBasedLocks } from "../../ServerBasedLocks";
@@ -212,6 +213,7 @@ for (const pullMergeMethod of ["Merge", "Rebase"] as PullMergeMethod[]) {
       // Validate the original state of the BisCore schema in the briefcase
       let iModel = await BriefcaseDb.open({ fileName: managerBriefcaseProps.fileName });
       iModel.pullMergeMethod = pullMergeMethod;
+
       const beforeVersion = iModel.querySchemaVersion("BisCore");
       assert.isTrue(semver.satisfies(beforeVersion!, "= 1.0.0"));
       assert.isFalse(iModel.nativeDb.hasPendingTxns());
@@ -332,6 +334,59 @@ for (const pullMergeMethod of ["Merge", "Rebase"] as PullMergeMethod[]) {
       assert.equal(0, rwIModel.nativeDb.getChangesetSize());
       await rwIModel.pushChanges({ description: "schema changeset", accessToken: adminToken });
       rwIModel.close();
+    });
+
+    it("should set a fake verifyCode for codeService that throws error for operations that affect code, if failed to open codeService ", async () => {
+      const iModelProps = {
+        iModelName: "codeServiceTest",
+        iTwinId,
+      };
+      const iModelId = await HubMock.createNewIModel(iModelProps);
+      const briefcaseProps = await BriefcaseManager.downloadBriefcase({ accessToken: "codeServiceTest", iTwinId, iModelId });
+      const originalCreateForIModel = CodeService.createForIModel;
+      // can be any errors except 'NoCodeIndex'
+      CodeService.createForIModel = async () => {
+        throw new CodeService.Error("MissingCode", 0x10000 + 1, " ");
+      };
+      const briefcaseDb = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
+      briefcaseDb.pullMergeMethod = pullMergeMethod;
+      briefcaseDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      let firstNonRootElement = { id: undefined, codeValue: "test" };
+      briefcaseDb.withPreparedStatement("SELECT * from Bis.Element LIMIT 1 OFFSET 1", (stmt: ECSqlStatement) => {
+        if (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          firstNonRootElement = stmt.getRow();
+        }
+      });
+      // make change to the briefcaseDb that does not affect code, e.g., save file property
+      // expect no error from verifyCode
+      expect(() => briefcaseDb.saveFileProperty({ name: "codeServiceProp", namespace: "codeService", id: 1, subId: 1 }, "codeService test")).to.not.throw();
+      // make change to the briefcaseDb that affects code that will invoke verifyCode, e.g., update an element with a non-null code
+      // expect error from verifyCode
+      let newProps = { id: firstNonRootElement.id, code: { ...Code.createEmpty(), value: firstNonRootElement.codeValue }, classFullName: undefined, model: undefined };
+      await briefcaseDb.locks.acquireLocks({ exclusive: firstNonRootElement.id });
+      expect(() => briefcaseDb.elements.updateElement(newProps)).to.throw(CodeService.Error);
+      // make change to the briefcaseDb that will invoke verifyCode with a null(empty) code, e.g., update an element with a null(empty) code
+      // expect no error from verifyCode
+      newProps = { id: firstNonRootElement.id, code: Code.createEmpty(), classFullName: undefined, model: undefined };
+      expect(() => briefcaseDb.elements.updateElement(newProps)).to.not.throw();
+      briefcaseDb.close();
+      // throw "NoCodeIndex", this error should get ignored because it means the iModel isn't enforcing codes. updating an element with an empty code and a non empty code should work without issue.
+      CodeService.createForIModel = async () => {
+        throw new CodeService.Error("NoCodeIndex", 0x10000 + 1, " ");
+      };
+      const briefcaseDb2 = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
+      briefcaseDb2.pullMergeMethod = pullMergeMethod;
+      briefcaseDb2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      await briefcaseDb2.locks.acquireLocks({ exclusive: firstNonRootElement.id });
+      // expect no error from verifyCode for empty code
+      expect(() => briefcaseDb2.elements.updateElement(newProps)).to.not.throw();
+      newProps = { id: firstNonRootElement.id, code: { ...Code.createEmpty(), value: firstNonRootElement.codeValue }, classFullName: undefined, model: undefined };
+      // make change to the briefcaseDb that affects code that will invoke verifyCode, e.g., update an element with a non-null code
+      // expect no error from verifyCode
+      expect(() => briefcaseDb2.elements.updateElement(newProps)).to.not.throw();
+      // clean up
+      CodeService.createForIModel = originalCreateForIModel;
+      briefcaseDb2.close();
     });
 
     it("clear cache on schema changes", async () => {
@@ -494,7 +549,7 @@ for (const pullMergeMethod of ["Merge", "Rebase"] as PullMergeMethod[]) {
         </ECEntityClass>
     </ECSchema>`;
       await rwIModel.importSchemaStrings([schemaV2]);
-      assert.equal(13, rwIModel.nativeDb.getChangesetSize());
+      assert.equal(0, rwIModel.nativeDb.getChangesetSize());
       rwIModel.saveChanges("user 1: schema changeset2");
       if ("push changes") {
         // Push the changes to the hub

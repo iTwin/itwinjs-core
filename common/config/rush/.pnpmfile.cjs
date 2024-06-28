@@ -1,5 +1,4 @@
 function readPackage(pkg) {
-
   // Hacky mess: For external packages to this monorepo that have peer dependencies on packages
   // in this repo, we need to do some magic in order to get the peerDeps to point to a correct
   // version of the packages. Update the pkg.json real dependency list to
@@ -28,8 +27,14 @@ function readPackage(pkg) {
     ].includes(pkg.name)
   ) {
     pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
-    if (pkg.name === "@itwin/browser-authorization" || pkg.name === "@itwin/electron-authorization") {
+    if (
+      pkg.name === "@itwin/browser-authorization" ||
+      pkg.name === "@itwin/electron-authorization"
+    ) {
       pkg.dependencies["@itwin/core-common"] = "workspace:*";
+    }
+    if (pkg.name == "@itwin/oidc-signin-tool") {
+      pkg.dependencies["@itwin/certa"] = "workspace:*";
     }
   }
 

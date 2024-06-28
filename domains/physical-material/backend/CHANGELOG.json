@@ -2,6 +2,30 @@
   "name": "@itwin/physical-material-backend",
   "entries": [
     {
+      "version": "4.7.2",
+      "tag": "@itwin/physical-material-backend_v4.7.2",
+      "date": "Sat, 22 Jun 2024 01:09:54 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.7.1",
+      "tag": "@itwin/physical-material-backend_v4.7.1",
+      "date": "Thu, 13 Jun 2024 22:47:32 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.7.0",
+      "tag": "@itwin/physical-material-backend_v4.7.0",
+      "date": "Wed, 12 Jun 2024 18:02:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.6.2",
+      "tag": "@itwin/physical-material-backend_v4.6.2",
+      "date": "Sat, 08 Jun 2024 00:50:25 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.6.1",
       "tag": "@itwin/physical-material-backend_v4.6.1",
       "date": "Wed, 29 May 2024 14:35:17 GMT",

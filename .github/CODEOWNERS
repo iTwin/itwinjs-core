@@ -46,8 +46,8 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/eslint-plugin/                     @calebmshafer @paulius-valiunas
 /common/**/express-server.*                   @paulius-valiunas @wgoehrig
 /common/**/express-server/                    @paulius-valiunas @wgoehrig
-/common/**/frontend-devtools.*                @iTwin/itwinjs-core-display @Ellord207
-/common/**/frontend-devtools/                 @iTwin/itwinjs-core-display @Ellord207
+/common/**/frontend-devtools.*                @iTwin/itwinjs-core-display
+/common/**/frontend-devtools/                 @iTwin/itwinjs-core-display
 /common/**/frontend-tiles.*                   @iTwin/itwinjs-core-display @danieliborra
 /common/**/frontend-tiles/                    @iTwin/itwinjs-core-display @danieliborra
 /common/**/core-geometry.*                    @bbastings @dassaf4 @saeeedtorabi
@@ -85,8 +85,8 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/rpcinterface-full-stack-tests/     @aruniverse @paulius-valiunas @wgoehrig
 /common/**/appui-*.*                          @iTwin/itwinjs-core-ui
 /common/**/appui-*/                           @iTwin/itwinjs-core-ui
-/common/**/webgl-compatibility.*              @iTwin/itwinjs-core-display @Ellord207
-/common/**/webgl-compatibility/               @iTwin/itwinjs-core-display @Ellord207
+/common/**/webgl-compatibility.*              @iTwin/itwinjs-core-display
+/common/**/webgl-compatibility/               @iTwin/itwinjs-core-display
 /common/**/core-webpack-tools/                @aruniverse @calebmshafer @wgoehrig
 
 /common/config/azure-pipelines  @aruniverse @calebmshafer @ColinKerr @wgoehrig
@@ -101,7 +101,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /core/extension                 @calebmshafer @wgoehrig @aruniverse @ben-polinsky
 /core/frontend                  @bbastings @iTwin/itwinjs-core-display @aruniverse @ben-polinsky
 /core/frontend/src/extension    @calebmshafer @wgoehrig @aruniverse @ben-polinsky
-/core/frontend-devtools         @iTwin/itwinjs-core-display @Ellord207
+/core/frontend-devtools         @iTwin/itwinjs-core-display
 /core/geometry                  @bbastings @dassaf4 @saeeedtorabi
 /core/hypermodeling             @bbastings @iTwin/itwinjs-core-display
 /core/i18n                      @wgoehrig @calebmshafer
@@ -109,13 +109,14 @@ rush.json       @iTwin/itwinjs-core-admins
 /core/mobile                    @iTwin/itwinjs-core-admins @iTwin/mobilesdkadmins
 /core/orbitgt                   @iTwin/itwinjs-core-display
 /core/quantity                  @calebmshafer @ColinKerr
-/core/webgl-compatibility       @iTwin/itwinjs-core-display @Ellord207
+/core/webgl-compatibility       @iTwin/itwinjs-core-display
 
 /docs   @iTwin/itwinjs-core
-/docs/getting-started @iTwin/itwinjs-core-admins @williamkbentley
-/docs/config          @iTwin/itwinjs-core-admins @williamkbentley
+/docs/getting-started @iTwin/itwinjs-core-admins @anmolshres98 @hl662 @DanRod1999
+/docs/config          @iTwin/itwinjs-core-admins @anmolshres98 @hl662 @DanRod1999
 /docs/presentation    @iTwin/itwinjs-core-presentation
 /docs/bis             @diegoalexdiaz @ColinKerr
+/docs/ui              @iTwin/itwinjs-core-ui @GerardasB
 
 # These domains should be split up a bit more
 /domains                      @iTwin/itwinjs-core-admins
@@ -141,11 +142,11 @@ rush.json       @iTwin/itwinjs-core-admins
 /presentation                   @iTwin/itwinjs-core-presentation
 /presentation/common/src/presentation-common/PresentationRpcInterface.ts @grigasp
 
-/test-apps/display-performance-test-app     @iTwin/itwinjs-core-display @hnn0003
+/test-apps/display-performance-test-app     @iTwin/itwinjs-core-display
 /test-apps/display-test-app                 @bbastings @iTwin/itwinjs-core-display
 /test-apps/display-test-app/ios             @iTwin/mobilesdkadmins
 /test-apps/display-test-app/android         @iTwin/mobilesdkadmins
-/test-apps/export-gltf                      @MichaelBelousov @iTwin/itwinjs-core-display
+/test-apps/export-gltf                      @iTwin/itwinjs-core-display
 /test-apps/imjs-importer                    @bbastings @dassaf4 @saeeedtorabi
 /test-apps/imodel-from-geojson              @iTwin/itwinjs-core-display
 /test-apps/imodel-from-orbitgt              @iTwin/itwinjs-core-display

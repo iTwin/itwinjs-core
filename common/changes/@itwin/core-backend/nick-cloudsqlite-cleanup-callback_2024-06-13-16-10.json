@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Make cleanDeletedBlocks interruptible, and remove function from CloudContainer object. Add it to CloudSqlite namespace",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
