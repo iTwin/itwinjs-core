@@ -67,24 +67,14 @@ await $`mkdir ${incomingPath}`
 // find the latest release branch, and make that the target for the changelogs
 let targetBranch = await $`git branch -a --list "origin/release/[0-9]*.[0-9]*.x" | tail -n1 | sed 's/  remotes\\///'`;
 let currentBranch = await $`git branch --show-current`;
-
-// the version in the commit message can be extracted from the latest tag
-// const latestTag = await $`git describe --tags $(git rev-list --tags --max-count=1)`;
-// const tag = latestTag.stdout.trim();
-// const versionMatch = tag.match(/release\/(\d+\.\d+\.\d+)/);
-// let commitMessage = versionMatch ? versionMatch[1] : null;
-
+await `git checkout origin/release/3.8.x`
+// the version in the commit message can be extracted from the latest commit with commit message starting with "X.X.X" (except X.X.X-dev.X)
 let commitMessage = await $`git log --grep="^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+[^-]*$" -n 1 --pretty=format:%s`;
-
-console.log(`commit msg before doing anything: ${commitMessage}`);
 
 // remove extra null and new line characters from git cmds
 targetBranch = String(targetBranch).replace(/\n/g, '');
 currentBranch = String(currentBranch).replace(/\n/g, '');
-// currentBranch = "origin/release/3.8.x"
-
 commitMessage = String(commitMessage).replace(/\n/g, '');
-console.log(`commit msg after rm nl: ${commitMessage}`);
 
 const substring = " Changelogs";
 if (commitMessage.includes(substring)) {
