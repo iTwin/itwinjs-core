@@ -76,12 +76,16 @@ let currentBranch = await $`git branch --show-current`;
 
 let commitMessage = await $`git log --grep="^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+\b[^-]*$" -n 1 --pretty=format:%s`;
 
+console.log(`commit msg before doing anything: ${commitMessage}`);
+
 // remove extra null and new line characters from git cmds
 targetBranch = String(targetBranch).replace(/\n/g, '');
 currentBranch = String(currentBranch).replace(/\n/g, '');
 // currentBranch = "origin/release/3.8.x"
 
 commitMessage = String(commitMessage).replace(/\n/g, '');
+console.log(`commit msg after rm nl: ${commitMessage}`);
+
 const substring = " Changelogs";
 if (commitMessage.includes(substring)) {
   commitMessage = commitMessage.replace(substring, '');
