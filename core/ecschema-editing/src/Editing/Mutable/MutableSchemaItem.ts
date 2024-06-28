@@ -9,6 +9,7 @@ import {SchemaItem} from "@itwin/ecschema-metadata";
  * @internal
  */
 export abstract class MutableSchemaItem extends SchemaItem {
+  public abstract override setName(name: string): void;
   public abstract override setDescription(description: string): void;
   public abstract override setDisplayLabel(displayLabel: string): void;
 }
