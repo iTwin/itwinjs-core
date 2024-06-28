@@ -344,6 +344,7 @@ export interface RulesetInsertOptions {
     onEntityUpdate?: UpdateCallbacks;
     replaceVersions?: "all" | "all-lower" | "exact";
     skip?: "never" | "same-id" | "same-id-and-version-eq" | "same-id-and-version-gte";
+    subjectId?: Id64String;
 }
 
 // @public

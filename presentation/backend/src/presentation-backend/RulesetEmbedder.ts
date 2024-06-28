@@ -92,6 +92,11 @@ export interface RulesetInsertOptions {
    * Callbacks that will be called before and after `Entity` is inserted
    */
   onEntityInsert?: InsertCallbacks;
+
+  /**
+   * Subject ID where ruleset is to be inserted or found modified.
+   */
+  subjectId?: Id64String;
 }
 
 /**
@@ -197,7 +202,7 @@ export class RulesetEmbedder {
     }
 
     // no exact match found - insert a new ruleset element
-    const model = await this.getOrCreateRulesetModel(normalizedOptions.onEntityInsert);
+    const model = await this.getOrCreateRulesetModel(normalizedOptions.onEntityInsert, options?.subjectId);
     const rulesetCode = RulesetElements.Ruleset.createRulesetCode(this._imodel, model.id, ruleset);
     return this.insertNewRuleset(ruleset, model, rulesetCode, normalizedOptions.onEntityInsert);
   }
@@ -246,19 +251,31 @@ export class RulesetEmbedder {
     return rulesetList;
   }
 
-  private async getOrCreateRulesetModel(callbacks?: InsertCallbacks): Promise<DefinitionModel> {
-    const rulesetModel = this.queryRulesetModel();
+  private async getOrCreateRulesetModel(callbacks?: InsertCallbacks, subjectId?: Id64String): Promise<DefinitionModel> {
+    const subject = subjectId ? this._imodel.elements.getElement<Subject>(subjectId) : await this.getOrCreateSubject(callbacks);
+
+    const rulesetModel = this.queryRulesetModel(subject);
     if (undefined !== rulesetModel) {
       return rulesetModel;
     }
 
-    const rulesetSubject = await this.insertSubject(callbacks);
-    const definitionPartition = await this.insertDefinitionPartition(rulesetSubject, callbacks);
+    const definitionPartition = await this.insertDefinitionPartition(subject, callbacks);
     return this.insertDefinitionModel(definitionPartition, callbacks);
   }
 
-  private queryRulesetModel(): DefinitionModel | undefined {
-    const definitionPartition = this.queryDefinitionPartition();
+  private async getOrCreateSubject(callbacks?: InsertCallbacks): Promise<Subject> {
+    const subject = this.querySubject();
+    if (subject) {
+      return subject;
+    }
+
+    return this.insertSubject(callbacks);
+  }
+
+  private queryRulesetModel(subject: Subject): DefinitionModel | undefined {
+    const definitionPartition = this._imodel.elements.tryGetElement<DefinitionPartition>(
+      DefinitionPartition.createCode(this._imodel, subject.id, this._rulesetModelName),
+    );
     if (undefined === definitionPartition) {
       return undefined;
     }
@@ -266,16 +283,7 @@ export class RulesetEmbedder {
     return this._imodel.models.getSubModel(definitionPartition.id);
   }
 
-  private queryDefinitionPartition(): DefinitionPartition | undefined {
-    const subject = this.querySubject();
-    if (undefined === subject) {
-      return undefined;
-    }
-
-    return this._imodel.elements.tryGetElement<DefinitionPartition>(DefinitionPartition.createCode(this._imodel, subject.id, this._rulesetModelName));
-  }
-
-  private querySubject(): DefinitionPartition | undefined {
+  private querySubject(): Subject | undefined {
     const root = this._imodel.elements.getRootSubject();
     const codeSpec: CodeSpec = this._imodel.codeSpecs.getByName(BisCodeSpec.subject);
     const code = new Code({
@@ -284,7 +292,7 @@ export class RulesetEmbedder {
       value: this._rulesetSubjectName,
     });
 
-    return this._imodel.elements.tryGetElement<DefinitionPartition>(code);
+    return this._imodel.elements.tryGetElement<Subject>(code);
   }
 
   private async insertDefinitionModel(definitionPartition: DefinitionPartition, callbacks?: InsertCallbacks): Promise<DefinitionModel> {

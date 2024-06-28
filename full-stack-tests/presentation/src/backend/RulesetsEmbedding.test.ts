@@ -5,13 +5,14 @@
 import { expect } from "chai";
 import faker from "faker";
 import fs from "fs";
-import { IModelDb, StandaloneDb } from "@itwin/core-backend";
+import { IModelDb, StandaloneDb, Subject } from "@itwin/core-backend";
 import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
 import { Presentation, RulesetEmbedder } from "@itwin/presentation-backend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { createRandomRuleset } from "@itwin/presentation-common/lib/cjs/test";
 import { initialize, terminate } from "../IntegrationTests";
 import { prepareOutputFilePath } from "../Utils";
+import { CodeSpec, IModel, SubjectProps } from "@itwin/core-common";
 
 const RULESET_1: Ruleset = {
   id: "ruleset_1",
@@ -29,7 +30,7 @@ const RULESET_1: Ruleset = {
   ],
 };
 
-describe("RulesEmbedding", () => {
+describe.only("RulesEmbedding", () => {
   let imodel: IModelDb;
   let embedder: RulesetEmbedder;
   let ruleset: Ruleset;
@@ -78,6 +79,35 @@ describe("RulesEmbedding", () => {
     expect(rulesets.length).equals(1);
 
     expect(ruleset).to.deep.eq(rulesets[0]);
+  });
+
+  it("inserts a ruleset into specified subject", async () => {
+    // Setup ruleset subject
+    const subjectProps: SubjectProps = {
+      classFullName: Subject.classFullName,
+      code: Subject.createCode(imodel, IModel.rootSubjectId, "test-ruleset-subject"),
+      model: IModel.repositoryModelId,
+      parent: {
+        id: IModel.rootSubjectId,
+        relClassName: "bis.SubjectOwnsSubjects",
+      },
+    };
+    const subjectId = imodel.elements.insertElement(subjectProps);
+
+    // Insert a ruleset into custom subject
+    const ruleset1 = { id: "1", rules: [] };
+    const rulesetId1 = await embedder.insertRuleset(ruleset1, { subjectId });
+    expect(Id64.isValid(rulesetId1)).true;
+
+    // Insert a ruleset into default subject
+    const ruleset2 = { id: "2", rules: [] };
+    const rulesetId2 = await embedder.insertRuleset(ruleset2);
+    expect(Id64.isValid(rulesetId2)).true;
+    expect(rulesetId2).not.to.eq(rulesetId1);
+
+    // Obtain all rulesets
+    const rulesets: Ruleset[] = await embedder.getRulesets();
+    expect(rulesets.sort((a, b) => a.id.localeCompare(b.id))).to.deep.eq([ruleset1, ruleset2]);
   });
 
   it("inserts multiple different rulesets to iModel", async () => {
