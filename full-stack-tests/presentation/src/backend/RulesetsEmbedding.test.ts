@@ -12,7 +12,7 @@ import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presenta
 import { createRandomRuleset } from "@itwin/presentation-common/lib/cjs/test";
 import { initialize, terminate } from "../IntegrationTests";
 import { prepareOutputFilePath } from "../Utils";
-import { CodeSpec, IModel, SubjectProps } from "@itwin/core-common";
+import { IModel, SubjectProps } from "@itwin/core-common";
 
 const RULESET_1: Ruleset = {
   id: "ruleset_1",
@@ -30,7 +30,7 @@ const RULESET_1: Ruleset = {
   ],
 };
 
-describe.only("RulesEmbedding", () => {
+describe("RulesEmbedding", () => {
   let imodel: IModelDb;
   let embedder: RulesetEmbedder;
   let ruleset: Ruleset;
