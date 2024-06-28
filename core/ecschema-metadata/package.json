@@ -5,15 +5,16 @@
   "license": "MIT",
   "main": "lib/cjs/ecschema-metadata.js",
   "typings": "lib/cjs/ecschema-metadata",
+  "module": "lib/esm/ecschema-metadata.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/iTwin/itwinjs-core.git",
     "directory": "core/ecschema-metadata"
   },
   "scripts": {
-    "build": "npm run -s build:cjs",
+    "build": "npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs && npm run -s copy:test-assets",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "extract-api": "betools extract-api --entry=ecschema-metadata",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
