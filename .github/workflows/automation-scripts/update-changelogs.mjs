@@ -74,7 +74,7 @@ const tag = latestTag.stdout.trim();
 const versionMatch = tag.match(/release\/(\d+\.\d+\.\d+)/);
 let commitMessage = versionMatch ? versionMatch[1] : null;
 
-const result = await $`git log --grep="^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+" -n 1 --pretty=format:%s`
+const result = await $`git log --grep="^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+\b[^-]*$" -n 1 --pretty=format:%s`
 console.log(result.stdout.trim())
 
 // remove extra null and new line characters from git cmds
