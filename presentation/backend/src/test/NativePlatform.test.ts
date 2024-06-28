@@ -7,7 +7,7 @@ import * as faker from "faker";
 import { join } from "path";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
+import { IModelDb, IModelHost, IModelJsNative, IModelNative } from "@itwin/core-backend";
 import { BeEvent } from "@itwin/core-bentley";
 import { DiagnosticsScopeLogs, PresentationError, PresentationStatus, VariableValueTypes } from "@itwin/presentation-common";
 import { createDefaultNativePlatform, NativePlatformDefinition, PresentationNativePlatformResponseError } from "../presentation-backend/NativePlatform";
@@ -22,7 +22,7 @@ describe("default NativePlatform", () => {
     } catch (e) {
       let isLoaded = false;
       try {
-        IModelHost.platform;
+        IModelNative.platform;
         isLoaded = true;
       } catch (_e) {}
       if (!isLoaded) {
