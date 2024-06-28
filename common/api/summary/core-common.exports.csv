@@ -503,6 +503,7 @@ public;ModelQueryParams
 public;ModelSelectorProps 
 public;MonochromeMode
 internal;MultiModelPackedFeatureTable 
+beta;nameOfErrorClassToConstructor:
 internal;NativeAppFunctions
 internal;nativeAppIpcStrings:
 internal;NativeAppNotifications

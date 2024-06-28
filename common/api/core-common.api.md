@@ -5185,6 +5185,7 @@ export interface IpcAppNotifications {
 export type IpcInvokeReturn = {
     result: any;
     error?: never;
+    errorConstructorName?: never;
 } | {
     result?: never;
     error: {
@@ -5193,6 +5194,13 @@ export type IpcInvokeReturn = {
         errorNumber: number;
         stack?: string;
     };
+    errorConstructorName?: never;
+} | {
+    result?: never;
+    error?: never;
+    errorConstructorName: string;
+    argsForErrorConstructor: any[];
+    stack?: string;
 };
 
 // @public
@@ -5990,6 +5998,11 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
     // (undocumented)
     get type(): BatchType;
 }
+
+// @beta
+export const nameOfErrorClassToConstructor: {
+    [key: string]: new (...args: any[]) => any;
+};
 
 // @internal
 export interface NativeAppFunctions {
