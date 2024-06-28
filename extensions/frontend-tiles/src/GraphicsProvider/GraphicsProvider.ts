@@ -3,100 +3,39 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, Logger} from "@itwin/core-bentley";
-import { IModelApp, IModelConnection} from "@itwin/core-frontend";
-import { obtainGraphicRepresentationUrl} from "./GraphicRepresentationProvider";
-import { loggerCategory} from "../LoggerCategory";
+import { initGeoscienceTileset } from './producers/GeoscienceTileset';
+import { initIModelTiles, initIModelTilesAs3DTiles, obtainIModelTilesetUrl } from './producers/IModelTileset';
 
-/** Arguments supplied  to [[obtainMeshExportTilesetUrl]].
+export { InitGeoscienceTilesArgs } from './producers/GeoscienceTileset';
+export { ObtainIModelTilesetUrlArgs, InitIModelTilesArgs } from './producers/IModelTileset';
+
+/**
+ * The GraphicsProvider class is responsible for providing graphics-related functionality.
  * @beta
  */
-export interface ObtainIModelTilesetUrlArgs {
-  /** The iModel for which to obtain a tileset URl. */
-  iModel: IModelConnection;
-  /** The token used to access the mesh export service. */
-  accessToken: AccessToken;
-  /** Chiefly used in testing environments. */
-  urlPrefix?: string;
-  /** If true, only exports produced for `iModel`'s specific changeset will be considered; otherwise, if no exports are found for the changeset,
-   * the most recent export for any changeset will be used.
-   */
-  requireExactChangeset?: boolean;
-  /** If true, enables a CDN (content delivery network) to access tiles faster. */
-  enableCDN?: boolean;
-}
+export class GraphicsProvider {
+  private static instance: GraphicsProvider;
 
-/** Obtains a URL pointing to a tileset appropriate for visualizing a specific iModel.
- * [[queryCompletedMeshExports]] is used to obtain a list of available exports. By default, the list is sorted from most to least recently-exported.
- * The first export matching the iModel's changeset is selected; or, if no such export exists, the first export in the list is selected.
- * @returns A URL from which the tileset can be loaded, or `undefined` if no appropriate URL could be obtained.
- * @beta
- */
-export async function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs): Promise<URL|undefined> {
-  if (!args.iModel.iModelId) {
-    Logger.logInfo(loggerCategory, "Cannot obtain Graphics Data for an iModel with no iModelId");
-    return undefined;
+  private constructor() { /* Private constructor to prevent instantiation */ }
+
+  // The URL of the iModel tileset.
+  public obtainIModelTilesetUrl = obtainIModelTilesetUrl;
+
+  // Initializes the geoscience tileset.
+  public initGeoscienceTileset = initGeoscienceTileset;
+
+  // Initializes the iModel tiles.
+  public initIModelTiles = initIModelTiles;
+
+  // Initializes the iModel tiles as 3D tiles.
+  public initIModelTilesAs3DTiles = initIModelTilesAs3DTiles;
+
+  public static getInstance(): GraphicsProvider {
+    if (!GraphicsProvider.instance) {
+      GraphicsProvider.instance = new GraphicsProvider();
+    }
+    return GraphicsProvider.instance;
   }
-
-  if (!args.iModel.iTwinId) {
-    Logger.logInfo(loggerCategory, "Cannot obtain Graphics Data for an iModel with no iTwinId");
-    return undefined;
-  }
-
-  const graphicsArgs = {
-    accessToken: args.accessToken,
-    sessionId: IModelApp.sessionId,
-    dataSource: {
-      iTwinId: args.iModel.iTwinId,
-      id: args.iModel.iModelId,
-      changeId: args.iModel.changeset.id,
-      type: "IMODEL",
-    },
-    format: "IMDL",
-    urlPrefix: args.urlPrefix,
-    requireExactVersion: args.requireExactChangeset,
-    enableCDN: args.enableCDN,
-  };
-
-  return obtainGraphicRepresentationUrl(graphicsArgs);
 }
 
-/** Arguments supplied to [[obtainGeoscienceTilesetUrl]].
- * @beta
- */
-export interface ObtainGeoscienceTilesetArgs {
-  /** The token used to access the mesh export service. */
-  accessToken: AccessToken;
-
-  organizationId: string;
-
-  workspaceId: string;
-
-  geoscienceObjectId: string;
-  /** Chiefly used in testing environments. */
-  urlPrefix?: string;
-  /** If true, only exports produced for `iModel`'s specific changeset will be considered; otherwise, if no exports are found for the changeset,
-   * the most recent export for any changeset will be used.
-   */
-  enableCDN?: boolean;
-}
-
-export async function obtainGeoscienceTilesetUrl(args: ObtainGeoscienceTilesetArgs): Promise<string|undefined> {
-  const headers = {
-    /* eslint-disable-next-line @typescript-eslint/naming-convention */
-    Authorization: args.accessToken,
-  };
-
-  const baseUrl = "https://351mt.api.integration.seequent.com";
-  const url = `${baseUrl}/visualization/orgs/${args.organizationId}/workspaces/${args.workspaceId}/geoscience-object/${args.geoscienceObjectId}`;
-  const response = await fetch(url, { headers });
-  const result = await response.json();
-
-  const objUrl = URL.createObjectURL(new Blob([JSON.stringify(result)], {type: "application/json"}));
-  if ((!result) || (!objUrl)) {
-    Logger.logInfo(loggerCategory, `No data available for Geoscience Object ${args.geoscienceObjectId}`);
-    return undefined;
-  }
-
-  return objUrl;
-}
+export default GraphicsProvider.getInstance();

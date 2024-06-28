@@ -3,19 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp, IModelConnection, SpatialTileTreeReferences, SpatialViewState } from "@itwin/core-frontend";
-import { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTreeRefs";
-import { queryGraphicRepresentations } from "./GraphicsProvider/GraphicRepresentationProvider";
+import { queryGraphicRepresentations } from "./GraphicsProvider/providers/GraphicRepresentation";
 import { AccessToken } from "@itwin/core-bentley";
-import { obtainIModelTilesetUrl, ObtainIModelTilesetUrlArgs} from "./GraphicsProvider/GraphicsProvider";
-
-/** A function that can provide the base URL where a tileset representing all of the spatial models in a given iModel are stored.
- * The tileset is expected to reside at "baseUrl/tileset.json" and to have been produced by the [mesh export service](https://developer.bentley.com/apis/mesh-export/).
- * If no such tileset exists for the given iModel, return `undefined`.
- * @see [[FrontendTilesOptions.computeSpatialTilesetBaseUrl]].
- * @beta
- */
-export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
+import { GraphicsProvider, InitIModelTilesArgs, ObtainIModelTilesetUrlArgs } from './GraphicsProvider/GraphicsProvider';
 
 /** Represents the result of a [mesh export](https://developer.bentley.com/apis/mesh-export/operations/get-export/#export).
  * @see [[queryCompletedMeshExports]].
@@ -83,7 +73,6 @@ export interface QueryMeshExportsArgs {
 export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator<MeshExport> {
   const graphicsArgs = {
     accessToken: args.accessToken,
-    sessionId: IModelApp.sessionId,
     dataSource: {
       iTwinId: args.iTwinId,
       id: args.iModelId,
@@ -95,7 +84,7 @@ export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterab
     enableCDN: args.enableCDN,
   };
 
-  for await (const data of queryGraphicRepresentations(graphicsArgs)){
+  for await (const data of queryGraphicRepresentations(graphicsArgs)) {
     const meshExport = {
       id: data.representationId,
       displayName: data.displayName,
@@ -132,69 +121,17 @@ export type ObtainMeshExportTilesetUrlArgs = ObtainIModelTilesetUrlArgs;
  * @beta
  */
 export async function obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise<URL | undefined> {
-  return obtainIModelTilesetUrl(args);
-}
-/** Options supplied to [[initializeFrontendTiles]].
- * @beta
- */
-export interface FrontendTilesOptions {
-  /** Provide the base URL for the pre-published tileset for a given iModel.
-   * If omitted, [[obtainMeshExportTilesetUrl]] will be invoked with default arguments, using the access token provided by [[IModelApp]].
-   */
-  computeSpatialTilesetBaseUrl?: ComputeSpatialTilesetBaseUrl;
-  /** The maximum number of levels in the tile tree to skip loading if they do not provide the desired level of detail for the current view.
-   * Default: 4.
-   * Reducing this value will load more intermediate tiles, which causes more gradual refinement: low-resolution tiles will display quickly, followed more gradually by
-   * successively higher-resolution ones.
-   * Increasing the value jumps more directly to tiles of the exact level of detail desired, which may load more, smaller tiles up-front, leaving some areas of the view
-   * vacant for longer; and when zooming out some newly-exposed areas of the view may remain vacant for longer because no lower-resolution tiles are initially available to
-   * fill them. However, tiles close to the viewer (and therefore likely of most interest to them) will refine to an appropriate level of detail more quickly.
-   */
-  maxLevelsToSkip?: number;
-  /** Specifies whether to permit the user to enable visible edges or wireframe mode for batched tiles.
-   * The currently-deployed mesh export service does not produce edges, so this currently defaults to `false` to avoid user confusion.
-   * Set it to `true` if you are loading tiles created with a version of the exporter that does produce edges.
-   * ###TODO delete this option once we deploy an edge-producing version of the exporter to production.
-   * @internal
-   */
-  enableEdges?: boolean;
-  /** Specifies whether to enable a CDN (content delivery network) to access tiles faster.
-   * This option is only used if computeSpatialTilesetBaseUrl is not defined.
-   * @beta
-   */
-  enableCDN?: boolean;
-  /** Specifies whether to enable an IndexedDB database for use as a local cache.
-  * Requested tiles will then first be search for in the database, and if not found, fetched as normal.
-  * @internal
-  */
-  useIndexedDBCache?: boolean;
+  return GraphicsProvider.getInstance().obtainIModelTilesetUrl(args);
 }
 
-/** Global configuration initialized by [[initializeFrontendTiles]].
- * @internal
+/** Arguments supplied to [[InitIModelTilesArgs]].
+ * @beta
  */
-export const frontendTilesOptions = {
-  maxLevelsToSkip: 4,
-  enableEdges: false,
-  useIndexedDBCache: false,
-};
+export type FrontendTilesOptions = InitIModelTilesArgs;
 
 /** Initialize the frontend-tiles package to obtain tiles for spatial views.
  * @beta
  */
 export function initializeFrontendTiles(options: FrontendTilesOptions): void {
-  if (undefined !== options.maxLevelsToSkip && options.maxLevelsToSkip >= 0)
-    frontendTilesOptions.maxLevelsToSkip = options.maxLevelsToSkip;
-
-  if (options.enableEdges)
-    frontendTilesOptions.enableEdges = true;
-
-  if (options.useIndexedDBCache)
-    frontendTilesOptions.useIndexedDBCache = true;
-
-  const computeUrl = options.computeSpatialTilesetBaseUrl ?? (
-    async (iModel: IModelConnection) => obtainMeshExportTilesetUrl({ iModel, accessToken: await IModelApp.getAccessToken(), enableCDN: options.enableCDN })
-  );
-
-  SpatialTileTreeReferences.create = (view: SpatialViewState) => createBatchedSpatialTileTreeReferences(view, computeUrl);
+  GraphicsProvider.getInstance().initIModelTiles(options);
 }
