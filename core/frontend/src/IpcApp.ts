@@ -98,10 +98,10 @@ export class IpcApp {
       const constructorName = retVal.errorConstructorName;
       const constructor = nameOfErrorClassToConstructor[constructorName];
       if (constructor) {
-        const newObj = new constructor(...retVal.argsForErrorConstructor);
+        const err = new constructor(...retVal.argsForErrorConstructor);
         if (retVal.stack)
-          newObj.stack = retVal.stack;
-        throw newObj;
+          err.stack = retVal.stack;
+        throw err;
       }
     } else if (undefined !== retVal.error) {
       const err = new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message);
