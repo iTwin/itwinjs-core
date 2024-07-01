@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-backend",
-      "comment": "Add ability to specify parent subject id for the rulesets.",
+      "comment": "`RulesetEmbedder`: Add ability to specify parent `bis.Subject` for the presentation rulesets' `Subject`.",
       "type": "none"
     }
   ],
