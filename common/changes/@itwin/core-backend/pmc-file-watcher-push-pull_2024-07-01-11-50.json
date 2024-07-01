@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Update IModel.changeset when changes are made by another process.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
