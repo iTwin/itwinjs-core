@@ -313,9 +313,8 @@ export class TxnManager {
 
   /** If a -watch file exists for this iModel, update its timestamp so watching processes can be
    * notified that we've modified the briefcase.
-   * @internal Used by IModelDb on push/pull.
    */
-  public touchWatchFile(): void {
+  private touchWatchFile(): void {
     // This is an async call. We don't have any reason to await it.
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     touch(this._iModel.watchFilePathName, { nocreate: true });

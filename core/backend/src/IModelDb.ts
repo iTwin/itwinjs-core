@@ -2775,7 +2775,6 @@ export class BriefcaseDb extends IModelDb {
       // Restart default txn to trigger events when watch file is changed by some other process.
       const watcher = fs.watch(briefcaseDb.watchFilePathName, { persistent: false }, () => {
         nativeDb.restartDefaultTxn();
-        briefcaseDb.changeset = briefcaseDb.nativeDb.getCurrentChangeset();
       });
 
       // Stop the watcher when we close this connection.
@@ -2999,7 +2998,6 @@ export class BriefcaseDb extends IModelDb {
     });
 
     IpcHost.notifyTxns(this, "notifyPulledChanges", this.changeset as ChangesetIndexAndId);
-    this.txns.touchWatchFile();
   }
 
   /** Push changes to iModelHub. */
@@ -3020,7 +3018,6 @@ export class BriefcaseDb extends IModelDb {
 
     const changeset = this.changeset as ChangesetIndexAndId;
     IpcHost.notifyTxns(this, "notifyPushedChanges", changeset);
-    this.txns.touchWatchFile();
   }
 
   public override close() {
