@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Append a test for null handling using updateElement",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
