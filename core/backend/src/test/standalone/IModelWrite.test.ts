@@ -5,6 +5,8 @@
 
 import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
+    ChangesetIdWithIndex,
+    ChangesetIndex,
   Code, ColorDef,
   GeometricElement2dProps, GeometryStreamProps, IModel, LockState, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
 } from "@itwin/core-common";
@@ -46,7 +48,7 @@ export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: 
   return { modelId, spatialCategoryId };
 }
 
-describe.only("IModelWriteTest", () => {
+describe("IModelWriteTest", () => {
   let managerAccessToken: AccessToken;
   let superAccessToken: AccessToken;
   let iTwinId: GuidString;
@@ -140,6 +142,11 @@ describe.only("IModelWriteTest", () => {
     sinon.restore();
   });
 
+  function expectEqualChangesets(a: ChangesetIdWithIndex, b: ChangesetIdWithIndex): void {
+    expect(a.id).to.equal(b.id);
+    expect(a.index).to.equal(b.index);
+  }
+
   it("WatchForChanges - pushPull", async () => {
     const adminAccessToken = await HubWrappers.getAccessToken(TestUserType.SuperManager);
     const iModelProps = {
@@ -182,6 +189,12 @@ describe.only("IModelWriteTest", () => {
     // Push the changes to the hub
 
     const prePushChangeset = bc.changeset;
+    let eventRaised = false;
+    roBC.onChangesetChanged.addOnce((prevCS) => {
+      expectEqualChangesets(prevCS, prePushChangeset);
+      eventRaised = true;
+    });
+    
     await bc.pushChanges({ accessToken: adminAccessToken, description: "test" });
     const postPushChangeset = bc.changeset;
     assert(!!postPushChangeset);
@@ -190,9 +203,9 @@ describe.only("IModelWriteTest", () => {
     // trigger watcher via stub
     fsWatcher.callback();
 
-    expect(roBC.changeset.id, "changeset should be updated").equal(postPushChangeset.id);
-    expect(roBC.changeset.index, "changeset should be updated").equal(postPushChangeset.index);
+    expectEqualChangesets(roBC.changeset, postPushChangeset);
     expect(roBC.nativeDb.getCurrentTxnId(), "txn should be updated").equal(bc.nativeDb.getCurrentTxnId());
+    expect(eventRaised).to.be.true;
 
     roBC.close();
     expect(nClosed).equal(1);
@@ -245,6 +258,11 @@ describe.only("IModelWriteTest", () => {
     const roBC = await BriefcaseDb.open({ fileName: briefcaseProps.fileName, watchForChanges: true });
 
     const prePullChangeset = bc.changeset;
+    let eventRaised = false;
+    roBC.onChangesetChanged.addOnce((prevCS) => {
+      expectEqualChangesets(prevCS, prePushChangeset);
+      eventRaised = true;
+    });
 
     await bc.pullChanges();
 
@@ -258,9 +276,9 @@ describe.only("IModelWriteTest", () => {
     console.error(postPullChangeset);
     console.error(roBC.changeset);
 
-    expect(roBC.changeset.id, "changeset should be updated").equal(postPullChangeset.id);
-    expect(roBC.changeset.index, "changeset should be updated").equal(postPullChangeset.index);
+    expectEqualChangesets(roBC.changeset, postPullChangeset);
     expect(roBC.nativeDb.getCurrentTxnId(), "txn should be updated").equal(bc.nativeDb.getCurrentTxnId());
+    expect(eventRaised).to.be.true;
 
     roBC.close();
     expect(nClosed).equal(1);
