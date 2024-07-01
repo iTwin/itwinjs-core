@@ -3052,6 +3052,7 @@ export class BriefcaseDb extends IModelDb {
     });
 
     IpcHost.notifyTxns(this, "notifyPulledChanges", this.changeset as ChangesetIndexAndId);
+    this.txns.touchWatchFile();
   }
 
   /** Push changes to iModelHub. */
@@ -3072,6 +3073,7 @@ export class BriefcaseDb extends IModelDb {
 
     const changeset = this.changeset as ChangesetIndexAndId;
     IpcHost.notifyTxns(this, "notifyPushedChanges", changeset);
+    this.txns.touchWatchFile();
   }
 
   public override close() {
