@@ -960,7 +960,7 @@ export namespace CloudSqlite {
         debugLogging?: boolean;
         findOrphanedBlocks?: boolean;
         nSeconds?: number;
-        onProgress?: (nDeleted: number, nTotalToDelete: number) => number;
+        onProgress?: (nDeleted: number, nTotalToDelete: number) => Promise<number>;
     }
     export interface CloudCache {
         // @internal
