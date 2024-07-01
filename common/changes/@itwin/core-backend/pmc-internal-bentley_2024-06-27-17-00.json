@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Begin deprecating @internal APIs.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

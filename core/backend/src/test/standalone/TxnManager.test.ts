@@ -12,9 +12,10 @@ import {
 import {
   ChangeInstanceKey,
   ChannelControl,
-  IModelHost, IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
+  IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
 } from "../../core-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
+import { IModelNative } from "../../internal/NativePlatform";
 
 /// cspell:ignore accum
 
@@ -25,7 +26,7 @@ describe("TxnManager", () => {
   let testFileName: string;
 
   const performUpgrade = (pathname: string) => {
-    const nativeDb = new IModelHost.platform.DgnDb();
+    const nativeDb = new IModelNative.platform.DgnDb();
     const upgradeOptions: UpgradeOptions = {
       domain: DomainOptions.Upgrade,
       schemaLockHeld: true,
