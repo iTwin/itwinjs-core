@@ -5,8 +5,8 @@
 
 import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  Code, ColorDef,
-  GeometricElement2dProps, GeometryStreamProps, IModel, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
+  ChangesetIdWithIndex, Code, ColorDef,
+  GeometricElement2dProps, GeometryStreamProps, IModel, LockState, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
 import * as chai from "chai";
@@ -24,10 +24,10 @@ import {
   BriefcaseManager,
   ChannelControl,
   CodeService,
-  DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, LockState, OpenBriefcaseArgs, SpatialCategory, Subject,
+  DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, OpenBriefcaseArgs, SpatialCategory, Subject,
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
-import { ServerBasedLocks } from "../../ServerBasedLocks";
+import { ServerBasedLocks } from "../../internal/ServerBasedLocks";
 
 chai.use(chaiAsPromised);
 
@@ -132,6 +132,147 @@ describe("IModelWriteTest", () => {
 
     // now they should match because restartDefaultTxn in the readonly briefcase reads the changes from the writeable connection
     expect(bc.nativeDb.getCurrentTxnId()).equal(roBC.nativeDb.getCurrentTxnId());
+
+    roBC.close();
+    expect(nClosed).equal(1);
+
+    bc.close();
+    sinon.restore();
+  });
+
+  function expectEqualChangesets(a: ChangesetIdWithIndex, b: ChangesetIdWithIndex): void {
+    expect(a.id).to.equal(b.id);
+    expect(a.index).to.equal(b.index);
+  }
+
+  it("WatchForChanges - push", async () => {
+    const adminAccessToken = await HubWrappers.getAccessToken(TestUserType.SuperManager);
+    const iModelProps = {
+      iModelName: "ReadWriteTest",
+      iTwinId,
+    };
+
+    const iModelId = await HubMock.createNewIModel(iModelProps);
+    const briefcaseProps = await BriefcaseManager.downloadBriefcase({ accessToken: adminAccessToken, iTwinId, iModelId });
+
+    let nClosed = 0;
+    const fsWatcher = {
+      callback: () => { },
+      close: () => ++nClosed,
+    };
+    const watchStub: any = (_filename: fs.PathLike, _opts: fs.WatchOptions, fn: () => void) => {
+      fsWatcher.callback = fn;
+      return fsWatcher;
+    };
+    sinon.stub(fs, "watch").callsFake(watchStub);
+
+    const bc = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
+    bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    const roBC = await BriefcaseDb.open({ fileName: briefcaseProps.fileName, watchForChanges: true });
+
+    const code1 = IModelTestUtils.getUniqueModelCode(bc, "newPhysicalModel1");
+    await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(bc, code1, true);
+    bc.saveChanges();
+
+    // immediately after save changes the current txnId in the writeable briefcase changes, but it isn't reflected
+    // in the readonly briefcase until the file watcher fires.
+    expect(bc.nativeDb.getCurrentTxnId()).not.equal(roBC.nativeDb.getCurrentTxnId());
+
+    // trigger watcher via stub
+    fsWatcher.callback();
+
+    // now they should match because restartDefaultTxn in the readonly briefcase reads the changes from the writeable connection
+    expect(bc.nativeDb.getCurrentTxnId()).equal(roBC.nativeDb.getCurrentTxnId());
+
+    // Push the changes to the hub
+
+    const prePushChangeset = bc.changeset;
+    let eventRaised = false;
+    roBC.onChangesetChanged.addOnce((prevCS) => {
+      expectEqualChangesets(prevCS, prePushChangeset);
+      eventRaised = true;
+    });
+
+    await bc.pushChanges({ accessToken: adminAccessToken, description: "test" });
+    const postPushChangeset = bc.changeset;
+    assert(!!postPushChangeset);
+    expect(prePushChangeset !== postPushChangeset, "changes should be pushed");
+
+    // trigger watcher via stub
+    fsWatcher.callback();
+
+    expectEqualChangesets(roBC.changeset, postPushChangeset);
+    expect(roBC.nativeDb.getCurrentTxnId(), "txn should be updated").equal(bc.nativeDb.getCurrentTxnId());
+    expect(eventRaised).to.be.true;
+
+    roBC.close();
+    expect(nClosed).equal(1);
+
+    bc.close();
+    sinon.restore();
+  });
+
+  it("WatchForChanges - pull", async () => {
+    const adminAccessToken = await HubWrappers.getAccessToken(TestUserType.SuperManager);
+
+    const pathname = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+    const hubName = "CompatibilityTest";
+    const iModelId = await HubWrappers.pushIModel(managerAccessToken, iTwinId, pathname, hubName, true);
+
+    // Download two copies of the briefcase - manager and super
+    const args: RequestNewBriefcaseProps = { iTwinId, iModelId };
+    const initialDb = await BriefcaseManager.downloadBriefcase({ accessToken: adminAccessToken, ...args });
+    const briefcaseProps = await BriefcaseManager.downloadBriefcase({ accessToken: adminAccessToken, ...args });
+
+    // Push some changes - prep for pull workflow.
+    const bc1 = await BriefcaseDb.open({ fileName: initialDb.fileName });
+    bc1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    const code2 = IModelTestUtils.getUniqueModelCode(bc1, "newPhysicalModel2");
+    await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(bc1, code2, true);
+    const prePushChangeset = bc1.changeset;
+    bc1.saveChanges();
+    await bc1.pushChanges({ accessToken: adminAccessToken, description: "test" });
+    const postPushChangeset = bc1.changeset;
+    assert(!!prePushChangeset);
+    expect(prePushChangeset !== postPushChangeset, "changes should be pushed");
+
+    bc1.close();
+
+    // Writer that pulls + watcher.
+    let nClosed = 0;
+    const fsWatcher = {
+      callback: () => { },
+      close: () => ++nClosed,
+    };
+    const watchStub: any = (_filename: fs.PathLike, _opts: fs.WatchOptions, fn: () => void) => {
+      fsWatcher.callback = fn;
+      return fsWatcher;
+    };
+    sinon.stub(fs, "watch").callsFake(watchStub);
+
+    const bc = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
+    bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    const roBC = await BriefcaseDb.open({ fileName: briefcaseProps.fileName, watchForChanges: true });
+
+    const prePullChangeset = bc.changeset;
+    let eventRaised = false;
+    roBC.onChangesetChanged.addOnce((prevCS) => {
+      expectEqualChangesets(prevCS, prePushChangeset);
+      eventRaised = true;
+    });
+
+    await bc.pullChanges();
+
+    const postPullChangeset = bc.changeset;
+    assert(!!postPullChangeset);
+    expect(prePullChangeset !== postPullChangeset, "changes should be pulled");
+
+    // trigger watcher via stub
+    fsWatcher.callback();
+
+    expectEqualChangesets(roBC.changeset, postPullChangeset);
+    expect(roBC.nativeDb.getCurrentTxnId(), "txn should be updated").equal(bc.nativeDb.getCurrentTxnId());
+    expect(eventRaised).to.be.true;
 
     roBC.close();
     expect(nClosed).equal(1);

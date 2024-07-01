@@ -1167,11 +1167,6 @@ export enum ChangesetType {
     SchemaSync = 65
 }
 
-// @alpha
-export class ChannelConstraintError extends IModelError {
-    constructor(message: string, getMetaData?: LoggingMetaData);
-}
-
 // @public
 export interface ChannelRootAspectProps extends ElementAspectProps {
     owner: string;
@@ -1638,6 +1633,20 @@ export enum ConcreteEntityTypes {
 export namespace ConcreteEntityTypes {
     // @internal
     export function toBisCoreRootClassFullName(type: ConcreteEntityTypes): string;
+}
+
+// @public
+export interface ConflictingLock {
+    briefcaseIds: number[];
+    objectId: string;
+    state: LockState;
+}
+
+// @public
+export class ConflictingLocksError extends IModelError {
+    constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]);
+    // (undocumented)
+    conflictingLocks?: ConflictingLock[];
 }
 
 // @alpha
@@ -4799,7 +4808,8 @@ export abstract class IModel implements IModelProps {
     protected constructor(tokenProps?: IModelRpcProps);
     cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d): Point3d;
     // (undocumented)
-    changeset: ChangesetIdWithIndex;
+    get changeset(): ChangesetIdWithIndex;
+    set changeset(changeset: ChangesetIdWithIndex);
     static readonly dictionaryId: Id64String;
     get ecefLocation(): EcefLocation | undefined;
     set ecefLocation(ecefLocation: EcefLocation | undefined);
@@ -4831,6 +4841,7 @@ export abstract class IModel implements IModelProps {
     get key(): string;
     get name(): string;
     set name(name: string);
+    readonly onChangesetChanged: BeEvent<(previousChangeset: ChangesetIdWithIndex) => void>;
     readonly onEcefLocationChanged: BeEvent<(previousLocation: EcefLocation | undefined) => void>;
     readonly onGeographicCoordinateSystemChanged: BeEvent<(previousGCS: GeographicCRS | undefined) => void>;
     readonly onGlobalOriginChanged: BeEvent<(previousOrigin: Point3d) => void>;
@@ -5531,6 +5542,13 @@ export interface Localization {
     initialize(namespaces: string[]): Promise<void>;
     registerNamespace(namespace: string): Promise<void>;
     unregisterNamespace(namespace: string): void;
+}
+
+// @public
+export enum LockState {
+    Exclusive = 2,
+    None = 0,
+    Shared = 1
 }
 
 export { LogFunction }
