@@ -184,7 +184,7 @@ export class BeEventList<T extends Listener> {
  * type EvListener = ListenerType<typeof ev>;
  * ```
  *
- * @beta
+ * @public
  */
 export type ListenerType<TEvent extends {
   addListener(listener: Listener): () => void;

@@ -20,4 +20,4 @@ In addition to [already supported Electron versions](../learning/SupportedPlatfo
 
 ## `ListenerType` helper
 
-Added a new helper type [ListenerType]($core-bentley) marked as `@beta` to retrieve the listener type of a [BeEvent]($core-bentley). This type is useful when implicit types can not be used i.e. you need to define a listener outside of [BeEvent.addListener]($core-bentley).
+Added a new helper type [ListenerType]($core-bentley) to retrieve the listener type of a [BeEvent]($core-bentley). This type is useful when implicit types can not be used i.e. you need to define a listener outside of [BeEvent.addListener]($core-bentley).

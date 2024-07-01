@@ -1178,7 +1178,7 @@ export namespace JsonUtils {
 // @public
 export type Listener = (...arg: any[]) => void;
 
-// @beta
+// @public
 export type ListenerType<TEvent extends {
     addListener(listener: Listener): () => void;
 }> = TEvent extends {
