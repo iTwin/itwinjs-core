@@ -147,7 +147,7 @@ describe("IModelWriteTest", () => {
     expect(a.index).to.equal(b.index);
   }
 
-  it("WatchForChanges - pushPull", async () => {
+  it("WatchForChanges - push", async () => {
     const adminAccessToken = await HubWrappers.getAccessToken(TestUserType.SuperManager);
     const iModelProps = {
       iModelName: "ReadWriteTest",
