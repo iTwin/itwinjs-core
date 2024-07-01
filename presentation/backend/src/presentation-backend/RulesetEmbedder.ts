@@ -28,6 +28,7 @@ import {
   CodeSpec,
   DefinitionElementProps,
   ElementProps,
+  IModel,
   InformationPartitionElementProps,
   ModelProps,
   QueryBinder,
@@ -92,11 +93,6 @@ export interface RulesetInsertOptions {
    * Callbacks that will be called before and after `Entity` is inserted
    */
   onEntityInsert?: InsertCallbacks;
-
-  /**
-   * Subject ID where ruleset is to be inserted or found modified.
-   */
-  subjectId?: Id64String;
 }
 
 /**
@@ -106,6 +102,11 @@ export interface RulesetInsertOptions {
 export interface RulesetEmbedderProps {
   /** iModel to embed rulesets to */
   imodel: IModelDb;
+  /**
+   * An ID of existing subject under which presentation ruleset will be located or created.
+   * Defaults to 'IModel.rootSubjectId'.
+   */
+  parentSubjectId?: Id64String;
 }
 
 /**
@@ -114,6 +115,7 @@ export interface RulesetEmbedderProps {
  */
 export class RulesetEmbedder {
   private _imodel: IModelDb;
+  private _parentSubjectId: Id64String;
   private readonly _schemaPath = path.join(KnownLocations.nativeAssetsDir, "ECSchemas/Domain/PresentationRules.ecschema.xml");
   private readonly _rulesetModelName = "PresentationRules";
   private readonly _rulesetSubjectName = "PresentationRules";
@@ -124,6 +126,7 @@ export class RulesetEmbedder {
   public constructor(props: RulesetEmbedderProps) {
     PresentationRules.registerSchema();
     this._imodel = props.imodel;
+    this._parentSubjectId = props.parentSubjectId ?? IModel.rootSubjectId;
   }
 
   /**
@@ -202,7 +205,7 @@ export class RulesetEmbedder {
     }
 
     // no exact match found - insert a new ruleset element
-    const model = await this.getOrCreateRulesetModel(normalizedOptions.onEntityInsert, options?.subjectId);
+    const model = await this.getOrCreateRulesetModel(normalizedOptions.onEntityInsert);
     const rulesetCode = RulesetElements.Ruleset.createRulesetCode(this._imodel, model.id, ruleset);
     return this.insertNewRuleset(ruleset, model, rulesetCode, normalizedOptions.onEntityInsert);
   }
@@ -251,31 +254,19 @@ export class RulesetEmbedder {
     return rulesetList;
   }
 
-  private async getOrCreateRulesetModel(callbacks?: InsertCallbacks, subjectId?: Id64String): Promise<DefinitionModel> {
-    const subject = subjectId ? this._imodel.elements.getElement<Subject>(subjectId) : await this.getOrCreateSubject(callbacks);
-
-    const rulesetModel = this.queryRulesetModel(subject);
+  private async getOrCreateRulesetModel(callbacks?: InsertCallbacks): Promise<DefinitionModel> {
+    const rulesetModel = this.queryRulesetModel();
     if (undefined !== rulesetModel) {
       return rulesetModel;
     }
 
-    const definitionPartition = await this.insertDefinitionPartition(subject, callbacks);
+    const rulesetSubject = await this.insertSubject(callbacks);
+    const definitionPartition = await this.insertDefinitionPartition(rulesetSubject, callbacks);
     return this.insertDefinitionModel(definitionPartition, callbacks);
   }
 
-  private async getOrCreateSubject(callbacks?: InsertCallbacks): Promise<Subject> {
-    const subject = this.querySubject();
-    if (subject) {
-      return subject;
-    }
-
-    return this.insertSubject(callbacks);
-  }
-
-  private queryRulesetModel(subject: Subject): DefinitionModel | undefined {
-    const definitionPartition = this._imodel.elements.tryGetElement<DefinitionPartition>(
-      DefinitionPartition.createCode(this._imodel, subject.id, this._rulesetModelName),
-    );
+  private queryRulesetModel(): DefinitionModel | undefined {
+    const definitionPartition = this.queryDefinitionPartition();
     if (undefined === definitionPartition) {
       return undefined;
     }
@@ -283,12 +274,21 @@ export class RulesetEmbedder {
     return this._imodel.models.getSubModel(definitionPartition.id);
   }
 
+  private queryDefinitionPartition(): DefinitionPartition | undefined {
+    const subject = this.querySubject();
+    if (undefined === subject) {
+      return undefined;
+    }
+
+    return this._imodel.elements.tryGetElement<DefinitionPartition>(DefinitionPartition.createCode(this._imodel, subject.id, this._rulesetModelName));
+  }
+
   private querySubject(): Subject | undefined {
-    const root = this._imodel.elements.getRootSubject();
+    const parent = this._imodel.elements.getElement<Subject>(this._parentSubjectId);
     const codeSpec: CodeSpec = this._imodel.codeSpecs.getByName(BisCodeSpec.subject);
     const code = new Code({
       spec: codeSpec.id,
-      scope: root.id,
+      scope: parent.id,
       value: this._rulesetSubjectName,
     });
 
@@ -322,18 +322,18 @@ export class RulesetEmbedder {
   }
 
   private async insertSubject(callbacks?: InsertCallbacks): Promise<Subject> {
-    const root = this._imodel.elements.getRootSubject();
+    const parent = this._imodel.elements.getElement<Subject>(this._parentSubjectId);
     const codeSpec: CodeSpec = this._imodel.codeSpecs.getByName(BisCodeSpec.subject);
     const subjectCode = new Code({
       spec: codeSpec.id,
-      scope: root.id,
+      scope: parent.id,
       value: this._rulesetSubjectName,
     });
     const subjectProps: SubjectProps = {
       classFullName: Subject.classFullName,
-      model: root.model,
+      model: parent.model,
       parent: {
-        id: root.id,
+        id: parent.id,
         relClassName: "BisCore:SubjectOwnsSubjects",
       },
       code: subjectCode,

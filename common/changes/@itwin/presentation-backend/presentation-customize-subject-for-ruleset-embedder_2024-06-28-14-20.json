@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-backend",
-      "comment": "Add ability to specify subject ID for the rulesets.",
+      "comment": "Add ability to specify parent subject id for the rulesets.",
       "type": "none"
     }
   ],

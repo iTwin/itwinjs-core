@@ -81,7 +81,7 @@ describe("RulesEmbedding", () => {
     expect(ruleset).to.deep.eq(rulesets[0]);
   });
 
-  it("inserts a ruleset into specified subject", async () => {
+  it("inserts a ruleset under specified parent subject", async () => {
     // Setup ruleset subject
     const subjectProps: SubjectProps = {
       classFullName: Subject.classFullName,
@@ -92,22 +92,22 @@ describe("RulesEmbedding", () => {
         relClassName: "bis.SubjectOwnsSubjects",
       },
     };
-    const subjectId = imodel.elements.insertElement(subjectProps);
+    const parentSubjectId = imodel.elements.insertElement(subjectProps);
 
     // Insert a ruleset into custom subject
     const ruleset1 = { id: "1", rules: [] };
-    const rulesetId1 = await embedder.insertRuleset(ruleset1, { subjectId });
+    embedder = new RulesetEmbedder({ imodel, parentSubjectId });
+    const rulesetId1 = await embedder.insertRuleset(ruleset1);
     expect(Id64.isValid(rulesetId1)).true;
-
-    // Insert a ruleset into default subject
-    const ruleset2 = { id: "2", rules: [] };
-    const rulesetId2 = await embedder.insertRuleset(ruleset2);
-    expect(Id64.isValid(rulesetId2)).true;
-    expect(rulesetId2).not.to.eq(rulesetId1);
 
     // Obtain all rulesets
     const rulesets: Ruleset[] = await embedder.getRulesets();
-    expect(rulesets.sort((a, b) => a.id.localeCompare(b.id))).to.deep.eq([ruleset1, ruleset2]);
+    expect(rulesets.sort((a, b) => a.id.localeCompare(b.id))).to.deep.eq([ruleset1]);
+
+    // Validate if ruleset subject has been created under the correct subject
+    const reader = imodel.createQueryReader("SELECT Parent.Id parentId FROM bis.Subject WHERE CodeValue = 'PresentationRules'");
+    const row = await reader.next();
+    expect(row.value.parentId).to.eq(parentSubjectId);
   });
 
   it("inserts multiple different rulesets to iModel", async () => {
