@@ -5,9 +5,7 @@
 
 import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
-    ChangesetIdWithIndex,
-    ChangesetIndex,
-  Code, ColorDef,
+  ChangesetIdWithIndex, Code, ColorDef,
   GeometricElement2dProps, GeometryStreamProps, IModel, LockState, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
@@ -194,7 +192,7 @@ describe("IModelWriteTest", () => {
       expectEqualChangesets(prevCS, prePushChangeset);
       eventRaised = true;
     });
-    
+
     await bc.pushChanges({ accessToken: adminAccessToken, description: "test" });
     const postPushChangeset = bc.changeset;
     assert(!!postPushChangeset);
@@ -240,7 +238,6 @@ describe("IModelWriteTest", () => {
 
     bc1.close();
 
-
     // Writer that pulls + watcher.
     let nClosed = 0;
     const fsWatcher = {
@@ -272,9 +269,6 @@ describe("IModelWriteTest", () => {
 
     // trigger watcher via stub
     fsWatcher.callback();
-    console.error(prePullChangeset);
-    console.error(postPullChangeset);
-    console.error(roBC.changeset);
 
     expectEqualChangesets(roBC.changeset, postPullChangeset);
     expect(roBC.nativeDb.getCurrentTxnId(), "txn should be updated").equal(bc.nativeDb.getCurrentTxnId());
