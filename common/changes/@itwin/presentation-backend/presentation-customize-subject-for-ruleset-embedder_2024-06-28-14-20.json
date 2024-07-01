@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-backend",
+      "comment": "`RulesetEmbedder`: Add ability to specify parent `bis.Subject` for the presentation rulesets' `Subject`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend"
+}
