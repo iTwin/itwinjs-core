@@ -171,3 +171,19 @@ export class BeEventList<T extends Listener> {
     this._events[name] = undefined;
   }
 }
+
+/**
+ * Retrieves the listener type of a {@link BeEvent}.
+ *
+ * @example
+ * ```ts
+ * const ev = new BeEvent<(x: number, y: string) => void>();
+ *
+ * // type EvListener = (x: number, y: string) => void
+ * type EvListener = ListenerType<typeof ev>;
+ * ```
+ *
+ * @beta
+ */
+export type ListenerType<TEvent extends BeEvent<Listener>> =
+  TEvent extends BeEvent<infer TListener> ? TListener : never;

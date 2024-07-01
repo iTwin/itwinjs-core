@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { BeEvent, BeEventList } from "../core-bentley";
+import { BeEvent, BeEventList, ListenerType } from "../core-bentley";
 
 /* eslint-disable no-empty */
 class Dummy {
@@ -351,6 +351,22 @@ describe("BeEvent tests", () => {
 
       result = list.get(event2).has(fn);
       expect(result, "Event 2 should not be present.").to.equal(false);
+    });
+  });
+
+  describe("ListenerType", () => {
+    it("Retrieves listener type", () => {
+      const dispatcher = new BeEvent<(args: {x: number, y: string}) => void>();
+
+      type DispatcherListener = ListenerType<typeof dispatcher>;
+      const fn: DispatcherListener = (args) => {
+        args.x === 0;
+        args.y === "a";
+        // @ts-expect-error z property does not exist.
+        args.z === 0;
+      };
+
+      dispatcher.addListener(fn);
     });
   });
 });

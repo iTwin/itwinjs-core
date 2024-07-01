@@ -1178,6 +1178,9 @@ export namespace JsonUtils {
 // @public
 export type Listener = (...arg: any[]) => void;
 
+// @beta
+export type ListenerType<TEvent extends BeEvent<Listener>> = TEvent extends BeEvent<infer TListener> ? TListener : never;
+
 // @public
 export type LogFunction = (category: string, message: string, metaData: LoggingMetaData) => void;
 
