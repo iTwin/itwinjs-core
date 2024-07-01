@@ -238,4 +238,33 @@ describe("ECDb", () => {
 
     ecdb.closeDb();
   });
+
+  it("should make importSchema fail if new schema changes are observed without version bump", () => {
+    const ecdb: ECDb = ECDbTestHelper.createECDb(outDir, "importSchemaNoVersionBump.ecdb");
+    const xmlpathOriginal = path.join(outDir, "importSchemaNoVersionBump1.ecschema.xml");
+
+    IModelJsFs.writeFileSync(xmlpathOriginal, `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+      <ECEntityClass typeName="Person" modifier="Sealed">
+        <ECProperty propertyName="Name" typeName="string"/>
+        <ECProperty propertyName="Age" typeName="int"/>
+      </ECEntityClass>
+      </ECSchema>`);
+    ecdb.importSchema(xmlpathOriginal);
+    ecdb.saveChanges();
+
+    const xmlpathUpdated = path.join(outDir, "importSchemaNoVersionBump2.ecschema.xml");
+    IModelJsFs.writeFileSync(xmlpathUpdated, `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+      <ECEntityClass typeName="Person" modifier="Sealed">
+        <ECProperty propertyName="Name" typeName="string"/>
+        <ECProperty propertyName="Age" typeName="int"/>
+        <ECProperty propertyName="Height" typeName="int"/>
+      </ECEntityClass>
+      </ECSchema>`);
+
+    expect(() => ecdb.importSchema(xmlpathUpdated)).to.throw("");
+
+    ecdb.closeDb();
+  });
 });
