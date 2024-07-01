@@ -66,7 +66,7 @@ export class SubCategoriesCache {
   }
 
   /** Load all subcategories that come from used spatial categories of the iModel into the cache. */
-  public async loadAllSubCategories(): Promise<void> {
+  public async loadAllUsedSpatialSubCategories(): Promise<void> {
     try {
       const results = await this._imodel.queryAllUsedSpatialSubCategories();
       if (undefined !== results){
