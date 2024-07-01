@@ -23,6 +23,8 @@ import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { SchemaSync } from "./SchemaSync";
+import { _releaseAllLocks } from "./internal/Symbols";
+import { IModelNative } from "./internal/NativePlatform";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -242,7 +244,7 @@ export class BriefcaseManager {
     };
 
     // now open the downloaded checkpoint and reset its BriefcaseId
-    const nativeDb = new IModelHost.platform.DgnDb();
+    const nativeDb = new IModelNative.platform.DgnDb();
     try {
       nativeDb.openIModel(fileName, OpenMode.ReadWrite);
     } catch (err: any) {
@@ -479,7 +481,7 @@ export class BriefcaseManager {
         db.nativeDb.completeCreateChangeset({ index });
         db.changeset = db.nativeDb.getCurrentChangeset();
         if (!arg.retainLocks)
-          await db.locks.releaseAllLocks();
+          await db.locks[_releaseAllLocks]();
 
         return;
       } catch (err: any) {

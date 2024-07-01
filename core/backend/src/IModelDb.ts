@@ -11,7 +11,7 @@ import { join } from "path";
 import * as touch from "touch";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType,
+  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult,
   Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode,
 } from "@itwin/core-bentley";
 import {
@@ -30,7 +30,8 @@ import {
 import { Range2d, Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
-import { ChannelAdmin, ChannelControl } from "./ChannelControl";
+import { ChannelControl } from "./ChannelControl";
+import { createChannelControl } from "./internal/ChannelAdmin";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CloudSqlite } from "./CloudSqlite";
@@ -51,7 +52,7 @@ import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";
 import { Relationships } from "./Relationship";
 import { SchemaSync } from "./SchemaSync";
-import { ServerBasedLocks } from "./ServerBasedLocks";
+import { createServerBasedLocks } from "./internal/ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotationLayout";
 import { TxnManager } from "./TxnManager";
@@ -61,29 +62,12 @@ import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from
 import { Workspace, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbSettingsProps, WorkspaceSettingNames } from "./workspace/Workspace";
 import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "./internal/workspace/WorkspaceImpl";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
-
+import { ChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
+import { LockControl } from "./LockControl";
+import { IModelNative } from "./internal/NativePlatform";
 import type { BlobContainer } from "./BlobContainerService";
-
-/** @internal */
-export interface ChangesetConflictArgs {
-  cause: DbConflictCause;
-  opcode: DbOpcode;
-  indirect: boolean;
-  tableName: string;
-  changesetFile?: string;
-  columnCount: number;
-  getForeignKeyConflicts: () => number;
-  dump: () => void;
-  setLastError: (message: string) => void;
-  getPrimaryKeyColumns: () => number[];
-  getValueType: (columnIndex: number, stage: DbChangeStage) => DbValueType | null | undefined;
-  getValueBinary: (columnIndex: number, stage: DbChangeStage) => Uint8Array | null | undefined;
-  getValueId: (columnIndex: number, stage: DbChangeStage) => Id64String | null | undefined;
-  getValueText: (columnIndex: number, stage: DbChangeStage) => string | null | undefined;
-  getValueInteger: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
-  getValueDouble: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
-  isValueNull: (columnIndex: number, stage: DbChangeStage) => boolean | undefined;
-}
+import { createNoOpLockControl } from "./internal/NoLocks";
+import { _close, _releaseAllLocks } from "./internal/Symbols";
 
 // spell:ignore fontid fontmap
 
@@ -123,67 +107,6 @@ export interface ComputedProjectExtents {
 }
 
 /**
- * Interface for acquiring element locks to coordinate simultaneous edits from multiple briefcases.
- * @beta
- */
-export interface LockControl {
-  /**
-   * true if this LockControl uses a server-based concurrency approach.
-   */
-  readonly isServerBased: boolean;
-  /**
-   * Close the local lock control database
-   * @internal
-   */
-  close(): void;
-  /**
-   * Notification that a new element was just created. Called by [[Element.onInserted]]
-   * @internal
-   */
-  elementWasCreated(id: Id64String): void;
-  /**
-   * Throw if locks are required and the exclusive lock is not held on the supplied element.
-   * Note: there is no need to check the shared locks on parents/models since an element cannot hold the exclusive lock without first obtaining them.
-   * Called by [[Element.onUpdate]], [[Element.onDelete]], etc.
-   * @internal
-   */
-  checkExclusiveLock(id: Id64String, type: string, operation: string): void;
-  /**
-   * Throw if locks are required and a shared lock is not held on the supplied element.
-   * Called by [[Element.onInsert]] to ensure shared lock is held on model and parent.
-   * @internal
-   */
-  checkSharedLock(id: Id64String, type: string, operation: string): void;
-  /**
-   * Determine whether the supplied element currently holds the exclusive lock
-   */
-  holdsExclusiveLock(id: Id64String): boolean;
-  /**
-   * Determine whether the supplied element currently holds a shared lock
-   */
-  holdsSharedLock(id: Id64String): boolean;
-  /**
-   * Acquire locks on one or more elements from the lock server, if required and not already held.
-   * If any required lock is not available, this method throws an exception and *none* of the requested locks are acquired.
-   * > Note: acquiring the exclusive lock on an element requires also obtaining a shared lock on all its owner elements. This method will
-   * attempt to acquire all necessary locks for both sets of input ids.
-   * @throws ConflictingLocksError if one or more requested locks are held by other briefcases.
-   */
-  acquireLocks(arg: {
-    /** if present, one or more elements to obtain shared lock */
-    shared?: Id64Arg;
-    /** if present, one or more elements to obtain exclusive lock */
-    exclusive?: Id64Arg;
-  }): Promise<void>;
-  /**
-   * Release all locks currently held by this Briefcase from the lock server.
-   * Not possible to release locks unless push or abandon all changes. Should only be called internally.
-   * @internal
-   */
-  releaseAllLocks(): Promise<void>;
-}
-
-/**
  * Options for the importing of schemas
  * @public
  */
@@ -194,20 +117,6 @@ export interface SchemaImportOptions {
    * @internal
    */
   ecSchemaXmlContext?: ECSchemaXmlContext;
-}
-
-/** A null-implementation of LockControl that does not attempt to limit access between briefcases. This relies on change-merging to resolve conflicts. */
-class NoLocks implements LockControl {
-  public get isServerBased() { return false; }
-  public close(): void { }
-  public clearAllLocks(): void { }
-  public holdsExclusiveLock(): boolean { return false; }
-  public holdsSharedLock(): boolean { return false; }
-  public checkExclusiveLock(): void { }
-  public checkSharedLock(): void { }
-  public elementWasCreated(): void { }
-  public async acquireLocks() { }
-  public async releaseAllLocks(): Promise<void> { }
 }
 
 /** @internal */
@@ -258,7 +167,7 @@ export abstract class IModelDb extends IModel {
   public readonly views = new IModelDb.Views(this);
   public readonly tiles = new IModelDb.Tiles(this);
   /** @beta */
-  public readonly channels: ChannelControl = new ChannelAdmin(this);
+  public readonly channels: ChannelControl = createChannelControl(this);
   private _relationships?: Relationships;
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
@@ -269,7 +178,7 @@ export abstract class IModelDb extends IModel {
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
   /** @internal */
-  protected _locks?: LockControl = new NoLocks();
+  protected _locks?: LockControl = createNoOpLockControl();
 
   /** @internal */
   protected _codeService?: CodeService;
@@ -415,7 +324,7 @@ export abstract class IModelDb extends IModel {
     this.beforeClose();
     IModelDb._openDbs.delete(this._fileKey);
     this._workspace?.close();
-    this.locks.close();
+    this.locks[_close]();
     this._locks = undefined;
     this._codeService?.close();
     this._codeService = undefined;
@@ -1012,7 +921,7 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(IModelStatus.UpgradeFailed, "Cannot upgrade a Readonly Db");
 
     try {
-      const nativeDb = new IModelHost.platform.DgnDb();
+      const nativeDb = new IModelNative.platform.DgnDb();
       const container = props?.container;
       if (container) {
         // temp files for cloud-based Dbs should be in the profileDir in a subdirectory named for their container
@@ -1303,7 +1212,7 @@ export abstract class IModelDb extends IModel {
   public async requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
     let request = this._snaps.get(sessionId);
     if (undefined === request) {
-      request = new IModelHost.platform.SnapRequest();
+      request = new IModelNative.platform.SnapRequest();
       this._snaps.set(sessionId, request);
     } else
       request.cancelSnap();
@@ -2696,7 +2605,7 @@ export class BriefcaseDb extends IModelDb {
   // if the iModel uses a lock server, create a ServerBasedLocks LockControl for this BriefcaseDb.
   protected makeLockControl() {
     if (this.useLockServer)
-      this._locks = new ServerBasedLocks(this);
+      this._locks = createServerBasedLocks(this);
   }
 
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, openMode: OpenMode, briefcaseId: number }) {
@@ -2766,7 +2675,7 @@ export class BriefcaseDb extends IModelDb {
           await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade, schemaLockHeld: true }, "Upgraded profile");
           await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
         } finally {
-          await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
+          await withBriefcaseDb(briefcase, async (db) => db.locks[_releaseAllLocks]());
         }
         return;
       }
@@ -2781,7 +2690,7 @@ export class BriefcaseDb extends IModelDb {
           await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
           await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
         } finally {
-          await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
+          await withBriefcaseDb(briefcase, async (db) => db.locks[_releaseAllLocks]());
         }
       }
       throw error;
@@ -2809,6 +2718,7 @@ export class BriefcaseDb extends IModelDb {
       // Restart default txn to trigger events when watch file is changed by some other process.
       const watcher = fs.watch(briefcaseDb.watchFilePathName, { persistent: false }, () => {
         nativeDb.restartDefaultTxn();
+        briefcaseDb.changeset = briefcaseDb.nativeDb.getCurrentChangeset();
       });
 
       // Stop the watcher when we close this connection.
@@ -2849,10 +2759,8 @@ export class BriefcaseDb extends IModelDb {
     return briefcaseDb;
   }
 
-  /**  This is called by native code when applying a changeset
-   * @internal
-   */
-  public onChangesetConflict(args: ChangesetConflictArgs): DbConflictResolution | undefined {
+  /**  This is called by native code when applying a changeset */
+  private onChangesetConflict(args: ChangesetConflictArgs): DbConflictResolution | undefined {
     // returning undefined will result in native handler to resolve conflict
 
     const category = "DgnCore";
@@ -3015,7 +2923,7 @@ export class BriefcaseDb extends IModelDb {
     } finally {
       if (isReadonly) {
         if (locks !== this._locks) { // did we have to create a ServerBasedLocks?
-          this.locks.close(); // yes, close it and reset back to previous
+          this.locks[_close](); // yes, close it and reset back to previous
           this._locks = locks;
         }
         this.closeAndReopen(OpenMode.Readonly, fileName);
@@ -3051,6 +2959,7 @@ export class BriefcaseDb extends IModelDb {
     });
 
     IpcHost.notifyTxns(this, "notifyPulledChanges", this.changeset as ChangesetIndexAndId);
+    this.txns.touchWatchFile();
   }
 
   /** Push changes to iModelHub. */
@@ -3071,6 +2980,7 @@ export class BriefcaseDb extends IModelDb {
 
     const changeset = this.changeset as ChangesetIndexAndId;
     IpcHost.notifyTxns(this, "notifyPushedChanges", changeset);
+    this.txns.touchWatchFile();
   }
 
   public override close() {
@@ -3179,7 +3089,7 @@ export class SnapshotDb extends IModelDb {
    * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
    */
   public static createEmpty(filePath: LocalFileName, options: CreateEmptySnapshotIModelProps): SnapshotDb {
-    const nativeDb = new IModelHost.platform.DgnDb();
+    const nativeDb = new IModelNative.platform.DgnDb();
     nativeDb.createIModel(filePath, options);
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
 
@@ -3203,7 +3113,7 @@ export class SnapshotDb extends IModelDb {
     iModelDb.performCheckpoint();
     IModelJsFs.copySync(iModelDb.pathName, snapshotFile);
 
-    const nativeDb = new IModelHost.platform.DgnDb();
+    const nativeDb = new IModelNative.platform.DgnDb();
     nativeDb.openIModel(snapshotFile, OpenMode.ReadWrite, undefined, options);
     nativeDb.vacuum();
 
@@ -3349,7 +3259,7 @@ export class StandaloneDb extends BriefcaseDb {
    * @param args The parameters that define the new iModel
    */
   public static createEmpty(filePath: LocalFileName, args: CreateEmptyStandaloneIModelProps): StandaloneDb {
-    const nativeDb = new IModelHost.platform.DgnDb();
+    const nativeDb = new IModelNative.platform.DgnDb();
     nativeDb.createIModel(filePath, args);
     nativeDb.saveLocalValue(BriefcaseLocalValue.StandaloneEdit, args.allowEdit);
     nativeDb.setITwinId(Guid.empty);
