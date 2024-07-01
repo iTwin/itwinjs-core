@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "SQLite when statement is cached vs when its used once or few time  and finalized quickly",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

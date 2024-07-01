@@ -64,12 +64,13 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param db The DgnDb or ECDb to prepare the statement against
    * @param ecsql The ECSQL statement string to prepare
    * @param logErrors Determine if errors are logged or not
+   * @param persistent Should be true if this statement will be cached and used multiple times
    * @throws [IModelError]($common) if the ECSQL statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or references to tables or properties that do not exist.
    * The error.message property will provide details.
    * @internal
    */
-  public prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors = true): void {
-    const stat = this.tryPrepare(db, ecsql, logErrors);
+  public prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors = true, persistent = false): void {
+    const stat = this.tryPrepare(db, ecsql, logErrors, persistent);
     if (stat.status !== DbResult.BE_SQLITE_OK) {
       throw new IModelError(stat.status, stat.message);
     }
@@ -79,15 +80,16 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param db The DgnDb or ECDb to prepare the statement against
    * @param ecsql The ECSQL statement string to prepare
    * @param logErrors Determine if errors are logged or not, its set to false by default for tryPrepare()
+   * @param persistent Should be true if this statement will be cached and used multiple times
    * @returns A [StatusCodeWithMessage]($bentley) object with a `status` member equal to [DbResult.BE_SQLITE_OK]($bentley) on success. Upon error, the `message` member will provide details.
    * @internal
    */
-  public tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors = false): StatusCodeWithMessage<DbResult> {
+  public tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors = false, persistent = false): StatusCodeWithMessage<DbResult> {
     if (this.isPrepared)
       throw new Error("ECSqlStatement is already prepared");
     this._sql = ecsql;
     this._stmt = new IModelHost.platform.ECSqlStatement();
-    return this._stmt.prepare(db, ecsql, logErrors);
+    return this._stmt.prepare(db, ecsql, logErrors, persistent);
   }
 
   /** Reset this statement so that the next call to step will return the first row, if any. */
