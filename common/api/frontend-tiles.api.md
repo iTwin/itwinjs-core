@@ -10,16 +10,17 @@ import { IModelConnection } from '@itwin/core-frontend';
 // @beta
 export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
 
-// @beta
-export interface DataSource {
-    changeId?: string;
-    id: string;
-    iTwinId: string;
-    type: string;
-}
+// @alpha
+export function createGeoscienceTileset(args: CreateGeoscienceTilesetArgs): Promise<void>;
+
+// @alpha
+export type CreateGeoscienceTilesetArgs = BaseGeoscienceArgs;
 
 // @beta
-export interface FrontendTilesOptions {
+export function createIModelTileset(options: CreateIModelTilesetArgs): void;
+
+// @beta
+export interface CreateIModelTilesetArgs {
     computeSpatialTilesetBaseUrl?: ComputeSpatialTilesetBaseUrl;
     enableCDN?: boolean;
     // @internal
@@ -29,6 +30,15 @@ export interface FrontendTilesOptions {
     useIndexedDBCache?: boolean;
 }
 
+// @beta
+export function createIModelTilesetAs3DTiles(args: CreateIModelTilesetAs3DTilesArgs): Promise<void>;
+
+// @beta
+export type CreateIModelTilesetAs3DTilesArgs = GetIModelTilesetUrlFromConnectionArgs;
+
+// @beta
+export type FrontendTilesOptions = CreateIModelTilesetArgs;
+
 // @internal
 export const frontendTilesOptions: {
     maxLevelsToSkip: number;
@@ -37,33 +47,19 @@ export const frontendTilesOptions: {
 };
 
 // @beta
-export type GraphicRepresentation = {
-    displayName: string;
-    representationId: string;
-    status: GraphicRepresentationStatus;
-    format: GraphicRepresentationFormat;
-    dataSource: DataSource;
-} & ({
-    status: Omit<GraphicRepresentationStatus, GraphicRepresentationStatus.Complete>;
-    url?: string;
-} | {
-    status: GraphicRepresentationStatus.Complete;
-    url: string;
-});
-
-// @beta
-export type GraphicRepresentationFormat = "IMDL" | "3DTILES" | string;
-
-// @beta
-export enum GraphicRepresentationStatus {
+export class GraphicsProvider {
+    // @alpha
+    createGeoscienceTileset: typeof createGeoscienceTileset;
     // (undocumented)
-    Complete = "Complete",
+    createIModelTileset: typeof createIModelTileset;
+    // @alpha
+    createIModelTilesetAs3DTiles: typeof createIModelTilesetAs3DTiles;
+    // @alpha
+    createRealityModelTilesetFromUrl: typeof createRealityModelTilesetFromUrl;
     // (undocumented)
-    Failed = "Failed",
+    getIModelTilesetUrlFromConnection: typeof getIModelTilesetUrlFromConnection;
     // (undocumented)
-    InProgress = "In progress",
-    // (undocumented)
-    NotStarted = "Not started"
+    static getInstance(): GraphicsProvider;
 }
 
 // @beta
@@ -106,50 +102,10 @@ export interface MeshExports {
 }
 
 // @beta
-export function obtainGraphicRepresentationUrl(args: ObtainGraphicRepresentationUrlArgs): Promise<URL | undefined>;
-
-// @beta
-export interface ObtainGraphicRepresentationUrlArgs {
-    accessToken: AccessToken;
-    dataSource: DataSource;
-    enableCDN?: boolean;
-    format: GraphicRepresentationFormat;
-    requireExactVersion?: boolean;
-    sessionId: string;
-    urlPrefix?: string;
-}
-
-// @beta
-export function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs): Promise<URL | undefined>;
-
-// @beta
-export interface ObtainIModelTilesetUrlArgs {
-    accessToken: AccessToken;
-    enableCDN?: boolean;
-    iModel: IModelConnection;
-    requireExactChangeset?: boolean;
-    urlPrefix?: string;
-}
-
-// @beta
 export function obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise<URL | undefined>;
 
 // @beta
-export type ObtainMeshExportTilesetUrlArgs = ObtainIModelTilesetUrlArgs;
-
-// @beta
-export function queryGraphicRepresentations(args: QueryGraphicRepresentationsArgs): AsyncIterableIterator<GraphicRepresentation>;
-
-// @beta
-export interface QueryGraphicRepresentationsArgs {
-    accessToken: AccessToken;
-    dataSource: DataSource;
-    enableCDN?: boolean;
-    format: GraphicRepresentationFormat;
-    includeIncomplete?: boolean;
-    sessionId: string;
-    urlPrefix?: string;
-}
+export type ObtainMeshExportTilesetUrlArgs = GetIModelTilesetUrlFromConnectionArgs;
 
 // @beta
 export function queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator<MeshExport>;

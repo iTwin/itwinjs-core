@@ -16,7 +16,10 @@ import { getIModelTilesetUrlFromConnection, GetIModelTilesetUrlFromConnectionArg
  */
 export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
 
-export type CreateIModelTilesetArgsAs3DTiles = GetIModelTilesetUrlFromConnectionArgs;
+/** Arguments supplied to [[CreateIModelTilesetAs3DTiles]]
+ * @beta
+ */
+export type CreateIModelTilesetAs3DTilesArgs = GetIModelTilesetUrlFromConnectionArgs;
 
 /** Options supplied to [[createIModelTileset]].
  * @beta
@@ -87,7 +90,7 @@ export function createIModelTileset(options: CreateIModelTilesetArgs): void {
 /** Initializes the IModelTiles using 3D Tiles format, with the provided options.
  * @beta
  */
-export async function createIModelTilesetAs3DTiles(args: CreateIModelTilesetArgsAs3DTiles): Promise<void> {
+export async function createIModelTilesetAs3DTiles(args: CreateIModelTilesetAs3DTilesArgs): Promise<void> {
   try {
     const url = await getIModelTilesetUrlFromConnection(args);
     if (url) {
