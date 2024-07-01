@@ -13418,7 +13418,7 @@ export class SubCategoriesCache {
     // (undocumented)
     getSubCategoryInfo(categoryId: Id64String, inputSubCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.SubCategoryInfo>>;
     load(categoryIds: Id64Arg): SubCategoriesRequest | undefined;
-    loadAllSubCategories(): Promise<void>;
+    loadAllUsedSpatialSubCategories(): Promise<void>;
     // (undocumented)
     onIModelConnectionClose(): void;
 }
