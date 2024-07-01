@@ -174,6 +174,7 @@ export class BeEventList<T extends Listener> {
 
 /**
  * Retrieves the listener type of a {@link BeEvent}.
+ * @note This can be used with a narrowed event type.
  *
  * @example
  * ```ts
@@ -185,5 +186,9 @@ export class BeEventList<T extends Listener> {
  *
  * @beta
  */
-export type ListenerType<TEvent extends BeEvent<Listener>> =
-  TEvent extends BeEvent<infer TListener> ? TListener : never;
+export type ListenerType<TEvent extends {
+  addListener(listener: Listener): () => void;
+}> =
+  TEvent extends {
+    addListener(listener: infer TListener): () => void;
+  } ? TListener : never;

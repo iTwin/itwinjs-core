@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { BeEvent, BeEventList, ListenerType } from "../core-bentley";
+import { BeEvent, BeEventList, Listener, ListenerType } from "../core-bentley";
 
 /* eslint-disable no-empty */
 class Dummy {
@@ -358,6 +358,23 @@ describe("BeEvent tests", () => {
     it("Retrieves listener type", () => {
       const dispatcher = new BeEvent<(args: {x: number, y: string}) => void>();
 
+      type DispatcherListener = ListenerType<typeof dispatcher>;
+      const fn: DispatcherListener = (args) => {
+        args.x === 0;
+        args.y === "a";
+        // @ts-expect-error z property does not exist.
+        args.z === 0;
+      };
+
+      dispatcher.addListener(fn);
+    });
+
+    it("Narrowed event type", () => {
+      interface MyEvent<TListener extends Listener = () => void> {
+        addListener(listener: TListener): () => void;
+      }
+
+      const dispatcher: MyEvent<(args: {x: number, y: string}) => void> = new BeEvent();
       type DispatcherListener = ListenerType<typeof dispatcher>;
       const fn: DispatcherListener = (args) => {
         args.x === 0;
